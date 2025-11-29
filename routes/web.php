@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\{AuthController, DashboardController, PenawaranController, PenugasanController, AKController, ALController, BandingController, PedomanController, DokumenController, PanduanController, BantuanController, ProfileController, SettingsController, ActivityController, TaskController, PasswordResetController, LaporanController};
+use App\Http\Controllers\{AuthController, DashboardController, PenawaranController, PenugasanController, AKController, ALController, BandingController, PedomanController, DokumenController, PanduanController, BantuanController, ProfileController, SettingsController, ActivityController, TaskController, PasswordResetController, LaporanController, UniversityController, DegreeLevelController, StudyProgramController};
 
 
 // Dashboard (awal)
@@ -29,6 +29,11 @@ Route::get('/reset-password/{token}', [PasswordResetController::class, 'showRese
 
 Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])
     ->name('password.update');
+
+// API ROUTES FOR TESTING (Tanpa Auth - Untuk Dokumentasi Postman)
+Route::resource('universitas', UniversityController::class);
+Route::resource('jenjang', DegreeLevelController::class);
+Route::resource('prodi', StudyProgramController::class);
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
