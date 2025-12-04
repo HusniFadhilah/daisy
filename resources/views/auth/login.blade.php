@@ -2,6 +2,7 @@
 
 @section('title', 'Login - DAISY')
 
+@section('content')
 <div class="auth-wrapper">
     <div class="auth-container fade-in">
         <!-- Left Side - Branding -->
@@ -125,7 +126,7 @@
         </div>
     </div>
 </div>
-
+@endsection
 
 @push('scripts')
 <!-- Custom Scripts -->

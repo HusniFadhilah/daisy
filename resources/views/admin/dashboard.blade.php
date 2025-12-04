@@ -2,6 +2,7 @@
 
 @section('title', 'Dashboard Admin - DAISY')
 
+@section('content')
 <!-- Main Content -->
 <main class="main-content">
     <!-- Alert Messages -->
@@ -322,4 +323,4 @@
     </div>
 </main>
 
-@include('layouts.footer')
+@endsection

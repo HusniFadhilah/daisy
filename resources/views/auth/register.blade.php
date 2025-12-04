@@ -1,6 +1,7 @@
 @extends('layouts.auth')
 
 @section('title', 'Register - DAISY')
+@section('content')
 <div class="auth-wrapper">
     <div class="auth-container fade-in">
         <!-- Left Side - Branding -->
@@ -159,6 +160,7 @@
         </div>
     </div>
 </div>
+@endsection
 
 @push('scripts')
 <!-- Custom Scripts -->

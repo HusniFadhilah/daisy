@@ -1,6 +1,7 @@
 @extends('layouts.auth')
 
 @section('title', 'Reset Password - DAISY')
+@section('content')
 <div class="auth-wrapper">
     <div class="auth-container fade-in" style="max-width: 600px;">
         <!-- Centered Content -->
@@ -116,6 +117,7 @@
         </div>
     </div>
 </div>
+@endsection
 
 @push('scripts')
 <!-- Custom Scripts -->
