@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Indikator extends Model
+class IndikatorStandar extends Model
 {
     protected $table = 'indikator';
     
@@ -12,18 +12,12 @@ class Indikator extends Model
     
     protected $fillable = [
         'id_elemen',
-        'id_jenis',
-        'kode_indikator',
+        'jenis_indikator',
         'deskripsi_indikator',
     ];
 
     public function elemenStandar()
     {
         return $this->belongsTo(ElemenStandar::class, 'id_elemen', 'id_elemen');
-    }
-
-    public function jenisIndikator()
-    {
-        return $this->belongsTo(JenisIndikator::class, 'id_jenis', 'id_jenis');
     }
 }
