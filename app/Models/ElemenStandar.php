@@ -1,0 +1,34 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class ElemenStandar extends Model
+{
+    protected $table = 'elemen_standar';
+    
+    protected $primaryKey = 'id_elemen';
+    
+    protected $fillable = [
+        'id_kriteria',
+        'kode_elemen',
+        'pernyataan_elemen',
+        'keterangan',
+    ];
+
+    public function kriteria()
+    {
+        return $this->belongsTo(Kriteria::class, 'id_kriteria', 'id_kriteria');
+    }
+
+    public function indikator()
+    {
+        return $this->hasMany(Indikator::class, 'id_elemen', 'id_elemen');
+    }
+
+    public function pernyataan()
+    {
+        return $this->hasMany(Pernyataan::class, 'id_elemen', 'id_elemen');
+    }
+}
