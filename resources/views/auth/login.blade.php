@@ -132,24 +132,6 @@
                     </button>
                 </form>
 
-                <!-- Divider -->
-                <div class="auth-divider">
-                    <span>Atau masuk dengan</span>
-                </div>
-
-                <!-- Social Login -->
-                <div class="social-login">
-                    <button type="button" class="btn-social google" onclick="socialLogin('google')">
-                        <i class="bi bi-google"></i>
-                    </button>
-                    <button type="button" class="btn-social facebook" onclick="socialLogin('facebook')">
-                        <i class="bi bi-facebook"></i>
-                    </button>
-                    <button type="button" class="btn-social github" onclick="socialLogin('github')">
-                        <i class="bi bi-github"></i>
-                    </button>
-                </div>
-
                 <!-- Footer -->
                 <div class="auth-footer">
                     <p>

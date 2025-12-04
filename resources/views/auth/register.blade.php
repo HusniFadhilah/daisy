@@ -167,24 +167,6 @@
                     </button>
                 </form>
 
-                <!-- Divider -->
-                <div class="auth-divider">
-                    <span>Atau daftar dengan</span>
-                </div>
-
-                <!-- Social Register -->
-                <div class="social-login">
-                    <button type="button" class="btn-social google" onclick="socialRegister('google')">
-                        <i class="bi bi-google"></i>
-                    </button>
-                    <button type="button" class="btn-social facebook" onclick="socialRegister('facebook')">
-                        <i class="bi bi-facebook"></i>
-                    </button>
-                    <button type="button" class="btn-social github" onclick="socialRegister('github')">
-                        <i class="bi bi-github"></i>
-                    </button>
-                </div>
-
                 <!-- Footer -->
                 <div class="auth-footer">
                     <p>
