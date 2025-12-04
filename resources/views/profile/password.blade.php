@@ -1,14 +1,9 @@
-@extends('layouts.app')
+@extends('layouts.template.app')
 
 @section('title', 'Ubah Password - DAISY')
 
 @push('styles')
 <style>
-    .password-container {
-        max-width: 700px;
-        margin: 0 auto;
-    }
-
     .password-toggle {
         cursor: pointer;
         color: #6c757d;
@@ -91,146 +86,144 @@
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-4">
-    <!-- Header -->
-    <div class="welcome-section mb-4 py-4">
-        <div class="welcome-content">
-            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
-                <div>
-                    <h2 class="mb-2">
-                        <i class="bi bi-shield-lock me-2"></i>Ubah Password
-                    </h2>
-                    <p class="mb-0">Jaga keamanan akun Anda dengan password yang kuat</p>
-                </div>
-                <a href="{{ route('profile') }}" class="quick-btn">
-                    <i class="bi bi-arrow-left"></i>Kembali
-                </a>
+<!-- Header -->
+<div class="welcome-section mb-4 py-4">
+    <div class="welcome-content">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div>
+                <h2 class="mb-2">
+                    <i class="bi bi-shield-lock me-2"></i>Ubah Password
+                </h2>
+                <p class="mb-0">Jaga keamanan akun Anda dengan password yang kuat</p>
             </div>
+            <a href="{{ route('profile') }}" class="quick-btn">
+                <i class="bi bi-arrow-left"></i>Kembali
+            </a>
         </div>
     </div>
+</div>
 
-    <!-- Change Password Form -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <form action="{{ route('profile.password.update') }}" method="POST" id="passwordForm">
-                @csrf
-                @method('PUT')
+<!-- Change Password Form -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form action="{{ route('profile.password.update') }}" method="POST" id="passwordForm">
+            @csrf
+            @method('PUT')
 
-                <!-- Current Password -->
-                <div class="mb-4">
-                    <label for="current_password" class="form-label fw-semibold required-field">Password Lama</label>
-                    <div class="input-group">
-                        <span class="input-group-text">
-                            <i class="bi bi-lock"></i>
-                        </span>
-                        <input type="password" class="form-control @error('current_password') is-invalid @enderror" id="current_password" name="current_password" placeholder="Masukkan password lama" required>
-                        <span class="input-group-text password-toggle" onclick="togglePassword('current_password')">
-                            <i class="bi bi-eye" id="current_password_icon"></i>
-                        </span>
-                        @error('current_password')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    <small class="text-muted">Konfirmasi password Anda saat ini</small>
+            <!-- Current Password -->
+            <div class="mb-4">
+                <label for="current_password" class="form-label fw-semibold required-field">Password Lama</label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="bi bi-lock"></i>
+                    </span>
+                    <input type="password" class="form-control @error('current_password') is-invalid @enderror" id="current_password" name="current_password" placeholder="Masukkan password lama" required>
+                    <span class="input-group-text password-toggle" onclick="togglePassword('current_password')">
+                        <i class="bi bi-eye" id="current_password_icon"></i>
+                    </span>
+                    @error('current_password')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+                <small class="text-muted">Konfirmasi password Anda saat ini</small>
+            </div>
+
+            <!-- New Password -->
+            <div class="mb-4">
+                <label for="password" class="form-label fw-semibold required-field">Password Baru</label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="bi bi-lock-fill"></i>
+                    </span>
+                    <input type="password" class="form-control @error('password') is-invalid @enderror" id="password" name="password" placeholder="Masukkan password baru" required oninput="checkPasswordStrength(this.value)">
+                    <span class="input-group-text password-toggle" onclick="togglePassword('password')">
+                        <i class="bi bi-eye" id="password_icon"></i>
+                    </span>
+                    @error('password')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
 
-                <!-- New Password -->
-                <div class="mb-4">
-                    <label for="password" class="form-label fw-semibold required-field">Password Baru</label>
-                    <div class="input-group">
-                        <span class="input-group-text">
-                            <i class="bi bi-lock-fill"></i>
-                        </span>
-                        <input type="password" class="form-control @error('password') is-invalid @enderror" id="password" name="password" placeholder="Masukkan password baru" required oninput="checkPasswordStrength(this.value)">
-                        <span class="input-group-text password-toggle" onclick="togglePassword('password')">
-                            <i class="bi bi-eye" id="password_icon"></i>
-                        </span>
-                        @error('password')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
+                <!-- Password Strength Indicator -->
+                <div class="password-strength" id="passwordStrength">
+                    <div class="password-strength-bar" id="passwordStrengthBar"></div>
+                </div>
+                <small class="text-muted d-block mt-2" id="strengthText"></small>
 
-                    <!-- Password Strength Indicator -->
-                    <div class="password-strength" id="passwordStrength">
-                        <div class="password-strength-bar" id="passwordStrengthBar"></div>
+                <!-- Password Requirements -->
+                <div class="password-requirements">
+                    <div class="requirement-item" id="req-length">
+                        <i class="bi bi-circle requirement-unmet"></i>
+                        <span>Minimal 6 karakter</span>
                     </div>
-                    <small class="text-muted d-block mt-2" id="strengthText"></small>
-
-                    <!-- Password Requirements -->
-                    <div class="password-requirements">
-                        <div class="requirement-item" id="req-length">
-                            <i class="bi bi-circle requirement-unmet"></i>
-                            <span>Minimal 6 karakter</span>
-                        </div>
-                        <div class="requirement-item" id="req-uppercase">
-                            <i class="bi bi-circle requirement-unmet"></i>
-                            <span>Minimal 1 huruf besar (A-Z)</span>
-                        </div>
-                        <div class="requirement-item" id="req-lowercase">
-                            <i class="bi bi-circle requirement-unmet"></i>
-                            <span>Minimal 1 huruf kecil (a-z)</span>
-                        </div>
-                        <div class="requirement-item" id="req-number">
-                            <i class="bi bi-circle requirement-unmet"></i>
-                            <span>Minimal 1 angka (0-9)</span>
-                        </div>
-                        <div class="requirement-item" id="req-special">
-                            <i class="bi bi-circle requirement-unmet"></i>
-                            <span>Minimal 1 karakter spesial (!@#$%^&*)</span>
-                        </div>
+                    <div class="requirement-item" id="req-uppercase">
+                        <i class="bi bi-circle requirement-unmet"></i>
+                        <span>Minimal 1 huruf besar (A-Z)</span>
+                    </div>
+                    <div class="requirement-item" id="req-lowercase">
+                        <i class="bi bi-circle requirement-unmet"></i>
+                        <span>Minimal 1 huruf kecil (a-z)</span>
+                    </div>
+                    <div class="requirement-item" id="req-number">
+                        <i class="bi bi-circle requirement-unmet"></i>
+                        <span>Minimal 1 angka (0-9)</span>
+                    </div>
+                    <div class="requirement-item" id="req-special">
+                        <i class="bi bi-circle requirement-unmet"></i>
+                        <span>Minimal 1 karakter spesial (!@#$%^&*)</span>
                     </div>
                 </div>
+            </div>
 
-                <!-- Confirm Password -->
-                <div class="mb-4">
-                    <label for="password_confirmation" class="form-label fw-semibold required-field">Konfirmasi Password Baru</label>
-                    <div class="input-group">
-                        <span class="input-group-text">
-                            <i class="bi bi-shield-check"></i>
-                        </span>
-                        <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" placeholder="Masukkan ulang password baru" required oninput="checkPasswordMatch()">
-                        <span class="input-group-text password-toggle" onclick="togglePassword('password_confirmation')">
-                            <i class="bi bi-eye" id="password_confirmation_icon"></i>
-                        </span>
-                    </div>
-                    <small class="text-muted" id="matchText"></small>
+            <!-- Confirm Password -->
+            <div class="mb-4">
+                <label for="password_confirmation" class="form-label fw-semibold required-field">Konfirmasi Password Baru</label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="bi bi-shield-check"></i>
+                    </span>
+                    <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" placeholder="Masukkan ulang password baru" required oninput="checkPasswordMatch()">
+                    <span class="input-group-text password-toggle" onclick="togglePassword('password_confirmation')">
+                        <i class="bi bi-eye" id="password_confirmation_icon"></i>
+                    </span>
                 </div>
+                <small class="text-muted" id="matchText"></small>
+            </div>
 
-                <div class="alert alert-warning">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
-                    <strong>Perhatian:</strong> Setelah mengubah password, Anda akan tetap login pada sesi ini.
-                    Namun Anda perlu menggunakan password baru untuk login di perangkat lain.
-                </div>
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                <strong>Perhatian:</strong> Setelah mengubah password, Anda akan tetap login pada sesi ini.
+                Namun Anda perlu menggunakan password baru untuk login di perangkat lain.
+            </div>
 
-                <div class="d-flex justify-content-end gap-2 mt-4">
-                    <a href="{{ route('profile') }}" class="btn btn-secondary px-4">
-                        <i class="bi bi-x-circle me-2"></i>Batal
-                    </a>
-                    <button type="submit" class="btn btn-primary px-4" id="submitBtn" disabled>
-                        <i class="bi bi-check-circle me-2"></i>Ubah Password
-                    </button>
-                </div>
-            </form>
-        </div>
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                <a href="{{ route('profile') }}" class="btn btn-secondary px-4">
+                    <i class="bi bi-x-circle me-2"></i>Batal
+                </a>
+                <button type="submit" class="btn btn-primary px-4" id="submitBtn" disabled>
+                    <i class="bi bi-check-circle me-2"></i>Ubah Password
+                </button>
+            </div>
+        </form>
     </div>
+</div>
 
-    <!-- Security Tips -->
-    <div class="card">
-        <div class="card-header custom-header bg-primary text-white">
-            <h3 class="mb-0 text-white">
-                <i class="bi bi-lightbulb me-2"></i>Tips Keamanan Password
-            </h3>
-        </div>
-        <div class="card-body">
-            <ul class="mb-0">
-                <li class="mb-2">Gunakan kombinasi huruf besar, huruf kecil, angka, dan simbol</li>
-                <li class="mb-2">Hindari menggunakan informasi pribadi seperti nama atau tanggal lahir</li>
-                <li class="mb-2">Jangan gunakan password yang sama untuk akun lain</li>
-                <li class="mb-2">Ubah password secara berkala (setiap 3-6 bulan)</li>
-                <li class="mb-2">Jangan bagikan password Anda kepada siapapun</li>
-                <li class="mb-0">Gunakan password manager untuk menyimpan password dengan aman</li>
-            </ul>
-        </div>
+<!-- Security Tips -->
+<div class="card">
+    <div class="card-header custom-header bg-primary text-white">
+        <h3 class="mb-0 text-white">
+            <i class="bi bi-lightbulb me-2"></i>Tips Keamanan Password
+        </h3>
+    </div>
+    <div class="card-body">
+        <ul class="mb-0">
+            <li class="mb-2">Gunakan kombinasi huruf besar, huruf kecil, angka, dan simbol</li>
+            <li class="mb-2">Hindari menggunakan informasi pribadi seperti nama atau tanggal lahir</li>
+            <li class="mb-2">Jangan gunakan password yang sama untuk akun lain</li>
+            <li class="mb-2">Ubah password secara berkala (setiap 3-6 bulan)</li>
+            <li class="mb-2">Jangan bagikan password Anda kepada siapapun</li>
+            <li class="mb-0">Gunakan password manager untuk menyimpan password dengan aman</li>
+        </ul>
     </div>
 </div>
 @endsection

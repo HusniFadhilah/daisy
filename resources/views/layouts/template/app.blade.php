@@ -1,7 +1,7 @@
-@include('layouts.header')
-@include('layouts.navbar')
+@include('layouts.template.header')
+@include('layouts.template.navbar')
 
-@include('layouts.sidebar')
+@include('layouts.template.sidebar')
 
 <!-- Main Content -->
 <main class="main-content">
@@ -41,4 +41,4 @@
     <!-- Page Content -->
     @yield('content')
 </main>
-@include('layouts.footer')
+@include('layouts.template.footer')

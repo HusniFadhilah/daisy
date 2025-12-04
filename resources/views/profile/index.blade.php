@@ -1,14 +1,9 @@
-@extends('layouts.app')
+@extends('layouts.template.app')
 
 @section('title', 'Profil Saya - DAISY')
 
 @push('styles')
 <style>
-    .profile-container {
-        max-width: 1100px;
-        margin: 0 auto;
-    }
-
     .page-header-compact {
         margin-bottom: 1.5rem;
     }
@@ -144,210 +139,205 @@
 @endpush
 
 @section('content')
-<div class="container-fluid px-4 py-4">
-    <div class="profile-container">
-        <!-- Header -->
-        <div class="welcome-section mb-4 py-4">
-            <div class="welcome-content">
-                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
-                    <div>
-                        <h2 class="mb-2">
-                            <i class="bi bi-person-circle me-2"></i>Profil Saya
-                        </h2>
-                        <p class="mb-0">Kelola informasi profil dan akun Anda</p>
+<!-- Header -->
+<div class="welcome-section mb-4 py-4">
+    <div class="welcome-content">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div>
+                <h2 class="mb-2">
+                    <i class="bi bi-person-circle me-2"></i>Profil Saya
+                </h2>
+                <p class="mb-0">Kelola informasi profil dan akun Anda</p>
+            </div>
+            <a href="{{ route('profile.password') }}" class="quick-btn">
+                <i class="bi bi-key"></i>Ubah Password
+            </a>
+        </div>
+    </div>
+</div>
+
+{{-- Baris atas: kiri avatar, kanan info akun --}}
+<div class="row g-3 mb-3">
+    {{-- Kartu Avatar & ringkasan --}}
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="avatar-section mb-2">
+                    <div class="avatar-wrapper">
+                        <div class="avatar-preview" id="avatarPreview">
+                            @if(isset($user->avatar))
+                            <img src="{{ asset('storage/' . $user->avatar) }}" alt="Avatar">
+                            @else
+                            {{ strtoupper(substr($user->name ?? 'U', 0, 1)) }}
+                            @endif
+                        </div>
+                        <label for="avatarInput" class="avatar-upload-btn" title="Ubah foto profil">
+                            <i class="bi bi-camera-fill"></i>
+                        </label>
+                        <input type="file" id="avatarInput" accept="image/*" style="display: none;">
                     </div>
-                    <a href="{{ route('profile.password') }}" class="quick-btn">
-                        <i class="bi bi-key"></i>Ubah Password
-                    </a>
+                </div>
+                <div class="profile-name">{{ $user->name ?? 'Nama User' }}</div>
+                <div class="profile-role">{{ $user->role ?? 'Role User' }}</div>
+                <div class="profile-meta">
+                    Bergabung: {{ isset($user->created_at) ? $user->created_at->format('d M Y') : '-' }}
                 </div>
             </div>
         </div>
+    </div>
 
-        {{-- Baris atas: kiri avatar, kanan info akun --}}
-        <div class="row g-3 mb-3">
-            {{-- Kartu Avatar & ringkasan --}}
-            <div class="col-lg-4">
-                <div class="card h-100">
-                    <div class="card-body text-center">
-                        <div class="avatar-section mb-2">
-                            <div class="avatar-wrapper">
-                                <div class="avatar-preview" id="avatarPreview">
-                                    @if(isset($user->avatar))
-                                    <img src="{{ asset('storage/' . $user->avatar) }}" alt="Avatar">
-                                    @else
-                                    {{ strtoupper(substr($user->name ?? 'U', 0, 1)) }}
-                                    @endif
-                                </div>
-                                <label for="avatarInput" class="avatar-upload-btn" title="Ubah foto profil">
-                                    <i class="bi bi-camera-fill"></i>
-                                </label>
-                                <input type="file" id="avatarInput" accept="image/*" style="display: none;">
-                            </div>
-                        </div>
-                        <div class="profile-name">{{ $user->name ?? 'Nama User' }}</div>
-                        <div class="profile-role">{{ $user->role ?? 'Role User' }}</div>
-                        <div class="profile-meta">
-                            Bergabung: {{ isset($user->created_at) ? $user->created_at->format('d M Y') : '-' }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Informasi akun ringkas --}}
-            <div class="col-lg-8">
-                <div class="card h-100">
-                    <div class="card-header d-flex align-items-center justify-content-between">
-                        <h6 class="mb-0">
-                            <i class="bi bi-info-circle me-2"></i>Informasi Akun
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-sm-6">
-                                <div class="info-item">
-                                    <i class="bi bi-envelope"></i>
-                                    <div>
-                                        <div class="info-item-label">Email</div>
-                                        <div class="info-item-value">{{ $user->email ?? 'email@example.com' }}</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-sm-6">
-                                <div class="info-item">
-                                    <i class="bi bi-shield-check"></i>
-                                    <div>
-                                        <div class="info-item-label">Role</div>
-                                        <div class="info-item-value">{{ $user->role ?? 'LAMDEPILAR' }}</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-sm-6">
-                                <div class="info-item">
-                                    <i class="bi bi-calendar-check"></i>
-                                    <div>
-                                        <div class="info-item-label">Bergabung Sejak</div>
-                                        <div class="info-item-value">
-                                            {{ isset($user->created_at) ? $user->created_at->format('d F Y') : '-' }}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-sm-6">
-                                <div class="info-item">
-                                    <i class="bi bi-clock-history"></i>
-                                    <div>
-                                        <div class="info-item-label">Terakhir Update</div>
-                                        <div class="info-item-value">
-                                            {{ isset($user->updated_at) ? $user->updated_at->format('d F Y H:i') : '-' }}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {{-- Form Edit Profil (tetap, tapi lebih “padat”) --}}
-        <div class="card">
-            <div class="card-header d-flex align-items-center">
+    {{-- Informasi akun ringkas --}}
+    <div class="col-lg-8">
+        <div class="card h-100">
+            <div class="card-header d-flex align-items-center justify-content-between">
                 <h6 class="mb-0">
-                    <i class="bi bi-pencil-square me-2"></i>Edit Profil
+                    <i class="bi bi-info-circle me-2"></i>Informasi Akun
                 </h6>
             </div>
             <div class="card-body">
-                <form action="{{ route('profile.update') }}" method="POST" id="profileForm">
-                    @csrf
-                    @method('PUT')
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="name" class="form-label fw-semibold required-field">Nama Lengkap</label>
-                            <div class="input-group">
-                                <span class="input-group-text">
-                                    <i class="bi bi-person"></i>
-                                </span>
-                                <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name', $user->name ?? '') }}" placeholder="Masukkan nama lengkap" required>
-                                @error('name')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <small class="text-muted">Minimal 3 karakter</small>
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label for="email" class="form-label fw-semibold required-field">Email</label>
-                            <div class="input-group">
-                                <span class="input-group-text">
-                                    <i class="bi bi-envelope"></i>
-                                </span>
-                                <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email" value="{{ old('email', $user->email ?? '') }}" placeholder="email@example.com" required>
-                                @error('email')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            <small class="text-muted">Email harus valid dan unik</small>
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label for="phone" class="form-label fw-semibold">No. Telepon</label>
-                            <div class="input-group">
-                                <span class="input-group-text">
-                                    <i class="bi bi-telephone"></i>
-                                </span>
-                                <input type="text" class="form-control @error('phone') is-invalid @enderror" id="phone" name="phone" value="{{ old('phone', $user->phone ?? '') }}" placeholder="08xxxxxxxxxx">
-                                @error('phone')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label for="institution" class="form-label fw-semibold">Institusi</label>
-                            <div class="input-group">
-                                <span class="input-group-text">
-                                    <i class="bi bi-building"></i>
-                                </span>
-                                <input type="text" class="form-control @error('institution') is-invalid @enderror" id="institution" name="institution" value="{{ old('institution', $user->institution ?? '') }}" placeholder="Nama institusi">
-                                @error('institution')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="col-12 mb-3">
-                            <label for="address" class="form-label fw-semibold">Alamat</label>
-                            <div class="input-group">
-                                <span class="input-group-text">
-                                    <i class="bi bi-geo-alt"></i>
-                                </span>
-                                <textarea class="form-control @error('address') is-invalid @enderror" id="address" name="address" rows="3" placeholder="Masukkan alamat lengkap">{{ old('address', $user->address ?? '') }}</textarea>
-                                @error('address')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="info-item">
+                            <i class="bi bi-envelope"></i>
+                            <div>
+                                <div class="info-item-label">Email</div>
+                                <div class="info-item-value">{{ $user->email ?? 'email@example.com' }}</div>
                             </div>
                         </div>
                     </div>
-
-                    <div class="alert alert-info mb-0 mt-2">
-                        <i class="bi bi-info-circle me-2"></i>
-                        <strong>Catatan:</strong> Untuk mengubah password, gunakan menu
-                        <a href="{{ route('profile.password') }}" class="alert-link">Ubah Password</a>.
+                    <div class="col-sm-6">
+                        <div class="info-item">
+                            <i class="bi bi-shield-check"></i>
+                            <div>
+                                <div class="info-item-label">Role</div>
+                                <div class="info-item-value">{{ $user->role ?? 'LAMDEPILAR' }}</div>
+                            </div>
+                        </div>
                     </div>
-
-                    <div class="d-flex justify-content-end gap-2 mt-4">
-                        <a href="{{ route('dashboard') }}" class="btn btn-secondary px-4">
-                            <i class="bi bi-x-circle me-2"></i>Batal
-                        </a>
-                        <button type="submit" class="btn btn-primary px-4">
-                            <i class="bi bi-check-circle me-2"></i>Simpan Perubahan
-                        </button>
+                    <div class="col-sm-6">
+                        <div class="info-item">
+                            <i class="bi bi-calendar-check"></i>
+                            <div>
+                                <div class="info-item-label">Bergabung Sejak</div>
+                                <div class="info-item-value">
+                                    {{ isset($user->created_at) ? $user->created_at->format('d F Y') : '-' }}
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </form>
+                    <div class="col-sm-6">
+                        <div class="info-item">
+                            <i class="bi bi-clock-history"></i>
+                            <div>
+                                <div class="info-item-label">Terakhir Update</div>
+                                <div class="info-item-value">
+                                    {{ isset($user->updated_at) ? $user->updated_at->format('d F Y H:i') : '-' }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
+    </div>
+</div>
 
+{{-- Form Edit Profil (tetap, tapi lebih “padat”) --}}
+<div class="card">
+    <div class="card-header d-flex align-items-center">
+        <h6 class="mb-0">
+            <i class="bi bi-pencil-square me-2"></i>Edit Profil
+        </h6>
+    </div>
+    <div class="card-body">
+        <form action="{{ route('profile.update') }}" method="POST" id="profileForm">
+            @csrf
+            @method('PUT')
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="name" class="form-label fw-semibold required-field">Nama Lengkap</label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="bi bi-person"></i>
+                        </span>
+                        <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name', $user->name ?? '') }}" placeholder="Masukkan nama lengkap" required>
+                        @error('name')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <small class="text-muted">Minimal 3 karakter</small>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label for="email" class="form-label fw-semibold required-field">Email</label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="bi bi-envelope"></i>
+                        </span>
+                        <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email" value="{{ old('email', $user->email ?? '') }}" placeholder="email@example.com" required>
+                        @error('email')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <small class="text-muted">Email harus valid dan unik</small>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label for="phone" class="form-label fw-semibold">No. Telepon</label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="bi bi-telephone"></i>
+                        </span>
+                        <input type="text" class="form-control @error('phone') is-invalid @enderror" id="phone" name="phone" value="{{ old('phone', $user->phone ?? '') }}" placeholder="08xxxxxxxxxx">
+                        @error('phone')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label for="institution" class="form-label fw-semibold">Institusi</label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="bi bi-building"></i>
+                        </span>
+                        <input type="text" class="form-control @error('institution') is-invalid @enderror" id="institution" name="institution" value="{{ old('institution', $user->institution ?? '') }}" placeholder="Nama institusi">
+                        @error('institution')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="col-12 mb-3">
+                    <label for="address" class="form-label fw-semibold">Alamat</label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="bi bi-geo-alt"></i>
+                        </span>
+                        <textarea class="form-control @error('address') is-invalid @enderror" id="address" name="address" rows="3" placeholder="Masukkan alamat lengkap">{{ old('address', $user->address ?? '') }}</textarea>
+                        @error('address')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-info mb-0 mt-2">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>Catatan:</strong> Untuk mengubah password, gunakan menu
+                <a href="{{ route('profile.password') }}" class="alert-link">Ubah Password</a>.
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                <a href="{{ route('dashboard') }}" class="btn btn-secondary px-4">
+                    <i class="bi bi-x-circle me-2"></i>Batal
+                </a>
+                <button type="submit" class="btn btn-primary px-4">
+                    <i class="bi bi-check-circle me-2"></i>Simpan Perubahan
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 @endsection
