@@ -1,8 +1,6 @@
-@include('layouts.header')
+@extends('layouts.app')
 
-@include('layouts.navbar')
-
-@include('layouts.sidebar')
+@section('title', 'Dashboard Admin - DAISY')
 
 <!-- Main Content -->
 <main class="main-content">
