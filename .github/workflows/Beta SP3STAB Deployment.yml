@@ -1,0 +1,24 @@
+name: Beta SP3STAB Deployment
+on:
+  push:
+    branches:
+      - main
+jobs:
+  web-deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get latest code
+        uses: actions/checkout@v3
+
+      - name: Sync files using SFTP
+        uses: sand4rt/ftp-deployer@v1.8
+        with:
+          sftp: true
+          host: ${{ secrets.SFTP_SP3STAB_SERVER }}
+          username: ${{ secrets.SFTP_SP3STAB_USERNAME }}
+          password: ${{ secrets.SFTP_SP3STAB_PASSWORD }}
+          remote_folder: /var/www/sipenahana/daisy
+          local_folder: './'
+          port: 22
+          exclude: '["vendor/**", ".vscode/**", "public/assets/plugins/**", "public/gs/**", ".git/**", "node_modules/**"]'
