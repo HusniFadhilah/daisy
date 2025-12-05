@@ -366,7 +366,7 @@ class AsesmenController extends Controller
      */
     private function calculateUserProgress($idAsesmen, $userId)
     {
-        $totalElemens = DB::table('elemen')->count();
+        $totalElemens = DB::table('elemen_standar')->count();
 
         $completedElemens = DB::table('penilaian_elemen')
             ->where('id_asesmen', $idAsesmen)
