@@ -18,6 +18,14 @@ class RoleSeeder extends Seeder
                 'alias' => 'Super Admin',
             ],
             [
+                'name' => 'asesi',
+                'alias' => 'Asesi',
+            ],
+            [
+                'name' => 'asesor',
+                'alias' => 'Asesor',
+            ],
+            [
                 'name' => 'verifikator',
                 'alias' => 'Verifikator',
             ],
@@ -32,10 +40,6 @@ class RoleSeeder extends Seeder
             [
                 'name' => 'admin_prodi',
                 'alias' => 'Admin Program Studi',
-            ],
-            [
-                'name' => 'asesi',
-                'alias' => 'Asesi',
             ],
             [
                 'name' => 'default',

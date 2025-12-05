@@ -42,17 +42,25 @@ class PasswordResetController extends Controller
         );
 
         // Kirim email
-        Mail::send('emails.password_reset', ['token' => $token], function ($m) use ($request) {
-            $m->to($request->email)->subject('Reset Password');
+        Mail::send('emails.password_reset', [
+            'token' => $token,
+            'email' => $request->email,
+        ], function ($m) use ($request) {
+            $m->to($request->email)->subject('Reset Password Akun Daisy');
         });
 
         return back()->with('success', 'Link reset password sudah dikirim ke email.');
     }
 
     // FORM RESET PASSWORD
-    public function showReset($token)
+    public function showReset(Request $request, $token)
     {
-        return view('auth.reset', ['token' => $token]);
+        $email = $request->query('email');
+
+        return view('auth.reset', [
+            'token' => $token,
+            'email' => $email,
+        ]);
     }
 
     // PROSES RESET PASSWORD
