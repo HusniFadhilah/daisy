@@ -23,7 +23,6 @@ class PernyataanSeeder extends Seeder
             'E6.1', 'E6.2', 'E6.3', 'E6.4', 'E6.5',
             'E7.1', 'E7.2', 'E7.3', 'E7.4', 'E7.5', 'E7.6'
         ])
-        ->whereNotIn('id_elemen', [1, 3, 7]) // Skip duplicate entries
         ->pluck('id_elemen', 'kode_elemen')
         ->toArray();
 
@@ -241,7 +240,10 @@ class PernyataanSeeder extends Seeder
 
         foreach ($pernyataan as $item) {
             if ($item['id_elemen'] !== null) {
-                Pernyataan::create($item);
+                Pernyataan::updateOrCreate(
+                    ['code' => $item['code']], // Check by code
+                    $item // Update or create with this data
+                );
             }
         }
     }

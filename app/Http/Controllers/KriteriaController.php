@@ -12,12 +12,17 @@ class KriteriaController extends Controller
      */
     public function index()
     {
-        $kriteria = Kriteria::all();
+        $kriteria = Kriteria::latest()->paginate(10);
         
-        return response()->json([
-            'success' => true,
-            'data' => $kriteria
-        ]);
+        return view('indikator.kriteria.index', compact('kriteria'));
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        return view('indikator.kriteria.create');
     }
 
     /**
@@ -31,13 +36,9 @@ class KriteriaController extends Controller
             'keterangan' => 'nullable|string',
         ]);
 
-        $kriteria = Kriteria::create($validated);
+        Kriteria::create($validated);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Kriteria created successfully.',
-            'data' => $kriteria
-        ], 201);
+        return redirect()->route('kriteria.index')->with('success', 'Kriteria berhasil ditambahkan');
     }
 
     /**
@@ -48,16 +49,24 @@ class KriteriaController extends Controller
         $kriteria = Kriteria::with('elemenStandar')->find($id);
         
         if (!$kriteria) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Kriteria not found'
-            ], 404);
+            return redirect()->route('kriteria.index')->with('error', 'Kriteria tidak ditemukan');
         }
         
-        return response()->json([
-            'success' => true,
-            'data' => $kriteria
-        ]);
+        return view('indikator.kriteria.show', compact('kriteria'));
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit($id)
+    {
+        $kriteria = Kriteria::find($id);
+        
+        if (!$kriteria) {
+            return redirect()->route('kriteria.index')->with('error', 'Kriteria tidak ditemukan');
+        }
+        
+        return view('indikator.kriteria.edit', compact('kriteria'));
     }
 
     /**
@@ -74,19 +83,12 @@ class KriteriaController extends Controller
         $kriteria = Kriteria::find($id);
         
         if (!$kriteria) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Kriteria not found'
-            ], 404);
+            return redirect()->route('kriteria.index')->with('error', 'Kriteria tidak ditemukan');
         }
         
         $kriteria->update($validated);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Kriteria updated successfully.',
-            'data' => $kriteria
-        ]);
+        return redirect()->route('kriteria.index')->with('success', 'Kriteria berhasil diperbarui');
     }
 
     /**
@@ -97,17 +99,11 @@ class KriteriaController extends Controller
         $kriteria = Kriteria::find($id);
         
         if (!$kriteria) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Kriteria not found'
-            ], 404);
+            return redirect()->route('kriteria.index')->with('error', 'Kriteria tidak ditemukan');
         }
         
         $kriteria->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Kriteria deleted successfully.'
-        ]);
+        return redirect()->route('kriteria.index')->with('success', 'Kriteria berhasil dihapus');
     }
 }

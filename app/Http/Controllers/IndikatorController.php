@@ -12,12 +12,19 @@ class IndikatorController extends Controller
      */
     public function index()
     {
-        $indikator = Indikator::with(['elemenStandar', 'jenisIndikator'])->get();
+        $indikator = Indikator::with(['elemenStandar.kriteria', 'jenisIndikator'])->latest()->paginate(10);
         
-        return response()->json([
-            'success' => true,
-            'data' => $indikator
-        ]);
+        return view('indikator.indikator.index', compact('indikator'));
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        $elemenStandar = \App\Models\ElemenStandar::with('kriteria')->get();
+        $jenisIndikator = \App\Models\JenisIndikator::all();
+        return view('indikator.indikator.create', compact('elemenStandar', 'jenisIndikator'));
     }
 
     /**
@@ -32,14 +39,9 @@ class IndikatorController extends Controller
             'deskripsi_indikator' => 'required|string',
         ]);
 
-        $indikator = Indikator::create($validated);
-        $indikator->load(['elemenStandar', 'jenisIndikator']);
+        Indikator::create($validated);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Indikator created successfully.',
-            'data' => $indikator
-        ], 201);
+        return redirect()->route('indikator.index')->with('success', 'Indikator berhasil ditambahkan');
     }
 
     /**
@@ -50,16 +52,26 @@ class IndikatorController extends Controller
         $indikator = Indikator::with(['elemenStandar.kriteria', 'jenisIndikator'])->find($id);
         
         if (!$indikator) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Indikator not found'
-            ], 404);
+            return redirect()->route('indikator.index')->with('error', 'Indikator tidak ditemukan');
         }
         
-        return response()->json([
-            'success' => true,
-            'data' => $indikator
-        ]);
+        return view('indikator.indikator.show', compact('indikator'));
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit($id)
+    {
+        $indikator = Indikator::find($id);
+        
+        if (!$indikator) {
+            return redirect()->route('indikator.index')->with('error', 'Indikator tidak ditemukan');
+        }
+        
+        $elemenStandar = \App\Models\ElemenStandar::with('kriteria')->get();
+        $jenisIndikator = \App\Models\JenisIndikator::all();
+        return view('indikator.indikator.edit', compact('indikator', 'elemenStandar', 'jenisIndikator'));
     }
 
     /**
@@ -77,20 +89,12 @@ class IndikatorController extends Controller
         $indikator = Indikator::find($id);
         
         if (!$indikator) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Indikator not found'
-            ], 404);
+            return redirect()->route('indikator.index')->with('error', 'Indikator tidak ditemukan');
         }
         
         $indikator->update($validated);
-        $indikator->load(['elemenStandar', 'jenisIndikator']);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Indikator updated successfully.',
-            'data' => $indikator
-        ]);
+        return redirect()->route('indikator.index')->with('success', 'Indikator berhasil diperbarui');
     }
 
     /**
@@ -101,17 +105,11 @@ class IndikatorController extends Controller
         $indikator = Indikator::find($id);
         
         if (!$indikator) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Indikator not found'
-            ], 404);
+            return redirect()->route('indikator.index')->with('error', 'Indikator tidak ditemukan');
         }
         
         $indikator->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Indikator deleted successfully.'
-        ]);
+        return redirect()->route('indikator.index')->with('success', 'Indikator berhasil dihapus');
     }
 }

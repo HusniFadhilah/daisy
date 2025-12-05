@@ -12,12 +12,18 @@ class ElemenStandarController extends Controller
      */
     public function index()
     {
-        $elemenStandar = ElemenStandar::with('kriteria')->get();
+        $elemenStandar = ElemenStandar::with(['kriteria', 'pernyataan'])->latest()->paginate(10);
         
-        return response()->json([
-            'success' => true,
-            'data' => $elemenStandar
-        ]);
+        return view('indikator.elemen.index', compact('elemenStandar'));
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        $kriteria = \App\Models\Kriteria::all();
+        return view('indikator.elemen.create', compact('kriteria'));
     }
 
     /**
@@ -32,14 +38,9 @@ class ElemenStandarController extends Controller
             'keterangan' => 'nullable|string',
         ]);
 
-        $elemenStandar = ElemenStandar::create($validated);
-        $elemenStandar->load('kriteria');
+        ElemenStandar::create($validated);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Elemen Standar created successfully.',
-            'data' => $elemenStandar
-        ], 201);
+        return redirect()->route('elemen-standar.index')->with('success', 'Elemen Standar berhasil ditambahkan');
     }
 
     /**
@@ -47,19 +48,28 @@ class ElemenStandarController extends Controller
      */
     public function show($id)
     {
-        $elemenStandar = ElemenStandar::with(['kriteria', 'indikator'])->find($id);
+        $elemenStandar = ElemenStandar::with(['kriteria', 'indikator', 'pernyataan'])->find($id);
         
         if (!$elemenStandar) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Elemen Standar not found'
-            ], 404);
+            return redirect()->route('elemen-standar.index')->with('error', 'Elemen Standar tidak ditemukan');
         }
         
-        return response()->json([
-            'success' => true,
-            'data' => $elemenStandar
-        ]);
+        return view('indikator.elemen.show', compact('elemenStandar'));
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit($id)
+    {
+        $elemenStandar = ElemenStandar::find($id);
+        
+        if (!$elemenStandar) {
+            return redirect()->route('elemen-standar.index')->with('error', 'Elemen Standar tidak ditemukan');
+        }
+        
+        $kriteria = \App\Models\Kriteria::all();
+        return view('indikator.elemen.edit', compact('elemenStandar', 'kriteria'));
     }
 
     /**
@@ -77,20 +87,12 @@ class ElemenStandarController extends Controller
         $elemenStandar = ElemenStandar::find($id);
         
         if (!$elemenStandar) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Elemen Standar not found'
-            ], 404);
+            return redirect()->route('elemen-standar.index')->with('error', 'Elemen Standar tidak ditemukan');
         }
         
         $elemenStandar->update($validated);
-        $elemenStandar->load('kriteria');
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Elemen Standar updated successfully.',
-            'data' => $elemenStandar
-        ]);
+        return redirect()->route('elemen-standar.index')->with('success', 'Elemen Standar berhasil diperbarui');
     }
 
     /**
@@ -101,17 +103,11 @@ class ElemenStandarController extends Controller
         $elemenStandar = ElemenStandar::find($id);
         
         if (!$elemenStandar) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Elemen Standar not found'
-            ], 404);
+            return redirect()->route('elemen-standar.index')->with('error', 'Elemen Standar tidak ditemukan');
         }
         
         $elemenStandar->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Elemen Standar deleted successfully.'
-        ]);
+        return redirect()->route('elemen-standar.index')->with('success', 'Elemen Standar berhasil dihapus');
     }
 }
