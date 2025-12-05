@@ -2,19 +2,32 @@
 <nav class="navbar top-navbar">
     <div class="container-fluid px-4">
         <div class="navbar-brand">
+            <!-- Mobile Menu Toggle (only visible on mobile) -->
             <button class="menu-toggle btn" onclick="toggleSidebar()">
                 <i class="bi bi-list"></i>
             </button>
-            <div class="brand-logo">
+
+            <!-- Logo (Desktop - full logo) -->
+            <div class="brand-logo brand-logo-desktop">
                 <a href="{{ route('home') }}" class="d-flex text-link">
                     <img src="{{ asset('assets/images/logo.png') }}" alt="Logo" width="120px" class="img-fluid">
                 </a>
             </div>
+
+            <!-- Logo (Mobile - square logo) -->
+            <div class="brand-logo brand-logo-mobile">
+                <a href="{{ route('home') }}" class="d-flex text-link">
+                    <img src="{{ asset('assets/images/logo-square.png') }}" alt="DAISY" class="img-fluid">
+                </a>
+            </div>
+
+            <!-- Brand Text (hidden on mobile) -->
             <div class="brand-text">
                 <h1>DAISY</h1>
                 <p>DEPILAR Accreditation Information System</p>
             </div>
         </div>
+
         <div class="d-flex align-items-center gap-3">
             <!-- Notification Icon -->
             <div class="notification-icon" onclick="showNotifications()">
@@ -28,7 +41,8 @@
                     <div class="user-avatar">{{ strtoupper(substr(auth()->user()->name ?? 'M', 0, 1)) }}</div>
                     <div class="user-info">
                         <div class="user-name">{{ auth()->user()->name ?? 'Dr. Eng. Maryono, ST., MT' }}</div>
-                        <div class="user-role">{{ auth()->user()->role ?? 'LAMDEPILAR' }}</div>
+                        {{-- <div class="user-role">{{ auth()->user()->role ?? 'LAMDEPILAR' }}</div> --}}
+                        <div class="user-role">Asesor</div>
                     </div>
                     <i class="bi bi-chevron-down"></i>
                 </div>

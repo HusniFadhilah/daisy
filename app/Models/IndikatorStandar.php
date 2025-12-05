@@ -7,9 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 class IndikatorStandar extends Model
 {
     protected $table = 'indikator';
-    
+
     protected $primaryKey = 'id_indikator';
-    
+
     protected $fillable = [
         'id_elemen',
         'jenis_indikator',

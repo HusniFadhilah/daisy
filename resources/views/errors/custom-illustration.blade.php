@@ -1,249 +1,157 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="id">
 <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@yield('code') - @yield('title') | DAISY</title>
 
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('assets/favicon/apple-touch-icon.png') }}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('assets/favicon/favicon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('assets/favicon/favicon-16x16.png') }}">
-    <link rel="manifest" href="{{ asset('assets/favicon/site.webmanifest') }}">
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- My CSS -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;800&display=swap" rel="stylesheet">
-    <!-- End of My CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/css/template.css') }}">
 
-    <title>@yield('title')</title>
     <style>
-        /* CSS */
-
-        /* MOBILE DEVICE STYLE (DEFAULT) */
         body {
-            background-color: #0D1128;
+            font-family: 'Montserrat', sans-serif;
+            background: #f9fafb;
+            display: flex;
+            justify-content: center;
+            padding: 30px;
         }
 
-        /* all content except illustration css*/
-        .content {
-            margin-top: 0%;
-        }
-
-        /* illustration class css */
-        .illustration-image {
-            /* hide illustration in mobile device */
-            max-width: 0%;
-        }
-
-        /* logo (image) class css */
-        .logo {
-            margin-top: 10px;
-            max-width: 70px;
-        }
-
-        /* logo (container) class css */
-        .class-logo {
-            margin-top: 24px;
+        .error-container {
+            max-width: 480px;
+            width: 100%;
             text-align: center;
+            margin-top: 20px;
         }
 
-        /* main title css */
-        .main-title h1 {
-            font-family: 'Poppins', sans-serif;
-            font-weight: 800;
-            font-size: 32px;
-            text-align: center;
-            margin-top: 40px;
-            color: white;
+        .error-logo img {
+            max-width: 130px;
+            margin-bottom: 10px;
         }
 
-        /* secondary text css */
-        p {
-            margin-top: 30px;
-            text-align: center;
-            font-size: 14px;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 400;
-            color: white;
+        .error-code {
+            font-size: 4.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.3rem;
         }
 
-        /* another service css */
-        .another-services {
-            margin-top: 100px;
+        .error-illustration img {
+            max-width: 260px;
+            width: 80%;
+            height: auto;
+            margin: 8px 0 18px 0;
+            animation: float 3s ease-in-out infinite;
         }
 
-        /* all button css */
-        .btn {
-            margin-top: 8px;
-            margin-left: auto;
-            border-radius: 100px;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 400;
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
         }
 
-        /* dbo button css */
-        .dbo {
-            margin-left: 20%;
-            margin-right: 20%;
-            width: 60%;
+        .error-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
         }
 
-        /* dmw button css */
-        .dmw {
-            margin-left: 20%;
-            margin-right: 20%;
-            width: 60%;
+        .error-message {
+            font-size: 0.95rem;
+            color: #666;
+            margin-bottom: 1.2rem;
         }
 
-        /* bukulink button css */
-        .bukulink {
-            margin-left: 20%;
-            margin-right: 20%;
-            width: 60%;
+        /* Wrapper tombol */
+        .error-actions {
+            display: flex;
+            gap: .75rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: .5rem;
         }
 
-        /* END OF MOBILE DEVICE CSS */
-
-
-        /* DESKTOP CSS */
-        @media (min-width: 992px) {
-
-            body {
-                background-color: #0D1128;
-                overflow: hidden;
-            }
-
-            /* illustration css */
-            .illustration-image {
-                position: absolute;
-                max-width: 50%;
-                margin-left: 55%;
-                margin-right: -40px;
-                margin-top: -80px;
-            }
-
-            /* content except the illustration css */
-            .content {
-                z-index: 1;
-                position: relative;
-            }
-
-            /* main title css */
-            .main-title h1 {
-                font-family: 'Poppins', sans-serif;
-                font-weight: 800;
-                font-size: 40px;
-                text-align: left;
-                margin-top: 40px;
-                color: white;
-            }
-
-            /* all paragraph text css */
-            p {
-                margin-top: 30px;
-                text-align: left;
-                font-size: 16px;
-                font-family: 'Poppins', sans-serif;
-                font-weight: 400;
-                color: white;
-            }
-
-
-            /* logo (image) css */
-            .class-logo {
-                margin-top: 30px;
-                text-align: left;
-            }
-
-            /* another service text css */
-            .another-services {
-                margin-top: 40px;
-            }
-
-            /* all button css */
-            .btn {
-                width: 150px;
-                margin-top: 8px;
-                margin-right: 20px;
-                border-radius: 100px;
-                font-family: 'Poppins', sans-serif;
-                font-weight: 400;
-            }
-
-            /* dbo button css */
-            .dbo {
-                margin-left: 0;
-                margin-right: 40px;
-                width: 180px;
-            }
-
-            /* dmw button css */
-            .dmw {
-                margin-left: 0;
-                margin-right: 40px;
-                width: 140px;
-            }
-
-            /* bukulink button css */
-            .bukulink {
-                margin-left: 0;
-                margin-right: 40px;
-                width: 140px;
-            }
-
-            /* END OF DESKTOP CSS */
+        .error-meta {
+            margin-top: 1.2rem;
+            font-size: 0.8rem;
+            color: #999;
         }
 
+        .error-meta a {
+            color: var(--primary);
+            text-decoration: none;
+        }
 
-        /* END OF CSS */
+        .error-meta a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 480px) {
+            .error-code {
+                font-size: 3.5rem;
+            }
+
+            .error-illustration img {
+                max-width: 200px;
+            }
+        }
 
     </style>
+
+    @stack('styles')
 </head>
 <body>
-    <!-- Image Illustration Top-Right -->
-    <img src="{{ asset('assets/img/illustration/illustration.png') }}" alt="" class="illustration-image">
+    <div class="error-container">
 
-    <!-- Content except illustration -->
-    <div class="content">
-
-        <!-- AUDI's logo container -->
-        <div class="container class-logo">
-            <img src="{{ asset('assets/img/logo/logo-bg.png') }}" alt="AUDI Logo" class="logo">
+        {{-- Logo --}}
+        <div class="error-logo">
+            <a href="{{ url('/') }}">
+                <img src="{{ asset('assets/images/logo.png') }}" alt="DAISY Logo">
+            </a>
         </div>
-        <!-- End of AUDI's logo container -->
 
-        <!-- Main title -->
-        <div class="container main-title">
-            <h1>Opss!<br>Error: @yield('code', __('Oh no'))</h1>
+        {{-- Code --}}
+        <div class="error-code">@yield('code')</div>
+
+        {{-- Illustration --}}
+        <div class="error-illustration">
+            <img src="@yield('illustration')" alt="Error Illustration">
         </div>
-        <!-- End of Main title -->
 
-        <!-- Secondary title -->
-        <div class="container secondary-text">
-            <div class="row">
-                <div class="col-lg-4">
-                    <p>@yield('message')</p>
-                </div>
-            </div>
+        {{-- Title --}}
+        <h1 class="error-title">@yield('title')</h1>
+
+        {{-- Message --}}
+        <p class="error-message">@yield('message')</p>
+
+        {{-- Actions (tombol) --}}
+        <div class="error-actions">
+            @yield('actions')
         </div>
-        <!-- End of Secondary title -->
 
-        <!-- Another Services -->
-        <div class="container">
-            <a href="{{ app('router')->has('home') ? route('home') : url('/') }}"><button type="button" class="btn btn-light dbo">Return Home</button></a>
+        <div class="error-meta">
+            @yield('meta', 'Jika masalah berlanjut, hubungi')
+            <a href="mailto:sekretariat@lamdepilar.or.id">sekretariat@lamdepilar.or.id</a>
         </div>
-        <!-- End of Another Services -->
-
     </div>
-    <!-- End content except illustration -->
 
-
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    @stack('scripts')
 </body>
 </html>

@@ -7,9 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 class ElemenStandar extends Model
 {
     protected $table = 'elemen_standar';
-    
+
     protected $primaryKey = 'id_elemen';
-    
+
     protected $fillable = [
         'id_kriteria',
         'kode_elemen',
@@ -30,5 +30,10 @@ class ElemenStandar extends Model
     public function pernyataan()
     {
         return $this->hasMany(Pernyataan::class, 'id_elemen', 'id_elemen');
+    }
+
+    public function penilaian()
+    {
+        return $this->hasMany(PenilaianElemen::class, 'id_elemen', 'id_elemen');
     }
 }

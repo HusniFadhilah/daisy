@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\{AuthController, DashboardController, PenawaranController, PenugasanController, AKController, ALController, BandingController, PedomanController, DokumenController, PanduanController, BantuanController, ProfileController, SettingsController, ActivityController, TaskController, PasswordResetController, LaporanController, UniversityController, DegreeLevelController, StudyProgramController, KriteriaController, ElemenStandarController, JenisIndikatorController, IndikatorController};
+use App\Http\Controllers\{AsesmenController, AuthController, DashboardController, PenawaranController, PenugasanController, AKController, ALController, BandingController, PedomanController, DokumenController, PanduanController, BantuanController, ProfileController, SettingsController, ActivityController, TaskController, PasswordResetController, LaporanController, UniversityController, DegreeLevelController, StudyProgramController, KriteriaController, ElemenStandarController, JenisIndikatorController, IndikatorController};
 
 
 // Dashboard (awal)
@@ -54,7 +54,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // PROSES AK
-    Route::prefix('ak')->name('ak.')->group(function () {
+    Route::prefix('ak')->name('ak.')->middleware(['auth'])->group(function () {
+
         Route::get('/berkas', [AKController::class, 'berkas'])->name('berkas');
         Route::get('/berkas/{id}', [AKController::class, 'showBerkas'])->name('berkas.show');
         Route::post('/berkas/{id}/nilai', [AKController::class, 'simpanNilai'])->name('berkas.nilai');
@@ -70,6 +71,36 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/validasi', [AKController::class, 'validasi'])->name('validasi');
         Route::get('/validasi/{id}', [AKController::class, 'showValidasi'])->name('validasi.show');
     });
+
+    Route::resource('asesmen', AsesmenController::class);
+    Route::resource('kriteria', KriteriaController::class);
+    Route::resource('elemen', ElemenStandarController::class);
+    Route::resource('jenis-indikator', JenisIndikatorController::class);
+    Route::resource('indikator', IndikatorController::class);
+
+    // Dashboard Overview
+    Route::get('/asesmen/dashboard', [AsesmenController::class, 'dashboard'])
+        ->name('asesmen.dashboard');
+
+    // CRUD Assessment
+    Route::resource('asesmen', AsesmenController::class);
+
+    // Assignment Management (AJAX Endpoints)
+    Route::post('/asesmen/{id}/assign-user', [AsesmenController::class, 'assignUser'])
+        ->name('asesmen.assign-user');
+
+    Route::post('/asesmen/{id}/bulk-assign', [AsesmenController::class, 'bulkAssign'])
+        ->name('asesmen.bulk-assign');
+
+    Route::post('/asesmen/{id}/update-role', [AsesmenController::class, 'updateUserRole'])
+        ->name('asesmen.update-role');
+
+    Route::delete('/asesmen/{id}/remove-user/{userId}', [AsesmenController::class, 'removeUser'])
+        ->name('asesmen.remove-user');
+
+    // Search Users (AJAX)
+    Route::get('/asesmen/search-users', [AsesmenController::class, 'searchUsers'])
+        ->name('asesmen.search-users');
 
     // PROSES AL
     Route::prefix('al')->name('al.')->group(function () {

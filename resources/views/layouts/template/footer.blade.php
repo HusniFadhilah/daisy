@@ -12,6 +12,28 @@
         sidebar.classList.toggle('show');
     }
 
+    // Toggle Sidebar Collapse for Desktop
+    function toggleSidebarCollapse() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const collapseIcon = document.getElementById('collapseIcon');
+
+        sidebar.classList.toggle('collapsed');
+        mainContent.classList.toggle('sidebar-collapsed');
+
+        // Toggle icon direction
+        if (sidebar.classList.contains('collapsed')) {
+            collapseIcon.classList.remove('bi-chevron-left');
+            collapseIcon.classList.add('bi-chevron-right');
+        } else {
+            collapseIcon.classList.remove('bi-chevron-right');
+            collapseIcon.classList.add('bi-chevron-left');
+        }
+
+        // Save state to localStorage
+        localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+    }
+
     // Toggle Submenu
     function toggleSubmenu(event, submenuId) {
         event.preventDefault();
@@ -27,6 +49,22 @@
 
     // Add active class to menu items on click
     document.addEventListener('DOMContentLoaded', function() {
+        // Restore sidebar collapse state from localStorage (desktop only)
+        if (window.innerWidth > 768) {
+            const sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if (sidebarCollapsed) {
+                const sidebar = document.getElementById('sidebar');
+                const mainContent = document.getElementById('mainContent');
+                const collapseIcon = document.getElementById('collapseIcon');
+
+                sidebar.classList.add('collapsed');
+                mainContent.classList.add('sidebar-collapsed');
+                collapseIcon.classList.remove('bi-chevron-left');
+                collapseIcon.classList.add('bi-chevron-right');
+            }
+        }
+
+        // Menu item active state
         document.querySelectorAll('.nav-link').forEach(item => {
             item.addEventListener('click', function(e) {
                 if (!this.getAttribute('onclick') || !this.getAttribute('onclick').includes('toggleSubmenu')) {
@@ -52,6 +90,18 @@
                 !menuToggle.contains(event.target) &&
                 sidebar.classList.contains('show')) {
                 sidebar.classList.remove('show');
+            }
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+
+            // Reset sidebar on resize
+            if (window.innerWidth <= 768) {
+                sidebar.classList.remove('collapsed');
+                mainContent.classList.remove('sidebar-collapsed');
             }
         });
     });

@@ -15,6 +15,25 @@ return new class extends Migration
             $table->id();
             $table->string('code')->unique();
             $table->string('name');
+            $table->text('description');
+
+            // Informasi Perguruan Tinggi
+            $table->string('perguruan_tinggi')->nullable();
+            $table->string('bentuk_pt', 100)->nullable();
+            $table->string('kode_panel', 50)->nullable();
+
+            // Periode Assessment
+            $table->date('tanggal_mulai')->nullable();
+            $table->date('tanggal_selesai')->nullable();
+
+            // Status
+            $table->enum('status', ['draft', 'active', 'completed', 'archived'])
+                ->default('draft');
+
+            // Index
+            $table->index('status');
+            $table->index('kode_panel');
+
             $table->timestamps();
         });
     }

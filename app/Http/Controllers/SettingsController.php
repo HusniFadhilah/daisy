@@ -9,7 +9,7 @@ class SettingsController extends Controller
     public function index()
     {
         // Tampilkan halaman settings
-        return view('settings');
+        return view('admin.settings');
     }
 
     public function update(Request $request)
