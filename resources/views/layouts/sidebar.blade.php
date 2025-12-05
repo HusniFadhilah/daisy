@@ -162,6 +162,20 @@
             <span>Bantuan Layanan</span>
         </a>
 
+        <!-- Indikator -->
+        <a href="{{ route('kriteria.index') }}" class="nav-link {{ request()->routeIs('kriteria.*') || request()->routeIs('elemen-standar.*') || request()->routeIs('indikator.*') ? 'active' : '' }}">
+            <span class="menu-icon">📊</span>
+            <span>Indikator</span>
+        </a>
+
+        @if(auth()->user()->role === 'admin')
+        <!-- Kelola Pengguna (Admin Only) -->
+        <a href="{{ route('users.index') }}" class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
+            <span class="menu-icon">👥</span>
+            <span>Kelola Pengguna</span>
+        </a>
+        @endif
+
         <!-- Profil & Pengaturan -->
         <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'profil-submenu')">
             <span class="menu-icon">👤</span>

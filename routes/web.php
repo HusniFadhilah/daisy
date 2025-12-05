@@ -35,6 +35,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    // USER MANAGEMENT (Admin Only)
+    Route::middleware('admin')->group(function () {
+        Route::resource('users', App\Http\Controllers\UserController::class);
+    });
+
+    // INDIKATOR MANAGEMENT (Admin Only)
+    Route::middleware('admin')->group(function () {
+        Route::resource('kriteria', KriteriaController::class);
+        Route::resource('elemen-standar', ElemenStandarController::class);
+        Route::resource('indikator', IndikatorController::class);
+    });
+
     // PENAWARAN ASESMEN
     Route::prefix('penawaran')->name('penawaran.')->group(function () {
         Route::get('/baru', [PenawaranController::class, 'baru'])->name('baru');
@@ -174,6 +186,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/kinerja', [LaporanController::class, 'kinerja'])->name('laporan.kinerja');
         Route::get('/export', [LaporanController::class, 'export'])->name('laporan.export');
     });
+
+    // INDIKATOR MANAGEMENT (Kriteria, Elemen Standar, Indikator)
+    Route::resource('kriteria', KriteriaController::class);
+    Route::resource('elemen-standar', ElemenStandarController::class);
+    Route::resource('indikator', IndikatorController::class);
 
     // NOTIFIKASI
     Route::prefix('notifications')->group(function () {
