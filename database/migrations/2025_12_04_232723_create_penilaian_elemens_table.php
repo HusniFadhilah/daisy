@@ -21,7 +21,7 @@ return new class extends Migration
             $table->enum('status', ['draft', 'submitted'])->default('draft');
             $table->timestamps();
 
-            // Unique constraint: satu user hanya bisa nilai 1 elemen 1x per assessment
+            // Unique constraint: satu user hanya bisa nilai 1 elemen 1x per asesmen
             $table->unique(['id_asesmen', 'id_user', 'id_elemen'], 'unique_penilaian');
 
             // Index untuk query cepat

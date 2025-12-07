@@ -1,11 +1,8 @@
-@include('layouts.header')
+@extends('layouts.template.app')
 
-@include('layouts.navbar')
+@section('title', 'Tambah User - Daisy')
 
-@include('layouts.sidebar')
-
-<!-- Main Content -->
-<main class="main-content">
+@section('content')
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Tambah Pengguna</h2>
@@ -21,7 +18,7 @@
 
                 <div class="mb-3">
                     <label for="name" class="form-label">Nama Lengkap <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control @error('name') is-invalid @enderror" 
+                    <input type="text" class="form-control @error('name') is-invalid @enderror"
                            id="name" name="name" value="{{ old('name') }}" required>
                     @error('name')
                         <div class="invalid-feedback">{{ $message }}</div>
@@ -30,7 +27,7 @@
 
                 <div class="mb-3">
                     <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
-                    <input type="email" class="form-control @error('email') is-invalid @enderror" 
+                    <input type="email" class="form-control @error('email') is-invalid @enderror"
                            id="email" name="email" value="{{ old('email') }}" required>
                     @error('email')
                         <div class="invalid-feedback">{{ $message }}</div>
@@ -51,7 +48,7 @@
 
                 <div class="mb-3">
                     <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
-                    <input type="password" class="form-control @error('password') is-invalid @enderror" 
+                    <input type="password" class="form-control @error('password') is-invalid @enderror"
                            id="password" name="password" required>
                     @error('password')
                         <div class="invalid-feedback">{{ $message }}</div>
@@ -60,7 +57,7 @@
 
                 <div class="mb-3">
                     <label for="password_confirmation" class="form-label">Konfirmasi Password <span class="text-danger">*</span></label>
-                    <input type="password" class="form-control" 
+                    <input type="password" class="form-control"
                            id="password_confirmation" name="password_confirmation" required>
                 </div>
 
@@ -72,6 +69,4 @@
         </div>
     </div>
 </div>
-</main>
-
-@include('layouts.footer')
+@endsection

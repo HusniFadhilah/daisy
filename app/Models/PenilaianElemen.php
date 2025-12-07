@@ -25,9 +25,9 @@ class PenilaianElemen extends Model
     ];
 
     /**
-     * Get the assessment
+     * Get the asesmen
      */
-    public function assessment()
+    public function asesmen()
     {
         return $this->belongsTo(Asesmen::class);
     }

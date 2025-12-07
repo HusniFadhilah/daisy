@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('bentuk_pt', 100)->nullable();
             $table->string('kode_panel', 50)->nullable();
 
-            // Periode Assessment
+            // Periode
             $table->date('tanggal_mulai')->nullable();
             $table->date('tanggal_selesai')->nullable();
 

@@ -1,11 +1,8 @@
-@include('layouts.header')
+@extends('layouts.template.app')
 
-@include('layouts.navbar')
+@section('title', 'Data User - Daisy')
 
-@include('layouts.sidebar')
-
-<!-- Main Content -->
-<main class="main-content">
+@section('content')
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Kelola Pengguna</h2>
@@ -95,6 +92,4 @@
         </div>
     </div>
 </div>
-</main>
-
-@include('layouts.footer')
+@endsection

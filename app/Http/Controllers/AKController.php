@@ -437,7 +437,7 @@ class AKController extends Controller
 
         // Add completion status
         foreach ($asesmens as $asesmen) {
-            $asesmen->is_complete = $this->isAssessmentComplete($asesmen->id, $user->id);
+            $asesmen->is_complete = $this->isAsesmenComplete($asesmen->id, $user->id);
             $asesmen->progress = $this->calculateProgress($asesmen->id, $user->id);
         }
 
@@ -472,7 +472,7 @@ class AKController extends Controller
     /**
      * Check if asesmen is complete (all indikators have penilaian)
      */
-    private function isAssessmentComplete($asesmenId, $userId)
+    private function isAsesmenComplete($asesmenId, $userId)
     {
         $totalIndikators = Indikator::count();
         $completedIndikators = PenilaianElemen::where('id_asesmen', $asesmenId)

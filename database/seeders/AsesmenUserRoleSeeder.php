@@ -16,18 +16,24 @@ class AsesmenUserRoleSeeder extends Seeder
      */
     public function run(): void
     {
-        $assessment = Asesmen::insertGetId([
+        $asesmen = Asesmen::insertGetId([
             'code' => 'Asesmen-' . Fungsi::uniqueCode(5),
-            'name' => 'Penilaian Akreditasi Universitas Serasan 2025',
-            'description' => 'Penilaian akreditasi institusi perguruan tinggi',
+            'name' => 'Penilaian Akreditasi Prodi Magister Ilmu Lingkungan Universitas Diponegoro 2025',
+            'description' => 'Penilaian akreditasi Prodi Magister Ilmu Lingkungan Universitas Diponegoro untuk tahun 2025-2030',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
         $roleAsesor = DB::table('roles')->whereName('asesor')->value('id');
+        $roleValidator = DB::table('roles')->whereName('validator')->value('id');
         AsesmenUserRole::create([
-            'id_asesmen' => $assessment,
-            'id_user' => 5, // Replace dengan user ID yang login
+            'id_asesmen' => $asesmen,
+            'id_user' => 5,
             'id_role' => $roleAsesor,
+        ]);
+        AsesmenUserRole::create([
+            'id_asesmen' => $asesmen,
+            'id_user' => 6,
+            'id_role' => $roleValidator,
         ]);
     }
 }
