@@ -17,11 +17,16 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(RoleSeeder::class);
         $this->call(UserSeeder::class);
+        $this->call(DegreeLevelSeeder::class);
+        $this->call(UniversitySeeder::class);
+        $this->call(StudyProgramSeeder::class);
         $this->call(KriteriaSeeder::class);
         $this->call(ElemenStandarSeeder::class);
         $this->call(PernyataanSeeder::class);
         $this->call(JenisIndikatorSeeder::class);
         $this->call(IndikatorSeeder::class);
+        $this->call(JenjangPenilaianSeeder::class);
+        $this->call(IndikatorPenilaianElemenSeeder::class);
         $this->call(AsesmenUserRoleSeeder::class);
     }
 }
