@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\{AsesmenController, AuthController, DashboardController, PenawaranController, PenugasanController, AKController, ALController, BandingController, PedomanController, DokumenController, PanduanController, BantuanController, ProfileController, SettingsController, ActivityController, TaskController, PasswordResetController, LaporanController, UniversityController, DegreeLevelController, StudyProgramController, KriteriaController, ElemenStandarController, JenisIndikatorController, IndikatorController};
+use App\Http\Controllers\{AsesmenController, AuthController, DashboardController, PenawaranController, PenugasanController, AKController, ALController, BandingController, PedomanController, DokumenController, PanduanController, BantuanController, ProfileController, SettingsController, ActivityController, TaskController, PasswordResetController, LaporanController, UniversityController, DegreeLevelController, StudyProgramController, KriteriaController, ElemenStandarController, JenisIndikatorController, IndikatorController, IndikatorPenilaianElemenController};
 
 
 // Dashboard (awal)
@@ -222,6 +222,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('kriteria', KriteriaController::class);
     Route::resource('elemen-standar', ElemenStandarController::class);
     Route::resource('indikator', IndikatorController::class);
+
+    // MASTER DATA (Admin Only)
+    Route::middleware('admin')->group(function () {
+        Route::get('/master-data', function() {
+            return redirect()->route('master-data.index', ['tab' => 'universities']);
+        });
+        Route::get('/master-data/{tab?}', [UniversityController::class, 'masterData'])->name('master-data.index');
+        Route::resource('universities', UniversityController::class);
+        Route::resource('study-programs', StudyProgramController::class);
+        Route::resource('indikator-penilaian', IndikatorPenilaianElemenController::class);
+    });
 
     // NOTIFIKASI
     Route::prefix('notifications')->group(function () {

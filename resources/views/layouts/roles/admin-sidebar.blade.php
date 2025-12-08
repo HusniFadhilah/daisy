@@ -137,3 +137,15 @@
         </a>
     </li>
 </ul>
+
+<!-- Univ & Prodi -->
+<a href="{{ route('master-data.index') }}" class="nav-link {{ request()->routeIs('master-data.*') || request()->routeIs('universities.*') || request()->routeIs('study-programs.*') ? 'active' : '' }}">
+    <span class="menu-icon">🏫</span>
+    <span>Univ & Prodi</span>
+</a>
+
+<!-- Indikator Penilaian -->
+<a href="{{ route('indikator-penilaian.index') }}" class="nav-link {{ request()->routeIs('indikator-penilaian.*') ? 'active' : '' }}">
+    <span class="menu-icon">📊</span>
+    <span>Indikator Penilaian</span>
+</a>

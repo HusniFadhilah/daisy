@@ -16,10 +16,14 @@ class StudyProgramController extends Controller
     {
         $studyPrograms = StudyProgram::with(['university', 'degreeLevel'])->get();
         
-        return response()->json([
-            'success' => true,
-            'data' => $studyPrograms
-        ]);
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'data' => $studyPrograms
+            ]);
+        }
+        
+        return view('prodi.index', compact('studyPrograms'));
     }
 
     /**
@@ -48,11 +52,16 @@ class StudyProgramController extends Controller
         $studyProgram = StudyProgram::create($validated);
         $studyProgram->load(['university', 'degreeLevel']);
         
-        return response()->json([
-            'success' => true,
-            'message' => 'Study Program created successfully.',
-            'data' => $studyProgram
-        ], 201);
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Study Program created successfully.',
+                'data' => $studyProgram
+            ], 201);
+        }
+
+        return redirect()->route('master-data.index', ['tab' => 'study-programs'])
+            ->with('success', 'Program studi berhasil ditambahkan.');
     }
 
     /**
@@ -112,11 +121,16 @@ class StudyProgramController extends Controller
         // Reload data dengan relasi
         $updatedProgram = StudyProgram::with(['university', 'degreeLevel'])->find($id);
         
-        return response()->json([
-            'success' => true,
-            'message' => 'Study Program updated successfully.',
-            'data' => $updatedProgram
-        ]);
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Study Program updated successfully.',
+                'data' => $updatedProgram
+            ]);
+        }
+
+        return redirect()->route('master-data.index', ['tab' => 'study-programs'])
+            ->with('success', 'Program studi berhasil diperbarui.');
     }
 
     /**
@@ -135,9 +149,7 @@ class StudyProgramController extends Controller
         
         $studyProgram->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Study Program deleted successfully.'
-        ]);
+        return redirect()->route('master-data.index', ['tab' => 'study-programs'])
+            ->with('success', 'Program studi berhasil dihapus.');
     }
 }

@@ -36,4 +36,9 @@ class ElemenStandar extends Model
     {
         return $this->hasMany(PenilaianElemen::class, 'id_elemen', 'id_elemen');
     }
+
+    public function indikatorPenilaian()
+    {
+        return $this->hasMany(IndikatorPenilaianElemen::class, 'elemen_standar_id', 'id_elemen');
+    }
 }

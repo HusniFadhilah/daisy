@@ -3,16 +3,30 @@
 namespace App\Http\Controllers;
 
 use App\Models\University;
+use App\Models\StudyProgram;
+use App\Models\DegreeLevel;
 use Illuminate\Http\Request;
 
 class UniversityController extends Controller
 {
     /**
+     * Display master data page with tabs
+     */
+    public function masterData(Request $request, $tab = 'universities')
+    {
+        $universities = University::withCount('studyPrograms')->get();
+        $studyPrograms = StudyProgram::with(['university', 'degreeLevel'])->get();
+        $degreeLevels = DegreeLevel::all();
+        
+        return view('master-data.index', compact('universities', 'studyPrograms', 'degreeLevels', 'tab'));
+    }
+
+    /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        $universities = University::all();
+        $universities = University::withCount('studyPrograms')->get();
         
         if ($request->wantsJson()) {
             return response()->json([
@@ -44,11 +58,16 @@ class UniversityController extends Controller
 
         $university = University::create($validated);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'University created successfully.',
-            'data' => $university
-        ], 201);
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'University created successfully.',
+                'data' => $university
+            ], 201);
+        }
+
+        return redirect()->route('master-data.index', ['tab' => 'universities'])
+            ->with('success', 'Universitas berhasil ditambahkan.');
     }
 
     /**
@@ -100,11 +119,16 @@ class UniversityController extends Controller
         
         $university->update($validated);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'University updated successfully.',
-            'data' => $university
-        ]);
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'University updated successfully.',
+                'data' => $university
+            ]);
+        }
+
+        return redirect()->route('master-data.index', ['tab' => 'universities'])
+            ->with('success', 'Universitas berhasil diperbarui.');
     }
 
     /**
@@ -123,9 +147,7 @@ class UniversityController extends Controller
         
         $university->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'University deleted successfully.'
-        ]);
+        return redirect()->route('master-data.index', ['tab' => 'universities'])
+            ->with('success', 'Universitas berhasil dihapus.');
     }
 }
