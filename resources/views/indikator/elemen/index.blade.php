@@ -1,11 +1,8 @@
-@include('layouts.header')
+@extends('layouts.template.app')
 
-@include('layouts.navbar')
+@section('title', 'Elemen Standar - Daisy')
 
-@include('layouts.sidebar')
-
-<!-- Main Content -->
-<main class="main-content">
+@section('content')
 <div class="container-fluid">
     <!-- Header dengan Tabs -->
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -290,4 +287,4 @@
     </div>
 </div>
 
-@include('layouts.footer')
+@endsection
