@@ -93,6 +93,11 @@
                     @endphp
 
                     @foreach($kriteriaRow->elemenStandar as $elemen)
+                    @php
+                        // Get penilaian for this elemen (not indikator!)
+                        $penilaian = $elemen->penilaian->first(); // Assuming relation exists
+                        $hasPenilaian = $penilaian && $penilaian->skor !== null;
+                    @endphp
                     <tr>
                         {{-- CETAK MERGED CELL HANYA DI ROW PERTAMA --}}
                         @if($firstRow)
@@ -108,11 +113,11 @@
                         </td>
 
                         {{-- Kolom Pemenuhan --}}
-                        <td class="matrix-cell" data-elemen-id="{{ $elemen->id_elemen }}" data-kriteria-id="{{ $kriteriaRow->id_kriteria }}" data-col="pemenuhan" style="background-color: {{ getSkorColor($elemen->penilaian->first()->skor ?? null) }}">
+                        <td class="matrix-cell" data-elemen-id="{{ $elemen->id_elemen }}" data-kriteria-id="{{ $kriteriaRow->id_kriteria }}" data-col="pemenuhan" style="background-color: {{ getSkorColor($hasPenilaian ? $penilaian->skor : null) }}">
                         </td>
 
                         {{-- Kolom Pelampauan --}}
-                        <td class="matrix-cell" data-elemen-id="{{ $elemen->id_elemen }}" data-kriteria-id="{{ $kriteriaRow->id_kriteria }}" data-col="pelampauan" style="background-color: {{ $elemen->penilaian->first()->skor == 4 ? getSkorColor(4) : '#e0e0e0' }}">
+                        <td class="matrix-cell" data-elemen-id="{{ $elemen->id_elemen }}" data-kriteria-id="{{ $kriteriaRow->id_kriteria }}" data-col="pelampauan" style="background-color: {{ $hasPenilaian ? $penilaian->skor == 4 ? getSkorColor(4) : '#e0e0e0' : '#e0e0e0' }}">
                         </td>
                     </tr>
                     @endforeach
@@ -140,7 +145,7 @@
                 <div class="col-6 col-md-3">
                     <div class="stat-box">
                         <h4 class="mb-0 fw-bold text-warning" id="statEmpty">0</h4>
-                        <small class="text-muted">Belum</small>
+                        <small class="text-muted">Belum Terisi</small>
                     </div>
                 </div>
                 <div class="col-6 col-md-3">
