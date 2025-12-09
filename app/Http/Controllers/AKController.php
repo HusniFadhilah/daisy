@@ -9,8 +9,12 @@ use Illuminate\Http\Request;
 use App\Models\ElemenStandar;
 use App\Models\AsesmenUserRole;
 use App\Models\PenilaianElemen;
+use App\Models\PenilaianImportLog;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use App\Jobs\ImportPenilaianExcelJob;
+use App\Services\PenilaianExcelService;
 use Illuminate\Support\Facades\Storage;
 
 class AKController extends Controller
@@ -45,9 +49,19 @@ class AKController extends Controller
         $user = Auth::user();
 
         // Check if user has access to this asesmen
-        $asesmen = Asesmen::whereHas('userRoles', function ($query) use ($user) {
-            $query->where('id_user', $user->id);
-        })->findOrFail($id);
+        $assignment = AsesmenUserRole::where('id_asesmen', $id)
+            ->where('id_user', Auth::user()->id)
+            ->firstOrFail();
+
+        // ✅ AUTO-UPDATE STATUS: not_started → in_progress
+        if ($assignment->status_pekerjaan === 'not_started') {
+            $assignment->update([
+                'status_pekerjaan' => 'in_progress',
+                'started_at' => now(), // Opsional: track kapan mulai
+            ]);
+        }
+
+        $asesmen = $assignment->asesmen;
 
         // Get all kriteria with elemen and indikator
         $kriterias = Kriteria::with([
@@ -120,6 +134,7 @@ class AKController extends Controller
                 'skor_info' => $skorInfo,
             ]);
         } catch (\Exception $e) {
+            Log::error($e);
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()
@@ -236,250 +251,370 @@ class AKController extends Controller
     }
 
     /**
-     * Display split nilai (untuk rekonsiliasi asesor)
+     * ============================================
+     * FINALISASI & SUBMIT PENILAIAN
+     * ============================================
      */
-    public function split()
-    {
-        $user = Auth::user();
-
-        // Get asesmens with split (difference in scores between assessors)
-        $asesmens = Asesmen::whereHas('penilaianElemen', function ($query) {
-            // Find asesmens with different scores for same indikator
-            $query->select('id_asesmen', 'id_elemen')
-                ->groupBy('id_asesmen', 'id_elemen')
-                ->havingRaw('COUNT(DISTINCT skor) > 1');
-        })->with('userRoles.user')->latest()->paginate(10);
-
-        return view('asesmen.ak.split.index', compact('asesmens'));
-    }
 
     /**
-     * Show detail split for rekonsiliasi
+     * Submit/Finalisasi penilaian asesor
      */
-    public function showSplit($id)
+    public function submitPenilaian(Request $request, $asesmenId)
     {
-        $asesmen = Asesmen::findOrFail($id);
-
-        // Get indikators with different scores (split)
-        $splits = DB::table('penilaian_elemen as p1')
-            ->join('penilaian_elemen as p2', function ($join) {
-                $join->on('p1.id_asesmen', '=', 'p2.id_asesmen')
-                    ->on('p1.id_elemen', '=', 'p2.id_elemen')
-                    ->on('p1.id_user', '<>', 'p2.id_user')
-                    ->whereRaw('p1.skor <> p2.skor');
-            })
-            ->join('elemen_standar as e', 'p1.id_elemen', '=', 'e.id_elemen')
-            ->join('kriteria as k', 'e.id_kriteria', '=', 'k.id_kriteria')
-            ->join('users as u1', 'p1.id_user', '=', 'u1.id')
-            ->join('users as u2', 'p2.id_user', '=', 'u2.id')
-            ->where('p1.id_asesmen', $id)
-            ->select(
-                'k.nama_kriteria',
-                'e.pernyataan_elemen',
-                'p1.skor as skor_asesor1',
-                'p2.skor as skor_asesor2',
-                'p1.komentar as komentar_asesor1',
-                'p2.komentar as komentar_asesor2',
-                'u1.name as nama_asesor1',
-                'u2.name as nama_asesor2',
-                'p1.id_user as user_id1',
-                'p2.id_user as user_id2'
-            )
-            ->groupBy(
-                'k.nama_kriteria',
-                'e.pernyataan_elemen',
-                'p1.skor',
-                'p2.skor',
-                'p1.komentar',
-                'p2.komentar',
-                'u1.name',
-                'u2.name',
-                'p1.id_user',
-                'p2.id_user'
-            )
-            ->get();
-
-        return view('asesmen.ak.split.show', compact('asesmen', 'splits'));
-    }
-
-    /**
-     * Save rekonsiliasi hasil split
-     */
-    public function rekonsiliasi(Request $request, $id)
-    {
-        $request->validate([
-            'id_indikator' => 'required|exists:indikator,id_indikator',
-            'skor_final' => 'required|integer|min:0|max:3',
-            'komentar_final' => 'required|string|max:5000',
-        ]);
-
         try {
+            $user = Auth::user();
+
+            // Check access
+            $assignment = AsesmenUserRole::where('id_asesmen', $asesmenId)
+                ->where('id_user', $user->id)
+                ->where('status_penawaran', 'accepted')
+                ->firstOrFail();
+
+            // Check if all elemen have been assessed
+            $totalElemen = ElemenStandar::count();
+            $assessedElemen = PenilaianElemen::where('id_asesmen', $asesmenId)
+                ->where('id_user', $user->id)
+                ->whereNotNull('skor')
+                ->whereNotNull('komentar')
+                ->count();
+
+            if ($assessedElemen < $totalElemen) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Penilaian belum lengkap. Anda baru menilai {$assessedElemen} dari {$totalElemen} elemen.",
+                    'assessed' => $assessedElemen,
+                    'total' => $totalElemen,
+                ], 422);
+            }
+
             DB::beginTransaction();
 
-            // Update all penilaian for this elemen to same score
-            PenilaianElemen::where('id_asesmen', $id)
-                ->where('id_elemen', $request->id_elemen)
+            // Update all penilaian status to submitted
+            PenilaianElemen::where('id_asesmen', $asesmenId)
+                ->where('id_user', $user->id)
                 ->update([
-                    'skor' => $request->skor_final,
-                    'komentar' => $request->komentar_final,
                     'status' => 'submitted',
                 ]);
+
+            // Update assignment status
+            $assignment->update([
+                'status_pekerjaan' => 'submitted',
+                'submitted_at' => now(),
+            ]);
 
             DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Rekonsiliasi berhasil disimpan'
+                'message' => 'Penilaian berhasil di-submit! Menunggu validasi dari validator.',
+                'submitted_at' => now()->format('d M Y H:i'),
             ]);
         } catch (\Exception $e) {
+            Log::error($e);
             DB::rollBack();
+
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Gagal submit penilaian: ' . $e->getMessage(),
             ], 500);
         }
     }
 
     /**
-     * Display upload page
+     * Batalkan submit (kembali ke draft)
      */
-    public function upload()
-    {
-        $user = Auth::user();
-
-        // Get user's asesmens with documents
-        $asesmens = Asesmen::whereHas('userRoles', function ($query) use ($user) {
-            $query->where('id_user', $user->id);
-        })->with('documents')->latest()->get();
-
-        return view('asesmen.ak.upload.index', compact('asesmens'));
-    }
-
-    /**
-     * Store uploaded file
-     */
-    public function storeUpload(Request $request)
-    {
-        $request->validate([
-            'id_asesmen' => 'required|exists:asesmens,id',
-            'file' => 'required|file|mimes:pdf,doc,docx,xls,xlsx|max:10240', // 10MB
-            'keterangan' => 'nullable|string|max:255',
-        ]);
-
-        try {
-            $file = $request->file('file');
-            $fileName = time() . '_' . $file->getClientOriginalName();
-            $filePath = $file->storeAs('asesmens/documents', $fileName, 'public');
-
-            // Save to database (assuming you have AssessmentDocument model)
-            // AssessmentDocument::create([
-            //     'id_asesmen' => $request->id_asesmen,
-            //     'file_name' => $fileName,
-            //     'file_path' => $filePath,
-            //     'keterangan' => $request->keterangan,
-            //     'uploaded_by' => Auth::id(),
-            // ]);
-
-            return redirect()->back()->with('success', 'File berhasil diupload');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal upload file: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Delete uploaded file
-     */
-    public function deleteUpload($id)
+    public function unsubmitPenilaian($asesmenId)
     {
         try {
-            // Assuming you have AssessmentDocument model
-            // $document = AssessmentDocument::findOrFail($id);
+            $user = Auth::user();
 
-            // Check permission
-            // if ($document->uploaded_by !== Auth::id() && !Auth::user()->hasRole('admin')) {
-            //     return response()->json([
-            //         'success' => false,
-            //         'message' => 'Anda tidak memiliki izin untuk menghapus file ini'
-            //     ], 403);
-            // }
+            $assignment = AsesmenUserRole::where('id_asesmen', $asesmenId)
+                ->where('id_user', $user->id)
+                ->where('status_pekerjaan', 'submitted')
+                ->firstOrFail();
 
-            // Delete file from storage
-            // Storage::disk('public')->delete($document->file_path);
+            // Check if already validated
+            $hasValidated = PenilaianElemen::where('id_asesmen', $asesmenId)
+                ->where('id_user', $user->id)
+                ->where('status_validasi', '!=', 'not_validated')
+                ->exists();
 
-            // Delete record
-            // $document->delete();
+            if ($hasValidated) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Penilaian sudah divalidasi, tidak bisa dibatalkan.',
+                ], 422);
+            }
+
+            DB::beginTransaction();
+
+            // Update back to draft
+            PenilaianElemen::where('id_asesmen', $asesmenId)
+                ->where('id_user', $user->id)
+                ->update([
+                    'status' => 'draft',
+                ]);
+
+            $assignment->update([
+                'status_pekerjaan' => 'in_progress',
+                'submitted_at' => null,
+            ]);
+
+            DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'File berhasil dihapus'
+                'message' => 'Submit dibatalkan. Anda dapat melanjutkan edit penilaian.',
             ]);
         } catch (\Exception $e) {
+            Log::error($e);
+            DB::rollBack();
+
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal menghapus file: ' . $e->getMessage()
+                'message' => 'Gagal membatalkan submit: ' . $e->getMessage(),
             ], 500);
         }
     }
 
     /**
-     * Display validasi page
+     * ============================================
+     * RESET SEMUA PENILAIAN
+     * ============================================
+     *
+     * ADD THIS METHOD TO: App\Http\Controllers\AKController
+     * Location: After unsubmitPenilaian() method
      */
-    public function validasi()
+
+    /**
+     * Reset/Hapus semua penilaian untuk asesmen tertentu
+     *
+     * @param int $asesmenId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function resetAllPenilaian($asesmenId)
     {
-        $user = Auth::user();
+        try {
+            $user = Auth::user();
 
-        // Get asesmens ready for validation (all penilaian completed)
-        $asesmens = Asesmen::whereHas('userRoles', function ($query) use ($user) {
-            $query->where('id_user', $user->id);
-        })->with(['penilaianElemen' => function ($query) use ($user) {
-            $query->where('id_user', $user->id);
-        }])->latest()->paginate(10);
+            // Verify access
+            $assignment = AsesmenUserRole::where('id_asesmen', $asesmenId)
+                ->where('id_user', $user->id)
+                ->first();
 
-        // Add completion status
-        foreach ($asesmens as $asesmen) {
-            $asesmen->is_complete = $this->isAsesmenComplete($asesmen->id, $user->id);
-            $asesmen->progress = $this->calculateProgress($asesmen->id, $user->id);
+            if (!$assignment) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda tidak memiliki akses ke asesmen ini',
+                ], 403);
+            }
+
+            // Check if submitted or approved - tidak boleh reset
+            if (in_array($assignment->status_pekerjaan, ['submitted', 'approved'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak dapat mereset penilaian yang sudah di-submit atau disetujui. Silakan batalkan submit terlebih dahulu.',
+                ], 422);
+            }
+
+            DB::beginTransaction();
+
+            try {
+                // Get count before delete
+                $totalDeleted = PenilaianElemen::where('id_asesmen', $asesmenId)
+                    ->where('id_user', $user->id)
+                    ->count();
+
+                // Delete all penilaian for this user and asesmen
+                PenilaianElemen::where('id_asesmen', $asesmenId)
+                    ->where('id_user', $user->id)
+                    ->delete();
+
+                // Update assignment status back to not_started
+                $assignment->update([
+                    'status_pekerjaan' => 'not_started',
+                    'submitted_at' => null,
+                ]);
+
+                DB::commit();
+
+                // Calculate new progress (should be 0)
+                $progress = $this->calculateProgress($asesmenId, $user->id);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => "Berhasil menghapus {$totalDeleted} penilaian. Semua penilaian telah direset.",
+                    'deleted_count' => $totalDeleted,
+                    'progress' => $progress,
+                ]);
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
+            }
+        } catch (\Exception $e) {
+            Log::error('Reset penilaian failed: ' . $e->getMessage(), [
+                'asesmen_id' => $asesmenId,
+                'user_id' => Auth::id(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mereset penilaian: ' . $e->getMessage(),
+            ], 500);
         }
-
-        return view('asesmen.ak.validasi.index', compact('asesmens'));
     }
 
     /**
-     * Show validasi detail
+     * Download template Excel (format kosong)
      */
-    public function showValidasi($id)
+    public function downloadTemplate($asesmenId)
     {
-        $user = Auth::user();
-        $asesmen = Asesmen::findOrFail($id);
+        try {
+            $user = Auth::user();
 
-        // Get all penilaian with kriteria, elemen, elemen
-        $penilaians = PenilaianElemen::where('id_asesmen', $id)
-            ->where('id_user', $user->id)
-            ->with([
-                'elemen.kriteria',
-                'elemen.indikator.jenisIndikator'
-            ])
-            ->get()
-            ->groupBy(function ($item) {
-                return $item->indikator->elemen->kriteria->nama_kriteria;
-            });
+            // Verify access
+            $asesmen = Asesmen::whereHas('userRoles', function ($query) use ($user) {
+                $query->where('id_user', $user->id);
+            })->findOrFail($asesmenId);
 
-        $progress = $this->calculateProgress($id, $user->id);
+            $excelService = new PenilaianExcelService();
+            $filePath = $excelService->generateTemplate($asesmen);
 
-        return view('asesmen.ak.validasi.show', compact('asesmen', 'penilaians', 'progress'));
+            return response()->download($filePath, basename($filePath))->deleteFileAfterSend(true);
+        } catch (\Exception $e) {
+            Log::error($e);
+            return redirect()->back()->with('error', 'Gagal download template: ' . $e->getMessage());
+        }
     }
 
     /**
-     * Check if asesmen is complete (all indikators have penilaian)
+     * Export penilaian ke Excel (dengan data)
      */
-    private function isAsesmenComplete($asesmenId, $userId)
+    public function exportExcel($asesmenId)
     {
-        $totalIndikators = Indikator::count();
-        $completedIndikators = PenilaianElemen::where('id_asesmen', $asesmenId)
-            ->where('id_user', $userId)
-            ->whereNotNull('skor')
-            ->count();
+        try {
+            $user = Auth::user();
 
-        return $totalIndikators === $completedIndikators;
+            // Verify access
+            $asesmen = Asesmen::whereHas('userRoles', function ($query) use ($user) {
+                $query->where('id_user', $user->id);
+            })->findOrFail($asesmenId);
+
+            $excelService = new PenilaianExcelService();
+            $filePath = $excelService->generateWithData($asesmen, $user->id);
+
+            return response()->download($filePath, basename($filePath))->deleteFileAfterSend(true);
+        } catch (\Exception $e) {
+            Log::error($e);
+            return redirect()->back()->with('error', 'Gagal export Excel: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Import penilaian dari Excel (using Queue)
+     */
+    public function importExcel(Request $request, $asesmenId)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls|max:10240', // 10MB max
+        ]);
+
+        try {
+            $user = Auth::user();
+
+            // Verify access
+            $asesmen = Asesmen::whereHas('userRoles', function ($query) use ($user) {
+                $query->where('id_user', $user->id);
+            })->findOrFail($asesmenId);
+
+            // Store file temporarily
+            $file = $request->file('file');
+            $filename = 'import_' . $asesmen->code . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $filePath = $file->storeAs('temp/imports', $filename);
+
+            // Create import log
+            $importLog = PenilaianImportLog::create([
+                'id_asesmen' => $asesmen->id,
+                'id_user' => $user->id,
+                'filename' => $file->getClientOriginalName(),
+                'status' => 'queued',
+            ]);
+
+            // Dispatch job
+            ImportPenilaianExcelJob::dispatch($filePath, $asesmen->id, $user->id, $importLog->id);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'File berhasil diupload. Import sedang diproses di background.',
+                'import_log_id' => $importLog->id,
+            ]);
+        } catch (\Exception $e) {
+            Log::error($e);
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal import Excel: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Check import status (AJAX)
+     */
+    public function checkImportStatus($importLogId)
+    {
+        try {
+            $user = Auth::user();
+
+            $importLog = PenilaianImportLog::where('id_user', $user->id)
+                ->findOrFail($importLogId);
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'status' => $importLog->status,
+                    'total_rows' => $importLog->total_rows,
+                    'imported_rows' => $importLog->imported_rows,
+                    'failed_rows' => $importLog->failed_rows,
+                    'errors' => $importLog->errors,
+                    'success_rate' => $importLog->success_rate,
+                    'started_at' => $importLog->started_at?->format('d M Y H:i:s'),
+                    'completed_at' => $importLog->completed_at?->format('d M Y H:i:s'),
+                ],
+            ]);
+        } catch (\Exception $e) {
+            Log::error($e);
+            return response()->json([
+                'success' => false,
+                'message' => 'Import log tidak ditemukan',
+            ], 404);
+        }
+    }
+
+    /**
+     * Get import history
+     */
+    public function importHistory($asesmenId)
+    {
+        try {
+            $user = Auth::user();
+
+            $logs = PenilaianImportLog::where('id_asesmen', $asesmenId)
+                ->where('id_user', $user->id)
+                ->orderBy('created_at', 'desc')
+                ->limit(10)
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $logs,
+            ]);
+        } catch (\Exception $e) {
+            Log::error($e);
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memuat riwayat import',
+            ], 500);
+        }
     }
 }

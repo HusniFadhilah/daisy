@@ -94,9 +94,9 @@
 
                     @foreach($kriteriaRow->elemenStandar as $elemen)
                     @php
-                        // Get penilaian for this elemen (not indikator!)
-                        $penilaian = $elemen->penilaian->first(); // Assuming relation exists
-                        $hasPenilaian = $penilaian && $penilaian->skor !== null;
+                    // Get penilaian for this elemen (not indikator!)
+                    $penilaian = $elemen->penilaian->first(); // Assuming relation exists
+                    $hasPenilaian = $penilaian && $penilaian->skor !== null;
                     @endphp
                     <tr>
                         {{-- CETAK MERGED CELL HANYA DI ROW PERTAMA --}}
@@ -113,7 +113,7 @@
                         </td>
 
                         {{-- Kolom Pemenuhan --}}
-                        <td class="matrix-cell" data-elemen-id="{{ $elemen->id_elemen }}" data-kriteria-id="{{ $kriteriaRow->id_kriteria }}" data-col="pemenuhan" style="background-color: {{ getSkorColor($hasPenilaian ? $penilaian->skor : null) }}">
+                        <td class="matrix-cell" data-elemen-id="{{ $elemen->id_elemen }}" data-kriteria-id="{{ $kriteriaRow->id_kriteria }}" data-col="pemenuhan" style="background-color: {{ $hasPenilaian ? $penilaian->skor == 4 ? '#e0e0e0' : getSkorColor($penilaian->skor) : '#e0e0e0' }}">
                         </td>
 
                         {{-- Kolom Pelampauan --}}
@@ -127,7 +127,7 @@
         </div>
 
         <!-- Summary Stats -->
-        <div class="p-3 bg-light border-top">
+        {{-- <div class="p-3 bg-light border-top">
             <h6 class="text-center mb-3 fw-bold">📊 Ringkasan Statistik</h6>
             <div class="row text-center g-3">
                 <div class="col-6 col-md-3">
@@ -155,7 +155,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
     </div>
 </div>
 
@@ -615,12 +615,10 @@ return $colors[$skor] ?? '#e0e0e0';
          * ============================================
          */
         function initializeHeatmapMatrix() {
-            updateMatrixStats();
+            //updateMatrixStats();
             setupMatrixInteractions();
             setupZoomControls();
             setupToggleButton();
-
-            console.log('✅ Enhanced Heatmap Matrix initialized with merged cells');
         }
 
         /**
@@ -643,10 +641,10 @@ return $colors[$skor] ?? '#e0e0e0';
             const empty = total - filled;
             const percent = total ? Math.round((filled / total) * 100) : 0;
 
-            document.getElementById('statTotal').textContent = total;
-            document.getElementById('statFilled').textContent = filled;
-            document.getElementById('statEmpty').textContent = empty;
-            document.getElementById('statPercentage').textContent = percent + '%';
+            document.getElementById('summaryTotal').innerHTML = `<b>${total}</b>`;
+            document.getElementById('summaryCompleted').innerHTML = `<b>${filled}</b>`;
+            document.getElementById('summaryRemaining').innerHTML = `<b>${empty}</b>`;
+            document.getElementById('summaryPercentage').innerHTML = `<b>${percent}%</b>`;
         }
 
         /**

@@ -15,22 +15,22 @@ class IndikatorSeeder extends Seeder
     {
         // Get elemen_standar IDs mapping
         $elemenMap = ElemenStandar::whereIn('kode_elemen', [
-            'D1', 'D2', 'D3',
-            'E1', 'E2', 'E3', 'E4', 'E5',
-            'P1', 'P2', 'P3', 'P4',
-            'I1', 'I2', 'I3',
-            'L1', 'L2', 'L3', 'L4',
-            'A1', 'A2', 'A3', 'A4', 'A5',
-            'R1', 'R2', 'R3', 'R4', 'R5', 'R6'
+            'D.1', 'D.2', 'D.3',
+            'E.1', 'E.2', 'E.3', 'E.4', 'E.5',
+            'P.1', 'P.2', 'P.3', 'P.4',
+            'I.1', 'I.2', 'I.3',
+            'L.1', 'L.2', 'L.3', 'L.4',
+            'A.1', 'A.2', 'A.3', 'A.4', 'A.5',
+            'R.1', 'R.2', 'R.3', 'R.4', 'R.5', 'R.6'
         ])
-        ->whereNotIn('id_elemen', [1, 3, 7]) // Skip duplicate entries
+        // ->whereNotIn('id_elemen', [1, 3, 7]) // Skip duplicate entries
         ->pluck('id_elemen', 'kode_elemen')
         ->toArray();
 
         $indikator = [
-            // D1 - Legalitas Program dan Tata Pamong
+            // D.1 - Legalitas Program dan Tata Pamong
             [
-                'id_elemen' => $elemenMap['D1'] ?? null,
+                'id_elemen' => $elemenMap['D.1'] ?? null,
                 'id_jenis' => 1, // Kualitatif
                 'kode_indikator' => 'IK-1.1.1',
                 'deskripsi_indikator' => "Institusi, UPPS dan Program Studi memiliki dokumen legalitas yang valid, tidak meragukan, serta menunjukkan perwujudan Good University Governance (GUG). Penilaian berfokus pada:
@@ -46,9 +46,9 @@ class IndikatorSeeder extends Seeder
                 (4) Pelaporan pada PDDIKTI lengkap ",
             ],
 
-            // D2 - Visi, Misi, Tujuan, dan Strategi
+            // D.2 - Visi, Misi, Tujuan, dan Strategi
             [
-                'id_elemen' => $elemenMap['D2'] ?? null,
+                'id_elemen' => $elemenMap['D.2'] ?? null,
                 'id_jenis' => 1, // Kualitatif
                 'kode_indikator' => 'IK-1.2.1',
                 'deskripsi_indikator' => "Diferensiasi misi dalam visi, misi, dan rencana strategis menunjukkan bahwa Institusi, Unit UPPS dan Program Studi (Program Studi) menunjukkan:
@@ -62,9 +62,9 @@ class IndikatorSeeder extends Seeder
                 (4) mencerminkan prinsip Good University Governance (GUG)  dan menjaga keberlangsungan organisasi  organisasi misalnya PT-UPPS-Program Studi mampu menunjukkan proses evaluasi dan atau tidak lanjut hasil evaluasi VMTS untuk menjamin relevansi serta keberlanjutan penyelenggaraan pendidikan tinggi.",
             ],
 
-            // D3 - Kesesuaian Visi Keilmuan
+            // D.3 - Kesesuaian Visi Keilmuan
             [
-                'id_elemen' => $elemenMap['D3'] ?? null,
+                'id_elemen' => $elemenMap['D.3'] ?? null,
                 'id_jenis' => 1, // Kualitatif
                 'kode_indikator' => 'IK-1.3.1',
                 'deskripsi_indikator' => "Visi dan misi yang dimiliki oleh Institusi, UPPS, dan Program Studi selaras dan koheren dan efektif menjadi acuan pengembangan.
@@ -80,9 +80,9 @@ class IndikatorSeeder extends Seeder
                 (4) menunjukkan adanya strategi dan program untuk mencapai daya saing/keunggulan dalam skala regional/ nasional/ internasional sesuai fokus misi.",
             ],
 
-            // E1 - Kurikulum
+            // E.1 - Kurikulum
             [
-                'id_elemen' => $elemenMap['E1'] ?? null,
+                'id_elemen' => $elemenMap['E.1'] ?? null,
                 'id_jenis' => 1, // Kualitatif
                 'kode_indikator' => 'IK-2.1.1',
                 'deskripsi_indikator' => "Program Studi dapat menunjukkan:
@@ -96,9 +96,9 @@ class IndikatorSeeder extends Seeder
                 (4) adanya bukti evaluasi terhadap kurikulum yang dilaksanakan secara berkesinambungan dan konsisten sesuai siklus pendidikan",
             ],
 
-            // E2 - Admisi Mahasiswa
+            // E.2 - Admisi Mahasiswa
             [
-                'id_elemen' => $elemenMap['E2'] ?? null,
+                'id_elemen' => $elemenMap['E.2'] ?? null,
                 'id_jenis' => 1, // Kualitatif
                 'kode_indikator' => 'IK-2.2.1',
                 'deskripsi_indikator' => "Institusi, Unit Pengelola Program studi, atau Program Studi telah menjalankan proses admisi yang memastikan efektifitas dan keberlanjutan masukan, proses, dan luaran yang ditandai:
@@ -108,7 +108,7 @@ class IndikatorSeeder extends Seeder
                 (4) terdokumentasi dengan baik dan dievaluasi untuk perbaikan berkelanjutan.",
             ],
             [
-                'id_elemen' => $elemenMap['E2'] ?? null,
+                'id_elemen' => $elemenMap['E.2'] ?? null,
                 'id_jenis' => 2, // Kuantitatif
                 'kode_indikator' => 'IKn-2.2.2',
                 'deskripsi_indikator' => "Program studi menyajikan data:
@@ -117,9 +117,9 @@ class IndikatorSeeder extends Seeder
                 (3) Cacah mahasiswa asing dan/atau keterlibatan mahasiswa ke dalam kegiatan internasional/ke luar negeri dalam beragam bentuk kegiatan pembelajaran (berkredit penuh waktu, berkredit tidak penuh waktu tetapi lebih dari 1 semester, berkredit periode singkat, tanpa kredit)",
             ],
 
-            // E3 - Proses dan Siklus Pembelajaran
+            // E.3 - Proses dan Siklus Pembelajaran
             [
-                'id_elemen' => $elemenMap['E3'] ?? null,
+                'id_elemen' => $elemenMap['E.3'] ?? null,
                 'id_jenis' => 1, // Kualitatif
                 'kode_indikator' => 'IK-2.3.1',
                 'deskripsi_indikator' => "Program Studi menunjukkan adanya kebijakan, pelaksanaan, dan evaluasi siklus pendidikan yang efektif yang ditandai:
@@ -129,7 +129,7 @@ class IndikatorSeeder extends Seeder
                 (4) evaluasi konsisten dan adanya upaya perbaikan berkelanjutan.",
             ],
             [
-                'id_elemen' => $elemenMap['E3'] ?? null,
+                'id_elemen' => $elemenMap['E.3'] ?? null,
                 'id_jenis' => 2, // Kuantitatif
                 'kode_indikator' => 'IKn-2.3.2',
                 'deskripsi_indikator' => "Efektifitas pendidikan yang ditunjukkan dengan data:
@@ -137,9 +137,9 @@ class IndikatorSeeder extends Seeder
                 (2) prestasi akademik mahasiswa ",
             ],
 
-            // E4 - Penilaian dan Evaluasi
+            // E.4 - Penilaian dan Evaluasi
             [
-                'id_elemen' => $elemenMap['E4'] ?? null,
+                'id_elemen' => $elemenMap['E.4'] ?? null,
                 'id_jenis' => 1, // Kualitatif
                 'kode_indikator' => 'IK-2.4.1',
                 'deskripsi_indikator' => "Program Studi dapat menunjukkan sistem penilaian dan evaluasi yang berbasis capaian secara efektif yang ditandai:
@@ -149,9 +149,9 @@ class IndikatorSeeder extends Seeder
                 (4) dilakukan evaluasi konsisten dan serta selalu diupayakan adanya perbaikan berkelanjutan.",
             ],
 
-            // E5 - Kompetensi Lulusan dan Capaian Pembelajaran
+            // E.5 - Kompetensi Lulusan dan Capaian Pembelajaran
             [
-                'id_elemen' => $elemenMap['E5'] ?? null,
+                'id_elemen' => $elemenMap['E.5'] ?? null,
                 'id_jenis' => 1, // Kualitatif
                 'kode_indikator' => 'IK-2.5.1',
                 'deskripsi_indikator' => "(1) adanya sistem pengukuran terhadap capaian pembelajaran dan memublikasikannya secara sistematis termasuk dalam surat keterangan pendamping ijazah
@@ -160,9 +160,9 @@ class IndikatorSeeder extends Seeder
                 (4) adanya lembaga atau unit untuk melakukan evaluasi, perbaikan, peningkatan kompetensi secara konsisten, berkelanjutan, terstruktur, dan sistematis yang melibatkan beragam pengampu kepentingan",
             ],
 
-            // P1 - Dosen dan Tenaga Kependidikan
+            // P.1 - Dosen dan Tenaga Kependidikan
             [
-                'id_elemen' => $elemenMap['P1'] ?? null,
+                'id_elemen' => $elemenMap['P.1'] ?? null,
                 'id_jenis' => 1, // Kualitatif
                 'kode_indikator' => 'IK-3.1.1',
                 'deskripsi_indikator' => "Unit Pengelola Program Studi (UPPS) perlu memastikan ketersediaan sumber daya manusia yang ditandai dengan:
@@ -172,7 +172,7 @@ class IndikatorSeeder extends Seeder
                 (4) adanya program pengembangan kompetensi dan profesionalitas untuk tenaga kependidikan termasuk tenaga fungsional.",
             ],
             [
-                'id_elemen' => $elemenMap['P1'] ?? null,
+                'id_elemen' => $elemenMap['P.1'] ?? null,
                 'id_jenis' => 2, // Kuantitatif
                 'kode_indikator' => 'IKn-3.1.1',
                 'deskripsi_indikator' => "Program Studi dapat menunjukkan data:
@@ -182,9 +182,9 @@ class IndikatorSeeder extends Seeder
                 (4) daftar tenaga kependidikan bersertifikat keahlian dan/atau fungsional",
             ],
 
-            // P2 - Sarana dan Prasarana Kerja
+            // P.2 - Sarana dan Prasarana Kerja
             [
-                'id_elemen' => $elemenMap['P2'] ?? null,
+                'id_elemen' => $elemenMap['P.2'] ?? null,
                 'id_jenis' => 1, // Kualitatif
                 'kode_indikator' => 'IK-3.2.1',
                 'deskripsi_indikator' => "Unit Pengelola Program Studi (UPPS) perlu memastikan ketersediaan sarana dan prasarana yang ditandai dengan:
@@ -194,9 +194,9 @@ class IndikatorSeeder extends Seeder
                 (4) adanya program kerja untuk pemeliharaan dan peningkatan ketercukupan sarana dan prasarana kerja berbasis survei kepuasan dan standar-standar yang berlaku",
             ],
 
-            // P3 - Pengembangan Kapasitas
+            // P.3 - Pengembangan Kapasitas
             [
-                'id_elemen' => $elemenMap['P3'] ?? null,
+                'id_elemen' => $elemenMap['P.3'] ?? null,
                 'id_jenis' => 1, // Kualitatif
                 'kode_indikator' => 'IK-3.3.1',
                 'deskripsi_indikator' => "UUProgram Studi menunjukkan kebijakan, proses, dan evaluasi pengembangan kapasitas institusi yang ditandai dengan:
@@ -206,9 +206,9 @@ class IndikatorSeeder extends Seeder
                 (4) sistem pengembangan kapasitas manajerial untuk pengelolaan kelembagaan.",
             ],
 
-            // P4 - Kesejahteraan Kerja
+            // P.4 - Kesejahteraan Kerja
             [
-                'id_elemen' => $elemenMap['P4'] ?? null,
+                'id_elemen' => $elemenMap['P.4'] ?? null,
                 'id_jenis' => 1, // Kualitatif
                 'kode_indikator' => 'IK-3.4.1',
                 'deskripsi_indikator' => "UUProgram Studi menunjukkan kebijakan, proses, dan evaluasi terkait kesejahteraan dosen, tenaga kependidikan, dan mahasiswa yang ditandai dengan:
@@ -218,9 +218,9 @@ class IndikatorSeeder extends Seeder
                 (4) program peningkatan kesejahteraan berbasis pada survei kepuasan dan bukti implementasinya",
             ],
 
-            // I1 - Sistem Penjaminan Mutu Internal
+            // I.1 - Sistem Penjaminan Mutu Internal
             [
-                'id_elemen' => $elemenMap['I1'] ?? null,
+                'id_elemen' => $elemenMap['I.1'] ?? null,
                 'id_jenis' => 1, // Kualitatif
                 'kode_indikator' => 'IK-4.1.1',
                 'deskripsi_indikator' => "UPPS dapat menunjukkan sistem penjaminan mutu internal tidak hanya dijalankan secara teknis, tetapi mendorong internalisasi budaya mutu yang berkelanjutan yang ditunjukkan sebagai berikut:
@@ -230,9 +230,9 @@ class IndikatorSeeder extends Seeder
                 (4) kebijakan dan dokumen survei dan umpan balik dari seluruh pengampu kepentingan yang tersistem dengan baik.",
             ],
 
-            // I2 - Implementasi Perbaikan Berkelanjutan
+            // I.2 - Implementasi Perbaikan Berkelanjutan
             [
-                'id_elemen' => $elemenMap['I2'] ?? null,
+                'id_elemen' => $elemenMap['I.2'] ?? null,
                 'id_jenis' => 1, // Kualitatif
                 'kode_indikator' => 'IK-4.2.1',
                 'deskripsi_indikator' => "Keterlaksanaan Sistem Penjaminan Mutu Internal (SPMI) yang memenuhi aspek berikut:
@@ -242,9 +242,9 @@ class IndikatorSeeder extends Seeder
                 (4) tersedianya bukti peningkatan standar.",
             ],
 
-            // I3 - Keterlibatan Pengampu Kepentingan dan Penjaminan Mutu Eksternal
+            // I.3 - Keterlibatan Pengampu Kepentingan dan Penjaminan Mutu Eksternal
             [
-                'id_elemen' => $elemenMap['I3'] ?? null,
+                'id_elemen' => $elemenMap['I.3'] ?? null,
                 'id_jenis' => 1, // Kualitatif
                 'kode_indikator' => 'IK-4.3.1',
                 'deskripsi_indikator' => "UPPS dan Program Studi dapat menunjukkan adanya keterlibatan pengampu kepentingan eksternal dalam penjaminan mutu untuk memastikan relevansi yang ditunjukkan dengan:
@@ -254,9 +254,9 @@ class IndikatorSeeder extends Seeder
                 (4) adanya pengakuan eksternal terhadap sistem sistem penjaminan mutu dan implementasinya yang ditunjukkan berupa pengakuan mutu dari lembaga audit eksternal, lembaga akreditasi, lembaga sertifikasi, atau lembaga pemeringkatan.",
             ],
 
-            // L1 - Sarana dan Prasarana Belajar
+            // L.1 - Sarana dan Prasarana Belajar
             [
-                'id_elemen' => $elemenMap['L1'] ?? null,
+                'id_elemen' => $elemenMap['L.1'] ?? null,
                 'id_jenis' => 1, // Kualitatif
                 'kode_indikator' => 'IK-5.1.1',
                 'deskripsi_indikator' => "Ketersediaan sarana dan prasarana belajar bagi mahasiswa yang ditandai dengan:
@@ -266,7 +266,7 @@ class IndikatorSeeder extends Seeder
                 (4) adanya program kerja untuk pemeliharaan dan peningkatan ketercukupan sarana dan prasarana belajar berbasis survei kepuasan dan kajian perkembangan keilmuan.",
             ],
             [
-                'id_elemen' => $elemenMap['L1'] ?? null,
+                'id_elemen' => $elemenMap['L.1'] ?? null,
                 'id_jenis' => 2, // Kuantitatif
                 'kode_indikator' => 'IKn-5.1.2',
                 'deskripsi_indikator' => "Program Studi dapat menunjukkan data:
@@ -275,9 +275,9 @@ class IndikatorSeeder extends Seeder
                 (3) rasio antara alat utama pembelajaran dan mahasiswa pengguna",
             ],
 
-            // L2 - Sumber Pengetahuan
+            // L.2 - Sumber Pengetahuan
             [
-                'id_elemen' => $elemenMap['L2'] ?? null,
+                'id_elemen' => $elemenMap['L.2'] ?? null,
                 'id_jenis' => 1, // Kualitatif
                 'kode_indikator' => 'IK-5.2.1',
                 'deskripsi_indikator' => "Ketersediaan sumber belajar bagi mahasiswa yang ditandai dengan:
@@ -287,9 +287,9 @@ class IndikatorSeeder extends Seeder
                 (4) adanya program kerja untuk pemeliharaan dan peningkatan ketersediaan sumber belajar berbasis survei kepuasan dan kajian perkembangan keilmuan.",
             ],
 
-            // L3 - Kepuasan Mahasiswa dan Alumni
+            // L.3 - Kepuasan Mahasiswa dan Alumni
             [
-                'id_elemen' => $elemenMap['L3'] ?? null,
+                'id_elemen' => $elemenMap['L.3'] ?? null,
                 'id_jenis' => 1, // Kualitatif
                 'kode_indikator' => 'IK-5.3.1',
                 'deskripsi_indikator' => "UPPS dan Program Studi perlu menunjukkan sistem umpan balik yang efektif dalam rangka memastikan proses belajar efektif yang ditandai dengan:
@@ -299,9 +299,9 @@ class IndikatorSeeder extends Seeder
                 (4) adanya program kerja sebagai tindak lanjut temuan dalam rangka peningkatan berkelanjutan.",
             ],
 
-            // L4 - Lulusan, Kajian Telusur, dan Kepuasan Pengguna
+            // L.4 - Lulusan, Kajian Telusur, dan Kepuasan Pengguna
             [
-                'id_elemen' => $elemenMap['L4'] ?? null,
+                'id_elemen' => $elemenMap['L.4'] ?? null,
                 'id_jenis' => 1, // Kualitatif
                 'kode_indikator' => 'IK-5.4.1',
                 'deskripsi_indikator' => "Ketersediaan sistem umpan balik yang efektif dalam rangka memastikan proses belajar efektif yang ditandai dengan:
@@ -311,9 +311,9 @@ class IndikatorSeeder extends Seeder
                 (4) adanya program kerja sebagai tindak lanjut temuan dalam rangka peningkatan berkelanjutan.",
             ],
 
-            // A1 - Organisasi dan Tata Kelola
+            // A.1 - Organisasi dan Tata Kelola
             [
-                'id_elemen' => $elemenMap['A1'] ?? null,
+                'id_elemen' => $elemenMap['A.1'] ?? null,
                 'id_jenis' => 1, // Kualitatif
                 'kode_indikator' => 'IK-6.1.1',
                 'deskripsi_indikator' => "Akuntabilitas publik yang ditandai dengan:
@@ -323,9 +323,9 @@ class IndikatorSeeder extends Seeder
                 (4) adanya prosedur eksekusi yang lengkpa dan dapat dibuktikan efektifitasnya dalam seluruh proses tridarma",
             ],
 
-            // A2 - Kerja Sama dan Kemitraan
+            // A.2 - Kerja Sama dan Kemitraan
             [
-                'id_elemen' => $elemenMap['A2'] ?? null,
+                'id_elemen' => $elemenMap['A.2'] ?? null,
                 'id_jenis' => 1, // Kualitatif
                 'kode_indikator' => 'IK-6.2.1',
                 'deskripsi_indikator' => "Kerjasama dan kemitraan efektif yang ditunjukkan:
@@ -335,7 +335,7 @@ class IndikatorSeeder extends Seeder
                 (4) terdapat bukti legalitas kemitraan setara (resiprokal) dalam bentuk gelar ganda dan sejenisnya yang berkelanjutan dan implementasinya.",
             ],
             [
-                'id_elemen' => $elemenMap['A2'] ?? null,
+                'id_elemen' => $elemenMap['A.2'] ?? null,
                 'id_jenis' => 2, // Kuantitatif
                 'kode_indikator' => 'IKn-6.2.2',
                 'deskripsi_indikator' => "Efektivitas kerjasama yang ditandai dengan data:
@@ -343,9 +343,9 @@ class IndikatorSeeder extends Seeder
                 (2) daftar kemitraan resiprokal dan rincian mahasiswa yang terlibat",
             ],
 
-            // A3 - Sistem dan Manajemen Informasi
+            // A.3 - Sistem dan Manajemen Informasi
             [
-                'id_elemen' => $elemenMap['A3'] ?? null,
+                'id_elemen' => $elemenMap['A.3'] ?? null,
                 'id_jenis' => 1, // Kualitatif
                 'kode_indikator' => 'IK-6.3.1',
                 'deskripsi_indikator' => "Efektifitas dan keandalan sistem yang ditunjukkan:
@@ -355,9 +355,9 @@ class IndikatorSeeder extends Seeder
                 (4) adanya program kerja dalam rangka pengembangan keandalan, integrasi, efektifitas sistem secara berkelanjutan.",
             ],
 
-            // A4 - Keselamatan dan Kesehatan Kerja serta Kelestarian Lingkungan
+            // A.4 - Keselamatan dan Kesehatan Kerja serta Kelestarian Lingkungan
             [
-                'id_elemen' => $elemenMap['A4'] ?? null,
+                'id_elemen' => $elemenMap['A.4'] ?? null,
                 'id_jenis' => 1, // Kualitatif
                 'kode_indikator' => 'IK-6.4.1',
                 'deskripsi_indikator' => "Efektifitas dan keandalan pengelolaan keamanan dan keselamatan kerja dan kelestarian lingkungan yang ditunjukkan:
@@ -367,9 +367,9 @@ class IndikatorSeeder extends Seeder
                 (4) adanya program kerja dalam rangka peningkatan keandalan dan efektifitas secara berkelanjutan berbasis umpan balik pengampu kepentingan dan/atau standar eksternal.",
             ],
 
-            // A5 - Keuangan, Keberlanjutan, dan Mitigasi Risiko
+            // A.5 - Keuangan, Keberlanjutan, dan Mitigasi Risiko
             [
-                'id_elemen' => $elemenMap['A5'] ?? null,
+                'id_elemen' => $elemenMap['A.5'] ?? null,
                 'id_jenis' => 1, // Kualitatif
                 'kode_indikator' => 'IK-6.5.1',
                 'deskripsi_indikator' => "Penilaian pembiayaan termasuk pembiayaan difokuskan:
@@ -379,9 +379,9 @@ class IndikatorSeeder extends Seeder
                 (4) adanya upaya untuk menjaga keseimbangan antara penerimaan dan pembiayaan agar terjaga keberlanjutannya termasuk di dalamnya upaya mengelola risiko dengan analisis yang sahih dan mitigasi yang adekuat.",
             ],
 
-            // R1 - Kebijakan Penelitian
+            // R.1 - Kebijakan Penelitian
             [
-                'id_elemen' => $elemenMap['R1'] ?? null,
+                'id_elemen' => $elemenMap['R.1'] ?? null,
                 'id_jenis' => 1, // Kualitatif
                 'kode_indikator' => 'IK-7.1.1',
                 'deskripsi_indikator' => "Relevansi kebijakan penelitian yang ditunjukkan:
@@ -391,9 +391,9 @@ class IndikatorSeeder extends Seeder
                 (4) adanya kaji ulang (review) terhadap keterlaksanaan program, hambatan, tingkat keberhasilan dan dampak.",
             ],
 
-            // R2 - Proses Penelitian
+            // R.2 - Proses Penelitian
             [
-                'id_elemen' => $elemenMap['R2'] ?? null,
+                'id_elemen' => $elemenMap['R.2'] ?? null,
                 'id_jenis' => 1, // Kualitatif
                 'kode_indikator' => 'IK-7.2.1',
                 'deskripsi_indikator' => "Efektifitas proses penelitian yang ditunjukkan dengan:
@@ -403,9 +403,9 @@ class IndikatorSeeder extends Seeder
                 (4) adanya diseminasi atas hasil penelitian dalam rangka menciptakan iklim akademik yang berkelanjutan",
             ],
 
-            // R3 - Luaran dan Dampak Penelitian
+            // R.3 - Luaran dan Dampak Penelitian
             [
-                'id_elemen' => $elemenMap['R3'] ?? null,
+                'id_elemen' => $elemenMap['R.3'] ?? null,
                 'id_jenis' => 1, // Kualitatif
                 'kode_indikator' => 'IK-7.3.1',
                 'deskripsi_indikator' => "Dampak atas luaran yang diukur melalui:
@@ -415,7 +415,7 @@ class IndikatorSeeder extends Seeder
                 (3) adanya pemanfaatan hasil penelitian atau karya inovasi dosen maupun mahasiswa yang menjadi modal kewirausahaan mahasiswa.",
             ],
             [
-                'id_elemen' => $elemenMap['R3'] ?? null,
+                'id_elemen' => $elemenMap['R.3'] ?? null,
                 'id_jenis' => 2, // Kuantitatif
                 'kode_indikator' => 'IKn-7.3.2',
                 'deskripsi_indikator' => "Cacah luaran baik berupa publikasi ilmiah atau karya inovatif yang relevan yang diukur melalui:
@@ -425,9 +425,9 @@ class IndikatorSeeder extends Seeder
                 (4) bobot penghargaan atas karya ilmiah/karya inovatif mahasiswa",
             ],
 
-            // R4 - Kebijakan Pengabdian kepada Masyarakat
+            // R.4 - Kebijakan Pengabdian kepada Masyarakat
             [
-                'id_elemen' => $elemenMap['R4'] ?? null,
+                'id_elemen' => $elemenMap['R.4'] ?? null,
                 'id_jenis' => 1, // Kualitatif
                 'kode_indikator' => 'IK-7.4.1',
                 'deskripsi_indikator' => "Relevansi kebijakan program pengabdian kepada masyarakat (PkM) yang ditunjukkan:
@@ -437,9 +437,9 @@ class IndikatorSeeder extends Seeder
                 (4) adanya kaji ulang (review) terhadap keterlaksanaan program, hambatan, tingkat keberhasilan dan dampak.",
             ],
 
-            // R5 - Proses Pengabdian kepada Masyarakat
+            // R.5 - Proses Pengabdian kepada Masyarakat
             [
-                'id_elemen' => $elemenMap['R5'] ?? null,
+                'id_elemen' => $elemenMap['R.5'] ?? null,
                 'id_jenis' => 1, // Kualitatif
                 'kode_indikator' => 'IK-7.5.1',
                 'deskripsi_indikator' => "Efektifitas proses pengabdian kepada masyarakat (PkM) yang ditunjukkan dengan:
@@ -449,9 +449,9 @@ class IndikatorSeeder extends Seeder
                 (4) adanya diseminasi atas hasil (PkM) dalam rangka menciptakan iklim akademik yang berkelanjutan",
             ],
 
-            // R6 - Luaran dan Dampak Pengabdian kepada Masyarakat
+            // R.6 - Luaran dan Dampak Pengabdian kepada Masyarakat
             [
-                'id_elemen' => $elemenMap['R6'] ?? null,
+                'id_elemen' => $elemenMap['R.6'] ?? null,
                 'id_jenis' => 1, // Kualitatif
                 'kode_indikator' => 'IK-7.6.1',
                 'deskripsi_indikator' => "Dampak atas luaran pengabdian kepada masyarakat (PkM) yang diukur melalui:
@@ -461,7 +461,7 @@ class IndikatorSeeder extends Seeder
                 (3) adanya pemanfaatan hasil PkM dosen maupun mahasiswa yang menjadi modal wirausaha sosial mahasiswa.",
             ],
             [
-                'id_elemen' => $elemenMap['R6'] ?? null,
+                'id_elemen' => $elemenMap['R.6'] ?? null,
                 'id_jenis' => 2, // Kuantitatif
                 'kode_indikator' => 'IKn-7.6.2',
                 'deskripsi_indikator' => "Cacah kegiatan yang relevan yang diukur melalui:

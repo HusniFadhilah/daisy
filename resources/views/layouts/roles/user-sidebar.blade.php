@@ -1,12 +1,17 @@
 <!-- Penawaran Asesmen -->
-<a href="#" class="nav-link" onclick="toggleSubmenu(event, 'penawaran-submenu')">
+<a href="{{ route('penawaran') }}" class="nav-link {{ request()->routeIs('penawaran') ? 'active' : '' }}">
+    <span class="menu-icon">📨</span>
+    <span>Penawaran Asesmen</span>
+</a>
+
+{{-- <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'penawaran-submenu')">
     <span class="menu-icon">📨</span>
     <span>Penawaran Asesmen</span>
     <span class="badge bg-danger menu-badge">{{ $penawaranBaru ?? 2 }}</span>
 </a>
 <ul class="submenu nav flex-column" id="penawaran-submenu">
     <li>
-        <a href="{{ route('penawaran.baru') }}" class="nav-link">
+        <a href="{{ route('asesmen.index') }}" class="nav-link">
             Daftar Penawaran Baru
         </a>
     </li>
@@ -15,10 +20,10 @@
             Riwayat Penawaran
         </a>
     </li>
-</ul>
+</ul> --}}
 
 <!-- Penugasan Asesmen -->
-<a href="#" class="nav-link" onclick="toggleSubmenu(event, 'penugasan-submenu')">
+{{-- <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'penugasan-submenu')">
     <span class="menu-icon">📋</span>
     <span>Penugasan Asesmen</span>
     <span class="badge bg-success menu-badge">{{ $penugasanAktif ?? 1 }}</span>
@@ -39,10 +44,14 @@
             Riwayat Penugasan
         </a>
     </li>
-</ul>
+</ul> --}}
 
 <!-- Proses AK -->
-<a href="#" class="nav-link" onclick="toggleSubmenu(event, 'ak-submenu')">
+<a href="{{ route('ak.berkas') }}" class="nav-link {{ request()->routeIs('ak.berkas') ? 'active' : '' }}">
+    <span class="menu-icon">📝</span>
+    <span>Proses AK</span>
+</a>
+{{-- <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'ak-submenu')">
     <span class="menu-icon">📝</span>
     <span>Proses AK</span>
     <span class="badge bg-warning menu-badge">{{ $prosesAK ?? 1 }}</span>
@@ -68,10 +77,14 @@
             Status Validasi
         </a>
     </li>
-</ul>
+</ul> --}}
 
 <!-- Proses AL -->
-<a href="#" class="nav-link" onclick="toggleSubmenu(event, 'al-submenu')">
+<a href="{{ route('al.jadwal') }}" class="nav-link {{ request()->routeIs('al.jadwal') ? 'active' : '' }}">
+     <span class="menu-icon">🏢</span>
+    <span>Proses AL</span>
+</a>
+{{-- <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'al-submenu')">
     <span class="menu-icon">🏢</span>
     <span>Proses AL</span>
 </a>
@@ -96,7 +109,7 @@
             Laporan Asesmen
         </a>
     </li>
-</ul>
+</ul> --}}
 
 <!-- Penugasan Banding -->
 <a href="{{ route('banding') }}" class="nav-link {{ request()->routeIs('banding') ? 'active' : '' }}">

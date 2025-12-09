@@ -16,6 +16,36 @@ return new class extends Migration
             $table->foreignId('id_asesmen')->constrained('asesmens', 'id')->onDelete('cascade');
             $table->foreignId('id_user')->constrained('users', 'id')->onDelete('cascade');
             $table->foreignId('id_role')->constrained('roles', 'id')->onDelete('cascade');
+
+            // Status penawaran dan assignment
+            $table->enum('status_penawaran', [
+                'pending',      // Menunggu respon asesor/validator
+                'accepted',     // Diterima oleh asesor/validator
+                'rejected',     // Ditolak oleh asesor/validator
+            ])->default('pending');
+
+            // Tanggal respon
+            $table->timestamp('responded_at')->nullable();
+
+            // Catatan dari asesor/validator saat menerima/menolak
+            $table->text('response_note')->nullable();
+
+            // Status pekerjaan asesor
+            $table->enum('status_pekerjaan', [
+                'not_started',  // Belum mulai
+                'in_progress',  // Sedang dikerjakan
+                'submitted',    // Sudah submit
+                'validated',    // Sudah divalidasi (untuk asesor)
+                'revision_required',     // Perlu revisi
+                'approved',     // Disetujui final
+            ])->default('not_started');
+
+            // Tanggal submit penilaian
+            $table->timestamp('submitted_at')->nullable();
+
+            // Index untuk query cepat
+            $table->index('status_penawaran');
+            $table->index('status_pekerjaan');
             $table->timestamps();
         });
     }

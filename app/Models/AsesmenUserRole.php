@@ -9,7 +9,12 @@ class AsesmenUserRole extends Model
     protected $fillable = [
         'id_asesmen',
         'id_user',
-        'id_role'
+        'id_role',
+        'status_penawaran',
+        'responded_at',
+        'response_note',
+        'status_pekerjaan',
+        'submitted_at'
     ];
 
     public function asesmen()

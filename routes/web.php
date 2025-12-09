@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ValidasiController;
 use App\Http\Controllers\{AsesmenController, AuthController, DashboardController, PenawaranController, PenugasanController, AKController, ALController, BandingController, PedomanController, DokumenController, PanduanController, BantuanController, ProfileController, SettingsController, ActivityController, TaskController, PasswordResetController, LaporanController, UniversityController, DegreeLevelController, StudyProgramController, KriteriaController, ElemenStandarController, JenisIndikatorController, IndikatorController, IndikatorPenilaianElemenController};
 
 
@@ -48,12 +49,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // PENAWARAN ASESMEN
-    Route::prefix('penawaran')->name('penawaran.')->group(function () {
-        Route::get('/baru', [PenawaranController::class, 'baru'])->name('baru');
-        Route::get('/riwayat', [PenawaranController::class, 'riwayat'])->name('riwayat');
-        Route::get('/{id}', [PenawaranController::class, 'show'])->name('show');
-        Route::post('/{id}/terima', [PenawaranController::class, 'terima'])->name('terima');
-        Route::post('/{id}/tolak', [PenawaranController::class, 'tolak'])->name('tolak');
+    Route::prefix('penawaran')->name('penawaran')->group(function () {
+        Route::get('', [PenawaranController::class, 'penawaranIndex'])
+            ->name('.index');
+        Route::get('/riwayat', [PenawaranController::class, 'penawaranIndex'])
+            ->name('.riwayat');
+        Route::post('/{id}/accept', [PenawaranController::class, 'acceptPenawaran'])
+            ->name('.accept');
+        Route::post('/{id}/reject', [PenawaranController::class, 'rejectPenawaran'])
+            ->name('.reject');
     });
 
     // PENUGASAN ASESMEN
@@ -71,7 +75,34 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/berkas', [AKController::class, 'berkas'])->name('berkas');
         Route::get('/berkas/{id}', [AKController::class, 'showBerkas'])->name('berkas.show');
         Route::post('/berkas/{id}/nilai', [AKController::class, 'simpanNilai'])->name('berkas.nilai');
+        Route::get('/berkas/{id}/template', [AKController::class, 'downloadTemplate'])
+            ->name('berkas.template');
+        Route::get('/berkas/{id}/export', [AKController::class, 'exportExcel'])
+            ->name('berkas.export');
+        Route::post('/berkas/{id}/import', [AKController::class, 'importExcel'])
+            ->name('berkas.import');
+        Route::get('/import-status/{id}', [AKController::class, 'checkImportStatus'])
+            ->name('import.status');
+        Route::post('/berkas/{id}/submit', [AKController::class, 'submitPenilaian'])
+            ->name('berkas.submit');
+        Route::post('/berkas/{id}/unsubmit', [AKController::class, 'unsubmitPenilaian'])
+            ->name('berkas.unsubmit');
+        Route::get('/berkas/{id}/import-history', [AKController::class, 'importHistory'])
+            ->name('berkas.import-history');
+        Route::delete('/berkas/{id}/reset-all', [AKController::class, 'resetAllPenilaian'])
+            ->name('berkas.reset-all');
 
+        Route::prefix('validasi')->name('validasi.')->middleware(['auth'])->group(function () {
+            Route::get('/', [ValidasiController::class, 'dashboard'])->name('dashboard');
+            Route::get('/{asesmenId}/asesor/{asesor1Id}/{asesor2Id?}', [ValidasiController::class, 'asesor'])->name('asesor');
+            Route::get('/{asesmenId}/elemen/{elemenId}/detail', [ValidasiController::class, 'getElemenDetail'])->name('elemen.detail');
+            Route::post('/{asesmenId}/elemen/{elemenId}/validate', [ValidasiController::class, 'validateElemen'])->name('elemen.validate');
+            Route::post('/{asesmenId}/validate-agreed', [ValidasiController::class, 'validateAgreed'])->name('validate-agreed');
+            Route::post('/{asesmenId}/asesor/{asesorId}/approve', [ValidasiController::class, 'approveAll'])->name('approve');
+            Route::get('/{asesmenId}/export-comparison/{asesor1Id}/{asesor2Id}', [ValidasiController::class, 'exportComparison'])->name('export-comparison');
+        });
+
+        //tdk terpakai
         Route::get('/split', [AKController::class, 'split'])->name('split');
         Route::get('/split/{id}', [AKController::class, 'showSplit'])->name('split.show');
         Route::post('/split/{id}/rekonsiliasi', [AKController::class, 'rekonsiliasi'])->name('split.rekonsiliasi');
@@ -84,35 +115,43 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/validasi/{id}', [AKController::class, 'showValidasi'])->name('validasi.show');
     });
 
+    // PENAWARAN ASESMEN
+    Route::prefix('penawaran')->name('penawaran')->group(function () {
+        Route::get('/', [PenawaranController::class, 'index']);
+        Route::post('/{id}/accept', [PenawaranController::class, 'acceptPenawaran'])
+            ->name('.accept');
+        Route::post('/{id}/reject', [PenawaranController::class, 'rejectPenawaran'])
+            ->name('.reject');
+    });
+
     Route::resource('asesmen', AsesmenController::class);
     Route::resource('kriteria', KriteriaController::class);
     Route::resource('elemen', ElemenStandarController::class);
     Route::resource('jenis-indikator', JenisIndikatorController::class);
     Route::resource('indikator', IndikatorController::class);
 
-    // Dashboard Overview
-    Route::get('/asesmen/dashboard', [AsesmenController::class, 'dashboard'])
-        ->name('asesmen.dashboard');
 
     // CRUD Assessment
     Route::resource('asesmen', AsesmenController::class);
-
-    // Assignment Management (AJAX Endpoints)
-    Route::post('/asesmen/{id}/assign-user', [AsesmenController::class, 'assignUser'])
-        ->name('asesmen.assign-user');
-
-    Route::post('/asesmen/{id}/bulk-assign', [AsesmenController::class, 'bulkAssign'])
-        ->name('asesmen.bulk-assign');
-
-    Route::post('/asesmen/{id}/update-role', [AsesmenController::class, 'updateUserRole'])
-        ->name('asesmen.update-role');
-
-    Route::delete('/asesmen/{id}/remove-user/{userId}', [AsesmenController::class, 'removeUser'])
-        ->name('asesmen.remove-user');
-
-    // Search Users (AJAX)
-    Route::get('/asesmen/search-users', [AsesmenController::class, 'searchUsers'])
-        ->name('asesmen.search-users');
+    // Dashboard Overview
+    Route::prefix('asesmen')->name('asesmen')->group(function () {
+        Route::get('/dashboard', [AsesmenController::class, 'dashboard'])
+            ->name('.dashboard');
+        // Assignment Management (AJAX Endpoints)
+        Route::post('/{id}/assign-user', [AsesmenController::class, 'assignUser'])
+            ->name('.assign-user');
+        Route::post('/{id}/bulk-assign', [AsesmenController::class, 'bulkAssign'])
+            ->name('.bulk-assign');
+        Route::post('/{id}/update-role', [AsesmenController::class, 'updateUserRole'])
+            ->name('.update-role');
+        Route::delete('/{id}/remove-user/{userId}', [AsesmenController::class, 'removeUser'])
+            ->name('.remove-user');
+        // Search Users (AJAX)
+        Route::get('/search-users', [AsesmenController::class, 'searchUsers'])
+            ->name('.search-users');
+        Route::post('/{id}/send-documents', [AsesmenController::class, 'sendDocuments'])
+            ->name('.send-documents');
+    });
 
     // PROSES AL
     Route::prefix('al')->name('al.')->group(function () {
@@ -225,7 +264,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // MASTER DATA (Admin Only)
     Route::middleware('admin')->group(function () {
-        Route::get('/master-data', function() {
+        Route::get('/master-data', function () {
             return redirect()->route('master-data.index', ['tab' => 'universities']);
         });
         Route::get('/master-data/{tab?}', [UniversityController::class, 'masterData'])->name('master-data.index');

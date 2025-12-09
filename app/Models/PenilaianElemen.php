@@ -18,6 +18,11 @@ class PenilaianElemen extends Model
         'skor',
         'komentar',
         'status',
+        'status_validasi',
+        'validated_by',
+        'validated_at',
+        'validation_note',
+        'revision_count'
     ];
 
     protected $casts = [

@@ -287,6 +287,71 @@
     </div>
 </div>
 
+
+{{-- Modal untuk Admin/DE mengirim kertas kerja dan panduan --}}
+{{-- Include di show.blade.php --}}
+
+<!-- Send Documents Modal -->
+<div class="modal fade" id="sendDocumentsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-send"></i> Kirim Kertas Kerja & Panduan Penilaian
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="sendDocumentsForm">
+                <input type="hidden" id="assignmentId" name="assignment_id">
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Informasi:</strong> Kirim link kertas kerja dan panduan penilaian kepada <strong id="recipientName"></strong> sebagai <strong id="recipientRole"></strong>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Link Kertas Kerja <span class="text-danger">*</span>
+                        </label>
+                        <input type="url" class="form-control" id="kertasKerjaLink" name="kertas_kerja_link" placeholder="https://docs.google.com/..." required>
+                        <small class="text-muted">
+                            Masukkan link Google Docs, Excel Online, atau platform lainnya
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Link Panduan Penilaian
+                        </label>
+                        <input type="url" class="form-control" id="panduanLink" name="panduan_link" placeholder="https://docs.google.com/...">
+                        <small class="text-muted">
+                            Opsional: Link ke panduan atau petunjuk penilaian
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Catatan Tambahan:</label>
+                        <textarea class="form-control" id="sendNote" name="send_note" rows="3" placeholder="Tambahkan catatan atau instruksi khusus..."></textarea>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <small>
+                            <i class="bi bi-exclamation-triangle"></i>
+                            <strong>Penting:</strong> Pastikan link dapat diakses oleh penerima (bukan private/restricted)
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-send"></i> Kirim Dokumen
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @push('styles')
 <style>
     .avatar-circle {
@@ -330,6 +395,64 @@
 <script>
     const idAsesmen = "{{ $asesmen->id }}";
     const csrfToken = '{{ csrf_token() }}';
+
+    function sendDocuments(assignmentId, userName, roleName) {
+        document.getElementById('assignmentId').value = assignmentId;
+        document.getElementById('recipientName').textContent = userName;
+        document.getElementById('recipientRole').textContent = roleName;
+        document.getElementById('kertasKerjaLink').value = '';
+        document.getElementById('panduanLink').value = '';
+        document.getElementById('sendNote').value = '';
+
+        new bootstrap.Modal(document.getElementById('sendDocumentsModal')).show();
+    }
+
+    document.getElementById('sendDocumentsForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData);
+
+        const btn = this.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mengirim...';
+
+        try {
+            const response = await fetch(`/asesmen/${idAsesmen}/send-documents`, {
+                method: 'POST'
+                , headers: {
+                    'Content-Type': 'application/json'
+                    , 'X-CSRF-TOKEN': csrfToken
+                    , 'Accept': 'application/json'
+                }
+                , body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                await Swal.fire({
+                    icon: 'success'
+                    , title: 'Berhasil!'
+                    , text: result.message
+                    , confirmButtonColor: '#28a745'
+                });
+
+                bootstrap.Modal.getInstance(document.getElementById('sendDocumentsModal')).hide();
+                location.reload();
+            } else {
+                throw new Error(result.message);
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: 'error'
+                , title: 'Error'
+                , text: error.message
+            });
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-send"></i> Kirim Dokumen';
+        }
+    });
 
     /**
      * Assign single user
