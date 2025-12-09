@@ -138,6 +138,35 @@
     </li>
 </ul>
 
+<!-- Manajemen Pengguna -->
+<a href="{{ route('users.index') }}" class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
+    <span class="menu-icon">👥</span>
+    <span>Kelola Pengguna</span>
+</a>
+
+<!-- Manajemen Indikator -->
+<a href="#" class="nav-link" onclick="toggleSubmenu(event, 'indikator-submenu')">
+    <span class="menu-icon">📋</span>
+    <span>Manajemen Indikator</span>
+</a>
+<ul class="submenu nav flex-column" id="indikator-submenu">
+    <li>
+        <a href="{{ route('kriteria.index') }}" class="nav-link {{ request()->routeIs('kriteria.*') ? 'active' : '' }}">
+            Kriteria
+        </a>
+    </li>
+    <li>
+        <a href="{{ route('elemen-standar.index') }}" class="nav-link {{ request()->routeIs('elemen-standar.*') ? 'active' : '' }}">
+            Elemen Standar
+        </a>
+    </li>
+    <li>
+        <a href="{{ route('indikator.index') }}" class="nav-link {{ request()->routeIs('indikator.*') && !request()->routeIs('indikator-penilaian.*') ? 'active' : '' }}">
+            Indikator
+        </a>
+    </li>
+</ul>
+
 <!-- Univ & Prodi -->
 <a href="{{ route('master-data.index') }}" class="nav-link {{ request()->routeIs('master-data.*') || request()->routeIs('universities.*') || request()->routeIs('study-programs.*') ? 'active' : '' }}">
     <span class="menu-icon">🏫</span>
