@@ -105,6 +105,9 @@ class StudyProgramController extends Controller
             'id_univ' => 'required|exists:universities,id',
             'id_level' => 'required|exists:degree_levels,id',
             'email' => 'nullable|email|max:255',
+            'peringkat_akreditasi' => 'nullable|string|max:255',
+            'tanggal_kadaluarsa' => 'nullable|date',
+            'status_kadaluarsa' => 'nullable|in:Aktif,Kadaluarsa,Belum Terakreditasi',
         ]);
 
         $studyProgram = StudyProgram::find($id);

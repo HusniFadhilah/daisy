@@ -138,7 +138,9 @@
                                     <th>Nama Program Studi</th>
                                     <th>Jenjang</th>
                                     <th>Universitas</th>
-                                    <th>Email</th>
+                                    <th>Peringkat</th>
+                                    <th>Status</th>
+                                    <th>Tanggal Kadaluarsa</th>
                                     <th>Aksi</th>
                                 </tr>
                             </thead>
@@ -154,7 +156,25 @@
                                         </span>
                                     </td>
                                     <td>{{ $program->university->name ?? '-' }}</td>
-                                    <td>{{ $program->email ?? '-' }}</td>
+                                    <td>
+                                        @if($program->peringkat_akreditasi)
+                                            <span class="badge bg-{{ $program->peringkat_akreditasi == 'A' ? 'success' : ($program->peringkat_akreditasi == 'B' ? 'primary' : 'warning') }}">
+                                                {{ $program->peringkat_akreditasi }}
+                                            </span>
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($program->status_kadaluarsa == 'Aktif')
+                                            <span class="badge bg-success">Aktif</span>
+                                        @elseif($program->status_kadaluarsa == 'Kadaluarsa')
+                                            <span class="badge bg-danger">Kadaluarsa</span>
+                                        @else
+                                            <span class="badge bg-secondary">Belum Terakreditasi</span>
+                                        @endif
+                                    </td>
+                                    <td>{{ $program->tanggal_kadaluarsa ? $program->tanggal_kadaluarsa->format('d/m/Y') : '-' }}</td>
                                     <td>
                                         <div class="btn-group" role="group">
                                             <a href="{{ route('study-programs.edit', $program->id) }}" 

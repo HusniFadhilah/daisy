@@ -12,6 +12,13 @@ class StudyProgram extends Model
         'id_univ',
         'id_level',
         'email',
+        'peringkat_akreditasi',
+        'tanggal_kadaluarsa',
+        'status_kadaluarsa',
+    ];
+
+    protected $casts = [
+        'tanggal_kadaluarsa' => 'date',
     ];
 
     public function university()

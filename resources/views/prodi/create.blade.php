@@ -97,6 +97,48 @@
                     @enderror
                 </div>
 
+                <div class="mb-3">
+                    <label for="peringkat_akreditasi" class="form-label">Peringkat Akreditasi</label>
+                    <select class="form-select @error('peringkat_akreditasi') is-invalid @enderror" 
+                            id="peringkat_akreditasi" 
+                            name="peringkat_akreditasi">
+                        <option value="">-- Pilih Peringkat --</option>
+                        <option value="A" {{ old('peringkat_akreditasi') == 'A' ? 'selected' : '' }}>A (Unggul)</option>
+                        <option value="B" {{ old('peringkat_akreditasi') == 'B' ? 'selected' : '' }}>B (Baik Sekali)</option>
+                        <option value="C" {{ old('peringkat_akreditasi') == 'C' ? 'selected' : '' }}>C (Baik)</option>
+                        <option value="Tidak Terakreditasi" {{ old('peringkat_akreditasi') == 'Tidak Terakreditasi' ? 'selected' : '' }}>Tidak Terakreditasi</option>
+                    </select>
+                    @error('peringkat_akreditasi')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="mb-3">
+                    <label for="tanggal_kadaluarsa" class="form-label">Tanggal Kadaluarsa</label>
+                    <input type="date" 
+                           class="form-control @error('tanggal_kadaluarsa') is-invalid @enderror" 
+                           id="tanggal_kadaluarsa" 
+                           name="tanggal_kadaluarsa" 
+                           value="{{ old('tanggal_kadaluarsa') }}">
+                    @error('tanggal_kadaluarsa')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="mb-3">
+                    <label for="status_kadaluarsa" class="form-label">Status Kadaluarsa</label>
+                    <select class="form-select @error('status_kadaluarsa') is-invalid @enderror" 
+                            id="status_kadaluarsa" 
+                            name="status_kadaluarsa">
+                        <option value="Belum Terakreditasi" {{ old('status_kadaluarsa') == 'Belum Terakreditasi' ? 'selected' : '' }}>Belum Terakreditasi</option>
+                        <option value="Aktif" {{ old('status_kadaluarsa') == 'Aktif' ? 'selected' : '' }}>Aktif</option>
+                        <option value="Kadaluarsa" {{ old('status_kadaluarsa') == 'Kadaluarsa' ? 'selected' : '' }}>Kadaluarsa</option>
+                    </select>
+                    @error('status_kadaluarsa')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
                 <div class="d-flex gap-2">
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save"></i> Simpan
