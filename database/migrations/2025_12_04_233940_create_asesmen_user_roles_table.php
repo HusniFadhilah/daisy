@@ -43,6 +43,10 @@ return new class extends Migration
             // Tanggal submit penilaian
             $table->timestamp('submitted_at')->nullable();
 
+            $table->timestamp('approved_at')->nullable();
+            $table->foreignId('approved_by')->nullable()
+                ->constrained('users', 'id')
+                ->onDelete('set null');
             // Index untuk query cepat
             $table->index('status_penawaran');
             $table->index('status_pekerjaan');

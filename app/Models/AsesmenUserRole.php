@@ -14,7 +14,9 @@ class AsesmenUserRole extends Model
         'responded_at',
         'response_note',
         'status_pekerjaan',
-        'submitted_at'
+        'submitted_at',
+        'approved_at',
+        'approved_by'
     ];
 
     public function asesmen()

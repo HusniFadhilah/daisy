@@ -40,10 +40,29 @@ class PenawaranController extends Controller
             ->whereIn('status_penawaran', ['accepted', 'rejected'])
             ->with(['asesmen', 'role'])
             ->orderBy('responded_at', 'desc')
-            ->limit(10)
             ->get();
 
         return view('asesmen.ak.penawaran.index', compact('penawarans', 'riwayat'));
+    }
+
+    public function cekPenawaran($id)
+    {
+        $user = Auth::user();
+
+        $asesmen = Asesmen::findOrFail($id);
+
+        $penawaran = AsesmenUserRole::where('id_asesmen', $id)
+            ->where('id_user', $user->id)
+            ->with('role', 'asesmen')
+            ->firstOrFail();
+
+        // Kalau sudah accepted, langsung redirect ke berkas (biar tidak bolak-balik ke sini)
+        if ($penawaran->status_penawaran === 'accepted') {
+            return redirect()->route('ak.berkas.show', $id);
+        }
+
+        // status: pending / rejected → tampilkan halaman "detail penawaran"
+        return view('asesmen.ak.penawaran.detail', compact('asesmen', 'penawaran'));
     }
 
     /**

@@ -10,7 +10,6 @@ class ValidasiPenilaian extends Model
     use HasFactory;
 
     protected $table = 'validasi_penilaian';
-    protected $primaryKey = 'id_validasi';
 
     protected $fillable = [
         'id_penilaian',
@@ -18,11 +17,11 @@ class ValidasiPenilaian extends Model
         'status_validasi',
         'skor_final',
         'catatan_validator',
-        'tanggal_validasi',
+        'validated_at',
     ];
 
     protected $casts = [
-        'tanggal_validasi' => 'datetime',
+        'validated_at' => 'datetime',
     ];
 
     /**
@@ -66,7 +65,7 @@ class ValidasiPenilaian extends Model
      */
     public function scopeNeedsRevision($query)
     {
-        return $query->where('status_validasi', 'revision_needed');
+        return $query->where('status_validasi', 'revision_required');
     }
 
     /**
@@ -91,7 +90,7 @@ class ValidasiPenilaian extends Model
         $badges = [
             'not_validated' => ['class' => 'bg-secondary', 'text' => 'Belum Validasi'],
             'validated' => ['class' => 'bg-success', 'text' => 'Disetujui'],
-            'revision_needed' => ['class' => 'bg-warning', 'text' => 'Perlu Revisi'],
+            'revision_required' => ['class' => 'bg-warning', 'text' => 'Perlu Revisi'],
         ];
 
         return $badges[$this->status_validasi] ?? $badges['not_validated'];
@@ -116,6 +115,6 @@ class ValidasiPenilaian extends Model
      */
     public function needsRevision()
     {
-        return $this->status_validasi === 'revision_needed';
+        return $this->status_validasi === 'revision_required';
     }
 }

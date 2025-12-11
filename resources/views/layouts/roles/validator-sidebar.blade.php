@@ -1,5 +1,5 @@
 <!-- Penawaran Asesmen -->
-<a href="{{ route('penawaran') }}" class="nav-link {{ request()->routeIs('penawaran') ? 'active' : '' }}">
+<a href="{{ route('penawaran') }}" class="nav-link {{ request()->routeIs('penawaran*') ? 'active' : '' }}">
     <span class="menu-icon">📨</span>
     <span>Penawaran Asesmen</span>
 </a>
@@ -47,7 +47,7 @@
 </ul> --}}
 
 <!-- Proses AK -->
-<a href="{{ route('ak.berkas') }}" class="nav-link {{ request()->routeIs('ak.berkas') ? 'active' : '' }}">
+<a href="{{ route('ak.validasi.index') }}" class="nav-link {{ request()->routeIs('ak*') ? 'active' : '' }}">
     <span class="menu-icon">📝</span>
     <span>Proses AK</span>
 </a>
@@ -81,7 +81,7 @@
 
 <!-- Proses AL -->
 <a href="{{ route('al.jadwal') }}" class="nav-link {{ request()->routeIs('al.jadwal') ? 'active' : '' }}">
-     <span class="menu-icon">🏢</span>
+    <span class="menu-icon">🏢</span>
     <span>Proses AL</span>
 </a>
 {{-- <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'al-submenu')">
@@ -91,24 +91,24 @@
 <ul class="submenu nav flex-column" id="al-submenu">
     <li>
         <a href="{{ route('al.jadwal') }}" class="nav-link">
-            Jadwal Visitasi
-        </a>
-    </li>
-    <li>
-        <a href="{{ route('al.dokumen') }}" class="nav-link">
-            Dokumen AL
-        </a>
-    </li>
-    <li>
-        <a href="{{ route('al.upload') }}" class="nav-link">
-            Upload Hasil AL
-        </a>
-    </li>
-    <li>
-        <a href="{{ route('al.laporan') }}" class="nav-link">
-            Laporan Asesmen
-        </a>
-    </li>
+Jadwal Visitasi
+</a>
+</li>
+<li>
+    <a href="{{ route('al.dokumen') }}" class="nav-link">
+        Dokumen AL
+    </a>
+</li>
+<li>
+    <a href="{{ route('al.upload') }}" class="nav-link">
+        Upload Hasil AL
+    </a>
+</li>
+<li>
+    <a href="{{ route('al.laporan') }}" class="nav-link">
+        Laporan Asesmen
+    </a>
+</li>
 </ul> --}}
 
 <!-- Penugasan Banding -->

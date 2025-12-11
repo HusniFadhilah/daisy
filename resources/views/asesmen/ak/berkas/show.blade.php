@@ -4,266 +4,59 @@
 
 @push('styles')
 <style>
-    :root {
-        --primary: #932136;
-        --secondary: #870820;
-        --success: #4caf50;
-        --warning: #ff9800;
-        --danger: #f44336;
-        --info: #2196f3;
+    .highlight-revision {
+        animation: pulseRevision 1s ease-in-out 3;
+        border: 2px solid #ff9800 !important;
     }
 
-    /* Keep all existing styles from original file */
-    .header-card {
-        background: white;
-        border: none;
-        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
-        border-radius: 12px;
+    @keyframes pulseRevision {
+
+        0%,
+        100% {
+            background-color: #fff3e0;
+            transform: scale(1);
+        }
+
+        50% {
+            background-color: #ffe0b2;
+            transform: scale(1.01);
+        }
     }
 
-    .progress-wrapper {
-        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-        color: white;
-        padding: 30px;
-        border-radius: 12px;
+    /* Panduan Penilaian Table */
+    .panduan-penilaian-wrapper .table {
+        font-size: 13px;
     }
 
-    .progress {
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 10px;
-        height: 20px;
+    .panduan-penilaian-wrapper .table td {
+        padding: 12px;
+        vertical-align: top;
     }
 
-    .progress-bar {
-        background: var(--light) !important;
-        border-radius: 10px;
-        transition: width 0.5s ease;
+    .panduan-penilaian-wrapper .table tbody tr:hover {
+        background-color: #f8f9fa;
     }
 
-    .stat-circle {
-        background: rgba(255, 255, 255, 0.15);
-        border-radius: 50%;
-        width: 120px;
-        height: 120px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto;
+    .penilaian-desc {
+        line-height: 1.6;
+        white-space: pre-line;
     }
 
-    .circle-content h2 {
-        color: white;
+    /* Badge skor dalam tabel */
+    .panduan-penilaian-wrapper .badge {
         font-weight: 700;
-    }
-
-    /* Kriteria Card */
-    .kriteria-card {
-        border: 2px solid #e0e0e0;
-        border-radius: 12px;
-        overflow: hidden;
-        transition: all 0.3s ease;
-    }
-
-    .kriteria-card:hover {
-        border-color: var(--primary);
-        box-shadow: 0 5px 20px rgba(147, 33, 54, 0.15);
-    }
-
-    .kriteria-header {
-        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-        border: none;
-        padding: 15px 20px;
-    }
-
-    .kriteria-btn {
-        color: white;
-        text-decoration: none;
-        font-size: 16px;
-        font-weight: 600;
-        width: 100%;
-        text-align: left;
-        padding: 0;
-    }
-
-    .kriteria-btn:hover {
-        color: white;
-    }
-
-    .kriteria-progress {
-        font-size: 14px;
-        padding: 6px 12px;
-    }
-
-    /* Elemen Card */
-    .elemen-card {
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-    }
-
-    .elemen-header {
-        background: #f8f9fa;
-        border: none;
-        padding: 12px 15px;
-    }
-
-    .elemen-btn {
-        color: #333;
-        text-decoration: none;
-        font-size: 15px;
-        width: 100%;
-        text-align: left;
-        padding: 0;
-    }
-
-    .elemen-btn:hover {
-        color: var(--primary);
-    }
-
-    .elemen-progress {
-        font-size: 12px;
-        padding: 4px 10px;
-    }
-
-    /* Indikator Card */
-    .indikator-card {
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-        transition: all 0.3s ease;
-    }
-
-    .indikator-card:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-
-    .indikator-card.has-penilaian {
-        border-left: 4px solid var(--success);
-    }
-
-    /* Form Styling */
-    .form-select:focus,
-    .form-control:focus {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 0.2rem rgba(147, 33, 54, 0.25);
-    }
-
-    .skor-select option {
-        padding: 10px;
-    }
-
-    .komentar-textarea {
-        resize: vertical;
-        min-height: 100px;
-    }
-
-    /* Chevron Animation */
-    .chevron-icon {
-        transition: transform 0.3s ease;
-    }
-
-    .collapsed .chevron-icon {
-        transform: rotate(0deg);
-    }
-
-    button[aria-expanded="true"] .chevron-icon {
-        transform: rotate(90deg);
-    }
-
-    /* Floating Action Button */
-    .floating-actions {
-        position: fixed;
-        bottom: 30px;
-        right: 30px;
-        z-index: 1000;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .btn-floating {
-        width: 56px;
-        height: 56px;
-        border-radius: 50%;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-        transition: all 0.3s ease;
-    }
-
-    .btn-floating:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-    }
-
-    /* Loading Overlay */
-    .loading-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.7);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-    }
-
-    .loading-overlay.show {
-        display: flex;
-    }
-
-    .spinner-border {
-        width: 1rem;
-        height: 1rem;
-        border-width: 0.3em;
-    }
-
-    /* NEW: Action Buttons Bar */
-    .action-buttons-bar {
-        position: sticky;
-        top: 0;
-        z-index: 100;
-        background: white;
-        padding: 15px 0;
-        border-bottom: 2px solid #e0e0e0;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    }
-
-    .btn-action-group {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
+        min-width: 50px;
     }
 
     /* Responsive */
     @media (max-width: 768px) {
-        .stat-circle {
-            width: 100px;
-            height: 100px;
+        .panduan-penilaian-wrapper .table {
+            font-size: 11px;
         }
 
-        .circle-content h2 {
-            font-size: 1.5rem;
-        }
-
-        .kriteria-btn,
-        .elemen-btn {
-            font-size: 14px;
-        }
-
-        .floating-actions {
-            bottom: 20px;
-            right: 20px;
-        }
-
-        .btn-action-group {
-            flex-direction: column;
-        }
-
-        .btn-action-group .btn {
-            width: 100%;
+        .panduan-penilaian-wrapper .badge {
+            font-size: 12px !important;
+            padding: 4px 8px !important;
         }
     }
 
@@ -271,9 +64,9 @@
 @endpush
 
 @section('content')
-<div class="container-fluid py-4">
+<div class="container-fluid py-3">
     <!-- Header Card -->
-    <div class="card mb-4 header-card">
+    <div class="card mb-4">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
@@ -323,21 +116,14 @@
                     @php
                     $assignment = $asesmen->userRoles->where('id_user', Auth::id())->first();
                     $statusPekerjaan = $assignment->status_pekerjaan ?? 'not_started';
-                    $isSubmitted = $statusPekerjaan === 'submitted';
+                    $isSubmittedOnly = $statusPekerjaan === 'submitted';
+                    $isSubmitted = isset($assignment) && in_array($statusPekerjaan, ['submitted', 'approved', 'validated']);
                     $isApproved = $statusPekerjaan === 'approved';
-                    $needsRevision = $statusPekerjaan === 'revision';
+                    $needsRevision = $statusPekerjaan === 'revision_required';
                     @endphp
 
-                    @if($needsRevision)
-                    <div class="alert alert-warning mb-3">
-                        <i class="bi bi-exclamation-triangle me-2"></i>
-                        <strong>Perlu Revisi!</strong> Validator meminta Anda untuk merevisi beberapa penilaian.
-                        Silakan periksa catatan validasi dan lakukan perbaikan.
-                    </div>
-                    @endif
-
-                    @if($isSubmitted && !$isApproved)
-                    <div class="alert alert-info alert-permanent mb-3">
+                    @if($isSubmittedOnly && !$isApproved)
+                    <div class="alert alert-info alert-permanent alert-dismissible mb-3">
                         <i class="bi bi-info-circle me-2"></i>
                         <strong>Sudah Di-Submit!</strong> Penilaian Anda sedang menunggu validasi dari validator.
                         <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="btnUnsubmit">
@@ -347,83 +133,88 @@
                     @endif
 
                     @if($isApproved)
-                    <div class="alert alert-success alert-permanent  mb-3">
+                    <div class="alert alert-success alert-permanent alert-dismissible mb-3">
                         <i class="bi bi-check-circle me-2"></i>
                         <strong>Penilaian Disetujui!</strong> Penilaian Anda telah divalidasi dan disetujui oleh validator.
                         Asesmen siap dilanjutkan ke tahap AL.
                     </div>
                     @endif
 
-                    <div class="d-flex justify-content-between flex-wrap gap-2">
-                        {{-- Submit Button --}}
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3">
+
+                        <!-- Finalisasi -->
                         <div>
-                            @if(!$isSubmitted && !$isApproved)
-                            <button type="button" class="btn btn-success btn-md" id="btnSubmit">
+                            @if(!$isSubmittedOnly && !$isApproved)
+                            <button class="btn btn-success w-md-100 w-md-auto" id="btnSubmit">
                                 <i class="bi bi-check-circle"></i> Finalisasi dan Kirim
                             </button>
+
                             <small class="d-block text-muted mt-1">
                                 <i class="bi bi-info-circle"></i>
                                 Pastikan semua elemen sudah dinilai sebelum mengirim
                             </small>
-                            @elseif($isSubmitted)
-                            <button type="button" class="btn btn-secondary btn-md" disabled>
+
+                            @elseif($isSubmittedOnly)
+                            <button class="btn btn-secondary w-100 w-md-auto" disabled>
                                 <i class="bi bi-clock-history"></i> Menunggu Validasi
                             </button>
+
                             @else
-                            <button type="button" class="btn btn-success btn-md" disabled>
+                            <button class="btn btn-success w-100 w-md-auto" disabled>
                                 <i class="bi bi-check-all"></i> Penilaian Disetujui
                             </button>
                             @endif
                         </div>
 
-                        {{-- Excel Actions (Dropdown Group) --}}
-                        <div class="btn-group">
-                            <div class="btn-group" role="group">
-                                <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="bi bi-download"></i> Download Excel
-                                </button>
+                        <!-- Excel Buttons -->
+                        <div class="btn-group flex-wrap w-md-100 w-md-auto">
 
-                                <ul class="dropdown-menu">
-                                    <li>
-                                        <h6 class="dropdown-header">
-                                            <i class="bi bi-file-earmark-excel"></i> Pilih Jenis Download
-                                        </h6>
-                                    </li>
-                                    <li>
-                                        <hr class="dropdown-divider">
-                                    </li>
-
-                                    <li>
-                                        <a class="dropdown-item" href="#" id="btnDownloadTemplate">
-                                            <i class="bi bi-file-earmark-text text-info"></i>
-                                            Download Template (Kosong)
-                                            <small class="d-block text-muted">Format Excel untuk import</small>
-                                        </a>
-                                    </li>
-
-                                    <li>
-                                        <a class="dropdown-item" href="#" id="btnDownloadData">
-                                            <i class="bi bi-file-earmark-excel text-success"></i>
-                                            Download Hasil Penilaian
-                                            <small class="d-block text-muted">Excel berisi penilaian Anda</small>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-
-                            <button type="button" class="btn btn-outline-primary btn-md" id="btnImport" {{ $isSubmitted || $isApproved ? 'disabled' : '' }}>
-                                <i class="bi bi-upload"></i> Import Excel
+                            <!-- Download -->
+                            <button class="btn btn-primary dropdown-toggle flex-grow-1 flex-md-grow-0" data-bs-toggle="dropdown">
+                                <i class="bi bi-download"></i> Download Excel
                             </button>
 
-                            <button type="button" class="btn btn-outline-secondary btn-md" id="btnImportHistory">
+                            <ul class="dropdown-menu">
+                                <li class="dropdown-header">
+                                    <i class="bi bi-file-earmark-excel"></i> Pilih Jenis Excel
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+
+                                <li>
+                                    <a class="dropdown-item" id="btnDownloadTemplate">
+                                        <i class="bi bi-file-earmark-text text-info"></i> Download Template
+                                        <small class="d-block text-muted">Format Excel untuk import</small>
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a class="dropdown-item" id="btnDownloadData">
+                                        <i class="bi bi-file-earmark-excel text-success"></i> Hasil Penilaian
+                                        <small class="d-block text-muted">Data Excel penilaian</small>
+                                    </a>
+                                </li>
+                            </ul>
+
+                            <!-- Upload -->
+                            <button class="btn btn-outline-primary" id="btnImport" {{ $isSubmittedOnly || $isApproved ? 'disabled' : '' }}>
+                                <i class="bi bi-upload"></i> Upload Excel
+                            </button>
+
+                            <!-- History -->
+                            <button class="btn btn-outline-secondary" id="btnImportHistory">
                                 <i class="bi bi-clock-history"></i>
                             </button>
 
-                            <button type="button" class="btn btn-outline-danger btn-md" id="btnResetAll" {{ $isSubmitted || $isApproved ? 'disabled' : '' }} title="Reset Semua Penilaian">
+                            <!-- Reset -->
+                            <button class="btn btn-outline-danger" id="btnResetAll" {{ $isSubmittedOnly || $isApproved ? 'disabled' : '' }}>
                                 <i class="bi bi-trash"></i> Reset All
                             </button>
+
                         </div>
                     </div>
+
 
                     {{-- Progress Summary --}}
                     <div class="mt-3 p-3 bg-light rounded">
@@ -451,12 +242,82 @@
         </div>
     </div>
 
+    @if($needsRevisions->count() > 0)
+    <div class="card mb-4 border-warning">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0">
+                <i class="bi bi-exclamation-triangle"></i>
+                Permintaan Revisi dari Validator ({{ $needsRevisions->count() }} Elemen)
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-warning alert-permanent alert-dismissible mb-3">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>Validator meminta Anda merevisi beberapa penilaian.</strong>
+                Silakan perhatikan catatan validator di bawah dan lakukan perbaikan.
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="10%">Kriteria</th>
+                            <th width="10%">Kode Elemen</th>
+                            <th width="25%">Elemen Standar</th>
+                            <th width="10%">Skor Anda</th>
+                            <th width="35%">Catatan Validator</th>
+                            <th width="10%">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($needsRevisions as $revisi)
+                        <tr>
+                            <td>
+                                <span class="badge bg-primary">
+                                    {{ $revisi->elemen->kriteria->kode_kriteria }}
+                                </span>
+                            </td>
+                            <td>
+                                <strong>{{ $revisi->elemen->kode_elemen }}</strong>
+                            </td>
+                            <td>
+                                <small>{{ Str::limit($revisi->elemen->pernyataan_elemen, 80) }}</small>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-secondary">{{ $revisi->skor }}</span>
+                            </td>
+                            <td>
+                                <div class="alert alert-light alert-permanent mb-0 p-2">
+                                    <small class="text-danger">
+                                        <i class="bi bi-chat-left-quote"></i>
+                                        "{{ $revisi->catatan_validator }}"
+                                    </small>
+                                </div>
+                                <small class="text-muted">
+                                    <i class="bi bi-clock"></i>
+                                    {{ \App\Libraries\Date::tglWaktu($revisi->validated_at) }}
+                                </small>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-warning btn-buka-revisi" data-elemen-id="{{ $revisi->id_elemen }}" data-kriteria-id="{{ $revisi->elemen->kriteria->id }}">
+                                    <i class="bi bi-pencil"></i> Buka & Revisi
+                                </button>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <!-- ========== HEATMAP MATRIX (ENHANCED) ========== -->
     @include('asesmen.ak.components.heatmap-matrix')
 
     <div class="card mb-4 shadow-sm">
         <div class="card-header bg-white border-bottom py-2">
-            <div class="d-flex justify-content-between">
+            <div class="d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">
                     <i class="bi bi-card-checklist"></i> Elemen Penilaian
                 </h5>
@@ -490,17 +351,17 @@
         @foreach($kriterias as $kriteriaIndex => $kriteria)
         <div class="card mb-3 kriteria-card">
             <!-- Kriteria Header -->
-            <div class="card-header kriteria-header" id="heading-kriteria-{{ $kriteria->id_kriteria }}">
+            <div class="card-header kriteria-header" id="heading-kriteria-{{ $kriteria->id }}">
                 <div class="d-flex justify-content-between align-items-center">
-                    <button class="btn btn-link kriteria-btn collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-kriteria-{{ $kriteria->id_kriteria }}" aria-expanded="false" aria-controls="collapse-kriteria-{{ $kriteria->id_kriteria }}">
+                    <button class="btn btn-link kriteria-btn collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-kriteria-{{ $kriteria->id }}" aria-expanded="false" aria-controls="collapse-kriteria-{{ $kriteria->id }}">
                         <i class="bi bi-chevron-right me-2 chevron-icon"></i>
                         <strong>{{ $kriteria->kode_kriteria }}:</strong> {{ $kriteria->nama_kriteria }}
                     </button>
                     <div class="d-flex gap-2 align-items-center">
-                        <span class="badge bg-secondary kriteria-progress" data-kriteria-id="{{ $kriteria->id_kriteria }}">
+                        <span class="badge bg-secondary kriteria-progress" data-kriteria-id="{{ $kriteria->id }}">
                             0 / {{ $kriteria->elemenStandar->count() }}
                         </span>
-                        <button type="button" class="btn btn-sm btn-light" onclick="toggleKriteriaAccordion({{ $kriteria->id_kriteria }})" title="Expand/Collapse Semua Pernyataan Standar">
+                        <button type="button" class="btn btn-sm btn-light" onclick="toggleKriteriaAccordion({{ $kriteria->id }})" title="Expand/Collapse Semua Pernyataan Standar">
                             <i class="bi bi-arrows-expand"></i>
                         </button>
                     </div>
@@ -508,23 +369,23 @@
             </div>
 
             <!-- Kriteria Body -->
-            <div id="collapse-kriteria-{{ $kriteria->id_kriteria }}" class="accordion-collapse collapse kriteria-collapse" aria-labelledby="heading-kriteria-{{ $kriteria->id_kriteria }}" data-bs-parent="#accordionKriteria">
+            <div id="collapse-kriteria-{{ $kriteria->id }}" class="accordion-collapse collapse kriteria-collapse" aria-labelledby="heading-kriteria-{{ $kriteria->id }}" data-bs-parent="#accordionKriteria">
                 <div class="card-body">
                     @if($kriteria->keterangan)
-                    <div class="alert alert-light alert-permanent mb-3">
+                    <div class="alert alert-light alert-permanent alert-dismissible mb-3">
                         <i class="bi bi-info-circle me-2"></i>
                         {{ $kriteria->keterangan }}
                     </div>
                     @endif
 
                     <!-- Nested Accordion per Pernyataan Standar (Elemen) -->
-                    <div class="accordion accordion-elemen" id="accordionElemen-{{ $kriteria->id_kriteria }}">
+                    <div class="accordion accordion-elemen" id="accordionElemen-{{ $kriteria->id }}">
                         @foreach($kriteria->elemenStandar as $elemenIndex => $elemen)
                         @php
                         // Get penilaian for this elemen (not indikator!)
                         $penilaian = $elemen->penilaian->first(); // Assuming relation exists
                         $hasPenilaian = $penilaian && $penilaian->skor !== null;
-
+                        $needsRevisionElemen = $penilaian && $penilaian->status_validasi === 'revision_required';
                         $totalIndikator = $elemen->indikator->count();
 
                         // Count jenis indikator
@@ -539,11 +400,11 @@
                         })->count() : 0;
                         @endphp
 
-                        <div class="card mb-3 elemen-card @if($hasPenilaian) has-penilaian @endif" data-elemen-id="{{ $elemen->id_elemen }}">
+                        <div class="card mb-3 elemen-card @if($hasPenilaian) has-penilaian @endif" data-elemen-id="{{ $elemen->id }}">
                             <!-- Pernyataan Standar Header -->
-                            <div class="card-header elemen-header" id="heading-elemen-{{ $elemen->id_elemen }}">
+                            <div class="card-header elemen-header" id="heading-elemen-{{ $elemen->id }}">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <button class="btn btn-link elemen-btn collapsed d-flex align-items-center w-100" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-elemen-{{ $elemen->id_elemen }}" aria-expanded="false" aria-controls="collapse-elemen-{{ $elemen->id_elemen }}">
+                                    <button class="btn btn-link elemen-btn collapsed d-flex align-items-center w-100" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-elemen-{{ $elemen->id }}" aria-expanded="false" aria-controls="collapse-elemen-{{ $elemen->id }}">
 
                                         <i class="bi bi-chevron-right me-2 chevron-icon"></i>
 
@@ -574,7 +435,7 @@
                                 </div>
                             </div>
                             <!-- Pernyataan Standar Body -->
-                            <div id="collapse-elemen-{{ $elemen->id_elemen }}" class="accordion-collapse collapse elemen-collapse" aria-labelledby="heading-elemen-{{ $elemen->id_elemen }}" data-bs-parent="#accordionElemen-{{ $kriteria->id_kriteria }}">
+                            <div id="collapse-elemen-{{ $elemen->id }}" class="accordion-collapse collapse elemen-collapse" aria-labelledby="heading-elemen-{{ $elemen->id }}" data-bs-parent="#accordionElemen-{{ $kriteria->id }}">
                                 <div class="card-body">
                                     {{-- @if($elemen->pernyataan)
                                     <div class="alert alert-light alert-permanent mb-4">
@@ -607,7 +468,7 @@
                                     </div>
 
                                     @if($totalIndikator > 0)
-                                    <div class="alert alert-info alert-permanent">
+                                    <div class="alert alert-info alert-permanent alert-dismissible">
                                         <i class="bi bi-info-circle me-2"></i>
                                         <small>
                                             <strong>Catatan:</strong> Indikator di bawah ini adalah panduan untuk menilai pernyataan standar di atas.
@@ -615,7 +476,7 @@
                                         </small>
                                     </div>
                                     @else
-                                    <div class="alert alert-secondary alert-permanent">
+                                    <div class="alert alert-secondary alert-permanent alert-dismissible">
                                         <i class="bi bi-info-circle me-2"></i>
                                         <small>
                                             Belum ada indikator yang terdapat di elemen penilaian
@@ -670,17 +531,103 @@
                                     </div>
                                 </div>
 
+                                @if($elemen->indikatorPenilaian && $elemen->indikatorPenilaian->count() > 0)
+                                <div class="panduan-penilaian-wrapper mb-4">
+                                    <div class="card border-info">
+                                        <div class="card-header bg-info bg-opacity-10">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <h6 class="mb-0">
+                                                    <i class="bi bi-book me-2"></i>
+                                                    <strong>📊 Panduan Penilaian per Kategori</strong>
+                                                </h6>
+                                                <button type="button" class="btn btn-sm btn-outline-info" onclick="togglePanduanAccordion({{ $elemen->id }})">
+                                                    <i class="bi bi-arrows-expand"></i> Expand All
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="card-body p-2">
+                                            <div class="alert alert-info alert-permanent mb-2">
+                                                <i class="bi bi-info-circle me-2"></i>
+                                                <small>Klik kategori untuk melihat kriteria penilaian</small>
+                                            </div>
+
+                                            <div class="accordion" id="accordionPanduan{{ $elemen->id }}">
+                                                @foreach($elemen->indikatorPenilaian->groupBy('id_jenjang_penilaian') as $jenjangId => $items)
+                                                @php
+                                                $jenjang = $items->first()->jenjangPenilaian;
+                                                $skor = $jenjang->skor;
+                                                $badgeColor = match($skor) {
+                                                0 => 'danger', 1 => 'warning', 2 => 'warning',
+                                                3 => 'success', 4 => 'success', default => 'secondary'
+                                                };
+                                                @endphp
+
+                                                <div class="accordion-item">
+                                                    <h2 class="accordion-header" id="headingPanduan{{ $elemen->id }}_{{ $skor }}">
+                                                        <button class="accordion-button collapsed py-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePanduan{{ $elemen->id }}_{{ $skor }}">
+                                                            <span class="badge me-2" style="background:#{{ $jenjang->color }}">{{ $skor }}</span>
+                                                            <strong style="color: #{{ $jenjang->color }};">
+                                                                {{ $jenjang->nama_jenjang }}
+                                                            </strong>
+                                                        </button>
+                                                    </h2>
+                                                    <div id="collapsePanduan{{ $elemen->id }}_{{ $skor }}" class="accordion-collapse collapse" data-bs-parent="#accordionPanduan{{ $elemen->id }}">
+                                                        <div class="accordion-body bg-light">
+                                                            @foreach($items as $item)
+                                                            <div class="mb-2">
+                                                                {!! nl2br(e($item->deskripsi_penilaian)) !!}
+
+                                                                @if($item->keterangan)
+                                                                <div class="alert alert-secondary alert-permanent mt-2 mb-0 p-2">
+                                                                    <small>
+                                                                        <i class="bi bi-lightbulb"></i>
+                                                                        <strong>Catatan:</strong> {{ $item->keterangan }}
+                                                                    </small>
+                                                                </div>
+                                                                @endif
+                                                            </div>
+                                                            @endforeach
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                @endif
+
                                 <!-- FORM PENILAIAN (PER ELEMEN) -->
                                 <div class="penilaian-form-wrapper mb-4">
-                                    <div class="card border-{{ $hasPenilaian ? 'success' : 'warning' }}">
-                                        <div class="card-header bg-{{ $hasPenilaian ? 'success' : 'warning' }} bg-opacity-10">
+                                    <div class="card border-{{ $needsRevisionElemen ? 'warning' : ($hasPenilaian ? 'success' : 'warning') }}">
+                                        <div class="card-header bg-{{ $needsRevisionElemen ? 'warning' : ($hasPenilaian ? 'success' : 'warning') }} bg-opacity-10">
                                             <h6 class="mb-0">
                                                 <i class="bi bi-clipboard-check me-2"></i>
                                                 <strong>Penilaian Elemen</strong>
+
+                                                @if($needsRevisionElemen)
+                                                <span class="badge bg-warning text-dark float-end">
+                                                    <i class="bi bi-exclamation-triangle"></i> Perlu Revisi
+                                                </span>
+                                                @endif
                                             </h6>
                                         </div>
                                         <div class="card-body">
-                                            <form class="form-penilaian" data-elemen-id="{{ $elemen->id_elemen }}">
+                                            {{-- Alert Revisi --}}
+                                            @if($needsRevisionElemen)
+                                            <div class="alert alert-warning alert-permanent alert-dismissible mb-3">
+                                                <h6 class="alert-heading">
+                                                    <i class="bi bi-chat-left-quote"></i> Catatan Validator:
+                                                </h6>
+                                                <p class="mb-2"><strong>"{{ $penilaian->catatan_validator }}"</strong></p>
+                                                <hr>
+                                                <small class="text-muted">
+                                                    <i class="bi bi-person"></i> Validator: {{ $penilaian->validator->name ?? 'N/A' }}<br>
+                                                    <i class="bi bi-clock"></i> Tanggal: {{ \App\Libraries\Date::tglWaktu($penilaian->validated_at) }}
+                                                </small>
+                                            </div>
+                                            @endif
+                                            <form class="form-penilaian" data-elemen-id="{{ $elemen->id }}">
                                                 <div class="row mb-3">
                                                     <div class="col-md-4">
                                                         <label class="form-label fw-semibold">
@@ -692,7 +639,7 @@
                                                                 0 - Tidak Memenuhi (Not Met)
                                                             </option>
                                                             <option value="1" @if($hasPenilaian && $penilaian->skor == 1) selected @endif>
-                                                                1 - Tidak Memenuhi (Not Met)
+                                                                1 - Belum Memenuhi (Not Met)
                                                             </option>
                                                             <option value="2" @if($hasPenilaian && $penilaian->skor == 2) selected @endif>
                                                                 2 - Lemah (Weakness)
@@ -722,7 +669,7 @@
                                                         <i class="bi bi-cloud-check"></i>
                                                         <span class="status-text">
                                                             @if($hasPenilaian)
-                                                            Tersimpan pada {{ $penilaian->updated_at->format('d M Y H:i') }}
+                                                            Tersimpan pada {{ \App\Libraries\Date::tglWaktu($penilaian->updated_at) }}
                                                             @else
                                                             Belum ada penilaian
                                                             @endif
@@ -774,7 +721,7 @@
                 @csrf
                 <div class="modal-body">
                     {{-- Instructions --}}
-                    <div class="alert alert-info alert-permanent mb-3">
+                    <div class="alert alert-info alert-permanent alert-dismissible mb-3">
                         <h6 class="alert-heading">
                             <i class="bi bi-info-circle"></i> Petunjuk Import
                         </h6>
@@ -914,7 +861,7 @@
                     {{-- Error List --}}
                     <div id="errorListContainer" class="d-none">
                         <h6 class="mb-2">Detail Error:</h6>
-                        <div class="alert alert-warning">
+                        <div class="alert alert-warning alert-permanent alert-dismissible">
                             <ul id="errorList" class="mb-0 small"></ul>
                         </div>
                     </div>
@@ -1038,14 +985,12 @@
 </div>
 
 @push('scripts')
-@php
-$statusPekerjaan = $assignment['status_pekerjaan'];
-@endphp
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const asesmenId = "{{ $asesmen->id }}";
+        const idAsesmen = "{{ $asesmen->id }}";
 
-        const checkStatusPekerjaan = @json(isset($assignment) && in_array($statusPekerjaan, ['submitted', 'approved']));
+        const checkStatusPekerjaan = @json($isSubmitted);
+        const needsRevision = @json($needsRevision);
         let saveTimeout;
         const AUTO_SAVE_DELAY = 2000;
         let currentImportLogId = null;
@@ -1126,26 +1071,22 @@ $statusPekerjaan = $assignment['status_pekerjaan'];
          */
         window.toggleKriteriaAccordion = function(kriteriaId) {
             const kriteriaCollapse = document.querySelector(`#collapse-kriteria-${kriteriaId}`);
+            if (!kriteriaCollapse) return;
+
             const elemenCollapses = kriteriaCollapse.querySelectorAll('.elemen-collapse');
 
-            // Check if any elemen is open
             const anyOpen = Array.from(elemenCollapses).some(el => el.classList.contains('show'));
 
-            if (anyOpen) {
-                // Close all elemen
-                elemenCollapses.forEach(collapse => {
-                    new bootstrap.Collapse(collapse, {
-                        hide: true
-                    });
+            elemenCollapses.forEach(collapse => {
+                const instance = bootstrap.Collapse.getOrCreateInstance(collapse, {
+                    toggle: false
                 });
-            } else {
-                // Open all elemen
-                elemenCollapses.forEach(collapse => {
-                    new bootstrap.Collapse(collapse, {
-                        show: true
-                    });
-                });
-            }
+                if (anyOpen) {
+                    instance.hide(); // tutup semua
+                } else {
+                    instance.show(); // buka semua
+                }
+            });
         };
 
         /**
@@ -1209,7 +1150,7 @@ $statusPekerjaan = $assignment['status_pekerjaan'];
             showLoading();
 
             try {
-                const response = await fetch(`/ak/berkas/${asesmenId}/submit`, {
+                const response = await fetch(`/ak/berkas/${idAsesmen}/submit`, {
                     method: 'POST'
                     , headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -1285,7 +1226,7 @@ $statusPekerjaan = $assignment['status_pekerjaan'];
             showLoading();
 
             try {
-                const response = await fetch(`/ak/berkas/${asesmenId}/unsubmit`, {
+                const response = await fetch(`/ak/berkas/${idAsesmen}/unsubmit`, {
                     method: 'POST'
                     , headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -1362,7 +1303,7 @@ $statusPekerjaan = $assignment['status_pekerjaan'];
             showLoading();
 
             try {
-                window.location.href = `/ak/berkas/${asesmenId}/export`;
+                window.location.href = `/ak/berkas/${idAsesmen}/export`;
 
                 setTimeout(() => {
                     hideLoading();
@@ -1419,7 +1360,7 @@ $statusPekerjaan = $assignment['status_pekerjaan'];
 
             try {
                 // Upload file
-                const response = await fetch(`/ak/berkas/${asesmenId}/import`, {
+                const response = await fetch(`/ak/berkas/${idAsesmen}/import`, {
                     method: 'POST'
                     , body: formData
                     , headers: {
@@ -1605,7 +1546,7 @@ $statusPekerjaan = $assignment['status_pekerjaan'];
             const formData = new FormData(form);
 
             try {
-                const response = await fetch(`/ak/berkas/${asesmenId}/nilai`, {
+                const response = await fetch(`/ak/berkas/${idAsesmen}/nilai`, {
                     method: 'POST'
                     , headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -1673,7 +1614,7 @@ $statusPekerjaan = $assignment['status_pekerjaan'];
             showLoading();
 
             try {
-                const response = await fetch(`/ak/berkas/${asesmenId}/nilai`, {
+                const response = await fetch(`/ak/berkas/${idAsesmen}/nilai`, {
                     method: 'POST'
                     , headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -1840,12 +1781,6 @@ $statusPekerjaan = $assignment['status_pekerjaan'];
             }
         }
 
-        if (typeof Swal === 'undefined') {
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
-            document.head.appendChild(script);
-        }
-
         /**
          * ============================================
          * EXCEL EXPORT/IMPORT HANDLERS (ENHANCED)
@@ -1919,7 +1854,7 @@ $statusPekerjaan = $assignment['status_pekerjaan'];
         function downloadTemplate() {
             showLoading();
 
-            window.location.href = `/ak/berkas/${asesmenId}/template`;
+            window.location.href = `/ak/berkas/${idAsesmen}/template`;
 
             setTimeout(() => {
                 hideLoading();
@@ -1939,7 +1874,7 @@ $statusPekerjaan = $assignment['status_pekerjaan'];
         function downloadDataExcel() {
             showLoading();
 
-            window.location.href = `/ak/berkas/${asesmenId}/export`;
+            window.location.href = `/ak/berkas/${idAsesmen}/export`;
 
             setTimeout(() => {
                 hideLoading();
@@ -1951,55 +1886,6 @@ $statusPekerjaan = $assignment['status_pekerjaan'];
                     , showConfirmButton: false
                 });
             }, 1000);
-        }
-
-        /**
-         * Start polling for import status
-         */
-        function startImportStatusPolling() {
-            // Clear any existing interval
-            if (importStatusInterval) {
-                clearInterval(importStatusInterval);
-            }
-
-            // Poll every 2 seconds
-            importStatusInterval = setInterval(async () => {
-                try {
-                    const response = await fetch(`/ak/import-status/${currentImportLogId}`, {
-                        headers: {
-                            'Accept': 'application/json'
-                        }
-                    });
-
-                    const result = await response.json();
-
-                    if (result.success) {
-                        const status = result.data.status;
-                        const progress = result.data.total_rows > 0 ?
-                            Math.round((result.data.imported_rows / result.data.total_rows) * 100) :
-                            0;
-
-                        // Update progress bar
-                        const progressBar = document.getElementById('importProgressBar');
-                        progressBar.style.width = progress + '%';
-                        progressBar.textContent = progress + '%';
-
-                        // Check if completed or failed
-                        if (status === 'completed') {
-                            clearInterval(importStatusInterval);
-                            showImportResult(result.data);
-
-                        } else if (status === 'failed') {
-                            clearInterval(importStatusInterval);
-                            showImportError(result.data);
-                        }
-                    }
-
-                } catch (error) {
-                    console.error('Error checking import status:', error);
-                    clearInterval(importStatusInterval);
-                }
-            }, 2000);
         }
 
         /**
@@ -2049,7 +1935,7 @@ $statusPekerjaan = $assignment['status_pekerjaan'];
                 </div>
 
                 ${data.errors && data.errors.length > 0 ? `
-                    <div class="alert alert-warning">
+                    <div class="alert alert-warning alert-permanent alert-dismissible">
                         <strong>⚠️ Peringatan:</strong>
                         <p class="mb-2">Beberapa baris gagal diimport:</p>
                         <ul class="mb-0 small">
@@ -2110,7 +1996,7 @@ $statusPekerjaan = $assignment['status_pekerjaan'];
 
             // Load history
             try {
-                const response = await fetch(`/ak/berkas/${asesmenId}/import-history`, {
+                const response = await fetch(`/ak/berkas/${idAsesmen}/import-history`, {
                     headers: {
                         'Accept': 'application/json'
                         , 'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -2210,20 +2096,6 @@ $statusPekerjaan = $assignment['status_pekerjaan'];
         }
 
         /**
-         * Get status badge HTML
-         */
-        function getStatusBadge(status) {
-            const badges = {
-                'queued': '<span class="badge bg-secondary"><i class="bi bi-clock"></i> Queued</span>'
-                , 'processing': '<span class="badge bg-info"><i class="bi bi-arrow-repeat"></i> Processing</span>'
-                , 'completed': '<span class="badge bg-success"><i class="bi bi-check-circle"></i> Completed</span>'
-                , 'failed': '<span class="badge bg-danger"><i class="bi bi-x-circle"></i> Failed</span>'
-            };
-
-            return badges[status] || '<span class="badge bg-secondary">Unknown</span>';
-        }
-
-        /**
          * Get progress bar HTML
          */
         function getProgressBar(log) {
@@ -2277,8 +2149,8 @@ $statusPekerjaan = $assignment['status_pekerjaan'];
          * DISABLE EDITING IF SUBMITTED
          * ============================================
          */
-        if (checkStatusPekerjaan) {
-            // Disable all form inputs if already submitted
+        if (checkStatusPekerjaan && !needsRevision) {
+            // Disable all form inputs ONLY if submitted AND NOT needs revision
             document.querySelectorAll('.form-penilaian').forEach(form => {
                 form.querySelectorAll('select, textarea, button[type="submit"]').forEach(el => {
                     el.disabled = true;
@@ -2291,11 +2163,10 @@ $statusPekerjaan = $assignment['status_pekerjaan'];
                 form.appendChild(infoDiv);
             });
 
-            // Disable import if submitted
+            // Disable import if submitted and not needs revision
             const btnImport = document.getElementById('btnImport');
             if (btnImport) btnImport.setAttribute('disabled', 'disabled');
         }
-
         /**
          * ============================================
          * UPDATE PROGRESS
@@ -2395,31 +2266,6 @@ $statusPekerjaan = $assignment['status_pekerjaan'];
             }
 
             resultModal.show();
-        }
-
-        /**
-         * ============================================
-         * UTILITY FUNCTIONS
-         * ============================================
-         */
-
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-        }
-
-        function formatDateTime(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleString('id-ID', {
-                day: '2-digit'
-                , month: 'short'
-                , year: 'numeric'
-                , hour: '2-digit'
-                , minute: '2-digit'
-            });
         }
 
         function getStatusBadge(status) {
@@ -2532,7 +2378,7 @@ $statusPekerjaan = $assignment['status_pekerjaan'];
                     <li><strong>Data tidak dapat dikembalikan</strong></li>
                 </ul>
 
-                <div class="alert alert-warning mt-3">
+                <div class="alert alert-warning alert-permanent alert-dismissible mt-3">
                     <i class="bi bi-lightbulb me-2"></i>
                     <strong>Tips:</strong> Jika Anda hanya ingin edit beberapa penilaian saja,
                     lebih baik gunakan tombol "Reset" pada form penilaian individual.
@@ -2561,7 +2407,7 @@ $statusPekerjaan = $assignment['status_pekerjaan'];
             showLoading();
 
             try {
-                const response = await fetch(`/ak/berkas/${asesmenId}/reset-all`, {
+                const response = await fetch(`/ak/berkas/${idAsesmen}/reset-all`, {
                     method: 'DELETE'
                     , headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -2614,6 +2460,74 @@ $statusPekerjaan = $assignment['status_pekerjaan'];
             }
         }
     });
+
+    /**
+     * ============================================
+     * HANDLE REVISI - AUTO OPEN ACCORDION
+     * ============================================
+     */
+    document.querySelectorAll('.btn-buka-revisi').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const elemenId = this.dataset.elemenId;
+            const kriteriaId = this.dataset.kriteriaId;
+
+            // 1. Buka accordion kriteria
+            const kriteriaCollapse = document.querySelector(`#collapse-kriteria-${kriteriaId}`);
+            if (kriteriaCollapse) {
+                const kriteriaInstance = bootstrap.Collapse.getOrCreateInstance(kriteriaCollapse, {
+                    toggle: false
+                });
+                kriteriaInstance.show();
+            }
+
+            // 2. Tunggu kriteria terbuka, lalu buka elemen
+            setTimeout(() => {
+                const elemenCollapse = document.querySelector(`#collapse-elemen-${elemenId}`);
+                if (elemenCollapse) {
+                    const elemenInstance = bootstrap.Collapse.getOrCreateInstance(elemenCollapse, {
+                        toggle: false
+                    });
+                    elemenInstance.show();
+
+                    // 3. Scroll ke elemen
+                    setTimeout(() => {
+                        const elemenCard = document.querySelector(`.elemen-card[data-elemen-id="${elemenId}"]`);
+                        if (elemenCard) {
+                            elemenCard.scrollIntoView({
+                                behavior: 'smooth'
+                                , block: 'center'
+                            });
+
+                            // 4. Highlight element
+                            elemenCard.classList.add('highlight-revision');
+                            setTimeout(() => {
+                                elemenCard.classList.remove('highlight-revision');
+                            }, 3000);
+
+                            // 5. Focus ke textarea komentar
+                            const textarea = elemenCard.querySelector('.komentar-textarea');
+                            if (textarea) {
+                                textarea.focus();
+                            }
+                        }
+                    }, 500);
+                }
+            }, 500);
+        });
+    });
+
+    function togglePanduanAccordion(elemenId) {
+        const accordion = document.getElementById(`accordionPanduan${elemenId}`);
+        const items = accordion.querySelectorAll('.accordion-collapse');
+        const anyOpen = Array.from(items).some(item => item.classList.contains('show'));
+
+        items.forEach(item => {
+            const bsCollapse = bootstrap.Collapse.getOrCreateInstance(item, {
+                toggle: false
+            });
+            anyOpen ? bsCollapse.hide() : bsCollapse.show();
+        });
+    }
 
 </script>
 @endpush

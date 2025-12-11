@@ -11,7 +11,7 @@ class PenilaianImportLog extends Model
 
     protected $fillable = [
         'id_asesmen',
-        'id_user',
+        'id_asesor',
         'filename',
         'status',
         'total_rows',
@@ -33,15 +33,15 @@ class PenilaianImportLog extends Model
      */
     public function asesmen()
     {
-        return $this->belongsTo(Asesmen::class, 'id_asesmen', 'id');
+        return $this->belongsTo(Asesmen::class, 'id_asesmen');
     }
 
     /**
      * Get the user
      */
-    public function user()
+    public function asesor()
     {
-        return $this->belongsTo(User::class, 'id_user', 'id');
+        return $this->belongsTo(User::class, 'id_asesor');
     }
 
     /**

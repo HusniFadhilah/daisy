@@ -24,7 +24,7 @@ class IndikatorSeeder extends Seeder
             'R.1', 'R.2', 'R.3', 'R.4', 'R.5', 'R.6'
         ])
         // ->whereNotIn('id_elemen', [1, 3, 7]) // Skip duplicate entries
-        ->pluck('id_elemen', 'kode_elemen')
+        ->pluck('id', 'kode_elemen')
         ->toArray();
 
         $indikator = [

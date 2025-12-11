@@ -23,14 +23,14 @@ class ImportPenilaianExcelJob implements ShouldQueue
     public $tries   = 3;
 
     protected $filePath;
-    protected $asesmenId;
+    protected $idAsesmen;
     protected $userId;
     protected $importLogId;
 
-    public function __construct($filePath, $asesmenId, $userId, $importLogId)
+    public function __construct($filePath, $idAsesmen, $userId, $importLogId)
     {
         $this->filePath    = $filePath;
-        $this->asesmenId   = $asesmenId;
+        $this->idAsesmen   = $idAsesmen;
         $this->userId      = $userId;
         $this->importLogId = $importLogId;
     }
@@ -140,9 +140,9 @@ class ImportPenilaianExcelJob implements ShouldQueue
                     // 4) Simpan / update penilaian
                     PenilaianElemen::updateOrCreate(
                         [
-                            'id_asesmen' => $this->asesmenId,
-                            'id_user'    => $this->userId,
-                            'id_elemen'  => $elemen->id_elemen,
+                            'id_asesmen' => $this->idAsesmen,
+                            'id_asesor'    => $this->userId,
+                            'id_elemen'  => $elemen->id,
                         ],
                         [
                             'skor'     => $skor,
@@ -224,7 +224,6 @@ class ImportPenilaianExcelJob implements ShouldQueue
             }
 
             return trim((string) $value);
-
         } catch (\Exception $e) {
             Log::error("Error reading cell {$coordinate}: " . $e->getMessage());
             return '';

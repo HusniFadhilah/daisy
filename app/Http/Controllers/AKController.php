@@ -35,7 +35,9 @@ class AKController extends Controller
 
         // Calculate progress for each asesmen
         foreach ($asesmens as $asesmen) {
+            $assignment = $asesmen->userRoles->first();
             $asesmen->progress = $this->calculateProgress($asesmen->id, $user->id);
+            $asesmen->statusInfo = $this->getStatusInfo($assignment);
         }
 
         return view('asesmen.ak.berkas.index', compact('asesmens'));
@@ -44,14 +46,16 @@ class AKController extends Controller
     /**
      * Show detail asesmen with accordion per elemen
      */
-    public function showBerkas($id)
+    public function showBerkas($idAsesmen)
     {
         $user = Auth::user();
 
         // Check if user has access to this asesmen
-        $assignment = AsesmenUserRole::where('id_asesmen', $id)
+        $assignment = AsesmenUserRole::where('id_asesmen', $idAsesmen)
             ->where('id_user', Auth::user()->id)
             ->firstOrFail();
+
+        if ($assignment->id_role != 3) abort(403);
 
         // ✅ AUTO-UPDATE STATUS: not_started → in_progress
         if ($assignment->status_pekerjaan === 'not_started') {
@@ -67,26 +71,32 @@ class AKController extends Controller
         $kriterias = Kriteria::with([
             'elemenStandar',
             'elemenStandar.indikator.jenisIndikator',
+            'elemenStandar.indikatorPenilaian.jenjangPenilaian',
             'elemenStandar.penilaian' => function ($query) use ($asesmen, $user) {
                 $query->where('id_asesmen', $asesmen->id)
-                    ->where('id_user', $user->id);
+                    ->where('id_asesor', $user->id);
             }
-        ])->orderBy('id_kriteria')->get();
+        ])->get();
 
+        $needsRevisions = PenilaianElemen::where('id_asesmen', $asesmen->id)
+            ->where('id_asesor', $user->id)
+            ->where('status_validasi', 'revision_required')
+            ->with('elemen.kriteria')
+            ->get();
         // Calculate progress
         $progress = $this->calculateProgress($asesmen->id, $user->id);
 
-        return view('asesmen.ak.berkas.show', compact('asesmen', 'kriterias', 'progress'));
+        return view('asesmen.ak.berkas.show', compact('asesmen', 'kriterias', 'progress', 'needsRevisions'));
     }
 
     /**
      * Save penilaian for specific indikator (AJAX)
      * UPDATED: Support skor 0-4
      */
-    public function simpanNilai(Request $request, $asesmenId)
+    public function simpanNilai(Request $request, $idAsesmen)
     {
         $request->validate([
-            'id_elemen' => 'required|exists:elemen_standar,id_elemen',
+            'id_elemen' => 'required|exists:elemen_standar,id',
             'skor' => 'required|integer|min:0|max:4', // UPDATED: Support 0-4
             'komentar' => 'nullable|string|max:5000',
         ]);
@@ -95,7 +105,7 @@ class AKController extends Controller
             $user = Auth::user();
 
             // Verify user has access
-            $hasAccess = AsesmenUserRole::where('id_asesmen', $asesmenId)
+            $hasAccess = AsesmenUserRole::where('id_asesmen', $idAsesmen)
                 ->where('id_user', $user->id)
                 ->exists();
 
@@ -109,19 +119,26 @@ class AKController extends Controller
             // Update or create penilaian
             $penilaian = PenilaianElemen::updateOrCreate(
                 [
-                    'id_asesmen' => $asesmenId,
-                    'id_user' => $user->id,
+                    'id_asesmen' => $idAsesmen,
+                    'id_asesor' => $user->id,
                     'id_elemen' => $request->id_elemen,
                 ],
                 [
                     'skor' => $request->skor,
                     'komentar' => $request->komentar,
                     'status' => 'draft',
+
+                    'status_validasi' => 'not_validated',
+                    'catatan_validator' => null,
+                    'validated_by' => null,
+                    'validated_at' => null,
+                    'skor_final' => null,
+                    'revision_count' => DB::raw('revision_count + 1'),
                 ]
             );
 
             // Calculate new progress
-            $progress = $this->calculateProgress($asesmenId, $user->id);
+            $progress = $this->calculateProgress($idAsesmen, $user->id);
 
             // Get skor label and class for response
             $skorInfo = $this->getSkorInfo($request->skor);
@@ -185,14 +202,14 @@ class AKController extends Controller
     /**
      * Calculate progress percentage for an asesmen
      */
-    private function calculateProgress($asesmenId, $userId)
+    private function calculateProgress($idAsesmen, $userId)
     {
         // Total indikators
         $totalElemens = ElemenStandar::count();
 
         // Completed elemens (has penilaian)
-        $completedElemens = PenilaianElemen::where('id_asesmen', $asesmenId)
-            ->where('id_user', $userId)
+        $completedElemens = PenilaianElemen::where('id_asesmen', $idAsesmen)
+            ->where('id_asesor', $userId)
             ->whereNotNull('skor')
             ->count();
 
@@ -211,12 +228,12 @@ class AKController extends Controller
     /**
      * Get heatmap data for visualization (NEW)
      */
-    public function getHeatmapData($asesmenId)
+    public function getHeatmapData($idAsesmen)
     {
         $user = Auth::user();
 
         // Verify access
-        $hasAccess = AsesmenUserRole::where('id_asesmen', $asesmenId)
+        $hasAccess = AsesmenUserRole::where('id_asesmen', $idAsesmen)
             ->where('id_user', $user->id)
             ->exists();
 
@@ -228,8 +245,8 @@ class AKController extends Controller
         }
 
         // Get all penilaian with kriteria, elemen info
-        $heatmapData = PenilaianElemen::where('id_asesmen', $asesmenId)
-            ->where('id_user', $user->id)
+        $heatmapData = PenilaianElemen::where('id_asesmen', $idAsesmen)
+            ->where('id_asesor', $user->id)
             ->with([
                 'elemen.kriteria'
             ])
@@ -259,21 +276,27 @@ class AKController extends Controller
     /**
      * Submit/Finalisasi penilaian asesor
      */
-    public function submitPenilaian(Request $request, $asesmenId)
+    public function submitPenilaian(Request $request, $idAsesmen)
     {
         try {
             $user = Auth::user();
 
             // Check access
-            $assignment = AsesmenUserRole::where('id_asesmen', $asesmenId)
+            $assignment = AsesmenUserRole::where('id_asesmen', $idAsesmen)
                 ->where('id_user', $user->id)
                 ->where('status_penawaran', 'accepted')
-                ->firstOrFail();
+                ->first();
+
+            if (!$assignment)
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada penugasan asesmen',
+                ], 500);
 
             // Check if all elemen have been assessed
             $totalElemen = ElemenStandar::count();
-            $assessedElemen = PenilaianElemen::where('id_asesmen', $asesmenId)
-                ->where('id_user', $user->id)
+            $assessedElemen = PenilaianElemen::where('id_asesmen', $idAsesmen)
+                ->where('id_asesor', $user->id)
                 ->whereNotNull('skor')
                 ->whereNotNull('komentar')
                 ->count();
@@ -290,8 +313,8 @@ class AKController extends Controller
             DB::beginTransaction();
 
             // Update all penilaian status to submitted
-            PenilaianElemen::where('id_asesmen', $asesmenId)
-                ->where('id_user', $user->id)
+            PenilaianElemen::where('id_asesmen', $idAsesmen)
+                ->where('id_asesor', $user->id)
                 ->update([
                     'status' => 'submitted',
                 ]);
@@ -323,34 +346,42 @@ class AKController extends Controller
     /**
      * Batalkan submit (kembali ke draft)
      */
-    public function unsubmitPenilaian($asesmenId)
+    public function unsubmitPenilaian($idAsesmen)
     {
         try {
             $user = Auth::user();
 
-            $assignment = AsesmenUserRole::where('id_asesmen', $asesmenId)
+            $assignment = AsesmenUserRole::where('id_asesmen', $idAsesmen)
                 ->where('id_user', $user->id)
                 ->where('status_pekerjaan', 'submitted')
                 ->firstOrFail();
 
-            // Check if already validated
-            $hasValidated = PenilaianElemen::where('id_asesmen', $asesmenId)
-                ->where('id_user', $user->id)
-                ->where('status_validasi', '!=', 'not_validated')
+            // ✅ PERBAIKAN: Hanya cek yang benar-benar sudah VALIDATED (final)
+            $hasValidated = PenilaianElemen::where('id_asesmen', $idAsesmen)
+                ->where('id_asesor', $user->id)
+                ->where('status_validasi', 'validated')  // ← UBAH INI
                 ->exists();
 
             if ($hasValidated) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Penilaian sudah divalidasi, tidak bisa dibatalkan.',
+                    'message' => 'Penilaian sudah divalidasi dan disetujui, tidak bisa dibatalkan.',
+                ], 422);
+            }
+
+            // ✅ TAMBAHAN: Cek jika sudah approved
+            if ($assignment->status_pekerjaan === 'approved') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Penilaian sudah disetujui, tidak bisa dibatalkan.',
                 ], 422);
             }
 
             DB::beginTransaction();
 
             // Update back to draft
-            PenilaianElemen::where('id_asesmen', $asesmenId)
-                ->where('id_user', $user->id)
+            PenilaianElemen::where('id_asesmen', $idAsesmen)
+                ->where('id_asesor', $user->id)
                 ->update([
                     'status' => 'draft',
                 ]);
@@ -389,16 +420,16 @@ class AKController extends Controller
     /**
      * Reset/Hapus semua penilaian untuk asesmen tertentu
      *
-     * @param int $asesmenId
+     * @param int $idAsesmen
      * @return \Illuminate\Http\JsonResponse
      */
-    public function resetAllPenilaian($asesmenId)
+    public function resetAllPenilaian($idAsesmen)
     {
         try {
             $user = Auth::user();
 
             // Verify access
-            $assignment = AsesmenUserRole::where('id_asesmen', $asesmenId)
+            $assignment = AsesmenUserRole::where('id_asesmen', $idAsesmen)
                 ->where('id_user', $user->id)
                 ->first();
 
@@ -421,13 +452,13 @@ class AKController extends Controller
 
             try {
                 // Get count before delete
-                $totalDeleted = PenilaianElemen::where('id_asesmen', $asesmenId)
-                    ->where('id_user', $user->id)
+                $totalDeleted = PenilaianElemen::where('id_asesmen', $idAsesmen)
+                    ->where('id_asesor', $user->id)
                     ->count();
 
                 // Delete all penilaian for this user and asesmen
-                PenilaianElemen::where('id_asesmen', $asesmenId)
-                    ->where('id_user', $user->id)
+                PenilaianElemen::where('id_asesmen', $idAsesmen)
+                    ->where('id_asesor', $user->id)
                     ->delete();
 
                 // Update assignment status back to not_started
@@ -439,7 +470,7 @@ class AKController extends Controller
                 DB::commit();
 
                 // Calculate new progress (should be 0)
-                $progress = $this->calculateProgress($asesmenId, $user->id);
+                $progress = $this->calculateProgress($idAsesmen, $user->id);
 
                 return response()->json([
                     'success' => true,
@@ -453,8 +484,8 @@ class AKController extends Controller
             }
         } catch (\Exception $e) {
             Log::error('Reset penilaian failed: ' . $e->getMessage(), [
-                'asesmen_id' => $asesmenId,
-                'user_id' => Auth::id(),
+                'id_asesmen' => $idAsesmen,
+                'id_asesor' => Auth::id(),
                 'trace' => $e->getTraceAsString()
             ]);
 
@@ -468,18 +499,34 @@ class AKController extends Controller
     /**
      * Download template Excel (format kosong)
      */
-    public function downloadTemplate($asesmenId)
+    public function downloadTemplate($idAsesmen)
     {
         try {
             $user = Auth::user();
 
-            // Verify access
             $asesmen = Asesmen::whereHas('userRoles', function ($query) use ($user) {
                 $query->where('id_user', $user->id);
-            })->findOrFail($asesmenId);
+            })->with(['userRoles.user', 'userRoles.role'])->findOrFail($idAsesmen);
+
+            // Ambil semua asesor (filter by role name)
+            $asesors = $asesmen->userRoles->filter(function ($userRole) {
+                return $userRole->id_role === 3; // atau role_id == 2
+            })->values(); // Reset keys
+
+            // Ambil asesor1 dan asesor2
+            $asesor1 = $asesors->first(); // Asesor pertama
+            $asesor2 = $asesors->skip(1)->first(); // Asesor kedua
+
+            // Cek apakah ada 2 asesor
+            if (!$asesor1 || !$asesor2) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Asesmen harus memiliki minimal 2 asesor.'
+                ], 400);
+            }
 
             $excelService = new PenilaianExcelService();
-            $filePath = $excelService->generateTemplate($asesmen);
+            $filePath = $excelService->generateTemplate($asesmen, $asesor1, $asesor2);
 
             return response()->download($filePath, basename($filePath))->deleteFileAfterSend(true);
         } catch (\Exception $e) {
@@ -491,7 +538,7 @@ class AKController extends Controller
     /**
      * Export penilaian ke Excel (dengan data)
      */
-    public function exportExcel($asesmenId)
+    public function exportExcel($idAsesmen)
     {
         try {
             $user = Auth::user();
@@ -499,7 +546,7 @@ class AKController extends Controller
             // Verify access
             $asesmen = Asesmen::whereHas('userRoles', function ($query) use ($user) {
                 $query->where('id_user', $user->id);
-            })->findOrFail($asesmenId);
+            })->findOrFail($idAsesmen);
 
             $excelService = new PenilaianExcelService();
             $filePath = $excelService->generateWithData($asesmen, $user->id);
@@ -514,7 +561,7 @@ class AKController extends Controller
     /**
      * Import penilaian dari Excel (using Queue)
      */
-    public function importExcel(Request $request, $asesmenId)
+    public function importExcel(Request $request, $idAsesmen)
     {
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xls|max:10240', // 10MB max
@@ -526,7 +573,7 @@ class AKController extends Controller
             // Verify access
             $asesmen = Asesmen::whereHas('userRoles', function ($query) use ($user) {
                 $query->where('id_user', $user->id);
-            })->findOrFail($asesmenId);
+            })->findOrFail($idAsesmen);
 
             // Store file temporarily
             $file = $request->file('file');
@@ -536,7 +583,7 @@ class AKController extends Controller
             // Create import log
             $importLog = PenilaianImportLog::create([
                 'id_asesmen' => $asesmen->id,
-                'id_user' => $user->id,
+                'id_asesor' => $user->id,
                 'filename' => $file->getClientOriginalName(),
                 'status' => 'queued',
             ]);
@@ -566,7 +613,7 @@ class AKController extends Controller
         try {
             $user = Auth::user();
 
-            $importLog = PenilaianImportLog::where('id_user', $user->id)
+            $importLog = PenilaianImportLog::where('id_asesor', $user->id)
                 ->findOrFail($importLogId);
 
             return response()->json([
@@ -594,13 +641,13 @@ class AKController extends Controller
     /**
      * Get import history
      */
-    public function importHistory($asesmenId)
+    public function importHistory($idAsesmen)
     {
         try {
             $user = Auth::user();
 
-            $logs = PenilaianImportLog::where('id_asesmen', $asesmenId)
-                ->where('id_user', $user->id)
+            $logs = PenilaianImportLog::where('id_asesmen', $idAsesmen)
+                ->where('id_asesor', $user->id)
                 ->orderBy('created_at', 'desc')
                 ->limit(10)
                 ->get();
@@ -616,5 +663,146 @@ class AKController extends Controller
                 'message' => 'Gagal memuat riwayat import',
             ], 500);
         }
+    }
+
+    /**
+     * Get status information for display
+     */
+    private function getStatusInfo($assignment)
+    {
+        if (!$assignment) {
+            return [
+                'badge_class' => 'bg-secondary',
+                'badge_icon' => 'bi-question-circle',
+                'badge_text' => 'Tidak Ada Penugasan',
+                'button_text' => 'Tidak Tersedia',
+                'button_class' => 'btn-secondary',
+                'button_icon' => 'bi-x-circle',
+                'button_disabled' => true,
+                'description' => 'Anda belum ditugaskan pada asesmen ini',
+            ];
+        }
+
+        $statusPenawaran = $assignment->status_penawaran;
+        $statusPekerjaan = $assignment->status_pekerjaan;
+
+        // ✅ STATUS PENAWARAN: pending
+        if ($statusPenawaran === 'pending') {
+            return [
+                'badge_class' => 'bg-warning text-dark',
+                'badge_icon' => 'bi-hourglass-split',
+                'badge_text' => 'Menunggu Konfirmasi',
+                'button_text' => 'Cek Penawaran',
+                'button_class' => 'btn-warning',
+                'button_icon' => 'bi-envelope-check',
+                'button_disabled' => false,
+                'button_route' => 'ak.berkas.penawaran',
+                'description' => 'Silakan konfirmasi penawaran terlebih dahulu',
+            ];
+        }
+
+        // ✅ STATUS PENAWARAN: rejected
+        if ($statusPenawaran === 'rejected') {
+            return [
+                'badge_class' => 'bg-danger',
+                'badge_icon' => 'bi-x-circle',
+                'badge_text' => 'Penawaran Ditolak',
+                'button_text' => 'Ditolak',
+                'button_class' => 'btn-danger',
+                'button_icon' => 'bi-x-circle',
+                'button_disabled' => true,
+                'description' => 'Anda menolak penawaran ini',
+            ];
+        }
+
+        // ✅ STATUS PENAWARAN: accepted
+        if ($statusPenawaran === 'accepted') {
+            // Check status pekerjaan
+            switch ($statusPekerjaan) {
+                case 'not_started':
+                    return [
+                        'badge_class' => 'bg-secondary',
+                        'badge_icon' => 'bi-file-text',
+                        'badge_text' => 'Belum Mulai',
+                        'button_text' => 'Mulai Penilaian',
+                        'button_class' => 'btn-primary',
+                        'button_icon' => 'bi-play-circle',
+                        'button_disabled' => false,
+                        'description' => 'Siap untuk memulai penilaian',
+                    ];
+
+                case 'in_progress':
+                    return [
+                        'badge_class' => 'bg-info',
+                        'badge_icon' => 'bi-clock-history',
+                        'badge_text' => 'Sedang Dikerjakan',
+                        'button_text' => 'Lanjutkan Penilaian',
+                        'button_class' => 'btn-primary',
+                        'button_icon' => 'bi-pencil-square',
+                        'button_disabled' => false,
+                        'description' => 'Penilaian sedang dalam proses',
+                    ];
+
+                case 'submitted':
+                    return [
+                        'badge_class' => 'bg-warning text-dark',
+                        'badge_icon' => 'bi-send-check',
+                        'badge_text' => 'Menunggu Validasi',
+                        'button_text' => 'Lihat Penilaian',
+                        'button_class' => 'btn-warning',
+                        'button_icon' => 'bi-eye',
+                        'button_disabled' => false,
+                        'description' => 'Penilaian telah di-submit, menunggu validator',
+                    ];
+
+                case 'revision_required':
+                    return [
+                        'badge_class' => 'bg-warning text-dark',
+                        'badge_icon' => 'bi-exclamation-triangle',
+                        'badge_text' => 'Perlu Revisi',
+                        'button_text' => 'Lakukan Revisi',
+                        'button_class' => 'btn-warning',
+                        'button_icon' => 'bi-arrow-repeat',
+                        'button_disabled' => false,
+                        'description' => 'Validator meminta revisi penilaian',
+                    ];
+
+                case 'approved':
+                    return [
+                        'badge_class' => 'bg-success',
+                        'badge_icon' => 'bi-check-circle',
+                        'badge_text' => 'Disetujui',
+                        'button_text' => 'Lihat Hasil',
+                        'button_class' => 'btn-success',
+                        'button_icon' => 'bi-file-earmark-check',
+                        'button_disabled' => false,
+                        'description' => 'Penilaian telah disetujui validator',
+                    ];
+
+                default:
+                    return [
+                        'badge_class' => 'bg-secondary',
+                        'badge_icon' => 'bi-question-circle',
+                        'badge_text' => 'Status Tidak Diketahui',
+                        'button_text' => 'Buka',
+                        'button_class' => 'btn-secondary',
+                        'button_icon' => 'bi-box-arrow-up-right',
+                        'button_disabled' => false,
+                        'description' => '',
+                    ];
+            }
+        }
+
+        // Default fallback
+        return [
+            'badge_class' => 'bg-secondary',
+            'badge_icon' => 'bi-question-circle',
+            'badge_text' => 'Status Tidak Diketahui',
+            'button_text' => 'Buka',
+            'button_class' => 'btn-secondary',
+            'button_icon' => 'bi-box-arrow-up-right',
+            'button_disabled' => false,
+            'description' => '',
+        ];
     }
 }

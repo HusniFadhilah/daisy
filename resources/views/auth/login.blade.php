@@ -117,14 +117,14 @@
             </form>
 
             <!-- Footer -->
-            <div class="auth-footer">
+            {{-- <div class="auth-footer">
                 <p>
                     Belum punya akun?
                     <a href="{{ route('register') }}">Daftar Sekarang</a>
-                </p>
-            </div>
-        </div>
+            </p>
+        </div> --}}
     </div>
+</div>
 </div>
 @endsection
 

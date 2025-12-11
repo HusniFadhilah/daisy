@@ -9,19 +9,19 @@ class IndikatorPenilaianElemen extends Model
     protected $table = 'indikator_penilaian_elemen';
 
     protected $fillable = [
-        'elemen_standar_id',
-        'jenjang_penilaian_id',
+        'id_elemen',
+        'id_jenjang_penilaian',
         'deskripsi_penilaian',
         'keterangan',
     ];
 
     public function elemenStandar()
     {
-        return $this->belongsTo(ElemenStandar::class, 'elemen_standar_id');
+        return $this->belongsTo(ElemenStandar::class, 'id_elemen');
     }
 
     public function jenjangPenilaian()
     {
-        return $this->belongsTo(JenjangPenilaian::class, 'jenjang_penilaian_id');
+        return $this->belongsTo(JenjangPenilaian::class, 'id_jenjang_penilaian');
     }
 }

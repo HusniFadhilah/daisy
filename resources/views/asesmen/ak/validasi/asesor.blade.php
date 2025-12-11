@@ -3,7 +3,7 @@
 @section('title', 'Validasi Penilaian Asesor - ' . $asesmen->name)
 
 @section('content')
-<div class="container-fluid py-4">
+<div class="container-fluid py-3">
     <!-- Header Card -->
     <div class="card mb-4 header-card shadow-sm">
         <div class="card-body">
@@ -12,7 +12,7 @@
                     <h3 class="mb-1">Validasi Penilaian Asesor</h3>
                     <p class="text-muted mb-0">{{ $asesmen->name }}</p>
                 </div>
-                <a href="{{ route('ak.validasi.dashboard') }}" class="btn btn-outline-secondary">
+                <a href="{{ route('ak.validasi.index') }}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left"></i> Kembali ke Dashboard
                 </a>
             </div>
@@ -41,7 +41,7 @@
                                     <span>Progress Penilaian:</span>
                                     <strong>{{ $progress1['completed'] }}/{{ $progress1['total'] }}</strong>
                                 </div>
-                                <div class="progress mt-2">
+                                <div class="progress mt-2" style="height: 20px;">
                                     <div class="progress-bar bg-primary" style="width: {{ $progress1['percentage'] }}%">
                                         {{ $progress1['percentage'] }}%
                                     </div>
@@ -73,7 +73,7 @@
                                     <span>Progress Penilaian:</span>
                                     <strong>{{ $progress2['completed'] }}/{{ $progress2['total'] }}</strong>
                                 </div>
-                                <div class="progress mt-2">
+                                <div class="progress mt-2" style="height: 20px;">
                                     <div class="progress-bar bg-warning" style="width: {{ $progress2['percentage'] }}%">
                                         {{ $progress2['percentage'] }}%
                                     </div>
@@ -86,30 +86,41 @@
         </div>
 
         <!-- Action Buttons -->
-        <div class="card-footer bg-white">
+        <div class="card-footer bg-white py-2">
+            @if($isApproved)
+            <div class="alert alert-success alert-permanent alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle me-2"></i>
+                Penilaian ini telah divalidasi oleh validator dan dinyatakan lolos untuk tahap Asesmen Lapangan (AL)
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            @endif
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    @if($allValidated)
-                    <button type="button" class="btn btn-success btn-lg" id="btnApproveAll">
+                    @if($allValidated && !$isApproved)
+                    <button type="button" class="btn btn-success btn-md" id="btnApproveAll">
                         <i class="bi bi-check-all"></i> Setujui Semua Penilaian
                     </button>
+                    @elseif($isApproved)
+                    <button type="button" class="btn btn-success btn-md" disabled>
+                        <i class="bi bi-check-circle"></i> Sudah Disetujui
+                    </button>
                     @else
-                    <button type="button" class="btn btn-secondary btn-lg" disabled>
+                    <button type="button" class="btn btn-secondary btn-md" disabled>
                         <i class="bi bi-hourglass-split"></i> Validasi Belum Lengkap
                     </button>
                     @endif
 
-                    <button type="button" class="btn btn-outline-primary btn-lg ms-2" id="btnExportComparison">
-                        <i class="bi bi-file-earmark-excel"></i> Export Perbandingan
+                    <button type="button" class="btn btn-outline-primary btn-md ms-lg-2 my-2" id="btnExportComparison">
+                        <i class="bi bi-file-earmark-excel"></i> Download Perbandingan
                     </button>
                 </div>
 
-                <div>
+                <div class="d-flex align-items-center">
                     <span class="text-muted me-3">
                         Progress Validasi:
                         <strong>{{ $validatedCount }}/{{ $totalElemen }}</strong>
                     </span>
-                    <div class="progress d-inline-block" style="width: 200px; vertical-align: middle;">
+                    <div class="progress d-inline-block" style="height: 20px; width: 200px;">
                         <div class="progress-bar bg-success" style="width: {{ $validationPercentage }}%">
                             {{ $validationPercentage }}%
                         </div>
@@ -132,31 +143,31 @@
         <div class="card-body">
             <div class="row">
                 <div class="col-md-3">
-                    <button type="button" class="btn btn-outline-success w-100" id="btnValidateAllAgreed">
+                    <button type="button" class="btn btn-outline-success w-100" id="btnValidateAllAgreed" {{ $isApproved ? 'disabled' : '' }}>
                         <i class="bi bi-check-circle"></i>
                         <div>Validasi Semua yang Sama</div>
-                        <small class="text-muted">Otomatis approve nilai yang sama</small>
+                        <small>Otomatis approve nilai yang sama</small>
                     </button>
                 </div>
                 <div class="col-md-3">
                     <button type="button" class="btn btn-outline-warning w-100" id="btnReviewDifferences">
                         <i class="bi bi-exclamation-triangle"></i>
                         <div>Review Perbedaan</div>
-                        <small class="text-muted">Lihat hanya yang berbeda</small>
+                        <small>Lihat hanya yang berbeda</small>
                     </button>
                 </div>
                 <div class="col-md-3">
                     <button type="button" class="btn btn-outline-info w-100" id="btnShowComments">
                         <i class="bi bi-chat-square-text"></i>
                         <div>Lihat Komentar</div>
-                        <small class="text-muted">Tampilkan justifikasi asesor</small>
+                        <small>Tampilkan justifikasi asesor</small>
                     </button>
                 </div>
                 <div class="col-md-3">
                     <button type="button" class="btn btn-outline-secondary w-100" id="btnExportNotes">
                         <i class="bi bi-file-text"></i>
                         <div>Export Catatan</div>
-                        <small class="text-muted">Download catatan validasi</small>
+                        <small>Download catatan validasi</small>
                     </button>
                 </div>
             </div>
@@ -206,7 +217,7 @@
             </div>
             <div class="modal-body">
                 <p>Apakah Anda yakin ingin <strong>menyetujui semua penilaian</strong> kedua asesor?</p>
-                <div class="alert alert-warning">
+                <div class="alert alert-warning alert-permanent alert-dismissible">
                     <i class="bi bi-exclamation-triangle"></i>
                     <strong>Perhatian:</strong> Setelah disetujui, asesor tidak dapat mengubah penilaian mereka.
                 </div>
@@ -222,6 +233,8 @@
     </div>
 </div>
 
+@include('asesmen.ak.components.modal-validasi-detail')
+@include('asesmen.ak.components.modal-detail-validasi')
 @endsection
 
 @push('styles')
@@ -253,11 +266,11 @@
 
 @push('scripts')
 <script>
+    const idAsesmen = "{{ $asesmen->id }}";
+    const asesor1Id = "{{ $asesor1->id }}";
+    const asesor2Id = "{{ $asesor2->id }}";
+    let diffFilterActive = false;
     document.addEventListener('DOMContentLoaded', function() {
-        const asesmenId = "{{ $asesmen->id }}";
-        const asesor1Id = "{{ $asesor1->id }}";
-        const asesor2Id = "{{ $asesor2->id }}";
-
         // Initialize all handlers
         initializeQuickActions();
         initializeApproveAll();
@@ -285,31 +298,55 @@
             });
 
             // Review differences only
-            document.getElementById('btnReviewDifferences')?.addEventListener('click', function() {
-                const diffRows = document.querySelectorAll('.validator-row[data-has-diff="true"]');
+            const btnReviewDifferences = document.getElementById('btnReviewDifferences');
+            let reviewDiffActive = false;
 
-                // Hide all rows
-                document.querySelectorAll('.validator-row').forEach(row => {
-                    row.style.display = 'none';
-                });
+            if (btnReviewDifferences) {
+                btnReviewDifferences.addEventListener('click', function() {
+                    const allRows = document.querySelectorAll('.validator-row');
+                    const diffRows = document.querySelectorAll('.validator-row[data-has-diff="true"]');
 
-                // Show only differences
-                diffRows.forEach(row => {
-                    row.style.display = '';
-                });
+                    if (!reviewDiffActive) {
+                        // MODE ON: baris beda jelas, baris lain dimute (opacity diturunkan)
+                        allRows.forEach(row => {
+                            if (row.dataset.hasDiff === 'true') {
+                                row.classList.add('review-diff-focus');
+                                row.classList.remove('review-diff-muted');
+                            } else {
+                                row.classList.add('review-diff-muted');
+                                row.classList.remove('review-diff-focus');
+                            }
+                        });
 
-                Swal.fire({
-                    icon: 'info'
-                    , title: 'Filter Aktif'
-                    , text: `Menampilkan ${diffRows.length} elemen dengan perbedaan penilaian.`
-                    , timer: 2000
+                        reviewDiffActive = true;
+
+                        Swal.fire({
+                            icon: 'info'
+                            , title: 'Review Perbedaan'
+                            , text: `Menyorot ${diffRows.length} elemen dengan perbedaan penilaian.`
+                            , timer: 2000
+                        });
+                    } else {
+                        // MODE OFF: kembalikan tampilan normal
+                        allRows.forEach(row => {
+                            row.classList.remove('review-diff-muted', 'review-diff-focus');
+                        });
+                        reviewDiffActive = false;
+
+                        Swal.fire({
+                            icon: 'info'
+                            , title: 'Filter Dimatikan'
+                            , text: 'Semua elemen ditampilkan normal kembali.'
+                            , timer: 1500
+                        });
+                    }
                 });
-            });
+            }
 
             // Export comparison
             const btnExportComparison = document.getElementById('btnExportComparison')
             if (btnExportComparison) btnExportComparison.addEventListener('click', function() {
-                window.location.href = `/ak/validasi/${asesmenId}/export-comparison`;
+                window.location.href = `/ak/validasi/${idAsesmen}/export-comparison/${asesor1Id}/${asesor2Id}`;
             });
         }
 
@@ -331,7 +368,7 @@
                 showLoading();
 
                 try {
-                    const response = await fetch(`/ak/validasi/${asesmenId}/asesor/${asesor1Id}/approve`, {
+                    const response = await fetch(`/ak/validasi/${idAsesmen}/asesor/approve`, {
                         method: 'POST'
                         , headers: {
                             'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -391,9 +428,6 @@
          */
         async function openValidationModal(elemenId) {
             const modal = new bootstrap.Modal(document.getElementById('modalValidasiDetail'));
-            const asesmenId = document.querySelector('[data-asesmen-id]')
-            if (asesmenId)
-                asesmenId.dataset.asesmenId || window.asesmenId;
 
             // Show modal
             modal.show();
@@ -404,7 +438,7 @@
 
             try {
                 // Fetch elemen detail
-                const response = await fetch(`/ak/validasi/${asesmenId}/elemen/${elemenId}`, {
+                const response = await fetch(`/ak/validasi/${idAsesmen}/elemen/${elemenId}`, {
                     headers: {
                         'Accept': 'application/json'
                         , 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
@@ -450,11 +484,17 @@
                 , hasDifference
             } = data;
 
-            // Store elemen ID
-            document.getElementById('validasiElemenId').value = elemen.id_elemen;
+            // Store elemen ID dan asesor IDs
+            document.getElementById('validasiElemenId').value = elemen.id;
+            document.getElementById('validasiAsesor1Id').value = asesor1.user.id;
+            document.getElementById('validasiAsesor2Id').value = asesor2.user.id;
+
+            // ✅ SET VALUE untuk radio buttons
+            document.getElementById('radioAsesor1').value = asesor1.user.id;
+            document.getElementById('radioAsesor2').value = asesor2.user.id;
 
             // Elemen Info
-            document.getElementById('detailKriteria').textContent = elemen.kriteria?.kode_kriteria || '-';
+            document.getElementById('detailKriteria').textContent = elemen.kriteria ? `${elemen.kriteria.kode_kriteria} (${elemen.kriteria.nama_kriteria})` : '-';
             document.getElementById('detailKodeElemen').textContent = elemen.kode_elemen;
             document.getElementById('detailElemenStandar').textContent = elemen.pernyataan_elemen;
 
@@ -475,12 +515,17 @@
 
             if (asesor1.penilaian) {
                 const skor1 = asesor1.penilaian.skor;
-                document.getElementById('skorAsesor1Container').innerHTML =
+                const skorAsesor1Container = document.getElementById('skorAsesor1Container')
+                if (skorAsesor1Container) skorAsesor1Container.innerHTML =
                     `<div class="skor-display" style="background: ${getSkorColor(skor1)}; color: white;">${skor1}</div>`;
-                document.getElementById('kategoriAsesor1').className = `badge ${getSkorBadgeClass(skor1)}`;
-                document.getElementById('kategoriAsesor1').textContent = getSkorLabel(skor1);
-                document.getElementById('justifikasiAsesor1').innerHTML =
-                    asesor1.penilaian.justifikasi || '<em class="text-muted">Tidak ada justifikasi</em>';
+                const kategoriAsesor1 = document.getElementById('kategoriAsesor1')
+                if (kategoriAsesor1) {
+                    kategoriAsesor1.className = `badge ${getSkorBadgeClass(skor1)}`;
+                    kategoriAsesor1.textContent = getSkorLabel(skor1);
+                }
+                const komentarAsesor1 = document.getElementById('komentarAsesor1')
+                if (komentarAsesor1) komentarAsesor1.innerHTML =
+                    asesor1.penilaian.komentar || '<em class="text-muted">Tidak ada justifikasi</em>';
             } else {
                 document.getElementById('skorAsesor1Container').innerHTML =
                     '<span class="text-muted">Belum dinilai</span>';
@@ -492,25 +537,29 @@
 
             if (asesor2.penilaian) {
                 const skor2 = asesor2.penilaian.skor;
-                document.getElementById('skorAsesor2Container').innerHTML =
-                    `<div class="skor-display" style="background: ${getSkorColor(skor2)}; color: white;">${skor2}</div>`;
-                document.getElementById('kategoriAsesor2').className = `badge ${getSkorBadgeClass(skor2)}`;
-                document.getElementById('kategoriAsesor2').textContent = getSkorLabel(skor2);
-                document.getElementById('justifikasiAsesor2').innerHTML =
-                    asesor2.penilaian.justifikasi || '<em class="text-muted">Tidak ada justifikasi</em>';
+                const skorAsesor2Container = document.getElementById('skorAsesor2Container')
+                if (skorAsesor2Container) skorAsesor2Container.innerHTML = `<div class="skor-display" style="background: ${getSkorColor(skor2)}; color: white;">${skor2}</div>`;
+                const kategoriAsesor2 = document.getElementById('kategoriAsesor2')
+                if (kategoriAsesor2) {
+                    kategoriAsesor2.className = `badge ${getSkorBadgeClass(skor2)}`;
+                    kategoriAsesor2.textContent = getSkorLabel(skor2);
+                }
+                const komentarAsesor2 = document.getElementById('komentarAsesor2')
+                if (komentarAsesor2) komentarAsesor2.innerHTML = asesor2.penilaian.komentar || '<em class="text-muted">Tidak ada justifikasi</em>';
             } else {
                 document.getElementById('skorAsesor2Container').innerHTML =
                     '<span class="text-muted">Belum dinilai</span>';
             }
 
             // Difference indicator
+            const rowDifference = document.getElementById('rowDifference')
             if (hasDifference && asesor1.penilaian && asesor2.penilaian) {
-                document.getElementById('rowDifference').style.display = '';
+                if (rowDifference) rowDifference.style.display = '';
                 const diff = Math.abs(asesor1.penilaian.skor - asesor2.penilaian.skor);
-                document.getElementById('differenceMessage').textContent =
-                    ` Selisih ${diff} poin antara kedua asesor.`;
+                const differenceMessage = document.getElementById('differenceMessage')
+                if (differenceMessage) differenceMessage.textContent = ` Selisih ${diff} poin antara kedua asesor.`;
             } else {
-                document.getElementById('rowDifference').style.display = 'none';
+                if (rowDifference) rowDifference.style.display = 'none';
             }
 
             // Setup quick select buttons
@@ -518,6 +567,9 @@
 
             // Reset form
             document.getElementById('formValidasi').reset();
+            document.querySelectorAll('input[name="asesor_target_revisi"]').forEach(radio => {
+                radio.checked = false;
+            });
         }
 
         /**
@@ -527,27 +579,51 @@
          */
         function setupModalEventListeners() {
             // Status validasi change
-            document.getElementById('statusValidasi')?.addEventListener('change', function() {
-                const btnRevision = document.getElementById('btnSaveRevision');
-                const btnValidasi = document.getElementById('btnSaveValidasi');
+            const statusValidasi = document.getElementById('statusValidasi');
+            if (statusValidasi) {
+                statusValidasi.addEventListener('change', function() {
+                    const btnRevision = document.getElementById('btnSaveRevision');
+                    const btnValidasi = document.getElementById('btnSaveValidasi');
+                    const alertRevisi = document.getElementById('alertRevisiInfo');
+                    const labelRequired = document.getElementById('labelCatatanRequired');
 
-                if (this.value === 'revision_needed') {
-                    btnRevision.style.display = 'inline-block';
-                    btnValidasi.style.display = 'none';
-                } else {
-                    btnRevision.style.display = 'none';
-                    btnValidasi.style.display = 'inline-block';
-                }
-            });
+                    if (this.value === 'revision_required') {
+                        btnRevision.style.display = 'inline-block';
+                        btnValidasi.style.display = 'none';
+                        alertRevisi.style.display = 'block';
+                        labelRequired.style.display = 'inline';
+
+                        // ✅ Show radio buttons untuk pilih asesor
+                        document.getElementById('rowAsesor1').classList.add('border-danger');
+                        document.getElementById('rowAsesor2').classList.add('border-danger');
+                    } else {
+                        btnRevision.style.display = 'none';
+                        btnValidasi.style.display = 'inline-block';
+                        alertRevisi.style.display = 'none';
+                        labelRequired.style.display = 'none';
+
+                        // ✅ Hide radio buttons
+                        document.getElementById('rowAsesor1').classList.remove('border-danger');
+                        document.getElementById('rowAsesor2').classList.remove('border-danger');
+                    }
+                });
+            }
 
             // Save validasi
-            document.getElementById('btnSaveValidasi')?.addEventListener('click', function() {
-                submitValidasi('validated');
-            });
+            const btnSaveValidasi = document.getElementById('btnSaveValidasi');
+            if (btnSaveValidasi) {
+                btnSaveValidasi.addEventListener('click', function() {
+                    submitValidasi('validated');
+                });
+            }
 
-            document.getElementById('btnSaveRevision')?.addEventListener('click', function() {
-                submitValidasi('revision_needed');
-            });
+            // Save revision
+            const btnSaveRevision = document.getElementById('btnSaveRevision');
+            if (btnSaveRevision) {
+                btnSaveRevision.addEventListener('click', function() {
+                    submitValidasi('revision_required');
+                });
+            }
         }
 
         /**
@@ -557,7 +633,8 @@
          */
         function setupQuickSelectButtons(penilaian1, penilaian2) {
             // Select Asesor 1 score
-            document.getElementById('btnSelectAsesor1')?.addEventListener('click', function() {
+            const btnSelectAsesor1 = document.getElementById('btnSelectAsesor1')
+            if (btnSelectAsesor1) btnSelectAsesor1.addEventListener('click', function() {
                 if (penilaian1) {
                     document.getElementById('skorFinal').value = penilaian1.skor;
                     document.getElementById('statusValidasi').value = 'validated';
@@ -571,7 +648,8 @@
             });
 
             // Select Asesor 2 score
-            document.getElementById('btnSelectAsesor2')?.addEventListener('click', function() {
+            const btnSelectAsesor2 = document.getElementById('btnSelectAsesor2')
+            if (btnSelectAsesor2) btnSelectAsesor2.addEventListener('click', function() {
                 if (penilaian2) {
                     document.getElementById('skorFinal').value = penilaian2.skor;
                     document.getElementById('statusValidasi').value = 'validated';
@@ -585,7 +663,8 @@
             });
 
             // Select Average (if applicable)
-            document.getElementById('btnSelectAverage')?.addEventListener('click', function() {
+            const btnSelectAverage = document.getElementById('btnSelectAverage')
+            if (btnSelectAverage) btnSelectAverage.addEventListener('click', function() {
                 if (penilaian1 && penilaian2) {
                     const avg = Math.round((penilaian1.skor + penilaian2.skor) / 2);
                     document.getElementById('skorFinal').value = avg;
@@ -611,33 +690,52 @@
             const elemenId = document.getElementById('validasiElemenId').value;
             const skorFinal = document.getElementById('skorFinal').value;
             const catatanValidator = document.getElementById('catatanValidator').value;
-            const asesmenId = document.querySelector('[data-asesmen-id]')?.dataset.asesmenId || window.asesmenId;
 
-            // Validation
-            if (!skorFinal) {
+            // ✅ VALIDASI: Jika revisi, harus pilih asesor
+            let asesorId = null;
+            if (status === 'revision_required') {
+                const selectedRadio = document.querySelector('input[name="asesor_target_revisi"]:checked');
+
+                if (!selectedRadio) {
+                    Swal.fire({
+                        icon: 'warning'
+                        , title: 'Pilih Asesor'
+                        , text: 'Silakan pilih asesor mana yang harus merevisi penilaian!'
+                    });
+                    return;
+                }
+
+                asesorId = selectedRadio.value;
+
+                if (!catatanValidator.trim()) {
+                    Swal.fire({
+                        icon: 'warning'
+                        , title: 'Catatan Diperlukan'
+                        , text: 'Silakan berikan catatan untuk revisi'
+                    });
+                    return;
+                }
+            }
+
+            // Validation for validated status
+            if (status === 'validated' && !skorFinal) {
                 Swal.fire({
                     icon: 'warning'
-                    , title: 'Validasi Tidak Lengkap'
+                    , title: 'Skor Final Diperlukan'
                     , text: 'Silakan pilih skor final terlebih dahulu'
                 });
                 return;
             }
 
-            if (status === 'revision_needed' && !catatanValidator) {
-                Swal.fire({
-                    icon: 'warning'
-                    , title: 'Catatan Diperlukan'
-                    , text: 'Silakan berikan catatan untuk revisi'
-                });
-                return;
-            }
-
             // Confirm
+            const confirmText = status === 'validated' ?
+                `Anda akan menyetujui penilaian dengan skor final: ${skorFinal}` :
+                `Anda akan meminta ${document.querySelector(`label[for="${document.querySelector('input[name="asesor_target_revisi"]:checked').id}"]`).closest('.card').querySelector('h6').textContent} untuk merevisi penilaian`;
+
             const confirmResult = await Swal.fire({
                 icon: 'question'
                 , title: status === 'validated' ? 'Setujui Penilaian?' : 'Minta Revisi?'
-                , text: status === 'validated' ?
-                    `Anda akan menyetujui penilaian dengan skor final: ${skorFinal}` : 'Asesor akan diminta untuk merevisi penilaian mereka'
+                , text: confirmText
                 , showCancelButton: true
                 , confirmButtonText: status === 'validated' ? 'Ya, Setujui' : 'Ya, Minta Revisi'
                 , cancelButtonText: 'Batal'
@@ -655,7 +753,7 @@
             });
 
             try {
-                const response = await fetch(`/ak/validasi/${asesmenId}/elemen/${elemenId}/validate`, {
+                const response = await fetch(`/ak/validasi/${idAsesmen}/elemen/${elemenId}/validate`, {
                     method: 'POST'
                     , headers: {
                         'Content-Type': 'application/json'
@@ -666,6 +764,7 @@
                         status: status
                         , skor_final: skorFinal
                         , catatan_validator: catatanValidator
+                        , id_asesor: asesorId // ✅ KIRIM ID ASESOR yang harus revisi
                     })
                 });
 
@@ -679,7 +778,7 @@
                 await Swal.fire({
                     icon: 'success'
                     , title: 'Berhasil!'
-                    , text: result.message || 'Validasi berhasil disimpan'
+                    , text: result.message
                     , timer: 2000
                     , showConfirmButton: false
                 });
@@ -688,7 +787,7 @@
                 const modal = bootstrap.Modal.getInstance(document.getElementById('modalValidasiDetail'));
                 modal.hide();
 
-                // Reload page to update matrix
+                // Reload page
                 window.location.reload();
 
             } catch (error) {
@@ -703,52 +802,13 @@
         }
 
         /**
-         * ============================================
-         * HELPER FUNCTIONS
-         * ============================================
-         */
-
-        function getSkorColor(skor) {
-            const colors = {
-                0: '#f44336'
-                , 1: '#ff9800'
-                , 2: '#ffeb3b'
-                , 3: '#8bc34a'
-                , 4: '#4caf50'
-            };
-            return colors[skor] || '#9e9e9e';
-        }
-
-        function getSkorLabel(skor) {
-            const labels = {
-                0: 'Tidak Memenuhi'
-                , 1: 'Belum Memenuhi'
-                , 2: 'Lemah'
-                , 3: 'Memenuhi'
-                , 4: 'Melampaui'
-            };
-            return labels[skor] || '-';
-        }
-
-        function getSkorBadgeClass(skor) {
-            const classes = {
-                0: 'bg-danger'
-                , 1: 'bg-warning'
-                , 2: 'bg-warning'
-                , 3: 'bg-success'
-                , 4: 'bg-success'
-            };
-            return classes[skor] || 'bg-secondary';
-        }
-
-        /**
          * Validate All Agreed
          */
         async function validateAllAgreed() {
             showLoading();
 
             try {
-                const response = await fetch(`/ak/validasi/${asesmenId}/validate-agreed`, {
+                const response = await fetch(`/ak/validasi/${idAsesmen}/validate-agreed`, {
                     method: 'POST'
                     , headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -799,6 +859,178 @@
             Swal.close();
         }
     });
+
+    /**
+     * ============================================
+     * HELPER FUNCTIONS
+     * ============================================
+     */
+
+    function getSkorColor(skor) {
+        const colors = {
+            0: '#f44336'
+            , 1: '#ff9800'
+            , 2: '#ffeb3b'
+            , 3: '#8bc34a'
+            , 4: '#4caf50'
+        };
+        return colors[skor] || '#9e9e9e';
+    }
+
+    function getSkorLabel(skor) {
+        const labels = {
+            0: 'Tidak Memenuhi'
+            , 1: 'Belum Memenuhi'
+            , 2: 'Lemah'
+            , 3: 'Memenuhi'
+            , 4: 'Melampaui'
+        };
+        return labels[skor] || '-';
+    }
+
+    function getSkorBadgeClass(skor) {
+        const classes = {
+            0: 'bg-danger'
+            , 1: 'bg-warning'
+            , 2: 'bg-warning'
+            , 3: 'bg-success'
+            , 4: 'bg-success'
+        };
+        return classes[skor] || 'bg-secondary';
+    }
+
+    /**
+     * ============================================
+     * SHOW KOMENTAR POPOVER
+     * ============================================
+     */
+    function showKomentarPopover(element, namaAsesor, skor, komentar) {
+        const skorLabel = {
+            0: 'Tidak Memenuhi'
+            , 1: 'Belum Memenuhi'
+            , 2: 'Lemah'
+            , 3: 'Memenuhi'
+            , 4: 'Pelampauan'
+        } [skor] || '-';
+
+        Swal.fire({
+            title: `💬 Komentar ${namaAsesor}`
+            , html: `
+            <div class="text-start">
+                <div class="alert alert-info alert-permanent alert-dismissible mb-3">
+                    <strong>Skor:</strong> ${skor} - ${skorLabel}
+                </div>
+                <div class="alert alert-light alert-permanent alert-dismissible">
+                    <strong>Justifikasi:</strong>
+                    <p class="mb-0 mt-2">${komentar || '<em>Tidak ada komentar</em>'}</p>
+                </div>
+            </div>
+        `
+            , icon: 'info'
+            , confirmButtonText: 'Tutup'
+            , width: '600px'
+        });
+    }
+
+    /**
+     * ============================================
+     * SHOW VALIDASI DETAIL
+     * ============================================
+     */
+    async function showValidasiDetail(elemenId, validasiId) {
+        const modal = new bootstrap.Modal(document.getElementById('modalDetailValidasi'));
+        modal.show();
+
+        // Show loading
+        document.getElementById('loadingDetailValidasi').style.display = 'block';
+        document.getElementById('contentDetailValidasi').style.display = 'none';
+
+        try {
+            // Fetch validasi detail
+            const response = await fetch(`/ak/validasi/${idAsesmen}/detail/${elemenId}`, {
+                headers: {
+                    'Accept': 'application/json'
+                    , 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            });
+
+            const result = await response.json();
+
+            if (!result.success) {
+                throw new Error(result.message || 'Gagal memuat data');
+            }
+
+            // Populate modal
+            populateValidasiDetail(result.data);
+
+            // Show content
+            document.getElementById('loadingDetailValidasi').style.display = 'none';
+            document.getElementById('contentDetailValidasi').style.display = 'block';
+
+        } catch (error) {
+            console.error('Error loading validasi detail:', error);
+            Swal.fire({
+                icon: 'error'
+                , title: 'Error'
+                , text: error.message
+            });
+            modal.hide();
+        }
+    }
+
+    function populateValidasiDetail(data) {
+        const {
+            elemen
+            , validasi
+            , penilaianAsesor
+        } = data;
+
+        // Elemen info
+        document.getElementById('detailValidasiKode').textContent = elemen.kode_elemen;
+        document.getElementById('detailValidasiElemen').textContent = elemen.pernyataan_elemen;
+
+        // Validasi info
+        const statusBadge = validasi.status_validasi === 'validated' ?
+            '<span class="badge bg-success">✅ Disetujui</span>' :
+            '<span class="badge bg-warning">⚠️ Perlu Revisi</span>';
+
+        document.getElementById('detailValidasiStatus').innerHTML = statusBadge;
+
+        const skorBadge = document.getElementById('badgeSkorFinal');
+        skorBadge.textContent = validasi.skor_final || '-';
+        skorBadge.className = `badge ${getSkorBadgeClass(validasi.skor_final)}`;
+
+        document.getElementById('detailValidasiValidator').textContent = validasi.validator ? validasi.validator.name : '-';
+        document.getElementById('detailValidasiTanggal').textContent = formatDateTime(validasi.validated_at);
+        document.getElementById('detailValidasiCatatan').innerHTML = validasi.catatan_validator || '<em class="text-muted">Tidak ada catatan</em>';
+
+        // Penilaian asesor
+        let htmlPenilaian = '';
+        penilaianAsesor.forEach(pen => {
+            htmlPenilaian += `
+            <div class="mb-3 pb-3 border-bottom">
+                <div class="d-flex align-items-center mb-2">
+                    <div class="avatar-circle me-2" style="width: 30px; height: 30px; font-size: 12px;">
+                        ${pen.asesor.name.substring(0, 2).toUpperCase()}
+                    </div>
+                    <strong>${pen.asesor.name}</strong>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <small class="text-muted">Skor:</small>
+                        <span class="badge ${getSkorBadgeClass(pen.skor)}">${pen.skor}</span>
+                    </div>
+                    <div class="col-md-12 mt-2">
+                        <small class="text-muted">Komentar:</small>
+                        <p class="small mb-0">${pen.komentar || '<em>-</em>'}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+        });
+
+        document.getElementById('detailPenilaianAsesor').innerHTML = htmlPenilaian;
+    }
 
 </script>
 @endpush
