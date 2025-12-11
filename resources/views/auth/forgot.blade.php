@@ -86,10 +86,10 @@
                     Ingat password Anda?
                     <a href="{{ route('login') }}">Masuk Sekarang</a>
                 </p>
-                <p style="margin-top: 10px;">
+                {{-- <p style="margin-top: 10px;">
                     Belum punya akun?
                     <a href="{{ route('register') }}">Daftar Sekarang</a>
-                </p>
+                </p> --}}
             </div>
         </div>
     </div>
