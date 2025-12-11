@@ -29,6 +29,7 @@ class AkreditasiSeeder extends Seeder
         
         $updated = 0;
         $notFound = 0;
+        $created = 0;
         $errors = [];
         
         while (($data = fgetcsv($file)) !== false) {
@@ -51,25 +52,61 @@ class AkreditasiSeeder extends Seeder
                 $status = !empty($statusKadaluarsa) && $statusKadaluarsa !== '-' ? $statusKadaluarsa : 'Belum Terakreditasi';
                 
                 // Map university name variations to exact database names
+                $universitasOriginal = $universitas;
                 $universitas = $this->mapUniversityName($universitas);
                 
-                // Find study program by name and university name
-                $studyProgram = StudyProgram::whereHas('university', function($query) use ($universitas) {
-                    $query->where('name', $universitas);
-                })
-                ->where('name', $programStudi)
-                ->first();
+                // Map jenjang from CSV to DegreeLevel name
+                $jenjangMapped = $this->mapJenjang($jenjang);
                 
-                if ($studyProgram) {
+                // Find or create university
+                $university = \App\Models\University::where('name', $universitas)->first();
+                if (!$university) {
+                    // Create university with auto-generated code
+                    $code = $this->generateUniversityCode($universitas);
+                    $university = \App\Models\University::create([
+                        'code' => $code,
+                        'name' => $universitas,
+                    ]);
+                    $this->command->info("Created university: {$universitas} ({$code})");
+                }
+                
+                // Find degree level
+                $degreeLevel = \App\Models\DegreeLevel::where('name', $jenjangMapped)->first();
+                if (!$degreeLevel) {
+                    $errors[] = "Jenjang tidak ditemukan: {$jenjang} ({$jenjangMapped}) untuk {$programStudi}";
+                    $notFound++;
+                    continue;
+                }
+                
+                // Find or create study program
+                $studyProgram = StudyProgram::where('id_univ', $university->id)
+                    ->where('id_level', $degreeLevel->id)
+                    ->where('name', $programStudi)
+                    ->first();
+                
+                if (!$studyProgram) {
+                    // Create study program
+                    $code = $this->generateProgramCode($university->code, $programStudi);
+                    $studyProgram = StudyProgram::create([
+                        'code' => $code,
+                        'name' => $programStudi,
+                        'id_univ' => $university->id,
+                        'id_level' => $degreeLevel->id,
+                        'email' => $email,
+                        'peringkat_akreditasi' => $peringkat,
+                        'tanggal_kadaluarsa' => $tanggal,
+                        'status_kadaluarsa' => $status,
+                    ]);
+                    $created++;
+                    $this->command->info("Created program: {$programStudi} ({$jenjang}) - {$universitas}");
+                } else {
+                    // Update existing study program
                     $studyProgram->update([
                         'peringkat_akreditasi' => $peringkat,
                         'tanggal_kadaluarsa' => $tanggal,
                         'status_kadaluarsa' => $status,
                     ]);
                     $updated++;
-                } else {
-                    $notFound++;
-                    $errors[] = "Program Studi tidak ditemukan: {$programStudi} - {$universitas}";
                 }
                 
             } catch (\Exception $e) {
@@ -81,15 +118,16 @@ class AkreditasiSeeder extends Seeder
         
         $this->command->info("Selesai!");
         $this->command->info("Updated: {$updated}");
+        $this->command->info("Created: {$created}");
         $this->command->info("Not Found: {$notFound}");
         
-        if (!empty($errors) && count($errors) <= 10) {
-            $this->command->warn("\nBeberapa email tidak ditemukan:");
+        if (!empty($errors) && count($errors) <= 50) {
+            $this->command->warn("\nBeberapa program studi tidak ditemukan:");
             foreach ($errors as $error) {
                 $this->command->line($error);
             }
-        } elseif (count($errors) > 10) {
-            $this->command->warn("\n{$notFound} email tidak ditemukan (terlalu banyak untuk ditampilkan)");
+        } elseif (count($errors) > 50) {
+            $this->command->warn("\n{$notFound} program studi tidak ditemukan (terlalu banyak untuk ditampilkan)");
         }
     }
     
@@ -125,5 +163,49 @@ class AkreditasiSeeder extends Seeder
         ];
         
         return $mappings[$name] ?? $name;
+    }
+    
+    /**
+     * Map jenjang from CSV format to DegreeLevel name in database
+     */
+    private function mapJenjang($jenjang): string
+    {
+        $mappings = [
+            'S1' => 'Sarjana (Strata 1)',
+            'S2' => 'Magister (Strata 2)',
+            'S3' => 'Doktor (Strata 3)',
+            'D-III' => 'Diploma III',
+            'D-IV' => 'Diploma IV / Sarjana Terapan',
+            'D3' => 'Diploma III',
+            'D4' => 'Diploma IV / Sarjana Terapan',
+            'STr' => 'Diploma IV / Sarjana Terapan',
+            'S2 Terapan' => 'Magister Terapan (Strata 2)',
+            'S3 Terapan' => 'Doktor Terapan (Strata 3)',
+        ];
+        
+        return $mappings[$jenjang] ?? $jenjang;
+    }
+    
+    /**
+     * Generate university code from name
+     */
+    private function generateUniversityCode($name): string
+    {
+        // Take first letters of each word, max 10 chars
+        $words = explode(' ', $name);
+        $code = '';
+        foreach ($words as $word) {
+            if (strlen($code) >= 10) break;
+            $code .= strtoupper(substr($word, 0, 1));
+        }
+        return $code ?: strtoupper(substr($name, 0, 10));
+    }
+    
+    /**
+     * Generate program code from university code and program name
+     */
+    private function generateProgramCode($univCode, $programName): string
+    {
+        return $univCode;
     }
 }

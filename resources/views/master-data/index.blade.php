@@ -158,7 +158,16 @@
                                     <td>{{ $program->university->name ?? '-' }}</td>
                                     <td>
                                         @if($program->peringkat_akreditasi)
-                                            <span class="badge bg-{{ $program->peringkat_akreditasi == 'A' ? 'success' : ($program->peringkat_akreditasi == 'B' ? 'primary' : 'warning') }}">
+                                            @php
+                                                $badgeColor = match(strtolower($program->peringkat_akreditasi)) {
+                                                    'unggul', 'a' => 'success',
+                                                    'baik sekali', 'b' => 'primary',
+                                                    'baik' => 'warning',
+                                                    'c' => 'secondary',
+                                                    default => 'info'
+                                                };
+                                            @endphp
+                                            <span class="badge bg-{{ $badgeColor }}">
                                                 {{ $program->peringkat_akreditasi }}
                                             </span>
                                         @else
@@ -166,10 +175,17 @@
                                         @endif
                                     </td>
                                     <td>
-                                        @if($program->status_kadaluarsa == 'Aktif')
-                                            <span class="badge bg-success">Aktif</span>
-                                        @elseif($program->status_kadaluarsa == 'Kadaluarsa')
-                                            <span class="badge bg-danger">Kadaluarsa</span>
+                                        @if($program->status_kadaluarsa)
+                                            @php
+                                                $statusLower = strtolower($program->status_kadaluarsa);
+                                                $badgeColor = 'secondary';
+                                                if (str_contains($statusLower, 'berlaku')) {
+                                                    $badgeColor = 'success';
+                                                } elseif (str_contains($statusLower, 'kadaluarsa') || str_contains($statusLower, 'hari lagi')) {
+                                                    $badgeColor = 'warning';
+                                                }
+                                            @endphp
+                                            <span class="badge bg-{{ $badgeColor }}">{{ $program->status_kadaluarsa }}</span>
                                         @else
                                             <span class="badge bg-secondary">Belum Terakreditasi</span>
                                         @endif
