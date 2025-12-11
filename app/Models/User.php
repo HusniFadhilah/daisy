@@ -3,9 +3,10 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Database\Seeders\RoleSeeder;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
@@ -22,7 +23,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
-        'last_role',
+        'role_selected',
     ];
 
     /**
@@ -46,5 +47,11 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function getRoleAliasAttribute()
+    {
+        $roles = RoleSeeder::getRoles();
+        return $roles->firstWhere('name', $this->attributes['role_selected'])['alias'] ?? 'LAMDEPILAR';
     }
 }

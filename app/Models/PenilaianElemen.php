@@ -13,16 +13,19 @@ class PenilaianElemen extends Model
 
     protected $fillable = [
         'id_asesmen',
-        'id_user',
+        'id_asesor',
         'id_elemen',
         'skor',
         'komentar',
         'status',
         'status_validasi',
+        'skor_final',
+        'catatan_validator',
         'validated_by',
         'validated_at',
         'validation_note',
-        'revision_count'
+        'revision_count',
+        'is_locked'
     ];
 
     protected $casts = [
@@ -40,9 +43,14 @@ class PenilaianElemen extends Model
     /**
      * Get the user (asesor)
      */
-    public function user()
+    public function asesor()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'id_asesor');
+    }
+
+    public function validator()
+    {
+        return $this->belongsTo(User::class, 'validated_by');
     }
 
     /**
@@ -50,7 +58,15 @@ class PenilaianElemen extends Model
      */
     public function elemen()
     {
-        return $this->belongsTo(ElemenStandar::class, 'id_elemen', 'id_elemen');
+        return $this->belongsTo(ElemenStandar::class, 'id_elemen');
+    }
+
+    /**
+     * PenilaianElemen has one Validasi
+     */
+    public function validasi()
+    {
+        return $this->hasOne(ValidasiPenilaian::class, 'id_penilaian');
     }
 
     /**

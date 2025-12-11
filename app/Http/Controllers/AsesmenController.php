@@ -190,7 +190,7 @@ class AsesmenController extends Controller
     public function updateUserRole(Request $request, $id)
     {
         $request->validate([
-            'assignment_id' => 'required|exists:asesmen_user_role,id',
+            'assignment_id' => 'required|exists:asesmen_user_roles,id',
             'id_role' => 'required|exists:roles,id',
         ]);
 
@@ -236,7 +236,7 @@ class AsesmenController extends Controller
             // Check if user has any penilaian
             $hasPenilaian = DB::table('penilaian_elemen')
                 ->where('id_asesmen', $id)
-                ->where('id_user', $userId)
+                ->where('id_asesor', $userId)
                 ->exists();
 
             if ($hasPenilaian) {
@@ -370,7 +370,7 @@ class AsesmenController extends Controller
 
         $completedElemens = DB::table('penilaian_elemen')
             ->where('id_asesmen', $idAsesmen)
-            ->where('id_user', $userId)
+            ->where('id_asesor', $userId)
             ->whereNotNull('skor')
             ->count();
 
@@ -406,8 +406,8 @@ class AsesmenController extends Controller
             ->get();
 
         // Most active asesor
-        $activeAsesor = User::select('users.*', DB::raw('COUNT(asesmen_user_role.id) as asesmen_count'))
-            ->join('asesmen_user_role', 'users.id', '=', 'asesmen_user_role.id_user')
+        $activeAsesor = User::select('users.*', DB::raw('COUNT(asesmen_user_roles.id) as asesmen_count'))
+            ->join('asesmen_user_roles', 'users.id', '=', 'asesmen_user_roles.id_user')
             ->groupBy('users.id')
             ->orderByDesc('asesmen_count')
             ->take(5)

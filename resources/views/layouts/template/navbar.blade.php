@@ -1,3 +1,7 @@
+@php
+$authUser = auth()->user();
+@endphp
+
 <!-- Top Navigation Bar -->
 <nav class="navbar top-navbar">
     <div class="container-fluid px-4">
@@ -38,11 +42,10 @@
             <!-- User Menu Dropdown -->
             <div class="dropdown">
                 <div class="user-menu" data-bs-toggle="dropdown">
-                    <div class="user-avatar">{{ strtoupper(substr(auth()->user()->name ?? 'M', 0, 1)) }}</div>
+                    <div class="user-avatar">{{ strtoupper(substr($authUser->name ?? 'M', 0, 1)) }}</div>
                     <div class="user-info">
-                        <div class="user-name">{{ auth()->user()->name ?? 'Dr. Eng. Maryono, ST., MT' }}</div>
-                        {{-- <div class="user-role">{{ auth()->user()->role ?? 'LAMDEPILAR' }}</div> --}}
-                        <div class="user-role">Asesor</div>
+                        <div class="user-name">{{ $authUser->name ?? 'Dr. Eng. Maryono, ST., MT' }}</div>
+                        <div class="user-role">{{ $authUser->role ? $authUser->role_alias : 'LAMDEPILAR' }}</div>
                     </div>
                     <i class="bi bi-chevron-down"></i>
                 </div>

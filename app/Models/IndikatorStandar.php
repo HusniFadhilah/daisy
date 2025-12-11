@@ -8,8 +8,6 @@ class IndikatorStandar extends Model
 {
     protected $table = 'indikator';
 
-    protected $primaryKey = 'id_indikator';
-
     protected $fillable = [
         'id_elemen',
         'jenis_indikator',
@@ -18,6 +16,6 @@ class IndikatorStandar extends Model
 
     public function elemenStandar()
     {
-        return $this->belongsTo(ElemenStandar::class, 'id_elemen', 'id_elemen');
+        return $this->belongsTo(ElemenStandar::class, 'id_elemen');
     }
 }

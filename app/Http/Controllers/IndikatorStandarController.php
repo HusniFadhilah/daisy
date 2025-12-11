@@ -13,7 +13,7 @@ class IndikatorStandarController extends Controller
     public function index()
     {
         $indikator = IndikatorStandar::with('elemenStandar')->get();
-        
+
         return response()->json([
             'success' => true,
             'data' => $indikator
@@ -26,7 +26,7 @@ class IndikatorStandarController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'id_elemen' => 'required|exists:elemen,id_elemen',
+            'id_elemen' => 'required|exists:elemen,id',
             'jenis_indikator' => 'required|string|max:20|in:Kualitatif,Kuantitatif',
             'deskripsi_indikator' => 'required|string',
         ]);
@@ -47,14 +47,14 @@ class IndikatorStandarController extends Controller
     public function show($id)
     {
         $indikator = IndikatorStandar::with('elemenStandar.standar')->find($id);
-        
+
         if (!$indikator) {
             return response()->json([
                 'success' => false,
                 'message' => 'Indikator not found'
             ], 404);
         }
-        
+
         return response()->json([
             'success' => true,
             'data' => $indikator
@@ -67,20 +67,20 @@ class IndikatorStandarController extends Controller
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'id_elemen' => 'required|exists:elemen,id_elemen',
+            'id_elemen' => 'required|exists:elemen,id',
             'jenis_indikator' => 'required|string|max:20|in:Kualitatif,Kuantitatif',
             'deskripsi_indikator' => 'required|string',
         ]);
 
         $indikator = IndikatorStandar::find($id);
-        
+
         if (!$indikator) {
             return response()->json([
                 'success' => false,
                 'message' => 'Indikator not found'
             ], 404);
         }
-        
+
         $indikator->update($validated);
         $indikator->load('elemenStandar');
 
@@ -97,14 +97,14 @@ class IndikatorStandarController extends Controller
     public function destroy($id)
     {
         $indikator = IndikatorStandar::find($id);
-        
+
         if (!$indikator) {
             return response()->json([
                 'success' => false,
                 'message' => 'Indikator not found'
             ], 404);
         }
-        
+
         $indikator->delete();
 
         return response()->json([

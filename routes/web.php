@@ -54,10 +54,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('.index');
         Route::get('/riwayat', [PenawaranController::class, 'penawaranIndex'])
             ->name('.riwayat');
-        Route::post('/{id}/accept', [PenawaranController::class, 'acceptPenawaran'])
-            ->name('.accept');
-        Route::post('/{id}/reject', [PenawaranController::class, 'rejectPenawaran'])
-            ->name('.reject');
     });
 
     // PENUGASAN ASESMEN
@@ -71,35 +67,48 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // PROSES AK
     Route::prefix('ak')->name('ak.')->middleware(['auth'])->group(function () {
-
         Route::get('/berkas', [AKController::class, 'berkas'])->name('berkas');
-        Route::get('/berkas/{id}', [AKController::class, 'showBerkas'])->name('berkas.show');
-        Route::post('/berkas/{id}/nilai', [AKController::class, 'simpanNilai'])->name('berkas.nilai');
-        Route::get('/berkas/{id}/template', [AKController::class, 'downloadTemplate'])
+        Route::get('/berkas/{idAsesmen}/cek-penawaran', [PenawaranController::class, 'cekPenawaran'])->name('berkas.penawaran');
+        Route::middleware('penawaran.accepted')->group(function () {
+            Route::get('/berkas/{idAsesmen}', [AKController::class, 'showBerkas'])->name('berkas.show');
+            Route::post('/berkas/{idAsesmen}/nilai', [AKController::class, 'simpanNilai'])->name('berkas.nilai');
+        });
+        Route::get('/berkas/{idAsesmen}/template', [AKController::class, 'downloadTemplate'])
             ->name('berkas.template');
-        Route::get('/berkas/{id}/export', [AKController::class, 'exportExcel'])
+        Route::get('/berkas/{idAsesmen}/export', [AKController::class, 'exportExcel'])
             ->name('berkas.export');
-        Route::post('/berkas/{id}/import', [AKController::class, 'importExcel'])
+        Route::post('/berkas/{idAsesmen}/import', [AKController::class, 'importExcel'])
             ->name('berkas.import');
-        Route::get('/import-status/{id}', [AKController::class, 'checkImportStatus'])
+        Route::get('/import-status/{idAsesmen}', [AKController::class, 'checkImportStatus'])
             ->name('import.status');
-        Route::post('/berkas/{id}/submit', [AKController::class, 'submitPenilaian'])
+        Route::post('/berkas/{idAsesmen}/submit', [AKController::class, 'submitPenilaian'])
             ->name('berkas.submit');
-        Route::post('/berkas/{id}/unsubmit', [AKController::class, 'unsubmitPenilaian'])
+        Route::post('/berkas/{idAsesmen}/unsubmit', [AKController::class, 'unsubmitPenilaian'])
             ->name('berkas.unsubmit');
-        Route::get('/berkas/{id}/import-history', [AKController::class, 'importHistory'])
+        Route::get('/berkas/{idAsesmen}/import-history', [AKController::class, 'importHistory'])
             ->name('berkas.import-history');
-        Route::delete('/berkas/{id}/reset-all', [AKController::class, 'resetAllPenilaian'])
+        Route::delete('/berkas/{idAsesmen}/reset-all', [AKController::class, 'resetAllPenilaian'])
             ->name('berkas.reset-all');
 
-        Route::prefix('validasi')->name('validasi.')->middleware(['auth'])->group(function () {
-            Route::get('/', [ValidasiController::class, 'dashboard'])->name('dashboard');
-            Route::get('/{asesmenId}/asesor/{asesor1Id}/{asesor2Id?}', [ValidasiController::class, 'asesor'])->name('asesor');
-            Route::get('/{asesmenId}/elemen/{elemenId}/detail', [ValidasiController::class, 'getElemenDetail'])->name('elemen.detail');
-            Route::post('/{asesmenId}/elemen/{elemenId}/validate', [ValidasiController::class, 'validateElemen'])->name('elemen.validate');
-            Route::post('/{asesmenId}/validate-agreed', [ValidasiController::class, 'validateAgreed'])->name('validate-agreed');
-            Route::post('/{asesmenId}/asesor/{asesorId}/approve', [ValidasiController::class, 'approveAll'])->name('approve');
-            Route::get('/{asesmenId}/export-comparison/{asesor1Id}/{asesor2Id}', [ValidasiController::class, 'exportComparison'])->name('export-comparison');
+        Route::prefix('validasi')->name('validasi.')->group(function () {
+            Route::get('/', [ValidasiController::class, 'index'])->name('index');
+            Route::middleware('penawaran.accepted')->group(function () {
+                Route::get('/{idAsesmen}/asesor/{asesor1Id}/{asesor2Id}', [ValidasiController::class, 'asesor'])->name('asesor');
+                Route::get('/{asesmen}/detail/{elemen}', [ValidasiController::class, 'getValidasiDetail'])
+                    ->name('detail');
+            });
+            Route::get('/{asesmen}/asesor', [ValidasiController::class, 'showAsesorComparison'])
+                ->name('asesor.comparison');
+            Route::get('/{asesmen}/elemen/{elemen}', [ValidasiController::class, 'getElemenDetail'])
+                ->name('elemen.detail');
+            Route::get('/{asesmen}/export-comparison', [ValidasiController::class, 'exportComparison'])
+                ->name('export.comparison');
+            Route::post('/{asesmen}/elemen/{elemen}/validate', [ValidasiController::class, 'validateElemen'])
+                ->name('elemen.validate');
+            Route::post('/{asesmen}/validate-agreed', [ValidasiController::class, 'validateAllAgreed'])
+                ->name('validate-agreed');
+            Route::post('/{asesmen}/asesor/approve', [ValidasiController::class, 'approveAllPenilaian'])
+                ->name('asesor.approve');
         });
 
         //tdk terpakai
@@ -110,9 +119,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/upload', [AKController::class, 'upload'])->name('upload');
         Route::post('/upload', [AKController::class, 'storeUpload'])->name('upload.store');
         Route::delete('/upload/{id}', [AKController::class, 'deleteUpload'])->name('upload.delete');
-
-        Route::get('/validasi', [AKController::class, 'validasi'])->name('validasi');
-        Route::get('/validasi/{id}', [AKController::class, 'showValidasi'])->name('validasi.show');
     });
 
     // PENAWARAN ASESMEN
@@ -130,9 +136,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('jenis-indikator', JenisIndikatorController::class);
     Route::resource('indikator', IndikatorController::class);
 
-
-    // CRUD Assessment
-    Route::resource('asesmen', AsesmenController::class);
     // Dashboard Overview
     Route::prefix('asesmen')->name('asesmen')->group(function () {
         Route::get('/dashboard', [AsesmenController::class, 'dashboard'])

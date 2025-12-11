@@ -12,32 +12,21 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('validasi_penilaian', function (Blueprint $table) {
-            $table->id('id_validasi');
+            $table->id();
 
             // Foreign Keys
-            $table->unsignedBigInteger('id_penilaian');
-            $table->unsignedBigInteger('id_validator');
+            $table->foreignId('id_penilaian')->nullable()->constrained('penilaian_elemen', 'id')->onDelete('cascade');
+            $table->foreignId('id_validator')->nullable()->constrained('users', 'id')->onDelete('cascade');
 
             // Validasi Data
-            $table->enum('status_validasi', ['not_validated', 'validated', 'revision_needed'])
+            $table->enum('status_validasi', ['not_validated', 'validated', 'revision_required', 'approved'])
                 ->default('not_validated');
             $table->integer('skor_final')->nullable()->comment('Skor final yang disetujui validator');
             $table->text('catatan_validator')->nullable();
-            $table->timestamp('tanggal_validasi')->nullable();
+            $table->timestamp('validated_at')->nullable();
 
             // Metadata
             $table->timestamps();
-
-            // Foreign Key Constraints
-            $table->foreign('id_penilaian')
-                ->references('id_penilaian')
-                ->on('penilaian_elemen')
-                ->onDelete('cascade');
-
-            $table->foreign('id_validator')
-                ->references('id')
-                ->on('users')
-                ->onDelete('cascade');
 
             // Indexes
             $table->index('id_penilaian');

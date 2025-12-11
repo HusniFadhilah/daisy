@@ -15,16 +15,16 @@ class IndikatorPenilaianElemenController extends Controller
     public function index(Request $request)
     {
         $indikators = IndikatorPenilaianElemen::with(['elemenStandar', 'jenjangPenilaian'])
-            ->orderBy('elemen_standar_id')
-            ->orderBy('jenjang_penilaian_id')
+            ->orderBy('id_elemen')
+            ->orderBy('id_jenjang_penilaian')
             ->get();
-        
+
         $elemenStandars = ElemenStandar::with('kriteria')->orderBy('kode_elemen')->get();
         $jenjangPenilaians = JenjangPenilaian::orderBy('skor')->get();
-        
+
         // Group by elemen standar
-        $groupedIndikators = $indikators->groupBy('elemen_standar_id');
-        
+        $groupedIndikators = $indikators->groupBy('id_elemen');
+
         return view('indikator-penilaian.index', compact('indikators', 'elemenStandars', 'jenjangPenilaians', 'groupedIndikators'));
     }
 
@@ -35,7 +35,7 @@ class IndikatorPenilaianElemenController extends Controller
     {
         $elemenStandars = ElemenStandar::with('kriteria')->orderBy('kode_elemen')->get();
         $jenjangPenilaians = JenjangPenilaian::orderBy('skor')->get();
-        
+
         return view('indikator-penilaian.create', compact('elemenStandars', 'jenjangPenilaians'));
     }
 
@@ -45,8 +45,8 @@ class IndikatorPenilaianElemenController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'elemen_standar_id' => 'required|exists:elemen_standar,id_elemen',
-            'jenjang_penilaian_id' => 'required|exists:jenjang_penilaian,id',
+            'id_elemen' => 'required|exists:elemen_standar,id',
+            'id_jenjang_penilaian' => 'required|exists:jenjang_penilaian,id',
             'deskripsi_penilaian' => 'required|string',
             'keterangan' => 'nullable|string',
         ]);
@@ -71,14 +71,14 @@ class IndikatorPenilaianElemenController extends Controller
     public function show($id)
     {
         $indikator = IndikatorPenilaianElemen::with(['elemenStandar', 'jenjangPenilaian'])->findOrFail($id);
-        
+
         if (request()->wantsJson()) {
             return response()->json([
                 'success' => true,
                 'data' => $indikator
             ]);
         }
-        
+
         return view('indikator-penilaian.show', compact('indikator'));
     }
 
@@ -90,7 +90,7 @@ class IndikatorPenilaianElemenController extends Controller
         $indikatorPenilaian = IndikatorPenilaianElemen::findOrFail($id);
         $elemenStandars = ElemenStandar::with('kriteria')->orderBy('kode_elemen')->get();
         $jenjangPenilaians = JenjangPenilaian::orderBy('skor')->get();
-        
+
         return view('indikator-penilaian.edit', compact('indikatorPenilaian', 'elemenStandars', 'jenjangPenilaians'));
     }
 
@@ -100,15 +100,15 @@ class IndikatorPenilaianElemenController extends Controller
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'elemen_standar_id' => 'required|exists:elemen_standar,id_elemen',
-            'jenjang_penilaian_id' => 'required|exists:jenjang_penilaian,id',
+            'id_elemen' => 'required|exists:elemen_standar,id',
+            'id_jenjang_penilaian' => 'required|exists:jenjang_penilaian,id',
             'deskripsi_penilaian' => 'required|string',
             'keterangan' => 'nullable|string',
         ]);
 
         $indikator = IndikatorPenilaianElemen::findOrFail($id);
         $indikator->update($validated);
-        
+
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,

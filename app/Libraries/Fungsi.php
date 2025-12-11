@@ -63,7 +63,7 @@ class Fungsi
 
     public static function getRoleSession()
     {
-        return Str::slug(Auth::user()->role->name ?? '');
+        return Str::slug(Auth::user()->role ?? '');
     }
 
     public static function uniqueCode($limit)
@@ -158,5 +158,18 @@ class Fungsi
         $imageData = self::fetchUrlWithCurl($url);
         $base64Image = base64_encode($imageData);
         return 'data:image/png;base64,' . $base64Image;
+    }
+
+    public static function getSkorColor($skor)
+    {
+        $colors = [
+            0 => 'bg-danger',
+            1 => 'bg-warning',
+            2 => 'bg-warning',
+            3 => 'bg-success',
+            4 => 'bg-success'
+        ];
+
+        return $colors[$skor] ?? 'bg-secondary';
     }
 }

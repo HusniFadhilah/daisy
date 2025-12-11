@@ -1,14 +1,3 @@
-{{--
-    ============================================
-    KERTAS KERJA VALIDATOR - MATRIX COMPARISON
-    ============================================
-
-    Component untuk menampilkan penilaian dari 2 asesor
-    dengan kolom indikator yang collapsible
-
-    Location: resources/views/asesmen/ak/components/validator-matrix.blade.php
---}}
-
 <div class="card mb-4 shadow-sm">
     <div class="card-header bg-white border-bottom">
         <div class="d-flex justify-content-between align-items-center">
@@ -95,18 +84,18 @@
                 <thead>
                     <tr>
                         {{-- Fixed Columns --}}
-                        <th class="vm-header sticky-col sticky-header" style="left: 0; min-width: 60px; z-index: 35;">
+                        <th class="vm-header sticky-col sticky-header bg-primary" style="left: 0; min-width: 60px; z-index: 35;">
                             <div class="text-center fw-bold">Kriteria</div>
                         </th>
-                        <th class="vm-header sticky-col sticky-header" style="left: 60px; min-width: 80px; z-index: 35;">
+                        <th class="vm-header sticky-col sticky-header bg-primary" style="left: 60px; min-width: 60px; z-index: 35;">
                             <div class="text-center fw-bold">Kode<br>Elemen</div>
                         </th>
-                        <th class="vm-header sticky-col sticky-header" style="left: 140px; min-width: 250px; z-index: 35;">
+                        <th class="vm-header sticky-col sticky-header elemen-col bg-primary" style="left: 120px; z-index: 35;">
                             <div class="fw-bold">Elemen Standar</div>
                         </th>
 
                         {{-- Collapsible Indikator Column --}}
-                        <th class="vm-header sticky-header indikator-col" style="min-width: 300px; z-index: 30;" id="indikatorHeader">
+                        <th class="vm-header sticky-header indikator-col bg-primary" style="min-width: 240px; z-index: 30;" id="indikatorHeader">
                             <div class="fw-bold">
                                 <i class="bi bi-list-ul me-2"></i>Indikator Penilaian
                             </div>
@@ -114,19 +103,19 @@
 
                         {{-- Asesor 1 Columns --}}
                         <th class="vm-header sticky-header text-center" colspan="2" style="background: #e3f2fd; z-index: 30;">
-                            <div class="fw-bold">Penilaian Asesor 1</div>
+                            <div class="fw-bold text-dark">Penilaian Asesor 1</div>
                             <div class="small text-muted">{{ $asesor1->name ?? 'Asesor 1' }}</div>
                         </th>
 
                         {{-- Asesor 2 Columns --}}
                         <th class="vm-header sticky-header text-center" colspan="2" style="background: #fff3e0; z-index: 30;">
-                            <div class="fw-bold">Penilaian Asesor 2</div>
+                            <div class="fw-bold text-dark">Penilaian Asesor 2</div>
                             <div class="small text-muted">{{ $asesor2->name ?? 'Asesor 2' }}</div>
                         </th>
 
                         {{-- Validasi Column --}}
                         <th class="vm-header sticky-header text-center" style="background: #e8f5e9; min-width: 120px; z-index: 30;">
-                            <div class="fw-bold">Validasi</div>
+                            <div class="fw-bold text-dark">Validasi</div>
                         </th>
                     </tr>
 
@@ -134,7 +123,7 @@
                     <tr>
                         <th class="vm-subheader sticky-col sticky-header" style="left: 0; z-index: 34;"></th>
                         <th class="vm-subheader sticky-col sticky-header" style="left: 60px; z-index: 34;"></th>
-                        <th class="vm-subheader sticky-col sticky-header" style="left: 140px; z-index: 34;"></th>
+                        <th class="vm-subheader sticky-col sticky-header" style="left: 120px; z-index: 34;"></th>
                         <th class="vm-subheader sticky-header indikator-col" style="z-index: 29;"></th>
 
                         {{-- Asesor 1 --}}
@@ -160,32 +149,37 @@
                     </tr>
                 </thead>
 
-                <tbody>
-                    @foreach($kriterias as $kriteria)
-                    @php
-                    $jumlahElemen = $kriteria->elemenStandar->count();
-                    $firstRow = true;
-                    @endphp
+                @foreach($kriterias as $kriteria)
+                @php
+                $jumlahElemen = $kriteria->elemenStandar->count();
+                $firstRow = true;
 
+                // cek apakah di kriteria ini ada elemen yang beda
+                $groupHasDiff = false;
+                foreach ($kriteria->elemenStandar as $e) {
+                $p1 = $e->penilaian->where('id_asesor', $asesor1->id)->first();
+                $p2 = $e->penilaian->where('id_asesor', $asesor2->id)->first();
+                if ($p1 && $p2 && $p1->skor != $p2->skor) {
+                $groupHasDiff = true;
+                break;
+                }
+                }
+                @endphp
+
+                {{-- ⬇⬇ satu group untuk satu kriteria --}}
+                <tbody class="validator-group" data-has-diff="{{ $groupHasDiff ? 'true' : 'false' }}">
                     @foreach($kriteria->elemenStandar as $elemen)
                     @php
-                    // Get penilaian dari kedua asesor
-                    $penilaian1 = $elemen->penilaian->where('id_user', $asesor1->id)->first();
-                    $penilaian2 = $elemen->penilaian->where('id_user', $asesor2->id)->first();
-
-                    // Get validasi status
+                    $penilaian1 = $elemen->penilaian->where('id_asesor', $asesor1->id)->first();
+                    $penilaian2 = $elemen->penilaian->where('id_asesor', $asesor2->id)->first();
                     $validasi = $elemen->penilaian->where('status_validasi', '!=', 'not_validated')->first();
 
-                    // Check perbedaan
-                    $hasDifference = false;
-                    if ($penilaian1 && $penilaian2) {
-                    $hasDifference = $penilaian1->skor != $penilaian2->skor;
-                    }
+                    $hasDifference = $penilaian1 && $penilaian2 && $penilaian1->skor != $penilaian2->skor;
                     @endphp
 
-                    <tr class="validator-row" data-elemen-id="{{ $elemen->id_elemen }}" @if($hasDifference) data-has-diff="true" @endif>
+                    <tr class="validator-row" data-elemen-id="{{ $elemen->id }}" @if($hasDifference) data-has-diff="true" @endif>
 
-                        {{-- Kriteria (Merged) --}}
+                        {{-- Kriteria (Merged sekali di baris pertama) --}}
                         @if($firstRow)
                         <td class="vm-cell sticky-col" style="left: 0; z-index: 15;" rowspan="{{ $jumlahElemen }}">
                             <span class="kriteria-badge">{{ $kriteria->kode_kriteria }}</span>
@@ -199,7 +193,7 @@
                         </td>
 
                         {{-- Elemen Standar --}}
-                        <td class="vm-cell sticky-col" style="left: 140px; z-index: 15;">
+                        <td class="vm-cell sticky-col elemen-col" style="left: 120px; z-index: 15;">
                             <div class="elemen-text">{{ $elemen->pernyataan_elemen }}</div>
                         </td>
 
@@ -222,30 +216,46 @@
                         </td>
 
                         {{-- Asesor 1 - Pemenuhan --}}
-                        <td class="vm-cell vm-score-cell text-center" style="background: {{ $penilaian1 && $penilaian1->skor != 4 ? getSkorColor($penilaian1->skor) : '#e0e0e0' }};" data-asesor="1" data-type="pemenuhan" data-skor="{{ $penilaian1->skor ?? '' }}">
+                        <td class="vm-cell vm-score-cell vm-clickable" style="background: {{ $penilaian1 && $penilaian1->skor != 4 ? '#' . \App\Models\JenjangPenilaian::where('skor', $penilaian1->skor)->first()?->color : '#e0e0e0' }};" data-asesor="1" data-type="pemenuhan" data-skor="{{ $penilaian1->skor ?? '' }}" data-komentar="{{ $penilaian1->komentar ?? '' }}" @if($penilaian1 && $penilaian1->skor != 4)
+                            onclick="showKomentarPopover(this, '{{ $asesor1->name }}', {{ $penilaian1->skor }}, '{{ addslashes($penilaian1->komentar) }}')"
+                            title="Klik untuk lihat komentar"
+                            @endif>
+
                             @if($penilaian1 && $penilaian1->skor != 4)
-                            <span class="score-badge">{{ $penilaian1->skor }}</span>
+                            <small class="text-{{ $penilaian1->skor == 2 ? 'dark':'white'}} text-left align-content-start">{{ $penilaian1->komentar }}</small>
                             @endif
                         </td>
 
                         {{-- Asesor 1 - Pelampauan --}}
-                        <td class="vm-cell vm-score-cell text-center" style="background: {{ $penilaian1 && $penilaian1->skor == 4 ? getSkorColor(4) : '#e0e0e0' }};" data-asesor="1" data-type="pelampauan" data-skor="{{ $penilaian1->skor ?? '' }}">
+                        <td class="vm-cell vm-score-cell vm-clickable" style="background: {{ $penilaian1 && $penilaian1->skor == 4 ? '#' . \App\Models\JenjangPenilaian::where('skor', 4)->first()?->color : '#e0e0e0' }};" data-asesor="1" data-type="pelampauan" data-skor="{{ $penilaian1->skor ?? '' }}" data-komentar="{{ $penilaian1->komentar ?? '' }}" @if($penilaian1 && $penilaian1->skor == 4)
+                            onclick="showKomentarPopover(this, '{{ $asesor1->name }}', 4, '{{ addslashes($penilaian1->komentar) }}')"
+                            title="Klik untuk lihat komentar"
+                            @endif>
+
                             @if($penilaian1 && $penilaian1->skor == 4)
-                            <span class="score-badge">4</span>
+                            <small class="text-white text-left align-content-start">{{ $penilaian1->komentar }}</small>
                             @endif
                         </td>
 
                         {{-- Asesor 2 - Pemenuhan --}}
-                        <td class="vm-cell vm-score-cell text-center" style="background: {{ $penilaian2 && $penilaian2->skor != 4 ? getSkorColor($penilaian2->skor) : '#e0e0e0' }};" data-asesor="2" data-type="pemenuhan" data-skor="{{ $penilaian2->skor ?? '' }}">
+                        <td class="vm-cell vm-score-cell vm-clickable" style="background: {{ $penilaian2 && $penilaian2->skor != 4 ? '#' . \App\Models\JenjangPenilaian::where('skor', $penilaian2->skor)->first()?->color : '#e0e0e0' }};" data-asesor="2" data-type="pemenuhan" data-skor="{{ $penilaian2->skor ?? '' }}" data-komentar="{{ $penilaian2->komentar ?? '' }}" @if($penilaian2 && $penilaian2->skor != 4)
+                            onclick="showKomentarPopover(this, '{{ $asesor2->name }}', {{ $penilaian2->skor }}, '{{ addslashes($penilaian2->komentar) }}')"
+                            title="Klik untuk lihat komentar"
+                            @endif>
+
                             @if($penilaian2 && $penilaian2->skor != 4)
-                            <span class="score-badge">{{ $penilaian2->skor }}</span>
+                            <small class="text-{{ $penilaian2->skor == 2 ? 'dark':'white'}} text-left align-content-start">{{ $penilaian2->komentar }}</small>
                             @endif
                         </td>
 
                         {{-- Asesor 2 - Pelampauan --}}
-                        <td class="vm-cell vm-score-cell text-center" style="background: {{ $penilaian2 && $penilaian2->skor == 4 ? getSkorColor(4) : '#e0e0e0' }};" data-asesor="2" data-type="pelampauan" data-skor="{{ $penilaian2->skor ?? '' }}">
+                        <td class="vm-cell vm-score-cell vm-clickable" style="background: {{ $penilaian2 && $penilaian2->skor == 4 ? '#' . \App\Models\JenjangPenilaian::where('skor', 4)->first()?->color : '#e0e0e0' }};" data-asesor="2" data-type="pelampauan" data-skor="{{ $penilaian2->skor ?? '' }}" data-komentar="{{ $penilaian2->komentar ?? '' }}" @if($penilaian2 && $penilaian2->skor == 4)
+                            onclick="showKomentarPopover(this, '{{ $asesor2->name }}', 4, '{{ addslashes($penilaian2->komentar) }}')"
+                            title="Klik untuk lihat komentar"
+                            @endif>
+
                             @if($penilaian2 && $penilaian2->skor == 4)
-                            <span class="score-badge">4</span>
+                            <small class="text-white text-left align-content-start">{{ $penilaian2->komentar }}</small>
                             @endif
                         </td>
 
@@ -256,7 +266,10 @@
                             <span class="badge bg-success">
                                 <i class="bi bi-check-circle"></i> Disetujui
                             </span>
-                            @elseif($validasi->status_validasi == 'revision_needed')
+                            <button class="btn btn-sm btn-outline-success d-block w-100 mt-2" onclick="showValidasiDetail({{ $elemen->id }}, {{ $validasi->id }})">
+                                <i class="bi bi-eye"></i> Detail
+                            </button>
+                            @elseif($validasi->status_validasi == 'revision_required')
                             <span class="badge bg-warning">
                                 <i class="bi bi-exclamation-triangle"></i> Revisi
                             </span>
@@ -266,7 +279,7 @@
                             </span>
                             @endif
                             @else
-                            <button class="btn btn-sm btn-outline-primary btn-validate" data-elemen-id="{{ $elemen->id_elemen }}">
+                            <button class="btn btn-sm btn-outline-primary btn-validate" data-elemen-id="{{ $elemen->id }}">
                                 <i class="bi bi-check"></i> Validasi
                             </button>
                             @endif
@@ -282,8 +295,8 @@
                         </td>
                     </tr>
                     @endforeach
-                    @endforeach
                 </tbody>
+                @endforeach
             </table>
         </div>
 
@@ -333,6 +346,36 @@
         background: white;
     }
 
+    .validator-row.review-diff-muted {
+        opacity: 0.25;
+        filter: grayscale(0.7);
+        transition: opacity 0.2s ease, filter 0.2s ease;
+    }
+
+    .validator-row.review-diff-focus {
+        position: relative;
+        z-index: 2;
+        box-shadow: 0 0 0 2px #ff9800 inset;
+        background-color: #fffbe6;
+    }
+
+    /* Kolom Elemen Standar dipersempit */
+    .elemen-col {
+        min-width: 100px;
+        /* sebelumnya 150px inline, sekarang bisa lebih kecil */
+        max-width: 150px;
+        /* batasi supaya tidak melebar */
+    }
+
+    /* Biar teks elemen tetap rapi walau kolom sempit */
+    .elemen-text {
+        font-size: 11px;
+        line-height: 1.4;
+        font-weight: 500;
+        word-wrap: break-word;
+        white-space: normal;
+    }
+
     /* Header Cells */
     .vm-header {
         padding: 12px 8px;
@@ -380,6 +423,23 @@
         background: #f8f9fa;
     }
 
+    .vm-clickable {
+        cursor: pointer;
+        position: relative;
+    }
+
+    .vm-clickable:hover::after {
+        content: '💬';
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        font-size: 16px;
+    }
+
+    .score-info {
+        position: relative;
+    }
+
     /* Sticky Positioning */
     .sticky-col {
         position: sticky;
@@ -399,7 +459,7 @@
 
     /* Indikator Column */
     .indikator-col {
-        max-width: 300px;
+        max-width: 200px;
         transition: all 0.3s ease;
     }
 

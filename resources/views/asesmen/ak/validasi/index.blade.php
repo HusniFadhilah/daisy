@@ -32,7 +32,7 @@
 @endpush
 
 @section('content')
-<div class="container-fluid py-4">
+<div class="container-fluid py-3">
     <!-- Header -->
     <div class="mb-4">
         <h2><i class="bi bi-check2-square"></i> Dashboard Validasi</h2>
@@ -74,26 +74,36 @@
 
     <!-- Asesmen List -->
     @forelse($needsValidation as $item)
+    @php
+    $idAsesors = $item['asesors']->pluck('id_user');
+    @endphp
     <div class="card asesmen-validasi-card mb-4">
-        <div class="card-header bg-primary text-white">
+        <div class="card-header bg-primary text-white py-3 ps-4">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h5 class="mb-0">{{ $item['asesmen']->name }}</h5>
-                    <small>{{ $item['asesmen']->perguruan_tinggi ?? '-' }}</small>
+                    <small>{{ $item['asesmen']->perguruan_tinggi ?? '' }}</small>
                 </div>
                 <span class="badge bg-warning text-dark">
-                    {{ $item['asesors']->count() }} Asesor Menunggu
+                    Menunggu {{ $item['asesors']->count() }} Asesor
                 </span>
             </div>
         </div>
         <div class="card-body">
-            <div class="mb-3">
-                <p class="mb-1">
-                    <i class="bi bi-tag"></i> <strong>Kode Panel:</strong>
-                    <span class="badge bg-secondary">{{ $item['asesmen']->kode_panel ?? 'N/A' }}</span>
-                </p>
-                @if($item['asesmen']->description)
-                <p class="mb-0 text-muted">{{ Str::limit($item['asesmen']->description, 120) }}</p>
+            <div class="d-flex justify-content-between align-items-start">
+                <div class="mb-3">
+                    <p class="mb-1">
+                        <i class="bi bi-tag"></i> <strong>Kode Panel:</strong>
+                        <span class="badge bg-secondary">{{ $item['asesmen']->kode_panel ?? 'N/A' }}</span>
+                    </p>
+                    @if($item['asesmen']->description)
+                    <p class="mb-0 text-muted">{{ Str::limit($item['asesmen']->description, 120) }}</p>
+                    @endif
+                </div>
+                @if(isset($idAsesors[0]) && isset($idAsesors[1]))
+                <a href="{{ route('ak.validasi.asesor', ['idAsesmen' => $item['asesmen']->id, 'asesor1Id' => $idAsesors[0],'asesor2Id' => $idAsesors[1]]) }}" class="btn btn-primary">
+                    <i class="bi bi-check2-square"></i> Validasi
+                </a>
                 @endif
             </div>
 
@@ -103,17 +113,17 @@
             @php
             // Calculate validation progress for this asesor
             $totalPenilaian = \App\Models\PenilaianElemen::where('id_asesmen', $item['asesmen']->id)
-            ->where('id_user', $asesor->id_user)
+            ->where('id_asesor', $asesor->id_user)
             ->count();
 
             $validatedCount = \App\Models\PenilaianElemen::where('id_asesmen', $item['asesmen']->id)
-            ->where('id_user', $asesor->id_user)
+            ->where('id_asesor', $asesor->id_user)
             ->whereIn('status_validasi', ['validated', 'approved'])
             ->count();
 
             $revisionCount = \App\Models\PenilaianElemen::where('id_asesmen', $item['asesmen']->id)
-            ->where('id_user', $asesor->id_user)
-            ->where('status_validasi', 'revision_needed')
+            ->where('id_asesor', $asesor->id_user)
+            ->where('status_validasi', 'revision_required')
             ->count();
 
             $percentage = $totalPenilaian > 0 ? round(($validatedCount / $totalPenilaian) * 100, 1) : 0;
@@ -134,7 +144,7 @@
                     </div>
                     <div class="col-md-3">
                         <small class="text-muted d-block">Submitted:</small>
-                        <strong>{{ $asesor->submitted_at->format('d M Y H:i') }}</strong>
+                        <strong>{{ \App\Libraries\Date::tglWaktu($asesor->submitted_at) }}</strong>
                     </div>
                     <div class="col-md-3">
                         <small class="text-muted d-block">Progress Validasi:</small>
@@ -149,11 +159,6 @@
                             <span class="text-danger">({{ $revisionCount }} perlu revisi)</span>
                             @endif
                         </small>
-                    </div>
-                    <div class="col-md-2 text-end">
-                        <a href="{{ route('ak.validasi.asesor', ['asesmenId' => $item['asesmen']->id, 'asesorId' => $asesor->id_user]) }}" class="btn btn-primary">
-                            <i class="bi bi-check2-square"></i> Validasi
-                        </a>
                     </div>
                 </div>
             </div>

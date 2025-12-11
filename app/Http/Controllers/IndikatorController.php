@@ -13,7 +13,7 @@ class IndikatorController extends Controller
     public function index()
     {
         $indikator = Indikator::with(['elemenStandar.kriteria', 'jenisIndikator'])->latest()->paginate(10);
-        
+
         return view('indikator.indikator.index', compact('indikator'));
     }
 
@@ -33,8 +33,8 @@ class IndikatorController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'id_elemen' => 'required|exists:elemen_standar,id_elemen',
-            'id_jenis' => 'required|exists:jenis_indikator,id_jenis',
+            'id_elemen' => 'required|exists:elemen_standar,id',
+            'id_jenis' => 'required|exists:jenis_indikator,id',
             'kode_indikator' => 'required|string|max:100',
             'deskripsi_indikator' => 'required|string',
         ]);
@@ -50,11 +50,11 @@ class IndikatorController extends Controller
     public function show($id)
     {
         $indikator = Indikator::with(['elemenStandar.kriteria', 'jenisIndikator'])->find($id);
-        
+
         if (!$indikator) {
             return redirect()->route('indikator.index')->with('error', 'Indikator tidak ditemukan');
         }
-        
+
         return view('indikator.indikator.show', compact('indikator'));
     }
 
@@ -64,11 +64,11 @@ class IndikatorController extends Controller
     public function edit($id)
     {
         $indikator = Indikator::find($id);
-        
+
         if (!$indikator) {
             return redirect()->route('indikator.index')->with('error', 'Indikator tidak ditemukan');
         }
-        
+
         $elemenStandar = \App\Models\ElemenStandar::with('kriteria')->get();
         $jenisIndikator = \App\Models\JenisIndikator::all();
         return view('indikator.indikator.edit', compact('indikator', 'elemenStandar', 'jenisIndikator'));
@@ -80,18 +80,18 @@ class IndikatorController extends Controller
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'id_elemen' => 'required|exists:elemen_standar,id_elemen',
-            'id_jenis' => 'required|exists:jenis_indikator,id_jenis',
+            'id_elemen' => 'required|exists:elemen_standar,id',
+            'id_jenis' => 'required|exists:jenis_indikator,id',
             'kode_indikator' => 'required|string|max:100',
             'deskripsi_indikator' => 'required|string',
         ]);
 
         $indikator = Indikator::find($id);
-        
+
         if (!$indikator) {
             return redirect()->route('indikator.index')->with('error', 'Indikator tidak ditemukan');
         }
-        
+
         $indikator->update($validated);
 
         return redirect()->route('indikator.index')->with('success', 'Indikator berhasil diperbarui');
@@ -103,11 +103,11 @@ class IndikatorController extends Controller
     public function destroy($id)
     {
         $indikator = Indikator::find($id);
-        
+
         if (!$indikator) {
             return redirect()->route('indikator.index')->with('error', 'Indikator tidak ditemukan');
         }
-        
+
         $indikator->delete();
 
         return redirect()->route('indikator.index')->with('success', 'Indikator berhasil dihapus');

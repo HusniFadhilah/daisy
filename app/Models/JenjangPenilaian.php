@@ -10,11 +10,17 @@ class JenjangPenilaian extends Model
 
     protected $fillable = [
         'nama_jenjang',
+        'color',
         'skor',
     ];
 
     public function indikatorPenilaianElemen()
     {
-        return $this->hasMany(IndikatorPenilaianElemen::class, 'jenjang_penilaian_id');
+        return $this->hasMany(IndikatorPenilaianElemen::class, 'id_jenjang_penilaian');
+    }
+
+    public static function getColorBySkor($skor)
+    {
+        return self::where('skor', $skor)->value('color') ?? 'cccccc';
     }
 }

@@ -13,7 +13,7 @@ class ElemenStandarSeeder extends Seeder
     public function run(): void
     {
         // Get kriteria IDs by kode_kriteria
-        $kriteriaMap = \App\Models\Kriteria::pluck('id_kriteria', 'kode_kriteria')->toArray();
+        $kriteriaMap = \App\Models\Kriteria::pluck('id', 'kode_kriteria')->toArray();
 
         $elemenStandar = [
             // D - Diferensiasi Misi

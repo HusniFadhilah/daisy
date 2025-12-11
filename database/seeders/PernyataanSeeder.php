@@ -23,7 +23,7 @@ class PernyataanSeeder extends Seeder
             'A.1', 'A.2', 'A.3', 'A.4', 'A.5',
             'R.1', 'R.2', 'R.3', 'R.4', 'R.5', 'R.6'
         ])
-        ->pluck('id_elemen', 'kode_elemen')
+        ->pluck('id', 'kode_elemen')
         ->toArray();
 
         $pernyataan = [

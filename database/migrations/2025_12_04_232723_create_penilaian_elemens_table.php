@@ -14,18 +14,16 @@ return new class extends Migration
         Schema::create('penilaian_elemen', function (Blueprint $table) {
             $table->id();
             $table->foreignId('id_asesmen')->constrained('asesmens', 'id')->onDelete('cascade');
-            $table->foreignId('id_user')->constrained('users', 'id')->onDelete('cascade');
-            $table->foreignId('id_elemen')->constrained('elemen_standar', 'id_elemen')->onDelete('cascade');
+            $table->foreignId('id_asesor')->constrained('users', 'id')->onDelete('cascade');
+            $table->foreignId('id_elemen')->constrained('elemen_standar', 'id')->onDelete('cascade');
             $table->integer('skor')->nullable()->comment('0=Not Met, 1=Not Met, 2=Weakness, 3=Met');
             $table->text('komentar')->nullable()->comment('Deskripsi/justifikasi penilaian asesor');
             $table->enum('status', ['draft', 'submitted'])->default('draft');
             // Status validasi oleh validator
-            $table->enum('status_validasi', [
-                'not_validated',    // Belum divalidasi
-                'validated',        // Sudah divalidasi - OK
-                'revision_needed',  // Perlu revisi
-                'approved',         // Disetujui final
-            ])->default('not_validated');
+            $table->enum('status_validasi', ['not_validated', 'validated', 'revision_required', 'approved'])
+                ->default('not_validated');
+            $table->integer('skor_final')->nullable()->comment('Skor final yang disetujui validator');
+            $table->text('catatan_validator')->nullable();
 
             // ID validator yang memvalidasi
             $table->foreignId('validated_by')->nullable()
@@ -41,13 +39,14 @@ return new class extends Migration
             // Versi penilaian (untuk tracking revisi)
             $table->integer('revision_count')->default(0);
 
+            $table->boolean('is_locked')->comment('0-false,1-true')->default(0);
             $table->timestamps();
 
             // Unique constraint: satu user hanya bisa nilai 1 elemen 1x per asesmen
-            $table->unique(['id_asesmen', 'id_user', 'id_elemen'], 'unique_penilaian');
+            $table->unique(['id_asesmen', 'id_asesor', 'id_elemen'], 'unique_penilaian');
 
             // Index untuk query cepat
-            $table->index(['id_asesmen', 'id_user']);
+            $table->index(['id_asesmen', 'id_asesor']);
             $table->index('status_validasi');
             $table->index('status');
         });

@@ -11,7 +11,6 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Style\Font;
 
 class PenilaianExcelService
 {
@@ -47,9 +46,7 @@ class PenilaianExcelService
         $kriterias = Kriteria::with([
             'elemenStandar.indikator.jenisIndikator',
             'elemenStandar.indikatorPenilaian.jenjangPenilaian',
-        ])
-            ->orderBy('id_kriteria')
-            ->get();
+        ])->get();
 
         foreach ($kriterias as $kriteria) {
             $isFirstElemen = true;
@@ -200,9 +197,7 @@ class PenilaianExcelService
         $kriterias = Kriteria::with([
             'elemenStandar.indikator.jenisIndikator',
             'elemenStandar.indikatorPenilaian.jenjangPenilaian',
-        ])
-            ->orderBy('id_kriteria')
-            ->get();
+        ])->get();
 
         foreach ($kriterias as $kriteria) {
             $isFirstElemen = true;
@@ -263,8 +258,8 @@ class PenilaianExcelService
 
                 // Ambil penilaian asesor
                 $penilaian = PenilaianElemen::where('id_asesmen', $asesmen->id)
-                    ->where('id_user', $userId)
-                    ->where('id_elemen', $elemen->id_elemen)
+                    ->where('id_asesor', $userId)
+                    ->where('id_elemen', $elemen->id)
                     ->first();
 
                 // kosongkan kolom skor

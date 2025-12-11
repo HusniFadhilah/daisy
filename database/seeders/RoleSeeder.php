@@ -12,7 +12,16 @@ class RoleSeeder extends Seeder
      */
     public function run(): void
     {
-        $roles = [
+        $roles = $this->getRoles();
+
+        foreach ($roles as $role) {
+            Role::create($role);
+        }
+    }
+
+    public static function getRoles()
+    {
+        return collect([
             [
                 'name' => 'super_admin',
                 'alias' => 'Super Admin',
@@ -26,12 +35,12 @@ class RoleSeeder extends Seeder
                 'alias' => 'Asesor',
             ],
             [
-                'name' => 'verifikator',
-                'alias' => 'Verifikator',
-            ],
-            [
                 'name' => 'validator',
                 'alias' => 'Validator',
+            ],
+            [
+                'name' => 'verifikator',
+                'alias' => 'Verifikator',
             ],
             [
                 'name' => 'admin_univ',
@@ -45,10 +54,6 @@ class RoleSeeder extends Seeder
                 'name' => 'default',
                 'alias' => 'Default User',
             ],
-        ];
-
-        foreach ($roles as $role) {
-            Role::create($role);
-        }
+        ]);
     }
 }

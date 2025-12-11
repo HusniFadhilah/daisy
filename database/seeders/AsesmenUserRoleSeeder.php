@@ -16,24 +16,65 @@ class AsesmenUserRoleSeeder extends Seeder
      */
     public function run(): void
     {
-        $asesmen = Asesmen::insertGetId([
+        $roleAsesor    = DB::table('roles')->whereName('asesor')->value('id');
+        $roleValidator = DB::table('roles')->whereName('validator')->value('id');
+
+
+        // === 1. Asesmen Magister Ilmu Lingkungan ===
+        $asesmenMil = Asesmen::insertGetId([
             'code' => 'Asesmen-' . Fungsi::uniqueCode(5),
             'name' => 'Penilaian Akreditasi Prodi Magister Ilmu Lingkungan Universitas Diponegoro 2025',
             'description' => 'Penilaian akreditasi Prodi Magister Ilmu Lingkungan Universitas Diponegoro untuk tahun 2025-2030',
             'created_at' => now(),
             'updated_at' => now(),
         ]);
-        $roleAsesor = DB::table('roles')->whereName('asesor')->value('id');
-        $roleValidator = DB::table('roles')->whereName('validator')->value('id');
-        AsesmenUserRole::create([
-            'id_asesmen' => $asesmen,
-            'id_user' => 5,
-            'id_role' => $roleAsesor,
+
+        $asesorsMil = [4, 5];
+        $validatorsMil = [9];
+
+        foreach ($asesorsMil as $u) {
+            AsesmenUserRole::create([
+                'id_asesmen' => $asesmenMil,
+                'id_user' => $u,
+                'id_role' => $roleAsesor,
+            ]);
+        }
+
+        foreach ($validatorsMil as $u) {
+            AsesmenUserRole::create([
+                'id_asesmen' => $asesmenMil,
+                'id_user' => $u,
+                'id_role' => $roleValidator,
+            ]);
+        }
+
+
+        // === 2. Asesmen Teknik Informatika ===
+        $asesmenTI = Asesmen::insertGetId([
+            'code' => 'Asesmen-' . Fungsi::uniqueCode(5),
+            'name' => 'Penilaian Akreditasi Prodi Teknik Informatika Universitas Diponegoro 2025',
+            'description' => 'Asesmen akreditasi Prodi Teknik Informatika untuk periode 2025-2030',
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
-        AsesmenUserRole::create([
-            'id_asesmen' => $asesmen,
-            'id_user' => 6,
-            'id_role' => $roleValidator,
-        ]);
+
+        $asesorsTI = [6, 7];
+        $validatorsTI = [11];
+
+        foreach ($asesorsTI as $u) {
+            AsesmenUserRole::create([
+                'id_asesmen' => $asesmenTI,
+                'id_user' => $u,
+                'id_role' => $roleAsesor,
+            ]);
+        }
+
+        foreach ($validatorsTI as $u) {
+            AsesmenUserRole::create([
+                'id_asesmen' => $asesmenTI,
+                'id_user' => $u,
+                'id_role' => $roleValidator,
+            ]);
+        }
     }
 }

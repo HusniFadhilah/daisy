@@ -32,19 +32,19 @@
     </ul>
 
     @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle me-2"></i>
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>
+        {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
     @endif
 
     @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="bi bi-exclamation-circle me-2"></i>
-            {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-circle me-2"></i>
+        {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
     @endif>
 
     <!-- Tabel Indikator -->
@@ -78,13 +78,13 @@
                             <td>{{ Str::limit($item->deskripsi_indikator, 60) }}</td>
                             <td>
                                 <div class="btn-group" role="group">
-                                    <button type="button" class="btn btn-sm btn-info text-white" data-bs-toggle="modal" data-bs-target="#showIndikatorModal{{ $item->id_indikator }}" title="Detail">
+                                    <button type="button" class="btn btn-sm btn-info text-white" data-bs-toggle="modal" data-bs-target="#showIndikatorModal{{ $item->id }}" title="Detail">
                                         <i class="bi bi-eye"></i>
                                     </button>
-                                    <button type="button" class="btn btn-sm btn-warning text-white" data-bs-toggle="modal" data-bs-target="#editIndikatorModal{{ $item->id_indikator }}" title="Edit">
+                                    <button type="button" class="btn btn-sm btn-warning text-white" data-bs-toggle="modal" data-bs-target="#editIndikatorModal{{ $item->id }}" title="Edit">
                                         <i class="bi bi-pencil"></i>
                                     </button>
-                                    <form action="{{ route('indikator.destroy', $item->id_indikator) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus indikator ini?')">
+                                    <form action="{{ route('indikator.destroy', $item->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus indikator ini?')">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-danger" title="Hapus">
@@ -96,7 +96,7 @@
                         </tr>
 
                         <!-- Modal Detail -->
-                        <div class="modal fade" id="showIndikatorModal{{ $item->id_indikator }}" tabindex="-1">
+                        <div class="modal fade" id="showIndikatorModal{{ $item->id }}" tabindex="-1">
                             <div class="modal-dialog modal-lg">
                                 <div class="modal-content">
                                     <div class="modal-header">
@@ -107,20 +107,20 @@
                                         <dl class="row">
                                             <dt class="col-sm-3">Kriteria</dt>
                                             <dd class="col-sm-9">{{ $item->elemenStandar->kriteria->kode_kriteria ?? '-' }} - {{ $item->elemenStandar->kriteria->nama_kriteria ?? '-' }}</dd>
-                                            
+
                                             <dt class="col-sm-3">Elemen Standar</dt>
                                             <dd class="col-sm-9">{{ $item->elemenStandar->kode_elemen ?? '-' }} - {{ $item->elemenStandar->pernyataan_elemen ?? '-' }}</dd>
-                                            
+
                                             <dt class="col-sm-3">Kode Indikator</dt>
                                             <dd class="col-sm-9">{{ $item->kode_indikator }}</dd>
-                                            
+
                                             <dt class="col-sm-3">Jenis</dt>
                                             <dd class="col-sm-9">
                                                 <span class="badge bg-{{ $item->jenisIndikator->nama_jenis == 'Kualitatif' ? 'warning' : 'success' }} fs-6">
                                                     {{ $item->jenisIndikator->nama_jenis ?? '-' }}
                                                 </span>
                                             </dd>
-                                            
+
                                             <dt class="col-sm-3">Deskripsi</dt>
                                             <dd class="col-sm-9">{!! nl2br(e($item->deskripsi_indikator)) !!}</dd>
                                         </dl>
@@ -133,10 +133,10 @@
                         </div>
 
                         <!-- Modal Edit -->
-                        <div class="modal fade" id="editIndikatorModal{{ $item->id_indikator }}" tabindex="-1">
+                        <div class="modal fade" id="editIndikatorModal{{ $item->id }}" tabindex="-1">
                             <div class="modal-dialog modal-lg">
                                 <div class="modal-content">
-                                    <form action="{{ route('indikator.update', $item->id_indikator) }}" method="POST">
+                                    <form action="{{ route('indikator.update', $item->id) }}" method="POST">
                                         @csrf
                                         @method('PUT')
                                         <div class="modal-header">
@@ -149,16 +149,16 @@
                                                 <select name="id_elemen" class="form-select @error('id_elemen') is-invalid @enderror" required>
                                                     <option value="">Pilih Elemen Standar</option>
                                                     @php
-                                                        $elemenStandar = \App\Models\ElemenStandar::with('kriteria')->get();
+                                                    $elemenStandar = \App\Models\ElemenStandar::with('kriteria')->get();
                                                     @endphp
                                                     @foreach($elemenStandar as $elemen)
-                                                        <option value="{{ $elemen->id_elemen }}" {{ old('id_elemen', $item->id_elemen) == $elemen->id_elemen ? 'selected' : '' }}>
-                                                            {{ $elemen->kriteria->kode_kriteria ?? '' }} - {{ $elemen->kode_elemen }} - {{ Str::limit($elemen->pernyataan_elemen, 50) }}
-                                                        </option>
+                                                    <option value="{{ $elemen->id }}" {{ old('id_elemen', $item->id_elemen) == $elemen->id ? 'selected' : '' }}>
+                                                        {{ $elemen->kriteria->kode_kriteria ?? '' }} - {{ $elemen->kode_elemen }} - {{ Str::limit($elemen->pernyataan_elemen, 50) }}
+                                                    </option>
                                                     @endforeach
                                                 </select>
                                                 @error('id_elemen')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                <div class="invalid-feedback">{{ $message }}</div>
                                                 @enderror
                                             </div>
 
@@ -168,7 +168,7 @@
                                                         <label class="form-label">Kode Indikator <span class="text-danger">*</span></label>
                                                         <input type="text" name="kode_indikator" class="form-control @error('kode_indikator') is-invalid @enderror" value="{{ old('kode_indikator', $item->kode_indikator) }}" required>
                                                         @error('kode_indikator')
-                                                            <div class="invalid-feedback">{{ $message }}</div>
+                                                        <div class="invalid-feedback">{{ $message }}</div>
                                                         @enderror
                                                     </div>
                                                 </div>
@@ -179,16 +179,16 @@
                                                         <select name="id_jenis" class="form-select @error('id_jenis') is-invalid @enderror" required>
                                                             <option value="">Pilih Jenis</option>
                                                             @php
-                                                                $jenisIndikator = \App\Models\JenisIndikator::all();
+                                                            $jenisIndikator = \App\Models\JenisIndikator::all();
                                                             @endphp
                                                             @foreach($jenisIndikator as $jenis)
-                                                                <option value="{{ $jenis->id_jenis }}" {{ old('id_jenis', $item->id_jenis) == $jenis->id_jenis ? 'selected' : '' }}>
-                                                                    {{ $jenis->nama_jenis }}
-                                                                </option>
+                                                            <option value="{{ $jenis->id }}" {{ old('id_jenis', $item->id_jenis) == $jenis->id ? 'selected' : '' }}>
+                                                                {{ $jenis->nama_jenis }}
+                                                            </option>
                                                             @endforeach
                                                         </select>
                                                         @error('id_jenis')
-                                                            <div class="invalid-feedback">{{ $message }}</div>
+                                                        <div class="invalid-feedback">{{ $message }}</div>
                                                         @enderror
                                                     </div>
                                                 </div>
@@ -199,7 +199,7 @@
                                                 <textarea name="deskripsi_indikator" class="form-control @error('deskripsi_indikator') is-invalid @enderror" rows="5" required>{{ old('deskripsi_indikator', $item->deskripsi_indikator) }}</textarea>
                                                 <small class="form-text text-muted">Gunakan Enter untuk membuat baris baru</small>
                                                 @error('deskripsi_indikator')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                <div class="invalid-feedback">{{ $message }}</div>
                                                 @enderror
                                             </div>
                                         </div>
@@ -250,16 +250,16 @@
                         <select name="id_elemen" class="form-select @error('id_elemen') is-invalid @enderror" required>
                             <option value="">Pilih Elemen Standar</option>
                             @php
-                                $elemenStandar = \App\Models\ElemenStandar::with('kriteria')->get();
+                            $elemenStandar = \App\Models\ElemenStandar::with('kriteria')->get();
                             @endphp
                             @foreach($elemenStandar as $elemen)
-                                <option value="{{ $elemen->id_elemen }}" {{ old('id_elemen') == $elemen->id_elemen ? 'selected' : '' }}>
-                                    {{ $elemen->kriteria->kode_kriteria ?? '' }} - {{ $elemen->kode_elemen }} - {{ Str::limit($elemen->pernyataan_elemen, 50) }}
-                                </option>
+                            <option value="{{ $elemen->id }}" {{ old('id_elemen') == $elemen->id ? 'selected' : '' }}>
+                                {{ $elemen->kriteria->kode_kriteria ?? '' }} - {{ $elemen->kode_elemen }} - {{ Str::limit($elemen->pernyataan_elemen, 50) }}
+                            </option>
                             @endforeach
                         </select>
                         @error('id_elemen')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
@@ -269,7 +269,7 @@
                                 <label class="form-label">Kode Indikator <span class="text-danger">*</span></label>
                                 <input type="text" name="kode_indikator" class="form-control @error('kode_indikator') is-invalid @enderror" value="{{ old('kode_indikator') }}" required>
                                 @error('kode_indikator')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
@@ -280,16 +280,16 @@
                                 <select name="id_jenis" class="form-select @error('id_jenis') is-invalid @enderror" required>
                                     <option value="">Pilih Jenis</option>
                                     @php
-                                        $jenisIndikator = \App\Models\JenisIndikator::all();
+                                    $jenisIndikator = \App\Models\JenisIndikator::all();
                                     @endphp
                                     @foreach($jenisIndikator as $jenis)
-                                        <option value="{{ $jenis->id_jenis }}" {{ old('id_jenis') == $jenis->id_jenis ? 'selected' : '' }}>
-                                            {{ $jenis->nama_jenis }}
-                                        </option>
+                                    <option value="{{ $jenis->id }}" {{ old('id_jenis') == $jenis->id ? 'selected' : '' }}>
+                                        {{ $jenis->nama_jenis }}
+                                    </option>
                                     @endforeach
                                 </select>
                                 @error('id_jenis')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
@@ -300,7 +300,7 @@
                         <textarea name="deskripsi_indikator" class="form-control @error('deskripsi_indikator') is-invalid @enderror" rows="5" required>{{ old('deskripsi_indikator') }}</textarea>
                         <small class="form-text text-muted">Gunakan Enter untuk membuat baris baru</small>
                         @error('deskripsi_indikator')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
                 </div>

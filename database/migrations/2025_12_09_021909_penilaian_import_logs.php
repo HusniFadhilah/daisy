@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('penilaian_import_logs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('id_asesmen')->constrained('asesmens', 'id')->onDelete('cascade');
-            $table->foreignId('id_user')->constrained('users', 'id')->onDelete('cascade');
+            $table->foreignId('id_asesor')->constrained('users', 'id')->onDelete('cascade');
             $table->string('filename');
             $table->string('status')->default('processing'); // processing, completed, failed
             $table->integer('total_rows')->default(0);
@@ -25,7 +25,7 @@ return new class extends Migration
             $table->timestamp('completed_at')->nullable();
             $table->timestamps();
 
-            $table->index(['id_asesmen', 'id_user', 'status']);
+            $table->index(['id_asesmen', 'id_asesor', 'status']);
         });
     }
 

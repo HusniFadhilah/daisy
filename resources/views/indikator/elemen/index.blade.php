@@ -32,19 +32,19 @@
     </ul>
 
     @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle me-2"></i>
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i>
+        {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
     @endif
 
     @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="bi bi-exclamation-circle me-2"></i>
-            {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-circle me-2"></i>
+        {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
     @endif
 
     <!-- Tabel Elemen Standar -->
@@ -72,9 +72,9 @@
                             <td><strong>{{ Str::limit($item->pernyataan_elemen, 50) }}</strong></td>
                             <td>
                                 @if($item->pernyataan->count() > 0)
-                                    <span class="badge bg-success">{{ $item->pernyataan->count() }} pernyataan</span>
+                                <span class="badge bg-success">{{ $item->pernyataan->count() }} pernyataan</span>
                                 @else
-                                    <span class="badge bg-secondary">Belum ada</span>
+                                <span class="badge bg-secondary">Belum ada</span>
                                 @endif
                             </td>
                             <td>{{ Str::limit($item->keterangan, 30) }}</td>
@@ -109,26 +109,26 @@
                                         <dl class="row">
                                             <dt class="col-sm-3">Kriteria</dt>
                                             <dd class="col-sm-9">{{ $item->kriteria->kode_kriteria ?? '-' }} - {{ $item->kriteria->nama_kriteria ?? '-' }}</dd>
-                                            
+
                                             <dt class="col-sm-3">Kode Elemen</dt>
                                             <dd class="col-sm-9">{{ $item->kode_elemen }}</dd>
-                                            
+
                                             <dt class="col-sm-3">Pernyataan Elemen</dt>
                                             <dd class="col-sm-9">{{ $item->pernyataan_elemen }}</dd>
-                                            
+
                                             <dt class="col-sm-3">Keterangan</dt>
                                             <dd class="col-sm-9">{{ $item->keterangan ?? '-' }}</dd>
-                                            
+
                                             <dt class="col-sm-3">Pernyataan Standar</dt>
                                             <dd class="col-sm-9">
                                                 @if($item->pernyataan->count() > 0)
-                                                    <ul>
-                                                        @foreach($item->pernyataan as $pernyataan)
-                                                            <li><strong>{{ $pernyataan->code }}</strong>: {{ $pernyataan->pernyataan }}</li>
-                                                        @endforeach
-                                                    </ul>
+                                                <ul>
+                                                    @foreach($item->pernyataan as $pernyataan)
+                                                    <li><strong>{{ $pernyataan->code }}</strong>: {{ $pernyataan->pernyataan }}</li>
+                                                    @endforeach
+                                                </ul>
                                                 @else
-                                                    <span class="text-muted">Belum ada pernyataan standar</span>
+                                                <span class="text-muted">Belum ada pernyataan standar</span>
                                                 @endif
                                             </dd>
                                         </dl>
@@ -157,16 +157,16 @@
                                                 <select name="id_kriteria" class="form-select @error('id_kriteria') is-invalid @enderror" required>
                                                     <option value="">Pilih Kriteria</option>
                                                     @php
-                                                        $kriteria = \App\Models\Kriteria::all();
+                                                    $kriterias = \App\Models\Kriteria::all();
                                                     @endphp
-                                                    @foreach($kriteria as $k)
-                                                        <option value="{{ $k->id_kriteria }}" {{ old('id_kriteria', $item->id_kriteria) == $k->id_kriteria ? 'selected' : '' }}>
-                                                            {{ $k->kode_kriteria }} - {{ $k->nama_kriteria }}
-                                                        </option>
+                                                    @foreach($kriterias as $kriteria)
+                                                    <option value="{{ $kriteria->id }}" {{ old('id_kriteria', $item->id_kriteria) == $kriteria->id ? 'selected' : '' }}>
+                                                        {{ $kriteria->kode_kriteria }} - {{ $kriteria->nama_kriteria }}
+                                                    </option>
                                                     @endforeach
                                                 </select>
                                                 @error('id_kriteria')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                <div class="invalid-feedback">{{ $message }}</div>
                                                 @enderror
                                             </div>
 
@@ -174,7 +174,7 @@
                                                 <label class="form-label">Kode Elemen <span class="text-danger">*</span></label>
                                                 <input type="text" name="kode_elemen" class="form-control @error('kode_elemen') is-invalid @enderror" value="{{ old('kode_elemen', $item->kode_elemen) }}" required>
                                                 @error('kode_elemen')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                <div class="invalid-feedback">{{ $message }}</div>
                                                 @enderror
                                             </div>
 
@@ -182,7 +182,7 @@
                                                 <label class="form-label">Pernyataan Elemen <span class="text-danger">*</span></label>
                                                 <textarea name="pernyataan_elemen" class="form-control @error('pernyataan_elemen') is-invalid @enderror" rows="3" required>{{ old('pernyataan_elemen', $item->pernyataan_elemen) }}</textarea>
                                                 @error('pernyataan_elemen')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                <div class="invalid-feedback">{{ $message }}</div>
                                                 @enderror
                                             </div>
 
@@ -190,7 +190,7 @@
                                                 <label class="form-label">Keterangan</label>
                                                 <textarea name="keterangan" class="form-control @error('keterangan') is-invalid @enderror" rows="2">{{ old('keterangan', $item->keterangan) }}</textarea>
                                                 @error('keterangan')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                <div class="invalid-feedback">{{ $message }}</div>
                                                 @enderror
                                             </div>
                                         </div>
@@ -241,16 +241,16 @@
                         <select name="id_kriteria" class="form-select @error('id_kriteria') is-invalid @enderror" required>
                             <option value="">Pilih Kriteria</option>
                             @php
-                                $kriteria = \App\Models\Kriteria::all();
+                            $kriterias = \App\Models\Kriteria::all();
                             @endphp
-                            @foreach($kriteria as $k)
-                                <option value="{{ $k->id_kriteria }}" {{ old('id_kriteria') == $k->id_kriteria ? 'selected' : '' }}>
-                                    {{ $k->kode_kriteria }} - {{ $k->nama_kriteria }}
-                                </option>
+                            @foreach($kriterias as $kriteria)
+                            <option value="{{ $kriteria->id }}" {{ old('id_kriteria') == $kriteria->id ? 'selected' : '' }}>
+                                {{ $kriteria->kode_kriteria }} - {{ $kriteria->nama_kriteria }}
+                            </option>
                             @endforeach
                         </select>
                         @error('id_kriteria')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
@@ -258,7 +258,7 @@
                         <label class="form-label">Kode Elemen <span class="text-danger">*</span></label>
                         <input type="text" name="kode_elemen" class="form-control @error('kode_elemen') is-invalid @enderror" value="{{ old('kode_elemen') }}" required>
                         @error('kode_elemen')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
@@ -266,7 +266,7 @@
                         <label class="form-label">Pernyataan Elemen <span class="text-danger">*</span></label>
                         <textarea name="pernyataan_elemen" class="form-control @error('pernyataan_elemen') is-invalid @enderror" rows="3" required>{{ old('pernyataan_elemen') }}</textarea>
                         @error('pernyataan_elemen')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
@@ -274,7 +274,7 @@
                         <label class="form-label">Keterangan</label>
                         <textarea name="keterangan" class="form-control @error('keterangan') is-invalid @enderror" rows="2">{{ old('keterangan') }}</textarea>
                         @error('keterangan')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
                 </div>
