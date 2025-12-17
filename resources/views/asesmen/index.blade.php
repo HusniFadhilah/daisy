@@ -126,9 +126,10 @@
                                 @endif
                             </td>
                             <td>
-                                {{ $asesmen->perguruan_tinggi ?? '-' }}
-                                @if($asesmen->bentuk_pt)
-                                <br><small class="text-muted">{{ $asesmen->bentuk_pt }}</small>
+                                @if($asesmen->studyProgram)
+                                {{ $asesmen->studyProgram->university->name ?? '-' }}
+                                @else
+                                <span class="text-muted">-</span>
                                 @endif
                             </td>
                             <td>

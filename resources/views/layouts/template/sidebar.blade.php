@@ -26,6 +26,8 @@ $authUser = Auth::user();
         @include('layouts.roles.verifikator-sidebar')
         @elseif(in_array($authUser->role_selected,['validator']))
         @include('layouts.roles.validator-sidebar')
+        @elseif(in_array($authUser->role_selected,['admin_prodi']))
+        @include('layouts.roles.prodi-sidebar')
         @else
         @include('layouts.roles.default-sidebar')
         @endif

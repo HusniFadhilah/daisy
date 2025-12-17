@@ -202,7 +202,7 @@
                             </h5>
                             <small class="text-muted">
                                 <i class="bi bi-building"></i>
-                                {{ $asesmen->program_studi->nama_program_studi ?? 'N/A' }}
+                                {{ $asesmen->program_studi->name ?? 'N/A' }}
                             </small>
                         </div>
 

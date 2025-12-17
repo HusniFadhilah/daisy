@@ -1,4 +1,12 @@
 <!-- Penawaran Asesmen -->
+<a href="{{ route('pemetaan.index') }}" class="nav-link {{ request()->routeIs('pemetaan*') ? 'active' : '' }}">
+    <span class="menu-icon">🗺️</span>
+    <span>Pemetaan Akreditasi</span>
+</a>
+<a href="{{ route('de.pengajuan') }}" class="nav-link {{ request()->routeIs('de*') ? 'active' : '' }}">
+    <span class="menu-icon">📋</span>
+    <span>Pengajuan Asesmen</span>
+</a>
 <a href="{{ route('asesmen.index') }}" class="nav-link {{ request()->routeIs('asesmen*') ? 'active' : '' }}">
     <span class="menu-icon">📨</span>
     <span>Penawaran Asesmen</span>

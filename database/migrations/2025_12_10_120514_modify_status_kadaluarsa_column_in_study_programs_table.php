@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('study_programs', function (Blueprint $table) {
             // Change status_kadaluarsa from enum to string to accommodate various status texts
-            $table->string('status_kadaluarsa')->nullable()->default('Belum Terakreditasi')->change();
+            $table->string('status_kadaluarsa')->default(null)->nullable()->change();
         });
     }
 
@@ -25,7 +25,7 @@ return new class extends Migration
         Schema::table('study_programs', function (Blueprint $table) {
             // Revert back to enum
             $table->enum('status_kadaluarsa', ['Aktif', 'Kadaluarsa', 'Belum Terakreditasi'])
-                  ->default('Belum Terakreditasi')->change();
+                ->default(null)->nullable()->change();
         });
     }
 };

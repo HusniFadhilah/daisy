@@ -16,21 +16,21 @@ class AkreditasiSeeder extends Seeder
     public function run(): void
     {
         $csvFile = database_path('seeders/data/data_akreditasi_lengkap.csv');
-        
+
         if (!file_exists($csvFile)) {
             $this->command->error("File CSV tidak ditemukan: {$csvFile}");
             return;
         }
 
         $file = fopen($csvFile, 'r');
-        
+
         // Skip header row
         fgetcsv($file);
-        
+
         $updated = 0;
         $notFound = 0;
         $errors = [];
-        
+
         while (($data = fgetcsv($file)) !== false) {
             try {
                 $universitas = $data[0];
@@ -40,26 +40,24 @@ class AkreditasiSeeder extends Seeder
                 $peringkatAkreditasi = $data[7];
                 $tanggalKadaluarsa = $data[8];
                 $statusKadaluarsa = $data[9];
-                
+
                 // Use data as-is from CSV
                 $peringkat = !empty($peringkatAkreditasi) && $peringkatAkreditasi !== '-' ? $peringkatAkreditasi : null;
-                
+
                 // Parse tanggal kadaluarsa
                 $tanggal = $this->parseTanggal($tanggalKadaluarsa);
-                
+
                 // Use status as-is from CSV
-                $status = !empty($statusKadaluarsa) && $statusKadaluarsa !== '-' ? $statusKadaluarsa : 'Belum Terakreditasi';
-                
+                $status = !empty($statusKadaluarsa) && $statusKadaluarsa !== '-' ? $statusKadaluarsa : null;
+
                 // Map university name variations to exact database names
                 $universitas = $this->mapUniversityName($universitas);
-                
+
                 // Find study program by name and university name
-                $studyProgram = StudyProgram::whereHas('university', function($query) use ($universitas) {
+                $studyProgram = StudyProgram::whereHas('university', function ($query) use ($universitas) {
                     $query->where('name', $universitas);
-                })
-                ->where('name', $programStudi)
-                ->first();
-                
+                })->whereRaw('TRIM(LOWER(name)) = ?', [trim(strtolower($programStudi))])->first();
+
                 if ($studyProgram) {
                     $studyProgram->update([
                         'peringkat_akreditasi' => $peringkat,
@@ -71,18 +69,17 @@ class AkreditasiSeeder extends Seeder
                     $notFound++;
                     $errors[] = "Program Studi tidak ditemukan: {$programStudi} - {$universitas}";
                 }
-                
             } catch (\Exception $e) {
                 $this->command->error("Error processing row: " . $e->getMessage());
             }
         }
-        
+
         fclose($file);
-        
+
         $this->command->info("Selesai!");
         $this->command->info("Updated: {$updated}");
         $this->command->info("Not Found: {$notFound}");
-        
+
         if (!empty($errors) && count($errors) <= 10) {
             $this->command->warn("\nBeberapa email tidak ditemukan:");
             foreach ($errors as $error) {
@@ -92,7 +89,7 @@ class AkreditasiSeeder extends Seeder
             $this->command->warn("\n{$notFound} email tidak ditemukan (terlalu banyak untuk ditampilkan)");
         }
     }
-    
+
     /**
      * Parse tanggal kadaluarsa from various formats
      */
@@ -101,7 +98,7 @@ class AkreditasiSeeder extends Seeder
         if (empty($tanggal) || $tanggal === '-') {
             return null;
         }
-        
+
         try {
             // Try to parse date in format Y-m-d
             $date = Carbon::createFromFormat('Y-m-d', $tanggal);
@@ -110,7 +107,7 @@ class AkreditasiSeeder extends Seeder
             return null;
         }
     }
-    
+
     /**
      * Map university name variations from CSV to exact database names
      */
@@ -123,7 +120,7 @@ class AkreditasiSeeder extends Seeder
             "Universitas 'Aisyiyah Bandung" => "Universitas Aisyiyah Bandung",
             "Universitas Maritim Raja Ali Haji (UMRAH)" => "Universitas Maritim Raja Ali Haji",
         ];
-        
+
         return $mappings[$name] ?? $name;
     }
 }

@@ -43,15 +43,17 @@
                         <div>{{ $asesmen->description ?? '-' }}</div>
                     </div>
 
+                    @if($asesmen->studyProgram)
                     <div class="info-item mb-3">
-                        <label class="text-muted small mb-1">Perguruan Tinggi:</label>
-                        <div class="fw-semibold">{{ $asesmen->perguruan_tinggi ?? '-' }}</div>
+                        <label class="text-muted small mb-1">Program Studi:</label>
+                        <div class="fw-semibold">{{ $asesmen->studyProgram->full_name }}</div>
                     </div>
 
                     <div class="info-item mb-3">
-                        <label class="text-muted small mb-1">Bentuk PT:</label>
-                        <div>{{ $asesmen->bentuk_pt ?? '-' }}</div>
+                        <label class="text-muted small mb-1">Perguruan Tinggi:</label>
+                        <div class="fw-semibold">{{ $asesmen->studyProgram->university->name }}</div>
                     </div>
+                    @endif
 
                     <div class="info-item mb-3">
                         <label class="text-muted small mb-1">Kode Panel:</label>

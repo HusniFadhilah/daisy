@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'role' => \App\Http\Middleware\CheckRoleMiddleware::class,
             'penawaran.accepted' => \App\Http\Middleware\EnsurePenawaranAccepted::class,
         ]);
     })
