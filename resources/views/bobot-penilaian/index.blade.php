@@ -1,0 +1,373 @@
+@extends('layouts.template.app')
+
+@section('content')
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">Bobot Penilaian</h1>
+            <p class="text-muted">Kelola bobot penilaian untuk setiap elemen standar berdasarkan kategori program studi</p>
+        </div>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalBobot">
+            <i class="bi bi-plus-lg"></i> Tambah Bobot
+        </button>
+    </div>
+
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
+    <!-- Filter Section -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ route('bobot-penilaian.index') }}" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Filter Kriteria/Elemen</label>
+                    <select name="id_elemen" class="form-select" id="filterElemen">
+                        <option value="">Semua Elemen</option>
+                        @foreach($elemens as $elemen)
+                            <option value="{{ $elemen->id_elemen }}" {{ request('id_elemen') == $elemen->id_elemen ? 'selected' : '' }}>
+                                {{ $elemen->kriteria->kode_kriteria ?? '' }}.{{ $elemen->kode_elemen }} - {{ $elemen->pernyataan_elemen }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Filter Kategori</label>
+                    <select name="id_category" class="form-select">
+                        <option value="">Semua Kategori</option>
+                        @foreach($categories as $category)
+                            <option value="{{ $category->id }}" {{ request('id_category') == $category->id ? 'selected' : '' }}>
+                                {{ $category->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-secondary me-2">
+                        <i class="bi bi-funnel"></i> Filter
+                    </button>
+                    <a href="{{ route('bobot-penilaian.index') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-clockwise"></i> Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="bobotTable">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Kriteria</th>
+                            <th>Elemen Standar</th>
+                            <th>Kategori</th>
+                            <th>Bobot</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($bobots as $bobot)
+                        <tr>
+                            <td>{{ $loop->iteration }}</td>
+                            <td>
+                                <strong>{{ $bobot->elemenStandar->kriteria->kode_kriteria ?? '-' }}</strong><br>
+                                <small class="text-muted">{{ $bobot->elemenStandar->kriteria->nama_kriteria ?? '-' }}</small>
+                            </td>
+                            <td>
+                                <strong>{{ $bobot->elemenStandar->kode_elemen }}</strong> - {{ $bobot->elemenStandar->pernyataan_elemen }}
+                            </td>
+                            <td>
+                                <span class="badge bg-info">{{ $bobot->category->name }}</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary">{{ $bobot->bobot }}</span>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-warning" 
+                                        onclick="editBobot({{ $bobot->id }}, {{ $bobot->id_elemen }}, {{ $bobot->id_category }}, {{ $bobot->bobot }})">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <form action="{{ route('bobot-penilaian.destroy', $bobot->id) }}" 
+                                      method="POST" 
+                                      class="d-inline"
+                                      onsubmit="return confirm('Yakin ingin menghapus bobot ini?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">Belum ada data bobot penilaian</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Perhitungan Section -->
+    <div class="card mt-4">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="bi bi-calculator"></i> Perhitungan Nilai Berbobot</h5>
+        </div>
+        <div class="card-body">
+            <form id="formHitung" class="row g-3">
+                <div class="col-md-5">
+                    <label class="form-label">Pilih Asesmen</label>
+                    <select name="asesmen_id" class="form-select" required>
+                        <option value="">-- Pilih Asesmen --</option>
+                        @foreach($asesmens as $asesmen)
+                            <option value="{{ $asesmen->id }}">
+                                {{ $asesmen->name }} - {{ $asesmen->perguruan_tinggi ?? 'N/A' }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label">Pilih Kategori</label>
+                    <select name="category_id" class="form-select" required>
+                        <option value="">-- Pilih Kategori --</option>
+                        @foreach($categories as $category)
+                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="bi bi-calculator"></i> Hitung
+                    </button>
+                </div>
+            </form>
+
+            <div id="hasilHitung" class="mt-4" style="display: none;">
+                <hr>
+                <h5>Hasil Perhitungan</h5>
+                <div id="hasilContent"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Tambah/Edit Bobot -->
+<div class="modal fade" id="modalBobot" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="formBobot" method="POST" action="{{ route('bobot-penilaian.store') }}">
+                @csrf
+                <input type="hidden" name="_method" value="POST" id="formMethod">
+                <input type="hidden" name="bobot_id" id="bobotId">
+                
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Tambah Bobot Penilaian</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Elemen Standar <span class="text-danger">*</span></label>
+                        <select name="id_elemen" class="form-select" id="inputElemen" required>
+                            <option value="">-- Pilih Elemen --</option>
+                            @foreach($elemens as $elemen)
+                                <option value="{{ $elemen->id_elemen }}">
+                                    {{ $elemen->kriteria->kode_kriteria ?? '' }}.{{ $elemen->kode_elemen }} - {{ $elemen->pernyataan_elemen }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Kategori <span class="text-danger">*</span></label>
+                        <select name="id_category" class="form-select" id="inputCategory" required>
+                            <option value="">-- Pilih Kategori --</option>
+                            @foreach($categories as $category)
+                                <option value="{{ $category->id }}">{{ $category->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Bobot <span class="text-danger">*</span></label>
+                        <input type="number" name="bobot" class="form-control" id="inputBobot" 
+                               min="0" max="100" required placeholder="Masukkan bobot (0-100)">
+                        <small class="text-muted">Bobot dalam skala 0-100</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endsection
+
+@push('scripts')
+<script>
+    // Initialize Select2
+    $(document).ready(function() {
+        $('#filterElemen, #inputElemen, #inputCategory').select2({
+            theme: 'bootstrap-5',
+            width: '100%'
+        });
+    });
+
+    // Edit Bobot
+    function editBobot(id, elemenId, categoryId, bobot) {
+        $('#modalTitle').text('Edit Bobot Penilaian');
+        $('#formMethod').val('PUT');
+        $('#formBobot').attr('action', `/bobot-penilaian/${id}`);
+        $('#bobotId').val(id);
+        $('#inputElemen').val(elemenId).trigger('change');
+        $('#inputCategory').val(categoryId).trigger('change');
+        $('#inputBobot').val(bobot);
+        $('#modalBobot').modal('show');
+    }
+
+    // Reset form saat modal ditutup
+    $('#modalBobot').on('hidden.bs.modal', function() {
+        $('#modalTitle').text('Tambah Bobot Penilaian');
+        $('#formMethod').val('POST');
+        $('#formBobot').attr('action', '{{ route("bobot-penilaian.store") }}');
+        $('#formBobot')[0].reset();
+        $('#inputElemen').val('').trigger('change');
+        $('#inputCategory').val('').trigger('change');
+    });
+
+    // Hitung nilai berbobot
+    $('#formHitung').on('submit', function(e) {
+        e.preventDefault();
+        
+        const asesmenId = $('[name="asesmen_id"]').val();
+        const categoryId = $('[name="category_id"]').val();
+        
+        if (!asesmenId || !categoryId) {
+            alert('Pilih asesmen dan kategori terlebih dahulu');
+            return;
+        }
+
+        // Show loading
+        $('#hasilContent').html('<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2">Menghitung...</p></div>');
+        $('#hasilHitung').show();
+
+        $.ajax({
+            url: `/bobot-penilaian/hitung/${asesmenId}/${categoryId}`,
+            method: 'GET',
+            dataType: 'json',
+            timeout: 10000, // 10 second timeout
+            success: function(response) {
+                console.log('Response:', response);
+                
+                // Check if redirected to login
+                if (typeof response === 'string' && response.includes('login')) {
+                    $('#hasilContent').html('<div class="alert alert-warning">Session expired. Silakan refresh halaman dan login kembali.</div>');
+                    return;
+                }
+                
+                let html = '<div class="row">';
+                
+                // Per Kriteria
+                response.per_kriteria.forEach((kriteria, index) => {
+                    html += `
+                        <div class="col-md-12 mb-3">
+                            <div class="card">
+                                <div class="card-header bg-light">
+                                    <strong>${kriteria.kriteria_kode}</strong> - ${kriteria.kriteria_nama}
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Elemen</th>
+                                                <th>Skor</th>
+                                                <th>Bobot</th>
+                                                <th>Nilai Berbobot</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                    `;
+                    
+                    kriteria.elemen.forEach(elemen => {
+                        html += `
+                            <tr>
+                                <td>${elemen.elemen_kode} - ${elemen.elemen_nama}</td>
+                                <td>${elemen.skor}</td>
+                                <td>${elemen.bobot}</td>
+                                <td><strong>${elemen.nilai_bobot}</strong></td>
+                            </tr>
+                        `;
+                    });
+                    
+                    html += `
+                                        </tbody>
+                                        <tfoot>
+                                            <tr class="table-active">
+                                                <td colspan="3"><strong>Total Kriteria</strong></td>
+                                                <td><strong>${kriteria.total}</strong></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                // Total Keseluruhan
+                html += `
+                    </div>
+                    <div class="card bg-success text-white mt-3">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <h6>Total Nilai Berbobot</h6>
+                                    <h3>${response.total_nilai_bobot}</h3>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6>Total Bobot</h6>
+                                    <h3>${response.total_bobot}</h3>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6>Nilai Akhir</h6>
+                                    <h3>${response.nilai_akhir}</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                $('#hasilContent').html(html);
+                $('#hasilHitung').slideDown();
+            },
+            error: function(xhr) {
+                console.error('Error:', xhr);
+                let errorMsg = 'Terjadi kesalahan';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMsg = xhr.responseJSON.message;
+                } else if (xhr.responseText) {
+                    errorMsg = xhr.responseText;
+                }
+                $('#hasilContent').html(`<div class="alert alert-danger">${errorMsg}</div>`);
+                alert('Gagal menghitung bobot: ' + errorMsg);
+            }
+        });
+    });
+</script>
+@endpush

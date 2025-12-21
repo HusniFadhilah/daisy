@@ -1,0 +1,248 @@
+// Use DBML to define your database structure
+// Docs: https://dbml.dbdiagram.io/docs
+
+////////////////////////////////////////////////////
+// USERS & ROLES
+////////////////////////////////////////////////////
+
+Table users {
+  id bigint [pk, increment]
+  name varchar
+  email varchar [unique]
+  email_verified_at timestamp
+  password varchar
+  role_id bigint
+  remember_token varchar
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table password_resets {
+  email varchar [pk]
+  token varchar
+  created_at timestamp
+}
+
+Table roles {
+  id bigint [pk, increment]
+  name varchar
+  created_at timestamp
+  updated_at timestamp
+}
+
+Ref: users.role_id > roles.id
+
+////////////////////////////////////////////////////
+// UNIVERSITIES, STUDY PROGRAMS, DEGREE LEVELS
+////////////////////////////////////////////////////
+
+Table universities {
+  id bigint [pk, increment]
+  code varchar [unique]
+  name varchar
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table degree_levels {
+  id bigint [pk, increment]
+  code varchar   // S1, S2, S3, D3, Profesi
+  name varchar   // Sarjana, Magister, Doktor, Diploma, dll
+  kategori varchar // Akademik / Vokasi / Profesi
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table study_programs {
+  id bigint [pk, increment]
+  code varchar
+  name varchar
+  id_univ bigint
+  id_level bigint
+  email varchar
+  peringkat_akreditasi varchar
+  tanggal_kadaluarsa date
+  status_kadaluarsa varchar
+  created_at timestamp
+  updated_at timestamp
+}
+
+Ref: study_programs.id_univ > universities.id
+Ref: study_programs.id_level > degree_levels.id
+
+////////////////////////////////////////////////////
+// ASESMENT
+////////////////////////////////////////////////////
+
+Table asesmens {
+  id bigint [pk, increment]
+  nama varchar
+  id_prodi bigint
+  tahun_ajaran varchar
+  tanggal_mulai date
+  tanggal_akhir date
+  status varchar
+  created_at timestamp
+  updated_at timestamp
+}
+
+Ref: asesmens.id_prodi > study_programs.id
+
+Table asesmen_kecukupans {
+  id bigint [pk, increment]
+  id_asesmen bigint
+  id_standar bigint
+  catatan text
+  created_at timestamp
+  updated_at timestamp
+}
+
+Ref: asesmen_kecukupans.id_asesmen > asesmens.id
+
+Table asesmen_lapangans {
+  id bigint [pk, increment]
+  id_asesmen bigint
+  id_standar bigint
+  catatan text
+  created_at timestamp
+  updated_at timestamp
+}
+
+Ref: asesmen_lapangans.id_asesmen > asesmens.id
+
+Table asesmen_user_roles {
+  id bigint [pk, increment]
+  id_asesmen bigint
+  id_user bigint
+  id_role bigint
+  created_at timestamp
+  updated_at timestamp
+}
+
+Ref: asesmen_user_roles.id_asesmen > asesmens.id
+Ref: asesmen_user_roles.id_user > users.id
+Ref: asesmen_user_roles.id_role > roles.id
+
+////////////////////////////////////////////////////
+// STANDAR, KRITERIA, ELEMEN, INDIKATOR, PERNYATAAN
+////////////////////////////////////////////////////
+
+Table kriteria {
+  id bigint [pk, increment]
+  kode varchar
+  nama varchar
+  deskripsi text
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table elemen_standar {
+  id bigint [pk, increment]
+  id_kriteria bigint
+  kode varchar
+  nama varchar
+  deskripsi text
+  created_at timestamp
+  updated_at timestamp
+}
+
+Ref: elemen_standar.id_kriteria > kriteria.id
+
+Table jenis_indikator {
+  id bigint [pk, increment]
+  nama varchar
+  deskripsi text
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table indikator_standar {
+  id bigint [pk, increment]
+  id_elemen bigint
+  id_jenis bigint
+  kode varchar
+  nama varchar
+  deskripsi text
+  created_at timestamp
+  updated_at timestamp
+}
+
+Ref: indikator_standar.id_elemen > elemen_standar.id
+Ref: indikator_standar.id_jenis > jenis_indikator.id
+
+Table pernyataans {
+  id bigint [pk, increment]
+  id_indikator bigint
+  id_elemen bigint
+  kode varchar
+  pernyataan text
+  created_at timestamp
+  updated_at timestamp
+}
+
+Ref: pernyataans.id_indikator > indikator_standar.id
+Ref: pernyataans.id_elemen > elemen_standar.id
+
+////////////////////////////////////////////////////
+// PENILAIAN
+////////////////////////////////////////////////////
+
+Table penilaian_elemens {
+  id bigint [pk, increment]
+  id_asesmen bigint
+  id_elemen bigint
+  skor int
+  catatan text
+  created_at timestamp
+  updated_at timestamp
+}
+
+Ref: penilaian_elemens.id_asesmen > asesmens.id
+Ref: penilaian_elemens.id_elemen > elemen_standar.id
+
+////////////////////////////////////////////////////
+// JENJANG PENILAIAN (TABEL REFERENSI)
+////////////////////////////////////////////////////
+
+Table jenjang_penilaian {
+  id bigint [pk, increment]
+  nama_jenjang varchar   // contoh: Sarjana, Magister, Doktor, Diploma, Profesi
+  skor int               // jika diperlukan default skor
+  created_at timestamp
+  updated_at timestamp
+}
+
+////////////////////////////////////////////////////
+// INDIKATOR PENILAIAN PER ELEMEN
+////////////////////////////////////////////////////
+
+Table indikator_penilaian_elemen {
+  id bigint [pk, increment]
+  elemen_standar_id bigint
+  jenjang_penilaian_id bigint
+  deskripsi_penilaian text
+  keterangan text
+  created_at timestamp
+  updated_at timestamp
+}
+
+Ref: indikator_penilaian_elemen.elemen_standar_id > elemen_standar.id
+Ref: indikator_penilaian_elemen.jenjang_penilaian_id > jenjang_penilaian.id
+
+////////////////////////////////////////////////////
+// TABEL BARU: BOBOT PENILAIAN (YANG DIMINTA)
+////////////////////////////////////////////////////
+// Menyimpan bobot sesuai tabel excel — bobot per elemen per jenjang prodi
+////////////////////////////////////////////////////
+
+Table bobot_penilaian {
+  id bigint [pk, increment]
+  id_elemen bigint
+  id_level bigint     // degree_levels.id → Sarjana/Magister/Doktor/Diploma/Profesi
+  bobot int           // nilai bobot sesuai tabel
+  created_at timestamp
+  updated_at timestamp
+}
+
+Ref: bobot_penilaian.id_elemen > elemen_standar.id
+Ref: bobot_penilaian.id_level > degree_levels.id

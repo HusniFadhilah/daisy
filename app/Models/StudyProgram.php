@@ -11,6 +11,7 @@ class StudyProgram extends Model
         'code',
         'id_univ',
         'id_level',
+        'category_id',
         'email',
         'peringkat_akreditasi',
         'tanggal_kadaluarsa',
@@ -29,5 +30,10 @@ class StudyProgram extends Model
     public function degreeLevel()
     {
         return $this->belongsTo(DegreeLevel::class, 'id_level');
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(StudyProgramCategory::class, 'category_id');
     }
 }

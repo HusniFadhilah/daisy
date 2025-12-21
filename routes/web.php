@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\{AsesmenController, AuthController, DashboardController, PenawaranController, PenugasanController, AKController, ALController, BandingController, PedomanController, DokumenController, PanduanController, BantuanController, ProfileController, SettingsController, ActivityController, TaskController, PasswordResetController, LaporanController, UniversityController, DegreeLevelController, StudyProgramController, KriteriaController, ElemenStandarController, JenisIndikatorController, IndikatorController, IndikatorPenilaianElemenController};
+use App\Http\Controllers\{AsesmenController, AuthController, DashboardController, PenawaranController, PenugasanController, AKController, ALController, BandingController, PedomanController, DokumenController, PanduanController, BantuanController, ProfileController, SettingsController, ActivityController, TaskController, PasswordResetController, LaporanController, UniversityController, DegreeLevelController, StudyProgramController, KriteriaController, ElemenStandarController, JenisIndikatorController, IndikatorController, IndikatorPenilaianElemenController, BobotPenilaianController};
 
 
 // Dashboard (awal)
@@ -232,6 +232,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('universities', UniversityController::class);
         Route::resource('study-programs', StudyProgramController::class);
         Route::resource('indikator-penilaian', IndikatorPenilaianElemenController::class);
+        
+        // BOBOT PENILAIAN
+        Route::resource('bobot-penilaian', BobotPenilaianController::class);
+        Route::get('/bobot-penilaian/hitung/{asesmenId}/{categoryId}', [BobotPenilaianController::class, 'calculate'])
+            ->name('bobot-penilaian.calculate');
     });
 
     // NOTIFIKASI

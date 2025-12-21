@@ -178,3 +178,8 @@
     <span class="menu-icon">📊</span>
     <span>Indikator Penilaian</span>
 </a>
+<!-- Bobot Penilaian -->
+<a href="{{ route('bobot-penilaian.index') }}" class="nav-link {{ request()->routeIs('bobot-penilaian.*') ? 'active' : '' }}">
+    <span class="menu-icon">⚖️</span>
+    <span>Bobot Penilaian</span>
+</a>
