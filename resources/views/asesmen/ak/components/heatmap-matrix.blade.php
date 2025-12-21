@@ -614,8 +614,6 @@ return $colors[$skor] ?? '#e0e0e0';
             setupMatrixInteractions();
             setupZoomControls();
             setupToggleButton();
-
-            console.log('✅ Enhanced Heatmap Matrix initialized with merged cells');
         }
 
         /**

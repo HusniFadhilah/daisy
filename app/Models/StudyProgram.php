@@ -12,6 +12,7 @@ class StudyProgram extends Model
         'id_univ',
         'id_level',
         'category_id',
+        'bentuk_pt',
         'email',
         'peringkat_akreditasi',
         'tanggal_kadaluarsa',

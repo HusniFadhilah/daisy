@@ -93,6 +93,26 @@ class StudyProgramSeeder extends Seeder
                 $programCode = null; // Tidak ada kode di CSV akreditasi
                 $email = $data['email'] ?? null;
                 
+                // Deteksi bentuk_pt berdasarkan nama universitas
+                $bentukPT = null;
+                if ($universityName) {
+                    if (strpos($universityName, 'Universitas') === 0) {
+                        $bentukPT = 'Universitas';
+                    } elseif (strpos($universityName, 'Institut') === 0) {
+                        $bentukPT = 'Institut';
+                    } elseif (strpos($universityName, 'Sekolah Tinggi') === 0) {
+                        $bentukPT = 'Sekolah Tinggi';
+                    } elseif (strpos($universityName, 'Politeknik') === 0) {
+                        $bentukPT = 'Politeknik';
+                    } elseif (strpos($universityName, 'Akademi') === 0) {
+                        $bentukPT = 'Akademi';
+                    } elseif (strpos($universityName, 'STMIK') === 0 || 
+                              strpos($universityName, 'STIKI') === 0 || 
+                              strpos($universityName, 'STKIP') === 0) {
+                        $bentukPT = 'Sekolah Tinggi';
+                    }
+                }
+                
                 // Data akreditasi
                 $peringkatAkreditasi = $data['Peringkat_Akreditasi'] ?? null;
                 $tanggalKadaluarsa = $data['Tanggal_Kadaluarsa'] ?? null;
@@ -148,6 +168,7 @@ class StudyProgramSeeder extends Seeder
                     'id_univ' => $universityId,
                     'id_level' => $degreeLevelId,
                     'category_id' => $categoryId,
+                    'bentuk_pt' => $bentukPT,
                     'email' => $email ? trim($email) : null,
                     'peringkat_akreditasi' => $peringkatAkreditasi,
                     'tanggal_kadaluarsa' => $tanggalKadaluarsa,

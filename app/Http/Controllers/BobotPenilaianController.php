@@ -9,6 +9,7 @@ use App\Models\ElemenStandar;
 use App\Models\StudyProgramCategory;
 use App\Models\Asesmen;
 use Illuminate\Http\Request;
+use Yajra\DataTables\Facades\DataTables;
 
 class BobotPenilaianController extends Controller
 {
@@ -25,6 +26,30 @@ class BobotPenilaianController extends Controller
     public function index(Request $request)
     {
         $filters = $request->only(['id_elemen', 'id_category']);
+        
+        if ($request->ajax()) {
+            $bobots = $this->bobotService->getAll($filters);
+            
+            return DataTables::of($bobots)
+                ->addIndexColumn()
+                ->addColumn('elemen_standar', function($row) {
+                    return $row->elemenStandar ? $row->elemenStandar->kode_elemen . ' - ' . $row->elemenStandar->nama_elemen : '-';
+                })
+                ->addColumn('category', function($row) {
+                    return $row->category ? $row->category->category_name : '-';
+                })
+                ->addColumn('asesmen', function($row) {
+                    return $row->asesmen ? $row->asesmen->nama : '-';
+                })
+                ->addColumn('action', function($row) {
+                    $editBtn = '<a href="'.route('bobot-penilaian.edit', $row->id).'" class="btn btn-sm btn-warning">Edit</a>';
+                    $deleteBtn = '<button onclick="deleteRecord('.$row->id.')" class="btn btn-sm btn-danger">Delete</button>';
+                    return $editBtn . ' ' . $deleteBtn;
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+        
         $bobots = $this->bobotService->getAll($filters);
 
         if ($request->wantsJson() || $request->is('api/*')) {

@@ -51,53 +51,23 @@
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table class="table table-hover" id="elemenStandarTable">
                     <thead>
                         <tr>
-                            <th width="5%">No</th>
-                            <th width="10%">Kriteria</th>
-                            <th width="10%">Kode</th>
-                            <th width="30%">Pernyataan Elemen</th>
-                            <th width="20%">Pernyataan Standar</th>
-                            <th width="10%">Keterangan</th>
-                            <th width="15%">Aksi</th>
+                            <th>No</th>
+                            <th>Kriteria</th>
+                            <th>Kode Elemen</th>
+                            <th>Pernyataan Elemen</th>
+                            <th>Keterangan</th>
+                            <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($elemenStandar as $item)
-                        <tr>
-                            <td>{{ $loop->iteration + ($elemenStandar->currentPage() - 1) * $elemenStandar->perPage() }}</td>
-                            <td><span class="badge bg-primary">{{ $item->kriteria->kode_kriteria ?? '-' }}</span></td>
-                            <td><span class="badge bg-info text-dark">{{ $item->kode_elemen }}</span></td>
-                            <td><strong>{{ Str::limit($item->pernyataan_elemen, 50) }}</strong></td>
-                            <td>
-                                @if($item->pernyataan->count() > 0)
-                                    <span class="badge bg-success">{{ $item->pernyataan->count() }} pernyataan</span>
-                                @else
-                                    <span class="badge bg-secondary">Belum ada</span>
-                                @endif
-                            </td>
-                            <td>{{ Str::limit($item->keterangan, 30) }}</td>
-                            <td>
-                                <div class="btn-group" role="group">
-                                    <button type="button" class="btn btn-sm btn-info text-white" data-bs-toggle="modal" data-bs-target="#showElemenModal{{ $item->id_elemen }}" title="Detail">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-warning text-white" data-bs-toggle="modal" data-bs-target="#editElemenModal{{ $item->id_elemen }}" title="Edit">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <form action="{{ route('elemen-standar.destroy', $item->id_elemen) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus elemen standar ini?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger" title="Hapus">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <!-- Modal Detail -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
                         <div class="modal fade" id="showElemenModal{{ $item->id_elemen }}" tabindex="-1">
                             <div class="modal-dialog modal-lg">
                                 <div class="modal-content">
@@ -156,9 +126,7 @@
                                                 <label class="form-label">Kriteria <span class="text-danger">*</span></label>
                                                 <select name="id_kriteria" class="form-select @error('id_kriteria') is-invalid @enderror" required>
                                                     <option value="">Pilih Kriteria</option>
-                                                    @php
-                                                        $kriteria = \App\Models\Kriteria::all();
-                                                    @endphp
+
                                                     @foreach($kriteria as $k)
                                                         <option value="{{ $k->id_kriteria }}" {{ old('id_kriteria', $item->id_kriteria) == $k->id_kriteria ? 'selected' : '' }}>
                                                             {{ $k->kode_kriteria }} - {{ $k->nama_kriteria }}
@@ -240,9 +208,6 @@
                         <label class="form-label">Kriteria <span class="text-danger">*</span></label>
                         <select name="id_kriteria" class="form-select @error('id_kriteria') is-invalid @enderror" required>
                             <option value="">Pilih Kriteria</option>
-                            @php
-                                $kriteria = \App\Models\Kriteria::all();
-                            @endphp
                             @foreach($kriteria as $k)
                                 <option value="{{ $k->id_kriteria }}" {{ old('id_kriteria') == $k->id_kriteria ? 'selected' : '' }}>
                                     {{ $k->kode_kriteria }} - {{ $k->nama_kriteria }}
@@ -288,3 +253,47 @@
 </div>
 
 @endsection
+
+@push('scripts')
+<script>
+    $(document).ready(function() {
+        $('#elemenStandarTable').DataTable({
+            serverSide: true,
+            processing: true,
+            ajax: "{{ route('elemen-standar.index') }}",
+            columns: [
+                { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
+                { data: 'kriteria_nama', name: 'kriteria_nama' },
+                { data: 'kode_elemen', name: 'kode_elemen' },
+                { data: 'pernyataan_elemen', name: 'pernyataan_elemen' },
+                { data: 'keterangan', name: 'keterangan' },
+                { data: 'action', name: 'action', orderable: false, searchable: false }
+            ],
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json'
+            },
+            pageLength: 25,
+            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Semua"]]
+        });
+    });
+
+    function deleteRecord(id) {
+        if (confirm('Yakin ingin menghapus elemen standar ini?')) {
+            $.ajax({
+                url: '/elemen-standar/' + id,
+                type: 'DELETE',
+                data: {
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    $('#elemenStandarTable').DataTable().ajax.reload();
+                    alert('Data berhasil dihapus');
+                },
+                error: function(xhr) {
+                    alert('Gagal menghapus data');
+                }
+            });
+        }
+    }
+</script>
+@endpush

@@ -51,53 +51,24 @@
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table class="table table-hover" id="indikatorTable">
                     <thead>
                         <tr>
-                            <th width="5%">No</th>
-                            <th width="10%">Kriteria</th>
-                            <th width="15%">Elemen</th>
-                            <th width="10%">Kode</th>
-                            <th width="10%">Jenis</th>
-                            <th width="35%">Deskripsi</th>
-                            <th width="15%">Aksi</th>
+                            <th>No</th>
+                            <th>Kriteria</th>
+                            <th>Elemen</th>
+                            <th>Kode</th>
+                            <th>Jenis</th>
+                            <th>Deskripsi</th>
+                            <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($indikator as $item)
-                        <tr>
-                            <td>{{ $loop->iteration + ($indikator->currentPage() - 1) * $indikator->perPage() }}</td>
-                            <td><span class="badge bg-primary">{{ $item->elemenStandar->kriteria->kode_kriteria ?? '-' }}</span></td>
-                            <td><span class="badge bg-info text-dark">{{ $item->elemenStandar->kode_elemen ?? '-' }}</span></td>
-                            <td><strong>{{ $item->kode_indikator }}</strong></td>
-                            <td>
-                                <span class="badge bg-{{ $item->jenisIndikator->nama_jenis == 'Kualitatif' ? 'warning' : 'success' }}">
-                                    {{ $item->jenisIndikator->nama_jenis ?? '-' }}
-                                </span>
-                            </td>
-                            <td>{{ Str::limit($item->deskripsi_indikator, 60) }}</td>
-                            <td>
-                                <div class="btn-group" role="group">
-                                    <button type="button" class="btn btn-sm btn-info text-white" data-bs-toggle="modal" data-bs-target="#showIndikatorModal{{ $item->id_indikator }}" title="Detail">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-warning text-white" data-bs-toggle="modal" data-bs-target="#editIndikatorModal{{ $item->id_indikator }}" title="Edit">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <form action="{{ route('indikator.destroy', $item->id_indikator) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus indikator ini?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger" title="Hapus">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <!-- Modal Detail -->
-                        <div class="modal fade" id="showIndikatorModal{{ $item->id_indikator }}" tabindex="-1">
-                            <div class="modal-dialog modal-lg">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
                                 <div class="modal-content">
                                     <div class="modal-header">
                                         <h5 class="modal-title">Detail Indikator</h5>
@@ -148,9 +119,6 @@
                                                 <label class="form-label">Elemen Standar <span class="text-danger">*</span></label>
                                                 <select name="id_elemen" class="form-select @error('id_elemen') is-invalid @enderror" required>
                                                     <option value="">Pilih Elemen Standar</option>
-                                                    @php
-                                                        $elemenStandar = \App\Models\ElemenStandar::with('kriteria')->get();
-                                                    @endphp
                                                     @foreach($elemenStandar as $elemen)
                                                         <option value="{{ $elemen->id_elemen }}" {{ old('id_elemen', $item->id_elemen) == $elemen->id_elemen ? 'selected' : '' }}>
                                                             {{ $elemen->kriteria->kode_kriteria ?? '' }} - {{ $elemen->kode_elemen }} - {{ Str::limit($elemen->pernyataan_elemen, 50) }}
@@ -178,9 +146,6 @@
                                                         <label class="form-label">Jenis <span class="text-danger">*</span></label>
                                                         <select name="id_jenis" class="form-select @error('id_jenis') is-invalid @enderror" required>
                                                             <option value="">Pilih Jenis</option>
-                                                            @php
-                                                                $jenisIndikator = \App\Models\JenisIndikator::all();
-                                                            @endphp
                                                             @foreach($jenisIndikator as $jenis)
                                                                 <option value="{{ $jenis->id_jenis }}" {{ old('id_jenis', $item->id_jenis) == $jenis->id_jenis ? 'selected' : '' }}>
                                                                     {{ $jenis->nama_jenis }}
@@ -249,9 +214,6 @@
                         <label class="form-label">Elemen Standar <span class="text-danger">*</span></label>
                         <select name="id_elemen" class="form-select @error('id_elemen') is-invalid @enderror" required>
                             <option value="">Pilih Elemen Standar</option>
-                            @php
-                                $elemenStandar = \App\Models\ElemenStandar::with('kriteria')->get();
-                            @endphp
                             @foreach($elemenStandar as $elemen)
                                 <option value="{{ $elemen->id_elemen }}" {{ old('id_elemen') == $elemen->id_elemen ? 'selected' : '' }}>
                                     {{ $elemen->kriteria->kode_kriteria ?? '' }} - {{ $elemen->kode_elemen }} - {{ Str::limit($elemen->pernyataan_elemen, 50) }}
@@ -279,9 +241,6 @@
                                 <label class="form-label">Jenis <span class="text-danger">*</span></label>
                                 <select name="id_jenis" class="form-select @error('id_jenis') is-invalid @enderror" required>
                                     <option value="">Pilih Jenis</option>
-                                    @php
-                                        $jenisIndikator = \App\Models\JenisIndikator::all();
-                                    @endphp
                                     @foreach($jenisIndikator as $jenis)
                                         <option value="{{ $jenis->id_jenis }}" {{ old('id_jenis') == $jenis->id_jenis ? 'selected' : '' }}>
                                             {{ $jenis->nama_jenis }}
@@ -314,3 +273,48 @@
 </div>
 
 @endsection
+
+@push('scripts')
+<script>
+    $(document).ready(function() {
+        $('#indikatorTable').DataTable({
+            serverSide: true,
+            processing: true,
+            ajax: "{{ route('indikator.index') }}",
+            columns: [
+                { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
+                { data: 'kriteria_nama', name: 'kriteria_nama' },
+                { data: 'elemen_nama', name: 'elemen_nama' },
+                { data: 'kode_indikator', name: 'kode_indikator' },
+                { data: 'jenis_nama', name: 'jenis_nama' },
+                { data: 'deskripsi_indikator', name: 'deskripsi_indikator' },
+                { data: 'action', name: 'action', orderable: false, searchable: false }
+            ],
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json'
+            },
+            pageLength: 25,
+            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Semua"]]
+        });
+    });
+
+    function deleteRecord(id) {
+        if (confirm('Yakin ingin menghapus indikator ini?')) {
+            $.ajax({
+                url: '/indikator/' + id,
+                type: 'DELETE',
+                data: {
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    $('#indikatorTable').DataTable().ajax.reload();
+                    alert('Data berhasil dihapus');
+                },
+                error: function(xhr) {
+                    alert('Gagal menghapus data');
+                }
+            });
+        }
+    }
+</script>
+@endpush

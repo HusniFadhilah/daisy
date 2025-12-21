@@ -73,52 +73,14 @@
                     <thead>
                         <tr>
                             <th>No</th>
-                            <th>Kriteria</th>
                             <th>Elemen Standar</th>
                             <th>Kategori</th>
+                            <th>Asesmen</th>
                             <th>Bobot</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($bobots as $bobot)
-                        <tr>
-                            <td>{{ $loop->iteration }}</td>
-                            <td>
-                                <strong>{{ $bobot->elemenStandar->kriteria->kode_kriteria ?? '-' }}</strong><br>
-                                <small class="text-muted">{{ $bobot->elemenStandar->kriteria->nama_kriteria ?? '-' }}</small>
-                            </td>
-                            <td>
-                                <strong>{{ $bobot->elemenStandar->kode_elemen }}</strong> - {{ $bobot->elemenStandar->pernyataan_elemen }}
-                            </td>
-                            <td>
-                                <span class="badge bg-info">{{ $bobot->category->name }}</span>
-                            </td>
-                            <td>
-                                <span class="badge bg-primary">{{ $bobot->bobot }}</span>
-                            </td>
-                            <td>
-                                <button class="btn btn-sm btn-warning" 
-                                        onclick="editBobot({{ $bobot->id }}, {{ $bobot->id_elemen }}, {{ $bobot->id_category }}, {{ $bobot->bobot }})">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                <form action="{{ route('bobot-penilaian.destroy', $bobot->id) }}" 
-                                      method="POST" 
-                                      class="d-inline"
-                                      onsubmit="return confirm('Yakin ingin menghapus bobot ini?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="6" class="text-center text-muted">Belum ada data bobot penilaian</td>
-                        </tr>
-                        @endforelse
                     </tbody>
                 </table>
             </div>
@@ -227,7 +189,58 @@
             theme: 'bootstrap-5',
             width: '100%'
         });
+
+        // Initialize DataTable
+        $('#bobotTable').DataTable({
+            serverSide: true,
+            processing: true,
+            ajax: {
+                url: "{{ route('bobot-penilaian.index') }}",
+                data: function(d) {
+                    d.id_elemen = $('#filterElemen').val();
+                    d.id_category = $('[name="id_category"]').val();
+                }
+            },
+            columns: [
+                { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
+                { data: 'elemen_standar', name: 'elemen_standar' },
+                { data: 'category', name: 'category' },
+                { data: 'asesmen', name: 'asesmen' },
+                { data: 'bobot', name: 'bobot' },
+                { data: 'action', name: 'action', orderable: false, searchable: false }
+            ],
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json'
+            },
+            pageLength: 25,
+            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Semua"]]
+        });
+
+        // Reload table on filter submit
+        $('form[method="GET"]').on('submit', function(e) {
+            e.preventDefault();
+            $('#bobotTable').DataTable().ajax.reload();
+        });
     });
+
+    function deleteRecord(id) {
+        if (confirm('Yakin ingin menghapus bobot ini?')) {
+            $.ajax({
+                url: '/bobot-penilaian/' + id,
+                type: 'DELETE',
+                data: {
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    $('#bobotTable').DataTable().ajax.reload();
+                    alert('Data berhasil dihapus');
+                },
+                error: function(xhr) {
+                    alert('Gagal menghapus data');
+                }
+            });
+        }
+    }
 
     // Edit Bobot
     function editBobot(id, elemenId, categoryId, bobot) {
@@ -273,8 +286,6 @@
             dataType: 'json',
             timeout: 10000, // 10 second timeout
             success: function(response) {
-                console.log('Response:', response);
-                
                 // Check if redirected to login
                 if (typeof response === 'string' && response.includes('login')) {
                     $('#hasilContent').html('<div class="alert alert-warning">Session expired. Silakan refresh halaman dan login kembali.</div>');
