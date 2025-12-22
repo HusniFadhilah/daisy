@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Jobs\ImportPenilaianExcelJob;
+use App\Models\JenjangPenilaian;
 use App\Services\PenilaianExcelService;
 use Illuminate\Support\Facades\Storage;
 
@@ -84,10 +85,11 @@ class AKController extends Controller
             ->where('status_validasi', 'revision_required')
             ->with('elemen.kriteria')
             ->get();
+        $jenjangs = JenjangPenilaian::all();
         // Calculate progress
         $progress = $this->calculateProgress($asesmen->id, $user->id);
 
-        return view('asesmen.ak.berkas.show', compact('asesmen', 'kriterias', 'progress', 'needsRevisions'));
+        return view('asesmen.ak.berkas.show', compact('asesmen', 'kriterias', 'progress', 'jenjangs', 'needsRevisions'));
     }
 
     /**
@@ -555,7 +557,7 @@ class AKController extends Controller
             return response()->download($filePath, basename($filePath))->deleteFileAfterSend(true);
         } catch (\Exception $e) {
             Log::error($e);
-            return redirect()->back()->with('error', 'Gagal export Excel: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal download data Excel: ' . $e->getMessage());
         }
     }
 
@@ -594,14 +596,14 @@ class AKController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'File berhasil diupload. Import sedang diproses di background.',
+                'message' => 'File berhasil diupload. Proses input data penilaian sedang diproses di background.',
                 'import_log_id' => $importLog->id,
             ]);
         } catch (\Exception $e) {
             Log::error($e);
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal import Excel: ' . $e->getMessage(),
+                'message' => 'Gagal upload excel penilaian: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -634,7 +636,7 @@ class AKController extends Controller
             Log::error($e);
             return response()->json([
                 'success' => false,
-                'message' => 'Import log tidak ditemukan',
+                'message' => 'Log upload excel penilaian tidak ditemukan',
             ], 404);
         }
     }
@@ -661,7 +663,7 @@ class AKController extends Controller
             Log::error($e);
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal memuat riwayat import',
+                'message' => 'Gagal memuat riwayat upload excel',
             ], 500);
         }
     }

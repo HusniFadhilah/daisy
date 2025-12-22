@@ -88,7 +88,7 @@
                 </div>
                 <div class="col-md-1">
                     <label class="form-label">&nbsp;</label>
-                    <button type="button" class="btn btn-outline-secondary d-block w-100" data-bs-toggle="tooltip" title="Export Excel">
+                    <button type="button" class="btn btn-outline-secondary d-block w-100" data-bs-toggle="tooltip" title="Download Data Excel">
                         <i class="bi bi-file-earmark-excel"></i>
                     </button>
                 </div>

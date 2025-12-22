@@ -164,6 +164,33 @@ function showToast(type, message) {
     });
 }
 
+/**
+ * ============================================
+ * GET COLOR FOR SCORE (JavaScript version)
+ * ============================================
+ */
+function getSkorColorJS(skor) {
+    const colors = {
+        0: '#f44336', // Red
+        1: '#ff9800', // Orange
+        2: '#ffeb3b', // Yellow
+        3: '#8bc34a', // Light Green
+        4: '#4caf50', // Dark Green
+    };
+
+    return colors[skor] || '#e0e0e0';
+}
+
+function textColorByBgJS(hex) {
+    hex = hex.replace('#', '');
+    return (parseInt(hex.substr(0, 2), 16) * 0.299 +
+        parseInt(hex.substr(2, 2), 16) * 0.587 +
+        parseInt(hex.substr(4, 2), 16) * 0.114) > 186
+        ? '#000'
+        : '#fff';
+}
+
+
 // Auto-hide alerts after 5 seconds
 document.addEventListener('DOMContentLoaded', function () {
     const alerts = document.querySelectorAll('.alert:not(.alert-permanent)');

@@ -20,7 +20,7 @@
                 {{ $studyProgram->degreeLevel->name }} - {{ $studyProgram->university->name }}
             </p>
         </div>
-        @if(!$activePengajuan && ($studyProgram->status_kadaluarsa != 'Aktif' || floor(now()->diffInDays($studyProgram->tanggal_kadaluarsa, false)) <= 180))) <a href="{{ route('pengajuan.create', ['study_program_id' => $studyProgram->id]) }}" class="btn btn-success">
+        @if(!$activePengajuan && ($studyProgram->status_kadaluarsa != 'Aktif' || floor(now()->diffInDays($studyProgram->tanggal_kadaluarsa, false)) <= 180)) <a href="{{ route('pengajuan.create', ['study_program_id' => $studyProgram->id]) }}" class="btn btn-success">
             <i class="bi bi-plus-circle"></i> Ajukan Akreditasi
             </a>
             @endif

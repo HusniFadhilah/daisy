@@ -11,7 +11,7 @@
             {{ isset($pengajuan) ? 'Lengkapi Pengajuan Akreditasi' : 'Ajukan Akreditasi Baru' }}
         </h2>
         <p class="text-muted">
-            {{ isset($pengajuan) ? 'Lengkapi data pengajuan yang telah dibuat oleh Desk Evaluator' : 'Lengkapi formulir di bawah untuk mengajukan permohonan akreditasi' }}
+            {{ isset($pengajuan) ? 'Lengkapi data pengajuan yang telah dibuat oleh Admin Depilar' : 'Lengkapi formulir di bawah untuk mengajukan permohonan akreditasi' }}
         </p>
     </div>
 
@@ -54,11 +54,15 @@
                             </label>
                             <select name="id_program_studi" class="form-select @error('id_program_studi') is-invalid @enderror" required>
                                 <option value="">-- Pilih Program Studi --</option>
-                                @foreach($prodis as $prodi)
-                                <option value="{{ $prodi->id }}" {{ (isset($pengajuan) && $pengajuan->id_program_studi == $prodi->id) || old('id_program_studi') == $prodi->id ? 'selected' : '' }}>
+                                @if($prodiUser)
+                                <option value="{{ $prodiUser->id }}" selected>{{ $prodiUser->full_name }}</option>
+                                @else
+                                @foreach ($prodis as $prodi)
+                                <option value="{{ $prodi->id }}" {{ ((request('study_program_id') ?? $pengajuan->id_program_studi ?? old('id_program_studi')) == $prodi->id) ? 'selected' : '' }}>
                                     {{ $prodi->full_name }}
                                 </option>
                                 @endforeach
+                                @endif
                             </select>
                             @error('id_program_studi')
                             <div class="invalid-feedback">{{ $message }}</div>

@@ -528,7 +528,34 @@
 
                     <!-- Peringkat Distribution (keep existing) -->
                     <div class="card mt-3">
-                        <!-- ... keep existing distribution card ... -->
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">
+                                <i class="bi bi-bar-chart"></i> Distribusi Peringkat
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            @php
+                            $peringkatData = [
+                            'Unggul' => $stats['by_peringkat']['Unggul'] ?? 0,
+                            'Baik Sekali' => $stats['by_peringkat']['Baik Sekali'] ?? 0,
+                            'Baik' => $stats['by_peringkat']['Baik'] ?? 0,
+                            'C' => $stats['by_peringkat']['C'] ?? 0,
+                            ];
+                            @endphp
+
+                            @foreach($peringkatData as $peringkat => $count)
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <small class="fw-bold">{{ $peringkat }}</small>
+                                    <small class="text-muted">{{ $count }}</small>
+                                </div>
+                                <div class="progress progress-custom">
+                                    <div class="progress-bar progress-bar-custom bg-{{ $peringkat == 'Unggul' ? 'primary' : ($peringkat == 'Baik Sekali' ? 'success' : ($peringkat == 'Baik' ? 'info' : 'warning')) }}" style="width: {{ $stats['total'] > 0 ? ($count / $stats['total']) * 100 : 0 }}%">
+                                    </div>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
                     </div>
                 </div>
 

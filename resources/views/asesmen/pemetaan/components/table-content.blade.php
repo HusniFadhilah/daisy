@@ -29,7 +29,7 @@
                             </span>
                             @endif
                         </div>
-                        <div class="alert alert-warning mb-2 py-2">
+                        <div class="alert alert-warning alert-permanent mb-2 py-2">
                             <small>
                                 <i class="bi bi-clock"></i>
                                 <strong>Kadaluarsa:</strong> {{ $program->tanggal_kadaluarsa->format('d M Y') }}
@@ -56,7 +56,7 @@
         </h5>
         <div class="btn-group btn-group-sm">
             <button type="button" class="btn btn-outline-success" onclick="exportExcel()">
-                <i class="bi bi-file-excel"></i> Export
+                <i class="bi bi-file-excel"></i> Download Data
             </button>
         </div>
     </div>
@@ -149,7 +149,9 @@
     </div>
     @if($studyPrograms->hasPages())
     <div class="card-footer bg-white">
-        {{ $studyPrograms->appends(request()->query())->links() }}
+        <nav aria-label="Page navigation">
+            {{ $studyPrograms->onEachSide(2)->links('pagination::bootstrap-5') }}
+        </nav>
     </div>
     @endif
 </div>

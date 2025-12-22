@@ -31,26 +31,12 @@
                     <span class="legend-box" style="background: #9e9e9e;"></span>
                     <span class="legend-text">Belum Dinilai</span>
                 </div>
+                @foreach ($jenjangs as $jenjang)
                 <div class="legend-item">
-                    <span class="legend-box" style="background: #f44336;"></span>
-                    <span class="legend-text">Tidak Memenuhi (Not Met)</span>
+                    <span class="legend-box" style="background: {{ $jenjang->color }};"></span>
+                    <span class="legend-text">{{ $jenjang->name }}</span>
                 </div>
-                <div class="legend-item">
-                    <span class="legend-box" style="background: #ff9800;"></span>
-                    <span class="legend-text">Belum Memenuhi (Not Met)</span>
-                </div>
-                <div class="legend-item">
-                    <span class="legend-box" style="background: #ffeb3b;"></span>
-                    <span class="legend-text">Lemah (Weakness/Couse of Concern)</span>
-                </div>
-                <div class="legend-item">
-                    <span class="legend-box" style="background: #8bc34a;"></span>
-                    <span class="legend-text">Memenuhi (Met)</span>
-                </div>
-                <div class="legend-item">
-                    <span class="legend-box" style="background: #4caf50;"></span>
-                    <span class="legend-text">Pelampauan Standar</span>
-                </div>
+                @endforeach
             </div>
         </div>
 
@@ -113,11 +99,11 @@
                         </td>
 
                         {{-- Kolom Pemenuhan --}}
-                        <td class="matrix-cell" data-elemen-id="{{ $elemen->id }}" data-kriteria-id="{{ $kriteria->id }}" data-col="pemenuhan" style="background-color: {{ $hasPenilaian ? $penilaian->skor == 4 ? '#e0e0e0' : getSkorColor($penilaian->skor) : '#e0e0e0' }}">
+                        <td class="matrix-cell" data-elemen-id="{{ $elemen->id }}" data-kriteria-id="{{ $kriteria->id }}" data-col="pemenuhan" style="background-color: {{ $hasPenilaian ? $penilaian->skor == 4 ? '#e0e0e0' : \App\Libraries\Fungsi::getSkorColor($penilaian->skor) : '#e0e0e0' }}">
                         </td>
 
                         {{-- Kolom Pelampauan --}}
-                        <td class="matrix-cell" data-elemen-id="{{ $elemen->id }}" data-kriteria-id="{{ $kriteria->id }}" data-col="pelampauan" style="background-color: {{ $hasPenilaian ? $penilaian->skor == 4 ? getSkorColor(4) : '#e0e0e0' : '#e0e0e0' }}">
+                        <td class="matrix-cell" data-elemen-id="{{ $elemen->id }}" data-kriteria-id="{{ $kriteria->id }}" data-col="pelampauan" style="background-color: {{ $hasPenilaian ? $penilaian->skor == 4 ? \App\Libraries\Fungsi::getSkorColor(4) : '#e0e0e0' : '#e0e0e0' }}">
                         </td>
                     </tr>
                     @endforeach
@@ -125,56 +111,8 @@
                 </tbody>
             </table>
         </div>
-
-        <!-- Summary Stats -->
-        {{-- <div class="p-3 bg-light border-top">
-            <h6 class="text-center mb-3 fw-bold">📊 Ringkasan Statistik</h6>
-            <div class="row text-center g-3">
-                <div class="col-6 col-md-3">
-                    <div class="stat-box">
-                        <h4 class="mb-0 fw-bold" id="statTotal">0</h4>
-                        <small class="text-muted">Total Isian</small>
-                    </div>
-                </div>
-                <div class="col-6 col-md-3">
-                    <div class="stat-box">
-                        <h4 class="mb-0 fw-bold text-success" id="statFilled">0</h4>
-                        <small class="text-muted">Terisi</small>
-                    </div>
-                </div>
-                <div class="col-6 col-md-3">
-                    <div class="stat-box">
-                        <h4 class="mb-0 fw-bold text-warning" id="statEmpty">0</h4>
-                        <small class="text-muted">Belum Terisi</small>
-                    </div>
-                </div>
-                <div class="col-6 col-md-3">
-                    <div class="stat-box">
-                        <h4 class="mb-0 fw-bold text-primary" id="statPercentage">0%</h4>
-                        <small class="text-muted">Progress</small>
-                    </div>
-                </div>
-            </div>
-        </div> --}}
     </div>
 </div>
-
-@php
-/**
-* Helper function to get color based on score
-*/
-function getSkorColor($skor) {
-$colors = [
-0 => '#f44336', // Red - Not Met
-1 => '#ff9800', // Orange - Not Met
-2 => '#ffeb3b', // Yellow - Weakness
-3 => '#8bc34a', // Light Green - Met
-4 => '#4caf50', // Dark Green - Exceeding
-];
-
-return $colors[$skor] ?? '#e0e0e0';
-}
-@endphp
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('assets/css/heatmap-matrix.css') }}">
@@ -432,23 +370,6 @@ return $colors[$skor] ?? '#e0e0e0';
             // update statistik ringkasan
             updateMatrixStats();
         };
-
-        /**
-         * ============================================
-         * GET COLOR FOR SCORE (JavaScript version)
-         * ============================================
-         */
-        function getSkorColorJS(skor) {
-            const colors = {
-                0: '#f44336', // Red
-                1: '#ff9800', // Orange
-                2: '#ffeb3b', // Yellow
-                3: '#8bc34a', // Light Green
-                4: '#4caf50', // Dark Green
-            };
-
-            return colors[skor] || '#e0e0e0';
-        }
     });
 
 </script>

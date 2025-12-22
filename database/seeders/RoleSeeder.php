@@ -28,7 +28,7 @@ class RoleSeeder extends Seeder
             ],
             [
                 'name' => 'asesi',
-                'alias' => 'Asesi',
+                'alias' => 'DE',
             ],
             [
                 'name' => 'asesor',
@@ -44,11 +44,11 @@ class RoleSeeder extends Seeder
             ],
             [
                 'name' => 'admin_univ',
-                'alias' => 'Admin Universitas',
+                'alias' => 'PT',
             ],
             [
                 'name' => 'admin_prodi',
-                'alias' => 'Admin Program Studi',
+                'alias' => 'PS/UPPS/PT',
             ],
             [
                 'name' => 'default',

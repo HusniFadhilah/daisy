@@ -19,22 +19,6 @@ use App\Services\PenilaianExcelService;
 
 class ValidasiController extends Controller
 {
-    /**
-     * Dashboard validasi untuk validator
-     */
-    // public function index()
-    // {
-    //     $validator = Auth::user();
-
-    //     // Get all asesmen yang perlu divalidasi oleh validator ini
-    //     $assignments = AsesmenUserRole::where('id_user', $validator->id)
-    //         ->where('id_role', 4)
-    //         ->with(['asesmen', 'asesmen.program'])
-    //         ->get();
-
-    //     return view('asesmen.ak.validasi.index', compact('assignments'));
-    // }
-
     public function index()
     {
         $user = Auth::user();
@@ -74,77 +58,87 @@ class ValidasiController extends Controller
     /**
      * Halaman validasi untuk specific asesmen dan asesor
      */
-    public function asesor($idAsesmen, $asesor1Id = null, $asesor2Id = null)
+    public function asesor($idAsesmen, $asesor1Id, $asesor2Id = null)
     {
         $validator = Auth::user();
-        // Verify validator has access to this asesmen
-        $validatorAssignment = AsesmenUserRole::where('id_asesmen', $idAsesmen)
-            ->where('id_user', $validator->id)
-            ->where('id_role', 4)
-            ->firstOrFail();
 
-        $asesmen = $validatorAssignment->asesmen;
-        $jenjangPenilaian = JenjangPenilaian::orderBy('skor')->get();
-        $isApproved = AsesmenUserRole::where('id_asesmen', $idAsesmen)
-            ->where('status_pekerjaan', 'approved')
-            ->exists();
+        // Pastikan validator punya akses
+        AsesmenUserRole::where([
+            'id_asesmen' => $idAsesmen,
+            'id_user' => $validator->id,
+            'id_role' => 4
+        ])->firstOrFail();
 
-        // Get asesor assignments
+        $asesmen = Asesmen::findOrFail($idAsesmen);
+
+        // Ambil semua jenjang penilaian sekaligus
+        $jenjangPenilaian = JenjangPenilaian::orderBy('skor')->get()->keyBy('skor');
+        $isApproved = AsesmenUserRole::where('id_asesmen', $idAsesmen)->where('status_pekerjaan', 'approved')->exists();
+
+        // Ambil asesor 1 & 2
         $asesor1 = User::findOrFail($asesor1Id);
-        // If asesor2 not specified, auto-detect the other asesor
-        if (!$asesor2Id) {
-            $asesor2 = AsesmenUserRole::where('id_asesmen', $idAsesmen)
-                ->where('role', 'asesor')
-                ->where('id_user', '!=', $asesor1Id)
-                ->firstOrFail()
-                ->user;
-        } else {
-            $asesor2 = User::findOrFail($asesor2Id);
+        $asesor2 = $asesor2Id
+            ? User::findOrFail($asesor2Id)
+            : AsesmenUserRole::with('user')
+            ->where('id_asesmen', $idAsesmen)
+            ->where('id_role', 3)
+            ->where('id_user', '!=', $asesor1Id)
+            ->firstOrFail()
+            ->user;
+
+        // --- CEK APAKAH KEDUA ASESOR SUDAH SUBMIT ---
+        $submittedAsesors = AsesmenUserRole::where('id_asesmen', $idAsesmen)
+            ->where('id_role', 3)
+            ->whereNotIn('status_pekerjaan', ['not_started'])
+            ->whereIn('id_user', [$asesor1->id, $asesor2->id])
+            ->pluck('id_user')
+            ->toArray();
+
+        $submittedCount = count($submittedAsesors);
+
+        if ($submittedCount < 2) {
+            $message = $submittedCount === 0
+                ? 'Kedua asesor belum submit penilaian, mohon tunggu hingga keduanya lengkap.'
+                : 'Salah satu asesor belum submit penilaian, mohon tunggu hingga keduanya lengkap.';
+            abort(403, $message);
         }
 
-        // Load kriteria with elemen, indikator, and penilaian from both asesor
+        // Ambil kriteria + elemen + indikator + penilaian untuk kedua asesor sekaligus
         $kriterias = Kriteria::with([
-            'elemenStandar',
             'elemenStandar.indikator',
-            'elemenStandar.penilaian' => function ($query) use ($asesor1Id, $asesor2Id, $idAsesmen) {
-                $query->whereIn('id_asesor', [$asesor1Id, $asesor2Id])
-                    ->where('id_asesmen', $idAsesmen);
-            }
+            'elemenStandar.penilaian' => fn($q) => $q->where('id_asesmen', $idAsesmen)
+                ->whereIn('id_asesor', [$asesor1->id, $asesor2->id])
         ])->get();
 
-        // Calculate progress for each asesor
+        // Total elemen (tetap pakai count() seperti permintaan)
         $totalElemen = ElemenStandar::count();
+
+        // Hitung progress keduanya sekaligus
+        $completedByAsesor = PenilaianElemen::where('id_asesmen', $idAsesmen)
+            ->whereNotNull('skor')
+            ->whereIn('id_asesor', [$asesor1->id, $asesor2->id])
+            ->select('id_asesor', DB::raw('COUNT(DISTINCT id_elemen) as total'))
+            ->groupBy('id_asesor')
+            ->pluck('total', 'id_asesor');
 
         $progress1 = [
             'total' => $totalElemen,
-            'completed' => PenilaianElemen::where('id_asesmen', $idAsesmen)
-                ->where('id_asesor', $asesor1Id)
-                ->whereNotNull('skor')
-                ->distinct('id_elemen')
-                ->count('id_elemen'),
-            'percentage' => 0
+            'completed' => $completedByAsesor[$asesor1->id] ?? 0,
+            'percentage' => $totalElemen ? round(($completedByAsesor[$asesor1->id] ?? 0) / $totalElemen * 100) : 0
         ];
-        $progress1['percentage'] = $totalElemen ? round(($progress1['completed'] / $totalElemen) * 100) : 0;
-
         $progress2 = [
             'total' => $totalElemen,
-            'completed' => PenilaianElemen::where('id_asesmen', $idAsesmen)
-                ->where('id_asesor', $asesor2Id)
-                ->whereNotNull('skor')
-                ->distinct('id_elemen')
-                ->count('id_elemen'),
-            'percentage' => 0
+            'completed' => $completedByAsesor[$asesor2->id] ?? 0,
+            'percentage' => $totalElemen ? round(($completedByAsesor[$asesor2->id] ?? 0) / $totalElemen * 100) : 0
         ];
-        $progress2['percentage'] = $totalElemen ? round(($progress2['completed'] / $totalElemen) * 100) : 0;
 
-        // Calculate validation progress
+        // Hitung validasi
         $validatedCount = PenilaianElemen::where('id_asesmen', $idAsesmen)
             ->whereIn('status_validasi', ['validated', 'revision_required'])
             ->distinct('id_elemen')
             ->count('id_elemen');
 
         $validationPercentage = $totalElemen ? round(($validatedCount / $totalElemen) * 100) : 0;
-
         $allValidated = $validatedCount == $totalElemen;
 
         return view('asesmen.ak.validasi.asesor', compact(
@@ -246,7 +240,7 @@ class ValidasiController extends Controller
             'status' => 'required|in:validated,revision_required',
             'catatan_validator' => 'nullable|string',
             'skor_final' => 'required_if:status,validated|integer|min:0|max:4',
-            'id_asesor' => 'required_if:status,revision_required',
+            'id_asesors' => 'required_if:status,revision_required',
         ]);
 
         DB::beginTransaction();
@@ -254,8 +248,8 @@ class ValidasiController extends Controller
             // Update semua penilaian untuk elemen ini
             $penilaianElemen = PenilaianElemen::where('id_asesmen', $idAsesmen)
                 ->where('id_elemen', $elemenId);
-            if ($request->id_asesor)
-                $penilaianElemen->where('id_asesor', $request->id_asesor);
+            if ($request->id_asesors)
+                $penilaianElemen->whereIn('id_asesor', $request->id_asesors);
             $penilaianElemen->update([
                 'status_validasi' => $request->status,
                 'catatan_validator' => $request->catatan_validator,
@@ -265,7 +259,7 @@ class ValidasiController extends Controller
 
             if ($request->status === 'revision_required') {
                 AsesmenUserRole::where('id_asesmen', $idAsesmen)
-                    ->where('id_user', $request->id_asesor)
+                    ->whereIn('id_user', $request->id_asesors)
                     ->update([
                         'status_pekerjaan' => 'revision_required',
                         'submitted_at' => null, // ← Reset submitted_at

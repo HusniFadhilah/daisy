@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Prodi;
 
+use App\Models\StudyProgram;
 use Illuminate\Http\Request;
 use App\Models\PengajuanDokumen;
 use Illuminate\Support\Facades\DB;
@@ -58,7 +59,8 @@ class PengajuanAkreditasiController extends Controller
     public function create(Request $request)
     {
         $user = Auth::user();
-        $prodis = $user->studyPrograms()->with(['degreeLevel', 'university'])->get();
+        $prodiUser = $user->studyPrograms()->with(['degreeLevel', 'university'])->first();
+        $prodis = $prodiUser ? null : StudyProgram::all();
 
         // ✅ CHECK: Apakah ada pengajuan yang sudah dibuat DE?
         $pengajuanId = $request->get('pengajuan_id');
@@ -80,7 +82,7 @@ class PengajuanAkreditasiController extends Controller
             }
         }
 
-        return view('asesmen.pengajuan.create', compact('prodis', 'pengajuan'));
+        return view('asesmen.pengajuan.create', compact('prodiUser', 'prodis', 'pengajuan'));
     }
 
     /**

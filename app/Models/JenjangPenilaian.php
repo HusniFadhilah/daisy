@@ -9,7 +9,7 @@ class JenjangPenilaian extends Model
     protected $table = 'jenjang_penilaian';
 
     protected $fillable = [
-        'nama_jenjang',
+        'name',
         'color',
         'skor',
     ];

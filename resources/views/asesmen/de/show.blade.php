@@ -245,7 +245,7 @@
 
                     @if($pengajuan->asesmen)
                     {{-- Jika sudah ada asesmen --}}
-                    <div class="alert alert-success">
+                    <div class="alert alert-success alert-permanent">
                         <i class="bi bi-check-circle"></i>
                         <strong>Asesmen sudah dibuat:</strong> {{ $pengajuan->asesmen->name }}
                     </div>
@@ -259,7 +259,7 @@
                     </div>
                     @else
                     {{-- Jika belum ada asesmen --}}
-                    <div class="alert alert-info">
+                    <div class="alert alert-info alert-permanent">
                         <i class="bi bi-info-circle"></i>
                         <strong>Langkah Selanjutnya:</strong> Buat asesmen baru untuk proses AK/Asesmen Dokumen dan assign asesor/validator.
                     </div>
@@ -276,7 +276,7 @@
                         </div>
                     </div>
 
-                    <a href="{{ route('asesmen.create', ['pengajuan_id' => $pengajuan->id]) }}" class="btn btn-success btn-lg">
+                    <a href="{{ route('asesmen.create', ['pengajuan_id' => $pengajuan->id]) }}" class="btn btn-success btn-md">
                         <i class="bi bi-plus-circle"></i> Buat Asesmen & Assign Asesor
                     </a>
                     @endif
@@ -571,7 +571,8 @@
 @push('scripts')
 <script>
     // Show/hide pembayaran field based on hasil review
-    document.getElementById('hasilReview').addEventListener('change', function() {
+    let hasilReview = document.getElementById('hasilReview')
+    if (hasilReview) hasilReview.addEventListener('change', function() {
         const divPembayaran = document.getElementById('divPembayaran');
         if (this.value === 'siap') {
             divPembayaran.style.display = 'block';

@@ -135,7 +135,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/upload/{id}', [AKController::class, 'deleteUpload'])->name('upload.delete');
     });
 
-    Route::prefix('pengajuan')->name('pengajuan')->group(function () {
+    Route::prefix('pengajuan')->name('pengajuan')->middleware(['role:admin_prodi,admin_univ'])->group(function () {
         Route::get('/', [PengajuanAkreditasiController::class, 'index']);
         Route::get('/create', [PengajuanAkreditasiController::class, 'create'])->name('.create');
         Route::post('/', [PengajuanAkreditasiController::class, 'store'])->name('.store');
@@ -150,7 +150,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 
     // ========== DESK EVALUATOR ROUTES ==========
-    Route::prefix('de')->name('de')->middleware(['auth', 'role:asesi,super_admin'])->group(function () {
+    Route::prefix('de')->name('de')->middleware(['role:asesi,super_admin'])->group(function () {
         Route::prefix('pengajuan')->name('.pengajuan')->group(function () {
             Route::get('/', [DeskEvaluatorController::class, 'index']);
             Route::get('/{id}', [DeskEvaluatorController::class, 'show'])->name('.show');
