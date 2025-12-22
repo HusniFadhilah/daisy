@@ -63,46 +63,11 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <<<<<<< HEAD @forelse($elemenStandar as $item) <tr>
-                            <td>{{ $loop->iteration + ($elemenStandar->currentPage() - 1) * $elemenStandar->perPage() }}</td>
-                            <td><span class="badge bg-primary">{{ $item->kriteria->kode_kriteria ?? '-' }}</span></td>
-                            <td><span class="badge bg-info text-dark">{{ $item->kode_elemen }}</span></td>
-                            <td><strong>{{ Str::limit($item->pernyataan_elemen, 50) }}</strong></td>
-                            <td>
-                                @if($item->pernyataan->count() > 0)
-                                <span class="badge bg-success">{{ $item->pernyataan->count() }} pernyataan</span>
-                                @else
-                                <span class="badge bg-secondary">Belum ada</span>
-                                @endif
-                            </td>
-                            <td>{{ Str::limit($item->keterangan, 30) }}</td>
-                            <td>
-                                <div class="btn-group" role="group">
-                                    <button type="button" class="btn btn-sm btn-info text-white" data-bs-toggle="modal" data-bs-target="#showElemenModal{{ $item->id_elemen }}" title="Detail">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-warning text-white" data-bs-toggle="modal" data-bs-target="#editElemenModal{{ $item->id_elemen }}" title="Edit">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <form action="{{ route('elemen-standar.destroy', $item->id_elemen) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus elemen standar ini?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger" title="Hapus">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                            </tr>
-
-                            <!-- Modal Detail -->
-                            =======
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
-    >>>>>>> 966fc62d4d9287e8e6b446bfce2bf6447edd4bf1
     <div class="modal fade" id="showElemenModal{{ $item->id_elemen }}" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -144,73 +109,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Modal Edit -->
-    <div class="modal fade" id="editElemenModal{{ $item->id_elemen }}" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <form action="{{ route('elemen-standar.update', $item->id_elemen) }}" method="POST">
-                    @csrf
-                    @method('PUT')
-                    <div class="modal-header">
-                        <h5 class="modal-title">Edit Elemen Standar</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label class="form-label">Kriteria <span class="text-danger">*</span></label>
-                            <select name="id_kriteria" class="form-select @error('id_kriteria') is-invalid @enderror" required>
-                                <option value="">Pilih Kriteria</option>
-                                @foreach($kriteria as $k)
-                                <option value="{{ $k->id_kriteria }}" {{ old('id_kriteria', $item->id_kriteria) == $k->id_kriteria ? 'selected' : '' }}>
-                                    {{ $k->kode_kriteria }} - {{ $k->nama_kriteria }}
-                                </option>
-                                @endforeach
-                            </select>
-                            @error('id_kriteria')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Kode Elemen <span class="text-danger">*</span></label>
-                            <input type="text" name="kode_elemen" class="form-control @error('kode_elemen') is-invalid @enderror" value="{{ old('kode_elemen', $item->kode_elemen) }}" required>
-                            @error('kode_elemen')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Pernyataan Elemen <span class="text-danger">*</span></label>
-                            <textarea name="pernyataan_elemen" class="form-control @error('pernyataan_elemen') is-invalid @enderror" rows="3" required>{{ old('pernyataan_elemen', $item->pernyataan_elemen) }}</textarea>
-                            @error('pernyataan_elemen')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Keterangan</label>
-                            <textarea name="keterangan" class="form-control @error('keterangan') is-invalid @enderror" rows="2">{{ old('keterangan', $item->keterangan) }}</textarea>
-                            @error('keterangan')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-primary">Simpan</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    @empty
-    <tr>
-        <td colspan="7" class="text-center">Belum ada data elemen standar</td>
-    </tr>
-    @endforelse
-    </tbody>
-    </table>
 </div>
 
 <!-- Pagination -->
@@ -242,16 +140,11 @@
                         <label class="form-label">Kriteria <span class="text-danger">*</span></label>
                         <select name="id_kriteria" class="form-select @error('id_kriteria') is-invalid @enderror" required>
                             <option value="">Pilih Kriteria</option>
-                            <<<<<<< HEAD @php $kriterias=\App\Models\Kriteria::all(); @endphp @foreach($kriterias as $kriteria) <option value="{{ $kriteria->id }}" {{ old('id_kriteria') == $kriteria->id ? 'selected' : '' }}>
-                                {{ $kriteria->kode_kriteria }} - {{ $kriteria->nama_kriteria }}
-                                </option>
-                                =======
-                                @foreach($kriteria as $k)
-                                <option value="{{ $k->id_kriteria }}" {{ old('id_kriteria') == $k->id_kriteria ? 'selected' : '' }}>
-                                    {{ $k->kode_kriteria }} - {{ $k->nama_kriteria }}
-                                </option>
-                                >>>>>>> 966fc62d4d9287e8e6b446bfce2bf6447edd4bf1
-                                @endforeach
+                            @foreach($kriteria as $k)
+                            <option value="{{ $k->id_kriteria }}" {{ old('id_kriteria') == $k->id_kriteria ? 'selected' : '' }}>
+                                {{ $k->kode_kriteria }} - {{ $k->nama_kriteria }}
+                            </option>
+                            @endforeach
                         </select>
                         @error('id_kriteria')
                         <div class="invalid-feedback">{{ $message }}</div>
