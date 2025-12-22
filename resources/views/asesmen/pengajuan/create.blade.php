@@ -11,7 +11,7 @@
             {{ isset($pengajuan) ? 'Lengkapi Pengajuan Akreditasi' : 'Ajukan Akreditasi Baru' }}
         </h2>
         <p class="text-muted">
-            {{ isset($pengajuan) ? 'Lengkapi data pengajuan yang telah dibuat oleh Admin Depilar' : 'Lengkapi formulir di bawah untuk mengajukan permohonan akreditasi' }}
+            {{ isset($pengajuan) ? 'Lengkapi data pengajuan yang telah dibuat oleh DE' : 'Lengkapi formulir di bawah untuk mengajukan permohonan akreditasi' }}
         </p>
     </div>
 

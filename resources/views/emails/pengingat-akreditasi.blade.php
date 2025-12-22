@@ -85,7 +85,7 @@
                 </a>
             </center>
 
-            <p style="margin-top: 30px;">Jika ada pertanyaan, hubungi tim Desk Evaluator.</p>
+            <p style="margin-top: 30px;">Jika ada pertanyaan, hubungi Dewan Eksekutif (DE) LAMDEPILAR.</p>
 
             <p>Hormat kami,<br><strong>Tim Akreditasi</strong></p>
         </div>

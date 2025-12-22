@@ -58,8 +58,8 @@
                         <div class="row g-3">
                             <div class="col-md-8">
                                 <label class="form-label fw-bold">Upload Borang Template</label>
-                                <input type="file" name="borang_template" class="form-control" accept=".xlsx,.xls,.pdf" required>
-                                <small class="text-muted">Format: XLSX, PDF | Max: 10 MB</small>
+                                <input type="file" name="borang_template" class="form-control" accept=".docx" required>
+                                <small class="text-muted">Format: DOCX | Max: 10 MB</small>
                             </div>
                             <div class="col-md-12">
                                 <label class="form-label fw-bold">Keterangan</label>

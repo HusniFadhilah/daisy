@@ -157,7 +157,7 @@
                 <ol>
                     <li>Perbaiki borang sesuai catatan review</li>
                     <li>Upload draft borang yang telah diperbaiki</li>
-                    <li>Menunggu review kembali dari Desk Evaluator</li>
+                    <li>Menunggu review kembali dari DE</li>
                 </ol>
             </div>
             @endif
@@ -168,7 +168,7 @@
                 </a>
             </center>
 
-            <p style="margin-top: 30px;">Hormat kami,<br><strong>{{ $review->reviewer->name }}</strong><br>Desk Evaluator</p>
+            <p style="margin-top: 30px;">Hormat kami,<br><strong>{{ $review->reviewer->name }}</strong><br>Dewan Eksekutif (DE) LAMDEPILAR</p>
         </div>
 
         <div class="footer">

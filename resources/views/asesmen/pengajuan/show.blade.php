@@ -224,7 +224,7 @@
                         </div>
                         @endif
                         <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Desk Evaluator</label>
+                            <label class="text-muted small">DE</label>
                             <p class="fw-bold mb-0">{{ $pengajuan->deskEvaluator->name ?? 'Belum ditugaskan' }}</p>
                         </div>
                     </div>

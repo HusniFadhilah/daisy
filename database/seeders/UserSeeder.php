@@ -26,7 +26,7 @@ class UserSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'name' => 'Admin Depilar',
+                'name' => 'Sekretariat LAMDEPILAR',
                 'email' => 'admin@daisy.lamdepilar.or.id',
                 'password' => Hash::make('password'),
                 'role' => 'admin',

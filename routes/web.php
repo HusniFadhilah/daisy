@@ -149,7 +149,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
 
-    // ========== DESK EVALUATOR ROUTES ==========
+    // ========== DE ROUTES ==========
     Route::prefix('de')->name('de')->middleware(['role:asesi,super_admin'])->group(function () {
         Route::prefix('pengajuan')->name('.pengajuan')->group(function () {
             Route::get('/', [DeskEvaluatorController::class, 'index']);

@@ -55,6 +55,7 @@ class PenilaianExcelService
         $sheet = $spreadsheet->createSheet();
         $sheet->setTitle('Kertas Kerja AK Asesor');
         $spreadsheet->setActiveSheetIndex(1);
+        $sheet->getSheetView()->setZoomScale(60);
 
         $this->setColumnWidths($sheet);
         $this->buildHeaders($sheet, $asesmen);

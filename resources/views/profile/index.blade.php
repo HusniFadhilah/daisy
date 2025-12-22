@@ -178,7 +178,7 @@
                     </div>
                 </div>
                 <div class="profile-name">{{ $user->name ?? 'Nama User' }}</div>
-                <div class="profile-role">{{ $user->role ?? 'Role User' }}</div>
+                <div class="profile-role">{{ $user->role_alias ?? 'Role User' }}</div>
                 <div class="profile-meta">
                     Bergabung: {{ isset($user->created_at) ? $user->created_at->format('d M Y') : '-' }}
                 </div>

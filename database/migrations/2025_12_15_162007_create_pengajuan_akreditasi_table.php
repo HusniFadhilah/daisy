@@ -15,7 +15,7 @@ return new class extends Migration
             // Relasi
             $table->foreignId('id_program_studi')->constrained('study_programs')->onDelete('cascade');
             $table->foreignId('id_user_pengaju')->default(null)->nullable()->constrained('users')->comment('User dari prodi yang mengajukan');
-            $table->foreignId('id_de_assigned')->default(null)->nullable()->constrained('users')->comment('Desk Evaluator yang ditugaskan');
+            $table->foreignId('id_de_assigned')->default(null)->nullable()->constrained('users')->comment('DE yang ditugaskan');
 
             // Data Pengajuan
             $table->year('tahun_akreditasi');

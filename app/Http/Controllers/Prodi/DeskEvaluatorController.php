@@ -31,7 +31,8 @@ class DeskEvaluatorController extends Controller
             'studyProgram.university',
             'pengaju',
             'reviewKesiapan'
-        ])->where('id_de_assigned', $user->id);
+        ]);
+        // ->where('id_de_assigned', $user->id);
 
         // Filter
         if ($request->filled('status')) {
@@ -122,7 +123,7 @@ class DeskEvaluatorController extends Controller
     public function kirimFormBorang(Request $request, $id)
     {
         $request->validate([
-            'borang_template' => 'required|file|mimes:xlsx,xls,pdf|max:10240',
+            'borang_template' => 'required|file|mimes:xlsx,xls,pdf,docx|max:10240',
             'keterangan' => 'nullable|string',
         ]);
 

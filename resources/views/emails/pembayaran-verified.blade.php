@@ -84,7 +84,7 @@
             <p>Yth. Tim {{ $pengajuan->studyProgram->name }},</p>
 
             @if($isVerified)
-            <p>Pembayaran akreditasi Anda telah <strong>DIVERIFIKASI</strong> oleh Desk Evaluator.</p>
+            <p>Pembayaran akreditasi Anda telah <strong>DIVERIFIKASI</strong> oleh DE.</p>
 
             <div class="info-box">
                 <p><strong>Nomor Pengajuan:</strong> {{ $pengajuan->nomor_pengajuan }}</p>
@@ -109,7 +109,7 @@
             </div>
 
             @else
-            <p>Pembayaran akreditasi Anda <strong>DITOLAK</strong> oleh Desk Evaluator.</p>
+            <p>Pembayaran akreditasi Anda <strong>DITOLAK</strong> oleh DE.</p>
 
             <div class="info-box">
                 <p><strong>Nomor Pengajuan:</strong> {{ $pengajuan->nomor_pengajuan }}</p>
@@ -140,7 +140,7 @@
                 </a>
             </center>
 
-            <p style="margin-top: 30px;">Hormat kami,<br><strong>Tim Desk Evaluator</strong></p>
+            <p style="margin-top: 30px;">Hormat kami,<br><strong>Dewan Eksekutif LAMDEPILAR</strong></p>
         </div>
 
         <div class="footer">

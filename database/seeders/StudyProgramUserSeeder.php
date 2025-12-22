@@ -15,8 +15,8 @@ class StudyProgramUserSeeder extends Seeder
         $adminProdi2 = User::where('email', 'admin_prodi2@daisy.lamdepilar.or.id')->first();
 
         // Get study programs
-        $prodi1 = StudyProgram::where('email', 's1arsitektur@undip.ac.id')->first();
-        $prodi2 = StudyProgram::where('email', 's1arsitektur@uii.ac.id')->first();
+        $prodi1 = StudyProgram::where('email', 's1arsitektur@universitasdiponegoro.ac.id')->first();
+        $prodi2 = StudyProgram::where('email', 's1arsitektur@universitasislamindonesia.ac.id')->first();
 
         if ($adminProdi1 && $prodi1) {
             // Admin Prodi 1 -> TI UGM & SI UGM

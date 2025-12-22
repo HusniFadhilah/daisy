@@ -1,12 +1,12 @@
 @extends('layouts.template.app')
 
-@section('title', 'Dashboard Desk Evaluator')
+@section('title', 'Dashboard Pengajuan Akreditasi')
 
 @section('content')
 <div class="container-fluid py-3">
     <!-- Header -->
     <div class="mb-4">
-        <h2><i class="bi bi-clipboard-data"></i> Dashboard Desk Evaluator</h2>
+        <h2><i class="bi bi-clipboard-data"></i> Dashboard Pengajuan Akreditasi</h2>
         <p class="text-muted mb-0">Kelola pengajuan akreditasi dan review kesiapan program studi</p>
     </div>
 
@@ -222,7 +222,7 @@ Masa akreditasi program studi Anda akan segera berakhir. Kami mengingatkan untuk
 Terima kasih atas perhatiannya.
 
 Hormat kami,
-Desk Evaluator</textarea>
+Dewan Eksekutif (DE) LAMDEPILAR</textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
