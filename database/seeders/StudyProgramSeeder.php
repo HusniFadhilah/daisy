@@ -166,7 +166,8 @@ class StudyProgramSeeder extends Seeder
 
                 $insertData[] = [
                     'name' => trim($programName),
-                    'code' => 'N/A', // CSV akreditasi tidak punya kode
+                    'full_name' => $degreeLevelCode . ' - ' . trim($programName) . ' ' . $universityName,
+                    'code' => trim($programCode ?: 'N/A'),
                     'id_univ' => $universityId,
                     'id_level' => $degreeLevelId,
                     'category_id' => $categoryId,
