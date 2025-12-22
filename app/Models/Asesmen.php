@@ -7,10 +7,25 @@ use Illuminate\Database\Eloquent\Model;
 class Asesmen extends Model
 {
     protected $fillable = [
+        'id_pengajuan',
+        'id_study_program',
         'code',
         'name',
-        'description'
+        'description',
+        'kode_panel',
+        'tanggal_mulai',
+        'tanggal_selesai',
     ];
+
+    public function pengajuan()
+    {
+        return $this->belongsTo(PengajuanAkreditasi::class, 'id_pengajuan');
+    }
+
+    public function studyProgram()
+    {
+        return $this->belongsTo(StudyProgram::class, 'id_study_program');
+    }
 
     public function userRoles()
     {

@@ -163,13 +163,23 @@ class Fungsi
     public static function getSkorColor($skor)
     {
         $colors = [
-            0 => 'bg-danger',
-            1 => 'bg-warning',
-            2 => 'bg-warning',
-            3 => 'bg-success',
-            4 => 'bg-success'
+            0 => '#f44336', // Red - Not Met
+            1 => '#ff9800', // Orange - Not Met
+            2 => '#ffeb3b', // Yellow - Weakness
+            3 => '#8bc34a', // Light Green - Met
+            4 => '#4caf50', // Dark Green - Exceeding
         ];
 
-        return $colors[$skor] ?? 'bg-secondary';
+        return $colors[$skor] ?? 'e0e0e0';
+    }
+
+    public static function textColorByBg($hex)
+    {
+        $hex = ltrim($hex, '#');
+        return (hexdec(substr($hex, 0, 2)) * 0.299 +
+            hexdec(substr($hex, 2, 2)) * 0.587 +
+            hexdec(substr($hex, 4, 2)) * 0.114) > 186
+            ? '#000'
+            : '#fff';
     }
 }

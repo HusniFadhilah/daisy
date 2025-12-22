@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('study_programs', function (Blueprint $table) {
             $table->string('peringkat_akreditasi')->nullable()->after('email');
             $table->date('tanggal_kadaluarsa')->nullable()->after('peringkat_akreditasi');
-            $table->enum('status_kadaluarsa', ['Aktif', 'Kadaluarsa', 'Belum Terakreditasi'])->default('Belum Terakreditasi')->after('tanggal_kadaluarsa');
+            $table->enum('status_kadaluarsa', ['Aktif', 'Kadaluarsa', 'Belum Terakreditasi'])->default(null)->nullable()->after('tanggal_kadaluarsa');
         });
     }
 

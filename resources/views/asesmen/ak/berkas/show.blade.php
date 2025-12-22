@@ -185,14 +185,14 @@
                                 <li>
                                     <a class="dropdown-item" id="btnDownloadTemplate">
                                         <i class="bi bi-file-earmark-text text-info"></i> Download Template
-                                        <small class="d-block text-muted">Format Excel untuk import</small>
+                                        <small class="d-block text-muted">Format Excel sebagai template</small>
                                     </a>
                                 </li>
 
                                 <li>
                                     <a class="dropdown-item" id="btnDownloadData">
-                                        <i class="bi bi-file-earmark-excel text-success"></i> Hasil Penilaian
-                                        <small class="d-block text-muted">Data Excel penilaian</small>
+                                        <i class="bi bi-file-earmark-excel text-success"></i> Hasil Penilaian Anda
+                                        <small class="d-block text-muted">Data Excel penilaian Anda</small>
                                     </a>
                                 </li>
                             </ul>
@@ -335,11 +335,17 @@
                 <i class="bi bi-info-circle me-2"></i>
                 <strong>Petunjuk:</strong>
                 <ol class="mb-0 mt-2">
-                    <li>Gunakan <strong>tombol di atas</strong> untuk submit, export, atau import penilaian</li>
-                    <li>Klik <strong>Expand/Collapse All</strong> untuk membuka/menutup semua accordion</li>
-                    <li>Klik <strong>sel di matrix</strong> untuk langsung membuka elemen tersebut</li>
-                    <li>Pilih kategori penilaian: <span class="badge bg-danger">0-1 (Not Met)</span>, <span class="badge bg-warning">2 (Weakness)</span>, <span class="badge bg-success">3 (Met)</span>, <span class="badge bg-success">4 (Exceeding)</span></li>
-                    <li>Penilaian akan <strong>otomatis tersimpan</strong> setelah Anda mengisi kategori dan komentar</li>
+                    <li>Gunakan <strong>tombol Finalisasi & Kirim</strong> untuk submit penilaian, <strong>tombol Download Excel</strong> untuk mengunduh template atau hasil penilaian dalam format excel, serta <strong>tombol Upload Excel</strong> untuk mengupload penilaian excel serta menyimpannya ke sistem</li>
+                    <li>Klik <strong>Expand/Collapse All</strong> untuk membuka/menutup semua form elemen penilaian</li>
+                    <li>Klik <strong>sel di matriks visualisasi penilaian</strong> untuk langsung membuka elemen penilaian dan menilai elemen tersebut</li>
+                    <li>Pilih kategori penilaian:
+                        @foreach ($jenjangs as $jenjang)
+                        <span class="badge" style="background:{{ $jenjang->color }}; color: {{ \App\Libraries\Fungsi::textColorByBg($jenjang->color) }}">
+                            {{ $jenjang->skor }} - {{ $jenjang->name }}
+                        </span>
+                        @endforeach
+                    </li>
+                    <li>Penilaian akan <strong>otomatis tersimpan</strong> setelah Anda mengisi kategori penilaian dan komentar/justifikasi penilaian</li>
                 </ol>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
@@ -556,19 +562,13 @@
                                                 @php
                                                 $jenjang = $items->first()->jenjangPenilaian;
                                                 $skor = $jenjang->skor;
-                                                $badgeColor = match($skor) {
-                                                0 => 'danger', 1 => 'warning', 2 => 'warning',
-                                                3 => 'success', 4 => 'success', default => 'secondary'
-                                                };
                                                 @endphp
 
                                                 <div class="accordion-item">
                                                     <h2 class="accordion-header" id="headingPanduan{{ $elemen->id }}_{{ $skor }}">
                                                         <button class="accordion-button collapsed py-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePanduan{{ $elemen->id }}_{{ $skor }}">
-                                                            <span class="badge me-2" style="background:#{{ $jenjang->color }}">{{ $skor }}</span>
-                                                            <strong style="color: #{{ $jenjang->color }};">
-                                                                {{ $jenjang->nama_jenjang }}
-                                                            </strong>
+                                                            <span class="badge me-2" style="background:{{ $jenjang->color }}; color: {{ \App\Libraries\Fungsi::textColorByBg($jenjang->color) }}">{{ $skor }}</span>
+                                                            <strong>{{ $jenjang->name }}</strong>
                                                         </button>
                                                     </h2>
                                                     <div id="collapsePanduan{{ $elemen->id }}_{{ $skor }}" class="accordion-collapse collapse" data-bs-parent="#accordionPanduan{{ $elemen->id }}">
@@ -713,7 +713,7 @@
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title" id="importModalLabel">
-                    <i class="bi bi-upload"></i> Import Penilaian dari Excel
+                    <i class="bi bi-upload"></i> Upload Penilaian dari Excel
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -723,14 +723,14 @@
                     {{-- Instructions --}}
                     <div class="alert alert-info alert-permanent alert-dismissible mb-3">
                         <h6 class="alert-heading">
-                            <i class="bi bi-info-circle"></i> Petunjuk Import
+                            <i class="bi bi-info-circle"></i> Petunjuk Upload
                         </h6>
                         <ul class="mb-0 small">
                             <li>File harus berformat Excel (.xlsx atau .xls)</li>
                             <li>Gunakan template yang sudah disediakan</li>
                             <li>Jangan ubah struktur atau nama sheet</li>
                             <li>Kolom <strong>Kode Elemen (E)</strong> tidak boleh diubah</li>
-                            <li>Isi penilaian pada kolom I-M (skor 0-4)</li>
+                            <li>Isi penilaian pada kolom I-M (pilih salah satu kategori, dan berikan justifikasi), pada cell warna kuning</li>
                             <li>Maksimal ukuran file: 10MB</li>
                         </ul>
                     </div>
@@ -765,7 +765,7 @@
                     {{-- Progress Bar (hidden initially) --}}
                     <div id="importProgress" class="d-none">
                         <div class="mb-2">
-                            <strong>Progress Import:</strong>
+                            <strong>Progress Upload:</strong>
                             <span id="progressText">0%</span>
                         </div>
                         <div class="progress" style="height: 25px;">
@@ -786,95 +786,10 @@
                         <i class="bi bi-x-circle"></i> Batal
                     </button>
                     <button type="submit" class="btn btn-primary" id="btnSubmitImport">
-                        <i class="bi bi-upload"></i> Upload & Import
+                        <i class="bi bi-upload"></i> Upload Sekarang
                     </button>
                 </div>
             </form>
-        </div>
-    </div>
-</div>
-
-{{-- Import Result Modal --}}
-<div class="modal fade" id="resultModal" tabindex="-1" aria-labelledby="resultModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header" id="resultHeader">
-                <h5 class="modal-title" id="resultModalLabel">
-                    <i class="bi bi-check-circle"></i> Hasil Import
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                {{-- Success Result --}}
-                <div id="successResult" class="d-none">
-                    <div class="text-center mb-4">
-                        <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
-                        <h4 class="mt-3 text-success">Import Berhasil!</h4>
-                    </div>
-
-                    <div class="row text-center mb-3">
-                        <div class="col-md-4">
-                            <div class="card bg-light">
-                                <div class="card-body">
-                                    <h3 class="text-primary mb-0" id="resultTotal">0</h3>
-                                    <small class="text-muted">Total Baris</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="card bg-light">
-                                <div class="card-body">
-                                    <h3 class="text-success mb-0" id="resultImported">0</h3>
-                                    <small class="text-muted">Berhasil Import</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="card bg-light">
-                                <div class="card-body">
-                                    <h3 class="text-danger mb-0" id="resultFailed">0</h3>
-                                    <small class="text-muted">Gagal</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="alert alert-success">
-                        <i class="bi bi-info-circle"></i>
-                        <strong>Penilaian Anda telah berhasil diimport!</strong>
-                        <p class="mb-0 mt-2">Silakan review hasil import dan lakukan finalisasi jika sudah sesuai.</p>
-                    </div>
-                </div>
-
-                {{-- Error Result --}}
-                <div id="errorResult" class="d-none">
-                    <div class="text-center mb-4">
-                        <i class="bi bi-x-circle-fill text-danger" style="font-size: 4rem;"></i>
-                        <h4 class="mt-3 text-danger">Import Gagal</h4>
-                    </div>
-
-                    <div class="alert alert-danger">
-                        <strong>Error:</strong>
-                        <p id="errorMessage" class="mb-0"></p>
-                    </div>
-
-                    {{-- Error List --}}
-                    <div id="errorListContainer" class="d-none">
-                        <h6 class="mb-2">Detail Error:</h6>
-                        <div class="alert alert-warning alert-permanent alert-dismissible">
-                            <ul id="errorList" class="mb-0 small"></ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="bi bi-x-circle"></i> Tutup
-                </button>
-                <button type="button" class="btn btn-primary" onclick="location.reload()">
-                    <i class="bi bi-arrow-clockwise"></i> Refresh Halaman
-                </button>
-            </div>
         </div>
     </div>
 </div>
@@ -885,7 +800,7 @@
         <div class="modal-content">
             <div class="modal-header bg-secondary text-white">
                 <h5 class="modal-title" id="historyModalLabel">
-                    <i class="bi bi-clock-history"></i> Riwayat Import
+                    <i class="bi bi-clock-history"></i> Riwayat Upload Excel
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -895,7 +810,7 @@
                         <div class="spinner-border text-primary" role="status">
                             <span class="visually-hidden">Loading...</span>
                         </div>
-                        <p class="mt-2">Memuat riwayat import...</p>
+                        <p class="mt-2">Memuat riwayat upload excel...</p>
                     </div>
                 </div>
             </div>
@@ -903,57 +818,6 @@
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                     <i class="bi bi-x-circle"></i> Tutup
                 </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Import History Modal -->
-<div class="modal fade" id="importHistoryModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header bg-secondary text-white">
-                <h5 class="modal-title">
-                    <i class="bi bi-clock-history"></i> Riwayat Import Excel
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <!-- Loading State -->
-                <div id="historyLoading" class="text-center py-5">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    <p class="mt-3 text-muted">Memuat riwayat import...</p>
-                </div>
-
-                <!-- History Table -->
-                <div id="historyContent" class="d-none">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead class="table-light">
-                                <tr>
-                                    <th width="5%">#</th>
-                                    <th width="20%">Waktu</th>
-                                    <th width="20%">File</th>
-                                    <th width="15%">Status</th>
-                                    <th width="15%">Progress</th>
-                                    <th width="15%">Success Rate</th>
-                                    <th width="10%">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody id="historyTableBody">
-                                <!-- Will be populated by JavaScript -->
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Empty State -->
-                    <div id="historyEmpty" class="text-center py-5 d-none">
-                        <i class="bi bi-inbox" style="font-size: 4rem; color: #ccc;"></i>
-                        <p class="text-muted mt-3">Belum ada riwayat import</p>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -965,7 +829,7 @@
         <div class="modal-content">
             <div class="modal-header bg-success text-white" id="resultModalHeader">
                 <h5 class="modal-title">
-                    <i class="bi bi-check-circle"></i> Import Berhasil
+                    <i class="bi bi-check-circle"></i> Upload Excel Berhasil
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
@@ -1069,23 +933,29 @@
         /**
          * Toggle Kriteria Accordion
          */
-        window.toggleKriteriaAccordion = function(kriteriaId) {
-            const kriteriaCollapse = document.querySelector(`#collapse-kriteria-${kriteriaId}`);
+        window.toggleKriteriaAccordion = function(kriteriaId, btn) {
+            const kriteriaCollapse = document.getElementById(`collapse-kriteria-${kriteriaId}`);
             if (!kriteriaCollapse) return;
 
+            const kriteriaInstance = bootstrap.Collapse.getOrCreateInstance(
+                kriteriaCollapse, {
+                    toggle: false
+                }
+            );
+
+            const isOpen = kriteriaCollapse.classList.contains('show');
+
+            // 1️⃣ Toggle kriteria
+            isOpen ? kriteriaInstance.hide() : kriteriaInstance.show();
+
+            // 2️⃣ Toggle semua elemen di dalam kriteria
             const elemenCollapses = kriteriaCollapse.querySelectorAll('.elemen-collapse');
 
-            const anyOpen = Array.from(elemenCollapses).some(el => el.classList.contains('show'));
-
-            elemenCollapses.forEach(collapse => {
-                const instance = bootstrap.Collapse.getOrCreateInstance(collapse, {
+            elemenCollapses.forEach(el => {
+                const instance = bootstrap.Collapse.getOrCreateInstance(el, {
                     toggle: false
                 });
-                if (anyOpen) {
-                    instance.hide(); // tutup semua
-                } else {
-                    instance.show(); // buka semua
-                }
+                isOpen ? instance.hide() : instance.show();
             });
         };
 
@@ -1389,12 +1259,12 @@
                 }
 
             } catch (error) {
-                console.error('Import error:', error);
+                console.error('Upload excel error:', error);
 
                 // Re-enable buttons
                 btnSubmit.disabled = false;
                 btnClose.disabled = false;
-                btnSubmit.innerHTML = '<i class="bi bi-upload"></i> Upload & Import';
+                btnSubmit.innerHTML = '<i class="bi bi-upload"></i> Upload Sekarang';
 
                 // Show error
                 showAlert('importAlert', 'danger', error.message);
@@ -1436,7 +1306,7 @@
                         // Check if completed
                         if (log.status === 'completed' || log.status === 'failed') {
                             clearInterval(pollingInterval);
-                            showResult(log);
+                            showImportResult(log);
                         }
                     }
                 } catch (error) {
@@ -1937,7 +1807,7 @@
                 ${data.errors && data.errors.length > 0 ? `
                     <div class="alert alert-warning alert-permanent alert-dismissible">
                         <strong>⚠️ Peringatan:</strong>
-                        <p class="mb-2">Beberapa baris gagal diimport:</p>
+                        <p class="mb-2">Beberapa baris gagal diproses:</p>
                         <ul class="mb-0 small">
                             ${data.errors.slice(0, 5).map(err => `<li>${err}</li>`).join('')}
                             ${data.errors.length > 5 ? `<li><em>...dan ${data.errors.length - 5} error lainnya</em></li>` : ''}
@@ -2029,7 +1899,7 @@
                 content.innerHTML = `
                 <div class="alert alert-info">
                     <i class="bi bi-info-circle"></i>
-                    Belum ada riwayat import.
+                    Belum ada riwayat upload excel.
                 </div>
             `;
                 return;
@@ -2123,7 +1993,7 @@
         window.showImportErrors = function(errors) {
             Swal.fire({
                 icon: 'warning'
-                , title: 'Import Errors'
+                , title: 'Upload excel error'
                 , html: `
                     <div class="text-start">
                         <ul class="mb-0">
@@ -2198,76 +2068,6 @@
             }
         }
 
-        /**
-         * ============================================
-         * SHOW RESULT
-         * ============================================
-         */
-
-        function showResult(log) {
-            // Hide import modal
-            const importModal = bootstrap.Modal.getInstance(document.getElementById('importModal'));
-            if (importModal) {
-                importModal.hide();
-            }
-
-            // Reset import form
-            setTimeout(() => {
-                document.getElementById('importForm').reset();
-                document.getElementById('fileInfo').classList.add('d-none');
-                document.getElementById('importProgress').classList.add('d-none');
-                const importAlert = document.getElementById('importAlert')
-                if (importAlert) importAlert.classList.add('d-none');
-
-                const btnSubmit = document.getElementById('btnSubmitImport');
-                const btnClose = document.getElementById('btnCloseImport');
-                btnSubmit.disabled = false;
-                btnClose.disabled = false;
-                btnSubmit.innerHTML = '<i class="bi bi-upload"></i> Upload & Import';
-            }, 500);
-
-            // Show result modal
-            const resultModal = new bootstrap.Modal(document.getElementById('resultModal'));
-
-            if (log.status === 'completed') {
-                // Success
-                document.getElementById('successResult').classList.remove('d-none');
-                document.getElementById('errorResult').classList.add('d-none');
-
-                document.getElementById('resultTotal').textContent = log.total_rows;
-                document.getElementById('resultImported').textContent = log.imported_rows;
-                document.getElementById('resultFailed').textContent = log.failed_rows;
-
-                document.getElementById('resultHeader').className = 'modal-header bg-success text-white';
-                document.getElementById('resultModalLabel').innerHTML = '<i class="bi bi-check-circle"></i> Import Berhasil';
-            } else {
-                // Failed
-                document.getElementById('successResult').classList.add('d-none');
-                document.getElementById('errorResult').classList.remove('d-none');
-
-                document.getElementById('errorMessage').textContent = log.errors || 'Import gagal. Silakan coba lagi.';
-
-                // Show error list if available
-                if (log.errors && typeof log.errors === 'object') {
-                    const errorList = document.getElementById('errorList');
-                    errorList.innerHTML = '';
-
-                    Object.values(log.errors).forEach(error => {
-                        const li = document.createElement('li');
-                        li.textContent = error;
-                        errorList.appendChild(li);
-                    });
-
-                    document.getElementById('errorListContainer').classList.remove('d-none');
-                }
-
-                document.getElementById('resultHeader').className = 'modal-header bg-danger text-white';
-                document.getElementById('resultModalLabel').innerHTML = '<i class="bi bi-x-circle"></i> Import Gagal';
-            }
-
-            resultModal.show();
-        }
-
         function getStatusBadge(status) {
             const badges = {
                 'queued': '<span class="badge bg-secondary">Antrian</span>'
@@ -2305,6 +2105,27 @@
                 , showConfirmButton: false
                 , timer: 3000
                 , timerProgressBar: true
+            });
+        }
+
+        const importResultModal = document.getElementById('importResultModal');
+        if (importResultModal) {
+            importResultModal.addEventListener('hidden.bs.modal', function() {
+                // Show loading indicator
+                Swal.fire({
+                    title: 'Memuat ulang data...'
+                    , html: 'Mohon tunggu sebentar'
+                    , allowOutsideClick: false
+                    , allowEscapeKey: false
+                    , didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Refresh halaman setelah delay singkat
+                setTimeout(() => {
+                    window.location.reload();
+                }, 300);
             });
         }
 

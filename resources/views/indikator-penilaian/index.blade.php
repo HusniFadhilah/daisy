@@ -63,7 +63,7 @@
                                     <td class="text-center">
                                         <span class="badge bg-primary">{{ $indikator->jenjangPenilaian->skor }}</span>
                                     </td>
-                                    <td>{{ $indikator->jenjangPenilaian->nama_jenjang }}</td>
+                                    <td>{{ $indikator->jenjangPenilaian->name }}</td>
                                     <td>{{ Str::limit($indikator->deskripsi_penilaian, 100) }}</td>
                                     <td>{{ $indikator->keterangan ?? '-' }}</td>
                                     <td>

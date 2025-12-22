@@ -42,7 +42,7 @@
                         <option value="">-- Pilih Jenjang Penilaian --</option>
                         @foreach($jenjangPenilaians as $jenjang)
                         <option value="{{ $jenjang->id }}" {{ old('id_jenjang_penilaian', $indikatorPenilaian->id_jenjang_penilaian) == $jenjang->id ? 'selected' : '' }}>
-                            Skor {{ $jenjang->skor }} - {{ $jenjang->nama_jenjang }}
+                            Skor {{ $jenjang->skor }} - {{ $jenjang->name }}
                         </option>
                         @endforeach
                     </select>

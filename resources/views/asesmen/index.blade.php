@@ -88,7 +88,7 @@
                 </div>
                 <div class="col-md-1">
                     <label class="form-label">&nbsp;</label>
-                    <button type="button" class="btn btn-outline-secondary d-block w-100" data-bs-toggle="tooltip" title="Export Excel">
+                    <button type="button" class="btn btn-outline-secondary d-block w-100" data-bs-toggle="tooltip" title="Download Data Excel">
                         <i class="bi bi-file-earmark-excel"></i>
                     </button>
                 </div>
@@ -126,9 +126,10 @@
                                 @endif
                             </td>
                             <td>
-                                {{ $asesmen->perguruan_tinggi ?? '-' }}
-                                @if($asesmen->bentuk_pt)
-                                <br><small class="text-muted">{{ $asesmen->bentuk_pt }}</small>
+                                @if($asesmen->studyProgram)
+                                {{ $asesmen->studyProgram->university->name ?? '-' }}
+                                @else
+                                <span class="text-muted">-</span>
                                 @endif
                             </td>
                             <td>

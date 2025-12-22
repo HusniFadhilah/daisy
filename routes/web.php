@@ -1,8 +1,11 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ValidasiController;
-use App\Http\Controllers\{AsesmenController, AuthController, DashboardController, PenawaranController, PenugasanController, AKController, ALController, BandingController, PedomanController, DokumenController, PanduanController, BantuanController, ProfileController, SettingsController, ActivityController, TaskController, PasswordResetController, LaporanController, UniversityController, DegreeLevelController, StudyProgramController, KriteriaController, ElemenStandarController, JenisIndikatorController, IndikatorController, IndikatorPenilaianElemenController, BobotPenilaianController};
+use App\Http\Controllers\Profile\{PasswordResetController, ProfileController};
+use App\Http\Controllers\Prodi\{DeskEvaluatorController, PengajuanAkreditasiController, PemetaanAkreditasiController};
+use App\Http\Controllers\Asesmen\{AsesmenController, AKController, ALController, PenawaranController, ValidasiController};
+use App\Http\Controllers\Master\{ElemenStandarController, JenisIndikatorController, IndikatorController, IndikatorPenilaianElemenController, KriteriaController, UniversityController, StudyProgramController};
+use App\Http\Controllers\{AuthController, BobotPenilaianController, DashboardController, PenugasanController, BandingController, PedomanController, DokumenController, PanduanController, BantuanController, SettingsController, ActivityController, TaskController, LaporanController, DegreeLevelController};
 
 
 // Dashboard (awal)
@@ -48,12 +51,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('indikator', IndikatorController::class);
     });
 
+    // PEMETAAN AKREDITASI
+    Route::prefix('pemetaan')->name('pemetaan.')->middleware(['auth'])->group(function () {
+        Route::get('/', [PemetaanAkreditasiController::class, 'index'])->name('index');
+        Route::get('/{id}', [PemetaanAkreditasiController::class, 'show'])->name('show');
+        Route::get('/timeline/ajax', [PemetaanAkreditasiController::class, 'getTimelineAjax'])->name('timeline.ajax');
+        Route::get('/calendar/ajax', [PemetaanAkreditasiController::class, 'getCalendarAjax'])->name('calendar.ajax');
+        Route::get('/table/ajax', [PemetaanAkreditasiController::class, 'getTableAjax'])->name('table.ajax');
+        Route::get('/export/excel', [PemetaanAkreditasiController::class, 'export'])->name('export');
+    });
+
     // PENAWARAN ASESMEN
     Route::prefix('penawaran')->name('penawaran')->group(function () {
-        Route::get('', [PenawaranController::class, 'penawaranIndex'])
-            ->name('.index');
-        Route::get('/riwayat', [PenawaranController::class, 'penawaranIndex'])
-            ->name('.riwayat');
+        Route::get('/', [PenawaranController::class, 'index']);
+        Route::post('/{id}/accept', [PenawaranController::class, 'acceptPenawaran'])
+            ->name('.accept');
+        Route::post('/{id}/reject', [PenawaranController::class, 'rejectPenawaran'])
+            ->name('.reject');
     });
 
     // PENUGASAN ASESMEN
@@ -121,13 +135,32 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/upload/{id}', [AKController::class, 'deleteUpload'])->name('upload.delete');
     });
 
-    // PENAWARAN ASESMEN
-    Route::prefix('penawaran')->name('penawaran')->group(function () {
-        Route::get('/', [PenawaranController::class, 'index']);
-        Route::post('/{id}/accept', [PenawaranController::class, 'acceptPenawaran'])
-            ->name('.accept');
-        Route::post('/{id}/reject', [PenawaranController::class, 'rejectPenawaran'])
-            ->name('.reject');
+    Route::prefix('pengajuan')->name('pengajuan')->middleware(['role:admin_prodi,admin_univ'])->group(function () {
+        Route::get('/', [PengajuanAkreditasiController::class, 'index']);
+        Route::get('/create', [PengajuanAkreditasiController::class, 'create'])->name('.create');
+        Route::post('/', [PengajuanAkreditasiController::class, 'store'])->name('.store');
+        Route::get('/{id}', [PengajuanAkreditasiController::class, 'show'])->name('.show');
+
+        Route::post('/{id}/upload-draft', [PengajuanAkreditasiController::class, 'uploadDraftBorang'])->name('.upload-draft');
+        Route::post('/{id}/upload-pembayaran', [PengajuanAkreditasiController::class, 'uploadBuktiPembayaran'])->name('.upload-pembayaran');
+        Route::post('/{id}/upload-final', [PengajuanAkreditasiController::class, 'uploadBorangFinal'])->name('.upload-final');
+        // Dokumen download
+        Route::get('/dokumen/{id}/download', [PengajuanAkreditasiController::class, 'downloadDokumen'])->name('.dokumen.download');
+    });
+
+
+    // ========== DESK EVALUATOR ROUTES ==========
+    Route::prefix('de')->name('de')->middleware(['role:asesi,super_admin'])->group(function () {
+        Route::prefix('pengajuan')->name('.pengajuan')->group(function () {
+            Route::get('/', [DeskEvaluatorController::class, 'index']);
+            Route::get('/{id}', [DeskEvaluatorController::class, 'show'])->name('.show');
+
+            Route::post('/kirim-pengingat', [DeskEvaluatorController::class, 'kirimPengingat'])->name('.kirim-pengingat');
+            Route::post('/{id}/kirim-borang', [DeskEvaluatorController::class, 'kirimFormBorang'])->name('.kirim-borang');
+            Route::post('/{id}/review', [DeskEvaluatorController::class, 'reviewKesiapan'])->name('.review');
+            Route::post('/{id}/verifikasi-pembayaran', [DeskEvaluatorController::class, 'verifikasiPembayaran'])->name('.verifikasi-pembayaran');
+            Route::post('/{id}/approve-ak', [DeskEvaluatorController::class, 'approveLanjutAK'])->name('.approve-ak');
+        });
     });
 
     Route::resource('asesmen', AsesmenController::class);
@@ -296,4 +329,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
             return response()->json(['success' => true]);
         })->name('notifications.readAll');
     });
+});
+
+Route::get('clearcache', function () {
+    Illuminate\Support\Facades\Artisan::call('cache:clear');
+    Illuminate\Support\Facades\Artisan::call('route:clear');
+    Illuminate\Support\Facades\Artisan::call('view:clear');
+    Illuminate\Support\Facades\Artisan::call('config:clear');
+    Illuminate\Support\Facades\Artisan::call('config:cache');
 });

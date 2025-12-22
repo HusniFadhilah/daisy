@@ -105,7 +105,7 @@
                             </div>
 
                             @if($asesmen->description)
-                            <div class="alert alert-light mb-3">
+                            <div class="alert alert-light alert-permanent mb-3">
                                 <small><i class="bi bi-info-circle me-1"></i>
                                     {{ Str::limit($asesmen->description, 200) }}
                                 </small>
@@ -125,7 +125,7 @@
                                 </button>
                             </div>
                             @elseif($penawaran->status_penawaran === 'accepted')
-                            <div class="alert alert-success mb-0">
+                            <div class="alert alert-success alert-permanent mb-0">
                                 <i class="bi bi-check-circle me-1"></i>
                                 Anda sudah menerima penawaran ini.
                                 <a href="{{ route('ak.berkas.show', $asesmen->id) }}" class="alert-link">
@@ -133,18 +133,17 @@
                                 </a>
                             </div>
                             @else
-                            <div class="alert alert-danger mb-0">
+                            <div class="alert alert-danger alert-permanent mb-0">
                                 <i class="bi bi-x-circle me-1"></i>
                                 Anda telah menolak penawaran ini.
                             </div>
                             @endif
                         </div>
-                    </div>
-
-                    <div class="mt-3">
-                        <a href="{{ route('ak.berkas') }}" class="btn btn-link">
-                            <i class="bi bi-arrow-left"></i> Kembali ke Daftar Berkas
-                        </a>
+                        <div class="card-footer">
+                            <a href="{{ route('ak.berkas') }}" class="btn btn-link">
+                                <i class="bi bi-arrow-left"></i> Kembali ke Daftar Berkas
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -166,7 +165,7 @@
                 <div class="modal-body">
                     <p>Anda akan menerima penawaran sebagai <strong id="roleText"></strong> dan siap melakukan penilaian.</p>
 
-                    <div class="alert alert-info">
+                    <div class="alert alert-info alert-permanent">
                         <small>
                             <i class="bi bi-info-circle"></i>
                             Setelah menerima, Anda akan dapat mengakses kertas kerja penilaian dan melakukan asesmen.

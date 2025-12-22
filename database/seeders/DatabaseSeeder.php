@@ -15,18 +15,23 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call(RoleSeeder::class);
-        $this->call(UserSeeder::class);
-        $this->call(DegreeLevelSeeder::class);
-        $this->call(UniversitySeeder::class);
-        $this->call(StudyProgramSeeder::class);
-        $this->call(KriteriaSeeder::class);
-        $this->call(ElemenStandarSeeder::class);
-        $this->call(PernyataanSeeder::class);
-        $this->call(JenisIndikatorSeeder::class);
-        $this->call(IndikatorSeeder::class);
-        $this->call(JenjangPenilaianSeeder::class);
-        $this->call(IndikatorPenilaianElemenSeeder::class);
-        $this->call(AsesmenUserRoleSeeder::class);
+        $this->call([
+            RoleSeeder::class,
+            UserSeeder::class,
+            DegreeLevelSeeder::class,
+            UniversitySeeder::class,
+            StudyProgramSeeder::class,
+            KriteriaSeeder::class,
+            ElemenStandarSeeder::class,
+            PernyataanSeeder::class,
+            JenisIndikatorSeeder::class,
+            IndikatorSeeder::class,
+            JenjangPenilaianSeeder::class,
+            IndikatorPenilaianElemenSeeder::class,
+            AsesmenUserRoleSeeder::class,
+            StudyProgramUserSeeder::class,
+            AkreditasiSeeder::class,
+            // PengajuanAkreditasiSeeder::class,
+        ]);
     }
 }

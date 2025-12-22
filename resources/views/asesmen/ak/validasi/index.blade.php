@@ -50,7 +50,7 @@
                     });
                     @endphp
                     <h3 class="text-warning mb-0">{{ $totalNeedsValidation }}</h3>
-                    <small class="text-muted">Asesor Perlu Divalidasi</small>
+                    <small class="text-muted">Penilaian Asesor Perlu Divalidasi oleh Anda</small>
                 </div>
             </div>
         </div>
@@ -102,7 +102,7 @@
                 </div>
                 @if(isset($idAsesors[0]) && isset($idAsesors[1]))
                 <a href="{{ route('ak.validasi.asesor', ['idAsesmen' => $item['asesmen']->id, 'asesor1Id' => $idAsesors[0],'asesor2Id' => $idAsesors[1]]) }}" class="btn btn-primary">
-                    <i class="bi bi-check2-square"></i> Validasi
+                    <i class="bi bi-check2-square"></i> Validasi sekarang
                 </a>
                 @endif
             </div>
@@ -143,7 +143,7 @@
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <small class="text-muted d-block">Submitted:</small>
+                        <small class="text-muted d-block">Disubmit pada:</small>
                         <strong>{{ \App\Libraries\Date::tglWaktu($asesor->submitted_at) }}</strong>
                     </div>
                     <div class="col-md-3">

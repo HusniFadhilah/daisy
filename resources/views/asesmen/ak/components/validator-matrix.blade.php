@@ -149,37 +149,63 @@
                     </tr>
                 </thead>
 
+                @php
+                // Preload semua warna skor agar tidak query berkali-kali
+                $warnaSkor = \App\Models\JenjangPenilaian::pluck('color', 'skor');
+
+                // Helper function untuk render cell skor
+                function renderScoreCell($penilaian, $asesor, $asesorNum, $warnaSkor) {
+                $skor = $penilaian->skor ?? null;
+                $komentar = $penilaian->komentar ?? '';
+
+                // Pemenuhan (skor != 4)
+                $bgPemenuhan = ($skor && $skor != 4) ? ($warnaSkor[$skor] ?? '') : '#e0e0e0';
+                $onclickPemenuhan = ($skor && $skor != 4)
+                ? "onclick=\"showKomentarPopover(this, '{$asesor->name}', $skor, '".addslashes($komentar)."')\" title='Klik untuk lihat komentar'"
+                : '';
+                $textColor = $skor == 2 ? 'dark' : 'white';
+                $cellPemenuhan = "<td class='vm-cell vm-score-cell vm-clickable' style='background: $bgPemenuhan;' data-asesor='$asesorNum' data-type='pemenuhan' data-skor='$skor' data-komentar='$komentar' $onclickPemenuhan>"
+                    . ($skor && $skor != 4 ? "<small class='text-$textColor text-left align-content-start'>$komentar</small>" : '')
+                    . "</td>";
+
+                // Pelampauan (skor == 4)
+                $bgPelampauan = ($skor == 4) ? ($warnaSkor[4] ?? '') : '#e0e0e0';
+                $onclickPelampauan = ($skor == 4)
+                ? "onclick=\"showKomentarPopover(this, '{$asesor->name}', 4, '".addslashes($komentar)."')\" title='Klik untuk lihat komentar'"
+                : '';
+                $cellPelampauan = "<td class='vm-cell vm-score-cell vm-clickable' style='background: $bgPelampauan;' data-asesor='$asesorNum' data-type='pelampauan' data-skor='$skor' data-komentar='$komentar' $onclickPelampauan>"
+                    . ($skor == 4 ? "<small class='text-white text-left align-content-start'>$komentar</small>" : '')
+                    . "</td>";
+
+                return $cellPemenuhan . $cellPelampauan;
+                }
+                @endphp
+
                 @foreach($kriterias as $kriteria)
                 @php
                 $jumlahElemen = $kriteria->elemenStandar->count();
                 $firstRow = true;
 
                 // cek apakah di kriteria ini ada elemen yang beda
-                $groupHasDiff = false;
-                foreach ($kriteria->elemenStandar as $e) {
+                $groupHasDiff = $kriteria->elemenStandar->some(function($e) use ($asesor1, $asesor2) {
                 $p1 = $e->penilaian->where('id_asesor', $asesor1->id)->first();
                 $p2 = $e->penilaian->where('id_asesor', $asesor2->id)->first();
-                if ($p1 && $p2 && $p1->skor != $p2->skor) {
-                $groupHasDiff = true;
-                break;
-                }
-                }
+                return $p1 && $p2 && $p1->skor != $p2->skor;
+                });
                 @endphp
 
-                {{-- ⬇⬇ satu group untuk satu kriteria --}}
                 <tbody class="validator-group" data-has-diff="{{ $groupHasDiff ? 'true' : 'false' }}">
                     @foreach($kriteria->elemenStandar as $elemen)
                     @php
                     $penilaian1 = $elemen->penilaian->where('id_asesor', $asesor1->id)->first();
                     $penilaian2 = $elemen->penilaian->where('id_asesor', $asesor2->id)->first();
                     $validasi = $elemen->penilaian->where('status_validasi', '!=', 'not_validated')->first();
-
                     $hasDifference = $penilaian1 && $penilaian2 && $penilaian1->skor != $penilaian2->skor;
                     @endphp
 
                     <tr class="validator-row" data-elemen-id="{{ $elemen->id }}" @if($hasDifference) data-has-diff="true" @endif>
 
-                        {{-- Kriteria (Merged sekali di baris pertama) --}}
+                        {{-- Kriteria --}}
                         @if($firstRow)
                         <td class="vm-cell sticky-col" style="left: 0; z-index: 15;" rowspan="{{ $jumlahElemen }}">
                             <span class="kriteria-badge">{{ $kriteria->kode_kriteria }}</span>
@@ -197,7 +223,7 @@
                             <div class="elemen-text">{{ $elemen->pernyataan_elemen }}</div>
                         </td>
 
-                        {{-- Indikator (Collapsible) --}}
+                        {{-- Indikator --}}
                         <td class="vm-cell indikator-col">
                             <div class="indikator-content">
                                 @if($elemen->indikator->count() > 0)
@@ -215,49 +241,9 @@
                             </div>
                         </td>
 
-                        {{-- Asesor 1 - Pemenuhan --}}
-                        <td class="vm-cell vm-score-cell vm-clickable" style="background: {{ $penilaian1 && $penilaian1->skor != 4 ? '#' . \App\Models\JenjangPenilaian::where('skor', $penilaian1->skor)->first()?->color : '#e0e0e0' }};" data-asesor="1" data-type="pemenuhan" data-skor="{{ $penilaian1->skor ?? '' }}" data-komentar="{{ $penilaian1->komentar ?? '' }}" @if($penilaian1 && $penilaian1->skor != 4)
-                            onclick="showKomentarPopover(this, '{{ $asesor1->name }}', {{ $penilaian1->skor }}, '{{ addslashes($penilaian1->komentar) }}')"
-                            title="Klik untuk lihat komentar"
-                            @endif>
-
-                            @if($penilaian1 && $penilaian1->skor != 4)
-                            <small class="text-{{ $penilaian1->skor == 2 ? 'dark':'white'}} text-left align-content-start">{{ $penilaian1->komentar }}</small>
-                            @endif
-                        </td>
-
-                        {{-- Asesor 1 - Pelampauan --}}
-                        <td class="vm-cell vm-score-cell vm-clickable" style="background: {{ $penilaian1 && $penilaian1->skor == 4 ? '#' . \App\Models\JenjangPenilaian::where('skor', 4)->first()?->color : '#e0e0e0' }};" data-asesor="1" data-type="pelampauan" data-skor="{{ $penilaian1->skor ?? '' }}" data-komentar="{{ $penilaian1->komentar ?? '' }}" @if($penilaian1 && $penilaian1->skor == 4)
-                            onclick="showKomentarPopover(this, '{{ $asesor1->name }}', 4, '{{ addslashes($penilaian1->komentar) }}')"
-                            title="Klik untuk lihat komentar"
-                            @endif>
-
-                            @if($penilaian1 && $penilaian1->skor == 4)
-                            <small class="text-white text-left align-content-start">{{ $penilaian1->komentar }}</small>
-                            @endif
-                        </td>
-
-                        {{-- Asesor 2 - Pemenuhan --}}
-                        <td class="vm-cell vm-score-cell vm-clickable" style="background: {{ $penilaian2 && $penilaian2->skor != 4 ? '#' . \App\Models\JenjangPenilaian::where('skor', $penilaian2->skor)->first()?->color : '#e0e0e0' }};" data-asesor="2" data-type="pemenuhan" data-skor="{{ $penilaian2->skor ?? '' }}" data-komentar="{{ $penilaian2->komentar ?? '' }}" @if($penilaian2 && $penilaian2->skor != 4)
-                            onclick="showKomentarPopover(this, '{{ $asesor2->name }}', {{ $penilaian2->skor }}, '{{ addslashes($penilaian2->komentar) }}')"
-                            title="Klik untuk lihat komentar"
-                            @endif>
-
-                            @if($penilaian2 && $penilaian2->skor != 4)
-                            <small class="text-{{ $penilaian2->skor == 2 ? 'dark':'white'}} text-left align-content-start">{{ $penilaian2->komentar }}</small>
-                            @endif
-                        </td>
-
-                        {{-- Asesor 2 - Pelampauan --}}
-                        <td class="vm-cell vm-score-cell vm-clickable" style="background: {{ $penilaian2 && $penilaian2->skor == 4 ? '#' . \App\Models\JenjangPenilaian::where('skor', 4)->first()?->color : '#e0e0e0' }};" data-asesor="2" data-type="pelampauan" data-skor="{{ $penilaian2->skor ?? '' }}" data-komentar="{{ $penilaian2->komentar ?? '' }}" @if($penilaian2 && $penilaian2->skor == 4)
-                            onclick="showKomentarPopover(this, '{{ $asesor2->name }}', 4, '{{ addslashes($penilaian2->komentar) }}')"
-                            title="Klik untuk lihat komentar"
-                            @endif>
-
-                            @if($penilaian2 && $penilaian2->skor == 4)
-                            <small class="text-white text-left align-content-start">{{ $penilaian2->komentar }}</small>
-                            @endif
-                        </td>
+                        {{-- Skor Asesor --}}
+                        {!! renderScoreCell($penilaian1, $asesor1, 1, $warnaSkor) !!}
+                        {!! renderScoreCell($penilaian2, $asesor2, 2, $warnaSkor) !!}
 
                         {{-- Validasi Status --}}
                         <td class="vm-cell vm-validasi-cell text-center">

@@ -166,7 +166,7 @@
                 <div class="col-md-3">
                     <button type="button" class="btn btn-outline-secondary w-100" id="btnExportNotes">
                         <i class="bi bi-file-text"></i>
-                        <div>Export Catatan</div>
+                        <div>Download Catatan</div>
                         <small>Download catatan validasi</small>
                     </button>
                 </div>
@@ -490,8 +490,8 @@
             document.getElementById('validasiAsesor2Id').value = asesor2.user.id;
 
             // ✅ SET VALUE untuk radio buttons
-            document.getElementById('radioAsesor1').value = asesor1.user.id;
-            document.getElementById('radioAsesor2').value = asesor2.user.id;
+            document.getElementById('chkAsesor1').value = asesor1.user.id;
+            document.getElementById('chkAsesor2').value = asesor2.user.id;
 
             // Elemen Info
             document.getElementById('detailKriteria').textContent = elemen.kriteria ? `${elemen.kriteria.kode_kriteria} (${elemen.kriteria.nama_kriteria})` : '-';
@@ -513,11 +513,11 @@
             document.getElementById('avatar1').textContent = asesor1.user.name.substring(0, 2).toUpperCase();
             document.getElementById('namaAsesor1').textContent = asesor1.user.name;
 
+            const skorAsesor1Container = document.getElementById('skorAsesor1Container')
             if (asesor1.penilaian) {
                 const skor1 = asesor1.penilaian.skor;
-                const skorAsesor1Container = document.getElementById('skorAsesor1Container')
                 if (skorAsesor1Container) skorAsesor1Container.innerHTML =
-                    `<div class="skor-display" style="background: ${getSkorColor(skor1)}; color: white;">${skor1}</div>`;
+                    `<div class="skor-display" style="background: ${getSkorColorJS(skor1)}; color: white;">${skor1}</div>`;
                 const kategoriAsesor1 = document.getElementById('kategoriAsesor1')
                 if (kategoriAsesor1) {
                     kategoriAsesor1.className = `badge ${getSkorBadgeClass(skor1)}`;
@@ -527,7 +527,7 @@
                 if (komentarAsesor1) komentarAsesor1.innerHTML =
                     asesor1.penilaian.komentar || '<em class="text-muted">Tidak ada justifikasi</em>';
             } else {
-                document.getElementById('skorAsesor1Container').innerHTML =
+                if (skorAsesor1Container) skorAsesor1Container.innerHTML =
                     '<span class="text-muted">Belum dinilai</span>';
             }
 
@@ -535,10 +535,10 @@
             document.getElementById('avatar2').textContent = asesor2.user.name.substring(0, 2).toUpperCase();
             document.getElementById('namaAsesor2').textContent = asesor2.user.name;
 
+            const skorAsesor2Container = document.getElementById('skorAsesor2Container')
             if (asesor2.penilaian) {
                 const skor2 = asesor2.penilaian.skor;
-                const skorAsesor2Container = document.getElementById('skorAsesor2Container')
-                if (skorAsesor2Container) skorAsesor2Container.innerHTML = `<div class="skor-display" style="background: ${getSkorColor(skor2)}; color: white;">${skor2}</div>`;
+                if (skorAsesor2Container) skorAsesor2Container.innerHTML = `<div class="skor-display" style="background: ${getSkorColorJS(skor2)}; color: white;">${skor2}</div>`;
                 const kategoriAsesor2 = document.getElementById('kategoriAsesor2')
                 if (kategoriAsesor2) {
                     kategoriAsesor2.className = `badge ${getSkorBadgeClass(skor2)}`;
@@ -547,7 +547,7 @@
                 const komentarAsesor2 = document.getElementById('komentarAsesor2')
                 if (komentarAsesor2) komentarAsesor2.innerHTML = asesor2.penilaian.komentar || '<em class="text-muted">Tidak ada justifikasi</em>';
             } else {
-                document.getElementById('skorAsesor2Container').innerHTML =
+                if (skorAsesor2Container) skorAsesor2Container.innerHTML =
                     '<span class="text-muted">Belum dinilai</span>';
             }
 
@@ -567,8 +567,8 @@
 
             // Reset form
             document.getElementById('formValidasi').reset();
-            document.querySelectorAll('input[name="asesor_target_revisi"]').forEach(radio => {
-                radio.checked = false;
+            document.querySelectorAll('input[name="asesor_target_revisi[]"]').forEach(cb => {
+                cb.checked = false;
             });
         }
 
@@ -692,20 +692,22 @@
             const catatanValidator = document.getElementById('catatanValidator').value;
 
             // ✅ VALIDASI: Jika revisi, harus pilih asesor
-            let asesorId = null;
+            let asesorIds = null;
             if (status === 'revision_required') {
-                const selectedRadio = document.querySelector('input[name="asesor_target_revisi"]:checked');
+                const selectedChecks = Array.from(
+                    document.querySelectorAll('input[name="asesor_target_revisi[]"]:checked')
+                );
 
-                if (!selectedRadio) {
+                if (selectedChecks.length === 0) {
                     Swal.fire({
                         icon: 'warning'
                         , title: 'Pilih Asesor'
-                        , text: 'Silakan pilih asesor mana yang harus merevisi penilaian!'
+                        , text: 'Silakan centang asesor mana yang harus merevisi penilaian!'
                     });
                     return;
                 }
 
-                asesorId = selectedRadio.value;
+                asesorIds = selectedChecks.map(cb => cb.value);
 
                 if (!catatanValidator.trim()) {
                     Swal.fire({
@@ -728,9 +730,20 @@
             }
 
             // Confirm
-            const confirmText = status === 'validated' ?
-                `Anda akan menyetujui penilaian dengan skor final: ${skorFinal}` :
-                `Anda akan meminta ${document.querySelector(`label[for="${document.querySelector('input[name="asesor_target_revisi"]:checked').id}"]`).closest('.card').querySelector('h6').textContent} untuk merevisi penilaian`;
+            let confirmText = `Anda akan menyetujui penilaian dengan skor final: ${skorFinal}`;
+            if (status === 'revision_required') {
+                const selectedChecks = Array.from(
+                    document.querySelectorAll('input[name="asesor_target_revisi[]"]:checked')
+                );
+
+                const names = selectedChecks.map(cb => {
+                    // ambil nama asesor dari card terdekat
+                    const card = cb.closest('.card');
+                    return card ? card.querySelector('h6').textContent.trim() : 'Asesor';
+                }).filter(Boolean);
+
+                confirmText = `Anda akan meminta revisi kepada: ${names.join(' dan ')}`;
+            }
 
             const confirmResult = await Swal.fire({
                 icon: 'question'
@@ -764,7 +777,7 @@
                         status: status
                         , skor_final: skorFinal
                         , catatan_validator: catatanValidator
-                        , id_asesor: asesorId // ✅ KIRIM ID ASESOR yang harus revisi
+                        , id_asesors: asesorIds // ✅ KIRIM ID ASESOR yang harus revisi
                     })
                 });
 
@@ -860,23 +873,6 @@
         }
     });
 
-    /**
-     * ============================================
-     * HELPER FUNCTIONS
-     * ============================================
-     */
-
-    function getSkorColor(skor) {
-        const colors = {
-            0: '#f44336'
-            , 1: '#ff9800'
-            , 2: '#ffeb3b'
-            , 3: '#8bc34a'
-            , 4: '#4caf50'
-        };
-        return colors[skor] || '#9e9e9e';
-    }
-
     function getSkorLabel(skor) {
         const labels = {
             0: 'Tidak Memenuhi'
@@ -917,9 +913,6 @@
             title: `💬 Komentar ${namaAsesor}`
             , html: `
             <div class="text-start">
-                <div class="alert alert-info alert-permanent alert-dismissible mb-3">
-                    <strong>Skor:</strong> ${skor} - ${skorLabel}
-                </div>
                 <div class="alert alert-light alert-permanent alert-dismissible">
                     <strong>Justifikasi:</strong>
                     <p class="mb-0 mt-2">${komentar || '<em>Tidak ada komentar</em>'}</p>
@@ -1016,10 +1009,6 @@
                     <strong>${pen.asesor.name}</strong>
                 </div>
                 <div class="row">
-                    <div class="col-md-6">
-                        <small class="text-muted">Skor:</small>
-                        <span class="badge ${getSkorBadgeClass(pen.skor)}">${pen.skor}</span>
-                    </div>
                     <div class="col-md-12 mt-2">
                         <small class="text-muted">Komentar:</small>
                         <p class="small mb-0">${pen.komentar || '<em>-</em>'}</p>

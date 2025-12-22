@@ -123,6 +123,74 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
+// ========================================
+// ✅ TOAST NOTIFICATION (Keep existing)
+// ========================================
+function showToast(type, message) {
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0`;
+    toast.setAttribute('role', 'alert');
+    toast.setAttribute('aria-live', 'assertive');
+    toast.setAttribute('aria-atomic', 'true');
+
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+                ${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+
+    let toastContainer = document.getElementById('toastContainer');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toastContainer';
+        toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+        toastContainer.style.zIndex = '9999';
+        document.body.appendChild(toastContainer);
+    }
+
+    toastContainer.appendChild(toast);
+
+    const bsToast = new bootstrap.Toast(toast, {
+        delay: 3000
+    });
+    bsToast.show();
+
+    toast.addEventListener('hidden.bs.toast', function () {
+        toast.remove();
+    });
+}
+
+/**
+ * ============================================
+ * GET COLOR FOR SCORE (JavaScript version)
+ * ============================================
+ */
+function getSkorColorJS(skor) {
+    const colors = {
+        0: '#f44336', // Red
+        1: '#ff9800', // Orange
+        2: '#ffeb3b', // Yellow
+        3: '#8bc34a', // Light Green
+        4: '#4caf50', // Dark Green
+    };
+
+    return colors[skor] || '#e0e0e0';
+}
+
+function textColorByBgJS(hex) {
+    hex = hex.replace('#', '');
+    return (parseInt(hex.substr(0, 2), 16) * 0.299 +
+        parseInt(hex.substr(2, 2), 16) * 0.587 +
+        parseInt(hex.substr(4, 2), 16) * 0.114) > 186
+        ? '#000'
+        : '#fff';
+}
+
+
 // Auto-hide alerts after 5 seconds
 document.addEventListener('DOMContentLoaded', function () {
     const alerts = document.querySelectorAll('.alert:not(.alert-permanent)');

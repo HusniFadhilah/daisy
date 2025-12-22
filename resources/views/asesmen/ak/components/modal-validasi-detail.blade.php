@@ -64,10 +64,6 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="mb-3">
-                                        <label class="form-label fw-bold">Skor:</label>
-                                        <div id="skorAsesor1Container">-</div>
-                                    </div>
-                                    <div class="mb-3">
                                         <label class="form-label fw-bold">Kategori:</label>
                                         <div>
                                             <span class="badge" id="kategoriAsesor1">-</span>
@@ -81,8 +77,8 @@
                                     <!-- ✅ TAMBAH: Radio Button untuk Select Asesor -->
                                     <div class="mt-3">
                                         <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="asesor_target_revisi" id="radioAsesor1" value="asesor1_id">
-                                            <label class="form-check-label text-danger" for="radioAsesor1">
+                                            <input class="form-check-input" type="checkbox" name="asesor_target_revisi[]" id="chkAsesor1" value="asesor1_id">
+                                            <label class="form-check-label text-danger" for="chkAsesor1">
                                                 <i class="bi bi-arrow-repeat"></i>
                                                 <strong>Minta asesor ini merevisi</strong>
                                             </label>
@@ -106,10 +102,6 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="mb-3">
-                                        <label class="form-label fw-bold">Skor:</label>
-                                        <div id="skorAsesor2Container">-</div>
-                                    </div>
-                                    <div class="mb-3">
                                         <label class="form-label fw-bold">Kategori:</label>
                                         <div>
                                             <span class="badge" id="kategoriAsesor2">-</span>
@@ -123,8 +115,8 @@
                                     <!-- ✅ TAMBAH: Radio Button untuk Select Asesor -->
                                     <div class="mt-3">
                                         <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="asesor_target_revisi" id="radioAsesor2" value="asesor2_id">
-                                            <label class="form-check-label text-danger" for="radioAsesor2">
+                                            <input class="form-check-input" type="checkbox" name="asesor_target_revisi[]" id="chkAsesor2" value="asesor2_id">
+                                            <label class="form-check-label text-danger" for="chkAsesor2">
                                                 <i class="bi bi-arrow-repeat"></i>
                                                 <strong>Minta asesor ini merevisi</strong>
                                             </label>
@@ -215,7 +207,7 @@
                                 </div>
 
                                 <!-- ✅ TAMBAH: Alert untuk Revisi -->
-                                <div id="alertRevisiInfo" class="alert alert-info" style="display: none;">
+                                <div id="alertRevisiInfo" class="alert alert-info alert-permanent" style="display: none;">
                                     <i class="bi bi-info-circle"></i>
                                     <strong>Info:</strong> Silakan pilih asesor mana yang harus merevisi penilaiannya dengan mencentang radio button di atas.
                                 </div>

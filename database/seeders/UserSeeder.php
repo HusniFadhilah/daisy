@@ -133,6 +133,41 @@ class UserSeeder extends Seeder
                 'role' => 'user',
                 'role_selected' => 'verifikator',
             ],
+            [
+                'name' => 'Admin Universitas 1',
+                'email' => 'admin_univ1@daisy.lamdepilar.or.id',
+                'password' => Hash::make('password'),
+                'role' => 'user',
+                'role_selected' => 'admin_univ',
+            ],
+            [
+                'name' => 'Admin Universitas 2',
+                'email' => 'admin_univ2@daisy.lamdepilar.or.id',
+                'password' => Hash::make('password'),
+                'role' => 'user',
+                'role_selected' => 'admin_univ',
+            ],
+            [
+                'name' => 'Admin Prodi 1',
+                'email' => 'admin_prodi1@daisy.lamdepilar.or.id',
+                'password' => Hash::make('password'),
+                'role' => 'user',
+                'role_selected' => 'admin_prodi',
+            ],
+            [
+                'name' => 'Admin Prodi 2',
+                'email' => 'admin_prodi2@daisy.lamdepilar.or.id',
+                'password' => Hash::make('password'),
+                'role' => 'user',
+                'role_selected' => 'admin_prodi',
+            ],
+            [
+                'name' => 'Default User',
+                'email' => 'default@daisy.lamdepilar.or.id',
+                'password' => Hash::make('password'),
+                'role' => 'user',
+                'role_selected' => 'default',
+            ],
         ];
 
         foreach ($users as $user) {

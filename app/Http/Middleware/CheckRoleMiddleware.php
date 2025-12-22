@@ -28,7 +28,7 @@ class CheckRoleMiddleware
         }
 
         if ($request->isMethod('get')) {
-            abort(401);
+            abort(403);
         } else if ($request->isMethod('post')) {
             return redirect('/');
         } else {
