@@ -31,6 +31,7 @@ return new class extends Migration
         Schema::create('study_programs', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('full_name');
             $table->string('code');
             $table->foreignId('id_univ')->constrained('universities')->onDelete('cascade');
             $table->foreignId('id_level')->constrained('degree_levels')->onDelete('cascade');

@@ -8,6 +8,7 @@ class StudyProgram extends Model
 {
     protected $fillable = [
         'name',
+        'full_name',
         'code',
         'id_univ',
         'id_level',
@@ -83,13 +84,5 @@ class StudyProgram extends Model
         return $this->users()
             ->wherePivot('role_in_prodi', 'staff')
             ->wherePivot('is_active', true);
-    }
-
-    /**
-     * Accessor untuk nama lengkap (nama + jenjang)
-     */
-    public function getFullNameAttribute()
-    {
-        return $this->degreeLevel->name . ' - ' . $this->name . ' ' . $this->university->name;
     }
 }

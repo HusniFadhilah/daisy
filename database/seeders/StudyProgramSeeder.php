@@ -86,6 +86,7 @@ class StudyProgramSeeder extends Seeder
 
                 $insertData[] = [
                     'name' => trim($programName),
+                    'full_name' => $degreeLevelCode . ' - ' . trim($programName) . ' ' . $universityName,
                     'code' => trim($programCode ?: 'N/A'),
                     'id_univ' => $universityId,
                     'id_level' => $degreeLevelId,
