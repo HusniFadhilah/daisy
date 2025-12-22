@@ -13,18 +13,15 @@ return new class extends Migration
     {
         Schema::create('bobot_penilaian', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('id_elemen');
+            $table->foreignId('id_elemen')->constrained('elemen_standar')->onDelete('cascade');
             $table->foreignId('id_level')->constrained('degree_levels')->onDelete('cascade');
             $table->integer('bobot');
             $table->timestamps();
-            
-            // Foreign key for elemen_standar with custom reference
-            $table->foreign('id_elemen')->references('id_elemen')->on('elemen_standar')->onDelete('cascade');
-            
+
             // Indexes
             $table->index('id_elemen');
             $table->index('id_level');
-            
+
             // Unique constraint
             $table->unique(['id_elemen', 'id_level']);
         });

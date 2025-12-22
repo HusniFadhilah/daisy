@@ -155,13 +155,13 @@
                 <div class="card-body">
                     <h6 class="fw-bold">Alur Pengajuan Akreditasi</h6>
                     <ol class="ps-3">
-                        <li class="mb-2">Submit surat permohonan</li>
-                        <li class="mb-2">DE mengirim form borang</li>
-                        <li class="mb-2">Upload draft borang</li>
-                        <li class="mb-2">DE melakukan review kesiapan</li>
-                        <li class="mb-2">Jika siap: lakukan pembayaran</li>
-                        <li class="mb-2">Upload borang final</li>
-                        <li class="mb-2">Lanjut ke tahap AK/Asesmen</li>
+                        <li class="mb-2">Submit surat permohonan oleh prodi</li>
+                        <li class="mb-2">DE LAMDEPILAR mengirim form borang</li>
+                        <li class="mb-2">Upload draft borang oleh prodi</li>
+                        <li class="mb-2">DE LAMDEPILAR melakukan review kesiapan</li>
+                        <li class="mb-2">Jika dinyatakan siap: lakukan pembayaran</li>
+                        <li class="mb-2">Upload borang final oleh prodi</li>
+                        <li class="mb-2">DE LAMDEPILAR menyatakan Lanjut ke tahap Asesmen Kecukupan (AK)</li>
                     </ol>
 
                     <hr>
