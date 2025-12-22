@@ -67,12 +67,9 @@ class PemetaanAkreditasiController extends Controller
         $degreeLevels = DegreeLevel::orderBy('code')->get();
 
         // Get urgent items (kadaluarsa dalam 6 bulan)
-        $urgentPrograms = StudyProgram::with(['university', 'degreeLevel'])
-            ->where('tanggal_kadaluarsa', '<=', now()->addMonths(6))
-            ->where('tanggal_kadaluarsa', '>=', now())
-            ->orderBy('tanggal_kadaluarsa')
-            ->limit(10)
-            ->get();
+        $urgentPrograms = $studyPrograms->getCollection()
+            ->filter(fn($p) => $p->tanggal_kadaluarsa >= now() && $p->tanggal_kadaluarsa <= now()->addMonths(6))
+            ->take(10);
 
         $periode = $request->get('periode', '3bulan'); // default 3 bulan
         $timelineData = $this->getTimelineData($periode);
@@ -181,29 +178,28 @@ class PemetaanAkreditasiController extends Controller
      */
     private function calculateStatistics()
     {
-        $total = StudyProgram::count();
-        $aktif = StudyProgram::where('status_kadaluarsa', 'Aktif')->count();
-        $kadaluarsa = StudyProgram::whereNotNull('tanggal_kadaluarsa')
-            ->whereDate('tanggal_kadaluarsa', '<=', Carbon::today())
-            ->count();
-        $belumTerakreditasi = StudyProgram::where('status_kadaluarsa', 'Belum Terakreditasi')->count();
+        $today = Carbon::today();
 
-        // Programs expiring in 3 months
-        $segera3Bulan = StudyProgram::where('tanggal_kadaluarsa', '<=', now()->addMonths(3))
-            ->where('tanggal_kadaluarsa', '>=', now())
-            ->count();
+        // 🔥 1 QUERY SAJA
+        $stats = StudyProgram::selectRaw("
+        COUNT(*) as total,
+        SUM(status_kadaluarsa = 'Aktif') as aktif,
+        SUM(status_kadaluarsa = 'Belum Terakreditasi') as belum_terakreditasi,
+        SUM(tanggal_kadaluarsa IS NOT NULL AND tanggal_kadaluarsa <= ?) as kadaluarsa,
+        SUM(tanggal_kadaluarsa BETWEEN ? AND ?) as segera_3_bulan,
+        SUM(tanggal_kadaluarsa BETWEEN ? AND ?) as segera_6_bulan,
+        SUM(tanggal_kadaluarsa BETWEEN ? AND ?) as segera_12_bulan
+    ", [
+            $today,
+            now(),
+            now()->addMonths(3),
+            now(),
+            now()->addMonths(6),
+            now(),
+            now()->addMonths(12),
+        ])->first();
 
-        // Programs expiring in 6 months
-        $segera6Bulan = StudyProgram::where('tanggal_kadaluarsa', '<=', now()->addMonths(6))
-            ->where('tanggal_kadaluarsa', '>=', now())
-            ->count();
-
-        // Programs expiring in 12 months
-        $segera12Bulan = StudyProgram::where('tanggal_kadaluarsa', '<=', now()->addMonths(12))
-            ->where('tanggal_kadaluarsa', '>=', now())
-            ->count();
-
-        // Count by peringkat
+        // Count by peringkat (tetap 1 query terpisah, memang perlu group by)
         $byPeringkat = StudyProgram::select('peringkat_akreditasi', DB::raw('count(*) as total'))
             ->whereNotNull('peringkat_akreditasi')
             ->groupBy('peringkat_akreditasi')
@@ -211,13 +207,13 @@ class PemetaanAkreditasiController extends Controller
             ->toArray();
 
         return [
-            'total' => $total,
-            'aktif' => $aktif,
-            'kadaluarsa' => $kadaluarsa,
-            'belum_terakreditasi' => $belumTerakreditasi,
-            'segera_3_bulan' => $segera3Bulan,
-            'segera_6_bulan' => $segera6Bulan,
-            'segera_12_bulan' => $segera12Bulan,
+            'total' => (int) $stats->total,
+            'aktif' => (int) $stats->aktif,
+            'kadaluarsa' => (int) $stats->kadaluarsa,
+            'belum_terakreditasi' => (int) $stats->belum_terakreditasi,
+            'segera_3_bulan' => (int) $stats->segera_3_bulan,
+            'segera_6_bulan' => (int) $stats->segera_6_bulan,
+            'segera_12_bulan' => (int) $stats->segera_12_bulan,
             'by_peringkat' => $byPeringkat,
         ];
     }
@@ -253,51 +249,58 @@ class PemetaanAkreditasiController extends Controller
 
     private function getTimelineData($periode)
     {
-        // Define periode ranges
         $periodes = [
-            '1bulan' => ['months' => 1, 'label' => 'Per Bulan'],
-            '3bulan' => ['months' => 3, 'label' => 'Per 3 Bulan (Triwulan)'],
-            '4bulan' => ['months' => 4, 'label' => 'Per 4 Bulan (Caturwulan)'],
-            '6bulan' => ['months' => 6, 'label' => 'Per 6 Bulan (Semester)'],
+            '1bulan'  => ['months' => 1,  'label' => 'Per Bulan'],
+            '3bulan'  => ['months' => 3,  'label' => 'Per 3 Bulan (Triwulan)'],
+            '4bulan'  => ['months' => 4,  'label' => 'Per 4 Bulan (Caturwulan)'],
+            '6bulan'  => ['months' => 6,  'label' => 'Per 6 Bulan (Semester)'],
             '12bulan' => ['months' => 12, 'label' => 'Per Tahun'],
         ];
 
         $selectedPeriode = $periodes[$periode] ?? $periodes['3bulan'];
         $monthsPerPeriod = $selectedPeriode['months'];
 
-        // Generate periods for next 5 years
-        $periodsCount = (int)ceil(60 / $monthsPerPeriod);
+        // Range 5 tahun
+        $startRange = now()->startOfDay();
+        $endRange   = now()->addYears(5)->endOfDay();
+
+        // 🔥 Ambil data SEKALI
+        $programs = StudyProgram::with(['university', 'degreeLevel'])
+            ->whereBetween('tanggal_kadaluarsa', [$startRange, $endRange])
+            ->orderBy('tanggal_kadaluarsa')
+            ->get();
+
+        // Jumlah periode
+        $periodsCount = (int) ceil(60 / $monthsPerPeriod);
         $timeline = [];
 
         for ($i = 0; $i < $periodsCount; $i++) {
-            $startDate = now()->addMonths($i * $monthsPerPeriod);
-            $endDate = now()->addMonths(($i + 1) * $monthsPerPeriod)->subDay();
 
-            // Count programs expiring in this period
-            $count = StudyProgram::whereBetween('tanggal_kadaluarsa', [$startDate, $endDate])
-                ->count();
+            $startDate = now()->copy()->addMonths($i * $monthsPerPeriod)->startOfDay();
+            $endDate   = now()->copy()->addMonths(($i + 1) * $monthsPerPeriod)->endOfDay();
 
-            // Get actual programs
-            $programs = StudyProgram::with(['university', 'degreeLevel'])
-                ->whereBetween('tanggal_kadaluarsa', [$startDate, $endDate])
-                ->orderBy('tanggal_kadaluarsa')
-                ->get();
+            // Filter dari collection (bukan query)
+            $periodPrograms = $programs->filter(
+                fn($p) =>
+                $p->tanggal_kadaluarsa >= $startDate &&
+                    $p->tanggal_kadaluarsa <= $endDate
+            );
 
             $timeline[] = [
-                'period' => $i + 1,
+                'period'     => $i + 1,
                 'start_date' => $startDate,
-                'end_date' => $endDate,
-                'label' => $this->getPeriodLabel($startDate, $endDate, $monthsPerPeriod),
-                'count' => $count,
-                'programs' => $programs,
-                'is_urgent' => $i < 2, // First 2 periods are urgent
+                'end_date'   => $endDate,
+                'label'      => $this->getPeriodLabel($startDate, $endDate, $monthsPerPeriod),
+                'count'      => $periodPrograms->count(),
+                'programs'   => $periodPrograms->values(),
+                'is_urgent'  => $i < 2,
             ];
         }
 
         return [
             'selected_periode' => $periode,
-            'periode_label' => $selectedPeriode['label'],
-            'timeline' => $timeline,
+            'periode_label'    => $selectedPeriode['label'],
+            'timeline'         => $timeline,
         ];
     }
 
@@ -325,25 +328,33 @@ class PemetaanAkreditasiController extends Controller
     {
         $calendar = [];
 
+        $startRange = now()->startOfMonth();
+        $endRange = now()->copy()->addMonths(12)->endOfMonth();
+
+        // 🔥 Ambil semua program sekali saja
+        $allPrograms = StudyProgram::with(['university', 'degreeLevel'])
+            ->whereBetween('tanggal_kadaluarsa', [$startRange, $endRange])
+            ->orderBy('tanggal_kadaluarsa')
+            ->get();
+
         for ($i = 0; $i < 12; $i++) {
-            $month = now()->addMonths($i);
+            $month = now()->copy()->addMonths($i);
             $startDate = $month->copy()->startOfMonth();
             $endDate = $month->copy()->endOfMonth();
 
-            $count = StudyProgram::whereBetween('tanggal_kadaluarsa', [$startDate, $endDate])
-                ->count();
-
-            $programs = StudyProgram::with(['university', 'degreeLevel'])
-                ->whereBetween('tanggal_kadaluarsa', [$startDate, $endDate])
-                ->orderBy('tanggal_kadaluarsa')
-                ->get();
+            // Filter dari collection, bukan query
+            $monthPrograms = $allPrograms->filter(
+                fn($p) =>
+                $p->tanggal_kadaluarsa >= $startDate &&
+                    $p->tanggal_kadaluarsa <= $endDate
+            );
 
             $calendar[] = [
                 'month' => $month->locale('id')->translatedFormat('F Y'),
                 'month_num' => $month->month,
                 'year' => $month->year,
-                'count' => $count,
-                'programs' => $programs,
+                'count' => $monthPrograms->count(),
+                'programs' => $monthPrograms->values(), // reindex collection
             ];
         }
 

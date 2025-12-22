@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             DegreeLevelSeeder::class,
             UniversitySeeder::class,
             StudyProgramSeeder::class,
+            StudyProgramCategorySeeder::class,
             KriteriaSeeder::class,
             ElemenStandarSeeder::class,
             PernyataanSeeder::class,
