@@ -90,6 +90,7 @@ class AkreditasiSeeder extends Seeder
                     $studyProgram = StudyProgram::create([
                         'code' => $code,
                         'name' => $programStudi,
+                        'full_name' => $degreeLevel->code . ' - ' . $programStudi . ' ' . $university->name,
                         'id_univ' => $university->id,
                         'id_level' => $degreeLevel->id,
                         'email' => $email,
