@@ -85,6 +85,23 @@
                 </div>
 
                 <div class="mb-3">
+                    <label for="bentuk_pt" class="form-label">Bentuk Perguruan Tinggi</label>
+                    <select class="form-select @error('bentuk_pt') is-invalid @enderror" 
+                            id="bentuk_pt" 
+                            name="bentuk_pt">
+                        <option value="">-- Pilih Bentuk PT --</option>
+                        <option value="Universitas" {{ old('bentuk_pt') == 'Universitas' ? 'selected' : '' }}>Universitas</option>
+                        <option value="Institut" {{ old('bentuk_pt') == 'Institut' ? 'selected' : '' }}>Institut</option>
+                        <option value="Sekolah Tinggi" {{ old('bentuk_pt') == 'Sekolah Tinggi' ? 'selected' : '' }}>Sekolah Tinggi</option>
+                        <option value="Politeknik" {{ old('bentuk_pt') == 'Politeknik' ? 'selected' : '' }}>Politeknik</option>
+                        <option value="Akademi" {{ old('bentuk_pt') == 'Akademi' ? 'selected' : '' }}>Akademi</option>
+                    </select>
+                    @error('bentuk_pt')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="mb-3">
                     <label for="email" class="form-label">Email</label>
                     <input type="email" 
                            class="form-control @error('email') is-invalid @enderror" 
@@ -99,15 +116,12 @@
 
                 <div class="mb-3">
                     <label for="peringkat_akreditasi" class="form-label">Peringkat Akreditasi</label>
-                    <select class="form-select @error('peringkat_akreditasi') is-invalid @enderror" 
-                            id="peringkat_akreditasi" 
-                            name="peringkat_akreditasi">
-                        <option value="">-- Pilih Peringkat --</option>
-                        <option value="A" {{ old('peringkat_akreditasi') == 'A' ? 'selected' : '' }}>A (Unggul)</option>
-                        <option value="B" {{ old('peringkat_akreditasi') == 'B' ? 'selected' : '' }}>B (Baik Sekali)</option>
-                        <option value="C" {{ old('peringkat_akreditasi') == 'C' ? 'selected' : '' }}>C (Baik)</option>
-                        <option value="Tidak Terakreditasi" {{ old('peringkat_akreditasi') == 'Tidak Terakreditasi' ? 'selected' : '' }}>Tidak Terakreditasi</option>
-                    </select>
+                    <input type="text" 
+                           class="form-control @error('peringkat_akreditasi') is-invalid @enderror" 
+                           id="peringkat_akreditasi" 
+                           name="peringkat_akreditasi" 
+                           value="{{ old('peringkat_akreditasi') }}"
+                           placeholder="Contoh: Unggul, Baik Sekali, A, B, dll">
                     @error('peringkat_akreditasi')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror

@@ -51,186 +51,151 @@
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table class="table table-hover" id="indikatorTable">
                     <thead>
                         <tr>
-                            <th width="5%">No</th>
-                            <th width="10%">Kriteria</th>
-                            <th width="15%">Elemen</th>
-                            <th width="10%">Kode</th>
-                            <th width="10%">Jenis</th>
-                            <th width="35%">Deskripsi</th>
-                            <th width="15%">Aksi</th>
+                            <th>No</th>
+                            <th>Kriteria</th>
+                            <th>Elemen</th>
+                            <th>Kode</th>
+                            <th>Jenis</th>
+                            <th>Deskripsi</th>
+                            <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($indikator as $item)
-                        <tr>
-                            <td>{{ $loop->iteration + ($indikator->currentPage() - 1) * $indikator->perPage() }}</td>
-                            <td><span class="badge bg-primary">{{ $item->elemenStandar->kriteria->kode_kriteria ?? '-' }}</span></td>
-                            <td><span class="badge bg-info text-dark">{{ $item->elemenStandar->kode_elemen ?? '-' }}</span></td>
-                            <td><strong>{{ $item->kode_indikator }}</strong></td>
-                            <td>
-                                <span class="badge bg-{{ $item->jenisIndikator->nama_jenis == 'Kualitatif' ? 'warning' : 'success' }}">
-                                    {{ $item->jenisIndikator->nama_jenis ?? '-' }}
-                                </span>
-                            </td>
-                            <td>{{ Str::limit($item->deskripsi_indikator, 60) }}</td>
-                            <td>
-                                <div class="btn-group" role="group">
-                                    <button type="button" class="btn btn-sm btn-info text-white" data-bs-toggle="modal" data-bs-target="#showIndikatorModal{{ $item->id }}" title="Detail">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-warning text-white" data-bs-toggle="modal" data-bs-target="#editIndikatorModal{{ $item->id }}" title="Edit">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <form action="{{ route('indikator.destroy', $item->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus indikator ini?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger" title="Hapus">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <!-- Modal Detail -->
-                        <div class="modal fade" id="showIndikatorModal{{ $item->id }}" tabindex="-1">
-                            <div class="modal-dialog modal-lg">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title">Detail Indikator</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <dl class="row">
-                                            <dt class="col-sm-3">Kriteria</dt>
-                                            <dd class="col-sm-9">{{ $item->elemenStandar->kriteria->kode_kriteria ?? '-' }} - {{ $item->elemenStandar->kriteria->nama_kriteria ?? '-' }}</dd>
-
-                                            <dt class="col-sm-3">Elemen Standar</dt>
-                                            <dd class="col-sm-9">{{ $item->elemenStandar->kode_elemen ?? '-' }} - {{ $item->elemenStandar->pernyataan_elemen ?? '-' }}</dd>
-
-                                            <dt class="col-sm-3">Kode Indikator</dt>
-                                            <dd class="col-sm-9">{{ $item->kode_indikator }}</dd>
-
-                                            <dt class="col-sm-3">Jenis</dt>
-                                            <dd class="col-sm-9">
-                                                <span class="badge bg-{{ $item->jenisIndikator->nama_jenis == 'Kualitatif' ? 'warning' : 'success' }} fs-6">
-                                                    {{ $item->jenisIndikator->nama_jenis ?? '-' }}
-                                                </span>
-                                            </dd>
-
-                                            <dt class="col-sm-3">Deskripsi</dt>
-                                            <dd class="col-sm-9">{!! nl2br(e($item->deskripsi_indikator)) !!}</dd>
-                                        </dl>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Modal Edit -->
-                        <div class="modal fade" id="editIndikatorModal{{ $item->id }}" tabindex="-1">
-                            <div class="modal-dialog modal-lg">
-                                <div class="modal-content">
-                                    <form action="{{ route('indikator.update', $item->id) }}" method="POST">
-                                        @csrf
-                                        @method('PUT')
-                                        <div class="modal-header">
-                                            <h5 class="modal-title">Edit Indikator</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <div class="mb-3">
-                                                <label class="form-label">Elemen Standar <span class="text-danger">*</span></label>
-                                                <select name="id_elemen" class="form-select @error('id_elemen') is-invalid @enderror" required>
-                                                    <option value="">Pilih Elemen Standar</option>
-                                                    @php
-                                                    $elemenStandar = \App\Models\ElemenStandar::with('kriteria')->get();
-                                                    @endphp
-                                                    @foreach($elemenStandar as $elemen)
-                                                    <option value="{{ $elemen->id }}" {{ old('id_elemen', $item->id_elemen) == $elemen->id ? 'selected' : '' }}>
-                                                        {{ $elemen->kriteria->kode_kriteria ?? '' }} - {{ $elemen->kode_elemen }} - {{ Str::limit($elemen->pernyataan_elemen, 50) }}
-                                                    </option>
-                                                    @endforeach
-                                                </select>
-                                                @error('id_elemen')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-
-                                            <div class="row">
-                                                <div class="col-md-8">
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Kode Indikator <span class="text-danger">*</span></label>
-                                                        <input type="text" name="kode_indikator" class="form-control @error('kode_indikator') is-invalid @enderror" value="{{ old('kode_indikator', $item->kode_indikator) }}" required>
-                                                        @error('kode_indikator')
-                                                        <div class="invalid-feedback">{{ $message }}</div>
-                                                        @enderror
-                                                    </div>
-                                                </div>
-
-                                                <div class="col-md-4">
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Jenis <span class="text-danger">*</span></label>
-                                                        <select name="id_jenis" class="form-select @error('id_jenis') is-invalid @enderror" required>
-                                                            <option value="">Pilih Jenis</option>
-                                                            @php
-                                                            $jenisIndikator = \App\Models\JenisIndikator::all();
-                                                            @endphp
-                                                            @foreach($jenisIndikator as $jenis)
-                                                            <option value="{{ $jenis->id }}" {{ old('id_jenis', $item->id_jenis) == $jenis->id ? 'selected' : '' }}>
-                                                                {{ $jenis->nama_jenis }}
-                                                            </option>
-                                                            @endforeach
-                                                        </select>
-                                                        @error('id_jenis')
-                                                        <div class="invalid-feedback">{{ $message }}</div>
-                                                        @enderror
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="mb-3">
-                                                <label class="form-label">Deskripsi Indikator <span class="text-danger">*</span></label>
-                                                <textarea name="deskripsi_indikator" class="form-control @error('deskripsi_indikator') is-invalid @enderror" rows="5" required>{{ old('deskripsi_indikator', $item->deskripsi_indikator) }}</textarea>
-                                                <small class="form-text text-muted">Gunakan Enter untuk membuat baris baru</small>
-                                                @error('deskripsi_indikator')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                            <button type="submit" class="btn btn-primary">Simpan</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                        @empty
-                        <tr>
-                            <td colspan="7" class="text-center">Belum ada data indikator</td>
-                        </tr>
-                        @endforelse
                     </tbody>
                 </table>
             </div>
-
-            <!-- Pagination -->
-            <div class="d-flex justify-content-between align-items-center mt-3">
-                <div class="text-muted">
-                    Menampilkan {{ $indikator->firstItem() ?? 0 }} - {{ $indikator->lastItem() ?? 0 }} dari {{ $indikator->total() }} data
-                </div>
-                <div>
-                    {{ $indikator->links('pagination::bootstrap-5') }}
-                </div>
-            </div>
         </div>
     </div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Detail Indikator</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+            <dl class="row">
+                <dt class="col-sm-3">Kriteria</dt>
+                <dd class="col-sm-9">{{ $item->elemenStandar->kriteria->kode_kriteria ?? '-' }} - {{ $item->elemenStandar->kriteria->nama_kriteria ?? '-' }}</dd>
+
+                <dt class="col-sm-3">Elemen Standar</dt>
+                <dd class="col-sm-9">{{ $item->elemenStandar->kode_elemen ?? '-' }} - {{ $item->elemenStandar->pernyataan_elemen ?? '-' }}</dd>
+
+                <dt class="col-sm-3">Kode Indikator</dt>
+                <dd class="col-sm-9">{{ $item->kode_indikator }}</dd>
+
+                <dt class="col-sm-3">Jenis</dt>
+                <dd class="col-sm-9">
+                    <span class="badge bg-{{ $item->jenisIndikator->nama_jenis == 'Kualitatif' ? 'warning' : 'success' }} fs-6">
+                        {{ $item->jenisIndikator->nama_jenis ?? '-' }}
+                    </span>
+                </dd>
+
+                <dt class="col-sm-3">Deskripsi</dt>
+                <dd class="col-sm-9">{!! nl2br(e($item->deskripsi_indikator)) !!}</dd>
+            </dl>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- Modal Edit -->
+<div class="modal fade" id="editIndikatorModal{{ $item->id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form action="{{ route('indikator.update', $item->id) }}" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Indikator</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Elemen Standar <span class="text-danger">*</span></label>
+                        <select name="id_elemen" class="form-select @error('id_elemen') is-invalid @enderror" required>
+                            <option value="">Pilih Elemen Standar</option>
+                            @foreach($elemenStandar as $elemen)
+                            <option value="{{ $elemen->id }}" {{ old('id_elemen', $item->id_elemen) == $elemen->id ? 'selected' : '' }}>
+                                {{ $elemen->kriteria->kode_kriteria ?? '' }} - {{ $elemen->kode_elemen }} - {{ Str::limit($elemen->pernyataan_elemen, 50) }}
+                            </option>
+                            @endforeach
+                        </select>
+                        @error('id_elemen')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label class="form-label">Kode Indikator <span class="text-danger">*</span></label>
+                                <input type="text" name="kode_indikator" class="form-control @error('kode_indikator') is-invalid @enderror" value="{{ old('kode_indikator', $item->kode_indikator) }}" required>
+                                @error('kode_indikator')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Jenis <span class="text-danger">*</span></label>
+                                <select name="id_jenis" class="form-select @error('id_jenis') is-invalid @enderror" required>
+                                    <option value="">Pilih Jenis</option>
+                                    @foreach($jenisIndikator as $jenis)
+                                    <option value="{{ $jenis->id }}" {{ old('id_jenis', $item->id_jenis) == $jenis->id ? 'selected' : '' }}>
+                                        {{ $jenis->nama_jenis }}
+                                    </option>
+                                    @endforeach
+                                </select>
+                                @error('id_jenis')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Deskripsi Indikator <span class="text-danger">*</span></label>
+                        <textarea name="deskripsi_indikator" class="form-control @error('deskripsi_indikator') is-invalid @enderror" rows="5" required>{{ old('deskripsi_indikator', $item->deskripsi_indikator) }}</textarea>
+                        <small class="form-text text-muted">Gunakan Enter untuk membuat baris baru</small>
+                        @error('deskripsi_indikator')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@empty
+<tr>
+    <td colspan="7" class="text-center">Belum ada data indikator</td>
+</tr>
+@endforelse
+</tbody>
+</table>
+</div>
+
+<!-- Pagination -->
+<div class="d-flex justify-content-between align-items-center mt-3">
+    <div class="text-muted">
+        Menampilkan {{ $indikator->firstItem() ?? 0 }} - {{ $indikator->lastItem() ?? 0 }} dari {{ $indikator->total() }} data
+    </div>
+    <div>
+        {{ $indikator->links('pagination::bootstrap-5') }}
+    </div>
+</div>
+</div>
+</div>
 </div>
 </main>
 
@@ -249,9 +214,6 @@
                         <label class="form-label">Elemen Standar <span class="text-danger">*</span></label>
                         <select name="id_elemen" class="form-select @error('id_elemen') is-invalid @enderror" required>
                             <option value="">Pilih Elemen Standar</option>
-                            @php
-                            $elemenStandar = \App\Models\ElemenStandar::with('kriteria')->get();
-                            @endphp
                             @foreach($elemenStandar as $elemen)
                             <option value="{{ $elemen->id }}" {{ old('id_elemen') == $elemen->id ? 'selected' : '' }}>
                                 {{ $elemen->kriteria->kode_kriteria ?? '' }} - {{ $elemen->kode_elemen }} - {{ Str::limit($elemen->pernyataan_elemen, 50) }}
@@ -279,9 +241,6 @@
                                 <label class="form-label">Jenis <span class="text-danger">*</span></label>
                                 <select name="id_jenis" class="form-select @error('id_jenis') is-invalid @enderror" required>
                                     <option value="">Pilih Jenis</option>
-                                    @php
-                                    $jenisIndikator = \App\Models\JenisIndikator::all();
-                                    @endphp
                                     @foreach($jenisIndikator as $jenis)
                                     <option value="{{ $jenis->id }}" {{ old('id_jenis') == $jenis->id ? 'selected' : '' }}>
                                         {{ $jenis->nama_jenis }}
@@ -314,3 +273,76 @@
 </div>
 
 @endsection
+
+@push('scripts')
+<script>
+    $(document).ready(function() {
+        $('#indikatorTable').DataTable({
+            serverSide: true
+            , processing: true
+            , ajax: "{{ route('indikator.index') }}"
+            , columns: [{
+                    data: 'DT_RowIndex'
+                    , name: 'DT_RowIndex'
+                    , orderable: false
+                    , searchable: false
+                }
+                , {
+                    data: 'kriteria_nama'
+                    , name: 'kriteria_nama'
+                }
+                , {
+                    data: 'elemen_nama'
+                    , name: 'elemen_nama'
+                }
+                , {
+                    data: 'kode_indikator'
+                    , name: 'kode_indikator'
+                }
+                , {
+                    data: 'jenis_nama'
+                    , name: 'jenis_nama'
+                }
+                , {
+                    data: 'deskripsi_indikator'
+                    , name: 'deskripsi_indikator'
+                }
+                , {
+                    data: 'action'
+                    , name: 'action'
+                    , orderable: false
+                    , searchable: false
+                }
+            ]
+            , language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json'
+            }
+            , pageLength: 25
+            , lengthMenu: [
+                [10, 25, 50, 100, -1]
+                , [10, 25, 50, 100, "Semua"]
+            ]
+        });
+    });
+
+    function deleteRecord(id) {
+        if (confirm('Yakin ingin menghapus indikator ini?')) {
+            $.ajax({
+                url: '/indikator/' + id
+                , type: 'DELETE'
+                , data: {
+                    _token: '{{ csrf_token() }}'
+                }
+                , success: function(response) {
+                    $('#indikatorTable').DataTable().ajax.reload();
+                    alert('Data berhasil dihapus');
+                }
+                , error: function(xhr) {
+                    alert('Gagal menghapus data');
+                }
+            });
+        }
+    }
+
+</script>
+@endpush

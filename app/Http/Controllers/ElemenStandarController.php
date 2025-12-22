@@ -4,17 +4,36 @@ namespace App\Http\Controllers;
 
 use App\Models\ElemenStandar;
 use Illuminate\Http\Request;
+use Yajra\DataTables\Facades\DataTables;
 
 class ElemenStandarController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $elemenStandar = ElemenStandar::with(['kriteria', 'pernyataan'])->latest()->paginate(10);
+        if ($request->ajax()) {
+            $data = ElemenStandar::with(['kriteria'])->select('elemen_standar.*');
 
-        return view('indikator.elemen.index', compact('elemenStandar'));
+            return DataTables::of($data)
+                ->addIndexColumn()
+                ->addColumn('kriteria_nama', function ($row) {
+                    return $row->kriteria ? $row->kriteria->kode_kriteria . ' - ' . $row->kriteria->nama_kriteria : '-';
+                })
+                ->addColumn('action', function ($row) {
+                    $btn = '<div class="btn-group" role="group">';
+                    $btn .= '<a href="' . route('elemen-standar.edit', $row->id_elemen) . '" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>';
+                    $btn .= '<button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord(' . $row->id_elemen . ')"><i class="bi bi-trash"></i></button>';
+                    $btn .= '</div>';
+                    return $btn;
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+
+        $kriteria = \App\Models\Kriteria::all();
+        return view('indikator.elemen.index', compact('kriteria'));
     }
 
     /**

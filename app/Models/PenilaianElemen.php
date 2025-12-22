@@ -54,6 +54,14 @@ class PenilaianElemen extends Model
     }
 
     /**
+     * Get the elemen standar (alias untuk backward compatibility)
+     */
+    public function elemenStandar()
+    {
+        return $this->belongsTo(ElemenStandar::class, 'id_elemen', 'id_elemen');
+    }
+
+    /**
      * Get the indikator
      */
     public function elemen()

@@ -13,7 +13,7 @@ class StudyProgramSeeder extends Seeder
      */
     public function run(): void
     {
-        $csvPath = database_path('seeders/data/dataProdi_dengan_email_COMPLETE.csv');
+        $csvPath = database_path('seeders/data/data_akreditasi_lengkap.csv');
         
         if (!file_exists($csvPath)) {
             $this->command->error("File CSV tidak ditemukan: {$csvPath}");
@@ -29,6 +29,21 @@ class StudyProgramSeeder extends Seeder
         
         // Ambil data degree level untuk mapping (gunakan code sebagai key)
         $degreeLevels = DB::table('degree_levels')->pluck('id', 'code')->toArray();
+        
+        // Ambil data category untuk mapping berdasarkan jenjang
+        $categoryMapping = [
+            'S1' => 'AK',
+            'S2' => 'MAG',
+            'S3' => 'DOK',
+            'D3' => 'VOK',
+            'D-III' => 'VOK',
+            'D4' => 'VOK',
+            'D-IV' => 'VOK',
+            'S2 Terapan' => 'MT',
+            'S3 Terapan' => 'MT',
+            'Profesi' => 'PRO',
+        ];
+        $categories = DB::table('study_program_categories')->pluck('id', 'code')->toArray();
         
         $insertData = [];
         $skipped = 0;
@@ -55,12 +70,71 @@ class StudyProgramSeeder extends Seeder
                 // Mapping kolom CSV (sesuaikan dengan struktur CSV yang sebenarnya)
                 $data = array_combine($header, $row);
                 
-                // Cari universitas (coba berbagai kemungkinan nama kolom)
-                $universityName = $data['Universitas'] ?? $data['universitas'] ?? $data['nama_universitas'] ?? $data['university'] ?? null;
-                $degreeLevelCode = $data['Jenjang'] ?? $data['jenjang'] ?? $data['degree_level'] ?? $data['level'] ?? null;
-                $programName = $data['Program Studi'] ?? $data['program_studi'] ?? $data['nama_prodi'] ?? $data['prodi'] ?? null;
-                $programCode = $data['Singkatan Umum/Resmi'] ?? $data['kode_prodi'] ?? $data['kode'] ?? $data['code'] ?? '';
-                $email = $data['Email'] ?? $data['email'] ?? null;
+                // Ambil data dari CSV
+                $universityName = $data['Universitas'] ?? null;
+                $degreeLevelCode = $data['Jenjang'] ?? null;
+                
+                // Normalisasi nama universitas (hapus tanda kurung dan isinya, fix typo)
+                if ($universityName) {
+                    $universityName = preg_replace('/\s*\([^)]*\)/', '', $universityName); // Hapus (UTP), (UMRAH), dll
+                    $universityName = str_replace("'", '', $universityName); // Hapus tanda petik
+                    $universityName = str_replace('AIi', 'Ali', $universityName); // Fix typo AIi -> Ali
+                    $universityName = trim($universityName);
+                }
+                
+                // Normalisasi jenjang D-III/D-IV menjadi D3/D4
+                if ($degreeLevelCode === 'D-III') {
+                    $degreeLevelCode = 'D3';
+                } elseif ($degreeLevelCode === 'D-IV') {
+                    $degreeLevelCode = 'D4';
+                }
+                
+                $programName = $data['Program Studi'] ?? null;
+                $programCode = null; // Tidak ada kode di CSV akreditasi
+                $email = $data['email'] ?? null;
+                
+                // Deteksi bentuk_pt berdasarkan nama universitas
+                $bentukPT = null;
+                if ($universityName) {
+                    if (strpos($universityName, 'Universitas') === 0) {
+                        $bentukPT = 'Universitas';
+                    } elseif (strpos($universityName, 'Institut') === 0) {
+                        $bentukPT = 'Institut';
+                    } elseif (strpos($universityName, 'Sekolah Tinggi') === 0) {
+                        $bentukPT = 'Sekolah Tinggi';
+                    } elseif (strpos($universityName, 'Politeknik') === 0) {
+                        $bentukPT = 'Politeknik';
+                    } elseif (strpos($universityName, 'Akademi') === 0) {
+                        $bentukPT = 'Akademi';
+                    } elseif (strpos($universityName, 'STMIK') === 0 || 
+                              strpos($universityName, 'STIKI') === 0 || 
+                              strpos($universityName, 'STKIP') === 0) {
+                        $bentukPT = 'Sekolah Tinggi';
+                    }
+                }
+                
+                // Data akreditasi
+                $peringkatAkreditasi = $data['Peringkat_Akreditasi'] ?? null;
+                $tanggalKadaluarsa = $data['Tanggal_Kadaluarsa'] ?? null;
+                $statusKadaluarsa = $data['Status_Kadaluarsa'] ?? 'Belum Terakreditasi';
+                
+                // Konversi status dari CSV ke enum database
+                if ($statusKadaluarsa === 'Masih Berlaku') {
+                    $statusKadaluarsa = 'Aktif';
+                } elseif (strpos($statusKadaluarsa, 'kadaluarsa') !== false || strpos($statusKadaluarsa, 'hari lagi') !== false) {
+                    $statusKadaluarsa = 'Kadaluarsa';
+                }
+                
+                // Parse tanggal kadaluarsa
+                if ($tanggalKadaluarsa && $tanggalKadaluarsa !== '-' && $tanggalKadaluarsa !== '') {
+                    try {
+                        $tanggalKadaluarsa = Carbon::createFromFormat('Y-m-d', $tanggalKadaluarsa)->format('Y-m-d');
+                    } catch (\Exception $e) {
+                        $tanggalKadaluarsa = null;
+                    }
+                } else {
+                    $tanggalKadaluarsa = null;
+                }
                 
                 if (!$programName || !$universityName || !$degreeLevelCode) {
                     $skipped++;
@@ -72,6 +146,10 @@ class StudyProgramSeeder extends Seeder
                 
                 // Cari ID degree level
                 $degreeLevelId = $degreeLevels[$degreeLevelCode] ?? null;
+                
+                // Cari category ID berdasarkan jenjang
+                $categoryCode = $categoryMapping[$degreeLevelCode] ?? 'AK';
+                $categoryId = $categories[$categoryCode] ?? null;
                 
                 if (!$universityId || !$degreeLevelId) {
                     $skipped++;
@@ -86,10 +164,15 @@ class StudyProgramSeeder extends Seeder
                 
                 $insertData[] = [
                     'name' => trim($programName),
-                    'code' => trim($programCode ?: 'N/A'),
+                    'code' => 'N/A', // CSV akreditasi tidak punya kode
                     'id_univ' => $universityId,
                     'id_level' => $degreeLevelId,
+                    'category_id' => $categoryId,
+                    'bentuk_pt' => $bentukPT,
                     'email' => $email ? trim($email) : null,
+                    'peringkat_akreditasi' => $peringkatAkreditasi,
+                    'tanggal_kadaluarsa' => $tanggalKadaluarsa,
+                    'status_kadaluarsa' => $statusKadaluarsa,
                     'created_at' => $timestamp,
                     'updated_at' => $timestamp,
                 ];

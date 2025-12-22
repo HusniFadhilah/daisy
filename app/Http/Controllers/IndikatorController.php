@@ -3,18 +3,48 @@
 namespace App\Http\Controllers;
 
 use App\Models\Indikator;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Yajra\DataTables\Facades\DataTables;
 
 class IndikatorController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $indikator = Indikator::with(['elemenStandar.kriteria', 'jenisIndikator'])->latest()->paginate(10);
+        if ($request->ajax()) {
+            $data = Indikator::with(['elemenStandar.kriteria', 'jenisIndikator'])->select('indikator.*');
 
-        return view('indikator.indikator.index', compact('indikator'));
+            return DataTables::of($data)
+                ->addIndexColumn()
+                ->addColumn('elemen_nama', function ($row) {
+                    if ($row->elemenStandar) {
+                        return $row->elemenStandar->kode_elemen . ' - ' . Str::limit($row->elemenStandar->pernyataan_elemen, 50);
+                    }
+                    return '-';
+                })
+                ->addColumn('kriteria_nama', function ($row) {
+                    return $row->elemenStandar && $row->elemenStandar->kriteria ? $row->elemenStandar->kriteria->kode_kriteria : '-';
+                })
+                ->addColumn('jenis_nama', function ($row) {
+                    return $row->jenisIndikator ? $row->jenisIndikator->nama_jenis : '-';
+                })
+                ->addColumn('action', function ($row) {
+                    $btn = '<div class="btn-group" role="group">';
+                    $btn .= '<a href="' . route('indikator.edit', $row->id_indikator) . '" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>';
+                    $btn .= '<button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord(' . $row->id_indikator . ')"><i class="bi bi-trash"></i></button>';
+                    $btn .= '</div>';
+                    return $btn;
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+
+        $elemenStandar = \App\Models\ElemenStandar::with('kriteria')->get();
+        $jenisIndikator = \App\Models\JenisIndikator::all();
+        return view('indikator.indikator.index', compact('elemenStandar', 'jenisIndikator'));
     }
 
     /**
