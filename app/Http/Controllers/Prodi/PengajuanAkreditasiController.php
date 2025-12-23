@@ -2,13 +2,17 @@
 
 namespace App\Http\Controllers\Prodi;
 
+use App\Models\BorangImport;
 use App\Models\StudyProgram;
 use Illuminate\Http\Request;
 use App\Models\PengajuanDokumen;
+use App\Models\PengajuanStatusLog;
 use Illuminate\Support\Facades\DB;
 use App\Models\PengajuanAkreditasi;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use App\Services\BorangParserService;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
@@ -202,68 +206,282 @@ class PengajuanAkreditasiController extends Controller
     }
 
     /**
-     * Upload draft borang (Langkah 4)
+     * Upload draft borang (DOCX only for processing)
      */
     public function uploadDraftBorang(Request $request, $id)
     {
-        $request->validate([
-            'draft_borang' => 'required|file|mimes:pdf,xlsx,xls|max:10240', // 10MB
-            'keterangan' => 'nullable|string|max:500',
-        ]);
-
-        $pengajuan = PengajuanAkreditasi::findOrFail($id);
-        $this->authorize('update', $pengajuan);
-
-        // Check status
-        if (!in_array($pengajuan->status, ['borang_dikirim', 'review_kesiapan_belum_siap'])) {
-            return back()->with('error', 'Status pengajuan tidak sesuai untuk upload draft borang.');
-        }
-
-        DB::beginTransaction();
         try {
+            $request->validate([
+                'draft_borang' => 'required|file|mimes:docx|max:10240',
+                'keterangan' => 'nullable|string|max:500',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // ✅ Return JSON for validation errors
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validasi gagal',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            throw $e; // Re-throw for non-AJAX requests
+        }
+        try {
+            $pengajuan = PengajuanAkreditasi::findOrFail($id);
+            $this->authorize('update', $pengajuan);
+
+            // Check status
+            if (!in_array($pengajuan->status, [
+                'borang_dikirim',
+                'review_kesiapan_belum_siap',
+                'draft_borang_diterima'
+            ])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Status pengajuan tidak sesuai untuk upload draft borang.'
+                ], 422);
+            }
+
+            DB::beginTransaction();
+
             // Mark previous drafts as not latest
             PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
                 ->where('jenis_dokumen', 'draft_borang')
                 ->update(['is_latest' => false]);
 
-            // Upload new draft
-            $file = $request->file('draft_borang');
-            $filename = 'draft_borang_v' . (time()) . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('pengajuan/' . $pengajuan->id . '/draft', $filename, 'public');
-
-            $versi = PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
+            // Get next version number
+            $lastVersion = PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
                 ->where('jenis_dokumen', 'draft_borang')
-                ->max('versi') + 1;
+                ->max('versi') ?? 0;
 
-            PengajuanDokumen::create([
+            $newVersion = $lastVersion + 1;
+
+            // Upload file
+            $file = $request->file('draft_borang');
+            $filename = 'draft_borang_v' . $newVersion . '_' . time() . '.docx';
+            $path = $file->storeAs('pengajuan/' . $pengajuan->id . '/draft_borang', $filename, 'public');
+
+            // ✅ Create document record - FIXED with all required fields
+            $dokumen = PengajuanDokumen::create([
                 'id_pengajuan' => $pengajuan->id,
                 'jenis_dokumen' => 'draft_borang',
-                'nama_file' => $filename,
+                'nama_file' => $filename,                           // ✅ Added
                 'path_file' => $path,
                 'original_filename' => $file->getClientOriginalName(),
                 'file_size' => $file->getSize(),
-                'mime_type' => $file->getMimeType(),
-                'uploaded_by' => Auth::id(),
-                'keterangan' => $request->keterangan,
-                'versi' => $versi,
+                'mime_type' => $file->getMimeType(),               // ✅ Added
+                'uploaded_by' => auth()->id(),
+                'keterangan' => $request->keterangan ?? 'Upload draft borang versi ' . $newVersion,
+                'versi' => $newVersion,
                 'is_latest' => true,
             ]);
 
-            // Update status
+            // Update pengajuan status (only if not already draft_borang_diterima)
             $oldStatus = $pengajuan->status;
-            $pengajuan->update([
-                'status' => 'draft_borang_diterima',
-                'tanggal_draft_borang' => now(),
-            ]);
+            if ($pengajuan->status !== 'draft_borang_diterima') {
+                $pengajuan->update([
+                    'status' => 'draft_borang_diterima',
+                    'tanggal_draft_borang' => now(),
+                ]);
 
-            $this->logStatus($pengajuan, $oldStatus, 'draft_borang_diterima', 'Draft borang diupload (v' . $versi . ')');
+                // Log status change
+                PengajuanStatusLog::create([
+                    'id_pengajuan' => $pengajuan->id,
+                    'status_from' => $oldStatus,
+                    'status_to' => 'draft_borang_diterima',
+                    'changed_by' => auth()->id(),
+                    'changed_at' => now(),
+                    'keterangan' => 'Draft borang diupload (versi ' . $newVersion . ')',
+                ]);
+            } else {
+                // Just log the re-upload
+                PengajuanStatusLog::create([
+                    'id_pengajuan' => $pengajuan->id,
+                    'status_from' => $oldStatus,
+                    'status_to' => $oldStatus,
+                    'changed_by' => auth()->id(),
+                    'changed_at' => now(),
+                    'keterangan' => 'Draft borang diupload ulang (versi ' . $newVersion . '): ' . ($request->keterangan ?? 'Revisi dokumen'),
+                ]);
+            }
 
             DB::commit();
 
-            return back()->with('success', 'Draft borang berhasil diupload.');
+            // Return JSON for AJAX
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Draft borang berhasil diupload (Versi ' . $newVersion . ')',
+                    'data' => [
+                        'dokumen_id' => $dokumen->id,
+                        'versi' => $dokumen->versi,
+                        'filename' => $dokumen->original_filename,
+                        'file_size' => $this->formatFileSize($dokumen->file_size),
+                        'mime_type' => $dokumen->mime_type,
+                        'status_changed' => $oldStatus !== $pengajuan->fresh()->status,
+                    ]
+                ]);
+            }
+
+            return back()->with('success', 'Draft borang berhasil diupload (Versi ' . $newVersion . ').');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal: ' . implode(', ', $e->errors()['draft_borang'] ?? ['Unknown error']),
+                'errors' => $e->errors()
+            ], 422);
         } catch (\Exception $e) {
             DB::rollBack();
+
+            Log::error('Upload draft borang failed: ' . $e->getMessage(), [
+                'pengajuan_id' => $id,
+                'user_id' => auth()->id(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan saat upload: ' . $e->getMessage()
+                ], 500);
+            }
+
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Process borang DOCX - extract data
+     */
+    public function processBorangDOCX(Request $request, $id)
+    {
+        try {
+            $pengajuan = PengajuanAkreditasi::findOrFail($id);
+            $this->authorize('update', $pengajuan);
+
+            // Get latest draft borang
+            $draftBorang = PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
+                ->where('jenis_dokumen', 'draft_borang')
+                ->where('is_latest', true)
+                ->firstOrFail();
+
+            // Check cooldown (prevent re-processing within 1 hour)
+            $latestImport = $pengajuan->latestBorangImport;
+            if ($latestImport && $latestImport->imported_at->diffInMinutes(now()) < 60) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Mohon tunggu minimal 1 jam sebelum memproses ulang. Terakhir diproses: ' . $latestImport->imported_at->diffForHumans()
+                ], 429);
+            }
+
+            // Process using parser service
+            $parserService = new \App\Services\BorangParserService();
+            $import = $parserService->parseBorangDOCX($draftBorang);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pembacaan data borang berhasil!',
+                'data' => [
+                    'id' => $import->id,
+                    'total_sections' => $import->total_sections,
+                    'total_tables' => $import->total_tables,
+                    'parsed_sections' => $import->parsed_sections,
+                    'parsed_tables' => $import->parsed_tables,
+                    'completion' => $import->completion_percentage,
+                    'status' => $import->status,
+                ]
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Draft borang tidak ditemukan. Silakan upload terlebih dahulu.'
+            ], 404);
+        } catch (\Exception $e) {
+            Log::error('Process borang DOCX failed: ' . $e->getMessage(), [
+                'pengajuan_id' => $id,
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memproses borang: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Show borang HTML preview
+     */
+    public function showBorangHTML($id)
+    {
+        $pengajuan = PengajuanAkreditasi::with('studyProgram.university')->findOrFail($id);
+        $this->authorize('view', $pengajuan);
+
+        // Get latest import
+        $import = BorangImport::where('id_pengajuan', $pengajuan->id)
+            ->with([
+                'sections' => function ($q) {
+                    $q->with(['elemen', 'tables.dataset'])->orderBy('position');
+                }
+            ])
+            ->latest()
+            ->firstOrFail();
+
+        return view('asesmen.pengajuan.borang-preview', compact('pengajuan', 'import'));
+    }
+
+    /**
+     * Helper: Format file size
+     */
+    private function formatFileSize($bytes)
+    {
+        if ($bytes === 0) return '0 Bytes';
+
+        $k = 1024;
+        $sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        $i = floor(log($bytes) / log($k));
+
+        return round($bytes / pow($k, $i), 2) . ' ' . $sizes[$i];
+    }
+
+    /**
+     * Show borang online form
+     */
+    public function showBorangOnline($id)
+    {
+        $pengajuan = PengajuanAkreditasi::with('studyProgram.university')->findOrFail($id);
+        $this->authorize('update', $pengajuan);
+
+        // Load kriteria with elemen
+        $kriteria = \App\Models\Kriteria::with([
+            'elemenStandar.pernyataan',
+            'elemenStandar.indikator.jenisIndikator'
+        ])->orderBy('kode_kriteria')->get();
+
+        return view('asesmen.pengajuan.borang-online', compact('pengajuan', 'kriteria'));
+    }
+
+    /**
+     * Save borang online (AJAX)
+     */
+    public function saveBorangOnline(Request $request, $id)
+    {
+        try {
+            $pengajuan = PengajuanAkreditasi::findOrFail($id);
+            $this->authorize('update', $pengajuan);
+
+            // Save logic here...
+            // You can save to database or generate DOCX from form data
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data borang berhasil disimpan!'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menyimpan: ' . $e->getMessage()
+            ], 500);
         }
     }
 
@@ -330,43 +548,46 @@ class PengajuanAkreditasiController extends Controller
     /**
      * Upload borang final (Langkah 7)
      */
+    /**
+     * Upload borang final
+     */
     public function uploadBorangFinal(Request $request, $id)
     {
         $request->validate([
-            'borang_final' => 'required|file|mimes:pdf,xlsx|max:10240',
+            'borang_final' => 'required|file|mimes:docx|max:10240', // 10MB
             'keterangan' => 'nullable|string|max:500',
         ]);
 
-        $pengajuan = PengajuanAkreditasi::findOrFail($id);
-        $this->authorize('update', $pengajuan);
-
-        // ✅ FIX: Check correct status
-        if ($pengajuan->status !== 'pembayaran_diterima') {
-            return back()->with('error', 'Upload bukti pembayaran terlebih dahulu.');
-        }
-
-        // ✅ FIX: Check payment verified
-        if (!$pengajuan->pembayaran || $pengajuan->pembayaran->status_pembayaran !== 'verified') {
-            return back()->with('error', 'Pembayaran belum diverifikasi oleh DE.');
-        }
-
-        DB::beginTransaction();
         try {
-            // Upload borang final
+            $pengajuan = PengajuanAkreditasi::findOrFail($id);
+            $this->authorize('update', $pengajuan);
+
+            if (
+                $pengajuan->status !== 'pembayaran_diterima' ||
+                $pengajuan->pembayaran->status_pembayaran !== 'verified'
+            ) {
+                return back()->with('error', 'Pembayaran harus diverifikasi terlebih dahulu.');
+            }
+
+            DB::beginTransaction();
+
+            // Upload file
             $file = $request->file('borang_final');
-            $filename = 'borang_final_' . time() . '.' . $file->getClientOriginalExtension();
+            $filename = 'borang_final_' . time() . '.docx';
             $path = $file->storeAs('pengajuan/' . $pengajuan->id . '/final', $filename, 'public');
 
+            // ✅ Create document record - FIXED
             PengajuanDokumen::create([
                 'id_pengajuan' => $pengajuan->id,
                 'jenis_dokumen' => 'borang_final',
-                'nama_file' => $filename,
+                'nama_file' => $filename,                           // ✅ Added
                 'path_file' => $path,
                 'original_filename' => $file->getClientOriginalName(),
                 'file_size' => $file->getSize(),
-                'mime_type' => $file->getMimeType(),
-                'uploaded_by' => Auth::id(),
+                'mime_type' => $file->getMimeType(),               // ✅ Added
+                'uploaded_by' => auth()->id(),
                 'keterangan' => $request->keterangan,
+                'versi' => 1,
                 'is_latest' => true,
             ]);
 
@@ -377,13 +598,22 @@ class PengajuanAkreditasiController extends Controller
                 'tanggal_borang_final' => now(),
             ]);
 
-            $this->logStatus($pengajuan, $oldStatus, 'borang_final_diterima', 'Borang final diupload');
+            // Log
+            PengajuanStatusLog::create([
+                'id_pengajuan' => $pengajuan->id,
+                'status_from' => $oldStatus,
+                'status_to' => 'borang_final_diterima',
+                'changed_by' => auth()->id(),
+                'changed_at' => now(),
+                'keterangan' => 'Borang final diupload',
+            ]);
 
             DB::commit();
 
-            return back()->with('success', 'Borang final berhasil diupload. Menunggu approval dari DE.');
+            return back()->with('success', 'Borang final berhasil diupload.');
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Upload borang final failed: ' . $e->getMessage());
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }

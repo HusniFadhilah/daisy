@@ -16,12 +16,12 @@ class StudyProgram extends Model
         'bentuk_pt',
         'email',
         'peringkat_akreditasi',
-        'tanggal_kadaluarsa',
-        'status_kadaluarsa',
+        'tanggal_kedaluwarsa',
+        'status_kedaluwarsa',
     ];
 
     protected $casts = [
-        'tanggal_kadaluarsa' => 'date',
+        'tanggal_kedaluwarsa' => 'date',
     ];
 
     public function university()

@@ -39,17 +39,17 @@ class AkreditasiSeeder extends Seeder
                 $jenjang = $data[2];
                 $email = $data[6];
                 $peringkatAkreditasi = $data[7];
-                $tanggalKadaluarsa = $data[8];
-                $statusKadaluarsa = $data[9];
+                $tanggalKedaluwarsa = $data[8];
+                $statusKedaluwarsa = $data[9];
 
                 // Use data as-is from CSV
                 $peringkat = !empty($peringkatAkreditasi) && $peringkatAkreditasi !== '-' ? $peringkatAkreditasi : null;
 
-                // Parse tanggal kadaluarsa
-                $tanggal = $this->parseTanggal($tanggalKadaluarsa);
+                // Parse tanggal kedaluwarsa
+                $tanggal = $this->parseTanggal($tanggalKedaluwarsa);
 
                 // Use status as-is from CSV
-                $status = !empty($statusKadaluarsa) && $statusKadaluarsa !== '-' ? $statusKadaluarsa : null;
+                $status = !empty($statusKedaluwarsa) && $statusKedaluwarsa !== '-' ? $statusKedaluwarsa : null;
 
                 // Map university name variations to exact database names
                 $universitasOriginal = $universitas;
@@ -95,8 +95,8 @@ class AkreditasiSeeder extends Seeder
                         'id_level' => $degreeLevel->id,
                         'email' => $email,
                         'peringkat_akreditasi' => $peringkat,
-                        'tanggal_kadaluarsa' => $tanggal,
-                        'status_kadaluarsa' => $status,
+                        'tanggal_kedaluwarsa' => $tanggal,
+                        'status_kedaluwarsa' => $status,
                     ]);
                     $created++;
                     $this->command->info("Created program: {$programStudi} ({$jenjang}) - {$universitas}");
@@ -104,8 +104,8 @@ class AkreditasiSeeder extends Seeder
                     // Update existing study program
                     $studyProgram->update([
                         'peringkat_akreditasi' => $peringkat,
-                        'tanggal_kadaluarsa' => $tanggal,
-                        'status_kadaluarsa' => $status,
+                        'tanggal_kedaluwarsa' => $tanggal,
+                        'status_kedaluwarsa' => $status,
                     ]);
                     $updated++;
                 }
@@ -132,7 +132,7 @@ class AkreditasiSeeder extends Seeder
     }
 
     /**
-     * Parse tanggal kadaluarsa from various formats
+     * Parse tanggal kedaluwarsa from various formats
      */
     private function parseTanggal($tanggal): ?string
     {

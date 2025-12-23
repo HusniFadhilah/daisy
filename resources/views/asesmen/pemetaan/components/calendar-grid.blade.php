@@ -5,7 +5,7 @@
         {{ $month['count'] }}
     </div>
     <small class="text-muted">
-        {{ $month['count'] > 0 ? 'Prodi Kadaluarsa' : 'Tidak Ada' }}
+        {{ $month['count'] > 0 ? 'Prodi Kedaluwarsa' : 'Tidak Ada' }}
     </small>
 </div>
 
@@ -16,7 +16,7 @@
         <div class="modal-content">
             <div class="modal-header bg-warning">
                 <h5 class="modal-title">
-                    <i class="bi bi-calendar-event"></i> Program Studi Kadaluarsa - {{ $month['month'] }}
+                    <i class="bi bi-calendar-event"></i> Program Studi Kedaluwarsa - {{ $month['month'] }}
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
@@ -32,7 +32,7 @@
                                 </p>
                                 <small class="text-danger">
                                     <i class="bi bi-calendar-x"></i>
-                                    Kadaluarsa: {{ $prog->tanggal_kadaluarsa->format('d F Y') }}
+                                    Kedaluwarsa: {{ $prog->tanggal_kedaluwarsa->format('d F Y') }}
                                 </small>
                             </div>
                             <div>

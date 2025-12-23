@@ -3,14 +3,14 @@
 <div class="card mb-4" id="urgent-section">
     <div class="card-header bg-warning text-dark">
         <h5 class="mb-0">
-            <i class="bi bi-alarm"></i> Program Studi Segera Kadaluarsa (6 Bulan Ke Depan)
+            <i class="bi bi-alarm"></i> Program Studi Segera Kedaluwarsa (6 Bulan Ke Depan)
         </h5>
     </div>
     <div class="card-body">
         <div class="row">
             @foreach($urgentPrograms as $program)
             @php
-            $daysLeft = floor(now()->diffInDays($program->tanggal_kadaluarsa, false));
+            $daysLeft = floor(now()->diffInDays($program->tanggal_kedaluwarsa, false));
             $monthsLeft = round($daysLeft / 30, 1);
             @endphp
             <div class="col-md-6 mb-3">
@@ -32,7 +32,7 @@
                         <div class="alert alert-warning alert-permanent mb-2 py-2">
                             <small>
                                 <i class="bi bi-clock"></i>
-                                <strong>Kadaluarsa:</strong> {{ $program->tanggal_kadaluarsa->format('d M Y') }}
+                                <strong>Kedaluwarsa:</strong> {{ $program->tanggal_kedaluwarsa->format('d M Y') }}
                                 ({{ $monthsLeft }} bulan lagi)
                             </small>
                         </div>
@@ -70,7 +70,7 @@
                         <th style="width: 80px;">Jenjang</th>
                         <th style="width: 120px;">Peringkat</th>
                         <th style="width: 150px;">Status</th>
-                        <th style="width: 150px;">Kadaluarsa</th>
+                        <th style="width: 150px;">Kedaluwarsa</th>
                         <th style="width: 100px;">Sisa Waktu</th>
                         <th style="width: 150px;">Aksi</th>
                     </tr>
@@ -78,7 +78,7 @@
                 <tbody>
                     @forelse($studyPrograms as $index => $program)
                     @php
-                    $daysLeft = $program->tanggal_kadaluarsa ? floor(now()->diffInDays($program->tanggal_kadaluarsa, false)) : null;
+                    $daysLeft = $program->tanggal_kedaluwarsa ? floor(now()->diffInDays($program->tanggal_kedaluwarsa, false)) : null;
                     $progressPercent = $daysLeft ? max(0, min(100, ($daysLeft / (5 * 365)) * 100)) : 0;
                     @endphp
                     <tr>
@@ -100,13 +100,13 @@
                             @endif
                         </td>
                         <td>
-                            <span class="status-badge status-{{ $program->status_kadaluarsa == 'Aktif' ? 'aktif' : ($program->status_kadaluarsa == 'Kadaluarsa' ? 'kadaluarsa' : 'belum') }} {{ $daysLeft && $daysLeft <= 90 ? 'status-urgent' : '' }}">
-                                {{ $program->status_kadaluarsa }}
+                            <span class="status-badge status-{{ $program->status_kedaluwarsa == 'Aktif' ? 'aktif' : ($program->status_kedaluwarsa == 'Kedaluwarsa' ? 'kedaluwarsa' : 'belum') }} {{ $daysLeft && $daysLeft <= 90 ? 'status-urgent' : '' }}">
+                                {{ $program->status_kedaluwarsa }}
                             </span>
                         </td>
                         <td>
-                            @if($program->tanggal_kadaluarsa)
-                            <small>{{ $program->tanggal_kadaluarsa->format('d M Y') }}</small>
+                            @if($program->tanggal_kedaluwarsa)
+                            <small>{{ $program->tanggal_kedaluwarsa->format('d M Y') }}</small>
                             @else
                             <small class="text-muted">-</small>
                             @endif
@@ -128,7 +128,7 @@
                                 <a href="{{ route('pemetaan.show', $program->id) }}" class="btn btn-outline-primary action-btn">
                                     <i class="bi bi-eye"></i>
                                 </a>
-                                @if($program->status_kadaluarsa != 'Aktif' || ($daysLeft && $daysLeft <= 180)) <a href="{{ route('pengajuan.create', ['study_program_id' => $program->id]) }}" class="btn btn-outline-success action-btn">
+                                @if($program->status_kedaluwarsa != 'Aktif' || ($daysLeft && $daysLeft <= 180)) <a href="{{ route('pengajuan.create', ['study_program_id' => $program->id]) }}" class="btn btn-outline-success action-btn">
                                     <i class="bi bi-plus-circle"></i>
                                     </a>
                                     @endif

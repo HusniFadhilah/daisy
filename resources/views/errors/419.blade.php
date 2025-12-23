@@ -6,7 +6,7 @@
 @section('illustration', 'https://demos.creative-tim.com/soft-ui-dashboard-pro/assets/img/illustrations/error-404.png')
 
 @section('message')
-Sesi Anda telah berakhir atau halaman sudah kadaluarsa. Ini terjadi karena Anda tidak aktif terlalu lama. Silakan muat ulang halaman dan coba lagi.
+Sesi Anda telah berakhir atau halaman sudah kedaluwarsa. Ini terjadi karena Anda tidak aktif terlalu lama. Silakan muat ulang halaman dan coba lagi.
 @endsection
 
 @section('actions')

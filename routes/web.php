@@ -135,31 +135,69 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/upload/{id}', [AKController::class, 'deleteUpload'])->name('upload.delete');
     });
 
-    Route::prefix('pengajuan')->name('pengajuan')->middleware(['role:admin_prodi,admin_univ'])->group(function () {
+    // ========== PRODI ROUTES - Pengajuan Akreditasi ==========
+    Route::prefix('pengajuan')->name('pengajuan')->middleware(['auth', 'role:admin_prodi,admin_univ'])->group(function () {
+        // List & CRUD
         Route::get('/', [PengajuanAkreditasiController::class, 'index']);
         Route::get('/create', [PengajuanAkreditasiController::class, 'create'])->name('.create');
         Route::post('/', [PengajuanAkreditasiController::class, 'store'])->name('.store');
+
+        // Template Download (must be before /{id} to avoid conflict)
+        Route::get('/template/download', [PengajuanAkreditasiController::class, 'downloadTemplateBorang'])->name('.template.download');
+
+        // Show detail
         Route::get('/{id}', [PengajuanAkreditasiController::class, 'show'])->name('.show');
 
+        // === Draft Borang ===
         Route::post('/{id}/upload-draft', [PengajuanAkreditasiController::class, 'uploadDraftBorang'])->name('.upload-draft');
+        Route::post('/{id}/process-borang', [PengajuanAkreditasiController::class, 'processBorangDOCX'])->name('.process-borang');
+        Route::get('/{id}/borang-preview', [PengajuanAkreditasiController::class, 'showBorangHTML'])->name('.borang-preview');
+
+        // === Borang Online (Alternative) ===
+        Route::get('/{id}/borang-online', [PengajuanAkreditasiController::class, 'showBorangOnline'])->name('.borang-online');
+        Route::post('/{id}/borang-online/save', [PengajuanAkreditasiController::class, 'saveBorangOnline'])->name('.borang-online.save');
+
+        // === Pembayaran ===
         Route::post('/{id}/upload-pembayaran', [PengajuanAkreditasiController::class, 'uploadBuktiPembayaran'])->name('.upload-pembayaran');
+
+        // === Borang Final ===
         Route::post('/{id}/upload-final', [PengajuanAkreditasiController::class, 'uploadBorangFinal'])->name('.upload-final');
-        // Dokumen download
+
+        // === Dokumen Download ===
         Route::get('/dokumen/{id}/download', [PengajuanAkreditasiController::class, 'downloadDokumen'])->name('.dokumen.download');
     });
 
-
-    // ========== DE ROUTES ==========
-    Route::prefix('de')->name('de')->middleware(['role:asesi,super_admin'])->group(function () {
+    // ========== DE ROUTES - Desk Evaluator ==========
+    Route::prefix('de')->name('de')->middleware(['auth', 'role:asesi,super_admin'])->group(function () {
         Route::prefix('pengajuan')->name('.pengajuan')->group(function () {
-            Route::get('/', [DeskEvaluatorController::class, 'index']);
+            // List & Show
+            Route::get('/', [DeskEvaluatorController::class, 'index'])->name('.index');
             Route::get('/{id}', [DeskEvaluatorController::class, 'show'])->name('.show');
 
-            Route::post('/kirim-pengingat', [DeskEvaluatorController::class, 'kirimPengingat'])->name('.kirim-pengingat');
-            Route::post('/{id}/kirim-borang', [DeskEvaluatorController::class, 'kirimFormBorang'])->name('.kirim-borang');
-            Route::post('/{id}/review', [DeskEvaluatorController::class, 'reviewKesiapan'])->name('.review');
-            Route::post('/{id}/verifikasi-pembayaran', [DeskEvaluatorController::class, 'verifikasiPembayaran'])->name('.verifikasi-pembayaran');
-            Route::post('/{id}/approve-ak', [DeskEvaluatorController::class, 'approveLanjutAK'])->name('.approve-ak');
+            // === Actions ===
+            // Pengingat
+            Route::post('/kirim-pengingat', [DeskEvaluatorController::class, 'kirimPengingat'])
+                ->name('.kirim-pengingat');
+
+            // Borang Template
+            Route::post('/{id}/kirim-borang', [DeskEvaluatorController::class, 'kirimFormBorang'])
+                ->name('.kirim-borang');
+
+            // View Parsed Borang (Read-only for DE)
+            Route::get('/{pengajuanId}/borang/{importId}/view', [DeskEvaluatorController::class, 'viewBorangHTML'])
+                ->name('.borang-view');
+
+            // Review Kesiapan
+            Route::post('/{id}/review', [DeskEvaluatorController::class, 'reviewKesiapan'])
+                ->name('.review');
+
+            // Verifikasi Pembayaran
+            Route::post('/{id}/verifikasi-pembayaran', [DeskEvaluatorController::class, 'verifikasiPembayaran'])
+                ->name('.verifikasi-pembayaran');
+
+            // Approve ke AK
+            Route::post('/{id}/approve-ak', [DeskEvaluatorController::class, 'approveLanjutAK'])
+                ->name('.approve-ak');
         });
     });
 
@@ -171,22 +209,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Dashboard Overview
     Route::prefix('asesmen')->name('asesmen')->group(function () {
-        Route::get('/dashboard', [AsesmenController::class, 'dashboard'])
-            ->name('.dashboard');
+        Route::get('/dashboard', [AsesmenController::class, 'dashboard'])->name('.dashboard');
         // Assignment Management (AJAX Endpoints)
-        Route::post('/{id}/assign-user', [AsesmenController::class, 'assignUser'])
-            ->name('.assign-user');
-        Route::post('/{id}/bulk-assign', [AsesmenController::class, 'bulkAssign'])
-            ->name('.bulk-assign');
-        Route::post('/{id}/update-role', [AsesmenController::class, 'updateUserRole'])
-            ->name('.update-role');
-        Route::delete('/{id}/remove-user/{userId}', [AsesmenController::class, 'removeUser'])
-            ->name('.remove-user');
+        Route::post('/{id}/assign-user', [AsesmenController::class, 'assignUser'])->name('.assign-user');
+        Route::post('/{id}/bulk-assign', [AsesmenController::class, 'bulkAssign'])->name('.bulk-assign');
+        Route::post('/{id}/update-role', [AsesmenController::class, 'updateUserRole'])->name('.update-role');
+        Route::delete('/{id}/remove-user/{userId}', [AsesmenController::class, 'removeUser'])->name('.remove-user');
         // Search Users (AJAX)
-        Route::get('/search-users', [AsesmenController::class, 'searchUsers'])
-            ->name('.search-users');
-        Route::post('/{id}/send-documents', [AsesmenController::class, 'sendDocuments'])
-            ->name('.send-documents');
+        Route::get('/search-users', [AsesmenController::class, 'searchUsers'])->name('.search-users');
+        Route::post('/{id}/send-documents', [AsesmenController::class, 'sendDocuments'])->name('.send-documents');
     });
 
     // PROSES AL

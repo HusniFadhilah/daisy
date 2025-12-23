@@ -79,7 +79,7 @@ class PasswordResetController extends Controller
             ->first();
 
         if (!$reset) {
-            return back()->withErrors(['email' => 'Token tidak valid atau kadaluarsa']);
+            return back()->withErrors(['email' => 'Token tidak valid atau kedaluwarsa']);
         }
 
         User::where('email', $request->email)->update([

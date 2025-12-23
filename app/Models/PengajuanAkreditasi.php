@@ -89,7 +89,6 @@ class PengajuanAkreditasi extends Model
         return $this->hasMany(PengajuanStatusLog::class, 'id_pengajuan');
     }
 
-    // Scopes
     public function scopeByProdi($query, $prodiId)
     {
         return $query->where('id_program_studi', $prodiId);
@@ -98,6 +97,16 @@ class PengajuanAkreditasi extends Model
     public function scopeByStatus($query, $status)
     {
         return $query->where('status', $status);
+    }
+
+    public function borangImports()
+    {
+        return $this->hasMany(BorangImport::class, 'id_pengajuan');
+    }
+
+    public function latestBorangImport()
+    {
+        return $this->hasOne(BorangImport::class, 'id_pengajuan')->latest();
     }
 
     // Helper Methods

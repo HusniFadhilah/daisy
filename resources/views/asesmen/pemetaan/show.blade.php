@@ -20,7 +20,7 @@
                 {{ $studyProgram->degreeLevel->name }} - {{ $studyProgram->university->name }}
             </p>
         </div>
-        @if(!$activePengajuan && ($studyProgram->status_kadaluarsa != 'Aktif' || floor(now()->diffInDays($studyProgram->tanggal_kadaluarsa, false)) <= 180)) <a href="{{ route('pengajuan.create', ['study_program_id' => $studyProgram->id]) }}" class="btn btn-success">
+        @if(!$activePengajuan && ($studyProgram->status_kedaluwarsa != 'Aktif' || floor(now()->diffInDays($studyProgram->tanggal_kedaluwarsa, false)) <= 180)) <a href="{{ route('pengajuan.create', ['study_program_id' => $studyProgram->id]) }}" class="btn btn-success">
             <i class="bi bi-plus-circle"></i> Ajukan Akreditasi
             </a>
             @endif
@@ -37,8 +37,8 @@
                     <div class="mb-3">
                         <label class="text-muted small">Status</label>
                         <div>
-                            <span class="badge bg-{{ $studyProgram->status_kadaluarsa == 'Aktif' ? 'success' : ($studyProgram->status_kadaluarsa == 'Kadaluarsa' ? 'danger' : 'secondary') }}">
-                                {{ $studyProgram->status_kadaluarsa }}
+                            <span class="badge bg-{{ $studyProgram->status_kedaluwarsa == 'Aktif' ? 'success' : ($studyProgram->status_kedaluwarsa == 'Kedaluwarsa' ? 'danger' : 'secondary') }}">
+                                {{ $studyProgram->status_kedaluwarsa }}
                             </span>
                         </div>
                     </div>
@@ -49,17 +49,17 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="text-muted small">Tanggal Kadaluarsa</label>
+                        <label class="text-muted small">Tanggal Kedaluwarsa</label>
                         <div class="fw-bold">
-                            {{ $studyProgram->tanggal_kadaluarsa ? $studyProgram->tanggal_kadaluarsa->format('d F Y') : '-' }}
+                            {{ $studyProgram->tanggal_kedaluwarsa ? $studyProgram->tanggal_kedaluwarsa->format('d F Y') : '-' }}
                         </div>
                     </div>
 
-                    @if($studyProgram->tanggal_kadaluarsa)
+                    @if($studyProgram->tanggal_kedaluwarsa)
                     <div class="mb-3">
                         <label class="text-muted small">Sisa Waktu</label>
                         @php
-                        $daysLeft = floor(now()->diffInDays($studyProgram->tanggal_kadaluarsa, false));
+                        $daysLeft = floor(now()->diffInDays($studyProgram->tanggal_kedaluwarsa, false));
                         @endphp
                         <div class="fw-bold {{ $daysLeft < 90 ? 'text-danger' : ($daysLeft < 180 ? 'text-warning' : 'text-success') }}">
                             {{ round($daysLeft / 30) }} Bulan ({{ $daysLeft }} hari)

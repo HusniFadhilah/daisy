@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Prodi;
 
+use App\Models\BorangImport;
 use App\Models\StudyProgram;
 use Illuminate\Http\Request;
 use App\Models\ReviewKesiapan;
+use App\Mail\PembayaranVerified;
 use App\Models\PengajuanDokumen;
 use App\Mail\PengingatAkreditasi;
 use Illuminate\Support\Facades\DB;
@@ -14,7 +16,6 @@ use App\Models\PembayaranAkreditasi;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ReviewKesiapanNotifikasi;
-use App\Mail\PembayaranVerified;
 
 class DeskEvaluatorController extends Controller
 {
@@ -169,6 +170,23 @@ class DeskEvaluatorController extends Controller
             DB::rollBack();
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * View parsed borang HTML (Read-only for DE)
+     */
+    public function viewBorangHTML($pengajuanId, $importId)
+    {
+        $pengajuan = PengajuanAkreditasi::with('studyProgram.university')->findOrFail($pengajuanId);
+
+        $import = BorangImport::with([
+            'sections' => function ($q) {
+                $q->with(['elemen', 'tables.dataset'])->orderBy('position');
+            }
+        ])->findOrFail($importId);
+
+        // Use same preview view
+        return view('asesmen.pengajuan.borang-preview', compact('pengajuan', 'import'));
     }
 
     /**

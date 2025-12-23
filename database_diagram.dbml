@@ -61,8 +61,8 @@ Table study_programs {
   id_level bigint
   email varchar
   peringkat_akreditasi varchar
-  tanggal_kadaluarsa date
-  status_kadaluarsa varchar
+  tanggal_kedaluwarsa date
+  status_kedaluwarsa varchar
   created_at timestamp
   updated_at timestamp
 }

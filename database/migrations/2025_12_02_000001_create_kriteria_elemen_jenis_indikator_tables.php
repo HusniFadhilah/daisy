@@ -47,6 +47,14 @@ return new class extends Migration
             $table->text('deskripsi_indikator');
             $table->timestamps();
         });
+
+        Schema::create('pernyataans', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('id_elemen')->constrained('elemen_standar', 'id')->onDelete('cascade');
+            $table->string('code')->unique();
+            $table->text('pernyataan');
+            $table->timestamps();
+        });
     }
 
     /**
@@ -54,6 +62,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('pernyataans');
         Schema::dropIfExists('indikator');
         Schema::dropIfExists('jenis_indikator');
         Schema::dropIfExists('elemen_standar');

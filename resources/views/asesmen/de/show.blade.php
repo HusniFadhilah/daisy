@@ -78,97 +78,90 @@
 
             <!-- ACTION: Review Kesiapan (Langkah 5a/5b) -->
             @if($pengajuan->status === 'draft_borang_diterima')
-            <div class="card action-card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="bi bi-clipboard-check text-warning"></i>
-                        Aksi Diperlukan: Review Kesiapan Borang
+            @php
+            $latestImport = $pengajuan->latestBorangImport;
+            @endphp
+
+            <!-- View Parsed Borang (Read-only for DE) -->
+            @if($latestImport)
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-file-earmark-spreadsheet"></i> Data Borang yang Telah Diproses
                     </h5>
-                    <p class="mb-3">
-                        Draft borang telah diupload. Lakukan review untuk menentukan apakah borang siap dilanjutkan ke tahap AK.
-                    </p>
-
-                    <div class="review-form">
-                        <form action="{{ route('de.pengajuan.review', $pengajuan->id) }}" method="POST">
-                            @csrf
-
-                            <!-- Checklist Kesiapan -->
-                            <div class="mb-4">
-                                <label class="form-label fw-bold">Checklist Kesiapan</label>
-                                <div class="border rounded p-3 bg-white">
-                                    <div class="form-check mb-2">
-                                        <input type="checkbox" class="form-check-input" name="checklist[]" value="Data kuantitatif lengkap" id="check1">
-                                        <label class="form-check-label" for="check1">
-                                            Data kuantitatif lengkap dan akurat
-                                        </label>
-                                    </div>
-                                    <div class="form-check mb-2">
-                                        <input type="checkbox" class="form-check-input" name="checklist[]" value="Data kualitatif sesuai standar" id="check2">
-                                        <label class="form-check-label" for="check2">
-                                            Data kualitatif sesuai dengan standar akreditasi
-                                        </label>
-                                    </div>
-                                    <div class="form-check mb-2">
-                                        <input type="checkbox" class="form-check-input" name="checklist[]" value="Dokumen pendukung lengkap" id="check3">
-                                        <label class="form-check-label" for="check3">
-                                            Dokumen pendukung lengkap
-                                        </label>
-                                    </div>
-                                    <div class="form-check mb-2">
-                                        <input type="checkbox" class="form-check-input" name="checklist[]" value="Format borang sesuai template" id="check4">
-                                        <label class="form-check-label" for="check4">
-                                            Format borang sesuai template
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" class="form-check-input" name="checklist[]" value="Tidak ada data yang kontradiktif" id="check5">
-                                        <label class="form-check-label" for="check5">
-                                            Tidak ada data yang kontradiktif
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Hasil Review -->
-                            <div class="mb-4">
-                                <label class="form-label fw-bold">Hasil Review <span class="text-danger">*</span></label>
-                                <select name="hasil_review" class="form-select" id="hasilReview" required>
-                                    <option value="">-- Pilih Hasil Review --</option>
-                                    <option value="siap">✅ SIAP - Lanjut ke tahap AK</option>
-                                    <option value="belum_siap">❌ BELUM SIAP - Perlu perbaikan</option>
-                                </select>
-                            </div>
-
-                            <!-- Jumlah Pembayaran (jika siap) -->
-                            <div class="mb-4" id="divPembayaran" style="display: none;">
-                                <label class="form-label fw-bold">Jumlah Pembayaran <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <span class="input-group-text">Rp</span>
-                                    <input type="number" name="jumlah_pembayaran" class="form-control" placeholder="0" min="0" step="1000">
-                                </div>
-                                <small class="text-muted">
-                                    Invoice akan dibuat otomatis setelah review
-                                </small>
-                            </div>
-
-                            <!-- Catatan Review -->
-                            <div class="mb-4">
-                                <label class="form-label fw-bold">Catatan Review <span class="text-danger">*</span></label>
-                                <textarea name="catatan_review" class="form-control" rows="5" placeholder="Berikan catatan detail hasil review..." required></textarea>
-                            </div>
-
-                            <div class="d-flex gap-2">
-                                <button type="submit" class="btn btn-success">
-                                    <i class="bi bi-check-circle"></i> Submit Review
-                                </button>
-                                <button type="reset" class="btn btn-secondary">
-                                    <i class="bi bi-x-circle"></i> Reset Form
-                                </button>
-                            </div>
-                        </form>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info alert-permanent">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Prodi telah memproses data borang.</strong><br>
+                        Anda dapat melihat hasil pembacaan data untuk membantu proses review.
                     </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <h4 class="mb-0 text-primary">{{ $latestImport->total_sections }}</h4>
+                                <small class="text-muted">Bagian</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <h4 class="mb-0 text-success">{{ $latestImport->total_tables }}</h4>
+                                <small class="text-muted">Total Tabel</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <h4 class="mb-0 text-info">{{ $latestImport->parsed_tables }}</h4>
+                                <small class="text-muted">Terproses</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <h4 class="mb-0 text-warning">{{ $latestImport->completion_percentage }}%</h4>
+                                <small class="text-muted">Kelengkapan</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive mb-3">
+                        <table class="table table-sm">
+                            <tr>
+                                <td width="150"><strong>File:</strong></td>
+                                <td>{{ $latestImport->original_filename }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Diproses oleh:</strong></td>
+                                <td>{{ $latestImport->importer->name }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Waktu:</strong></td>
+                                <td>{{ $latestImport->imported_at->format('d M Y H:i') }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Status:</strong></td>
+                                <td>
+                                    <span class="badge bg-{{ $latestImport->status === 'success' ? 'success' : 'warning' }}">
+                                        {{ strtoupper($latestImport->status) }}
+                                    </span>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <a href="{{ route('de.pengajuan.borang-view', [$pengajuan->id, $latestImport->id]) }}" class="btn btn-primary" target="_blank">
+                        <i class="bi bi-eye"></i> Lihat Preview Borang (HTML)
+                    </a>
+
+                    @if($latestImport->status === 'failed')
+                    <div class="alert alert-danger alert-permanent mt-3 mb-0">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>Pembacaan Data Gagal:</strong> {{ $latestImport->parsing_notes }}
+                    </div>
+                    @endif
                 </div>
             </div>
+            @endif
             @endif
 
             <!-- ACTION: Verifikasi Pembayaran -->
@@ -582,6 +575,68 @@
             divPembayaran.querySelector('input').required = false;
         }
     });
+
+    async function parseBorang(pengajuanId, dokumenId) {
+        const btn = document.getElementById('btnParse');
+        const resultDiv = document.getElementById('parseResult');
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Sedang memproses data...';
+        resultDiv.style.display = 'block';
+        resultDiv.innerHTML = '<div class="alert alert-info"><i class="bi bi-hourglass-split"></i> Memproses dokumen, mohon tunggu...</div>';
+
+        try {
+            const response = await fetch(`/de/pengajuan/${pengajuanId}/borang/${dokumenId}/parse`, {
+                method: 'POST'
+                , headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    , 'Accept': 'application/json'
+                , }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                resultDiv.innerHTML = `
+                <div class="alert alert-success alert-permanent">
+                    <i class="bi bi-check-circle"></i>
+                    <strong>Pembacaan data berhasil!</strong><br>
+                    Kelengkapan: ${data.data.completeness}%<br>
+                    Status: ${data.data.status}
+                </div>
+            `;
+
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                resultDiv.innerHTML = `
+                <div class="alert alert-danger alert-permanent">
+                    <i class="bi bi-x-circle"></i>
+                    <strong>Pembacaan data gagal:</strong> ${data.message}
+                </div>
+            `;
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-gear"></i> Proses & Ekstrak Data';
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            resultDiv.innerHTML = `
+            <div class="alert alert-danger alert-permanent">
+                <i class="bi bi-x-circle"></i>
+                <strong>Error:</strong> ${error.message}
+            </div>
+        `;
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-gear"></i> Proses & Ekstrak Data';
+        }
+    }
+
+    function reParseBorang(pengajuanId, dokumenId) {
+        if (confirm('Apakah Anda yakin ingin memproses ulang dokumen ini? Data pemrosesan sebelumnya akan ditimpa.')) {
+            parseBorang(pengajuanId, dokumenId);
+        }
+    }
 
 </script>
 @endpush

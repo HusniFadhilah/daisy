@@ -117,25 +117,25 @@ class StudyProgramSeeder extends Seeder
 
                 // Data akreditasi
                 $peringkatAkreditasi = $data['Peringkat_Akreditasi'] ?? null;
-                $tanggalKadaluarsa = $data['Tanggal_Kadaluarsa'] ?? null;
-                $statusKadaluarsa = $data['Status_Kadaluarsa'] ?? 'Belum Terakreditasi';
+                $tanggalKedaluwarsa = $data['Tanggal_Kedaluwarsa'] ?? null;
+                $statusKedaluwarsa = $data['Status_Kedaluwarsa'] ?? 'Belum Terakreditasi';
 
                 // Konversi status dari CSV ke enum database
-                if ($statusKadaluarsa === 'Masih Berlaku') {
-                    $statusKadaluarsa = 'Aktif';
-                } elseif (strpos($statusKadaluarsa, 'kadaluarsa') !== false || strpos($statusKadaluarsa, 'hari lagi') !== false) {
-                    $statusKadaluarsa = 'Kadaluarsa';
+                if ($statusKedaluwarsa === 'Masih Berlaku') {
+                    $statusKedaluwarsa = 'Aktif';
+                } elseif (strpos($statusKedaluwarsa, 'kedaluwarsa') !== false || strpos($statusKedaluwarsa, 'hari lagi') !== false) {
+                    $statusKedaluwarsa = 'Kedaluwarsa';
                 }
 
-                // Parse tanggal kadaluarsa
-                if ($tanggalKadaluarsa && $tanggalKadaluarsa !== '-' && $tanggalKadaluarsa !== '') {
+                // Parse tanggal kedaluwarsa
+                if ($tanggalKedaluwarsa && $tanggalKedaluwarsa !== '-' && $tanggalKedaluwarsa !== '') {
                     try {
-                        $tanggalKadaluarsa = Carbon::createFromFormat('Y-m-d', $tanggalKadaluarsa)->format('Y-m-d');
+                        $tanggalKedaluwarsa = Carbon::createFromFormat('Y-m-d', $tanggalKedaluwarsa)->format('Y-m-d');
                     } catch (\Exception $e) {
-                        $tanggalKadaluarsa = null;
+                        $tanggalKedaluwarsa = null;
                     }
                 } else {
-                    $tanggalKadaluarsa = null;
+                    $tanggalKedaluwarsa = null;
                 }
 
                 if (!$programName || !$universityName || !$degreeLevelCode) {
@@ -174,8 +174,8 @@ class StudyProgramSeeder extends Seeder
                     'bentuk_pt' => $bentukPT,
                     'email' => $email ? trim($email) : null,
                     'peringkat_akreditasi' => $peringkatAkreditasi,
-                    'tanggal_kadaluarsa' => $tanggalKadaluarsa,
-                    'status_kadaluarsa' => $statusKadaluarsa,
+                    'tanggal_kedaluwarsa' => $tanggalKedaluwarsa,
+                    'status_kedaluwarsa' => $statusKedaluwarsa,
                     'created_at' => $timestamp,
                     'updated_at' => $timestamp,
                 ];

@@ -40,7 +40,7 @@
         color: #155724;
     }
 
-    .status-kadaluarsa {
+    .status-kedaluwarsa {
         background: #f8d7da;
         color: #721c24;
     }
@@ -309,8 +309,8 @@
                 <div class="card-body text-white">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="mb-1 opacity-75">Kadaluarsa</h6>
-                            <h2 class="mb-0 fw-bold">{{ $stats['kadaluarsa'] }}</h2>
+                            <h6 class="mb-1 opacity-75">Kedaluwarsa</h6>
+                            <h2 class="mb-0 fw-bold">{{ $stats['kedaluwarsa'] }}</h2>
                             <small class="opacity-75">Perlu reakreditasi</small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
@@ -347,7 +347,7 @@
             <div class="alert alert-warning alert-dismissible alert-permanent fade show" style="border-left: 4px solid #ffc107;">
                 <i class="bi bi-exclamation-triangle-fill me-2"></i>
                 <strong>Perhatian!</strong>
-                Ada <strong>{{ $stats['segera_3_bulan'] }}</strong> prodi yang akan kadaluarsa dalam 3 bulan
+                Ada <strong>{{ $stats['segera_3_bulan'] }}</strong> prodi yang akan kedaluwarsa dalam 3 bulan
                 dan <strong>{{ $stats['segera_6_bulan'] }}</strong> prodi dalam 6 bulan.
                 <a href="#urgent-section" class="alert-link ms-2">Lihat Detail →</a>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -386,7 +386,7 @@
                     <div class="row align-items-center">
                         <div class="col-md-8">
                             <h5 class="mb-0">
-                                <i class="bi bi-clock-history"></i> Timeline Kadaluarsa Akreditasi
+                                <i class="bi bi-clock-history"></i> Timeline Kedaluwarsa Akreditasi
                             </h5>
                             <small id="periodeLabelText">{{ $timelineData['periode_label'] }}</small>
                         </div>
@@ -424,7 +424,7 @@
             <div class="card">
                 <div class="card-header bg-success text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-calendar3"></i> Kalender Kadaluarsa (12 Bulan Ke Depan)
+                        <i class="bi bi-calendar3"></i> Kalender Kedaluwarsa (12 Bulan Ke Depan)
                     </h5>
                 </div>
                 <div class="card-body">
@@ -493,11 +493,11 @@
                                 <!-- Status -->
                                 <div class="mb-3">
                                     <label class="form-label text-white">Status Akreditasi</label>
-                                    <select name="status_kadaluarsa" id="statusFilter" class="form-select">
+                                    <select name="status_kedaluwarsa" id="statusFilter" class="form-select">
                                         <option value="">Semua Status</option>
-                                        <option value="Aktif" {{ request('status_kadaluarsa') == 'Aktif' ? 'selected' : '' }}>Aktif</option>
-                                        <option value="Kadaluarsa" {{ request('status_kadaluarsa') == 'Kadaluarsa' ? 'selected' : '' }}>Kadaluarsa</option>
-                                        <option value="Belum Terakreditasi" {{ request('status_kadaluarsa') == 'Belum Terakreditasi' ? 'selected' : '' }}>Belum Terakreditasi</option>
+                                        <option value="Aktif" {{ request('status_kedaluwarsa') == 'Aktif' ? 'selected' : '' }}>Aktif</option>
+                                        <option value="Kedaluwarsa" {{ request('status_kedaluwarsa') == 'Kedaluwarsa' ? 'selected' : '' }}>Kedaluwarsa</option>
+                                        <option value="Belum Terakreditasi" {{ request('status_kedaluwarsa') == 'Belum Terakreditasi' ? 'selected' : '' }}>Belum Terakreditasi</option>
                                     </select>
                                 </div>
 
@@ -725,7 +725,7 @@
             search: document.getElementById('searchInput').value
             , university_id: document.getElementById('universityFilter').value
             , degree_level_id: document.getElementById('degreeLevelFilter').value
-            , status_kadaluarsa: document.getElementById('statusFilter').value
+            , status_kedaluwarsa: document.getElementById('statusFilter').value
             , peringkat: document.getElementById('peringkatFilter').value
         , };
 

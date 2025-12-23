@@ -37,11 +37,6 @@
         box-shadow: 0 0 0 2px #e0e0e0;
     }
 
-    .timeline-item.active::before {
-        background: #0d6efd;
-        box-shadow: 0 0 0 2px #0d6efd;
-    }
-
     .timeline-item.completed::before {
         background: #28a745;
         box-shadow: 0 0 0 2px #28a745;
@@ -49,6 +44,69 @@
 
     .action-card {
         border-left: 4px solid #0d6efd;
+        animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .processing-stats {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 10px;
+        padding: 15px;
+    }
+
+    .processing-stats .stat-item {
+        text-align: center;
+        padding: 10px;
+    }
+
+    .processing-stats .stat-item h4 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    .file-preview-card {
+        background: #f8f9fa;
+        border: 2px dashed #dee2e6;
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+    }
+
+    .file-preview-card.has-file {
+        border-color: #28a745;
+        background: #d4edda;
+    }
+
+    .upload-area {
+        border: 2px dashed #ced4da;
+        border-radius: 8px;
+        padding: 30px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .upload-area:hover {
+        border-color: #0d6efd;
+        background: #f8f9fa;
+    }
+
+    .upload-area.dragover {
+        border-color: #28a745;
+        background: #d4edda;
     }
 
 </style>
@@ -64,8 +122,7 @@
                 {{ $pengajuan->nomor_pengajuan }}
             </h2>
             <p class="text-muted mb-0">
-                {{ $pengajuan->studyProgram->name }} -
-                {{ $pengajuan->tahun_akreditasi }}
+                {{ $pengajuan->studyProgram->name }} - {{ $pengajuan->tahun_akreditasi }}
             </p>
         </div>
         <div>
@@ -78,41 +135,223 @@
     <div class="row">
         <!-- Main Content -->
         <div class="col-md-8">
-            <!-- Current Action Required -->
+            <!-- ACTION: Upload/Isi Draft Borang -->
             @if(in_array($pengajuan->status, ['borang_dikirim', 'review_kesiapan_belum_siap']))
             <div class="card action-card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">
                         <i class="bi bi-exclamation-circle text-warning"></i>
-                        Aksi Diperlukan: Upload Draft Borang
+                        Aksi Diperlukan: Lengkapi Draft Borang
                     </h5>
                     <p class="mb-3">
-                        Silakan lengkapi borang yang telah dikirimkan oleh DE dan upload sebagai draft untuk direview.
+                        Anda dapat melengkapi borang dengan 2 cara:
                     </p>
 
-                    <form action="{{ route('pengajuan.upload-draft', $pengajuan->id) }}" method="POST" enctype="multipart/form-data">
-                        @csrf
-                        <div class="row g-3">
-                            <div class="col-md-8">
-                                <label class="form-label fw-bold">Draft Borang</label>
-                                <input type="file" name="draft_borang" class="form-control" accept=".pdf,.xlsx,.xls" required>
-                                <small class="text-muted">Format: PDF, XLSX | Max: 10 MB</small>
+                    <!-- Nav Tabs -->
+                    <ul class="nav nav-tabs mb-3" id="borangTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="upload-tab" data-bs-toggle="tab" data-bs-target="#upload-panel" type="button">
+                                <i class="bi bi-upload"></i> Upload DOCX
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="online-tab" data-bs-toggle="tab" data-bs-target="#online-panel" type="button">
+                                <i class="bi bi-pencil-square"></i> Isi Online
+                            </button>
+                        </li>
+                    </ul>
+
+                    <!-- Tab Content -->
+                    <div class="tab-content" id="borangTabContent">
+                        <!-- Upload DOCX Panel -->
+                        <div class="tab-pane fade show active" id="upload-panel">
+                            <div class="alert alert-info alert-permanent">
+                                <i class="bi bi-info-circle"></i>
+                                <strong>Format yang diterima:</strong> DOCX (Microsoft Word)
+                                <ul class="mb-0 mt-2">
+                                    <li>Bagian diawali dengan kode (contoh: <code>D.1 Legalitas Program</code>)</li>
+                                    <li>Tabel didahului marker <strong>"Mohon isi di sini"</strong></li>
+                                    <li>Header tabel format: <code>Tabel E.1.1 - Judul Tabel</code></li>
+                                </ul>
                             </div>
-                            <div class="col-md-12">
-                                <label class="form-label fw-bold">Keterangan</label>
-                                <textarea name="keterangan" class="form-control" rows="2" placeholder="Catatan terkait draft borang (opsional)"></textarea>
+
+                            <div class="alert alert-success alert-permanent mb-3">
+                                <i class="bi bi-download"></i>
+                                <strong>Belum punya template?</strong> Download template borang resmi.
+                                <br>
+                                <a href="{{ route('pengajuan.template.download') }}" class="btn btn-sm btn-success mt-2">
+                                    <i class="bi bi-download"></i> Download Template Borang DOCX
+                                </a>
                             </div>
-                            <div class="col-md-12">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="bi bi-upload"></i> Upload Draft Borang
-                                </button>
+
+                            <form id="formUploadBorang" enctype="multipart/form-data">
+                                @csrf
+                                <!-- Upload Area -->
+                                <div class="upload-area mb-3" id="uploadArea">
+                                    <i class="bi bi-cloud-upload fs-1 text-muted"></i>
+                                    <p class="mb-2"><strong>Klik atau drag & drop file di sini</strong></p>
+                                    <p class="text-muted small mb-2">Format: DOCX | Max: 10 MB</p>
+                                    <input type="file" id="inputDraftBorang" name="draft_borang" class="d-none" accept=".docx">
+                                    <button type="button" class="btn btn-primary btn-sm" onclick="document.getElementById('inputDraftBorang').click()">
+                                        <i class="bi bi-folder2-open"></i> Pilih File
+                                    </button>
+                                </div>
+
+                                <!-- File Preview -->
+                                <div id="filePreview" class="file-preview-card d-none mb-3">
+                                    <i class="bi bi-file-earmark-word fs-1 text-success"></i>
+                                    <p class="mb-1 mt-2"><strong id="fileName"></strong></p>
+                                    <p class="text-muted small mb-2" id="fileSize"></p>
+                                    <div class="d-flex gap-2 justify-content-center">
+                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeFile()">
+                                            <i class="bi bi-trash"></i> Hapus
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="document.getElementById('inputDraftBorang').click()">
+                                            <i class="bi bi-arrow-repeat"></i> Ganti File
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Keterangan -->
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Keterangan (Opsional)</label>
+                                    <textarea name="keterangan" class="form-control" rows="2" placeholder="Catatan terkait draft borang"></textarea>
+                                </div>
+
+                                <!-- Submit Buttons -->
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary" id="btnSubmitUpload" disabled>
+                                        <i class="bi bi-upload"></i> Upload Draft Borang
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Isi Online Panel -->
+                        <div class="tab-pane fade" id="online-panel">
+                            <div class="alert alert-info alert-permanent">
+                                <i class="bi bi-info-circle"></i>
+                                <strong>Isi borang langsung di web</strong><br>
+                                Sistem akan memandu Anda mengisi setiap bagian borang secara terstruktur.
+                            </div>
+
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-pencil-square fs-1 text-primary mb-3"></i>
+                                    <h5>Form Isian Borang Online</h5>
+                                    <p class="text-muted mb-3">
+                                        Isi borang evaluasi diri secara langsung dengan form yang terstruktur
+                                    </p>
+                                    <a href="{{ route('pengajuan.borang-online', $pengajuan->id) }}" class="btn btn-primary">
+                                        <i class="bi bi-pencil-square"></i> Mulai Mengisi Borang Online
+                                    </a>
+                                </div>
                             </div>
                         </div>
-                    </form>
+                    </div>
                 </div>
             </div>
             @endif
 
+            <!-- SECTION: Proses & Preview Borang -->
+            @if($pengajuan->status === 'draft_borang_diterima')
+            @include('asesmen.pengajuan.components.modal-upload')
+            @endif
+
+            <!-- 🆕 MODAL UPLOAD ULANG -->
+            <div class="modal fade" id="modalUploadUlang" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header bg-warning">
+                            <h5 class="modal-title">
+                                <i class="bi bi-arrow-repeat"></i> Upload Ulang Draft Borang
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="alert alert-warning alert-permanent">
+                                <i class="bi bi-exclamation-triangle"></i>
+                                <strong>Perhatian:</strong> Dokumen lama akan diganti dengan dokumen baru.
+                                Versi akan bertambah secara otomatis.
+                            </div>
+
+                            @if($draftBorang ?? false)
+                            <div class="card bg-light mb-3">
+                                <div class="card-body">
+                                    <h6 class="fw-bold mb-2">Dokumen Saat Ini:</h6>
+                                    <table class="table table-sm table-borderless mb-0">
+                                        <tr>
+                                            <td width="120"><i class="bi bi-file-word text-primary"></i> File:</td>
+                                            <td><strong>{{ $draftBorang->original_filename ?? '-' }}</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <td><i class="bi bi-hdd text-info"></i> Ukuran:</td>
+                                            <td>{{ $draftBorang->file_size_formatted ?? '-' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><i class="bi bi-clock text-warning"></i> Upload:</td>
+                                            <td>{{ $draftBorang->created_at->format('d M Y H:i') ?? '-' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><i class="bi bi-tag text-secondary"></i> Versi:</td>
+                                            <td>v{{ $draftBorang->versi ?? '1' }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                            @endif
+
+                            <form id="formUploadUlang" enctype="multipart/form-data">
+                                @csrf
+                                <!-- Upload Area -->
+                                <div class="upload-area-modal mb-3" id="uploadAreaModal">
+                                    <i class="bi bi-cloud-upload fs-1 text-muted"></i>
+                                    <p class="mb-2"><strong>Klik atau drag & drop file baru di sini</strong></p>
+                                    <p class="text-muted small mb-2">Format: DOCX | Max: 10 MB</p>
+                                    <input type="file" id="inputDraftBorangUlang" name="draft_borang" class="d-none" accept=".docx">
+                                    <button type="button" class="btn btn-primary btn-sm" onclick="document.getElementById('inputDraftBorangUlang').click()">
+                                        <i class="bi bi-folder2-open"></i> Pilih File Baru
+                                    </button>
+                                </div>
+
+                                <!-- File Preview -->
+                                <div id="filePreviewModal" class="file-preview-card d-none mb-3">
+                                    <i class="bi bi-file-earmark-word fs-1 text-success"></i>
+                                    <p class="mb-1 mt-2"><strong id="fileNameModal"></strong></p>
+                                    <p class="text-muted small mb-2" id="fileSizeModal"></p>
+                                    <div class="d-flex gap-2 justify-content-center">
+                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeFileModal()">
+                                            <i class="bi bi-trash"></i> Hapus
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="document.getElementById('inputDraftBorangUlang').click()">
+                                            <i class="bi bi-arrow-repeat"></i> Ganti File
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Keterangan -->
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">
+                                        Alasan Upload Ulang <span class="text-danger">*</span>
+                                    </label>
+                                    <textarea name="keterangan" class="form-control" rows="3" placeholder="Contoh: Revisi data mahasiswa tahun 2023, Perbaikan tabel E.1.1" required></textarea>
+                                    <small class="text-muted">Jelaskan perubahan yang dilakukan</small>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="bi bi-x"></i> Batal
+                            </button>
+                            <button type="button" class="btn btn-warning" onclick="submitUploadUlang()" id="btnSubmitUlang" disabled>
+                                <i class="bi bi-upload"></i> Upload Versi Baru
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACTION: Upload Pembayaran -->
             @if($pengajuan->status === 'menunggu_pembayaran')
             <div class="card action-card mb-4">
                 <div class="card-body">
@@ -123,9 +362,17 @@
 
                     @if($pengajuan->pembayaran)
                     <div class="alert alert-info alert-permanent">
-                        <strong>Invoice:</strong> {{ $pengajuan->pembayaran->nomor_invoice }}<br>
-                        <strong>Jumlah:</strong> Rp {{ number_format($pengajuan->pembayaran->jumlah_pembayaran, 0, ',', '.') }}<br>
-                        <strong>Jatuh Tempo:</strong> {{ $pengajuan->pembayaran->tanggal_jatuh_tempo->format('d M Y') }}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Invoice:</strong> {{ $pengajuan->pembayaran->nomor_invoice }}
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Jumlah:</strong> Rp {{ number_format($pengajuan->pembayaran->jumlah_pembayaran, 0, ',', '.') }}
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Jatuh Tempo:</strong> {{ $pengajuan->pembayaran->tanggal_jatuh_tempo->format('d M Y') }}
+                            </div>
+                        </div>
                     </div>
                     @endif
 
@@ -152,6 +399,7 @@
             </div>
             @endif
 
+            <!-- ACTION: Upload Borang Final -->
             @if($pengajuan->status === 'pembayaran_diterima' && $pengajuan->pembayaran && $pengajuan->pembayaran->status_pembayaran === 'verified')
             <div class="card action-card mb-4">
                 <div class="card-body">
@@ -165,17 +413,16 @@
 
                     <div class="alert alert-warning alert-permanent">
                         <i class="bi bi-exclamation-triangle"></i>
-                        <strong>Perhatian:</strong> Pastikan borang final sudah lengkap dan tidak ada revisi
-                        data kuantitatif/kualitatif yang berkaitan dengan proses akreditasi.
+                        <strong>Perhatian:</strong> Pastikan borang final sudah lengkap dan tidak ada revisi.
                     </div>
 
                     <form action="{{ route('pengajuan.upload-final', $pengajuan->id) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <div class="row g-3">
                             <div class="col-md-8">
-                                <label class="form-label fw-bold">Borang Final</label>
-                                <input type="file" name="borang_final" class="form-control" accept=".pdf,.xlsx" required>
-                                <small class="text-muted">Format: PDF, XLSX | Max: 10 MB</small>
+                                <label class="form-label fw-bold">Borang Final (DOCX)</label>
+                                <input type="file" name="borang_final" class="form-control" accept=".docx" required>
+                                <small class="text-muted">Format: DOCX | Max: 10 MB</small>
                             </div>
                             <div class="col-md-12">
                                 <label class="form-label fw-bold">Keterangan</label>
@@ -246,7 +493,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    @foreach($pengajuan->reviewKesiapan as $review)
+                    @foreach($pengajuan->reviewKesiapan->sortByDesc('tanggal_review') as $review)
                     <div class="mb-3 pb-3 {{ !$loop->last ? 'border-bottom' : '' }}">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <div>
@@ -454,4 +701,219 @@
         </div>
     </div>
 </div>
+@push('scripts')
+<script>
+    // File Upload Handling
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('inputDraftBorang');
+    const filePreview = document.getElementById('filePreview');
+    const btnSubmit = document.getElementById('btnSubmitUpload');
+    const formUpload = document.getElementById('formUploadBorang');
+
+    if (fileInput) {
+        // Click to upload
+        if (uploadArea) uploadArea.addEventListener('click', (e) => {
+            if (e.target !== uploadArea && e.target.closest('.btn')) return;
+            fileInput.click();
+        });
+
+        // File selected
+        fileInput.addEventListener('change', (e) => {
+            handleFileSelect(e.target.files[0]);
+        });
+
+        // Drag & Drop
+        if (uploadArea) uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        if (uploadArea) uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        if (uploadArea) uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+
+            const file = e.dataTransfer.files[0];
+            if (file && file.name.endsWith('.docx')) {
+                fileInput.files = e.dataTransfer.files;
+                handleFileSelect(file);
+            } else {
+                alert('Hanya file DOCX yang diperbolehkan!');
+            }
+        });
+    }
+
+    function handleFileSelect(file) {
+        if (!file) return;
+
+        // Validate file
+        if (!file.name.endsWith('.docx')) {
+            alert('Hanya file DOCX yang diperbolehkan!');
+            return;
+        }
+
+        if (file.size > 10 * 1024 * 1024) {
+            alert('Ukuran file maksimal 10 MB!');
+            return;
+        }
+
+        // Show preview
+        document.getElementById('fileName').textContent = file.name;
+        document.getElementById('fileSize').textContent = formatFileSize(file.size);
+
+        uploadArea.classList.add('d-none');
+        filePreview.classList.remove('d-none');
+        filePreview.classList.add('has-file');
+        btnSubmit.disabled = false;
+    }
+
+    function removeFile() {
+        fileInput.value = '';
+        uploadArea.classList.remove('d-none');
+        filePreview.classList.add('d-none');
+        filePreview.classList.remove('has-file');
+        btnSubmit.disabled = true;
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    }
+
+    // Form Submit
+    if (formUpload) formUpload.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        if (!fileInput.files[0]) {
+            alert('Pilih file terlebih dahulu!');
+            return;
+        }
+
+        const formData = new FormData(formUpload);
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mengupload...';
+
+        try {
+            const response = await fetch('{{ route("pengajuan.upload-draft", $pengajuan->id) }}', {
+                method: 'POST'
+                , body: formData
+                , headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success || response.ok) {
+                alert('✅ Draft borang berhasil diupload!');
+                window.location.reload();
+            } else {
+                alert('❌ Upload gagal: ' + (data.message || 'Terjadi kesalahan'));
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = '<i class="bi bi-upload"></i> Upload Draft Borang';
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('❌ Terjadi kesalahan: ' + error.message);
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = '<i class="bi bi-upload"></i> Upload Draft Borang';
+        }
+    });
+
+    // Process Borang
+    async function processBorang(pengajuanId) {
+        const btn = document.getElementById('btnProcessBorang');
+        const resultDiv = document.getElementById('processResult');
+
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Sedang memproses...';
+        }
+
+        if (resultDiv) {
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `
+            <div class="alert alert-info alert-permanent">
+                <div class="d-flex align-items-center">
+                    <div class="spinner-border text-primary me-3" role="status"></div>
+                    <div>
+                        <strong>Memproses dokumen DOCX...</strong><br>
+                        <small>Sedang melakukan pembacaan data dari borang. Proses ini memerlukan 10-30 detik.</small>
+                    </div>
+                </div>
+            </div>
+        `;
+        }
+
+        try {
+            const response = await fetch(`/pengajuan/${pengajuanId}/process-borang`, {
+                method: 'POST'
+                , headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    , 'Accept': 'application/json'
+                , }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                if (resultDiv) {
+                    resultDiv.innerHTML = `
+                    <div class="alert alert-success alert-permanent">
+                        <i class="bi bi-check-circle"></i>
+                        <strong>Pembacaan data berhasil!</strong><br>
+                        <ul class="mb-0 mt-2">
+                            <li>Total Bagian: <strong>${data.data.total_sections}</strong></li>
+                            <li>Total Tabel: <strong>${data.data.total_tables}</strong></li>
+                            <li>Berhasil Diproses: <strong>${data.data.parsed_tables}/${data.data.total_tables}</strong></li>
+                            <li>Kelengkapan: <strong>${data.data.completion}%</strong></li>
+                        </ul>
+                    </div>
+                `;
+                }
+
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            } else {
+                if (resultDiv) {
+                    resultDiv.innerHTML = `
+                    <div class="alert alert-danger alert-permanent">
+                        <i class="bi bi-x-circle"></i>
+                        <strong>Pembacaan data gagal:</strong><br>
+                        ${data.message}
+                    </div>
+                `;
+                }
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-gear"></i> Proses & Validasi Borang';
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            if (resultDiv) {
+                resultDiv.innerHTML = `
+                <div class="alert alert-danger alert-permanent">
+                    <i class="bi bi-x-circle"></i>
+                    <strong>Terjadi kesalahan:</strong><br>
+                    ${error.message}
+                </div>
+            `;
+            }
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-gear"></i> Proses & Validasi Borang';
+            }
+        }
+    }
+
+</script>
+@endpush
 @endsection

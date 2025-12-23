@@ -11,8 +11,8 @@ class StudyProgramUserSeeder extends Seeder
     public function run(): void
     {
         // Get admin prodi users
-        $adminProdi1 = User::where('email', 'admin_prodi1@daisy.lamdepilar.or.id')->first();
-        $adminProdi2 = User::where('email', 'admin_prodi2@daisy.lamdepilar.or.id')->first();
+        $adminProdi1 = User::where('email', 'upps1@daisy.lamdepilar.or.id')->first();
+        $adminProdi2 = User::where('email', 'upps2@daisy.lamdepilar.or.id')->first();
 
         // Get study programs
         $prodi1 = StudyProgram::where('email', 's1arsitektur@universitasdiponegoro.ac.id')->first();

@@ -31,9 +31,9 @@ class PemetaanAkreditasiController extends Controller
             $query->where('id_level', $request->degree_level_id);
         }
 
-        // Filter by status kadaluarsa
-        if ($request->filled('status_kadaluarsa')) {
-            $query->where('status_kadaluarsa', $request->status_kadaluarsa);
+        // Filter by status kedaluwarsa
+        if ($request->filled('status_kedaluwarsa')) {
+            $query->where('status_kedaluwarsa', $request->status_kedaluwarsa);
         }
 
         // Filter by peringkat
@@ -47,12 +47,12 @@ class PemetaanAkreditasiController extends Controller
         }
 
         // Sort
-        $sortBy = $request->get('sort_by', 'tanggal_kadaluarsa');
+        $sortBy = $request->get('sort_by', 'tanggal_kedaluwarsa');
         $sortOrder = $request->get('sort_order', 'asc');
 
-        if ($sortBy === 'tanggal_kadaluarsa') {
-            $query->orderByRaw('CASE WHEN tanggal_kadaluarsa IS NULL THEN 1 ELSE 0 END')
-                ->orderBy('tanggal_kadaluarsa', $sortOrder);
+        if ($sortBy === 'tanggal_kedaluwarsa') {
+            $query->orderByRaw('CASE WHEN tanggal_kedaluwarsa IS NULL THEN 1 ELSE 0 END')
+                ->orderBy('tanggal_kedaluwarsa', $sortOrder);
         } else {
             $query->orderBy($sortBy, $sortOrder);
         }
@@ -66,9 +66,9 @@ class PemetaanAkreditasiController extends Controller
         $universities = University::orderBy('name')->get();
         $degreeLevels = DegreeLevel::orderBy('code')->get();
 
-        // Get urgent items (kadaluarsa dalam 6 bulan)
+        // Get urgent items (kedaluwarsa dalam 6 bulan)
         $urgentPrograms = $studyPrograms->getCollection()
-            ->filter(fn($p) => $p->tanggal_kadaluarsa >= now() && $p->tanggal_kadaluarsa <= now()->addMonths(6))
+            ->filter(fn($p) => $p->tanggal_kedaluwarsa >= now() && $p->tanggal_kedaluwarsa <= now()->addMonths(6))
             ->take(10);
 
         $periode = $request->get('periode', '3bulan'); // default 3 bulan
@@ -130,8 +130,8 @@ class PemetaanAkreditasiController extends Controller
             $query->where('id_level', $request->degree_level_id);
         }
 
-        if ($request->filled('status_kadaluarsa')) {
-            $query->where('status_kadaluarsa', $request->status_kadaluarsa);
+        if ($request->filled('status_kedaluwarsa')) {
+            $query->where('status_kedaluwarsa', $request->status_kedaluwarsa);
         }
 
         if ($request->filled('peringkat')) {
@@ -143,12 +143,12 @@ class PemetaanAkreditasiController extends Controller
         }
 
         // Sort
-        $sortBy = $request->get('sort_by', 'tanggal_kadaluarsa');
+        $sortBy = $request->get('sort_by', 'tanggal_kedaluwarsa');
         $sortOrder = $request->get('sort_order', 'asc');
 
-        if ($sortBy === 'tanggal_kadaluarsa') {
-            $query->orderByRaw('CASE WHEN tanggal_kadaluarsa IS NULL THEN 1 ELSE 0 END')
-                ->orderBy('tanggal_kadaluarsa', $sortOrder);
+        if ($sortBy === 'tanggal_kedaluwarsa') {
+            $query->orderByRaw('CASE WHEN tanggal_kedaluwarsa IS NULL THEN 1 ELSE 0 END')
+                ->orderBy('tanggal_kedaluwarsa', $sortOrder);
         } else {
             $query->orderBy($sortBy, $sortOrder);
         }
@@ -157,9 +157,9 @@ class PemetaanAkreditasiController extends Controller
 
         // Get urgent programs
         $urgentPrograms = StudyProgram::with(['university', 'degreeLevel'])
-            ->where('tanggal_kadaluarsa', '<=', now()->addMonths(6))
-            ->where('tanggal_kadaluarsa', '>=', now())
-            ->orderBy('tanggal_kadaluarsa')
+            ->where('tanggal_kedaluwarsa', '<=', now()->addMonths(6))
+            ->where('tanggal_kedaluwarsa', '>=', now())
+            ->orderBy('tanggal_kedaluwarsa')
             ->limit(10)
             ->get();
 
@@ -183,12 +183,12 @@ class PemetaanAkreditasiController extends Controller
         // 🔥 1 QUERY SAJA
         $stats = StudyProgram::selectRaw("
         COUNT(*) as total,
-        SUM(status_kadaluarsa = 'Aktif') as aktif,
-        SUM(status_kadaluarsa = 'Belum Terakreditasi') as belum_terakreditasi,
-        SUM(tanggal_kadaluarsa IS NOT NULL AND tanggal_kadaluarsa <= ?) as kadaluarsa,
-        SUM(tanggal_kadaluarsa BETWEEN ? AND ?) as segera_3_bulan,
-        SUM(tanggal_kadaluarsa BETWEEN ? AND ?) as segera_6_bulan,
-        SUM(tanggal_kadaluarsa BETWEEN ? AND ?) as segera_12_bulan
+        SUM(status_kedaluwarsa = 'Aktif') as aktif,
+        SUM(status_kedaluwarsa = 'Belum Terakreditasi') as belum_terakreditasi,
+        SUM(tanggal_kedaluwarsa IS NOT NULL AND tanggal_kedaluwarsa <= ?) as kedaluwarsa,
+        SUM(tanggal_kedaluwarsa BETWEEN ? AND ?) as segera_3_bulan,
+        SUM(tanggal_kedaluwarsa BETWEEN ? AND ?) as segera_6_bulan,
+        SUM(tanggal_kedaluwarsa BETWEEN ? AND ?) as segera_12_bulan
     ", [
             $today,
             now(),
@@ -209,7 +209,7 @@ class PemetaanAkreditasiController extends Controller
         return [
             'total' => (int) $stats->total,
             'aktif' => (int) $stats->aktif,
-            'kadaluarsa' => (int) $stats->kadaluarsa,
+            'kedaluwarsa' => (int) $stats->kedaluwarsa,
             'belum_terakreditasi' => (int) $stats->belum_terakreditasi,
             'segera_3_bulan' => (int) $stats->segera_3_bulan,
             'segera_6_bulan' => (int) $stats->segera_6_bulan,
@@ -266,8 +266,8 @@ class PemetaanAkreditasiController extends Controller
 
         // 🔥 Ambil data SEKALI
         $programs = StudyProgram::with(['university', 'degreeLevel'])
-            ->whereBetween('tanggal_kadaluarsa', [$startRange, $endRange])
-            ->orderBy('tanggal_kadaluarsa')
+            ->whereBetween('tanggal_kedaluwarsa', [$startRange, $endRange])
+            ->orderBy('tanggal_kedaluwarsa')
             ->get();
 
         // Jumlah periode
@@ -282,8 +282,8 @@ class PemetaanAkreditasiController extends Controller
             // Filter dari collection (bukan query)
             $periodPrograms = $programs->filter(
                 fn($p) =>
-                $p->tanggal_kadaluarsa >= $startDate &&
-                    $p->tanggal_kadaluarsa <= $endDate
+                $p->tanggal_kedaluwarsa >= $startDate &&
+                    $p->tanggal_kedaluwarsa <= $endDate
             );
 
             $timeline[] = [
@@ -333,8 +333,8 @@ class PemetaanAkreditasiController extends Controller
 
         // 🔥 Ambil semua program sekali saja
         $allPrograms = StudyProgram::with(['university', 'degreeLevel'])
-            ->whereBetween('tanggal_kadaluarsa', [$startRange, $endRange])
-            ->orderBy('tanggal_kadaluarsa')
+            ->whereBetween('tanggal_kedaluwarsa', [$startRange, $endRange])
+            ->orderBy('tanggal_kedaluwarsa')
             ->get();
 
         for ($i = 0; $i < 12; $i++) {
@@ -345,8 +345,8 @@ class PemetaanAkreditasiController extends Controller
             // Filter dari collection, bukan query
             $monthPrograms = $allPrograms->filter(
                 fn($p) =>
-                $p->tanggal_kadaluarsa >= $startDate &&
-                    $p->tanggal_kadaluarsa <= $endDate
+                $p->tanggal_kedaluwarsa >= $startDate &&
+                    $p->tanggal_kedaluwarsa <= $endDate
             );
 
             $calendar[] = [

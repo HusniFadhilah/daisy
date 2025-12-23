@@ -37,9 +37,9 @@ class StudyProgramController extends Controller
                 })
                 ->addColumn('peringkat', function ($row) {
                     if ($row->peringkat_akreditasi) {
-                        $class = match ($row->status_kadaluarsa) {
+                        $class = match ($row->status_kedaluwarsa) {
                             'Aktif' => 'success',
-                            'Kadaluarsa' => 'warning',
+                            'Kedaluwarsa' => 'warning',
                             default => 'secondary'
                         };
                         return '<span class="badge bg-' . $class . '">' . $row->peringkat_akreditasi . '</span>';
@@ -142,8 +142,8 @@ class StudyProgramController extends Controller
             'bentuk_pt' => 'nullable|in:Universitas,Institut,Sekolah Tinggi,Politeknik,Akademi',
             'email' => 'nullable|email|max:255',
             'peringkat_akreditasi' => 'nullable|string|max:255',
-            'tanggal_kadaluarsa' => 'nullable|date',
-            'status_kadaluarsa' => 'nullable|in:Aktif,Kadaluarsa,Belum Terakreditasi',
+            'tanggal_kedaluwarsa' => 'nullable|date',
+            'status_kedaluwarsa' => 'nullable|in:Aktif,Kedaluwarsa,Belum Terakreditasi',
         ]);
 
         $studyProgram = StudyProgram::find($id);

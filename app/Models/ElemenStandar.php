@@ -40,4 +40,14 @@ class ElemenStandar extends Model
         return $this->hasMany(IndikatorPenilaianElemen::class, 'id_elemen')->with('jenjangPenilaian')
             ->orderBy('id_jenjang_penilaian');
     }
+
+    public function datasetBorang()
+    {
+        return $this->hasMany(DatasetBorang::class, 'id_elemen');
+    }
+
+    public function borangSections()
+    {
+        return $this->hasMany(BorangSection::class, 'id_elemen');
+    }
 }

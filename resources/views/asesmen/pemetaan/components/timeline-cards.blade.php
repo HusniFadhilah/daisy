@@ -28,7 +28,7 @@
         </button>
         @else
         <div class="alert alert-success py-2 mb-0">
-            <small><i class="bi bi-check-circle"></i> Tidak ada yang kadaluarsa</small>
+            <small><i class="bi bi-check-circle"></i> Tidak ada yang kedaluwarsa</small>
         </div>
         @endif
     </div>
@@ -56,7 +56,7 @@
                                 <th>Program Studi</th>
                                 <th>Universitas</th>
                                 <th>Peringkat</th>
-                                <th>Kadaluarsa</th>
+                                <th>Kedaluwarsa</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
@@ -77,10 +77,10 @@
                                     @endif
                                 </td>
                                 <td>
-                                    {{ $prog->tanggal_kadaluarsa->format('d M Y') }}
+                                    {{ $prog->tanggal_kedaluwarsa->format('d M Y') }}
                                     <br>
                                     <small class="text-danger">
-                                        {{ floor(now()->diffInDays($prog->tanggal_kadaluarsa)) }} hari lagi
+                                        {{ floor(now()->diffInDays($prog->tanggal_kedaluwarsa)) }} hari lagi
                                     </small>
                                 </td>
                                 <td>

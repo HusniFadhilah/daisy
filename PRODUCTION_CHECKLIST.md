@@ -68,7 +68,7 @@
 
 ### File Debugging Dipindahkan ke `debug_files/`
 - ✅ analisis_akreditasi.php
-- ✅ analisis_prodi_kadaluarsa.php
+- ✅ analisis_prodi_kedaluwarsa.php
 - ✅ cek_5_data.php
 - ✅ check_admin.php
 - ✅ check_data.php

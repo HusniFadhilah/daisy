@@ -190,6 +190,45 @@ function textColorByBgJS(hex) {
         : '#fff';
 }
 
+async function fetchJSON(url, options = {}) {
+    try {
+        // Ensure we request JSON
+        options.headers = {
+            ...options.headers,
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest', // Mark as AJAX
+        };
+
+        const response = await fetch(url, options);
+        const contentType = response.headers.get('content-type');
+
+        // Check if response is JSON
+        if (!contentType || !contentType.includes('application/json')) {
+            const text = await response.text();
+            console.error('Non-JSON response received:', {
+                url,
+                status: response.status,
+                contentType,
+                body: text.substring(0, 500)
+            });
+            throw new Error('Server mengembalikan response yang tidak valid');
+        }
+
+        const data = await response.json();
+
+        // Check if request was successful
+        if (!response.ok) {
+            throw new Error(data.message || `HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        return { success: true, data };
+
+    } catch (error) {
+        console.error('Fetch error:', error);
+        return { success: false, error: error.message };
+    }
+}
+
 
 // Auto-hide alerts after 5 seconds
 document.addEventListener('DOMContentLoaded', function () {
