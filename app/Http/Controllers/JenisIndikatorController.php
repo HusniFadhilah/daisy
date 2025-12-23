@@ -4,20 +4,40 @@ namespace App\Http\Controllers;
 
 use App\Models\JenisIndikator;
 use Illuminate\Http\Request;
+use Yajra\DataTables\Facades\DataTables;
 
 class JenisIndikatorController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $jenisIndikator = JenisIndikator::all();
+        if ($request->ajax()) {
+            $data = JenisIndikator::select('jenis_indikator.*');
+            
+            return DataTables::of($data)
+                ->addIndexColumn()
+                ->addColumn('action', function($row){
+                    $btn = '<div class="btn-group" role="group">';
+                    $btn .= '<button type="button" class="btn btn-sm btn-warning" onclick="editRecord('.$row->id_jenis.')" data-bs-toggle="modal" data-bs-target="#editModal"><i class="bi bi-pencil"></i></button>';
+                    $btn .= '<button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord('.$row->id_jenis.')"><i class="bi bi-trash"></i></button>';
+                    $btn .= '</div>';
+                    return $btn;
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
         
-        return response()->json([
-            'success' => true,
-            'data' => $jenisIndikator
-        ]);
+        if ($request->wantsJson()) {
+            $jenisIndikator = JenisIndikator::all();
+            return response()->json([
+                'success' => true,
+                'data' => $jenisIndikator
+            ]);
+        }
+        
+        return view('indikator.jenis.index');
     }
 
     /**

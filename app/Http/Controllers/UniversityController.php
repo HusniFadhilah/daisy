@@ -6,6 +6,7 @@ use App\Models\University;
 use App\Models\StudyProgram;
 use App\Models\DegreeLevel;
 use Illuminate\Http\Request;
+use Yajra\DataTables\Facades\DataTables;
 
 class UniversityController extends Controller
 {
@@ -26,16 +27,34 @@ class UniversityController extends Controller
      */
     public function index(Request $request)
     {
-        $universities = University::withCount('studyPrograms')->get();
+        if ($request->ajax()) {
+            $data = University::withCount('studyPrograms')->select('universities.*');
+            
+            return DataTables::of($data)
+                ->addIndexColumn()
+                ->addColumn('study_programs_count', function($row){
+                    return $row->study_programs_count;
+                })
+                ->addColumn('action', function($row){
+                    $btn = '<div class="btn-group" role="group">';
+                    $btn .= '<a href="'.route('universities.edit', $row->id).'" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>';
+                    $btn .= '<button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord('.$row->id.')"><i class="bi bi-trash"></i></button>';
+                    $btn .= '</div>';
+                    return $btn;
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
         
         if ($request->wantsJson()) {
+            $universities = University::withCount('studyPrograms')->get();
             return response()->json([
                 'success' => true,
                 'data' => $universities
             ]);
         }
         
-        return view('universitas.index', compact('universities'));
+        return view('universitas.index');
     }
 
     /**

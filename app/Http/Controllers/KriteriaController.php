@@ -4,17 +4,32 @@ namespace App\Http\Controllers;
 
 use App\Models\Kriteria;
 use Illuminate\Http\Request;
+use Yajra\DataTables\Facades\DataTables;
 
 class KriteriaController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $kriteria = Kriteria::latest()->paginate(10);
+        if ($request->ajax()) {
+            $data = Kriteria::select('kriteria.*');
+            
+            return DataTables::of($data)
+                ->addIndexColumn()
+                ->addColumn('action', function($row){
+                    $btn = '<div class="btn-group" role="group">';
+                    $btn .= '<a href="'.route('kriteria.edit', $row->id_kriteria).'" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>';
+                    $btn .= '<button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord('.$row->id_kriteria.')"><i class="bi bi-trash"></i></button>';
+                    $btn .= '</div>';
+                    return $btn;
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
         
-        return view('indikator.kriteria.index', compact('kriteria'));
+        return view('indikator.kriteria.index');
     }
 
     /**

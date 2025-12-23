@@ -5,16 +5,39 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Yajra\DataTables\Facades\DataTables;
 
 class UserController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::latest()->paginate(10);
-        return view('admin.users.index', compact('users'));
+        if ($request->ajax()) {
+            $data = User::select('users.*');
+            
+            return DataTables::of($data)
+                ->addIndexColumn()
+                ->addColumn('role', function($row){
+                    $class = $row->role === 'admin' ? 'primary' : 'secondary';
+                    return '<span class="badge bg-'.$class.'">'.ucfirst($row->role).'</span>';
+                })
+                ->addColumn('created_at', function($row){
+                    return $row->created_at ? $row->created_at->format('d M Y') : '-';
+                })
+                ->addColumn('action', function($row){
+                    $btn = '<div class="btn-group" role="group">';
+                    $btn .= '<a href="'.route('users.edit', $row->id).'" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>';
+                    $btn .= '<button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord('.$row->id.')"><i class="bi bi-trash"></i></button>';
+                    $btn .= '</div>';
+                    return $btn;
+                })
+                ->rawColumns(['role', 'action'])
+                ->make(true);
+        }
+        
+        return view('admin.users.index');
     }
 
     /**

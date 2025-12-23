@@ -51,53 +51,22 @@
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table class="table table-hover" id="kriteriaTable">
                     <thead>
                         <tr>
-                            <th width="5%">No</th>
-                            <th width="15%">Kode</th>
-                            <th width="40%">Nama Kriteria</th>
-                            <th width="25%">Keterangan</th>
-                            <th width="15%">Aksi</th>
+                            <th>No</th>
+                            <th>Kode</th>
+                            <th>Nama Kriteria</th>
+                            <th>Keterangan</th>
+                            <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($kriteria as $item)
-                        <tr>
-                            <td>{{ $loop->iteration + ($kriteria->currentPage() - 1) * $kriteria->perPage() }}</td>
-                            <td><span class="badge bg-info text-dark">{{ $item->kode_kriteria }}</span></td>
-                            <td><strong>{{ $item->nama_kriteria }}</strong></td>
-                            <td>{{ Str::limit($item->keterangan, 50) }}</td>
-                            <td>
-                                <div class="btn-group" role="group">
-                                    <button type="button" class="btn btn-sm btn-info text-white" data-bs-toggle="modal" data-bs-target="#showKriteriaModal{{ $item->id_kriteria }}" title="Detail">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-warning text-white" data-bs-toggle="modal" data-bs-target="#editKriteriaModal{{ $item->id_kriteria }}" title="Edit">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <form action="{{ route('kriteria.destroy', $item->id_kriteria) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus kriteria ini?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger" title="Hapus">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <!-- Modal Detail -->
-                        <div class="modal fade" id="showKriteriaModal{{ $item->id_kriteria }}" tabindex="-1">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title">Detail Kriteria</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <dl class="row">
-                                            <dt class="col-sm-4">Kode Kriteria</dt>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
                                             <dd class="col-sm-8">{{ $item->kode_kriteria }}</dd>
                                             
                                             <dt class="col-sm-4">Nama Kriteria</dt>
@@ -225,3 +194,46 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    $(document).ready(function() {
+        $('#kriteriaTable').DataTable({
+            serverSide: true,
+            processing: true,
+            ajax: "{{ route('kriteria.index') }}",
+            columns: [
+                { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
+                { data: 'kode_kriteria', name: 'kode_kriteria' },
+                { data: 'nama_kriteria', name: 'nama_kriteria' },
+                { data: 'keterangan', name: 'keterangan' },
+                { data: 'action', name: 'action', orderable: false, searchable: false }
+            ],
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json'
+            },
+            pageLength: 25,
+            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Semua"]]
+        });
+    });
+
+    function deleteRecord(id) {
+        if (confirm('Yakin ingin menghapus kriteria ini?')) {
+            $.ajax({
+                url: '/kriteria/' + id,
+                type: 'DELETE',
+                data: {
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    $('#kriteriaTable').DataTable().ajax.reload();
+                    alert('Data berhasil dihapus');
+                },
+                error: function(xhr) {
+                    alert('Gagal menghapus data');
+                }
+            });
+        }
+    }
+</script>
+@endpush
