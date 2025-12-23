@@ -50,6 +50,12 @@ class AkreditasiSeeder extends Seeder
 
                 // Use status as-is from CSV
                 $status = !empty($statusKedaluwarsa) && $statusKedaluwarsa !== '-' ? $statusKedaluwarsa : null;
+                // Konversi status dari CSV ke enum database
+                if ($status === 'Masih Berlaku') {
+                    $status = 'Aktif';
+                } elseif (strpos($status, 'kadaluarsa') !== false || strpos($status, 'kedaluwarsa') !== false || strpos($status, 'hari lagi') !== false) {
+                    $status = 'Kedaluwarsa';
+                }
 
                 // Map university name variations to exact database names
                 $universitasOriginal = $universitas;

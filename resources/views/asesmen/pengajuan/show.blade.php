@@ -820,7 +820,7 @@
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('❌ Terjadi kesalahan: ' + error.message);
+            alert('❌ Terjadi kesalahans: ' + error.message);
             btnSubmit.disabled = false;
             btnSubmit.innerHTML = '<i class="bi bi-upload"></i> Upload Draft Borang';
         }

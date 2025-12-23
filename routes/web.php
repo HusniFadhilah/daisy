@@ -171,7 +171,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('de')->name('de')->middleware(['auth', 'role:asesi,super_admin'])->group(function () {
         Route::prefix('pengajuan')->name('.pengajuan')->group(function () {
             // List & Show
-            Route::get('/', [DeskEvaluatorController::class, 'index'])->name('.index');
+            Route::get('/', [DeskEvaluatorController::class, 'index']);
             Route::get('/{id}', [DeskEvaluatorController::class, 'show'])->name('.show');
 
             // === Actions ===
