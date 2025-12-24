@@ -110,9 +110,9 @@
                     </button>
                     @endif
 
-                    <button type="button" class="btn btn-outline-primary btn-md ms-lg-2 my-2" id="btnExportComparison">
+                    {{-- <button type="button" class="btn btn-outline-primary btn-md ms-lg-2 my-2" id="btnExportComparison">
                         <i class="bi bi-file-earmark-excel"></i> Download Perbandingan
-                    </button>
+                    </button> --}}
                 </div>
 
                 <div class="d-flex align-items-center">
@@ -142,21 +142,21 @@
         </div>
         <div class="card-body">
             <div class="row">
-                <div class="col-md-3">
+                <div class="col-md-6">
                     <button type="button" class="btn btn-outline-success w-100" id="btnValidateAllAgreed" {{ $isApproved ? 'disabled' : '' }}>
                         <i class="bi bi-check-circle"></i>
                         <div>Validasi Semua yang Sama</div>
                         <small>Otomatis approve nilai yang sama</small>
                     </button>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-6">
                     <button type="button" class="btn btn-outline-warning w-100" id="btnReviewDifferences">
                         <i class="bi bi-exclamation-triangle"></i>
                         <div>Review Perbedaan</div>
-                        <small>Lihat hanya yang berbeda</small>
+                        <small>Lihat hanya penilaian yang berbeda antar asesor</small>
                     </button>
                 </div>
-                <div class="col-md-3">
+                {{-- <div class="col-md-3">
                     <button type="button" class="btn btn-outline-info w-100" id="btnShowComments">
                         <i class="bi bi-chat-square-text"></i>
                         <div>Lihat Komentar</div>
@@ -169,7 +169,7 @@
                         <div>Download Catatan</div>
                         <small>Download catatan validasi</small>
                     </button>
-                </div>
+                </div> --}}
             </div>
         </div>
     </div>
@@ -723,14 +723,14 @@
             if (status === 'validated' && !skorFinal) {
                 Swal.fire({
                     icon: 'warning'
-                    , title: 'Skor Final Diperlukan'
-                    , text: 'Silakan pilih skor final terlebih dahulu'
+                    , title: 'Skor/Kategori Final Diperlukan'
+                    , text: 'Silakan pilih skor/kategori final terlebih dahulu'
                 });
                 return;
             }
 
             // Confirm
-            let confirmText = `Anda akan menyetujui penilaian dengan skor final: ${skorFinal}`;
+            let confirmText = `Anda akan menyetujui penilaian dengan kategori: ${skorFinal}`;
             if (status === 'revision_required') {
                 const selectedChecks = Array.from(
                     document.querySelectorAll('input[name="asesor_target_revisi[]"]:checked')
@@ -875,11 +875,11 @@
 
     function getSkorLabel(skor) {
         const labels = {
-            0: 'Tidak Memenuhi'
-            , 1: 'Belum Memenuhi'
-            , 2: 'Lemah'
-            , 3: 'Memenuhi'
-            , 4: 'Melampaui'
+            0: '0 - Tidak Memenuhi (Not Met)'
+            , 1: '1 - Belum Memenuhi (Not Met)'
+            , 2: '2 - Lemah (Weakness/Cause of Concern)'
+            , 3: '3 - Memenuhi (Met)'
+            , 4: '4 - Pelampauan Standar'
         };
         return labels[skor] || '-';
     }
@@ -902,11 +902,11 @@
      */
     function showKomentarPopover(element, namaAsesor, skor, komentar) {
         const skorLabel = {
-            0: 'Tidak Memenuhi'
-            , 1: 'Belum Memenuhi'
-            , 2: 'Lemah'
-            , 3: 'Memenuhi'
-            , 4: 'Pelampauan'
+            0: '0 - Tidak Memenuhi (Not Met)'
+            , 1: '1 - Belum Memenuhi (Not Met)'
+            , 2: '2 - Lemah (Weakness/Cause of Concern)'
+            , 3: '3 - Memenuhi (Met)'
+            , 4: '4 - Pelampauan Standar'
         } [skor] || '-';
 
         Swal.fire({

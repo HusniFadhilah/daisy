@@ -29,16 +29,11 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2><i class="bi bi-clipboard-data"></i> Kelola Asesmen</h2>
-            <p class="text-muted mb-0">Manage asesmen akreditasi dan assign asesor</p>
+            <p class="text-muted mb-0">Atur asesmen akreditasi dan assign asesor</p>
         </div>
-        <div class="btn-group">
-            <a href="{{ route('asesmen.dashboard') }}" class="btn btn-outline-primary">
-                <i class="bi bi-grid-3x3"></i> Dashboard
-            </a>
-            <a href="{{ route('asesmen.create') }}" class="btn btn-primary">
-                <i class="bi bi-plus-lg"></i> Buat Asesmen Baru
-            </a>
-        </div>
+        <a href="{{ route('asesmen.create') }}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> Buat Asesmen Baru
+        </a>
     </div>
 
     <!-- Alerts -->
@@ -110,7 +105,7 @@
                             <th>Nama Asesmen</th>
                             <th>Perguruan Tinggi</th>
                             <th style="width: 100px;">Kode Panel</th>
-                            <th style="width: 120px;">Jumlah Asesor</th>
+                            <th style="width: 120px;">Jumlah Peran</th>
                             <th style="width: 150px;">Tanggal</th>
                             <th style="width: 200px;">Aksi</th>
                         </tr>

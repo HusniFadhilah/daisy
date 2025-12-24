@@ -174,7 +174,7 @@ class AKController extends Controller
                 'class' => 'danger',
             ],
             1 => [
-                'label' => 'Tidak Memenuhi (Not Met)',
+                'label' => 'Belum Memenuhi (Not Met)',
                 'color' => '#ff9800',
                 'class' => 'warning',
             ],

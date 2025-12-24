@@ -80,88 +80,391 @@
             @if($pengajuan->status === 'draft_borang_diterima')
             @php
             $latestImport = $pengajuan->latestBorangImport;
+            $draftBorang = $pengajuan->dokumen->where('jenis_dokumen', 'draft_borang')->where('is_latest', true)->first();
             @endphp
 
-            <!-- View Parsed Borang (Read-only for DE) -->
-            @if($latestImport)
-            <div class="card mb-4">
+            <div class="card action-card mb-4">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-file-earmark-spreadsheet"></i> Data Borang yang Telah Diproses
+                        <i class="bi bi-file-earmark-spreadsheet"></i>
+                        Aksi Diperlukan: Review Kesiapan Borang
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div class="alert alert-info alert-permanent">
-                        <i class="bi bi-info-circle"></i>
-                        <strong>Prodi telah memproses data borang.</strong><br>
-                        Anda dapat melihat hasil pembacaan data untuk membantu proses review.
+                    {{-- Alert Status --}}
+                    <div class="alert alert-success alert-permanent mb-4">
+                        <i class="bi bi-check-circle"></i>
+                        <strong>Prodi telah mengupload draft borang.</strong><br>
+                        Silakan review kelengkapan dan kesiapan borang sebelum melanjutkan ke tahap pembayaran.
                     </div>
 
-                    <div class="row mb-3">
-                        <div class="col-md-3">
-                            <div class="text-center p-3 bg-light rounded">
-                                <h4 class="mb-0 text-primary">{{ $latestImport->total_sections }}</h4>
-                                <small class="text-muted">Bagian</small>
+                    {{-- Preview & Form Online Links --}}
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="card bg-primary bg-opacity-10 border-primary h-100">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-eye fs-1 text-primary mb-3 d-block"></i>
+                                    <h6 class="fw-bold">Preview Borang HTML</h6>
+                                    <p class="text-muted small mb-3">
+                                        Lihat preview borang yang sudah diproses<br>
+                                        dari dokumen DOCX
+                                    </p>
+                                    @if($latestImport)
+                                    <a href="{{ route('de.pengajuan.borang-view', [$pengajuan->id, $latestImport->id]) }}" class="btn btn-primary" target="_blank">
+                                        <i class="bi bi-eye"></i> Lihat Preview
+                                    </a>
+                                    @else
+                                    <button class="btn btn-primary" disabled>
+                                        <i class="bi bi-eye-slash"></i> Belum Diproses
+                                    </button>
+                                    @endif
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="text-center p-3 bg-light rounded">
-                                <h4 class="mb-0 text-success">{{ $latestImport->total_tables }}</h4>
-                                <small class="text-muted">Total Tabel</small>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="text-center p-3 bg-light rounded">
-                                <h4 class="mb-0 text-info">{{ $latestImport->parsed_tables }}</h4>
-                                <small class="text-muted">Terproses</small>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="text-center p-3 bg-light rounded">
-                                <h4 class="mb-0 text-warning">{{ $latestImport->completion_percentage }}%</h4>
-                                <small class="text-muted">Kelengkapan</small>
+
+                        <div class="col-md-6">
+                            <div class="card bg-info bg-opacity-10 border-info h-100">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-pencil-square fs-1 text-info mb-3 d-block"></i>
+                                    <h6 class="fw-bold">Form Isian Online</h6>
+                                    <p class="text-muted small mb-3">
+                                        Lihat form online yang diisi prodi<br>
+                                        (Read-only untuk DE)
+                                    </p>
+                                    <a href="{{ route('pengajuan.borang-online', $pengajuan->id) }}" class="btn btn-info" target="_blank">
+                                        <i class="bi bi-pencil-square"></i> Lihat Form Online
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="table-responsive mb-3">
-                        <table class="table table-sm">
-                            <tr>
-                                <td width="150"><strong>File:</strong></td>
-                                <td>{{ $latestImport->original_filename }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Diproses oleh:</strong></td>
-                                <td>{{ $latestImport->importer->name }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Waktu:</strong></td>
-                                <td>{{ $latestImport->imported_at->format('d M Y H:i') }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Status:</strong></td>
-                                <td>
-                                    <span class="badge bg-{{ $latestImport->status === 'success' ? 'success' : 'warning' }}">
-                                        {{ strtoupper($latestImport->status) }}
-                                    </span>
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
+                    {{-- Processing Stats --}}
+                    @if($latestImport)
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <h6 class="fw-bold mb-3">
+                                <i class="bi bi-graph-up"></i> Status Pemrosesan Data
+                            </h6>
+                            <div class="row text-center">
+                                <div class="col-md-3">
+                                    <div class="p-3 bg-white rounded shadow-sm">
+                                        <h4 class="mb-0 text-primary">{{ $latestImport->total_sections }}</h4>
+                                        <small class="text-muted">Bagian</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="p-3 bg-white rounded shadow-sm">
+                                        <h4 class="mb-0 text-success">{{ $latestImport->total_tables }}</h4>
+                                        <small class="text-muted">Total Tabel</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="p-3 bg-white rounded shadow-sm">
+                                        <h4 class="mb-0 text-info">{{ $latestImport->parsed_tables }}</h4>
+                                        <small class="text-muted">Terproses</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="p-3 bg-white rounded shadow-sm">
+                                        <h4 class="mb-0 text-warning">{{ $latestImport->completion_percentage }}%</h4>
+                                        <small class="text-muted">Kelengkapan</small>
+                                    </div>
+                                </div>
+                            </div>
 
-                    <a href="{{ route('de.pengajuan.borang-view', [$pengajuan->id, $latestImport->id]) }}" class="btn btn-primary" target="_blank">
-                        <i class="bi bi-eye"></i> Lihat Preview Borang (HTML)
-                    </a>
+                            <div class="mt-3 pt-3 border-top">
+                                <table class="table table-sm table-borderless mb-0">
+                                    <tr>
+                                        <td width="200">
+                                            <i class="bi bi-file-word text-primary"></i>
+                                            <strong>File:</strong>
+                                        </td>
+                                        <td>{{ $latestImport->original_filename }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <i class="bi bi-person text-success"></i>
+                                            <strong>Diproses oleh:</strong>
+                                        </td>
+                                        <td>{{ $latestImport->importer->name ?? 'System' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <i class="bi bi-clock text-info"></i>
+                                            <strong>Waktu:</strong>
+                                        </td>
+                                        <td>{{ $latestImport->imported_at->format('d M Y H:i') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <i class="bi bi-check-circle text-success"></i>
+                                            <strong>Status:</strong>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ $latestImport->status === 'success' ? 'success' : 'warning' }}">
+                                                {{ strtoupper($latestImport->status) }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
 
                     @if($latestImport->status === 'failed')
-                    <div class="alert alert-danger alert-permanent mt-3 mb-0">
+                    <div class="alert alert-danger alert-permanent mb-4">
                         <i class="bi bi-exclamation-triangle"></i>
-                        <strong>Pembacaan Data Gagal:</strong> {{ $latestImport->parsing_notes }}
+                        <strong>Pembacaan Data Gagal:</strong><br>
+                        {{ $latestImport->parsing_notes }}
                     </div>
                     @endif
+                    @endif
+
+                    {{-- Download Draft Document --}}
+                    @if($draftBorang)
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <h6 class="fw-bold mb-3">
+                                <i class="bi bi-file-earmark-word"></i> Dokumen Draft
+                            </h6>
+                            <div class="row small">
+                                <div class="col-md-3">
+                                    <i class="bi bi-file-word text-primary"></i>
+                                    <strong>File:</strong><br>
+                                    {{ $draftBorang->original_filename }}
+                                </div>
+                                <div class="col-md-3">
+                                    <i class="bi bi-hdd text-info"></i>
+                                    <strong>Ukuran:</strong><br>
+                                    {{ $draftBorang->file_size_formatted ?? '-' }}
+                                </div>
+                                <div class="col-md-3">
+                                    <i class="bi bi-clock text-warning"></i>
+                                    <strong>Upload:</strong><br>
+                                    {{ $draftBorang->created_at->format('d M Y H:i') }}
+                                </div>
+                                <div class="col-md-3">
+                                    <i class="bi bi-tag text-secondary"></i>
+                                    <strong>Versi:</strong><br>
+                                    v{{ $draftBorang->versi ?? '1' }}
+                                </div>
+                            </div>
+
+                            <div class="mt-3 pt-3 border-top">
+                                <a href="{{ route('pengajuan.download-dokumen', $draftBorang->id) }}" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-download"></i> Download Draft DOCX
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
+                    {{-- ============================================
+             FORM REVIEW KESIAPAN
+             ============================================ --}}
+                    <div class="card border-primary">
+                        <div class="card-header bg-primary text-white">
+                            <h6 class="mb-0">
+                                <i class="bi bi-clipboard-check"></i> Form Review Kesiapan Borang
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <form action="{{ route('de.pengajuan.review-kesiapan', $pengajuan->id) }}" method="POST" id="formReviewKesiapan">
+                                @csrf
+
+                                {{-- Hasil Review --}}
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">
+                                        Hasil Review <span class="text-danger">*</span>
+                                    </label>
+                                    <select name="hasil_review" class="form-select" id="hasilReview" required>
+                                        <option value="">-- Pilih Hasil Review --</option>
+                                        <option value="siap">
+                                            ✅ SIAP - Lanjut ke Pembayaran
+                                        </option>
+                                        <option value="belum_siap">
+                                            ❌ BELUM SIAP - Perlu Revisi
+                                        </option>
+                                    </select>
+                                    <small class="text-muted">
+                                        Pilih "SIAP" jika borang sudah lengkap dan memenuhi syarat
+                                    </small>
+                                </div>
+
+                                {{-- Catatan Review --}}
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">
+                                        Catatan Review <span class="text-danger">*</span>
+                                    </label>
+                                    <textarea name="catatan_review" class="form-control" rows="5" required placeholder="Berikan catatan detail tentang hasil review:
+- Kelengkapan data
+- Validitas dokumen pendukung
+- Format dan struktur borang
+- Saran perbaikan (jika ada)"></textarea>
+                                    <small class="text-muted">
+                                        Minimal 50 karakter. Berikan feedback yang konstruktif.
+                                    </small>
+                                </div>
+
+                                {{-- Checklist Kesiapan --}}
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">
+                                        Checklist Kesiapan (Opsional)
+                                    </label>
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" type="checkbox" name="checklist[]" value="Kelengkapan data memenuhi standar" id="check1">
+                                                <label class="form-check-label" for="check1">
+                                                    Kelengkapan data memenuhi standar
+                                                </label>
+                                            </div>
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" type="checkbox" name="checklist[]" value="Validitas dokumen pendukung terpenuhi" id="check2">
+                                                <label class="form-check-label" for="check2">
+                                                    Validitas dokumen pendukung terpenuhi
+                                                </label>
+                                            </div>
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" type="checkbox" name="checklist[]" value="Format sesuai template LAMDEPILAR" id="check3">
+                                                <label class="form-check-label" for="check3">
+                                                    Format sesuai template LAMDEPILAR
+                                                </label>
+                                            </div>
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" type="checkbox" name="checklist[]" value="Data kuantitatif terverifikasi" id="check4">
+                                                <label class="form-check-label" for="check4">
+                                                    Data kuantitatif terverifikasi
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="checklist[]" value="Narasi deskriptif lengkap dan jelas" id="check5">
+                                                <label class="form-check-label" for="check5">
+                                                    Narasi deskriptif lengkap dan jelas
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {{-- ============================================
+                         PEMBAYARAN SECTION (Only if SIAP)
+                         ============================================ --}}
+                                <div id="divPembayaran" style="display: none;">
+                                    <div class="card border-success">
+                                        <div class="card-header bg-success text-white">
+                                            <h6 class="mb-0">
+                                                <i class="bi bi-credit-card"></i> Generate Invoice Pembayaran
+                                            </h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="alert alert-info alert-permanent mb-3">
+                                                <i class="bi bi-info-circle"></i>
+                                                <strong>Perhatian:</strong> Invoice pembayaran akan otomatis digenerate
+                                                setelah Anda submit review dengan hasil "SIAP".
+                                            </div>
+
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label fw-bold">
+                                                        Jumlah Pembayaran (Rp) <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="number" name="jumlah_pembayaran" class="form-control" value="5000000" step="100000" min="0">
+                                                    <small class="text-muted">
+                                                        Default: Rp 5.000.000,- (sesuai ketentuan)
+                                                    </small>
+                                                </div>
+
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label fw-bold">
+                                                        Jatuh Tempo (Hari) <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="number" name="jatuh_tempo_hari" class="form-control" value="14" min="1" max="30">
+                                                    <small class="text-muted">
+                                                        Jumlah hari dari hari ini. Default: 14 hari.
+                                                    </small>
+                                                </div>
+                                            </div>
+
+                                            <div class="alert alert-warning alert-permanent mb-0">
+                                                <i class="bi bi-exclamation-triangle"></i>
+                                                <strong>Catatan:</strong> Prodi akan menerima notifikasi invoice
+                                                dan harus melakukan pembayaran sebelum jatuh tempo.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {{-- Submit Buttons --}}
+                                <div class="d-flex gap-2 mt-4 pt-3 border-top">
+                                    <button type="submit" class="btn btn-success btn-lg">
+                                        <i class="bi bi-send"></i> Submit Review Kesiapan
+                                    </button>
+
+                                    <button type="reset" class="btn btn-outline-secondary btn-lg">
+                                        <i class="bi bi-arrow-counterclockwise"></i> Reset Form
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
-            @endif
+
+            {{-- ============================================
+     JAVASCRIPT: Show/Hide Pembayaran Section
+     ============================================ --}}
+            @push('scripts')
+            <script>
+                // Show/hide pembayaran field based on hasil review
+                const hasilReview = document.getElementById('hasilReview')
+                if (hasilReview) hasilReview.addEventListener('change', function() {
+                    const divPembayaran = document.getElementById('divPembayaran');
+                    if (this.value === 'siap') {
+                        divPembayaran.style.display = 'block';
+                        divPembayaran.querySelector('input[name="jumlah_pembayaran"]').required = true;
+                        divPembayaran.querySelector('input[name="jatuh_tempo_hari"]').required = true;
+                    } else {
+                        divPembayaran.style.display = 'none';
+                        divPembayaran.querySelector('input[name="jumlah_pembayaran"]').required = false;
+                        divPembayaran.querySelector('input[name="jatuh_tempo_hari"]').required = false;
+                    }
+                });
+
+                // Form validation
+                const formReviewKesiapan = document.getElementById('formReviewKesiapan')
+                if (formReviewKesiapan) formReviewKesiapan.addEventListener('submit', function(e) {
+                    const hasilReview = document.getElementById('hasilReview').value;
+                    const catatan = document.querySelector('textarea[name="catatan_review"]').value;
+
+                    if (!hasilReview) {
+                        e.preventDefault();
+                        alert('Mohon pilih hasil review!');
+                        return false;
+                    }
+
+                    if (catatan.length < 50) {
+                        e.preventDefault();
+                        alert('Catatan review minimal 50 karakter!');
+                        return false;
+                    }
+
+                    // Confirm submission
+                    const confirmMsg = hasilReview === 'siap' ?
+                        'Apakah Anda yakin borang SIAP dan akan melanjutkan ke pembayaran?' :
+                        'Apakah Anda yakin borang BELUM SIAP dan perlu revisi dari prodi?';
+
+                    if (!confirm(confirmMsg)) {
+                        e.preventDefault();
+                        return false;
+                    }
+
+                    return true;
+                });
+
+            </script>
+            @endpush
             @endif
 
             <!-- ACTION: Verifikasi Pembayaran -->

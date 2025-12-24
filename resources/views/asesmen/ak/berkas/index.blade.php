@@ -202,7 +202,7 @@
                             </h5>
                             <small class="text-muted">
                                 <i class="bi bi-building"></i>
-                                {{ $asesmen->program_studi->name ?? 'N/A' }}
+                                {{ $asesmen->studyProgram->full_name ?? 'N/A' }}
                             </small>
                         </div>
 
@@ -254,7 +254,7 @@
                         <div class="d-flex justify-content-between">
                             <small class="text-muted">
                                 <i class="bi bi-person-badge"></i>
-                                <strong>{{ $assignment->role->role_name ?? 'N/A' }}</strong>
+                                <strong>{{ $assignment->role->alias ?? 'N/A' }}</strong>
                             </small>
                             <small class="text-muted">
                                 <i class="bi bi-calendar3"></i>

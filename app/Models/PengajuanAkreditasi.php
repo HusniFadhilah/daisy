@@ -53,6 +53,11 @@ class PengajuanAkreditasi extends Model
         return $this->belongsTo(StudyProgram::class, 'id_program_studi');
     }
 
+    public function programStudi()
+    {
+        return $this->belongsTo(StudyProgram::class, 'id_program_studi');
+    }
+
     // Alias untuk backward compatibility
     public function getProgramStudiAttribute()
     {

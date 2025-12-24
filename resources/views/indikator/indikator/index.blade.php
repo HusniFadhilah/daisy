@@ -93,7 +93,7 @@
                 </dd>
 
                 <dt class="col-sm-3">Deskripsi</dt>
-                <dd class="col-sm-9">{!! nl2br(e($item->deskripsi_indikator)) !!}</dd>
+                <dd class="col-sm-9">{!! nl2br(e(str_replace("\r\n", "\n",$item->deskripsi_indikator))) !!}</dd>
             </dl>
         </div>
         <div class="modal-footer">

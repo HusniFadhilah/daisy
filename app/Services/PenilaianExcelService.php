@@ -12,6 +12,9 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use \PhpOffice\PhpSpreadsheet\Style\Protection;
+use PhpOffice\PhpSpreadsheet\RichText\RichText;
+use PhpOffice\PhpSpreadsheet\Cell\DataValidation;
 
 class PenilaianExcelService
 {
@@ -49,7 +52,7 @@ class PenilaianExcelService
     {
         $spreadsheet = new Spreadsheet();
         // Sheet 0 → MENU
-        $this->buildMenuSheet($spreadsheet);
+        $this->buildMenuSheet($spreadsheet, $asesmen);
 
         // Sheet 1 → Kertas Kerja
         $sheet = $spreadsheet->createSheet();
@@ -59,6 +62,12 @@ class PenilaianExcelService
 
         $this->setColumnWidths($sheet);
         $this->buildHeaders($sheet, $asesmen);
+
+        $sheet->getProtection()->setSheet(true);
+        $sheet->getProtection()->setPassword('lamdepilar'); // opsional
+        $sheet->getProtection()->setSort(true);
+        $sheet->getProtection()->setInsertRows(true);
+        $sheet->getProtection()->setFormatCells(true);
 
         return [$spreadsheet, $sheet];
     }
@@ -70,17 +79,17 @@ class PenilaianExcelService
     {
         $sheet->getColumnDimension('A')->setWidth(5);
         $sheet->getColumnDimension('B')->setWidth(5);
-        $sheet->getColumnDimension('C')->setWidth(35);
+        $sheet->getColumnDimension('C')->setWidth(20);
         $sheet->getColumnDimension('D')->setWidth(6);
         $sheet->getColumnDimension('E')->setWidth(6);
         $sheet->getColumnDimension('F')->setWidth(25);
-        $sheet->getColumnDimension('G')->setWidth(35);
+        $sheet->getColumnDimension('G')->setWidth(45);
         $sheet->getColumnDimension('H')->setWidth(15);
-        $sheet->getColumnDimension('I')->setWidth(35);
-        $sheet->getColumnDimension('J')->setWidth(35);
-        $sheet->getColumnDimension('K')->setWidth(35);
-        $sheet->getColumnDimension('L')->setWidth(35);
-        $sheet->getColumnDimension('M')->setWidth(50);
+        $sheet->getColumnDimension('I')->setWidth(37);
+        $sheet->getColumnDimension('J')->setWidth(37);
+        $sheet->getColumnDimension('K')->setWidth(37);
+        $sheet->getColumnDimension('L')->setWidth(37);
+        $sheet->getColumnDimension('M')->setWidth(70);
     }
 
     /**
@@ -91,6 +100,9 @@ class PenilaianExcelService
     private function renderElemenRows($sheet, Asesmen $asesmen, ?int $userId): void
     {
         $currentRow = 8;
+        $sheet->getStyle($sheet->calculateWorksheetDimension())
+            ->getProtection()
+            ->setLocked(Protection::PROTECTION_PROTECTED);
 
         $kriterias = Kriteria::with([
             'elemenStandar.indikator.jenisIndikator',
@@ -99,7 +111,13 @@ class PenilaianExcelService
 
         foreach ($kriterias as $kriteria) {
             $isFirstElemen = true;
-
+            $elemenCount = $kriteria->elemenStandar->count();
+            if ($elemenCount > 1) {
+                $blockStartRow = $currentRow;
+                $blockEndRow   = $currentRow + ($elemenCount * 2) - 1;
+                $this->mergeBlock($sheet, 'B', 'B', $blockStartRow, $blockEndRow);
+                $this->mergeBlock($sheet, 'C', 'C', $blockStartRow, $blockEndRow);
+            }
             foreach ($kriteria->elemenStandar as $index => $elemen) {
                 $templateRow = $currentRow;
                 $asesorRow   = $currentRow + 1;
@@ -142,6 +160,23 @@ class PenilaianExcelService
                 // ========== 4) Baris asesor: kosongkan I–M ==========
                 foreach (['I', 'J', 'K', 'L', 'M'] as $col) {
                     $sheet->setCellValue("{$col}{$asesorRow}", '');
+                    $sheet->getStyle("{$col}{$asesorRow}")
+                        ->getProtection()
+                        ->setLocked(Protection::PROTECTION_UNPROTECTED);
+                }
+
+                // ===== Data Validation: hanya boleh 1 kolom terisi =====
+                foreach (range('I', 'M') as $col) {
+                    $cell = $sheet->getCell("{$col}{$asesorRow}");
+                    $validation = $cell->getDataValidation();
+                    $validation->setType(DataValidation::TYPE_CUSTOM);
+                    $validation->setErrorStyle(DataValidation::STYLE_STOP);
+                    $validation->setAllowBlank(true);
+                    $validation->setShowInputMessage(true);
+                    $validation->setShowErrorMessage(true);
+                    $validation->setErrorTitle('Input Salah');
+                    $validation->setError('Hanya boleh mengisi satu kolom per baris I-M ini.');
+                    $validation->setFormula1("=COUNTA(I{$asesorRow}:M{$asesorRow})<=1");
                 }
 
                 // ========== 5) Jika withData mode, isi komentar pada kolom sesuai skor ==========
@@ -159,7 +194,7 @@ class PenilaianExcelService
                     ->setWrapText(true);
 
                 // ========== 7) Border & wrap untuk kedua baris ==========
-                $this->applyRowStyling($sheet, $templateRow);
+                $this->applyRowStyling($sheet, $templateRow, 200);
                 $this->applyRowStyling($sheet, $asesorRow);
 
                 // ========== 8) Style baris asesor (kuning + tinggi) ==========
@@ -204,13 +239,18 @@ class PenilaianExcelService
      */
     private function mergeTwoRowBlock($sheet, int $templateRow, int $asesorRow): void
     {
-        $sheet->mergeCells("B{$templateRow}:B{$asesorRow}");
-        $sheet->mergeCells("C{$templateRow}:C{$asesorRow}");
         $sheet->mergeCells("D{$templateRow}:D{$asesorRow}");
         $sheet->mergeCells("E{$templateRow}:E{$asesorRow}");
         $sheet->mergeCells("F{$templateRow}:F{$asesorRow}");
         $sheet->mergeCells("G{$templateRow}:G{$asesorRow}");
         $sheet->mergeCells("H{$templateRow}:H{$asesorRow}");
+    }
+
+    private function mergeBlock($sheet, $blockStart, $blockEnd, int $rowStart, int $rowEnd): void
+    {
+        if ($rowStart <= $rowEnd) {
+            $sheet->mergeCells("$blockStart{$rowStart}:$blockEnd{$rowEnd}");
+        }
     }
 
     /**
@@ -292,7 +332,7 @@ class PenilaianExcelService
 
         // Subheader penilaian row 6
         $sheet->setCellValue('I6', 'Tidak Memenuhi (Not Met)');
-        $sheet->setCellValue('J6', 'Tidak Memenuhi (Not Met)');
+        $sheet->setCellValue('J6', 'Belum Memenuhi (Not Met)');
         $sheet->setCellValue('K6', 'Lemah (Weakness/Cause of Concern)');
         $sheet->setCellValue('L6', 'Memenuhi (Met)');
         $sheet->setCellValue('M6', 'Pelampauan Standar');
@@ -336,12 +376,28 @@ class PenilaianExcelService
         $sheet->getRowDimension(5)->setRowHeight(30);
         $sheet->getRowDimension(6)->setRowHeight(40);
         $sheet->getRowDimension(7)->setRowHeight(20);
+
+        // Petunjuk isi
+        $sheet->mergeCells('B4:M4');
+        $sheet->setCellValue('B4', 'Silahkan isi di bagian cell berwarna kuning. Masing-masing baris, hanya 1 kolom yang dapat diisi');
+        $sheet->getStyle('B4')->applyFromArray([
+            'font' => [
+                'bold' => true,
+                'color' => ['argb' => 'FFFF0000'], // merah
+                'size' => 12
+            ],
+            'alignment' => [
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
+            ]
+        ]);
+        $sheet->getRowDimension(4)->setRowHeight(20);
     }
 
     /**
      * Apply styling to data row
      */
-    private function applyRowStyling($sheet, $row): void
+    private function applyRowStyling($sheet, $row, ?int $maxHeight = null): void
     {
         $range = "B{$row}:M{$row}";
 
@@ -353,6 +409,11 @@ class PenilaianExcelService
             ->setWrapText(true);
 
         $sheet->getRowDimension($row)->setRowHeight(-1); // Auto height
+
+        // Hanya set maxHeight jika diberikan
+        if ($maxHeight !== null) {
+            $sheet->getRowDimension($row)->setRowHeight($maxHeight);
+        }
     }
 
     /**
@@ -374,10 +435,11 @@ class PenilaianExcelService
         return $map;
     }
 
-    private function buildMenuSheet(Spreadsheet $spreadsheet): void
+    private function buildMenuSheet(Spreadsheet $spreadsheet, Asesmen $asesmen): void
     {
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Menu');
+        $sheet->getSheetView()->setZoomScale(80);
 
         // Hide gridlines
         $sheet->setShowGridlines(false);
@@ -393,7 +455,7 @@ class PenilaianExcelService
         $sheet->getStyle('A1')->applyFromArray([
             'font' => [
                 'bold' => true,
-                'size' => 18,
+                'size' => 24,
                 'color' => ['argb' => 'FF000000']
             ],
             'alignment' => [
@@ -413,7 +475,7 @@ class PenilaianExcelService
         $sheet->getStyle('A2')->applyFromArray([
             'font' => [
                 'bold' => true,
-                'size' => 16,
+                'size' => 20,
                 'color' => ['argb' => 'FF000000']
             ],
             'alignment' => [
@@ -436,7 +498,7 @@ class PenilaianExcelService
         $sheet->getStyle('A4')->applyFromArray([
             'font' => [
                 'bold' => true,
-                'size' => 16,
+                'size' => 20,
                 'color' => ['argb' => 'FF000000']
             ],
             'alignment' => [
@@ -453,21 +515,25 @@ class PenilaianExcelService
         // ===== ROW 5: Empty =====
         $sheet->getRowDimension(5)->setRowHeight(5);
 
-        // ===== BACKGROUND TEAL BESAR (Row 6-35) =====
-        $sheet->getStyle('A6:Y35')->applyFromArray([
+        // ===== BACKGROUND TEAL BESAR (Row 6-27) =====
+        $fillTeal = [
             'fill' => [
                 'fillType' => Fill::FILL_SOLID,
                 'startColor' => ['argb' => 'FF008080']
             ]
-        ]);
+        ];
+
+        foreach (['A3:Y3', 'A5:Y5', 'A6:Y27'] as $range) {
+            $sheet->getStyle($range)->applyFromArray($fillTeal);
+        }
 
         // ===== DATA PERGURUAN TINGGI (Kiri - Row 7, 9, 11, 13, 15) =====
         $leftData = [
-            7  => ['label' => 'Nama Perguruan Tinggi', 'value' => 'Universitas Serasan'],
+            7  => ['label' => 'Nama Perguruan Tinggi', 'value' => $asesmen->studyProgram->university->name ?? '-'],
             9  => ['label' => 'Bentuk Perguruan Tinggi', 'value' => 'Universitas'],
-            11 => ['label' => 'Jenis Pengelolaan', 'value' => 'PTS'],
-            13 => ['label' => 'Kode Panel', 'value' => 'T01-P007'],
-            15 => ['label' => 'TS *)', 'value' => '2017 / 2018'],
+            11 => ['label' => 'Jenis Pengelolaan', 'value' => 'PTN'],
+            13 => ['label' => 'Kode Panel', 'value' => $asesmen->kode_panel],
+            15 => ['label' => 'TS *)', 'value' => ''],
         ];
 
         foreach ($leftData as $row => $data) {
@@ -477,7 +543,7 @@ class PenilaianExcelService
             $sheet->getStyle("B{$row}:E{$row}")->applyFromArray([
                 'font' => [
                     'bold' => true,
-                    'size' => 11,
+                    'size' => 14,
                     'color' => ['argb' => 'FF000000']
                 ],
                 'alignment' => [
@@ -491,7 +557,7 @@ class PenilaianExcelService
             $sheet->getStyle("F{$row}")->applyFromArray([
                 'font' => [
                     'bold' => true,
-                    'size' => 11,
+                    'size' => 14,
                     'color' => ['argb' => 'FF000000']
                 ],
                 'alignment' => [
@@ -505,7 +571,7 @@ class PenilaianExcelService
             $sheet->setCellValue("G{$row}", $data['value']);
             $sheet->getStyle("G{$row}:L{$row}")->applyFromArray([
                 'font' => [
-                    'size' => 11,
+                    'size' => 14,
                     'color' => ['argb' => 'FF000000']
                 ],
                 'alignment' => [
@@ -528,7 +594,7 @@ class PenilaianExcelService
         }
 
         // ===== VERTICAL YELLOW LINE (Column M) =====
-        $sheet->getStyle('M6:M35')->applyFromArray([
+        $sheet->getStyle('M6:M27')->applyFromArray([
             'borders' => [
                 'right' => [
                     'borderStyle' => Border::BORDER_MEDIUM,
@@ -537,13 +603,13 @@ class PenilaianExcelService
             ]
         ]);
 
-        // ===== ASESMEN KECUKUPAN HEADER (Row 8) =====
-        $sheet->mergeCells('N8:Y8');
-        $sheet->setCellValue('N8', 'ASESMEN KECUKUPAN');
-        $sheet->getStyle('N8')->applyFromArray([
+        // ===== ASESMEN KECUKUPAN HEADER (Row 18) =====
+        $sheet->mergeCells('N18:Y18');
+        $sheet->setCellValue('N18', 'ASESMEN KECUKUPAN');
+        $sheet->getStyle('N18')->applyFromArray([
             'font' => [
                 'bold' => true,
-                'size' => 16,
+                'size' => 20,
                 'color' => ['argb' => 'FFFBFD02'] // Yellow
             ],
             'alignment' => [
@@ -551,15 +617,15 @@ class PenilaianExcelService
                 'vertical' => Alignment::VERTICAL_CENTER
             ]
         ]);
-        $sheet->getRowDimension(8)->setRowHeight(25);
+        $sheet->getRowDimension(18)->setRowHeight(25);
 
-        // ===== (Penilaian Individual) (Row 9) =====
-        $sheet->mergeCells('N9:Y9');
-        $sheet->setCellValue('N9', '(Penilaian Individual)');
-        $sheet->getStyle('N9')->applyFromArray([
+        // ===== (Penilaian Individual) (Row 19) =====
+        $sheet->mergeCells('N19:Y19');
+        $sheet->setCellValue('N19', '(Penilaian Individual)');
+        $sheet->getStyle('N19')->applyFromArray([
             'font' => [
                 'italic' => true,
-                'size' => 12,
+                'size' => 14,
                 'color' => ['argb' => 'FF000000']
             ],
             'alignment' => [
@@ -567,13 +633,13 @@ class PenilaianExcelService
                 'vertical' => Alignment::VERTICAL_CENTER
             ]
         ]);
-        $sheet->getRowDimension(9)->setRowHeight(20);
+        $sheet->getRowDimension(19)->setRowHeight(20);
 
-        // ===== DATA ASESOR (Kanan - Row 11, 13, 15) =====
+        // ===== DATA ASESOR (Kanan - Row 21, 23, 25) =====
         $rightData = [
-            11 => ['label' => 'Nama Asesor', 'value' => Auth::user()->name ?? 'Maryono, Dr. Eng.'],
-            13 => ['label' => 'Kota Penilaian', 'value' => 'Semarang'],
-            15 => ['label' => 'Tanggal Penilaian', 'value' => date('d-M-Y')],
+            21 => ['label' => 'Nama Asesor', 'value' => Auth::user()->name ?? 'Maryono, Dr. Eng.'],
+            23 => ['label' => 'Kota Penilaian', 'value' => 'Semarang'],
+            25 => ['label' => 'Tanggal Penilaian', 'value' => date('d-M-Y')],
         ];
 
         foreach ($rightData as $row => $data) {
@@ -583,7 +649,7 @@ class PenilaianExcelService
             $sheet->getStyle("O{$row}:R{$row}")->applyFromArray([
                 'font' => [
                     'bold' => true,
-                    'size' => 11,
+                    'size' => 14,
                     'color' => ['argb' => 'FF000000']
                 ],
                 'alignment' => [
@@ -597,7 +663,7 @@ class PenilaianExcelService
             $sheet->getStyle("S{$row}")->applyFromArray([
                 'font' => [
                     'bold' => true,
-                    'size' => 11,
+                    'size' => 14,
                     'color' => ['argb' => 'FF000000']
                 ],
                 'alignment' => [
@@ -611,7 +677,7 @@ class PenilaianExcelService
             $sheet->setCellValue("T{$row}", $data['value']);
             $sheet->getStyle("T{$row}:X{$row}")->applyFromArray([
                 'font' => [
-                    'size' => 11,
+                    'size' => 14,
                     'color' => ['argb' => 'FF000000']
                 ],
                 'alignment' => [
@@ -633,10 +699,10 @@ class PenilaianExcelService
             $sheet->getRowDimension($row)->setRowHeight(22);
         }
 
-        // ===== FOOTNOTE TS (Row 32) =====
-        $sheet->mergeCells('B32:L32');
-        $sheet->setCellValue('B32', '*) TS = Tahun akademik penuh terakhir saat pengajuan usulan akreditasi');
-        $sheet->getStyle('B32')->applyFromArray([
+        // ===== FOOTNOTE TS (Row 23) =====
+        $sheet->mergeCells('B23:L23');
+        $sheet->setCellValue('B23', '*) TS = Tahun akademik penuh terakhir saat pengajuan usulan akreditasi');
+        $sheet->getStyle('B23')->applyFromArray([
             'font' => [
                 'italic' => true,
                 'size' => 9,
@@ -647,12 +713,12 @@ class PenilaianExcelService
                 'vertical' => Alignment::VERTICAL_CENTER
             ]
         ]);
-        $sheet->getRowDimension(32)->setRowHeight(18);
+        $sheet->getRowDimension(23)->setRowHeight(18);
 
-        // ===== SOURCE (Row 34) =====
-        $sheet->mergeCells('B34:L34');
-        $sheet->setCellValue('B34', 'LAMDEPILAR      versi 1.0');
-        $sheet->getStyle('B34')->applyFromArray([
+        // ===== SOURCE (Row 25) =====
+        $sheet->mergeCells('B25:L25');
+        $sheet->setCellValue('B25', 'LAMDEPILAR      versi 1.0');
+        $sheet->getStyle('B25')->applyFromArray([
             'font' => [
                 'size' => 9,
                 'color' => ['argb' => 'FFFBFD02'] // Yellow
@@ -662,18 +728,32 @@ class PenilaianExcelService
                 'vertical' => Alignment::VERTICAL_CENTER
             ]
         ]);
-        $sheet->getRowDimension(34)->setRowHeight(16);
+        $sheet->getRowDimension(25)->setRowHeight(16);
+
+        // Perpendek tinggi baris tertentu
+        foreach ([8, 10, 12, 14, 22, 24] as $row) {
+            $sheet->getRowDimension($row)->setRowHeight(6);
+        }
     }
 
     /**
      * Bangun teks instruksi default untuk cell penilaian.
      */
-    private function buildPenilaianInstruction(?string $deskripsi, int $skor): string
+    private function buildPenilaianInstruction(?string $deskripsi, int $skor): RichText
     {
+        $richText = new RichText();
+
+        // Bagian italic
+        $italicText = $richText->createTextRun("Tuliskan pernyataan penilaian pada kolom ini apabila:\n\n");
+        $italicText->getFont()->setItalic(true);
+
+        // Bagian deskripsi (normal)
         if ($deskripsi) {
-            return "Tuliskan pernyataan penilaian  pada kolom ini apabila:\n\n" . $deskripsi;
+            $richText->createText($deskripsi);
+        } else {
+            $richText->createText("skor {$skor}");
         }
 
-        return "Tuliskan pernyataan penilaian  pada kolom ini apabila skor {$skor}";
+        return $richText;
     }
 }

@@ -110,7 +110,7 @@ $authUser = Auth::user();
                                 <div class="info-row">
                                     <i class="bi bi-building text-muted me-2"></i>
                                     <strong>Perguruan Tinggi:</strong><br>
-                                    <span class="ms-4">{{ $penawaran->asesmen->perguruan_tinggi ?? '-' }}</span>
+                                    <span class="ms-4">{{ $penawaran->asesmen->studyProgram->university->name ?? '-' }}</span>
                                 </div>
                                 <div class="info-row">
                                     <i class="bi bi-tag text-muted me-2"></i>

@@ -22,9 +22,13 @@ class AsesmenUserRoleSeeder extends Seeder
 
         // === 1. Asesmen Magister Ilmu Lingkungan ===
         $asesmenMil = Asesmen::insertGetId([
+            'id_study_program' => 676,
             'code' => 'Asesmen-' . Fungsi::uniqueCode(5),
+            'kode_panel' => 'T01-P001',
             'name' => 'Penilaian Akreditasi Prodi Magister Ilmu Lingkungan Universitas Diponegoro 2025',
             'description' => 'Penilaian akreditasi Prodi Magister Ilmu Lingkungan Universitas Diponegoro untuk tahun 2025-2030',
+            'tanggal_mulai'   => now(),
+            'tanggal_selesai' => now()->addMonths(2),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -52,6 +56,7 @@ class AsesmenUserRoleSeeder extends Seeder
         // === 2. Asesmen Teknik Informatika ===
         $asesmenTI = Asesmen::insertGetId([
             'code' => 'Asesmen-' . Fungsi::uniqueCode(5),
+            'kode_panel' => 'T01-P002',
             'name' => 'Penilaian Akreditasi Prodi Teknik Informatika Universitas Diponegoro 2025',
             'description' => 'Asesmen akreditasi Prodi Teknik Informatika untuk periode 2025-2030',
             'created_at' => now(),

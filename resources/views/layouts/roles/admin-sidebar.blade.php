@@ -166,7 +166,7 @@ Jadwal Visitasi
 </a>
 
 <!-- Manajemen Indikator -->
-<a href="#" class="nav-link" onclick="toggleSubmenu(event, 'indikator-submenu')">
+<a href="#" class="nav-link {{ request()->routeIs('kriteria.*') || request()->routeIs('elemen-standar.*') || request()->routeIs('indikator.*') ? 'active' : '' }}" onclick="toggleSubmenu(event, 'indikator-submenu')">
     <span class="menu-icon">📋</span>
     <span>Manajemen Indikator</span>
 </a>

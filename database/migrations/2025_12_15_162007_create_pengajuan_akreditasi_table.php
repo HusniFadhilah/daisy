@@ -25,16 +25,23 @@ return new class extends Migration
 
             // Status
             $table->enum('status', [
+                'draft',
                 'pengingat_dikirim',
                 'surat_permohonan_diterima',
                 'borang_dikirim',
-                'draft_borang_diterima',
-                'review_kesiapan_siap',
                 'review_kesiapan_belum_siap',
+                'review_kesiapan_siap',
+                'draft_borang_diterima',
                 'menunggu_pembayaran',
                 'pembayaran_diterima',
                 'borang_final_diterima',
-                'lanjut_ke_ak',
+                'borang_online_selesai',
+                'assigned_to_asesor',
+                'ak_in_progress',
+                'ak_completed',
+                'al_in_progress',
+                'al_completed',
+                'selesai',
                 'ditolak'
             ])->default('pengingat_dikirim');
 
@@ -58,10 +65,16 @@ return new class extends Migration
 
             $table->enum('jenis_dokumen', [
                 'surat_permohonan',
+                'surat_tugas',
                 'borang_template',
                 'draft_borang',
                 'borang_final',
                 'bukti_pembayaran',
+                'lembar_pengesahan',
+                'dokumen_pendukung',
+                'laporan_ak',
+                'laporan_al',
+                'sertifikat',
                 'lainnya'
             ]);
 

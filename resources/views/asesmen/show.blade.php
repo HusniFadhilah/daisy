@@ -46,12 +46,12 @@
                     @if($asesmen->studyProgram)
                     <div class="info-item mb-3">
                         <label class="text-muted small mb-1">Program Studi:</label>
-                        <div class="fw-semibold">{{ $asesmen->studyProgram->full_name }}</div>
+                        <div class="fw-semibold">{{ $asesmen->studyProgram->full_name ?? '-' }}</div>
                     </div>
 
                     <div class="info-item mb-3">
                         <label class="text-muted small mb-1">Perguruan Tinggi:</label>
-                        <div class="fw-semibold">{{ $asesmen->studyProgram->university->name }}</div>
+                        <div class="fw-semibold">{{ $asesmen->studyProgram->university->name ?? '-' }}</div>
                     </div>
                     @endif
 
@@ -90,7 +90,7 @@
                     <div class="card text-center">
                         <div class="card-body">
                             <h3 class="text-primary mb-0">{{ $asesmen->userRoles->count() }}</h3>
-                            <small class="text-muted">Asesor Ditugaskan</small>
+                            <small class="text-muted">Peran Ditugaskan</small>
                         </div>
                     </div>
                 </div>

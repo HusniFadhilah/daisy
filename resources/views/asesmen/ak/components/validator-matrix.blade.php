@@ -5,17 +5,17 @@
                 <i class="bi bi-clipboard-check"></i> Kertas Kerja Validator - Perbandingan Penilaian
             </h5>
             <div class="btn-group btn-group-sm">
-                <button type="button" class="btn btn-outline-primary" id="btnToggleIndikator" title="Sembunyikan/Tampilkan Indikator">
+                {{-- <button type="button" class="btn btn-outline-primary" id="btnToggleIndikator" title="Sembunyikan/Tampilkan Indikator">
                     <i class="bi bi-layout-sidebar"></i> <span id="toggleIndikatorText">Sembunyikan</span> Indikator
-                </button>
-                <button type="button" class="btn btn-outline-secondary" id="btnExpandIndikator" title="Perlebar Kolom Indikator">
+                </button> --}}
+                {{-- <button type="button" class="btn btn-outline-secondary" id="btnExpandIndikator" title="Perlebar Kolom Indikator">
                     <i class="bi bi-arrows-expand"></i> Perlebar
                 </button>
                 <button type="button" class="btn btn-outline-secondary" id="btnCollapseIndikator" title="Persempit Kolom Indikator">
                     <i class="bi bi-arrows-collapse"></i> Persempit
-                </button>
-                <button type="button" class="btn btn-outline-info" id="btnHighlightDiff" title="Highlight Perbedaan">
-                    <i class="bi bi-search"></i> Highlight Beda
+                </button> --}}
+                <button type="button" class="btn btn-outline-secondary" id="btnHighlightDiff" title="Highlight Perbedaan">
+                    <i class="bi bi-search"></i> Highlight Penilaian yang Beda
                 </button>
             </div>
         </div>
@@ -159,13 +159,13 @@
                 $komentar = $penilaian->komentar ?? '';
 
                 // Pemenuhan (skor != 4)
-                $bgPemenuhan = ($skor && $skor != 4) ? ($warnaSkor[$skor] ?? '') : '#e0e0e0';
-                $onclickPemenuhan = ($skor && $skor != 4)
+                $bgPemenuhan = (isset($skor) && $skor != 4) ? ($warnaSkor[$skor] ?? '') : '#e0e0e0';
+                $onclickPemenuhan = (isset($skor) && $skor != 4)
                 ? "onclick=\"showKomentarPopover(this, '{$asesor->name}', $skor, '".addslashes($komentar)."')\" title='Klik untuk lihat komentar'"
                 : '';
                 $textColor = $skor == 2 ? 'dark' : 'white';
                 $cellPemenuhan = "<td class='vm-cell vm-score-cell vm-clickable' style='background: $bgPemenuhan;' data-asesor='$asesorNum' data-type='pemenuhan' data-skor='$skor' data-komentar='$komentar' $onclickPemenuhan>"
-                    . ($skor && $skor != 4 ? "<small class='text-$textColor text-left align-content-start'>$komentar</small>" : '')
+                    . (isset($skor) && $skor != 4 ? "<small class='text-$textColor text-left align-content-start'>$komentar</small>" : '')
                     . "</td>";
 
                 // Pelampauan (skor == 4)
@@ -231,7 +231,7 @@
                                     @foreach($elemen->indikator as $indikator)
                                     <li class="small">
                                         <strong>{{ $indikator->kode_indikator }}:</strong>
-                                        {{ Str::limit($indikator->deskripsi_indikator, 150) }}
+                                        {!! nl2br(e(str_replace("\r\n", "\n",$indikator->deskripsi_indikator))) !!}
                                     </li>
                                     @endforeach
                                 </ul>
@@ -256,7 +256,7 @@
                                 <i class="bi bi-eye"></i> Detail
                             </button>
                             @elseif($validasi->status_validasi == 'revision_required')
-                            <span class="badge bg-warning">
+                            <span class="badge bg-warning btn-validate">
                                 <i class="bi bi-exclamation-triangle"></i> Revisi
                             </span>
                             @else
@@ -298,7 +298,7 @@
                 <div class="col-md-3">
                     <div class="stat-box">
                         <h4 class="mb-0 text-danger" id="statDifferences">0</h4>
-                        <small class="text-muted">Perbedaan</small>
+                        <small class="text-muted">Perbedaan Penilaian</small>
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -602,21 +602,21 @@
             const toggleText = document.getElementById('toggleIndikatorText');
 
             let isVisible = true;
-
-            btnToggle.addEventListener('click', function() {
-                isVisible = !isVisible;
-
-                indikatorCols.forEach(col => {
-                    if (isVisible) {
-                        col.classList.remove('collapsed');
-                        toggleText.textContent = 'Sembunyikan';
-                    } else {
-                        col.classList.add('collapsed');
-                        col.classList.remove('expanded');
-                        toggleText.textContent = 'Tampilkan';
-                    }
+            if (btnToggle)
+                btnToggle.addEventListener('click', function() {
+                    isVisible = !isVisible;
+                    if (indikatorCols)
+                        indikatorCols.forEach(col => {
+                            if (isVisible) {
+                                col.classList.remove('collapsed');
+                                toggleText.textContent = 'Sembunyikan';
+                            } else {
+                                col.classList.add('collapsed');
+                                col.classList.remove('expanded');
+                                toggleText.textContent = 'Tampilkan';
+                            }
+                        });
                 });
-            });
         }
 
         /**
@@ -627,18 +627,19 @@
             const btnCollapse = document.getElementById('btnCollapseIndikator');
             const indikatorCols = document.querySelectorAll('.indikator-col');
 
-            btnExpand.addEventListener('click', function() {
-                indikatorCols.forEach(col => {
-                    col.classList.add('expanded');
-                    col.classList.remove('collapsed');
+            if (btnExpand)
+                btnExpand.addEventListener('click', function() {
+                    indikatorCols.forEach(col => {
+                        col.classList.add('expanded');
+                        col.classList.remove('collapsed');
+                    });
                 });
-            });
-
-            btnCollapse.addEventListener('click', function() {
-                indikatorCols.forEach(col => {
-                    col.classList.remove('expanded');
+            if (btnCollapse)
+                btnCollapse.addEventListener('click', function() {
+                    indikatorCols.forEach(col => {
+                        col.classList.remove('expanded');
+                    });
                 });
-            });
         }
 
         /**

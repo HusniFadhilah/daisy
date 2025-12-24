@@ -163,6 +163,38 @@
                 </div>
             </div>
             @endforeach
+
+            @php
+            $asesorBelumSubmit = $item['asesors']->filter(function($asesor) {
+            return is_null($asesor->submitted_at);
+            });
+            @endphp
+
+            @if($asesorBelumSubmit->count() > 0)
+            <h6 class="mb-3 mt-4"><i class="bi bi-exclamation-triangle"></i> Daftar Asesor yang Belum Submit:</h6>
+
+            @foreach($asesorBelumSubmit as $asesor)
+            <div class="asesor-list-item" style="background-color: #fff3cd; border-color: #ffeeba;">
+                <div class="row align-items-center">
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-circle me-3">
+                                {{ substr($asesor->user->name, 0, 1) }}
+                            </div>
+                            <div>
+                                <div class="fw-semibold">{{ $asesor->user->name }}</div>
+                                <small class="text-muted">{{ $asesor->user->email }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted d-block">Status:</small>
+                        <strong>Belum submit</strong>
+                    </div>
+                </div>
+            </div>
+            @endforeach
+            @endif
         </div>
     </div>
     @empty

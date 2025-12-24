@@ -134,7 +134,7 @@ class ValidasiController extends Controller
 
         // Hitung validasi
         $validatedCount = PenilaianElemen::where('id_asesmen', $idAsesmen)
-            ->whereIn('status_validasi', ['validated', 'revision_required'])
+            ->whereIn('status_validasi', ['validated'])
             ->distinct('id_elemen')
             ->count('id_elemen');
 

@@ -89,7 +89,7 @@
                             </span>
                         </div>
                         <div class="progress" style="height: 20px;">
-                            <div class="progress-bar bg-gradient" role="progressbar" id="progressBarPenilaian" style="width: {{ $progress['percentage'] }}%" aria-valuenow="{{ $progress['percentage'] }}" aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-bar bg-gradient bg-success" role="progressbar" id="progressBarPenilaian" style="width: {{ $progress['percentage'] }}%" aria-valuenow="{{ $progress['percentage'] }}" aria-valuemin="0" aria-valuemax="100">
                             </div>
                         </div>
                         <small class="text-white mt-1 d-block">
@@ -528,7 +528,7 @@
                                                     </div>
 
                                                     <p class="mb-0" style="line-height: 1.6;">
-                                                        {{ $indikator->deskripsi_indikator }}
+                                                        {{ nl2br(e(str_replace("\r\n", "\n",$indikator->deskripsi_indikator))) }}
                                                     </p>
                                                 </div>
                                             </div>
@@ -538,59 +538,85 @@
                                 </div>
 
                                 @if($elemen->indikatorPenilaian && $elemen->indikatorPenilaian->count() > 0)
+                                @php
+                                // Group berdasarkan jenjang
+                                $grouped = $elemen->indikatorPenilaian->groupBy('id_jenjang_penilaian');
+
+                                // Ambil daftar jenjang (urut berdasarkan skor)
+                                $jenjangList = $grouped
+                                ->map(function ($items) {
+                                return $items->first()->jenjangPenilaian; // object jenjang
+                                })
+                                ->sortBy('skor')
+                                ->values();
+                                @endphp
+
                                 <div class="panduan-penilaian-wrapper mb-4">
                                     <div class="card border-info">
-                                        <div class="card-header bg-info bg-opacity-10">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <h6 class="mb-0">
-                                                    <i class="bi bi-book me-2"></i>
-                                                    <strong>📊 Panduan Penilaian per Kategori</strong>
-                                                </h6>
-                                                <button type="button" class="btn btn-sm btn-outline-info" onclick="togglePanduanAccordion({{ $elemen->id }})">
-                                                    <i class="bi bi-arrows-expand"></i> Expand All
-                                                </button>
-                                            </div>
+                                        <div class="card-header bg-success bg-opacity-10 d-flex justify-content-between align-items-center">
+                                            <h6 class="mb-0">
+                                                <i class="bi bi-table me-2"></i>
+                                                <strong>📊 Panduan Penilaian per Kategori</strong>
+                                            </h6>
+
+                                            {{-- optional: collapse --}}
+                                            <button class="btn btn-sm btn-outline-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePanduanTable{{ $elemen->id }}" aria-expanded="false" aria-controls="collapsePanduanTable{{ $elemen->id }}">
+                                                <i class="bi bi-chevron-down"></i> Tampilkan
+                                            </button>
                                         </div>
-                                        <div class="card-body p-2">
-                                            <div class="alert alert-info alert-permanent mb-2">
-                                                <i class="bi bi-info-circle me-2"></i>
-                                                <small>Klik kategori untuk melihat kriteria penilaian</small>
-                                            </div>
 
-                                            <div class="accordion" id="accordionPanduan{{ $elemen->id }}">
-                                                @foreach($elemen->indikatorPenilaian->groupBy('id_jenjang_penilaian') as $jenjangId => $items)
-                                                @php
-                                                $jenjang = $items->first()->jenjangPenilaian;
-                                                $skor = $jenjang->skor;
-                                                @endphp
+                                        <div id="collapsePanduanTable{{ $elemen->id }}" class="collapse">
+                                            <div class="card-body p-0">
+                                                <div class="table-responsive">
+                                                    <table class="table table-bordered align-top text-start mb-0 panduan-table-auto">
+                                                        <thead class="table-success text-center">
+                                                            <tr>
+                                                                @foreach($jenjangList as $jenjang)
+                                                                <th>{{ $jenjang->name }}</th>
+                                                                @endforeach
+                                                            </tr>
 
-                                                <div class="accordion-item">
-                                                    <h2 class="accordion-header" id="headingPanduan{{ $elemen->id }}_{{ $skor }}">
-                                                        <button class="accordion-button collapsed py-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePanduan{{ $elemen->id }}_{{ $skor }}">
-                                                            <span class="badge me-2" style="background:{{ $jenjang->color }}; color: {{ \App\Libraries\Fungsi::textColorByBg($jenjang->color) }}">{{ $skor }}</span>
-                                                            <strong>{{ $jenjang->name }}</strong>
-                                                        </button>
-                                                    </h2>
-                                                    <div id="collapsePanduan{{ $elemen->id }}_{{ $skor }}" class="accordion-collapse collapse" data-bs-parent="#accordionPanduan{{ $elemen->id }}">
-                                                        <div class="accordion-body bg-light">
-                                                            @foreach($items as $item)
-                                                            <div class="mb-2">
-                                                                {!! nl2br(e($item->deskripsi_penilaian)) !!}
+                                                            <tr>
+                                                                @foreach($jenjangList as $jenjang)
+                                                                <th class="text-center">
+                                                                    <span class="badge" style="background: {{ $jenjang->color }}; color: {{ \App\Libraries\Fungsi::textColorByBg($jenjang->color) }}">
+                                                                        {{ $jenjang->skor }}
+                                                                    </span>
+                                                                </th>
+                                                                @endforeach
+                                                            </tr>
+                                                        </thead>
 
-                                                                @if($item->keterangan)
-                                                                <div class="alert alert-secondary alert-permanent mt-2 mb-0 p-2">
-                                                                    <small>
-                                                                        <i class="bi bi-lightbulb"></i>
-                                                                        <strong>Catatan:</strong> {{ $item->keterangan }}
-                                                                    </small>
-                                                                </div>
-                                                                @endif
-                                                            </div>
-                                                            @endforeach
-                                                        </div>
-                                                    </div>
+                                                        <tbody>
+                                                            {{-- Baris 3: Isi indikator per jenjang (menyamping) --}}
+                                                            <tr>
+                                                                @foreach($jenjangList as $jenjang)
+                                                                @php
+                                                                $items = $grouped->get($jenjang->id, collect());
+                                                                @endphp
+
+                                                                <td>
+                                                                    @forelse($items as $item)
+                                                                    <div class="mb-2">
+                                                                        {!! nl2br(e(str_replace("\r\n", "\n", $item->deskripsi_penilaian))) !!}
+                                                                        @if($item->keterangan)
+                                                                        <div class="alert alert-secondary alert-permanent mt-2 mb-0 p-2">
+                                                                            <small>
+                                                                                <i class="bi bi-lightbulb"></i>
+                                                                                <strong>Catatan:</strong> {{ $item->keterangan }}
+                                                                            </small>
+                                                                        </div>
+                                                                        @endif
+                                                                    </div>
+                                                                    @empty
+                                                                    <em class="text-muted">Belum ada indikator pada jenjang ini.</em>
+                                                                    @endforelse
+                                                                </td>
+                                                                @endforeach
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
                                                 </div>
-                                                @endforeach
                                             </div>
                                         </div>
                                     </div>
@@ -1772,34 +1798,32 @@
                     <div class="mb-3">
                         <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
                     </div>
-                    <h4 class="text-success">Import Berhasil!</h4>
+                    <h4 class="text-success">Simpan Data Excel Berhasil!</h4>
                 </div>
 
                 <div class="row text-center mb-4">
                     <div class="col-md-4">
                         <div class="p-3 bg-light rounded">
                             <h3 class="text-primary mb-0">${data.total_rows}</h3>
-                            <small class="text-muted">Total Baris</small>
+                            <small class="text-muted">Total Baris Terbaca</small>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="p-3 bg-light rounded">
                             <h3 class="text-success mb-0">${data.imported_rows}</h3>
-                            <small class="text-muted">Berhasil</small>
+                            <small class="text-muted">Penilaian Elemen Berhasil DiSimpan</small>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="p-3 bg-light rounded">
                             <h3 class="text-danger mb-0">${data.failed_rows}</h3>
-                            <small class="text-muted">Gagal</small>
+                            <small class="text-muted">Penilaian Elemen Gagal DiSimpan</small>
                         </div>
                     </div>
                 </div>
 
                 <div class="alert alert-success">
-                    <i class="bi bi-info-circle me-2"></i>
-                    <strong>Success Rate: ${data.success_rate}%</strong>
-                    <p class="mb-0 mt-2 small">
+                    <p class="mb-0 small">
                         Waktu selesai: ${data.completed_at}
                     </p>
                 </div>

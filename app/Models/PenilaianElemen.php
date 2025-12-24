@@ -84,7 +84,7 @@ class PenilaianElemen extends Model
     {
         $labels = [
             0 => 'Tidak Memenuhi (Not Met)',
-            1 => 'Tidak Memenuhi (Not Met)',
+            1 => 'Belum Memenuhi (Not Met)',
             2 => 'Lemah (Weakness/Cause of Concern)',
             3 => 'Memenuhi (Met)',
             4 => 'Pelampauan Standar',

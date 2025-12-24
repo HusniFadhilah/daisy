@@ -157,7 +157,7 @@ class ImportPenilaianExcelJob implements ShouldQueue
                 } catch (\Exception $e) {
                     $errors[] = "Row {$row}: " . $e->getMessage();
                     $failedRows++;
-                    // Log::error("Error importing row {$row}: " . $e->getMessage());
+                    Log::error("Error importing row {$row}: " . $e->getMessage());
                 }
             }
 

@@ -181,15 +181,13 @@
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             <label class="form-label fw-bold">
-                                                Skor Final <span class="text-danger">*</span>
+                                                Kategori Final <span class="text-danger">*</span>
                                             </label>
                                             <select class="form-select" id="skorFinal" name="skor_final" required>
-                                                <option value="">-- Pilih Skor --</option>
-                                                <option value="0">0 - Not Met</option>
-                                                <option value="1">1 - Not Met</option>
-                                                <option value="2">2 - Weakness</option>
-                                                <option value="3">3 - Met</option>
-                                                <option value="4">4 - Exceeding</option>
+                                                <option value="">-- Pilih Kategori --</option>
+                                                @foreach ($jenjangPenilaian as $jenjang)
+                                                <option value="{{ $jenjang->skor }}">{{ $jenjang->skor }} - {{ $jenjang->name }}</option>
+                                                @endforeach
                                             </select>
                                         </div>
                                     </div>
