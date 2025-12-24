@@ -528,7 +528,8 @@
                                                     </div>
 
                                                     <p class="mb-0" style="line-height: 1.6;">
-                                                        {{ nl2br(e(str_replace("\r\n", "\n",$indikator->deskripsi_indikator))) }}
+                                                        {{-- {{ nl2br(e(str_replace("\r\n", "\n",$indikator->deskripsi_indikator))) }} --}}
+                                                        {!! nl2br(e(str_replace("\r\n", "\n",$indikator->deskripsi_indikator))) !!}
                                                     </p>
                                                 </div>
                                             </div>

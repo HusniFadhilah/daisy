@@ -34,7 +34,7 @@
                     <div class="auth-feature-icon">🔒</div>
                     <div class="auth-feature-text">
                         <h4>Aman & Terpercaya</h4>
-                        <p>Data terenkripsi dengan standar keamanan tinggi</p>
+                        <p>Data terenkripsi dengan standar keamanan yang memadai</p>
                     </div>
                 </div>
             </div>
