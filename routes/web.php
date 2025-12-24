@@ -10,7 +10,7 @@ use App\Http\Controllers\{AuthController, BobotPenilaianController, DashboardCon
 
 // Dashboard (awal)
 Route::get('/', function () {
-    return view('home');
+    return redirect()->route('login');
 })->name('home');
 Route::get('/under-development', function () {
     return abort(503, '🚧 Fitur Sedang Dalam Pengembangan. Silakan kembali lagi nanti.');

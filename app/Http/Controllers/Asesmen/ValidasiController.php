@@ -21,38 +21,36 @@ class ValidasiController extends Controller
 {
     public function index()
     {
-        $user = Auth::user();
+        $userId = auth()->id();
 
-        // Get asesmen yang sudah di-assign ke validator ini
-        $assignments = AsesmenUserRole::where('id_user', $user->id)
-            ->where('status_penawaran', 'accepted')
-            ->where('id_role', 4)
-            ->with(['asesmen'])
-            ->get();
-
-        // Get penilaian yang perlu divalidasi
-        $idAsesmens = $assignments->pluck('id_asesmen');
-
-        $needsValidation = [];
-        foreach ($idAsesmens as $idAsesmen) {
-            $asesmen = Asesmen::find($idAsesmen);
-
-            // Get asesor yang sudah submit
-            $submittedAsesors = AsesmenUserRole::where('id_asesmen', $idAsesmen)
+        $assignments = AsesmenUserRole::with([
+            'asesmen',
+            'asesmen.asesmenUserRoles' => fn($q) =>
+            $q->where('id_role', 3)
                 ->where('status_pekerjaan', 'submitted')
-                ->where('id_role', 3)
                 ->with('user')
-                ->get();
+        ])->where('id_user', $userId)->where('id_role', 4)->where('status_penawaran', 'accepted')->get();
 
-            if ($submittedAsesors->count() > 0) {
-                $needsValidation[] = [
-                    'asesmen' => $asesmen,
-                    'asesors' => $submittedAsesors,
-                ];
-            }
-        }
+        $needsValidation = $assignments->where('status_pekerjaan', '!=', 'approved')
+            ->map(fn($a) => [
+                'asesmen' => $a->asesmen,
+                'asesors' => $a->asesmen->asesmenUserRoles,
+            ])->filter(fn($item) => $item['asesors']->isNotEmpty())->values();
 
-        return view('asesmen.ak.validasi.index', compact('needsValidation'));
+        $validated = $assignments
+            ->where('status_pekerjaan', 'approved')
+            ->map(fn($a) => [
+                'id_asesmen' => $a->id_asesmen,
+                'asesmen'    => $a->asesmen,
+                'asesors'    => $a->asesmen->asesmenUserRoles,
+            ])
+            ->filter(fn($i) => $i['asesors']->count() >= 0)
+            ->values();
+
+        return view(
+            'asesmen.ak.validasi.index',
+            compact('needsValidation', 'validated')
+        );
     }
 
     /**

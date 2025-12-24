@@ -65,7 +65,7 @@
         <div class="col-md-4">
             <div class="card text-center">
                 <div class="card-body">
-                    <h3 class="text-success mb-0">0</h3>
+                    <h3 class="text-success mb-0">{{ count($validated) }}</h3>
                     <small class="text-muted">Selesai Divalidasi</small>
                 </div>
             </div>
@@ -201,10 +201,58 @@
     <div class="card">
         <div class="card-body text-center py-5">
             <i class="bi bi-inbox" style="font-size: 4rem; color: #ccc;"></i>
-            <p class="text-muted mt-3 mb-0">Belum ada asesor yang submit penilaian untuk divalidasi.</p>
+            <p class="text-muted mt-3 mb-0">Belum ada asesor terbaru yang submit penilaian untuk divalidasi.</p>
         </div>
     </div>
     @endforelse
+
+    {{-- @if($validated->count())
+    <hr class="my-5">
+
+    <h4 class="mb-3 text-success">
+        <i class="bi bi-check-circle"></i> Asesmen lain yang Sudah Divalidasi
+    </h4>
+
+    @foreach($validated as $item)
+    @php
+    $idAsesors = $item['asesors']->pluck('id_user')->values();
+    @endphp
+
+    <div class="card asesmen-validasi-card mb-3 border-success">
+        <div class="card-header bg-success text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-0">{{ $item['asesmen']->name }}</h6>
+    <small>{{ $item['asesmen']->perguruan_tinggi ?? '' }}</small>
+</div>
+<span class="badge bg-light text-success">
+    Sudah Divalidasi
+</span>
+</div>
+</div>
+
+<div class="card-body">
+    <p class="mb-2">
+        <strong>Kode Panel:</strong>
+        <span class="badge bg-secondary">
+            {{ $item['asesmen']->kode_panel ?? 'N/A' }}
+        </span>
+    </p>
+
+    @if(isset($idAsesors[0], $idAsesors[1]))
+    <a href="{{ route('ak.validasi.asesor', [
+                'idAsesmen' => $item['id_asesmen'],
+                'asesor1Id' => $idAsesors[0],
+                'asesor2Id' => $idAsesors[1]
+            ]) }}" class="btn btn-sm btn-outline-primary">
+        <i class="bi bi-arrow-right"></i> Lihat Penilaian
+    </a>
+    @endif
+</div>
+</div>
+@endforeach
+@endif --}}
+
 </div>
 
 <style>
