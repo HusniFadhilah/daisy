@@ -15,6 +15,11 @@ Route::get('/', function () {
 Route::get('/under-development', function () {
     return abort(503, '🚧 Fitur Sedang Dalam Pengembangan. Silakan kembali lagi nanti.');
 })->name('under.development');
+Route::get('/reload-captcha', function () {
+    return response()->json([
+        'captcha' => captcha_img('flat')
+    ]);
+});
 
 // LOGIN / REGISTER
 Route::middleware('guest')->group(function () {

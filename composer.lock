@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "586abe64d4fd664a5cd9b92d9e9daac3",
+    "content-hash": "60b272e383bd2fde488c48ed156e2a2e",
     "packages": [
         {
             "name": "brick/math",
@@ -724,6 +724,72 @@
                 "source": "https://github.com/ezyang/htmlpurifier/tree/v4.19.0"
             },
             "time": "2025-10-17T16:34:55+00:00"
+        },
+        {
+            "name": "fahlisaputra/laravel-minify",
+            "version": "v1.2.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/fahlisaputra/laravel-minify.git",
+                "reference": "6a19886ef2284440f166bde932501c2911318577"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/fahlisaputra/laravel-minify/zipball/6a19886ef2284440f166bde932501c2911318577",
+                "reference": "6a19886ef2284440f166bde932501c2911318577",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/http": "^6.0 || ^7.0 || ^8.0 || ^9.0 || ^10.0 || ^11.0 || ^12.0",
+                "illuminate/support": "^6.0 || ^7.0 || ^8.0 || ^9.0 || ^10.0 || ^11.0 || ^12.0",
+                "illuminate/view": "^6.0 || ^7.0 || ^8.0 || ^9.0 || ^10.0 || ^11.0 || ^12.0",
+                "php": "^7.2.5 || ^8.0 || ^8.1 || ^8.2 || ^8.3 || ^8.4"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Fahlisaputra\\Minify\\MinifyServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "files": [
+                    "src/Helpers.php"
+                ],
+                "psr-4": {
+                    "Fahlisaputra\\Minify\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "fahlisaputra",
+                    "email": "saputra@fahli.net"
+                }
+            ],
+            "description": "Minify your blade views, html, css and obfuscate js files on the fly. Lightweight minifier for your Laravel project.",
+            "keywords": [
+                "css-minifier",
+                "html-minifier",
+                "js-minifier",
+                "js-obfuscate",
+                "laravel"
+            ],
+            "support": {
+                "issues": "https://github.com/fahlisaputra/laravel-minify/issues",
+                "source": "https://github.com/fahlisaputra/laravel-minify/tree/v1.2.3"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/fahlisaputra",
+                    "type": "github"
+                }
+            ],
+            "time": "2025-07-07T06:22:54+00:00"
         },
         {
             "name": "fruitcake/php-cors",
@@ -2788,6 +2854,79 @@
                 "source": "https://github.com/MarkBaker/PHPMatrix/tree/3.0.1"
             },
             "time": "2022-12-02T22:17:43+00:00"
+        },
+        {
+            "name": "mews/captcha",
+            "version": "3.4.7",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/mewebstudio/captcha.git",
+                "reference": "2622c4f90dd621f19fe57e03e45f6f099509e839"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/mewebstudio/captcha/zipball/2622c4f90dd621f19fe57e03e45f6f099509e839",
+                "reference": "2622c4f90dd621f19fe57e03e45f6f099509e839",
+                "shasum": ""
+            },
+            "require": {
+                "ext-gd": "*",
+                "illuminate/config": "~5|^6|^7|^8|^9|^10|^11|^12",
+                "illuminate/filesystem": "~5|^6|^7|^8|^9|^10|^11|^12",
+                "illuminate/hashing": "~5|^6|^7|^8|^9|^10|^11|^12",
+                "illuminate/session": "~5|^6|^7|^8|^9|^10|^11|^12",
+                "illuminate/support": "~5|^6|^7|^8|^9|^10|^11|^12",
+                "intervention/image": "^3.7",
+                "php": "^7.2|^8.1|^8.2|^8.3"
+            },
+            "require-dev": {
+                "mockery/mockery": "^1.0",
+                "phpunit/phpunit": "^8.5|^9.5.10|^10.5|^11"
+            },
+            "type": "package",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "Captcha": "Mews\\Captcha\\Facades\\Captcha"
+                    },
+                    "providers": [
+                        "Mews\\Captcha\\CaptchaServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "files": [
+                    "src/helpers.php"
+                ],
+                "psr-4": {
+                    "Mews\\Captcha\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Muharrem ERİN",
+                    "email": "me@mewebstudio.com",
+                    "homepage": "https://github.com/mewebstudio",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Laravel 5/6/7/8/9/10/11/12 Captcha Package",
+            "homepage": "https://github.com/mewebstudio/captcha",
+            "keywords": [
+                "captcha",
+                "laravel12 Captcha",
+                "laravel12 Security",
+                "laravel5 Security"
+            ],
+            "support": {
+                "issues": "https://github.com/mewebstudio/captcha/issues",
+                "source": "https://github.com/mewebstudio/captcha/tree/3.4.7"
+            },
+            "time": "2025-10-11T14:42:33+00:00"
         },
         {
             "name": "monolog/monolog",

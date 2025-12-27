@@ -28,5 +28,15 @@
     <!-- Bootstrap Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     @stack('scripts')
+    <script>
+        var reloadCaptchaBtn = document.getElementById('reload-captcha');
+        reloadCaptchaBtn && reloadCaptchaBtn.addEventListener('click', function() {
+            fetch('/reload-captcha')
+                .then(r => r.json())
+                .then(d => document.querySelector('.captcha span').innerHTML = d.captcha)
+                .catch(() => triggerSweetalert("Gagal!", "Terjadi kegagalan, silahkan coba beberapa saat lagi!", "error"));
+        });
+
+    </script>
 </body>
 </html>

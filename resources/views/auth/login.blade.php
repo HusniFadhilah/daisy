@@ -50,21 +50,21 @@
             <!-- Alert Messages -->
             @if(session('success'))
             <div class="auth-alert success">
-                <span class="auth-alert-icon">✓</span>
+                <span class="auth-alert-icon alert-permanent">✓</span>
                 <span>{{ session('success') }}</span>
             </div>
             @endif
 
             @if(session('error'))
             <div class="auth-alert error">
-                <span class="auth-alert-icon">✕</span>
+                <span class="auth-alert-icon alert-permanent">✕</span>
                 <span>{{ session('error') }}</span>
             </div>
             @endif
 
             @if($errors->any())
             <div class="auth-alert error">
-                <span class="auth-alert-icon">✕</span>
+                <span class="auth-alert-icon alert-permanent">✕</span>
                 <span>{{ $errors->first() }}</span>
             </div>
             @endif
@@ -107,6 +107,24 @@
                     <a href="{{ route('password.request') }}" style="font-size: 14px; color: var(--primary); text-decoration: none; font-weight: 600;">
                         Lupa Password?
                     </a>
+                </div>
+                <div class="form-group mt-4 mb-4">
+                    <div class="row align-items-center">
+                        <div class="col-6">
+                            <input type="text" class="form-control @error('captcha') is-invalid @enderror" placeholder="Masukkan Captcha" name="captcha" required>
+                        </div>
+                        <div class="col-4 captcha px-0">
+                            <span>{!! captcha_img() !!}</span>
+                        </div>
+                        <div class="col-2 pl-0">
+                            <button type="button" class="btn btn-danger reload" id="reload-captcha" title="Refresh captcha">&#x21bb;</button>
+                        </div>
+                    </div>
+                    @error('captcha')
+                    <small class="text-danger" role="alert">
+                        {{ $message }}
+                    </small>
+                    @enderror
                 </div>
 
                 <!-- Submit Button -->
