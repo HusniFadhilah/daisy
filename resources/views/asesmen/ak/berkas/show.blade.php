@@ -122,7 +122,7 @@
                     $needsRevision = $statusPekerjaan === 'revision_required';
                     @endphp
 
-                    @if($isSubmittedOnly && !$isApproved)
+                    @if($isSubmittedOnly && !$isApproved && app()->environment('local'))
                     <div class="alert alert-info alert-permanent alert-dismissible mb-3">
                         <i class="bi bi-info-circle me-2"></i>
                         <strong>Sudah Di-Submit!</strong> Penilaian Anda sedang menunggu validasi dari validator.

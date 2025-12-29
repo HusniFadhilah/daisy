@@ -300,17 +300,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/tiket/{id}/reply', [BantuanController::class, 'replyTicket'])->name('bantuan.tiket.reply');
         });
 
-        // PROFIL & PENGATURAN
-        Route::prefix('profile')->group(function () {
-            Route::get('/', [ProfileController::class, 'index'])->name('profile.index');
-            Route::get('/', [ProfileController::class, 'index'])->name('profile'); // alias
-            Route::put('/', [ProfileController::class, 'update'])->name('profile.update');
-            Route::post('/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar');
-
-            Route::get('/password', [ProfileController::class, 'passwordForm'])->name('profile.password');
-            Route::put('/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
-        });
-
         Route::prefix('settings')->group(function () {
             Route::get('/', [SettingsController::class, 'index'])->name('settings.index');
             Route::get('/', [SettingsController::class, 'index'])->name('settings'); // alias
@@ -334,6 +323,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/kinerja', [LaporanController::class, 'kinerja'])->name('laporan.kinerja');
             Route::get('/export', [LaporanController::class, 'export'])->name('laporan.export');
         });
+    });
+
+    // PROFIL & PENGATURAN
+    Route::prefix('profile')->group(function () {
+        Route::get('/', [ProfileController::class, 'index'])->name('profile.index');
+        Route::get('/', [ProfileController::class, 'index'])->name('profile'); // alias
+        Route::put('/', [ProfileController::class, 'update'])->name('profile.update');
+        Route::post('/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar');
+
+        Route::get('/password', [ProfileController::class, 'passwordForm'])->name('profile.password');
+        Route::put('/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
     });
 
     // INDIKATOR MANAGEMENT (Kriteria, Elemen Standar, Indikator)
