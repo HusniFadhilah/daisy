@@ -9,11 +9,13 @@ use App\Models\PenilaianElemen;
 use Illuminate\Support\Facades\Auth;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Color;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use \PhpOffice\PhpSpreadsheet\Style\Protection;
 use PhpOffice\PhpSpreadsheet\RichText\RichText;
+use PhpOffice\PhpSpreadsheet\Style\Conditional;
 use PhpOffice\PhpSpreadsheet\Cell\DataValidation;
 
 class PenilaianExcelService
@@ -63,6 +65,7 @@ class PenilaianExcelService
         $this->setColumnWidths($sheet);
         $this->buildHeaders($sheet, $asesmen);
 
+        $this->buildPenilaianAKSheet($spreadsheet, $asesmen);
         $sheet->getProtection()->setSheet(true);
         $sheet->getProtection()->setPassword('lamdepilar'); // opsional
         $sheet->getProtection()->setSort(true);
@@ -83,8 +86,8 @@ class PenilaianExcelService
         $sheet->getColumnDimension('D')->setWidth(6);
         $sheet->getColumnDimension('E')->setWidth(6);
         $sheet->getColumnDimension('F')->setWidth(25);
-        $sheet->getColumnDimension('G')->setWidth(45);
-        $sheet->getColumnDimension('H')->setWidth(15);
+        $sheet->getColumnDimension('G')->setWidth(40);
+        $sheet->getColumnDimension('H')->setWidth(20);
         $sheet->getColumnDimension('I')->setWidth(37);
         $sheet->getColumnDimension('J')->setWidth(37);
         $sheet->getColumnDimension('K')->setWidth(37);
@@ -397,9 +400,9 @@ class PenilaianExcelService
     /**
      * Apply styling to data row
      */
-    private function applyRowStyling($sheet, $row, ?int $maxHeight = null): void
+    private function applyRowStyling($sheet, $row, ?int $maxHeight = null, $startColumn = 'B', $endColumn = 'M'): void
     {
-        $range = "B{$row}:M{$row}";
+        $range = "{$startColumn}{$row}:{$endColumn}{$row}";
 
         $sheet->getStyle($range)->getBorders()->getAllBorders()
             ->setBorderStyle(Border::BORDER_THIN);
@@ -531,7 +534,7 @@ class PenilaianExcelService
         $leftData = [
             7  => ['label' => 'Nama Perguruan Tinggi', 'value' => $asesmen->studyProgram->university->name ?? '-'],
             9  => ['label' => 'Bentuk Perguruan Tinggi', 'value' => 'Universitas'],
-            11 => ['label' => 'Jenis Pengelolaan', 'value' => 'PTN'],
+            11 => ['label' => 'Jenis Pengelolaan (PTN/PTS)', 'value' => ''],
             13 => ['label' => 'Kode Panel', 'value' => $asesmen->kode_panel],
             15 => ['label' => 'TS *)', 'value' => ''],
         ];
@@ -755,5 +758,276 @@ class PenilaianExcelService
         }
 
         return $richText;
+    }
+
+    /**
+     * Build sheet "Penilaian (AK)" setelah sheet Kertas Kerja
+     */
+    private function buildPenilaianAKSheet(Spreadsheet $spreadsheet, Asesmen $asesmen): void
+    {
+        // Buat sheet baru
+        $sheet = $spreadsheet->createSheet();
+        $sheet->setTitle('Penilaian (AK)');
+        $sheet->getSheetView()->setZoomScale(60);
+
+        // Set column widths
+        $sheet->getColumnDimension('A')->setWidth(5);
+        $sheet->getColumnDimension('B')->setWidth(5);
+        $sheet->getColumnDimension('C')->setWidth(20);
+        $sheet->getColumnDimension('D')->setWidth(6);
+        $sheet->getColumnDimension('E')->setWidth(6);
+        $sheet->getColumnDimension('F')->setWidth(25);
+        $sheet->getColumnDimension('G')->setWidth(40);
+        $sheet->getColumnDimension('H')->setWidth(20);
+        $sheet->getColumnDimension('I')->setWidth(80);
+        $sheet->getColumnDimension('J')->setWidth(80);
+
+        // Build headers
+        $this->buildPenilaianAKHeaders($sheet, $asesmen);
+
+        // Build data rows
+        $this->renderPenilaianAKRows($sheet, $asesmen);
+    }
+
+    /**
+     * Build headers untuk sheet Penilaian (AK)
+     */
+    private function buildPenilaianAKHeaders($sheet, $asesmen): void
+    {
+        // ===== Title =====
+        $sheet->mergeCells('B2:J2');
+        $sheet->setCellValue('B2', 'Lembaga Akreditasi Mandiri Desain Perencanaan Lingkungan Arsitektur | LAMDEPILAR');
+        $sheet->getStyle('B2')->getFont()->setBold(true)->setSize(14);
+        $sheet->getStyle('B2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        $sheet->mergeCells('B3:J3');
+        $sheet->setCellValue('B3', 'Tabel 3. Penilaian AK');
+        $sheet->getStyle('B3')->getFont()->setBold(true)->setSize(12);
+        $sheet->getStyle('B3')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        // ===== Header row 5-6 dengan rowspan (mengikuti pola Kertas Kerja) =====
+
+        // Kriteria (B-C) rowspan sampai row 6
+        $sheet->mergeCells('B5:C6');
+        $sheet->setCellValue('B5', 'Kriteria');
+
+        // Kode Elemen (D-E) rowspan sampai row 6
+        $sheet->mergeCells('D5:E6');
+        $sheet->setCellValue('D5', 'Kode Elemen');
+
+        // Elemen Standar (F) rowspan sampai row 6
+        $sheet->mergeCells('F5:F6');
+        $sheet->setCellValue('F5', 'Elemen Standar');
+
+        // Indikator (G-H) merge row 5, subheader di row 6
+        $sheet->mergeCells('G5:H5');
+        $sheet->setCellValue('G5', 'Indikator');
+        $sheet->setCellValue('G6', 'Kualitatif');
+        $sheet->setCellValue('H6', 'Kuantitatif');
+
+        // Penilaian (F:G) merge row 5
+        $sheet->mergeCells('I5:J5');
+        $sheet->setCellValue('I5', 'Penilaian');
+
+        // Subheader penilaian row 6
+        $sheet->setCellValue('I6', 'Pemenuhan Standar');
+        $sheet->setCellValue('J6', 'Pelampauan Standar');
+
+        // ===== Styling umum header =====
+        $headerRange = 'B5:J6';
+        $sheet->getStyle($headerRange)->getFont()->setBold(true);
+        $sheet->getStyle($headerRange)->getAlignment()
+            ->setHorizontal(Alignment::HORIZONTAL_CENTER)
+            ->setVertical(Alignment::VERTICAL_CENTER)
+            ->setWrapText(true);
+
+        // Border
+        $sheet->getStyle($headerRange)->getBorders()->getAllBorders()
+            ->setBorderStyle(Border::BORDER_THIN);
+
+        // ===== Warna sesuai pola Kertas Kerja =====
+        // B5:F6 putih (Kriteria, Kode Elemen, Elemen Standar)
+        $sheet->getStyle('B5:F6')->getFill()
+            ->setFillType(Fill::FILL_SOLID)
+            ->getStartColor()->setARGB('FFFFFFFF');
+
+        // G5:H6 indikator #D0E0E3 (sama dengan sheet Kertas Kerja)
+        $sheet->getStyle('G5:H6')->getFill()
+            ->setFillType(Fill::FILL_SOLID)
+            ->getStartColor()->setARGB('FFD0E0E3');
+
+        // I5:J6 penilaian #D9EAD3 (sama dengan sheet Kertas Kerja)
+        $sheet->getStyle('I5:J6')->getFill()
+            ->setFillType(Fill::FILL_SOLID)
+            ->getStartColor()->setARGB('FFD9EAD3');
+
+        // Tinggi baris header
+        $sheet->getRowDimension(5)->setRowHeight(30);
+        $sheet->getRowDimension(6)->setRowHeight(30);
+
+        // Petunjuk pengisian (opsional, sesuaikan jika diperlukan)
+        $sheet->mergeCells('B4:J4');
+        $sheet->setCellValue('B4', 'Hasil Penilaian (Auto-filled dari Kertas Kerja Asesor)');
+        $sheet->getStyle('B4')->applyFromArray([
+            'font' => [
+                'bold' => true,
+                'color' => ['argb' => 'FF0000FF'], // biru
+                'size' => 11
+            ],
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER,
+                'vertical' => Alignment::VERTICAL_CENTER
+            ]
+        ]);
+        $sheet->getRowDimension(4)->setRowHeight(20);
+    }
+
+    /**
+     * Render data rows untuk sheet Penilaian (AK)
+     */
+    /**
+     * Render data rows untuk sheet Penilaian (AK)
+     */
+    private function renderPenilaianAKRows($sheet, Asesmen $asesmen): void
+    {
+        $currentRow = 7;
+        $penilaianAsesorRow = $currentRow + 2;
+        $kriterias = Kriteria::with([
+            'elemenStandar.indikator.jenisIndikator',
+        ])->get();
+
+        foreach ($kriterias as $kriteria) {
+            $isFirstElemen = true;
+            $elemenCount = $kriteria->elemenStandar->count();
+
+            if ($elemenCount > 1) {
+                $blockStartRow = $currentRow;
+                $blockEndRow   = $currentRow + $elemenCount - 1;
+                $this->mergeBlock($sheet, 'B', 'B', $blockStartRow, $blockEndRow);
+                $this->mergeBlock($sheet, 'C', 'C', $blockStartRow, $blockEndRow);
+            }
+
+            foreach ($kriteria->elemenStandar as $index => $elemen) {
+                $templateRow = $currentRow;
+                // Isi kriteria (hanya sekali per grup)
+                if ($isFirstElemen) {
+                    $sheet->setCellValue("B{$templateRow}", $kriteria->kode_kriteria);
+                    $sheet->setCellValue("C{$templateRow}", $kriteria->nama_kriteria);
+                }
+
+                // ========== 3) Isi elemen + indikator ==========
+                $indikatorKualitatif = $elemen->indikator
+                    ->filter(fn($ind) => $ind->jenisIndikator &&
+                        stripos($ind->jenisIndikator->nama_jenis, 'kualitatif') !== false)
+                    ->pluck('deskripsi_indikator')
+                    ->implode("\n\n");
+
+                $indikatorKuantitatif = $elemen->indikator
+                    ->filter(fn($ind) => $ind->jenisIndikator &&
+                        stripos($ind->jenisIndikator->nama_jenis, 'kuantitatif') !== false)
+                    ->pluck('deskripsi_indikator')
+                    ->implode("\n\n");
+
+                $sheet->setCellValue("D{$templateRow}", $index + 1);
+                $sheet->setCellValue("E{$templateRow}", $elemen->kode_elemen);
+                $sheet->setCellValue("F{$templateRow}", $elemen->pernyataan_elemen);
+                $sheet->setCellValue("G{$templateRow}", $indikatorKualitatif ?: 'Tidak ada');
+                $sheet->setCellValue("H{$templateRow}", $indikatorKuantitatif ?: 'Tidak ada');
+
+                // Formula Pemenuhan Standar - Menggunakan CONCATENATE untuk kompatibilitas
+                // Menggabungkan nilai dari kolom I, J, K, L di baris yang sesuai
+                // Pemenuhan Standar (kolom I-L digabung), anti #N/A
+                $formulaPemenuhan = "=IFERROR(CONCATENATE(" .
+                    "IFERROR(INDEX('Kertas Kerja AK Asesor'!\$I:\$I,MATCH(E{$templateRow},'Kertas Kerja AK Asesor'!\$E:\$E,0)+1),\"\")," .
+                    "IFERROR(INDEX('Kertas Kerja AK Asesor'!\$J:\$J,MATCH(E{$templateRow},'Kertas Kerja AK Asesor'!\$E:\$E,0)+1),\"\")," .
+                    "IFERROR(INDEX('Kertas Kerja AK Asesor'!\$K:\$K,MATCH(E{$templateRow},'Kertas Kerja AK Asesor'!\$E:\$E,0)+1),\"\")," .
+                    "IFERROR(INDEX('Kertas Kerja AK Asesor'!\$L:\$L,MATCH(E{$templateRow},'Kertas Kerja AK Asesor'!\$E:\$E,0)+1),\"\")" .
+                    "),\"\")";
+                $sheet->setCellValue("I{$templateRow}", $formulaPemenuhan);
+
+                // Formula Pelampauan Standar
+                $formulaPelampauan = "=IF('Kertas Kerja AK Asesor'!M{$penilaianAsesorRow}=\"\", \"\", 'Kertas Kerja AK Asesor'!M{$penilaianAsesorRow})";
+
+                $sheet->setCellValue("J{$templateRow}", $formulaPelampauan);
+
+                // Apply styling
+                $this->applyRowStyling($sheet, $currentRow, null, 'B', 'J');
+
+                // Alignment dan wrap text
+                $sheet->getStyle("B{$currentRow}:J{$currentRow}")
+                    ->getAlignment()
+                    ->setVertical(Alignment::VERTICAL_TOP)
+                    ->setWrapText(true);
+
+                $currentRow++;
+                $penilaianAsesorRow += 2;
+                $isFirstElemen = false;
+            }
+        }
+
+        // Apply conditional formatting setelah semua data dirender
+        $this->applyPenilaianAKConditionalFormatting($sheet, 7, $currentRow - 1);
+    }
+
+    /**
+     * Apply conditional formatting untuk sheet Penilaian (AK)
+     */
+    private function applyPenilaianAKConditionalFormatting($sheet, int $startRow, int $endRow): void
+    {
+        $rulesPemenuhan = [
+            // kolom sumber => [warna bg, warna font]
+            'L' => ['FF00B050', Color::COLOR_WHITE], // hijau tua
+            'K' => ['FFFFC000', Color::COLOR_BLACK], // kuning
+            'J' => ['FF92D050', Color::COLOR_BLACK], // hijau muda
+            'I' => ['FFFF0000', Color::COLOR_WHITE], // merah
+        ];
+
+        $conditionals = [];
+
+        foreach ($rulesPemenuhan as $col => [$bg, $font]) {
+            $conditional = new Conditional();
+            $conditional->setConditionType(Conditional::CONDITION_EXPRESSION);
+            $conditional->addCondition(
+                "=IFERROR(
+                INDEX('Kertas Kerja AK Asesor'!\${$col}:\${$col},
+                MATCH(\$E{$startRow}, 'Kertas Kerja AK Asesor'!\$E:\$E, 0)+1),
+            \"\")<>\"\""
+            );
+
+            $conditional->getStyle()->getFill()
+                ->setFillType(Fill::FILL_SOLID)
+                ->getStartColor()->setARGB($bg);
+
+            $conditional->getStyle()->getFont()
+                ->setBold(true)
+                ->getColor()->setARGB($font);
+
+            $conditionals[] = $conditional;
+        }
+
+        // Urutan prioritas: atas → bawah
+        $sheet->getStyle("I{$startRow}:I{$endRow}")
+            ->setConditionalStyles($conditionals);
+
+        // ===== Pelampauan Standar (kolom J) =====
+        $pelampauan = new Conditional();
+        $pelampauan->setConditionType(Conditional::CONDITION_EXPRESSION);
+        $pelampauan->addCondition(
+            "=IFERROR(
+            INDEX('Kertas Kerja AK Asesor'!\$M:\$M,
+            MATCH(\$E{$startRow}, 'Kertas Kerja AK Asesor'!\$E:\$E, 0)+1),
+        \"\")<>\"\""
+        );
+
+        $pelampauan->getStyle()->getFill()
+            ->setFillType(Fill::FILL_SOLID)
+            ->getStartColor()->setARGB('FF006100');
+
+        $pelampauan->getStyle()->getFont()
+            ->setBold(true)
+            ->getColor()->setARGB(Color::COLOR_WHITE);
+
+        $sheet->getStyle("J{$startRow}:J{$endRow}")
+            ->setConditionalStyles([$pelampauan]);
     }
 }

@@ -108,6 +108,7 @@
                         Lupa Password?
                     </a>
                 </div>
+                @if (app()->environment('production'))
                 <div class="form-group mt-4 mb-4">
                     <div class="row align-items-center">
                         <div class="col-6">
@@ -126,6 +127,7 @@
                     </small>
                     @enderror
                 </div>
+                @endif
 
                 <!-- Submit Button -->
                 <button type="submit" class="btn-auth-primary" id="loginBtn">

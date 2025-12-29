@@ -16,11 +16,17 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $request->validate([
+        $rules = [
             'email' => 'required|email',
             'password' => 'required',
-            'captcha' => 'required|captcha',
-        ]);
+        ];
+
+        if (app()->environment('production')) {
+            $rules['captcha'] = 'required|captcha';
+        }
+
+        $request->validate($rules);
+
         $credentials = $request->only('email', 'password');
 
         if (Auth::attempt($credentials)) {

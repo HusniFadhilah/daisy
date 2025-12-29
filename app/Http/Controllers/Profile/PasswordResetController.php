@@ -21,9 +21,15 @@ class PasswordResetController extends Controller
     // KIRIM LINK RESET PASSWORD
     public function sendResetLink(Request $request)
     {
-        $request->validate([
-            'email' => 'required|email'
-        ]);
+        $rules = [
+            'email' => 'required|email',
+        ];
+
+        if (app()->environment('production')) {
+            $rules['captcha'] = 'required|captcha';
+        }
+
+        $request->validate($rules);
 
         $user = User::where('email', $request->email)->first();
 

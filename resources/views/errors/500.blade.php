@@ -6,7 +6,7 @@
 @section('illustration', 'https://demos.creative-tim.com/soft-ui-dashboard-pro/assets/img/illustrations/error-500.png')
 
 @section('message')
-{{ $exception ? $exception->getMessage() : 'Maaf, terjadi kesalahan pada server kami. Tim teknis kami telah diberitahu dan sedang memperbaiki masalah ini. Silakan coba beberapa saat lagi.' }}
+{{ 'Maaf, terjadi kesalahan pada server kami. Tim teknis kami telah diberitahu dan sedang memperbaiki masalah ini. Silakan coba beberapa saat lagi.' }}
 @endsection
 
 @section('actions')
