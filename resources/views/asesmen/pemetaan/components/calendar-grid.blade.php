@@ -12,7 +12,7 @@
 <!-- Modal for Month Details -->
 @if($month['count'] > 0)
 <div class="modal fade" id="monthModal{{ $month['month_num'] }}{{ $month['year'] }}" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header bg-warning">
                 <h5 class="modal-title">

@@ -150,7 +150,7 @@ $latestImport = $pengajuan->latestBorangImport;
 
 <!-- 🆕 MODAL UPLOAD ULANG -->
 <div class="modal fade" id="modalUploadUlang" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header bg-warning">
                 <h5 class="modal-title">
@@ -242,7 +242,7 @@ $latestImport = $pengajuan->latestBorangImport;
 </div>
 
 <div class="modal fade" id="uploadDraftModal" tabindex="-1" aria-labelledby="uploadDraftLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title" id="uploadDraftLabel">

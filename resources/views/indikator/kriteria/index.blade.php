@@ -89,7 +89,7 @@
 
                         <!-- Modal Detail -->
                         <div class="modal fade" id="showKriteriaModal{{ $item->id }}" tabindex="-1">
-                            <div class="modal-dialog">
+                            <div class="modal-dialog modal-dialog-centered">
                                 <div class="modal-content">
                                     <div class="modal-header">
                                         <h5 class="modal-title">Detail Kriteria</h5>
@@ -116,7 +116,7 @@
 
                         <!-- Modal Edit -->
                         <div class="modal fade" id="editKriteriaModal{{ $item->id }}" tabindex="-1">
-                            <div class="modal-dialog">
+                            <div class="modal-dialog modal-dialog-centered">
                                 <div class="modal-content">
                                     <form action="{{ route('kriteria.update', $item->id) }}" method="POST">
                                         @csrf
@@ -183,7 +183,7 @@
 
 <!-- Modal Create -->
 <div class="modal fade" id="createKriteriaModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <form action="{{ route('kriteria.store') }}" method="POST">
                 @csrf

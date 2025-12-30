@@ -69,7 +69,7 @@
         </div>
     </div>
     <div class="modal fade" id="showElemenModal{{ $item->id_elemen }}" tabindex="-1">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Detail Elemen Standar</h5>
@@ -127,7 +127,7 @@
 
 <!-- Modal Create -->
 <div class="modal fade" id="createElemenModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <form action="{{ route('elemen-standar.store') }}" method="POST">
                 @csrf

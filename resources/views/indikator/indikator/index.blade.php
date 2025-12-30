@@ -105,7 +105,7 @@
 
 <!-- Modal Edit -->
 <div class="modal fade" id="editIndikatorModal{{ $item->id }}" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <form action="{{ route('indikator.update', $item->id) }}" method="POST">
                 @csrf
@@ -201,7 +201,7 @@
 
 <!-- Modal Create -->
 <div class="modal fade" id="createIndikatorModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <form action="{{ route('indikator.store') }}" method="POST">
                 @csrf

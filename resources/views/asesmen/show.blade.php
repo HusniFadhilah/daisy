@@ -248,7 +248,7 @@
 
 <!-- Bulk Assign Modal -->
 <div class="modal fade" id="bulkAssignModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header bg-success text-white">
                 <h5 class="modal-title"><i class="bi bi-people-fill"></i> Bulk Assign Users</h5>
@@ -295,7 +295,7 @@
 
 <!-- Send Documents Modal -->
 <div class="modal fade" id="sendDocumentsModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title">
