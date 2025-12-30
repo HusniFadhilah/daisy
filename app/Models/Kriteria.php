@@ -21,6 +21,13 @@ class Kriteria extends Model
 
     public function indikator()
     {
-        return $this->hasMany(Indikator::class, 'id_indikator');
+        return $this->hasManyThrough(
+            Indikator::class,
+            ElemenStandar::class,
+            'id_kriteria', // FK di elemen_standar
+            'id_elemen',   // FK di indikator
+            'id',          // PK kriteria
+            'id'           // PK elemen_standar
+        );
     }
 }

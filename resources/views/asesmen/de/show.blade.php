@@ -77,7 +77,7 @@
             @endif
 
             <!-- ACTION: Review Kesiapan (Langkah 5a/5b) -->
-            @if($pengajuan->status === 'draft_borang_diterima')
+            @if(in_array($pengajuan->status, ['draft_borang_diterima', 'borang_online_selesai']))
             @php
             $latestImport = $pengajuan->latestBorangImport;
             $draftBorang = $pengajuan->dokumen->where('jenis_dokumen', 'draft_borang')->where('is_latest', true)->first();
@@ -103,9 +103,9 @@
                         <div class="col-md-6">
                             <div class="card bg-primary bg-opacity-10 border-primary h-100">
                                 <div class="card-body text-center">
-                                    <i class="bi bi-eye fs-1 text-primary mb-3 d-block"></i>
-                                    <h6 class="fw-bold">Preview Borang HTML</h6>
-                                    <p class="text-muted small mb-3">
+                                    <i class="bi bi-eye text-white fs-1 mb-3 d-block"></i>
+                                    <h6 class="fw-bold text-white">Preview Borang HTML</h6>
+                                    <p class="text-white small mb-3">
                                         Lihat preview borang yang sudah diproses<br>
                                         dari dokumen DOCX
                                     </p>
@@ -252,8 +252,8 @@
                             </div>
 
                             <div class="mt-3 pt-3 border-top">
-                                <a href="{{ route('pengajuan.download-dokumen', $draftBorang->id) }}" class="btn btn-sm btn-primary">
-                                    <i class="bi bi-download"></i> Download Draft DOCX
+                                <a href="{{ route('pengajuan.borang.export-docx', $pengajuan->id) }}" class="btn btn-success btn-sm">
+                                    <i class="bi bi-file-earmark-arrow-down"></i> Download Draft DOCX
                                 </a>
                             </div>
                         </div>
@@ -270,7 +270,7 @@
                             </h6>
                         </div>
                         <div class="card-body">
-                            <form action="{{ route('de.pengajuan.review-kesiapan', $pengajuan->id) }}" method="POST" id="formReviewKesiapan">
+                            <form action="{{ route('de.pengajuan.review', $pengajuan->id) }}" method="POST" id="formReviewKesiapan">
                                 @csrf
 
                                 {{-- Hasil Review --}}
@@ -398,11 +398,11 @@
 
                                 {{-- Submit Buttons --}}
                                 <div class="d-flex gap-2 mt-4 pt-3 border-top">
-                                    <button type="submit" class="btn btn-success btn-lg">
+                                    <button type="submit" class="btn btn-success btn-md">
                                         <i class="bi bi-send"></i> Submit Review Kesiapan
                                     </button>
 
-                                    <button type="reset" class="btn btn-outline-secondary btn-lg">
+                                    <button type="reset" class="btn btn-outline-secondary btn-md">
                                         <i class="bi bi-arrow-counterclockwise"></i> Reset Form
                                     </button>
                                 </div>
@@ -444,9 +444,9 @@
                         return false;
                     }
 
-                    if (catatan.length < 50) {
+                    if (catatan.length < 5) {
                         e.preventDefault();
-                        alert('Catatan review minimal 50 karakter!');
+                        alert('Catatan review minimal 5 karakter!');
                         return false;
                     }
 
@@ -531,7 +531,7 @@
             </div>
             @endif
 
-            @if($pengajuan->status === 'lanjut_ke_ak')
+            @if($pengajuan->status === 'pengajuan_completed')
             <div class="card action-card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">

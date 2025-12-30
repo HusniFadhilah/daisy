@@ -1,7 +1,7 @@
 <!-- Penawaran Asesmen -->
 <a href="{{ route('pengajuan') }}" class="nav-link {{ request()->routeIs('pengajuan*') ? 'active' : '' }}">
     <span class="menu-icon">📋</span>
-    <span>Pengajuan Asesmen</span>
+    <span>Pengajuan Akreditasi</span>
 </a>
 
 <!-- Proses AK -->

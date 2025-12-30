@@ -241,8 +241,252 @@ $latestImport = $pengajuan->latestBorangImport;
     </div>
 </div>
 
+<div class="modal fade" id="uploadDraftModal" tabindex="-1" aria-labelledby="uploadDraftLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="uploadDraftLabel">
+                    <i class="bi bi-upload"></i> Upload Draft Lembar Evaluasi Diri
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form id="uploadDraftForm" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body">
+                    {{-- Instructions --}}
+                    <div class="alert alert-info alert-permanent mb-3">
+                        <h6 class="alert-heading">
+                            <i class="bi bi-info-circle"></i> Petunjuk Upload
+                        </h6>
+                        <ol class="mb-0 small">
+                            <li>File harus berformat <strong>Microsoft Word (.docx)</strong></li>
+                            <li>Gunakan template yang sudah dikirim oleh Desk Evaluator</li>
+                            <li><strong>Jangan ubah</strong> struktur dokumen, kode elemen, atau format tabel</li>
+                            <li>Isi bagian yang bertanda <strong>"Mohon isi di sini"</strong></li>
+                            <li>Maksimal ukuran file: <strong>10MB</strong></li>
+                        </ol>
+                    </div>
+
+                    {{-- File Upload Area --}}
+                    <div class="mb-3">
+                        <label for="draftBorangFile" class="form-label fw-semibold">
+                            Pilih File Borang <span class="text-danger">*</span>
+                        </label>
+                        <input type="file" class="form-control" id="draftBorangFile" name="draft_borang" accept=".docx" required>
+                        <div class="invalid-feedback">
+                            Mohon pilih file DOCX terlebih dahulu
+                        </div>
+                    </div>
+
+                    {{-- Keterangan --}}
+                    <div class="mb-3">
+                        <label for="keteranganUpload" class="form-label fw-semibold">
+                            Keterangan <small class="text-muted">(Opsional)</small>
+                        </label>
+                        <textarea class="form-control" id="keteranganUpload" name="keterangan" rows="3" placeholder="Contoh: Upload versi 1 - revisi berdasarkan masukan DE"></textarea>
+                        <small class="text-muted">
+                            <i class="bi bi-lightbulb"></i>
+                            Tambahkan catatan untuk memudahkan tracking versi
+                        </small>
+                    </div>
+
+                    {{-- File Info Display --}}
+                    <div id="fileInfoUpload" class="alert alert-secondary d-none">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi bi-file-earmark-word text-primary"></i>
+                                <strong>File dipilih:</strong>
+                                <span id="fileNameUpload">-</span>
+                            </div>
+                            <div>
+                                <small class="text-muted">
+                                    Ukuran: <span id="fileSizeUpload">-</span>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Upload Progress (hidden initially) --}}
+                    <div id="uploadProgress" class="d-none">
+                        <div class="mb-2">
+                            <strong>Progress Upload:</strong>
+                            <span id="uploadProgressText">0%</span>
+                        </div>
+                        <div class="progress" style="height: 25px;">
+                            <div id="uploadProgressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%">
+                                0%
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Alert --}}
+                    <div id="uploadAlert" class="alert d-none mt-3" role="alert"></div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="btnCancelUpload">
+                        <i class="bi bi-x-circle"></i> Batal
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="btnSubmitUpload">
+                        <i class="bi bi-upload"></i> Upload Sekarang
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const uploadForm = document.getElementById('uploadDraftForm');
+        const fileInput = document.getElementById('draftBorangFile');
+        const fileInfo = document.getElementById('fileInfoUpload');
+        const fileName = document.getElementById('fileNameUpload');
+        const fileSize = document.getElementById('fileSizeUpload');
+        const btnSubmit = document.getElementById('btnSubmitUpload');
+        const btnCancel = document.getElementById('btnCancelUpload');
+        const uploadProgress = document.getElementById('uploadProgress');
+        const uploadAlert = document.getElementById('uploadAlert');
+
+        // File input change handler
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+
+            if (file) {
+                // Validate file type
+                const fileExtension = file.name.split('.').pop().toLowerCase();
+                if (fileExtension !== 'docx') {
+                    showUploadAlert('danger', 'Format file tidak valid! Harus .docx');
+                    fileInput.value = '';
+                    fileInfo.classList.add('d-none');
+                    return;
+                }
+
+                // Validate file size (10MB max)
+                if (file.size > 10 * 1024 * 1024) {
+                    showUploadAlert('danger', 'Ukuran file terlalu besar! Maksimal 10MB');
+                    fileInput.value = '';
+                    fileInfo.classList.add('d-none');
+                    return;
+                }
+
+                // Display file info
+                fileName.textContent = file.name;
+                fileSize.textContent = formatFileSize(file.size);
+                fileInfo.classList.remove('d-none');
+                uploadAlert.classList.add('d-none');
+            } else {
+                fileInfo.classList.add('d-none');
+            }
+        });
+
+        // Form submit handler
+        uploadForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const file = fileInput.files[0];
+            if (!file) {
+                fileInput.classList.add('is-invalid');
+                showUploadAlert('danger', 'Mohon pilih file terlebih dahulu!');
+                return;
+            }
+
+            const formData = new FormData(uploadForm);
+
+            // Disable buttons
+            btnSubmit.disabled = true;
+            btnCancel.disabled = true;
+            btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mengupload...';
+
+            // Show progress
+            uploadProgress.classList.remove('d-none');
+            uploadAlert.classList.add('d-none');
+
+            try {
+                const response = await fetch('{{ route("pengajuan.upload-draft", $pengajuan->id) }}', {
+                    method: 'POST'
+                    , body: formData
+                    , headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        , 'Accept': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Update progress to 100%
+                    updateUploadProgress(100);
+
+                    await Swal.fire({
+                        icon: 'success'
+                        , title: 'Upload Berhasil!'
+                        , html: `
+                        <p>${data.message}</p>
+                        <div class="alert alert-info mt-3">
+                            <small>
+                                <i class="bi bi-info-circle"></i>
+                                File: <strong>${data.data.filename}</strong><br>
+                                Ukuran: <strong>${data.data.file_size}</strong><br>
+                                Versi: <strong>${data.data.versi}</strong>
+                            </small>
+                        </div>
+                    `
+                        , confirmButtonColor: '#28a745'
+                    });
+
+                    // Close modal and reload
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('uploadDraftModal'));
+                    modal.hide();
+                    window.location.reload();
+
+                } else {
+                    throw new Error(data.message || 'Upload gagal');
+                }
+
+            } catch (error) {
+                console.error('Upload error:', error);
+                showUploadAlert('danger', error.message);
+
+                // Re-enable buttons
+                btnSubmit.disabled = false;
+                btnCancel.disabled = false;
+                btnSubmit.innerHTML = '<i class="bi bi-upload"></i> Upload Sekarang';
+                uploadProgress.classList.add('d-none');
+            }
+        });
+
+        function updateUploadProgress(percentage) {
+            const progressBar = document.getElementById('uploadProgressBar');
+            const progressText = document.getElementById('uploadProgressText');
+
+            progressBar.style.width = percentage + '%';
+            progressBar.textContent = percentage + '%';
+            progressText.textContent = percentage + '%';
+
+            if (percentage === 100) {
+                progressBar.classList.remove('progress-bar-animated');
+                progressBar.classList.add('bg-success');
+            }
+        }
+
+        function showUploadAlert(type, message) {
+            uploadAlert.className = `alert alert-${type}`;
+            uploadAlert.innerHTML = `<i class="bi bi-${type === 'danger' ? 'exclamation-triangle' : 'info-circle'}"></i> ${message}`;
+            uploadAlert.classList.remove('d-none');
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+    });
+
     // 🆕 UPLOAD ULANG FUNCTIONS
     let modalUploadUlang;
 

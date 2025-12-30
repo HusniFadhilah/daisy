@@ -25,36 +25,22 @@
         <!-- Legend -->
         <div class="p-3 bg-light border-bottom">
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-8">
                     <h6 class="mb-2">Legenda Kategori Penilaian:</h6>
                     <div class="d-flex flex-wrap gap-2">
                         <div class="legend-item">
                             <span class="legend-box" style="background: #9e9e9e;"></span>
                             <span class="legend-text">Belum Dinilai</span>
                         </div>
+                        @foreach ($jenjangPenilaian as $jenjang)
                         <div class="legend-item">
-                            <span class="legend-box" style="background: #f44336;"></span>
-                            <span class="legend-text">0 - Not Met</span>
+                            <span class="legend-box" style="background: {{ $jenjang->color }};"></span>
+                            <span class="legend-text">{{ $jenjang->name }}</span>
                         </div>
-                        <div class="legend-item">
-                            <span class="legend-box" style="background: #ff9800;"></span>
-                            <span class="legend-text">1 - Not Met</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-box" style="background: #ffeb3b;"></span>
-                            <span class="legend-text">2 - Weakness</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-box" style="background: #8bc34a;"></span>
-                            <span class="legend-text">3 - Met</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-box" style="background: #4caf50;"></span>
-                            <span class="legend-text">4 - Exceeding</span>
-                        </div>
+                        @endforeach
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <h6 class="mb-2">Status Validasi:</h6>
                     <div class="d-flex flex-wrap gap-2">
                         <div class="legend-item">

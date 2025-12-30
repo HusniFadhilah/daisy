@@ -26,7 +26,7 @@ return [
     |
     */
 
-    'enabled' => env('MINIFY_ENABLED', true),
+    'enabled' => env('MINIFY_ENABLED', false),
 
     /*
     |--------------------------------------------------------------------------
@@ -44,7 +44,7 @@ return [
     |
     */
 
-    'assets_enabled' => env('MINIFY_ASSETS_ENABLED', true),
+    'assets_enabled' => env('MINIFY_ASSETS_ENABLED', false),
 
     /*
     |--------------------------------------------------------------------------
@@ -118,7 +118,7 @@ return [
     | Default: true
     |
     */
-    'obfuscate' => env('MINIFY_OBFUSCATE', true),
+    'obfuscate' => env('MINIFY_OBFUSCATE', false),
 
     /*
     |--------------------------------------------------------------------------

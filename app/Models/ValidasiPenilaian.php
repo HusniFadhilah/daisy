@@ -35,7 +35,7 @@ class ValidasiPenilaian extends Model
      */
     public function penilaian()
     {
-        return $this->belongsTo(PenilaianElemen::class, 'id_penilaian', 'id_penilaian');
+        return $this->belongsTo(PenilaianElemen::class, 'id_penilaian', 'id');
     }
 
     /**

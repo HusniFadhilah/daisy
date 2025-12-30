@@ -134,47 +134,64 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // ========== PRODI ROUTES - Pengajuan Akreditasi ==========
-    Route::prefix('pengajuan')->name('pengajuan')->middleware(['auth', 'role:admin_prodi,admin_univ'])->group(function () {
-        // List & CRUD
-        Route::get('/', [PengajuanAkreditasiController::class, 'index']);
-        Route::get('/create', [PengajuanAkreditasiController::class, 'create'])->name('.create');
-        Route::post('/', [PengajuanAkreditasiController::class, 'store'])->name('.store');
+    Route::prefix('pengajuan')->name('pengajuan')->group(function () {
+        Route::middleware(['auth', 'role:admin_prodi,admin_univ'])->group(function () {
+            // List & CRUD
+            Route::get('/', [PengajuanAkreditasiController::class, 'index']);
+            Route::get('/create', [PengajuanAkreditasiController::class, 'create'])->name('.create');
+            Route::post('/', [PengajuanAkreditasiController::class, 'store'])->name('.store');
 
-        // Template Download (must be before /{id} to avoid conflict)
-        Route::get('/template/download', [PengajuanAkreditasiController::class, 'downloadTemplateBorang'])->name('.template.download');
+            // Template Download (must be before /{id} to avoid conflict)
+            Route::get('/template/download', [PengajuanAkreditasiController::class, 'downloadTemplateBorang'])->name('.template.download');
 
-        // Show detail
-        Route::get('/{id}', [PengajuanAkreditasiController::class, 'show'])->name('.show');
+            // Show detail
+            Route::get('/{id}', [PengajuanAkreditasiController::class, 'show'])->name('.show');
 
-        // === Draft Borang ===
-        Route::post('/{id}/upload-draft', [PengajuanAkreditasiController::class, 'uploadDraftBorang'])->name('.upload-draft');
-        Route::post('/{id}/process-borang', [PengajuanAkreditasiController::class, 'processBorangDOCX'])->name('.process-borang');
-        Route::get('/{id}/borang-preview', [PengajuanAkreditasiController::class, 'showBorangHTML'])->name('.borang-preview');
+            // === Draft Borang ===
+            Route::post('/{id}/upload-draft', [PengajuanAkreditasiController::class, 'uploadDraftBorang'])->name('.upload-draft');
+            Route::post('/{id}/process-borang', [PengajuanAkreditasiController::class, 'processBorangDOCX'])->name('.process-borang');
+            Route::get('/{id}/borang-preview', [PengajuanAkreditasiController::class, 'showBorangHTML'])->name('.borang-preview');
 
-        // === Borang Online (Alternative) ===
-        Route::get('/{id}/borang-online', [PengajuanAkreditasiController::class, 'showBorangOnline'])
-            ->name('.borang-online');
-        Route::get('/{id}/borang-online/data', [PengajuanAkreditasiController::class, 'getBorangData'])
-            ->name('.borang-online.data');
-        Route::post('/{id}/borang-online/save', [PengajuanAkreditasiController::class, 'saveBorangOnline'])
-            ->name('.borang-online.save');
-        Route::post('/{id}/borang-online/save-field', [PengajuanAkreditasiController::class, 'saveBorangField'])
-            ->name('.borang-online.save-field');
-        Route::post('/{id}/borang-online/upload', [PengajuanAkreditasiController::class, 'uploadBorangFile'])
-            ->name('.borang-online.upload');
-        Route::post('/{id}/borang-online/save-all', [PengajuanAkreditasiController::class, 'saveBorangOnline'])
-            ->name('.borang-online.save-all');
-        Route::post('/{id}/borang-online/submit', [PengajuanAkreditasiController::class, 'submitBorangOnline'])->name('submit');
-        Route::get('/pengesahan/preview', [PengajuanAkreditasiController::class, 'previewLembarPengesahan'])->name('pengesahan.preview');
+            // === Borang Online (Alternative) ===
+            Route::get('/{id}/borang-online', [PengajuanAkreditasiController::class, 'showBorangOnline'])
+                ->name('.borang-online');
+            Route::get('/{id}/borang-online/data', [PengajuanAkreditasiController::class, 'getBorangData'])
+                ->name('.borang-online.data');
+            Route::post('/{id}/borang-online/save', [PengajuanAkreditasiController::class, 'saveBorangOnline'])
+                ->name('.borang-online.save');
+            Route::post('/{id}/borang-online/save-field', [PengajuanAkreditasiController::class, 'saveBorangField'])
+                ->name('.borang-online.save-field');
+            Route::post('/{id}/borang-online/upload', [PengajuanAkreditasiController::class, 'uploadBorangFile'])
+                ->name('.borang-online.upload');
+            Route::post('/{id}/borang-online/save-all', [PengajuanAkreditasiController::class, 'saveBorangOnline'])
+                ->name('.borang-online.save-all');
+            Route::post('/{id}/borang-online/submit', [PengajuanAkreditasiController::class, 'submitBorangOnline'])->name('.submit');
+            Route::get('/pengesahan/preview', [PengajuanAkreditasiController::class, 'previewLembarPengesahan'])->name('.pengesahan.preview');
+            Route::post('/{id}/borang/import-docx', [PengajuanAkreditasiController::class, 'importBorangDocx'])
+                ->name('.borang.import-docx');
+            Route::get('/{id}/borang/import-status/{importId}', [PengajuanAkreditasiController::class, 'checkImportStatus'])
+                ->name('.borang.import-status');
+            Route::post('/{id}/borang/reset', [PengajuanAkreditasiController::class, 'resetBorang'])
+                ->name('.borang.reset');
+            Route::get('/{id}/borang/stats', [PengajuanAkreditasiController::class, 'getBorangStats'])
+                ->name('.borang.stats');
 
-        // === Pembayaran ===
-        Route::post('/{id}/upload-pembayaran', [PengajuanAkreditasiController::class, 'uploadBuktiPembayaran'])->name('.upload-pembayaran');
+            // === Pembayaran ===
+            Route::post('/{id}/upload-pembayaran', [PengajuanAkreditasiController::class, 'uploadBuktiPembayaran'])->name('.upload-pembayaran');
 
-        // === Borang Final ===
-        Route::post('/{id}/upload-final', [PengajuanAkreditasiController::class, 'uploadBorangFinal'])->name('.upload-final');
+            // === Borang Final ===
+            Route::post('/{id}/upload-final', [PengajuanAkreditasiController::class, 'uploadBorangFinal'])->name('.upload-final');
 
-        // === Dokumen Download ===
-        Route::get('/dokumen/{id}/download', [PengajuanAkreditasiController::class, 'downloadDokumen'])->name('.dokumen.download');
+            // === Dokumen Download ===
+            Route::get('/dokumen/{id}/download', [PengajuanAkreditasiController::class, 'downloadDokumen'])->name('.dokumen.download');
+        });
+
+        Route::middleware(['auth', 'role:admin_prodi,admin_univ,super_admin,asesi'])->group(function () {
+            Route::get('/{id}/borang/download-template', [PengajuanAkreditasiController::class, 'downloadBorangTemplate'])
+                ->name('.borang.download-template');
+            Route::get('/{id}/borang/export-docx', [PengajuanAkreditasiController::class, 'exportBorangDocx'])
+                ->name('.borang.export-docx');
+        });
     });
 
     // ========== DE ROUTES - Desk Evaluator ==========

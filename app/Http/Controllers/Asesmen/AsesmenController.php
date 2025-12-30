@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Asesmen;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\Asesmen;
+use App\Libraries\Fungsi;
 use Illuminate\Http\Request;
 use App\Models\AsesmenUserRole;
 use Illuminate\Support\Facades\DB;
@@ -51,7 +52,7 @@ class AsesmenController extends Controller
             }
 
             // Check status
-            if ($pengajuan->status !== 'lanjut_ke_ak') {
+            if ($pengajuan->status !== 'pengajuan_completed') {
                 return redirect()
                     ->route('de.pengajuan.show', $pengajuan->id)
                     ->with('error', 'Pengajuan belum disetujui untuk lanjut ke AK.');
@@ -71,9 +72,8 @@ class AsesmenController extends Controller
         $request->validate([
             'id_pengajuan' => 'nullable|exists:pengajuan_akreditasi,id',
             'id_study_program' => 'nullable|exists:study_programs,id',
-            'code' => 'nullable|string|max:50',
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:1000',
+            'description' => 'string|max:1000',
             'kode_panel' => 'nullable|string|max:50',
             'tanggal_mulai' => 'nullable|date',
             'tanggal_selesai' => 'nullable|date|after_or_equal:tanggal_mulai',
@@ -85,7 +85,7 @@ class AsesmenController extends Controller
             $asesmen = Asesmen::create([
                 'id_pengajuan' => $request->id_pengajuan,
                 'id_study_program' => $request->id_study_program,
-                'code' => $request->code,
+                'code' => 'Asesmen-' . Fungsi::uniqueCode(5),
                 'name' => $request->name,
                 'description' => $request->description,
                 'kode_panel' => $request->kode_panel,
@@ -97,8 +97,8 @@ class AsesmenController extends Controller
             if ($request->id_pengajuan) {
                 $pengajuan = PengajuanAkreditasi::find($request->id_pengajuan);
                 $pengajuan->statusLog()->create([
-                    'status_from' => 'lanjut_ke_ak',
-                    'status_to' => 'lanjut_ke_ak',
+                    'status_from' => 'ak_in_progress',
+                    'status_to' => 'ak_in_progress',
                     'changed_by' => Auth::id(),
                     'keterangan' => 'Asesmen dibuat: ' . $asesmen->name,
                     'changed_at' => now(),
@@ -167,7 +167,7 @@ class AsesmenController extends Controller
         $request->validate([
             'code' => 'nullable|string|max:50',
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:1000',
+            'description' => 'string|max:1000',
             'tanggal_mulai' => 'nullable|date',
             'tanggal_selesai' => 'nullable|date|after_or_equal:tanggal_mulai',
         ]);

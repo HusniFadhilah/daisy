@@ -50,7 +50,7 @@ class DeskEvaluatorController extends Controller
             'menunggu_pembayaran' => PengajuanAkreditasi::where('id_de_assigned', $user->id)
                 ->where('status', 'menunggu_pembayaran')->count(),
             'siap_lanjut' => PengajuanAkreditasi::where('id_de_assigned', $user->id)
-                ->where('status', 'lanjut_ke_ak')->count(),
+                ->where('status', 'pengajuan_completed')->count(),
         ];
 
         return view('asesmen.de.index', compact('pengajuans', 'stats'));
@@ -203,7 +203,7 @@ class DeskEvaluatorController extends Controller
 
         $pengajuan = PengajuanAkreditasi::findOrFail($id);
 
-        if ($pengajuan->status !== 'draft_borang_diterima') {
+        if (!in_array($pengajuan->status, ['draft_borang_diterima', 'borang_online_selesai'])) {
             return back()->with('error', 'Status pengajuan tidak sesuai untuk review.');
         }
 
@@ -358,12 +358,11 @@ class DeskEvaluatorController extends Controller
         try {
             $oldStatus = $pengajuan->status;
             $pengajuan->update([
-                'status' => 'lanjut_ke_ak',
+                'status' => 'pengajuan_completed',
                 'tanggal_lanjut_ak' => now(),
             ]);
 
-            $this->logStatus($pengajuan, $oldStatus, 'lanjut_ke_ak', 'Disetujui lanjut ke tahap AK/Asesmen Dokumen');
-
+            $this->logStatus($pengajuan, $oldStatus, 'pengajuan_completed', 'Disetujui lanjut ke tahap AK/Asesmen Dokumen');
             // TODO: Create Asesmen record and assign asesor/validator
 
             DB::commit();

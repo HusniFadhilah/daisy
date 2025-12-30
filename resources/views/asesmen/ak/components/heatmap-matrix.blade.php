@@ -343,32 +343,36 @@
          * ============================================
          */
         window.updateMatrixCell = function(elemenId, skor) {
-            skor = parseInt(skor);
-            if (isNaN(skor)) return;
+            try {
+                skor = parseInt(skor);
+                if (isNaN(skor)) return;
 
-            // ambil semua cell untuk elemen ini (pemenuhan + pelampauan)
-            const cells = document.querySelectorAll(`.matrix-cell[data-elemen-id="${elemenId}"]`);
-            if (!cells.length) return;
+                // ambil semua cell untuk elemen ini (pemenuhan + pelampauan)
+                const cells = document.querySelectorAll(`.matrix-cell[data-elemen-id="${elemenId}"]`);
+                if (!cells.length) return;
 
-            cells.forEach(cell => {
-                const colType = cell.dataset.col; // 'pemenuhan' / 'pelampauan'
+                cells.forEach(cell => {
+                    const colType = cell.dataset.col; // 'pemenuhan' / 'pelampauan'
 
-                // logika: skor 4 → isi hanya pelampauan, skor 0–3 → isi hanya pemenuhan
-                const shouldFill =
-                    (skor === 4 && colType === 'pelampauan') ||
-                    (skor !== 4 && colType === 'pemenuhan');
+                    // logika: skor 4 → isi hanya pelampauan, skor 0–3 → isi hanya pemenuhan
+                    const shouldFill =
+                        (skor === 4 && colType === 'pelampauan') ||
+                        (skor !== 4 && colType === 'pemenuhan');
 
-                cell.classList.toggle('has-score', shouldFill);
-                cell.dataset.skor = shouldFill ? skor : '';
-                cell.style.backgroundColor = shouldFill ? getSkorColorJS(skor) : '#e0e0e0';
+                    cell.classList.toggle('has-score', shouldFill);
+                    cell.dataset.skor = shouldFill ? skor : '';
+                    cell.style.backgroundColor = shouldFill ? getSkorColorJS(skor) : '#e0e0e0';
 
-                // animasi kecil
-                cell.classList.add('updating');
-                setTimeout(() => cell.classList.remove('updating'), 500);
-            });
+                    // animasi kecil
+                    cell.classList.add('updating');
+                    setTimeout(() => cell.classList.remove('updating'), 500);
+                });
 
-            // update statistik ringkasan
-            updateMatrixStats();
+                // update statistik ringkasan
+                updateMatrixStats();
+            } catch (error) {
+                console.error('Error updating matrix cell:', error);
+            }
         };
     });
 

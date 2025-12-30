@@ -55,9 +55,30 @@ class User extends Authenticatable
         return $roles->firstWhere('name', $this->attributes['role_selected'])['alias'] ?? 'LAMDEPILAR';
     }
 
-    public function asesmen()
+    public function asesmenUserRoles()
     {
-        return $this->hasMany(Asesmen::class, 'id_asesmen', 'id');
+        return $this->hasMany(AsesmenUserRole::class, 'id_user');
+    }
+
+    public function asesmens()
+    {
+        return $this->belongsToMany(
+            Asesmen::class,
+            'asesmen_user_roles', // pivot table
+            'id_user',            // FK user di pivot
+            'id_asesmen'          // FK asesmen di pivot
+        )
+            ->withPivot([
+                'id_role',
+                'status_penawaran',
+                'responded_at',
+                'response_note',
+                'status_pekerjaan',
+                'submitted_at',
+                'approved_at',
+                'approved_by',
+            ])
+            ->withTimestamps();
     }
 
     public function studyPrograms()

@@ -14,15 +14,13 @@ return new class extends Migration
         // ========================================
         Schema::create('dataset_borang', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_elemen')
-                ->constrained('elemen_standar')
-                ->onDelete('cascade');
+            $table->foreignId('id_elemen')->constrained('elemen_standar')->onDelete('cascade');
 
-            $table->string('kode', 50)->unique(); // E.1.1, E.1.2, D.1.1
+            $table->string('kode', 50)->unique(); // E.1.a, E.1.b, D.1.a
             $table->string('nama', 255);
             $table->text('deskripsi')->nullable();
 
-            // ✅ Extended field types for online form
+            // Field types
             $table->enum('tipe_field', [
                 'text',
                 'textarea',
@@ -36,21 +34,24 @@ return new class extends Migration
                 'narasi'
             ])->default('text');
 
-            // ✅ For form inputs
+            // Form configuration
             $table->string('label_field')->nullable();
             $table->string('placeholder')->nullable();
             $table->boolean('is_required')->default(false);
-            $table->json('options')->nullable(); // For select fields
-            $table->text('keterangan')->nullable(); // Help text
+            $table->json('options')->nullable();
+            $table->text('keterangan')->nullable();
 
-            // ✅ For table fields
-            $table->json('expected_columns')->nullable(); // Expected table structure
+            // Table configuration
+            $table->json('expected_columns')->nullable();
+            $table->longText('template_html')->nullable();
+            $table->json('validation_rules')->nullable();
 
             $table->integer('urutan')->default(0);
             $table->boolean('is_active')->default(true);
             $table->timestamps();
 
             $table->index(['id_elemen', 'kode']);
+            $table->index(['tipe_field']);
         });
 
         // ========================================
@@ -62,12 +63,13 @@ return new class extends Migration
                 ->constrained('pengajuan_akreditasi')
                 ->onDelete('cascade');
             $table->foreignId('id_dokumen')
+                ->nullable()
                 ->constrained('pengajuan_dokumen')
-                ->onDelete('cascade');
+                ->onDelete('set null');
 
-            $table->string('original_filename');
+            $table->string('original_filename')->nullable();
+            $table->string('stored_path')->nullable();
 
-            // ✅ FIXED: Complete status enum
             $table->enum('status', [
                 'pending',
                 'processing',
@@ -91,10 +93,11 @@ return new class extends Migration
                 ->constrained('users')
                 ->onDelete('cascade');
             $table->timestamp('imported_at')->nullable();
+            $table->timestamp('completed_at')->nullable();
             $table->timestamps();
 
             $table->index(['id_pengajuan', 'status']);
-            $table->index(['id_dokumen', 'status']);
+            $table->index(['status']);
         });
 
         // ========================================
@@ -112,7 +115,7 @@ return new class extends Migration
 
             $table->string('kode_section', 50); // D.1, E.1, etc.
             $table->string('judul_section');
-            $table->text('konten_narasi')->nullable(); // Text before "Mohon isi di sini"
+            $table->longText('konten_narasi')->nullable();
             $table->integer('position')->default(0);
             $table->timestamps();
 
@@ -133,12 +136,13 @@ return new class extends Migration
                 ->constrained('dataset_borang')
                 ->onDelete('set null');
 
-            $table->string('kode_tabel', 50); // E.1.1, E.1.2, etc.
-            $table->string('judul_tabel');
+            $table->string('kode_tabel', 50); // E.1.a, E.1.b, etc.
+            $table->string('judul_tabel')->nullable();
             $table->integer('row_count')->default(0);
             $table->integer('col_count')->default(0);
-            $table->json('headers')->nullable(); // Table headers
-            $table->json('data')->nullable(); // Full table data as JSON
+            $table->json('headers')->nullable();
+            $table->longText('data')->nullable(); // Store as JSON or HTML
+            $table->longText('html_content')->nullable(); // Original HTML
             $table->integer('position')->default(0);
             $table->timestamps();
 
@@ -151,18 +155,23 @@ return new class extends Migration
         // ========================================
         Schema::create('borang_data', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_borang_import')
-                ->constrained('borang_imports')
+            $table->foreignId('id_pengajuan')
+                ->constrained('pengajuan_akreditasi')
                 ->onDelete('cascade');
 
-            // ✅ Flexible string key (not FK)
-            // Supports: 'desc_123', 'table_456', 'field_E.1.1', etc.
+            $table->foreignId('id_borang_import')
+                ->nullable()
+                ->constrained('borang_imports')
+                ->onDelete('set null');
+
+            // Flexible key: 'desc_123', 'E.1.a', 'field_name', etc.
             $table->string('dataset_id', 255);
 
-            // Store value as text (can be JSON for complex data)
-            $table->text('nilai')->nullable();
+            // Store value
+            $table->longText('nilai')->nullable();
+            $table->boolean('is_template')->default(true);
 
-            // ✅ Optional: Link to dataset_borang if needed
+            // Optional link to dataset_borang
             $table->foreignId('id_dataset_borang')
                 ->nullable()
                 ->constrained('dataset_borang')
@@ -170,8 +179,9 @@ return new class extends Migration
 
             $table->timestamps();
 
-            // ✅ Unique: one value per dataset per import
-            $table->unique(['id_borang_import', 'dataset_id'], 'borang_data_unique');
+            // One value per dataset per pengajuan
+            $table->unique(['id_pengajuan', 'dataset_id'], 'borang_data_unique');
+            $table->index(['id_pengajuan']);
             $table->index(['id_borang_import']);
             $table->index(['dataset_id']);
         });

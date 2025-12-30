@@ -111,8 +111,8 @@
                         <label for="code" class="form-label fw-semibold">
                             Kode Panel
                         </label>
-                        <input type="text" class="form-control @error('code') is-invalid @enderror" id="code" name="code" value="{{ old('code', $asesmen->code ?? '') }}" placeholder="Contoh: T01-P007" style="max-width: 200px;">
-                        @error('code')
+                        <input type="text" class="form-control @error('kode_panel') is-invalid @enderror" id="kode_panel" name="kode_panel" value="{{ old('kode_panel', $asesmen->kode_panel ?? '') }}" placeholder="Contoh: T01-P007" style="max-width: 200px;">
+                        @error('kode_panel')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>

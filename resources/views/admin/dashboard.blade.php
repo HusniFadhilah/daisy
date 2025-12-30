@@ -1,15 +1,18 @@
+@php
+$authUser = auth()->user();
+@endphp
 @extends('layouts.template.app')
 
-@section('title', 'Dashboard Admin - DAISY')
+@section('title', 'Dashboard ' . $authUser->role_alias . ' - DAISY')
 
 @section('content')
 <div class="container-fluid py-3">
     <!-- Welcome Section -->
     <section class="welcome-section">
         <div class="welcome-content">
-            <h2>Selamat Datang Kembali, {{ auth()->user()->name ?? 'Dr. Eng. Maryono' }}! 👋</h2>
+            <h2>Selamat Datang Kembali, {{ $authUser->name ?? 'Dr. Eng. Maryono' }}! 👋</h2>
             {{-- <p class="mb-0">Anda memiliki {{ $penawaranBaru ?? 2 }} penawaran baru, dan {{ $penugasanAktif ?? 1 }} tugas aktif. Mari kita selesaikan tugas ini dengan senyum 😊</p> --}}
-            <p class="mb-0">Role Anda adalah {{ auth()->user()->role_alias }}</p>
+            <p class="mb-0">Role Anda adalah {{ $authUser->role_alias }}</p>
         </div>
     </section>
 

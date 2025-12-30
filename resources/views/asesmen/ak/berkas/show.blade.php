@@ -883,13 +883,20 @@
         const checkStatusPekerjaan = @json($isSubmitted);
         const needsRevision = @json($needsRevision);
         let saveTimeout;
+        let isSaving = false;
         const AUTO_SAVE_DELAY = 2000;
         let currentImportLogId = null;
         let importStatusInterval = null;
 
+        let pollingInterval = null;
+        let pollCount = 0;
+        const MAX_POLL_COUNT = 150; // 5 menit (150 * 2 detik)
+        const POLL_INTERVAL = 2000; // 2 detik
+
         // Loading Overlay
         const loadingOverlay = createLoadingOverlay();
         const toggleBtn = document.getElementById('toggleAllAccordion');
+        const importModal = document.getElementById('importModal');
 
         // Initialize
         initializeCharCounters();
@@ -943,7 +950,7 @@
                 if (importAlert) importAlert.classList.add('d-none');
 
                 // Show modal
-                const modal = new bootstrap.Modal(document.getElementById('importModal'));
+                const modal = new bootstrap.Modal(importModal);
                 modal.show();
             });
             document.getElementById('btnImportHistory').addEventListener('click', importHistoryExcel);
@@ -1284,7 +1291,6 @@
                 } else {
                     throw new Error(data.message || 'Upload gagal');
                 }
-
             } catch (error) {
                 console.error('Upload excel error:', error);
 
@@ -1296,6 +1302,9 @@
                 // Show error
                 showAlert('importAlert', 'danger', error.message);
                 document.getElementById('importProgress').classList.add('d-none');
+                // Clear file input
+                fileInput.value = '';
+                fileInfo.classList.add('d-none');
             }
         }
 
@@ -1305,16 +1314,41 @@
          * ============================================
          */
 
-        let pollingInterval = null;
-
         function pollImportStatus(importLogId) {
             // Clear any existing interval
             if (pollingInterval) {
                 clearInterval(pollingInterval);
             }
 
+            // Reset poll count
+            pollCount = 0;
+
             // Poll every 2 seconds
             pollingInterval = setInterval(async () => {
+                pollCount++;
+
+                // ✅ TIMEOUT: Stop after 5 minutes
+                if (pollCount >= MAX_POLL_COUNT) {
+                    clearInterval(pollingInterval);
+                    pollingInterval = null;
+
+                    showAlert('importAlert', 'warning'
+                        , 'Import timeout. Proses memakan waktu lebih lama dari biasanya. ' +
+                        'Silakan refresh halaman untuk cek status terbaru.'
+                    );
+
+                    // Re-enable buttons
+                    const btnSubmit = document.getElementById('btnSubmitImport');
+                    const btnClose = document.getElementById('btnCloseImport');
+                    if (btnSubmit) {
+                        btnSubmit.disabled = false;
+                        btnSubmit.innerHTML = '<i class="bi bi-upload"></i> Upload Sekarang';
+                    }
+                    if (btnClose) btnClose.disabled = false;
+
+                    return;
+                }
+
                 try {
                     const response = await fetch(`/ak/import-status/${importLogId}`, {
                         headers: {
@@ -1323,25 +1357,66 @@
                         }
                     });
 
+                    // ✅ Handle HTTP errors
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+
                     const data = await response.json();
+
                     if (data.success) {
                         const log = data.data;
 
-                        // Update progress
+                        // Update progress with ETA
                         updateProgressImport(log);
 
-                        // Check if completed
+                        // ✅ Check if completed or failed
                         if (log.status === 'completed' || log.status === 'failed') {
                             clearInterval(pollingInterval);
-                            showImportResult(log);
+                            pollingInterval = null;
+                            pollCount = 0;
+
+                            // Show result
+                            if (log.status === 'completed') {
+                                showImportResult(log);
+                            } else {
+                                showImportError(log);
+                            }
                         }
+                    } else {
+                        throw new Error(data.message || 'Gagal mendapatkan status import');
                     }
+
                 } catch (error) {
                     console.error('Polling error:', error);
-                    clearInterval(pollingInterval);
-                    showAlert('importAlert', 'danger', 'Gagal memeriksa status import');
+
+                    // ✅ Retry logic: Only clear after 3 consecutive errors
+                    if (!window.pollErrorCount) window.pollErrorCount = 0;
+                    window.pollErrorCount++;
+
+                    if (window.pollErrorCount >= 3) {
+                        clearInterval(pollingInterval);
+                        pollingInterval = null;
+                        window.pollErrorCount = 0;
+
+                        showAlert('importAlert', 'danger'
+                            , `Gagal memeriksa status import: ${error.message}. ` +
+                            'Silakan refresh halaman untuk cek status.'
+                        );
+
+                        // Re-enable buttons
+                        const btnSubmit = document.getElementById('btnSubmitImport');
+                        const btnClose = document.getElementById('btnCloseImport');
+                        if (btnSubmit) {
+                            btnSubmit.disabled = false;
+                            btnSubmit.innerHTML = '<i class="bi bi-upload"></i> Upload Sekarang';
+                        }
+                        if (btnClose) btnClose.disabled = false;
+                    } else {
+                        console.warn(`Polling error (${window.pollErrorCount}/3), retrying...`);
+                    }
                 }
-            }, 2000);
+            }, POLL_INTERVAL);
         }
 
         /**
@@ -1441,7 +1516,8 @@
          */
         async function autoSavePenilaian(form, idElemen) {
             const formData = new FormData(form);
-
+            if (isSaving) return;
+            isSaving = true;
             try {
                 const response = await fetch(`/ak/berkas/${idAsesmen}/nilai`, {
                     method: 'POST'
@@ -1479,6 +1555,8 @@
                 }
             } catch (error) {
                 console.error('Auto-save error:', error);
+            } finally {
+                isSaving = false;
             }
         }
 
@@ -1790,7 +1868,7 @@
          */
         function showImportResult(data) {
             // Close import modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('importModal'));
+            const modal = bootstrap.Modal.getInstance(importModal);
             if (modal) modal.hide();
 
             // Prepare result content
@@ -1855,7 +1933,7 @@
          */
         function showImportError(data) {
             // Close import modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('importModal'));
+            const modal = bootstrap.Modal.getInstance(importModal);
             if (modal) modal.hide();
 
             // Prepare error content
@@ -2037,6 +2115,9 @@
             if (importStatusInterval) {
                 clearInterval(importStatusInterval);
             }
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+            }
         });
 
         /**
@@ -2090,6 +2171,16 @@
             } else if (log.status === 'failed') {
                 progressBar.classList.remove('bg-warning', 'bg-success');
                 progressBar.classList.add('bg-danger');
+            }
+
+            if (log.started_at && log.imported_rows > 0) {
+                const elapsed = Date.now() - new Date(log.started_at).getTime();
+                const avgPerRow = elapsed / log.imported_rows;
+                const remaining = (log.total_rows - log.imported_rows) * avgPerRow;
+                const eta = Math.ceil(remaining / 1000); // seconds
+
+                document.getElementById('progressText').textContent =
+                    `${percentage}% (sisa ~${eta} detik)`;
             }
         }
 

@@ -13,6 +13,18 @@ return new class extends Migration
     {
         Schema::create('asesmens', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('id_pengajuan')
+                ->nullable()
+                ->constrained('pengajuan_akreditasi')
+                ->onDelete('set null')
+                ->comment('Relasi ke pengajuan akreditasi (jika ada)');
+
+            // Add fields from StudyProgram
+            $table->foreignId('id_study_program')
+                ->nullable()
+                ->constrained('study_programs')
+                ->onDelete('set null')
+                ->comment('Program studi yang diases');
             $table->string('code')->unique();
             $table->string('name');
             $table->text('description');

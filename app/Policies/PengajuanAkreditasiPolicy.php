@@ -100,4 +100,19 @@ class PengajuanAkreditasiPolicy
     {
         return $user->hasRole('de') && $pengajuan->id_de_assigned === $user->id;
     }
+
+    /**
+     * Determine if user can reset borang
+     */
+    public function resetBorang(User $user, PengajuanAkreditasi $pengajuan)
+    {
+        // Only prodi who owns this pengajuan can reset
+        if ($user->role !== 'prodi') {
+            return false;
+        }
+
+        $userStudyProgramIds = $user->studyPrograms()->pluck('study_programs.id')->toArray();
+
+        return in_array($pengajuan->id_program_studi, $userStudyProgramIds);
+    }
 }

@@ -240,7 +240,7 @@
                                     <i class="bi bi-pencil-square fs-1 text-primary mb-3"></i>
                                     <h5>Form Isian Borang Online</h5>
                                     <p class="text-muted mb-3">
-                                        Isi borang evaluasi diri secara langsung dengan form yang terstruktur
+                                        Isi lembar evaluasi diri secara langsung dengan form yang terstruktur
                                     </p>
                                     <a href="{{ route('pengajuan.borang-online', $pengajuan->id) }}" class="btn btn-primary">
                                         <i class="bi bi-pencil-square"></i> Mulai Mengisi Borang Online
@@ -254,7 +254,7 @@
             @endif
 
             <!-- SECTION: Proses & Preview Borang -->
-            @if($pengajuan->status === 'draft_borang_diterima')
+            @if(in_array($pengajuan->status, ['draft_borang_diterima', 'borang_online_selesai']))
             @include('asesmen.pengajuan.components.modal-upload')
             @endif
 
@@ -709,6 +709,11 @@
     const filePreview = document.getElementById('filePreview');
     const btnSubmit = document.getElementById('btnSubmitUpload');
     const formUpload = document.getElementById('formUploadBorang');
+    const btnResetBorangShow = document.getElementById('btnResetBorangShow');
+
+    if (btnResetBorangShow) btnResetBorangShow.addEventListener('click', function() {
+        window.location.href = '{{ route("pengajuan.borang-online", $pengajuan->id) }}#reset';
+    });
 
     if (fileInput) {
         // Click to upload

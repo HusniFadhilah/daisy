@@ -37,7 +37,7 @@ class PenilaianElemen extends Model
      */
     public function asesmen()
     {
-        return $this->belongsTo(Asesmen::class);
+        return $this->belongsTo(Asesmen::class, 'id_asesmen');
     }
 
     /**
@@ -58,7 +58,7 @@ class PenilaianElemen extends Model
      */
     public function elemenStandar()
     {
-        return $this->belongsTo(ElemenStandar::class, 'id_elemen', 'id_elemen');
+        return $this->belongsTo(ElemenStandar::class, 'id_elemen', 'id');
     }
 
     /**

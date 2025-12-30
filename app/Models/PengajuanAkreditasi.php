@@ -79,6 +79,11 @@ class PengajuanAkreditasi extends Model
         return $this->hasMany(PengajuanDokumen::class, 'id_pengajuan');
     }
 
+    public function borangData()
+    {
+        return $this->hasMany(BorangData::class, 'id_pengajuan');
+    }
+
     public function reviewKesiapan()
     {
         return $this->hasMany(ReviewKesiapan::class, 'id_pengajuan');
@@ -134,39 +139,123 @@ class PengajuanAkreditasi extends Model
 
     public function getStatusLabelAttribute()
     {
-        $labels = [
-            'pengingat_dikirim' => 'Pengingat Dikirim',
-            'surat_permohonan_diterima' => 'Surat Permohonan Diterima',
-            'borang_dikirim' => 'Borang Dikirim',
-            'draft_borang_diterima' => 'Draft Borang Diterima',
-            'review_kesiapan_siap' => 'Review: Siap Lanjut',
-            'review_kesiapan_belum_siap' => 'Review: Belum Siap',
-            'menunggu_pembayaran' => 'Menunggu Pembayaran',
-            'pembayaran_diterima' => 'Pembayaran Diterima',
-            'borang_final_diterima' => 'Borang Final Diterima',
-            'lanjut_ke_ak' => 'Lanjut ke AK',
-            'ditolak' => 'Ditolak',
-        ];
-
-        return $labels[$this->status] ?? $this->status;
+        return $this->statusMap()[$this->status]['label']
+            ?? ucfirst(str_replace('_', ' ', $this->status));
     }
 
     public function getStatusBadgeClassAttribute()
     {
-        $classes = [
-            'pengingat_dikirim' => 'bg-secondary',
-            'surat_permohonan_diterima' => 'bg-info',
-            'borang_dikirim' => 'bg-primary',
-            'draft_borang_diterima' => 'bg-warning',
-            'review_kesiapan_siap' => 'bg-success',
-            'review_kesiapan_belum_siap' => 'bg-danger',
-            'menunggu_pembayaran' => 'bg-warning',
-            'pembayaran_diterima' => 'bg-info',
-            'borang_final_diterima' => 'bg-primary',
-            'lanjut_ke_ak' => 'bg-success',
-            'ditolak' => 'bg-danger',
-        ];
+        return $this->statusMap()[$this->status]['bg'] ?? 'bg-secondary';
+    }
 
-        return $classes[$this->status] ?? 'bg-secondary';
+    public function getStatusIconAttribute()
+    {
+        return $this->statusMap()[$this->status]['icon'] ?? 'bi-question-circle';
+    }
+
+
+    public static function statusMap(): array
+    {
+        return [
+            'draft' => [
+                'label' => 'Draft',
+                'bg' => 'bg-secondary',
+                'icon' => 'bi-pencil',
+            ],
+
+            'pengingat_dikirim' => [
+                'label' => 'Pengingat Dikirim',
+                'bg' => 'bg-secondary',
+                'icon' => 'bi-bell',
+            ],
+            'surat_permohonan_diterima' => [
+                'label' => 'Surat Permohonan Diterima',
+                'bg' => 'bg-info',
+                'icon' => 'bi-envelope-check',
+            ],
+
+            'borang_dikirim' => [
+                'label' => 'Borang Dikirim',
+                'bg' => 'bg-primary',
+                'icon' => 'bi-send',
+            ],
+            'draft_borang_diterima' => [
+                'label' => 'Draft Borang Diterima',
+                'bg' => 'bg-warning',
+                'icon' => 'bi-file-earmark-text',
+            ],
+
+            'review_kesiapan_belum_siap' => [
+                'label' => 'Review Kesiapan: Belum Siap',
+                'bg' => 'bg-danger',
+                'icon' => 'bi-x-circle',
+            ],
+            'review_kesiapan_siap' => [
+                'label' => 'Review Kesiapan: Siap',
+                'bg' => 'bg-success',
+                'icon' => 'bi-check-circle',
+            ],
+
+            'menunggu_pembayaran' => [
+                'label' => 'Menunggu Pembayaran',
+                'bg' => 'bg-warning',
+                'icon' => 'bi-hourglass-split',
+            ],
+            'pembayaran_diterima' => [
+                'label' => 'Pembayaran Diterima',
+                'bg' => 'bg-info',
+                'icon' => 'bi-credit-card',
+            ],
+
+            'borang_final_diterima' => [
+                'label' => 'Borang Final Diterima',
+                'bg' => 'bg-primary',
+                'icon' => 'bi-file-earmark-check',
+            ],
+            'borang_online_selesai' => [
+                'label' => 'Borang Online Selesai',
+                'bg' => 'bg-success',
+                'icon' => 'bi-ui-checks',
+            ],
+
+            'pengajuan_completed' => [
+                'label' => 'Pengajuan Selesai',
+                'bg' => 'bg-success',
+                'icon' => 'bi-check2-all',
+            ],
+
+            'ak_in_progress' => [
+                'label' => 'Asesmen Kecukupan (AK) Berlangsung',
+                'bg' => 'bg-primary',
+                'icon' => 'bi-clipboard-data',
+            ],
+            'ak_completed' => [
+                'label' => 'Asesmen Kecukupan (AK) Selesai',
+                'bg' => 'bg-success',
+                'icon' => 'bi-clipboard-check',
+            ],
+
+            'al_in_progress' => [
+                'label' => 'Asesmen Lapangan (AL) Berlangsung',
+                'bg' => 'bg-primary',
+                'icon' => 'bi-building',
+            ],
+            'al_completed' => [
+                'label' => 'Asesmen Lapangan (AL) Selesai',
+                'bg' => 'bg-success',
+                'icon' => 'bi-building-check',
+            ],
+
+            'selesai' => [
+                'label' => 'Selesai',
+                'bg' => 'bg-dark',
+                'icon' => 'bi-flag-fill',
+            ],
+            'ditolak' => [
+                'label' => 'Ditolak',
+                'bg' => 'bg-danger',
+                'icon' => 'bi-x-octagon',
+            ],
+        ];
     }
 }

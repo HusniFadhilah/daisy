@@ -14,16 +14,16 @@ return new class extends Migration
         Schema::create('bobot_penilaian', function (Blueprint $table) {
             $table->id();
             $table->foreignId('id_elemen')->constrained('elemen_standar')->onDelete('cascade');
-            $table->foreignId('id_level')->constrained('degree_levels')->onDelete('cascade');
+            $table->foreignId('id_category')->constrained('study_program_categories')->onDelete('cascade');
             $table->integer('bobot');
             $table->timestamps();
 
             // Indexes
             $table->index('id_elemen');
-            $table->index('id_level');
+            $table->index('id_category');
 
             // Unique constraint
-            $table->unique(['id_elemen', 'id_level']);
+            $table->unique(['id_elemen', 'id_category']);
         });
     }
 

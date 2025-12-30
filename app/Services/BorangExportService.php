@@ -1,28 +1,40 @@
 <?php
+// app/Services/BorangExportService.php
 
-namespace Database\Seeders;
+namespace App\Services;
 
-use Illuminate\Database\Seeder;
+use App\Models\PengajuanAkreditasi;
+use App\Models\Kriteria;
+use App\Models\BorangData;
 use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\IOFactory;
 use PhpOffice\PhpWord\SimpleType\Jc;
 use PhpOffice\PhpWord\Style\Font;
-use App\Models\Kriteria;
 
-class BorangExampleSeeder extends Seeder
+class BorangExportService
 {
     protected PhpWord $phpWord;
-
     protected array $numberingRegistered = [];
+    protected $pengajuan;
+    protected $borangDataMap = [];
 
-    public function run()
+    public function __construct($pengajuan)
     {
+        $this->pengajuan = $pengajuan;
         $this->phpWord = new PhpWord();
 
-        // ✅ FONT Montserrat 11PT (SEPERTI TEMPLATE)
+        // Load existing borang data
+        $borangData = BorangData::where('id_pengajuan', $pengajuan->id)->get();
+        foreach ($borangData as $data) {
+            $this->borangDataMap[$data->dataset_id] = $data->value;
+        }
+
         $this->phpWord->setDefaultFontName('Montserrat');
         $this->phpWord->setDefaultFontSize(11);
+    }
 
+    public function generate()
+    {
         $this->addCoverPage();
         $this->addLembarPengesahan();
         $this->addKataPengantarSection();
@@ -30,16 +42,13 @@ class BorangExampleSeeder extends Seeder
         $this->addContentPages();
         $this->addSuplemenSection();
 
+        return $this->phpWord;
+    }
+
+    public function save($filePath)
+    {
         $objWriter = IOFactory::createWriter($this->phpWord, 'Word2007');
-        $filePath = storage_path('app/public/templates/TEMPLATE_BORANG_EVALUASI_DIRI.docx');
-
-        if (!file_exists(dirname($filePath))) {
-            mkdir(dirname($filePath), 0755, true);
-        }
-
         $objWriter->save($filePath);
-
-        $this->command->info('✅ Template DOCX berhasil dibuat: ' . $filePath);
     }
 
     private function addCoverPage()
@@ -59,12 +68,19 @@ class BorangExampleSeeder extends Seeder
 
         $section->addTextBreak(6);
 
-        // Logo placeholder
-        $section->addText(
-            '[LOGO UNIVERSITAS]',
-            ['size' => 14, 'bold' => true],
-            ['alignment' => Jc::CENTER]
-        );
+        // ✅ LOGO (bisa diganti dengan image jika ada)
+        if ($this->pengajuan->studyProgram->university->logo) {
+            $section->addImage(
+                storage_path('app/public/' . $this->pengajuan->studyProgram->university->logo),
+                ['width' => 100, 'height' => 100, 'alignment' => Jc::CENTER]
+            );
+        } else {
+            $section->addText(
+                '[LOGO UNIVERSITAS]',
+                ['size' => 14, 'bold' => true],
+                ['alignment' => Jc::CENTER]
+            );
+        }
 
         $section->addTextBreak(5);
 
@@ -76,25 +92,27 @@ class BorangExampleSeeder extends Seeder
 
         $section->addTextBreak(1);
 
+        // ✅ NAMA PRODI DARI DATABASE
         $section->addText(
-            '[NAMA PROGRAM STUDI]',
+            strtoupper($this->pengajuan->studyProgram->name),
             ['size' => 14],
             ['alignment' => Jc::CENTER]
         );
 
         $section->addTextBreak(8);
 
+        // ✅ UNIVERSITAS DARI DATABASE
         $section->addText(
-            'UNIVERSITAS/INSTITUT ..................................',
+            strtoupper($this->pengajuan->studyProgram->university->name ?? 'UNIVERSITAS'),
             ['size' => 12],
             ['alignment' => Jc::CENTER]
         );
 
         $section->addTextBreak(1);
 
+        // ✅ TAHUN PENGAJUAN
         $textRun = $section->addTextRun(['alignment' => Jc::CENTER]);
-        $textRun->addText('Bulan, ', ['size' => 12]);
-        $textRun->addText('Tahun', ['size' => 12, 'underline' => Font::UNDERLINE_SINGLE, 'color' => 'FF0000']);
+        $textRun->addText(date('F, Y', strtotime($this->pengajuan->created_at)), ['size' => 12]);
     }
 
     private function addLembarPengesahan()
@@ -106,81 +124,65 @@ class BorangExampleSeeder extends Seeder
             'marginRight' => 1500,
         ]);
 
-        // Judul
         $section->addText(
             'LEMBAR PENGESAHAN',
             ['size' => 14, 'bold' => true],
             ['alignment' => Jc::CENTER, 'spaceAfter' => 500]
         );
 
-        // Style table (tanpa border)
         $this->phpWord->addTableStyle('FormTable', [
             'borderSize' => 0,
             'borderColor' => 'FFFFFF',
             'cellMarginTop' => 0,
             'cellMarginBottom' => 0,
-            'cellMarginLeft' => 0,
-            'cellMarginRight' => 0,
         ]);
 
-        // ===== BLOK 1: Lembaga Penjaminan Mutu =====
+        // Lembaga Penjaminan Mutu
         $section->addText('Lembaga Penjaminan Mutu', ['size' => 11, 'bold' => true], ['spaceAfter' => 120]);
 
         $table1 = $section->addTable('FormTable');
-        $this->addRow($table1, 'Universitas/Institut');
-        $this->addRow($table1, 'Lembaga Penjaminan Mutu');
-        $this->addRow($table1, 'Telp');
-        $this->addRow($table1, 'Mobile telp dan/atau WA');
-        $this->addRow($table1, 'Alamat Email');
+        $this->addRow($table1, 'Universitas/Institut', $this->pengajuan->studyProgram->university->name ?? '');
+        $this->addRow($table1, 'Lembaga Penjaminan Mutu', '');
+        $this->addRow($table1, 'Telp', '');
+        $this->addRow($table1, 'Mobile telp dan/atau WA', '');
+        $this->addRow($table1, 'Alamat Email', '');
 
         $section->addTextBreak(1);
 
-        // ===== BLOK 2: Program Studi Akreditasi =====
+        // Program Studi
         $section->addText('Program Studi Akreditasi', ['size' => 11, 'bold' => true], ['spaceAfter' => 120]);
 
         $table2 = $section->addTable('FormTable');
-        $this->addRow($table2, 'Program Studi');
-        $this->addRow($table2, 'Akreditasi');
-        $this->addRow($table2, 'Kontak PIC Akreditasi');
-        $this->addRow($table2, 'Telp');
-        $this->addRow($table2, 'Mobile telp dan/atau WA');
-        $this->addRow($table2, 'Alamat Email');
+        $this->addRow($table2, 'Program Studi', $this->pengajuan->studyProgram->name);
+        $this->addRow($table2, 'Akreditasi', $this->pengajuan->studyProgram->accreditation_status ?? '');
+        $this->addRow($table2, 'Kontak PIC Akreditasi', $this->pengajuan->user->name ?? '');
+        $this->addRow($table2, 'Telp', $this->pengajuan->user->phone ?? '');
+        $this->addRow($table2, 'Mobile telp dan/atau WA', $this->pengajuan->user->phone ?? '');
+        $this->addRow($table2, 'Alamat Email', $this->pengajuan->user->email ?? '');
 
-        // Spacer besar supaya tanda tangan turun ke bawah
         $section->addTextBreak(6);
 
-        // ===== BLOK TANDA TANGAN (KANAN BAWAH) =====
-        // Pakai table 1 baris 2 kolom: kiri kosong, kanan isi tanda tangan
+        // Tanda tangan
         $this->phpWord->addTableStyle('SignTable', [
             'borderSize' => 0,
             'borderColor' => 'FFFFFF',
-            'cellMarginLeft' => 0,
-            'cellMarginRight' => 0,
         ]);
 
         $signTable = $section->addTable('SignTable');
         $signTable->addRow();
-
-        // Kolom kiri kosong (untuk mendorong konten ke kanan)
         $signTable->addCell(5200)->addText(' ');
 
-        // Kolom kanan (isi tanda tangan)
         $cell = $signTable->addCell(3500);
+        $cell->addText(
+            date('d F Y', strtotime($this->pengajuan->created_at)),
+            ['size' => 11],
+            ['alignment' => Jc::START, 'spaceAfter' => 120]
+        );
 
-        $run = $cell->addTextRun(['alignment' => Jc::START, 'spaceAfter' => 120]);
-        $run->addText('Kota, tanggal, Bulan, Tahun');
-
-        $cell->addTextBreak(1);
-
-        $run2 = $cell->addTextRun(['spaceAfter' => 120]);
-        $run2->addText('Ttd dan stemp', ['color' => 'bbbbbb', 'italic' => true]);
-
-        $cell->addTextBreak(1);
-
-        $cell->addText('Ketua Penjaminan Mutu Universitas/UPPS', ['size' => 11, 'color' => 'bbbbbb', 'italic' => true], ['spaceAfter' => 700]);
-
-        $cell->addText('Nama :', ['size' => 11], ['spaceAfter' => 80]);
-        $cell->addText('NIP   :', ['size' => 11]);
+        $cell->addTextBreak(3);
+        $cell->addText('Ketua Penjaminan Mutu', ['size' => 11], ['spaceAfter' => 700]);
+        $cell->addText('Nama : ___________________', ['size' => 11], ['spaceAfter' => 80]);
+        $cell->addText('NIP   : ___________________', ['size' => 11]);
     }
 
     private function addKataPengantarSection()
@@ -192,12 +194,17 @@ class BorangExampleSeeder extends Seeder
             'marginRight' => 1500,
         ]);
 
-        // Judul
         $section->addText(
             'KATA PENGANTAR',
             ['size' => 14, 'bold' => true],
             ['alignment' => Jc::CENTER, 'spaceAfter' => 500]
         );
+
+        // ✅ ISI KATA PENGANTAR DARI DATABASE (jika ada)
+        $kataPengantar = $this->borangDataMap['kata_pengantar'] ?? '';
+        if ($kataPengantar) {
+            $section->addText($kataPengantar, ['size' => 11], ['alignment' => Jc::BOTH]);
+        }
     }
 
     private function addRingkasanSection()
@@ -209,22 +216,26 @@ class BorangExampleSeeder extends Seeder
             'marginRight' => 1500,
         ]);
 
-        // Judul
         $section->addText(
             'RINGKASAN',
             ['size' => 14, 'bold' => true],
             ['alignment' => Jc::CENTER, 'spaceAfter' => 500]
         );
+
+        // ✅ ISI RINGKASAN DARI DATABASE (jika ada)
+        $ringkasan = $this->borangDataMap['ringkasan'] ?? '';
+        if ($ringkasan) {
+            $section->addText($ringkasan, ['size' => 11], ['alignment' => Jc::BOTH]);
+        }
     }
 
     private function addContentPages()
     {
-        // ✅ AMBIL DATA DARI DATABASE
         $kriterias = Kriteria::with([
             'elemenStandar.pernyataan',
             'elemenStandar.indikator',
             'elemenStandar.datasetBorang'
-        ])->get();
+        ])->orderBy('kode_kriteria')->get();
 
         foreach ($kriterias as $kriteria) {
             $section = $this->phpWord->addSection([
@@ -234,62 +245,165 @@ class BorangExampleSeeder extends Seeder
                 'marginRight' => 1500,
             ]);
 
-            // ✅ KRITERIA HEADER (D. Diferensiasi Misi)
             $section->addText(
                 $kriteria->kode_kriteria . '. ' . $kriteria->nama_kriteria,
                 ['size' => 11, 'bold' => true],
                 ['spaceAfter' => 100]
             );
 
-            // Italic subtitle
             $section->addText(
                 '(' . $this->getKriteriaSubtitle($kriteria->kode_kriteria) . ')',
                 ['size' => 11, 'italic' => true],
                 ['spaceAfter' => 200]
             );
+
             $countElemen = $kriteria->elemenStandar->count();
+
             foreach ($kriteria->elemenStandar as $key => $elemen) {
 
-                // ✅ JUDUL ELEMEN (SESUAI CONTOH WORD)
+                // Judul elemen
                 $section->addText(
-                    $key + 1 . '. ' . $elemen->kode_elemen . '. ' . $elemen->pernyataan_elemen,
+                    ($key + 1) . '. ' . $elemen->kode_elemen . '. ' . $elemen->pernyataan_elemen,
                     ['size' => 11, 'bold' => true],
                     ['spaceAfter' => 150]
                 );
 
-                // ✅ PERNYATAAN STANDAR (JUSTIFY)
+                // Pernyataan Standar
                 $this->addPernyataanStandar($section, $elemen);
-
                 $section->addTextBreak(1);
 
-                // ✅ URAIAN INDIKATOR PENILAIAN (NUMBERED LIST)
+                // Uraian Indikator
                 $this->addUraianIndikator($section, $elemen);
-
                 $section->addPageBreak();
 
-                // ✅ KOTAK ELEMEN (1. D.1. Legalitas Program dan Tata Pamong)
+                // Kotak Elemen
                 $this->addElemenBox($section, $kriteria, $elemen);
-
                 $section->addTextBreak(0.5);
 
-                // ✅ KOTAK DESKRIPSI (BESAR) - DI SINI TABEL AKAN MASUK
-                $this->addDeskripsiBox($section, $elemen);
+                // ✅ KOTAK DESKRIPSI DENGAN DATA DARI DATABASE
+                $this->addDeskripsiBoxWithData($section, $elemen);
 
-                if ($key + 1 != $countElemen) $section->addPageBreak();
+                if ($key + 1 != $countElemen) {
+                    $section->addPageBreak();
+                }
             }
         }
     }
 
     /**
-     * ✅ Kotak kecil untuk elemen
+     * ✅ Kotak deskripsi dengan data terisi dari database
      */
+    private function addDeskripsiBoxWithData($section, $elemen)
+    {
+        $table = $section->addTable([
+            'borderSize' => 6,
+            'borderColor' => '000000',
+            'cellMargin' => 100,
+            'width' => 100 * 50,
+            'unit' => 'pct'
+        ]);
+
+        $table->addRow();
+        $cell = $table->addCell(9500);
+
+        $cell->addText(
+            'Deskripsi ' . strtolower($elemen->pernyataan_elemen),
+            ['size' => 11, 'italic' => true],
+            ['spaceAfter' => 200]
+        );
+
+        // ✅ AMBIL DESKRIPSI DARI DATABASE
+        $descKey = 'desc_' . $elemen->id;
+        $deskripsi = $this->borangDataMap[$descKey] ?? '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi...]';
+
+        $cell->addText(
+            $deskripsi,
+            ['size' => 11, 'color' => empty($this->borangDataMap[$descKey]) ? 'FF0000' : '000000'],
+            ['spaceAfter' => 300, 'alignment' => Jc::BOTH]
+        );
+
+        // ✅ TABEL DATA DARI DATABASE
+        if ($elemen->datasetBorang && $elemen->datasetBorang->count() > 0) {
+            foreach ($elemen->datasetBorang as $dataset) {
+                if ($dataset->tipe_field === 'table') {
+
+                    $cell->addText(
+                        $dataset->nama,
+                        ['size' => 11, 'bold' => true],
+                        ['spaceAfter' => 100]
+                    );
+
+                    // ✅ AMBIL DATA TABEL DARI DATABASE
+                    $tableData = $this->borangDataMap[$dataset->kode] ?? null;
+
+                    if ($tableData) {
+                        // Insert HTML table (perlu dikonversi ke PhpWord table)
+                        $this->addHtmlTableToCell($cell, $tableData);
+                    } else {
+                        // Template kosong
+                        $this->addDatasetTable($cell, $dataset);
+                    }
+
+                    $cell->addTextBreak(1);
+                }
+            }
+        }
+    }
+
+    /**
+     * ✅ Convert HTML table string to PhpWord table
+     */
+    private function addHtmlTableToCell($cell, $htmlTable)
+    {
+        // Simple HTML parser untuk extract table data
+        preg_match_all('/<tr[^>]*>(.*?)<\/tr>/is', $htmlTable, $rows);
+
+        if (empty($rows[1])) {
+            return;
+        }
+
+        $tableStyle = [
+            'borderSize' => 6,
+            'borderColor' => '000000',
+            'cellMargin' => 80,
+            'width' => 100,
+            'unit' => 'pct',
+        ];
+
+        $dataTable = $cell->addTable($tableStyle);
+
+        foreach ($rows[1] as $rowIndex => $rowHtml) {
+            // Extract cells
+            preg_match_all('/<t[hd][^>]*>(.*?)<\/t[hd]>/is', $rowHtml, $cells);
+
+            if (empty($cells[1])) continue;
+
+            $dataTable->addRow($rowIndex === 0 ? 400 : 350);
+
+            foreach ($cells[1] as $cellHtml) {
+                $cellText = strip_tags($cellHtml);
+                $cellText = html_entity_decode($cellText);
+                $cellText = trim($cellText);
+
+                $cellStyle = $rowIndex === 0 ? ['bgColor' => 'D3D3D3'] : [];
+                $fontStyle = $rowIndex === 0 ? ['bold' => true, 'size' => 10] : ['size' => 10];
+
+                $tableCell = $dataTable->addCell(null, $cellStyle);
+                $tableCell->addText($cellText, $fontStyle, ['alignment' => Jc::CENTER]);
+            }
+        }
+    }
+
+    // ✅ Methods lainnya sama seperti BorangExampleSeeder
+    // (addElemenBox, addDatasetTable, addPernyataanStandar, etc)
+
     private function addElemenBox($section, $kriteria, $elemen)
     {
         $table = $section->addTable([
             'borderSize' => 6,
             'borderColor' => '000000',
             'cellMargin' => 80,
-            'width' => 100 * 50, // Full width
+            'width' => 100 * 50,
             'unit' => 'pct'
         ]);
 
@@ -304,6 +418,70 @@ class BorangExampleSeeder extends Seeder
             $elemen->kode_elemen . '. ' . $elemen->pernyataan_elemen,
             ['size' => 11, 'bold' => true]
         );
+    }
+
+    private function addDatasetTable($cell, $dataset)
+    {
+        $columns = $dataset->expected_columns ?? ['No', 'Keterangan', 'Data'];
+        $columnCount = count($columns);
+
+        $tableStyle = [
+            'borderSize' => 6,
+            'borderColor' => '000000',
+            'cellMargin' => 80,
+            'width' => 100,
+            'unit' => 'pct',
+        ];
+
+        $dataTable = $cell->addTable($tableStyle);
+
+        // Header
+        $dataTable->addRow(400);
+        foreach ($columns as $col) {
+            $headerCell = $dataTable->addCell(
+                intval(100 / $columnCount),
+                ['bgColor' => 'D3D3D3', 'valign' => 'center']
+            );
+            $headerCell->addText($col, ['bold' => true, 'size' => 10], ['alignment' => Jc::CENTER]);
+        }
+
+        // Empty rows
+        for ($i = 1; $i <= 3; $i++) {
+            $dataTable->addRow(350);
+            foreach ($columns as $index => $col) {
+                $rowCell = $dataTable->addCell(intval(100 / $columnCount));
+                $rowCell->addText(
+                    $index === 0 ? (string)$i : '',
+                    ['size' => 10],
+                    ['alignment' => $index === 0 ? Jc::CENTER : Jc::START]
+                );
+            }
+        }
+    }
+
+    private function getKriteriaSubtitle($kodeKriteria)
+    {
+        $subtitles = [
+            'D' => 'Differentiation of the mission',
+            'E' => 'Education, Evaluation System, and Learning Outcomes',
+            'P' => 'Human Resource Development',
+            'I' => 'Internalization of Quality Assurance',
+            'L' => 'Learning Environment and Resources',
+            'A' => 'Accountability, Governance, and Cooperation',
+            'R' => 'Research, Community Service, and Academic Atmosphere'
+        ];
+
+        return $subtitles[$kodeKriteria] ?? '';
+    }
+
+    private function ensureNumberingStyle(string $name, array $definition): void
+    {
+        if (isset($this->numberingRegistered[$name])) {
+            return;
+        }
+
+        $this->phpWord->addNumberingStyle($name, $definition);
+        $this->numberingRegistered[$name] = true;
     }
 
     /**
@@ -353,71 +531,6 @@ class BorangExampleSeeder extends Seeder
 
                     $cell->addTextBreak(1);
                 }
-            }
-        }
-    }
-
-    /**
-     * ✅ Tambahkan tabel dataset di dalam kotak deskripsi
-     */
-    private function addDatasetTable($cell, $dataset)
-    {
-        $columns = $dataset->expected_columns ?? ['No', 'Keterangan', 'Data'];
-        $columnCount = count($columns);
-
-        // ✅ TABLE STYLE: AUTOFIT KE CONTAINER
-        $tableStyle = [
-            'borderSize'  => 6,
-            'borderColor' => '000000',
-            'cellMargin'  => 80,
-            'width'       => 100,
-            'unit'        => 'pct',
-            'layout'      => \PhpOffice\PhpWord\Style\Table::LAYOUT_AUTO,
-        ];
-
-        $dataTable = $cell->addTable($tableStyle);
-
-        // ✅ HEADER
-        $dataTable->addRow(400);
-
-        foreach ($columns as $col) {
-            $headerCell = $dataTable->addCell(
-                intval(100 / $columnCount),
-                [
-                    'bgColor'   => 'D3D3D3',
-                    'valign'    => 'center',
-                    'wordWrap'  => true
-                ]
-            );
-
-            $headerCell->addText(
-                $col,
-                ['bold' => true, 'size' => 10],
-                [
-                    'alignment' => Jc::CENTER,
-                    'wordWrap'  => true
-                ]
-            );
-        }
-
-        // ✅ ROW DATA (CONTOH 3 BARIS)
-        for ($i = 1; $i <= 3; $i++) {
-            $dataTable->addRow(350);
-
-            foreach ($columns as $index => $col) {
-                $rowCell = $dataTable->addCell(
-                    intval(100 / $columnCount),
-                    ['wordWrap' => true]
-                );
-
-                $rowCell->addText(
-                    $index === 0 ? (string)$i : '',
-                    ['size' => 10],
-                    [
-                        'alignment' => $index === 0 ? Jc::CENTER : Jc::START,
-                        'wordWrap'  => true
-                    ]
-                );
             }
         }
     }
@@ -597,38 +710,10 @@ class BorangExampleSeeder extends Seeder
         );
     }
 
-    /**
-     * Helper untuk subtitle kriteria
-     */
-    private function getKriteriaSubtitle($kodeKriteria)
-    {
-        $subtitles = [
-            'D' => 'Differentiation of the mission',
-            'E' => 'Education, Evaluation System, and Learning Outcomes',
-            'P' => 'Human Resource Development',
-            'I' => 'Internalization of Quality Assurance',
-            'L' => 'Learning Environment and Resources',
-            'A' => 'Accountability, Governance, and Cooperation',
-            'R' => 'Research, Community Service, and Academic Atmosphere'
-        ];
-
-        return $subtitles[$kodeKriteria] ?? '';
-    }
-
     private function addFormLine($section, $label, $hasRedText = false, $alignment = Jc::START)
     {
         $textRun = $section->addTextRun(['alignment' => $alignment, 'spaceAfter' => 200]);
         $textRun->addText($label . str_repeat(' ', 5) . ': ................', ['size' => 11]);
-    }
-
-    private function ensureNumberingStyle(string $name, array $definition): void
-    {
-        if (isset($this->numberingRegistered[$name])) {
-            return;
-        }
-
-        $this->phpWord->addNumberingStyle($name, $definition);
-        $this->numberingRegistered[$name] = true;
     }
 
     private function addRow(

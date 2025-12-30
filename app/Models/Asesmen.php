@@ -41,4 +41,25 @@ class Asesmen extends Model
     {
         return $this->hasMany(PenilaianElemen::class, 'id_asesmen');
     }
+
+    public function users()
+    {
+        return $this->belongsToMany(
+            User::class,
+            'asesmen_user_roles',
+            'id_asesmen',
+            'id_user'
+        )
+            ->withPivot([
+                'id_role',
+                'status_penawaran',
+                'responded_at',
+                'response_note',
+                'status_pekerjaan',
+                'submitted_at',
+                'approved_at',
+                'approved_by',
+            ])
+            ->withTimestamps();
+    }
 }
