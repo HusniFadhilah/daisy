@@ -138,7 +138,7 @@ class AsesmenController extends Controller
             ->get();
 
         // Get all roles
-        $roles = Role::orderBy('name')->get();
+        $roles = Role::whereIn('name', ['asesor', 'validator'])->orderBy('name')->get();
 
         // Calculate completion stats per user
         $userStats = [];

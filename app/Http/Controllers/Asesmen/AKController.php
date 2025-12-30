@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Asesmen;
 
+use App\Models\Role;
 use App\Models\Asesmen;
 use App\Models\Kriteria;
 use App\Models\Indikator;
@@ -9,13 +10,13 @@ use Illuminate\Http\Request;
 use App\Models\ElemenStandar;
 use App\Models\AsesmenUserRole;
 use App\Models\PenilaianElemen;
+use App\Models\JenjangPenilaian;
 use App\Models\PenilaianImportLog;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Jobs\ImportPenilaianExcelJob;
-use App\Models\JenjangPenilaian;
 use App\Services\PenilaianExcelService;
 use Illuminate\Support\Facades\Storage;
 
@@ -682,7 +683,7 @@ class AKController extends Controller
                 'button_class' => 'btn-secondary',
                 'button_icon' => 'bi-x-circle',
                 'button_disabled' => true,
-                'description' => 'Anda belum ditugaskan pada asesmen ini',
+                'description' => 'Anda belum ditugaskan pada asesmen ini sebagai ' . Role::getRoleAlias($assignment->id_role),
             ];
         }
 
@@ -700,7 +701,7 @@ class AKController extends Controller
                 'button_icon' => 'bi-envelope-check',
                 'button_disabled' => false,
                 'button_route' => 'ak.berkas.penawaran',
-                'description' => 'Silakan konfirmasi penawaran terlebih dahulu',
+                'description' => 'Silakan konfirmasi penawaran terlebih dahulu sebagai ' . Role::getRoleAlias($assignment->id_role),
             ];
         }
 
@@ -714,7 +715,7 @@ class AKController extends Controller
                 'button_class' => 'btn-danger',
                 'button_icon' => 'bi-x-circle',
                 'button_disabled' => true,
-                'description' => 'Anda menolak penawaran ini',
+                'description' => 'Anda menolak penawaran ini sebagai ' . Role::getRoleAlias($assignment->id_role),
             ];
         }
 
@@ -731,7 +732,7 @@ class AKController extends Controller
                         'button_class' => 'btn-primary',
                         'button_icon' => 'bi-play-circle',
                         'button_disabled' => false,
-                        'description' => 'Siap untuk memulai penilaian',
+                        'description' => 'Siap untuk memulai penilaian sebagai ' . Role::getRoleAlias($assignment->id_role),
                     ];
 
                 case 'in_progress':
