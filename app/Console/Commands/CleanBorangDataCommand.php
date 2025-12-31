@@ -6,7 +6,7 @@ use Illuminate\Console\Command;
 use App\Models\BorangData;
 use Illuminate\Support\Facades\DB;
 
-class CleanBorangData extends Command
+class CleanBorangDataCommand extends Command
 {
     protected $signature = 'borang:clean {pengajuan_id?}';
     protected $description = 'Clean empty table templates and duplicate borang_data';

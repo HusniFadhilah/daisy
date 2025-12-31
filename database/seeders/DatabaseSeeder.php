@@ -3,8 +3,9 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\File;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,6 +16,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->clearStorageFolders();
         $this->call([
             RoleSeeder::class,
             UserSeeder::class,
@@ -35,5 +37,48 @@ class DatabaseSeeder extends Seeder
             // PengajuanAkreditasiSeeder::class,
             DatasetBorangSeeder::class,
         ]);
+    }
+    /**
+     * Clear storage folders
+     */
+    private function clearStorageFolders(): void
+    {
+        // Paths to clear
+        $paths = [
+            storage_path('app/private'),
+            storage_path('app/public'),
+        ];
+
+        foreach ($paths as $path) {
+            if (File::exists($path)) {
+                // Get all files and directories
+                $files = File::allFiles($path);
+                $directories = File::directories($path);
+
+                // Delete all files
+                foreach ($files as $file) {
+                    File::delete($file->getPathname());
+                }
+
+                // Delete all subdirectories
+                foreach ($directories as $directory) {
+                    // Keep .gitignore if exists
+                    $gitignore = $directory . '/.gitignore';
+                    $hasGitignore = File::exists($gitignore);
+
+                    File::deleteDirectory($directory);
+
+                    // Recreate directory with .gitignore
+                    if ($hasGitignore) {
+                        File::makeDirectory($directory, 0755, true);
+                        File::put($gitignore, "*\n!.gitignore\n");
+                    }
+                }
+            } else {
+                // Create if not exists
+                File::makeDirectory($path, 0755, true);
+                File::put($path . '/.gitignore', "*\n!.gitignore\n");
+            }
+        }
     }
 }

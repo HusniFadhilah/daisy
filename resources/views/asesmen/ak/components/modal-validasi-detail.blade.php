@@ -1,5 +1,5 @@
 <div class="modal fade" id="modalValidasiDetail" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title">
@@ -9,133 +9,55 @@
             </div>
 
             <div class="modal-body">
-                <!-- Loading State -->
+                {{-- Loading State --}}
                 <div id="loadingDetail" class="text-center py-5">
                     <div class="spinner-border text-primary" role="status"></div>
-                    <p class="mt-3">Memuat data...</p>
+                    <p class="mt-3 text-muted">Memuat detail penilaian...</p>
                 </div>
 
-                <!-- Content Container -->
+                {{-- Content Container --}}
                 <div id="detailContainer" style="display: none;">
-                    <!-- Elemen Info -->
-                    <div class="card mb-4 bg-light">
+                    {{-- Elemen Info --}}
+                    <div class="card mb-3 bg-light">
                         <div class="card-body">
                             <h6 class="mb-3">
                                 <i class="bi bi-info-circle"></i> Informasi Elemen
                             </h6>
                             <div class="row">
-                                <div class="col-md-6">
+                                <div class="col-md-12 mb-2">
                                     <small class="text-muted">Kriteria:</small>
-                                    <p class="mb-2" id="detailKriteria">-</p>
+                                    <div id="detailKriteria" class="fw-semibold">-</div>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-12 mb-2">
                                     <small class="text-muted">Kode Elemen:</small>
-                                    <p class="mb-2"><strong id="detailKodeElemen">-</strong></p>
+                                    <div><strong id="detailKodeElemen">-</strong></div>
                                 </div>
-                                <div class="col-12">
+                                <div class="col-md-12 mb-2">
                                     <small class="text-muted">Pernyataan Elemen:</small>
-                                    <p id="detailElemenStandar">-</p>
+                                    <div id="detailElemenStandar">-</div>
                                 </div>
-                            </div>
-
-                            <!-- Indikator List -->
-                            <div class="mt-3">
-                                <h6 class="mb-2">
-                                    <i class="bi bi-list-ul"></i> Indikator Penilaian
-                                </h6>
-                                <div id="detailIndikator" class="small">-</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Perbandingan Penilaian Asesor -->
-                    <div class="row">
-                        <!-- Asesor 1 -->
-                        <div class="col-md-6">
-                            <div class="card border-primary h-100" id="rowAsesor1">
-                                <div class="card-header bg-primary text-white">
-                                    <div class="d-flex align-items-center">
-                                        <div class="avatar-circle me-2" id="avatar1">A1</div>
-                                        <div>
-                                            <h6 class="mb-0" id="namaAsesor1">Asesor 1</h6>
-                                            <small>Penilaian Pertama</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="card-body">
-                                    <div class="mb-3">
-                                        <label class="form-label fw-bold">Kategori:</label>
-                                        <div>
-                                            <span class="badge" id="kategoriAsesor1">-</span>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label class="form-label fw-bold">Komentar/Justifikasi:</label>
-                                        <div class="alert alert-light alert-permanent alert-dismissible" id="komentarAsesor1">-</div>
-                                    </div>
-
-                                    <!-- ✅ TAMBAH: Radio Button untuk Select Asesor -->
-                                    <div class="mt-3">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="asesor_target_revisi[]" id="chkAsesor1" value="asesor1_id">
-                                            <label class="form-check-label text-danger" for="chkAsesor1">
-                                                <i class="bi bi-arrow-repeat"></i>
-                                                <strong>Minta asesor ini merevisi</strong>
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Asesor 2 -->
-                        <div class="col-md-6">
-                            <div class="card border-warning h-100" id="rowAsesor2">
-                                <div class="card-header bg-warning">
-                                    <div class="d-flex align-items-center">
-                                        <div class="avatar-circle me-2 bg-warning" id="avatar2">A2</div>
-                                        <div>
-                                            <h6 class="mb-0" id="namaAsesor2">Asesor 2</h6>
-                                            <small>Penilaian Kedua</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="card-body">
-                                    <div class="mb-3">
-                                        <label class="form-label fw-bold">Kategori:</label>
-                                        <div>
-                                            <span class="badge" id="kategoriAsesor2">-</span>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label class="form-label fw-bold">Komentar/Justifikasi:</label>
-                                        <div class="alert alert-light alert-permanent alert-dismissible" id="komentarAsesor2">-</div>
-                                    </div>
-
-                                    <!-- ✅ TAMBAH: Radio Button untuk Select Asesor -->
-                                    <div class="mt-3">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="asesor_target_revisi[]" id="chkAsesor2" value="asesor2_id">
-                                            <label class="form-check-label text-danger" for="chkAsesor2">
-                                                <i class="bi bi-arrow-repeat"></i>
-                                                <strong>Minta asesor ini merevisi</strong>
-                                            </label>
-                                        </div>
-                                    </div>
+                                <div class="col-md-12">
+                                    <small class="text-muted">Indikator:</small>
+                                    <div id="detailIndikator">-</div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- ✅ TAMBAH: Alert Perbedaan -->
-                    <div id="rowDifference" class="alert alert-warning alert-permanent alert-dismissible mt-3" style="display: none;">
-                        <i class="bi bi-exclamation-triangle me-2"></i>
-                        <strong>Perbedaan Penilaian Terdeteksi!</strong>
+                    {{-- Penilaian dari Semua Asesor (Dynamic Grid) --}}
+                    <div class="row mb-3" id="penilaianAsesorsContainer">
+                        {{-- Will be populated by JavaScript dynamically --}}
+                    </div>
+
+                    {{-- Difference Alert --}}
+                    <div id="rowDifference" class="alert alert-warning alert-permanent" style="display: none;">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>Perhatian:</strong>
                         <span id="differenceMessage"></span>
                     </div>
 
-                    <!-- Form Validasi -->
-                    <div class="card mt-4">
+                    {{-- Form Validasi --}}
+                    <div class="card">
                         <div class="card-header bg-success text-white">
                             <h6 class="mb-0">
                                 <i class="bi bi-check-circle"></i> Form Validasi
@@ -143,53 +65,55 @@
                         </div>
                         <div class="card-body">
                             <form id="formValidasi">
-                                <input type="hidden" id="validasiElemenId" name="elemen_id">
-                                <input type="hidden" id="validasiAsesor1Id" name="asesor1_id">
-                                <input type="hidden" id="validasiAsesor2Id" name="asesor2_id">
+                                <input type="hidden" id="validasiElemenId">
 
-                                <!-- Quick Select Buttons -->
+                                {{-- Quick Select Buttons (Dynamic) --}}
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">
-                                        <i class="bi bi-lightning"></i> Quick Select:
+                                        <i class="bi bi-lightning"></i> Quick Select Skor:
                                     </label>
-                                    <div class="btn-group w-100">
-                                        <button type="button" class="btn btn-outline-primary" id="btnSelectAsesor1">
-                                            <i class="bi bi-1-circle"></i> Pilih Skor Asesor 1
-                                        </button>
-                                        <button type="button" class="btn btn-outline-warning" id="btnSelectAsesor2">
-                                            <i class="bi bi-2-circle"></i> Pilih Skor Asesor 2
-                                        </button>
-                                        <button type="button" class="btn btn-outline-info" id="btnSelectAverage">
-                                            <i class="bi bi-calculator"></i> Rata-rata
-                                        </button>
+                                    <div class="btn-group w-100" role="group" id="quickSelectButtons">
+                                        {{-- Populated by JS --}}
                                     </div>
                                 </div>
 
                                 <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label fw-bold">
-                                                Status Validasi <span class="text-danger">*</span>
-                                            </label>
-                                            <select class="form-select" id="statusValidasi" name="status" required>
-                                                <option value="">-- Pilih Status --</option>
-                                                <option value="validated">✅ Disetujui</option>
-                                                <option value="revision_required">⚠️ Perlu Revisi</option>
-                                            </select>
-                                        </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">
+                                            Status Validasi <span class="text-danger">*</span>
+                                        </label>
+                                        <select class="form-select" id="statusValidasi" required>
+                                            <option value="">-- Pilih Status --</option>
+                                            <option value="validated">✅ Setujui Penilaian</option>
+                                            <option value="revision_required">⚠️ Minta Revisi</option>
+                                        </select>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label fw-bold">
-                                                Kategori Final <span class="text-danger">*</span>
-                                            </label>
-                                            <select class="form-select" id="skorFinal" name="skor_final" required>
-                                                <option value="">-- Pilih Kategori --</option>
-                                                @foreach ($jenjangPenilaian as $jenjang)
-                                                <option value="{{ $jenjang->skor }}">{{ $jenjang->skor }} - {{ $jenjang->name }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">
+                                            Skor Final
+                                            <span class="text-danger" id="labelSkorRequired">*</span>
+                                        </label>
+                                        <select class="form-select" id="skorFinal">
+                                            <option value="">-- Pilih Skor --</option>
+                                            <option value="0">0 - Tidak Memenuhi (Not Met)</option>
+                                            <option value="1">1 - Belum Memenuhi (Not Met)</option>
+                                            <option value="2">2 - Lemah (Weakness/Cause of Concern)</option>
+                                            <option value="3">3 - Memenuhi (Met)</option>
+                                            <option value="4">4 - Pelampauan Standar</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {{-- Revision Section (shown when revision_required selected) --}}
+                                <div id="revisionSection" style="display: none;">
+                                    <div class="alert alert-warning alert-permanent mb-3" id="alertRevisiInfo">
+                                        <i class="bi bi-exclamation-triangle"></i>
+                                        <strong>Pilih asesor yang harus merevisi penilaian:</strong>
+                                    </div>
+
+                                    <div class="row" id="asesorCheckboxes">
+                                        {{-- Populated by JS --}}
                                     </div>
                                 </div>
 
@@ -198,16 +122,10 @@
                                         Catatan Validator
                                         <span class="text-danger" id="labelCatatanRequired" style="display: none;">*</span>
                                     </label>
-                                    <textarea class="form-control" id="catatanValidator" name="catatan_validator" rows="4" placeholder="Berikan catatan validasi atau alasan revisi..."></textarea>
+                                    <textarea class="form-control" id="catatanValidator" rows="4" placeholder="Berikan catatan validasi atau alasan revisi..."></textarea>
                                     <small class="text-muted">
                                         Catatan wajib diisi jika meminta revisi
                                     </small>
-                                </div>
-
-                                <!-- ✅ TAMBAH: Alert untuk Revisi -->
-                                <div id="alertRevisiInfo" class="alert alert-info alert-permanent" style="display: none;">
-                                    <i class="bi bi-info-circle"></i>
-                                    <strong>Info:</strong> Silakan pilih asesor mana yang harus merevisi penilaiannya dengan mencentang radio button di atas.
                                 </div>
                             </form>
                         </div>
@@ -220,10 +138,10 @@
                     <i class="bi bi-x-circle"></i> Tutup
                 </button>
                 <button type="button" class="btn btn-warning" id="btnSaveRevision" style="display: none;">
-                    <i class="bi bi-arrow-repeat"></i> Minta Revisi
+                    <i class="bi bi-arrow-counterclockwise"></i> Minta Revisi
                 </button>
                 <button type="button" class="btn btn-success" id="btnSaveValidasi">
-                    <i class="bi bi-check-circle"></i> Setujui
+                    <i class="bi bi-check-circle"></i> Setujui Penilaian
                 </button>
             </div>
         </div>
@@ -232,7 +150,23 @@
 
 @push('styles')
 <style>
-    .avatar-circle-sm {
+    .asesor-card {
+        transition: all 0.3s ease;
+    }
+
+    .asesor-card.highlight {
+        background: #fff3e0;
+        border-color: #ff9800 !important;
+        border-width: 3px !important;
+        transform: scale(1.02);
+        box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+    }
+
+    .asesor-card-header {
+        padding: 10px 15px;
+    }
+
+    .avatar-circle-modal {
         width: 40px;
         height: 40px;
         border-radius: 50%;
@@ -241,35 +175,18 @@
         justify-content: center;
         color: white;
         font-weight: bold;
-        font-size: 14px;
+        font-size: 16px;
     }
 
     .skor-display {
-        font-size: 32px;
+        font-size: 28px;
         font-weight: 700;
-        padding: 10px 20px;
+        padding: 8px 16px;
         border-radius: 8px;
         display: inline-block;
-        min-width: 80px;
-    }
-
-    #rowAsesor1.highlight {
-        background: #e3f2fd !important;
-        border-left: 4px solid #2196f3;
-    }
-
-    #rowAsesor2.highlight {
-        background: #fff3e0 !important;
-        border-left: 4px solid #ff9800;
+        min-width: 70px;
+        text-align: center;
     }
 
 </style>
-@endpush
-
-@push('scripts')
-<script>
-    // This script is included in the main page
-    // See validator-modal-handler.js for the full implementation
-
-</script>
 @endpush

@@ -42,7 +42,7 @@ $authUser = Auth::user();
     <div class="welcome-section mb-4">
         <div class="welcome-content">
             <h2><i class="bi bi-envelope-open"></i> Daftar Penawaran Asesmen</h2>
-            <p class="mb-0">Kelola penawaran penilaian akreditasi yang ditawarkan kepada Anda sebagai <b>{{ $authUser->role_alias }}</b></p>
+            <p class="mb-0">Kelola penawaran penilaian akreditasi yang ditawarkan kepada Anda</b></p>
         </div>
     </div>
 

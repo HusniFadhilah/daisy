@@ -25,8 +25,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
             'role' => \App\Http\Middleware\CheckRoleMiddleware::class,
-            'penawaran.accepted' => \App\Http\Middleware\EnsurePenawaranAccepted::class,
-            'under.dev' => \App\Http\Middleware\UnderDevelopment::class,
+            'penawaran.accepted' => \App\Http\Middleware\EnsurePenawaranAcceptedMiddleware::class,
+            'under.dev' => \App\Http\Middleware\UnderDevelopmentMiddleware::class,
+            'sync.roles' => \App\Http\Middleware\SyncUserRolesMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

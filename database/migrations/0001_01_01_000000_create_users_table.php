@@ -17,6 +17,8 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->enum('role', ['admin', 'user'])->default('user');
             $table->enum('role_selected', ['super_admin', 'asesi', 'asesor', 'validator', 'verifikator', 'admin_univ', 'admin_prodi', 'default'])->default('default');
+            $table->string('roles')->default('default');
+            $table->timestamp('last_role_switch')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();

@@ -136,7 +136,7 @@
                     <div class="alert alert-success alert-permanent alert-dismissible mb-3">
                         <i class="bi bi-check-circle me-2"></i>
                         <strong>Penilaian Disetujui!</strong> Penilaian Anda telah divalidasi dan disetujui oleh validator.
-                        Asesmen siap dilanjutkan ke tahap AL.
+                        Asesmen siap dilanjutkan ke tahap Asesmen Lapangan (AL).
                     </div>
                     @endif
 
@@ -241,7 +241,6 @@
             </div>
         </div>
     </div>
-
     @if($needsRevisions->count() > 0)
     <div class="card mb-4 border-warning">
         <div class="card-header bg-warning text-dark">
@@ -643,15 +642,70 @@
                                             {{-- Alert Revisi --}}
                                             @if($needsRevisionElemen)
                                             <div class="alert alert-warning alert-permanent alert-dismissible mb-3">
-                                                <h6 class="alert-heading">
-                                                    <i class="bi bi-chat-left-quote"></i> Catatan Validator:
-                                                </h6>
-                                                <p class="mb-2"><strong>"{{ $penilaian->catatan_validator }}"</strong></p>
+                                                <div class="row">
+                                                    <div class="col-md-8">
+                                                        <h6 class="alert-heading">
+                                                            <i class="bi bi-chat-left-quote"></i> Catatan Validator:
+                                                        </h6>
+                                                        <p class="mb-2"><strong>"{{ $penilaian->catatan_validator }}"</strong></p>
+                                                    </div>
+
+                                                    {{-- ✅ SKOR FINAL VALIDATOR --}}
+                                                    <div class="col-md-4">
+                                                        <div class="card border-primary bg-light">
+                                                            <div class="card-body p-3 text-center">
+                                                                <small class="text-muted d-block mb-2">
+                                                                    <i class="bi bi-star-fill"></i> Preferensi Skor Validator:
+                                                                </small>
+                                                                <div class="skor-validator-display mb-2">
+                                                                    @php
+                                                                    $skorFinal = $penilaian->skor_final ?? $penilaian->skor;
+                                                                    $skorBadgeClass = match($skorFinal) {
+                                                                    0, 1 => 'bg-danger',
+                                                                    2 => 'bg-warning text-dark',
+                                                                    3, 4 => 'bg-success',
+                                                                    default => 'bg-secondary'
+                                                                    };
+                                                                    $skorLabel = match($skorFinal) {
+                                                                    0 => '0 - Tidak Memenuhi',
+                                                                    1 => '1 - Belum Memenuhi',
+                                                                    2 => '2 - Lemah',
+                                                                    3 => '3 - Memenuhi',
+                                                                    4 => '4 - Pelampauan',
+                                                                    default => 'N/A'
+                                                                    };
+                                                                    @endphp
+
+                                                                    <span class="badge {{ $skorBadgeClass }}" style="font-size: 1.5rem; padding: 0.75rem 1.25rem;">
+                                                                        <strong>{{ $skorFinal }}</strong>
+                                                                    </span>
+                                                                </div>
+
+                                                                <small class="text-muted">{{ $skorLabel }}</small>
+
+                                                                {{-- Quick Action Button --}}
+                                                                <button type="button" class="btn btn-sm btn-primary w-100 mt-2 btn-use-validator-score" data-skor="{{ $skorFinal }}" data-elemen-id="{{ $elemen->id }}" title="Gunakan skor yang direkomendasikan validator">
+                                                                    <i class="bi bi-lightning-charge"></i> Gunakan Skor Ini
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
                                                 <hr>
-                                                <small class="text-muted">
-                                                    <i class="bi bi-person"></i> Validator: {{ $penilaian->validator->name ?? 'N/A' }}<br>
-                                                    <i class="bi bi-clock"></i> Tanggal: {{ \App\Libraries\Date::tglWaktu($penilaian->validated_at) }}
-                                                </small>
+
+                                                <div class="row mt-3">
+                                                    <div class="col-md-6">
+                                                        <small class="text-muted">
+                                                            <i class="bi bi-person"></i> <strong>Validator:</strong> {{ $penilaian->validator->name ?? 'N/A' }}
+                                                        </small>
+                                                    </div>
+                                                    <div class="col-md-6 text-end">
+                                                        <small class="text-muted">
+                                                            <i class="bi bi-clock"></i> <strong>Tanggal:</strong> {{ \App\Libraries\Date::tglWaktu($penilaian->validated_at) }}
+                                                        </small>
+                                                    </div>
+                                                </div>
                                             </div>
                                             @endif
                                             <form class="form-penilaian" data-elemen-id="{{ $elemen->id }}">
@@ -2450,6 +2504,67 @@
                     }, 500);
                 }
             }, 500);
+        });
+    });
+
+    /**
+     * ============================================
+     * HANDLE "GUNAKAN SKOR INI" BUTTON
+     * ============================================
+     */
+    document.querySelectorAll('.btn-use-validator-score').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const skor = this.dataset.skor;
+            const elemenId = this.dataset.elemenId;
+
+            // Find form for this elemen
+            const form = document.querySelector(`.form-penilaian[data-elemen-id="${elemenId}"]`);
+            if (!form) return;
+
+            const skorSelect = form.querySelector('.skor-select');
+            if (!skorSelect) return;
+
+            // Set value
+            skorSelect.value = skor;
+
+            // Trigger change event for auto-save
+            skorSelect.dispatchEvent(new Event('input', {
+                bubbles: true
+            }));
+
+            // Visual feedback
+            this.innerHTML = '<i class="bi bi-check-circle"></i> Skor Diterapkan!';
+            this.classList.remove('btn-primary');
+            this.classList.add('btn-success');
+
+            // Scroll to komentar textarea
+            const komentarTextarea = form.querySelector('.komentar-textarea');
+            if (komentarTextarea) {
+                komentarTextarea.focus();
+                komentarTextarea.scrollIntoView({
+                    behavior: 'smooth'
+                    , block: 'center'
+                });
+            }
+
+            // Show toast
+            Swal.fire({
+                toast: true
+                , position: 'top-end'
+                , icon: 'success'
+                , title: `Skor ${skor} diterapkan!`
+                , text: 'Silakan perbarui komentar/justifikasi Anda'
+                , showConfirmButton: false
+                , timer: 3000
+                , timerProgressBar: true
+            });
+
+            // Reset button after 3 seconds
+            setTimeout(() => {
+                this.innerHTML = '<i class="bi bi-lightning-charge"></i> Gunakan Skor Ini';
+                this.classList.remove('btn-success');
+                this.classList.add('btn-primary');
+            }, 3000);
         });
     });
 

@@ -7,7 +7,9 @@ use App\Models\User;
 use App\Models\Asesmen;
 use App\Libraries\Fungsi;
 use Illuminate\Http\Request;
+use App\Models\AsesmenLapangan;
 use App\Models\AsesmenUserRole;
+use App\Models\AsesmenKecukupan;
 use Illuminate\Support\Facades\DB;
 use App\Models\PengajuanAkreditasi;
 use App\Http\Controllers\Controller;
@@ -195,21 +197,59 @@ class AsesmenController extends Controller
         $request->validate([
             'id_user' => 'required|exists:users,id',
             'id_role' => 'required|exists:roles,id',
+            'jenis_asesmen' => 'required|in:ak,al',
         ]);
 
         try {
             $asesmen = Asesmen::findOrFail($id);
+            $role = Role::findOrFail($request->id_role);
 
-            // Check if user already assigned
+            // Check if user already assigned for this jenis_asesmen
             $exists = AsesmenUserRole::where('id_asesmen', $id)
                 ->where('id_user', $request->id_user)
+                ->where('id_role', $request->id_role)
+                ->where('jenis_asesmen', $request->jenis_asesmen)
                 ->exists();
 
             if ($exists) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'User sudah di-assign ke asesmen ini'
+                    'message' => 'User sudah di-assign dengan role ini untuk ' . strtoupper($request->jenis_asesmen)
                 ], 422);
+            }
+
+            // Get or create AsesmenKecukupan/AsesmenLapangan
+            if ($request->jenis_asesmen === 'ak') {
+                $asesmenKecukupan = AsesmenKecukupan::firstOrCreate(
+                    ['id_asesmen' => $id],
+                    [
+                        'code' => 'AK-' . $asesmen->code,
+                        'status' => 'active',
+                    ]
+                );
+                $linkId = $asesmenKecukupan->id;
+                $linkField = 'id_asesmen_kecukupan';
+            } else {
+                $asesmenLapangan = AsesmenLapangan::firstOrCreate(
+                    ['id_asesmen' => $id],
+                    [
+                        'code' => 'AL-' . $asesmen->code,
+                        'status' => 'active',
+                    ]
+                );
+                $linkId = $asesmenLapangan->id;
+                $linkField = 'id_asesmen_lapangan';
+            }
+
+            // Determine urutan_asesor if role is asesor
+            $urutanAsesor = null;
+            if ($role->name === 'asesor') {
+                $maxUrutan = AsesmenUserRole::where('id_asesmen', $id)
+                    ->where('jenis_asesmen', $request->jenis_asesmen)
+                    ->whereHas('role', fn($q) => $q->where('name', 'asesor'))
+                    ->max('urutan_asesor');
+
+                $urutanAsesor = ($maxUrutan ?? 0) + 1;
             }
 
             // Create assignment
@@ -217,24 +257,187 @@ class AsesmenController extends Controller
                 'id_asesmen' => $id,
                 'id_user' => $request->id_user,
                 'id_role' => $request->id_role,
+                'jenis_asesmen' => $request->jenis_asesmen,
+                $linkField => $linkId,
+                'urutan_asesor' => $urutanAsesor,
+                'status_penawaran' => 'pending',
             ]);
 
             $user = User::find($request->id_user);
-            $role = Role::find($request->id_role);
+
+            // Check requirements after assignment
+            $requirementsMet = $request->jenis_asesmen === 'ak'
+                ? $asesmenKecukupan->hasMinimumRequirements()
+                : $asesmenLapangan->hasMinimumRequirements();
+
+            $missingRequirements = $request->jenis_asesmen === 'ak'
+                ? $asesmenKecukupan->getMissingRequirements()
+                : $asesmenLapangan->getMissingRequirements();
 
             return response()->json([
                 'success' => true,
-                'message' => "User {$user->name} berhasil di-assign sebagai {$role->name}",
+                'message' => "User {$user->name} berhasil di-assign sebagai {$role->alias} untuk " . strtoupper($request->jenis_asesmen),
                 'data' => [
                     'assignment' => $assignment,
                     'user' => $user,
                     'role' => $role,
+                    'requirements_met' => $requirementsMet,
+                    'missing_requirements' => $missingRequirements,
                 ]
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal assign user: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get assignment requirements status
+     */
+    public function getRequirementsStatus($id, $jenisAsesmen)
+    {
+        try {
+            $asesmen = Asesmen::findOrFail($id);
+
+            if ($jenisAsesmen === 'ak') {
+                $asesmenKecukupan = AsesmenKecukupan::where('id_asesmen', $id)->first();
+
+                if (!$asesmenKecukupan) {
+                    return response()->json([
+                        'success' => true,
+                        'data' => [
+                            'requirements_met' => false,
+                            'missing' => ['2 asesor', '1 validator'],
+                            'current' => ['asesor' => 0, 'validator' => 0],
+                        ]
+                    ]);
+                }
+
+                $asesorCount = $asesmenKecukupan->asesors()->count();
+                $validatorCount = $asesmenKecukupan->validators()->count();
+
+                return response()->json([
+                    'success' => true,
+                    'data' => [
+                        'requirements_met' => $asesmenKecukupan->hasMinimumRequirements(),
+                        'missing' => $asesmenKecukupan->getMissingRequirements(),
+                        'current' => [
+                            'asesor' => $asesorCount,
+                            'validator' => $validatorCount,
+                        ],
+                    ]
+                ]);
+            } else {
+                // Similar for AL
+                $asesmenLapangan = AsesmenLapangan::where('id_asesmen', $id)->first();
+
+                if (!$asesmenLapangan) {
+                    return response()->json([
+                        'success' => true,
+                        'data' => [
+                            'requirements_met' => false,
+                            'missing' => ['2 asesor', '1 validator'],
+                            'current' => ['asesor' => 0, 'validator' => 0],
+                        ]
+                    ]);
+                }
+
+                $asesorCount = $asesmenLapangan->asesors()->count();
+                $validatorCount = $asesmenLapangan->validators()->count();
+
+                return response()->json([
+                    'success' => true,
+                    'data' => [
+                        'requirements_met' => $asesmenLapangan->hasMinimumRequirements(),
+                        'missing' => $asesmenLapangan->getMissingRequirements(),
+                        'current' => [
+                            'asesor' => $asesorCount,
+                            'validator' => $validatorCount,
+                        ],
+                    ]
+                ]);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get assignments for specific jenis asesmen
+     */
+    public function getAssignments($id, $jenisAsesmen)
+    {
+        try {
+            $asesmen = Asesmen::findOrFail($id);
+
+            // Get assignments based on jenis asesmen
+            $assignments = AsesmenUserRole::where('id_asesmen', $id)
+                ->where('jenis_asesmen', $jenisAsesmen)
+                ->whereIn('status_penawaran', ['pending', 'accepted'])
+                ->with(['user', 'role'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            // Group by role
+            $groupedAssignments = $assignments->groupBy('role.name')->map(function ($items) {
+                return $items->map(function ($item) {
+                    return [
+                        'id' => $item->id,
+                        'user' => [
+                            'id' => $item->user->id,
+                            'name' => $item->user->name,
+                            'email' => $item->user->email,
+                        ],
+                        'role' => [
+                            'id' => $item->role->id,
+                            'name' => $item->role->name,
+                            'alias' => $item->role->alias,
+                        ],
+                        'urutan_asesor' => $item->urutan_asesor,
+                        'status_penawaran' => $item->status_penawaran,
+                        'status_pekerjaan' => $item->status_pekerjaan,
+                        'created_at' => $item->created_at->format('d M Y H:i'),
+                    ];
+                });
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => $groupedAssignments
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get rejected assignments (for replacement guidance)
+     */
+    public function getRejectedAssignments($id, $jenisAsesmen)
+    {
+        try {
+            $rejected = AsesmenUserRole::where('id_asesmen', $id)
+                ->where('jenis_asesmen', $jenisAsesmen)
+                ->where('status_penawaran', 'rejected')
+                ->with(['user', 'role'])
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $rejected
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
             ], 500);
         }
     }
@@ -288,6 +491,18 @@ class AsesmenController extends Controller
         try {
             $asesmen = Asesmen::findOrFail($id);
 
+            // Get the assignment to check jenis_asesmen
+            $assignment = AsesmenUserRole::where('id_asesmen', $id)
+                ->where('id_user', $userId)
+                ->first();
+
+            if (!$assignment) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Assignment tidak ditemukan'
+                ], 404);
+            }
+
             // Check if user has any penilaian
             $hasPenilaian = DB::table('penilaian_elemen')
                 ->where('id_asesmen', $id)
@@ -301,26 +516,128 @@ class AsesmenController extends Controller
                 ], 422);
             }
 
-            // Delete assignment
-            $deleted = AsesmenUserRole::where('id_asesmen', $id)
-                ->where('id_user', $userId)
-                ->delete();
+            // ✅ NEW: Check if removing this user will violate minimum requirements
+            $jenisAsesmen = $assignment->jenis_asesmen;
+            $roleId = $assignment->id_role;
+            $role = Role::find($roleId);
 
-            if ($deleted) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'User berhasil dihapus dari asesmen'
-                ]);
-            } else {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Assignment tidak ditemukan'
-                ], 404);
+            if ($assignment->status_penawaran === 'accepted') {
+                // Count current assignments of this role for this jenis_asesmen
+                $currentCount = AsesmenUserRole::where('id_asesmen', $id)
+                    ->where('jenis_asesmen', $jenisAsesmen)
+                    ->where('id_role', $roleId)
+                    ->where('status_penawaran', 'accepted')
+                    ->count();
+
+                // Check minimum requirements
+                $minRequired = 0;
+                if ($role->name === 'asesor') {
+                    $minRequired = 2;
+                } elseif ($role->name === 'validator') {
+                    $minRequired = 1;
+                }
+
+                if ($currentCount <= $minRequired) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Tidak bisa menghapus {$role->alias} karena akan melanggar persyaratan minimum ({$minRequired} {$role->alias} untuk " . strtoupper($jenisAsesmen) . "). Assign pengganti terlebih dahulu.",
+                        'validation_error' => true
+                    ], 422);
+                }
             }
+
+            // Delete assignment
+            $assignment->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'User berhasil dihapus dari asesmen',
+                'jenis_asesmen' => $jenisAsesmen // Return for UI update
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal hapus user: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Reassign user (replace rejected assignment)
+     */
+    public function reassignUser(Request $request, $id)
+    {
+        $request->validate([
+            'assignment_id' => 'required|exists:asesmen_user_roles,id',
+            'new_user_id' => 'required|exists:users,id',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $oldAssignment = AsesmenUserRole::findOrFail($request->assignment_id);
+
+            // Verify old assignment is rejected
+            if ($oldAssignment->status_penawaran !== 'rejected') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Hanya assignment yang ditolak yang bisa di-reassign'
+                ], 422);
+            }
+
+            // Check if new user already assigned
+            $exists = AsesmenUserRole::where('id_asesmen', $id)
+                ->where('id_user', $request->new_user_id)
+                ->where('id_role', $oldAssignment->id_role)
+                ->where('jenis_asesmen', $oldAssignment->jenis_asesmen)
+                ->exists();
+
+            if ($exists) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User sudah di-assign dengan role ini'
+                ], 422);
+            }
+
+            // Delete old assignment
+            $jenisAsesmen = $oldAssignment->jenis_asesmen;
+            $roleId = $oldAssignment->id_role;
+            $linkField = $jenisAsesmen === 'ak' ? 'id_asesmen_kecukupan' : 'id_asesmen_lapangan';
+            $linkId = $oldAssignment->$linkField;
+            $urutanAsesor = $oldAssignment->urutan_asesor;
+
+            $oldAssignment->delete();
+
+            // Create new assignment
+            $newAssignment = AsesmenUserRole::create([
+                'id_asesmen' => $id,
+                'id_user' => $request->new_user_id,
+                'id_role' => $roleId,
+                'jenis_asesmen' => $jenisAsesmen,
+                $linkField => $linkId,
+                'urutan_asesor' => $urutanAsesor,
+                'status_penawaran' => 'pending',
+            ]);
+
+            DB::commit();
+
+            $user = User::find($request->new_user_id);
+            $role = Role::find($roleId);
+
+            return response()->json([
+                'success' => true,
+                'message' => "Berhasil reassign ke {$user->name} sebagai {$role->alias}",
+                'data' => [
+                    'assignment' => $newAssignment,
+                    'user' => $user,
+                    'role' => $role,
+                ]
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal reassign: ' . $e->getMessage()
             ], 500);
         }
     }

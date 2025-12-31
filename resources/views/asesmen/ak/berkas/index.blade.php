@@ -127,7 +127,7 @@
         ];
         @endphp
 
-        <div class="col-md-2">
+        <div class="col-md-3 mb-2">
             <div class="card border-warning text-center">
                 <div class="card-body">
                     <h3 class="mb-0 text-warning">{{ $stats['pending'] }}</h3>
@@ -135,7 +135,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-2">
+        <div class="col-md-3 mb-2">
             <div class="card border-info text-center">
                 <div class="card-body">
                     <h3 class="mb-0 text-info">{{ $stats['in_progress'] }}</h3>
@@ -143,7 +143,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-2">
+        <div class="col-md-3 mb-2">
             <div class="card border-primary text-center">
                 <div class="card-body">
                     <h3 class="mb-0 text-primary">{{ $stats['submitted'] }}</h3>
@@ -151,7 +151,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-2">
+        <div class="col-md-3 mb-2">
             <div class="card border-warning text-center">
                 <div class="card-body">
                     <h3 class="mb-0 text-warning">{{ $stats['revision'] }}</h3>
@@ -159,7 +159,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-2">
+        <div class="col-md-3 mb-2">
             <div class="card border-success text-center">
                 <div class="card-body">
                     <h3 class="mb-0 text-success">{{ $stats['approved'] }}</h3>
@@ -177,8 +177,7 @@
         $statusInfo = $asesmen->statusInfo;
         $assignment = $asesmen->userRoles->first();
         @endphp
-
-        <div class="col-md-6 col-lg-4 mb-4">
+        <div class="col-md-6 col-lg-6 col-xl-4 mb-4">
             <div class="card asesmen-card h-100">
                 {{-- Status Indicator Corner --}}
                 @if($assignment->status_pekerjaan == 'approved')

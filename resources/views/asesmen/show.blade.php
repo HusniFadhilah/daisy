@@ -13,7 +13,7 @@
                     <li class="breadcrumb-item active">{{ $asesmen->name }}</li>
                 </ol>
             </nav>
-            <h2 class="mb-0">{{ $asesmen->name }}</h2>
+            <h3 class="mb-0">{{ $asesmen->name }}</h3>
         </div>
         <div class="btn-group">
             <a href="{{ route('asesmen.edit', $asesmen->id) }}" class="btn btn-outline-secondary">
@@ -24,6 +24,155 @@
             </a>
         </div>
     </div>
+
+    <div class="card mb-4 border-warning" id="requirementsPanel">
+        <div class="card-header bg-warning">
+            <h5 class="mb-0">
+                <i class="bi bi-exclamation-triangle"></i>
+                Panduan Assignment & Persyaratan
+            </h5>
+        </div>
+        <div class="card-body">
+            {{-- Tab navigation --}}
+            <ul class="nav nav-tabs mb-3" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#akRequirements" type="button">
+                        Asesmen Kecukupan (AK)
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#alRequirements" type="button">
+                        Asesmen Lapangan (AL)
+                    </button>
+                </li>
+            </ul>
+
+            {{-- Tab content --}}
+            <div class="tab-content">
+                {{-- AK Requirements --}}
+                <div class="tab-pane fade show active" id="akRequirements">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold mb-3">Persyaratan Minimum:</h6>
+                            <ul class="list-group mb-3">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span><i class="bi bi-person"></i> Asesor</span>
+                                    <span class="badge bg-primary rounded-pill">
+                                        Minimal 2 orang
+                                    </span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span><i class="bi bi-person-check"></i> Validator</span>
+                                    <span class="badge bg-success rounded-pill">
+                                        Minimal 1 orang
+                                    </span>
+                                </li>
+                            </ul>
+
+                            <div id="akStatus" class="status-container">
+                                <div class="spinner-border spinner-border-sm" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                Loading status...
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h6 class="fw-bold mb-3">Yang Sudah Di-assign (AK):</h6>
+                            <div id="akAssignments" class="assignments-list">
+                                <div class="spinner-border spinner-border-sm" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+
+                            <div id="akRejected" class="rejected-list mt-3" style="display: none;">
+                                <h6 class="text-danger fw-bold mb-2">
+                                    <i class="bi bi-x-circle"></i> Penawaran Ditolak:
+                                </h6>
+                                <div id="akRejectedList"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- AL Requirements --}}
+                <div class="tab-pane fade" id="alRequirements">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold mb-3">Persyaratan Minimum:</h6>
+                            <ul class="list-group mb-3">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span><i class="bi bi-person"></i> Asesor</span>
+                                    <span class="badge bg-primary rounded-pill">
+                                        Minimal 2 orang
+                                    </span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span><i class="bi bi-person-check"></i> Validator</span>
+                                    <span class="badge bg-success rounded-pill">
+                                        Minimal 1 orang
+                                    </span>
+                                </li>
+                            </ul>
+
+                            <div id="alStatus" class="status-container">
+                                <div class="spinner-border spinner-border-sm" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                Loading status...
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h6 class="fw-bold mb-3">Yang Sudah Di-assign (AL):</h6>
+                            <div id="alAssignments" class="assignments-list">
+                                <div class="spinner-border spinner-border-sm" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+
+                            <div id="alRejected" class="rejected-list mt-3" style="display: none;">
+                                <h6 class="text-danger fw-bold mb-2">
+                                    <i class="bi bi-x-circle"></i> Penawaran Ditolak:
+                                </h6>
+                                <div id="alRejectedList"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if($asesmen->userRoles->where('status_penawaran', 'rejected')->count() > 0)
+    <div class="alert alert-danger" role="alert">
+        <h5 class="alert-heading">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            Perhatian: Ada Penawaran yang Ditolak
+        </h5>
+        <p class="mb-0">
+            Terdapat <strong>{{ $asesmen->userRoles->where('status_penawaran', 'rejected')->count() }}</strong> user yang menolak penawaran.
+            Silakan assign pengganti atau hapus assignment yang ditolak.
+        </p>
+        <hr>
+        <div class="mb-0">
+            @foreach($asesmen->userRoles->where('status_penawaran', 'rejected') as $rejected)
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                    <strong>{{ $rejected->user->name }}</strong> -
+                    {{ $rejected->role->alias }} ({{ strtoupper($rejected->jenis_asesmen) }})
+                    @if($rejected->response_note)
+                    <br><small class="text-muted">"{{ $rejected->response_note }}"</small>
+                    @endif
+                </div>
+                <button class="btn btn-sm btn-warning" onclick="reassignUser({{ $rejected->id }}, '{{ $rejected->user->name }}', '{{ $rejected->jenis_asesmen }}')">
+                    <i class="bi bi-arrow-repeat"></i> Reassign
+                </button>
+            </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
 
     <div class="row">
         <!-- Asesmen Info Card -->
@@ -120,7 +269,15 @@
                 <div class="card-body">
                     <form id="assignForm" onsubmit="assignUser(event)">
                         <div class="row g-3">
-                            <div class="col-md-6">
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">Jenis Asesmen:</label>
+                                <select id="jenisAsesmen" class="form-select" required>
+                                    <option value="">-- Pilih --</option>
+                                    <option value="ak">Asesmen Kecukupan (AK)</option>
+                                    <option value="al">Asesmen Lapangan (AL)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
                                 <label class="form-label fw-semibold">Pilih User:</label>
                                 <select id="userId" class="form-select" required>
                                     <option value="">-- Pilih User --</option>
@@ -130,13 +287,8 @@
                                     </option>
                                     @endforeach
                                 </select>
-                                @if($availableUsers->count() == 0)
-                                <small class="text-warning">
-                                    <i class="bi bi-info-circle"></i> Semua user sudah di-assign
-                                </small>
-                                @endif
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label class="form-label fw-semibold">Role:</label>
                                 <select id="roleId" class="form-select" required>
                                     <option value="">-- Pilih Role --</option>
@@ -147,19 +299,12 @@
                             </div>
                             <div class="col-md-2">
                                 <label class="form-label">&nbsp;</label>
-                                <button type="submit" class="btn btn-success w-100" {{ $availableUsers->count() == 0 ? 'disabled' : '' }}>
+                                <button type="submit" class="btn btn-success w-100">
                                     <i class="bi bi-plus-circle"></i> Assign
                                 </button>
                             </div>
                         </div>
                     </form>
-
-                    <!-- Bulk Assign (Optional) -->
-                    <div class="mt-3 pt-3 border-top">
-                        <button type="button" class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#bulkAssignModal">
-                            <i class="bi bi-people-fill"></i> Bulk Assign Multiple Users
-                        </button>
-                    </div>
                 </div>
             </div>
 
@@ -179,7 +324,9 @@
                                     <th style="width: 50px;">#</th>
                                     <th>Nama</th>
                                     <th>Email</th>
-                                    <th style="width: 300px;">Role</th>
+                                    <th style="width: 150px;">Jenis Asesmen</th>
+                                    <th style="width: 200px;">Role</th>
+                                    <th style="width: 150px;">Status Penawaran</th>
                                     <th style="width: 150px;">Progress</th>
                                     <th style="width: 120px;">Ditugaskan</th>
                                     <th style="width: 100px;">Aksi</th>
@@ -189,8 +336,15 @@
                                 @forelse($asesmen->userRoles as $index => $userRole)
                                 @php
                                 $stats = $userStats[$userRole->id_user] ?? ['completed' => 0, 'total' => 0, 'percentage' => 0];
+                                $statusPenawaran = $userRole->status_penawaran;
+                                $statusBadge = match($statusPenawaran) {
+                                'accepted' => ['class' => 'success', 'icon' => 'check-circle', 'text' => 'Diterima'],
+                                'rejected' => ['class' => 'danger', 'icon' => 'x-circle', 'text' => 'Ditolak'],
+                                'pending' => ['class' => 'warning', 'icon' => 'clock', 'text' => 'Menunggu'],
+                                default => ['class' => 'secondary', 'icon' => 'question-circle', 'text' => 'Unknown'],
+                                };
                                 @endphp
-                                <tr id="assignment-row-{{ $userRole->id }}">
+                                <tr id="assignment-row-{{ $userRole->id }}" class="{{ $statusPenawaran === 'rejected' ? 'table-danger' : '' }}">
                                     <td>{{ $index + 1 }}</td>
                                     <td>
                                         <div class="d-flex align-items-center">
@@ -204,6 +358,15 @@
                                     </td>
                                     <td>{{ $userRole->user->email }}</td>
                                     <td>
+                                        <span class="badge bg-{{ $userRole->jenis_asesmen === 'ak' ? 'primary' : 'info' }}">
+                                            {{ strtoupper($userRole->jenis_asesmen) }}
+                                        </span>
+                                        @if($userRole->urutan_asesor)
+                                        <small class="text-muted">#{{ $userRole->urutan_asesor }}</small>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($statusPenawaran === 'accepted')
                                         <select class="form-select form-select-sm" onchange="updateUserRole({{ $userRole->id }}, this.value)">
                                             @foreach($roles as $role)
                                             <option value="{{ $role->id }}" {{ $userRole->role->name == $role->name ? 'selected' : '' }}>
@@ -211,29 +374,56 @@
                                             </option>
                                             @endforeach
                                         </select>
+                                        @else
+                                        <span class="badge bg-secondary">{{ $userRole->role->alias }}</span>
+                                        @endif
                                     </td>
                                     <td>
+                                        <span class="badge bg-{{ $statusBadge['class'] }}">
+                                            <i class="bi bi-{{ $statusBadge['icon'] }}"></i>
+                                            {{ $statusBadge['text'] }}
+                                        </span>
+                                        @if($statusPenawaran === 'rejected' && $userRole->response_note)
+                                        <button class="btn btn-sm btn-link p-0 ms-1" data-bs-toggle="tooltip" title="{{ $userRole->response_note }}">
+                                            <i class="bi bi-info-circle"></i>
+                                        </button>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($statusPenawaran === 'accepted')
                                         <div class="progress" style="height: 20px;">
                                             <div class="progress-bar bg-{{ $stats['percentage'] == 100 ? 'success' : ($stats['percentage'] > 0 ? 'warning' : 'secondary') }}" role="progressbar" style="width: {{ $stats['percentage'] }}%">
                                                 {{ $stats['percentage'] }}%
                                             </div>
                                         </div>
                                         <small class="text-muted">{{ $stats['completed'] }}/{{ $stats['total'] }}</small>
+                                        @else
+                                        <span class="text-muted">-</span>
+                                        @endif
                                     </td>
                                     <td>
                                         <small class="text-muted">{{ $userRole->created_at->format('d M Y') }}</small>
+                                        @if($userRole->responded_at)
+                                        <br>
+                                        <small class="text-muted">Respon: {{ $userRole->responded_at->format('d M Y') }}</small>
+                                        @endif
                                     </td>
                                     <td>
-                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeUser({{ $userRole->id }}, {{ $userRole->id_user }}, '{{ $userRole->user->name }}')" data-bs-toggle="tooltip" title="Hapus">
+                                        @if($statusPenawaran === 'rejected')
+                                        <button type="button" class="btn btn-sm btn-warning" onclick="reassignUser({{ $userRole->id }}, '{{ $userRole->user->name }}', '{{ $userRole->jenis_asesmen }}')" data-bs-toggle="tooltip" title="Re-assign">
+                                            <i class="bi bi-arrow-repeat"></i>
+                                        </button>
+                                        @endif
+                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeUser({{ $userRole->id }}, {{ $userRole->id_user }}, '{{ $userRole->user->name }}', '{{ $userRole->jenis_asesmen }}')" data-bs-toggle="tooltip" title="Hapus" {{ $statusPenawaran === 'accepted' && $stats['completed'] > 0 ? 'disabled' : '' }}>
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="7" class="text-center py-4">
+                                    <td colspan="9" class="text-center py-4">
                                         <i class="bi bi-people" style="font-size: 3rem; color: #ccc;"></i>
-                                        <p class="text-muted mt-2">Belum ada asesor ditugaskan. Assign asesor di atas.</p>
+                                        <p class="text-muted mt-2">Belum ada user ditugaskan. Assign user di atas.</p>
                                     </td>
                                 </tr>
                                 @endforelse
@@ -390,6 +580,48 @@
         overflow-y: auto;
     }
 
+    .status-container {
+        padding: 15px;
+        border-radius: 8px;
+        border: 2px solid #e0e0e0;
+    }
+
+    .status-container.complete {
+        background: #d4edda;
+        border-color: #28a745;
+    }
+
+    .status-container.incomplete {
+        background: #fff3cd;
+        border-color: #ffc107;
+    }
+
+    .assignments-list {
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .assignment-item {
+        padding: 10px;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        margin-bottom: 8px;
+        background: #f8f9fa;
+    }
+
+    .assignment-item.pending-assignment {
+        border: 2px dashed #ffc107;
+        background: #fff9e6;
+    }
+
+    .rejected-item {
+        padding: 10px;
+        border: 1px solid #dc3545;
+        border-radius: 6px;
+        margin-bottom: 8px;
+        background: #f8d7da;
+    }
+
 </style>
 @endpush
 
@@ -398,6 +630,219 @@
     const idAsesmen = "{{ $asesmen->id }}";
     const csrfToken = '{{ csrf_token() }}';
 
+    document.addEventListener('DOMContentLoaded', function() {
+        loadRequirementsStatus('ak');
+        loadRequirementsStatus('al');
+    });
+
+    /**
+     * ============================================
+     * LOAD REQUIREMENTS STATUS
+     * ============================================
+     */
+    async function loadRequirementsStatus(jenisAsesmen) {
+        try {
+            // Fetch all data in parallel
+            const [statusResponse, rejectedResponse, assignmentsResponse] = await Promise.all([
+                fetch(`/asesmen/${idAsesmen}/requirements/${jenisAsesmen}`)
+                , fetch(`/asesmen/${idAsesmen}/rejected/${jenisAsesmen}`)
+                , fetch(`/asesmen/${idAsesmen}/assignments/${jenisAsesmen}`)
+            ]);
+
+            const statusData = await statusResponse.json();
+            const rejectedData = await rejectedResponse.json();
+            const assignmentsData = await assignmentsResponse.json();
+
+            // Update UI
+            updateRequirementsUI(
+                jenisAsesmen
+                , statusData.data
+                , rejectedData.data
+                , assignmentsData.data
+            );
+        } catch (error) {
+            console.error(`Error loading ${jenisAsesmen} requirements:`, error);
+
+            // Show error in UI
+            const statusContainer = document.getElementById(`${jenisAsesmen}Status`);
+            if (statusContainer) {
+                statusContainer.className = 'status-container';
+                statusContainer.innerHTML = `
+                    <div class="text-danger">
+                        <i class="bi bi-exclamation-circle"></i>
+                        Gagal memuat data
+                    </div>
+                `;
+            }
+        }
+    }
+
+    /**
+     * ============================================
+     * UPDATE REQUIREMENTS UI
+     * ============================================
+     */
+    function updateRequirementsUI(jenisAsesmen, status, rejected, assignments) {
+        const prefix = jenisAsesmen.toUpperCase();
+        const statusContainer = document.getElementById(`${jenisAsesmen}Status`);
+        const assignmentsContainer = document.getElementById(`${jenisAsesmen}Assignments`);
+        const rejectedContainer = document.getElementById(`${jenisAsesmen}Rejected`);
+        const rejectedList = document.getElementById(`${jenisAsesmen}RejectedList`);
+
+        // ============================================
+        // 1. UPDATE STATUS CONTAINER
+        // ============================================
+        if (status && status.requirements_met) {
+            statusContainer.className = 'status-container complete';
+            statusContainer.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-check-circle-fill text-success fs-4 me-2"></i>
+                    <div>
+                        <div class="fw-bold">✅ Persyaratan Terpenuhi</div>
+                        <small class="text-muted">
+                            Asesor: ${status.current.asesor} | Validator: ${status.current.validator}
+                        </small>
+                    </div>
+                </div>
+            `;
+        } else {
+            statusContainer.className = 'status-container incomplete';
+            statusContainer.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-exclamation-triangle-fill text-warning fs-4 me-2"></i>
+                    <div>
+                        <div class="fw-bold">⚠️ Persyaratan Belum Terpenuhi</div>
+                        <small class="text-danger">
+                            ${status.missing.join(', ')}
+                        </small>
+                        <br>
+                        <small class="text-muted">
+                            Saat ini: Asesor ${status.current.asesor} | Validator ${status.current.validator}
+                        </small>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ============================================
+        // 2. UPDATE ASSIGNMENTS LIST
+        // ============================================
+        if (assignments && Object.keys(assignments).length > 0) {
+            let assignmentsHtml = '';
+
+            // Iterate through roles (asesor, validator, etc)
+            for (const [roleName, users] of Object.entries(assignments)) {
+                const roleIcon = roleName === 'asesor' ? 'person' : 'person-check';
+                const roleBadge = roleName === 'asesor' ? 'primary' : 'success';
+                const roleLabel = roleName === 'asesor' ? 'Asesor' : 'Validator';
+
+                assignmentsHtml += `
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-${roleIcon} me-2"></i>
+                            <strong>${roleLabel} (${users.length})</strong>
+                        </div>
+                `;
+
+                users.forEach(user => {
+                    const statusBadge = getStatusBadge(user.status_pekerjaan);
+                    const urutanText = user.urutan_asesor ? ` #${user.urutan_asesor}` : '';
+
+                    // ✅ ADD: Status penawaran indicator
+                    const penawaranBadge = user.status_penawaran === 'pending' ?
+                        '<span class="badge bg-warning ms-2">Menunggu Konfirmasi</span>' :
+                        '<span class="badge bg-success ms-2">Diterima</span>';
+
+                    assignmentsHtml += `
+                        <div class="assignment-item ${user.status_penawaran === 'pending' ? 'pending-assignment' : ''}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>${user.user.name}${urutanText}</strong>
+                                    <small class="d-block text-muted">${user.user.email}</small>
+                                    ${penawaranBadge}
+                                </div>
+                                <span class="badge bg-${statusBadge.color}">${statusBadge.text}</span>
+                            </div>
+                            <small class="text-muted">Ditugaskan: ${user.created_at}</small>
+                        </div>
+                    `;
+                });
+
+                assignmentsHtml += '</div>';
+            }
+
+            assignmentsContainer.innerHTML = assignmentsHtml;
+        } else {
+            assignmentsContainer.innerHTML = `
+                <div class="text-center text-muted py-3">
+                    <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                    <p class="mb-0 mt-2">Belum ada yang di-assign untuk ${prefix}</p>
+                </div>
+            `;
+        }
+
+        // ============================================
+        // 3. UPDATE REJECTED LIST
+        // ============================================
+        if (rejected && rejected.length > 0) {
+            rejectedContainer.style.display = 'block';
+            rejectedList.innerHTML = rejected.map(item => `
+                <div class="rejected-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>${item.user.name}</strong>
+                            <small class="d-block text-muted">${item.role.alias}</small>
+                        </div>
+                        <span class="badge bg-danger">Ditolak</span>
+                    </div>
+                    ${item.response_note ? `<small class="text-muted mt-1 d-block"><i class="bi bi-chat-quote"></i> "${item.response_note}"</small>` : ''}
+                </div>
+            `).join('');
+        } else {
+            rejectedContainer.style.display = 'none';
+        }
+    }
+
+    /**
+     * ============================================
+     * GET STATUS BADGE
+     * ============================================
+     */
+    function getStatusBadge(status) {
+        const badges = {
+            'not_started': {
+                color: 'secondary'
+                , text: 'Belum Mulai'
+            }
+            , 'in_progress': {
+                color: 'info'
+                , text: 'Sedang Dikerjakan'
+            }
+            , 'submitted': {
+                color: 'warning'
+                , text: 'Submitted'
+            }
+            , 'revision_required': {
+                color: 'danger'
+                , text: 'Revisi'
+            }
+            , 'approved': {
+                color: 'success'
+                , text: 'Approved'
+            }
+        };
+
+        return badges[status] || {
+            color: 'secondary'
+            , text: 'Unknown'
+        };
+    }
+
+    /**
+     * ============================================
+     * SEND DOCUMENTS
+     * ============================================
+     */
     function sendDocuments(assignmentId, userName, roleName) {
         document.getElementById('assignmentId').value = assignmentId;
         document.getElementById('recipientName').textContent = userName;
@@ -457,16 +902,23 @@
     });
 
     /**
-     * Assign single user
+     * ============================================
+     * ASSIGN USER
+     * ============================================
      */
     async function assignUser(event) {
         event.preventDefault();
 
         const userId = document.getElementById('userId').value;
         const roleId = document.getElementById('roleId').value;
+        const jenisAsesmen = document.getElementById('jenisAsesmen').value;
 
-        if (!userId || !roleId) {
-            alert('Mohon pilih user dan role');
+        if (!userId || !roleId || !jenisAsesmen) {
+            Swal.fire({
+                icon: 'warning'
+                , title: 'Perhatian'
+                , text: 'Mohon lengkapi semua field'
+            });
             return;
         }
 
@@ -481,25 +933,44 @@
                 , body: JSON.stringify({
                     id_user: userId
                     , id_role: roleId
-                , })
-            , });
+                    , jenis_asesmen: jenisAsesmen
+                })
+            });
 
             const data = await response.json();
 
             if (data.success) {
-                alert(data.message);
-                location.reload(); // Reload untuk update list
+                let message = data.message;
+
+                if (!data.data.requirements_met) {
+                    message += '\n\n⚠️ ' + data.data.missing_requirements.join(', ');
+                } else {
+                    message += '\n\n✅ Persyaratan sudah terpenuhi!';
+                }
+
+                await Swal.fire({
+                    icon: data.data.requirements_met ? 'success' : 'info'
+                    , title: 'Berhasil!'
+                    , text: message
+                });
+
+                location.reload();
             } else {
-                alert('Error: ' + data.message);
+                throw new Error(data.message);
             }
         } catch (error) {
-            console.error('Error:', error);
-            alert('Terjadi kesalahan saat assign user');
+            Swal.fire({
+                icon: 'error'
+                , title: 'Error'
+                , text: error.message
+            });
         }
     }
 
     /**
-     * Bulk assign users
+     * ============================================
+     * BULK ASSIGN USERS
+     * ============================================
      */
     async function bulkAssignUsers(event) {
         event.preventDefault();
@@ -509,18 +980,33 @@
         const roleId = document.getElementById('bulkRoleId').value;
 
         if (userIds.length === 0) {
-            alert('Mohon pilih minimal 1 user');
+            Swal.fire({
+                icon: 'warning'
+                , title: 'Perhatian'
+                , text: 'Mohon pilih minimal 1 user'
+            });
             return;
         }
 
         if (!roleId) {
-            alert('Mohon pilih role');
+            Swal.fire({
+                icon: 'warning'
+                , title: 'Perhatian'
+                , text: 'Mohon pilih role'
+            });
             return;
         }
 
-        if (!confirm(`Assign ${userIds.length} user(s) ke asesmen ini?`)) {
-            return;
-        }
+        const confirmed = await Swal.fire({
+            icon: 'question'
+            , title: 'Konfirmasi'
+            , text: `Assign ${userIds.length} user(s) ke asesmen ini?`
+            , showCancelButton: true
+            , confirmButtonText: 'Ya, Assign'
+            , cancelButtonText: 'Batal'
+        });
+
+        if (!confirmed.isConfirmed) return;
 
         try {
             const response = await fetch(`/asesmen/${idAsesmen}/bulk-assign`, {
@@ -534,28 +1020,46 @@
                     id_users: userIds
                     , id_role: roleId
                 , })
-            , });
+            });
 
             const data = await response.json();
 
             if (data.success) {
-                alert(data.message);
+                await Swal.fire({
+                    icon: 'success'
+                    , title: 'Berhasil!'
+                    , text: data.message
+                });
                 location.reload();
             } else {
-                alert('Error: ' + data.message);
+                throw new Error(data.message);
             }
         } catch (error) {
-            console.error('Error:', error);
-            alert('Terjadi kesalahan saat bulk assign');
+            Swal.fire({
+                icon: 'error'
+                , title: 'Error'
+                , text: error.message
+            });
         }
     }
 
     /**
-     * Update user role
+     * ============================================
+     * UPDATE USER ROLE
+     * ============================================
      */
     async function updateUserRole(assignmentId, roleId) {
-        if (!confirm('Update role user ini?')) {
-            location.reload(); // Reload untuk reset select
+        const confirmed = await Swal.fire({
+            icon: 'question'
+            , title: 'Konfirmasi'
+            , text: 'Update role user ini?'
+            , showCancelButton: true
+            , confirmButtonText: 'Ya, Update'
+            , cancelButtonText: 'Batal'
+        });
+
+        if (!confirmed.isConfirmed) {
+            location.reload();
             return;
         }
 
@@ -571,30 +1075,50 @@
                     assignment_id: assignmentId
                     , id_role: roleId
                 , })
-            , });
+            });
 
             const data = await response.json();
 
             if (data.success) {
-                showToast(data.message, 'success');
+                await Swal.fire({
+                    icon: 'success'
+                    , title: 'Berhasil!'
+                    , text: data.message
+                    , timer: 1500
+                    , showConfirmButton: false
+                });
+
+                setTimeout(() => location.reload(), 1000);
             } else {
-                alert('Error: ' + data.message);
-                location.reload();
+                throw new Error(data.message);
             }
         } catch (error) {
-            console.error('Error:', error);
-            alert('Terjadi kesalahan saat update role');
+            Swal.fire({
+                icon: 'error'
+                , title: 'Error'
+                , text: error.message
+            });
             location.reload();
         }
     }
 
     /**
-     * Remove user from asesmen
+     * ============================================
+     * REMOVE USER
+     * ============================================
      */
-    async function removeUser(assignmentId, userId, userName) {
-        if (!confirm(`Hapus "${userName}" dari asesmen ini?\n\nPerhatian: User yang sudah melakukan penilaian tidak bisa dihapus.`)) {
-            return;
-        }
+    async function removeUser(assignmentId, userId, userName, jenisAsesmen) {
+        const confirmed = await Swal.fire({
+            icon: 'warning'
+            , title: 'Konfirmasi Hapus'
+            , html: `Hapus <strong>"${userName}"</strong> dari ${jenisAsesmen.toUpperCase()}?<br><br><small class="text-danger">Perhatian: Sistem akan cek apakah persyaratan minimum masih terpenuhi.</small>`
+            , showCancelButton: true
+            , confirmButtonText: 'Ya, Hapus'
+            , cancelButtonText: 'Batal'
+            , confirmButtonColor: '#dc3545'
+        });
+
+        if (!confirmed.isConfirmed) return;
 
         try {
             const response = await fetch(`/asesmen/${idAsesmen}/remove-user/${userId}`, {
@@ -604,46 +1128,134 @@
                     , 'X-CSRF-TOKEN': csrfToken
                     , 'Accept': 'application/json'
                 , }
-            , });
+            });
 
             const data = await response.json();
 
             if (data.success) {
-                // Remove row from table
                 const row = document.getElementById(`assignment-row-${assignmentId}`);
                 if (row) {
                     row.remove();
                 }
-                showToast(data.message, 'success');
 
-                // Reload after 1 second to update available users
+                await Swal.fire({
+                    icon: 'success'
+                    , title: 'Berhasil!'
+                    , text: data.message
+                    , timer: 1500
+                    , showConfirmButton: false
+                });
+
+                // Reload requirements for affected jenis_asesmen
+                loadRequirementsStatus(data.jenis_asesmen || jenisAsesmen);
+
                 setTimeout(() => location.reload(), 1000);
             } else {
-                alert('Error: ' + data.message);
+                // Check if it's a validation error
+                if (data.validation_error) {
+                    await Swal.fire({
+                        icon: 'error'
+                        , title: 'Tidak Bisa Menghapus'
+                        , html: data.message
+                        , confirmButtonColor: '#dc3545'
+                    });
+                } else {
+                    throw new Error(data.message);
+                }
             }
         } catch (error) {
-            console.error('Error:', error);
-            alert('Terjadi kesalahan saat hapus user');
+            Swal.fire({
+                icon: 'error'
+                , title: 'Error'
+                , text: error.message
+            });
         }
     }
 
     /**
-     * Refresh assignments
+     * ============================================
+     * REASSIGN USER
+     * ============================================
+     */
+    async function reassignUser(assignmentId, userName, jenisAsesmen) {
+        const {
+            value: newUserId
+        } = await Swal.fire({
+            title: 'Reassign User'
+            , html: `
+            <p>Pilih pengganti untuk <strong>${userName}</strong> (${jenisAsesmen.toUpperCase()}):</p>
+            <select id="newUserId" class="form-select">
+                <option value="">-- Pilih User --</option>
+                @foreach($availableUsers as $user)
+                <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
+                @endforeach
+            </select>
+        `
+            , showCancelButton: true
+            , confirmButtonText: 'Reassign'
+            , cancelButtonText: 'Batal'
+            , preConfirm: () => {
+                const select = document.getElementById('newUserId');
+                if (!select.value) {
+                    Swal.showValidationMessage('Pilih user terlebih dahulu');
+                    return false;
+                }
+                return select.value;
+            }
+        });
+
+        if (!newUserId) return;
+
+        try {
+            const response = await fetch(`/asesmen/${idAsesmen}/reassign-user`, {
+                method: 'POST'
+                , headers: {
+                    'Content-Type': 'application/json'
+                    , 'X-CSRF-TOKEN': csrfToken
+                    , 'Accept': 'application/json'
+                , }
+                , body: JSON.stringify({
+                    assignment_id: assignmentId
+                    , new_user_id: newUserId
+                , })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                await Swal.fire({
+                    icon: 'success'
+                    , title: 'Berhasil!'
+                    , text: data.message
+                , });
+
+                location.reload();
+            } else {
+                throw new Error(data.message);
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: 'error'
+                , title: 'Error'
+                , text: error.message
+            });
+        }
+    }
+
+    /**
+     * ============================================
+     * REFRESH ASSIGNMENTS
+     * ============================================
      */
     function refreshAssignments() {
         location.reload();
     }
 
     /**
-     * Show toast notification
+     * ============================================
+     * INITIALIZE TOOLTIPS
+     * ============================================
      */
-    function showToast(message, type = 'info') {
-        // Simple alert for now, can be replaced with Bootstrap toast
-        const icon = type === 'success' ? '✅' : '❌';
-        alert(`${icon} ${message}`);
-    }
-
-    // Initialize tooltips
     document.addEventListener('DOMContentLoaded', function() {
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {

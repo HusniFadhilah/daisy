@@ -12,11 +12,11 @@ class PengajuanDokumen extends Model
     protected $fillable = [
         'id_pengajuan',
         'jenis_dokumen',
-        'nama_file',            // ✅ Added
+        'nama_file',
         'path_file',
         'original_filename',
         'file_size',
-        'mime_type',            // ✅ Added
+        'mime_type',
         'uploaded_by',
         'keterangan',
         'versi',

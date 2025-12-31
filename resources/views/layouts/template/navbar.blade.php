@@ -38,7 +38,7 @@ $authUser = auth()->user();
                 <i class="bi bi-bell-fill"></i>
                 <span class="notification-badge">{{ $notificationCount ?? 5 }}</span>
         </div> --}}
-
+        @include('layouts.template.role-switcher')
         <!-- User Menu Dropdown -->
         <div class="dropdown">
             <div class="user-menu" data-bs-toggle="dropdown">

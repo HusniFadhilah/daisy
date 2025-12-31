@@ -55,7 +55,7 @@ class AKController extends Controller
 
         // Check if user has access to this asesmen
         $assignment = AsesmenUserRole::where('id_asesmen', $idAsesmen)
-            ->where('id_user', Auth::user()->id)
+            ->where('id_user', $user->id)
             ->firstOrFail();
 
         if ($assignment->id_role != 3) abort(403);

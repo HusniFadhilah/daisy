@@ -1,100 +1,102 @@
+{{-- resources/views/asesmen/ak/validasi/asesor.blade.php --}}
+
 @extends('layouts.template.app')
 
 @section('title', 'Validasi Penilaian Asesor - ' . $asesmen->name)
 
 @section('content')
 <div class="container-fluid py-3">
-    <!-- Header Card -->
+    {{-- Header Card --}}
     <div class="card mb-4 header-card shadow-sm">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
                     <h3 class="mb-1">Validasi Penilaian Asesor</h3>
-                    <p class="text-muted mb-0">{{ $asesmen->name }}</p>
+                    <p class="text-muted mb-0">
+                        {{ $asesmen->name }}
+                        <span class="badge bg-primary ms-2">
+                            {{ strtoupper($jenisAsesmen) }}
+                        </span>
+                    </p>
                 </div>
                 <a href="{{ route('ak.validasi.index') }}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left"></i> Kembali ke Dashboard
                 </a>
             </div>
 
-            <!-- Asesor Info -->
+            {{-- Dynamic Asesor Info Cards --}}
             <div class="row mt-4">
-                <div class="col-md-6">
-                    <div class="card border-primary">
-                        <div class="card-header bg-primary text-white">
+                @foreach($asesors as $index => $asesor)
+                @php
+                $colors = [
+                ['border' => 'primary', 'bg' => 'primary'],
+                ['border' => 'warning', 'bg' => 'warning'],
+                ['border' => 'success', 'bg' => 'success'],
+                ['border' => 'info', 'bg' => 'info'],
+                ['border' => 'purple', 'bg' => 'purple'],
+                ];
+                $color = $colors[$index % count($colors)];
+                $progress = $asesorProgress[$asesor->id_user] ?? ['completed' => 0, 'total' => 0, 'percentage' => 0];
+                @endphp
+                <div class="col-md-6 col-lg-{{ $asesors->count() > 2 ? '4' : '6' }} mb-3">
+                    <div class="card border-{{ $color['border'] }}">
+                        <div class="card-header bg-{{ $color['bg'] }} text-white">
                             <h6 class="mb-0">
-                                <i class="bi bi-person"></i> Asesor 1
+                                <i class="bi bi-person"></i> Asesor {{ $asesor->urutan_asesor }}
                             </h6>
+                            @if($asesor->status_pekerjaan === 'revision_required')
+                            <span class="badge bg-danger">
+                                <i class="bi bi-exclamation-triangle"></i> Revisi
+                            </span>
+                            @elseif($asesor->status_pekerjaan === 'submitted')
+                            <span class="badge bg-success">
+                                <i class="bi bi-check-circle"></i> Submitted
+                            </span>
+                            @elseif($asesor->status_pekerjaan === 'approved')
+                            <span class="badge bg-success">
+                                <i class="bi bi-patch-check"></i> Approved
+                            </span>
+                            @endif
                         </div>
                         <div class="card-body">
                             <div class="d-flex align-items-center">
-                                <div class="avatar-circle me-3">
-                                    {{ substr($asesor1->name, 0, 2) }}
+                                <div class="avatar-circle me-3 bg-{{ $color['bg'] }}">
+                                    {{ substr($asesor->user->name, 0, 2) }}
                                 </div>
                                 <div>
-                                    <h6 class="mb-0">{{ $asesor1->name }}</h6>
-                                    <small class="text-muted">{{ $asesor1->email }}</small>
+                                    <h6 class="mb-0">{{ $asesor->user->name }}</h6>
+                                    <small class="text-muted">{{ $asesor->user->email }}</small>
                                 </div>
                             </div>
                             <div class="mt-3">
                                 <div class="d-flex justify-content-between">
                                     <span>Progress Penilaian:</span>
-                                    <strong>{{ $progress1['completed'] }}/{{ $progress1['total'] }}</strong>
+                                    <strong>{{ $progress['completed'] }}/{{ $progress['total'] }}</strong>
                                 </div>
                                 <div class="progress mt-2" style="height: 20px;">
-                                    <div class="progress-bar bg-primary" style="width: {{ $progress1['percentage'] }}%">
-                                        {{ $progress1['percentage'] }}%
+                                    <div class="progress-bar bg-{{ $color['bg'] }}" style="width: {{ $progress['completion_percentage'] }}%">
+                                        {{ $progress['completion_percentage'] }}%
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <div class="col-md-6">
-                    <div class="card border-warning">
-                        <div class="card-header bg-warning">
-                            <h6 class="mb-0">
-                                <i class="bi bi-person"></i> Asesor 2
-                            </h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="d-flex align-items-center">
-                                <div class="avatar-circle me-3 bg-warning">
-                                    {{ substr($asesor2->name, 0, 2) }}
-                                </div>
-                                <div>
-                                    <h6 class="mb-0">{{ $asesor2->name }}</h6>
-                                    <small class="text-muted">{{ $asesor2->email }}</small>
-                                </div>
-                            </div>
-                            <div class="mt-3">
-                                <div class="d-flex justify-content-between">
-                                    <span>Progress Penilaian:</span>
-                                    <strong>{{ $progress2['completed'] }}/{{ $progress2['total'] }}</strong>
-                                </div>
-                                <div class="progress mt-2" style="height: 20px;">
-                                    <div class="progress-bar bg-warning" style="width: {{ $progress2['percentage'] }}%">
-                                        {{ $progress2['percentage'] }}%
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                @endforeach
             </div>
         </div>
 
-        <!-- Action Buttons -->
-        <div class="card-footer bg-white py-2">
+        {{-- Action Buttons --}}
+        <div class="card-footer bg-white py-3">
             @if($isApproved)
-            <div class="alert alert-success alert-permanent alert-dismissible fade show" role="alert">
+            <div class="alert alert-success alert-permanent mb-3">
                 <i class="bi bi-check-circle me-2"></i>
-                Penilaian ini telah divalidasi oleh validator dan dinyatakan lolos untuk tahap Asesmen Lapangan (AL)
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <strong>Penilaian Telah Disetujui!</strong>
+                <p class="mb-0">Validasi telah diselesaikan dan lolos untuk tahap selanjutnya (Asesmen Lapangan/AL).</p>
             </div>
             @endif
-            <div class="d-flex justify-content-between align-items-center">
+
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <div>
                     @if($allValidated && !$isApproved)
                     <button type="button" class="btn btn-success btn-md" id="btnApproveAll">
@@ -109,10 +111,6 @@
                         <i class="bi bi-hourglass-split"></i> Validasi Belum Lengkap
                     </button>
                     @endif
-
-                    {{-- <button type="button" class="btn btn-outline-primary btn-md ms-lg-2 my-2" id="btnExportComparison">
-                        <i class="bi bi-file-earmark-excel"></i> Download Perbandingan
-                    </button> --}}
                 </div>
 
                 <div class="d-flex align-items-center">
@@ -120,7 +118,7 @@
                         Progress Validasi:
                         <strong>{{ $validatedCount }}/{{ $totalElemen }}</strong>
                     </span>
-                    <div class="progress d-inline-block" style="height: 20px; width: 200px;">
+                    <div class="progress" style="height: 20px; width: 200px;">
                         <div class="progress-bar bg-success" style="width: {{ $validationPercentage }}%">
                             {{ $validationPercentage }}%
                         </div>
@@ -130,10 +128,10 @@
         </div>
     </div>
 
-    <!-- Validator Matrix -->
-    @include('asesmen.ak.components.validator-matrix')
+    {{-- Validator Matrix --}}
+    @include('asesmen.ak.components.validator-matrix', ['asesors' => $asesors,'kriterias' => $kriterias,'jenjangs' =>$jenjangs])
 
-    <!-- Quick Actions Panel -->
+    {{-- Quick Actions Panel --}}
     <div class="card mb-4 shadow-sm">
         <div class="card-header bg-white">
             <h6 class="mb-0">
@@ -141,12 +139,12 @@
             </h6>
         </div>
         <div class="card-body">
-            <div class="row">
+            <div class="row g-3">
                 <div class="col-md-6">
                     <button type="button" class="btn btn-outline-success w-100" id="btnValidateAllAgreed" {{ $isApproved ? 'disabled' : '' }}>
                         <i class="bi bi-check-circle"></i>
                         <div>Validasi Semua yang Sama</div>
-                        <small>Otomatis approve nilai yang sama</small>
+                        <small>Otomatis approve nilai yang sama dari semua asesor</small>
                     </button>
                 </div>
                 <div class="col-md-6">
@@ -156,56 +154,12 @@
                         <small>Lihat hanya penilaian yang berbeda antar asesor</small>
                     </button>
                 </div>
-                {{-- <div class="col-md-3">
-                    <button type="button" class="btn btn-outline-info w-100" id="btnShowComments">
-                        <i class="bi bi-chat-square-text"></i>
-                        <div>Lihat Komentar</div>
-                        <small>Tampilkan justifikasi asesor</small>
-                    </button>
-                </div>
-                <div class="col-md-3">
-                    <button type="button" class="btn btn-outline-secondary w-100" id="btnExportNotes">
-                        <i class="bi bi-file-text"></i>
-                        <div>Download Catatan</div>
-                        <small>Download catatan validasi</small>
-                    </button>
-                </div> --}}
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal: Detail Penilaian & Validasi -->
-<div class="modal fade" id="validationModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-xl">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">
-                    <i class="bi bi-clipboard-check"></i> Validasi Penilaian Elemen
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div id="validationContent">
-                    <!-- Will be populated by JavaScript -->
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="bi bi-x-circle"></i> Tutup
-                </button>
-                <button type="button" class="btn btn-warning" id="btnRequestRevision">
-                    <i class="bi bi-arrow-counterclockwise"></i> Minta Revisi
-                </button>
-                <button type="button" class="btn btn-success" id="btnApproveElement">
-                    <i class="bi bi-check-circle"></i> Setujui
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal: Approve All Confirmation -->
+{{-- Modal: Approve All Confirmation --}}
 <div class="modal fade" id="approveAllModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -216,8 +170,8 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p>Apakah Anda yakin ingin <strong>menyetujui semua penilaian</strong> kedua asesor?</p>
-                <div class="alert alert-warning alert-permanent alert-dismissible">
+                <p>Apakah Anda yakin ingin <strong>menyetujui semua penilaian</strong>?</p>
+                <div class="alert alert-warning alert-permanent">
                     <i class="bi bi-exclamation-triangle"></i>
                     <strong>Perhatian:</strong> Setelah disetujui, asesor tidak dapat mengubah penilaian mereka.
                 </div>
@@ -233,8 +187,10 @@
     </div>
 </div>
 
+{{-- Include Modals --}}
 @include('asesmen.ak.components.modal-validasi-detail')
 @include('asesmen.ak.components.modal-detail-validasi')
+
 @endsection
 
 @push('styles')
@@ -256,9 +212,84 @@
         background: #ff9800;
     }
 
+    .avatar-circle.bg-success {
+        background: #4caf50;
+    }
+
+    .avatar-circle.bg-info {
+        background: #00bcd4;
+    }
+
+    .avatar-circle.bg-purple {
+        background: #9c27b0;
+    }
+
     .header-card {
         border: none;
         box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    /* ✅ Quick Select Average Button */
+    .quick-select-average {
+        position: relative;
+        border: 2px dashed #2196f3 !important;
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%) !important;
+        color: #1976d2 !important;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .quick-select-average:hover {
+        background: linear-gradient(135deg, #bbdefb 0%, #90caf9 100%) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+    }
+
+    .quick-select-average.active {
+        background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%) !important;
+        color: white !important;
+        border-color: #1565c0 !important;
+    }
+
+    .quick-select-average i {
+        font-size: 1.2rem;
+        display: block;
+        margin-bottom: 0.25rem;
+    }
+
+    /* ✅ Quick Select Buttons Group */
+    #quickSelectButtons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    #quickSelectButtons button {
+        flex: 1;
+        min-width: 100px;
+        padding: 0.75rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    #quickSelectButtons button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    #quickSelectButtons button.active {
+        box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.3);
+        transform: scale(1.05);
+    }
+
+    #quickSelectButtons button strong {
+        font-size: 1.5rem;
+        display: block;
+    }
+
+    #quickSelectButtons button small {
+        font-size: 0.75rem;
+        opacity: 0.8;
     }
 
 </style>
@@ -267,37 +298,279 @@
 @push('scripts')
 <script>
     const idAsesmen = "{{ $asesmen->id }}";
-    const asesor1Id = "{{ $asesor1->id }}";
-    const asesor2Id = "{{ $asesor2->id }}";
-    let diffFilterActive = false;
+    const jenisAsesmen = "{{ $jenisAsesmen }}";
+
+    // Store asesor IDs dynamically
+    const asesorIds = @json($asesorIds);
+    const asesorData = @json($asesorData);
+
+    /**
+     * ============================================
+     * POPULATE MODAL CONTENT (GLOBAL)
+     * ============================================
+     */
+    function populateModalContent(data) {
+        const {
+            elemen
+            , penilaian_data
+            , hasDifference
+            , total_asesors
+        } = data;
+
+        // ✅ 1. Populate Elemen Info
+        document.getElementById('detailKriteria').textContent = elemen.kriteria ?
+            `${elemen.kriteria.kode_kriteria} - ${elemen.kriteria.nama_kriteria}` :
+            '-';
+        document.getElementById('detailKodeElemen').textContent = elemen.kode_elemen;
+        document.getElementById('detailElemenStandar').textContent = elemen.pernyataan_elemen;
+
+        // Indikator
+        let indikatorHtml = '';
+        if (elemen.indikator && elemen.indikator.length > 0) {
+            indikatorHtml = '<ul class="mb-0 ps-3">';
+            elemen.indikator.forEach(ind => {
+                indikatorHtml += `
+                <li class="small">
+                    <strong>${ind.kode_indikator}:</strong> ${ind.deskripsi_indikator}
+                </li>
+            `;
+            });
+            indikatorHtml += '</ul>';
+        } else {
+            indikatorHtml = '<small class="text-muted">-</small>';
+        }
+        document.getElementById('detailIndikator').innerHTML = indikatorHtml;
+
+        // ✅ 2. Set hidden elemen ID
+        document.getElementById('validasiElemenId').value = elemen.id;
+
+        // ✅ 3. Populate Penilaian Asesors (Dynamic Grid)
+        const colors = ['#2196f3', '#ff9800', '#4caf50', '#9c27b0', '#00bcd4'];
+        let htmlAsesors = '';
+        let skorList = [];
+
+        penilaian_data.forEach((item, index) => {
+            const asesor = item.asesor;
+            const penilaian = item.penilaian;
+            const color = colors[index % colors.length];
+            const skor = penilaian.skor;
+
+            if (skor !== null && skor !== undefined) {
+                skorList.push(skor);
+            }
+
+            htmlAsesors += `
+            <div class="col-md-${total_asesors > 2 ? '4' : '6'} mb-3">
+                <div class="card asesor-card border-2" style="border-left: 4px solid ${color};" data-asesor-id="${asesor.id}">
+                    <div class="card-header asesor-card-header" style="background: ${color};">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-circle-modal me-2" style="background: white; color: ${color};">
+                                    ${asesor.name.substring(0, 2).toUpperCase()}
+                                </div>
+                                <div class="text-white">
+                                    <h6 class="mb-0">${asesor.name}</h6>
+                                    <small>Asesor ${index + 1}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-2">
+                            <small class="text-muted">Skor:</small>
+                            <div>
+                                <span class="skor-display ${getSkorBadgeClass(skor)}">
+                                    ${skor !== null ? skor : '-'}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <small class="text-muted">Kategori:</small>
+                            <div>
+                                <span class="badge ${getSkorBadgeClass(skor)}">
+                                    ${getSkorLabel(skor)}
+                                </span>
+                            </div>
+                        </div>
+                        <div>
+                            <small class="text-muted">Komentar:</small>
+                            <p class="small mb-0 mt-1">${penilaian.komentar || '<em class="text-muted">Tidak ada komentar</em>'}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        });
+
+        document.getElementById('penilaianAsesorsContainer').innerHTML = htmlAsesors;
+
+        // ✅ 4. Show/Hide Difference Alert
+        const rowDifference = document.getElementById('rowDifference');
+        if (rowDifference) {
+            if (hasDifference) {
+                const uniqueScores = [...new Set(skorList)];
+                document.getElementById('differenceMessage').textContent =
+                    `Terdapat perbedaan penilaian: Skor ${uniqueScores.join(', ')}`;
+                rowDifference.style.display = 'block';
+            } else {
+                rowDifference.style.display = 'none';
+            }
+        }
+
+        // ✅ 5. Generate Quick Select Buttons (WITH AVERAGE)
+        const quickSelectContainer = document.getElementById('quickSelectButtons');
+        if (quickSelectContainer) {
+            const uniqueScores = [...new Set(skorList)].sort();
+            let quickBtns = '';
+
+            // Add unique scores
+            uniqueScores.forEach(skor => {
+                quickBtns += `
+                <button type="button" class="btn btn-outline-${getSkorButtonClass(skor)}"
+                        onclick="selectSkor(${skor})">
+                    <strong>${skor}</strong>
+                    <small class="d-block">${getSkorLabelShort(skor)}</small>
+                </button>
+            `;
+            });
+
+            // ✅ ADD AVERAGE SCORE BUTTON
+            if (skorList.length > 0) {
+                const average = skorList.reduce((a, b) => a + b, 0) / skorList.length;
+                const averageRounded = Math.round(average); // Bulatkan ke integer terdekat
+                const averageDisplay = average.toFixed(1); // Tampilkan dengan 1 desimal
+
+                quickBtns += `
+                <button type="button" class="btn btn-outline-primary quick-select-average"
+                        onclick="selectSkor(${averageRounded})"
+                        title="Rata-rata dari ${skorList.join(', ')}">
+                    <i class="bi bi-calculator"></i>
+                    <strong>${averageDisplay}</strong>
+                    <small class="d-block">Rata-rata (≈${averageRounded})</small>
+                </button>
+            `;
+            }
+
+            quickSelectContainer.innerHTML = quickBtns;
+        }
+
+        // ✅ 6. Generate Asesor Checkboxes for Revision
+        const asesorCheckboxes = document.getElementById('asesorCheckboxes');
+        if (asesorCheckboxes) {
+            let checkboxHtml = '';
+
+            penilaian_data.forEach((item, index) => {
+                const asesor = item.asesor;
+                const color = colors[index % colors.length];
+
+                checkboxHtml += `
+                <div class="col-md-6 mb-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox"
+                               name="asesor_target_revisi[]"
+                               value="${asesor.id}"
+                               id="revisi_asesor_${asesor.id}" data-nama="${asesor.name}">
+                        <label class="form-check-label" for="revisi_asesor_${asesor.id}">
+                            <span class="badge" style="background: ${color};">Asesor ${index + 1}</span>
+                            ${asesor.name}
+                        </label>
+                    </div>
+                </div>
+            `;
+            });
+
+            asesorCheckboxes.innerHTML = checkboxHtml;
+        }
+    }
+
+    /**
+     * ============================================
+     * HELPER: SELECT SKOR
+     * ============================================
+     */
+    function selectSkor(skor) {
+        document.getElementById('skorFinal').value = skor;
+
+        // Highlight selected button
+        document.querySelectorAll('#quickSelectButtons button').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.closest('button').classList.add('active');
+    }
+
+    /**
+     * ============================================
+     * OPEN VALIDATION MODAL
+     * ============================================
+     */
+    async function openValidationModal(elemenId) {
+        const modal = new bootstrap.Modal(document.getElementById('modalValidasiDetail'));
+        modal.show();
+
+        document.getElementById('loadingDetail').style.display = 'block';
+        document.getElementById('detailContainer').style.display = 'none';
+
+        try {
+            const response = await fetch(`/ak/validasi/${idAsesmen}/elemen/${elemenId}`, {
+                headers: {
+                    'Accept': 'application/json'
+                    , 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            });
+
+            const result = await response.json();
+
+            if (!result.success) {
+                throw new Error(result.message || 'Gagal memuat data');
+            }
+
+            populateModalContent(result.data);
+
+            document.getElementById('loadingDetail').style.display = 'none';
+            document.getElementById('detailContainer').style.display = 'block';
+
+        } catch (error) {
+            console.error('Error loading elemen detail:', error);
+            Swal.fire({
+                icon: 'error'
+                , title: 'Error'
+                , text: error.message || 'Gagal memuat detail penilaian'
+            });
+            modal.hide();
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
-        // Initialize all handlers
         initializeQuickActions();
         initializeApproveAll();
         initializeValidationModal();
 
         /**
-         * Quick Actions
+         * ============================================
+         * QUICK ACTIONS
+         * ============================================
          */
         function initializeQuickActions() {
             // Validate all agreed
-            const btnValidateAllAgreed = document.getElementById('btnValidateAllAgreed')
-            if (btnValidateAllAgreed) btnValidateAllAgreed.addEventListener('click', async function() {
-                const confirmed = await Swal.fire({
-                    icon: 'question'
-                    , title: 'Validasi Otomatis?'
-                    , text: 'Sistem akan otomatis menyetujui semua penilaian yang nilainya sama dari kedua asesor.'
-                    , showCancelButton: true
-                    , confirmButtonText: 'Ya, Lanjutkan'
-                    , cancelButtonText: 'Batal'
+            const btnValidateAllAgreed = document.getElementById('btnValidateAllAgreed');
+            if (btnValidateAllAgreed) {
+                btnValidateAllAgreed.addEventListener('click', async function() {
+                    const confirmed = await Swal.fire({
+                        icon: 'question'
+                        , title: 'Validasi Otomatis?'
+                        , text: 'Sistem akan otomatis menyetujui semua penilaian yang nilainya sama dari semua asesor.'
+                        , showCancelButton: true
+                        , confirmButtonText: 'Ya, Lanjutkan'
+                        , cancelButtonText: 'Batal'
+                    });
+
+                    if (confirmed.isConfirmed) {
+                        validateAllAgreed();
+                    }
                 });
+            }
 
-                if (confirmed.isConfirmed) {
-                    validateAllAgreed();
-                }
-            });
-
-            // Review differences only
+            // Review differences
             const btnReviewDifferences = document.getElementById('btnReviewDifferences');
             let reviewDiffActive = false;
 
@@ -307,7 +580,6 @@
                     const diffRows = document.querySelectorAll('.validator-row[data-has-diff="true"]');
 
                     if (!reviewDiffActive) {
-                        // MODE ON: baris beda jelas, baris lain dimute (opacity diturunkan)
                         allRows.forEach(row => {
                             if (row.dataset.hasDiff === 'true') {
                                 row.classList.add('review-diff-focus');
@@ -319,6 +591,7 @@
                         });
 
                         reviewDiffActive = true;
+                        this.innerHTML = '<i class="bi bi-x-circle"></i><div>Matikan Filter</div><small>Tampilkan semua elemen</small>';
 
                         Swal.fire({
                             icon: 'info'
@@ -327,11 +600,12 @@
                             , timer: 2000
                         });
                     } else {
-                        // MODE OFF: kembalikan tampilan normal
                         allRows.forEach(row => {
                             row.classList.remove('review-diff-muted', 'review-diff-focus');
                         });
+
                         reviewDiffActive = false;
+                        this.innerHTML = '<i class="bi bi-exclamation-triangle"></i><div>Review Perbedaan</div><small>Lihat hanya penilaian yang berbeda antar asesor</small>';
 
                         Swal.fire({
                             icon: 'info'
@@ -342,74 +616,73 @@
                     }
                 });
             }
-
-            // Export comparison
-            const btnExportComparison = document.getElementById('btnExportComparison')
-            if (btnExportComparison) btnExportComparison.addEventListener('click', function() {
-                window.location.href = `/ak/validasi/${idAsesmen}/export-comparison/${asesor1Id}/${asesor2Id}`;
-            });
-        }
-
-        /**
-         * Approve All
-         */
-        function initializeApproveAll() {
-            const btnApproveAll = document.getElementById('btnApproveAll')
-            if (btnApproveAll) btnApproveAll.addEventListener('click', function() {
-                const modal = new bootstrap.Modal(document.getElementById('approveAllModal'));
-                modal.show();
-            });
-
-            const confirmApproveAll = document.getElementById('confirmApproveAll')
-            if (confirmApproveAll) confirmApproveAll.addEventListener('click', async function() {
-                const modal = bootstrap.Modal.getInstance(document.getElementById('approveAllModal'));
-                modal.hide();
-
-                showLoading();
-
-                try {
-                    const response = await fetch(`/ak/validasi/${idAsesmen}/asesor/approve`, {
-                        method: 'POST'
-                        , headers: {
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                            , 'Accept': 'application/json'
-                            , 'Content-Type': 'application/json'
-                        }
-                    });
-
-                    const data = await response.json();
-                    hideLoading();
-
-                    if (data.success) {
-                        await Swal.fire({
-                            icon: 'success'
-                            , title: 'Berhasil!'
-                            , text: data.message
-                            , confirmButtonColor: '#28a745'
-                        });
-
-                        window.location.reload();
-                    } else {
-                        throw new Error(data.message);
-                    }
-                } catch (error) {
-                    hideLoading();
-                    Swal.fire({
-                        icon: 'error'
-                        , title: 'Gagal'
-                        , text: error.message
-                    });
-                }
-            });
         }
 
         /**
          * ============================================
-         * INITIALIZE VALIDATION MODAL
+         * APPROVE ALL
+         * ============================================
+         */
+        function initializeApproveAll() {
+            const btnApproveAll = document.getElementById('btnApproveAll');
+            if (btnApproveAll) {
+                btnApproveAll.addEventListener('click', function() {
+                    const modal = new bootstrap.Modal(document.getElementById('approveAllModal'));
+                    modal.show();
+                });
+            }
+
+            const confirmApproveAll = document.getElementById('confirmApproveAll');
+            if (confirmApproveAll) {
+                confirmApproveAll.addEventListener('click', async function() {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('approveAllModal'));
+                    modal.hide();
+
+                    showLoading();
+
+                    try {
+                        const response = await fetch(`/ak/validasi/${idAsesmen}/asesor/approve`, {
+                            method: 'POST'
+                            , headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                , 'Accept': 'application/json'
+                                , 'Content-Type': 'application/json'
+                            }
+                        });
+
+                        const data = await response.json();
+                        hideLoading();
+
+                        if (data.success) {
+                            await Swal.fire({
+                                icon: 'success'
+                                , title: 'Berhasil!'
+                                , text: data.message
+                                , confirmButtonColor: '#28a745'
+                            });
+
+                            window.location.reload();
+                        } else {
+                            throw new Error(data.message);
+                        }
+                    } catch (error) {
+                        hideLoading();
+                        Swal.fire({
+                            icon: 'error'
+                            , title: 'Gagal'
+                            , text: error.message
+                        });
+                    }
+                });
+            }
+        }
+
+        /**
+         * ============================================
+         * VALIDATION MODAL
          * ============================================
          */
         function initializeValidationModal() {
-            // Setup event listeners for validate buttons in matrix
             document.querySelectorAll('.btn-validate').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const elemenId = this.dataset.elemenId;
@@ -417,159 +690,7 @@
                 });
             });
 
-            // Setup modal event listeners
             setupModalEventListeners();
-        }
-
-        /**
-         * ============================================
-         * OPEN VALIDATION MODAL
-         * ============================================
-         */
-        async function openValidationModal(elemenId) {
-            const modal = new bootstrap.Modal(document.getElementById('modalValidasiDetail'));
-
-            // Show modal
-            modal.show();
-
-            // Show loading
-            document.getElementById('loadingDetail').style.display = 'block';
-            document.getElementById('detailContainer').style.display = 'none';
-
-            try {
-                // Fetch elemen detail
-                const response = await fetch(`/ak/validasi/${idAsesmen}/elemen/${elemenId}`, {
-                    headers: {
-                        'Accept': 'application/json'
-                        , 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    }
-                });
-
-                const result = await response.json();
-
-                if (!result.success) {
-                    throw new Error(result.message || 'Gagal memuat data');
-                }
-
-                // Populate modal with data
-                populateModalContent(result.data);
-
-                // Hide loading, show content
-                document.getElementById('loadingDetail').style.display = 'none';
-                document.getElementById('detailContainer').style.display = 'block';
-
-            } catch (error) {
-                console.error('Error loading elemen detail:', error);
-
-                Swal.fire({
-                    icon: 'error'
-                    , title: 'Error'
-                    , text: error.message || 'Gagal memuat detail penilaian'
-                });
-
-                modal.hide();
-            }
-        }
-
-        /**
-         * ============================================
-         * POPULATE MODAL CONTENT
-         * ============================================
-         */
-        function populateModalContent(data) {
-            const {
-                elemen
-                , asesor1
-                , asesor2
-                , hasDifference
-            } = data;
-
-            // Store elemen ID dan asesor IDs
-            document.getElementById('validasiElemenId').value = elemen.id;
-            document.getElementById('validasiAsesor1Id').value = asesor1.user.id;
-            document.getElementById('validasiAsesor2Id').value = asesor2.user.id;
-
-            // ✅ SET VALUE untuk radio buttons
-            document.getElementById('chkAsesor1').value = asesor1.user.id;
-            document.getElementById('chkAsesor2').value = asesor2.user.id;
-
-            // Elemen Info
-            document.getElementById('detailKriteria').textContent = elemen.kriteria ? `${elemen.kriteria.kode_kriteria} (${elemen.kriteria.nama_kriteria})` : '-';
-            document.getElementById('detailKodeElemen').textContent = elemen.kode_elemen;
-            document.getElementById('detailElemenStandar').textContent = elemen.pernyataan_elemen;
-
-            // Indikator
-            const indikatorContainer = document.getElementById('detailIndikator');
-            if (elemen.indikator && elemen.indikator.length > 0) {
-                indikatorContainer.innerHTML = '<ul class="mb-0">' +
-                    elemen.indikator.map(ind =>
-                        `<li><strong>${ind.kode_indikator}:</strong> ${ind.deskripsi_indikator}</li>`
-                    ).join('') + '</ul>';
-            } else {
-                indikatorContainer.innerHTML = '<p class="text-muted mb-0">Tidak ada indikator</p>';
-            }
-
-            // Asesor 1
-            document.getElementById('avatar1').textContent = asesor1.user.name.substring(0, 2).toUpperCase();
-            document.getElementById('namaAsesor1').textContent = asesor1.user.name;
-
-            const skorAsesor1Container = document.getElementById('skorAsesor1Container')
-            if (asesor1.penilaian) {
-                const skor1 = asesor1.penilaian.skor;
-                if (skorAsesor1Container) skorAsesor1Container.innerHTML =
-                    `<div class="skor-display" style="background: ${getSkorColorJS(skor1)}; color: white;">${skor1}</div>`;
-                const kategoriAsesor1 = document.getElementById('kategoriAsesor1')
-                if (kategoriAsesor1) {
-                    kategoriAsesor1.className = `badge ${getSkorBadgeClass(skor1)}`;
-                    kategoriAsesor1.textContent = getSkorLabel(skor1);
-                }
-                const komentarAsesor1 = document.getElementById('komentarAsesor1')
-                if (komentarAsesor1) komentarAsesor1.innerHTML =
-                    asesor1.penilaian.komentar || '<em class="text-muted">Tidak ada justifikasi</em>';
-            } else {
-                if (skorAsesor1Container) skorAsesor1Container.innerHTML =
-                    '<span class="text-muted">Belum dinilai</span>';
-            }
-
-            // Asesor 2
-            document.getElementById('avatar2').textContent = asesor2.user.name.substring(0, 2).toUpperCase();
-            document.getElementById('namaAsesor2').textContent = asesor2.user.name;
-
-            const skorAsesor2Container = document.getElementById('skorAsesor2Container')
-            if (asesor2.penilaian) {
-                const skor2 = asesor2.penilaian.skor;
-                if (skorAsesor2Container) skorAsesor2Container.innerHTML = `<div class="skor-display" style="background: ${getSkorColorJS(skor2)}; color: white;">${skor2}</div>`;
-                const kategoriAsesor2 = document.getElementById('kategoriAsesor2')
-                if (kategoriAsesor2) {
-                    kategoriAsesor2.className = `badge ${getSkorBadgeClass(skor2)}`;
-                    kategoriAsesor2.textContent = getSkorLabel(skor2);
-                }
-                const komentarAsesor2 = document.getElementById('komentarAsesor2')
-                if (komentarAsesor2) komentarAsesor2.innerHTML = asesor2.penilaian.komentar || '<em class="text-muted">Tidak ada justifikasi</em>';
-            } else {
-                if (skorAsesor2Container) skorAsesor2Container.innerHTML =
-                    '<span class="text-muted">Belum dinilai</span>';
-            }
-
-            // Difference indicator
-            const rowDifference = document.getElementById('rowDifference')
-            if (hasDifference && asesor1.penilaian && asesor2.penilaian) {
-                if (rowDifference) rowDifference.style.display = '';
-                const diff = Math.abs(asesor1.penilaian.skor - asesor2.penilaian.skor);
-                const differenceMessage = document.getElementById('differenceMessage')
-                if (differenceMessage) differenceMessage.textContent = ` Selisih ${diff} poin antara kedua asesor.`;
-            } else {
-                if (rowDifference) rowDifference.style.display = 'none';
-            }
-
-            // Setup quick select buttons
-            setupQuickSelectButtons(asesor1.penilaian, asesor2.penilaian);
-
-            // Reset form
-            document.getElementById('formValidasi').reset();
-            document.querySelectorAll('input[name="asesor_target_revisi[]"]').forEach(cb => {
-                cb.checked = false;
-            });
         }
 
         /**
@@ -578,38 +699,38 @@
          * ============================================
          */
         function setupModalEventListeners() {
-            // Status validasi change
             const statusValidasi = document.getElementById('statusValidasi');
             if (statusValidasi) {
                 statusValidasi.addEventListener('change', function() {
                     const btnRevision = document.getElementById('btnSaveRevision');
                     const btnValidasi = document.getElementById('btnSaveValidasi');
-                    const alertRevisi = document.getElementById('alertRevisiInfo');
+                    const revisionSection = document.getElementById('revisionSection');
                     const labelRequired = document.getElementById('labelCatatanRequired');
 
                     if (this.value === 'revision_required') {
                         btnRevision.style.display = 'inline-block';
                         btnValidasi.style.display = 'none';
-                        alertRevisi.style.display = 'block';
+                        revisionSection.style.display = 'block';
                         labelRequired.style.display = 'inline';
 
-                        // ✅ Show radio buttons untuk pilih asesor
-                        document.getElementById('rowAsesor1').classList.add('border-danger');
-                        document.getElementById('rowAsesor2').classList.add('border-danger');
+                        // Add danger border to all asesor cards
+                        document.querySelectorAll('.asesor-card').forEach(card => {
+                            card.classList.add('border-danger');
+                        });
                     } else {
                         btnRevision.style.display = 'none';
                         btnValidasi.style.display = 'inline-block';
-                        alertRevisi.style.display = 'none';
+                        revisionSection.style.display = 'none';
                         labelRequired.style.display = 'none';
 
-                        // ✅ Hide radio buttons
-                        document.getElementById('rowAsesor1').classList.remove('border-danger');
-                        document.getElementById('rowAsesor2').classList.remove('border-danger');
+                        // Remove danger border
+                        document.querySelectorAll('.asesor-card').forEach(card => {
+                            card.classList.remove('border-danger');
+                        });
                     }
                 });
             }
 
-            // Save validasi
             const btnSaveValidasi = document.getElementById('btnSaveValidasi');
             if (btnSaveValidasi) {
                 btnSaveValidasi.addEventListener('click', function() {
@@ -617,68 +738,12 @@
                 });
             }
 
-            // Save revision
             const btnSaveRevision = document.getElementById('btnSaveRevision');
             if (btnSaveRevision) {
                 btnSaveRevision.addEventListener('click', function() {
                     submitValidasi('revision_required');
                 });
             }
-        }
-
-        /**
-         * ============================================
-         * SETUP QUICK SELECT BUTTONS
-         * ============================================
-         */
-        function setupQuickSelectButtons(penilaian1, penilaian2) {
-            // Select Asesor 1 score
-            const btnSelectAsesor1 = document.getElementById('btnSelectAsesor1')
-            if (btnSelectAsesor1) btnSelectAsesor1.addEventListener('click', function() {
-                if (penilaian1) {
-                    document.getElementById('skorFinal').value = penilaian1.skor;
-                    document.getElementById('statusValidasi').value = 'validated';
-                    document.getElementById('rowAsesor1').classList.add('highlight');
-                    document.getElementById('rowAsesor2').classList.remove('highlight');
-
-                    setTimeout(() => {
-                        document.getElementById('rowAsesor1').classList.remove('highlight');
-                    }, 2000);
-                }
-            });
-
-            // Select Asesor 2 score
-            const btnSelectAsesor2 = document.getElementById('btnSelectAsesor2')
-            if (btnSelectAsesor2) btnSelectAsesor2.addEventListener('click', function() {
-                if (penilaian2) {
-                    document.getElementById('skorFinal').value = penilaian2.skor;
-                    document.getElementById('statusValidasi').value = 'validated';
-                    document.getElementById('rowAsesor2').classList.add('highlight');
-                    document.getElementById('rowAsesor1').classList.remove('highlight');
-
-                    setTimeout(() => {
-                        document.getElementById('rowAsesor2').classList.remove('highlight');
-                    }, 2000);
-                }
-            });
-
-            // Select Average (if applicable)
-            const btnSelectAverage = document.getElementById('btnSelectAverage')
-            if (btnSelectAverage) btnSelectAverage.addEventListener('click', function() {
-                if (penilaian1 && penilaian2) {
-                    const avg = Math.round((penilaian1.skor + penilaian2.skor) / 2);
-                    document.getElementById('skorFinal').value = avg;
-                    document.getElementById('statusValidasi').value = 'validated';
-
-                    Swal.fire({
-                        icon: 'info'
-                        , title: 'Rata-rata Dipilih'
-                        , text: `Skor rata-rata: ${avg}`
-                        , timer: 2000
-                        , showConfirmButton: false
-                    });
-                }
-            });
         }
 
         /**
@@ -691,8 +756,13 @@
             const skorFinal = document.getElementById('skorFinal').value;
             const catatanValidator = document.getElementById('catatanValidator').value;
 
-            // ✅ VALIDASI: Jika revisi, harus pilih asesor
-            let asesorIds = null;
+            // ✅ Build payload based on status
+            let payload = {
+                status: status
+                , skor_final: skorFinal
+                , catatan_validator: catatanValidator
+            };
+
             if (status === 'revision_required') {
                 const selectedChecks = Array.from(
                     document.querySelectorAll('input[name="asesor_target_revisi[]"]:checked')
@@ -707,7 +777,8 @@
                     return;
                 }
 
-                asesorIds = selectedChecks.map(cb => cb.value);
+                // ✅ Only add id_asesors if revision_required
+                payload.id_asesors = selectedChecks.map(cb => cb.value);
 
                 if (!catatanValidator.trim()) {
                     Swal.fire({
@@ -719,30 +790,21 @@
                 }
             }
 
-            // Validation for validated status
             if (status === 'validated' && !skorFinal) {
                 Swal.fire({
                     icon: 'warning'
-                    , title: 'Skor/Kategori Final Diperlukan'
-                    , text: 'Silakan pilih skor/kategori final terlebih dahulu'
+                    , title: 'Skor Final Diperlukan'
+                    , text: 'Silakan pilih skor final terlebih dahulu'
                 });
                 return;
             }
 
-            // Confirm
-            let confirmText = `Anda akan menyetujui penilaian dengan kategori: ${skorFinal}`;
+            let confirmText = `Anda akan menyetujui penilaian dengan skor: ${skorFinal}`;
             if (status === 'revision_required') {
-                const selectedChecks = Array.from(
+                const selectedAsesors = Array.from(
                     document.querySelectorAll('input[name="asesor_target_revisi[]"]:checked')
-                );
-
-                const names = selectedChecks.map(cb => {
-                    // ambil nama asesor dari card terdekat
-                    const card = cb.closest('.card');
-                    return card ? card.querySelector('h6').textContent.trim() : 'Asesor';
-                }).filter(Boolean);
-
-                confirmText = `Anda akan meminta revisi kepada: ${names.join(' dan ')}`;
+                ).map(cb => cb.dataset.nama);
+                confirmText = `Anda akan meminta revisi kepada: ${selectedAsesors.join(', ')}`;
             }
 
             const confirmResult = await Swal.fire({
@@ -756,14 +818,7 @@
 
             if (!confirmResult.isConfirmed) return;
 
-            // Show loading
-            Swal.fire({
-                title: 'Menyimpan...'
-                , allowOutsideClick: false
-                , didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
+            showLoading();
 
             try {
                 const response = await fetch(`/ak/validasi/${idAsesmen}/elemen/${elemenId}/validate`, {
@@ -773,12 +828,7 @@
                         , 'Accept': 'application/json'
                         , 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     }
-                    , body: JSON.stringify({
-                        status: status
-                        , skor_final: skorFinal
-                        , catatan_validator: catatanValidator
-                        , id_asesors: asesorIds // ✅ KIRIM ID ASESOR yang harus revisi
-                    })
+                    , body: JSON.stringify(payload) // ✅ Send payload instead of hardcoded object
                 });
 
                 const result = await response.json();
@@ -787,7 +837,6 @@
                     throw new Error(result.message || 'Gagal menyimpan validasi');
                 }
 
-                // Success
                 await Swal.fire({
                     icon: 'success'
                     , title: 'Berhasil!'
@@ -796,15 +845,14 @@
                     , showConfirmButton: false
                 });
 
-                // Close modal
                 const modal = bootstrap.Modal.getInstance(document.getElementById('modalValidasiDetail'));
                 modal.hide();
 
-                // Reload page
                 window.location.reload();
 
             } catch (error) {
                 console.error('Error submitting validation:', error);
+                hideLoading();
 
                 Swal.fire({
                     icon: 'error'
@@ -815,7 +863,9 @@
         }
 
         /**
-         * Validate All Agreed
+         * ============================================
+         * VALIDATE ALL AGREED
+         * ============================================
          */
         async function validateAllAgreed() {
             showLoading();
@@ -856,7 +906,9 @@
         }
 
         /**
-         * Loading helpers
+         * ============================================
+         * HELPERS
+         * ============================================
          */
         function showLoading() {
             Swal.fire({
@@ -873,6 +925,179 @@
         }
     });
 
+    /**
+     * ============================================
+     * SHOW KOMENTAR POPOVER
+     * ============================================
+     */
+    function showKomentarPopover(element, namaAsesor, skor, komentar) {
+        const skorLabel = getSkorLabel(skor);
+
+        Swal.fire({
+            title: `💬 Komentar ${namaAsesor}`
+            , html: `
+                <div class="text-start">
+                    <div class="mb-2">
+                        <span class="badge ${getSkorBadgeClass(skor)}">${skorLabel}</span>
+                    </div>
+                    <div class="alert alert-light alert-permanent">
+                        <strong>Justifikasi:</strong>
+                        <p class="mb-0 mt-2">${komentar || '<em>Tidak ada komentar</em>'}</p>
+                    </div>
+                </div>
+            `
+            , icon: 'info'
+            , confirmButtonText: 'Tutup'
+            , width: '600px'
+        });
+    }
+
+    /**
+     * ============================================
+     * SHOW VALIDASI DETAIL (VIEW-ONLY MODAL)
+     * ============================================
+     */
+    async function showValidasiDetail(elemenId, validasiId) {
+        const modal = new bootstrap.Modal(document.getElementById('modalDetailValidasi'));
+        modal.show();
+
+        document.getElementById('loadingDetailValidasi').style.display = 'block';
+        document.getElementById('contentDetailValidasi').style.display = 'none';
+
+        try {
+            const response = await fetch(`/ak/validasi/${idAsesmen}/detail/${elemenId}`, {
+                headers: {
+                    'Accept': 'application/json'
+                    , 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            });
+
+            const result = await response.json();
+
+            if (!result.success) {
+                throw new Error(result.message || 'Gagal memuat data');
+            }
+
+            populateValidasiDetail(result.data);
+
+            document.getElementById('loadingDetailValidasi').style.display = 'none';
+            document.getElementById('contentDetailValidasi').style.display = 'block';
+
+        } catch (error) {
+            console.error('Error loading validasi detail:', error);
+            Swal.fire({
+                icon: 'error'
+                , title: 'Error'
+                , text: error.message
+            });
+            modal.hide();
+        }
+    }
+
+    /**
+     * ============================================
+     * POPULATE VALIDASI DETAIL
+     * ============================================
+     */
+    function populateValidasiDetail(data) {
+        const {
+            elemen
+            , validasi
+            , penilaianAsesor
+        } = data;
+
+        // Elemen info
+        const detailValidasiKriteria = document.getElementById('detailValidasiKriteria');
+        if (detailValidasiKriteria) {
+            detailValidasiKriteria.textContent = elemen.kriteria ?
+                `${elemen.kriteria.kode_kriteria} - ${elemen.kriteria.nama_kriteria}` :
+                '-';
+        }
+        const detailValidasiKode = document.getElementById('detailValidasiKode');
+        if (detailValidasiKode) {
+            detailValidasiKode.textContent = elemen.kode_elemen;
+        }
+        const detailValidasiElemen = document.getElementById('detailValidasiElemen');
+        if (detailValidasiElemen) {
+            detailValidasiElemen.textContent = elemen.pernyataan_elemen;
+        }
+
+        // Validasi info
+        const statusBadge = validasi.status_validasi === 'validated' ?
+            '<span class="badge bg-success">✅ Disetujui</span>' :
+            '<span class="badge bg-warning text-dark">⚠️ Perlu Revisi</span>';
+
+        const detailValidasiStatus = document.getElementById('detailValidasiStatus');
+        if (detailValidasiStatus) {
+            detailValidasiStatus.innerHTML = statusBadge;
+        }
+
+        const skorBadge = document.getElementById('badgeSkorFinal');
+        skorBadge.textContent = validasi.skor_final || '-';
+        skorBadge.className = `badge ${getSkorBadgeClass(validasi.skor_final)}`;
+
+        const detailValidasiValidator = document.getElementById('detailValidasiValidator');
+        if (detailValidasiValidator) {
+            detailValidasiValidator.textContent = validasi.validator ? validasi.validator.name : '-';
+        }
+        const detailValidasiTanggal = document.getElementById('detailValidasiTanggal');
+        if (detailValidasiTanggal) {
+            detailValidasiTanggal.textContent = formatDateTime(validasi.validated_at);
+        }
+        const detailValidasiCatatan = document.getElementById('detailValidasiCatatan');
+        if (detailValidasiCatatan) {
+            detailValidasiCatatan.innerHTML = validasi.catatan_validator || '<em class="text-muted">Tidak ada catatan</em>';
+        }
+
+        // Penilaian asesor (Dynamic for all asesors)
+        const colors = ['#2196f3', '#ff9800', '#4caf50', '#9c27b0', '#00bcd4'];
+
+        let htmlPenilaian = '<div class="row">';
+        penilaianAsesor.forEach((pen, index) => {
+            const color = colors[index % colors.length];
+
+            htmlPenilaian += `
+                <div class="col-md-6 mb-3">
+                    <div class="card asesor-penilaian-card asesor-${index + 1}" style="border-left-color: ${color};">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="avatar-circle-detail me-2" style="background: ${color};">
+                                    ${pen.asesor.name.substring(0, 2).toUpperCase()}
+                                </div>
+                                <div>
+                                    <strong>${pen.asesor.name}</strong>
+                                    <div><small class="text-muted">Asesor ${index + 1}</small></div>
+                                </div>
+                            </div>
+
+                            <div class="mb-2">
+                                <small class="text-muted">Skor:</small>
+                                <div>
+                                    <span class="badge ${getSkorBadgeClass(pen.skor)}">
+                                        ${getSkorLabel(pen.skor)}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <small class="text-muted">Komentar:</small>
+                                <p class="small mb-0 mt-1">${pen.komentar || '<em class="text-muted">Tidak ada komentar</em>'}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        htmlPenilaian += '</div>';
+
+        document.getElementById('detailPenilaianAsesor').innerHTML = htmlPenilaian;
+    }
+
+    /**
+     * ============================================
+     * HELPER FUNCTIONS
+     * ============================================
+     */
     function getSkorLabel(skor) {
         const labels = {
             0: '0 - Tidak Memenuhi (Not Met)'
@@ -880,6 +1105,17 @@
             , 2: '2 - Lemah (Weakness/Cause of Concern)'
             , 3: '3 - Memenuhi (Met)'
             , 4: '4 - Pelampauan Standar'
+        };
+        return labels[skor] || '-';
+    }
+
+    function getSkorLabelShort(skor) {
+        const labels = {
+            0: 'Tidak Memenuhi'
+            , 1: 'Belum Memenuhi'
+            , 2: 'Lemah'
+            , 3: 'Memenuhi'
+            , 4: 'Pelampauan'
         };
         return labels[skor] || '-';
     }
@@ -895,130 +1131,38 @@
         return classes[skor] || 'bg-secondary';
     }
 
-    /**
-     * ============================================
-     * SHOW KOMENTAR POPOVER
-     * ============================================
-     */
-    function showKomentarPopover(element, namaAsesor, skor, komentar) {
-        const skorLabel = {
-            0: '0 - Tidak Memenuhi (Not Met)'
-            , 1: '1 - Belum Memenuhi (Not Met)'
-            , 2: '2 - Lemah (Weakness/Cause of Concern)'
-            , 3: '3 - Memenuhi (Met)'
-            , 4: '4 - Pelampauan Standar'
-        } [skor] || '-';
-
-        Swal.fire({
-            title: `💬 Komentar ${namaAsesor}`
-            , html: `
-            <div class="text-start">
-                <div class="alert alert-light alert-permanent alert-dismissible">
-                    <strong>Justifikasi:</strong>
-                    <p class="mb-0 mt-2">${komentar || '<em>Tidak ada komentar</em>'}</p>
-                </div>
-            </div>
-        `
-            , icon: 'info'
-            , confirmButtonText: 'Tutup'
-            , width: '600px'
-        });
+    function getSkorButtonClass(skor) {
+        const classes = {
+            0: 'danger'
+            , 1: 'warning'
+            , 2: 'warning'
+            , 3: 'success'
+            , 4: 'success'
+        };
+        return classes[skor] || 'secondary';
     }
 
-    /**
-     * ============================================
-     * SHOW VALIDASI DETAIL
-     * ============================================
-     */
-    async function showValidasiDetail(elemenId, validasiId) {
-        const modal = new bootstrap.Modal(document.getElementById('modalDetailValidasi'));
-        modal.show();
-
-        // Show loading
-        document.getElementById('loadingDetailValidasi').style.display = 'block';
-        document.getElementById('contentDetailValidasi').style.display = 'none';
-
-        try {
-            // Fetch validasi detail
-            const response = await fetch(`/ak/validasi/${idAsesmen}/detail/${elemenId}`, {
-                headers: {
-                    'Accept': 'application/json'
-                    , 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                }
-            });
-
-            const result = await response.json();
-
-            if (!result.success) {
-                throw new Error(result.message || 'Gagal memuat data');
-            }
-
-            // Populate modal
-            populateValidasiDetail(result.data);
-
-            // Show content
-            document.getElementById('loadingDetailValidasi').style.display = 'none';
-            document.getElementById('contentDetailValidasi').style.display = 'block';
-
-        } catch (error) {
-            console.error('Error loading validasi detail:', error);
-            Swal.fire({
-                icon: 'error'
-                , title: 'Error'
-                , text: error.message
-            });
-            modal.hide();
-        }
+    function getSkorColorJS(skor) {
+        const colors = {
+            0: '#f44336'
+            , 1: '#ff9800'
+            , 2: '#ffeb3b'
+            , 3: '#8bc34a'
+            , 4: '#4caf50'
+        };
+        return colors[skor] || '#9e9e9e';
     }
 
-    function populateValidasiDetail(data) {
-        const {
-            elemen
-            , validasi
-            , penilaianAsesor
-        } = data;
-
-        // Elemen info
-        document.getElementById('detailValidasiKode').textContent = elemen.kode_elemen;
-        document.getElementById('detailValidasiElemen').textContent = elemen.pernyataan_elemen;
-
-        // Validasi info
-        const statusBadge = validasi.status_validasi === 'validated' ?
-            '<span class="badge bg-success">✅ Disetujui</span>' :
-            '<span class="badge bg-warning">⚠️ Perlu Revisi</span>';
-
-        document.getElementById('detailValidasiStatus').innerHTML = statusBadge;
-
-        const skorBadge = document.getElementById('badgeSkorFinal');
-        skorBadge.textContent = validasi.skor_final || '-';
-        skorBadge.className = `badge ${getSkorBadgeClass(validasi.skor_final)}`;
-
-        document.getElementById('detailValidasiValidator').textContent = validasi.validator ? validasi.validator.name : '-';
-        document.getElementById('detailValidasiTanggal').textContent = formatDateTime(validasi.validated_at);
-        document.getElementById('detailValidasiCatatan').innerHTML = validasi.catatan_validator || '<em class="text-muted">Tidak ada catatan</em>';
-
-        // Penilaian asesor
-        let htmlPenilaian = '';
-        penilaianAsesor.forEach(pen => {
-            htmlPenilaian += `
-            <div class="mb-3 pb-3 border-bottom">
-                <div class="d-flex align-items-center mb-2">
-                    <div class="avatar-circle me-2" style="width: 30px; height: 30px; font-size: 12px;">
-                        ${pen.asesor.name.substring(0, 2).toUpperCase()}
-                    </div>
-                    <strong>${pen.asesor.name}</strong>
-                </div>
-                <div class="row">
-                    <div class="col-md-12 mt-2">
-                        <small class="text-muted">Komentar:</small>
-                        <p class="small mb-0">${pen.komentar || '<em>-</em>'}</p>
-                    </div>
-                </div>
-            </div>
-        `;
+    function formatDateTime(datetime) {
+        if (!datetime) return '-';
+        const date = new Date(datetime);
+        return date.toLocaleDateString('id-ID', {
+            day: '2-digit'
+            , month: 'long'
+            , year: 'numeric'
+            , hour: '2-digit'
+            , minute: '2-digit'
         });
-
-        document.getElementById('detailPenilaianAsesor').innerHTML = htmlPenilaian;
     }
 
 </script>

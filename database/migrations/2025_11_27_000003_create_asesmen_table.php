@@ -47,11 +47,124 @@ return new class extends Migration
             $table->timestamps();
         });
 
+        Schema::create('asesmen_kecukupan', function (Blueprint $table) {
+            $table->id();
+
+            // Foreign key to main asesmen
+            $table->foreignId('id_asesmen')
+                ->constrained('asesmens')
+                ->onDelete('cascade')
+                ->comment('Link to main asesmen');
+
+            // Basic info
+            $table->string('code', 50)->unique()->comment('Unique code for AK, e.g., AK-12345');
+
+            // Schedule
+            $table->date('tanggal_mulai')->nullable()->comment('Start date of AK');
+            $table->date('tanggal_selesai')->nullable()->comment('End date of AK');
+
+            // Status
+            $table->enum('status', ['draft', 'active', 'completed', 'cancelled'])
+                ->default('draft')
+                ->comment('Status of Asesmen Kecukupan');
+
+            // Additional info
+            $table->text('catatan')->nullable()->comment('Notes or remarks');
+            $table->text('hasil_asesmen')->nullable()->comment('Assessment results/summary');
+
+            // Completion tracking
+            $table->timestamp('completed_at')->nullable()->comment('When AK was completed');
+            $table->foreignId('completed_by')->nullable()
+                ->constrained('users')
+                ->onDelete('set null')
+                ->comment('Who completed this AK');
+
+            // Timestamps
+            $table->timestamps();
+            $table->softDeletes();
+
+            // Indexes
+            $table->index('id_asesmen');
+            $table->index('status');
+            $table->index(['id_asesmen', 'status']);
+        });
+
+        Schema::create('asesmen_lapangan', function (Blueprint $table) {
+            $table->id();
+
+            // Foreign key to main asesmen
+            $table->foreignId('id_asesmen')
+                ->constrained('asesmens')
+                ->onDelete('cascade')
+                ->comment('Link to main asesmen');
+
+            // Link to AK (optional - AL usually follows AK)
+            $table->foreignId('id_asesmen_kecukupan')
+                ->nullable()
+                ->constrained('asesmen_kecukupan')
+                ->onDelete('set null')
+                ->comment('Link to related Asesmen Kecukupan');
+
+            // Basic info
+            $table->string('code', 50)->unique()->comment('Unique code for AL, e.g., AL-12345');
+
+            // Schedule
+            $table->date('tanggal_mulai')->nullable()->comment('Start date of AL');
+            $table->date('tanggal_selesai')->nullable()->comment('End date of AL');
+
+            // Location info for field assessment
+            $table->string('lokasi')->nullable()->comment('Location of field assessment');
+            $table->text('alamat')->nullable()->comment('Detailed address');
+            $table->string('koordinat')->nullable()->comment('GPS coordinates if applicable');
+
+            // Status
+            $table->enum('status', ['draft', 'active', 'completed', 'cancelled'])
+                ->default('draft')
+                ->comment('Status of Asesmen Lapangan');
+
+            // Additional info
+            $table->text('agenda')->nullable()->comment('Assessment agenda/schedule');
+            $table->text('catatan')->nullable()->comment('Notes or remarks');
+            $table->text('hasil_asesmen')->nullable()->comment('Assessment results/summary');
+
+            // Documents
+            $table->text('link_laporan')->nullable()->comment('Link to final report');
+            $table->text('link_dokumentasi')->nullable()->comment('Link to documentation/photos');
+
+            // Completion tracking
+            $table->timestamp('completed_at')->nullable()->comment('When AL was completed');
+            $table->foreignId('completed_by')->nullable()
+                ->constrained('users')
+                ->onDelete('set null')
+                ->comment('Who completed this AL');
+
+            // Timestamps
+            $table->timestamps();
+            $table->softDeletes();
+
+            // Indexes
+            $table->index('id_asesmen');
+            $table->index('id_asesmen_kecukupan');
+            $table->index('status');
+            $table->index(['id_asesmen', 'status']);
+            $table->index(['id_asesmen_kecukupan', 'status']);
+        });
+
         Schema::create('asesmen_user_roles', function (Blueprint $table) {
             $table->id();
             $table->foreignId('id_asesmen')->constrained('asesmens', 'id')->onDelete('cascade');
             $table->foreignId('id_user')->constrained('users', 'id')->onDelete('cascade');
             $table->foreignId('id_role')->constrained('roles', 'id')->onDelete('cascade');
+            $table->enum('jenis_asesmen', ['ak', 'al'])->default('ak')->comment('Type of asesmen: ak (Asesmen Kecukupan) or al (Asesmen Lapangan)');
+            $table->foreignId('id_asesmen_kecukupan')
+                ->nullable()
+                ->constrained('asesmen_kecukupan')
+                ->onDelete('cascade');
+            $table->foreignId('id_asesmen_lapangan')
+                ->nullable()
+                ->constrained('asesmen_lapangan')
+                ->onDelete('cascade');
+            $table->integer('urutan_asesor')->nullable();
 
             // Status penawaran dan assignment
             $table->enum('status_penawaran', [
@@ -86,6 +199,10 @@ return new class extends Migration
             // Index untuk query cepat
             $table->index('status_penawaran');
             $table->index('status_pekerjaan');
+            $table->index(['id_asesmen', 'jenis_asesmen']);
+            $table->index(['id_asesmen_kecukupan', 'id_role']);
+            $table->index(['id_asesmen_lapangan', 'id_role']);
+            $table->index('urutan_asesor');
             $table->timestamps();
         });
     }
@@ -96,6 +213,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('asesmen_user_roles');
+        Schema::dropIfExists('asesmen_lapangan');
+        Schema::dropIfExists('asesmen_kecukupan');
         Schema::dropIfExists('asesmens');
     }
 };

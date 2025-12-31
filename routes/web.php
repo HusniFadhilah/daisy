@@ -42,12 +42,13 @@ Route::middleware('guest')->group(function () {
     Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])
         ->name('password.update');
 });
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::get('/select-role', [AuthController::class, 'showRoleSelection'])->name('select.role');
+    Route::post('/select-role', [AuthController::class, 'selectRole'])->name('select.role.post');
 
     Route::middleware('admin')->group(function () {
         // USER MANAGEMENT (Admin Only)
@@ -114,9 +115,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::prefix('validasi')->name('validasi.')->group(function () {
             Route::get('/', [ValidasiController::class, 'index'])->name('index');
             Route::middleware('penawaran.accepted')->group(function () {
-                Route::get('/{idAsesmen}/asesor/{asesor1Id}/{asesor2Id}', [ValidasiController::class, 'asesor'])->name('asesor');
-                Route::get('/{asesmen}/detail/{elemen}', [ValidasiController::class, 'getValidasiDetail'])
-                    ->name('detail');
+                Route::get('/{idAsesmen}/{jenisAsesmen?}', [ValidasiController::class, 'asesor'])->name('asesor')->where('jenisAsesmen', 'ak|al');
+                Route::get('/{asesmen}/detail/{elemen}', [ValidasiController::class, 'getValidasiDetail'])->name('detail');
             });
             Route::get('/{asesmen}/asesor', [ValidasiController::class, 'showAsesorComparison'])
                 ->name('asesor.comparison');
@@ -240,11 +240,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Assignment Management (AJAX Endpoints)
         Route::post('/{id}/assign-user', [AsesmenController::class, 'assignUser'])->name('.assign-user');
         Route::post('/{id}/bulk-assign', [AsesmenController::class, 'bulkAssign'])->name('.bulk-assign');
+        Route::post('/{id}/reassign-user', [AsesmenController::class, 'reassignUser'])->name('.reassign-user');
         Route::post('/{id}/update-role', [AsesmenController::class, 'updateUserRole'])->name('.update-role');
         Route::delete('/{id}/remove-user/{userId}', [AsesmenController::class, 'removeUser'])->name('.remove-user');
         // Search Users (AJAX)
         Route::get('/search-users', [AsesmenController::class, 'searchUsers'])->name('.search-users');
         Route::post('/{id}/send-documents', [AsesmenController::class, 'sendDocuments'])->name('.send-documents');
+
+        Route::get('/{id}/requirements/{jenisAsesmen}', [AsesmenController::class, 'getRequirementsStatus'])->name('.requirements')->where('jenisAsesmen', 'ak|al');
+        Route::get('/{id}/rejected/{jenisAsesmen}', [AsesmenController::class, 'getRejectedAssignments'])->name('.rejected')->where('jenisAsesmen', 'ak|al');
+        Route::get('/{id}/assignments/{jenisAsesmen}', [AsesmenController::class, 'getAssignments'])->name('.assignments')->where('jenisAsesmen', 'ak|al');
     });
 
     Route::middleware('under.dev')->group(function () {
@@ -343,14 +348,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // PROFIL & PENGATURAN
-    Route::prefix('profile')->group(function () {
-        Route::get('/', [ProfileController::class, 'index'])->name('profile.index');
-        Route::get('/', [ProfileController::class, 'index'])->name('profile'); // alias
-        Route::put('/', [ProfileController::class, 'update'])->name('profile.update');
-        Route::post('/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar');
+    Route::prefix('profile')->name('profile')->group(function () {
+        Route::get('/', [ProfileController::class, 'index'])->name('.index');
+        Route::get('/', [ProfileController::class, 'index']); // alias
+        Route::put('/', [ProfileController::class, 'update'])->name('.update');
+        Route::post('/avatar', [ProfileController::class, 'updateAvatar'])->name('.avatar');
 
-        Route::get('/password', [ProfileController::class, 'passwordForm'])->name('profile.password');
-        Route::put('/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+        Route::get('/password', [ProfileController::class, 'passwordForm'])->name('.password');
+        Route::put('/password', [ProfileController::class, 'updatePassword'])->name('.password.update');
+        Route::post('/switch-role', [ProfileController::class, 'switchRole'])->name('.switch-role');
+        Route::get('/available-roles', [ProfileController::class, 'getAvailableRoles'])->name('.available-roles');
     });
 
     // INDIKATOR MANAGEMENT (Kriteria, Elemen Standar, Indikator)

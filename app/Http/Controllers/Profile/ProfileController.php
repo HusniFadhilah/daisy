@@ -63,4 +63,50 @@ class ProfileController extends Controller
 
         return back()->with('success', 'Password berhasil diubah!');
     }
+
+    /**
+     * Switch user role
+     */
+    public function switchRole(Request $request)
+    {
+        $request->validate([
+            'role' => 'required|string',
+        ]);
+
+        $user = Auth::user();
+
+        // Sync roles first
+        $user->syncRolesFromAssignments();
+
+        // Switch role
+        if ($user->switchRole($request->role)) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Role berhasil diubah ke: ' . $user->role_alias,
+                'role' => $user->role_selected,
+                'role_alias' => $user->role_alias,
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Role tidak valid atau Anda tidak memiliki akses ke role ini',
+        ], 403);
+    }
+
+    /**
+     * Get available roles
+     */
+    public function getAvailableRoles()
+    {
+        $user = Auth::user();
+        $user->syncRolesFromAssignments();
+
+        return response()->json([
+            'success' => true,
+            'roles' => $user->available_roles,
+            'current_role' => $user->role_selected,
+            'current_role_alias' => $user->role_alias,
+        ]);
+    }
 }
