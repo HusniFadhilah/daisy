@@ -31,15 +31,27 @@ class AKController extends Controller
 
         // Get asesmens where user is assigned
         $asesmens = Asesmen::whereHas('userRoles', function ($query) use ($user) {
-            $query->where('id_user', $user->id)->where('jenis_asesmen', 'ak');
+            $query->where('id_user', $user->id)->where('jenis_asesmen', 'ak')->where('id_role', 3);
         })->with(['userRoles' => function ($query) use ($user) {
-            $query->where('id_user', $user->id)->where('jenis_asesmen', 'ak')->with('role');
+            $query->where('id_user', $user->id)->where('jenis_asesmen', 'ak')->where('id_role', 3)->with('role');
         }])->latest()->paginate(10);
 
-        // Calculate progress for each asesmen
+        // Ambil semua progress sekaligus
+        $progressAll = $this->calculateProgressBulk(
+            $asesmens->pluck('id')->toArray(),
+            $user->id
+        );
+
+        // Map ke masing-masing asesmen
         foreach ($asesmens as $asesmen) {
+            $asesmen->progress = $progressAll[$asesmen->id] ?? [
+                'total' => 0,
+                'completed' => 0,
+                'remaining' => 0,
+                'percentage' => 0
+            ];
+
             $assignment = $asesmen->userRoles->first();
-            $asesmen->progress = $this->calculateProgress($asesmen->id, $user->id);
             $asesmen->statusInfo = $this->getStatusInfo($assignment);
         }
 
@@ -52,12 +64,13 @@ class AKController extends Controller
     public function showBerkas($idAsesmen)
     {
         $user = Auth::user();
-
         // Check if user has access to this asesmen
         $assignment = AsesmenUserRole::where('id_asesmen', $idAsesmen)
             ->where('id_user', $user->id)
             ->firstOrFail();
-
+        if ($assignment->id_role != $user->role_selected) {
+            abort(403, 'Mohon maaf role Anda sebagai ' . ($user->role_selected) . ' tidak diizinkan membuka halaman ini. Silahkan pindah ke role lain');
+        }
         // ✅ AUTO-UPDATE STATUS: not_started → in_progress
         if ($assignment->status_pekerjaan === 'not_started') {
             $assignment->update([
@@ -86,7 +99,7 @@ class AKController extends Controller
             ->get();
         $jenjangs = JenjangPenilaian::all();
         // Calculate progress
-        $progress = $this->calculateProgress($asesmen->id, $user->id);
+        $progress = $this->calculateProgressBulk([$asesmen->id], $user->id)[$asesmen->id];
 
         return view('asesmen.ak.berkas.show', compact('asesmen', 'kriterias', 'progress', 'jenjangs', 'needsRevisions'));
     }
@@ -140,7 +153,7 @@ class AKController extends Controller
             );
 
             // Calculate new progress
-            $progress = $this->calculateProgress($idAsesmen, $user->id);
+            $progress = $this->calculateProgressBulk([$idAsesmen], $user->id)[$idAsesmen];
 
             // Get skor label and class for response
             $skorInfo = JenjangPenilaian::getSkorInfo($request->skor);
@@ -162,29 +175,35 @@ class AKController extends Controller
     }
 
     /**
-     * Calculate progress percentage for an asesmen
+     * Hitung progress untuk satu user di banyak asesmen sekaligus
      */
-    private function calculateProgress($idAsesmen, $userId)
+    private function calculateProgressBulk($asesmenIds, $userId)
     {
-        // Total indikators
         $totalElemens = ElemenStandar::count();
 
-        // Completed elemens (has penilaian)
-        $completedElemens = PenilaianElemen::where('id_asesmen', $idAsesmen)
-            ->where('id_asesor', $userId)
+        // Ambil semua penilaian user sekaligus
+        $penilaian = PenilaianElemen::where('id_asesor', $userId)
+            ->whereIn('id_asesmen', $asesmenIds)
             ->whereNotNull('skor')
-            ->count();
+            ->select('id_asesmen', DB::raw('COUNT(*) as completed'))
+            ->groupBy('id_asesmen')
+            ->pluck('completed', 'id_asesmen'); // [id_asesmen => completed]
 
-        $percentage = $totalElemens > 0
-            ? round(($completedElemens / $totalElemens) * 100, 1)
-            : 0;
+        // Mapping progress per asesmen
+        $progress = [];
+        foreach ($asesmenIds as $id) {
+            $completed = $penilaian[$id] ?? 0;
+            $percentage = $totalElemens ? round($completed / $totalElemens * 100, 1) : 0;
 
-        return [
-            'total' => $totalElemens,
-            'completed' => $completedElemens,
-            'percentage' => $percentage,
-            'remaining' => $totalElemens - $completedElemens,
-        ];
+            $progress[$id] = [
+                'total' => $totalElemens,
+                'completed' => $completed,
+                'remaining' => $totalElemens - $completed,
+                'percentage' => $percentage,
+            ];
+        }
+
+        return $progress;
     }
 
     /**
@@ -432,7 +451,7 @@ class AKController extends Controller
                 DB::commit();
 
                 // Calculate new progress (should be 0)
-                $progress = $this->calculateProgress($idAsesmen, $user->id);
+                $progress = $this->calculateProgressBulk([$idAsesmen], $user->id)[$idAsesmen];
 
                 return response()->json([
                     'success' => true,

@@ -172,7 +172,7 @@ class ValidasiController extends Controller
             ->first();
 
         if (!$assignment) {
-            abort(403, 'Anda tidak memiliki akses sebagai validator untuk asesmen ini.');
+            abort(403, 'Mohon maaf role Anda sebagai ' . ($user->role_selected) . ' tidak diizinkan membuka halaman ini. Silahkan pindah ke role lain');
         }
 
         // Check if validator has accepted the assignment
