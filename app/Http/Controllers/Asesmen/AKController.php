@@ -9,7 +9,7 @@ use App\Models\Indikator;
 use Illuminate\Http\Request;
 use App\Models\ElemenStandar;
 use App\Models\AsesmenUserRole;
-use App\Models\PenilaianElemen;
+use App\Models\PenilaianElemenAK;
 use App\Models\JenjangPenilaian;
 use App\Models\PenilaianImportLog;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +18,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Jobs\ImportPenilaianExcelJob;
 use App\Services\PenilaianExcelService;
-use Illuminate\Support\Facades\Storage;
 
 class AKController extends Controller
 {
@@ -68,7 +67,7 @@ class AKController extends Controller
         $assignment = AsesmenUserRole::where('id_asesmen', $idAsesmen)
             ->where('id_user', $user->id)
             ->firstOrFail();
-        if ($assignment->id_role != $user->role_selected) {
+        if ($assignment->role->name != $user->role_selected) {
             abort(403, 'Mohon maaf role Anda sebagai ' . ($user->role_selected) . ' tidak diizinkan membuka halaman ini. Silahkan pindah ke role lain');
         }
         // ✅ AUTO-UPDATE STATUS: not_started → in_progress
@@ -86,13 +85,13 @@ class AKController extends Controller
             'elemenStandar',
             'elemenStandar.indikator.jenisIndikator',
             'elemenStandar.indikatorPenilaian.jenjangPenilaian',
-            'elemenStandar.penilaian' => function ($query) use ($asesmen, $user) {
+            'elemenStandar.penilaianElemenAK' => function ($query) use ($asesmen, $user) {
                 $query->where('id_asesmen', $asesmen->id)
                     ->where('id_asesor', $user->id);
             }
         ])->get();
 
-        $needsRevisions = PenilaianElemen::where('id_asesmen', $asesmen->id)
+        $needsRevisions = PenilaianElemenAK::where('id_asesmen', $asesmen->id)
             ->where('id_asesor', $user->id)
             ->where('status_validasi', 'revision_required')
             ->with('elemen.kriteria')
@@ -132,7 +131,7 @@ class AKController extends Controller
             }
 
             // Update or create penilaian
-            $penilaian = PenilaianElemen::updateOrCreate(
+            $penilaian = PenilaianElemenAK::updateOrCreate(
                 [
                     'id_asesmen' => $idAsesmen,
                     'id_asesor' => $user->id,
@@ -182,7 +181,7 @@ class AKController extends Controller
         $totalElemens = ElemenStandar::count();
 
         // Ambil semua penilaian user sekaligus
-        $penilaian = PenilaianElemen::where('id_asesor', $userId)
+        $penilaian = PenilaianElemenAK::where('id_asesor', $userId)
             ->whereIn('id_asesmen', $asesmenIds)
             ->whereNotNull('skor')
             ->select('id_asesmen', DB::raw('COUNT(*) as completed'))
@@ -226,7 +225,7 @@ class AKController extends Controller
         }
 
         // Get all penilaian with kriteria, elemen info
-        $heatmapData = PenilaianElemen::where('id_asesmen', $idAsesmen)
+        $heatmapData = PenilaianElemenAK::where('id_asesmen', $idAsesmen)
             ->where('id_asesor', $user->id)
             ->with([
                 'elemen.kriteria'
@@ -276,7 +275,7 @@ class AKController extends Controller
 
             // Check if all elemen have been assessed
             $totalElemen = ElemenStandar::count();
-            $assessedElemen = PenilaianElemen::where('id_asesmen', $idAsesmen)
+            $assessedElemen = PenilaianElemenAK::where('id_asesmen', $idAsesmen)
                 ->where('id_asesor', $user->id)
                 ->whereNotNull('skor')
                 ->whereNotNull('komentar')
@@ -294,7 +293,7 @@ class AKController extends Controller
             DB::beginTransaction();
 
             // Update all penilaian status to submitted
-            PenilaianElemen::where('id_asesmen', $idAsesmen)
+            PenilaianElemenAK::where('id_asesmen', $idAsesmen)
                 ->where('id_asesor', $user->id)
                 ->update([
                     'status' => 'submitted',
@@ -338,7 +337,7 @@ class AKController extends Controller
                 ->firstOrFail();
 
             // ✅ PERBAIKAN: Hanya cek yang benar-benar sudah VALIDATED (final)
-            $hasValidated = PenilaianElemen::where('id_asesmen', $idAsesmen)
+            $hasValidated = PenilaianElemenAK::where('id_asesmen', $idAsesmen)
                 ->where('id_asesor', $user->id)
                 ->where('status_validasi', 'validated')  // ← UBAH INI
                 ->exists();
@@ -361,7 +360,7 @@ class AKController extends Controller
             DB::beginTransaction();
 
             // Update back to draft
-            PenilaianElemen::where('id_asesmen', $idAsesmen)
+            PenilaianElemenAK::where('id_asesmen', $idAsesmen)
                 ->where('id_asesor', $user->id)
                 ->update([
                     'status' => 'draft',
@@ -433,12 +432,12 @@ class AKController extends Controller
 
             try {
                 // Get count before delete
-                $totalDeleted = PenilaianElemen::where('id_asesmen', $idAsesmen)
+                $totalDeleted = PenilaianElemenAK::where('id_asesmen', $idAsesmen)
                     ->where('id_asesor', $user->id)
                     ->count();
 
                 // Delete all penilaian for this user and asesmen
-                PenilaianElemen::where('id_asesmen', $idAsesmen)
+                PenilaianElemenAK::where('id_asesmen', $idAsesmen)
                     ->where('id_asesor', $user->id)
                     ->delete();
 
@@ -506,7 +505,7 @@ class AKController extends Controller
                 ], 400);
             }
 
-            $excelService = new PenilaianExcelService();
+            $excelService = new PenilaianExcelService(PenilaianElemenAK::class);
             $filePath = $excelService->generateTemplate($asesmen, $asesor1, $asesor2);
 
             return response()->download($filePath, basename($filePath))->deleteFileAfterSend(true);
@@ -529,7 +528,7 @@ class AKController extends Controller
                 $query->where('id_user', $user->id);
             })->findOrFail($idAsesmen);
 
-            $excelService = new PenilaianExcelService();
+            $excelService = new PenilaianExcelService(PenilaianElemenAK::class);
             $filePath = $excelService->generateWithData($asesmen, $user->id);
 
             return response()->download($filePath, basename($filePath))->deleteFileAfterSend(true);
@@ -570,7 +569,7 @@ class AKController extends Controller
             ]);
 
             // Dispatch job
-            ImportPenilaianExcelJob::dispatch($filePath, $asesmen->id, $user->id, $importLog->id);
+            ImportPenilaianExcelJob::dispatch(PenilaianElemenAK::class, $filePath, $asesmen->id, $user->id, $importLog->id);
 
             return response()->json([
                 'success' => true,

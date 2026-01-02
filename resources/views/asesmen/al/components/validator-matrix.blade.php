@@ -135,9 +135,9 @@
                 $warnaSkor = $jenjangs->pluck('color', 'skor');
 
                 // Helper function untuk render cell skor
-                function renderScoreCellDynamic($penilaian, $asesor, $asesorNum, $warnaSkor) {
-                $skor = $penilaian->skor ?? null;
-                $komentar = $penilaian->komentar ?? '';
+                function renderScoreCellDynamic($penilaianElemenAK, $asesor, $asesorNum, $warnaSkor) {
+                $skor = $penilaianElemenAK->skor ?? null;
+                $komentar = $penilaianElemenAK->komentar ?? '';
 
                 // Pemenuhan (skor != 4)
                 $bgPemenuhan = (isset($skor) && $skor != 4) ? ($warnaSkor[$skor] ?? '') : '#e0e0e0';
@@ -173,9 +173,9 @@
                 $groupHasDiff = $kriteria->elemenStandar->some(function($elemen) use ($asesors) {
                 $skors = [];
                 foreach ($asesors as $asesor) {
-                $penilaian = $elemen->penilaian->where('id_asesor', $asesor->id_user)->first();
-                if ($penilaian && $penilaian->skor !== null) {
-                $skors[] = $penilaian->skor;
+                $penilaianElemenAK = $elemen->penilaianElemenAK->where('id_asesor', $asesor->id_user)->first();
+                if ($penilaianElemenAK && $penilaianElemenAK->skor !== null) {
+                $skors[] = $penilaianElemenAK->skor;
                 }
                 }
                 return count(array_unique($skors)) > 1;
@@ -190,15 +190,15 @@
                     $skors = [];
 
                     foreach ($asesors as $asesor) {
-                    $penilaian = $elemen->penilaian->where('id_asesor', $asesor->id_user)->first();
-                    $penilaians[$asesor->id_user] = $penilaian;
-                    if ($penilaian && $penilaian->skor !== null) {
-                    $skors[] = $penilaian->skor;
+                    $penilaianElemenAK = $elemen->penilaianElemenAK->where('id_asesor', $asesor->id_user)->first();
+                    $penilaians[$asesor->id_user] = $penilaianElemenAK;
+                    if ($penilaianElemenAK && $penilaianElemenAK->skor !== null) {
+                    $skors[] = $penilaianElemenAK->skor;
                     }
                     }
 
                     $hasDifference = count(array_unique($skors)) > 1;
-                    $validasi = $elemen->penilaian->where('status_validasi', '!=', 'not_validated')->first();
+                    $validasi = $elemen->penilaianElemenAK->where('status_validasi', '!=', 'not_validated')->first();
                     @endphp
 
                     <tr class="validator-row" data-elemen-id="{{ $elemen->id }}" @if($hasDifference) data-has-diff="true" @endif>

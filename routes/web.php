@@ -135,6 +135,31 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
     });
 
+    Route::prefix('al')->name('al.')->group(function () {
+        Route::get('/berkas', [ALController::class, 'berkas'])->name('berkas');
+        Route::get('/berkas/{idAsesmen}/cek-penawaran', [PenawaranController::class, 'cekPenawaran'])->name('berkas.penawaran');
+        Route::middleware('penawaran.accepted')->group(function () {
+            Route::get('/berkas/{idAsesmen}', [ALController::class, 'showBerkas'])->name('berkas.show');
+            Route::post('/berkas/{idAsesmen}/nilai', [ALController::class, 'simpanNilai'])->name('berkas.nilai');
+        });
+        Route::get('/berkas/{idAsesmen}/template', [ALController::class, 'downloadTemplate'])
+            ->name('berkas.template');
+        Route::get('/berkas/{idAsesmen}/export', [ALController::class, 'exportExcel'])
+            ->name('berkas.export');
+        Route::post('/berkas/{idAsesmen}/import', [ALController::class, 'importExcel'])
+            ->name('berkas.import');
+        Route::get('/import-status/{idAsesmen}', [ALController::class, 'checkImportStatus'])
+            ->name('import.status');
+        Route::post('/berkas/{idAsesmen}/submit', [ALController::class, 'submitPenilaian'])
+            ->name('berkas.submit');
+        Route::post('/berkas/{idAsesmen}/unsubmit', [ALController::class, 'unsubmitPenilaian'])
+            ->name('berkas.unsubmit');
+        Route::get('/berkas/{idAsesmen}/import-history', [ALController::class, 'importHistory'])
+            ->name('berkas.import-history');
+        Route::delete('/berkas/{idAsesmen}/reset-all', [ALController::class, 'resetAllPenilaian'])
+            ->name('berkas.reset-all');
+    });
+
     // ========== PRODI ROUTES - Pengajuan Akreditasi ==========
     Route::prefix('pengajuan')->name('pengajuan')->group(function () {
         Route::middleware(['auth', 'role:admin_prodi,admin_univ'])->group(function () {
@@ -256,24 +281,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::middleware('under.dev')->group(function () {
-        // PROSES AL
-        Route::prefix('al')->name('al.')->group(function () {
-            Route::get('/jadwal', [ALController::class, 'jadwal'])->name('jadwal');
-            Route::get('/jadwal/{id}', [ALController::class, 'showJadwal'])->name('jadwal.show');
-            Route::post('/jadwal/{id}/konfirmasi', [ALController::class, 'konfirmasiJadwal'])->name('jadwal.konfirmasi');
-
-            Route::get('/dokumen', [ALController::class, 'dokumen'])->name('dokumen');
-            Route::get('/dokumen/{id}/download', [ALController::class, 'downloadDokumen'])->name('dokumen.download');
-
-            Route::get('/upload', [ALController::class, 'upload'])->name('upload');
-            Route::post('/upload', [ALController::class, 'storeUpload'])->name('upload.store');
-            Route::delete('/upload/{id}', [ALController::class, 'deleteUpload'])->name('upload.delete');
-
-            Route::get('/laporan', [ALController::class, 'laporan'])->name('laporan');
-            Route::get('/laporan/{id}', [ALController::class, 'showLaporan'])->name('laporan.show');
-            Route::post('/laporan', [ALController::class, 'storeLaporan'])->name('laporan.store');
-        });
-
         // PENUGASAN BANDING
         Route::prefix('banding')->group(function () {
             Route::get('/', [BandingController::class, 'index'])

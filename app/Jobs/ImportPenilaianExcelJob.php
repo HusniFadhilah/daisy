@@ -22,13 +22,15 @@ class ImportPenilaianExcelJob implements ShouldQueue
     public $timeout = 600;
     public $tries   = 3;
 
+    protected $modelPenilaianElemen;
     protected $filePath;
     protected $idAsesmen;
     protected $userId;
     protected $importLogId;
 
-    public function __construct($filePath, $idAsesmen, $userId, $importLogId)
+    public function __construct($modelPenilaianElemen, $filePath, $idAsesmen, $userId, $importLogId)
     {
+        $this->modelPenilaianElemen    = $modelPenilaianElemen;
         $this->filePath    = $filePath;
         $this->idAsesmen   = $idAsesmen;
         $this->userId      = $userId;
@@ -138,7 +140,8 @@ class ImportPenilaianExcelJob implements ShouldQueue
                     }
 
                     // 4) Simpan / update penilaian
-                    PenilaianElemen::updateOrCreate(
+                    $modelPenilaianElemen = $this->modelPenilaianElemen;
+                    $modelPenilaianElemen::updateOrCreate(
                         [
                             'id_asesmen' => $this->idAsesmen,
                             'id_asesor'    => $this->userId,

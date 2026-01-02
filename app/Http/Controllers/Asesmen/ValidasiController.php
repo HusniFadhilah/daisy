@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use App\Models\ElemenStandar;
 use App\Models\AsesmenLapangan;
 use App\Models\AsesmenUserRole;
-use App\Models\PenilaianElemen;
+use App\Models\PenilaianElemenAK;
 use App\Models\AsesmenKecukupan;
 use App\Models\JenjangPenilaian;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +17,6 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Services\ValidasiExcelService;
-use App\Services\PenilaianExcelService;
 
 class ValidasiController extends Controller
 {
@@ -125,21 +124,21 @@ class ValidasiController extends Controller
      */
     private function calculateAsesorValidationProgress($idAsesmen, $idUser)
     {
-        $totalPenilaian = PenilaianElemen::where('id_asesmen', $idAsesmen)
+        $totalPenilaian = PenilaianElemenAK::where('id_asesmen', $idAsesmen)
             ->where('id_asesor', $idUser)
             ->count();
 
-        $validatedCount = PenilaianElemen::where('id_asesmen', $idAsesmen)
+        $validatedCount = PenilaianElemenAK::where('id_asesmen', $idAsesmen)
             ->where('id_asesor', $idUser)
             ->whereIn('status_validasi', ['validated', 'approved'])
             ->count();
 
-        $revisionCount = PenilaianElemen::where('id_asesmen', $idAsesmen)
+        $revisionCount = PenilaianElemenAK::where('id_asesmen', $idAsesmen)
             ->where('id_asesor', $idUser)
             ->where('status_validasi', 'revision_required')
             ->count();
 
-        $pendingCount = PenilaianElemen::where('id_asesmen', $idAsesmen)
+        $pendingCount = PenilaianElemenAK::where('id_asesmen', $idAsesmen)
             ->where('id_asesor', $idUser)
             ->where('status_validasi', 'pending')
             ->count();
@@ -227,9 +226,40 @@ class ValidasiController extends Controller
         }
 
         // Calculate progress for each asesor
+        $totalElemen = ElemenStandar::count();
+        // Ambil semua penilaian semua asesor di asesmen ini
+        $penilaianAll = PenilaianElemenAK::where('id_asesmen', $idAsesmen)
+            ->whereIn('id_asesor', $asesors->pluck('id_user'))
+            ->select('id_asesor', 'status_validasi', DB::raw('COUNT(*) as count'))
+            ->groupBy('id_asesor', 'status_validasi')
+            ->get();
+
+        // Mapping penilaian per asesor
         $asesorProgress = [];
+
         foreach ($asesors as $asesor) {
-            $asesorProgress[$asesor->id_user] = $this->calculateProgress($idAsesmen, $asesor->id_user);
+            $asesorId = $asesor->id_user;
+
+            $items = $penilaianAll->where('id_asesor', $asesorId);
+
+            $completed = $items->sum('count'); // semua yang punya skor
+            $validated = ($items->whereIn('status_validasi', ['validated', 'approved'])->sum('count'));
+            $pending = $items->where('status_validasi', 'pending')->sum('count');
+            $revision = $items->where('status_validasi', 'revision_required')->sum('count');
+
+            $completionPercentage = $totalElemen > 0 ? round(($completed / $totalElemen) * 100, 1) : 0;
+            $validationPercentage = $totalElemen > 0 ? round(($validated / $totalElemen) * 100, 1) : 0;
+
+            $asesorProgress[$asesorId] = [
+                'total' => $totalElemen,
+                'completed' => $completed,
+                'validated' => $validated,
+                'pending_validation' => $pending,
+                'revision_required' => $revision,
+                'completion_percentage' => $completionPercentage,
+                'validation_percentage' => $validationPercentage,
+                'status' => $this->getProgressStatus($completed, $validated, $totalElemen, $revision),
+            ];
         }
 
         // Get all kriteria with elemen and penilaian from ALL asesors
@@ -237,19 +267,18 @@ class ValidasiController extends Controller
             'elemenStandar',
             'elemenStandar.indikator.jenisIndikator',
             'elemenStandar.indikatorPenilaian.jenjangPenilaian',
-            'elemenStandar.penilaian' => function ($query) use ($idAsesmen, $asesors) {
+            'elemenStandar.penilaianElemenAK' => function ($query) use ($idAsesmen, $asesors) {
                 $query->where('id_asesmen', $idAsesmen)
                     ->whereIn('id_asesor', $asesors->pluck('id_user'));
             }
         ])->get();
 
         // Calculate validation stats
-        $totalElemen = ElemenStandar::count();
         $validatedCount = 0;
 
         foreach ($kriterias as $kriteria) {
             foreach ($kriteria->elemenStandar as $elemen) {
-                $penilaians = $elemen->penilaian;
+                $penilaians = $elemen->penilaianElemenAK;
 
                 // Cek jika semua asesor sudah dinilai DAN sudah divalidasi
                 if ($penilaians->count() === $asesors->count()) {
@@ -299,62 +328,6 @@ class ValidasiController extends Controller
             'isApproved',
             'jenjangs'
         ));
-    }
-
-    /**
-     * ============================================
-     * CALCULATE PROGRESS FOR ASESOR
-     * ============================================
-     */
-    private function calculateProgress($idAsesmen, $idUser)
-    {
-        // Total elemen standar
-        $totalElemen = ElemenStandar::count();
-
-        // Count completed penilaian (has score)
-        $completedCount = PenilaianElemen::where('id_asesmen', $idAsesmen)
-            ->where('id_asesor', $idUser)
-            ->whereNotNull('skor')
-            ->count();
-
-        // Count validated penilaian
-        $validatedCount = PenilaianElemen::where('id_asesmen', $idAsesmen)
-            ->where('id_asesor', $idUser)
-            ->whereIn('status_validasi', ['validated', 'approved'])
-            ->count();
-
-        // Count pending validation
-        $pendingValidation = PenilaianElemen::where('id_asesmen', $idAsesmen)
-            ->where('id_asesor', $idUser)
-            ->whereNotNull('skor')
-            ->where('status_validasi', 'pending')
-            ->count();
-
-        // Count revision required
-        $revisionRequired = PenilaianElemen::where('id_asesmen', $idAsesmen)
-            ->where('id_asesor', $idUser)
-            ->where('status_validasi', 'revision_required')
-            ->count();
-
-        // Calculate percentages
-        $completionPercentage = $totalElemen > 0
-            ? round(($completedCount / $totalElemen) * 100, 1)
-            : 0;
-
-        $validationPercentage = $totalElemen > 0
-            ? round(($validatedCount / $totalElemen) * 100, 1)
-            : 0;
-
-        return [
-            'total' => $totalElemen,
-            'completed' => $completedCount,
-            'validated' => $validatedCount,
-            'pending_validation' => $pendingValidation,
-            'revision_required' => $revisionRequired,
-            'completion_percentage' => $completionPercentage,
-            'validation_percentage' => $validationPercentage,
-            'status' => $this->getProgressStatus($completedCount, $validatedCount, $totalElemen, $revisionRequired),
-        ];
     }
 
     /**
@@ -409,7 +382,7 @@ class ValidasiController extends Controller
             $elemen = ElemenStandar::with('kriteria')->findOrFail($elemenId);
 
             // Get validasi data
-            $validasi = PenilaianElemen::where('id_asesmen', $idAsesmen)
+            $validasi = PenilaianElemenAK::where('id_asesmen', $idAsesmen)
                 ->where('id_elemen', $elemenId)
                 ->whereIn('status_validasi', ['validated', 'revision_needed'])
                 ->with('validator')
@@ -423,7 +396,7 @@ class ValidasiController extends Controller
             }
 
             // Get penilaian dari semua asesor
-            $penilaianAsesor = PenilaianElemen::where('id_asesmen', $idAsesmen)
+            $penilaianAsesor = PenilaianElemenAK::where('id_asesmen', $idAsesmen)
                 ->where('id_elemen', $elemenId)
                 ->with('asesor')
                 ->get();
@@ -451,7 +424,7 @@ class ValidasiController extends Controller
     public function getElemenDetail(Request $request, Asesmen $asesmen, ElemenStandar $elemen)
     {
         // Get ALL penilaian for this elemen
-        $penilaianElemen = PenilaianElemen::where('id_asesmen', $asesmen->id)
+        $penilaianElemen = PenilaianElemenAK::where('id_asesmen', $asesmen->id)
             ->where('id_elemen', $elemen->id)
             ->with('asesor')
             ->get();
@@ -500,7 +473,7 @@ class ValidasiController extends Controller
         try {
             if ($request->status === 'validated') {
                 // Validate ALL asesors for this elemen
-                PenilaianElemen::where('id_asesmen', $idAsesmen)
+                PenilaianElemenAK::where('id_asesmen', $idAsesmen)
                     ->where('id_elemen', $elemenId)
                     ->update([
                         'status_validasi' => 'validated',
@@ -519,7 +492,7 @@ class ValidasiController extends Controller
                 }
 
                 // Update selected asesors
-                PenilaianElemen::where('id_asesmen', $idAsesmen)
+                PenilaianElemenAK::where('id_asesmen', $idAsesmen)
                     ->where('id_elemen', $elemenId)
                     ->whereIn('id_asesor', $request->id_asesors)
                     ->update([
@@ -575,7 +548,7 @@ class ValidasiController extends Controller
 
             foreach ($elemenIds as $elemenId) {
                 // Get ALL penilaian for this elemen
-                $penilaianList = PenilaianElemen::where('id_asesmen', $idAsesmen)
+                $penilaianList = PenilaianElemenAK::where('id_asesmen', $idAsesmen)
                     ->where('id_elemen', $elemenId)
                     ->whereNotNull('skor')
                     ->get();
@@ -592,7 +565,7 @@ class ValidasiController extends Controller
                     // All asesors agree - auto validate
                     $agreedScore = $uniqueScores->first();
 
-                    PenilaianElemen::where('id_asesmen', $idAsesmen)
+                    PenilaianElemenAK::where('id_asesmen', $idAsesmen)
                         ->where('id_elemen', $elemenId)
                         ->update([
                             'status_validasi' => 'validated',
@@ -643,7 +616,7 @@ class ValidasiController extends Controller
             $elemenIds = ElemenStandar::pluck('id');
 
             foreach ($elemenIds as $elemenId) {
-                $validatedCount = PenilaianElemen::where('id_asesmen', $idAsesmen)
+                $validatedCount = PenilaianElemenAK::where('id_asesmen', $idAsesmen)
                     ->where('id_elemen', $elemenId)
                     ->where('status_validasi', 'validated')
                     ->count();
@@ -679,7 +652,7 @@ class ValidasiController extends Controller
                 ]);
 
             // Lock all penilaian
-            PenilaianElemen::where('id_asesmen', $idAsesmen)
+            PenilaianElemenAK::where('id_asesmen', $idAsesmen)
                 ->update([
                     'is_locked' => true,
                 ]);

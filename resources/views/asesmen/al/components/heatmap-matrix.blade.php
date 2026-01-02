@@ -80,9 +80,9 @@
 
                     @foreach($kriteria->elemenStandar as $elemen)
                     @php
-                    // Get penilaianElemenAK for this elemen (not indikator!)
-                    $penilaianElemenAK = $elemen->penilaianElemenAK->first(); // Assuming relation exists
-                    $hasPenilaian = $penilaianElemenAK && $penilaianElemenAK->skor !== null;
+                    // Get penilaian for this elemen (not indikator!)
+                    $penilaian = $elemen->penilaian->first(); // Assuming relation exists
+                    $hasPenilaian = $penilaian && $penilaian->skor !== null;
                     @endphp
                     <tr>
                         {{-- CETAK MERGED CELL HANYA DI ROW PERTAMA --}}
@@ -99,11 +99,11 @@
                         </td>
 
                         {{-- Kolom Pemenuhan --}}
-                        <td class="matrix-cell" data-elemen-id="{{ $elemen->id }}" data-kriteria-id="{{ $kriteria->id }}" data-col="pemenuhan" style="background-color: {{ $hasPenilaian ? $penilaianElemenAK->skor == 4 ? '#e0e0e0' : \App\Models\JenjangPenilaian::getSkorColor($penilaianElemenAK->skor) : '#e0e0e0' }}">
+                        <td class="matrix-cell" data-elemen-id="{{ $elemen->id }}" data-kriteria-id="{{ $kriteria->id }}" data-col="pemenuhan" style="background-color: {{ $hasPenilaian ? $penilaian->skor == 4 ? '#e0e0e0' : \App\Models\JenjangPenilaian::getSkorColor($penilaian->skor) : '#e0e0e0' }}">
                         </td>
 
                         {{-- Kolom Pelampauan --}}
-                        <td class="matrix-cell" data-elemen-id="{{ $elemen->id }}" data-kriteria-id="{{ $kriteria->id }}" data-col="pelampauan" style="background-color: {{ $hasPenilaian ? $penilaianElemenAK->skor == 4 ? \App\Models\JenjangPenilaian::getSkorColor(4) : '#e0e0e0' : '#e0e0e0' }}">
+                        <td class="matrix-cell" data-elemen-id="{{ $elemen->id }}" data-kriteria-id="{{ $kriteria->id }}" data-col="pelampauan" style="background-color: {{ $hasPenilaian ? $penilaian->skor == 4 ? \App\Models\JenjangPenilaian::getSkorColor(4) : '#e0e0e0' : '#e0e0e0' }}">
                         </td>
                     </tr>
                     @endforeach

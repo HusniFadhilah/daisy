@@ -399,9 +399,9 @@
                         @foreach($kriteria->elemenStandar as $elemenIndex => $elemen)
                         @php
                         // Get penilaian for this elemen (not indikator!)
-                        $penilaianElemenAK = $elemen->penilaianElemenAK->first(); // Assuming relation exists
-                        $hasPenilaian = $penilaianElemenAK && $penilaianElemenAK->skor !== null;
-                        $needsRevisionElemen = $penilaianElemenAK && $penilaianElemenAK->status_validasi === 'revision_required';
+                        $penilaian = $elemen->penilaian->first(); // Assuming relation exists
+                        $hasPenilaian = $penilaian && $penilaian->skor !== null;
+                        $needsRevisionElemen = $penilaian && $penilaian->status_validasi === 'revision_required';
                         $totalIndikator = $elemen->indikator->count();
 
                         // Count jenis indikator
@@ -653,7 +653,7 @@
                                             {{-- Alert Revisi --}}
                                             @if($needsRevisionElemen)
                                             @php
-                                            $preferensiSkor = $penilaianElemenAK->preferensi_skor;
+                                            $preferensiSkor = $penilaian->preferensi_skor;
                                             @endphp
                                             <div class="alert alert-warning alert-permanent alert-dismissible mb-3">
                                                 <div class="row">
@@ -661,7 +661,7 @@
                                                         <h6 class="alert-heading">
                                                             <i class="bi bi-chat-left-quote"></i> Catatan Validator:
                                                         </h6>
-                                                        <p class="mb-2"><strong>"{{ $penilaianElemenAK->catatan_validator }}"</strong></p>
+                                                        <p class="mb-2"><strong>"{{ $penilaian->catatan_validator }}"</strong></p>
                                                     </div>
 
                                                     {{-- ✅ SKOR FINAL VALIDATOR --}}
@@ -694,12 +694,12 @@
                                                 <div class="row mt-3">
                                                     <div class="col-md-6">
                                                         <small class="text-muted">
-                                                            <i class="bi bi-person"></i> <strong>Validator:</strong> {{ $penilaianElemenAK->validator->name ?? 'N/A' }}
+                                                            <i class="bi bi-person"></i> <strong>Validator:</strong> {{ $penilaian->validator->name ?? 'N/A' }}
                                                         </small>
                                                     </div>
                                                     <div class="col-md-6 text-end">
                                                         <small class="text-muted">
-                                                            <i class="bi bi-clock"></i> <strong>Tanggal:</strong> {{ \App\Libraries\Date::tglWaktu($penilaianElemenAK->validated_at) }}
+                                                            <i class="bi bi-clock"></i> <strong>Tanggal:</strong> {{ \App\Libraries\Date::tglWaktu($penilaian->validated_at) }}
                                                         </small>
                                                     </div>
                                                 </div>
@@ -714,7 +714,7 @@
                                                         <select class="form-select skor-select" name="skor" required>
                                                             <option value="">-- Pilih Kategori --</option>
                                                             @foreach ($jenjangs as $jenjang)
-                                                            <option value="{{ $jenjang->skor }}" @if($hasPenilaian && $penilaianElemenAK->skor == $jenjang->skor) selected @endif>
+                                                            <option value="{{ $jenjang->skor }}" @if($hasPenilaian && $penilaian->skor == $jenjang->skor) selected @endif>
                                                                 {{ $jenjang->skor }} - {{ $jenjang->name }}
                                                             </option>
                                                             @endforeach
@@ -724,10 +724,10 @@
                                                         <label class="form-label fw-semibold">
                                                             <i class="bi bi-chat-left-text me-1"></i> Komentar/Justifikasi Penilaian
                                                         </label>
-                                                        <textarea class="form-control komentar-textarea" name="komentar" rows="4" placeholder="Berikan justifikasi dan analisis penilaian berdasarkan seluruh indikator di bawah ini..." required>{{ $hasPenilaian ? $penilaianElemenAK->komentar : '' }}</textarea>
+                                                        <textarea class="form-control komentar-textarea" name="komentar" rows="4" placeholder="Berikan justifikasi dan analisis penilaian berdasarkan seluruh indikator di bawah ini..." required>{{ $hasPenilaian ? $penilaian->komentar : '' }}</textarea>
                                                         <small class="text-muted">
                                                             <i class="bi bi-info-circle me-1"></i>
-                                                            <span class="char-count">{{ $hasPenilaian ? strlen($penilaianElemenAK->komentar) : 0 }}</span> karakter
+                                                            <span class="char-count">{{ $hasPenilaian ? strlen($penilaian->komentar) : 0 }}</span> karakter
                                                         </small>
                                                     </div>
                                                 </div>
@@ -737,7 +737,7 @@
                                                         <i class="bi bi-cloud-check"></i>
                                                         <span class="status-text">
                                                             @if($hasPenilaian)
-                                                            Tersimpan pada {{ \App\Libraries\Date::tglWaktu($penilaianElemenAK->updated_at) }}
+                                                            Tersimpan pada {{ \App\Libraries\Date::tglWaktu($penilaian->updated_at) }}
                                                             @else
                                                             Belum ada penilaian
                                                             @endif

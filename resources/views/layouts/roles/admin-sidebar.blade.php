@@ -88,7 +88,7 @@
 </ul> --}}
 
 <!-- Proses AL -->
-<a href="{{ route('al.jadwal') }}" class="nav-link {{ request()->routeIs('al.jadwal') ? 'active' : '' }}">
+<a href="{{ route('al.berkas') }}" class="nav-link {{ request()->routeIs('al*') ? 'active' : '' }}">
     <span class="menu-icon">🏢</span>
     <span>Proses AL</span>
 </a>

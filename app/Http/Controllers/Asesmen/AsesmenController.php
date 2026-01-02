@@ -141,45 +141,99 @@ class AsesmenController extends Controller
         $totalElemens = DB::table('elemen_standar')->count();
 
         // Hitung progress bulk
-        $asesorProgress = DB::table('penilaian_elemen')
+        // === PROGRESS BULK (4 QUERY TOTAL) ===
+        $asesorAK = DB::table('penilaian_elemen_ak')
             ->where('id_asesmen', $asesmen->id)
             ->whereNotNull('skor')
             ->groupBy('id_asesor')
-            ->select('id_asesor', DB::raw('COUNT(*) as completed'))
-            ->pluck('completed', 'id_asesor');
+            ->select('id_asesor', DB::raw('COUNT(*) c'))
+            ->pluck('c', 'id_asesor');
 
-        $validatorProgress = DB::table('penilaian_elemen')
+        $validatorAK = DB::table('penilaian_elemen_ak')
             ->where('id_asesmen', $asesmen->id)
             ->whereNotNull('validated_at')
-            ->select('validated_by', DB::raw('COUNT(DISTINCT id_elemen) as completed'))
             ->groupBy('validated_by')
-            ->pluck('completed', 'validated_by');
+            ->select('validated_by', DB::raw('COUNT(DISTINCT id_elemen) c'))
+            ->pluck('c', 'validated_by');
 
-        // Map ke userRole
-        $userStats = $asesmen->userRoles->mapWithKeys(function ($userRole) use ($asesorProgress, $validatorProgress, $totalElemens) {
-            $completed = $userRole->id_role == 3
-                ? ($asesorProgress[$userRole->id_user] ?? 0)
-                : ($userRole->id_role == 4
-                    ? ($validatorProgress[$userRole->id_user] ?? 0)
-                    : 0
-                );
+        $asesorAL = DB::table('penilaian_elemen_al')
+            ->where('id_asesmen', $asesmen->id)
+            ->whereNotNull('skor')
+            ->groupBy('id_asesor')
+            ->select('id_asesor', DB::raw('COUNT(*) c'))
+            ->pluck('c', 'id_asesor');
 
-            $percentage = $totalElemens ? round($completed / $totalElemens * 100, 1) : 0;
+        // === MAP USER STATS (NO QUERY) ===
+        $userStats = $asesmen->userRoles->mapWithKeys(function ($ur) use (
+            $asesorAK,
+            $validatorAK,
+            $asesorAL,
+            $totalElemens
+        ) {
+            $done = 0;
 
-            return [$userRole->id_user => [
+            if ($ur->id_role == 3) { // asesor
+                $done = $ur->jenis_asesmen === 'ak'
+                    ? ($asesorAK[$ur->id_user] ?? 0)
+                    : ($asesorAL[$ur->id_user] ?? 0);
+            }
+
+            if ($ur->id_role == 4 && $ur->jenis_asesmen === 'ak') { // validator
+                $done = $validatorAK[$ur->id_user] ?? 0;
+            }
+
+            return [$ur->id_user => [
                 'total' => $totalElemens,
-                'completed' => $completed,
-                'remaining' => $totalElemens - $completed,
-                'percentage' => $percentage,
+                'completed' => $done,
+                'percentage' => $totalElemens ? round($done / $totalElemens * 100, 1) : 0,
             ]];
         })->toArray();
 
-        // Statistik status AK / AL
+        // === STATUS STAT ===
         $asesmenStats = $asesmen->userRoles()
-            ->selectRaw('jenis_asesmen, status_pekerjaan, COUNT(*) as total')
+            ->selectRaw('jenis_asesmen, status_pekerjaan, COUNT(*) total')
             ->groupBy('jenis_asesmen', 'status_pekerjaan')
             ->get()
             ->groupBy('jenis_asesmen');
+
+        // Map ke userRole
+        $userStats = $asesmen->userRoles->mapWithKeys(function ($ur) use (
+            $asesorAK,
+            $validatorAK,
+            $asesorAL,
+            $totalElemens
+        ) {
+            $completed = 0;
+
+            // ===== ASESOR =====
+            if ($ur->id_role == 3) {
+                if ($ur->jenis_asesmen === 'ak') {
+                    $completed = $asesorAK[$ur->id_user] ?? 0;
+                }
+
+                if ($ur->jenis_asesmen === 'al') {
+                    $completed = $asesorAL[$ur->id_user] ?? 0;
+                }
+            }
+
+            // ===== VALIDATOR (HANYA AK) =====
+            if ($ur->id_role == 4 && $ur->jenis_asesmen === 'ak') {
+                $completed = $validatorAK[$ur->id_user] ?? 0;
+            }
+
+            $percentage = $totalElemens
+                ? round(($completed / $totalElemens) * 100, 1)
+                : 0;
+
+            return [
+                $ur->id_user => [
+                    'total' => $totalElemens,
+                    'completed' => $completed,
+                    'remaining' => $totalElemens - $completed,
+                    'percentage' => $percentage,
+                ]
+            ];
+        })->toArray();
 
         return view('asesmen.show', compact(
             'asesmen',
@@ -542,12 +596,13 @@ class AsesmenController extends Controller
             }
 
             // Check if user has any penilaian
-            $hasPenilaian = DB::table('penilaian_elemen')
-                ->where('id_asesmen', $id)
-                ->where('id_asesor', $userId)
-                ->exists();
+            $hasPenilaianElemenAK = DB::table('penilaian_elemen_ak')->where('id_asesmen', $id)
+                ->where(function ($query) use ($userId) {
+                    $query->where('id_asesor', $userId)->orWhere('validated_by', $userId);
+                })->exists();
+            $hasPenilaianElemenAL = DB::table('penilaian_elemen_al')->where('id_asesmen', $id)->where('id_asesor', $userId)->exists();
 
-            if ($hasPenilaian) {
+            if ($hasPenilaianElemenAK || $hasPenilaianElemenAL) {
                 return response()->json([
                     'success' => false,
                     'message' => 'User tidak bisa dihapus karena sudah melakukan penilaian. Hapus penilaian terlebih dahulu.'
@@ -691,7 +746,7 @@ class AsesmenController extends Controller
             $asesmen = Asesmen::findOrFail($id);
 
             // Check if has penilaian
-            $hasPenilaian = $asesmen->penilaianElemen()->exists();
+            $hasPenilaian = $asesmen->penilaianElemenAK()->exists() || $asesmen->penilaianElemenAL()->exists();
 
             if ($hasPenilaian) {
                 return redirect()

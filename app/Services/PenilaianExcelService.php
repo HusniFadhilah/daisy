@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\Asesmen;
 use App\Models\Kriteria;
 use App\Models\ElemenStandar;
-use App\Models\PenilaianElemen;
 use Illuminate\Support\Facades\Auth;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -20,6 +19,12 @@ use PhpOffice\PhpSpreadsheet\Cell\DataValidation;
 
 class PenilaianExcelService
 {
+    protected $modelPenilaianElemen;
+
+    public function __construct($modelPenilaianElemen)
+    {
+        $this->modelPenilaianElemen = $modelPenilaianElemen;
+    }
     /**
      * Generate template Excel file (format kosong)
      */
@@ -214,7 +219,8 @@ class PenilaianExcelService
      */
     private function applyPenilaianDataToAsesorRow($sheet, Asesmen $asesmen, int $userId, ElemenStandar $elemen, int $asesorRow): void
     {
-        $penilaian = PenilaianElemen::where('id_asesmen', $asesmen->id)
+        $modelPenilaianElemen = $this->modelPenilaianElemen;
+        $penilaian = $modelPenilaianElemen::where('id_asesmen', $asesmen->id)
             ->where('id_asesor', $userId)
             ->where('id_elemen', $elemen->id)
             ->first();

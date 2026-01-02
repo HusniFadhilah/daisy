@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('penilaian_elemen', function (Blueprint $table) {
+        Schema::create('penilaian_elemen_ak', function (Blueprint $table) {
             $table->id();
             $table->foreignId('id_asesmen')->constrained('asesmens', 'id')->onDelete('cascade');
             $table->foreignId('id_asesor')->constrained('users', 'id')->onDelete('cascade');
@@ -52,6 +52,26 @@ return new class extends Migration
             $table->index('status');
         });
 
+        Schema::create('penilaian_elemen_al', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('id_asesmen')->constrained('asesmens', 'id')->onDelete('cascade');
+            $table->foreignId('id_asesor')->constrained('users', 'id')->onDelete('cascade');
+            $table->foreignId('id_elemen')->constrained('elemen_standar', 'id')->onDelete('cascade');
+            $table->integer('skor')->nullable()->comment('0=Not Met, 1=Not Met, 2=Weakness, 3=Met');
+            $table->text('komentar')->nullable()->comment('Deskripsi/justifikasi penilaian asesor');
+            $table->enum('status', ['draft', 'submitted'])->default('draft');
+
+            $table->boolean('is_locked')->comment('0-false,1-true')->default(0);
+            $table->timestamps();
+
+            // Unique constraint: satu user hanya bisa nilai 1 elemen 1x per asesmen
+            $table->unique(['id_asesmen', 'id_asesor', 'id_elemen'], 'unique_penilaian');
+
+            // Index untuk query cepat
+            $table->index(['id_asesmen', 'id_asesor']);
+            $table->index('status');
+        });
+
         Schema::create('penilaian_import_logs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('id_asesmen')->constrained('asesmens', 'id')->onDelete('cascade');
@@ -73,7 +93,7 @@ return new class extends Migration
             $table->id();
 
             // Foreign Keys
-            $table->foreignId('id_penilaian')->nullable()->constrained('penilaian_elemen', 'id')->onDelete('cascade');
+            $table->foreignId('id_penilaian')->nullable()->constrained('penilaian_elemen_ak', 'id')->onDelete('cascade');
             $table->foreignId('id_validator')->nullable()->constrained('users', 'id')->onDelete('cascade');
 
             // Validasi Data
@@ -100,6 +120,7 @@ return new class extends Migration
     {
         Schema::dropIfExists('validasi_penilaian');
         Schema::dropIfExists('penilaian_import_logs');
-        Schema::dropIfExists('penilaian_elemen');
+        Schema::dropIfExists('penilaian_elemen_al');
+        Schema::dropIfExists('penilaian_elemen_ak');
     }
 };
