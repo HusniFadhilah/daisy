@@ -87,7 +87,7 @@ class User extends Authenticatable
     {
         // Get all unique roles from accepted assignments
         $assignedRoles = $this->asesmenUserRoles()
-            ->where('status_penawaran', 'accepted')
+            ->whereIn('status_penawaran', ['pending', 'accepted'])
             ->with('role')
             ->get()
             ->pluck('role.name')

@@ -500,7 +500,7 @@
                                             @endif
 
                                             @else
-                                            <input type="text" class="form-control auto-save-field" name="{{ $dataset->kode }}" data-field-id="{{ $dataset->kode }}" data-field-type="text" placeholder="{{ $dataset->placeholder }}" value="{{ $existingData[$dataset->kode] ?? '' }}" @if($dataset->is_required) required @endif>
+                                            <input type="text" class="form-control auto-save-field @error($dataset->kode) is-invalid @enderror" name="{{ $dataset->kode }}" data-field-id="{{ $dataset->kode }}" data-field-type="text" placeholder="{{ $dataset->placeholder }}" value="{{ $existingData[$dataset->kode] ?? '' }}" @if($dataset->is_required) required @endif>
 
                                             <div class="save-status text-muted mt-1">
                                                 <i class="bi bi-cloud-check"></i>
@@ -513,6 +513,9 @@
                                                 <i class="bi bi-lightbulb"></i> {{ $dataset->keterangan }}
                                             </small>
                                             @endif
+                                            @error($dataset->kode)
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
                                         </div>
                                         @endforeach
                                     </div>
@@ -542,10 +545,15 @@
                     @csrf
                     <div class="mb-3">
                         <label class="form-label">Pilih File DOCX</label>
-                        <input type="file" class="form-control" name="docx_file" accept=".docx,.doc" required>
+                        <input type="file" class="form-control @error('docx_file') is-invalid @enderror" name="docx_file" accept=".docx,.doc" required>
                         <small class="text-muted">
                             Format: .docx atau .doc (Max 10MB)
                         </small>
+                        @error('docx_file')
+                        <span class="invalid-feedback" role="alert">
+                            {{ $message }}
+                        </span>
+                        @enderror
                     </div>
 
                     <div class="alert alert-warning">

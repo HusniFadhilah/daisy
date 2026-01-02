@@ -31,9 +31,9 @@ class AKController extends Controller
 
         // Get asesmens where user is assigned
         $asesmens = Asesmen::whereHas('userRoles', function ($query) use ($user) {
-            $query->where('id_user', $user->id);
+            $query->where('id_user', $user->id)->where('jenis_asesmen', 'ak');
         })->with(['userRoles' => function ($query) use ($user) {
-            $query->where('id_user', $user->id)->with('role');
+            $query->where('id_user', $user->id)->where('jenis_asesmen', 'ak')->with('role');
         }])->latest()->paginate(10);
 
         // Calculate progress for each asesmen
@@ -57,8 +57,6 @@ class AKController extends Controller
         $assignment = AsesmenUserRole::where('id_asesmen', $idAsesmen)
             ->where('id_user', $user->id)
             ->firstOrFail();
-
-        if ($assignment->id_role != 3) abort(403);
 
         // ✅ AUTO-UPDATE STATUS: not_started → in_progress
         if ($assignment->status_pekerjaan === 'not_started') {
@@ -145,7 +143,7 @@ class AKController extends Controller
             $progress = $this->calculateProgress($idAsesmen, $user->id);
 
             // Get skor label and class for response
-            $skorInfo = $this->getSkorInfo($request->skor);
+            $skorInfo = JenjangPenilaian::getSkorInfo($request->skor);
 
             return response()->json([
                 'success' => true,
@@ -161,46 +159,6 @@ class AKController extends Controller
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()
             ], 500);
         }
-    }
-
-    /**
-     * Get skor information (label, color, class)
-     */
-    private function getSkorInfo($skor)
-    {
-        $skorMapping = [
-            0 => [
-                'label' => 'Tidak Memenuhi (Not Met)',
-                'color' => '#f44336',
-                'class' => 'danger',
-            ],
-            1 => [
-                'label' => 'Belum Memenuhi (Not Met)',
-                'color' => '#ff9800',
-                'class' => 'warning',
-            ],
-            2 => [
-                'label' => 'Lemah (Weakness/Cause of Concern)',
-                'color' => '#ffeb3b',
-                'class' => 'warning',
-            ],
-            3 => [
-                'label' => 'Memenuhi (Met)',
-                'color' => '#8bc34a',
-                'class' => 'success',
-            ],
-            4 => [
-                'label' => 'Pelampauan Standar (Exceeding Standard)',
-                'color' => '#4caf50',
-                'class' => 'success',
-            ],
-        ];
-
-        return $skorMapping[$skor] ?? [
-            'label' => 'Unknown',
-            'color' => '#9e9e9e',
-            'class' => 'secondary',
-        ];
     }
 
     /**
@@ -261,7 +219,7 @@ class AKController extends Controller
                     'kriteria_code' => $penilaian->elemen->kriteria->kode_kriteria,
                     'elemen_code' => $penilaian->elemen->kode_elemen,
                     'skor' => $penilaian->skor,
-                    'skor_info' => $this->getSkorInfo($penilaian->skor),
+                    'skor_info' => JenjangPenilaian::getSkorInfo($penilaian->skor),
                 ];
             });
 

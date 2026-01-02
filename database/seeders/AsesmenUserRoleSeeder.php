@@ -112,24 +112,6 @@ class AsesmenUserRoleSeeder extends Seeder
             ]);
         }
 
-        // Assign Validator untuk AL
-        $validatorsMilAL = [10]; // User ID validator untuk AL
-        foreach ($validatorsMilAL as $userId) {
-            AsesmenUserRole::create([
-                'id_asesmen' => $asesmenMil,
-                'id_user' => $userId,
-                'id_role' => $roleValidator,
-                'jenis_asesmen' => 'al',
-                'id_asesmen_kecukupan' => null,
-                'id_asesmen_lapangan' => $alMil,
-                'urutan_asesor' => null,
-                'status_penawaran' => 'pending',
-                'status_pekerjaan' => 'not_started',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
-
         // ============================================
         // 2. ASESMEN TEKNIK INFORMATIKA
         // ============================================
@@ -214,24 +196,6 @@ class AsesmenUserRoleSeeder extends Seeder
                 'id_asesmen_kecukupan' => null,
                 'id_asesmen_lapangan' => $alTI,
                 'urutan_asesor' => $index + 1,
-                'status_penawaran' => 'pending',
-                'status_pekerjaan' => 'not_started',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
-
-        // Assign Validator untuk AL
-        $validatorsTIAL = [11]; // Bisa validator yang sama atau berbeda
-        foreach ($validatorsTIAL as $userId) {
-            AsesmenUserRole::create([
-                'id_asesmen' => $asesmenTI,
-                'id_user' => $userId,
-                'id_role' => $roleValidator,
-                'jenis_asesmen' => 'al',
-                'id_asesmen_kecukupan' => null,
-                'id_asesmen_lapangan' => $alTI,
-                'urutan_asesor' => null,
                 'status_penawaran' => 'pending',
                 'status_pekerjaan' => 'not_started',
                 'created_at' => now(),

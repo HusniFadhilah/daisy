@@ -16,6 +16,7 @@
     --info: #2196f3;
     --dark: #2c3e50;
     --light: #f5f7fa;
+    --bs-border-width: 1.2px;
 }
 
 body {
@@ -949,6 +950,10 @@ h5 {
 .form-control:focus {
     border-color: var(--primary);
     box-shadow: 0 0 0 0.2rem rgba(147, 33, 54, 0.25);
+}
+
+.form-check-input {
+    border: 1.8px solid var(--bs-border-color);
 }
 
 .skor-select option {

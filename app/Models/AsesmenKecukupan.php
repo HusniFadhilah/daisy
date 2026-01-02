@@ -87,6 +87,21 @@ class AsesmenKecukupan extends Model
         return $missing;
     }
 
+    public function hasMinimumRequirementsWithCounts(int $asesorCount, int $validatorCount): bool
+    {
+        return $asesorCount >= 2 && $validatorCount >= 1;
+    }
+
+    public function getMissingRequirementsWithCounts(int $asesorCount, int $validatorCount): array
+    {
+        $missing = [];
+
+        if ($asesorCount < 2) $missing[] = 'Kurang ' . (2 - $asesorCount) . ' asesor';
+        if ($validatorCount < 1) $missing[] = 'Kurang ' . (1 - $validatorCount) . ' validator';
+
+        return $missing;
+    }
+
     public function isComplete()
     {
         return $this->status === 'completed';

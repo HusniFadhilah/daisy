@@ -63,7 +63,7 @@ class BorangParserService
 
             // Update import status
             $import->update([
-                'status' => 'success',
+                'status' => 'completed',
                 'total_sections' => count($parsedData['sections']),
                 'total_tables' => collect($parsedData['sections'])->sum(fn($s) => count($s['tables'])),
                 'parsed_sections' => count($parsedData['sections']),

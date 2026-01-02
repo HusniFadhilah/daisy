@@ -523,6 +523,7 @@ class ValidasiController extends Controller
                     ->where('id_elemen', $elemenId)
                     ->whereIn('id_asesor', $request->id_asesors)
                     ->update([
+                        'preferensi_skor' => $request->skor_final,
                         'status_validasi' => 'revision_required',
                         'catatan_validator' => $request->catatan_validator,
                         'validated_at' => now(),

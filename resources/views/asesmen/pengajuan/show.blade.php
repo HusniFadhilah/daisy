@@ -215,12 +215,17 @@
                                 <!-- Keterangan -->
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Keterangan (Opsional)</label>
-                                    <textarea name="keterangan" class="form-control" rows="2" placeholder="Catatan terkait draft borang"></textarea>
+                                    <textarea name="keterangan" class="form-control @error('keterangan') is-invalid @enderror" rows="2" placeholder="Catatan terkait draft borang"></textarea>
+                                    @error('keterangan')
+                                    <span class="invalid-feedback" role="alert">
+                                        {{ $message }}
+                                    </span>
+                                    @enderror
                                 </div>
 
                                 <!-- Submit Buttons -->
                                 <div class="d-flex gap-2">
-                                    <button type="submit" class="btn btn-primary" id="btnSubmitUpload" disabled>
+                                    <button type="submit" class="btn btn-primary" id="btnUploadBorang" disabled>
                                         <i class="bi bi-upload"></i> Upload Draft Borang
                                     </button>
                                 </div>
@@ -370,7 +375,7 @@
                                 <strong>Jumlah:</strong> Rp {{ number_format($pengajuan->pembayaran->jumlah_pembayaran, 0, ',', '.') }}
                             </div>
                             <div class="col-md-6">
-                                <strong>Jatuh Tempo:</strong> {{ $pengajuan->pembayaran->tanggal_jatuh_tempo->format('d M Y') }}
+                                <strong>Jatuh Tempo:</strong> {{ \App\Libraries\Date::tglIndo($pengajuan->pembayaran->tanggal_jatuh_tempo) }}
                             </div>
                         </div>
                     </div>
@@ -381,12 +386,22 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Tanggal Pembayaran</label>
-                                <input type="date" name="tanggal_pembayaran" class="form-control" value="{{ date('Y-m-d') }}" required>
+                                <input type="date" name="tanggal_pembayaran" class="form-control @error('tanggal_pembayaran') is-invalid @enderror" value="{{ date('Y-m-d') }}" required>
+                                @error('tanggal_pembayaran')
+                                <span class="invalid-feedback" role="alert">
+                                    {{ $message }}
+                                </span>
+                                @enderror
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Bukti Pembayaran</label>
-                                <input type="file" name="bukti_pembayaran" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required>
+                                <input type="file" name="bukti_pembayaran" class="form-control @error('bukti_pembayaran') is-invalid @enderror" accept=".pdf,.jpg,.jpeg,.png" required>
                                 <small class="text-muted">Format: PDF, JPG, PNG | Max: 5 MB</small>
+                                @error('bukti_pembayaran')
+                                <span class="invalid-feedback" role="alert">
+                                    {{ $message }}
+                                </span>
+                                @enderror
                             </div>
                             <div class="col-md-12">
                                 <button type="submit" class="btn btn-success">
@@ -421,12 +436,22 @@
                         <div class="row g-3">
                             <div class="col-md-8">
                                 <label class="form-label fw-bold">Borang Final (DOCX)</label>
-                                <input type="file" name="borang_final" class="form-control" accept=".docx" required>
+                                <input type="file" name="borang_final" class="form-control @error('borang_final') is-invalid @enderror" accept=".docx" required>
                                 <small class="text-muted">Format: DOCX | Max: 10 MB</small>
+                                @error('borang_final')
+                                <span class="invalid-feedback" role="alert">
+                                    {{ $message }}
+                                </span>
+                                @enderror
                             </div>
                             <div class="col-md-12">
                                 <label class="form-label fw-bold">Keterangan</label>
-                                <textarea name="keterangan" class="form-control" rows="2"></textarea>
+                                <textarea name="keterangan" class="form-control @error('keterangan') is-invalid @enderror" rows="2"></textarea>
+                                @error('keterangan')
+                                <span class="invalid-feedback" role="alert">
+                                    {{ $message }}
+                                </span>
+                                @enderror
                             </div>
                             <div class="col-md-12">
                                 <button type="submit" class="btn btn-primary">
@@ -707,7 +732,7 @@
     const uploadArea = document.getElementById('uploadArea');
     const fileInput = document.getElementById('inputDraftBorang');
     const filePreview = document.getElementById('filePreview');
-    const btnSubmit = document.getElementById('btnSubmitUpload');
+    const btnUploadBorang = document.getElementById('btnUploadBorang');
     const formUpload = document.getElementById('formUploadBorang');
     const btnResetBorangShow = document.getElementById('btnResetBorangShow');
 
@@ -772,7 +797,7 @@
         uploadArea.classList.add('d-none');
         filePreview.classList.remove('d-none');
         filePreview.classList.add('has-file');
-        btnSubmit.disabled = false;
+        btnUploadBorang.disabled = false;
     }
 
     function removeFile() {
@@ -780,7 +805,7 @@
         uploadArea.classList.remove('d-none');
         filePreview.classList.add('d-none');
         filePreview.classList.remove('has-file');
-        btnSubmit.disabled = true;
+        btnUploadBorang.disabled = true;
     }
 
     function formatFileSize(bytes) {
@@ -801,10 +826,11 @@
         }
 
         const formData = new FormData(formUpload);
-        btnSubmit.disabled = true;
-        btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mengupload...';
+        btnUploadBorang.disabled = true;
+        btnUploadBorang.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mengupload...';
 
         try {
+            console.log(formData)
             const response = await fetch('{{ route("pengajuan.upload-draft", $pengajuan->id) }}', {
                 method: 'POST'
                 , body: formData
@@ -814,20 +840,21 @@
             });
 
             const data = await response.json();
+            console.log(data)
 
             if (data.success || response.ok) {
                 alert('✅ Draft borang berhasil diupload!');
                 window.location.reload();
             } else {
                 alert('❌ Upload gagal: ' + (data.message || 'Terjadi kesalahan'));
-                btnSubmit.disabled = false;
-                btnSubmit.innerHTML = '<i class="bi bi-upload"></i> Upload Draft Borang';
+                btnUploadBorang.disabled = false;
+                btnUploadBorang.innerHTML = '<i class="bi bi-upload"></i> Upload Draft Borang';
             }
         } catch (error) {
             console.error('Error:', error);
             alert('❌ Terjadi kesalahans: ' + error.message);
-            btnSubmit.disabled = false;
-            btnSubmit.innerHTML = '<i class="bi bi-upload"></i> Upload Draft Borang';
+            btnUploadBorang.disabled = false;
+            btnUploadBorang.innerHTML = '<i class="bi bi-upload"></i> Upload Draft Borang';
         }
     });
 

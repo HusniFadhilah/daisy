@@ -1,11 +1,11 @@
 <div class="card mb-4 shadow-sm">
     <div class="card-header bg-white border-bottom">
-        <div class="d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">
+        <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-2">
+            <h5 class="mb-0 text-wrap text-break flex-grow-1">
                 <i class="bi bi-clipboard-check"></i> Kertas Kerja Validator - Perbandingan Penilaian
-                <span class="badge bg-primary ms-2">{{ $asesors->count() }} Asesor</span>
+                <span class="badge bg-primary ms-2 mt-md-2">{{ $asesors->count() }} Asesor</span>
             </h5>
-            <div class="btn-group btn-group-sm">
+            <div class="btn-group btn-group-sm ms-md-auto">
                 <button type="button" class="btn btn-outline-secondary" id="btnHighlightDiff" title="Highlight Perbedaan">
                     <i class="bi bi-search"></i> Highlight Perbedaan
                 </button>
@@ -17,7 +17,7 @@
         {{-- Legend --}}
         <div class="p-3 bg-light border-bottom">
             <div class="row">
-                <div class="col-md-8">
+                <div class="col-md-8 mb-3">
                     <h6 class="mb-2">Legenda Kategori Penilaian:</h6>
                     <div class="d-flex flex-wrap gap-2">
                         <div class="legend-item">
@@ -32,7 +32,7 @@
                         @endforeach
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-4 mb-3">
                     <h6 class="mb-2">Status Validasi:</h6>
                     <div class="d-flex flex-wrap gap-2">
                         <div class="legend-item">
@@ -62,18 +62,18 @@
                 <thead>
                     <tr>
                         {{-- Fixed Columns --}}
-                        <th class="vm-header sticky-col sticky-header bg-primary" style="left: 0; min-width: 60px; z-index: 35;">
+                        <th class="vm-header sticky-col sticky-header bg-primary" style="left: 0; min-width: 40px; z-index: 35;">
                             <div class="text-center fw-bold">Kriteria</div>
                         </th>
-                        <th class="vm-header sticky-col sticky-header bg-primary" style="left: 60px; min-width: 80px; z-index: 35;">
+                        <th class="vm-header sticky-col sticky-header bg-primary" style="left: 40px; min-width: 50px; z-index: 35;">
                             <div class="text-center fw-bold">Kode<br>Elemen</div>
                         </th>
-                        <th class="vm-header sticky-col sticky-header elemen-col bg-primary" style="left: 140px; min-width: 200px; z-index: 35;">
+                        <th class="vm-header sticky-col sticky-header elemen-col bg-primary" style="left: 70px; max-width: 120px; z-index: 35;">
                             <div class="fw-bold">Elemen Standar</div>
                         </th>
 
                         {{-- Collapsible Indikator Column --}}
-                        <th class="vm-header sticky-header indikator-col bg-primary" style="min-width: 200px; z-index: 30;" id="indikatorHeader">
+                        <th class="vm-header sticky-header indikator-col bg-primary" style="min-width: 180px; z-index: 30;" id="indikatorHeader">
                             <div class="fw-bold">
                                 <i class="bi bi-list-ul me-2"></i>Indikator Penilaian
                             </div>
@@ -105,8 +105,8 @@
                     {{-- Sub-header for Pemenuhan/Pelampauan --}}
                     <tr>
                         <th class="vm-subheader sticky-col sticky-header" style="left: 0; z-index: 34;"></th>
-                        <th class="vm-subheader sticky-col sticky-header" style="left: 60px; z-index: 34;"></th>
-                        <th class="vm-subheader sticky-col sticky-header" style="left: 140px; z-index: 34;"></th>
+                        <th class="vm-subheader sticky-col sticky-header" style="left: 40px; z-index: 34;"></th>
+                        <th class="vm-subheader sticky-col sticky-header" style="left: 70px; z-index: 34;"></th>
                         <th class="vm-subheader sticky-header indikator-col" style="z-index: 29;"></th>
 
                         {{-- Dynamic Asesor Sub-headers --}}
@@ -212,12 +212,12 @@
                         @endif
 
                         {{-- Kode Elemen --}}
-                        <td class="vm-cell sticky-col text-center" style="left: 60px; z-index: 15;">
+                        <td class="vm-cell sticky-col text-center" style="left: 40px; z-index: 15;">
                             <strong>{{ $elemen->kode_elemen }}</strong>
                         </td>
 
                         {{-- Elemen Standar --}}
-                        <td class="vm-cell sticky-col elemen-col" style="left: 140px; z-index: 15;">
+                        <td class="vm-cell sticky-col elemen-col" style="left: 70px; z-index: 15;">
                             <div class="elemen-text">{{ $elemen->pernyataan_elemen }}</div>
                         </td>
 
@@ -287,25 +287,25 @@
         {{-- Summary Statistics --}}
         <div class="p-3 bg-light border-top">
             <div class="row text-center">
-                <div class="col-md-3">
+                <div class="col-md-4 col-lg-3 my-2">
                     <div class="stat-box">
                         <h4 class="mb-0" id="statTotalElemen">0</h4>
                         <small class="text-muted">Total Elemen</small>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4 col-lg-3 my-2">
                     <div class="stat-box">
                         <h4 class="mb-0 text-danger" id="statDifferences">0</h4>
                         <small class="text-muted">Perbedaan Penilaian</small>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4 col-lg-3 my-2">
                     <div class="stat-box">
                         <h4 class="mb-0 text-warning" id="statPending">0</h4>
                         <small class="text-muted">Belum Validasi</small>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4 col-lg-3 my-2">
                     <div class="stat-box">
                         <h4 class="mb-0 text-success" id="statValidated">0</h4>
                         <small class="text-muted">Sudah Validasi</small>
@@ -344,7 +344,7 @@
 
     /* Elemen Column */
     .elemen-col {
-        max-width: 200px;
+        max-width: 80px;
     }
 
     .elemen-text {
@@ -423,7 +423,7 @@
     }
 
     .sticky-col.sticky-header {
-        z-index: 30;
+        z-index: 40;
     }
 
     /* Indikator Column */

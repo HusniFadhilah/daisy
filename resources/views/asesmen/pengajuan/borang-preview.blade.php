@@ -80,6 +80,7 @@
             box-shadow: none !important;
         }
     }
+
 </style>
 @endpush
 
@@ -146,7 +147,7 @@
                         </tr>
                         <tr>
                             <th>Tanggal Pengajuan</th>
-                            <td>: {{ $pengajuan->tanggal_pengajuan?->format('d M Y') }}</td>
+                            <td>: {{ \App\Libraries\Date::tglIndo($pengajuan->tanggal_pengajuan) }}</td>
                         </tr>
                     </table>
                 </div>
@@ -176,115 +177,115 @@
 
     {{-- Content Sections --}}
     @if($import && $import->sections->count() > 0)
-        @foreach($import->sections as $section)
-        <div class="preview-section">
-            <div class="card">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">
-                        <span class="badge bg-primary me-2">{{ $section->kode_section }}</span>
-                        {{ $section->judul_section }}
-                    </h5>
-                </div>
+    @foreach($import->sections as $section)
+    <div class="preview-section">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">
+                    <span class="badge bg-primary me-2">{{ $section->kode_section }}</span>
+                    {{ $section->judul_section }}
+                </h5>
+            </div>
 
-                <div class="card-body">
-                    {{-- Konten Narasi --}}
-                    @if($section->konten_narasi)
-                    <div class="mb-4">
-                        <h6 class="field-label">
-                            <i class="bi bi-file-text"></i> Deskripsi/Narasi
-                        </h6>
-                        <div class="narasi-content">
-                            {{ $section->konten_narasi }}
+            <div class="card-body">
+                {{-- Konten Narasi --}}
+                @if($section->konten_narasi)
+                <div class="mb-4">
+                    <h6 class="field-label">
+                        <i class="bi bi-file-text"></i> Deskripsi/Narasi
+                    </h6>
+                    <div class="narasi-content">
+                        {{ $section->konten_narasi }}
+                    </div>
+                </div>
+                @endif
+
+                {{-- Tables --}}
+                @if($section->tables->count() > 0)
+                <div class="mb-3">
+                    <h6 class="field-label">
+                        <i class="bi bi-table"></i> Data Tabel
+                    </h6>
+
+                    @foreach($section->tables as $table)
+                    <div class="table-preview mb-4">
+                        <p class="mb-2">
+                            <strong>{{ $table->kode_tabel }}</strong> - {{ $table->judul_tabel }}
+                        </p>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                @if($table->headers)
+                                <thead class="table-light">
+                                    <tr>
+                                        @foreach($table->headers as $header)
+                                        <th>{{ $header }}</th>
+                                        @endforeach
+                                    </tr>
+                                </thead>
+                                @endif
+
+                                <tbody>
+                                    @if($table->data && count($table->data) > 1)
+                                    @foreach(array_slice($table->data, 1) as $row)
+                                    <tr>
+                                        @foreach($row as $cell)
+                                        <td>{{ $cell }}</td>
+                                        @endforeach
+                                    </tr>
+                                    @endforeach
+                                    @else
+                                    <tr>
+                                        <td colspan="{{ count($table->headers ?? []) }}" class="text-center text-muted">
+                                            <em>Belum ada data</em>
+                                        </td>
+                                    </tr>
+                                    @endif
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                    @endif
+                    @endforeach
+                </div>
+                @endif
 
-                    {{-- Tables --}}
-                    @if($section->tables->count() > 0)
-                    <div class="mb-3">
-                        <h6 class="field-label">
-                            <i class="bi bi-table"></i> Data Tabel
-                        </h6>
+                {{-- Dataset Fields (from online form) --}}
+                @if($section->elemen && $section->elemen->datasetBorang->count() > 0)
+                <div class="mt-4">
+                    <h6 class="field-label">
+                        <i class="bi bi-list-check"></i> Data Pendukung
+                    </h6>
 
-                        @foreach($section->tables as $table)
-                        <div class="table-preview mb-4">
-                            <p class="mb-2">
-                                <strong>{{ $table->kode_tabel }}</strong> - {{ $table->judul_tabel }}
-                            </p>
+                    <div class="row">
+                        @foreach($section->elemen->datasetBorang as $dataset)
+                        @php
+                        $value = \App\Models\BorangData::where('id_borang_import', $import->id)
+                        ->where('dataset_id', $dataset->kode)
+                        ->value('nilai');
+                        @endphp
 
-                            <div class="table-responsive">
-                                <table class="table table-bordered table-hover">
-                                    @if($table->headers)
-                                    <thead class="table-light">
-                                        <tr>
-                                            @foreach($table->headers as $header)
-                                            <th>{{ $header }}</th>
-                                            @endforeach
-                                        </tr>
-                                    </thead>
-                                    @endif
-
-                                    <tbody>
-                                        @if($table->data && count($table->data) > 1)
-                                            @foreach(array_slice($table->data, 1) as $row)
-                                            <tr>
-                                                @foreach($row as $cell)
-                                                <td>{{ $cell }}</td>
-                                                @endforeach
-                                            </tr>
-                                            @endforeach
-                                        @else
-                                        <tr>
-                                            <td colspan="{{ count($table->headers ?? []) }}" class="text-center text-muted">
-                                                <em>Belum ada data</em>
-                                            </td>
-                                        </tr>
-                                        @endif
-                                    </tbody>
-                                </table>
+                        @if($value)
+                        <div class="col-md-6 mb-3">
+                            <div class="field-label">{{ $dataset->nama }}</div>
+                            <div class="field-value">
+                                @if($dataset->tipe_field === 'file')
+                                <a href="{{ Storage::url($value) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-file-earmark"></i> Lihat File
+                                </a>
+                                @else
+                                {{ $value }}
+                                @endif
                             </div>
                         </div>
+                        @endif
                         @endforeach
                     </div>
-                    @endif
-
-                    {{-- Dataset Fields (from online form) --}}
-                    @if($section->elemen && $section->elemen->datasetBorang->count() > 0)
-                    <div class="mt-4">
-                        <h6 class="field-label">
-                            <i class="bi bi-list-check"></i> Data Pendukung
-                        </h6>
-
-                        <div class="row">
-                            @foreach($section->elemen->datasetBorang as $dataset)
-                            @php
-                            $value = \App\Models\BorangData::where('id_borang_import', $import->id)
-                                ->where('dataset_id', $dataset->kode)
-                                ->value('nilai');
-                            @endphp
-
-                            @if($value)
-                            <div class="col-md-6 mb-3">
-                                <div class="field-label">{{ $dataset->nama }}</div>
-                                <div class="field-value">
-                                    @if($dataset->tipe_field === 'file')
-                                        <a href="{{ Storage::url($value) }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                            <i class="bi bi-file-earmark"></i> Lihat File
-                                        </a>
-                                    @else
-                                        {{ $value }}
-                                    @endif
-                                </div>
-                            </div>
-                            @endif
-                            @endforeach
-                        </div>
-                    </div>
-                    @endif
                 </div>
+                @endif
             </div>
         </div>
-        @endforeach
+    </div>
+    @endforeach
     @else
     <div class="alert alert-warning">
         <i class="bi bi-exclamation-triangle"></i>
@@ -313,16 +314,17 @@
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Export PDF (could use jsPDF or similar library)
-    document.getElementById('btnExportPDF')?.addEventListener('click', function() {
-        Swal.fire({
-            icon: 'info',
-            title: 'Export PDF',
-            text: 'Fitur export PDF dalam pengembangan. Silakan gunakan Print to PDF dari browser.',
-            confirmButtonColor: '#932136'
+    document.addEventListener('DOMContentLoaded', function() {
+        // Export PDF (could use jsPDF or similar library)
+        document.getElementById('btnExportPDF') ? .addEventListener('click', function() {
+            Swal.fire({
+                icon: 'info'
+                , title: 'Export PDF'
+                , text: 'Fitur export PDF dalam pengembangan. Silakan gunakan Print to PDF dari browser.'
+                , confirmButtonColor: '#932136'
+            });
         });
     });
-});
+
 </script>
 @endpush

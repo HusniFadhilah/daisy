@@ -107,12 +107,6 @@
                                         Minimal 2 orang
                                     </span>
                                 </li>
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <span><i class="bi bi-person-check"></i> Validator</span>
-                                    <span class="badge bg-success rounded-pill">
-                                        Minimal 1 orang
-                                    </span>
-                                </li>
                             </ul>
 
                             <div id="alStatus" class="status-container">
@@ -145,7 +139,7 @@
     </div>
 
     @if($asesmen->userRoles->where('status_penawaran', 'rejected')->count() > 0)
-    <div class="alert alert-danger" role="alert">
+    <div class="alert alert-danger alert-permanent" role="alert">
         <h5 class="alert-heading">
             <i class="bi bi-exclamation-triangle-fill"></i>
             Perhatian: Ada Penawaran yang Ditolak
@@ -173,7 +167,41 @@
         </div>
     </div>
     @endif
-
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-md-4 col-lg-3 my-2">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="text-primary mb-0">{{ $asesmen->userRoles->count() }}</h3>
+                    <small class="text-muted">Peran Ditugaskan</small>
+                </div>
+            </div>
+        </div>
+        @php
+        $statuses = [
+        'not_started' => 'Belum Mulai',
+        'in_progress' => 'Sedang Dikerjakan',
+        'submitted' => 'Submitted',
+        'validated' => 'Tervalidasi',
+        'revision_required' => 'Perlu Revisi',
+        'approved' => 'Disetujui',
+        ];
+        @endphp
+        @foreach ($statuses as $key => $label)
+        <div class="col-md-4 col-lg-3 my-2">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h3 class="mb-0">
+                        {{ optional($asesmenStats['ak'] ?? collect())
+                    ->firstWhere('status_pekerjaan', $key)
+                    ->total ?? 0 }}
+                    </h3>
+                    <small class="text-muted">AK - {{ $label }}</small>
+                </div>
+            </div>
+        </div>
+        @endforeach
+    </div>
     <div class="row">
         <!-- Asesmen Info Card -->
         <div class="col-md-3 mb-4">
@@ -215,8 +243,8 @@
                         <label class="text-muted small mb-1">Periode:</label>
                         <div>
                             @if($asesmen->tanggal_mulai && $asesmen->tanggal_selesai)
-                            {{ \Carbon\Carbon::parse($asesmen->tanggal_mulai)->format('d M Y') }} -
-                            {{ \Carbon\Carbon::parse($asesmen->tanggal_selesai)->format('d M Y') }}
+                            {{ \App\Libraries\Date::tglIndo($asesmen->tanggal_mulai) }} -
+                            {{ \App\Libraries\Date::tglIndo($asesmen->tanggal_selesai) }}
                             @else
                             -
                             @endif
@@ -225,7 +253,7 @@
 
                     <div class="info-item">
                         <label class="text-muted small mb-1">Dibuat:</label>
-                        <div>{{ $asesmen->created_at->format('d M Y H:i') }}</div>
+                        <div>{{ \App\Libraries\Date::tglIndo($asesmen->created_at) }}</div>
                     </div>
                 </div>
             </div>
@@ -233,34 +261,6 @@
 
         <!-- Assignment Section -->
         <div class="col-md-9 mb-4">
-            <!-- Quick Stats -->
-            <div class="row mb-4">
-                <div class="col-md-4">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h3 class="text-primary mb-0">{{ $asesmen->userRoles->count() }}</h3>
-                            <small class="text-muted">Peran Ditugaskan</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h3 class="text-success mb-0">{{ $asesmen->penilaianElemen->where('status', 'submitted')->count() }}</h3>
-                            <small class="text-muted">Penilaian Submitted</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h3 class="text-warning mb-0">{{ $asesmen->penilaianElemen->where('status', 'draft')->count() }}</h3>
-                            <small class="text-muted">Penilaian Draft</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- Assign User Card -->
             <div class="card mb-4">
                 <div class="card-header bg-success text-white">
@@ -323,9 +323,9 @@
                                 <tr>
                                     <th style="width: 50px;">#</th>
                                     <th>Nama</th>
-                                    <th>Email</th>
+                                    <th style="max-width: 150px;">Email</th>
                                     <th style="width: 150px;">Jenis Asesmen</th>
-                                    <th style="width: 200px;">Role</th>
+                                    <th style="min-width: 120px;">Role</th>
                                     <th style="width: 150px;">Status Penawaran</th>
                                     <th style="width: 150px;">Progress</th>
                                     <th style="width: 120px;">Ditugaskan</th>
@@ -356,7 +356,11 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <td>{{ $userRole->user->email }}</td>
+                                    <td>
+                                        <span class="badge bg-light text-dark d-inline-block text-wrap" style="min-width: 120px; white-space: normal; word-break: break-word;">
+                                            {{ $userRole->user->email }}
+                                        </span>
+                                    </td>
                                     <td>
                                         <span class="badge bg-{{ $userRole->jenis_asesmen === 'ak' ? 'primary' : 'info' }}">
                                             {{ strtoupper($userRole->jenis_asesmen) }}
@@ -369,7 +373,7 @@
                                         @if($statusPenawaran === 'accepted')
                                         <select class="form-select form-select-sm" onchange="updateUserRole({{ $userRole->id }}, this.value)">
                                             @foreach($roles as $role)
-                                            <option value="{{ $role->id }}" {{ $userRole->role->name == $role->name ? 'selected' : '' }}>
+                                            <option value="{{ $role->id }}" {{ $userRole->id_role == $role->id ? 'selected' : '' }}>
                                                 {{ $role->alias }}
                                             </option>
                                             @endforeach
@@ -402,10 +406,10 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <small class="text-muted">{{ $userRole->created_at->format('d M Y') }}</small>
+                                        <small class="text-muted">{{ \App\Libraries\Date::tglIndo($userRole->created_at) }}</small>
                                         @if($userRole->responded_at)
                                         <br>
-                                        <small class="text-muted">Respon: {{ $userRole->responded_at->format('d M Y') }}</small>
+                                        <small class="text-muted">Respon: {{ \App\Libraries\Date::tglIndo($userRole->responded_at) }}</small>
                                         @endif
                                     </td>
                                     <td>
@@ -496,7 +500,7 @@
             <form id="sendDocumentsForm">
                 <input type="hidden" id="assignmentId" name="assignment_id">
                 <div class="modal-body">
-                    <div class="alert alert-info">
+                    <div class="alert alert-info alert-permanent">
                         <i class="bi bi-info-circle"></i>
                         <strong>Informasi:</strong> Kirim link kertas kerja dan panduan penilaian kepada <strong id="recipientName"></strong> sebagai <strong id="recipientRole"></strong>
                     </div>
@@ -505,28 +509,43 @@
                         <label class="form-label fw-semibold">
                             Link Kertas Kerja <span class="text-danger">*</span>
                         </label>
-                        <input type="url" class="form-control" id="kertasKerjaLink" name="kertas_kerja_link" placeholder="https://docs.google.com/..." required>
+                        <input type="url" class="form-control @error('kertas_kerja_link') is-invalid @enderror" id="kertasKerjaLink" name="kertas_kerja_link" placeholder="https://docs.google.com/..." required>
                         <small class="text-muted">
                             Masukkan link Google Docs, Excel Online, atau platform lainnya
                         </small>
+                        @error('kertas_kerja_link')
+                        <span class="invalid-feedback" role="alert">
+                            {{ $message }}
+                        </span>
+                        @enderror
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold">
                             Link Panduan Penilaian
                         </label>
-                        <input type="url" class="form-control" id="panduanLink" name="panduan_link" placeholder="https://docs.google.com/...">
+                        <input type="url" class="form-control @error('panduan_link') is-invalid @enderror" id="panduanLink" name="panduan_link" placeholder="https://docs.google.com/...">
                         <small class="text-muted">
                             Opsional: Link ke panduan atau petunjuk penilaian
                         </small>
+                        @error('panduan_link')
+                        <span class="invalid-feedback" role="alert">
+                            {{ $message }}
+                        </span>
+                        @enderror
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Catatan Tambahan:</label>
-                        <textarea class="form-control" id="sendNote" name="send_note" rows="3" placeholder="Tambahkan catatan atau instruksi khusus..."></textarea>
+                        <textarea class="form-control @error('send_note') is-invalid @enderror" id="sendNote" name="send_note" rows="3" placeholder="Tambahkan catatan atau instruksi khusus..."></textarea>
+                        @error('send_note')
+                        <span class="invalid-feedback" role="alert">
+                            {{ $message }}
+                        </span>
+                        @enderror
                     </div>
 
-                    <div class="alert alert-warning">
+                    <div class="alert alert-warning alert-permanent">
                         <small>
                             <i class="bi bi-exclamation-triangle"></i>
                             <strong>Penting:</strong> Pastikan link dapat diakses oleh penerima (bukan private/restricted)
@@ -700,7 +719,7 @@
                     <div>
                         <div class="fw-bold">✅ Persyaratan Terpenuhi</div>
                         <small class="text-muted">
-                            Asesor: ${status.current.asesor} | Validator: ${status.current.validator}
+                            Asesor: ${status.current.asesor} ${jenisAsesmen == 'ak' ? '| Validator: '+status.current.validator:''}
                         </small>
                     </div>
                 </div>
@@ -711,14 +730,15 @@
                 <div class="d-flex align-items-center">
                     <i class="bi bi-exclamation-triangle-fill text-warning fs-4 me-2"></i>
                     <div>
-                        <div class="fw-bold">⚠️ Persyaratan Belum Terpenuhi</div>
+                        <div class="fw-bold">Persyaratan Belum Terpenuhi</div>
                         <small class="text-danger">
                             ${status.missing.join(', ')}
                         </small>
                         <br>
-                        <small class="text-muted">
-                            Saat ini: Asesor ${status.current.asesor} | Validator ${status.current.validator}
+                        <small>
+                            Saat ini: Asesor ${status.current.asesor} ${jenisAsesmen == 'ak' ? '| Validator: '+status.current.validator:''}
                         </small>
+                        <br><small class="text-muted">Semua role yang diassign harus menyetujuinya, atau cari user lain</small>
                     </div>
                 </div>
             `;

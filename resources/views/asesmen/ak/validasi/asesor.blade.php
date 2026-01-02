@@ -9,17 +9,21 @@
     {{-- Header Card --}}
     <div class="card mb-4 header-card shadow-sm">
         <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                    <h3 class="mb-1">Validasi Penilaian Asesor</h3>
-                    <p class="text-muted mb-0">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 gap-2">
+
+                <!-- Judul + badge -->
+                <div class="flex-grow-1">
+                    <h3 class="mb-1 text-wrap text-break">Validasi Penilaian Asesor</h3>
+                    <p class="text-muted mb-0 text-wrap text-break">
                         {{ $asesmen->name }}
                         <span class="badge bg-primary ms-2">
                             {{ strtoupper($jenisAsesmen) }}
                         </span>
                     </p>
                 </div>
-                <a href="{{ route('ak.validasi.index') }}" class="btn btn-outline-secondary">
+
+                <!-- Tombol -->
+                <a href="{{ route('ak.validasi.index') }}" class="btn btn-outline-secondary mt-2 mt-md-0">
                     <i class="bi bi-arrow-left"></i> Kembali ke Dashboard
                 </a>
             </div>
@@ -36,38 +40,54 @@
                 ['border' => 'purple', 'bg' => 'purple'],
                 ];
                 $color = $colors[$index % count($colors)];
-                $progress = $asesorProgress[$asesor->id_user] ?? ['completed' => 0, 'total' => 0, 'percentage' => 0];
+                $progress = $asesorProgress[$asesor->id_user] ?? ['completed' => 0, 'total' => 0, 'completion_percentage' => 0];
                 @endphp
-                <div class="col-md-6 col-lg-{{ $asesors->count() > 2 ? '4' : '6' }} mb-3">
+
+                <div class="col-md-12 col-lg-6 mb-3">
                     <div class="card border-{{ $color['border'] }}">
-                        <div class="card-header bg-{{ $color['bg'] }} text-white">
-                            <h6 class="mb-0">
+
+                        <!-- Card Header -->
+                        <div class="card-header bg-{{ $color['bg'] }} text-white
+                            d-flex flex-column flex-md-row
+                            align-items-start align-items-md-center gap-2">
+
+                            <h6 class="mb-0 flex-grow-1 text-wrap text-break">
                                 <i class="bi bi-person"></i> Asesor {{ $asesor->urutan_asesor }}
                             </h6>
+
                             @if($asesor->status_pekerjaan === 'revision_required')
-                            <span class="badge bg-danger">
+                            <span class="badge bg-danger ms-md-auto">
                                 <i class="bi bi-exclamation-triangle"></i> Revisi
                             </span>
                             @elseif($asesor->status_pekerjaan === 'submitted')
-                            <span class="badge bg-success">
+                            <span class="badge bg-success ms-md-auto">
                                 <i class="bi bi-check-circle"></i> Submitted
                             </span>
                             @elseif($asesor->status_pekerjaan === 'approved')
-                            <span class="badge bg-success">
+                            <span class="badge bg-success ms-md-auto">
                                 <i class="bi bi-patch-check"></i> Approved
                             </span>
                             @endif
                         </div>
+
+                        <!-- Card Body -->
                         <div class="card-body">
                             <div class="d-flex align-items-center">
+                                <!-- Avatar -->
                                 <div class="avatar-circle me-3 bg-{{ $color['bg'] }}">
                                     {{ substr($asesor->user->name, 0, 2) }}
                                 </div>
-                                <div>
-                                    <h6 class="mb-0">{{ $asesor->user->name }}</h6>
-                                    <small class="text-muted">{{ $asesor->user->email }}</small>
+
+                                <!-- Nama + Email -->
+                                <div class="min-width-0 w-100">
+                                    <h6 class="mb-0 text-truncate">{{ $asesor->user->name }}</h6>
+                                    <span class="badge bg-light text-dark d-block text-break w-100">
+                                        {{ $asesor->user->email }}
+                                    </span>
                                 </div>
                             </div>
+
+                            <!-- Progress -->
                             <div class="mt-3">
                                 <div class="d-flex justify-content-between">
                                     <span>Progress Penilaian:</span>
@@ -360,7 +380,7 @@
             }
 
             htmlAsesors += `
-            <div class="col-md-${total_asesors > 2 ? '4' : '6'} mb-3">
+            <div class="col-md-12 col-lg-6 mb-3">
                 <div class="card asesor-card border-2" style="border-left: 4px solid ${color};" data-asesor-id="${asesor.id}">
                     <div class="card-header asesor-card-header" style="background: ${color};">
                         <div class="d-flex align-items-center justify-content-between">
@@ -376,14 +396,6 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <div class="mb-2">
-                            <small class="text-muted">Skor:</small>
-                            <div>
-                                <span class="skor-display ${getSkorBadgeClass(skor)}">
-                                    ${skor !== null ? skor : '-'}
-                                </span>
-                            </div>
-                        </div>
                         <div class="mb-2">
                             <small class="text-muted">Kategori:</small>
                             <div>
@@ -410,7 +422,7 @@
             if (hasDifference) {
                 const uniqueScores = [...new Set(skorList)];
                 document.getElementById('differenceMessage').textContent =
-                    `Terdapat perbedaan penilaian: Skor ${uniqueScores.join(', ')}`;
+                    `Terdapat perbedaan penilaian: Kategori ${uniqueScores.join(', ')}`;
                 rowDifference.style.display = 'block';
             } else {
                 rowDifference.style.display = 'none';
@@ -789,17 +801,24 @@
                     return;
                 }
             }
-
-            if (status === 'validated' && !skorFinal) {
+            if (!status) {
                 Swal.fire({
                     icon: 'warning'
-                    , title: 'Skor Final Diperlukan'
-                    , text: 'Silakan pilih skor final terlebih dahulu'
+                    , title: 'Status Validasi Diperlukan'
+                    , text: 'Silakan pilih setujui menjadi kategori final, atau minta revisi terlebih dahulu'
+                });
+                return;
+            }
+            if (!skorFinal) {
+                Swal.fire({
+                    icon: 'warning'
+                    , title: 'Kategori Final Diperlukan'
+                    , text: 'Silakan pilih kategori final terlebih dahulu'
                 });
                 return;
             }
 
-            let confirmText = `Anda akan menyetujui penilaian dengan skor: ${skorFinal}`;
+            let confirmText = `Anda akan menyetujui penilaian dengan kategori: ${skorFinal}`;
             if (status === 'revision_required') {
                 const selectedAsesors = Array.from(
                     document.querySelectorAll('input[name="asesor_target_revisi[]"]:checked')
@@ -1057,7 +1076,7 @@
             const color = colors[index % colors.length];
 
             htmlPenilaian += `
-                <div class="col-md-6 mb-3">
+                <div class="col-md-12 col-lg-6 mb-3">
                     <div class="card asesor-penilaian-card asesor-${index + 1}" style="border-left-color: ${color};">
                         <div class="card-body">
                             <div class="d-flex align-items-center mb-2">
@@ -1071,7 +1090,7 @@
                             </div>
 
                             <div class="mb-2">
-                                <small class="text-muted">Skor:</small>
+                                <small class="text-muted">Kategori:</small>
                                 <div>
                                     <span class="badge ${getSkorBadgeClass(pen.skor)}">
                                         ${getSkorLabel(pen.skor)}
@@ -1091,66 +1110,6 @@
         htmlPenilaian += '</div>';
 
         document.getElementById('detailPenilaianAsesor').innerHTML = htmlPenilaian;
-    }
-
-    /**
-     * ============================================
-     * HELPER FUNCTIONS
-     * ============================================
-     */
-    function getSkorLabel(skor) {
-        const labels = {
-            0: '0 - Tidak Memenuhi (Not Met)'
-            , 1: '1 - Belum Memenuhi (Not Met)'
-            , 2: '2 - Lemah (Weakness/Cause of Concern)'
-            , 3: '3 - Memenuhi (Met)'
-            , 4: '4 - Pelampauan Standar'
-        };
-        return labels[skor] || '-';
-    }
-
-    function getSkorLabelShort(skor) {
-        const labels = {
-            0: 'Tidak Memenuhi'
-            , 1: 'Belum Memenuhi'
-            , 2: 'Lemah'
-            , 3: 'Memenuhi'
-            , 4: 'Pelampauan'
-        };
-        return labels[skor] || '-';
-    }
-
-    function getSkorBadgeClass(skor) {
-        const classes = {
-            0: 'bg-danger'
-            , 1: 'bg-warning'
-            , 2: 'bg-warning'
-            , 3: 'bg-success'
-            , 4: 'bg-success'
-        };
-        return classes[skor] || 'bg-secondary';
-    }
-
-    function getSkorButtonClass(skor) {
-        const classes = {
-            0: 'danger'
-            , 1: 'warning'
-            , 2: 'warning'
-            , 3: 'success'
-            , 4: 'success'
-        };
-        return classes[skor] || 'secondary';
-    }
-
-    function getSkorColorJS(skor) {
-        const colors = {
-            0: '#f44336'
-            , 1: '#ff9800'
-            , 2: '#ffeb3b'
-            , 3: '#8bc34a'
-            , 4: '#4caf50'
-        };
-        return colors[skor] || '#9e9e9e';
     }
 
     function formatDateTime(datetime) {

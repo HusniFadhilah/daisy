@@ -12,6 +12,7 @@ use App\Models\AsesmenUserRole;
 use App\Models\AsesmenKecukupan;
 use Illuminate\Support\Facades\DB;
 use App\Models\PengajuanAkreditasi;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 
@@ -113,6 +114,7 @@ class AsesmenController extends Controller
                 ->route('asesmen.show', $asesmen->id)
                 ->with('success', 'Asesmen berhasil dibuat. Silakan assign asesor dan validator.');
         } catch (\Exception $e) {
+            Log::error($e);
             DB::rollBack();
             return redirect()
                 ->back()
@@ -126,30 +128,66 @@ class AsesmenController extends Controller
      */
     public function show($id)
     {
-        $asesmen = Asesmen::with([
-            'userRoles.user',
-            'userRoles.role',
-            'penilaianElemen'
-        ])->findOrFail($id);
+        $asesmen = Asesmen::with(['userRoles.user', 'userRoles.role'])
+            ->findOrFail($id);
 
-        // Get users who are NOT assigned yet
-        $assignedUserIds = $asesmen->userRoles->pluck('id_user')->toArray();
+        $assignedUserIds = $asesmen->userRoles->pluck('id_user');
         $availableUsers = User::whereNotIn('id', $assignedUserIds)
-            ->where('role', '!=', 'admin') // Exclude admin from asesor list
+            ->where('role', '!=', 'admin')
             ->orderBy('name')
             ->get();
 
-        // Get all roles
         $roles = Role::whereIn('name', ['asesor', 'validator'])->orderBy('name')->get();
+        $totalElemens = DB::table('elemen_standar')->count();
 
-        // Calculate completion stats per user
-        $userStats = [];
-        foreach ($asesmen->userRoles as $userRole) {
-            $stats = $this->calculateUserProgress($asesmen->id, $userRole->id_user);
-            $userStats[$userRole->id_user] = $stats;
-        }
+        // Hitung progress bulk
+        $asesorProgress = DB::table('penilaian_elemen')
+            ->where('id_asesmen', $asesmen->id)
+            ->whereNotNull('skor')
+            ->groupBy('id_asesor')
+            ->select('id_asesor', DB::raw('COUNT(*) as completed'))
+            ->pluck('completed', 'id_asesor');
 
-        return view('asesmen.show', compact('asesmen', 'availableUsers', 'roles', 'userStats'));
+        $validatorProgress = DB::table('penilaian_elemen')
+            ->where('id_asesmen', $asesmen->id)
+            ->whereNotNull('validated_at')
+            ->select('validated_by', DB::raw('COUNT(DISTINCT id_elemen) as completed'))
+            ->groupBy('validated_by')
+            ->pluck('completed', 'validated_by');
+
+        // Map ke userRole
+        $userStats = $asesmen->userRoles->mapWithKeys(function ($userRole) use ($asesorProgress, $validatorProgress, $totalElemens) {
+            $completed = $userRole->id_role == 3
+                ? ($asesorProgress[$userRole->id_user] ?? 0)
+                : ($userRole->id_role == 4
+                    ? ($validatorProgress[$userRole->id_user] ?? 0)
+                    : 0
+                );
+
+            $percentage = $totalElemens ? round($completed / $totalElemens * 100, 1) : 0;
+
+            return [$userRole->id_user => [
+                'total' => $totalElemens,
+                'completed' => $completed,
+                'remaining' => $totalElemens - $completed,
+                'percentage' => $percentage,
+            ]];
+        })->toArray();
+
+        // Statistik status AK / AL
+        $asesmenStats = $asesmen->userRoles()
+            ->selectRaw('jenis_asesmen, status_pekerjaan, COUNT(*) as total')
+            ->groupBy('jenis_asesmen', 'status_pekerjaan')
+            ->get()
+            ->groupBy('jenis_asesmen');
+
+        return view('asesmen.show', compact(
+            'asesmen',
+            'availableUsers',
+            'roles',
+            'userStats',
+            'asesmenStats'
+        ));
     }
 
     /**
@@ -182,6 +220,7 @@ class AsesmenController extends Controller
                 ->route('asesmen.show', $asesmen->id)
                 ->with('success', 'Asesmen berhasil diupdate.');
         } catch (\Exception $e) {
+            Log::error($e);
             return redirect()
                 ->back()
                 ->withInput()
@@ -286,6 +325,7 @@ class AsesmenController extends Controller
                 ]
             ]);
         } catch (\Exception $e) {
+            Log::error($e);
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal assign user: ' . $e->getMessage()
@@ -299,8 +339,6 @@ class AsesmenController extends Controller
     public function getRequirementsStatus($id, $jenisAsesmen)
     {
         try {
-            $asesmen = Asesmen::findOrFail($id);
-
             if ($jenisAsesmen === 'ak') {
                 $asesmenKecukupan = AsesmenKecukupan::where('id_asesmen', $id)->first();
 
@@ -321,8 +359,8 @@ class AsesmenController extends Controller
                 return response()->json([
                     'success' => true,
                     'data' => [
-                        'requirements_met' => $asesmenKecukupan->hasMinimumRequirements(),
-                        'missing' => $asesmenKecukupan->getMissingRequirements(),
+                        'requirements_met' => $asesmenKecukupan->hasMinimumRequirementsWithCounts($asesorCount, $validatorCount),
+                        'missing' => $asesmenKecukupan->getMissingRequirementsWithCounts($asesorCount, $validatorCount),
                         'current' => [
                             'asesor' => $asesorCount,
                             'validator' => $validatorCount,
@@ -338,28 +376,27 @@ class AsesmenController extends Controller
                         'success' => true,
                         'data' => [
                             'requirements_met' => false,
-                            'missing' => ['2 asesor', '1 validator'],
-                            'current' => ['asesor' => 0, 'validator' => 0],
+                            'missing' => ['2 asesor'],
+                            'current' => ['asesor' => 0],
                         ]
                     ]);
                 }
 
                 $asesorCount = $asesmenLapangan->asesors()->count();
-                $validatorCount = $asesmenLapangan->validators()->count();
 
                 return response()->json([
                     'success' => true,
                     'data' => [
-                        'requirements_met' => $asesmenLapangan->hasMinimumRequirements(),
-                        'missing' => $asesmenLapangan->getMissingRequirements(),
+                        'requirements_met' => $asesmenLapangan->hasMinimumRequirementsWithCounts($asesorCount),
+                        'missing' => $asesmenLapangan->getMissingRequirementsWithCounts($asesorCount),
                         'current' => [
                             'asesor' => $asesorCount,
-                            'validator' => $validatorCount,
                         ],
                     ]
                 ]);
             }
         } catch (\Exception $e) {
+            Log::error($e);
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
@@ -411,6 +448,7 @@ class AsesmenController extends Controller
                 'data' => $groupedAssignments
             ]);
         } catch (\Exception $e) {
+            Log::error($e);
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
@@ -435,6 +473,7 @@ class AsesmenController extends Controller
                 'data' => $rejected
             ]);
         } catch (\Exception $e) {
+            Log::error($e);
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
@@ -476,6 +515,7 @@ class AsesmenController extends Controller
                 ]
             ]);
         } catch (\Exception $e) {
+            Log::error($e);
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal update role: ' . $e->getMessage()
@@ -489,8 +529,6 @@ class AsesmenController extends Controller
     public function removeUser($id, $userId)
     {
         try {
-            $asesmen = Asesmen::findOrFail($id);
-
             // Get the assignment to check jenis_asesmen
             $assignment = AsesmenUserRole::where('id_asesmen', $id)
                 ->where('id_user', $userId)
@@ -555,6 +593,7 @@ class AsesmenController extends Controller
                 'jenis_asesmen' => $jenisAsesmen // Return for UI update
             ]);
         } catch (\Exception $e) {
+            Log::error($e);
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal hapus user: ' . $e->getMessage()
@@ -634,6 +673,7 @@ class AsesmenController extends Controller
                 ]
             ]);
         } catch (\Exception $e) {
+            Log::error($e);
             DB::rollBack();
             return response()->json([
                 'success' => false,
@@ -665,6 +705,7 @@ class AsesmenController extends Controller
                 ->route('asesmen.index')
                 ->with('success', 'Asesmen berhasil dihapus.');
         } catch (\Exception $e) {
+            Log::error($e);
             return redirect()
                 ->back()
                 ->with('error', 'Gagal hapus asesmen: ' . $e->getMessage());
@@ -683,7 +724,6 @@ class AsesmenController extends Controller
         ]);
 
         try {
-            $asesmen = Asesmen::findOrFail($id);
             $assignedCount = 0;
             $skippedCount = 0;
 
@@ -725,37 +765,13 @@ class AsesmenController extends Controller
                 ]
             ]);
         } catch (\Exception $e) {
+            Log::error($e);
             DB::rollBack();
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal bulk assign: ' . $e->getMessage()
             ], 500);
         }
-    }
-
-    /**
-     * Calculate progress for specific user
-     */
-    private function calculateUserProgress($idAsesmen, $userId)
-    {
-        $totalElemens = DB::table('elemen_standar')->count();
-
-        $completedElemens = DB::table('penilaian_elemen')
-            ->where('id_asesmen', $idAsesmen)
-            ->where('id_asesor', $userId)
-            ->whereNotNull('skor')
-            ->count();
-
-        $percentage = $totalElemens > 0
-            ? round(($completedElemens / $totalElemens) * 100, 1)
-            : 0;
-
-        return [
-            'total' => $totalElemens,
-            'completed' => $completedElemens,
-            'percentage' => $percentage,
-            'remaining' => $totalElemens - $completedElemens,
-        ];
     }
 
     /**

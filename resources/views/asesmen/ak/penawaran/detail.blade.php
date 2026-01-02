@@ -90,8 +90,8 @@
                                     <strong>Periode:</strong><br>
                                     <span class="ms-4">
                                         @if($asesmen->tanggal_mulai && $asesmen->tanggal_selesai)
-                                        {{ \Carbon\Carbon::parse($asesmen->tanggal_mulai)->format('d M Y') }} -
-                                        {{ \Carbon\Carbon::parse($asesmen->tanggal_selesai)->format('d M Y') }}
+                                        {{ \App\Libraries\Date::tglIndo($asesmen->tanggal_mulai) }} -
+                                        {{ \App\Libraries\Date::tglIndo($asesmen->tanggal_selesai) }}
                                         @else
                                         -
                                         @endif

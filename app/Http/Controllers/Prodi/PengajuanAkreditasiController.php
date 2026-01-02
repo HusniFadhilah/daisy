@@ -220,6 +220,7 @@ class PengajuanAkreditasiController extends Controller
                 'keterangan' => 'nullable|string|max:500',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error($e);
             // ✅ Return JSON for validation errors
             if ($request->expectsJson() || $request->ajax()) {
                 return response()->json([
@@ -330,6 +331,11 @@ class PengajuanAkreditasiController extends Controller
 
             return back()->with('success', 'Draft borang berhasil diupload (Versi ' . $newVersion . ').');
         } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Upload draft borang failed: ' . $e->getMessage(), [
+                'pengajuan_id' => $id,
+                'user_id' => $authId,
+                'trace' => $e->getTraceAsString()
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Validasi gagal: ' . implode(', ', $e->errors()['draft_borang'] ?? ['Unknown error']),
@@ -1210,7 +1216,7 @@ class PengajuanAkreditasiController extends Controller
             if ($authUser->role !== 'prodi' && $authUser->id_prodi !== $pengajuan->id_prodi) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Anda tidak memiliki akses untuk mengimport borang ini'
+                    'message' => 'Anda tidak memiliki akses untuk mengupload & memproses borang ini'
                 ], 403);
             }
 

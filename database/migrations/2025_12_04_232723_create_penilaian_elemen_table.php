@@ -22,6 +22,7 @@ return new class extends Migration
             // Status validasi oleh validator
             $table->enum('status_validasi', ['not_validated', 'validated', 'revision_required', 'approved'])
                 ->default('not_validated');
+            $table->integer('preferensi_skor')->nullable()->comment('Skor yang disarankan validator');
             $table->integer('skor_final')->nullable()->comment('Skor final yang disetujui validator');
             $table->text('catatan_validator')->nullable();
 

@@ -48,7 +48,7 @@ $authUser = Auth::user();
 
     <!-- Stats Cards -->
     <div class="row mb-4">
-        <div class="col-md-3">
+        <div class="col-md-4 col-lg-3 mb-2">
             <div class="card text-center border-warning">
                 <div class="card-body">
                     <h3 class="text-warning mb-0">{{ $penawarans->count() }}</h3>
@@ -56,7 +56,7 @@ $authUser = Auth::user();
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4 col-lg-3 mb-2">
             <div class="card text-center border-success">
                 <div class="card-body">
                     <h3 class="text-success mb-0">{{ $riwayat->where('status_penawaran', 'accepted')->count() }}</h3>
@@ -64,7 +64,7 @@ $authUser = Auth::user();
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4 col-lg-3 mb-2">
             <div class="card text-center border-danger">
                 <div class="card-body">
                     <h3 class="text-danger mb-0">{{ $riwayat->where('status_penawaran', 'rejected')->count() }}</h3>
@@ -72,7 +72,7 @@ $authUser = Auth::user();
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4 col-lg-3 mb-2">
             <div class="card text-center border-primary">
                 <div class="card-body">
                     <h3 class="text-primary mb-0">{{ $riwayat->where('status_pekerjaan', 'submitted')->count() }}</h3>
@@ -122,8 +122,8 @@ $authUser = Auth::user();
                                     <strong>Periode:</strong><br>
                                     <span class="ms-4">
                                         @if($penawaran->asesmen->tanggal_mulai && $penawaran->asesmen->tanggal_selesai)
-                                        {{ \Carbon\Carbon::parse($penawaran->asesmen->tanggal_mulai)->format('d M Y') }} -
-                                        {{ \Carbon\Carbon::parse($penawaran->asesmen->tanggal_selesai)->format('d M Y') }}
+                                        {{ \App\Libraries\Date::tglIndo($penawaran->asesmen->tanggal_mulai) }} -
+                                        {{ \App\Libraries\Date::tglIndo($penawaran->asesmen->tanggal_selesai) }}
                                         @else
                                         -
                                         @endif
@@ -269,7 +269,7 @@ $authUser = Auth::user();
                                     <i class="bi bi-arrow-right"></i> Lihat Penilaian
                                 </a>
                                 @elseif($authUser->role_selected == 'validator')
-                                <a href="{{ route('ak.validasi.asesor',['idAsesmen'=>$item->id_asesmen,'asesor1Id'=>$idAsesors[0],'asesor2Id'=>$idAsesors[1]]) }}" class="btn btn-sm btn-outline-primary">
+                                <a href="{{ route('ak.validasi.asesor', ['idAsesmen' => $item['asesmen']->id, 'jenisAsesmen' => 'ak']) }}" class="btn btn-sm btn-outline-primary">
                                     <i class="bi bi-arrow-right"></i> Lihat Penilaian
                                 </a>
                                 @endif

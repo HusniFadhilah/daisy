@@ -224,8 +224,13 @@ $latestImport = $pengajuan->latestBorangImport;
                         <label class="form-label fw-bold">
                             Alasan Upload Ulang <span class="text-danger">*</span>
                         </label>
-                        <textarea name="keterangan" class="form-control" rows="3" placeholder="Contoh: Revisi data mahasiswa tahun 2023, Perbaikan tabel E.1.1" required></textarea>
+                        <textarea name="keterangan" class="form-control @error('keterangan') is-invalid @enderror" rows="3" placeholder="Contoh: Revisi data mahasiswa tahun 2023, Perbaikan tabel E.1.1" required></textarea>
                         <small class="text-muted">Jelaskan perubahan yang dilakukan</small>
+                        @error('keterangan')
+                        <span class="invalid-feedback" role="alert">
+                            {{ $message }}
+                        </span>
+                        @enderror
                     </div>
                 </form>
             </div>
@@ -345,7 +350,7 @@ $latestImport = $pengajuan->latestBorangImport;
         const fileInfo = document.getElementById('fileInfoUpload');
         const fileName = document.getElementById('fileNameUpload');
         const fileSize = document.getElementById('fileSizeUpload');
-        const btnSubmit = document.getElementById('btnSubmitUpload');
+        const btnSubmitUpload = document.getElementById('btnSubmitUpload');
         const btnCancel = document.getElementById('btnCancelUpload');
         const uploadProgress = document.getElementById('uploadProgress');
         const uploadAlert = document.getElementById('uploadAlert');
@@ -396,9 +401,9 @@ $latestImport = $pengajuan->latestBorangImport;
             const formData = new FormData(uploadForm);
 
             // Disable buttons
-            btnSubmit.disabled = true;
+            btnSubmitUpload.disabled = true;
             btnCancel.disabled = true;
-            btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mengupload...';
+            btnSubmitUpload.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mengupload...';
 
             // Show progress
             uploadProgress.classList.remove('d-none');
@@ -451,9 +456,9 @@ $latestImport = $pengajuan->latestBorangImport;
                 showUploadAlert('danger', error.message);
 
                 // Re-enable buttons
-                btnSubmit.disabled = false;
+                btnSubmitUpload.disabled = false;
                 btnCancel.disabled = false;
-                btnSubmit.innerHTML = '<i class="bi bi-upload"></i> Upload Sekarang';
+                btnSubmitUpload.innerHTML = '<i class="bi bi-upload"></i> Upload Sekarang';
                 uploadProgress.classList.add('d-none');
             }
         });

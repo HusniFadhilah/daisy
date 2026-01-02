@@ -16,7 +16,7 @@ class PengajuanAkreditasiPolicy
     public function viewAny(User $user)
     {
         // Prodi can view their own, DE can view assigned
-        return $user->hasRole(['prodi', 'de', 'admin']);
+        return $user->hasRole(['admin_prodi', 'asesi', 'super_admin']);
     }
 
     /**
@@ -30,12 +30,12 @@ class PengajuanAkreditasiPolicy
         }
 
         // DE can view if assigned
-        if ($user->hasRole('de')) {
-            return $pengajuan->id_de_assigned === $user->id;
-        }
+        // if ($user->hasRole('asesi')) {
+        //     return $pengajuan->id_de_assigned === $user->id;
+        // }
 
         // Admin can view all
-        return $user->hasRole('admin');
+        return $user->hasRole(['asesi', 'super_admin']);
     }
 
     /**
@@ -43,7 +43,7 @@ class PengajuanAkreditasiPolicy
      */
     public function create(User $user)
     {
-        return $user->hasRole('prodi');
+        return $user->hasRole('admin_prodi');
     }
 
     /**
@@ -65,7 +65,7 @@ class PengajuanAkreditasiPolicy
     public function delete(User $user, PengajuanAkreditasi $pengajuan)
     {
         // Only admin or prodi (if status still draft) can delete
-        if ($user->hasRole('admin')) {
+        if ($user->hasRole('admin_prodi')) {
             return true;
         }
 
@@ -82,7 +82,7 @@ class PengajuanAkreditasiPolicy
      */
     public function review(User $user, PengajuanAkreditasi $pengajuan)
     {
-        return $user->hasRole('de') && $pengajuan->id_de_assigned === $user->id;
+        return $user->hasRole(['asesi', 'super_admin']) && $pengajuan->id_de_assigned === $user->id;
     }
 
     /**
@@ -90,7 +90,7 @@ class PengajuanAkreditasiPolicy
      */
     public function verifyPayment(User $user, PengajuanAkreditasi $pengajuan)
     {
-        return $user->hasRole('de') && $pengajuan->id_de_assigned === $user->id;
+        return $user->hasRole(['asesi', 'super_admin']) && $pengajuan->id_de_assigned === $user->id;
     }
 
     /**
@@ -98,7 +98,7 @@ class PengajuanAkreditasiPolicy
      */
     public function approveToAK(User $user, PengajuanAkreditasi $pengajuan)
     {
-        return $user->hasRole('de') && $pengajuan->id_de_assigned === $user->id;
+        return $user->hasRole(['asesi', 'super_admin']) && $pengajuan->id_de_assigned === $user->id;
     }
 
     /**
@@ -107,7 +107,7 @@ class PengajuanAkreditasiPolicy
     public function resetBorang(User $user, PengajuanAkreditasi $pengajuan)
     {
         // Only prodi who owns this pengajuan can reset
-        if ($user->role !== 'prodi') {
+        if ($user->role !== 'admin_prodi') {
             return false;
         }
 

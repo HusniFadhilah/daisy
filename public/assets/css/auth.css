@@ -531,6 +531,31 @@
     font-size: 20px;
 }
 
+* Custom Bootstrap Overrides */ .btn-primary {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    border: none;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
+}
+
+.bg-primary {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%) !important;
+}
+
+.text-primary {
+    color: var(--primary) !important;
+}
+
+.badge.bg-primary {
+    background: var(--primary) !important;
+}
+
+.badge.bg-danger {
+    background: var(--danger) !important;
+}
+
 /* Loading State */
 .btn-loading {
     position: relative;

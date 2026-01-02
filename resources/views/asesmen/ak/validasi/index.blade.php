@@ -16,7 +16,6 @@
     }
 
     .asesor-list-item {
-        padding: 15px;
         border: 1px solid #e0e0e0;
         border-radius: 8px;
         margin-bottom: 10px;
@@ -72,7 +71,7 @@
 
     <!-- Stats -->
     <div class="row mb-4">
-        <div class="col-md-3">
+        <div class="col-md-4 col-lg-3 mb-2">
             <div class="card text-center stat-card" data-bs-toggle="modal" data-bs-target="#modalAsesorSubmitted">
                 <div class="card-body">
                     <h3 class="text-warning mb-0">{{ $stats['total_asesor_submitted'] }}</h3>
@@ -83,7 +82,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4 col-lg-3 mb-2">
             <div class="card text-center stat-card" data-bs-toggle="modal" data-bs-target="#modalAsesorPending">
                 <div class="card-body">
                     <h3 class="text-danger mb-0">{{ $stats['total_asesor_pending'] }}</h3>
@@ -94,7 +93,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4 col-lg-3 mb-2">
             <div class="card text-center stat-card">
                 <div class="card-body">
                     <h3 class="text-primary mb-0">{{ $stats['total_needs_validation'] }}</h3>
@@ -105,7 +104,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4 col-lg-3 mb-2">
             <div class="card text-center stat-card">
                 <div class="card-body">
                     <h3 class="text-success mb-0">{{ $stats['total_validated'] }}</h3>
@@ -126,9 +125,9 @@
     @forelse($needsValidation as $item)
     <div class="card asesmen-validasi-card mb-4">
         <div class="card-header bg-primary text-white py-3 ps-4">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h5 class="mb-0">{{ $item['asesmen']->name }}</h5>
+            <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-2">
+                <div class="flex-grow-1">
+                    <h5 class="mb-0 text-wrap text-break">{{ $item['asesmen']->name }}</h5>
                     <small>
                         @if($item['asesmen']->studyProgram)
                         {{ $item['asesmen']->studyProgram->full_name }} -
@@ -136,7 +135,7 @@
                         @endif
                     </small>
                 </div>
-                <div class="text-end">
+                <div class="ms-md-auto text-start text-md-end d-flex flex-wrap gap-1">
                     <span class="badge bg-warning text-dark mb-1">
                         {{ $item['asesors']->count() }} Asesor Submit
                     </span>
@@ -150,9 +149,9 @@
             </div>
         </div>
         <div class="card-body">
-            <div class="d-flex justify-content-between align-items-start mb-3">
-                <div>
-                    <p class="mb-1">
+            <div class="d-flex flex-column flex-md-row align-items-start align-items-md-start gap-2 mb-3">
+                <div class="flex-grow-1">
+                    <p class="mb-1 d-flex align-items-center flex-wrap gap-1">
                         <i class="bi bi-tag"></i> <strong>Kode Panel:</strong>
                         <span class="badge bg-secondary">{{ $item['asesmen']->kode_panel ?? 'N/A' }}</span>
                     </p>
@@ -175,20 +174,21 @@
                 // Check minimum requirements
                 $hasMinimumAsesors = $totalAcceptedAsesors >= 2;
                 @endphp
-
-                @if(!$hasMinimumAsesors)
-                <button class="btn btn-secondary" disabled title="Minimal 2 asesor harus di-assign">
-                    <i class="bi bi-exclamation-triangle"></i> Kurang Asesor
-                </button>
-                @elseif(!$allAsesorsSubmitted)
-                <button class="btn btn-warning" disabled title="Menunggu semua asesor submit penilaian">
-                    <i class="bi bi-clock"></i> Menunggu {{ $item['asesors_pending']->count() }} Asesor Submit
-                </button>
-                @else
-                <a href="{{ route('ak.validasi.asesor', ['idAsesmen' => $item['asesmen']->id, 'jenisAsesmen' => 'ak']) }}" class="btn btn-primary">
-                    <i class="bi bi-check2-square"></i> Validasi Sekarang
-                </a>
-                @endif
+                <div class="ms-md-auto">
+                    @if(!$hasMinimumAsesors)
+                    <button class="btn btn-secondary" disabled title="Minimal 2 asesor harus di-assign">
+                        <i class="bi bi-exclamation-triangle"></i> Kurang Asesor
+                    </button>
+                    @elseif(!$allAsesorsSubmitted)
+                    <button class="btn btn-warning" disabled title="Menunggu semua asesor submit penilaian">
+                        <i class="bi bi-clock"></i> Menunggu {{ $item['asesors_pending']->count() }} Asesor Submit
+                    </button>
+                    @else
+                    <a href="{{ route('ak.validasi.asesor', ['idAsesmen' => $item['asesmen']->id, 'jenisAsesmen' => 'ak']) }}" class="btn btn-primary">
+                        <i class="bi bi-check2-square"></i> Validasi Sekarang
+                    </a>
+                    @endif
+                </div>
             </div>
 
             <h6 class="mb-3">
@@ -206,9 +206,9 @@
             ];
             @endphp
 
-            <div class="asesor-list-item">
-                <div class="row align-items-center">
-                    <div class="col-md-4">
+            <div class="asesor-list-item px-3 pb-3 pt-1">
+                <div class="row align-items-center pt-0">
+                    <div class="col-md-12 col-lg-4 mt-2">
                         <div class="d-flex align-items-center">
                             <div class="avatar-circle me-3">
                                 {{ substr($asesor->user->name, 0, 1) }}
@@ -227,11 +227,11 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-4 col-lg-3 mt-2">
                         <small class="text-muted d-block">Disubmit pada:</small>
                         <strong>{{ \App\Libraries\Date::tglWaktu($asesor->submitted_at) }}</strong>
                     </div>
-                    <div class="col-md-5">
+                    <div class="col-md-8 col-lg-5 mt-2">
                         <small class="text-muted d-block mb-1">Progress Validasi:</small>
                         <div class="progress" style="height: 24px;">
                             <div class="progress-bar bg-{{ $progress['percentage'] == 100 ? 'success' : ($progress['percentage'] > 0 ? 'warning' : 'secondary') }}" role="progressbar" style="width: {{ $progress['percentage'] }}%">
@@ -264,16 +264,16 @@
             </h6>
 
             @foreach($item['asesors_pending'] as $asesor)
-            <div class="asesor-list-item" style="background-color: #fff3cd; border-color: #ffc107;">
+            <div class="asesor-list-item px-3 pb-3 pt-1" style="background-color: #fff3cd; border-color: #ffc107;">
                 <div class="row align-items-center">
-                    <div class="col-md-5">
+                    <div class="col-md-12 col-lg-5">
                         <div class="d-flex align-items-center">
                             <div class="avatar-circle me-3" style="background: #ff9800;">
                                 {{ substr($asesor->user->name, 0, 1) }}
                             </div>
-                            <div>
+                            <div class="min-width-0 w-100">
                                 <div class="fw-semibold">{{ $asesor->user->name }}</div>
-                                <small class="text-muted">{{ $asesor->user->email }}</small>
+                                <small class="text-muted d-block text-break">{{ $asesor->user->email }}</small>
                                 <div class="mt-1">
                                     <span class="badge bg-{{ $asesor->jenis_asesmen === 'ak' ? 'primary' : 'info' }}">
                                         {{ strtoupper($asesor->jenis_asesmen) }}
@@ -285,7 +285,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-8 col-lg-4">
                         <small class="text-muted d-block">Status Pekerjaan:</small>
                         <strong>
                             @if($asesor->status_pekerjaan === 'not_started')
@@ -299,7 +299,7 @@
                             @endif
                         </strong>
                     </div>
-                    <div class="col-md-3 text-end">
+                    <div class="col-md-4 col-lg-3 text-end">
                         <small class="text-muted">Menunggu Submit</small>
                     </div>
                 </div>
@@ -328,16 +328,16 @@
     @foreach($validated as $item)
     <div class="card asesmen-validasi-card mb-3 border-success">
         <div class="card-header bg-success text-white">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="mb-0">{{ $item['asesmen']->name }}</h6>
-                    <small>
+            <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-2">
+                <div class="flex-grow-1">
+                    <h6 class="mb-0 text-wrap text-break">{{ $item['asesmen']->name }}</h6>
+                    <small class="text-wrap text-break">
                         @if($item['asesmen']->studyProgram)
                         {{ $item['asesmen']->studyProgram->full_name }}
                         @endif
                     </small>
                 </div>
-                <span class="badge bg-light text-success">
+                <span class="badge bg-light text-success ms-md-auto">
                     <i class="bi bi-check-circle"></i> Sudah Divalidasi
                 </span>
             </div>
@@ -378,7 +378,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <strong>{{ $asesor->user->name }}</strong>
-                            <br><small class="text-muted">{{ $asesor->user->email }}</small>
+                            <br><small class="text-muted d-block text-break">{{ $asesor->user->email }}</small>
                         </div>
                         <span class="badge bg-warning">Perlu Validasi</span>
                     </div>

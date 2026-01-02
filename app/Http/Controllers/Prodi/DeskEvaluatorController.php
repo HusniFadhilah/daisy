@@ -246,7 +246,7 @@ class DeskEvaluatorController extends Controller
 
                 $this->logStatus($pengajuan, $oldStatus, 'menunggu_pembayaran', 'Review: Siap lanjut, menunggu pembayaran');
 
-                $message = 'Review selesai. Borang SIAP untuk lanjut ke tahap AK. Invoice pembayaran telah dibuat.';
+                $message = 'Review draft borang selesai. Invoice pembayaran telah dibuat. Sedang menunggu UPPS mengupload bukti pembayaran';
             } else {
                 // Langkah 5b: Belum siap
                 $pengajuan->update([

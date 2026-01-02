@@ -106,7 +106,7 @@
                         </div>
                         <div class="mt-2">
                             <small class="text-muted">
-                                <i class="bi bi-calendar"></i> {{ $pengajuan->created_at->format('d M Y') }}
+                                <i class="bi bi-calendar"></i> {{ \App\Libraries\Date::tglIndo($pengajuan->created_at) }}
                                 @if($pengajuan->pengaju)
                                 | <i class="bi bi-person"></i> {{ $pengajuan->pengaju->name }}
                                 @endif

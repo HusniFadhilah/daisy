@@ -143,7 +143,7 @@
                             </td>
                             <td>
                                 <small class="text-muted">
-                                    <i class="bi bi-calendar"></i> {{ $asesmen->created_at->format('d M Y') }}
+                                    <i class="bi bi-calendar"></i> {{ \App\Libraries\Date::tglIndo($asesmen->created_at) }}
                                 </small>
                             </td>
                             <td>

@@ -113,10 +113,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('berkas.reset-all');
 
         Route::prefix('validasi')->name('validasi.')->group(function () {
-            Route::get('/', [ValidasiController::class, 'index'])->name('index');
-            Route::middleware('penawaran.accepted')->group(function () {
-                Route::get('/{idAsesmen}/{jenisAsesmen?}', [ValidasiController::class, 'asesor'])->name('asesor')->where('jenisAsesmen', 'ak|al');
-                Route::get('/{asesmen}/detail/{elemen}', [ValidasiController::class, 'getValidasiDetail'])->name('detail');
+            Route::middleware(['auth', 'role:validator'])->group(function () {
+                Route::get('/', [ValidasiController::class, 'index'])->name('index');
+                Route::middleware('penawaran.accepted')->group(function () {
+                    Route::get('/{idAsesmen}/{jenisAsesmen?}', [ValidasiController::class, 'asesor'])->name('asesor')->where('jenisAsesmen', 'ak|al');
+                    Route::get('/{asesmen}/detail/{elemen}', [ValidasiController::class, 'getValidasiDetail'])->name('detail');
+                });
             });
             Route::get('/{asesmen}/asesor', [ValidasiController::class, 'showAsesorComparison'])
                 ->name('asesor.comparison');
@@ -150,13 +152,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             // === Draft Borang ===
             Route::post('/{id}/upload-draft', [PengajuanAkreditasiController::class, 'uploadDraftBorang'])->name('.upload-draft');
             Route::post('/{id}/process-borang', [PengajuanAkreditasiController::class, 'processBorangDOCX'])->name('.process-borang');
-            Route::get('/{id}/borang-preview', [PengajuanAkreditasiController::class, 'showBorangHTML'])->name('.borang-preview');
 
-            // === Borang Online (Alternative) ===
-            Route::get('/{id}/borang-online', [PengajuanAkreditasiController::class, 'showBorangOnline'])
-                ->name('.borang-online');
-            Route::get('/{id}/borang-online/data', [PengajuanAkreditasiController::class, 'getBorangData'])
-                ->name('.borang-online.data');
             Route::post('/{id}/borang-online/save', [PengajuanAkreditasiController::class, 'saveBorangOnline'])
                 ->name('.borang-online.save');
             Route::post('/{id}/borang-online/save-field', [PengajuanAkreditasiController::class, 'saveBorangField'])
@@ -166,6 +162,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/{id}/borang-online/save-all', [PengajuanAkreditasiController::class, 'saveBorangOnline'])
                 ->name('.borang-online.save-all');
             Route::post('/{id}/borang-online/submit', [PengajuanAkreditasiController::class, 'submitBorangOnline'])->name('.submit');
+            Route::get('/{id}/borang-preview', [PengajuanAkreditasiController::class, 'showBorangHTML'])->name('.borang-preview');
+
+            // === Borang Online (Alternative) ===
+            Route::get('/{id}/borang-online', [PengajuanAkreditasiController::class, 'showBorangOnline'])
+                ->name('.borang-online');
+            Route::get('/{id}/borang-online/data', [PengajuanAkreditasiController::class, 'getBorangData'])
+                ->name('.borang-online.data');
             Route::get('/pengesahan/preview', [PengajuanAkreditasiController::class, 'previewLembarPengesahan'])->name('.pengesahan.preview');
             Route::post('/{id}/borang/import-docx', [PengajuanAkreditasiController::class, 'importBorangDocx'])
                 ->name('.borang.import-docx');

@@ -110,11 +110,11 @@
                                         dari dokumen DOCX
                                     </p>
                                     @if($latestImport)
-                                    <a href="{{ route('de.pengajuan.borang-view', [$pengajuan->id, $latestImport->id]) }}" class="btn btn-primary" target="_blank">
+                                    <a href="{{ route('de.pengajuan.borang-view', [$pengajuan->id, $latestImport->id]) }}" class="btn btn-light" target="_blank">
                                         <i class="bi bi-eye"></i> Lihat Preview
                                     </a>
                                     @else
-                                    <button class="btn btn-primary" disabled>
+                                    <button class="btn btn-light" disabled>
                                         <i class="bi bi-eye-slash"></i> Belum Diproses
                                     </button>
                                     @endif
@@ -303,7 +303,7 @@
 - Format dan struktur borang
 - Saran perbaikan (jika ada)"></textarea>
                                     <small class="text-muted">
-                                        Minimal 50 karakter. Berikan feedback yang konstruktif.
+                                        Minimal 5 karakter. Berikan feedback yang konstruktif.
                                     </small>
                                 </div>
 
@@ -418,7 +418,7 @@
             @push('scripts')
             <script>
                 // Show/hide pembayaran field based on hasil review
-                const hasilReview = document.getElementById('hasilReview')
+                hasilReview = document.getElementById('hasilReview')
                 if (hasilReview) hasilReview.addEventListener('change', function() {
                     const divPembayaran = document.getElementById('divPembayaran');
                     if (this.value === 'siap') {
@@ -479,7 +479,7 @@
                     <div class="alert alert-info alert-permanent">
                         <strong>Invoice:</strong> {{ $pengajuan->pembayaran->nomor_invoice }}<br>
                         <strong>Jumlah:</strong> Rp {{ number_format($pengajuan->pembayaran->jumlah_pembayaran, 0, ',', '.') }}<br>
-                        <strong>Tanggal Pembayaran:</strong> {{ $pengajuan->pembayaran->tanggal_pembayaran->format('d M Y') }}
+                        <strong>Tanggal Pembayaran:</strong> {{ \App\Libraries\Date::tglIndo($pengajuan->pembayaran->tanggal_pembayaran) }}
                     </div>
 
                     <form action="{{ route('de.pengajuan.verifikasi-pembayaran', $pengajuan->id) }}" method="POST">
@@ -656,14 +656,14 @@
                         <div class="col-md-6 mb-2">
                             <label class="text-muted small">Jatuh Tempo</label>
                             <p class="fw-bold mb-0">
-                                {{ $pengajuan->pembayaran->tanggal_jatuh_tempo->format('d M Y') }}
+                                {{ \App\Libraries\Date::tglIndo($pengajuan->pembayaran->tanggal_jatuh_tempo) }}
                             </p>
                         </div>
                         @if($pengajuan->pembayaran->tanggal_pembayaran)
                         <div class="col-md-6 mb-2">
                             <label class="text-muted small">Tanggal Pembayaran</label>
                             <p class="fw-bold mb-0">
-                                {{ $pengajuan->pembayaran->tanggal_pembayaran->format('d M Y') }}
+                                {{ \App\Libraries\Date::tglIndo($pengajuan->pembayaran->tanggal_pembayaran) }}
                             </p>
                         </div>
                         @endif
@@ -867,7 +867,7 @@
 @push('scripts')
 <script>
     // Show/hide pembayaran field based on hasil review
-    let hasilReview = document.getElementById('hasilReview')
+    hasilReview = document.getElementById('hasilReview')
     if (hasilReview) hasilReview.addEventListener('change', function() {
         const divPembayaran = document.getElementById('divPembayaran');
         if (this.value === 'siap') {

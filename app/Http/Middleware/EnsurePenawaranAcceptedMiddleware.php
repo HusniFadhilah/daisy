@@ -31,6 +31,8 @@ class EnsurePenawaranAcceptedMiddleware
             abort(403, 'Anda tidak memiliki penawaran untuk asesmen ini.');
         }
 
+        if ($assignment->id_user != $user->id) abort(403, 'Mohon maaf, Anda tidak diizinkan membuka halaman berikut');
+
         // enum: 'pending', 'accepted', 'rejected'
         if ($assignment->status_penawaran !== 'accepted') {
             // Belum accept (pending / rejected) → arahkan ke halaman cek penawaran

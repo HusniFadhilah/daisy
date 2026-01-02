@@ -3,10 +3,7 @@
     <div class="card-body">
         <div class="d-flex justify-content-between align-items-start mb-2">
             <div>
-                <h6 class="fw-bold mb-1">{{ $period['label'] }}</h6>
-                <small class="text-muted">
-                    {{ $period['start_date']->format('d M') }} - {{ $period['end_date']->format('d M Y') }}
-                </small>
+                <h6 class="fw-bold mb-0">{{ $period['label'] }}</h6>
             </div>
             @if($period['is_urgent'])
             <span class="badge bg-danger">
@@ -14,6 +11,9 @@
             </span>
             @endif
         </div>
+        <small class="text-muted">
+            {{ \App\Libraries\Date::tglIndo($period['start_date'],false) }} - {{ \App\Libraries\Date::tglIndo($period['end_date'],false) }}
+        </small>
 
         <div class="text-center my-3">
             <h2 class="mb-0 fw-bold {{ $period['count'] > 0 ? 'text-danger' : 'text-success' }}">
@@ -46,7 +46,7 @@
             </div>
             <div class="modal-body">
                 <p class="text-muted">
-                    Periode: {{ $period['start_date']->format('d M Y') }} - {{ $period['end_date']->format('d M Y') }}
+                    Periode: {{ \App\Libraries\Date::tglIndo($period['start_date']) }} - {{ \App\Libraries\Date::tglIndo($period['end_date']) }}
                 </p>
                 <div class="table-responsive">
                     <table class="table table-hover">
@@ -77,7 +77,7 @@
                                     @endif
                                 </td>
                                 <td>
-                                    {{ $prog->tanggal_kedaluwarsa->format('d M Y') }}
+                                    {{ \App\Libraries\Date::tglIndo($prog->tanggal_kedaluwarsa) }}
                                     <br>
                                     <small class="text-danger">
                                         {{ floor(now()->diffInDays($prog->tanggal_kedaluwarsa)) }} hari lagi

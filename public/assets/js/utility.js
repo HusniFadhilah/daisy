@@ -190,6 +190,50 @@ function textColorByBgJS(hex) {
         : '#fff';
 }
 
+function getSkorLabel(skor) {
+    const labels = {
+        0: '0 - Tidak Memenuhi (Not Met)'
+        , 1: '1 - Belum Memenuhi (Not Met)'
+        , 2: '2 - Lemah (Weakness/Cause of Concern)'
+        , 3: '3 - Memenuhi (Met)'
+        , 4: '4 - Pelampauan Standar'
+    };
+    return labels[skor] || '-';
+}
+
+function getSkorLabelShort(skor) {
+    const labels = {
+        0: 'Tidak Memenuhi'
+        , 1: 'Belum Memenuhi'
+        , 2: 'Lemah'
+        , 3: 'Memenuhi'
+        , 4: 'Pelampauan'
+    };
+    return labels[skor] || '-';
+}
+
+function getSkorBadgeClass(skor) {
+    const classes = {
+        0: 'bg-danger'
+        , 1: 'bg-warning'
+        , 2: 'bg-warning'
+        , 3: 'bg-success'
+        , 4: 'bg-success'
+    };
+    return classes[skor] || 'bg-secondary';
+}
+
+function getSkorButtonClass(skor) {
+    const classes = {
+        0: 'danger'
+        , 1: 'warning'
+        , 2: 'warning'
+        , 3: 'success'
+        , 4: 'success'
+    };
+    return classes[skor] || 'secondary';
+}
+
 async function fetchJSON(url, options = {}) {
     try {
         // Ensure we request JSON

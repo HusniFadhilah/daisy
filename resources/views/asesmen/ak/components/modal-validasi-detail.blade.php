@@ -1,5 +1,5 @@
 <div class="modal fade" id="modalValidasiDetail" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
+    <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable modal-fullscreen-sm-down">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title">
@@ -70,7 +70,7 @@
                                 {{-- Quick Select Buttons (Dynamic) --}}
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">
-                                        <i class="bi bi-lightning"></i> Quick Select Skor:
+                                        <i class="bi bi-lightning"></i> Quick Select Kategori:
                                     </label>
                                     <div class="btn-group w-100" role="group" id="quickSelectButtons">
                                         {{-- Populated by JS --}}
@@ -91,11 +91,11 @@
 
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label fw-bold">
-                                            Skor Final
+                                            Kategori Final
                                             <span class="text-danger" id="labelSkorRequired">*</span>
                                         </label>
                                         <select class="form-select" id="skorFinal">
-                                            <option value="">-- Pilih Skor --</option>
+                                            <option value="">-- Pilih Kategori --</option>
                                             <option value="0">0 - Tidak Memenuhi (Not Met)</option>
                                             <option value="1">1 - Belum Memenuhi (Not Met)</option>
                                             <option value="2">2 - Lemah (Weakness/Cause of Concern)</option>

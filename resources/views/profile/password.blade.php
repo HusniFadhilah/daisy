@@ -190,7 +190,7 @@
                 <small class="text-muted" id="matchText"></small>
             </div>
 
-            <div class="alert alert-warning">
+            <div class="alert alert-warning alert-permanent">
                 <i class="bi bi-exclamation-triangle me-2"></i>
                 <strong>Perhatian:</strong> Setelah mengubah password, Anda akan tetap login pada sesi ini.
                 Namun Anda perlu menggunakan password baru untuk login di perangkat lain.

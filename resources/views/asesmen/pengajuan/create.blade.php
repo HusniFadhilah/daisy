@@ -126,7 +126,12 @@
                             <label class="form-label fw-bold">
                                 Catatan/Keterangan Tambahan
                             </label>
-                            <textarea name="catatan_pengaju" class="form-control" rows="4" placeholder="Masukkan catatan atau keterangan tambahan jika ada...">{{ old('catatan_pengaju') }}</textarea>
+                            <textarea name="catatan_pengaju" class="form-control @error('catatan_pengaju') is-invalid @enderror" rows="4" placeholder="Masukkan catatan atau keterangan tambahan jika ada...">{{ old('catatan_pengaju') }}</textarea>
+                            @error('catatan_pengaju')
+                            <span class="invalid-feedback" role="alert">
+                                {{ $message }}
+                            </span>
+                            @enderror
                         </div>
 
                         <!-- Buttons -->

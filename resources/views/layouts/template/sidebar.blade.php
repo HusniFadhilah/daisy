@@ -46,7 +46,7 @@ $authUser = Auth::user();
         </a>
 
         <!-- Profil & Pengaturan -->
-        <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'profil-submenu')">
+        <a href="#" class="nav-link {{ request()->routeIs('profile*') ? 'active' : '' }}" onclick="toggleSubmenu(event, 'profil-submenu')">
             <span class="menu-icon">👤</span>
             <span>Profil & Pengaturan</span>
         </a>

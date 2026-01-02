@@ -86,15 +86,24 @@ class AsesmenLapangan extends Model
         $missing = [];
 
         $asesorCount = $this->asesors()->count();
-        $validatorCount = $this->validators()->count();
 
         if ($asesorCount < 2) {
             $missing[] = 'Kurang ' . (2 - $asesorCount) . ' asesor';
         }
 
-        if ($validatorCount < 1) {
-            $missing[] = 'Kurang ' . (1 - $validatorCount) . ' validator';
-        }
+        return $missing;
+    }
+
+    public function hasMinimumRequirementsWithCounts(int $asesorCount): bool
+    {
+        return $asesorCount >= 2;
+    }
+
+    public function getMissingRequirementsWithCounts(int $asesorCount): array
+    {
+        $missing = [];
+
+        if ($asesorCount < 2) $missing[] = 'Kurang ' . (2 - $asesorCount) . ' asesor';
 
         return $missing;
     }

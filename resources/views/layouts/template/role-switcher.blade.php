@@ -78,7 +78,7 @@
                 }
 
                 // Reload page to apply new role
-                window.location.reload();
+                window.location.href = "{{ route('dashboard') }}";
             } else {
                 throw new Error(data.message);
             }

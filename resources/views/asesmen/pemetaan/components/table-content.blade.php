@@ -31,7 +31,7 @@
                         <div class="alert alert-warning alert-permanent mb-2 py-2">
                             <small>
                                 <i class="bi bi-clock"></i>
-                                <strong>Kedaluwarsa:</strong> {{ $program->tanggal_kedaluwarsa->format('d M Y') }}
+                                <strong>Kedaluwarsa:</strong> {{ \App\Libraries\Date::tglIndo($program->tanggal_kedaluwarsa) }}
                                 ({{ $daysLeft }} hari lagi)
                             </small>
                         </div>
@@ -104,7 +104,7 @@
                         </td>
                         <td>
                             @if($program->tanggal_kedaluwarsa)
-                            <small>{{ $program->tanggal_kedaluwarsa->format('d M Y') }}</small>
+                            <small>{{ \App\Libraries\Date::tglIndo($program->tanggal_kedaluwarsa) }}</small>
                             @else
                             <small class="text-muted">-</small>
                             @endif

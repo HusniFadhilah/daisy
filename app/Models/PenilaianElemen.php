@@ -19,6 +19,7 @@ class PenilaianElemen extends Model
         'komentar',
         'status',
         'status_validasi',
+        'preferensi_skor',
         'skor_final',
         'catatan_validator',
         'validated_by',
@@ -75,36 +76,5 @@ class PenilaianElemen extends Model
     public function validasi()
     {
         return $this->hasOne(ValidasiPenilaian::class, 'id_penilaian');
-    }
-
-    /**
-     * Get skor label
-     */
-    public function getSkorLabelAttribute()
-    {
-        $labels = [
-            0 => 'Tidak Memenuhi (Not Met)',
-            1 => 'Belum Memenuhi (Not Met)',
-            2 => 'Lemah (Weakness/Cause of Concern)',
-            3 => 'Memenuhi (Met)',
-            4 => 'Pelampauan Standar',
-        ];
-
-        return $labels[$this->skor] ?? 'N/A';
-    }
-
-    /**
-     * Get skor class for styling
-     */
-    public function getSkorClassAttribute()
-    {
-        $classes = [
-            0 => 'danger',
-            1 => 'danger',
-            2 => 'warning',
-            3 => 'success',
-        ];
-
-        return $classes[$this->skor] ?? 'secondary';
     }
 }

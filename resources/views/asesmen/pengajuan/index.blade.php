@@ -93,7 +93,7 @@
 
                         <small class="text-muted">
                             <i class="bi bi-clock"></i>
-                            {{ $pengajuan->created_at->format('d M Y') }}
+                            {{ \App\Libraries\Date::tglIndo($pengajuan->created_at) }}
                         </small>
 
                         @if($pengajuan->deskEvaluator)

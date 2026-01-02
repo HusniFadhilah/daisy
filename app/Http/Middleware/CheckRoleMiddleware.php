@@ -28,7 +28,7 @@ class CheckRoleMiddleware
         }
 
         if ($request->isMethod('get')) {
-            abort(403);
+            abort(403, 'Maaf, role Anda yaitu <strong>' . e($user->role_selected) . '</strong> tidak memiliki izin untuk mengakses halaman ini. Silakan hubungi administrator jika Anda merasa ini adalah kesalahan.');
         } else if ($request->isMethod('post')) {
             return redirect('/');
         } else {

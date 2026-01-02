@@ -12,17 +12,17 @@
     </div>
 
     @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
     @endif
 
     @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
     @endif
 
     <div class="card">
@@ -50,7 +50,7 @@
                                     {{ ucfirst($user->role) }}
                                 </span>
                             </td>
-                            <td>{{ $user->created_at->format('d M Y') }}</td>
+                            <td>{{ \App\Libraries\Date::tglIndo($user->created_at) }}</td>
                             <td>
                                 <div class="btn-group" role="group">
                                     <a href="{{ route('users.show', $user->id) }}" class="btn btn-sm btn-info text-white" title="Detail">

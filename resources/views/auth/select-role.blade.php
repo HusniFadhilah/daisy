@@ -20,12 +20,12 @@ return $icons[$roleName] ?? 'person';
 function getRoleDescription($roleName) {
 $descriptions = [
 'super_admin' => 'Akses penuh ke seluruh sistem',
-'asesi' => 'Desk Evaluator - Review dan evaluasi pengajuan',
+'asesi' => 'LAMDEPILAR - Review dan evaluasi asesmen akreditasi',
 'asesor' => 'Melakukan penilaian dokumen akreditasi',
 'validator' => 'Validasi hasil penilaian asesor',
 'verifikator' => 'Verifikasi dokumen dan data',
 'admin_univ' => 'Administrator Perguruan Tinggi',
-'admin_prodi' => 'Administrator Program Studi',
+'admin_prodi' => 'Unit Pengelola Program Studi',
 'default' => 'Pengguna umum',
 ];
 return $descriptions[$roleName] ?? 'User role';

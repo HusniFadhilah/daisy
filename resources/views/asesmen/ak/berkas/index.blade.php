@@ -194,22 +194,23 @@
 
                 <div class="card-body">
                     {{-- Header --}}
-                    <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="d-flex justify-content-between align-items-start">
                         <div class="flex-grow-1 me-2">
                             <h5 class="card-title mb-1">
                                 {{ $asesmen->name }}
                             </h5>
-                            <small class="text-muted">
-                                <i class="bi bi-building"></i>
-                                {{ $asesmen->studyProgram->full_name ?? 'N/A' }}
-                            </small>
                         </div>
-
                         {{-- Status Badge --}}
                         <span class="badge badge-sm {{ $statusInfo['badge_class'] }} flex-shrink-0">
                             <i class="{{ $statusInfo['badge_icon'] }}"></i>
                             {{ $statusInfo['badge_text'] }}
                         </span>
+                    </div>
+                    <div class="mb-3">
+                        <small class="text-muted">
+                            <i class="bi bi-building"></i>
+                            {{ $asesmen->studyProgram->full_name ?? 'N/A' }}
+                        </small>
                     </div>
 
                     {{-- Description --}}
@@ -257,11 +258,10 @@
                             </small>
                             <small class="text-muted">
                                 <i class="bi bi-calendar3"></i>
-                                {{ $asesmen->created_at->format('d M Y') }}
+                                {{ \App\Libraries\Date::tglIndo($asesmen->created_at) }}
                             </small>
                         </div>
                     </div>
-
                     {{-- Additional Info for Submitted/Approved --}}
                     @if(in_array($assignment->status_pekerjaan, ['submitted', 'approved']))
                     <div class="alert alert-info alert-permanent py-2 mb-3">

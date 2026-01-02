@@ -13,8 +13,7 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Admin user
-        User::insert([
+        $users = [
             [
                 'name' => 'Superadmin',
                 'email' => 'superadmin@daisy.lamdepilar.or.id',
@@ -22,9 +21,6 @@ class UserSeeder extends Seeder
                 'role' => 'admin',
                 'role_selected' => 'super_admin',
                 'roles' => json_encode(['super_admin']),
-                'email_verified_at' => now(),
-                'created_at' => now(),
-                'updated_at' => now(),
             ],
             [
                 'name' => 'Sekretariat LAMDEPILAR',
@@ -33,9 +29,6 @@ class UserSeeder extends Seeder
                 'role' => 'admin',
                 'role_selected' => 'asesi',
                 'roles' => json_encode(['asesi']),
-                'email_verified_at' => now(),
-                'created_at' => now(),
-                'updated_at' => now(),
             ],
             [
                 'name' => 'Budi Santoso',
@@ -44,14 +37,7 @@ class UserSeeder extends Seeder
                 'role' => 'user',
                 'role_selected' => 'asesi',
                 'roles' => json_encode(['asesi']),
-                'email_verified_at' => now(),
-                'created_at' => now(),
-                'updated_at' => now(),
             ],
-        ]);
-
-        // Regular users
-        $users = [
             [
                 'name' => 'Asesor 1',
                 'email' => 'asesor1@daisy.lamdepilar.or.id',

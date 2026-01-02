@@ -263,13 +263,17 @@
                             <th width="10%">Kriteria</th>
                             <th width="10%">Kode Elemen</th>
                             <th width="25%">Elemen Standar</th>
-                            <th width="10%">Skor Anda</th>
+                            <th width="10%">Kategori Penilaian Anda</th>
+                            <th width="10%">Preferensi Validator</th>
                             <th width="35%">Catatan Validator</th>
                             <th width="10%">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($needsRevisions as $revisi)
+                        @php
+                        $preferensiSkor = $revisi->preferensi_skor;
+                        @endphp
                         <tr>
                             <td>
                                 <span class="badge bg-primary">
@@ -283,7 +287,14 @@
                                 <small>{{ Str::limit($revisi->elemen->pernyataan_elemen, 80) }}</small>
                             </td>
                             <td class="text-center">
-                                <span class="badge bg-secondary">{{ $revisi->skor }}</span>
+                                <span class="badge" style="background-color: {{ \App\Models\JenjangPenilaian::getSkorColor($revisi->skor) }}; color: {{ \App\Models\JenjangPenilaian::textColorByBg(\App\Models\JenjangPenilaian::getSkorColor($revisi->skor)) }}">{{ \App\Models\JenjangPenilaian::getSkorLabelAttribute($revisi->skor, true) }}</span>
+                            </td>
+                            <td class="text-center">
+                                @if($preferensiSkor)
+                                <span class="badge" style="background-color: {{ \App\Models\JenjangPenilaian::getSkorColor($preferensiSkor) }}; color: {{ \App\Models\JenjangPenilaian::textColorByBg(\App\Models\JenjangPenilaian::getSkorColor($preferensiSkor)) }}">{{ \App\Models\JenjangPenilaian::getSkorLabelAttribute($preferensiSkor, true) }}</span>
+                                @else
+                                Tidak ada
+                                @endif
                             </td>
                             <td>
                                 <div class="alert alert-light alert-permanent mb-0 p-2">
@@ -339,7 +350,7 @@
                     <li>Klik <strong>sel di matriks visualisasi penilaian</strong> untuk langsung membuka elemen penilaian dan menilai elemen tersebut</li>
                     <li>Pilih kategori penilaian:
                         @foreach ($jenjangs as $jenjang)
-                        <span class="badge" style="background:{{ $jenjang->color }}; color: {{ \App\Libraries\Fungsi::textColorByBg($jenjang->color) }}">
+                        <span class="badge text-wrap text-break" style="background:{{ $jenjang->color }}; color: {{ \App\Models\JenjangPenilaian::textColorByBg($jenjang->color) }}">
                             {{ $jenjang->skor }} - {{ $jenjang->name }}
                         </span>
                         @endforeach
@@ -408,8 +419,8 @@
                         <div class="card mb-3 elemen-card @if($hasPenilaian) has-penilaian @endif" data-elemen-id="{{ $elemen->id }}">
                             <!-- Pernyataan Standar Header -->
                             <div class="card-header elemen-header" id="heading-elemen-{{ $elemen->id }}">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <button class="btn btn-link elemen-btn collapsed d-flex align-items-center w-100" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-elemen-{{ $elemen->id }}" aria-expanded="false" aria-controls="collapse-elemen-{{ $elemen->id }}">
+                                <div class="d-md-flex justify-content-between align-items-center">
+                                    <button class="btn btn-link elemen-btn collapsed d-flex flex-column flex-md-row align-items-start align-items-md-center w-100 gap-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-elemen-{{ $elemen->id }}" aria-expanded="false" aria-controls="collapse-elemen-{{ $elemen->id }}">
 
                                         <i class="bi bi-chevron-right me-2 chevron-icon"></i>
 
@@ -553,14 +564,14 @@
 
                                 <div class="panduan-penilaian-wrapper mb-4">
                                     <div class="card border-info">
-                                        <div class="card-header bg-success bg-opacity-10 d-flex justify-content-between align-items-center">
+                                        <div class="card-header bg-success bg-opacity-10 d-flex flex-column flex-md-row align-items-start align-items-md-center gap-2">
                                             <h6 class="mb-0">
                                                 <i class="bi bi-table me-2"></i>
                                                 <strong>📊 Panduan Penilaian per Kategori</strong>
                                             </h6>
 
                                             {{-- optional: collapse --}}
-                                            <button class="btn btn-sm btn-outline-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePanduanTable{{ $elemen->id }}" aria-expanded="false" aria-controls="collapsePanduanTable{{ $elemen->id }}">
+                                            <button class="btn btn-sm btn-outline-dark ms-md-auto align-self-md-center" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePanduanTable{{ $elemen->id }}" aria-expanded="false" aria-controls="collapsePanduanTable{{ $elemen->id }}">
                                                 <i class="bi bi-chevron-down"></i> Tampilkan
                                             </button>
                                         </div>
@@ -579,7 +590,7 @@
                                                             <tr>
                                                                 @foreach($jenjangList as $jenjang)
                                                                 <th class="text-center">
-                                                                    <span class="badge" style="background: {{ $jenjang->color }}; color: {{ \App\Libraries\Fungsi::textColorByBg($jenjang->color) }}">
+                                                                    <span class="badge" style="background: {{ $jenjang->color }}; color: {{ \App\Models\JenjangPenilaian::textColorByBg($jenjang->color) }}">
                                                                         {{ $jenjang->skor }}
                                                                     </span>
                                                                 </th>
@@ -641,6 +652,9 @@
                                         <div class="card-body">
                                             {{-- Alert Revisi --}}
                                             @if($needsRevisionElemen)
+                                            @php
+                                            $preferensiSkor = $penilaian->preferensi_skor;
+                                            @endphp
                                             <div class="alert alert-warning alert-permanent alert-dismissible mb-3">
                                                 <div class="row">
                                                     <div class="col-md-8">
@@ -651,45 +665,28 @@
                                                     </div>
 
                                                     {{-- ✅ SKOR FINAL VALIDATOR --}}
+                                                    @if($preferensiSkor)
                                                     <div class="col-md-4">
                                                         <div class="card border-primary bg-light">
                                                             <div class="card-body p-3 text-center">
                                                                 <small class="text-muted d-block mb-2">
-                                                                    <i class="bi bi-star-fill"></i> Preferensi Skor Validator:
+                                                                    <i class="bi bi-star-fill"></i> Preferensi Kategori oleh Validator:
                                                                 </small>
                                                                 <div class="skor-validator-display mb-2">
-                                                                    @php
-                                                                    $skorFinal = $penilaian->skor_final ?? $penilaian->skor;
-                                                                    $skorBadgeClass = match($skorFinal) {
-                                                                    0, 1 => 'bg-danger',
-                                                                    2 => 'bg-warning text-dark',
-                                                                    3, 4 => 'bg-success',
-                                                                    default => 'bg-secondary'
-                                                                    };
-                                                                    $skorLabel = match($skorFinal) {
-                                                                    0 => '0 - Tidak Memenuhi',
-                                                                    1 => '1 - Belum Memenuhi',
-                                                                    2 => '2 - Lemah',
-                                                                    3 => '3 - Memenuhi',
-                                                                    4 => '4 - Pelampauan',
-                                                                    default => 'N/A'
-                                                                    };
-                                                                    @endphp
-
-                                                                    <span class="badge {{ $skorBadgeClass }}" style="font-size: 1.5rem; padding: 0.75rem 1.25rem;">
-                                                                        <strong>{{ $skorFinal }}</strong>
+                                                                    <span class="badge" style="font-size: 1.5rem; padding: 0.75rem 1.25rem; background: {{ \App\Models\JenjangPenilaian::getSkorColor($preferensiSkor) }}">
+                                                                        <strong>{{ $preferensiSkor }}</strong>
                                                                     </span>
                                                                 </div>
 
-                                                                <small class="text-muted">{{ $skorLabel }}</small>
-
+                                                                <small class="text-muted">{{ \App\Models\JenjangPenilaian::getSkorLabelAttribute($preferensiSkor) }}</small>
                                                                 {{-- Quick Action Button --}}
-                                                                <button type="button" class="btn btn-sm btn-primary w-100 mt-2 btn-use-validator-score" data-skor="{{ $skorFinal }}" data-elemen-id="{{ $elemen->id }}" title="Gunakan skor yang direkomendasikan validator">
-                                                                    <i class="bi bi-lightning-charge"></i> Gunakan Skor Ini
+                                                                <button type="button" class="btn btn-sm btn-primary w-100 mt-2 btn-use-validator-score" data-skor="{{ $preferensiSkor }}" data-elemen-id="{{ $elemen->id }}" title="Gunakan kategori penilaian yang direkomendasikan validator">
+                                                                    <i class="bi bi-lightning-charge"></i> Gunakan Kategori Ini
                                                                 </button>
                                                             </div>
                                                         </div>
                                                     </div>
+                                                    @endif
                                                 </div>
 
                                                 <hr>
@@ -716,21 +713,11 @@
                                                         </label>
                                                         <select class="form-select skor-select" name="skor" required>
                                                             <option value="">-- Pilih Kategori --</option>
-                                                            <option value="0" @if($hasPenilaian && $penilaian->skor == 0) selected @endif>
-                                                                0 - Tidak Memenuhi (Not Met)
+                                                            @foreach ($jenjangs as $jenjang)
+                                                            <option value="{{ $jenjang->skor }}" @if($hasPenilaian && $penilaian->skor == $jenjang->skor) selected @endif>
+                                                                {{ $jenjang->skor }} - {{ $jenjang->name }}
                                                             </option>
-                                                            <option value="1" @if($hasPenilaian && $penilaian->skor == 1) selected @endif>
-                                                                1 - Belum Memenuhi (Not Met)
-                                                            </option>
-                                                            <option value="2" @if($hasPenilaian && $penilaian->skor == 2) selected @endif>
-                                                                2 - Lemah (Weakness)
-                                                            </option>
-                                                            <option value="3" @if($hasPenilaian && $penilaian->skor == 3) selected @endif>
-                                                                3 - Memenuhi (Met)
-                                                            </option>
-                                                            <option value="4" @if($hasPenilaian && $penilaian->skor == 4) selected @endif>
-                                                                4 - Pelampauan Standar (Exceeding)
-                                                            </option>
+                                                            @endforeach
                                                         </select>
                                                     </div>
                                                     <div class="col-md-8">
@@ -745,8 +732,8 @@
                                                     </div>
                                                 </div>
 
-                                                <div class="d-flex justify-content-between align-items-center">
-                                                    <div class="save-status text-muted small">
+                                                <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-2">
+                                                    <div class="save-status text-muted small d-flex align-items-center flex-wrap">
                                                         <i class="bi bi-cloud-check"></i>
                                                         <span class="status-text">
                                                             @if($hasPenilaian)
@@ -756,7 +743,7 @@
                                                             @endif
                                                         </span>
                                                     </div>
-                                                    <div class="btn-group">
+                                                    <div class="btn-group ms-md-auto">
                                                         <button type="button" class="btn btn-sm btn-outline-secondary btn-reset">
                                                             <i class="bi bi-arrow-counterclockwise"></i> Reset
                                                         </button>
@@ -2552,7 +2539,7 @@
                 toast: true
                 , position: 'top-end'
                 , icon: 'success'
-                , title: `Skor ${skor} diterapkan!`
+                , title: `Kategori ${skor} diterapkan!`
                 , text: 'Silakan perbarui komentar/justifikasi Anda'
                 , showConfirmButton: false
                 , timer: 3000
@@ -2561,7 +2548,7 @@
 
             // Reset button after 3 seconds
             setTimeout(() => {
-                this.innerHTML = '<i class="bi bi-lightning-charge"></i> Gunakan Skor Ini';
+                this.innerHTML = '<i class="bi bi-lightning-charge"></i> Gunakan Kategori Ini';
                 this.classList.remove('btn-success');
                 this.classList.add('btn-primary');
             }, 3000);
