@@ -81,7 +81,6 @@ return new class extends Migration
 
             // Timestamps
             $table->timestamps();
-            $table->softDeletes();
 
             // Indexes
             $table->index('id_asesmen');
@@ -140,7 +139,6 @@ return new class extends Migration
 
             // Timestamps
             $table->timestamps();
-            $table->softDeletes();
 
             // Indexes
             $table->index('id_asesmen');

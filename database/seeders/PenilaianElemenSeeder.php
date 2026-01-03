@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\PenilaianElemenAK;
+use App\Models\PenilaianElemenAk;
 use App\Models\Asesmen;
 use App\Models\ElemenStandar;
 
@@ -32,7 +32,7 @@ class PenilaianElemenSeeder extends Seeder
 
         // Buat penilaian dummy dengan skor random 0-3
         foreach ($elemens as $elemen) {
-            PenilaianElemenAK::updateOrCreate(
+            PenilaianElemenAk::updateOrCreate(
                 [
                     'id_asesmen' => $asesmen->id,
                     'id_user' => 1, // Admin user

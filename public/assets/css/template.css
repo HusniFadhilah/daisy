@@ -76,6 +76,42 @@ h5 {
     background: var(--danger) !important;
 }
 
+.badge-outline-primary {
+    color: var(--primary);
+    border: 1px solid var(--primary);
+    background-color: transparent;
+}
+
+.badge-outline-secondary {
+    color: var(--secondary);
+    border: 1px solid var(--secondary);
+    background-color: transparent;
+}
+
+.badge-outline-info {
+    color: var(--info);
+    border: 1px solid var(--info);
+    background-color: transparent;
+}
+
+.badge-outline-warning {
+    color: var(--warning);
+    border: 1px solid var(--warning);
+    background-color: transparent;
+}
+
+.badge-outline-success {
+    color: var(--success);
+    border: 1px solid var(--success);
+    background-color: transparent;
+}
+
+.badge-outline-danger {
+    color: var(--danger);
+    border: 1px solid var(--danger);
+    background-color: transparent;
+}
+
 /* Top Navigation Bar */
 .top-navbar {
     background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);

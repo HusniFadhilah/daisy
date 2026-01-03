@@ -1,6 +1,6 @@
 @extends('layouts.template.app')
 
-@section('title', 'Daftar Berkas Penilaian AK')
+@section('title', 'Daftar Berkas Penilaian AL')
 
 
 @push('styles')
@@ -28,10 +28,10 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h2 class="mb-1">
-                        <i class="bi bi-clipboard-check"></i> Daftar Berkas Penilaian AK
+                        <i class="bi bi-clipboard-check"></i> Daftar Berkas Penilaian AL
                     </h2>
                     <p class="mb-0 opacity-75">
-                        Kelola dan lakukan penilaian akreditasi perguruan tinggi
+                        Kelola dan lakukan penilaian lapangan pada akreditasi perguruan tinggi
                     </p>
                 </div>
                 <div class="text-end">
@@ -50,7 +50,7 @@
             </h6>
         </div>
         <div class="card-body">
-            <form method="GET" action="{{ route('ak.berkas') }}" class="row g-3">
+            <form method="GET" action="{{ route('al.berkas') }}" class="row g-3">
                 <div class="col-md-4">
                     <label class="form-label">Pencarian</label>
                     <div class="input-group">
@@ -81,21 +81,11 @@
                     <label class="form-label">Status Pekerjaan</label>
                     <select name="status_pekerjaan" class="form-select">
                         <option value="">Semua Status</option>
-                        <option value="not_started" {{ request('status_pekerjaan') == 'not_started' ? 'selected' : '' }}>
-                            Belum Mulai
+                        @foreach($statusPekerjaan as $key => $status)
+                        <option value="{{ $key }}" {{ request('status_pekerjaan') === $key ? 'selected' : '' }}>
+                            {{ $status['label'] }}
                         </option>
-                        <option value="in_progress" {{ request('status_pekerjaan') == 'in_progress' ? 'selected' : '' }}>
-                            Sedang Dikerjakan
-                        </option>
-                        <option value="submitted" {{ request('status_pekerjaan') == 'submitted' ? 'selected' : '' }}>
-                            Sudah Di-submit
-                        </option>
-                        <option value="revision_required" {{ request('status_pekerjaan') == 'revision_required' ? 'selected' : '' }}>
-                            Perlu Revisi
-                        </option>
-                        <option value="approved" {{ request('status_pekerjaan') == 'approved' ? 'selected' : '' }}>
-                            Disetujui
-                        </option>
+                        @endforeach
                     </select>
                 </div>
 
@@ -105,7 +95,7 @@
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-search"></i> Cari
                         </button>
-                        <a href="{{ route('ak.berkas') }}" class="btn btn-outline-secondary btn-sm">
+                        <a href="{{ route('al.berkas') }}" class="btn btn-outline-secondary btn-sm">
                             <i class="bi bi-arrow-clockwise"></i> Reset
                         </a>
                     </div>
@@ -180,17 +170,7 @@
         <div class="col-md-6 col-lg-6 col-xl-4 mb-4">
             <div class="card asesmen-card h-100">
                 {{-- Status Indicator Corner --}}
-                @if($assignment->status_pekerjaan == 'approved')
-                <div class="status-indicator"></div>
-                @elseif($assignment->status_pekerjaan == 'revision_required')
-                <div class="status-indicator revision"></div>
-                @elseif($assignment->status_pekerjaan == 'in_progress')
-                <div class="status-indicator in-progress"></div>
-                @elseif($assignment->status_penawaran == 'pending')
-                <div class="status-indicator pending"></div>
-                @elseif($assignment->status_penawaran == 'rejected')
-                <div class="status-indicator rejected"></div>
-                @endif
+                <div class="status-indicator {{ $assignment->status_indicator }}"></div>
 
                 <div class="card-body">
                     {{-- Header --}}
@@ -293,7 +273,7 @@
                         </a>
                         @else
                         {{-- Button ke berkas show --}}
-                        <a href="{{ route('ak.berkas.show', $asesmen->id) }}" class="btn {{ $statusInfo['button_class'] }}" @if($statusInfo['button_disabled']) disabled @endif>
+                        <a href="{{ route('al.berkas.show', $asesmen->id) }}" class="btn {{ $statusInfo['button_class'] }}" @if($statusInfo['button_disabled']) disabled @endif>
                             <i class="{{ $statusInfo['button_icon'] }}"></i>
                             {{ $statusInfo['button_text'] }}
                         </a>
@@ -301,7 +281,7 @@
 
                         {{-- Secondary Actions --}}
                         @if($assignment->status_penawaran === 'accepted' && $assignment->status_pekerjaan !== 'not_started')
-                        <a href="{{ route('ak.berkas.show', $asesmen->id) }}" class="btn btn-sm btn-outline-secondary">
+                        <a href="{{ route('al.berkas.show', $asesmen->id) }}" class="btn btn-sm btn-outline-secondary">
                             <i class="bi bi-eye"></i> Lihat Detail
                         </a>
                         @endif

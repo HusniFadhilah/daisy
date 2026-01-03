@@ -793,6 +793,17 @@ class PenilaianExcelService
 
         // Build data rows
         $this->renderPenilaianAKRows($sheet, $asesmen);
+
+        // 🔒 LOCK SEMUA CELL
+        $sheet->getStyle($sheet->calculateWorksheetDimension())
+            ->getProtection()
+            ->setLocked(Protection::PROTECTION_PROTECTED);
+
+        // 🔐 AKTIFKAN SHEET PROTECTION
+        $sheet->getProtection()->setSheet(true);
+        $sheet->getProtection()->setPassword('lamdepilar'); // opsional
+        $sheet->getProtection()->setSelectLockedCells(false);
+        $sheet->getProtection()->setSelectUnlockedCells(false);
     }
 
     /**

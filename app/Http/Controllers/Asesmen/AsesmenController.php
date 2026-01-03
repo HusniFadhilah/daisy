@@ -235,12 +235,15 @@ class AsesmenController extends Controller
             ];
         })->toArray();
 
+        $statusPekerjaan = AsesmenUserRole::STATUS_PEKERJAAN;
+
         return view('asesmen.show', compact(
             'asesmen',
             'availableUsers',
             'roles',
             'userStats',
-            'asesmenStats'
+            'asesmenStats',
+            'statusPekerjaan'
         ));
     }
 
@@ -596,13 +599,13 @@ class AsesmenController extends Controller
             }
 
             // Check if user has any penilaian
-            $hasPenilaianElemenAK = DB::table('penilaian_elemen_ak')->where('id_asesmen', $id)
+            $hasPenilaianElemenAk = DB::table('penilaian_elemen_ak')->where('id_asesmen', $id)
                 ->where(function ($query) use ($userId) {
                     $query->where('id_asesor', $userId)->orWhere('validated_by', $userId);
                 })->exists();
-            $hasPenilaianElemenAL = DB::table('penilaian_elemen_al')->where('id_asesmen', $id)->where('id_asesor', $userId)->exists();
+            $hasPenilaianElemenAl = DB::table('penilaian_elemen_al')->where('id_asesmen', $id)->where('id_asesor', $userId)->exists();
 
-            if ($hasPenilaianElemenAK || $hasPenilaianElemenAL) {
+            if ($hasPenilaianElemenAk || $hasPenilaianElemenAl) {
                 return response()->json([
                     'success' => false,
                     'message' => 'User tidak bisa dihapus karena sudah melakukan penilaian. Hapus penilaian terlebih dahulu.'
@@ -746,7 +749,7 @@ class AsesmenController extends Controller
             $asesmen = Asesmen::findOrFail($id);
 
             // Check if has penilaian
-            $hasPenilaian = $asesmen->penilaianElemenAK()->exists() || $asesmen->penilaianElemenAL()->exists();
+            $hasPenilaian = $asesmen->penilaianElemenAk()->exists() || $asesmen->penilaianElemenAl()->exists();
 
             if ($hasPenilaian) {
                 return redirect()

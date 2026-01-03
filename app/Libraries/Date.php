@@ -156,17 +156,23 @@ class Date
 
     public static function tglWaktu($date, $lang = 'id', $isFull = true)
     {
-        return $lang == 'id' ? self::tglIndo($date) . ' pukul ' . self::pukul($date) : self::indoDate($date, $isFull) . ' at ' . self::pukul($date);
+        $checkTgl = $lang == 'id' ? self::tglIndo($date, $isFull) : self::indoDate($date, $isFull);
+        if (trim($checkTgl) !== '') return $checkTgl . ($lang == 'id' ? ' pukul ' : ' at ') . self::pukul($date);
+        else return '-';
     }
 
     public static function hariTglWaktu($date, $lang = 'id', $isFull = true)
     {
-        return self::hari($date, $lang) . ', ' . ($lang == 'id' ? self::tglIndo($date, $isFull) . ' pukul ' . self::pukul($date) : self::indoDate($date, $isFull) . ' ay ' . self::pukul($date));
+        $checkTgl = $lang == 'id' ? self::tglIndo($date, $isFull) : self::indoDate($date, $isFull);
+        if (trim($checkTgl) !== '') return $lang == 'id' ? (self::hari($date, $lang) . ', ' . $checkTgl) : $checkTgl;
+        else return '-';
     }
 
     public static function hariTgl($date, $lang = 'id', $isFull = true)
     {
-        return self::hari($date, $lang) . ', ' . ($lang == 'id' ? self::tglIndo($date, $isFull) : self::indoDate($date, $isFull));
+        $checkTgl = $lang == 'id' ? self::tglIndo($date, $isFull) : self::indoDate($date, $isFull);
+        if (trim($checkTgl) !== '') return $lang == 'id' ? (self::hari($date, $lang) . ', ' . $checkTgl) : $checkTgl;
+        else return '-';
     }
 
     public static function tglDefault($date)

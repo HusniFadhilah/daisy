@@ -1,11 +1,14 @@
 <!-- Heatmap Matrix Component - Enhanced with Merged Cells -->
 <div class="card mb-4 shadow-sm">
     <div class="card-header bg-white border-bottom">
-        <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center">
             <h5 class="mb-0">
                 <i class="bi bi-grid-3x3"></i> Matriks Visualisasi Penilaian
             </h5>
-            <div class="btn-group btn-group-sm">
+            <div class="btn-group btn-group-sm flex-wrap">
+                <button type="button" class="btn btn-outline-info" id="btnViewComparison" data-id-asesmen="{{ $asesmen->id }}" data-jenis-asesmen="ak" title="Lihat Perbandingan Asesor">
+                    <i class="bi bi-people"></i> Lihat Perbandingan Asesor
+                </button>
                 <button type="button" class="btn btn-outline-primary" id="btnZoomIn" title="Perbesar">
                     <i class="bi bi-zoom-in"></i>
                 </button>
@@ -80,9 +83,9 @@
 
                     @foreach($kriteria->elemenStandar as $elemen)
                     @php
-                    // Get penilaianElemenAK for this elemen (not indikator!)
-                    $penilaianElemenAK = $elemen->penilaianElemenAK->first(); // Assuming relation exists
-                    $hasPenilaian = $penilaianElemenAK && $penilaianElemenAK->skor !== null;
+                    // Get penilaianElemenAk for this elemen (not indikator!)
+                    $penilaianElemenAk = $elemen->penilaianElemenAk->first(); // Assuming relation exists
+                    $hasPenilaian = $penilaianElemenAk && $penilaianElemenAk->skor !== null;
                     @endphp
                     <tr>
                         {{-- CETAK MERGED CELL HANYA DI ROW PERTAMA --}}
@@ -99,11 +102,11 @@
                         </td>
 
                         {{-- Kolom Pemenuhan --}}
-                        <td class="matrix-cell" data-elemen-id="{{ $elemen->id }}" data-kriteria-id="{{ $kriteria->id }}" data-col="pemenuhan" style="background-color: {{ $hasPenilaian ? $penilaianElemenAK->skor == 4 ? '#e0e0e0' : \App\Models\JenjangPenilaian::getSkorColor($penilaianElemenAK->skor) : '#e0e0e0' }}">
+                        <td class="matrix-cell" data-elemen-id="{{ $elemen->id }}" data-kriteria-id="{{ $kriteria->id }}" data-col="pemenuhan" style="background-color: {{ $hasPenilaian ? $penilaianElemenAk->skor == 4 ? '#e0e0e0' : \App\Models\JenjangPenilaian::getSkorColor($penilaianElemenAk->skor) : '#e0e0e0' }}">
                         </td>
 
                         {{-- Kolom Pelampauan --}}
-                        <td class="matrix-cell" data-elemen-id="{{ $elemen->id }}" data-kriteria-id="{{ $kriteria->id }}" data-col="pelampauan" style="background-color: {{ $hasPenilaian ? $penilaianElemenAK->skor == 4 ? \App\Models\JenjangPenilaian::getSkorColor(4) : '#e0e0e0' : '#e0e0e0' }}">
+                        <td class="matrix-cell" data-elemen-id="{{ $elemen->id }}" data-kriteria-id="{{ $kriteria->id }}" data-col="pelampauan" style="background-color: {{ $hasPenilaian ? $penilaianElemenAk->skor == 4 ? \App\Models\JenjangPenilaian::getSkorColor(4) : '#e0e0e0' : '#e0e0e0' }}">
                         </td>
                     </tr>
                     @endforeach

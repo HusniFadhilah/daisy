@@ -7,8 +7,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PengajuanAkreditasi extends Model
 {
-    use SoftDeletes;
-
     protected $table = 'pengajuan_akreditasi';
 
     protected $fillable = [

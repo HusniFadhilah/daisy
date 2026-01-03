@@ -161,19 +161,11 @@
                 </div>
 
                 @php
-                // Get total accepted asesors for this asesmen
-                $totalAcceptedAsesors = \App\Models\AsesmenUserRole::where('id_asesmen', $item['asesmen']->id)
-                ->where('jenis_asesmen', 'ak')
-                ->where('status_penawaran', 'accepted')
-                ->whereHas('role', fn($q) => $q->where('name', 'asesor'))
-                ->count();
-
-                // Check if all asesors have submitted
-                $allAsesorsSubmitted = $item['asesors_pending']->count() === 0 && $item['asesors']->count() >= 2;
-
-                // Check minimum requirements
+                $totalAcceptedAsesors = $item['total_accepted_asesors'];
+                $allAsesorsSubmitted = $item['asesors_pending']->isEmpty() && $item['asesors']->count() >= 2;
                 $hasMinimumAsesors = $totalAcceptedAsesors >= 2;
                 @endphp
+
                 <div class="ms-md-auto">
                     @if(!$hasMinimumAsesors)
                     <button class="btn btn-secondary" disabled title="Minimal 2 asesor harus di-assign">

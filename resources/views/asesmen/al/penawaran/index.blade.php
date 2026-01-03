@@ -212,15 +212,19 @@ $authUser = Auth::user();
                         @foreach($riwayat as $key=> $item)
                         @php
                         $idAsesors = $item->where('id_asesmen',$item->id_asesmen)->whereNot('id_user', $authUser->id)->pluck('id_user');
+                        $jenisAsesmen = $item->jenis_asesmen;
                         @endphp
                         <tr>
                             <td>{{ $key+1 }}</td>
                             <td>
                                 <div class="fw-semibold">{{ $item->asesmen->name }}</div>
-                                <small class="text-muted">{{ $item->asesmen->perguruan_tinggi }}</small>
+                                <small class="text-muted text-block">
+                                    <i class="bi bi-building"></i>
+                                    {{ $item->asesmen->studyProgram->full_name ?? 'N/A' }}
+                                </small>
                             </td>
                             <td>
-                                <span class="badge bg-primary">{{ $item->role->alias }}</span>
+                                <span class="badge bg-primary">{{ $item->role->alias.' '.strtoupper($jenisAsesmen) }}</span>
                             </td>
                             <td>
                                 @if($item->status_penawaran === 'accepted')
@@ -265,11 +269,11 @@ $authUser = Auth::user();
                             <td>
                                 @if($item->status_penawaran === 'accepted')
                                 @if($authUser->role_selected == 'asesor')
-                                <a href="{{ route('ak.berkas.show',$item->id_asesmen) }}" class="btn btn-sm btn-outline-primary">
+                                <a href="{{ route($jenisAsesmen.'.berkas.show',$item->id_asesmen) }}" class="btn btn-sm btn-outline-primary">
                                     <i class="bi bi-arrow-right"></i> Lihat Penilaian
                                 </a>
                                 @elseif($authUser->role_selected == 'validator')
-                                <a href="{{ route('ak.validasi.asesor', ['idAsesmen' => $item['asesmen']->id, 'jenisAsesmen' => 'ak']) }}" class="btn btn-sm btn-outline-primary">
+                                <a href="{{ route($jenisAsesmen.'.validasi.asesor', ['idAsesmen' => $item['asesmen']->id, 'jenisAsesmen' => 'ak']) }}" class="btn btn-sm btn-outline-primary">
                                     <i class="bi bi-arrow-right"></i> Lihat Penilaian
                                 </a>
                                 @endif

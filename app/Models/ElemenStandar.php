@@ -30,14 +30,14 @@ class ElemenStandar extends Model
         return $this->hasMany(Pernyataan::class, 'id_elemen');
     }
 
-    public function penilaianElemenAK()
+    public function penilaianElemenAk()
     {
-        return $this->hasMany(new PenilaianElemenAK, 'id_elemen');
+        return $this->hasMany(new PenilaianElemenAk, 'id_elemen');
     }
 
-    public function penilaianElemenAL()
+    public function penilaianElemenAl()
     {
-        return $this->hasMany(PenilaianElemenAL::class, 'id_elemen');
+        return $this->hasMany(PenilaianElemenAl::class, 'id_elemen');
     }
 
     public function indikatorPenilaian()

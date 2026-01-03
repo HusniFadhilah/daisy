@@ -177,17 +177,7 @@
                 </div>
             </div>
         </div>
-        @php
-        $statuses = [
-        'not_started' => 'Belum Mulai',
-        'in_progress' => 'Sedang Dikerjakan',
-        'submitted' => 'Submitted',
-        'validated' => 'Tervalidasi',
-        'revision_required' => 'Perlu Revisi',
-        'approved' => 'Disetujui',
-        ];
-        @endphp
-        @foreach ($statuses as $key => $label)
+        @foreach($statusPekerjaan as $key => $status)
         <div class="col-md-4 col-lg-3 my-2">
             <div class="card text-center">
                 <div class="card-body">
@@ -196,7 +186,7 @@
                     ->firstWhere('status_pekerjaan', $key)
                     ->total ?? 0 }}
                     </h3>
-                    <small class="text-muted">AK - {{ $label }}</small>
+                    <small class="text-muted">AK - {{ $status['label'] }}</small>
                 </div>
             </div>
         </div>
@@ -326,7 +316,7 @@
                                     <th style="max-width: 150px;">Email</th>
                                     <th style="width: 150px;">Jenis Asesmen</th>
                                     <th style="min-width: 120px;">Role</th>
-                                    <th style="width: 150px;">Status Penawaran</th>
+                                    <th style="width: 150px;">Status</th>
                                     <th style="width: 150px;">Progress</th>
                                     <th style="width: 120px;">Ditugaskan</th>
                                     <th style="width: 100px;">Aksi</th>
@@ -371,7 +361,7 @@
                                     </td>
                                     <td>
                                         @if($statusPenawaran === 'accepted')
-                                        <select class="form-select form-select-sm" onchange="updateUserRole({{ $userRole->id }}, this.value)">
+                                        <select class="form-select form-select-sm" onchange="updateUserRole({{ $userRole->id }}, this.value)" disabled>
                                             @foreach($roles as $role)
                                             <option value="{{ $role->id }}" {{ $userRole->id_role == $role->id ? 'selected' : '' }}>
                                                 {{ $role->alias }}
@@ -383,14 +373,34 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <span class="badge bg-{{ $statusBadge['class'] }}">
-                                            <i class="bi bi-{{ $statusBadge['icon'] }}"></i>
-                                            {{ $statusBadge['text'] }}
-                                        </span>
+                                        <div>
+                                            <small>Status penawaran:</small>
+                                            {{-- Badge Status Penawaran --}}
+                                            <span class="badge bg-{{ $statusBadge['class'] }} d-inline-flex align-items-center">
+                                                <i class="bi bi-{{ $statusBadge['icon'] }} me-1"></i>
+                                                {{ $statusBadge['text'] }}
+                                            </span>
+                                        </div>
+
+                                        {{-- Badge Status Pekerjaan --}}
+                                        @if($statusPenawaran === 'accepted' && $userRole->status_pekerjaan)
+                                        <div class="mt-2">
+                                            <small>Status pekerjaan:</small>
+                                            <span class="badge badge-outline-{{ $userRole->status_badge }}">
+                                                <i class="bi bi-{{ $userRole->status_icon }}"></i>
+                                                {{ $userRole->status_label }}
+                                            </span>
+                                        </div>
+                                        @endif
+
+                                        {{-- Tooltip jika ditolak --}}
                                         @if($statusPenawaran === 'rejected' && $userRole->response_note)
-                                        <button class="btn btn-sm btn-link p-0 ms-1" data-bs-toggle="tooltip" title="{{ $userRole->response_note }}">
-                                            <i class="bi bi-info-circle"></i>
-                                        </button>
+                                        <div class="mt-2">
+                                            <small>Alasan penolakan:</small>
+                                            <button class="btn btn-sm btn-link p-0 ms-1" data-bs-toggle="tooltip" title="{{ $userRole->response_note }}">
+                                                <i class="bi bi-info-circle"></i>
+                                            </button>
+                                        </div>
                                         @endif
                                     </td>
                                     <td>
@@ -765,7 +775,7 @@
                 `;
 
                 users.forEach(user => {
-                    const statusBadge = getStatusBadge(user.status_pekerjaan);
+                    const statusBadge = getStatusPekerjaanBadge(user.status_pekerjaan);
                     const urutanText = user.urutan_asesor ? ` #${user.urutan_asesor}` : '';
 
                     // ✅ ADD: Status penawaran indicator
@@ -828,7 +838,7 @@
      * GET STATUS BADGE
      * ============================================
      */
-    function getStatusBadge(status) {
+    function getStatusPekerjaanBadge(status) {
         const badges = {
             'not_started': {
                 color: 'secondary'

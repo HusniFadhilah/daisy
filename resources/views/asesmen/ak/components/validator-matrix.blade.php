@@ -173,9 +173,9 @@
                 $groupHasDiff = $kriteria->elemenStandar->some(function($elemen) use ($asesors) {
                 $skors = [];
                 foreach ($asesors as $asesor) {
-                $penilaian = $elemen->penilaian->where('id_asesor', $asesor->id_user)->first();
-                if ($penilaian && $penilaian->skor !== null) {
-                $skors[] = $penilaian->skor;
+                $penilaianElemenAk = $elemen->penilaianElemenAk->where('id_asesor', $asesor->id_user)->first();
+                if ($penilaianElemenAk && $penilaianElemenAk->skor !== null) {
+                $skors[] = $penilaianElemenAk->skor;
                 }
                 }
                 return count(array_unique($skors)) > 1;
@@ -190,15 +190,15 @@
                     $skors = [];
 
                     foreach ($asesors as $asesor) {
-                    $penilaian = $elemen->penilaian->where('id_asesor', $asesor->id_user)->first();
-                    $penilaians[$asesor->id_user] = $penilaian;
-                    if ($penilaian && $penilaian->skor !== null) {
-                    $skors[] = $penilaian->skor;
+                    $penilaianElemenAk = $elemen->penilaianElemenAk->where('id_asesor', $asesor->id_user)->first();
+                    $penilaians[$asesor->id_user] = $penilaianElemenAk;
+                    if ($penilaianElemenAk && $penilaianElemenAk->skor !== null) {
+                    $skors[] = $penilaianElemenAk->skor;
                     }
                     }
 
                     $hasDifference = count(array_unique($skors)) > 1;
-                    $validasi = $elemen->penilaian->where('status_validasi', '!=', 'not_validated')->first();
+                    $validasi = $elemen->penilaianElemenAk->where('status_validasi', '!=', 'not_validated')->first();
                     @endphp
 
                     <tr class="validator-row" data-elemen-id="{{ $elemen->id }}" @if($hasDifference) data-has-diff="true" @endif>

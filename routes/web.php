@@ -112,6 +112,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/berkas/{idAsesmen}/reset-all', [AKController::class, 'resetAllPenilaian'])
             ->name('berkas.reset-all');
 
+        Route::get('/berkas/{asesmen}/comparison-data', [AKController::class, 'getComparisonData'])->name('berkas.comparison-data');
+
         Route::prefix('validasi')->name('validasi.')->group(function () {
             Route::middleware(['auth', 'role:validator'])->group(function () {
                 Route::get('/', [ValidasiController::class, 'index'])->name('index');
@@ -158,6 +160,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('berkas.import-history');
         Route::delete('/berkas/{idAsesmen}/reset-all', [ALController::class, 'resetAllPenilaian'])
             ->name('berkas.reset-all');
+
+        Route::get('/berkas/{asesmen}/comparison-data', [AKController::class, 'getComparisonData'])->name('berkas.comparison-data');
     });
 
     // ========== PRODI ROUTES - Pengajuan Akreditasi ==========
@@ -256,28 +260,30 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
     });
 
-    Route::resource('asesmen', AsesmenController::class);
-    Route::resource('kriteria', KriteriaController::class);
-    Route::resource('elemen', ElemenStandarController::class);
-    Route::resource('jenis-indikator', JenisIndikatorController::class);
-    Route::resource('indikator', IndikatorController::class);
+    Route::middleware(['auth', 'role:super_admin,asesi'])->group(function () {
+        Route::resource('asesmen', AsesmenController::class);
+        Route::resource('kriteria', KriteriaController::class);
+        Route::resource('elemen', ElemenStandarController::class);
+        Route::resource('jenis-indikator', JenisIndikatorController::class);
+        Route::resource('indikator', IndikatorController::class);
 
-    // Dashboard Overview
-    Route::prefix('asesmen')->name('asesmen')->group(function () {
-        Route::get('/dashboard', [AsesmenController::class, 'dashboard'])->name('.dashboard');
-        // Assignment Management (AJAX Endpoints)
-        Route::post('/{id}/assign-user', [AsesmenController::class, 'assignUser'])->name('.assign-user');
-        Route::post('/{id}/bulk-assign', [AsesmenController::class, 'bulkAssign'])->name('.bulk-assign');
-        Route::post('/{id}/reassign-user', [AsesmenController::class, 'reassignUser'])->name('.reassign-user');
-        Route::post('/{id}/update-role', [AsesmenController::class, 'updateUserRole'])->name('.update-role');
-        Route::delete('/{id}/remove-user/{userId}', [AsesmenController::class, 'removeUser'])->name('.remove-user');
-        // Search Users (AJAX)
-        Route::get('/search-users', [AsesmenController::class, 'searchUsers'])->name('.search-users');
-        Route::post('/{id}/send-documents', [AsesmenController::class, 'sendDocuments'])->name('.send-documents');
+        // Dashboard Overview
+        Route::prefix('asesmen')->name('asesmen')->group(function () {
+            Route::get('/dashboard', [AsesmenController::class, 'dashboard'])->name('.dashboard');
+            // Assignment Management (AJAX Endpoints)
+            Route::post('/{id}/assign-user', [AsesmenController::class, 'assignUser'])->name('.assign-user');
+            Route::post('/{id}/bulk-assign', [AsesmenController::class, 'bulkAssign'])->name('.bulk-assign');
+            Route::post('/{id}/reassign-user', [AsesmenController::class, 'reassignUser'])->name('.reassign-user');
+            Route::post('/{id}/update-role', [AsesmenController::class, 'updateUserRole'])->name('.update-role');
+            Route::delete('/{id}/remove-user/{userId}', [AsesmenController::class, 'removeUser'])->name('.remove-user');
+            // Search Users (AJAX)
+            Route::get('/search-users', [AsesmenController::class, 'searchUsers'])->name('.search-users');
+            Route::post('/{id}/send-documents', [AsesmenController::class, 'sendDocuments'])->name('.send-documents');
 
-        Route::get('/{id}/requirements/{jenisAsesmen}', [AsesmenController::class, 'getRequirementsStatus'])->name('.requirements')->where('jenisAsesmen', 'ak|al');
-        Route::get('/{id}/rejected/{jenisAsesmen}', [AsesmenController::class, 'getRejectedAssignments'])->name('.rejected')->where('jenisAsesmen', 'ak|al');
-        Route::get('/{id}/assignments/{jenisAsesmen}', [AsesmenController::class, 'getAssignments'])->name('.assignments')->where('jenisAsesmen', 'ak|al');
+            Route::get('/{id}/requirements/{jenisAsesmen}', [AsesmenController::class, 'getRequirementsStatus'])->name('.requirements')->where('jenisAsesmen', 'ak|al');
+            Route::get('/{id}/rejected/{jenisAsesmen}', [AsesmenController::class, 'getRejectedAssignments'])->name('.rejected')->where('jenisAsesmen', 'ak|al');
+            Route::get('/{id}/assignments/{jenisAsesmen}', [AsesmenController::class, 'getAssignments'])->name('.assignments')->where('jenisAsesmen', 'ak|al');
+        });
     });
 
     Route::middleware('under.dev')->group(function () {

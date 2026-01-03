@@ -37,14 +37,14 @@ class Asesmen extends Model
         return $this->hasMany(AsesmenUserRole::class, 'id_asesmen');
     }
 
-    public function penilaianElemenAK()
+    public function penilaianElemenAk()
     {
-        return $this->hasMany(new PenilaianElemenAK, 'id_asesmen');
+        return $this->hasMany(new PenilaianElemenAk, 'id_asesmen');
     }
 
-    public function penilaianElemenAL()
+    public function penilaianElemenAl()
     {
-        return $this->hasMany(PenilaianElemenAL::class, 'id_asesmen');
+        return $this->hasMany(PenilaianElemenAl::class, 'id_asesmen');
     }
 
     public function users()

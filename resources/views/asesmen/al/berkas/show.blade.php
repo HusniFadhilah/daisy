@@ -1,6 +1,6 @@
 @extends('layouts.template.app')
 
-@section('title', 'Penilaian AK - ' . $asesmen->name)
+@section('title', 'Penilaian AL - ' . $asesmen->name)
 
 @push('styles')
 <style>
@@ -70,10 +70,10 @@
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
-                    <h3 class="mb-1">Penilaian Asesmen Kecukupan</h3>
+                    <h3 class="mb-1">Penilaian Asesmen Lapangan</h3>
                     <p class="text-muted mb-0">{{ $asesmen->name }}</p>
                 </div>
-                <a href="{{ route('ak.berkas') }}" class="btn btn-outline-secondary">
+                <a href="{{ route('al.berkas') }}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left"></i> Kembali
                 </a>
             </div>
@@ -125,7 +125,7 @@
                     @if($isSubmittedOnly && !$isApproved && app()->environment('local'))
                     <div class="alert alert-info alert-permanent alert-dismissible mb-3">
                         <i class="bi bi-info-circle me-2"></i>
-                        <strong>Sudah Di-Submit!</strong> Penilaian Anda sedang menunggu validasi dari validator.
+                        <strong>Sudah Di-Submit!</strong> Penilaian Anda sedang menunggu persetujuan dari DE LAMDEPILAR.
                         <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="btnUnsubmit">
                             <i class="bi bi-arrow-counterclockwise"></i> Batalkan Submit
                         </button>
@@ -135,8 +135,7 @@
                     @if($isApproved)
                     <div class="alert alert-success alert-permanent alert-dismissible mb-3">
                         <i class="bi bi-check-circle me-2"></i>
-                        <strong>Penilaian Disetujui!</strong> Penilaian Anda telah divalidasi dan disetujui oleh validator.
-                        Asesmen siap dilanjutkan ke tahap Asesmen Lapangan (AL).
+                        <strong>Penilaian Disetujui!</strong> Penilaian Anda pada tahap Asesmen Lapangan (AL) telah divalidasi dan disetujui oleh DE LAMDEPILAR.
                     </div>
                     @endif
 
@@ -241,89 +240,9 @@
             </div>
         </div>
     </div>
-    @if($needsRevisions->count() > 0)
-    <div class="card mb-4 border-warning">
-        <div class="card-header bg-warning text-dark">
-            <h5 class="mb-0">
-                <i class="bi bi-exclamation-triangle"></i>
-                Permintaan Revisi dari Validator ({{ $needsRevisions->count() }} Elemen)
-            </h5>
-        </div>
-        <div class="card-body">
-            <div class="alert alert-warning alert-permanent alert-dismissible mb-3">
-                <i class="bi bi-info-circle me-2"></i>
-                <strong>Validator meminta Anda merevisi beberapa penilaian.</strong>
-                Silakan perhatikan catatan validator di bawah dan lakukan perbaikan.
-            </div>
-
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead class="table-light">
-                        <tr>
-                            <th width="10%">Kriteria</th>
-                            <th width="10%">Kode Elemen</th>
-                            <th width="25%">Elemen Standar</th>
-                            <th width="10%">Kategori Penilaian Anda</th>
-                            <th width="10%">Preferensi Validator</th>
-                            <th width="35%">Catatan Validator</th>
-                            <th width="10%">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($needsRevisions as $revisi)
-                        @php
-                        $preferensiSkor = $revisi->preferensi_skor;
-                        @endphp
-                        <tr>
-                            <td>
-                                <span class="badge bg-primary">
-                                    {{ $revisi->elemen->kriteria->kode_kriteria }}
-                                </span>
-                            </td>
-                            <td>
-                                <strong>{{ $revisi->elemen->kode_elemen }}</strong>
-                            </td>
-                            <td>
-                                <small>{{ Str::limit($revisi->elemen->pernyataan_elemen, 80) }}</small>
-                            </td>
-                            <td class="text-center">
-                                <span class="badge" style="background-color: {{ \App\Models\JenjangPenilaian::getSkorColor($revisi->skor) }}; color: {{ \App\Models\JenjangPenilaian::textColorByBg(\App\Models\JenjangPenilaian::getSkorColor($revisi->skor)) }}">{{ \App\Models\JenjangPenilaian::getSkorLabelAttribute($revisi->skor, true) }}</span>
-                            </td>
-                            <td class="text-center">
-                                @if($preferensiSkor)
-                                <span class="badge" style="background-color: {{ \App\Models\JenjangPenilaian::getSkorColor($preferensiSkor) }}; color: {{ \App\Models\JenjangPenilaian::textColorByBg(\App\Models\JenjangPenilaian::getSkorColor($preferensiSkor)) }}">{{ \App\Models\JenjangPenilaian::getSkorLabelAttribute($preferensiSkor, true) }}</span>
-                                @else
-                                Tidak ada
-                                @endif
-                            </td>
-                            <td>
-                                <div class="alert alert-light alert-permanent mb-0 p-2">
-                                    <small class="text-danger">
-                                        <i class="bi bi-chat-left-quote"></i>
-                                        "{{ $revisi->catatan_validator }}"
-                                    </small>
-                                </div>
-                                <small class="text-muted">
-                                    <i class="bi bi-clock"></i>
-                                    {{ \App\Libraries\Date::tglWaktu($revisi->validated_at) }}
-                                </small>
-                            </td>
-                            <td>
-                                <button type="button" class="btn btn-sm btn-warning btn-buka-revisi" data-elemen-id="{{ $revisi->id_elemen }}" data-kriteria-id="{{ $revisi->elemen->kriteria->id }}">
-                                    <i class="bi bi-pencil"></i> Buka & Revisi
-                                </button>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    @endif
 
     <!-- ========== HEATMAP MATRIX (ENHANCED) ========== -->
-    @include('asesmen.ak.components.heatmap-matrix')
+    @include('asesmen.al.components.heatmap-matrix')
 
     <div class="card mb-4 shadow-sm">
         <div class="card-header bg-white border-bottom py-2">
@@ -399,9 +318,9 @@
                         @foreach($kriteria->elemenStandar as $elemenIndex => $elemen)
                         @php
                         // Get penilaian for this elemen (not indikator!)
-                        $penilaian = $elemen->penilaian->first(); // Assuming relation exists
-                        $hasPenilaian = $penilaian && $penilaian->skor !== null;
-                        $needsRevisionElemen = $penilaian && $penilaian->status_validasi === 'revision_required';
+                        $penilaianElemenAl = $elemen->penilaianElemenAl->first(); // Assuming relation exists
+                        $hasPenilaian = $penilaianElemenAl && $penilaianElemenAl->skor !== null;
+                        $needsRevisionElemen = $penilaianElemenAl && $penilaianElemenAl->status_validasi === 'revision_required';
                         $totalIndikator = $elemen->indikator->count();
 
                         // Count jenis indikator
@@ -653,7 +572,7 @@
                                             {{-- Alert Revisi --}}
                                             @if($needsRevisionElemen)
                                             @php
-                                            $preferensiSkor = $penilaian->preferensi_skor;
+                                            $preferensiSkor = $penilaianElemenAl->preferensi_skor;
                                             @endphp
                                             <div class="alert alert-warning alert-permanent alert-dismissible mb-3">
                                                 <div class="row">
@@ -661,7 +580,7 @@
                                                         <h6 class="alert-heading">
                                                             <i class="bi bi-chat-left-quote"></i> Catatan Validator:
                                                         </h6>
-                                                        <p class="mb-2"><strong>"{{ $penilaian->catatan_validator }}"</strong></p>
+                                                        <p class="mb-2"><strong>"{{ $penilaianElemenAl->catatan_validator }}"</strong></p>
                                                     </div>
 
                                                     {{-- ✅ SKOR FINAL VALIDATOR --}}
@@ -694,12 +613,12 @@
                                                 <div class="row mt-3">
                                                     <div class="col-md-6">
                                                         <small class="text-muted">
-                                                            <i class="bi bi-person"></i> <strong>Validator:</strong> {{ $penilaian->validator->name ?? 'N/A' }}
+                                                            <i class="bi bi-person"></i> <strong>Validator:</strong> {{ $penilaianElemenAl->validator->name ?? 'N/A' }}
                                                         </small>
                                                     </div>
                                                     <div class="col-md-6 text-end">
                                                         <small class="text-muted">
-                                                            <i class="bi bi-clock"></i> <strong>Tanggal:</strong> {{ \App\Libraries\Date::tglWaktu($penilaian->validated_at) }}
+                                                            <i class="bi bi-clock"></i> <strong>Tanggal:</strong> {{ \App\Libraries\Date::tglWaktu($penilaianElemenAl->validated_at) }}
                                                         </small>
                                                     </div>
                                                 </div>
@@ -714,7 +633,7 @@
                                                         <select class="form-select skor-select" name="skor" required>
                                                             <option value="">-- Pilih Kategori --</option>
                                                             @foreach ($jenjangs as $jenjang)
-                                                            <option value="{{ $jenjang->skor }}" @if($hasPenilaian && $penilaian->skor == $jenjang->skor) selected @endif>
+                                                            <option value="{{ $jenjang->skor }}" @if($hasPenilaian && $penilaianElemenAl->skor == $jenjang->skor) selected @endif style="background:{{ $jenjang->color }}; color:{{ \App\Models\JenjangPenilaian::textColorByBg($jenjang->color) }}">
                                                                 {{ $jenjang->skor }} - {{ $jenjang->name }}
                                                             </option>
                                                             @endforeach
@@ -724,20 +643,20 @@
                                                         <label class="form-label fw-semibold">
                                                             <i class="bi bi-chat-left-text me-1"></i> Komentar/Justifikasi Penilaian
                                                         </label>
-                                                        <textarea class="form-control komentar-textarea" name="komentar" rows="4" placeholder="Berikan justifikasi dan analisis penilaian berdasarkan seluruh indikator di bawah ini..." required>{{ $hasPenilaian ? $penilaian->komentar : '' }}</textarea>
+                                                        <textarea class="form-control komentar-textarea" name="komentar" rows="4" placeholder="Berikan justifikasi dan analisis penilaian berdasarkan seluruh indikator di bawah ini..." required>{{ $hasPenilaian ? $penilaianElemenAl->komentar : '' }}</textarea>
                                                         <small class="text-muted">
                                                             <i class="bi bi-info-circle me-1"></i>
-                                                            <span class="char-count">{{ $hasPenilaian ? strlen($penilaian->komentar) : 0 }}</span> karakter
+                                                            <span class="char-count">{{ $hasPenilaian ? strlen($penilaianElemenAl->komentar) : 0 }}</span> karakter
                                                         </small>
                                                     </div>
                                                 </div>
 
                                                 <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-2">
                                                     <div class="save-status text-muted small d-flex align-items-center flex-wrap">
-                                                        <i class="bi bi-cloud-check"></i>
+                                                        <i class="bi bi-cloud-check me-2"></i>
                                                         <span class="status-text">
                                                             @if($hasPenilaian)
-                                                            Tersimpan pada {{ \App\Libraries\Date::tglWaktu($penilaian->updated_at) }}
+                                                            Tersimpan pada {{ \App\Libraries\Date::tglWaktu($penilaianElemenAl->updated_at) }}
                                                             @else
                                                             Belum ada penilaian
                                                             @endif
@@ -1095,7 +1014,7 @@
             showLoading();
 
             try {
-                const response = await fetch(`/ak/berkas/${idAsesmen}/submit`, {
+                const response = await fetch(`/al/berkas/${idAsesmen}/submit`, {
                     method: 'POST'
                     , headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -1171,7 +1090,7 @@
             showLoading();
 
             try {
-                const response = await fetch(`/ak/berkas/${idAsesmen}/unsubmit`, {
+                const response = await fetch(`/al/berkas/${idAsesmen}/unsubmit`, {
                     method: 'POST'
                     , headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -1248,7 +1167,7 @@
             showLoading();
 
             try {
-                window.location.href = `/ak/berkas/${idAsesmen}/export`;
+                window.location.href = `/al/berkas/${idAsesmen}/export`;
 
                 setTimeout(() => {
                     hideLoading();
@@ -1305,7 +1224,7 @@
 
             try {
                 // Upload file
-                const response = await fetch(`/ak/berkas/${idAsesmen}/import`, {
+                const response = await fetch(`/al/berkas/${idAsesmen}/import`, {
                     method: 'POST'
                     , body: formData
                     , headers: {
@@ -1391,7 +1310,7 @@
                 }
 
                 try {
-                    const response = await fetch(`/ak/import-status/${importLogId}`, {
+                    const response = await fetch(`/al/import-status/${importLogId}`, {
                         headers: {
                             'Accept': 'application/json'
                             , 'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -1560,7 +1479,7 @@
             if (isSaving) return;
             isSaving = true;
             try {
-                const response = await fetch(`/ak/berkas/${idAsesmen}/nilai`, {
+                const response = await fetch(`/al/berkas/${idAsesmen}/nilai`, {
                     method: 'POST'
                     , headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -1630,7 +1549,7 @@
             showLoading();
 
             try {
-                const response = await fetch(`/ak/berkas/${idAsesmen}/nilai`, {
+                const response = await fetch(`/al/berkas/${idAsesmen}/nilai`, {
                     method: 'POST'
                     , headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -1870,7 +1789,7 @@
         function downloadTemplate() {
             showLoading();
 
-            window.location.href = `/ak/berkas/${idAsesmen}/template`;
+            window.location.href = `/al/berkas/${idAsesmen}/template`;
 
             setTimeout(() => {
                 hideLoading();
@@ -1890,7 +1809,7 @@
         function downloadDataExcel() {
             showLoading();
 
-            window.location.href = `/ak/berkas/${idAsesmen}/export`;
+            window.location.href = `/al/berkas/${idAsesmen}/export`;
 
             setTimeout(() => {
                 hideLoading();
@@ -2010,7 +1929,7 @@
 
             // Load history
             try {
-                const response = await fetch(`/ak/berkas/${idAsesmen}/import-history`, {
+                const response = await fetch(`/al/berkas/${idAsesmen}/import-history`, {
                     headers: {
                         'Accept': 'application/json'
                         , 'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -2385,7 +2304,7 @@
             showLoading();
 
             try {
-                const response = await fetch(`/ak/berkas/${idAsesmen}/reset-all`, {
+                const response = await fetch(`/al/berkas/${idAsesmen}/reset-all`, {
                     method: 'DELETE'
                     , headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'

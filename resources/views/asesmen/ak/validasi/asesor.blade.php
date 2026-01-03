@@ -79,9 +79,9 @@
                                 </div>
 
                                 <!-- Nama + Email -->
-                                <div class="min-width-0 w-100">
+                                <div>
                                     <h6 class="mb-0 text-truncate">{{ $asesor->user->name }}</h6>
-                                    <span class="badge bg-light text-dark d-block text-break w-100">
+                                    <span class="badge bg-light text-dark d-block text-break">
                                         {{ $asesor->user->email }}
                                     </span>
                                 </div>
@@ -766,6 +766,7 @@
         async function submitValidasi(status) {
             const elemenId = document.getElementById('validasiElemenId').value;
             const skorFinal = document.getElementById('skorFinal').value;
+            const statusValidasi = document.getElementById('statusValidasi').value;
             const catatanValidator = document.getElementById('catatanValidator').value;
 
             // ✅ Build payload based on status
@@ -801,7 +802,7 @@
                     return;
                 }
             }
-            if (!status) {
+            if (!statusValidasi) {
                 Swal.fire({
                     icon: 'warning'
                     , title: 'Status Validasi Diperlukan'
@@ -812,8 +813,8 @@
             if (!skorFinal) {
                 Swal.fire({
                     icon: 'warning'
-                    , title: 'Kategori Final Diperlukan'
-                    , text: 'Silakan pilih kategori final terlebih dahulu'
+                    , title: 'Preferensi Kategori Diperlukan'
+                    , text: 'Silakan pilih preferensi kategori terlebih dahulu'
                 });
                 return;
             }

@@ -91,16 +91,14 @@
 
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label fw-bold">
-                                            Kategori Final
+                                            Preferensi Kategori
                                             <span class="text-danger" id="labelSkorRequired">*</span>
                                         </label>
                                         <select class="form-select" id="skorFinal">
                                             <option value="">-- Pilih Kategori --</option>
-                                            <option value="0">0 - Tidak Memenuhi (Not Met)</option>
-                                            <option value="1">1 - Belum Memenuhi (Not Met)</option>
-                                            <option value="2">2 - Lemah (Weakness/Cause of Concern)</option>
-                                            <option value="3">3 - Memenuhi (Met)</option>
-                                            <option value="4">4 - Pelampauan Standar</option>
+                                            @foreach ($jenjangs as $jenjang)
+                                            <option value="{{ $jenjang->skor }}">{{ $jenjang->skor }} - {{ $jenjang->name }}</option>
+                                            @endforeach
                                         </select>
                                     </div>
                                 </div>

@@ -31,7 +31,7 @@
                         <i class="bi bi-clipboard-check"></i> Daftar Berkas Penilaian AK
                     </h2>
                     <p class="mb-0 opacity-75">
-                        Kelola dan lakukan penilaian akreditasi perguruan tinggi
+                        Kelola dan lakukan penilaian asesmen dokumen perguruan tinggi
                     </p>
                 </div>
                 <div class="text-end">
@@ -81,21 +81,11 @@
                     <label class="form-label">Status Pekerjaan</label>
                     <select name="status_pekerjaan" class="form-select">
                         <option value="">Semua Status</option>
-                        <option value="not_started" {{ request('status_pekerjaan') == 'not_started' ? 'selected' : '' }}>
-                            Belum Mulai
+                        @foreach($statusPekerjaan as $key => $status)
+                        <option value="{{ $key }}" {{ request('status_pekerjaan') === $key ? 'selected' : '' }}>
+                            {{ $status['label'] }}
                         </option>
-                        <option value="in_progress" {{ request('status_pekerjaan') == 'in_progress' ? 'selected' : '' }}>
-                            Sedang Dikerjakan
-                        </option>
-                        <option value="submitted" {{ request('status_pekerjaan') == 'submitted' ? 'selected' : '' }}>
-                            Sudah Di-submit
-                        </option>
-                        <option value="revision_required" {{ request('status_pekerjaan') == 'revision_required' ? 'selected' : '' }}>
-                            Perlu Revisi
-                        </option>
-                        <option value="approved" {{ request('status_pekerjaan') == 'approved' ? 'selected' : '' }}>
-                            Disetujui
-                        </option>
+                        @endforeach
                     </select>
                 </div>
 
@@ -180,17 +170,7 @@
         <div class="col-md-6 col-lg-6 col-xl-4 mb-4">
             <div class="card asesmen-card h-100">
                 {{-- Status Indicator Corner --}}
-                @if($assignment->status_pekerjaan == 'approved')
-                <div class="status-indicator"></div>
-                @elseif($assignment->status_pekerjaan == 'revision_required')
-                <div class="status-indicator revision"></div>
-                @elseif($assignment->status_pekerjaan == 'in_progress')
-                <div class="status-indicator in-progress"></div>
-                @elseif($assignment->status_penawaran == 'pending')
-                <div class="status-indicator pending"></div>
-                @elseif($assignment->status_penawaran == 'rejected')
-                <div class="status-indicator rejected"></div>
-                @endif
+                <div class="status-indicator {{ $assignment->status_indicator }}"></div>
 
                 <div class="card-body">
                     {{-- Header --}}

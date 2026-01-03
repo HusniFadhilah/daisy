@@ -56,7 +56,6 @@ return new class extends Migration
             $table->timestamp('tanggal_lanjut_ak')->nullable();
 
             $table->timestamps();
-            $table->softDeletes();
         });
 
         Schema::create('pengajuan_dokumen', function (Blueprint $table) {
