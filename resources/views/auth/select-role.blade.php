@@ -24,7 +24,7 @@ $descriptions = [
 'asesor' => 'Melakukan penilaian dokumen akreditasi',
 'validator' => 'Validasi hasil penilaian asesor',
 'verifikator' => 'Verifikasi dokumen dan data',
-'admin_univ' => 'Administrator Perguruan Tinggi',
+'admin_univ' => 'Unit Pengelola Perguruan Tinggi',
 'admin_prodi' => 'Unit Pengelola Program Studi',
 'default' => 'Pengguna umum',
 ];
