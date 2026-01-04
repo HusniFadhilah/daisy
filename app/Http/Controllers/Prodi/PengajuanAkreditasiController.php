@@ -182,6 +182,7 @@ class PengajuanAkreditasiController extends Controller
             return redirect()->route('pengajuan.show', $pengajuan->id)
                 ->with('success', $message);
         } catch (\Exception $e) {
+            Log::error($e);
             DB::rollBack();
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage())->withInput();
         }
@@ -1139,6 +1140,7 @@ class PengajuanAkreditasiController extends Controller
                 ]
             ]);
         } catch (\Exception $e) {
+            Log::error($e);
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()

@@ -340,12 +340,28 @@ class AsesmenController extends Controller
             // Determine urutan_asesor if role is asesor
             $urutanAsesor = null;
             if ($role->name === 'asesor') {
-                $maxUrutan = AsesmenUserRole::where('id_asesmen', $id)
+                $existingUrutans = AsesmenUserRole::where('id_asesmen', $id)
                     ->where('jenis_asesmen', $request->jenis_asesmen)
                     ->whereHas('role', fn($q) => $q->where('name', 'asesor'))
-                    ->max('urutan_asesor');
+                    ->pluck('urutan_asesor')
+                    ->toArray();
 
-                $urutanAsesor = ($maxUrutan ?? 0) + 1;
+                sort($existingUrutans);
+
+                // Find first missing number (gap)
+                $urutanAsesor = 1;
+                foreach ($existingUrutans as $urutan) {
+                    if ($urutan !== $urutanAsesor) {
+                        break; // Found gap, use this urutan
+                    }
+                    $urutanAsesor++;
+                }
+                // $maxUrutan = AsesmenUserRole::where('id_asesmen', $id)
+                //     ->where('jenis_asesmen', $request->jenis_asesmen)
+                //     ->whereHas('role', fn($q) => $q->where('name', 'asesor'))
+                //     ->max('urutan_asesor');
+
+                // $urutanAsesor = ($maxUrutan ?? 0) + 1;
             }
 
             // Create assignment
@@ -372,11 +388,14 @@ class AsesmenController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => "User {$user->name} berhasil di-assign sebagai {$role->alias} untuk " . strtoupper($request->jenis_asesmen),
+                'message' => "User {$user->name} berhasil di-assign sebagai {$role->alias} untuk " .
+                    strtoupper($request->jenis_asesmen) .
+                    ($urutanAsesor ? " (Asesor {$urutanAsesor})" : ""),
                 'data' => [
                     'assignment' => $assignment,
                     'user' => $user,
                     'role' => $role,
+                    'urutan_asesor' => $urutanAsesor,
                     'requirements_met' => $requirementsMet,
                     'missing_requirements' => $missingRequirements,
                 ]
@@ -386,6 +405,58 @@ class AsesmenController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal assign user: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Manually reorder asesor (Admin only)
+     */
+    public function reorderAsesor(Request $request, $id)
+    {
+        $request->validate([
+            'jenis_asesmen' => 'required|in:ak,al',
+            'order_by' => 'in:created_at,name', // Optional: reorder by time or name
+        ]);
+
+        try {
+            $jenisAsesmen = $request->jenis_asesmen;
+            $orderBy = $request->order_by ?? 'created_at';
+
+            // Get all asesor assignments
+            $query = AsesmenUserRole::where('id_asesmen', $id)
+                ->where('jenis_asesmen', $jenisAsesmen)
+                ->whereHas('role', fn($q) => $q->where('name', 'asesor'));
+
+            if ($orderBy === 'name') {
+                $query->join('users', 'asesmen_user_roles.id_user', '=', 'users.id')
+                    ->orderBy('users.name');
+            } else {
+                $query->orderBy('created_at');
+            }
+
+            $asesors = $query->get();
+
+            // Reorder
+            $newUrutan = 1;
+            foreach ($asesors as $asesor) {
+                $asesor->update(['urutan_asesor' => $newUrutan]);
+                $newUrutan++;
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => "Urutan asesor berhasil diatur ulang ({$asesors->count()} asesor)",
+                'data' => [
+                    'total_reordered' => $asesors->count(),
+                    'order_by' => $orderBy
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error($e);
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal reorder asesor: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -643,12 +714,19 @@ class AsesmenController extends Controller
             }
 
             // Delete assignment
+            $userName = $assignment->user->name;
+            $isAsesor = $role->name === 'asesor';
             $assignment->delete();
+            if ($isAsesor) {
+                $this->reorganizeAsesorOrder($id, $jenisAsesmen);
+            }
 
             return response()->json([
                 'success' => true,
-                'message' => 'User berhasil dihapus dari asesmen',
-                'jenis_asesmen' => $jenisAsesmen // Return for UI update
+                'message' => "{$userName} berhasil dihapus dari asesmen. " .
+                    ($isAsesor ? "Urutan asesor telah diatur ulang." : ""),
+                'jenis_asesmen' => $jenisAsesmen,
+                'reorganized' => $isAsesor
             ]);
         } catch (\Exception $e) {
             Log::error($e);
@@ -738,6 +816,61 @@ class AsesmenController extends Controller
                 'message' => 'Gagal reassign: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Reorganize urutan asesor after deletion
+     * Menghilangkan gap dan mengurutkan ulang dari 1, 2, 3, ...
+     */
+    private function reorganizeAsesorOrder($idAsesmen, $jenisAsesmen)
+    {
+        // Get all asesor assignments for this asesmen & jenis, ordered by urutan_asesor
+        $asesors = AsesmenUserRole::where('id_asesmen', $idAsesmen)
+            ->where('jenis_asesmen', $jenisAsesmen)
+            ->whereHas('role', fn($q) => $q->where('name', 'asesor'))
+            ->orderBy('urutan_asesor')
+            ->get();
+
+        // Reorganize urutan from 1, 2, 3, ...
+        $newUrutan = 1;
+        foreach ($asesors as $asesor) {
+            if ($asesor->urutan_asesor !== $newUrutan) {
+                $asesor->update(['urutan_asesor' => $newUrutan]);
+
+                Log::info("Reorganized asesor urutan", [
+                    'id_asesmen' => $idAsesmen,
+                    'jenis_asesmen' => $jenisAsesmen,
+                    'user_id' => $asesor->id_user,
+                    'old_urutan' => $asesor->urutan_asesor,
+                    'new_urutan' => $newUrutan
+                ]);
+            }
+            $newUrutan++;
+        }
+
+        return $asesors->count();
+    }
+
+    /**
+     * Reorder asesor based on created_at (oldest = Asesor 1)
+     */
+    private function reorderAsesorByTime($idAsesmen, $jenisAsesmen)
+    {
+        // Get all asesor assignments ordered by created_at
+        $asesors = AsesmenUserRole::where('id_asesmen', $idAsesmen)
+            ->where('jenis_asesmen', $jenisAsesmen)
+            ->whereHas('role', fn($q) => $q->where('name', 'asesor'))
+            ->orderBy('created_at')
+            ->get();
+
+        // Assign new urutan based on order
+        $newUrutan = 1;
+        foreach ($asesors as $asesor) {
+            $asesor->update(['urutan_asesor' => $newUrutan]);
+            $newUrutan++;
+        }
+
+        return $asesors->count();
     }
 
     /**

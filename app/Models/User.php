@@ -19,6 +19,7 @@ class User extends Authenticatable
         'role',
         'roles',
         'role_selected',
+        'is_multiple_role',
         'last_role_switch',
     ];
 
@@ -96,18 +97,13 @@ class User extends Authenticatable
             ->values()
             ->toArray();
 
-        // Always include base role
-        if ($this->role && !in_array($this->role, $assignedRoles)) {
-            $assignedRoles[] = $this->role;
-        }
-
         // Always include current role_selected if not in list
         if ($this->role_selected && !in_array($this->role_selected, $assignedRoles)) {
             $assignedRoles[] = $this->role_selected;
         }
-
+        $assignedRoles = array_values(array_unique($assignedRoles));
         // Update roles column
-        $this->update(['roles' => array_values(array_unique($assignedRoles))]);
+        $this->update(['roles' => $assignedRoles, 'is_multiple_role' => count($assignedRoles) > 1]);
 
         return $this;
     }

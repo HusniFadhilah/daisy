@@ -283,6 +283,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{id}/requirements/{jenisAsesmen}', [AsesmenController::class, 'getRequirementsStatus'])->name('.requirements')->where('jenisAsesmen', 'ak|al');
             Route::get('/{id}/rejected/{jenisAsesmen}', [AsesmenController::class, 'getRejectedAssignments'])->name('.rejected')->where('jenisAsesmen', 'ak|al');
             Route::get('/{id}/assignments/{jenisAsesmen}', [AsesmenController::class, 'getAssignments'])->name('.assignments')->where('jenisAsesmen', 'ak|al');
+            Route::post('/{id}/reorder-asesor', [AsesmenController::class, 'reorderAsesor'])->name('reorder-asesor');
         });
     });
 

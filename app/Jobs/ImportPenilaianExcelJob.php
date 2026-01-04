@@ -188,8 +188,7 @@ class ImportPenilaianExcelJob implements ShouldQueue
                 'completed_at' => now(),
             ]);
 
-            Log::error('Import failed: ' . $e->getMessage());
-            Log::error('Stack trace: ' . $e->getTraceAsString());
+            Log::error($e);
 
             Storage::delete($this->filePath);
 

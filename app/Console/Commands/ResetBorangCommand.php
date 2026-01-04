@@ -3,13 +3,14 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use App\Models\PengajuanAkreditasi;
 use App\Models\BorangData;
 use App\Models\BorangImport;
+use Illuminate\Console\Command;
 use App\Models\PengajuanDokumen;
 use App\Models\PengajuanStatusLog;
 use Illuminate\Support\Facades\DB;
+use App\Models\PengajuanAkreditasi;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class ResetBorangCommand extends Command
@@ -85,6 +86,7 @@ class ResetBorangCommand extends Command
             $this->info('✅ Borang reset successfully!');
             return 0;
         } catch (\Exception $e) {
+            Log::error($e);
             DB::rollBack();
             $this->error('Failed: ' . $e->getMessage());
             return 1;

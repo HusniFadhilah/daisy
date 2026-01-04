@@ -5,23 +5,25 @@
 @section('content')
 <div class="container-fluid py-3">
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-2">
+    <div class="row align-items-center mb-3">
+        <div class="col">
+            <nav class="d-none d-md-block mb-1">
+                <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item"><a href="{{ route('asesmen.index') }}">Asesmen</a></li>
                     <li class="breadcrumb-item active">{{ $asesmen->name }}</li>
                 </ol>
             </nav>
-            <h3 class="mb-0">{{ $asesmen->name }}</h3>
+            <h3 class="mb-0 text-wrap">{{ $asesmen->name }}</h3>
         </div>
-        <div class="btn-group">
-            <a href="{{ route('asesmen.edit', $asesmen->id) }}" class="btn btn-outline-secondary">
-                <i class="bi bi-pencil"></i> Edit
-            </a>
-            <a href="{{ route('asesmen.index') }}" class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i> Kembali
-            </a>
+        <div class="col-auto">
+            <div class="btn-group">
+                <a href="{{ route('asesmen.edit',$asesmen->id) }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-pencil"></i><span class="d-none d-md-inline"> Edit</span>
+                </a>
+                <a href="{{ route('asesmen.index') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i><span class="d-none d-md-inline"> Kembali</span>
+                </a>
+            </div>
         </div>
     </div>
 
@@ -52,7 +54,7 @@
                 {{-- AK Requirements --}}
                 <div class="tab-pane fade show active" id="akRequirements">
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-6 my-2">
                             <h6 class="fw-bold mb-3">Persyaratan Minimum:</h6>
                             <ul class="list-group mb-3">
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -77,8 +79,16 @@
                             </div>
                         </div>
 
-                        <div class="col-md-6">
-                            <h6 class="fw-bold mb-3">Yang Sudah Di-assign (AK):</h6>
+                        <div class="col-md-6 my-2">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="fw-bold mb-3">Yang Sudah Di-assign (AK):</h6>
+                                <div class="btn-group btn-group-sm">
+                                    <button type="button" class="btn btn-outline-secondary" id="btnReorderAK" title="Reorder Asesor" onclick="reorderAsesor({ asesmenId: {{ $asesmen->id }}, jenisAsesmen: 'ak' })">
+                                        <i class="bi bi-arrow-down-up"></i> Reorder Asesor
+                                    </button>
+                                </div>
+                            </div>
+
                             <div id="akAssignments" class="assignments-list">
                                 <div class="spinner-border spinner-border-sm" role="status">
                                     <span class="visually-hidden">Loading...</span>
@@ -98,7 +108,7 @@
                 {{-- AL Requirements --}}
                 <div class="tab-pane fade" id="alRequirements">
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-6 my-2">
                             <h6 class="fw-bold mb-3">Persyaratan Minimum:</h6>
                             <ul class="list-group mb-3">
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -117,8 +127,15 @@
                             </div>
                         </div>
 
-                        <div class="col-md-6">
-                            <h6 class="fw-bold mb-3">Yang Sudah Di-assign (AL):</h6>
+                        <div class="col-md-6 my-2">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="fw-bold mb-3">Yang Sudah Di-assign (AL):</h6>
+                                <div class="btn-group btn-group-sm">
+                                    <button type="button" class="btn btn-outline-secondary" id="btnReorderAL" title="Reorder Asesor" onclick="reorderAsesor({ asesmenId: {{ $asesmen->id }}, jenisAsesmen: 'al' })">
+                                        <i class="bi bi-arrow-down-up"></i> Reorder Asesor
+                                    </button>
+                                </div>
+                            </div>
                             <div id="alAssignments" class="assignments-list">
                                 <div class="spinner-border spinner-border-sm" role="status">
                                     <span class="visually-hidden">Loading...</span>
@@ -194,7 +211,7 @@
     </div>
     <div class="row">
         <!-- Asesmen Info Card -->
-        <div class="col-md-3 mb-4">
+        <div class="col-md-12 col-lg-3 mb-4">
             <div class="card h-100">
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0"><i class="bi bi-info-circle"></i> Informasi Asesmen</h5>
@@ -250,7 +267,7 @@
         </div>
 
         <!-- Assignment Section -->
-        <div class="col-md-9 mb-4">
+        <div class="col-md-12 col-lg-9 mb-4">
             <!-- Assign User Card -->
             <div class="card mb-4">
                 <div class="card-header bg-success text-white">
@@ -323,7 +340,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($asesmen->userRoles as $index => $userRole)
+                                @forelse($asesmen->userRoles ->sortBy([ ['jenis_asesmen', 'asc'], ['id_role', 'asc'] ]) as $index => $userRole)
                                 @php
                                 $stats = $userStats[$userRole->id_user] ?? ['completed' => 0, 'total' => 0, 'percentage' => 0];
                                 $statusPenawaran = $userRole->status_penawaran;
@@ -1068,6 +1085,60 @@
             Swal.fire({
                 icon: 'error'
                 , title: 'Error'
+                , text: error.message
+            });
+        }
+    }
+
+    async function reorderAsesor({
+        jenisAsesmen
+        , orderBy = 'created_at'
+        , asesmenId
+    }) {
+        const result = await Swal.fire({
+            icon: 'question'
+            , title: `Reorder Asesor ${jenisAsesmen.toUpperCase()}?`
+            , text: 'Urutan asesor akan diatur ulang berdasarkan waktu assignment (yang paling awal = Asesor 1)'
+            , showCancelButton: true
+            , confirmButtonText: 'Ya, Reorder'
+            , cancelButtonText: 'Batal'
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+            const response = await fetch(`/asesmen/${asesmenId}/reorder-asesor`, {
+                method: 'POST'
+                , headers: {
+                    'Content-Type': 'application/json'
+                    , 'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    , 'Accept': 'application/json'
+                }
+                , body: JSON.stringify({
+                    jenis_asesmen: jenisAsesmen
+                    , order_by: orderBy
+                })
+            });
+
+            const data = await response.json();
+
+            if (!data.success) {
+                throw new Error(data.message || 'Gagal reorder asesor');
+            }
+
+            await Swal.fire({
+                icon: 'success'
+                , title: 'Berhasil!'
+                , text: data.message
+                , timer: 2000
+            });
+
+            location.reload();
+
+        } catch (error) {
+            Swal.fire({
+                icon: 'error'
+                , title: 'Gagal'
                 , text: error.message
             });
         }

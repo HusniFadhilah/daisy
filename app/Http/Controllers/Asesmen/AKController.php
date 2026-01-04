@@ -467,6 +467,7 @@ class AKController extends Controller
                     'progress' => $progress,
                 ]);
             } catch (\Exception $e) {
+                Log::error($e);
                 DB::rollBack();
                 throw $e;
             }

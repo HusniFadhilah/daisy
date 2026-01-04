@@ -35,10 +35,11 @@ class AuthController extends Controller
             // Sync roles from assignments after login
             $user = Auth::user();
             $user->syncRolesFromAssignments();
-
+            $user = $user->fresh();
             // If user has multiple roles, redirect to role selection
             if ($user->hasMultipleRoles()) {
-                return redirect()->route('select.role');
+                return redirect()->route('select.role')
+                    ->with('success', 'Login berhasil! Silakan pilih role Anda.');
             }
 
             return redirect()->intended('/dashboard');
@@ -61,7 +62,8 @@ class AuthController extends Controller
         if (!$user->hasMultipleRoles()) {
             return redirect('/dashboard');
         }
-
+        $user->syncRolesFromAssignments();
+        $user = $user->fresh();
         return view('auth.select-role', [
             'roles' => $user->available_roles,
             'current_role' => $user->role_selected,
@@ -79,8 +81,15 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
-        if ($user->switchRole($request->role)) {
-            return redirect()->intended('/dashboard')->with('success', 'Role aktif: ' . $user->role_alias);
+        if (!$user->hasMultipleRoles()) {
+            return redirect()->route('dashboard')
+                ->with('error', 'Anda hanya memiliki 1 role, tidak dapat memilih role lain.');
+        }
+        $roleName = $request->role;
+
+        if ($user->switchRole($roleName)) {
+            return redirect()->route('dashboard')
+                ->with('success', 'Role berhasil diubah ke: ' . ucfirst($roleName));
         }
 
         return back()->with('error', 'Role tidak valid');

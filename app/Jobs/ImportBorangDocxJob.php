@@ -138,8 +138,7 @@ class ImportBorangDocxJob implements ShouldQueue
                 @unlink($this->filePath);
             }
         } catch (\Exception $e) {
-            Log::error('❌ ERROR: ' . $e->getMessage());
-            Log::error($e->getTraceAsString());
+            Log::error($e);
 
             if ($borangImport) {
                 $borangImport->markAsFailed(['error' => $e->getMessage()]);

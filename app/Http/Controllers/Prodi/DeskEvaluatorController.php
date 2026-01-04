@@ -11,6 +11,7 @@ use App\Models\PengajuanDokumen;
 use App\Mail\PengingatAkreditasi;
 use Illuminate\Support\Facades\DB;
 use App\Models\PengajuanAkreditasi;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\Models\PembayaranAkreditasi;
 use Illuminate\Support\Facades\Auth;
@@ -113,6 +114,7 @@ class DeskEvaluatorController extends Controller
 
             return back()->with('success', 'Pengingat berhasil dikirim ke ' . count($prodis) . ' program studi.');
         } catch (\Exception $e) {
+            Log::error($e);
             DB::rollBack();
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
@@ -167,6 +169,7 @@ class DeskEvaluatorController extends Controller
 
             return back()->with('success', 'Form borang berhasil dikirim ke prodi.');
         } catch (\Exception $e) {
+            Log::error($e);
             DB::rollBack();
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
@@ -268,6 +271,7 @@ class DeskEvaluatorController extends Controller
 
             return back()->with('success', $message);
         } catch (\Exception $e) {
+            Log::error($e);
             DB::rollBack();
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
@@ -333,6 +337,7 @@ class DeskEvaluatorController extends Controller
 
             return back()->with('success', $message);
         } catch (\Exception $e) {
+            Log::error($e);
             DB::rollBack();
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
@@ -369,6 +374,7 @@ class DeskEvaluatorController extends Controller
 
             return back()->with('success', 'Pengajuan disetujui dan akan dilanjutkan ke tahap AK/Asesmen Dokumen.');
         } catch (\Exception $e) {
+            Log::error($e);
             DB::rollBack();
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
