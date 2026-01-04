@@ -28,11 +28,14 @@ Urutan: **Asesor {{ $assignment->urutan_asesor }}**
 
 ## Langkah Selanjutnya
 
-Silakan **terima atau tolak** penawaran ini melalui tombol di bawah:
+Silakan gunakan akun {{ $user->email }} yang telah diberikan sebelumnya untuk **terima atau tolak** penawaran ini melalui tombol di bawah:
 
 @component('mail::button', ['url' => $acceptUrl, 'color' => 'success'])
 Lihat Detail & Respond
 @endcomponent
+
+{{-- **Atau klik link berikut:**
+{{ $acceptUrl }} --}}
 
 ---
 
@@ -43,6 +46,6 @@ Lihat Detail & Respond
 
 Terima kasih atas perhatian dan kerjasamanya.
 
-Salam,<br>
-{{ config('app.name') }}
+Hormat Kami<br>
+DE LAMDEPILAR
 @endcomponent

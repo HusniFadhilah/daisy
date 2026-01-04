@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Helpers\RouteHelper;
 use App\Models\Asesmen;
 use App\Models\AsesmenUserRole;
 use Illuminate\Bus\Queueable;
@@ -17,9 +18,6 @@ class PenawaranAsesmenMail extends Mailable
     public $user;
     public $role;
 
-    /**
-     * Create a new message instance.
-     */
     public function __construct(AsesmenUserRole $assignment)
     {
         $this->assignment = $assignment;
@@ -28,12 +26,12 @@ class PenawaranAsesmenMail extends Mailable
         $this->role = $assignment->role;
     }
 
-    /**
-     * Build the message.
-     */
     public function build()
     {
         $jenisAsesmen = strtoupper($this->assignment->jenis_asesmen);
+
+        // ✅ Encrypt assignment ID untuk URL
+        $token = RouteHelper::encryptId($this->assignment->id);
 
         return $this->subject("Penawaran {$this->role->alias} - {$jenisAsesmen} - {$this->asesmen->name}")
             ->markdown('emails.asesmen.penawaran-assignment', [
@@ -42,7 +40,7 @@ class PenawaranAsesmenMail extends Mailable
                 'user' => $this->user,
                 'role' => $this->role,
                 'jenisAsesmen' => $jenisAsesmen,
-                'acceptUrl' => route('ak.penawaran.detail', $this->asesmen->id),
+                'acceptUrl' => route('penawaran.show', $token),
             ]);
     }
 }

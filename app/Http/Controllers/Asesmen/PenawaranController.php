@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Asesmen;
 
 use App\Models\Asesmen;
+use App\Helpers\RouteHelper;
 use Illuminate\Http\Request;
 use App\Models\AsesmenUserRole;
 use Illuminate\Support\Facades\DB;
@@ -43,6 +44,43 @@ class PenawaranController extends Controller
         return view('asesmen.ak.penawaran.index', compact('penawarans', 'riwayat'));
     }
 
+    /**
+     * Show penawaran detail (generic untuk AK & AL)
+     */
+    public function show($token)
+    {
+        $user = Auth::user();
+        // Get assignment
+        $assignmentId = RouteHelper::decryptId($token);
+
+        // Get assignment
+        $assignment = AsesmenUserRole::where('id', $assignmentId)
+            ->where('id_user', $user->id)
+            ->with(['role', 'asesmen.studyProgram'])
+            ->firstOrFail();
+
+        $asesmen = $assignment->asesmen;
+
+        // ✅ If already accepted, redirect ke berkas
+        if ($assignment->status_penawaran === 'accepted') {
+            $route = $assignment->jenis_asesmen === 'ak'
+                ? 'ak.berkas.show'
+                : 'al.berkas.show';
+
+            return redirect()->route($route, $asesmen->id)
+                ->with('info', 'Penawaran sudah diterima. Silakan lanjutkan penilaian.');
+        }
+
+        // ✅ If rejected, show with info
+        if ($assignment->status_penawaran === 'rejected') {
+            return view('asesmen.penawaran.detail', compact('asesmen', 'assignment'))
+                ->with('info', 'Penawaran ini sudah ditolak sebelumnya.');
+        }
+
+        // ✅ Pending: show detail for response
+        return view('asesmen.penawaran.detail', compact('asesmen', 'assignment'));
+    }
+
     public function cekPenawaran($id)
     {
         $user = Auth::user();
@@ -66,7 +104,7 @@ class PenawaranController extends Controller
     /**
      * Terima penawaran asesmen
      */
-    public function acceptPenawaran(Request $request, $assignmentId)
+    public function acceptPenawaran(Request $request, $token)
     {
         $request->validate([
             'response_note' => 'nullable|string|max:1000',
@@ -74,7 +112,7 @@ class PenawaranController extends Controller
 
         try {
             $user = Auth::user();
-
+            $assignmentId = RouteHelper::decryptId($token);
             $assignment = AsesmenUserRole::where('id', $assignmentId)
                 ->where('id_user', $user->id)
                 ->where('status_penawaran', 'pending')
@@ -89,11 +127,6 @@ class PenawaranController extends Controller
 
             try {
                 SendPenawaranResponseEmail::dispatch($assignment, 'accepted');
-
-                Log::info("Email job dispatched untuk accepted penawaran", [
-                    'assignment_id' => $assignment->id,
-                    'user_id' => $user->id,
-                ]);
             } catch (\Exception $e) {
                 Log::error("Gagal dispatch email job accepted", [
                     'assignment_id' => $assignment->id,
@@ -117,7 +150,7 @@ class PenawaranController extends Controller
     /**
      * Tolak penawaran asesmen
      */
-    public function rejectPenawaran(Request $request, $assignmentId)
+    public function rejectPenawaran(Request $request, $token)
     {
         $request->validate([
             'response_note' => 'required|string|max:1000',
@@ -125,7 +158,7 @@ class PenawaranController extends Controller
 
         try {
             $user = Auth::user();
-
+            $assignmentId = RouteHelper::decryptId($token);
             $assignment = AsesmenUserRole::where('id', $assignmentId)
                 ->where('id_user', $user->id)
                 ->where('status_penawaran', 'pending')
@@ -139,11 +172,6 @@ class PenawaranController extends Controller
 
             try {
                 SendPenawaranResponseEmail::dispatch($assignment, 'rejected');
-
-                Log::info("Email job dispatched untuk rejected penawaran", [
-                    'assignment_id' => $assignment->id,
-                    'user_id' => $user->id,
-                ]);
             } catch (\Exception $e) {
                 Log::error("Gagal dispatch email job rejected", [
                     'assignment_id' => $assignment->id,

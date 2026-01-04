@@ -39,6 +39,6 @@ Mulai Penilaian
 
 Jika ada pertanyaan, hubungi admin di {{ $adminEmail }}.
 
-Salam,<br>
-{{ config('app.name') }}
+Hormat Kami<br>
+DE LAMDEPILAR
 @endcomponent

@@ -39,6 +39,6 @@ Assign Pengganti
 
 Terima kasih.
 
-Salam,<br>
-{{ config('app.name') }}
+Hormat Kami<br>
+DE LAMDEPILAR
 @endcomponent

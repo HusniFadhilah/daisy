@@ -181,7 +181,7 @@
     function confirmDelete(id, name) {
         if (confirm(`Apakah Anda yakin ingin menghapus asesmen "${name}"?\n\nPerhatian: Asesmen yang sudah ada penilaian tidak bisa dihapus.`)) {
             const form = document.getElementById('deleteForm');
-            form.action = `/admin/asesmen/${id}`;
+            form.action = `/asesmen/${id}`;
             form.submit();
         }
     }

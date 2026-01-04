@@ -72,6 +72,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // PENAWARAN ASESMEN
     Route::prefix('penawaran')->name('penawaran')->group(function () {
         Route::get('/', [PenawaranController::class, 'index']);
+        Route::get('/{token}', [PenawaranController::class, 'show'])->name('.show');
         Route::post('/{id}/accept', [PenawaranController::class, 'acceptPenawaran'])
             ->name('.accept');
         Route::post('/{id}/reject', [PenawaranController::class, 'rejectPenawaran'])
@@ -415,10 +416,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 });
 
+Route::get('/preview/email/penawaran/{assignment}', function (\App\Models\AsesmenUserRole $assignment) {
+    return new \App\Mail\PenawaranAsesmenMail($assignment);
+})->name('email.preview.penawaran');
+
 Route::get('clearcache', function () {
     Illuminate\Support\Facades\Artisan::call('cache:clear');
     Illuminate\Support\Facades\Artisan::call('route:clear');
     Illuminate\Support\Facades\Artisan::call('view:clear');
     Illuminate\Support\Facades\Artisan::call('config:clear');
+    Illuminate\Support\Facades\Artisan::call('config:cache');
     Illuminate\Support\Facades\Artisan::call('config:cache');
 });

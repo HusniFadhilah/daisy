@@ -389,11 +389,6 @@ class AsesmenController extends Controller
 
             try {
                 SendPenawaranAsesmenEmail::dispatch($assignment);
-
-                Log::info("Email job dispatched untuk penawaran asesmen", [
-                    'assignment_id' => $assignment->id,
-                    'user_email' => $user->email,
-                ]);
             } catch (\Exception $e) {
                 // Email gagal di-dispatch, tapi assignment tetap berhasil
                 Log::error("Gagal dispatch email job penawaran", [
@@ -498,8 +493,8 @@ class AsesmenController extends Controller
                     ]);
                 }
 
-                $asesorCount = $asesmenKecukupan->asesors()->count();
-                $validatorCount = $asesmenKecukupan->validators()->count();
+                $asesorCount = $asesmenKecukupan->asesors->count();
+                $validatorCount = $asesmenKecukupan->validators->count();
 
                 return response()->json([
                     'success' => true,

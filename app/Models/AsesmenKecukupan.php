@@ -63,8 +63,8 @@ class AsesmenKecukupan extends Model
     // Helpers
     public function hasMinimumRequirements()
     {
-        $asesorCount = $this->asesors()->count();
-        $validatorCount = $this->validators()->count();
+        $asesorCount = $this->asesors->count();
+        $validatorCount = $this->validators->count();
 
         return $asesorCount >= 2 && $validatorCount >= 1;
     }
@@ -73,8 +73,8 @@ class AsesmenKecukupan extends Model
     {
         $missing = [];
 
-        $asesorCount = $this->asesors()->count();
-        $validatorCount = $this->validators()->count();
+        $asesorCount = $this->asesors->count();
+        $validatorCount = $this->validators->count();
 
         if ($asesorCount < 2) {
             $missing[] = 'Kurang ' . (2 - $asesorCount) . ' asesor';

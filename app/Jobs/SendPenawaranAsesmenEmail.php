@@ -46,12 +46,6 @@ class SendPenawaranAsesmenEmail implements ShouldQueue
 
             Mail::to($user->email)
                 ->send(new PenawaranAsesmenMail($this->assignment));
-
-            Log::info("Email penawaran asesmen berhasil dikirim", [
-                'assignment_id' => $this->assignment->id,
-                'user_email' => $user->email,
-                'asesmen_id' => $this->assignment->id_asesmen,
-            ]);
         } catch (\Exception $e) {
             Log::error("Gagal mengirim email penawaran asesmen", [
                 'assignment_id' => $this->assignment->id,
