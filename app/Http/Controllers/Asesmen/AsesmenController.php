@@ -15,6 +15,7 @@ use App\Models\PengajuanAkreditasi;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use App\Jobs\SendPenawaranAsesmenEmail;
 
 class AsesmenController extends Controller
 {
@@ -386,11 +387,27 @@ class AsesmenController extends Controller
                 ? $asesmenKecukupan->getMissingRequirements()
                 : $asesmenLapangan->getMissingRequirements();
 
+            try {
+                SendPenawaranAsesmenEmail::dispatch($assignment);
+
+                Log::info("Email job dispatched untuk penawaran asesmen", [
+                    'assignment_id' => $assignment->id,
+                    'user_email' => $user->email,
+                ]);
+            } catch (\Exception $e) {
+                // Email gagal di-dispatch, tapi assignment tetap berhasil
+                Log::error("Gagal dispatch email job penawaran", [
+                    'assignment_id' => $assignment->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => "User {$user->name} berhasil di-assign sebagai {$role->alias} untuk " .
                     strtoupper($request->jenis_asesmen) .
-                    ($urutanAsesor ? " (Asesor {$urutanAsesor})" : ""),
+                    ($urutanAsesor ? " (Asesor {$urutanAsesor})" : "") .
+                    ". Email penawaran telah dikirim.",
                 'data' => [
                     'assignment' => $assignment,
                     'user' => $user,

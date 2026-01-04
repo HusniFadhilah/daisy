@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use App\Jobs\SendPenawaranResponseEmail;
 
 class PenawaranController extends Controller
 {
@@ -86,6 +87,20 @@ class PenawaranController extends Controller
                 'status_pekerjaan' => 'not_started',
             ]);
 
+            try {
+                SendPenawaranResponseEmail::dispatch($assignment, 'accepted');
+
+                Log::info("Email job dispatched untuk accepted penawaran", [
+                    'assignment_id' => $assignment->id,
+                    'user_id' => $user->id,
+                ]);
+            } catch (\Exception $e) {
+                Log::error("Gagal dispatch email job accepted", [
+                    'assignment_id' => $assignment->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Penawaran berhasil diterima. Anda dapat mulai melakukan penilaian.',
@@ -121,6 +136,20 @@ class PenawaranController extends Controller
                 'responded_at' => now(),
                 'response_note' => $request->response_note,
             ]);
+
+            try {
+                SendPenawaranResponseEmail::dispatch($assignment, 'rejected');
+
+                Log::info("Email job dispatched untuk rejected penawaran", [
+                    'assignment_id' => $assignment->id,
+                    'user_id' => $user->id,
+                ]);
+            } catch (\Exception $e) {
+                Log::error("Gagal dispatch email job rejected", [
+                    'assignment_id' => $assignment->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
 
             return response()->json([
                 'success' => true,
