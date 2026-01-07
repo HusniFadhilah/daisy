@@ -45,7 +45,7 @@ $authUser = auth()->user();
                 <div class="user-avatar">{{ strtoupper(substr($authUser->name ?? 'M', 0, 1)) }}</div>
                 <div class="user-info">
                     <div class="user-name">{{ $authUser->name ?? 'Dr. Eng. Maryono, ST., MT' }}</div>
-                    <div class="user-role">{{ $authUser->role ? $authUser->role_alias : 'LAMDEPILAR' }}</div>
+                    <div class="user-role">{{ $authUser->role_alias ?? 'LAMDEPILAR' }}</div>
                 </div>
                 <i class="bi bi-chevron-down"></i>
             </div>

@@ -15,6 +15,7 @@ return new class extends Migration
         Schema::create('dataset_borang', function (Blueprint $table) {
             $table->id();
             $table->foreignId('id_elemen')->constrained('elemen_standar')->onDelete('cascade');
+            $table->foreignId('id_degree_level')->nullable()->constrained('degree_levels')->onDelete('cascade');
 
             $table->string('kode', 50)->unique(); // E.1.a, E.1.b, D.1.a
             $table->string('nama', 255);
@@ -43,15 +44,35 @@ return new class extends Migration
 
             // Table configuration
             $table->json('expected_columns')->nullable();
+            $table->json('expected_rows')->nullable();
             $table->longText('template_html')->nullable();
             $table->json('validation_rules')->nullable();
 
             $table->integer('urutan')->default(0);
             $table->boolean('is_active')->default(true);
+            $table->boolean('has_degree_variants')->default(false);
             $table->timestamps();
 
             $table->index(['id_elemen', 'kode']);
+            $table->index(['id_elemen', 'id_degree_level']);
             $table->index(['tipe_field']);
+        });
+
+        Schema::create('dataset_borang_degree_level', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('id_dataset_borang')->constrained('dataset_borang')->onDelete('cascade');
+            $table->foreignId('id_degree_level')->constrained('degree_levels')->onDelete('cascade');
+
+            // ✅ Template khusus untuk degree level ini
+            $table->json('expected_columns')->nullable(); // Override columns
+            $table->longText('template_html')->nullable(); // Override template
+            $table->json('validation_rules')->nullable(); // Override validation
+            $table->text('keterangan')->nullable(); // Catatan khusus
+
+            $table->timestamps();
+
+            // Unique: satu dataset hanya punya 1 variasi per degree level
+            $table->unique(['id_dataset_borang', 'id_degree_level'], 'dataset_degree_unique');
         });
 
         // ========================================
@@ -62,6 +83,7 @@ return new class extends Migration
             $table->foreignId('id_pengajuan')
                 ->constrained('pengajuan_akreditasi')
                 ->onDelete('cascade');
+            $table->foreignId('id_degree_level')->nullable()->constrained('degree_levels')->onDelete('cascade');
             $table->foreignId('id_dokumen')
                 ->nullable()
                 ->constrained('pengajuan_dokumen')
@@ -159,7 +181,7 @@ return new class extends Migration
             $table->foreignId('id_pengajuan')
                 ->constrained('pengajuan_akreditasi')
                 ->onDelete('cascade');
-
+            $table->foreignId('id_degree_level')->nullable()->constrained('degree_levels')->onDelete('cascade');
             $table->foreignId('id_borang_import')
                 ->nullable()
                 ->constrained('borang_imports')
@@ -182,6 +204,7 @@ return new class extends Migration
 
             // One value per dataset per pengajuan
             $table->unique(['id_pengajuan', 'dataset_id'], 'borang_data_unique');
+            $table->index(['id_pengajuan', 'id_degree_level']);
             $table->index(['id_pengajuan']);
             $table->index(['id_borang_import']);
             $table->index(['dataset_id']);
@@ -194,6 +217,7 @@ return new class extends Migration
         Schema::dropIfExists('borang_tables');
         Schema::dropIfExists('borang_sections');
         Schema::dropIfExists('borang_imports');
+        Schema::dropIfExists('dataset_borang_degree_level');
         Schema::dropIfExists('dataset_borang');
     }
 };

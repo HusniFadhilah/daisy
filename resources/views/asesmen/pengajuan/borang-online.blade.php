@@ -6,7 +6,8 @@
 
 @push('styles')
 {{-- CKEditor 5 CSS --}}
-<link rel="stylesheet" href="{{ asset('assets/css/ckeditor5.css') }}">
+<link href="https://cdn.jsdelivr.net/npm/tinymce@8.3.1/skins/ui/oxide/content.min.css" rel="stylesheet">
+{{-- <link rel="stylesheet" href="{{ asset('assets/css/ckeditor5.css') }}"> --}}
 
 <style>
     /* CKEditor custom styling */
@@ -330,13 +331,13 @@
         @endphp
 
         <div class="card mb-3 kriteria-card" data-kriteria-id="{{ $kriteria->id }}">
-            <div class="card-header bg-light">
+            <div class="card-header kriteria-header" id="heading-kriteria-{{ $kriteria->id }}">
                 <div class="d-flex justify-content-between align-items-center">
-                    <button class="btn btn-link collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-kriteria-{{ $kriteria->id }}">
-                        <i class="bi bi-chevron-right me-2"></i>
+                    <button class="btn btn-link kriteria-btn collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-kriteria-{{ $kriteria->id }}" aria-expanded="false" aria-controls="collapse-kriteria-{{ $kriteria->id }}">
+                        <i class="bi bi-chevron-right me-2 chevron-icon"></i>
                         <strong>{{ $kriteria->kode_kriteria }}:</strong> {{ $kriteria->nama_kriteria }}
                     </button>
-                    <div class="d-flex align-items-center gap-2">
+                    <div class="d-flex gap-2 align-items-center">
                         {{-- Elemen Progress --}}
                         <span class="badge {{ $kProgress['completed_elemen'] === $kProgress['total_elemen'] ? 'bg-success' : 'bg-info' }} kriteria-progress-elemen" title="Elemen yang sudah lengkap 100%" data-kriteria-id="{{ $kriteria->id }}" title="Elemen Lengkap">
                             <i class="bi bi-check-square"></i>
@@ -349,7 +350,10 @@
                             {{ $kProgress['filled_fields'] }}/{{ $kProgress['total_fields'] }}
                         </span>
 
-                        <small class="text-muted">{{ $kProgress['percentage'] }}%</small>
+                        <small class="text-white">{{ $kProgress['percentage'] }}%</small>
+                        <button type="button" class="btn btn-sm btn-light" onclick="toggleKriteriaAccordion({{ $kriteria->id }})" title="Expand/Collapse Semua Pernyataan Standar">
+                            <i class="bi bi-arrows-expand"></i>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -374,29 +378,31 @@
 
                         <div class="card mb-3 elemen-card @if($hasData) has-data @endif" data-elemen-id="{{ $elemen->id }}" data-initial-filled="{{ $eProgress['filled'] }}" data-initial-total="{{ $eProgress['total'] }}">
                             {{-- Elemen Header --}}
-                            <div class="card-header">
-                                <button class="btn btn-link collapsed d-flex w-100 justify-content-between align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-elemen-{{ $elemen->id }}">
-                                    <div>
-                                        <span class="badge bg-primary me-2">{{ $elemen->kode_elemen }}</span>
-                                        <strong>{{ $elemen->pernyataan_elemen }}</strong>
-                                    </div>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <small class="text-muted elemen-progress-text">
-                                            {{ $eProgress['filled'] }}/{{ $eProgress['total'] }}
-                                        </small>
-                                        <span class="badge {{ $elemenBadgeClass }} elemen-status-badge">
-                                            @if($hasData)
-                                            <i class="bi bi-check-circle"></i> Lengkap
-                                            @else
-                                            <i class="bi bi-clock"></i> {{ $eProgress['percentage'] }}%
-                                            @endif
-                                        </span>
-                                    </div>
-                                </button>
+                            <div class="card-header elemen-header" id="heading-elemen-{{ $elemen->id }}">
+                                <div class="d-md-flex justify-content-between align-items-center">
+                                    <button class="btn btn-link elemen-btn collapsed d-flex flex-column flex-md-row align-items-start align-items-md-center w-100 gap-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-elemen-{{ $elemen->id }}" aria-expanded="false" aria-controls="collapse-elemen-{{ $elemen->id }}">
+                                        <div>
+                                            <span class="badge bg-primary me-2">{{ $elemen->kode_elemen }}</span>
+                                            <strong>{{ $elemen->pernyataan_elemen }}</strong>
+                                        </div>
+                                        <div class="ms-auto d-flex align-items-center gap-2">
+                                            <small class="text-muted elemen-progress-text">
+                                                {{ $eProgress['filled'] }}/{{ $eProgress['total'] }}
+                                            </small>
+                                            <span class="badge {{ $elemenBadgeClass }} elemen-status-badge">
+                                                @if($hasData)
+                                                <i class="bi bi-check-circle"></i> Lengkap
+                                                @else
+                                                <i class="bi bi-clock"></i> {{ $eProgress['percentage'] }}%
+                                                @endif
+                                            </span>
+                                        </div>
+                                    </button>
+                                </div>
                             </div>
 
                             {{-- Elemen Body --}}
-                            <div id="collapse-elemen-{{ $elemen->id }}" class="accordion-collapse collapse" data-bs-parent="#accordionElemen-{{ $kriteria->id }}">
+                            <div id="collapse-elemen-{{ $elemen->id }}" class="accordion-collapse collapse elemen-collapse" aria-labelledby="heading-elemen-{{ $elemen->id }}" data-bs-parent="#accordionElemen-{{ $kriteria->id }}">
                                 <div class="card-body">
                                     {{-- Deskripsi Narasi --}}
                                     <div class="mb-4">
@@ -442,94 +448,94 @@
 
                                             @if($dataset->tipe_field === 'table')
                                             {{-- CKEditor for Table --}}
-                                            <div class="wysiwyg-editor" data-dataset-id="{{ $dataset->kode }}" data-field-type="table" data-template="{{ $dataset->expected_columns ? json_encode($dataset->expected_columns) : '' }}">
-                                                {!! $existingData[$dataset->kode] ?? $dataset->template_html ?? '' !!}
-                                            </div>
-
-                                            <div class="editor-actions">
-                                                <small class="text-muted">
-                                                    <i class="bi bi-info-circle"></i> Gunakan toolbar editor untuk mengedit tabel
-                                                </small>
-                                                <button type="button" class="btn btn-sm btn-primary btn-save-editor" data-dataset-id="{{ $dataset->kode }}">
-                                                    <i class="bi bi-save"></i> Simpan
-                                                </button>
-                                            </div>
-
-                                            <div class="save-status text-muted mt-1">
-                                                <i class="bi bi-cloud-check"></i>
-                                                <span class="status-text">
-                                                    @if(isset($existingData[$dataset->kode]))
-                                                    Tersimpan
-                                                    @else
-                                                    Belum ada data
-                                                    @endif
-                                                </span>
-                                            </div>
-
-                                            @elseif($dataset->tipe_field === 'narasi' || $dataset->tipe_field === 'textarea')
-                                            {{-- Simple Textarea --}}
-                                            <textarea class="form-control auto-save-field" name="{{ $dataset->kode }}" data-field-id="{{ $dataset->kode }}" data-field-type="textarea" rows="4" placeholder="{{ $dataset->placeholder }}" @if($dataset->is_required) required @endif>{{ $existingData[$dataset->kode] ?? '' }}</textarea>
-
-                                            <div class="save-status text-muted mt-1">
-                                                <i class="bi bi-cloud-check"></i>
-                                                <span class="status-text">Belum ada perubahan</span>
-                                            </div>
-
-                                            @elseif($dataset->tipe_field === 'number')
-                                            <input type="number" class="form-control auto-save-field" name="{{ $dataset->kode }}" data-field-id="{{ $dataset->kode }}" data-field-type="number" placeholder="{{ $dataset->placeholder }}" value="{{ $existingData[$dataset->kode] ?? '' }}" @if($dataset->is_required) required @endif>
-
-                                            <div class="save-status text-muted mt-1">
-                                                <i class="bi bi-cloud-check"></i>
-                                                <span class="status-text">Belum ada perubahan</span>
-                                            </div>
-
-                                            @elseif($dataset->tipe_field === 'date')
-                                            <input type="date" class="form-control auto-save-field" name="{{ $dataset->kode }}" data-field-id="{{ $dataset->kode }}" data-field-type="date" value="{{ $existingData[$dataset->kode] ?? '' }}" @if($dataset->is_required) required @endif>
-
-                                            <div class="save-status text-muted mt-1">
-                                                <i class="bi bi-cloud-check"></i>
-                                                <span class="status-text">Belum ada perubahan</span>
-                                            </div>
-
-                                            @elseif($dataset->tipe_field === 'file')
-                                            <input type="file" class="form-control file-upload-field" name="{{ $dataset->kode }}" data-field-id="{{ $dataset->kode }}" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
-                                            @if(isset($existingData[$dataset->kode]))
-                                            <small class="text-success">
-                                                <i class="bi bi-check-circle"></i> File tersimpan
+                                            {{-- <div class="wysiwyg-editor" data-dataset-id="{{ $dataset->kode }}" data-field-type="table" data-template="{{ $dataset->expected_columns ? json_encode($dataset->expected_columns) : '' }}">
+                                            {!! $existingData[$dataset->kode] ?? $dataset->template_html ?? '' !!}
+                                        </div> --}}
+                                        <textarea id="editor_{{ \Illuminate\Support\Str::slug($dataset->kode, '_') }}" class="tinymce-editor" data-dataset-id="{{ $dataset->kode }}" data-field-type="table" data-template="{{ $dataset->expected_columns ? e(json_encode($dataset->expected_columns)) : '' }}">{!! $existingData[$dataset->kode] ?? $dataset->template_html ?? '' !!}</textarea>
+                                        <div class="editor-actions">
+                                            <small class="text-muted">
+                                                <i class="bi bi-info-circle"></i> Gunakan toolbar editor untuk mengedit tabel
                                             </small>
-                                            @endif
-
-                                            @else
-                                            <input type="text" class="form-control auto-save-field @error($dataset->kode) is-invalid @enderror" name="{{ $dataset->kode }}" data-field-id="{{ $dataset->kode }}" data-field-type="text" placeholder="{{ $dataset->placeholder }}" value="{{ $existingData[$dataset->kode] ?? '' }}" @if($dataset->is_required) required @endif>
-
-                                            <div class="save-status text-muted mt-1">
-                                                <i class="bi bi-cloud-check"></i>
-                                                <span class="status-text">Belum ada perubahan</span>
-                                            </div>
-                                            @endif
-
-                                            @if($dataset->keterangan)
-                                            <small class="text-muted d-block mt-1">
-                                                <i class="bi bi-lightbulb"></i> {{ $dataset->keterangan }}
-                                            </small>
-                                            @endif
-                                            @error($dataset->kode)
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
+                                            <button type="button" class="btn btn-sm btn-primary btn-save-editor" data-dataset-id="{{ $dataset->kode }}">
+                                                <i class="bi bi-save"></i> Simpan
+                                            </button>
                                         </div>
-                                        @endforeach
+
+                                        <div class="save-status text-muted mt-1">
+                                            <i class="bi bi-cloud-check"></i>
+                                            <span class="status-text">
+                                                @if(isset($existingData[$dataset->kode]))
+                                                Tersimpan
+                                                @else
+                                                Belum ada data
+                                                @endif
+                                            </span>
+                                        </div>
+
+                                        @elseif($dataset->tipe_field === 'narasi' || $dataset->tipe_field === 'textarea')
+                                        {{-- Simple Textarea --}}
+                                        <textarea class="form-control auto-save-field" name="{{ $dataset->kode }}" data-field-id="{{ $dataset->kode }}" data-field-type="textarea" rows="4" placeholder="{{ $dataset->placeholder }}" @if($dataset->is_required) required @endif>{{ $existingData[$dataset->kode] ?? '' }}</textarea>
+
+                                        <div class="save-status text-muted mt-1">
+                                            <i class="bi bi-cloud-check"></i>
+                                            <span class="status-text">Belum ada perubahan</span>
+                                        </div>
+
+                                        @elseif($dataset->tipe_field === 'number')
+                                        <input type="number" class="form-control auto-save-field" name="{{ $dataset->kode }}" data-field-id="{{ $dataset->kode }}" data-field-type="number" placeholder="{{ $dataset->placeholder }}" value="{{ $existingData[$dataset->kode] ?? '' }}" @if($dataset->is_required) required @endif>
+
+                                        <div class="save-status text-muted mt-1">
+                                            <i class="bi bi-cloud-check"></i>
+                                            <span class="status-text">Belum ada perubahan</span>
+                                        </div>
+
+                                        @elseif($dataset->tipe_field === 'date')
+                                        <input type="date" class="form-control auto-save-field" name="{{ $dataset->kode }}" data-field-id="{{ $dataset->kode }}" data-field-type="date" value="{{ $existingData[$dataset->kode] ?? '' }}" @if($dataset->is_required) required @endif>
+
+                                        <div class="save-status text-muted mt-1">
+                                            <i class="bi bi-cloud-check"></i>
+                                            <span class="status-text">Belum ada perubahan</span>
+                                        </div>
+
+                                        @elseif($dataset->tipe_field === 'file')
+                                        <input type="file" class="form-control file-upload-field" name="{{ $dataset->kode }}" data-field-id="{{ $dataset->kode }}" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
+                                        @if(isset($existingData[$dataset->kode]))
+                                        <small class="text-success">
+                                            <i class="bi bi-check-circle"></i> File tersimpan
+                                        </small>
+                                        @endif
+
+                                        @else
+                                        <input type="text" class="form-control auto-save-field @error($dataset->kode) is-invalid @enderror" name="{{ $dataset->kode }}" data-field-id="{{ $dataset->kode }}" data-field-type="text" placeholder="{{ $dataset->placeholder }}" value="{{ $existingData[$dataset->kode] ?? '' }}" @if($dataset->is_required) required @endif>
+
+                                        <div class="save-status text-muted mt-1">
+                                            <i class="bi bi-cloud-check"></i>
+                                            <span class="status-text">Belum ada perubahan</span>
+                                        </div>
+                                        @endif
+
+                                        @if($dataset->keterangan)
+                                        <small class="text-muted d-block mt-1">
+                                            <i class="bi bi-lightbulb"></i> {{ $dataset->keterangan }}
+                                        </small>
+                                        @endif
+                                        @error($dataset->kode)
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
                                     </div>
-                                    @endif
+                                    @endforeach
                                 </div>
+                                @endif
                             </div>
                         </div>
-                        @endforeach
                     </div>
+                    @endforeach
                 </div>
             </div>
         </div>
-        @endforeach
     </div>
+    @endforeach
+</div>
 </div>
 
 {{-- Modal Import DOCX --}}
@@ -587,28 +593,12 @@
 
 @push('scripts')
 {{-- CKEditor 5 --}}
-<script src="{{ asset('assets/js/ckeditor5.umd.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/tinymce@8.3.1/tinymce.min.js"></script>
+{{-- <script src="{{ asset('assets/js/ckeditor5.umd.js') }}"></script> --}}
 
 <script>
-    const {
-        ClassicEditor
-        , Essentials
-        , Bold
-        , Italic
-        , Font
-        , Paragraph
-        , Table
-        , TableToolbar
-        , Heading
-        , List
-        , Link
-        , Alignment
-        , Underline
-        , Strikethrough
-        , Indent
-        , IndentBlock
-    } = CKEDITOR;
-    const licenseKeyCKEDITOR = 'eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3Njc3NDM5OTksImp0aSI6ImViNWYxM2ZjLWViMmEtNDNhZi05OGE2LTI1YjBmMTY4N2RhMyIsInVzYWdlRW5kcG9pbnQiOiJodHRwczovL3Byb3h5LWV2ZW50LmNrZWRpdG9yLmNvbSIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsiY2xvdWQiLCJkcnVwYWwiLCJzaCJdLCJ3aGl0ZUxhYmVsIjp0cnVlLCJsaWNlbnNlVHlwZSI6InRyaWFsIiwiZmVhdHVyZXMiOlsiKiJdLCJ2YyI6ImM2MjE0NTY3In0.rTMaN-qZUvY2yczKBRALkpIws_B92_gsnIJtG2pQvOikQvsYE8JoFXqwA_WxymhPtO7kjMQOV0s8FILQ8W1syA'
+    //const { ClassicEditor , Essentials , Bold , Italic , Font , Paragraph , Table , TableToolbar , Heading , List , Link , Alignment , Underline , Strikethrough , Indent , IndentBlock } = CKEDITOR;
+    //const licenseKeyCKEDITOR = 'eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3Njc3NDM5OTksImp0aSI6ImViNWYxM2ZjLWViMmEtNDNhZi05OGE2LTI1YjBmMTY4N2RhMyIsInVzYWdlRW5kcG9pbnQiOiJodHRwczovL3Byb3h5LWV2ZW50LmNrZWRpdG9yLmNvbSIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsiY2xvdWQiLCJkcnVwYWwiLCJzaCJdLCJ3aGl0ZUxhYmVsIjp0cnVlLCJsaWNlbnNlVHlwZSI6InRyaWFsIiwiZmVhdHVyZXMiOlsiKiJdLCJ2YyI6ImM2MjE0NTY3In0.rTMaN-qZUvY2yczKBRALkpIws_B92_gsnIJtG2pQvOikQvsYE8JoFXqwA_WxymhPtO7kjMQOV0s8FILQ8W1syA'
 
     document.addEventListener('DOMContentLoaded', function() {
         const pengajuanId = "{{ $pengajuan->id }}";
@@ -631,82 +621,83 @@
         initializeResetBorang();
         initializeImportExport();
 
-        /**
-         * ✅ Initialize CKEditor with existing data
-         */
-        async function initializeWYSIWYGEditors() {
-            const editorElements = document.querySelectorAll('.wysiwyg-editor');
+        function initializeWYSIWYGEditors() {
+            const editorElements = document.querySelectorAll('textarea.tinymce-editor');
 
-            for (const element of editorElements) {
-                const datasetId = element.dataset.datasetId;
-                const existingContent = element.innerHTML.trim();
+            editorElements.forEach((el) => {
+                const datasetId = el.dataset.datasetId;
 
-                try {
-                    const editor = await ClassicEditor.create(element, {
-                        licenseKey: licenseKeyCKEDITOR
-                        , plugins: [
-                            Essentials, Bold, Italic, Font, Paragraph
-                            , Table, TableToolbar, Heading, List, Link
-                            , Alignment, Underline, Strikethrough
-                            , Indent, IndentBlock
-                        ]
-                        , toolbar: [
-                            'undo', 'redo', '|'
-                            , 'heading', '|'
-                            , 'bold', 'italic', 'underline', 'strikethrough', '|'
-                            , 'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor', '|'
-                            , 'alignment', '|'
-                            , 'bulletedList', 'numberedList', '|'
-                            , 'outdent', 'indent', '|'
-                            , 'insertTable', 'link'
-                        ]
-                        , table: {
-                            contentToolbar: [
-                                'tableColumn', 'tableRow', 'mergeTableCells'
-                                , 'tableProperties', 'tableCellProperties'
-                            ]
-                        }
-                    });
-
-                    // Set data
-                    if (existingContent && existingContent.length > 50) {
-                        editor.setData(existingContent);
-                    } else {
-                        const templateColumns = element.dataset.template;
-                        if (templateColumns) {
-                            const columns = JSON.parse(templateColumns);
-                            if (columns.length > 0) {
-                                insertTemplateTable(editor, columns);
+                tinymce.init({
+                    license_key: 'gpl'
+                    , target: el
+                    , menubar: false
+                    , height: 550
+                    , plugins: 'table lists link code'
+                    , toolbar: [
+                        'undo redo | bold italic underline strikethrough | alignleft aligncenter alignright | bullist numlist |'
+                        , 'table | link | code'
+                    ].join(' ')
+                    , content_style: `
+        table { border-collapse: collapse; width: 100%; }
+        td, th { border: 1px solid #ddd; padding: 8px; }
+        th { background: #f2f2f2; font-weight: bold; }
+      `
+                    , setup: function(editor) {
+                        editor.on('init', function() {
+                            // Jika kosong / terlalu pendek, isi template dari expected_columns
+                            const existing = editor.getContent({
+                                format: 'html'
+                            }).trim();
+                            if (!existing || existing.length < 50) {
+                                const templateColumns = el.dataset.template;
+                                if (templateColumns) {
+                                    try {
+                                        const columns = JSON.parse(templateColumns);
+                                        if (columns && columns.length > 0) {
+                                            editor.setContent(buildTemplateTable(columns));
+                                        }
+                                    } catch (e) {
+                                        console.error('Template JSON parse error:', datasetId, e);
+                                    }
+                                }
                             }
-                        }
+
+                            // simpan instance
+                            editorInstances[datasetId] = editor;
+                        });
                     }
+                });
+            });
 
-                    editorInstances[datasetId] = editor;
-
-                } catch (error) {
-                    console.error('❌ Editor init failed for', datasetId, error);
-                }
-            }
-
-            // Update progress after editors load
             setTimeout(updateProgress, 1000);
         }
 
-        function insertTemplateTable(editor, columns) {
-            let tableHTML = '<table style="width:100%;border-collapse:collapse;"><thead><tr>';
+        function buildTemplateTable(columns) {
+            let html = '<table style="width:100%;border-collapse:collapse;"><thead><tr>';
             columns.forEach(col => {
-                tableHTML += `<th style="border:1px solid #ddd;padding:8px;background-color:#f2f2f2;">${col}</th>`;
+                html += `<th style="border:1px solid #ddd;padding:8px;background-color:#f2f2f2;">${escapeHtml(col)}</th>`;
             });
-            tableHTML += '</tr></thead><tbody>';
+            html += '</tr></thead><tbody>';
+
             for (let i = 0; i < 3; i++) {
-                tableHTML += '<tr>';
+                html += '<tr>';
                 columns.forEach(() => {
-                    tableHTML += '<td style="border:1px solid #ddd;padding:8px;">&nbsp;</td>';
+                    html += '<td style="border:1px solid #ddd;padding:8px;">&nbsp;</td>';
                 });
-                tableHTML += '</tr>';
+                html += '</tr>';
             }
-            tableHTML += '</tbody></table>';
-            editor.setData(tableHTML);
+
+            html += '</tbody></table>';
+            return html;
+        }
+
+        function escapeHtml(str) {
+            return String(str)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
         }
 
         /**
@@ -722,7 +713,8 @@
                     return;
                 }
 
-                const content = editor.getData();
+                //const content = editor.getData(); // CKEditor 5
+                const content = editor.getContent(); // TinyMCE
                 const wrapper = this.closest('.dataset-field-wrapper');
                 const statusElement = wrapper.querySelector('.status-text');
 
@@ -1036,7 +1028,8 @@
                     totalFieldsCount++;
 
                     if (editorInstances[datasetId]) {
-                        const content = editorInstances[datasetId].getData().trim();
+                        //const content = editorInstances[datasetId].getData().trim();
+                        const content = editorInstances[datasetId].getContent().trim();
 
                         // Check if has real data (not just template)
                         const hasRealData = content.length > 0 &&
@@ -1434,6 +1427,35 @@
                 }
             });
         }
+
+        /**
+         * Toggle Kriteria Accordion
+         */
+        window.toggleKriteriaAccordion = function(kriteriaId, btn) {
+            const kriteriaCollapse = document.getElementById(`collapse-kriteria-${kriteriaId}`);
+            if (!kriteriaCollapse) return;
+
+            const kriteriaInstance = bootstrap.Collapse.getOrCreateInstance(
+                kriteriaCollapse, {
+                    toggle: false
+                }
+            );
+
+            const isOpen = kriteriaCollapse.classList.contains('show');
+
+            // 1️⃣ Toggle kriteria
+            isOpen ? kriteriaInstance.hide() : kriteriaInstance.show();
+
+            // 2️⃣ Toggle semua elemen di dalam kriteria
+            const elemenCollapses = kriteriaCollapse.querySelectorAll('.elemen-collapse');
+
+            elemenCollapses.forEach(el => {
+                const instance = bootstrap.Collapse.getOrCreateInstance(el, {
+                    toggle: false
+                });
+                isOpen ? instance.hide() : instance.show();
+            });
+        };
 
         function showLoading() {
             document.getElementById('loadingOverlay').classList.add('show');

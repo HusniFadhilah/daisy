@@ -60,10 +60,53 @@ class DatasetBorangSeeder extends Seeder
             'label_field'       => $cfg['title'],
             'is_required'       => true,
             'expected_columns'  => $cfg['columns'],
-            'template_html'     => $this->makeTemplateHtml($cfg['columns'], $cfg['sample_rows'] ?? []),
+            'template_html' => $this->safeTemplateHtml(
+                $this->makeTemplateHtml($cfg['columns'], $cfg['sample_rows'] ?? []),
+                $cfg['columns']
+            ),
+            // 'template_html'     => $this->makeTemplateHtml($cfg['columns'], $cfg['sample_rows'] ?? []),
             'keterangan'        => $cfg['note'] ?? ('Isi data tabel untuk elemen ' . $elemen->kode_elemen),
             'urutan'            => 2,
         ]);
+    }
+
+    private function safeTemplateHtml(string $html, array $expectedColumns): string
+    {
+        // 1) HARD BLOCK merge
+        if (preg_match('/\b(colspan|rowspan)\s*=\s*["\']?\d+/i', $html)) {
+            // kalau ketemu merge, jatuhkan ke template polos yang pasti aman
+            return $this->makeTemplateHtml($expectedColumns, []);
+        }
+
+        // 2) Pastikan benar-benar ada table/tr/td
+        if (!preg_match('/<table\b/i', $html) || !preg_match('/<tr\b/i', $html)) {
+            return $this->makeTemplateHtml($expectedColumns, []);
+        }
+
+        // 3) Normalisasi: ambil hanya <table> ... </table> pertama
+        if (preg_match('/<table\b[^>]*>.*<\/table>/is', $html, $m)) {
+            $html = $m[0];
+        }
+
+        // 4) Validasi tiap row: jumlah kolom harus sama dengan expected
+        $expectedCount = count($expectedColumns);
+
+        preg_match_all('/<tr\b[^>]*>(.*?)<\/tr>/is', $html, $rows);
+        if (empty($rows[1])) {
+            return $this->makeTemplateHtml($expectedColumns, []);
+        }
+
+        foreach ($rows[1] as $rowHtml) {
+            preg_match_all('/<t[hd]\b[^>]*>(.*?)<\/t[hd]>/is', $rowHtml, $cells);
+            $cellCount = count($cells[1] ?? []);
+
+            if ($expectedCount > 0 && $cellCount !== $expectedCount) {
+                // mismatch -> fallback aman
+                return $this->makeTemplateHtml($expectedColumns, []);
+            }
+        }
+
+        return $html;
     }
 
     private function tableConfig(string $kodeElemen): array

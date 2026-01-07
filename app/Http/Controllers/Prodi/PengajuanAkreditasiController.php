@@ -196,12 +196,28 @@ class PengajuanAkreditasiController extends Controller
         $pengajuan = PengajuanAkreditasi::with([
             'studyProgram.degreeLevel', // ✅ FIX
             'studyProgram.university',
-            'pengaju',
-            'deskEvaluator',
-            'dokumen.uploader',
-            'reviewKesiapan.reviewer',
+            'pengaju' => function ($query) {
+                $query->select('id', 'name', 'email', 'role');
+            },
+            'deskEvaluator' => function ($query) {
+                $query->select('id', 'name', 'email', 'role');
+            },
+            'dokumen' => function ($query) {
+                $query->with(['uploader' => function ($q) {
+                    $q->select('id', 'name', 'email');
+                }]);
+            },
+            'reviewKesiapan' => function ($query) {
+                $query->with(['reviewer' => function ($q) {
+                    $q->select('id', 'name', 'email');
+                }]);
+            },
             'pembayaran',
-            'statusLog.changedBy'
+            'statusLog' => function ($query) {
+                $query->with(['changedBy' => function ($q) {
+                    $q->select('id', 'name', 'email');
+                }])->latest();
+            }
         ])->findOrFail($id);
 
         // Check authorization

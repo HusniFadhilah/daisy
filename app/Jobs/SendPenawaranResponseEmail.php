@@ -80,11 +80,6 @@ class SendPenawaranResponseEmail implements ShouldQueue
 
             Mail::to($user->email)
                 ->send($mailClass);
-
-            Log::info("Email konfirmasi {$this->responseType} berhasil dikirim ke user", [
-                'user_email' => $user->email,
-                'assignment_id' => $this->assignment->id,
-            ]);
         } catch (\Exception $e) {
             Log::error("Gagal mengirim email ke user", [
                 'error' => $e->getMessage(),
@@ -108,11 +103,6 @@ class SendPenawaranResponseEmail implements ShouldQueue
 
             Mail::to($adminEmail)
                 ->send($mailClass);
-
-            Log::info("Email notifikasi {$this->responseType} berhasil dikirim ke admin", [
-                'admin_email' => $adminEmail,
-                'assignment_id' => $this->assignment->id,
-            ]);
         } catch (\Exception $e) {
             Log::error("Gagal mengirim email ke admin", [
                 'error' => $e->getMessage(),

@@ -35,7 +35,7 @@ class DatabaseSeeder extends Seeder
             StudyProgramUserSeeder::class,
             AkreditasiSeeder::class,
             // PengajuanAkreditasiSeeder::class,
-            DatasetBorangSeeder::class,
+            DatasetBorangSeeder3::class,
         ]);
     }
     /**

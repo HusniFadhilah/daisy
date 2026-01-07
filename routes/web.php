@@ -428,3 +428,5 @@ Route::get('clearcache', function () {
     Illuminate\Support\Facades\Artisan::call('config:cache');
     Illuminate\Support\Facades\Artisan::call('config:cache');
 });
+
+Route::get('/debug/dataset-borang', [\App\Http\Controllers\DatasetBorangController::class, 'index'])->name('debug.dataset-borang.index');

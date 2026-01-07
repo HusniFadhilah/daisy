@@ -11,6 +11,7 @@ class DatasetBorang extends Model
 
     protected $fillable = [
         'id_elemen',
+        'id_degree_level',
         'kode',
         'nama',
         'deskripsi',
@@ -21,18 +22,22 @@ class DatasetBorang extends Model
         'options',
         'keterangan',
         'expected_columns',
+        'expected_rows',
         'template_html',
         'validation_rules',
         'urutan',
         'is_active',
+        'has_degree_variants',
     ];
 
     protected $casts = [
         'expected_columns' => 'array',
+        'expected_rows' => 'array',
         'options' => 'array',
         'validation_rules' => 'array',
         'is_required' => 'boolean',
         'is_active' => 'boolean',
+        'has_degree_variants' => 'boolean',
     ];
 
     // ==========================================
@@ -42,6 +47,26 @@ class DatasetBorang extends Model
     public function elemen()
     {
         return $this->belongsTo(ElemenStandar::class, 'id_elemen');
+    }
+
+    public function degreeLevel()
+    {
+        return $this->belongsTo(DegreeLevel::class, 'id_degree_level');
+    }
+
+    public function degreeLevelVariants()
+    {
+        return $this->belongsToMany(
+            DegreeLevel::class,
+            'dataset_borang_degree_level',
+            'id_dataset_borang',
+            'id_degree_level'
+        )->withPivot([
+            'expected_columns',
+            'template_html',
+            'validation_rules',
+            'keterangan'
+        ])->withTimestamps();
     }
 
     public function borangTables()
@@ -128,6 +153,71 @@ class DatasetBorang extends Model
         $html .= '</tbody></table>';
 
         return $html;
+    }
+
+    /**
+     * ✅ Get template untuk degree level tertentu
+     */
+    public function getTemplateForDegree($degreeLevelId)
+    {
+        // Cek apakah ada variant untuk degree level ini
+        $variant = $this->degreeLevelVariants()
+            ->where('id_degree_level', $degreeLevelId)
+            ->first();
+
+        if ($variant && $variant->pivot->template_html) {
+            return [
+                'template_html' => $variant->pivot->template_html,
+                'expected_columns' => $variant->pivot->expected_columns,
+                'validation_rules' => $variant->pivot->validation_rules,
+                'keterangan' => $variant->pivot->keterangan,
+                'source' => 'variant',
+            ];
+        }
+
+        // Fallback ke template default
+        return [
+            'template_html' => $this->template_html,
+            'expected_columns' => $this->expected_columns,
+            'validation_rules' => $this->validation_rules,
+            'keterangan' => $this->keterangan,
+            'source' => 'default',
+        ];
+    }
+
+    /**
+     * ✅ Check if dataset is applicable for degree level
+     */
+    public function isApplicableFor($degreeLevelId)
+    {
+        // Jika id_degree_level NULL = berlaku untuk semua
+        if ($this->id_degree_level === null) {
+            return true;
+        }
+
+        // Jika spesifik, harus match
+        if ($this->id_degree_level == $degreeLevelId) {
+            return true;
+        }
+
+        // Cek di variants
+        return $this->degreeLevelVariants()
+            ->where('id_degree_level', $degreeLevelId)
+            ->exists();
+    }
+
+    /**
+     * ✅ Scope: Filter by degree level
+     */
+    public function scopeForDegreeLevel($query, $degreeLevelId)
+    {
+        return $query->where(function ($q) use ($degreeLevelId) {
+            $q->whereNull('id_degree_level')
+                ->orWhere('id_degree_level', $degreeLevelId)
+                ->orWhereHas('degreeLevelVariants', function ($q2) use ($degreeLevelId) {
+                    $q2->where('id_degree_level', $degreeLevelId);
+                });
+        });
     }
 
     /**

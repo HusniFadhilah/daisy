@@ -34,7 +34,6 @@ class DeskEvaluatorController extends Controller
             'pengaju',
             'reviewKesiapan'
         ]);
-        // ->where('id_de_assigned', $user->id);
 
         // Filter
         if ($request->filled('status')) {
@@ -45,13 +44,10 @@ class DeskEvaluatorController extends Controller
 
         // Statistics
         $stats = [
-            'total' => PengajuanAkreditasi::where('id_de_assigned', $user->id)->count(),
-            'menunggu_review' => PengajuanAkreditasi::where('id_de_assigned', $user->id)
-                ->where('status', 'draft_borang_diterima')->count(),
-            'menunggu_pembayaran' => PengajuanAkreditasi::where('id_de_assigned', $user->id)
-                ->where('status', 'menunggu_pembayaran')->count(),
-            'siap_lanjut' => PengajuanAkreditasi::where('id_de_assigned', $user->id)
-                ->where('status', 'pengajuan_completed')->count(),
+            'total' => PengajuanAkreditasi::count(),
+            'menunggu_review' => PengajuanAkreditasi::where('status', 'draft_borang_diterima')->count(),
+            'menunggu_pembayaran' => PengajuanAkreditasi::where('status', 'menunggu_pembayaran')->count(),
+            'siap_lanjut' => PengajuanAkreditasi::where('status', 'pengajuan_completed')->count(),
         ];
 
         return view('asesmen.de.index', compact('pengajuans', 'stats'));
@@ -65,12 +61,32 @@ class DeskEvaluatorController extends Controller
         $pengajuan = PengajuanAkreditasi::with([
             'studyProgram.degreeLevel',
             'studyProgram.university',
-            'pengaju',
-            'deskEvaluator',
-            'dokumen.uploader',
-            'reviewKesiapan.reviewer',
-            'pembayaran.verifier',
-            'statusLog.changedBy'
+            'pengaju' => function ($query) {
+                $query->select('id', 'name', 'email', 'role');
+            },
+            'deskEvaluator' => function ($query) {
+                $query->select('id', 'name', 'email', 'role');
+            },
+            'dokumen' => function ($query) {
+                $query->with(['uploader' => function ($q) {
+                    $q->select('id', 'name', 'email');
+                }]);
+            },
+            'reviewKesiapan' => function ($query) {
+                $query->with(['reviewer' => function ($q) {
+                    $q->select('id', 'name', 'email');
+                }]);
+            },
+            'pembayaran' => function ($query) {
+                $query->with(['verifier' => function ($q) {
+                    $q->select('id', 'name', 'email');
+                }]);
+            },
+            'statusLog' => function ($query) {
+                $query->with(['changedBy' => function ($q) {
+                    $q->select('id', 'name', 'email');
+                }])->latest();
+            }
         ])->findOrFail($id);
 
         return view('asesmen.de.show', compact('pengajuan'));

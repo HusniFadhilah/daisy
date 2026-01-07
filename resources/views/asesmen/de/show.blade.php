@@ -800,14 +800,22 @@
                 <div class="card-body">
                     <div class="timeline">
                         @foreach([
-                        ['date' => $pengajuan->tanggal_pengingat, 'label' => 'Pengingat'],
-                        ['date' => $pengajuan->tanggal_surat_permohonan, 'label' => 'Surat Permohonan'],
-                        ['date' => $pengajuan->tanggal_borang_dikirim, 'label' => 'Borang Dikirim'],
-                        ['date' => $pengajuan->tanggal_draft_borang, 'label' => 'Draft Diterima'],
-                        ['date' => $pengajuan->tanggal_review_kesiapan, 'label' => 'Review'],
+                        ['date' => $pengajuan->tanggal_pengingat, 'label' => 'Pengingat Masa Akreditasi'],
+                        ['date' => $pengajuan->tanggal_surat_permohonan, 'label' => 'Surat Permohonan PS'],
+                        ['date' => $pengajuan->tanggal_borang_dikirim, 'label' => 'Penyampaian Template LED'],
+                        ['date' => $pengajuan->tanggal_draft_borang, 'label' => 'Dokumen LED Diterima'],
+                        ['date' => $pengajuan->tanggal_review_kesiapan, 'label' => 'Review Kesiapan'],
                         ['date' => $pengajuan->tanggal_pembayaran, 'label' => 'Pembayaran'],
-                        ['date' => $pengajuan->tanggal_borang_final, 'label' => 'Borang Final'],
-                        ['date' => $pengajuan->tanggal_lanjut_ak, 'label' => 'Lanjut AK'],
+                        ['date' => $pengajuan->tanggal_borang_final, 'label' => 'LED PS Final'],
+                        ['date' => $pengajuan->tanggal_lanjut_ak, 'label' => 'Keputusan Kesiapan'],
+                        ['date' => $pengajuan->tanggal_lanjut_ak, 'label' => 'Proses Penilaian Dokumen (AK)'],
+                        ['date' => $pengajuan->tanggal_lanjut_ak, 'label' => 'Validasi Hasil AK'],
+                        ['date' => $pengajuan->tanggal_lanjut_ak, 'label' => 'Proses Asesmen Lapangan (AL)'],
+                        ['date' => $pengajuan->tanggal_lanjut_ak, 'label' => 'Penyampaian Hasil Akreditasi'],
+                        ['date' => $pengajuan->tanggal_lanjut_ak, 'label' => 'Banding'],
+                        ['date' => $pengajuan->tanggal_lanjut_ak, 'label' => 'Penetapan Hasil Akreditasi'],
+                        ['date' => $pengajuan->tanggal_lanjut_ak, 'label' => 'Pengumuman Hasil Akreditasi'],
+                        ['date' => $pengajuan->tanggal_lanjut_ak, 'label' => 'Penyimpanan Berkas Akreditasi'],
                         ] as $item)
                         <div class="d-flex mb-3">
                             <div class="me-3">
