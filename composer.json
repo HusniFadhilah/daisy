@@ -20,7 +20,6 @@
         "phpoffice/phpword": "^1.4",
         "setasign/fpdf": "^1.8",
         "setasign/fpdi": "^2.6",
-        "setasign/fpdi-tcpdf": "^2.3",
         "yajra/laravel-datatables": "^12.0"
     },
     "require-dev": {
