@@ -2,7 +2,7 @@
 
 @extends('layouts.template.app')
 
-@section('title', 'Isi Lembar Evaluasi Diri - ' . $pengajuan->studyProgram->name)
+@section('title', 'Isi Laporan Evaluasi Diri - ' . $pengajuan->studyProgram->name)
 
 @push('styles')
 {{-- CKEditor 5 CSS --}}
@@ -172,7 +172,7 @@
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
-                    <h3 class="mb-1">Lembar Evaluasi Diri</h3>
+                    <h3 class="mb-1">Laporan Evaluasi Diri</h3>
                     <p class="text-muted mb-0">
                         {{ $pengajuan->studyProgram->name }} - {{ $pengajuan->nomor_pengajuan }}
                     </p>
@@ -1395,7 +1395,7 @@
                 const confirmed = await Swal.fire({
                     icon: 'question'
                     , title: 'Konfirmasi Finalisasi'
-                    , html: '<p><strong>Submit lembar evaluasi diri?</strong></p>'
+                    , html: '<p><strong>Submit laporan evaluasi diri?</strong></p>'
                     , showCancelButton: true
                     , confirmButtonText: 'Ya, Finalisasi'
                     , cancelButtonText: 'Batal'

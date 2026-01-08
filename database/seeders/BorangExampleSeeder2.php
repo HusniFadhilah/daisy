@@ -31,7 +31,7 @@ class BorangExampleSeeder2 extends Seeder
         // $this->addSuplemenSection();
 
         $objWriter = IOFactory::createWriter($this->phpWord, 'Word2007');
-        $filePath = storage_path('app/public/templates/TEMPLATE_BORANG_EVALUASI_DIRI.docx');
+        $filePath = storage_path('app/public/templates/TEMPLATE_LAPORAN_EVALUASI_DIRI.docx');
 
         if (!file_exists(dirname($filePath))) {
             mkdir(dirname($filePath), 0755, true);

@@ -91,7 +91,7 @@
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h4 class="mb-1">Preview Lembar Evaluasi Diri</h4>
+                    <h4 class="mb-1">Preview Laporan Evaluasi Diri</h4>
                     <p class="text-muted mb-0">
                         {{ $pengajuan->studyProgram->name }} - {{ $pengajuan->nomor_pengajuan }}
                     </p>
@@ -115,7 +115,7 @@
     {{-- Document Header --}}
     <div class="card mb-4">
         <div class="preview-header text-center">
-            <h3 class="mb-2">LEMBAR EVALUASI DIRI</h3>
+            <h3 class="mb-2">LAPORAN EVALUASI DIRI</h3>
             <h5 class="mb-3">{{ $pengajuan->studyProgram->full_name }}</h5>
             <div class="row text-center">
                 <div class="col-md-4">

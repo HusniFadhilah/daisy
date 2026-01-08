@@ -251,7 +251,7 @@ $latestImport = $pengajuan->latestBorangImport;
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title" id="uploadDraftLabel">
-                    <i class="bi bi-upload"></i> Upload Draft Lembar Evaluasi Diri
+                    <i class="bi bi-upload"></i> Upload Draft Laporan Evaluasi Diri
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>

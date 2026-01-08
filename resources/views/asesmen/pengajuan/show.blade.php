@@ -245,7 +245,7 @@
                                     <i class="bi bi-pencil-square fs-1 text-primary mb-3"></i>
                                     <h5>Form Isian Borang Online</h5>
                                     <p class="text-muted mb-3">
-                                        Isi lembar evaluasi diri secara langsung dengan form yang terstruktur
+                                        Isi laporan evaluasi diri secara langsung dengan form yang terstruktur
                                     </p>
                                     <a href="{{ route('pengajuan.borang-online', $pengajuan->id) }}" class="btn btn-primary">
                                         <i class="bi bi-pencil-square"></i> Mulai Mengisi Borang Online

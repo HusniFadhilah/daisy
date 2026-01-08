@@ -794,9 +794,12 @@ class PenilaianExcelService
         $sheet->getColumnDimension('H')->setWidth(20);
         $sheet->getColumnDimension('I')->setWidth(80);
         $sheet->getColumnDimension('J')->setWidth(80);
+        // $sheet->getColumnDimension('K')->setWidth(80);
+        // $sheet->getColumnDimension('L')->setWidth(80);
 
         // Build headers
         $this->buildPenilaianJenisHeaders($sheet, $asesmen);
+        // $this->appendPenilaianAsesor2Headers($sheet);
         $this->setTanggalCetak($sheet, 'B1:F1');
 
         // Build data rows
@@ -977,13 +980,19 @@ class PenilaianExcelService
 
                 // Apply styling
                 $this->applyRowStyling($sheet, $currentRow, null, 'B', 'J');
+                // $this->applyRowStyling($sheet, $currentRow, null, 'B', 'L');
+
+                // $sheet->getStyle("B{$currentRow}:L{$currentRow}")
+                //     ->getAlignment()
+                //     ->setVertical(Alignment::VERTICAL_TOP)
+                //     ->setWrapText(true);
 
                 // Alignment dan wrap text
                 $sheet->getStyle("B{$currentRow}:J{$currentRow}")
                     ->getAlignment()
                     ->setVertical(Alignment::VERTICAL_TOP)
                     ->setWrapText(true);
-
+                // $this->setPenilaianAsesor2Formulas($sheet, $penilaianName, $templateRow, $penilaianAsesorRow);
                 $currentRow++;
                 $penilaianAsesorRow += 2;
                 $isFirstElemen = false;
@@ -992,6 +1001,7 @@ class PenilaianExcelService
 
         // Apply conditional formatting setelah semua data dirender
         $this->applyPenilaianJenisConditionalFormatting($sheet, $penilaianName, 7, $currentRow - 1);
+        // $this->applyPenilaianJenisConditionalFormattingAsesor2($sheet, $penilaianName, 7, $currentRow - 1);
     }
 
     /**
@@ -1080,4 +1090,72 @@ class PenilaianExcelService
 
         $sheet->getRowDimension(1)->setRowHeight(18);
     }
+
+    //     /**
+    //  * Tambahkan header Penilaian Asesor 2 di kolom K-L saja.
+    //  * Tidak mengubah header existing di I-J.
+    //  */
+    // private function appendPenilaianAsesor2Headers($sheet, string $labelAsesor2 = 'Penilaian Asesor (Asesor 2)'): void
+    // {
+    //     // Header utama (row 5)
+    //     $sheet->mergeCells('K5:L5');
+    //     $sheet->setCellValue('K5', $labelAsesor2);
+
+    //     // Subheader (row 6)
+    //     $sheet->setCellValue('K6', 'Pemenuhan Standar');
+    //     $sheet->setCellValue('L6', 'Pelampauan Standar');
+
+    //     // Style header K5:L6 samakan dengan I5:J6 (fill, font, alignment, border)
+    //     // Copy style dari I5:J6 -> K5:L6
+    //     $sheet->duplicateStyle($sheet->getStyle('I5:J6'), 'K5:L6');
+    // }
+
+    // /**
+    //  * Isi rumus K (Pemenuhan) & L (Pelampauan) untuk Asesor 2 pada satu baris data Penilaian.
+    //  * Rumus dibuat persis seperti I & J, hanya beda offset baris asesor.
+    //  *
+    //  * Asumsi layout Kertas Kerja:
+    //  * - template row = MATCH(...)
+    //  * - asesor 1 row = template + 1
+    //  * - asesor 2 row = template + 3
+    //  */
+    // private function setPenilaianAsesor2Formulas($sheet, string $penilaianName, int $templateRow, int $penilaianAsesorRow): void
+    // {
+    //     // ===== Pemenuhan Standar Asesor 2 (kolom K) =====
+    //     // Persis seperti rumus kolom I, hanya offset MATCH(...)+3 (bukan +1)
+    //     $formulaPemenuhanAsesor2 = "=IFERROR(CONCATENATE(" .
+    //         "IFERROR(INDEX('Kertas Kerja {$penilaianName} Asesor'!\$I:\$I,MATCH(E{$templateRow},'Kertas Kerja {$penilaianName} Asesor'!\$E:\$E,0)+3),\"\")," .
+    //         "IFERROR(INDEX('Kertas Kerja {$penilaianName} Asesor'!\$J:\$J,MATCH(E{$templateRow},'Kertas Kerja {$penilaianName} Asesor'!\$E:\$E,0)+3),\"\")," .
+    //         "IFERROR(INDEX('Kertas Kerja {$penilaianName} Asesor'!\$K:\$K,MATCH(E{$templateRow},'Kertas Kerja {$penilaianName} Asesor'!\$E:\$E,0)+3),\"\")," .
+    //         "IFERROR(INDEX('Kertas Kerja {$penilaianName} Asesor'!\$L:\$L,MATCH(E{$templateRow},'Kertas Kerja {$penilaianName} Asesor'!\$E:\$E,0)+3),\"\")" .
+    //     "),\"\")";
+
+    //     $sheet->setCellValue("K{$templateRow}", $formulaPemenuhanAsesor2);
+
+    //     // ===== Pelampauan Standar Asesor 2 (kolom L) =====
+    //     // Persis seperti rumus kolom J, hanya baris asesor 2 = $penilaianAsesorRow + 2
+    //     $rowAsesor2 = $penilaianAsesorRow + 2;
+    //     $formulaPelampauanAsesor2 = "=IF('Kertas Kerja {$penilaianName} Asesor'!M{$rowAsesor2}=\"\", \"\", 'Kertas Kerja {$penilaianName} Asesor'!M{$rowAsesor2})";
+
+    //     $sheet->setCellValue("L{$templateRow}", $formulaPelampauanAsesor2);
+
+    //     // (Opsional) kalau Anda ingin style sel K:L sama dengan I:J per baris:
+    //     // $sheet->duplicateStyle($sheet->getStyle("I{$templateRow}:J{$templateRow}"), "K{$templateRow}:L{$templateRow}");
+    // }
+
+    // /**
+    //  * Terapkan conditional formatting untuk K (Pemenuhan Asesor 2) & L (Pelampauan Asesor 2)
+    //  * sama persis dengan I & J.
+    //  */
+    // private function applyPenilaianJenisConditionalFormattingAsesor2($sheet, string $penilaianName, int $startRow, int $endRow): void
+    // {
+    //     // Cara paling aman supaya "persis": duplicate conditional styles dari I dan J
+    //     // (karena Anda sudah build conditional di applyPenilaianJenisConditionalFormatting)
+    //     $styleI = $sheet->getStyle("I{$startRow}:I{$endRow}")->getConditionalStyles();
+    //     $styleJ = $sheet->getStyle("J{$startRow}:J{$endRow}")->getConditionalStyles();
+
+    //     $sheet->getStyle("K{$startRow}:K{$endRow}")->setConditionalStyles($styleI);
+    //     $sheet->getStyle("L{$startRow}:L{$endRow}")->setConditionalStyles($styleJ);
+    // }
+
 }

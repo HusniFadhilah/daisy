@@ -83,7 +83,7 @@ class BorangExampleSeeder extends Seeder
 
         $objWriter = IOFactory::createWriter($this->phpWord, 'Word2007');
         $safeCode = $degreeLevel->code; // contoh: "s2-terapan" jadi "s2_terapan"
-        $filePath = storage_path("app/public/templates/TEMPLATE_BORANG_EVALUASI_DIRI_{$safeCode}.docx");
+        $filePath = storage_path("app/public/templates/TEMPLATE_LAPORAN_EVALUASI_DIRI_{$safeCode}.docx");
 
         if (!file_exists(dirname($filePath))) {
             mkdir(dirname($filePath), 0755, true);

@@ -574,14 +574,14 @@ class PengajuanAkreditasiController extends Controller
                 'status_to' => 'borang_online_selesai',
                 'changed_by' => $authId,
                 'changed_at' => now(),
-                'keterangan' => 'Lembar Evaluasi Diri difinalisasi dan di-submit',
+                'keterangan' => 'Laporan Evaluasi Diri difinalisasi dan di-submit',
             ]);
 
             DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Lembar Evaluasi Diri berhasil disubmit!',
+                'message' => 'Laporan Evaluasi Diri berhasil disubmit!',
                 'data' => [
                     'status' => $pengajuan->status,
                     'submitted_at' => now()->format('d M Y H:i'),
@@ -1331,7 +1331,7 @@ class PengajuanAkreditasiController extends Controller
         try {
             $pengajuan = PengajuanAkreditasi::findOrFail($id);
             $degreeLevel = $pengajuan->studyProgram->degreeLevel->code;
-            $fileName = 'TEMPLATE_BORANG_EVALUASI_DIRI_' . $degreeLevel . '.docx';
+            $fileName = 'TEMPLATE_LAPORAN_EVALUASI_DIRI_' . $degreeLevel . '.docx';
             $templatePath = storage_path('app/public/templates/' . $fileName);
 
             if (!file_exists($templatePath)) {

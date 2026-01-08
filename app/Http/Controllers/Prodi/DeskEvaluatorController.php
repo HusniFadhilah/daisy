@@ -230,7 +230,7 @@ class DeskEvaluatorController extends Controller
                 // Create pseudo filename for record
                 $filename = 'borang_template_link_' . time() . '.url';
                 $pathFile = 'links/' . $filename; // Virtual path
-                $originalFilename = 'TEMPLATE_BORANG_EVALUASI_DIRI_' . $degreeLevel;
+                $originalFilename = 'TEMPLATE_LEMBAR_EVALUASI_DIRI_' . $degreeLevel;
                 $mimeType = 'text/uri-list';
                 $fileSize = strlen($templateLink);
             }

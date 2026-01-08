@@ -2,7 +2,7 @@
 
 @extends('layouts.template.app')
 
-@section('title', 'Validasi Lembar Evaluasi Diri - ' . $asesmen->name)
+@section('title', 'Validasi Laporan Evaluasi Diri - ' . $asesmen->name)
 
 @section('content')
 <div class="container-fluid py-3">
@@ -13,7 +13,7 @@
 
                 <!-- Judul + badge -->
                 <div class="flex-grow-1">
-                    <h3 class="mb-1 text-wrap text-break">Validasi Lembar Evaluasi Diri</h3>
+                    <h3 class="mb-1 text-wrap text-break">Validasi Laporan Evaluasi Diri</h3>
                     <p class="text-muted mb-0 text-wrap text-break">
                         {{ $asesmen->name }}
                         <span class="badge bg-primary ms-2">
@@ -364,7 +364,7 @@
         // ✅ 2. Set hidden elemen ID
         document.getElementById('validasiElemenId').value = elemen.id;
 
-        // ✅ 3. Populate Lembar Evaluasi Diri (Dynamic Grid)
+        // ✅ 3. Populate Laporan Evaluasi Diri (Dynamic Grid)
         const colors = ['#2196f3', '#ff9800', '#4caf50', '#9c27b0', '#00bcd4'];
         let htmlAsesors = '';
         let skorList = [];
@@ -1069,7 +1069,7 @@
             detailValidasiCatatan.innerHTML = validasi.catatan_validator || '<em class="text-muted">Tidak ada catatan</em>';
         }
 
-        // Lembar Evaluasi Diri (Dynamic for all asesors)
+        // Laporan Evaluasi Diri (Dynamic for all asesors)
         const colors = ['#2196f3', '#ff9800', '#4caf50', '#9c27b0', '#00bcd4'];
 
         let htmlPenilaian = '<div class="row">';
