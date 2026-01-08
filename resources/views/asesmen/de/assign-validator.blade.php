@@ -1,6 +1,6 @@
 @extends('layouts.template.app')
 
-@section('title', 'Assign Validator Borang - ' . $pengajuan->nomor_pengajuan)
+@section('title', 'Assign Validator LED - ' . $pengajuan->nomor_pengajuan)
 
 @section('content')
 <div class="container-fluid py-3">
@@ -9,7 +9,7 @@
         <div>
             <h2>
                 <i class="bi bi-person-check"></i>
-                Assign Validator Borang
+                Assign Validator LED
             </h2>
             <p class="text-muted mb-0">
                 {{ $pengajuan->nomor_pengajuan }} - {{ $pengajuan->studyProgram->name }}
@@ -62,7 +62,7 @@
             <div class="card">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-file-earmark-text"></i> Info Borang
+                        <i class="bi bi-file-earmark-text"></i> Info LED
                     </h5>
                 </div>
                 <div class="card-body">
@@ -198,9 +198,9 @@
                             <strong><i class="bi bi-info-circle"></i> Yang Akan Terjadi:</strong>
                             <ul class="mb-0 mt-2">
                                 <li>Sistem akan membuat asesmen (jika belum ada)</li>
-                                <li>Assignment dengan <code>jenis_asesmen = 'borang'</code> akan dibuat</li>
+                                <li>Assignment dengan <code>jenis_asesmen = 'dokumen'</code> akan dibuat</li>
                                 <li>Email penawaran akan dikirim ke validator</li>
-                                <li>Status pengajuan akan diupdate ke <code>borang_validation_pending</code></li>
+                                <li>Status pengajuan akan diupdate ke <code>Validator LED Di-assign</code></li>
                                 @if($currentAssignment && $currentAssignment->status_penawaran === 'pending')
                                 <li class="text-warning"><strong>Assignment lama yang pending akan dihapus</strong></li>
                                 @endif
@@ -225,7 +225,7 @@
             <div class="card mt-4">
                 <div class="card-header bg-light">
                     <h6 class="mb-0">
-                        <i class="bi bi-question-circle"></i> Persyaratan Validator Borang
+                        <i class="bi bi-question-circle"></i> Persyaratan Validator LED
                     </h6>
                 </div>
                 <div class="card-body">
@@ -233,7 +233,7 @@
                         <li>Minimal <strong>1 validator</strong> untuk review LED</li>
                         <li>Validator harus memiliki role <code>validator</code> di sistem</li>
                         <li>Validator harus menerima penawaran sebelum bisa mulai review</li>
-                        <li>Borang harus sudah di-submit dan status <code>completed</code></li>
+                        <li>LED harus sudah di-submit dan status <code>Diterima</code></li>
                     </ul>
                 </div>
             </div>

@@ -41,7 +41,6 @@ class ALController extends Controller
             $asesmens->pluck('id')->toArray(),
             $user->id
         );
-
         // Map ke masing-masing asesmen
         foreach ($asesmens as $asesmen) {
             $asesmen->progress = $progressAll[$asesmen->id] ?? [

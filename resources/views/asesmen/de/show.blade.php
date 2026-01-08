@@ -54,13 +54,13 @@
     <div class="row">
         <!-- Main Content -->
         <div class="col-md-12 col-lg-8">
-            <!-- ACTION: Kirim Form Borang (Langkah 3) -->
+            <!-- ACTION: Kirim Form LED (Langkah 3) -->
             @if($pengajuan->status === 'surat_permohonan_diterima')
             <div class="card action-card mb-4">
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">
                         <i class="bi bi-file-earmark-arrow-down"></i>
-                        Aksi Diperlukan: Kirim Form Borang
+                        Aksi Diperlukan: Kirim Form LED
                     </h5>
                 </div>
                 <div class="card-body">
@@ -178,7 +178,7 @@
                                 <ul class="mb-0 small">
                                     <li id="infoMetode">Link template akan dikirim ke email prodi</li>
                                     <li>Prodi dapat mengakses template melalui link/download file</li>
-                                    <li>Status pengajuan akan diupdate ke <code>borang_dikirim</code></li>
+                                    <li>Status pengajuan akan diupdate ke <code>Penyampaian Template LED</code></li>
                                     <li>Notifikasi email akan dikirim ke UPPS</li>
                                 </ul>
                             </div>
@@ -209,7 +209,7 @@
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0">
                         <i class="bi bi-file-earmark-spreadsheet"></i>
-                        Aksi Diperlukan: Review Kesiapan Borang
+                        Aksi Diperlukan: Review Kesiapan LED
                     </h5>
                 </div>
                 <div class="card-body">
@@ -217,7 +217,7 @@
                     <div class="alert alert-success alert-permanent mb-4">
                         <i class="bi bi-check-circle"></i>
                         <strong>Prodi telah mengupload draft LED.</strong><br>
-                        Silakan review kelengkapan dan kesiapan borang sebelum melanjutkan ke tahap pembayaran.
+                        Silakan review kelengkapan dan kesiapan LED sebelum melanjutkan ke tahap pembayaran.
                     </div>
 
                     {{-- Preview & Form Online Links --}}
@@ -388,7 +388,7 @@
                     <div class="card border-primary">
                         <div class="card-header bg-primary text-white">
                             <h6 class="mb-0">
-                                <i class="bi bi-clipboard-check"></i> Form Review Kesiapan Borang
+                                <i class="bi bi-clipboard-check"></i> Form Review Kesiapan LED
                             </h6>
                         </div>
                         <div class="card-body">
@@ -410,7 +410,7 @@
                                         </option>
                                     </select>
                                     <small class="text-muted">
-                                        Pilih "SIAP" jika borang sudah lengkap dan memenuhi syarat
+                                        Pilih "SIAP" jika LED sudah lengkap dan memenuhi syarat
                                     </small>
                                 </div>
 
@@ -422,7 +422,7 @@
                                     <textarea name="catatan_review" class="form-control" rows="5" required placeholder="Berikan catatan detail tentang hasil review:
 - Kelengkapan data
 - Validitas dokumen pendukung
-- Format dan struktur borang
+- Format dan struktur LED
 - Saran perbaikan (jika ada)"></textarea>
                                     <small class="text-muted">
                                         Minimal 5 karakter. Berikan feedback yang konstruktif.
@@ -574,8 +574,8 @@
 
                     // Confirm submission
                     const confirmMsg = hasilReview === 'siap' ?
-                        'Apakah Anda yakin borang SIAP dan akan melanjutkan ke pembayaran?' :
-                        'Apakah Anda yakin borang BELUM SIAP dan perlu revisi dari prodi?';
+                        'Apakah Anda yakin LED SIAP dan akan melanjutkan ke pembayaran?' :
+                        'Apakah Anda yakin LED BELUM SIAP dan perlu revisi dari prodi?';
 
                     if (!confirm(confirmMsg)) {
                         e.preventDefault();
@@ -633,7 +633,7 @@
                         Aksi Diperlukan: Approve Lanjut ke Tahap AK
                     </h5>
                     <p class="mb-3">
-                        Borang final telah diterima dan pembayaran telah diverifikasi.
+                        LED final telah diterima dan pembayaran telah diverifikasi.
                         Setujui untuk melanjutkan ke tahap AK/Asesmen Dokumen.
                     </p>
 

@@ -4,7 +4,9 @@ namespace App\Services;
 
 use App\Models\Asesmen;
 use App\Models\Kriteria;
+use Illuminate\Support\Str;
 use App\Models\ElemenStandar;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -19,11 +21,14 @@ use PhpOffice\PhpSpreadsheet\Cell\DataValidation;
 
 class PenilaianExcelService
 {
-    protected $modelPenilaianElemen;
+    protected $modelPenilaianElemen, $penilaianName, $penilaianFullName, $asesorName;
 
     public function __construct($modelPenilaianElemen)
     {
         $this->modelPenilaianElemen = $modelPenilaianElemen;
+        $this->penilaianName = $modelPenilaianElemen == \App\Models\PenilaianElemenAl::class ? 'AL' : 'AK';
+        $this->penilaianFullName = $this->penilaianName == 'AL' ? 'Asesmen Lapangan' : 'Asesmen Kecukupan';
+        $this->asesorName = Auth::user()->name ?? 'Asesor LAMDEPILAR';
     }
     /**
      * Generate template Excel file (format kosong)
@@ -35,7 +40,7 @@ class PenilaianExcelService
         // mode = template (tanpa data penilaian)
         $this->renderElemenRows($sheet, $asesmen, null);
 
-        return $this->saveSpreadsheet($spreadsheet, 'Template_Penilaian_AK');
+        return $this->saveSpreadsheet($spreadsheet, 'Template_Penilaian_' . $this->penilaianName);
     }
 
     /**
@@ -48,7 +53,7 @@ class PenilaianExcelService
         // mode = withData (isi komentar di kolom sesuai skor)
         $this->renderElemenRows($sheet, $asesmen, (int) $userId);
 
-        return $this->saveSpreadsheet($spreadsheet, 'Penilaian_AK_', $asesmen->code);
+        return $this->saveSpreadsheet($spreadsheet, 'Penilaian_' . $this->penilaianName . '_', $asesmen->code . '_' . Str::slug($this->asesorName));
     }
 
     /**
@@ -62,15 +67,17 @@ class PenilaianExcelService
         $this->buildMenuSheet($spreadsheet, $asesmen);
 
         // Sheet 1 → Kertas Kerja
+        $penilaianName = strtoupper($this->penilaianName);
         $sheet = $spreadsheet->createSheet();
-        $sheet->setTitle('Kertas Kerja AK Asesor');
+        $sheet->setTitle('Kertas Kerja ' . $penilaianName . ' Asesor');
         $spreadsheet->setActiveSheetIndex(1);
         $sheet->getSheetView()->setZoomScale(60);
 
         $this->setColumnWidths($sheet);
         $this->buildHeaders($sheet, $asesmen);
+        $this->setTanggalCetak($sheet, 'B1:F1');
 
-        $this->buildPenilaianAKSheet($spreadsheet, $asesmen);
+        $this->buildPenilaianJenisSheet($spreadsheet, $asesmen, $penilaianName);
         $sheet->getProtection()->setSheet(true);
         $sheet->getProtection()->setPassword('lamdepilar'); // opsional
         $sheet->getProtection()->setSort(true);
@@ -528,7 +535,7 @@ class PenilaianExcelService
         $fillTeal = [
             'fill' => [
                 'fillType' => Fill::FILL_SOLID,
-                'startColor' => ['argb' => 'FF008080']
+                'startColor' => ['argb' => '932136']
             ]
         ];
 
@@ -553,7 +560,7 @@ class PenilaianExcelService
                 'font' => [
                     'bold' => true,
                     'size' => 14,
-                    'color' => ['argb' => 'FF000000']
+                    'color' => ['argb' => 'FFFFFFFF']
                 ],
                 'alignment' => [
                     'horizontal' => Alignment::HORIZONTAL_LEFT,
@@ -567,7 +574,7 @@ class PenilaianExcelService
                 'font' => [
                     'bold' => true,
                     'size' => 14,
-                    'color' => ['argb' => 'FF000000']
+                    'color' => ['argb' => 'FFFFFFFF']
                 ],
                 'alignment' => [
                     'horizontal' => Alignment::HORIZONTAL_CENTER,
@@ -612,9 +619,9 @@ class PenilaianExcelService
             ]
         ]);
 
-        // ===== ASESMEN KECUKUPAN HEADER (Row 18) =====
+        // ===== JENIS ASESMEN HEADER (Row 18) =====
         $sheet->mergeCells('N18:Y18');
-        $sheet->setCellValue('N18', 'ASESMEN KECUKUPAN');
+        $sheet->setCellValue('N18', strtoupper($this->penilaianFullName));
         $sheet->getStyle('N18')->applyFromArray([
             'font' => [
                 'bold' => true,
@@ -635,7 +642,7 @@ class PenilaianExcelService
             'font' => [
                 'italic' => true,
                 'size' => 14,
-                'color' => ['argb' => 'FF000000']
+                'color' => ['argb' => 'FFFFFFFF']
             ],
             'alignment' => [
                 'horizontal' => Alignment::HORIZONTAL_CENTER,
@@ -646,7 +653,7 @@ class PenilaianExcelService
 
         // ===== DATA ASESOR (Kanan - Row 21, 23, 25) =====
         $rightData = [
-            21 => ['label' => 'Nama Asesor', 'value' => Auth::user()->name ?? 'Maryono, Dr. Eng.'],
+            21 => ['label' => 'Nama Asesor', 'value' => $this->asesorName],
             23 => ['label' => 'Kota Penilaian', 'value' => 'Semarang'],
             25 => ['label' => 'Tanggal Penilaian', 'value' => date('d-M-Y')],
         ];
@@ -659,7 +666,7 @@ class PenilaianExcelService
                 'font' => [
                     'bold' => true,
                     'size' => 14,
-                    'color' => ['argb' => 'FF000000']
+                    'color' => ['argb' => 'FFFFFFFF']
                 ],
                 'alignment' => [
                     'horizontal' => Alignment::HORIZONTAL_LEFT,
@@ -673,7 +680,7 @@ class PenilaianExcelService
                 'font' => [
                     'bold' => true,
                     'size' => 14,
-                    'color' => ['argb' => 'FF000000']
+                    'color' => ['argb' => 'FFFFFFFF']
                 ],
                 'alignment' => [
                     'horizontal' => Alignment::HORIZONTAL_CENTER,
@@ -767,13 +774,13 @@ class PenilaianExcelService
     }
 
     /**
-     * Build sheet "Penilaian (AK)" setelah sheet Kertas Kerja
+     * Build sheet "Penilaian (JENIS)" setelah sheet Kertas Kerja
      */
-    private function buildPenilaianAKSheet(Spreadsheet $spreadsheet, Asesmen $asesmen): void
+    private function buildPenilaianJenisSheet(Spreadsheet $spreadsheet, Asesmen $asesmen, $penilaianName): void
     {
         // Buat sheet baru
         $sheet = $spreadsheet->createSheet();
-        $sheet->setTitle('Penilaian (AK)');
+        $sheet->setTitle('Penilaian ' . strtoupper($this->penilaianName));
         $sheet->getSheetView()->setZoomScale(60);
 
         // Set column widths
@@ -789,10 +796,11 @@ class PenilaianExcelService
         $sheet->getColumnDimension('J')->setWidth(80);
 
         // Build headers
-        $this->buildPenilaianAKHeaders($sheet, $asesmen);
+        $this->buildPenilaianJenisHeaders($sheet, $asesmen);
+        $this->setTanggalCetak($sheet, 'B1:F1');
 
         // Build data rows
-        $this->renderPenilaianAKRows($sheet, $asesmen);
+        $this->renderPenilaianJenisRows($sheet, $asesmen, $penilaianName);
 
         // 🔒 LOCK SEMUA CELL
         $sheet->getStyle($sheet->calculateWorksheetDimension())
@@ -807,9 +815,9 @@ class PenilaianExcelService
     }
 
     /**
-     * Build headers untuk sheet Penilaian (AK)
+     * Build headers untuk sheet Penilaian (JENIS)
      */
-    private function buildPenilaianAKHeaders($sheet, $asesmen): void
+    private function buildPenilaianJenisHeaders($sheet, $asesmen): void
     {
         // ===== Title =====
         $sheet->mergeCells('B2:J2');
@@ -818,7 +826,7 @@ class PenilaianExcelService
         $sheet->getStyle('B2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
         $sheet->mergeCells('B3:J3');
-        $sheet->setCellValue('B3', 'Tabel 3. Penilaian AK');
+        $sheet->setCellValue('B3', 'Tabel 3. Penilaian ' . strtoupper($this->penilaianName));
         $sheet->getStyle('B3')->getFont()->setBold(true)->setSize(12);
         $sheet->getStyle('B3')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
@@ -844,7 +852,7 @@ class PenilaianExcelService
 
         // Penilaian (F:G) merge row 5
         $sheet->mergeCells('I5:J5');
-        $sheet->setCellValue('I5', 'Penilaian');
+        $sheet->setCellValue('I5', 'Penilaian Asesor (' . $this->asesorName . ')');
 
         // Subheader penilaian row 6
         $sheet->setCellValue('I6', 'Pemenuhan Standar');
@@ -900,12 +908,12 @@ class PenilaianExcelService
     }
 
     /**
-     * Render data rows untuk sheet Penilaian (AK)
+     * Render data rows untuk sheet Penilaian (JENIS)
      */
     /**
-     * Render data rows untuk sheet Penilaian (AK)
+     * Render data rows untuk sheet Penilaian (JENIS)
      */
-    private function renderPenilaianAKRows($sheet, Asesmen $asesmen): void
+    private function renderPenilaianJenisRows($sheet, Asesmen $asesmen, $penilaianName): void
     {
         $currentRow = 7;
         $penilaianAsesorRow = $currentRow + 2;
@@ -955,15 +963,15 @@ class PenilaianExcelService
                 // Menggabungkan nilai dari kolom I, J, K, L di baris yang sesuai
                 // Pemenuhan Standar (kolom I-L digabung), anti #N/A
                 $formulaPemenuhan = "=IFERROR(CONCATENATE(" .
-                    "IFERROR(INDEX('Kertas Kerja AK Asesor'!\$I:\$I,MATCH(E{$templateRow},'Kertas Kerja AK Asesor'!\$E:\$E,0)+1),\"\")," .
-                    "IFERROR(INDEX('Kertas Kerja AK Asesor'!\$J:\$J,MATCH(E{$templateRow},'Kertas Kerja AK Asesor'!\$E:\$E,0)+1),\"\")," .
-                    "IFERROR(INDEX('Kertas Kerja AK Asesor'!\$K:\$K,MATCH(E{$templateRow},'Kertas Kerja AK Asesor'!\$E:\$E,0)+1),\"\")," .
-                    "IFERROR(INDEX('Kertas Kerja AK Asesor'!\$L:\$L,MATCH(E{$templateRow},'Kertas Kerja AK Asesor'!\$E:\$E,0)+1),\"\")" .
+                    "IFERROR(INDEX('Kertas Kerja " . $penilaianName . " Asesor'!\$I:\$I,MATCH(E{$templateRow},'Kertas Kerja " . $penilaianName . " Asesor'!\$E:\$E,0)+1),\"\")," .
+                    "IFERROR(INDEX('Kertas Kerja " . $penilaianName . " Asesor'!\$J:\$J,MATCH(E{$templateRow},'Kertas Kerja " . $penilaianName . " Asesor'!\$E:\$E,0)+1),\"\")," .
+                    "IFERROR(INDEX('Kertas Kerja " . $penilaianName . " Asesor'!\$K:\$K,MATCH(E{$templateRow},'Kertas Kerja " . $penilaianName . " Asesor'!\$E:\$E,0)+1),\"\")," .
+                    "IFERROR(INDEX('Kertas Kerja " . $penilaianName . " Asesor'!\$L:\$L,MATCH(E{$templateRow},'Kertas Kerja " . $penilaianName . " Asesor'!\$E:\$E,0)+1),\"\")" .
                     "),\"\")";
                 $sheet->setCellValue("I{$templateRow}", $formulaPemenuhan);
 
                 // Formula Pelampauan Standar
-                $formulaPelampauan = "=IF('Kertas Kerja AK Asesor'!M{$penilaianAsesorRow}=\"\", \"\", 'Kertas Kerja AK Asesor'!M{$penilaianAsesorRow})";
+                $formulaPelampauan = "=IF('Kertas Kerja " . $penilaianName . " Asesor'!M{$penilaianAsesorRow}=\"\", \"\", 'Kertas Kerja " . $penilaianName . " Asesor'!M{$penilaianAsesorRow})";
 
                 $sheet->setCellValue("J{$templateRow}", $formulaPelampauan);
 
@@ -983,13 +991,13 @@ class PenilaianExcelService
         }
 
         // Apply conditional formatting setelah semua data dirender
-        $this->applyPenilaianAKConditionalFormatting($sheet, 7, $currentRow - 1);
+        $this->applyPenilaianJenisConditionalFormatting($sheet, $penilaianName, 7, $currentRow - 1);
     }
 
     /**
-     * Apply conditional formatting untuk sheet Penilaian (AK)
+     * Apply conditional formatting untuk sheet Penilaian (JENIS)
      */
-    private function applyPenilaianAKConditionalFormatting($sheet, int $startRow, int $endRow): void
+    private function applyPenilaianJenisConditionalFormatting($sheet, $penilaianName, int $startRow, int $endRow): void
     {
         $rulesPemenuhan = [
             // kolom sumber => [warna bg, warna font]
@@ -1006,8 +1014,8 @@ class PenilaianExcelService
             $conditional->setConditionType(Conditional::CONDITION_EXPRESSION);
             $conditional->addCondition(
                 "=IFERROR(
-                INDEX('Kertas Kerja AK Asesor'!\${$col}:\${$col},
-                MATCH(\$E{$startRow}, 'Kertas Kerja AK Asesor'!\$E:\$E, 0)+1),
+                INDEX('Kertas Kerja " . $penilaianName . " Asesor'!\${$col}:\${$col},
+                MATCH(\$E{$startRow}, 'Kertas Kerja " . $penilaianName . " Asesor'!\$E:\$E, 0)+1),
             \"\")<>\"\""
             );
 
@@ -1031,8 +1039,8 @@ class PenilaianExcelService
         $pelampauan->setConditionType(Conditional::CONDITION_EXPRESSION);
         $pelampauan->addCondition(
             "=IFERROR(
-            INDEX('Kertas Kerja AK Asesor'!\$M:\$M,
-            MATCH(\$E{$startRow}, 'Kertas Kerja AK Asesor'!\$E:\$E, 0)+1),
+            INDEX('Kertas Kerja " . $penilaianName . " Asesor'!\$M:\$M,
+            MATCH(\$E{$startRow}, 'Kertas Kerja " . $penilaianName . " Asesor'!\$E:\$E, 0)+1),
         \"\")<>\"\""
         );
 
@@ -1046,5 +1054,30 @@ class PenilaianExcelService
 
         $sheet->getStyle("J{$startRow}:J{$endRow}")
             ->setConditionalStyles([$pelampauan]);
+    }
+
+    private function setTanggalCetak($sheet, string $range = 'B1:F1'): void
+    {
+        $sheet->mergeCells($range);
+
+        // pakai timezone app (Laravel) kalau mau konsisten
+        $tglCetak = now()->format('d-m-Y H:i:s');
+
+        $startCell = explode(':', $range)[0]; // "B1"
+        $sheet->setCellValue($startCell, "Tanggal cetak: {$tglCetak}");
+
+        $sheet->getStyle($range)->applyFromArray([
+            'font' => [
+                'bold' => true,
+                'size' => 10,
+                'color' => ['argb' => 'FF000000'],
+            ],
+            'alignment' => [
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
+                'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+            ],
+        ]);
+
+        $sheet->getRowDimension(1)->setRowHeight(18);
     }
 }
