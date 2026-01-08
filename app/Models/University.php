@@ -13,6 +13,6 @@ class University extends Model
 
     public function studyPrograms()
     {
-        return $this->hasMany(StudyProgram::class, 'id_univ');
+        return $this->hasMany(StudyProgram::class, 'id_university');
     }
 }

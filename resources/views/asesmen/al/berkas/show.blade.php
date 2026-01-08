@@ -60,17 +60,93 @@
         }
     }
 
+    .step-circle {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        border: 2px solid #ced4da;
+        color: #6c757d;
+        background: #fff;
+    }
+
+    .step-circle.active {
+        border-color: #0d6efd;
+        color: #0d6efd;
+        background: #e7f1ff;
+    }
+
+    .step-circle.done {
+        border-color: #198754;
+        color: #198754;
+        background: #eaf7ef;
+    }
+
+    .step-circle.inactive {
+        border-color: #ced4da;
+        color: #6c757d;
+        background: #fff;
+    }
+
+    .step-line {
+        flex: 1;
+        min-width: 60px;
+        height: 2px;
+        background: #dee2e6;
+    }
+
 </style>
 @endpush
 
+@php
+$assignment = $asesmen->userRoles->where('id_user', Auth::id())->first();
+$statusPekerjaan = $assignment->status_pekerjaan ?? 'not_started';
+$isSubmittedOnly = $statusPekerjaan === 'submitted';
+$isSubmitted = isset($assignment) && in_array($statusPekerjaan, ['submitted', 'approved', 'validated']);
+$isApproved = $statusPekerjaan === 'approved';
+$needsRevision = $statusPekerjaan === 'revision_required';
+@endphp
+
 @section('content')
 <div class="container-fluid py-3">
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+
+                {{-- STEP 1 --}}
+                <a href="{{ route('al.berkas.show', ['idAsesmen' => $asesmen->id, 'step' => 1]) }}" class="text-decoration-none d-flex align-items-center gap-2">
+                    <span class="step-circle {{ $step === 1 ? 'active' : 'done' }}">1</span>
+                    <div>
+                        <div class="fw-bold {{ $step === 1 ? '' : 'text-muted' }}">Penilaian Asesmen Lapangan (AL)</div>
+                        {{-- <small class="text-muted">Isi kategori & justifikasi per elemen</small> --}}
+                    </div>
+                </a>
+
+                <div class="step-line"></div>
+
+                {{-- STEP 2 --}}
+                <a href="{{ route('al.berkas.show', ['idAsesmen' => $asesmen->id, 'step' => 2]) }}" class="text-decoration-none d-flex align-items-center gap-2">
+                    <span class="step-circle {{ $step === 2 ? 'active' : 'inactive' }}">2</span>
+                    <div>
+                        <div class="fw-bold {{ $step === 2 ? '' : 'text-muted' }}">Hasil dan Berita Acara Asesmen Lapangan (AL)</div>
+                        {{-- <small class="text-muted">Upload BA dan Download PDF laporan</small> --}}
+                    </div>
+                </a>
+
+            </div>
+        </div>
+    </div>
+
+    @if($step === 1)
     <!-- Header Card -->
     <div class="card mb-4">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
-                    <h3 class="mb-1">Penilaian Asesmen Lapangan</h3>
+                    <h3 class="mb-1">Penilaian Asesmen Lapangan (AL)</h3>
                     <p class="text-muted mb-0">{{ $asesmen->name }}</p>
                 </div>
                 <a href="{{ route('al.berkas') }}" class="btn btn-outline-secondary">
@@ -113,15 +189,6 @@
             <div class="row align-items-center my-2">
                 <div class="col-12 mb-md-0">
                     {{-- Status Indicator --}}
-                    @php
-                    $assignment = $asesmen->userRoles->where('id_user', Auth::id())->first();
-                    $statusPekerjaan = $assignment->status_pekerjaan ?? 'not_started';
-                    $isSubmittedOnly = $statusPekerjaan === 'submitted';
-                    $isSubmitted = isset($assignment) && in_array($statusPekerjaan, ['submitted', 'approved', 'validated']);
-                    $isApproved = $statusPekerjaan === 'approved';
-                    $needsRevision = $statusPekerjaan === 'revision_required';
-                    @endphp
-
                     @if($isSubmittedOnly && !$isApproved && app()->environment('local'))
                     <div class="alert alert-info alert-permanent alert-dismissible mb-3">
                         <i class="bi bi-info-circle me-2"></i>
@@ -684,6 +751,89 @@
         </div>
     </div>
     @endforeach
+    @elseif($step === 2)
+    <div class="card shadow-sm">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="bi bi-folder2-open"></i> Hasil dan Berita Acara Asesmen Lapangan (AL)
+            </h5>
+
+            <a href="{{ route('al.berkas.laporanPdf', $asesmen->id) }}" class="btn btn-primary">
+                <i class="bi bi-file-earmark-pdf"></i> Download Laporan PDF
+            </a>
+        </div>
+
+        <div class="card-body">
+            {{-- Upload BA --}}
+            <div class="alert alert-info alert-permanent">
+                <i class="bi bi-info-circle"></i>
+                Upload file Hasil dan Berita Acara Asesmen Lapangan (AL) (PDF). File ini akan digabungkan otomatis dengan lampiran di bagian akhir laporan.
+            </div>
+
+            <form action="{{ route('al.berkas.documents.beritaAcara.upload', $asesmen->id) }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-8">
+                        <label class="form-label fw-semibold">Upload Hasil dan Berita Acara Asesmen Lapangan (AL) (PDF)</label>
+                        <input type="file" name="files[]" class="form-control" accept="application/pdf" multiple required>
+                        {{-- <small class="text-muted">Bisa multiple file (akan diurutkan berdasarkan waktu upload / atau custom order kalau kamu buat).</small> --}}
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn btn-success w-100">
+                            <i class="bi bi-upload"></i> Upload
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            {{-- <hr> --}}
+
+            {{-- List file BA --}}
+            {{-- <h6 class="fw-bold mb-2"><i class="bi bi-list-ul"></i> Daftar Berita Acara</h6>
+
+            @if(empty($beritaAcaraFiles) || count($beritaAcaraFiles) === 0)
+            <div class="alert alert-secondary alert-permanent mb-0">
+                Belum ada file berita acara yang diupload.
+            </div>
+            @else
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>File</th>
+                            <th>Uploaded</th>
+                            <th class="text-end">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($beritaAcaraFiles as $f)
+                        <tr>
+                            <td>
+                                <i class="bi bi-file-earmark-pdf text-danger"></i>
+                                {{ $f['name'] }}
+            </td>
+            <td><small class="text-muted">{{ $f['uploaded_at'] }}</small></td>
+            <td class="text-end">
+                <a class="btn btn-sm btn-outline-primary" href="{{ $f['url'] }}" target="_blank">
+                    <i class="bi bi-eye"></i> Lihat
+                </a>
+                <form class="d-inline" method="POST" action="{{ route('al.berkas.beritaAcara.delete', [$asesmen->id, $f['id']]) }}" onsubmit="return confirm('Hapus file ini?')">
+                    @csrf
+                    @method('DELETE')
+                    <button class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash"></i> Hapus
+                    </button>
+                </form>
+            </td>
+            </tr>
+            @endforeach
+            </tbody>
+            </table>
+        </div>
+        @endif --}}
+    </div>
+</div>
+@endif
 </div>
 
 <!-- Floating Action Button -->

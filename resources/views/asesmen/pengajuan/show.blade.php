@@ -135,13 +135,13 @@
     <div class="row">
         <!-- Main Content -->
         <div class="col-md-8">
-            <!-- ACTION: Upload/Isi Draft Borang -->
+            <!-- ACTION: Upload/Isi Draft LED -->
             @if(in_array($pengajuan->status, ['borang_dikirim', 'review_kesiapan_belum_siap']))
             <div class="card action-card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">
                         <i class="bi bi-exclamation-circle text-warning"></i>
-                        Aksi Diperlukan: Lengkapi Draft Borang
+                        Aksi Diperlukan: Lengkapi Draft LED
                     </h5>
                     <p class="mb-3">
                         Anda dapat melengkapi borang dengan 2 cara:
@@ -177,10 +177,10 @@
 
                             <div class="alert alert-success alert-permanent mb-3">
                                 <i class="bi bi-download"></i>
-                                <strong>Belum punya template?</strong> Download template borang resmi.
+                                <strong>Belum punya template?</strong> Download template LED resmi.
                                 <br>
                                 <a href="{{ route('pengajuan.template.download') }}" class="btn btn-sm btn-success mt-2">
-                                    <i class="bi bi-download"></i> Download Template Borang DOCX
+                                    <i class="bi bi-download"></i> Download Template LED DOCX
                                 </a>
                             </div>
 
@@ -215,7 +215,7 @@
                                 <!-- Keterangan -->
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Keterangan (Opsional)</label>
-                                    <textarea name="keterangan" class="form-control @error('keterangan') is-invalid @enderror" rows="2" placeholder="Catatan terkait draft borang"></textarea>
+                                    <textarea name="keterangan" class="form-control @error('keterangan') is-invalid @enderror" rows="2" placeholder="Catatan terkait draft LED"></textarea>
                                     @error('keterangan')
                                     <span class="invalid-feedback" role="alert">
                                         {{ $message }}
@@ -226,7 +226,7 @@
                                 <!-- Submit Buttons -->
                                 <div class="d-flex gap-2">
                                     <button type="submit" class="btn btn-primary" id="btnUploadBorang" disabled>
-                                        <i class="bi bi-upload"></i> Upload Draft Borang
+                                        <i class="bi bi-upload"></i> Upload Draft LED
                                     </button>
                                 </div>
                             </form>
@@ -258,7 +258,7 @@
             </div>
             @endif
 
-            <!-- SECTION: Proses & Preview Borang -->
+            <!-- SECTION: Proses & Preview LED -->
             @if(in_array($pengajuan->status, ['draft_borang_diterima', 'borang_online_selesai']))
             @include('asesmen.pengajuan.components.modal-upload')
             @endif
@@ -269,7 +269,7 @@
                     <div class="modal-content">
                         <div class="modal-header bg-warning">
                             <h5 class="modal-title">
-                                <i class="bi bi-arrow-repeat"></i> Upload Ulang Draft Borang
+                                <i class="bi bi-arrow-repeat"></i> Upload Ulang Draft LED
                             </h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
@@ -644,7 +644,7 @@
                     </div>
 
                     <div class="timeline-item {{ $pengajuan->tanggal_draft_borang ? 'completed' : '' }}">
-                        <strong>Draft Borang Diterima</strong>
+                        <strong>Draft LED Diterima</strong>
                         @if($pengajuan->tanggal_draft_borang)
                         <small class="d-block text-muted">
                             {{ $pengajuan->tanggal_draft_borang->format('d M Y H:i') }}
@@ -843,18 +843,18 @@
             console.log(data)
 
             if (data.success || response.ok) {
-                alert('✅ Draft borang berhasil diupload!');
+                alert('✅ Draft LED berhasil diupload!');
                 window.location.reload();
             } else {
                 alert('❌ Upload gagal: ' + (data.message || 'Terjadi kesalahan'));
                 btnUploadBorang.disabled = false;
-                btnUploadBorang.innerHTML = '<i class="bi bi-upload"></i> Upload Draft Borang';
+                btnUploadBorang.innerHTML = '<i class="bi bi-upload"></i> Upload Draft LED';
             }
         } catch (error) {
             console.error('Error:', error);
             alert('❌ Terjadi kesalahans: ' + error.message);
             btnUploadBorang.disabled = false;
-            btnUploadBorang.innerHTML = '<i class="bi bi-upload"></i> Upload Draft Borang';
+            btnUploadBorang.innerHTML = '<i class="bi bi-upload"></i> Upload Draft LED';
         }
     });
 

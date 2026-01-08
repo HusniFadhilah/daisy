@@ -28,7 +28,7 @@ class StudyProgramSeeder extends Seeder
         $universities = DB::table('universities')->pluck('id', 'name')->toArray();
 
         // Ambil data degree level untuk mapping (gunakan code sebagai key)
-        $degreeLevels = DB::table('degree_levels')->pluck('id', 'code')->toArray();
+        $degreeLevels = DB::table('degree_levels')->pluck('id', 'alias')->toArray();
 
         // Ambil data category untuk mapping berdasarkan jenjang
         $categoryMapping = [
@@ -168,8 +168,8 @@ class StudyProgramSeeder extends Seeder
                     'name' => trim($programName),
                     'full_name' => $degreeLevelCode . ' - ' . trim($programName) . ' ' . $universityName,
                     'code' => trim($programCode ?: 'N/A'),
-                    'id_univ' => $universityId,
-                    'id_level' => $degreeLevelId,
+                    'id_university' => $universityId,
+                    'id_degree_level' => $degreeLevelId,
                     'category_id' => $categoryId,
                     'bentuk_pt' => $bentukPT,
                     'email' => $email ? trim($email) : null,

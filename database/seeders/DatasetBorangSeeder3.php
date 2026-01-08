@@ -129,7 +129,7 @@ class DatasetBorangSeeder3 extends Seeder
             'tipe_field' => 'narasi',
             'label_field' => 'Deskripsi',
             'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
-            'is_required' => true,
+            'is_required' => false,
             'urutan' => 1,
         ]);
     }
@@ -146,7 +146,7 @@ class DatasetBorangSeeder3 extends Seeder
             'tipe_field' => 'narasi',
             'label_field' => 'Deskripsi',
             'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
-            'is_required' => true,
+            'is_required' => false,
             'urutan' => 1,
         ]);
     }
@@ -163,7 +163,7 @@ class DatasetBorangSeeder3 extends Seeder
             'tipe_field' => 'narasi',
             'label_field' => 'Deskripsi',
             'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
-            'is_required' => true,
+            'is_required' => false,
             'urutan' => 1,
         ]);
     }
@@ -183,7 +183,7 @@ class DatasetBorangSeeder3 extends Seeder
             'tipe_field' => 'narasi',
             'label_field' => 'Deskripsi',
             'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
-            'is_required' => true,
+            'is_required' => false,
             'urutan' => 1,
         ]);
 
@@ -302,7 +302,7 @@ class DatasetBorangSeeder3 extends Seeder
             'tipe_field' => 'narasi',
             'label_field' => 'Deskripsi',
             'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
-            'is_required' => true,
+            'is_required' => false,
             'urutan' => 1,
         ]);
 
@@ -430,7 +430,7 @@ class DatasetBorangSeeder3 extends Seeder
             'tipe_field' => 'narasi',
             'label_field' => 'Deskripsi',
             'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
-            'is_required' => true,
+            'is_required' => false,
             'urutan' => 1,
         ]);
 
@@ -482,7 +482,7 @@ class DatasetBorangSeeder3 extends Seeder
             'tipe_field' => 'narasi',
             'label_field' => 'Deskripsi',
             'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
-            'is_required' => true,
+            'is_required' => false,
             'urutan' => 1,
         ]);
 
@@ -586,7 +586,7 @@ class DatasetBorangSeeder3 extends Seeder
             'tipe_field' => 'narasi',
             'label_field' => 'Deskripsi',
             'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
-            'is_required' => true,
+            'is_required' => false,
             'urutan' => 1,
         ]);
     }
@@ -603,7 +603,7 @@ class DatasetBorangSeeder3 extends Seeder
             'tipe_field' => 'narasi',
             'label_field' => 'Deskripsi',
             'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
-            'is_required' => true,
+            'is_required' => false,
             'urutan' => 1,
         ]);
     }
@@ -620,7 +620,7 @@ class DatasetBorangSeeder3 extends Seeder
             'tipe_field' => 'narasi',
             'label_field' => 'Deskripsi',
             'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
-            'is_required' => true,
+            'is_required' => false,
             'urutan' => 1,
         ]);
     }
@@ -637,7 +637,7 @@ class DatasetBorangSeeder3 extends Seeder
             'tipe_field' => 'narasi',
             'label_field' => 'Deskripsi',
             'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
-            'is_required' => true,
+            'is_required' => false,
             'urutan' => 1,
         ]);
     }
@@ -654,7 +654,7 @@ class DatasetBorangSeeder3 extends Seeder
             'tipe_field' => 'narasi',
             'label_field' => 'Deskripsi',
             'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
-            'is_required' => true,
+            'is_required' => false,
             'urutan' => 1,
         ]);
     }
@@ -671,7 +671,7 @@ class DatasetBorangSeeder3 extends Seeder
             'tipe_field' => 'narasi',
             'label_field' => 'Deskripsi',
             'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
-            'is_required' => true,
+            'is_required' => false,
             'urutan' => 1,
         ]);
     }
@@ -688,7 +688,7 @@ class DatasetBorangSeeder3 extends Seeder
             'tipe_field' => 'narasi',
             'label_field' => 'Deskripsi',
             'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
-            'is_required' => true,
+            'is_required' => false,
             'urutan' => 1,
         ]);
     }
@@ -705,7 +705,7 @@ class DatasetBorangSeeder3 extends Seeder
             'tipe_field' => 'narasi',
             'label_field' => 'Deskripsi',
             'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
-            'is_required' => true,
+            'is_required' => false,
             'urutan' => 1,
         ]);
     }
@@ -722,7 +722,7 @@ class DatasetBorangSeeder3 extends Seeder
             'tipe_field' => 'narasi',
             'label_field' => 'Deskripsi',
             'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
-            'is_required' => true,
+            'is_required' => false,
             'urutan' => 1,
         ]);
     }
@@ -739,7 +739,7 @@ class DatasetBorangSeeder3 extends Seeder
             'tipe_field' => 'narasi',
             'label_field' => 'Deskripsi',
             'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
-            'is_required' => true,
+            'is_required' => false,
             'urutan' => 1,
         ]);
     }
@@ -756,7 +756,7 @@ class DatasetBorangSeeder3 extends Seeder
             'tipe_field' => 'narasi',
             'label_field' => 'Deskripsi',
             'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
-            'is_required' => true,
+            'is_required' => false,
             'urutan' => 1,
         ]);
 
@@ -793,7 +793,7 @@ class DatasetBorangSeeder3 extends Seeder
             'tipe_field' => 'narasi',
             'label_field' => 'Deskripsi',
             'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
-            'is_required' => true,
+            'is_required' => false,
             'urutan' => 1,
         ]);
 
@@ -850,7 +850,7 @@ class DatasetBorangSeeder3 extends Seeder
             'tipe_field' => 'narasi',
             'label_field' => 'Deskripsi',
             'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
-            'is_required' => true,
+            'is_required' => false,
             'urutan' => 1,
         ]);
     }
@@ -867,7 +867,7 @@ class DatasetBorangSeeder3 extends Seeder
             'tipe_field' => 'narasi',
             'label_field' => 'Deskripsi',
             'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
-            'is_required' => true,
+            'is_required' => false,
             'urutan' => 1,
         ]);
     }
@@ -884,7 +884,7 @@ class DatasetBorangSeeder3 extends Seeder
             'tipe_field' => 'narasi',
             'label_field' => 'Deskripsi',
             'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
-            'is_required' => true,
+            'is_required' => false,
             'urutan' => 1,
         ]);
     }
@@ -901,7 +901,7 @@ class DatasetBorangSeeder3 extends Seeder
             'tipe_field' => 'narasi',
             'label_field' => 'Deskripsi',
             'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
-            'is_required' => true,
+            'is_required' => false,
             'urutan' => 1,
         ]);
     }
@@ -918,7 +918,7 @@ class DatasetBorangSeeder3 extends Seeder
             'tipe_field' => 'narasi',
             'label_field' => 'Deskripsi',
             'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
-            'is_required' => true,
+            'is_required' => false,
             'urutan' => 1,
         ]);
     }
@@ -935,7 +935,7 @@ class DatasetBorangSeeder3 extends Seeder
             'tipe_field' => 'narasi',
             'label_field' => 'Deskripsi',
             'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
-            'is_required' => true,
+            'is_required' => false,
             'urutan' => 1,
         ]);
     }
@@ -952,7 +952,7 @@ class DatasetBorangSeeder3 extends Seeder
             'tipe_field' => 'narasi',
             'label_field' => 'Deskripsi',
             'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
-            'is_required' => true,
+            'is_required' => false,
             'urutan' => 1,
         ]);
 
@@ -1143,7 +1143,7 @@ class DatasetBorangSeeder3 extends Seeder
             'tipe_field' => 'narasi',
             'label_field' => 'Deskripsi',
             'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
-            'is_required' => true,
+            'is_required' => false,
             'urutan' => 1,
         ]);
     }
@@ -1160,7 +1160,7 @@ class DatasetBorangSeeder3 extends Seeder
             'tipe_field' => 'narasi',
             'label_field' => 'Deskripsi',
             'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
-            'is_required' => true,
+            'is_required' => false,
             'urutan' => 1,
         ]);
     }
@@ -1182,7 +1182,7 @@ class DatasetBorangSeeder3 extends Seeder
             'tipe_field' => 'narasi',
             'label_field' => 'Deskripsi',
             'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
-            'is_required' => true,
+            'is_required' => false,
             'urutan' => 1,
         ]);
 
@@ -1544,7 +1544,7 @@ class DatasetBorangSeeder3 extends Seeder
         $variants = $this->masaStudiVariantConfig();
 
         foreach ($variants as $degreeCode => $cfg) {
-            $degree = DegreeLevel::where('code', $degreeCode)->first();
+            $degree = DegreeLevel::where('alias', $degreeCode)->first();
             if (!$degree) continue;
 
             DB::table('dataset_borang_degree_level')->updateOrInsert(

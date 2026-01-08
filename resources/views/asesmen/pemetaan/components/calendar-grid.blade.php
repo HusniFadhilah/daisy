@@ -28,7 +28,7 @@
                             <div>
                                 <h6 class="fw-bold mb-1">{{ $prog->name }}</h6>
                                 <p class="mb-1 text-muted">
-                                    {{ $prog->university->name }} - {{ $prog->degreeLevel->code }}
+                                    {{ $prog->university->name }} - {{ $prog->degreeLevel->alias }}
                                 </p>
                                 <small class="text-danger">
                                     <i class="bi bi-calendar-x"></i>

@@ -8,11 +8,12 @@ class DegreeLevel extends Model
 {
     protected $fillable = [
         'code',
+        'alias',
         'name',
     ];
 
     public function studyPrograms()
     {
-        return $this->hasMany(StudyProgram::class, 'id_level');
+        return $this->hasMany(StudyProgram::class, 'id_degree_level');
     }
 }

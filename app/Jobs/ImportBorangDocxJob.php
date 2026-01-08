@@ -36,9 +36,6 @@ class ImportBorangDocxJob implements ShouldQueue
         $borangImport = null;
 
         try {
-            Log::info('🚀 IMPORT BORANG - Parse Row-based Structure');
-            Log::info('📁 File: ' . $this->filePath);
-
             if (!file_exists($this->filePath)) {
                 throw new \Exception('File not found');
             }
@@ -56,10 +53,6 @@ class ImportBorangDocxJob implements ShouldQueue
 
             $phpWord = IOFactory::load($this->filePath);
 
-            Log::info('');
-            Log::info('PROCESSING TABLES');
-            Log::info('=====================================');
-
             $totalParsed = 0;
             $tableIndex = 0;
 
@@ -71,10 +64,6 @@ class ImportBorangDocxJob implements ShouldQueue
                         // Check if this is elemen box
                         if (preg_match('/\b([DEPILLAR])\.(\d+)\.\s+/i', $tableText, $matches)) {
                             $elemenCode = $matches[1] . '.' . $matches[2];
-
-                            Log::info('');
-                            Log::info("┌─────────────────────────────");
-                            Log::info("│ 📍 TABLE #{$tableIndex}: {$elemenCode}");
 
                             // ✅ PARSE ROW 2 (description + nested tables)
                             $deskripsi = '';
@@ -89,9 +78,6 @@ class ImportBorangDocxJob implements ShouldQueue
                                 foreach ($descriptionRow->getCells() as $cell) {
                                     $this->parseCell($cell, $deskripsi, $tablesBuffer);
                                 }
-
-                                Log::info("│ 📝 Desc: " . strlen($deskripsi) . " chars");
-                                Log::info("│ 📊 Tables: " . count($tablesBuffer));
                             } else {
                                 Log::warning("│ ⚠️  Table has < 2 rows");
                             }
@@ -107,19 +93,13 @@ class ImportBorangDocxJob implements ShouldQueue
 
                             if ($saved) {
                                 $totalParsed++;
-                                Log::info("│ 💾 SAVED");
                             }
-
-                            Log::info("└─────────────────────────────");
                         }
 
                         $tableIndex++;
                     }
                 }
             }
-
-            Log::info('');
-            Log::info("✅ COMPLETED: Parsed {$totalParsed} elements");
 
             if ($borangImport) {
                 $borangImport->update([

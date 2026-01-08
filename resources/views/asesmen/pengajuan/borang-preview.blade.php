@@ -1,6 +1,6 @@
 @extends('layouts.template.app')
 
-@section('title', 'Preview Borang - ' . $pengajuan->studyProgram->name)
+@section('title', 'Preview LED - ' . $pengajuan->studyProgram->name)
 
 @push('styles')
 <style>
@@ -91,7 +91,7 @@
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h4 class="mb-1">Preview Borang Evaluasi Diri</h4>
+                    <h4 class="mb-1">Preview Lembar Evaluasi Diri</h4>
                     <p class="text-muted mb-0">
                         {{ $pengajuan->studyProgram->name }} - {{ $pengajuan->nomor_pengajuan }}
                     </p>
@@ -115,7 +115,7 @@
     {{-- Document Header --}}
     <div class="card mb-4">
         <div class="preview-header text-center">
-            <h3 class="mb-2">BORANG EVALUASI DIRI</h3>
+            <h3 class="mb-2">LEMBAR EVALUASI DIRI</h3>
             <h5 class="mb-3">{{ $pengajuan->studyProgram->full_name }}</h5>
             <div class="row text-center">
                 <div class="col-md-4">
@@ -289,7 +289,7 @@
     @else
     <div class="alert alert-warning">
         <i class="bi bi-exclamation-triangle"></i>
-        <strong>Belum ada data borang.</strong> Silakan upload draft borang atau isi melalui form online.
+        <strong>Belum ada data borang.</strong> Silakan upload draft LED atau isi melalui form online.
     </div>
     @endif
 

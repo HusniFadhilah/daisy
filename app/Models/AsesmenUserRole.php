@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Database\Eloquent\Model;
 
 class AsesmenUserRole extends Model
@@ -21,6 +22,12 @@ class AsesmenUserRole extends Model
         'submitted_at',
         'approved_at',
         'approved_by'
+    ];
+
+    protected $casts = [
+        'responded_at' => 'datetime',
+        'submitted_at' => 'datetime',
+        'approved_at' => 'datetime',
     ];
 
     public const STATUS_PEKERJAAN = [
@@ -109,7 +116,6 @@ class AsesmenUserRole extends Model
             'button_class' => 'btn-warning',
             'button_icon' => 'bi-envelope-check',
             'button_disabled' => false,
-            'button_route' => 'ak.berkas.penawaran',
         ],
         'rejected' => [
             'badge_class' => 'bg-danger',
@@ -135,6 +141,11 @@ class AsesmenUserRole extends Model
     public function role()
     {
         return $this->belongsTo(Role::class, 'id_role', 'id');
+    }
+
+    public function borangValidation()
+    {
+        return $this->hasOne(BorangValidation::class, 'id_assignment');
     }
 
     public function pengajuan()
@@ -202,6 +213,40 @@ class AsesmenUserRole extends Model
         return $query->where('status_penawaran', 'pending');
     }
 
+    /**
+     * Scope: Get by pengajuan (through asesmen)
+     */
+    public function scopeByPengajuan($query, int $pengajuanId)
+    {
+        return $query->whereHas('asesmen', function ($q) use ($pengajuanId) {
+            $q->where('id_pengajuan', $pengajuanId);
+        });
+    }
+
+    /**
+     * Scope: Get borang validators only
+     */
+    public function scopeForBorang($query)
+    {
+        return $query->where('jenis_asesmen', 'dokumen');
+    }
+
+    /**
+     * Check if this is a borang validator assignment
+     */
+    public function isBorangValidator(): bool
+    {
+        return $this->jenis_asesmen === 'dokumen';
+    }
+
+    /**
+     * Check if user can still be reassigned (not accepted yet)
+     */
+    public function canBeReassigned(): bool
+    {
+        return $this->status_penawaran !== 'accepted';
+    }
+
     public function getStatusMetaAttribute(): array
     {
         return self::STATUS_PEKERJAAN[$this->status_pekerjaan]
@@ -211,6 +256,11 @@ class AsesmenUserRole extends Model
                 'icon'  => 'info-circle',
                 'indicator' => 'default',
             ];
+    }
+
+    public function getTokenAttribute(): string
+    {
+        return Crypt::encryptString($this->id);
     }
 
     public function getStatusLabelAttribute(): string
@@ -239,10 +289,18 @@ class AsesmenUserRole extends Model
             return self::defaultStatus('Tidak Ada Penugasan', true);
         }
 
+        if ($assignment->jenis_asesmen === 'dokumen') {
+            return self::getBorangStatusInfo($assignment);
+        }
+
         // 1️⃣ Status penawaran override
         if ($assignment->status_penawaran !== 'accepted') {
+            $route = 'penawaran.berkas.cekPenawaran';
             return self::STATUS_PENAWARAN_UI[$assignment->status_penawaran]
-                + ['description' => 'Sebagai ' . Role::getRoleAlias($assignment->id_role)];
+                + [
+                    'button_route' => $route,
+                    'description' => 'Sebagai ' . Role::getRoleAlias($assignment->id_role),
+                ];
         }
 
         // 2️⃣ Status pekerjaan
@@ -277,5 +335,44 @@ class AsesmenUserRole extends Model
             'button_disabled' => $disabled,
             'description' => '',
         ];
+    }
+
+    private static function getBorangStatusInfo($assignment)
+    {
+        $status = $assignment->status_pekerjaan;
+
+        $statusMap = [
+            'not_started' => [
+                'badge_class' => 'bg-warning',
+                'badge_icon' => 'bi-clock',
+                'badge_text' => 'Menunggu Review',
+                'button_class' => 'btn-primary',
+                'button_text' => 'Mulai Review',
+            ],
+            'in_progress' => [
+                'badge_class' => 'bg-info',
+                'badge_icon' => 'bi-eye',
+                'badge_text' => 'Sedang Direview',
+                'button_class' => 'btn-info',
+                'button_text' => 'Lanjutkan Review',
+            ],
+            'revision_required' => [
+                'badge_class' => 'bg-danger',
+                'badge_icon' => 'bi-exclamation-triangle',
+                'badge_text' => 'Perlu Revisi',
+                'button_class' => 'btn-warning',
+                'button_text' => 'Lihat Catatan',
+            ],
+            'approved' => [
+                'badge_class' => 'bg-success',
+                'badge_icon' => 'bi-check-circle',
+                'badge_text' => 'Disetujui',
+                'button_class' => 'btn-success',
+                'button_text' => 'Sudah Disetujui',
+                'button_disabled' => true,
+            ],
+        ];
+
+        return $statusMap[$status] ?? $statusMap['not_started'];
     }
 }

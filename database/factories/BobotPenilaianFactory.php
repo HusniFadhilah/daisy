@@ -18,7 +18,7 @@ class BobotPenilaianFactory extends Factory
     {
         return [
             'id_elemen' => \App\Models\ElemenStandar::inRandomOrder()->first()->id,
-            'id_level' => \App\Models\DegreeLevel::inRandomOrder()->first()->id,
+            'id_degree_level' => \App\Models\DegreeLevel::inRandomOrder()->first()->id,
             'bobot' => fake()->numberBetween(1, 10),
         ];
     }

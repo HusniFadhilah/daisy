@@ -10,12 +10,14 @@ use Illuminate\Http\Request;
 use App\Models\AsesmenLapangan;
 use App\Models\AsesmenUserRole;
 use App\Models\AsesmenKecukupan;
+use App\Models\BorangValidation;
 use Illuminate\Support\Facades\DB;
 use App\Models\PengajuanAkreditasi;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Jobs\SendPenawaranAsesmenEmail;
+use App\Notifications\ValidatorBorangAssignedNotification;
 
 class AsesmenController extends Controller
 {
@@ -133,8 +135,9 @@ class AsesmenController extends Controller
             ->findOrFail($id);
 
         $assignedUserIds = $asesmen->userRoles->pluck('id_user');
-        $availableUsers = User::whereNotIn('id', $assignedUserIds)
-            ->where('role', '!=', 'admin')
+        $availableUsers = User::
+            // whereNotIn('id', $assignedUserIds)
+            where('role', '!=', 'admin')
             ->orderBy('name')
             ->get();
 
@@ -294,7 +297,7 @@ class AsesmenController extends Controller
         $request->validate([
             'id_user' => 'required|exists:users,id',
             'id_role' => 'required|exists:roles,id',
-            'jenis_asesmen' => 'required|in:ak,al',
+            'jenis_asesmen' => 'required|in:ak,al,dokumen',
         ]);
 
         try {
@@ -973,6 +976,91 @@ class AsesmenController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal bulk assign: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Assign validator for borang (reuse existing assignUser method)
+     */
+    public function assignValidatorBorang(Request $request, $idPengajuan)
+    {
+        $request->validate([
+            'id_validator' => 'required|exists:users,id',
+            'catatan_de' => 'nullable|string|max:1000',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $pengajuan = PengajuanAkreditasi::findOrFail($idPengajuan);
+
+            // Check if already has validator
+            $existingValidator = AsesmenUserRole::where('id_pengajuan', $idPengajuan)
+                ->where('jenis_asesmen', 'dokumen')
+                ->whereHas('role', fn($q) => $q->where('name', 'validator'))
+                ->whereIn('status_penawaran', ['pending', 'accepted'])
+                ->first();
+
+            if ($existingValidator) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pengajuan sudah memiliki validator borang.',
+                ], 422);
+            }
+
+            // Get or create Asesmen for this pengajuan
+            $asesmen = $pengajuan->asesmen;
+            if (!$asesmen) {
+                $asesmen = Asesmen::create([
+                    'id_pengajuan' => $idPengajuan,
+                    'id_study_program' => $pengajuan->id_program_studi,
+                    'code' => 'ASM-' . Fungsi::uniqueCode(5),
+                    'name' => 'Asesmen - ' . $pengajuan->nomor_pengajuan,
+                    'description' => 'Asesmen untuk validasi LED',
+                ]);
+            }
+
+            $validatorRole = Role::where('name', 'validator')->firstOrFail();
+
+            // ✅ CREATE ASSIGNMENT (reuse table!)
+            $assignment = AsesmenUserRole::create([
+                'id_asesmen' => $asesmen->id,
+                'id_pengajuan' => $idPengajuan, // NEW: direct link
+                'id_user' => $request->id_validator,
+                'id_role' => $validatorRole->id,
+                'jenis_asesmen' => 'borang', // ← NEW enum value
+                'status_penawaran' => 'pending',
+            ]);
+
+            // Create validation record
+            $validation = BorangValidation::create([
+                'id_assignment' => $assignment->id,
+                'id_pengajuan' => $idPengajuan,
+                'catatan_de' => $request->catatan_de,
+            ]);
+
+            // Send notification
+            $validator = User::find($request->id_validator);
+            $validator->notify(new ValidatorBorangAssignedNotification($pengajuan, $assignment));
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => "Validator {$validator->name} berhasil di-assign untuk review LED.",
+                'data' => [
+                    'assignment' => $assignment,
+                    'validation' => $validation,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Assign validator borang failed: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal assign validator: ' . $e->getMessage(),
             ], 500);
         }
     }

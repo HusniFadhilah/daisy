@@ -41,7 +41,7 @@ class PenawaranController extends Controller
             ->orderBy('responded_at', 'desc')
             ->get();
 
-        return view('asesmen.ak.penawaran.index', compact('penawarans', 'riwayat'));
+        return view('asesmen.penawaran.index', compact('penawarans', 'riwayat'));
     }
 
     /**
@@ -81,24 +81,25 @@ class PenawaranController extends Controller
         return view('asesmen.penawaran.detail', compact('asesmen', 'assignment'));
     }
 
-    public function cekPenawaran($id)
+    public function cekPenawaran($idAsesmen, $jenisAsesmen)
     {
         $user = Auth::user();
 
-        $asesmen = Asesmen::findOrFail($id);
+        $asesmen = Asesmen::findOrFail($idAsesmen);
 
-        $penawaran = AsesmenUserRole::where('id_asesmen', $id)
+        $penawaran = AsesmenUserRole::where('id_asesmen', $idAsesmen)
+            ->where('jenis_asesmen', $jenisAsesmen)
             ->where('id_user', $user->id)
             ->with('role', 'asesmen')
             ->firstOrFail();
 
         // Kalau sudah accepted, langsung redirect ke berkas (biar tidak bolak-balik ke sini)
         if ($penawaran->status_penawaran === 'accepted') {
-            return redirect()->route('ak.berkas.show', $id);
+            return redirect()->route($jenisAsesmen . '.berkas.show', $idAsesmen);
         }
 
         // status: pending / rejected → tampilkan halaman "detail penawaran"
-        return view('asesmen.ak.penawaran.detail', compact('asesmen', 'penawaran'));
+        return view('asesmen.' . $jenisAsesmen . '.penawaran.detail', compact('asesmen', 'penawaran'));
     }
 
     /**

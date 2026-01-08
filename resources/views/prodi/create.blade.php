@@ -37,31 +37,31 @@
                 </div>
 
                 <div class="mb-3">
-                    <label for="id_univ" class="form-label">Universitas <span class="text-danger">*</span></label>
-                    <select class="form-select @error('id_univ') is-invalid @enderror" id="id_univ" name="id_univ" required>
+                    <label for="id_university" class="form-label">Universitas <span class="text-danger">*</span></label>
+                    <select class="form-select @error('id_university') is-invalid @enderror" id="id_university" name="id_university" required>
                         <option value="">-- Pilih Universitas --</option>
                         @foreach($universities as $university)
-                        <option value="{{ $university->id }}" {{ old('id_univ') == $university->id ? 'selected' : '' }}>
+                        <option value="{{ $university->id }}" {{ old('id_university') == $university->id ? 'selected' : '' }}>
                             {{ $university->name }}
                         </option>
                         @endforeach
                     </select>
-                    @error('id_univ')
+                    @error('id_university')
                     <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
                 <div class="mb-3">
-                    <label for="id_level" class="form-label">Jenjang <span class="text-danger">*</span></label>
-                    <select class="form-select @error('id_level') is-invalid @enderror" id="id_level" name="id_level" required>
+                    <label for="id_degree_level" class="form-label">Jenjang <span class="text-danger">*</span></label>
+                    <select class="form-select @error('id_degree_level') is-invalid @enderror" id="id_degree_level" name="id_degree_level" required>
                         <option value="">-- Pilih Jenjang --</option>
                         @foreach($degreeLevels as $level)
-                        <option value="{{ $level->id }}" {{ old('id_level') == $level->id ? 'selected' : '' }}>
+                        <option value="{{ $level->id }}" {{ old('id_degree_level') == $level->id ? 'selected' : '' }}>
                             {{ $level->name }}
                         </option>
                         @endforeach
                     </select>
-                    @error('id_level')
+                    @error('id_degree_level')
                     <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
@@ -133,7 +133,7 @@
 @push('scripts')
 <script>
     $(document).ready(function() {
-        $('#id_univ, #id_level').select2({
+        $('#id_university, #id_degree_level').select2({
             theme: 'bootstrap-5'
             , width: '100%'
         });

@@ -10,8 +10,8 @@ class StudyProgram extends Model
         'name',
         'full_name',
         'code',
-        'id_univ',
-        'id_level',
+        'id_university',
+        'id_degree_level',
         'category_id',
         'bentuk_pt',
         'email',
@@ -26,20 +26,18 @@ class StudyProgram extends Model
 
     public function university()
     {
-        return $this->belongsTo(University::class, 'id_univ');
+        return $this->belongsTo(University::class, 'id_university');
     }
 
     public function degreeLevel()
     {
-        return $this->belongsTo(DegreeLevel::class, 'id_level');
+        return $this->belongsTo(DegreeLevel::class, 'id_degree_level');
     }
-
 
     public function category()
     {
         return $this->belongsTo(StudyProgramCategory::class, 'category_id');
     }
-
     /**
      * Relasi Many-to-Many dengan Users
      * 1 prodi bisa punya banyak admin users

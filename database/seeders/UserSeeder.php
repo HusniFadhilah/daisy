@@ -20,7 +20,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('=Secret1234'),
                 'role' => 'admin',
                 'role_selected' => 'super_admin',
-                'roles' => json_encode(['super_admin']),
+                'roles' => ['super_admin'],
             ],
             [
                 'name' => 'Sekretariat LAMDEPILAR',
@@ -28,7 +28,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('=Secret1234'),
                 'role' => 'admin',
                 'role_selected' => 'asesi',
-                'roles' => json_encode(['asesi']),
+                'roles' => ['asesi'],
             ],
             [
                 'name' => 'Budi Santoso',
@@ -36,7 +36,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('=Secret1234'),
                 'role' => 'user',
                 'role_selected' => 'asesi',
-                'roles' => json_encode(['asesi']),
+                'roles' => ['asesi'],
             ],
             [
                 'name' => 'Asesor 1',
@@ -44,7 +44,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('=Secret1234'),
                 'role' => 'user',
                 'role_selected' => 'asesor',
-                'roles' => json_encode(['asesor']),
+                'roles' => ['asesor'],
             ],
             [
                 'name' => 'Asesor 2',
@@ -52,7 +52,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('=Secret1234'),
                 'role' => 'user',
                 'role_selected' => 'asesor',
-                'roles' => json_encode(['asesor']),
+                'roles' => ['asesor'],
             ],
             [
                 'name' => 'Siti Nurhaliza',
@@ -60,7 +60,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('=Secret1234'),
                 'role' => 'user',
                 'role_selected' => 'asesor',
-                'roles' => json_encode(['asesor']),
+                'roles' => ['asesor'],
             ],
             [
                 'name' => 'Ahmad Fauzi',
@@ -68,7 +68,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('=Secret1234'),
                 'role' => 'user',
                 'role_selected' => 'asesor',
-                'roles' => json_encode(['asesor']),
+                'roles' => ['asesor'],
             ],
             [
                 'name' => 'Dewi Lestari',
@@ -76,7 +76,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('=Secret1234'),
                 'role' => 'user',
                 'role_selected' => 'asesor',
-                'roles' => json_encode(['asesor']),
+                'roles' => ['asesor'],
             ],
             [
                 'name' => 'Validator 1',
@@ -84,7 +84,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('=Secret1234'),
                 'role' => 'user',
                 'role_selected' => 'validator',
-                'roles' => json_encode(['validator']),
+                'roles' => ['validator'],
             ],
             [
                 'name' => 'Validator 2',
@@ -92,7 +92,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('=Secret1234'),
                 'role' => 'user',
                 'role_selected' => 'validator',
-                'roles' => json_encode(['validator']),
+                'roles' => ['validator'],
             ],
             [
                 'name' => 'Eko Prasetyo',
@@ -100,7 +100,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('=Secret1234'),
                 'role' => 'user',
                 'role_selected' => 'validator',
-                'roles' => json_encode(['validator']),
+                'roles' => ['validator'],
             ],
             [
                 'name' => 'Verifikator 1',
@@ -108,7 +108,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('=Secret1234'),
                 'role' => 'user',
                 'role_selected' => 'verifikator',
-                'roles' => json_encode(['verifikator']),
+                'roles' => ['verifikator'],
             ],
             [
                 'name' => 'Verifikator 2',
@@ -116,7 +116,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('=Secret1234'),
                 'role' => 'user',
                 'role_selected' => 'verifikator',
-                'roles' => json_encode(['verifikator']),
+                'roles' => ['verifikator'],
             ],
             [
                 'name' => 'Rudi Hermawan',
@@ -124,7 +124,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('=Secret1234'),
                 'role' => 'user',
                 'role_selected' => 'verifikator',
-                'roles' => json_encode(['verifikator']),
+                'roles' => ['verifikator'],
             ],
             [
                 'name' => 'Rina Wati',
@@ -132,7 +132,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('=Secret1234'),
                 'role' => 'user',
                 'role_selected' => 'verifikator',
-                'roles' => json_encode(['verifikator']),
+                'roles' => ['verifikator'],
             ],
             [
                 'name' => 'Perguruan Tinggi 1',
@@ -140,7 +140,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('=Secret1234'),
                 'role' => 'user',
                 'role_selected' => 'admin_univ',
-                'roles' => json_encode(['admin_univ']),
+                'roles' => ['admin_univ'],
             ],
             [
                 'name' => 'Perguruan Tinggi 2',
@@ -148,7 +148,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('=Secret1234'),
                 'role' => 'user',
                 'role_selected' => 'admin_univ',
-                'roles' => json_encode(['admin_univ']),
+                'roles' => ['admin_univ'],
             ],
             [
                 'name' => 'PS/UPPS/PT 1',
@@ -156,7 +156,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('=Secret1234'),
                 'role' => 'user',
                 'role_selected' => 'admin_prodi',
-                'roles' => json_encode(['admin_prodi']),
+                'roles' => ['admin_prodi'],
             ],
             [
                 'name' => 'PS/UPPS/PT 2',
@@ -164,7 +164,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('=Secret1234'),
                 'role' => 'user',
                 'role_selected' => 'admin_prodi',
-                'roles' => json_encode(['admin_prodi']),
+                'roles' => ['admin_prodi'],
             ],
             [
                 'name' => 'Default User',
@@ -172,7 +172,15 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('=Secret1234'),
                 'role' => 'user',
                 'role_selected' => 'default',
-                'roles' => json_encode(['default']),
+                'roles' => ['default'],
+            ],
+            [
+                'name' => 'Test User',
+                'email' => 'remahankecil@gmail.com',
+                'password' => Hash::make('=Secret1234'),
+                'role' => 'admin',
+                'role_selected' => 'super_admin',
+                'roles' => ['super_admin', 'asesi', 'asesor', 'validator', 'verifikator', 'admin_univ', 'admin_prodi', 'default'],
             ],
         ];
 

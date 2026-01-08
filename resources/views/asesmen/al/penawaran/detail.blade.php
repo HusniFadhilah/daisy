@@ -57,7 +57,7 @@
                             <div class="d-flex justify-content-between align-items-start mb-3">
                                 <div class="flex-grow-1">
                                     <h5 class="card-title mb-1 text-primary">{{ $asesmen->name }}</h5>
-                                    <span class="badge bg-primary">{{ $penawaran->role->alias }}</span>
+                                    <span class="badge bg-primary">{{ $penawaran->role->alias.' '.ucfirst($penawaran->jenis_asesmen) }}</span>
                                 </div>
 
                                 <span class="badge status-badge
@@ -117,10 +117,10 @@
                             {{-- Tombol aksi hanya muncul kalau masih pending --}}
                             @if($penawaran->status_penawaran === null || $penawaran->status_penawaran === 'pending')
                             <div class="d-grid gap-2">
-                                <button type="button" class="btn btn-success" onclick="acceptPenawaran({{ $penawaran->id }}, '{{ $penawaran->role->alias }}')">
+                                <button type="button" class="btn btn-success" onclick="acceptPenawaran('{{ $penawaran->token }}', '{{ $penawaran->role->alias }}')">
                                     <i class="bi bi-check-circle"></i> Terima Penawaran
                                 </button>
-                                <button type="button" class="btn btn-outline-danger" onclick="rejectPenawaran({{ $penawaran->id }}, '{{ $asesmen->name }}')">
+                                <button type="button" class="btn btn-outline-danger" onclick="rejectPenawaran('{{ $penawaran->token }}', '{{ $asesmen->name }}')">
                                     <i class="bi bi-x-circle"></i> Tolak Penawaran
                                 </button>
                             </div>
@@ -249,7 +249,8 @@
         btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Memproses...';
 
         try {
-            const response = await fetch(`/penawaran/${currentPenawaranId}/accept`, {
+            const token = '{{ \App\Helpers\RouteHelper::encryptId($penawaran->id) }}';
+            const response = await fetch(`/penawaran/${token}/accept`, {
                 method: 'POST'
                 , headers: {
                     'Content-Type': 'application/json'
@@ -305,7 +306,8 @@
         btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Memproses...';
 
         try {
-            const response = await fetch(`/penawaran/${currentPenawaranId}/reject`, {
+            const token = '{{ \App\Helpers\RouteHelper::encryptId($penawaran->id) }}';
+            const response = await fetch(`/penawaran/${token}/reject`, {
                 method: 'POST'
                 , headers: {
                     'Content-Type': 'application/json'

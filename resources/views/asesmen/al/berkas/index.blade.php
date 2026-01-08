@@ -267,7 +267,7 @@
                     <div class="d-grid gap-2">
                         @if($statusInfo['button_route'] ?? false)
                         {{-- Button ke route khusus (penawaran) --}}
-                        <a href="{{ route($statusInfo['button_route'], $asesmen->id) }}" class="btn {{ $statusInfo['button_class'] }}" @if($statusInfo['button_disabled']) disabled @endif>
+                        <a href="{{ route($statusInfo['button_route'], ['idAsesmen'=>$asesmen->id,'jenisAsesmen'=>$assignment->jenis_asesmen]) }}" class="btn {{ $statusInfo['button_class'] }}" @if($statusInfo['button_disabled']) disabled @endif>
                             <i class="{{ $statusInfo['button_icon'] }}"></i>
                             {{ $statusInfo['button_text'] }}
                         </a>

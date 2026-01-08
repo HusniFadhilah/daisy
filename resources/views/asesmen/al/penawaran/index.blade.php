@@ -99,7 +99,7 @@ $authUser = Auth::user();
                             <div class="d-flex justify-content-between align-items-start mb-3">
                                 <div class="flex-grow-1">
                                     <h5 class="card-title mb-1 text-primary">{{ $penawaran->asesmen->name }}</h5>
-                                    <span class="badge bg-primary">{{ $penawaran->role->alias }}</span>
+                                    <span class="badge bg-primary">{{ $penawaran->role->alias.' '.ucfirst($penawaran->jenis_asesmen) }}</span>
                                 </div>
                                 <span class="badge bg-warning status-badge">
                                     <i class="bi bi-clock-history"></i> Pending
@@ -166,10 +166,10 @@ $authUser = Auth::user();
                             <hr>
 
                             <div class="d-grid gap-2">
-                                <button type="button" class="btn btn-success" onclick="acceptPenawaran({{ $penawaran->id }}, '{{ $penawaran->role->alias }}')">
+                                <button type="button" class="btn btn-success" onclick="acceptPenawaran('{{ $penawaran->token }}', '{{ $penawaran->role->alias }}')">
                                     <i class="bi bi-check-circle"></i> Terima Penawaran
                                 </button>
-                                <button type="button" class="btn btn-outline-danger" onclick="rejectPenawaran({{ $penawaran->id }}, '{{ $penawaran->asesmen->name }}')">
+                                <button type="button" class="btn btn-outline-danger" onclick="rejectPenawaran('{{ $penawaran->token }}', '{{ $penawaran->asesmen->name }}')">
                                     <i class="bi bi-x-circle"></i> Tolak Penawaran
                                 </button>
                             </div>
@@ -224,7 +224,7 @@ $authUser = Auth::user();
                                 </small>
                             </td>
                             <td>
-                                <span class="badge bg-primary">{{ $item->role->alias.' '.strtoupper($jenisAsesmen) }}</span>
+                                <span class="badge bg-primary">{{ $item->role->alias.' '.ucfirst($jenisAsesmen) }}</span>
                             </td>
                             <td>
                                 @if($item->status_penawaran === 'accepted')
@@ -272,11 +272,6 @@ $authUser = Auth::user();
                                 <a href="{{ route($jenisAsesmen.'.berkas.show',$item->id_asesmen) }}" class="btn btn-sm btn-outline-primary">
                                     <i class="bi bi-arrow-right"></i> Lihat Penilaian
                                 </a>
-                                @elseif($authUser->role_selected == 'validator')
-                                <a href="{{ route($jenisAsesmen.'.validasi.asesor', ['idAsesmen' => $item['asesmen']->id, 'jenisAsesmen' => 'ak']) }}" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-arrow-right"></i> Lihat Penilaian
-                                </a>
-                                @endif
                                 @endif
                             </td>
                         </tr>

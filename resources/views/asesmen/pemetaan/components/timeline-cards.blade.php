@@ -66,7 +66,7 @@
                                 <td>{{ $index + 1 }}</td>
                                 <td>
                                     <div class="fw-bold">{{ $prog->name }}</div>
-                                    <small class="text-muted">{{ $prog->degreeLevel->code }}</small>
+                                    <small class="text-muted">{{ $prog->degreeLevel->alias }}</small>
                                 </td>
                                 <td>{{ $prog->university->name }}</td>
                                 <td>

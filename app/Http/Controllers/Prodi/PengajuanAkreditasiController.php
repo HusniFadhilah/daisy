@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Prodi;
 
 use App\Models\Kriteria;
+use Illuminate\Support\Str;
 use App\Models\BorangImport;
 use App\Models\StudyProgram;
 use Illuminate\Http\Request;
@@ -12,6 +13,7 @@ use App\Models\PengajuanStatusLog;
 use Illuminate\Support\Facades\DB;
 use App\Models\PengajuanAkreditasi;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\URL;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Services\BorangExportService;
@@ -227,7 +229,7 @@ class PengajuanAkreditasiController extends Controller
     }
 
     /**
-     * Upload draft borang (DOCX only for processing)
+     * Upload draft LED (DOCX only for processing)
      */
     public function uploadDraftBorang(Request $request, $id)
     {
@@ -261,7 +263,7 @@ class PengajuanAkreditasiController extends Controller
             ])) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Status pengajuan tidak sesuai untuk upload draft borang.'
+                    'message' => 'Status pengajuan tidak sesuai untuk upload draft LED.'
                 ], 422);
             }
 
@@ -294,7 +296,7 @@ class PengajuanAkreditasiController extends Controller
                 'file_size' => $file->getSize(),
                 'mime_type' => $file->getMimeType(),               // ✅ Added
                 'uploaded_by' => $authId,
-                'keterangan' => $request->keterangan ?? 'Upload draft borang versi ' . $newVersion,
+                'keterangan' => $request->keterangan ?? 'Upload draft LED versi ' . $newVersion,
                 'versi' => $newVersion,
                 'is_latest' => true,
             ]);
@@ -314,7 +316,7 @@ class PengajuanAkreditasiController extends Controller
                     'status_to' => 'draft_borang_diterima',
                     'changed_by' => $authId,
                     'changed_at' => now(),
-                    'keterangan' => 'Draft borang diupload (versi ' . $newVersion . ')',
+                    'keterangan' => 'Draft LED diupload (versi ' . $newVersion . ')',
                 ]);
             } else {
                 // Just log the re-upload
@@ -324,7 +326,7 @@ class PengajuanAkreditasiController extends Controller
                     'status_to' => $oldStatus,
                     'changed_by' => $authId,
                     'changed_at' => now(),
-                    'keterangan' => 'Draft borang diupload ulang (versi ' . $newVersion . '): ' . ($request->keterangan ?? 'Revisi dokumen'),
+                    'keterangan' => 'Draft LED diupload ulang (versi ' . $newVersion . '): ' . ($request->keterangan ?? 'Revisi dokumen'),
                 ]);
             }
 
@@ -334,7 +336,7 @@ class PengajuanAkreditasiController extends Controller
             if ($request->expectsJson() || $request->ajax()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Draft borang berhasil diupload (Versi ' . $newVersion . ')',
+                    'message' => 'Draft LED berhasil diupload (Versi ' . $newVersion . ')',
                     'data' => [
                         'dokumen_id' => $dokumen->id,
                         'versi' => $dokumen->versi,
@@ -346,9 +348,9 @@ class PengajuanAkreditasiController extends Controller
                 ]);
             }
 
-            return back()->with('success', 'Draft borang berhasil diupload (Versi ' . $newVersion . ').');
+            return back()->with('success', 'Draft LED berhasil diupload (Versi ' . $newVersion . ').');
         } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::error('Upload draft borang failed: ' . $e->getMessage(), [
+            Log::error('Upload draft LED failed: ' . $e->getMessage(), [
                 'pengajuan_id' => $id,
                 'user_id' => $authId,
                 'trace' => $e->getTraceAsString()
@@ -361,7 +363,7 @@ class PengajuanAkreditasiController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            Log::error('Upload draft borang failed: ' . $e->getMessage(), [
+            Log::error('Upload draft LED failed: ' . $e->getMessage(), [
                 'pengajuan_id' => $id,
                 'user_id' => $authId,
                 'trace' => $e->getTraceAsString()
@@ -387,7 +389,7 @@ class PengajuanAkreditasiController extends Controller
             $pengajuan = PengajuanAkreditasi::findOrFail($id);
             $this->authorize('update', $pengajuan);
 
-            // Get latest draft borang
+            // Get latest draft LED
             $draftBorang = PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
                 ->where('jenis_dokumen', 'draft_borang')
                 ->where('is_latest', true)
@@ -422,7 +424,7 @@ class PengajuanAkreditasiController extends Controller
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Draft borang tidak ditemukan. Silakan upload terlebih dahulu.'
+                'message' => 'Draft LED tidak ditemukan. Silakan upload terlebih dahulu.'
             ], 404);
         } catch (\Exception $e) {
             Log::error('Process borang DOCX failed: ' . $e->getMessage(), [
@@ -498,14 +500,14 @@ class PengajuanAkreditasiController extends Controller
                 ->whereNotNull('nilai')
                 ->count();
 
-            if ($filledFields < $totalRequiredFields) {
-                return response()->json([
-                    'success' => false,
-                    'message' => "Borang belum lengkap! Anda baru mengisi $filledFields dari $totalRequiredFields field.",
-                    'filled' => $filledFields,
-                    'required' => $totalRequiredFields,
-                ], 422);
-            }
+            // if ($filledFields < $totalRequiredFields) {
+            //     return response()->json([
+            //         'success' => false,
+            //         'message' => "Borang belum lengkap! Anda baru mengisi $filledFields dari $totalRequiredFields field.",
+            //         'filled' => $filledFields,
+            //         'required' => $totalRequiredFields,
+            //     ], 422);
+            // }
 
             DB::beginTransaction();
 
@@ -572,14 +574,14 @@ class PengajuanAkreditasiController extends Controller
                 'status_to' => 'borang_online_selesai',
                 'changed_by' => $authId,
                 'changed_at' => now(),
-                'keterangan' => 'Borang online difinalisasi dan di-submit',
+                'keterangan' => 'Lembar Evaluasi Diri difinalisasi dan di-submit',
             ]);
 
             DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Borang evaluasi diri berhasil disubmit!',
+                'message' => 'Lembar Evaluasi Diri berhasil disubmit!',
                 'data' => [
                     'status' => $pengajuan->status,
                     'submitted_at' => now()->format('d M Y H:i'),
@@ -669,7 +671,6 @@ class PengajuanAkreditasiController extends Controller
 
         // ✅ Calculate detailed progress
         $progressData = $this->calculateBorangProgress($kriterias, $existingData);
-        // dd($progressData);
         return view('asesmen.pengajuan.borang-online', compact(
             'pengajuan',
             'kriterias',
@@ -1055,7 +1056,7 @@ class PengajuanAkreditasiController extends Controller
                 $deletedImports++;
             }
 
-            // 3. Mark draft borang documents as not latest (keep for history)
+            // 3. Mark draft LED documents as not latest (keep for history)
             PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
                 ->where('jenis_dokumen', 'draft_borang')
                 ->update(['is_latest' => false]);
@@ -1329,21 +1330,36 @@ class PengajuanAkreditasiController extends Controller
     {
         try {
             $pengajuan = PengajuanAkreditasi::findOrFail($id);
-
-            $templatePath = storage_path('app/public/templates/TEMPLATE_BORANG_EVALUASI_DIRI.docx');
+            $degreeLevel = $pengajuan->studyProgram->degreeLevel->code;
+            $fileName = 'TEMPLATE_BORANG_EVALUASI_DIRI_' . $degreeLevel . '.docx';
+            $templatePath = storage_path('app/public/templates/' . $fileName);
 
             if (!file_exists($templatePath)) {
                 // Generate template if not exists
-                Artisan::call('db:seed', ['--class' => 'BorangExampleSeeder']);
+                Artisan::call('borang:generate-template', [
+                    '--degree_level' => $degreeLevel,
+                ]);
+                if (!file_exists($templatePath)) {
+                    throw new \RuntimeException("Template belum berhasil dibuat: {$templatePath}");
+                }
             }
 
             return response()->download(
                 $templatePath,
-                'Template_Borang_LED.docx'
+                $fileName
             );
         } catch (\Exception $e) {
             Log::error('Download template DOCX Error: ' . $e);
-            return back()->with('error', 'Gagal mendownload template: ' . $e->getMessage());
+
+            $current = request()->fullUrl();
+            $previous = URL::previous();
+
+            // Jika prev sama dengan current (atau kosong), jangan back() → hindari loop
+            if (!$previous || rtrim($previous, '/') === rtrim($current, '/')) {
+                abort(500, 'Gagal mendownload template: ' . $e->getMessage());
+            }
+
+            return redirect()->to($previous)->with('error', 'Gagal mendownload template: ' . $e->getMessage());
         }
     }
 
@@ -1385,7 +1401,7 @@ class PengajuanAkreditasiController extends Controller
      */
     private function getOrCreateBorangImport($pengajuan)
     {
-        // Get latest draft borang document
+        // Get latest draft LED document
         $draftBorang = PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
             ->where('jenis_dokumen', 'draft_borang')
             ->where('is_latest', true)

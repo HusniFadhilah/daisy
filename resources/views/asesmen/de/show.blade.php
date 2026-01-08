@@ -14,6 +14,19 @@
         border-radius: 8px;
     }
 
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #932136, #870820);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 18px;
+    }
+
 </style>
 @endpush
 
@@ -40,36 +53,145 @@
 
     <div class="row">
         <!-- Main Content -->
-        <div class="col-md-8">
+        <div class="col-md-12 col-lg-8">
             <!-- ACTION: Kirim Form Borang (Langkah 3) -->
             @if($pengajuan->status === 'surat_permohonan_diterima')
             <div class="card action-card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="bi bi-file-earmark-arrow-down text-primary"></i>
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-file-earmark-arrow-down"></i>
                         Aksi Diperlukan: Kirim Form Borang
                     </h5>
+                </div>
+                <div class="card-body">
                     <p class="mb-3">
-                        Surat permohonan telah diterima. Kirimkan form borang template ke prodi untuk dilengkapi.
+                        Surat permohonan telah diterima. Kirimkan form Template LED ke prodi untuk dilengkapi.
                     </p>
 
-                    <form action="{{ route('de.pengajuan.kirim-borang', $pengajuan->id) }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('de.pengajuan.kirim-borang', $pengajuan->id) }}" method="POST" enctype="multipart/form-data" id="formKirimBorang">
                         @csrf
-                        <div class="row g-3">
-                            <div class="col-md-8">
-                                <label class="form-label fw-bold">Upload Borang Template</label>
-                                <input type="file" name="borang_template" class="form-control" accept=".docx" required>
-                                <small class="text-muted">Format: DOCX | Max: 10 MB</small>
+
+                        {{-- Pilihan Metode Pengiriman --}}
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                Metode Pengiriman Template <span class="text-danger">*</span>
+                            </label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="metode_kirim" id="metodeLink" value="link" checked>
+                                <label class="btn btn-outline-primary" for="metodeLink">
+                                    <i class="bi bi-link-45deg"></i> Kirim Link Template
+                                </label>
+
+                                <input type="radio" class="btn-check" name="metode_kirim" id="metodeUpload" value="upload">
+                                <label class="btn btn-outline-primary" for="metodeUpload">
+                                    <i class="bi bi-cloud-upload"></i> Upload File Template
+                                </label>
                             </div>
-                            <div class="col-md-12">
-                                <label class="form-label fw-bold">Keterangan</label>
-                                <textarea name="keterangan" class="form-control" rows="2" placeholder="Petunjuk pengisian atau informasi tambahan"></textarea>
+                        </div>
+
+                        {{-- OPTION 1: Link Template --}}
+                        <div id="divLink" class="mb-4">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="fw-bold mb-3">
+                                        <i class="bi bi-link"></i> Link Template LED
+                                    </h6>
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">
+                                            URL Template <span class="text-danger">*</span>
+                                        </label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">
+                                                <i class="bi bi-globe"></i>
+                                            </span>
+                                            <input type="url" name="template_link" id="template_link" class="form-control" value="{{ url('pengajuan/' . $pengajuan->id . '/borang/download-template') }}" placeholder="https://example.com/template.docx">
+                                        </div>
+                                        <small class="text-muted">
+                                            Link ke template LED yang dapat diakses oleh prodi
+                                        </small>
+                                    </div>
+
+                                    <div class="alert alert-info alert-permanent mb-0">
+                                        <strong><i class="bi bi-info-circle"></i> Default Template:</strong>
+                                        <p class="mb-2">
+                                            Template default tersedia di:
+                                            <a href="{{ route('pengajuan.borang.download-template', $pengajuan->id) }}" target="_blank" class="alert-link">
+                                                <i class="bi bi-download"></i> Download Preview
+                                            </a>
+                                        </p>
+                                        <div class="d-flex gap-2">
+                                            <button type="button" class="btn btn-sm btn-primary" onclick="useDefaultLink()">
+                                                <i class="bi bi-arrow-clockwise"></i> Gunakan Link Default
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearLink()">
+                                                <i class="bi bi-x-circle"></i> Kosongkan
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-md-12">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="bi bi-send"></i> Kirim Form Borang ke Prodi
-                                </button>
+                        </div>
+
+                        {{-- OPTION 2: Upload File --}}
+                        <div id="divUpload" class="mb-4" style="display: none;">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="fw-bold mb-3">
+                                        <i class="bi bi-cloud-upload"></i> Upload File Template
+                                    </h6>
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">
+                                            File Template LED <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="file" name="borang_template" id="borang_template" class="form-control" accept=".docx,.doc">
+                                        <small class="text-muted">
+                                            Format: DOCX, DOC | Maksimal: 10 MB
+                                        </small>
+                                    </div>
+
+                                    <div class="alert alert-warning alert-permanent mb-0">
+                                        <i class="bi bi-exclamation-triangle"></i>
+                                        <strong>Perhatian:</strong> File yang diupload akan disimpan di server
+                                        dan dapat didownload oleh prodi.
+                                    </div>
+                                </div>
                             </div>
+                        </div>
+
+                        {{-- Keterangan (untuk kedua metode) --}}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Keterangan</label>
+                            <textarea name="keterangan" class="form-control" rows="3" placeholder="Petunjuk pengisian atau informasi tambahan untuk prodi..."></textarea>
+                            <small class="text-muted">
+                                Keterangan akan dikirim bersama notifikasi email ke prodi
+                            </small>
+                        </div>
+
+                        {{-- Preview Info --}}
+                        <div class="card border-info mb-3">
+                            <div class="card-body">
+                                <h6 class="fw-bold text-info mb-2">
+                                    <i class="bi bi-info-circle"></i> Yang Akan Terjadi:
+                                </h6>
+                                <ul class="mb-0 small">
+                                    <li id="infoMetode">Link template akan dikirim ke email prodi</li>
+                                    <li>Prodi dapat mengakses template melalui link/download file</li>
+                                    <li>Status pengajuan akan diupdate ke <code>borang_dikirim</code></li>
+                                    <li>Notifikasi email akan dikirim ke UPPS</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        {{-- Submit Button --}}
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary" id="btnSubmit">
+                                <i class="bi bi-send"></i> Kirim Template ke Prodi
+                            </button>
+                            <button type="reset" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-counterclockwise"></i> Reset
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -94,7 +216,7 @@
                     {{-- Alert Status --}}
                     <div class="alert alert-success alert-permanent mb-4">
                         <i class="bi bi-check-circle"></i>
-                        <strong>Prodi telah mengupload draft borang.</strong><br>
+                        <strong>Prodi telah mengupload draft LED.</strong><br>
                         Silakan review kelengkapan dan kesiapan borang sebelum melanjutkan ke tahap pembayaran.
                     </div>
 
@@ -104,9 +226,9 @@
                             <div class="card bg-primary bg-opacity-10 border-primary h-100">
                                 <div class="card-body text-center">
                                     <i class="bi bi-eye text-white fs-1 mb-3 d-block"></i>
-                                    <h6 class="fw-bold text-white">Preview Borang HTML</h6>
+                                    <h6 class="fw-bold text-white">Preview LED HTML</h6>
                                     <p class="text-white small mb-3">
-                                        Lihat preview borang yang sudah diproses<br>
+                                        Lihat preview LED yang sudah diproses<br>
                                         dari dokumen DOCX
                                     </p>
                                     @if($latestImport)
@@ -580,6 +702,177 @@
             </div>
             @endif
 
+            {{-- ============================================
+     SECTION: VALIDATOR BORANG (if applicable)
+     ============================================ --}}
+            @if(in_array($pengajuan->status, [
+            'borang_online_selesai',
+            'borang_validation_pending',
+            'borang_in_validation',
+            'borang_revision_required',
+            'borang_validated'
+            ]) && $pengajuan->latestBorangImport)
+
+            <div class="card mb-4 border-primary">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-clipboard-check"></i>
+                            Validasi LED
+                        </h5>
+                        @if(!$currentValidator || $currentValidator->status_penawaran === 'rejected')
+                        <a href="{{ route('de.pengajuan.assign-validator.form', $pengajuan->id) }}" class="btn btn-light btn-sm">
+                            <i class="bi bi-person-plus"></i>
+                            {{ $currentValidator ? 'Reassign Validator' : 'Assign Validator' }}
+                        </a>
+                        @endif
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if($currentValidator)
+                    {{-- Validator Info --}}
+                    <div class="row align-items-center">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <div class="avatar-circle mx-auto mb-2" style="width: 80px; height: 80px; font-size: 2rem;">
+                                    {{ substr($currentValidator->user->name, 0, 1) }}
+                                </div>
+                                <h6 class="fw-bold">{{ $currentValidator->user->name }}</h6>
+                                <small class="text-muted">{{ $currentValidator->user->email }}</small>
+                            </div>
+                        </div>
+
+                        <div class="col-md-9">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="text-muted small">Role</label>
+                                    <p class="fw-bold mb-0">
+                                        <span class="badge bg-success">
+                                            {{ $currentValidator->role->alias }}
+                                        </span>
+                                    </p>
+                                </div>
+
+                                <div class="col-md-4 mb-3">
+                                    <label class="text-muted small">Status Penawaran</label>
+                                    <p class="mb-0">
+                                        @php
+                                        $penawaranBadge = match($currentValidator->status_penawaran) {
+                                        'accepted' => ['class' => 'success', 'icon' => 'check-circle', 'text' => 'Diterima'],
+                                        'rejected' => ['class' => 'danger', 'icon' => 'x-circle', 'text' => 'Ditolak'],
+                                        'pending' => ['class' => 'warning', 'icon' => 'clock', 'text' => 'Menunggu'],
+                                        default => ['class' => 'secondary', 'icon' => 'question-circle', 'text' => 'Unknown'],
+                                        };
+                                        @endphp
+                                        <span class="badge bg-{{ $penawaranBadge['class'] }}">
+                                            <i class="bi bi-{{ $penawaranBadge['icon'] }}"></i>
+                                            {{ $penawaranBadge['text'] }}
+                                        </span>
+                                    </p>
+                                </div>
+
+                                @if($currentValidator->status_penawaran === 'accepted')
+                                <div class="col-md-4 mb-3">
+                                    <label class="text-muted small">Status Pekerjaan</label>
+                                    <p class="mb-0">
+                                        <span class="badge bg-info">
+                                            {{ $currentValidator->status_label ?? 'Belum Mulai' }}
+                                        </span>
+                                    </p>
+                                </div>
+                                @endif
+
+                                <div class="col-md-4 mb-3">
+                                    <label class="text-muted small">Di-assign</label>
+                                    <p class="mb-0">{{ $currentValidator->created_at->format('d M Y H:i') }}</p>
+                                </div>
+
+                                @if($currentValidator->responded_at)
+                                <div class="col-md-4 mb-3">
+                                    <label class="text-muted small">Respon</label>
+                                    <p class="mb-0">{{ $currentValidator->responded_at->format('d M Y H:i') }}</p>
+                                </div>
+                                @endif
+
+                                @if($currentValidator->status_penawaran === 'accepted' && $currentValidator->approved_at)
+                                <div class="col-md-4 mb-3">
+                                    <label class="text-muted small">Selesai Review</label>
+                                    <p class="mb-0">{{ $currentValidator->approved_at->format('d M Y H:i') }}</p>
+                                </div>
+                                @endif
+                            </div>
+
+                            {{-- Actions --}}
+                            <div class="d-flex gap-2 mt-3">
+                                @if($currentValidator->status_penawaran === 'pending')
+                                <span class="badge bg-warning">
+                                    <i class="bi bi-hourglass-split"></i>
+                                    Menunggu validator menerima penawaran
+                                </span>
+                                @elseif($currentValidator->status_penawaran === 'rejected')
+                                <a href="{{ route('de.pengajuan.assign-validator.form', $pengajuan->id) }}" class="btn btn-warning btn-sm">
+                                    <i class="bi bi-arrow-repeat"></i>
+                                    Assign Validator Baru
+                                </a>
+                                @elseif($currentValidator->status_penawaran === 'accepted')
+                                @if($currentValidator->borangValidation)
+                                <a href="{{ route('borang.show', $currentValidator->id) }}" class="btn btn-primary btn-sm" target="_blank">
+                                    <i class="bi bi-eye"></i>
+                                    Lihat Progress Validasi
+                                </a>
+                                @endif
+                                @endif
+                            </div>
+
+                            {{-- Validation Details (if available) --}}
+                            @if($currentValidator->borangValidation && $currentValidator->status_pekerjaan !== 'not_started')
+                            <div class="card bg-light mt-3">
+                                <div class="card-body">
+                                    <h6 class="fw-bold mb-3">
+                                        <i class="bi bi-clipboard-data"></i>
+                                        Detail Validasi
+                                    </h6>
+
+                                    @if($currentValidator->borangValidation->catatan_validator)
+                                    <div class="mb-2">
+                                        <strong>Catatan Validator:</strong>
+                                        <p class="mb-0">{{ $currentValidator->borangValidation->catatan_validator }}</p>
+                                    </div>
+                                    @endif
+
+                                    @if($currentValidator->borangValidation->revision_points && count($currentValidator->borangValidation->revision_points) > 0)
+                                    <div class="mb-2">
+                                        <strong>Poin Revisi ({{ count($currentValidator->borangValidation->revision_points) }}):</strong>
+                                        <ul class="mb-0">
+                                            @foreach($currentValidator->borangValidation->revision_points as $point)
+                                            <li>{{ $point }}</li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                    @endif
+                                </div>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+
+                    @else
+                    {{-- No Validator Assigned Yet --}}
+                    <div class="text-center py-4">
+                        <i class="bi bi-person-x" style="font-size: 3rem; color: #ccc;"></i>
+                        <p class="text-muted mt-3 mb-3">
+                            Belum ada validator yang di-assign untuk review LED
+                        </p>
+                        <a href="{{ route('de.pengajuan.assign-validator.form', $pengajuan->id) }}" class="btn btn-primary">
+                            <i class="bi bi-person-plus"></i>
+                            Assign Validator Sekarang
+                        </a>
+                    </div>
+                    @endif
+                </div>
+            </div>
+            @endif
+
             <!-- Informasi Pengajuan -->
             <div class="card mb-4">
                 <div class="card-header bg-light">
@@ -789,46 +1082,203 @@
         </div>
 
         <!-- Sidebar -->
-        <div class="col-md-4">
+        <div class="col-md-12 col-lg-4">
             <!-- Timeline -->
             <div class="card mb-4">
                 <div class="card-header bg-light">
                     <h5 class="mb-0">
-                        <i class="bi bi-clock-history"></i> Timeline
+                        <i class="bi bi-clock-history"></i> Timeline Proses Akreditasi
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="timeline">
                         @foreach([
-                        ['date' => $pengajuan->tanggal_pengingat, 'label' => 'Pengingat Masa Akreditasi'],
-                        ['date' => $pengajuan->tanggal_surat_permohonan, 'label' => 'Surat Permohonan PS'],
-                        ['date' => $pengajuan->tanggal_borang_dikirim, 'label' => 'Penyampaian Template LED'],
-                        ['date' => $pengajuan->tanggal_draft_borang, 'label' => 'Dokumen LED Diterima'],
-                        ['date' => $pengajuan->tanggal_review_kesiapan, 'label' => 'Review Kesiapan'],
-                        ['date' => $pengajuan->tanggal_pembayaran, 'label' => 'Pembayaran'],
-                        ['date' => $pengajuan->tanggal_borang_final, 'label' => 'LED PS Final'],
-                        ['date' => $pengajuan->tanggal_lanjut_ak, 'label' => 'Keputusan Kesiapan'],
-                        ['date' => $pengajuan->tanggal_lanjut_ak, 'label' => 'Proses Penilaian Dokumen (AK)'],
-                        ['date' => $pengajuan->tanggal_lanjut_ak, 'label' => 'Validasi Hasil AK'],
-                        ['date' => $pengajuan->tanggal_lanjut_ak, 'label' => 'Proses Asesmen Lapangan (AL)'],
-                        ['date' => $pengajuan->tanggal_lanjut_ak, 'label' => 'Penyampaian Hasil Akreditasi'],
-                        ['date' => $pengajuan->tanggal_lanjut_ak, 'label' => 'Banding'],
-                        ['date' => $pengajuan->tanggal_lanjut_ak, 'label' => 'Penetapan Hasil Akreditasi'],
-                        ['date' => $pengajuan->tanggal_lanjut_ak, 'label' => 'Pengumuman Hasil Akreditasi'],
-                        ['date' => $pengajuan->tanggal_lanjut_ak, 'label' => 'Penyimpanan Berkas Akreditasi'],
+                        // ========================================
+                        // FASE 1: PERSIAPAN & PENGAJUAN
+                        // ========================================
+                        [
+                        'date' => $pengajuan->tanggal_pengingat,
+                        'label' => 'Pengingat Masa Akreditasi',
+                        'icon' => 'bi-bell',
+                        'phase' => 'Persiapan'
+                        ],
+                        [
+                        'date' => $pengajuan->tanggal_surat_permohonan,
+                        'label' => 'Surat Permohonan PS',
+                        'icon' => 'bi-envelope',
+                        'phase' => 'Persiapan'
+                        ],
+                        [
+                        'date' => $pengajuan->tanggal_borang_dikirim,
+                        'label' => 'Penyampaian Template LED',
+                        'icon' => 'bi-file-earmark-arrow-down',
+                        'phase' => 'Persiapan'
+                        ],
+                        [
+                        'date' => $pengajuan->tanggal_draft_borang,
+                        'label' => 'Draft LED Diterima dari Prodi',
+                        'icon' => 'bi-file-earmark-check',
+                        'phase' => 'Persiapan'
+                        ],
+
+                        // ========================================
+                        // FASE 2: VALIDASI (NEW!)
+                        // ========================================
+                        [
+                        'date' => $pengajuan->tanggal_validasi_borang_assigned,
+                        'label' => 'Validator LED Di-assign',
+                        'icon' => 'bi-person-check',
+                        'phase' => 'Validasi LED',
+                        'color' => 'success'
+                        ],
+                        [
+                        'date' => $pengajuan->tanggal_validasi_borang_selesai,
+                        'label' => 'Validasi LED Selesai',
+                        'icon' => 'bi-clipboard-check',
+                        'phase' => 'Validasi LED',
+                        'color' => 'success'
+                        ],
+
+                        // ========================================
+                        // FASE 3: REVIEW KESIAPAN & PEMBAYARAN
+                        // ========================================
+                        [
+                        'date' => $pengajuan->tanggal_review_kesiapan,
+                        'label' => 'Review Kesiapan oleh DE',
+                        'icon' => 'bi-clipboard2-check',
+                        'phase' => 'Review'
+                        ],
+                        [
+                        'date' => $pengajuan->tanggal_pembayaran,
+                        'label' => 'Pembayaran Diterima',
+                        'icon' => 'bi-credit-card',
+                        'phase' => 'Pembayaran'
+                        ],
+                        [
+                        'date' => $pengajuan->tanggal_borang_final,
+                        'label' => 'LED PS Final Diterima',
+                        'icon' => 'bi-file-earmark-text',
+                        'phase' => 'Pembayaran'
+                        ],
+                        [
+                        'date' => $pengajuan->tanggal_lanjut_ak,
+                        'label' => 'Keputusan Lanjut ke AK',
+                        'icon' => 'bi-check-circle',
+                        'phase' => 'Pembayaran'
+                        ],
+
+                        // ========================================
+                        // FASE 4: ASESMEN KECUKUPAN (AK)
+                        // ========================================
+                        [
+                        'date' => $pengajuan->tanggal_ak_mulai,
+                        'label' => 'Proses Penilaian Dokumen (AK) Dimulai',
+                        'icon' => 'bi-file-earmark-medical',
+                        'phase' => 'Asesmen Kecukupan',
+                        'color' => 'success'
+                        ],
+                        [
+                        'date' => $pengajuan->tanggal_ak_selesai,
+                        'label' => 'Validasi Hasil AK Selesai',
+                        'icon' => 'bi-clipboard-check',
+                        'phase' => 'Asesmen Kecukupan',
+                        'color' => 'success'
+                        ],
+
+                        // ========================================
+                        // FASE 5: ASESMEN LAPANGAN (AL)
+                        // ========================================
+                        [
+                        'date' => $pengajuan->tanggal_al_mulai,
+                        'label' => 'Proses Asesmen Lapangan (AL) Dimulai',
+                        'icon' => 'bi-building',
+                        'phase' => 'Asesmen Lapangan',
+                        'color' => 'success'
+                        ],
+                        [
+                        'date' => $pengajuan->tanggal_al_selesai,
+                        'label' => 'Validasi Hasil AL Selesai',
+                        'icon' => 'bi-clipboard-data',
+                        'phase' => 'Asesmen Lapangan',
+                        'color' => 'success'
+                        ],
+
+                        // ========================================
+                        // FASE 6: PENYELESAIAN
+                        // ========================================
+                        [
+                        'date' => $pengajuan->tanggal_hasil_akreditasi,
+                        'label' => 'Penyampaian Hasil Akreditasi',
+                        'icon' => 'bi-envelope-paper',
+                        'phase' => 'Penyelesaian',
+                        'color' => 'success'
+                        ],
+                        [
+                        'date' => $pengajuan->tanggal_banding,
+                        'label' => 'Banding (Jika Ada)',
+                        'icon' => 'bi-arrow-repeat',
+                        'phase' => 'Penyelesaian',
+                        'color' => 'danger',
+                        'optional' => true
+                        ],
+                        [
+                        'date' => $pengajuan->tanggal_penetapan,
+                        'label' => 'Penetapan Hasil Akreditasi',
+                        'icon' => 'bi-award',
+                        'phase' => 'Penyelesaian',
+                        'color' => 'success'
+                        ],
+                        [
+                        'date' => $pengajuan->tanggal_pengumuman,
+                        'label' => 'Pengumuman Hasil Akreditasi',
+                        'icon' => 'bi-megaphone',
+                        'phase' => 'Penyelesaian',
+                        'color' => 'success'
+                        ],
+                        [
+                        'date' => $pengajuan->tanggal_penyimpanan,
+                        'label' => 'Penyimpanan Berkas Akreditasi',
+                        'icon' => 'bi-archive',
+                        'phase' => 'Penyelesaian',
+                        'color' => 'secondary'
+                        ],
                         ] as $item)
-                        <div class="d-flex mb-3">
+                        @php
+                        $isCompleted = $item['date'] !== null;
+                        $iconColor = $isCompleted ? 'text-success' : 'text-muted';
+                        $itemColor = $item['color'] ?? ($isCompleted ? 'success' : 'muted');
+                        $isOptional = $item['optional'] ?? false;
+                        @endphp
+
+                        <div class="d-flex mb-3 {{ $isOptional && !$isCompleted ? 'opacity-50' : '' }}">
                             <div class="me-3">
-                                @if($item['date'])
-                                <i class="bi bi-check-circle-fill text-success"></i>
+                                @if($isCompleted)
+                                <i class="bi bi-check-circle-fill {{ $iconColor }}" style="font-size: 1.2rem;"></i>
                                 @else
-                                <i class="bi bi-circle text-muted"></i>
+                                <i class="bi bi-circle {{ $iconColor }}"></i>
                                 @endif
                             </div>
-                            <div>
-                                <strong>{{ $item['label'] }}</strong>
-                                @if($item['date'])
-                                <br><small class="text-muted">{{ $item['date']->format('d M Y H:i') }}</small>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <strong class="{{ $isCompleted ? 'text-' . $itemColor : 'text-muted' }}">
+                                            <i class="{{ $item['icon'] ?? 'bi-circle' }} me-1"></i>
+                                            {{ $item['label'] }}
+                                            @if($isOptional)
+                                            <span class="badge bg-secondary ms-1">Opsional</span>
+                                            @endif
+                                        </strong>
+                                    </div>
+                                    @if($isCompleted)
+                                    <span class="badge bg-{{ $itemColor }}">
+                                        {{ $item['date']->format('d M Y') }}
+                                    </span>
+                                    @endif
+                                </div>
+                                @if($isCompleted)
+                                <small class="text-muted">
+                                    <i class="bi bi-clock"></i> {{ $item['date']->format('H:i') }} WIB
+                                </small>
                                 @endif
                             </div>
                         </div>
@@ -948,6 +1398,89 @@
             parseBorang(pengajuanId, dokumenId);
         }
     }
+
+
+    // Toggle between link and upload
+    document.querySelectorAll('input[name="metode_kirim"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const divLink = document.getElementById('divLink');
+            const divUpload = document.getElementById('divUpload');
+            const templateLink = document.getElementById('template_link');
+            const borangTemplate = document.getElementById('borang_template');
+            const infoMetode = document.getElementById('infoMetode');
+
+            if (this.value === 'link') {
+                divLink.style.display = 'block';
+                divUpload.style.display = 'none';
+                templateLink.required = true;
+                borangTemplate.required = false;
+                infoMetode.textContent = 'Link template akan dikirim ke email prodi';
+            } else {
+                divLink.style.display = 'none';
+                divUpload.style.display = 'block';
+                templateLink.required = false;
+                borangTemplate.required = true;
+                infoMetode.textContent = 'File template akan diupload dan dapat didownload oleh prodi';
+            }
+        });
+    });
+
+    // Use default link
+    function useDefaultLink() {
+        const template_link = document.getElementById('template_link');
+        if (template_link) template_link.value = "{{ url('pengajuan/' . $pengajuan->id . '/borang/download-template') }}";
+    }
+
+    // Clear link
+    function clearLink() {
+        const template_link = document.getElementById('template_link');
+        if (template_link) template_link.value = '';
+    }
+
+    // Form validation
+    const formKirimBorang = document.getElementById('formKirimBorang')
+    if (formKirimBorang) formKirimBorang.addEventListener('submit', function(e) {
+        const metode = document.querySelector('input[name="metode_kirim"]:checked').value;
+
+        if (metode === 'link') {
+            const link = document.getElementById('template_link').value;
+            if (!link) {
+                e.preventDefault();
+                alert('Mohon masukkan URL template!');
+                return false;
+            }
+
+            // Validate URL format
+            try {
+                new URL(link);
+            } catch (error) {
+                e.preventDefault();
+                alert('Format URL tidak valid!');
+                return false;
+            }
+        } else {
+            const file = document.getElementById('borang_template').files[0];
+            if (!file) {
+                e.preventDefault();
+                alert('Mohon pilih file template!');
+                return false;
+            }
+
+            // Validate file size (10 MB)
+            if (file.size > 10 * 1024 * 1024) {
+                e.preventDefault();
+                alert('Ukuran file terlalu besar! Maksimal 10 MB.');
+                return false;
+            }
+        }
+
+        return true;
+    });
+
+    // Auto-fill default on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        useDefaultLink();
+    });
 
 </script>
 @endpush

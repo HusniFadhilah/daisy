@@ -162,7 +162,7 @@
                     <ol class="ps-3">
                         <li class="mb-2">Submit surat permohonan oleh prodi</li>
                         <li class="mb-2">DE LAMDEPILAR mengirim form borang</li>
-                        <li class="mb-2">Upload draft borang oleh prodi</li>
+                        <li class="mb-2">Upload draft LED oleh prodi</li>
                         <li class="mb-2">DE LAMDEPILAR melakukan review kesiapan</li>
                         <li class="mb-2">Jika dinyatakan siap: lakukan pembayaran</li>
                         <li class="mb-2">Upload borang final oleh prodi</li>

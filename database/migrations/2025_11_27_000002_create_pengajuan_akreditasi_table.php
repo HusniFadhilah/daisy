@@ -30,17 +30,24 @@ return new class extends Migration
                 'surat_permohonan_diterima',
                 'borang_dikirim',
                 'draft_borang_diterima',
+                'borang_online_selesai',
+                'borang_validation_pending',
+                'borang_in_validation',
+                'borang_revision_required',
+                'borang_validated',
                 'review_kesiapan_belum_siap',
                 'review_kesiapan_siap',
                 'menunggu_pembayaran',
                 'pembayaran_diterima',
                 'borang_final_diterima',
-                'borang_online_selesai',
                 'pengajuan_completed',
                 'ak_in_progress',
                 'ak_completed',
                 'al_in_progress',
                 'al_completed',
+                'hasil_diumumkan',
+                'banding_diajukan',
+                'hasil_ditetapkan',
                 'selesai',
                 'ditolak'
             ])->default('pengingat_dikirim');
@@ -54,6 +61,26 @@ return new class extends Migration
             $table->timestamp('tanggal_pembayaran')->nullable();
             $table->timestamp('tanggal_borang_final')->nullable();
             $table->timestamp('tanggal_lanjut_ak')->nullable();
+
+            // ===== Timeline baru =====
+            // Borang validation
+            $table->timestamp('tanggal_validasi_borang_assigned')->nullable()->comment('Tanggal validator di-assign untuk review LED');
+            $table->timestamp('tanggal_validasi_borang_selesai')->nullable()->comment('Tanggal validator approve/request revision LED');
+
+            // AK Timeline
+            $table->timestamp('tanggal_ak_mulai')->nullable()->comment('Tanggal mulai proses AK/Penilaian Dokumen');
+            $table->timestamp('tanggal_ak_selesai')->nullable()->comment('Tanggal selesai validasi hasil AK');
+
+            // AL Timeline
+            $table->timestamp('tanggal_al_mulai')->nullable()->comment('Tanggal mulai proses AL/Asesmen Lapangan');
+            $table->timestamp('tanggal_al_selesai')->nullable()->comment('Tanggal selesai validasi hasil AL');
+
+            // Final Timeline
+            $table->timestamp('tanggal_hasil_akreditasi')->nullable()->comment('Tanggal penyampaian hasil akreditasi');
+            $table->timestamp('tanggal_banding')->nullable()->comment('Tanggal pengajuan banding (optional)');
+            $table->timestamp('tanggal_penetapan')->nullable()->comment('Tanggal penetapan hasil akreditasi');
+            $table->timestamp('tanggal_pengumuman')->nullable()->comment('Tanggal pengumuman hasil akreditasi');
+            $table->timestamp('tanggal_penyimpanan')->nullable()->comment('Tanggal penyimpanan berkas akreditasi');
 
             $table->timestamps();
         });
@@ -75,20 +102,25 @@ return new class extends Migration
                 'laporan_al',
                 'sertifikat',
                 'lainnya'
-            ]);
+            ])->index();
 
-            $table->string('nama_file');
-            $table->string('path_file');
-            $table->string('original_filename');
-            $table->integer('file_size')->comment('in bytes');
-            $table->string('mime_type');
+            $table->string('nama_file')->nullable(); // ✅ Nullable jika pakai link
+            $table->string('path_file')->nullable(); // ✅ Nullable jika pakai link
+            $table->string('original_filename')->nullable(); // ✅ Nullable jika pakai link
+            $table->unsignedBigInteger('file_size')->nullable()
+                ->comment('File size in bytes'); // ✅ Use unsignedBigInteger for large files
+            $table->string('mime_type', 100)->nullable();
 
-            $table->foreignId('uploaded_by')->constrained('users');
+            $table->foreignId('uploaded_by')->nullable()->constrained('users');
             $table->text('keterangan')->nullable();
+            $table->string('template_link', 500)->nullable()->comment('Link to template if sent via link instead of file upload');
             $table->integer('versi')->default(1);
-            $table->boolean('is_latest')->default(true);
+            $table->boolean('is_latest')->default(true)->index();
 
             $table->timestamps();
+
+            $table->index(['id_pengajuan', 'jenis_dokumen', 'is_latest'], 'idx_pengajuan_jenis_latest');
+            $table->index('created_at', 'idx_created_at');
         });
 
         Schema::create('review_kesiapan', function (Blueprint $table) {
@@ -164,7 +196,7 @@ return new class extends Migration
 
     public function down()
     {
-        Schema::dropIfExists('study_program_user');
+        Schema::dropIfExists('study_program_users');
         Schema::dropIfExists('pengajuan_status_log');
         Schema::dropIfExists('pembayaran_akreditasi');
         Schema::dropIfExists('review_kesiapan');

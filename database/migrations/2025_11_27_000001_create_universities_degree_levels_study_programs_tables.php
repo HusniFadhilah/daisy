@@ -22,7 +22,8 @@ return new class extends Migration
         // Create degree_levels table
         Schema::create('degree_levels', function (Blueprint $table) {
             $table->id();
-            $table->string('code', 10);
+            $table->string('code', 15);
+            $table->string('alias', 15);
             $table->string('name', 50)->nullable();
             $table->timestamps();
         });
@@ -41,8 +42,8 @@ return new class extends Migration
             $table->string('name');
             $table->string('full_name');
             $table->string('code');
-            $table->foreignId('id_univ')->constrained('universities')->onDelete('cascade');
-            $table->foreignId('id_level')->constrained('degree_levels')->onDelete('cascade');
+            $table->foreignId('id_university')->constrained('universities')->onDelete('cascade');
+            $table->foreignId('id_degree_level')->constrained('degree_levels')->onDelete('cascade');
             $table->foreignId('category_id')->nullable()->constrained('study_program_categories')->onDelete('set null');
             $table->enum('bentuk_pt', ['Universitas', 'Institut', 'Sekolah Tinggi', 'Politeknik', 'Akademi'])->nullable();
             $table->string('email')->nullable();

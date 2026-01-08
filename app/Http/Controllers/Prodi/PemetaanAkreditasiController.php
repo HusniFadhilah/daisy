@@ -23,12 +23,12 @@ class PemetaanAkreditasiController extends Controller
 
         // Filter by university
         if ($request->filled('university_id')) {
-            $query->where('id_univ', $request->university_id);
+            $query->where('id_university', $request->university_id);
         }
 
         // Filter by degree level
         if ($request->filled('degree_level_id')) {
-            $query->where('id_level', $request->degree_level_id);
+            $query->where('id_degree_level', $request->degree_level_id);
         }
 
         // Filter by status kedaluwarsa
@@ -123,11 +123,11 @@ class PemetaanAkreditasiController extends Controller
 
         // Apply filters
         if ($request->filled('university_id')) {
-            $query->where('id_univ', $request->university_id);
+            $query->where('id_university', $request->university_id);
         }
 
         if ($request->filled('degree_level_id')) {
-            $query->where('id_level', $request->degree_level_id);
+            $query->where('id_degree_level', $request->degree_level_id);
         }
 
         if ($request->filled('status_kedaluwarsa')) {

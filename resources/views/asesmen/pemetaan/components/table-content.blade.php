@@ -87,7 +87,7 @@
                             <small class="text-muted">{{ $program->university->name }}</small>
                         </td>
                         <td>
-                            <span class="badge bg-secondary">{{ $program->degreeLevel->code }}</span>
+                            <span class="badge bg-secondary">{{ $program->degreeLevel->alias }}</span>
                         </td>
                         <td>
                             @if($program->peringkat_akreditasi)

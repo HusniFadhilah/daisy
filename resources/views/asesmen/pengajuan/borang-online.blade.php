@@ -729,6 +729,7 @@
                         this.innerHTML = '<i class="bi bi-save"></i> Simpan';
                     }, 2000);
                 } catch (error) {
+                    console.log(error)
                     this.disabled = false;
                     this.innerHTML = '<i class="bi bi-save"></i> Simpan';
                     Swal.fire('Error', 'Gagal menyimpan: ' + error.message, 'error');
@@ -967,9 +968,9 @@
                         clearInterval(importStatusInterval);
                         Swal.fire({
                             icon: 'success'
-                            , title: 'Import Berhasil!'
+                            , title: 'Proses Upload Berhasil!'
                             , html: `
-                                <p><strong>${progress.sections.parsed} elemen</strong> berhasil diimport</p>
+                                <p><strong>${progress.sections.parsed} elemen</strong> berhasil diupload</p>
                                 <p><strong>${progress.tables.parsed} tabel</strong> data terisi</p>
                                 <p class="text-muted mt-2">Halaman akan dimuat ulang...</p>
                             `
@@ -1022,7 +1023,7 @@
                 }
 
                 // ✅ 2. Count TABLE fields only (match server-side)
-                card.querySelectorAll('.wysiwyg-editor[data-field-type="table"]').forEach(editorEl => {
+                card.querySelectorAll('textarea.tinymce-editor[data-field-type="table"]').forEach(editorEl => {
                     const datasetId = editorEl.dataset.datasetId;
                     elemenTotalCount++;
                     totalFieldsCount++;
@@ -1167,6 +1168,8 @@
                 elemenCards.forEach(card => {
                     let elemenFilled = 0;
                     let elemenTotal = 0;
+                    let elemenTotalCount = 0;
+                    let totalFieldsCount = 0;
 
                     // Count description
                     const descField = card.querySelector('textarea[data-field-type="description"]');
@@ -1179,15 +1182,20 @@
                     }
 
                     // Count table fields only
-                    card.querySelectorAll('.wysiwyg-editor[data-field-type="table"]').forEach(editorEl => {
+                    card.querySelectorAll('textarea.tinymce-editor[data-field-type="table"]').forEach(editorEl => {
                         const datasetId = editorEl.dataset.datasetId;
-                        elemenTotal++;
+                        elemenTotalCount++;
+                        totalFieldsCount++;
 
-                        if (editorInstances[datasetId]) {
-                            const content = editorInstances[datasetId].getData().trim();
-                            const hasRealData = content.length > 100 && !isEmptyTable(content);
+                        const editor = editorInstances[datasetId];
+                        if (editor) {
+                            const content = editor.getContent({
+                                format: 'html'
+                            }).trim();
+                            const hasRealData = content.length > 0 && !isEmptyTable(content);
                             if (hasRealData) {
                                 elemenFilled++;
+                                filledFields++;
                             }
                         }
                     });
@@ -1287,7 +1295,7 @@
                         <ul class="text-danger">
                             <li><strong>${statsData.stats.total_data}</strong> data yang sudah diisi</li>
                             <li><strong>${statsData.stats.total_imports}</strong> riwayat import</li>
-                            ${statsData.stats.draft_borang ? `<li>Draft borang: ${statsData.stats.draft_borang.filename}</li>` : ''}
+                            ${statsData.stats.draft_borang ? `<li>Draft LED: ${statsData.stats.draft_borang.filename}</li>` : ''}
                         </ul>
                         <p class="mt-3 text-muted">Anda harus mengisi ulang dari awal.</p>
                         <p class="mt-3"><strong>Ketik "RESET" untuk konfirmasi:</strong></p>
@@ -1368,7 +1376,10 @@
                     if (field.value.trim() !== '') filledCount++;
                 });
                 Object.keys(editorInstances).forEach(id => {
-                    if (editorInstances[id].getData().trim() !== '') filledCount++;
+                    const content = editorInstances[id].getContent({
+                        format: 'html'
+                    }).trim();
+                    if (content !== '' && !isEmptyTable(content)) filledCount++;
                 });
 
                 if (filledCount < totalFields) {

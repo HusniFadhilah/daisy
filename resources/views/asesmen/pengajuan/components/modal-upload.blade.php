@@ -99,7 +99,7 @@ $latestImport = $pengajuan->latestBorangImport;
         <!-- Not Processed Yet -->
         <div class="alert alert-info alert-permanent">
             <i class="bi bi-info-circle"></i>
-            <strong>Draft borang Anda sudah diupload!</strong><br>
+            <strong>Draft LED Anda sudah diupload!</strong><br>
             File: <strong>{{ $draftBorang->original_filename }}</strong> ({{ $draftBorang->file_size_formatted }})
         </div>
 
@@ -142,7 +142,7 @@ $latestImport = $pengajuan->latestBorangImport;
         @else
         <div class="alert alert-warning alert-permanent">
             <i class="bi bi-exclamation-triangle"></i>
-            Upload draft borang terlebih dahulu untuk melakukan pembacaan data.
+            Upload draft LED terlebih dahulu untuk melakukan pembacaan data.
         </div>
         @endif
     </div>
@@ -154,7 +154,7 @@ $latestImport = $pengajuan->latestBorangImport;
         <div class="modal-content">
             <div class="modal-header bg-warning">
                 <h5 class="modal-title">
-                    <i class="bi bi-arrow-repeat"></i> Upload Ulang Draft Borang
+                    <i class="bi bi-arrow-repeat"></i> Upload Ulang Draft LED
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>

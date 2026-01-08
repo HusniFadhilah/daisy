@@ -153,7 +153,7 @@ return new class extends Migration
             $table->foreignId('id_asesmen')->constrained('asesmens', 'id')->onDelete('cascade');
             $table->foreignId('id_user')->constrained('users', 'id')->onDelete('cascade');
             $table->foreignId('id_role')->constrained('roles', 'id')->onDelete('cascade');
-            $table->enum('jenis_asesmen', ['ak', 'al'])->default('ak')->comment('Type of asesmen: ak (Asesmen Kecukupan) or al (Asesmen Lapangan)');
+            $table->enum('jenis_asesmen', ['ak', 'al', 'dokumen'])->default('ak')->comment('Type of asesmen: ak (Asesmen Kecukupan) or al (Asesmen Lapangan)');
             $table->foreignId('id_asesmen_kecukupan')
                 ->nullable()
                 ->constrained('asesmen_kecukupan')
@@ -201,6 +201,97 @@ return new class extends Migration
             $table->index(['id_asesmen_kecukupan', 'id_role']);
             $table->index(['id_asesmen_lapangan', 'id_role']);
             $table->index('urutan_asesor');
+            $table->unique(
+                ['id_asesmen', 'id_user', 'jenis_asesmen'],
+                'unique_asesmen_user_borang'
+            );
+            $table->timestamps();
+        });
+
+        Schema::create('asesmen_documents', function (Blueprint $table) {
+            $table->id();
+
+            $table->foreignId('id_asesmen')
+                ->constrained('asesmens')
+                ->cascadeOnDelete();
+
+            // contoh type: berita_acara, lampiran, foto, dll
+            $table->string('type', 50)->index();
+
+            // judul/label file (mis: "Berita Acara Hari 1", "Lampiran A")
+            $table->string('title')->nullable();
+
+            // urutan saat digabung ke laporan (semakin kecil semakin dulu)
+            $table->unsignedInteger('sort_order')->default(1)->index();
+
+            // path file di storage/public
+            $table->string('path');
+            $table->string('original_name')->nullable();
+            $table->unsignedBigInteger('size')->nullable();
+            $table->string('mime', 100)->nullable();
+
+            // status aktif (bisa nonaktifkan kalau file lama)
+            $table->boolean('is_active')->default(true)->index();
+
+            // optional: versi per dokumen (kalau kamu mau revisi file yang sama)
+            $table->unsignedInteger('version')->default(1);
+
+            $table->foreignId('uploaded_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamp('uploaded_at')->nullable();
+
+            $table->timestamps();
+
+            // Boleh banyak file aktif -> JANGAN unique (id_asesmen,type)
+            $table->index(['id_asesmen', 'type', 'is_active', 'sort_order']);
+        });
+
+        Schema::create('borang_validations', function (Blueprint $table) {
+            $table->id();
+
+            // ✅ Link to assignment (reuse existing table)
+            $table->foreignId('id_assignment')
+                ->constrained('asesmen_user_roles')
+                ->onDelete('cascade');
+
+            $table->foreignId('id_pengajuan')
+                ->constrained('pengajuan_akreditasi')
+                ->onDelete('cascade');
+
+            // Validation checklist (flexible JSON)
+            $table->json('checklist_items')->nullable();
+            $table->json('revision_points')->nullable(); // Per-section revisions
+            $table->text('catatan_validator')->nullable();
+
+            // Progress tracking
+            $table->integer('total_sections')->default(0);
+            $table->integer('validated_sections')->default(0);
+
+            // Status handled by asesmen_user_roles.status_pekerjaan
+            // No need to duplicate status here!
+
+            $table->timestamps();
+
+            $table->index(['id_assignment', 'id_pengajuan']);
+        });
+
+        // ========================================
+        // 3. NEW TABLE: borang_revision_history
+        // ========================================
+        Schema::create('borang_revision_history', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('id_pengajuan')
+                ->constrained('pengajuan_akreditasi')
+                ->onDelete('cascade');
+            $table->foreignId('id_validation')
+                ->constrained('borang_validations')
+                ->onDelete('cascade');
+
+            $table->integer('revision_number')->default(1);
+            $table->json('revised_sections')->nullable();
+            $table->text('revision_notes')->nullable();
+
+            $table->foreignId('revised_by')->constrained('users');
+            $table->timestamp('revised_at');
             $table->timestamps();
         });
     }
@@ -210,6 +301,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('asesmen_documents');
         Schema::dropIfExists('asesmen_user_roles');
         Schema::dropIfExists('asesmen_lapangan');
         Schema::dropIfExists('asesmen_kecukupan');

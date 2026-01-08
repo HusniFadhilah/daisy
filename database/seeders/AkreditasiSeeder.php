@@ -85,8 +85,8 @@ class AkreditasiSeeder extends Seeder
                 }
 
                 // Find or create study program
-                $studyProgram = StudyProgram::where('id_univ', $university->id)
-                    ->where('id_level', $degreeLevel->id)
+                $studyProgram = StudyProgram::where('id_university', $university->id)
+                    ->where('id_degree_level', $degreeLevel->id)
                     ->where('name', $programStudi)
                     ->first();
 
@@ -96,9 +96,9 @@ class AkreditasiSeeder extends Seeder
                     $studyProgram = StudyProgram::create([
                         'code' => $code,
                         'name' => $programStudi,
-                        'full_name' => $degreeLevel->code . ' - ' . $programStudi . ' ' . $university->name,
-                        'id_univ' => $university->id,
-                        'id_level' => $degreeLevel->id,
+                        'full_name' => $degreeLevel->alias . ' - ' . $programStudi . ' ' . $university->name,
+                        'id_university' => $university->id,
+                        'id_degree_level' => $degreeLevel->id,
                         'email' => $email,
                         'peringkat_akreditasi' => $peringkat,
                         'tanggal_kedaluwarsa' => $tanggal,

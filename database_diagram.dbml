@@ -57,8 +57,8 @@ Table study_programs {
   id bigint [pk, increment]
   code varchar
   name varchar
-  id_univ bigint
-  id_level bigint
+  id_university bigint
+  id_degree_level bigint
   email varchar
   peringkat_akreditasi varchar
   tanggal_kedaluwarsa date
@@ -67,8 +67,8 @@ Table study_programs {
   updated_at timestamp
 }
 
-Ref: study_programs.id_univ > universities.id
-Ref: study_programs.id_level > degree_levels.id
+Ref: study_programs.id_university > universities.id
+Ref: study_programs.id_degree_level > degree_levels.id
 
 ////////////////////////////////////////////////////
 // ASESMENT
@@ -238,11 +238,11 @@ Ref: indikator_penilaian_elemen.jenjang_penilaian_id > jenjang_penilaian.id
 Table bobot_penilaian {
   id bigint [pk, increment]
   id_elemen bigint
-  id_level bigint     // degree_levels.id → Sarjana/Magister/Doktor/Diploma/Profesi
+  id_degree_level bigint     // degree_levels.id → Sarjana/Magister/Doktor/Diploma/Profesi
   bobot int           // nilai bobot sesuai tabel
   created_at timestamp
   updated_at timestamp
 }
 
 Ref: bobot_penilaian.id_elemen > elemen_standar.id
-Ref: bobot_penilaian.id_level > degree_levels.id
+Ref: bobot_penilaian.id_degree_level > degree_levels.id

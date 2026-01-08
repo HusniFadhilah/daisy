@@ -67,4 +67,18 @@ class Asesmen extends Model
             ])
             ->withTimestamps();
     }
+
+    public function documents()
+    {
+        return $this->hasMany(AsesmenDocument::class, 'id_asesmen');
+    }
+
+    public function beritaAcara()
+    {
+        return $this->documents()
+            ->where('type', 'berita_acara')
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('id');
+    }
 }
