@@ -44,6 +44,11 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    // CHANGE PASSWORD FIRST LOGIN
+    Route::get('/change-password-first', [AuthController::class, 'showChangePasswordFirst'])->name('change.password.first');
+    Route::post('/change-password-first', [AuthController::class, 'changePasswordFirst'])->name('change.password.first.post');
+    Route::post('/change-password-skip', [AuthController::class, 'skipChangePassword'])->name('change.password.skip');
+    
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -52,6 +57,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::middleware('admin')->group(function () {
         // USER MANAGEMENT (Admin Only)
+        Route::get('users/export', [App\Http\Controllers\UserController::class, 'export'])->name('users.export');
+        Route::post('users/import', [App\Http\Controllers\UserController::class, 'import'])->name('users.import');
+        Route::get('users/template', [App\Http\Controllers\UserController::class, 'downloadTemplate'])->name('users.template');
         Route::resource('users', App\Http\Controllers\UserController::class);
         // INDIKATOR MANAGEMENT (Admin Only)
         Route::resource('kriteria', KriteriaController::class);

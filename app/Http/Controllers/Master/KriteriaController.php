@@ -4,11 +4,8 @@ namespace App\Http\Controllers\Master;
 
 use App\Models\Kriteria;
 use Illuminate\Http\Request;
-<<<<<<<< HEAD:app/Http/Controllers/KriteriaController.php
-use Yajra\DataTables\Facades\DataTables;
-========
 use App\Http\Controllers\Controller;
->>>>>>>> origin/main:app/Http/Controllers/Master/KriteriaController.php
+use Yajra\DataTables\Facades\DataTables;
 
 class KriteriaController extends Controller
 {
@@ -17,7 +14,6 @@ class KriteriaController extends Controller
      */
     public function index(Request $request)
     {
-<<<<<<<< HEAD:app/Http/Controllers/KriteriaController.php
         if ($request->ajax()) {
             $data = Kriteria::select('kriteria.*');
             
@@ -35,11 +31,6 @@ class KriteriaController extends Controller
         }
         
         return view('indikator.kriteria.index');
-========
-        $kriteria = Kriteria::latest()->paginate(10);
-
-        return view('indikator.kriteria.index', compact('kriteria'));
->>>>>>>> origin/main:app/Http/Controllers/Master/KriteriaController.php
     }
 
     /**

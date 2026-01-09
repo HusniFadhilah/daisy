@@ -36,6 +36,7 @@ class AuthController extends Controller
             $user = Auth::user();
             $user->syncRolesFromAssignments();
             $user = $user->fresh();
+            
             // If user has multiple roles, redirect to role selection
             if ($user->hasMultipleRoles()) {
                 return redirect()->route('select.role')
@@ -126,5 +127,81 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect('/login');
+    }
+
+    /**
+     * Show change password form for first login
+     */
+    public function showChangePasswordFirst()
+    {
+        return view('auth.change-password-first');
+    }
+
+    /**
+     * Update password on first login
+     */
+    public function changePasswordFirst(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'new_password' => 'required|min:8|confirmed',
+        ], [
+            'current_password.required' => 'Password lama harus diisi',
+            'new_password.required' => 'Password baru harus diisi',
+            'new_password.min' => 'Password baru minimal 8 karakter',
+            'new_password.confirmed' => 'Konfirmasi password tidak cocok',
+        ]);
+
+        $user = Auth::user();
+
+        // Verify current password
+        if (!Hash::check($request->current_password, $user->password)) {
+            return back()->withErrors(['current_password' => 'Password lama tidak sesuai']);
+        }
+
+        // Update password and remove must_change_password flag
+        $user->must_change_password = false;
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        // Force flush Auth dan reload user dari database
+        Auth::logout();
+        Auth::loginUsingId($user->id);
+
+        // Redirect based on user roles
+        $user = Auth::user(); // Ambil user fresh setelah login
+        if ($user->hasMultipleRoles()) {
+            return redirect()->route('select.role')
+                ->with('success', 'Password berhasil diubah! Silakan pilih role Anda.');
+        }
+
+        return redirect()->route('dashboard')
+            ->with('success', 'Password berhasil diubah!');
+    }
+
+    /**
+     * Skip change password (optional)
+     */
+    public function skipChangePassword(Request $request)
+    {
+        $user = Auth::user();
+        
+        // Set flag to false to skip next time
+        $user->must_change_password = false;
+        $user->save();
+
+        // Force flush Auth dan reload user dari database
+        Auth::logout();
+        Auth::loginUsingId($user->id);
+
+        // Redirect based on user roles
+        $user = Auth::user(); // Ambil user fresh setelah login
+        if ($user->hasMultipleRoles()) {
+            return redirect()->route('select.role')
+                ->with('info', 'Anda dapat mengganti password nanti dari menu profil.');
+        }
+
+        return redirect()->route('dashboard')
+            ->with('info', 'Anda dapat mengganti password nanti dari menu profil.');
     }
 }

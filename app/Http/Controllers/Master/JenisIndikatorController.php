@@ -3,12 +3,9 @@
 namespace App\Http\Controllers\Master;
 
 use Illuminate\Http\Request;
-<<<<<<<< HEAD:app/Http/Controllers/JenisIndikatorController.php
-use Yajra\DataTables\Facades\DataTables;
-========
 use App\Models\JenisIndikator;
 use App\Http\Controllers\Controller;
->>>>>>>> origin/main:app/Http/Controllers/Master/JenisIndikatorController.php
+use Yajra\DataTables\Facades\DataTables;
 
 class JenisIndikatorController extends Controller
 {
@@ -17,7 +14,6 @@ class JenisIndikatorController extends Controller
      */
     public function index(Request $request)
     {
-<<<<<<<< HEAD:app/Http/Controllers/JenisIndikatorController.php
         if ($request->ajax()) {
             $data = JenisIndikator::select('jenis_indikator.*');
             
@@ -43,14 +39,6 @@ class JenisIndikatorController extends Controller
         }
         
         return view('indikator.jenis.index');
-========
-        $jenisIndikator = JenisIndikator::all();
-
-        return response()->json([
-            'success' => true,
-            'data' => $jenisIndikator
-        ]);
->>>>>>>> origin/main:app/Http/Controllers/Master/JenisIndikatorController.php
     }
 
     /**

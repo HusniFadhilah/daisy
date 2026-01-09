@@ -185,7 +185,10 @@ class UserSeeder extends Seeder
         ];
 
         foreach ($users as $user) {
-            User::create($user);
+            User::updateOrCreate(
+                ['email' => $user['email']],
+                array_merge($user, ['must_change_password' => false]) // Seeder set false, hanya Excel yang true
+            );
         }
     }
 }

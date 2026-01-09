@@ -16,11 +16,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'register',
         ]);
 
-        $middleware->web(append: [
-            \Fahlisaputra\Minify\Middleware\MinifyHtml::class,
-            \Fahlisaputra\Minify\Middleware\MinifyCss::class,
-            \Fahlisaputra\Minify\Middleware\MinifyJavascript::class,
-        ]);
+        // Minify middleware - disabled karena package issue
+        // $middleware->web(append: [
+        //     \Fahlisaputra\Minify\Middleware\MinifyHtml::class,
+        //     \Fahlisaputra\Minify\Middleware\MinifyCss::class,
+        //     \Fahlisaputra\Minify\Middleware\MinifyJavascript::class,
+        // ]);
 
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,

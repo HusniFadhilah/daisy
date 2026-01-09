@@ -21,6 +21,7 @@ class User extends Authenticatable
         'role_selected',
         'is_multiple_role',
         'last_role_switch',
+        'must_change_password',
     ];
 
     protected $hidden = [

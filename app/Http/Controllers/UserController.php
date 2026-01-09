@@ -6,6 +6,11 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Yajra\DataTables\Facades\DataTables;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\UsersExport;
+use App\Imports\UsersImport;
+use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 
 class UserController extends Controller
 {
@@ -20,16 +25,21 @@ class UserController extends Controller
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('role', function($row){
-                    $class = $row->role === 'admin' ? 'primary' : 'secondary';
+                    $class = $row->role === 'admin' ? 'danger' : 'primary';
                     return '<span class="badge bg-'.$class.'">'.ucfirst($row->role).'</span>';
+                })
+                ->addColumn('role_alias', function($row){
+                    return $row->role_alias;
                 })
                 ->addColumn('created_at', function($row){
                     return $row->created_at ? $row->created_at->format('d M Y') : '-';
                 })
                 ->addColumn('action', function($row){
                     $btn = '<div class="btn-group" role="group">';
-                    $btn .= '<a href="'.route('users.edit', $row->id).'" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>';
-                    $btn .= '<button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord('.$row->id.')"><i class="bi bi-trash"></i></button>';
+                    $btn .= '<a href="'.route('users.edit', $row->id).'" class="btn btn-sm btn-warning" title="Edit"><i class="bi bi-pencil"></i></a>';
+                    if($row->id !== auth()->id()) {
+                        $btn .= '<button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord('.$row->id.')" title="Hapus"><i class="bi bi-trash"></i></button>';
+                    }
                     $btn .= '</div>';
                     return $btn;
                 })
@@ -58,9 +68,23 @@ class UserController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
             'role' => 'required|in:admin,user',
+            'role_selected' => 'required|in:super_admin,asesi,asesor,validator,verifikator,admin_univ,admin_prodi,default',
+            'roles' => 'nullable|array',
+            'roles.*' => 'in:super_admin,asesi,asesor,validator,verifikator,admin_univ,admin_prodi,default',
         ]);
 
+        // Set roles - jika tidak diisi, gunakan role_selected sebagai default
+        $roles = $request->roles ?? [$validated['role_selected']];
+        
+        // Pastikan role_selected ada di dalam roles
+        if (!in_array($validated['role_selected'], $roles)) {
+            $roles[] = $validated['role_selected'];
+        }
+
         $validated['password'] = Hash::make($validated['password']);
+        $validated['roles'] = array_values(array_unique($roles));
+        $validated['is_multiple_role'] = count($validated['roles']) > 1;
+        $validated['must_change_password'] = true; // Admin create user, set true agar user ganti password
         
         User::create($validated);
 
@@ -97,14 +121,28 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $id,
             'role' => 'required|in:admin,user',
+            'role_selected' => 'required|in:super_admin,asesi,asesor,validator,verifikator,admin_univ,admin_prodi,default',
+            'roles' => 'nullable|array',
+            'roles.*' => 'in:super_admin,asesi,asesor,validator,verifikator,admin_univ,admin_prodi,default',
             'password' => 'nullable|string|min:8|confirmed',
         ]);
+
+        // Set roles - jika tidak diisi, gunakan role_selected sebagai default
+        $roles = $request->roles ?? [$validated['role_selected']];
+        
+        // Pastikan role_selected ada di dalam roles
+        if (!in_array($validated['role_selected'], $roles)) {
+            $roles[] = $validated['role_selected'];
+        }
 
         if (!empty($validated['password'])) {
             $validated['password'] = Hash::make($validated['password']);
         } else {
             unset($validated['password']);
         }
+
+        $validated['roles'] = array_values(array_unique($roles));
+        $validated['is_multiple_role'] = count($validated['roles']) > 1;
 
         $user->update($validated);
 
@@ -129,5 +167,74 @@ class UserController extends Controller
 
         return redirect()->route('users.index')
             ->with('success', 'Pengguna berhasil dihapus.');
+    }
+
+    /**
+     * Export users to Excel
+     */
+    public function export()
+    {
+        return Excel::download(new UsersExport, 'users_' . date('Y-m-d_His') . '.xlsx');
+    }
+
+    /**
+     * Download Excel template for import
+     */
+    public function downloadTemplate()
+    {
+        $template = [
+            ['nama', 'email', 'password', 'role', 'role_aktif', 'semua_roles'],
+            ['John Doe', 'john@example.com', 'password123', 'user', 'asesi', 'asesi,asesor'],
+            ['Jane Smith', 'jane@example.com', 'password123', 'admin', 'admin_univ', 'admin_univ,validator'],
+        ];
+
+        return Excel::download(new class($template) implements FromArray, WithHeadings {
+            protected $data;
+            
+            public function __construct($data) {
+                $this->data = $data;
+            }
+            
+            public function array(): array {
+                return array_slice($this->data, 1); // Skip headers
+            }
+            
+            public function headings(): array {
+                return $this->data[0];
+            }
+        }, 'template_users.xlsx');
+    }
+
+    /**
+     * Import users from Excel
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv|max:2048'
+        ]);
+
+        try {
+            $import = new UsersImport;
+            Excel::import($import, $request->file('file'));
+
+            $failures = $import->failures();
+            
+            if ($failures->isNotEmpty()) {
+                $errors = [];
+                foreach ($failures as $failure) {
+                    $errors[] = "Baris {$failure->row()}: " . implode(', ', $failure->errors());
+                }
+                
+                return redirect()->route('users.index')
+                    ->with('warning', 'Import selesai dengan beberapa error: ' . implode(' | ', $errors));
+            }
+
+            return redirect()->route('users.index')
+                ->with('success', 'Data pengguna berhasil diimport.');
+        } catch (\Exception $e) {
+            return redirect()->route('users.index')
+                ->with('error', 'Gagal mengimport data: ' . $e->getMessage());
+        }
     }
 }
