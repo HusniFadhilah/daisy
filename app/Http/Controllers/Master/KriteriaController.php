@@ -4,11 +4,11 @@ namespace App\Http\Controllers\Master;
 
 use App\Models\Kriteria;
 use Illuminate\Http\Request;
-<<<<<<< HEAD:app/Http/Controllers/KriteriaController.php
+<<<<<<<< HEAD:app/Http/Controllers/KriteriaController.php
 use Yajra\DataTables\Facades\DataTables;
-=======
+========
 use App\Http\Controllers\Controller;
->>>>>>> ba30e62e26daa1c2eef43174c4e356ec279023ba:app/Http/Controllers/Master/KriteriaController.php
+>>>>>>>> origin/main:app/Http/Controllers/Master/KriteriaController.php
 
 class KriteriaController extends Controller
 {
@@ -17,7 +17,7 @@ class KriteriaController extends Controller
      */
     public function index(Request $request)
     {
-<<<<<<< HEAD:app/Http/Controllers/KriteriaController.php
+<<<<<<<< HEAD:app/Http/Controllers/KriteriaController.php
         if ($request->ajax()) {
             $data = Kriteria::select('kriteria.*');
             
@@ -35,11 +35,11 @@ class KriteriaController extends Controller
         }
         
         return view('indikator.kriteria.index');
-=======
+========
         $kriteria = Kriteria::latest()->paginate(10);
 
         return view('indikator.kriteria.index', compact('kriteria'));
->>>>>>> ba30e62e26daa1c2eef43174c4e356ec279023ba:app/Http/Controllers/Master/KriteriaController.php
+>>>>>>>> origin/main:app/Http/Controllers/Master/KriteriaController.php
     }
 
     /**

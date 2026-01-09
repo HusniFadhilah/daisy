@@ -18,7 +18,7 @@
 
 <!-- Stats Grid -->
 <div class="row g-4 mb-4">
-    <div class="col-12 col-md-6 col-lg-3">
+    <div class="col-12 col-md-6 col-lg-4 col-xl-3">
         <div class="stat-card">
             <div class="stat-header">
                 <div>
@@ -34,7 +34,7 @@
         </div>
     </div>
 
-    <div class="col-12 col-md-6 col-lg-3">
+    <div class="col-12 col-md-6 col-lg-4 col-xl-3">
         <div class="stat-card success">
             <div class="stat-header">
                 <div>
@@ -50,7 +50,7 @@
         </div>
     </div>
 
-    <div class="col-12 col-md-6 col-lg-3">
+    <div class="col-12 col-md-6 col-lg-4 col-xl-3">
         <div class="stat-card warning">
             <div class="stat-header">
                 <div>
@@ -66,7 +66,7 @@
         </div>
     </div>
 
-    <div class="col-12 col-md-6 col-lg-3">
+    <div class="col-12 col-md-6 col-lg-4 col-xl-3">
         <div class="stat-card info">
             <div class="stat-header">
                 <div>
@@ -242,7 +242,7 @@
 
 <!-- Additional Stats -->
 <div class="row g-4">
-    <div class="col-12 col-md-6 col-lg-3">
+    <div class="col-12 col-md-6 col-lg-4 col-xl-3">
         <div class="stat-card">
             <div class="stat-header">
                 <div>
@@ -255,7 +255,7 @@
         </div>
     </div>
 
-    <div class="col-12 col-md-6 col-lg-3">
+    <div class="col-12 col-md-6 col-lg-4 col-xl-3">
         <div class="stat-card success">
             <div class="stat-header">
                 <div>
@@ -268,7 +268,7 @@
         </div>
     </div>
 
-    <div class="col-12 col-md-6 col-lg-3">
+    <div class="col-12 col-md-6 col-lg-4 col-xl-3">
         <div class="stat-card info">
             <div class="stat-header">
                 <div>
@@ -281,7 +281,7 @@
         </div>
     </div>
 
-    <div class="col-12 col-md-6 col-lg-3">
+    <div class="col-12 col-md-6 col-lg-4 col-xl-3">
         <div class="stat-card warning">
             <div class="stat-header">
                 <div>

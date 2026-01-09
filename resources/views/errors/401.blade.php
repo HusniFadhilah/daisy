@@ -6,7 +6,7 @@
 @section('illustration', 'https://demos.creative-tim.com/soft-ui-dashboard-pro/assets/img/illustrations/error-404.png')
 
 @section('message')
-Anda perlu login terlebih dahulu untuk mengakses halaman ini. Silakan login dengan akun yang telah terdaftar.
+{{ 'Anda perlu login terlebih dahulu untuk mengakses halaman ini. Silakan login dengan akun yang telah terdaftar.' }}
 @endsection
 
 @section('actions')

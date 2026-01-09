@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\PenilaianElemen;
+use App\Models\PenilaianElemenAk;
 use App\Models\Asesmen;
 use App\Models\ElemenStandar;
 
@@ -16,7 +16,7 @@ class PenilaianElemenSeeder extends Seeder
     {
         // Ambil asesmen pertama
         $asesmen = Asesmen::first();
-        
+
         if (!$asesmen) {
             echo "Tidak ada asesmen. Buat asesmen terlebih dahulu.\n";
             return;
@@ -24,7 +24,7 @@ class PenilaianElemenSeeder extends Seeder
 
         // Ambil semua elemen
         $elemens = ElemenStandar::all();
-        
+
         if ($elemens->isEmpty()) {
             echo "Tidak ada elemen standar.\n";
             return;
@@ -32,7 +32,7 @@ class PenilaianElemenSeeder extends Seeder
 
         // Buat penilaian dummy dengan skor random 0-3
         foreach ($elemens as $elemen) {
-            PenilaianElemen::updateOrCreate(
+            PenilaianElemenAk::updateOrCreate(
                 [
                     'id_asesmen' => $asesmen->id,
                     'id_user' => 1, // Admin user

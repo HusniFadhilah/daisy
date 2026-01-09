@@ -20,78 +20,56 @@
             <form action="{{ route('study-programs.update', $studyProgram->id) }}" method="POST">
                 @csrf
                 @method('PUT')
-                
+
                 <div class="mb-3">
                     <label for="code" class="form-label">Kode Program Studi <span class="text-danger">*</span></label>
-                    <input type="text" 
-                           class="form-control @error('code') is-invalid @enderror" 
-                           id="code" 
-                           name="code" 
-                           value="{{ old('code', $studyProgram->code) }}"
-                           placeholder="Contoh: 12345"
-                           required>
+                    <input type="text" class="form-control @error('code') is-invalid @enderror" id="code" name="code" value="{{ old('code', $studyProgram->code) }}" placeholder="Contoh: 12345" required>
                     @error('code')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                    <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
                 <div class="mb-3">
                     <label for="name" class="form-label">Nama Program Studi <span class="text-danger">*</span></label>
-                    <input type="text" 
-                           class="form-control @error('name') is-invalid @enderror" 
-                           id="name" 
-                           name="name" 
-                           value="{{ old('name', $studyProgram->name) }}"
-                           placeholder="Contoh: Teknik Informatika"
-                           required>
+                    <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name', $studyProgram->name) }}" placeholder="Contoh: Teknik Informatika" required>
                     @error('name')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                    <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
                 <div class="mb-3">
-                    <label for="id_univ" class="form-label">Universitas <span class="text-danger">*</span></label>
-                    <select class="form-select @error('id_univ') is-invalid @enderror" 
-                            id="id_univ" 
-                            name="id_univ" 
-                            required>
+                    <label for="id_university" class="form-label">Universitas <span class="text-danger">*</span></label>
+                    <select class="form-select @error('id_university') is-invalid @enderror" id="id_university" name="id_university" required>
                         <option value="">-- Pilih Universitas --</option>
                         @foreach($universities as $university)
-                            <option value="{{ $university->id }}" 
-                                {{ old('id_univ', $studyProgram->id_univ) == $university->id ? 'selected' : '' }}>
-                                {{ $university->name }}
-                            </option>
+                        <option value="{{ $university->id }}" {{ old('id_university', $studyProgram->id_university) == $university->id ? 'selected' : '' }}>
+                            {{ $university->name }}
+                        </option>
                         @endforeach
                     </select>
-                    @error('id_univ')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                    @error('id_university')
+                    <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
                 <div class="mb-3">
-                    <label for="id_level" class="form-label">Jenjang <span class="text-danger">*</span></label>
-                    <select class="form-select @error('id_level') is-invalid @enderror" 
-                            id="id_level" 
-                            name="id_level" 
-                            required>
+                    <label for="id_degree_level" class="form-label">Jenjang <span class="text-danger">*</span></label>
+                    <select class="form-select @error('id_degree_level') is-invalid @enderror" id="id_degree_level" name="id_degree_level" required>
                         <option value="">-- Pilih Jenjang --</option>
                         @foreach($degreeLevels as $level)
-                            <option value="{{ $level->id }}" 
-                                {{ old('id_level', $studyProgram->id_level) == $level->id ? 'selected' : '' }}>
-                                {{ $level->name }}
-                            </option>
+                        <option value="{{ $level->id }}" {{ old('id_degree_level', $studyProgram->id_degree_level) == $level->id ? 'selected' : '' }}>
+                            {{ $level->name }}
+                        </option>
                         @endforeach
                     </select>
-                    @error('id_level')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                    @error('id_degree_level')
+                    <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
                 <div class="mb-3">
                     <label for="bentuk_pt" class="form-label">Bentuk Perguruan Tinggi</label>
-                    <select class="form-select @error('bentuk_pt') is-invalid @enderror" 
-                            id="bentuk_pt" 
-                            name="bentuk_pt">
+                    <select class="form-select @error('bentuk_pt') is-invalid @enderror" id="bentuk_pt" name="bentuk_pt">
                         <option value="">-- Pilih Bentuk PT --</option>
                         <option value="Universitas" {{ old('bentuk_pt', $studyProgram->bentuk_pt) == 'Universitas' ? 'selected' : '' }}>Universitas</option>
                         <option value="Institut" {{ old('bentuk_pt', $studyProgram->bentuk_pt) == 'Institut' ? 'selected' : '' }}>Institut</option>
@@ -100,59 +78,43 @@
                         <option value="Akademi" {{ old('bentuk_pt', $studyProgram->bentuk_pt) == 'Akademi' ? 'selected' : '' }}>Akademi</option>
                     </select>
                     @error('bentuk_pt')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                    <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
                 <div class="mb-3">
                     <label for="email" class="form-label">Email</label>
-                    <input type="email" 
-                           class="form-control @error('email') is-invalid @enderror" 
-                           id="email" 
-                           name="email" 
-                           value="{{ old('email', $studyProgram->email) }}"
-                           placeholder="Contoh: prodi@university.ac.id">
+                    <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email" value="{{ old('email', $studyProgram->email) }}" placeholder="Contoh: prodi@university.ac.id">
                     @error('email')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                    <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
                 <div class="mb-3">
                     <label for="peringkat_akreditasi" class="form-label">Peringkat Akreditasi</label>
-                    <input type="text" 
-                           class="form-control @error('peringkat_akreditasi') is-invalid @enderror" 
-                           id="peringkat_akreditasi" 
-                           name="peringkat_akreditasi" 
-                           value="{{ old('peringkat_akreditasi', $studyProgram->peringkat_akreditasi) }}"
-                           placeholder="Contoh: Unggul, Baik Sekali, A, B, dll">
+                    <input type="text" class="form-control @error('peringkat_akreditasi') is-invalid @enderror" id="peringkat_akreditasi" name="peringkat_akreditasi" value="{{ old('peringkat_akreditasi', $studyProgram->peringkat_akreditasi) }}" placeholder="Contoh: Unggul, Baik Sekali, A, B, dll">
                     @error('peringkat_akreditasi')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                    <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
                 <div class="mb-3">
-                    <label for="tanggal_kadaluarsa" class="form-label">Tanggal Kadaluarsa</label>
-                    <input type="date" 
-                           class="form-control @error('tanggal_kadaluarsa') is-invalid @enderror" 
-                           id="tanggal_kadaluarsa" 
-                           name="tanggal_kadaluarsa" 
-                           value="{{ old('tanggal_kadaluarsa', $studyProgram->tanggal_kadaluarsa ? $studyProgram->tanggal_kadaluarsa->format('Y-m-d') : '') }}">
-                    @error('tanggal_kadaluarsa')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                    <label for="tanggal_kedaluwarsa" class="form-label">Tanggal Kedaluwarsa</label>
+                    <input type="date" class="form-control @error('tanggal_kedaluwarsa') is-invalid @enderror" id="tanggal_kedaluwarsa" name="tanggal_kedaluwarsa" value="{{ old('tanggal_kedaluwarsa', $studyProgram->tanggal_kedaluwarsa ? $studyProgram->tanggal_kedaluwarsa->format('Y-m-d') : '') }}">
+                    @error('tanggal_kedaluwarsa')
+                    <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
                 <div class="mb-3">
-                    <label for="status_kadaluarsa" class="form-label">Status Kadaluarsa</label>
-                    <select class="form-select @error('status_kadaluarsa') is-invalid @enderror" 
-                            id="status_kadaluarsa" 
-                            name="status_kadaluarsa">
-                        <option value="Belum Terakreditasi" {{ old('status_kadaluarsa', $studyProgram->status_kadaluarsa) == 'Belum Terakreditasi' ? 'selected' : '' }}>Belum Terakreditasi</option>
-                        <option value="Aktif" {{ old('status_kadaluarsa', $studyProgram->status_kadaluarsa) == 'Aktif' ? 'selected' : '' }}>Aktif</option>
-                        <option value="Kadaluarsa" {{ old('status_kadaluarsa', $studyProgram->status_kadaluarsa) == 'Kadaluarsa' ? 'selected' : '' }}>Kadaluarsa</option>
+                    <label for="status_kedaluwarsa" class="form-label">Status Kedaluwarsa</label>
+                    <select class="form-select @error('status_kedaluwarsa') is-invalid @enderror" id="status_kedaluwarsa" name="status_kedaluwarsa">
+                        <option value="Belum Terakreditasi" {{ old('status_kedaluwarsa', $studyProgram->status_kedaluwarsa) == 'Belum Terakreditasi' ? 'selected' : '' }}>Belum Terakreditasi</option>
+                        <option value="Aktif" {{ old('status_kedaluwarsa', $studyProgram->status_kedaluwarsa) == 'Aktif' ? 'selected' : '' }}>Aktif</option>
+                        <option value="Kedaluwarsa" {{ old('status_kedaluwarsa', $studyProgram->status_kedaluwarsa) == 'Kedaluwarsa' ? 'selected' : '' }}>Kedaluwarsa</option>
                     </select>
-                    @error('status_kadaluarsa')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                    @error('status_kedaluwarsa')
+                    <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
@@ -172,11 +134,12 @@
 @push('scripts')
 <script>
     $(document).ready(function() {
-        $('#id_univ, #id_level').select2({
-            theme: 'bootstrap-5',
-            width: '100%'
+        $('#id_university, #id_degree_level').select2({
+            theme: 'bootstrap-5'
+            , width: '100%'
         });
     });
+
 </script>
 @endpush
 @endsection

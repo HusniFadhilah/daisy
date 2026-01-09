@@ -40,16 +40,11 @@
                 <div class="col-md-3">
                     <select name="status" class="form-select">
                         <option value="">Semua Status</option>
-                        <option value="pengingat_dikirim" {{ request('status') == 'pengingat_dikirim' ? 'selected' : '' }}>Pengingat Dikirim</option>
-                        <option value="surat_permohonan_diterima" {{ request('status') == 'surat_permohonan_diterima' ? 'selected' : '' }}>Surat Diterima</option>
-                        <option value="borang_dikirim" {{ request('status') == 'borang_dikirim' ? 'selected' : '' }}>Borang Dikirim</option>
-                        <option value="draft_borang_diterima" {{ request('status') == 'draft_borang_diterima' ? 'selected' : '' }}>Draft Diterima</option>
-                        <option value="review_kesiapan_siap" {{ request('status') == 'review_kesiapan_siap' ? 'selected' : '' }}>Review: Siap</option>
-                        <option value="review_kesiapan_belum_siap" {{ request('status') == 'review_kesiapan_belum_siap' ? 'selected' : '' }}>Review: Belum Siap</option>
-                        <option value="menunggu_pembayaran" {{ request('status') == 'menunggu_pembayaran' ? 'selected' : '' }}>Menunggu Pembayaran</option>
-                        <option value="pembayaran_diterima" {{ request('status') == 'pembayaran_diterima' ? 'selected' : '' }}>Pembayaran Diterima</option>
-                        <option value="borang_final_diterima" {{ request('status') == 'borang_final_diterima' ? 'selected' : '' }}>Borang Final Diterima</option>
-                        <option value="lanjut_ke_ak" {{ request('status') == 'lanjut_ke_ak' ? 'selected' : '' }}>Lanjut ke AK</option>
+                        @foreach (\App\Models\PengajuanAkreditasi::statusMap() as $key => $status)
+                        <option value="{{ $key }}" {{ request('status') === $key ? 'selected' : '' }}>
+                            {{ $status['label'] }}
+                        </option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="col-md-3">
@@ -98,7 +93,7 @@
 
                         <small class="text-muted">
                             <i class="bi bi-clock"></i>
-                            {{ $pengajuan->created_at->format('d M Y') }}
+                            {{ \App\Libraries\Date::tglIndo($pengajuan->created_at) }}
                         </small>
 
                         @if($pengajuan->deskEvaluator)

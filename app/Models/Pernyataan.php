@@ -14,6 +14,6 @@ class Pernyataan extends Model
 
     public function elemenStandar()
     {
-        return $this->belongsTo(ElemenStandar::class, 'id_elemen', 'id_elemen');
+        return $this->belongsTo(ElemenStandar::class, 'id_elemen');
     }
 }

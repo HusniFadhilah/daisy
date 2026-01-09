@@ -1,11 +1,14 @@
 <!-- Heatmap Matrix Component - Enhanced with Merged Cells -->
 <div class="card mb-4 shadow-sm">
     <div class="card-header bg-white border-bottom">
-        <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center">
             <h5 class="mb-0">
                 <i class="bi bi-grid-3x3"></i> Matriks Visualisasi Penilaian
             </h5>
-            <div class="btn-group btn-group-sm">
+            <div class="btn-group btn-group-sm flex-wrap">
+                <button type="button" class="btn btn-outline-info" id="btnViewComparison" data-id-asesmen="{{ $asesmen->id }}" data-jenis-asesmen="ak" title="Lihat Perbandingan Asesor">
+                    <i class="bi bi-people"></i> Lihat Perbandingan Asesor
+                </button>
                 <button type="button" class="btn btn-outline-primary" id="btnZoomIn" title="Perbesar">
                     <i class="bi bi-zoom-in"></i>
                 </button>
@@ -31,26 +34,12 @@
                     <span class="legend-box" style="background: #9e9e9e;"></span>
                     <span class="legend-text">Belum Dinilai</span>
                 </div>
+                @foreach ($jenjangs as $jenjang)
                 <div class="legend-item">
-                    <span class="legend-box" style="background: #f44336;"></span>
-                    <span class="legend-text">Tidak Memenuhi (Not Met)</span>
+                    <span class="legend-box" style="background: {{ $jenjang->color }};"></span>
+                    <span class="legend-text">{{ $jenjang->name }}</span>
                 </div>
-                <div class="legend-item">
-                    <span class="legend-box" style="background: #ff9800;"></span>
-                    <span class="legend-text">Belum Memenuhi (Not Met)</span>
-                </div>
-                <div class="legend-item">
-                    <span class="legend-box" style="background: #ffeb3b;"></span>
-                    <span class="legend-text">Lemah (Weakness/Couse of Concern)</span>
-                </div>
-                <div class="legend-item">
-                    <span class="legend-box" style="background: #8bc34a;"></span>
-                    <span class="legend-text">Memenuhi (Met)</span>
-                </div>
-                <div class="legend-item">
-                    <span class="legend-box" style="background: #4caf50;"></span>
-                    <span class="legend-text">Pelampauan Standar</span>
-                </div>
+                @endforeach
             </div>
         </div>
 
@@ -86,33 +75,38 @@
                 </thead>
 
                 <tbody>
-                    @foreach($kriterias as $kriteriaRow)
+                    @foreach($kriterias as $kriteria)
                     @php
-                    $jumlahElemen = $kriteriaRow->elemenStandar->count();
+                    $jumlahElemen = $kriteria->elemenStandar->count();
                     $firstRow = true;
                     @endphp
 
-                    @foreach($kriteriaRow->elemenStandar as $elemen)
+                    @foreach($kriteria->elemenStandar as $elemen)
+                    @php
+                    // Get penilaianElemenAk for this elemen (not indikator!)
+                    $penilaianElemenAk = $elemen->penilaianElemenAk->first(); // Assuming relation exists
+                    $hasPenilaian = $penilaianElemenAk && $penilaianElemenAk->skor !== null;
+                    @endphp
                     <tr>
                         {{-- CETAK MERGED CELL HANYA DI ROW PERTAMA --}}
                         @if($firstRow)
                         <th class="matrix-row sticky-col text-center" rowspan="{{ $jumlahElemen }}">
-                            <span class="kriteria-badge">{{ $kriteriaRow->kode_kriteria }}</span>
+                            <span class="kriteria-badge">{{ $kriteria->kode_kriteria }}</span>
                         </th>
                         @php $firstRow = false; @endphp
                         @endif
 
                         {{-- Kolom Elemen --}}
-                        <td class="matrix-header-row sticky-col" data-elemen-id="{{ $elemen->id_elemen }}" data-kriteria-id="{{ $kriteriaRow->id_kriteria }}">
+                        <td class="matrix-header-row sticky-col" data-elemen-id="{{ $elemen->id }}" data-kriteria-id="{{ $kriteria->id }}">
                             {{ $elemen->kode_elemen }} – {{ Str::limit($elemen->pernyataan_elemen, 30) }}
                         </td>
 
                         {{-- Kolom Pemenuhan --}}
-                        <td class="matrix-cell" data-elemen-id="{{ $elemen->id_elemen }}" data-kriteria-id="{{ $kriteriaRow->id_kriteria }}" data-col="pemenuhan" style="background-color: {{ getSkorColor($elemen->penilaian->first()->skor ?? null) }}">
+                        <td class="matrix-cell" data-elemen-id="{{ $elemen->id }}" data-kriteria-id="{{ $kriteria->id }}" data-col="pemenuhan" style="background-color: {{ $hasPenilaian ? $penilaianElemenAk->skor == 4 ? '#e0e0e0' : \App\Models\JenjangPenilaian::getSkorColor($penilaianElemenAk->skor) : '#e0e0e0' }}">
                         </td>
 
                         {{-- Kolom Pelampauan --}}
-                        <td class="matrix-cell" data-elemen-id="{{ $elemen->id_elemen }}" data-kriteria-id="{{ $kriteriaRow->id_kriteria }}" data-col="pelampauan" style="background-color: {{ $elemen->penilaian->first()->skor == 4 ? getSkorColor(4) : '#e0e0e0' }}">
+                        <td class="matrix-cell" data-elemen-id="{{ $elemen->id }}" data-kriteria-id="{{ $kriteria->id }}" data-col="pelampauan" style="background-color: {{ $hasPenilaian ? $penilaianElemenAk->skor == 4 ? \App\Models\JenjangPenilaian::getSkorColor(4) : '#e0e0e0' : '#e0e0e0' }}">
                         </td>
                     </tr>
                     @endforeach
@@ -120,483 +114,11 @@
                 </tbody>
             </table>
         </div>
-
-        <!-- Summary Stats -->
-        <div class="p-3 bg-light border-top">
-            <h6 class="text-center mb-3 fw-bold">📊 Ringkasan Statistik</h6>
-            <div class="row text-center g-3">
-                <div class="col-6 col-md-3">
-                    <div class="stat-box">
-                        <h4 class="mb-0 fw-bold" id="statTotal">0</h4>
-                        <small class="text-muted">Total Isian</small>
-                    </div>
-                </div>
-                <div class="col-6 col-md-3">
-                    <div class="stat-box">
-                        <h4 class="mb-0 fw-bold text-success" id="statFilled">0</h4>
-                        <small class="text-muted">Terisi</small>
-                    </div>
-                </div>
-                <div class="col-6 col-md-3">
-                    <div class="stat-box">
-                        <h4 class="mb-0 fw-bold text-warning" id="statEmpty">0</h4>
-                        <small class="text-muted">Belum</small>
-                    </div>
-                </div>
-                <div class="col-6 col-md-3">
-                    <div class="stat-box">
-                        <h4 class="mb-0 fw-bold text-primary" id="statPercentage">0%</h4>
-                        <small class="text-muted">Progress</small>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 
-@php
-/**
-* Helper function to get color based on score
-*/
-function getSkorColor($skor) {
-$colors = [
-0 => '#f44336', // Red - Not Met
-1 => '#ff9800', // Orange - Not Met
-2 => '#ffeb3b', // Yellow - Weakness
-3 => '#8bc34a', // Light Green - Met
-4 => '#4caf50', // Dark Green - Exceeding
-];
-
-return $colors[$skor] ?? '#e0e0e0';
-}
-@endphp
-
 @push('styles')
-<style>
-    /* ============================================ */
-    /* MATRIX TABLE BASE                           */
-    /* ============================================ */
-    .matrix-table {
-        width: max-content;
-        min-width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-        font-size: 12px;
-        background: white;
-    }
-
-    /* ============================================ */
-    /* STICKY POSITIONING                          */
-    /* ============================================ */
-    .sticky-header {
-        position: sticky;
-        top: 0;
-        background: white;
-    }
-
-    .header-row-kriteria .sticky-header {
-        top: 0;
-        z-index: 25;
-    }
-
-    .header-row-elemen .sticky-header {
-        top: 50px;
-        /* Height of kriteria header */
-        z-index: 24;
-    }
-
-    .sticky-col {
-        position: sticky;
-        left: 0;
-        z-index: 10;
-        background: white;
-    }
-
-    .sticky-col.sticky-header {
-        z-index: 30;
-    }
-
-    /* ============================================ */
-    /* CORNER HEADER (TOP-LEFT CELL)               */
-    /* ============================================ */
-    .matrix-header-corner {
-        min-width: 180px;
-        max-width: 180px;
-        padding: 12px;
-        background: linear-gradient(135deg, #932136 0%, #870820 100%);
-        border: 1px solid #dee2e6;
-        text-align: center;
-        font-weight: 600;
-    }
-
-    .corner-label {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 5px;
-    }
-
-    .corner-label i {
-        font-size: 18px;
-        margin: 5px 0;
-    }
-
-    /* ============================================ */
-    /* KRITERIA HEADER (MERGED ROW)                */
-    /* ============================================ */
-    .matrix-header-kriteria {
-        padding: 10px 8px;
-        background: linear-gradient(135deg, #932136 0%, #870820 100%);
-        color: white;
-        border: 1px solid #dee2e6;
-        text-align: center;
-        vertical-align: middle;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-weight: 700;
-        height: 50px;
-    }
-
-    .matrix-header-kriteria:hover {
-        background: linear-gradient(135deg, #7a1b2c 0%, #6d0619 100%);
-        transform: translateY(-3px);
-        box-shadow: 0 6px 16px rgba(147, 33, 54, 0.4);
-    }
-
-    .kriteria-label {
-        display: flex;
-        flex-direction: column;
-        gap: 3px;
-    }
-
-    .kriteria-label span {
-        font-size: 14px;
-    }
-
-    .kriteria-label small {
-        font-size: 10px;
-        opacity: 0.9;
-        font-weight: 500;
-    }
-
-    /* ============================================ */
-    /* ELEMEN HEADER                               */
-    /* ============================================ */
-    .matrix-header-elemen {
-        min-width: 60px;
-        max-width: 60px;
-        padding: 8px 4px;
-        background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
-        color: white;
-        border: 1px solid #dee2e6;
-        text-align: center;
-        vertical-align: middle;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-weight: 600;
-        height: 45px;
-    }
-
-    .matrix-header-elemen:hover {
-        background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
-        transform: translateY(-3px);
-        box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
-    }
-
-    .elemen-label {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100%;
-    }
-
-    .elemen-code {
-        font-size: 11px;
-        font-weight: 700;
-    }
-
-    /* ============================================ */
-    /* ROW HEADERS                                 */
-    /* ============================================ */
-    .matrix-row {
-        background: #f8f9fa;
-        border: 1px solid #dee2e6;
-    }
-
-    .matrix-header-row {
-        min-width: 180px;
-        max-width: 180px;
-        padding: 10px;
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        border: 1px solid #dee2e6;
-        text-align: left;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-
-    .matrix-header-row:hover {
-        background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
-        transform: translateX(3px);
-        box-shadow: 3px 0 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .row-label {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .kriteria-badge {
-        background: #932136;
-        color: white;
-        padding: 3px 8px;
-        border-radius: 4px;
-        font-weight: 700;
-        font-size: 11px;
-        flex-shrink: 0;
-    }
-
-    .kriteria-name {
-        font-size: 11px;
-        color: #333;
-        font-weight: 500;
-        line-height: 1.3;
-    }
-
-    /* ============================================ */
-    /* MATRIX CELLS                                */
-    /* ============================================ */
-    .matrix-cell {
-        min-width: 60px;
-        max-width: 60px;
-        height: 50px;
-        border: 1px solid #dee2e6;
-        text-align: center;
-        vertical-align: middle;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        position: relative;
-    }
-
-    .matrix-cell:hover {
-        transform: scale(1.15);
-        z-index: 5;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-        border: 3px solid #333;
-    }
-
-    .matrix-cell.has-score {
-        border: 2px solid #333;
-    }
-
-    .matrix-cell.has-score:hover {
-        border: 3px solid #000;
-    }
-
-    .cell-content {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 100%;
-    }
-
-    .score-badge {
-        background: rgba(255, 255, 255, 0.95);
-        color: #333;
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-weight: 700;
-        font-size: 14px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    }
-
-    /* ============================================ */
-    /* LEGEND                                      */
-    /* ============================================ */
-    .legend-item {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 10px;
-        background: white;
-        border-radius: 6px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-        transition: all 0.2s ease;
-    }
-
-    .legend-item:hover {
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-        transform: translateY(-2px);
-    }
-
-    .legend-box {
-        width: 24px;
-        height: 24px;
-        border-radius: 4px;
-        border: 2px solid #333;
-        display: inline-block;
-    }
-
-    .legend-text {
-        font-size: 11px;
-        font-weight: 600;
-        color: #333;
-    }
-
-    /* ============================================ */
-    /* STATISTICS BOXES                            */
-    /* ============================================ */
-    .stat-box {
-        padding: 12px;
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        transition: all 0.2s ease;
-    }
-
-    .stat-box:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-        transform: translateY(-2px);
-    }
-
-    .stat-box h4 {
-        font-size: 32px;
-        margin-bottom: 4px;
-    }
-
-    .stat-box small {
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        font-size: 10px;
-        font-weight: 600;
-    }
-
-    /* ============================================ */
-    /* ZOOM CONTROLS                               */
-    /* ============================================ */
-    .matrix-table.zoom-out {
-        transform: scale(0.75);
-        transform-origin: top left;
-    }
-
-    .matrix-table.zoom-in {
-        transform: scale(1.25);
-        transform-origin: top left;
-    }
-
-    /* ============================================ */
-    /* TOGGLE VISIBILITY                           */
-    /* ============================================ */
-    #matrixContainer.hidden {
-        display: none !important;
-    }
-
-    /* ============================================ */
-    /* ANIMATIONS                                  */
-    /* ============================================ */
-    @keyframes cellPulse {
-
-        0%,
-        100% {
-            transform: scale(1);
-        }
-
-        50% {
-            transform: scale(1.15);
-        }
-    }
-
-    .matrix-cell.updating {
-        animation: cellPulse 0.5s ease;
-    }
-
-    @keyframes highlightFade {
-        0% {
-            box-shadow: 0 0 0 0 rgba(147, 33, 54, 0.7);
-        }
-
-        50% {
-            box-shadow: 0 0 0 10px rgba(147, 33, 54, 0);
-        }
-
-        100% {
-            box-shadow: 0 0 0 0 rgba(147, 33, 54, 0);
-        }
-    }
-
-    .matrix-cell.highlight {
-        animation: highlightFade 1s ease;
-    }
-
-    /* ============================================ */
-    /* RESPONSIVE DESIGN                           */
-    /* ============================================ */
-    @media (max-width: 768px) {
-
-        .matrix-header-corner,
-        .matrix-header-row {
-            min-width: 140px;
-            max-width: 140px;
-            font-size: 10px;
-            padding: 6px;
-        }
-
-        .matrix-header-kriteria {
-            padding: 8px 4px;
-            height: 40px;
-        }
-
-        .matrix-header-elemen,
-        .matrix-cell {
-            min-width: 50px;
-            max-width: 50px;
-            height: 45px;
-        }
-
-        .score-badge {
-            font-size: 12px;
-            padding: 3px 6px;
-        }
-
-        .kriteria-name {
-            display: none;
-        }
-
-        .kriteria-label small {
-            display: none;
-        }
-
-        .legend-item {
-            font-size: 10px;
-            padding: 4px 6px;
-        }
-
-        .legend-box {
-            width: 20px;
-            height: 20px;
-        }
-
-        .stat-box h4 {
-            font-size: 24px;
-        }
-    }
-
-    @media (max-width: 576px) {
-
-        .matrix-header-elemen,
-        .matrix-cell {
-            min-width: 45px;
-            max-width: 45px;
-            height: 40px;
-        }
-
-        .header-row-elemen .sticky-header {
-            top: 40px;
-        }
-    }
-
-</style>
+<link rel="stylesheet" href="{{ asset('assets/css/heatmap-matrix.css') }}">
 @endpush
 
 @push('scripts')
@@ -610,7 +132,7 @@ return $colors[$skor] ?? '#e0e0e0';
          * ============================================
          */
         function initializeHeatmapMatrix() {
-            updateMatrixStats();
+            //updateMatrixStats();
             setupMatrixInteractions();
             setupZoomControls();
             setupToggleButton();
@@ -636,10 +158,10 @@ return $colors[$skor] ?? '#e0e0e0';
             const empty = total - filled;
             const percent = total ? Math.round((filled / total) * 100) : 0;
 
-            document.getElementById('statTotal').textContent = total;
-            document.getElementById('statFilled').textContent = filled;
-            document.getElementById('statEmpty').textContent = empty;
-            document.getElementById('statPercentage').textContent = percent + '%';
+            document.getElementById('summaryTotal').innerHTML = `<b>${total}</b>`;
+            document.getElementById('summaryCompleted').innerHTML = `<b>${filled}</b>`;
+            document.getElementById('summaryRemaining').innerHTML = `<b>${empty}</b>`;
+            document.getElementById('summaryPercentage').innerHTML = `<b>${percent}%</b>`;
         }
 
         /**
@@ -824,50 +346,37 @@ return $colors[$skor] ?? '#e0e0e0';
          * ============================================
          */
         window.updateMatrixCell = function(elemenId, skor) {
-            skor = parseInt(skor);
-            if (isNaN(skor)) return;
+            try {
+                skor = parseInt(skor);
+                if (isNaN(skor)) return;
 
-            // ambil semua cell untuk elemen ini (pemenuhan + pelampauan)
-            const cells = document.querySelectorAll(`.matrix-cell[data-elemen-id="${elemenId}"]`);
-            if (!cells.length) return;
+                // ambil semua cell untuk elemen ini (pemenuhan + pelampauan)
+                const cells = document.querySelectorAll(`.matrix-cell[data-elemen-id="${elemenId}"]`);
+                if (!cells.length) return;
 
-            cells.forEach(cell => {
-                const colType = cell.dataset.col; // 'pemenuhan' / 'pelampauan'
+                cells.forEach(cell => {
+                    const colType = cell.dataset.col; // 'pemenuhan' / 'pelampauan'
 
-                // logika: skor 4 → isi hanya pelampauan, skor 0–3 → isi hanya pemenuhan
-                const shouldFill =
-                    (skor === 4 && colType === 'pelampauan') ||
-                    (skor !== 4 && colType === 'pemenuhan');
+                    // logika: skor 4 → isi hanya pelampauan, skor 0–3 → isi hanya pemenuhan
+                    const shouldFill =
+                        (skor === 4 && colType === 'pelampauan') ||
+                        (skor !== 4 && colType === 'pemenuhan');
 
-                cell.classList.toggle('has-score', shouldFill);
-                cell.dataset.skor = shouldFill ? skor : '';
-                cell.style.backgroundColor = shouldFill ? getSkorColorJS(skor) : '#e0e0e0';
+                    cell.classList.toggle('has-score', shouldFill);
+                    cell.dataset.skor = shouldFill ? skor : '';
+                    cell.style.backgroundColor = shouldFill ? getSkorColorJS(skor) : '#e0e0e0';
 
-                // animasi kecil
-                cell.classList.add('updating');
-                setTimeout(() => cell.classList.remove('updating'), 500);
-            });
+                    // animasi kecil
+                    cell.classList.add('updating');
+                    setTimeout(() => cell.classList.remove('updating'), 500);
+                });
 
-            // update statistik ringkasan
-            updateMatrixStats();
+                // update statistik ringkasan
+                updateMatrixStats();
+            } catch (error) {
+                console.error('Error updating matrix cell:', error);
+            }
         };
-
-        /**
-         * ============================================
-         * GET COLOR FOR SCORE (JavaScript version)
-         * ============================================
-         */
-        function getSkorColorJS(skor) {
-            const colors = {
-                0: '#f44336', // Red
-                1: '#ff9800', // Orange
-                2: '#ffeb3b', // Yellow
-                3: '#8bc34a', // Light Green
-                4: '#4caf50', // Dark Green
-            };
-
-            return colors[skor] || '#e0e0e0';
-        }
     });
 
 </script>

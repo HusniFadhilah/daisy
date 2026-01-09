@@ -8,8 +8,6 @@ class ElemenStandar extends Model
 {
     protected $table = 'elemen_standar';
 
-    protected $primaryKey = 'id_elemen';
-
     protected $fillable = [
         'id_kriteria',
         'kode_elemen',
@@ -19,26 +17,42 @@ class ElemenStandar extends Model
 
     public function kriteria()
     {
-        return $this->belongsTo(Kriteria::class, 'id_kriteria', 'id_kriteria');
+        return $this->belongsTo(Kriteria::class, 'id_kriteria');
     }
 
     public function indikator()
     {
-        return $this->hasMany(Indikator::class, 'id_elemen', 'id_elemen');
+        return $this->hasMany(Indikator::class, 'id_elemen');
     }
 
     public function pernyataan()
     {
-        return $this->hasMany(Pernyataan::class, 'id_elemen', 'id_elemen');
+        return $this->hasMany(Pernyataan::class, 'id_elemen');
     }
 
-    public function penilaian()
+    public function penilaianElemenAk()
     {
-        return $this->hasMany(PenilaianElemen::class, 'id_elemen', 'id_elemen');
+        return $this->hasMany(new PenilaianElemenAk, 'id_elemen');
+    }
+
+    public function penilaianElemenAl()
+    {
+        return $this->hasMany(PenilaianElemenAl::class, 'id_elemen');
     }
 
     public function indikatorPenilaian()
     {
-        return $this->hasMany(IndikatorPenilaianElemen::class, 'elemen_standar_id', 'id_elemen');
+        return $this->hasMany(IndikatorPenilaianElemen::class, 'id_elemen')->with('jenjangPenilaian')
+            ->orderBy('id_jenjang_penilaian');
+    }
+
+    public function datasetBorang()
+    {
+        return $this->hasMany(DatasetBorang::class, 'id_elemen');
+    }
+
+    public function borangSections()
+    {
+        return $this->hasMany(BorangSection::class, 'id_elemen');
     }
 }

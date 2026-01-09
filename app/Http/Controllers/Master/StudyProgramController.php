@@ -78,8 +78,8 @@ class StudyProgramController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:255',
-            'id_univ' => 'required|exists:universities,id',
-            'id_level' => 'required|exists:degree_levels,id',
+            'id_university' => 'required|exists:universities,id',
+            'id_degree_level' => 'required|exists:degree_levels,id',
             'bentuk_pt' => 'nullable|in:Universitas,Institut,Sekolah Tinggi,Politeknik,Akademi',
             'email' => 'nullable|email|max:255',
         ]);
@@ -137,8 +137,8 @@ class StudyProgramController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:255',
-            'id_univ' => 'required|exists:universities,id',
-            'id_level' => 'required|exists:degree_levels,id',
+            'id_university' => 'required|exists:universities,id',
+            'id_degree_level' => 'required|exists:degree_levels,id',
             'bentuk_pt' => 'nullable|in:Universitas,Institut,Sekolah Tinggi,Politeknik,Akademi',
             'email' => 'nullable|email|max:255',
             'peringkat_akreditasi' => 'nullable|string|max:255',

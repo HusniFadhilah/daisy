@@ -16,22 +16,22 @@ class AkreditasiSeeder extends Seeder
     public function run(): void
     {
         $csvFile = database_path('seeders/data/data_akreditasi_lengkap.csv');
-        
+
         if (!file_exists($csvFile)) {
             $this->command->error("File CSV tidak ditemukan: {$csvFile}");
             return;
         }
 
         $file = fopen($csvFile, 'r');
-        
+
         // Skip header row
         fgetcsv($file);
-        
+
         $updated = 0;
         $notFound = 0;
         $created = 0;
         $errors = [];
-        
+
         while (($data = fgetcsv($file)) !== false) {
             try {
                 $universitas = $data[0];
@@ -39,25 +39,31 @@ class AkreditasiSeeder extends Seeder
                 $jenjang = $data[2];
                 $email = $data[6];
                 $peringkatAkreditasi = $data[7];
-                $tanggalKadaluarsa = $data[8];
-                $statusKadaluarsa = $data[9];
-                
+                $tanggalKedaluwarsa = $data[8];
+                $statusKedaluwarsa = $data[9];
+
                 // Use data as-is from CSV
                 $peringkat = !empty($peringkatAkreditasi) && $peringkatAkreditasi !== '-' ? $peringkatAkreditasi : null;
-                
-                // Parse tanggal kadaluarsa
-                $tanggal = $this->parseTanggal($tanggalKadaluarsa);
-                
+
+                // Parse tanggal kedaluwarsa
+                $tanggal = $this->parseTanggal($tanggalKedaluwarsa);
+
                 // Use status as-is from CSV
-                $status = !empty($statusKadaluarsa) && $statusKadaluarsa !== '-' ? $statusKadaluarsa : 'Belum Terakreditasi';
-                
+                $status = !empty($statusKedaluwarsa) && $statusKedaluwarsa !== '-' ? $statusKedaluwarsa : null;
+                // Konversi status dari CSV ke enum database
+                if ($status === 'Masih Berlaku') {
+                    $status = 'Aktif';
+                } elseif (strpos($status, 'kadaluarsa') !== false || strpos($status, 'kedaluwarsa') !== false || strpos($status, 'hari lagi') !== false) {
+                    $status = 'Kedaluwarsa';
+                }
+
                 // Map university name variations to exact database names
                 $universitasOriginal = $universitas;
                 $universitas = $this->mapUniversityName($universitas);
-                
+
                 // Map jenjang from CSV to DegreeLevel name
                 $jenjangMapped = $this->mapJenjang($jenjang);
-                
+
                 // Find or create university
                 $university = \App\Models\University::where('name', $universitas)->first();
                 if (!$university) {
@@ -69,7 +75,7 @@ class AkreditasiSeeder extends Seeder
                     ]);
                     $this->command->info("Created university: {$universitas} ({$code})");
                 }
-                
+
                 // Find degree level
                 $degreeLevel = \App\Models\DegreeLevel::where('name', $jenjangMapped)->first();
                 if (!$degreeLevel) {
@@ -77,25 +83,26 @@ class AkreditasiSeeder extends Seeder
                     $notFound++;
                     continue;
                 }
-                
+
                 // Find or create study program
-                $studyProgram = StudyProgram::where('id_univ', $university->id)
-                    ->where('id_level', $degreeLevel->id)
+                $studyProgram = StudyProgram::where('id_university', $university->id)
+                    ->where('id_degree_level', $degreeLevel->id)
                     ->where('name', $programStudi)
                     ->first();
-                
+
                 if (!$studyProgram) {
                     // Create study program
                     $code = $this->generateProgramCode($university->code, $programStudi);
                     $studyProgram = StudyProgram::create([
                         'code' => $code,
                         'name' => $programStudi,
-                        'id_univ' => $university->id,
-                        'id_level' => $degreeLevel->id,
+                        'full_name' => $degreeLevel->alias . ' - ' . $programStudi . ' ' . $university->name,
+                        'id_university' => $university->id,
+                        'id_degree_level' => $degreeLevel->id,
                         'email' => $email,
                         'peringkat_akreditasi' => $peringkat,
-                        'tanggal_kadaluarsa' => $tanggal,
-                        'status_kadaluarsa' => $status,
+                        'tanggal_kedaluwarsa' => $tanggal,
+                        'status_kedaluwarsa' => $status,
                     ]);
                     $created++;
                     $this->command->info("Created program: {$programStudi} ({$jenjang}) - {$universitas}");
@@ -103,24 +110,23 @@ class AkreditasiSeeder extends Seeder
                     // Update existing study program
                     $studyProgram->update([
                         'peringkat_akreditasi' => $peringkat,
-                        'tanggal_kadaluarsa' => $tanggal,
-                        'status_kadaluarsa' => $status,
+                        'tanggal_kedaluwarsa' => $tanggal,
+                        'status_kedaluwarsa' => $status,
                     ]);
                     $updated++;
                 }
-                
             } catch (\Exception $e) {
                 $this->command->error("Error processing row: " . $e->getMessage());
             }
         }
-        
+
         fclose($file);
-        
+
         $this->command->info("Selesai!");
         $this->command->info("Updated: {$updated}");
         $this->command->info("Created: {$created}");
         $this->command->info("Not Found: {$notFound}");
-        
+
         if (!empty($errors) && count($errors) <= 50) {
             $this->command->warn("\nBeberapa program studi tidak ditemukan:");
             foreach ($errors as $error) {
@@ -130,16 +136,16 @@ class AkreditasiSeeder extends Seeder
             $this->command->warn("\n{$notFound} program studi tidak ditemukan (terlalu banyak untuk ditampilkan)");
         }
     }
-    
+
     /**
-     * Parse tanggal kadaluarsa from various formats
+     * Parse tanggal kedaluwarsa from various formats
      */
     private function parseTanggal($tanggal): ?string
     {
         if (empty($tanggal) || $tanggal === '-') {
             return null;
         }
-        
+
         try {
             // Try to parse date in format Y-m-d
             $date = Carbon::createFromFormat('Y-m-d', $tanggal);
@@ -148,7 +154,7 @@ class AkreditasiSeeder extends Seeder
             return null;
         }
     }
-    
+
     /**
      * Map university name variations from CSV to exact database names
      */
@@ -161,10 +167,10 @@ class AkreditasiSeeder extends Seeder
             "Universitas 'Aisyiyah Bandung" => "Universitas Aisyiyah Bandung",
             "Universitas Maritim Raja Ali Haji (UMRAH)" => "Universitas Maritim Raja Ali Haji",
         ];
-        
+
         return $mappings[$name] ?? $name;
     }
-    
+
     /**
      * Map jenjang from CSV format to DegreeLevel name in database
      */
@@ -182,10 +188,10 @@ class AkreditasiSeeder extends Seeder
             'S2 Terapan' => 'Magister Terapan (Strata 2)',
             'S3 Terapan' => 'Doktor Terapan (Strata 3)',
         ];
-        
+
         return $mappings[$jenjang] ?? $jenjang;
     }
-    
+
     /**
      * Generate university code from name
      */
@@ -200,7 +206,7 @@ class AkreditasiSeeder extends Seeder
         }
         return $code ?: strtoupper(substr($name, 0, 10));
     }
-    
+
     /**
      * Generate program code from university code and program name
      */

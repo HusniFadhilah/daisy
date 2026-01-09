@@ -1,5 +1,18 @@
 <!-- Penawaran Asesmen -->
-<a href="#" class="nav-link" onclick="toggleSubmenu(event, 'penawaran-submenu')">
+<a href="{{ route('pemetaan.index') }}" class="nav-link {{ request()->routeIs('pemetaan*') ? 'active' : '' }}">
+    <span class="menu-icon">🗺️</span>
+    <span>Pemetaan Akreditasi</span>
+</a>
+<a href="{{ route('de.pengajuan') }}" class="nav-link {{ request()->routeIs('de*') ? 'active' : '' }}">
+    <span class="menu-icon">📋</span>
+    <span>Pengajuan Akreditasi</span>
+</a>
+<a href="{{ route('asesmen.index') }}" class="nav-link {{ request()->routeIs('asesmen*') ? 'active' : '' }}">
+    <span class="menu-icon">📨</span>
+    <span>Penawaran Asesmen</span>
+</a>
+
+{{-- <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'penawaran-submenu')">
     <span class="menu-icon">📨</span>
     <span>Penawaran Asesmen</span>
     <span class="badge bg-danger menu-badge">{{ $penawaranBaru ?? 2 }}</span>
@@ -15,10 +28,10 @@
             Riwayat Penawaran
         </a>
     </li>
-</ul>
+</ul> --}}
 
 <!-- Penugasan Asesmen -->
-<a href="#" class="nav-link" onclick="toggleSubmenu(event, 'penugasan-submenu')">
+{{-- <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'penugasan-submenu')">
     <span class="menu-icon">📋</span>
     <span>Penugasan Asesmen</span>
     <span class="badge bg-success menu-badge">{{ $penugasanAktif ?? 1 }}</span>
@@ -39,10 +52,14 @@
             Riwayat Penugasan
         </a>
     </li>
-</ul>
+</ul> --}}
 
 <!-- Proses AK -->
-<a href="#" class="nav-link" onclick="toggleSubmenu(event, 'ak-submenu')">
+<a href="{{ route('ak.berkas') }}" class="nav-link {{ request()->routeIs('ak*') ? 'active' : '' }}">
+    <span class="menu-icon">📝</span>
+    <span>Proses AK</span>
+</a>
+{{-- <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'ak-submenu')">
     <span class="menu-icon">📝</span>
     <span>Proses AK</span>
     <span class="badge bg-warning menu-badge">{{ $prosesAK ?? 1 }}</span>
@@ -68,35 +85,39 @@
             Status Validasi
         </a>
     </li>
-</ul>
+</ul> --}}
 
 <!-- Proses AL -->
-<a href="#" class="nav-link" onclick="toggleSubmenu(event, 'al-submenu')">
+<a href="{{ route('al.berkas') }}" class="nav-link {{ request()->routeIs('al*') ? 'active' : '' }}">
+    <span class="menu-icon">🏢</span>
+    <span>Proses AL</span>
+</a>
+{{-- <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'al-submenu')">
     <span class="menu-icon">🏢</span>
     <span>Proses AL</span>
 </a>
 <ul class="submenu nav flex-column" id="al-submenu">
     <li>
         <a href="{{ route('al.jadwal') }}" class="nav-link">
-            Jadwal Visitasi
-        </a>
-    </li>
-    <li>
-        <a href="{{ route('al.dokumen') }}" class="nav-link">
-            Dokumen AL
-        </a>
-    </li>
-    <li>
-        <a href="{{ route('al.upload') }}" class="nav-link">
-            Upload Hasil AL
-        </a>
-    </li>
-    <li>
-        <a href="{{ route('al.laporan') }}" class="nav-link">
-            Laporan Asesmen
-        </a>
-    </li>
-</ul>
+Jadwal Visitasi
+</a>
+</li>
+<li>
+    <a href="{{ route('al.dokumen') }}" class="nav-link">
+        Dokumen AL
+    </a>
+</li>
+<li>
+    <a href="{{ route('al.upload') }}" class="nav-link">
+        Upload Hasil AL
+    </a>
+</li>
+<li>
+    <a href="{{ route('al.laporan') }}" class="nav-link">
+        Laporan Asesmen
+    </a>
+</li>
+</ul> --}}
 
 <!-- Penugasan Banding -->
 <a href="{{ route('banding') }}" class="nav-link {{ request()->routeIs('banding') ? 'active' : '' }}">
@@ -145,7 +166,7 @@
 </a>
 
 <!-- Manajemen Indikator -->
-<a href="#" class="nav-link" onclick="toggleSubmenu(event, 'indikator-submenu')">
+<a href="#" class="nav-link {{ request()->routeIs('kriteria.*') || request()->routeIs('elemen-standar.*') || request()->routeIs('indikator.*') ? 'active' : '' }}" onclick="toggleSubmenu(event, 'indikator-submenu')">
     <span class="menu-icon">📋</span>
     <span>Manajemen Indikator</span>
 </a>

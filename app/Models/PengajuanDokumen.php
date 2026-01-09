@@ -12,13 +12,14 @@ class PengajuanDokumen extends Model
     protected $fillable = [
         'id_pengajuan',
         'jenis_dokumen',
-        'nama_file',            // ✅ Added
+        'nama_file',
         'path_file',
         'original_filename',
         'file_size',
-        'mime_type',            // ✅ Added
+        'mime_type',
         'uploaded_by',
         'keterangan',
+        'template_link',
         'versi',
         'is_latest',
     ];
@@ -41,7 +42,26 @@ class PengajuanDokumen extends Model
     // Accessors
     public function getDownloadUrlAttribute()
     {
-        return route('pengajuan.dokumen.download', $this->id);
+        // ✅ Handle both file and link
+        if ($this->template_link) {
+            return $this->template_link;
+        }
+
+        if ($this->path_file) {
+            return route('pengajuan.dokumen.download', $this->id);
+        }
+
+        return null;
+    }
+
+    public function getIsLinkBasedAttribute()
+    {
+        return !empty($this->template_link);
+    }
+
+    public function getIsFileBasedAttribute()
+    {
+        return !empty($this->path_file);
     }
 
     public function getFileSizeFormattedAttribute()
@@ -88,5 +108,15 @@ class PengajuanDokumen extends Model
     public function scopeOfType($query, $type)
     {
         return $query->where('jenis_dokumen', $type);
+    }
+
+    public function scopeByType($query, $type)
+    {
+        return $query->where('jenis_dokumen', $type);
+    }
+
+    public function scopeByPengajuan($query, $pengajuanId)
+    {
+        return $query->where('id_pengajuan', $pengajuanId);
     }
 }

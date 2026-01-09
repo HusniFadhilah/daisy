@@ -133,18 +133,18 @@ class Date
         return $y;
     }
 
-    public static function tglIndo($date)
+    public static function tglIndo($date, $isFull = true)
     {
         $d = self::tanggal($date);
-        $m = self::bulan($date);
+        $m = self::bulan($date, $isFull);
         $y = self::tahun($date);
         return $d . " " . $m . " " . $y;
     }
 
-    public static function indoDate($date)
+    public static function indoDate($date, $isFull = true)
     {
         $d = self::tanggal($date);
-        $m = self::month($date);
+        $m = self::month($date, $isFull);
         $y = self::tahun($date);
         return $d . " " . $m . " " . $y;
     }
@@ -154,19 +154,25 @@ class Date
         return self::bulan($date) . ' ' . self::tahun($date);
     }
 
-    public static function tglWaktu($date, $lang = 'id')
+    public static function tglWaktu($date, $lang = 'id', $isFull = true)
     {
-        return $lang == 'id' ? self::tglIndo($date) . ' pukul ' . self::pukul($date) : self::indoDate($date) . ' at ' . self::pukul($date);
+        $checkTgl = $lang == 'id' ? self::tglIndo($date, $isFull) : self::indoDate($date, $isFull);
+        if (trim($checkTgl) !== '') return $checkTgl . ($lang == 'id' ? ' pukul ' : ' at ') . self::pukul($date);
+        else return '-';
     }
 
-    public static function hariTglWaktu($date, $lang = 'id')
+    public static function hariTglWaktu($date, $lang = 'id', $isFull = true)
     {
-        return self::hari($date, $lang) . ', ' . ($lang == 'id' ? self::tglIndo($date) . ' pukul ' . self::pukul($date) : self::indoDate($date) . ' ay ' . self::pukul($date));
+        $checkTgl = $lang == 'id' ? self::tglIndo($date, $isFull) : self::indoDate($date, $isFull);
+        if (trim($checkTgl) !== '') return $lang == 'id' ? (self::hari($date, $lang) . ', ' . $checkTgl) : $checkTgl;
+        else return '-';
     }
 
-    public static function hariTgl($date, $lang = 'id')
+    public static function hariTgl($date, $lang = 'id', $isFull = true)
     {
-        return self::hari($date, $lang) . ', ' . ($lang == 'id' ? self::tglIndo($date) : self::indoDate($date));
+        $checkTgl = $lang == 'id' ? self::tglIndo($date, $isFull) : self::indoDate($date, $isFull);
+        if (trim($checkTgl) !== '') return $lang == 'id' ? (self::hari($date, $lang) . ', ' . $checkTgl) : $checkTgl;
+        else return '-';
     }
 
     public static function tglDefault($date)

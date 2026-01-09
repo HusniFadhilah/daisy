@@ -11,24 +11,10 @@
         </a>
     </div>
 
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-
-    @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover" id="usersTable">
+                <table class="table table-hover">
                     <thead>
                         <tr>
                             <th>No</th>
@@ -40,57 +26,44 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @forelse($users as $user)
+                        <tr>
+                            <td>{{ $loop->iteration + ($users->currentPage() - 1) * $users->perPage() }}</td>
+                            <td>{{ $user->name }}</td>
+                            <td>{{ $user->email }}</td>
+                            <td>
+                                <span class="badge bg-{{ $user->role === 'admin' ? 'danger' : 'primary' }}">
+                                    {{ ucfirst($user->role) }}
+                                </span>
+                            </td>
+                            <td>{{ \App\Libraries\Date::tglIndo($user->created_at) }}</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{{ route('users.show', $user->id) }}" class="btn btn-sm btn-info text-white" title="Detail">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{{ route('users.edit', $user->id) }}" class="btn btn-sm btn-warning text-white" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    @if($user->id !== auth()->id())
+                                    <form action="{{ route('users.destroy', $user->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus pengguna ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-danger" title="Hapus">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="6" class="text-center">Belum ada data pengguna</td>
+                        </tr>
+                        @endforelse
                     </tbody>
                 </table>
-            </div>
-        </div>
-    </div>
-</div>
-@endsection
-
-@push('scripts')
-<script>
-    $(document).ready(function() {
-        $('#usersTable').DataTable({
-            serverSide: true,
-            processing: true,
-            ajax: "{{ route('users.index') }}",
-            columns: [
-                { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
-                { data: 'name', name: 'name' },
-                { data: 'email', name: 'email' },
-                { data: 'role', name: 'role' },
-                { data: 'created_at', name: 'created_at' },
-                { data: 'action', name: 'action', orderable: false, searchable: false }
-            ],
-            language: {
-                url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json'
-            },
-            pageLength: 25,
-            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Semua"]]
-        });
-    });
-
-    function deleteRecord(id) {
-        if (confirm('Yakin ingin menghapus pengguna ini?')) {
-            $.ajax({
-                url: '/users/' + id,
-                type: 'DELETE',
-                data: {
-                    _token: '{{ csrf_token() }}'
-                },
-                success: function(response) {
-                    $('#usersTable').DataTable().ajax.reload();
-                    alert('Data berhasil dihapus');
-                },
-                error: function(xhr) {
-                    alert('Gagal menghapus data');
-                }
-            });
-        }
-    }
-</script>
-@endpush
             </div>
 
             <!-- Pagination -->

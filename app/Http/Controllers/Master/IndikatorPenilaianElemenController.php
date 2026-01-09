@@ -20,7 +20,7 @@ class IndikatorPenilaianElemenController extends Controller
             ->orderBy('id_jenjang_penilaian')
             ->get();
 
-        $elemenStandars = ElemenStandar::with('kriteria')->orderBy('kode_elemen')->get();
+        $elemenStandars = ElemenStandar::with('kriteria')->get();
         $jenjangPenilaians = JenjangPenilaian::orderBy('skor')->get();
 
         // Group by elemen standar

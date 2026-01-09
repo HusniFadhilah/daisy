@@ -8,11 +8,27 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb mb-2">
             <li class="breadcrumb-item"><a href="{{ route('asesmen.index') }}">Asesmen</a></li>
+            @if(isset($pengajuan))
+            <li class="breadcrumb-item">
+                <a href="{{ route('de.pengajuan.show', $pengajuan->id) }}">
+                    Pengajuan {{ $pengajuan->nomor_pengajuan }}
+                </a>
+            </li>
+            @endif
             <li class="breadcrumb-item active">{{ isset($asesmen) ? 'Edit' : 'Buat Baru' }}</li>
         </ol>
     </nav>
     <h2>{{ isset($asesmen) ? 'Edit Asesmen' : 'Buat Asesmen Baru' }}</h2>
 </div>
+
+@if(isset($pengajuan))
+<div class="alert alert-info alert-permanent fade show">
+    <i class="bi bi-info-circle"></i>
+    <strong>Info:</strong> Asesmen ini dibuat dari Pengajuan Akreditasi <strong>{{ $pengajuan->nomor_pengajuan }}</strong>.
+    Data program studi dan universitas akan otomatis terisi.
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+@endif
 
 <!-- Form -->
 <div class="row justify-content-center">
@@ -29,6 +45,11 @@
                     @csrf
                     @if(isset($asesmen))
                     @method('PUT')
+                    @endif
+
+                    @if(isset($pengajuan))
+                    <input type="hidden" name="id_pengajuan" value="{{ $pengajuan->id }}">
+                    <input type="hidden" name="id_study_program" value="{{ $pengajuan->id_program_studi }}">
                     @endif
 
                     <!-- Nama Asesmen -->
@@ -56,44 +77,42 @@
 
                     <hr class="my-4">
 
-                    <!-- Informasi Perguruan Tinggi -->
+                    <!-- Informasi Perguruan Tinggi (READ ONLY - dari relasi) -->
                     <h5 class="mb-3">Informasi Perguruan Tinggi</h5>
 
-                    <div class="row">
-                        <div class="col-md-8 mb-3">
-                            <label for="perguruan_tinggi" class="form-label fw-semibold">
-                                Nama Perguruan Tinggi
-                            </label>
-                            <input type="text" class="form-control @error('perguruan_tinggi') is-invalid @enderror" id="perguruan_tinggi" name="perguruan_tinggi" value="{{ old('perguruan_tinggi', $asesmen->perguruan_tinggi ?? '') }}" placeholder="Contoh: Universitas Serasan">
-                            @error('perguruan_tinggi')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="col-md-4 mb-3">
-                            <label for="bentuk_pt" class="form-label fw-semibold">
-                                Bentuk PT
-                            </label>
-                            <select class="form-select @error('bentuk_pt') is-invalid @enderror" id="bentuk_pt" name="bentuk_pt">
-                                <option value="">-- Pilih --</option>
-                                <option value="Universitas" {{ old('bentuk_pt', $asesmen->bentuk_pt ?? '') == 'Universitas' ? 'selected' : '' }}>Universitas</option>
-                                <option value="Institut" {{ old('bentuk_pt', $asesmen->bentuk_pt ?? '') == 'Institut' ? 'selected' : '' }}>Institut</option>
-                                <option value="Sekolah Tinggi" {{ old('bentuk_pt', $asesmen->bentuk_pt ?? '') == 'Sekolah Tinggi' ? 'selected' : '' }}>Sekolah Tinggi</option>
-                                <option value="Politeknik" {{ old('bentuk_pt', $asesmen->bentuk_pt ?? '') == 'Politeknik' ? 'selected' : '' }}>Politeknik</option>
-                                <option value="Akademi" {{ old('bentuk_pt', $asesmen->bentuk_pt ?? '') == 'Akademi' ? 'selected' : '' }}>Akademi</option>
-                            </select>
-                            @error('bentuk_pt')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                    @if(isset($studyProgram))
+                    {{-- Tampilkan info dari studyProgram --}}
+                    <div class="alert alert-secondary alert-permanent">
+                        <strong><i class="bi bi-info-circle"></i> Data dari Pengajuan:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li><strong>Program Studi:</strong> {{ $studyProgram->full_name }}</li>
+                            <li><strong>Universitas:</strong> {{ $studyProgram->university->name }}</li>
+                        </ul>
                     </div>
+                    @elseif(isset($asesmen) && $asesmen->studyProgram)
+                    {{-- Tampilkan info dari asesmen existing --}}
+                    <div class="alert alert-secondary alert-permanent">
+                        <strong><i class="bi bi-info-circle"></i> Informasi Program Studi:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li><strong>Program Studi:</strong> {{ $asesmen->studyProgram->full_name }}</li>
+                            <li><strong>Universitas:</strong> {{ $asesmen->studyProgram->university->name }}</li>
+                        </ul>
+                    </div>
+                    @else
+                    {{-- Jika tidak ada studyProgram (create manual tanpa pengajuan) --}}
+                    <div class="alert alert-warning alert-permanent">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>Perhatian:</strong> Asesmen ini tidak terhubung dengan program studi.
+                        Untuk menghubungkan dengan program studi, buat asesmen melalui pengajuan akreditasi.
+                    </div>
+                    @endif
 
                     <div class="mb-3">
                         <label for="code" class="form-label fw-semibold">
                             Kode Panel
                         </label>
-                        <input type="text" class="form-control @error('code') is-invalid @enderror" id="code" name="code" value="{{ old('code', $asesmen->code ?? '') }}" placeholder="Contoh: T01-P007" style="max-width: 200px;">
-                        @error('code')
+                        <input type="text" class="form-control @error('kode_panel') is-invalid @enderror" id="kode_panel" name="kode_panel" value="{{ old('kode_panel', $asesmen->kode_panel ?? '') }}" placeholder="Contoh: T01-P007" style="max-width: 200px;">
+                        @error('kode_panel')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>

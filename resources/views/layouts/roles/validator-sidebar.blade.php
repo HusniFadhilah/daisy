@@ -80,10 +80,10 @@
 </ul> --}}
 
 <!-- Proses AL -->
-<a href="{{ route('al.jadwal') }}" class="nav-link {{ request()->routeIs('al.jadwal') ? 'active' : '' }}">
-    <span class="menu-icon">🏢</span>
-    <span>Proses AL</span>
-</a>
+{{-- <a href="{{ route('al.jadwal') }}" class="nav-link {{ request()->routeIs('al.jadwal') ? 'active' : '' }}">
+<span class="menu-icon">🏢</span>
+<span>Proses AL</span>
+</a> --}}
 {{-- <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'al-submenu')">
     <span class="menu-icon">🏢</span>
     <span>Proses AL</span>

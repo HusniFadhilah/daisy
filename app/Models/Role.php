@@ -10,4 +10,10 @@ class Role extends Model
         'name',
         'alias',
     ];
+
+    public static function getRoleAlias($roleID)
+    {
+        $role = self::findOrFail($roleID);
+        return $role ? $role->alias : null;
+    }
 }

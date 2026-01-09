@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('indikator_penilaian_elemen', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('elemen_standar_id')->nullable()->constrained('elemen_standar', 'id_elemen')->onDelete('cascade');
-            $table->foreignId('jenjang_penilaian_id')->nullable()->constrained('jenjang_penilaian')->onDelete('cascade');
+            $table->foreignId('id_elemen')->nullable()->constrained('elemen_standar', 'id')->onDelete('cascade');
+            $table->foreignId('id_jenjang_penilaian')->nullable()->constrained('jenjang_penilaian')->onDelete('cascade');
             $table->text('deskripsi_penilaian')->nullable();
             $table->string('keterangan')->nullable();
             $table->timestamps();

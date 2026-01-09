@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('jenjang_penilaian', function (Blueprint $table) {
             $table->id();
-            $table->string('nama_jenjang')->nullable();
+            $table->string('name')->nullable();
+            $table->string('color')->nullable();
             $table->integer('skor')->nullable();
             $table->timestamps();
         });

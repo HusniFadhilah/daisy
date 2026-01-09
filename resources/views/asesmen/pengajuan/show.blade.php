@@ -135,13 +135,13 @@
     <div class="row">
         <!-- Main Content -->
         <div class="col-md-8">
-            <!-- ACTION: Upload/Isi Draft Borang -->
+            <!-- ACTION: Upload/Isi Draft LED -->
             @if(in_array($pengajuan->status, ['borang_dikirim', 'review_kesiapan_belum_siap']))
             <div class="card action-card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">
                         <i class="bi bi-exclamation-circle text-warning"></i>
-                        Aksi Diperlukan: Lengkapi Draft Borang
+                        Aksi Diperlukan: Lengkapi Draft LED
                     </h5>
                     <p class="mb-3">
                         Anda dapat melengkapi borang dengan 2 cara:
@@ -177,10 +177,10 @@
 
                             <div class="alert alert-success alert-permanent mb-3">
                                 <i class="bi bi-download"></i>
-                                <strong>Belum punya template?</strong> Download template borang resmi.
+                                <strong>Belum punya template?</strong> Download template LED resmi.
                                 <br>
                                 <a href="{{ route('pengajuan.template.download') }}" class="btn btn-sm btn-success mt-2">
-                                    <i class="bi bi-download"></i> Download Template Borang DOCX
+                                    <i class="bi bi-download"></i> Download Template LED DOCX
                                 </a>
                             </div>
 
@@ -215,13 +215,18 @@
                                 <!-- Keterangan -->
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">Keterangan (Opsional)</label>
-                                    <textarea name="keterangan" class="form-control" rows="2" placeholder="Catatan terkait draft borang"></textarea>
+                                    <textarea name="keterangan" class="form-control @error('keterangan') is-invalid @enderror" rows="2" placeholder="Catatan terkait draft LED"></textarea>
+                                    @error('keterangan')
+                                    <span class="invalid-feedback" role="alert">
+                                        {{ $message }}
+                                    </span>
+                                    @enderror
                                 </div>
 
                                 <!-- Submit Buttons -->
                                 <div class="d-flex gap-2">
-                                    <button type="submit" class="btn btn-primary" id="btnSubmitUpload" disabled>
-                                        <i class="bi bi-upload"></i> Upload Draft Borang
+                                    <button type="submit" class="btn btn-primary" id="btnUploadBorang" disabled>
+                                        <i class="bi bi-upload"></i> Upload Draft LED
                                     </button>
                                 </div>
                             </form>
@@ -240,7 +245,7 @@
                                     <i class="bi bi-pencil-square fs-1 text-primary mb-3"></i>
                                     <h5>Form Isian Borang Online</h5>
                                     <p class="text-muted mb-3">
-                                        Isi borang evaluasi diri secara langsung dengan form yang terstruktur
+                                        Isi laporan evaluasi diri secara langsung dengan form yang terstruktur
                                     </p>
                                     <a href="{{ route('pengajuan.borang-online', $pengajuan->id) }}" class="btn btn-primary">
                                         <i class="bi bi-pencil-square"></i> Mulai Mengisi Borang Online
@@ -253,18 +258,18 @@
             </div>
             @endif
 
-            <!-- SECTION: Proses & Preview Borang -->
-            @if($pengajuan->status === 'draft_borang_diterima')
+            <!-- SECTION: Proses & Preview LED -->
+            @if(in_array($pengajuan->status, ['draft_borang_diterima', 'borang_online_selesai']))
             @include('asesmen.pengajuan.components.modal-upload')
             @endif
 
             <!-- 🆕 MODAL UPLOAD ULANG -->
             <div class="modal fade" id="modalUploadUlang" tabindex="-1">
-                <div class="modal-dialog modal-lg">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
                     <div class="modal-content">
                         <div class="modal-header bg-warning">
                             <h5 class="modal-title">
-                                <i class="bi bi-arrow-repeat"></i> Upload Ulang Draft Borang
+                                <i class="bi bi-arrow-repeat"></i> Upload Ulang Draft LED
                             </h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
@@ -370,7 +375,7 @@
                                 <strong>Jumlah:</strong> Rp {{ number_format($pengajuan->pembayaran->jumlah_pembayaran, 0, ',', '.') }}
                             </div>
                             <div class="col-md-6">
-                                <strong>Jatuh Tempo:</strong> {{ $pengajuan->pembayaran->tanggal_jatuh_tempo->format('d M Y') }}
+                                <strong>Jatuh Tempo:</strong> {{ \App\Libraries\Date::tglIndo($pengajuan->pembayaran->tanggal_jatuh_tempo) }}
                             </div>
                         </div>
                     </div>
@@ -381,12 +386,22 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Tanggal Pembayaran</label>
-                                <input type="date" name="tanggal_pembayaran" class="form-control" value="{{ date('Y-m-d') }}" required>
+                                <input type="date" name="tanggal_pembayaran" class="form-control @error('tanggal_pembayaran') is-invalid @enderror" value="{{ date('Y-m-d') }}" required>
+                                @error('tanggal_pembayaran')
+                                <span class="invalid-feedback" role="alert">
+                                    {{ $message }}
+                                </span>
+                                @enderror
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Bukti Pembayaran</label>
-                                <input type="file" name="bukti_pembayaran" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required>
+                                <input type="file" name="bukti_pembayaran" class="form-control @error('bukti_pembayaran') is-invalid @enderror" accept=".pdf,.jpg,.jpeg,.png" required>
                                 <small class="text-muted">Format: PDF, JPG, PNG | Max: 5 MB</small>
+                                @error('bukti_pembayaran')
+                                <span class="invalid-feedback" role="alert">
+                                    {{ $message }}
+                                </span>
+                                @enderror
                             </div>
                             <div class="col-md-12">
                                 <button type="submit" class="btn btn-success">
@@ -421,12 +436,22 @@
                         <div class="row g-3">
                             <div class="col-md-8">
                                 <label class="form-label fw-bold">Borang Final (DOCX)</label>
-                                <input type="file" name="borang_final" class="form-control" accept=".docx" required>
+                                <input type="file" name="borang_final" class="form-control @error('borang_final') is-invalid @enderror" accept=".docx" required>
                                 <small class="text-muted">Format: DOCX | Max: 10 MB</small>
+                                @error('borang_final')
+                                <span class="invalid-feedback" role="alert">
+                                    {{ $message }}
+                                </span>
+                                @enderror
                             </div>
                             <div class="col-md-12">
                                 <label class="form-label fw-bold">Keterangan</label>
-                                <textarea name="keterangan" class="form-control" rows="2"></textarea>
+                                <textarea name="keterangan" class="form-control @error('keterangan') is-invalid @enderror" rows="2"></textarea>
+                                @error('keterangan')
+                                <span class="invalid-feedback" role="alert">
+                                    {{ $message }}
+                                </span>
+                                @enderror
                             </div>
                             <div class="col-md-12">
                                 <button type="submit" class="btn btn-primary">
@@ -470,236 +495,236 @@
                             <p class="fw-bold mb-0">{{ $pengajuan->pengaju->name }}</p>
                         </div>
                         @endif
-                        <div class="col-md-6 mb-3">
+                        {{-- <div class="col-md-6 mb-3">
                             <label class="text-muted small">DE</label>
                             <p class="fw-bold mb-0">{{ $pengajuan->deskEvaluator->name ?? 'Belum ditugaskan' }}</p>
-                        </div>
-                    </div>
+                    </div> --}}
+                </div>
 
-                    @if($pengajuan->catatan_pengaju)
-                    <hr>
-                    <label class="text-muted small">Catatan Pengaju</label>
-                    <p class="mb-0">{{ $pengajuan->catatan_pengaju }}</p>
-                    @endif
-                </div>
-            </div>
-
-            <!-- Review Kesiapan -->
-            @if($pengajuan->reviewKesiapan->count() > 0)
-            <div class="card mb-4">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">
-                        <i class="bi bi-clipboard-check"></i> Hasil Review Kesiapan
-                    </h5>
-                </div>
-                <div class="card-body">
-                    @foreach($pengajuan->reviewKesiapan->sortByDesc('tanggal_review') as $review)
-                    <div class="mb-3 pb-3 {{ !$loop->last ? 'border-bottom' : '' }}">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <div>
-                                <span class="badge {{ $review->hasil_review === 'siap' ? 'bg-success' : 'bg-danger' }}">
-                                    {{ $review->hasil_review === 'siap' ? 'SIAP' : 'BELUM SIAP' }}
-                                </span>
-                                <small class="text-muted ms-2">Versi {{ $review->versi_review }}</small>
-                            </div>
-                            <small class="text-muted">
-                                {{ $review->tanggal_review->format('d M Y H:i') }}
-                            </small>
-                        </div>
-                        <p class="mb-2"><strong>Reviewer:</strong> {{ $review->reviewer->name }}</p>
-                        <p class="mb-0"><strong>Catatan:</strong></p>
-                        <p class="text-muted">{{ $review->catatan_review }}</p>
-
-                        @if($review->checklist_kesiapan)
-                        <p class="mb-1"><strong>Checklist:</strong></p>
-                        <ul>
-                            @foreach($review->checklist_kesiapan as $item)
-                            <li>{{ $item }}</li>
-                            @endforeach
-                        </ul>
-                        @endif
-                    </div>
-                    @endforeach
-                </div>
-            </div>
-            @endif
-
-            <!-- Dokumen -->
-            <div class="card mb-4">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">
-                        <i class="bi bi-folder"></i> Dokumen
-                    </h5>
-                </div>
-                <div class="card-body">
-                    @forelse($pengajuan->dokumen->groupBy('jenis_dokumen') as $jenis => $docs)
-                    <div class="mb-3">
-                        <h6 class="fw-bold text-primary">
-                            {{ str_replace('_', ' ', ucwords($jenis)) }}
-                        </h6>
-                        <div class="table-responsive">
-                            <table class="table table-sm table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Nama File</th>
-                                        <th>Versi</th>
-                                        <th>Upload Oleh</th>
-                                        <th>Tanggal</th>
-                                        <th>Ukuran</th>
-                                        <th>Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($docs as $doc)
-                                    <tr>
-                                        <td>
-                                            {{ $doc->original_filename }}
-                                            @if($doc->is_latest)
-                                            <span class="badge bg-success">Latest</span>
-                                            @endif
-                                        </td>
-                                        <td>v{{ $doc->versi }}</td>
-                                        <td>{{ $doc->uploader->name }}</td>
-                                        <td>{{ $doc->created_at->format('d/m/Y H:i') }}</td>
-                                        <td>{{ $doc->file_size_formatted }}</td>
-                                        <td>
-                                            <a href="{{ $doc->download_url }}" class="btn btn-sm btn-primary">
-                                                <i class="bi bi-download"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    @empty
-                    <p class="text-muted mb-0">Belum ada dokumen yang diupload.</p>
-                    @endforelse
-                </div>
+                @if($pengajuan->catatan_pengaju)
+                <hr>
+                <label class="text-muted small">Catatan Pengaju</label>
+                <p class="mb-0">{{ $pengajuan->catatan_pengaju }}</p>
+                @endif
             </div>
         </div>
 
-        <!-- Sidebar -->
-        <div class="col-md-4">
-            <!-- Timeline -->
-            <div class="card mb-4">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">
-                        <i class="bi bi-clock-history"></i> Timeline Proses
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="timeline">
-                        <div class="timeline-item {{ $pengajuan->tanggal_pengingat ? 'completed' : '' }}">
-                            <strong>Pengingat Dikirim</strong>
-                            @if($pengajuan->tanggal_pengingat)
-                            <small class="d-block text-muted">
-                                {{ $pengajuan->tanggal_pengingat->format('d M Y H:i') }}
-                            </small>
-                            @endif
-                        </div>
-
-                        <div class="timeline-item {{ $pengajuan->tanggal_surat_permohonan ? 'completed' : '' }}">
-                            <strong>Surat Permohonan</strong>
-                            @if($pengajuan->tanggal_surat_permohonan)
-                            <small class="d-block text-muted">
-                                {{ $pengajuan->tanggal_surat_permohonan->format('d M Y H:i') }}
-                            </small>
-                            @endif
-                        </div>
-
-                        <div class="timeline-item {{ $pengajuan->tanggal_borang_dikirim ? 'completed' : '' }}">
-                            <strong>Borang Dikirim</strong>
-                            @if($pengajuan->tanggal_borang_dikirim)
-                            <small class="d-block text-muted">
-                                {{ $pengajuan->tanggal_borang_dikirim->format('d M Y H:i') }}
-                            </small>
-                            @endif
-                        </div>
-
-                        <div class="timeline-item {{ $pengajuan->tanggal_draft_borang ? 'completed' : '' }}">
-                            <strong>Draft Borang Diterima</strong>
-                            @if($pengajuan->tanggal_draft_borang)
-                            <small class="d-block text-muted">
-                                {{ $pengajuan->tanggal_draft_borang->format('d M Y H:i') }}
-                            </small>
-                            @endif
-                        </div>
-
-                        <div class="timeline-item {{ $pengajuan->tanggal_review_kesiapan ? 'completed' : '' }}">
-                            <strong>Review Kesiapan</strong>
-                            @if($pengajuan->tanggal_review_kesiapan)
-                            <small class="d-block text-muted">
-                                {{ $pengajuan->tanggal_review_kesiapan->format('d M Y H:i') }}
-                            </small>
-                            @endif
-                        </div>
-
-                        <div class="timeline-item {{ $pengajuan->tanggal_pembayaran ? 'completed' : '' }}">
-                            <strong>Pembayaran</strong>
-                            @if($pengajuan->tanggal_pembayaran)
-                            <small class="d-block text-muted">
-                                {{ $pengajuan->tanggal_pembayaran->format('d M Y H:i') }}
-                            </small>
-                            @endif
-                        </div>
-
-                        <div class="timeline-item {{ $pengajuan->tanggal_borang_final ? 'completed' : '' }}">
-                            <strong>Borang Final</strong>
-                            @if($pengajuan->tanggal_borang_final)
-                            <small class="d-block text-muted">
-                                {{ $pengajuan->tanggal_borang_final->format('d M Y H:i') }}
-                            </small>
-                            @endif
-                        </div>
-
-                        <div class="timeline-item {{ $pengajuan->tanggal_lanjut_ak ? 'completed' : '' }}">
-                            <strong>Lanjut ke AK</strong>
-                            @if($pengajuan->tanggal_lanjut_ak)
-                            <small class="d-block text-muted">
-                                {{ $pengajuan->tanggal_lanjut_ak->format('d M Y H:i') }}
-                            </small>
-                            @endif
-                        </div>
-                    </div>
-                </div>
+        <!-- Review Kesiapan -->
+        @if($pengajuan->reviewKesiapan->count() > 0)
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">
+                    <i class="bi bi-clipboard-check"></i> Hasil Review Kesiapan
+                </h5>
             </div>
-
-            <!-- Status Log -->
-            <div class="card">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">
-                        <i class="bi bi-list-check"></i> Log Aktivitas
-                    </h5>
-                </div>
-                <div class="card-body" style="max-height: 400px; overflow-y: auto;">
-                    @forelse($pengajuan->statusLog->sortByDesc('changed_at') as $log)
-                    <div class="mb-3 pb-3 {{ !$loop->last ? 'border-bottom' : '' }}">
-                        <div class="d-flex justify-content-between">
-                            <small class="text-muted">
-                                {{ $log->changed_at->format('d/m/Y H:i') }}
-                            </small>
-                            <small class="text-muted">
-                                {{ $log->changedBy->name }}
-                            </small>
+            <div class="card-body">
+                @foreach($pengajuan->reviewKesiapan->sortByDesc('tanggal_review') as $review)
+                <div class="mb-3 pb-3 {{ !$loop->last ? 'border-bottom' : '' }}">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <span class="badge {{ $review->hasil_review === 'siap' ? 'bg-success' : 'bg-danger' }}">
+                                {{ $review->hasil_review === 'siap' ? 'SIAP' : 'BELUM SIAP' }}
+                            </span>
+                            <small class="text-muted ms-2">Versi {{ $review->versi_review }}</small>
                         </div>
-                        <p class="mb-0 small">
-                            <span class="badge bg-secondary">{{ str_replace('_', ' ', $log->status_from) }}</span>
-                            <i class="bi bi-arrow-right"></i>
-                            <span class="badge bg-primary">{{ str_replace('_', ' ', $log->status_to) }}</span>
-                        </p>
-                        @if($log->keterangan)
-                        <small class="text-muted">{{ $log->keterangan }}</small>
-                        @endif
+                        <small class="text-muted">
+                            {{ $review->tanggal_review->format('d M Y H:i') }}
+                        </small>
                     </div>
-                    @empty
-                    <p class="text-muted small mb-0">Belum ada aktivitas</p>
-                    @endforelse
+                    <p class="mb-2"><strong>Reviewer:</strong> {{ $review->reviewer->name }}</p>
+                    <p class="mb-0"><strong>Catatan:</strong></p>
+                    <p class="text-muted">{{ $review->catatan_review }}</p>
+
+                    @if($review->checklist_kesiapan)
+                    <p class="mb-1"><strong>Checklist:</strong></p>
+                    <ul>
+                        @foreach($review->checklist_kesiapan as $item)
+                        <li>{{ $item }}</li>
+                        @endforeach
+                    </ul>
+                    @endif
                 </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
+        <!-- Dokumen -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">
+                    <i class="bi bi-folder"></i> Dokumen
+                </h5>
+            </div>
+            <div class="card-body">
+                @forelse($pengajuan->dokumen->groupBy('jenis_dokumen') as $jenis => $docs)
+                <div class="mb-3">
+                    <h6 class="fw-bold text-primary">
+                        {{ str_replace('_', ' ', ucwords($jenis)) }}
+                    </h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nama File</th>
+                                    <th>Versi</th>
+                                    <th>Upload Oleh</th>
+                                    <th>Tanggal</th>
+                                    <th>Ukuran</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($docs as $doc)
+                                <tr>
+                                    <td>
+                                        {{ $doc->original_filename }}
+                                        @if($doc->is_latest)
+                                        <span class="badge bg-success">Latest</span>
+                                        @endif
+                                    </td>
+                                    <td>v{{ $doc->versi }}</td>
+                                    <td>{{ $doc->uploader->name }}</td>
+                                    <td>{{ $doc->created_at->format('d/m/Y H:i') }}</td>
+                                    <td>{{ $doc->file_size_formatted }}</td>
+                                    <td>
+                                        <a href="{{ $doc->download_url }}" class="btn btn-sm btn-primary">
+                                            <i class="bi bi-download"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                @empty
+                <p class="text-muted mb-0">Belum ada dokumen yang diupload.</p>
+                @endforelse
             </div>
         </div>
     </div>
+
+    <!-- Sidebar -->
+    <div class="col-md-4">
+        <!-- Timeline -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">
+                    <i class="bi bi-clock-history"></i> Timeline Proses
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    <div class="timeline-item {{ $pengajuan->tanggal_pengingat ? 'completed' : '' }}">
+                        <strong>Pengingat Dikirim</strong>
+                        @if($pengajuan->tanggal_pengingat)
+                        <small class="d-block text-muted">
+                            {{ $pengajuan->tanggal_pengingat->format('d M Y H:i') }}
+                        </small>
+                        @endif
+                    </div>
+
+                    <div class="timeline-item {{ $pengajuan->tanggal_surat_permohonan ? 'completed' : '' }}">
+                        <strong>Surat Permohonan</strong>
+                        @if($pengajuan->tanggal_surat_permohonan)
+                        <small class="d-block text-muted">
+                            {{ $pengajuan->tanggal_surat_permohonan->format('d M Y H:i') }}
+                        </small>
+                        @endif
+                    </div>
+
+                    <div class="timeline-item {{ $pengajuan->tanggal_borang_dikirim ? 'completed' : '' }}">
+                        <strong>Borang Dikirim</strong>
+                        @if($pengajuan->tanggal_borang_dikirim)
+                        <small class="d-block text-muted">
+                            {{ $pengajuan->tanggal_borang_dikirim->format('d M Y H:i') }}
+                        </small>
+                        @endif
+                    </div>
+
+                    <div class="timeline-item {{ $pengajuan->tanggal_draft_borang ? 'completed' : '' }}">
+                        <strong>Draft LED Diterima</strong>
+                        @if($pengajuan->tanggal_draft_borang)
+                        <small class="d-block text-muted">
+                            {{ $pengajuan->tanggal_draft_borang->format('d M Y H:i') }}
+                        </small>
+                        @endif
+                    </div>
+
+                    <div class="timeline-item {{ $pengajuan->tanggal_review_kesiapan ? 'completed' : '' }}">
+                        <strong>Review Kesiapan</strong>
+                        @if($pengajuan->tanggal_review_kesiapan)
+                        <small class="d-block text-muted">
+                            {{ $pengajuan->tanggal_review_kesiapan->format('d M Y H:i') }}
+                        </small>
+                        @endif
+                    </div>
+
+                    <div class="timeline-item {{ $pengajuan->tanggal_pembayaran ? 'completed' : '' }}">
+                        <strong>Pembayaran</strong>
+                        @if($pengajuan->tanggal_pembayaran)
+                        <small class="d-block text-muted">
+                            {{ $pengajuan->tanggal_pembayaran->format('d M Y H:i') }}
+                        </small>
+                        @endif
+                    </div>
+
+                    <div class="timeline-item {{ $pengajuan->tanggal_borang_final ? 'completed' : '' }}">
+                        <strong>Borang Final</strong>
+                        @if($pengajuan->tanggal_borang_final)
+                        <small class="d-block text-muted">
+                            {{ $pengajuan->tanggal_borang_final->format('d M Y H:i') }}
+                        </small>
+                        @endif
+                    </div>
+
+                    <div class="timeline-item {{ $pengajuan->tanggal_lanjut_ak ? 'completed' : '' }}">
+                        <strong>Lanjut ke AK</strong>
+                        @if($pengajuan->tanggal_lanjut_ak)
+                        <small class="d-block text-muted">
+                            {{ $pengajuan->tanggal_lanjut_ak->format('d M Y H:i') }}
+                        </small>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Log -->
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">
+                    <i class="bi bi-list-check"></i> Log Aktivitas
+                </h5>
+            </div>
+            <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                @forelse($pengajuan->statusLog->sortByDesc('changed_at') as $log)
+                <div class="mb-3 pb-3 {{ !$loop->last ? 'border-bottom' : '' }}">
+                    <div class="d-flex justify-content-between">
+                        <small class="text-muted">
+                            {{ $log->changed_at->format('d/m/Y H:i') }}
+                        </small>
+                        <small class="text-muted">
+                            {{ $log->changedBy->name }}
+                        </small>
+                    </div>
+                    <p class="mb-0 small">
+                        <span class="badge bg-secondary">{{ str_replace('_', ' ', $log->status_from) }}</span>
+                        <i class="bi bi-arrow-right"></i>
+                        <span class="badge bg-primary">{{ str_replace('_', ' ', $log->status_to) }}</span>
+                    </p>
+                    @if($log->keterangan)
+                    <small class="text-muted">{{ $log->keterangan }}</small>
+                    @endif
+                </div>
+                @empty
+                <p class="text-muted small mb-0">Belum ada aktivitas</p>
+                @endforelse
+            </div>
+        </div>
+    </div>
+</div>
 </div>
 @push('scripts')
 <script>
@@ -707,8 +732,13 @@
     const uploadArea = document.getElementById('uploadArea');
     const fileInput = document.getElementById('inputDraftBorang');
     const filePreview = document.getElementById('filePreview');
-    const btnSubmit = document.getElementById('btnSubmitUpload');
+    const btnUploadBorang = document.getElementById('btnUploadBorang');
     const formUpload = document.getElementById('formUploadBorang');
+    const btnResetBorangShow = document.getElementById('btnResetBorangShow');
+
+    if (btnResetBorangShow) btnResetBorangShow.addEventListener('click', function() {
+        window.location.href = '{{ route("pengajuan.borang-online", $pengajuan->id) }}#reset';
+    });
 
     if (fileInput) {
         // Click to upload
@@ -767,7 +797,7 @@
         uploadArea.classList.add('d-none');
         filePreview.classList.remove('d-none');
         filePreview.classList.add('has-file');
-        btnSubmit.disabled = false;
+        btnUploadBorang.disabled = false;
     }
 
     function removeFile() {
@@ -775,7 +805,7 @@
         uploadArea.classList.remove('d-none');
         filePreview.classList.add('d-none');
         filePreview.classList.remove('has-file');
-        btnSubmit.disabled = true;
+        btnUploadBorang.disabled = true;
     }
 
     function formatFileSize(bytes) {
@@ -796,10 +826,11 @@
         }
 
         const formData = new FormData(formUpload);
-        btnSubmit.disabled = true;
-        btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mengupload...';
+        btnUploadBorang.disabled = true;
+        btnUploadBorang.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mengupload...';
 
         try {
+            console.log(formData)
             const response = await fetch('{{ route("pengajuan.upload-draft", $pengajuan->id) }}', {
                 method: 'POST'
                 , body: formData
@@ -809,20 +840,21 @@
             });
 
             const data = await response.json();
+            console.log(data)
 
             if (data.success || response.ok) {
-                alert('✅ Draft borang berhasil diupload!');
+                alert('✅ Draft LED berhasil diupload!');
                 window.location.reload();
             } else {
                 alert('❌ Upload gagal: ' + (data.message || 'Terjadi kesalahan'));
-                btnSubmit.disabled = false;
-                btnSubmit.innerHTML = '<i class="bi bi-upload"></i> Upload Draft Borang';
+                btnUploadBorang.disabled = false;
+                btnUploadBorang.innerHTML = '<i class="bi bi-upload"></i> Upload Draft LED';
             }
         } catch (error) {
             console.error('Error:', error);
             alert('❌ Terjadi kesalahans: ' + error.message);
-            btnSubmit.disabled = false;
-            btnSubmit.innerHTML = '<i class="bi bi-upload"></i> Upload Draft Borang';
+            btnUploadBorang.disabled = false;
+            btnUploadBorang.innerHTML = '<i class="bi bi-upload"></i> Upload Draft LED';
         }
     });
 

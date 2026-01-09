@@ -1,4 +1,7 @@
 <!-- Sidebar -->
+@php
+$authUser = Auth::user();
+@endphp
 <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <h3>Main Menu</h3>
@@ -15,10 +18,18 @@
         </a>
 
         @auth
-        @if(in_array(Auth::user()->role,['admin']))
+        @if(in_array($authUser->role_selected,['super_admin','asesi']))
         @include('layouts.roles.admin-sidebar')
-        @elseif(in_array(Auth::user()->role,['user']))
-        @include('layouts.roles.user-sidebar')
+        @elseif(in_array($authUser->role_selected,['asesor']))
+        @include('layouts.roles.asesor-sidebar')
+        @elseif(in_array($authUser->role_selected,['verifikator']))
+        @include('layouts.roles.verifikator-sidebar')
+        @elseif(in_array($authUser->role_selected,['validator']))
+        @include('layouts.roles.validator-sidebar')
+        @elseif(in_array($authUser->role_selected,['admin_prodi']))
+        @include('layouts.roles.prodi-sidebar')
+        @else
+        @include('layouts.roles.default-sidebar')
         @endif
         @endauth
 
@@ -35,7 +46,7 @@
         </a>
 
         <!-- Profil & Pengaturan -->
-        <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'profil-submenu')">
+        <a href="#" class="nav-link {{ request()->routeIs('profile*') ? 'active' : '' }}" onclick="toggleSubmenu(event, 'profil-submenu')">
             <span class="menu-icon">👤</span>
             <span>Profil & Pengaturan</span>
         </a>

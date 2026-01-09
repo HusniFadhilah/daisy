@@ -6,11 +6,11 @@ use App\Models\University;
 use App\Models\DegreeLevel;
 use App\Models\StudyProgram;
 use Illuminate\Http\Request;
-<<<<<<< HEAD:app/Http/Controllers/UniversityController.php
+<<<<<<<< HEAD:app/Http/Controllers/UniversityController.php
 use Yajra\DataTables\Facades\DataTables;
-=======
+========
 use App\Http\Controllers\Controller;
->>>>>>> ba30e62e26daa1c2eef43174c4e356ec279023ba:app/Http/Controllers/Master/UniversityController.php
+>>>>>>>> origin/main:app/Http/Controllers/Master/UniversityController.php
 
 class UniversityController extends Controller
 {
@@ -31,7 +31,7 @@ class UniversityController extends Controller
      */
     public function index(Request $request)
     {
-<<<<<<< HEAD:app/Http/Controllers/UniversityController.php
+<<<<<<<< HEAD:app/Http/Controllers/UniversityController.php
         if ($request->ajax()) {
             $data = University::withCount('studyPrograms')->select('universities.*');
             
@@ -51,10 +51,10 @@ class UniversityController extends Controller
                 ->make(true);
         }
         
-=======
+========
         $universities = University::withCount('studyPrograms')->get();
 
->>>>>>> ba30e62e26daa1c2eef43174c4e356ec279023ba:app/Http/Controllers/Master/UniversityController.php
+>>>>>>>> origin/main:app/Http/Controllers/Master/UniversityController.php
         if ($request->wantsJson()) {
             $universities = University::withCount('studyPrograms')->get();
             return response()->json([
@@ -62,13 +62,13 @@ class UniversityController extends Controller
                 'data' => $universities
             ]);
         }
-<<<<<<< HEAD:app/Http/Controllers/UniversityController.php
+<<<<<<<< HEAD:app/Http/Controllers/UniversityController.php
         
         return view('universitas.index');
-=======
+========
 
         return view('universitas.index', compact('universities'));
->>>>>>> ba30e62e26daa1c2eef43174c4e356ec279023ba:app/Http/Controllers/Master/UniversityController.php
+>>>>>>>> origin/main:app/Http/Controllers/Master/UniversityController.php
     }
 
     /**

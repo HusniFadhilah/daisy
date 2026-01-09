@@ -291,10 +291,10 @@
                 untuk proses akreditasi program studi mereka
             </p>
             <div class="hero-buttons">
-                <a href="{{ route('register') }}" class="btn-hero-primary">
-                    <span>Daftar Sekarang</span>
-                    <i class="bi bi-arrow-right"></i>
-                </a>
+                {{-- <a href="{{ route('register') }}" class="btn-hero-primary">
+                <span>Daftar Sekarang</span>
+                <i class="bi bi-arrow-right"></i>
+                </a> --}}
                 <a href="{{ route('login') }}" class="btn-hero-secondary">
                     <span>Login</span>
                     <i class="bi bi-box-arrow-in-right"></i>

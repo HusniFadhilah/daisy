@@ -63,7 +63,7 @@ class Fungsi
 
     public static function getRoleSession()
     {
-        return Str::slug(Auth::user()->role->name ?? '');
+        return Str::slug(Auth::user()->role ?? '');
     }
 
     public static function uniqueCode($limit)

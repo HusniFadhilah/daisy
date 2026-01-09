@@ -61,6 +61,26 @@
                     </small>
                 </div>
 
+                @if (app()->environment('production'))
+                <div class="form-group mt-4 mb-4">
+                    <div class="row align-items-center">
+                        <div class="col-6">
+                            <input type="text" class="form-control @error('captcha') is-invalid @enderror" placeholder="Masukkan Captcha" name="captcha" required>
+                        </div>
+                        <div class="col-4 captcha px-0">
+                            <span>{!! captcha_img() !!}</span>
+                        </div>
+                        <div class="col-2 pl-0">
+                            <button type="button" class="btn btn-danger reload" id="reload-captcha" title="Refresh captcha">&#x21bb;</button>
+                        </div>
+                    </div>
+                    @error('captcha')
+                    <small class="text-danger" role="alert">
+                        {{ $message }}
+                    </small>
+                    @enderror
+                </div>
+                @endif
                 <!-- Submit Button -->
                 <button type="submit" class="btn-auth-primary" id="resetBtn">
                     <span>Kirim Link Reset Password</span>
@@ -86,10 +106,10 @@
                     Ingat password Anda?
                     <a href="{{ route('login') }}">Masuk Sekarang</a>
                 </p>
-                <p style="margin-top: 10px;">
+                {{-- <p style="margin-top: 10px;">
                     Belum punya akun?
                     <a href="{{ route('register') }}">Daftar Sekarang</a>
-                </p>
+                </p> --}}
             </div>
         </div>
     </div>

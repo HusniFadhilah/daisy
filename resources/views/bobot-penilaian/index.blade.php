@@ -13,20 +13,6 @@
         </button>
     </div>
 
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-
-    @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-
     <!-- Filter Section -->
     <div class="card mb-4">
         <div class="card-body">
@@ -36,9 +22,9 @@
                     <select name="id_elemen" class="form-select" id="filterElemen">
                         <option value="">Semua Elemen</option>
                         @foreach($elemens as $elemen)
-                            <option value="{{ $elemen->id_elemen }}" {{ request('id_elemen') == $elemen->id_elemen ? 'selected' : '' }}>
-                                {{ $elemen->kriteria->kode_kriteria ?? '' }}.{{ $elemen->kode_elemen }} - {{ $elemen->pernyataan_elemen }}
-                            </option>
+                        <option value="{{ $elemen->id_elemen }}" {{ request('id_elemen') == $elemen->id_elemen ? 'selected' : '' }}>
+                            {{ $elemen->kriteria->kode_kriteria ?? '' }}.{{ $elemen->kode_elemen }} - {{ $elemen->pernyataan_elemen }}
+                        </option>
                         @endforeach
                     </select>
                 </div>
@@ -47,9 +33,9 @@
                     <select name="id_category" class="form-select">
                         <option value="">Semua Kategori</option>
                         @foreach($categories as $category)
-                            <option value="{{ $category->id }}" {{ request('id_category') == $category->id ? 'selected' : '' }}>
-                                {{ $category->name }}
-                            </option>
+                        <option value="{{ $category->id }}" {{ request('id_category') == $category->id ? 'selected' : '' }}>
+                            {{ $category->name }}
+                        </option>
                         @endforeach
                     </select>
                 </div>
@@ -99,9 +85,9 @@
                     <select name="asesmen_id" class="form-select" required>
                         <option value="">-- Pilih Asesmen --</option>
                         @foreach($asesmens as $asesmen)
-                            <option value="{{ $asesmen->id }}">
-                                {{ $asesmen->name }} - {{ $asesmen->perguruan_tinggi ?? 'N/A' }}
-                            </option>
+                        <option value="{{ $asesmen->id }}">
+                            {{ $asesmen->name }} - {{ $asesmen->perguruan_tinggi ?? 'N/A' }}
+                        </option>
                         @endforeach
                     </select>
                 </div>
@@ -110,7 +96,7 @@
                     <select name="category_id" class="form-select" required>
                         <option value="">-- Pilih Kategori --</option>
                         @foreach($categories as $category)
-                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                        <option value="{{ $category->id }}">{{ $category->name }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -132,13 +118,13 @@
 
 <!-- Modal Tambah/Edit Bobot -->
 <div class="modal fade" id="modalBobot" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <form id="formBobot" method="POST" action="{{ route('bobot-penilaian.store') }}">
                 @csrf
                 <input type="hidden" name="_method" value="POST" id="formMethod">
                 <input type="hidden" name="bobot_id" id="bobotId">
-                
+
                 <div class="modal-header">
                     <h5 class="modal-title" id="modalTitle">Tambah Bobot Penilaian</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -149,9 +135,9 @@
                         <select name="id_elemen" class="form-select" id="inputElemen" required>
                             <option value="">-- Pilih Elemen --</option>
                             @foreach($elemens as $elemen)
-                                <option value="{{ $elemen->id_elemen }}">
-                                    {{ $elemen->kriteria->kode_kriteria ?? '' }}.{{ $elemen->kode_elemen }} - {{ $elemen->pernyataan_elemen }}
-                                </option>
+                            <option value="{{ $elemen->id_elemen }}">
+                                {{ $elemen->kriteria->kode_kriteria ?? '' }}.{{ $elemen->kode_elemen }} - {{ $elemen->pernyataan_elemen }}
+                            </option>
                             @endforeach
                         </select>
                     </div>
@@ -160,14 +146,13 @@
                         <select name="id_category" class="form-select" id="inputCategory" required>
                             <option value="">-- Pilih Kategori --</option>
                             @foreach($categories as $category)
-                                <option value="{{ $category->id }}">{{ $category->name }}</option>
+                            <option value="{{ $category->id }}">{{ $category->name }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Bobot <span class="text-danger">*</span></label>
-                        <input type="number" name="bobot" class="form-control" id="inputBobot" 
-                               min="0" max="100" required placeholder="Masukkan bobot (0-100)">
+                        <input type="number" name="bobot" class="form-control" id="inputBobot" min="0" max="100" required placeholder="Masukkan bobot (0-100)">
                         <small class="text-muted">Bobot dalam skala 0-100</small>
                     </div>
                 </div>
@@ -186,34 +171,58 @@
     // Initialize Select2
     $(document).ready(function() {
         $('#filterElemen, #inputElemen, #inputCategory').select2({
-            theme: 'bootstrap-5',
-            width: '100%'
+            theme: 'bootstrap-5'
+            , width: '100%'
         });
 
         // Initialize DataTable
         $('#bobotTable').DataTable({
-            serverSide: true,
-            processing: true,
-            ajax: {
-                url: "{{ route('bobot-penilaian.index') }}",
-                data: function(d) {
+            serverSide: true
+            , processing: true
+            , ajax: {
+                url: "{{ route('bobot-penilaian.index') }}"
+                , data: function(d) {
                     d.id_elemen = $('#filterElemen').val();
                     d.id_category = $('[name="id_category"]').val();
                 }
-            },
-            columns: [
-                { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
-                { data: 'elemen_standar', name: 'elemen_standar' },
-                { data: 'category', name: 'category' },
-                { data: 'asesmen', name: 'asesmen' },
-                { data: 'bobot', name: 'bobot' },
-                { data: 'action', name: 'action', orderable: false, searchable: false }
-            ],
-            language: {
+            }
+            , columns: [{
+                    data: 'DT_RowIndex'
+                    , name: 'DT_RowIndex'
+                    , orderable: false
+                    , searchable: false
+                }
+                , {
+                    data: 'elemen_standar'
+                    , name: 'elemen_standar'
+                }
+                , {
+                    data: 'category'
+                    , name: 'category'
+                }
+                , {
+                    data: 'asesmen'
+                    , name: 'asesmen'
+                }
+                , {
+                    data: 'bobot'
+                    , name: 'bobot'
+                }
+                , {
+                    data: 'action'
+                    , name: 'action'
+                    , orderable: false
+                    , searchable: false
+                }
+            ]
+            , language: {
                 url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json'
-            },
-            pageLength: 25,
-            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Semua"]]
+            }
+            , pageLength: 25
+            , lengthMenu: [
+                [10, 25, 50, 100, -1]
+                , [10, 25, 50, 100, "Semua"]
+            ]
         });
 
         // Reload table on filter submit
@@ -226,16 +235,16 @@
     function deleteRecord(id) {
         if (confirm('Yakin ingin menghapus bobot ini?')) {
             $.ajax({
-                url: '/bobot-penilaian/' + id,
-                type: 'DELETE',
-                data: {
+                url: '/bobot-penilaian/' + id
+                , type: 'DELETE'
+                , data: {
                     _token: '{{ csrf_token() }}'
-                },
-                success: function(response) {
+                }
+                , success: function(response) {
                     $('#bobotTable').DataTable().ajax.reload();
                     alert('Data berhasil dihapus');
-                },
-                error: function(xhr) {
+                }
+                , error: function(xhr) {
                     alert('Gagal menghapus data');
                 }
             });
@@ -267,10 +276,10 @@
     // Hitung nilai berbobot
     $('#formHitung').on('submit', function(e) {
         e.preventDefault();
-        
+
         const asesmenId = $('[name="asesmen_id"]').val();
         const categoryId = $('[name="category_id"]').val();
-        
+
         if (!asesmenId || !categoryId) {
             alert('Pilih asesmen dan kategori terlebih dahulu');
             return;
@@ -281,19 +290,19 @@
         $('#hasilHitung').show();
 
         $.ajax({
-            url: `/bobot-penilaian/hitung/${asesmenId}/${categoryId}`,
-            method: 'GET',
-            dataType: 'json',
-            timeout: 10000, // 10 second timeout
+            url: `/bobot-penilaian/hitung/${asesmenId}/${categoryId}`
+            , method: 'GET'
+            , dataType: 'json'
+            , timeout: 10000, // 10 second timeout
             success: function(response) {
                 // Check if redirected to login
                 if (typeof response === 'string' && response.includes('login')) {
                     $('#hasilContent').html('<div class="alert alert-warning">Session expired. Silakan refresh halaman dan login kembali.</div>');
                     return;
                 }
-                
+
                 let html = '<div class="row">';
-                
+
                 // Per Kriteria
                 response.per_kriteria.forEach((kriteria, index) => {
                     html += `
@@ -314,7 +323,7 @@
                                         </thead>
                                         <tbody>
                     `;
-                    
+
                     kriteria.elemen.forEach(elemen => {
                         html += `
                             <tr>
@@ -325,7 +334,7 @@
                             </tr>
                         `;
                     });
-                    
+
                     html += `
                                         </tbody>
                                         <tfoot>
@@ -340,7 +349,7 @@
                         </div>
                     `;
                 });
-                
+
                 // Total Keseluruhan
                 html += `
                     </div>
@@ -363,11 +372,11 @@
                         </div>
                     </div>
                 `;
-                
+
                 $('#hasilContent').html(html);
                 $('#hasilHitung').slideDown();
-            },
-            error: function(xhr) {
+            }
+            , error: function(xhr) {
                 console.error('Error:', xhr);
                 let errorMsg = 'Terjadi kesalahan';
                 if (xhr.responseJSON && xhr.responseJSON.message) {
@@ -380,5 +389,6 @@
             }
         });
     });
+
 </script>
 @endpush

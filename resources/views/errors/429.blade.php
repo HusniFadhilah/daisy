@@ -6,7 +6,7 @@
 @section('illustration', 'https://demos.creative-tim.com/soft-ui-dashboard-pro/assets/img/illustrations/error-404.png')
 
 @section('message')
-Anda telah mengirimkan terlalu banyak permintaan dalam waktu singkat. Untuk keamanan, akses Anda dibatasi sementara. Silakan tunggu beberapa saat sebelum mencoba lagi.
+{{ 'Anda telah mengirimkan terlalu banyak permintaan dalam waktu singkat. Untuk keamanan, akses Anda dibatasi sementara. Silakan tunggu beberapa saat sebelum mencoba lagi.' }}
 @endsection
 
 @section('actions')

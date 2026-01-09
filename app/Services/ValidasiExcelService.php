@@ -2,13 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\User;
 use App\Models\Asesmen;
 use App\Models\Kriteria;
-use App\Models\ElemenStandar;
-use App\Models\PenilaianElemen;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Style\Font;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Border;
@@ -85,7 +81,7 @@ class ValidasiExcelService
         $row = 6;
         $kriterias = Kriteria::with([
             'elemenStandar.indikator',
-            'elemenStandar.penilaian' => function ($query) use ($idAsesmen, $asesor1Id, $asesor2Id) {
+            'elemenStandar.penilaianElemenAK' => function ($query) use ($idAsesmen, $asesor1Id, $asesor2Id) {
                 $query->where('id_asesmen', $idAsesmen)
                     ->whereIn('id_asesor', [$asesor1Id, $asesor2Id]);
             }
@@ -94,8 +90,8 @@ class ValidasiExcelService
         foreach ($kriterias as $kriteria) {
             foreach ($kriteria->elemenStandar as $elemen) {
                 // Get penilaian
-                $penilaian1 = $elemen->penilaian->where('id_asesor', $asesor1Id)->first();
-                $penilaian2 = $elemen->penilaian->where('id_asesor', $asesor2Id)->first();
+                $penilaian1 = $elemen->penilaianElemenAK->where('id_asesor', $asesor1Id)->first();
+                $penilaian2 = $elemen->penilaianElemenAK->where('id_asesor', $asesor2Id)->first();
 
                 // Indikator
                 $indikatorText = $elemen->indikator->map(function ($ind) {

@@ -24,39 +24,17 @@
 @endpush
 
 @section('content')
-<div class="container-fluid py-4">
+<div class="container-fluid py-3">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2><i class="bi bi-clipboard-data"></i> Kelola Asesmen</h2>
-            <p class="text-muted mb-0">Manage asesmen akreditasi dan assign asesor</p>
+            <p class="text-muted mb-0">Atur asesmen akreditasi dan assign asesor</p>
         </div>
-        <div class="btn-group">
-            <a href="{{ route('asesmen.dashboard') }}" class="btn btn-outline-primary">
-                <i class="bi bi-grid-3x3"></i> Dashboard
-            </a>
-            <a href="{{ route('asesmen.create') }}" class="btn btn-primary">
-                <i class="bi bi-plus-lg"></i> Buat Asesmen Baru
-            </a>
-        </div>
+        <a href="{{ route('asesmen.create') }}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> Buat Asesmen Baru
+        </a>
     </div>
-
-    <!-- Alerts -->
-    @if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="bi bi-check-circle me-2"></i>
-        {{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    @endif
-
-    @if(session('error'))
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <i class="bi bi-exclamation-triangle me-2"></i>
-        {{ session('error') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    @endif
 
     <!-- Filters & Search -->
     <div class="card mb-4">
@@ -88,7 +66,7 @@
                 </div>
                 <div class="col-md-1">
                     <label class="form-label">&nbsp;</label>
-                    <button type="button" class="btn btn-outline-secondary d-block w-100" data-bs-toggle="tooltip" title="Export Excel">
+                    <button type="button" class="btn btn-outline-secondary d-block w-100" data-bs-toggle="tooltip" title="Download Data Excel">
                         <i class="bi bi-file-earmark-excel"></i>
                     </button>
                 </div>
@@ -110,7 +88,7 @@
                             <th>Nama Asesmen</th>
                             <th>Perguruan Tinggi</th>
                             <th style="width: 100px;">Kode Panel</th>
-                            <th style="width: 120px;">Jumlah Asesor</th>
+                            <th style="width: 120px;">Jumlah Peran</th>
                             <th style="width: 150px;">Tanggal</th>
                             <th style="width: 200px;">Aksi</th>
                         </tr>
@@ -126,9 +104,10 @@
                                 @endif
                             </td>
                             <td>
-                                {{ $asesmen->perguruan_tinggi ?? '-' }}
-                                @if($asesmen->bentuk_pt)
-                                <br><small class="text-muted">{{ $asesmen->bentuk_pt }}</small>
+                                @if($asesmen->studyProgram)
+                                {{ $asesmen->studyProgram->university->name ?? '-' }}
+                                @else
+                                <span class="text-muted">-</span>
                                 @endif
                             </td>
                             <td>
@@ -147,7 +126,7 @@
                             </td>
                             <td>
                                 <small class="text-muted">
-                                    <i class="bi bi-calendar"></i> {{ $asesmen->created_at->format('d M Y') }}
+                                    <i class="bi bi-calendar"></i> {{ \App\Libraries\Date::tglIndo($asesmen->created_at) }}
                                 </small>
                             </td>
                             <td>
@@ -202,7 +181,7 @@
     function confirmDelete(id, name) {
         if (confirm(`Apakah Anda yakin ingin menghapus asesmen "${name}"?\n\nPerhatian: Asesmen yang sudah ada penilaian tidak bisa dihapus.`)) {
             const form = document.getElementById('deleteForm');
-            form.action = `/admin/asesmen/${id}`;
+            form.action = `/asesmen/${id}`;
             form.submit();
         }
     }

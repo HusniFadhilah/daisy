@@ -8,8 +8,6 @@ class Kriteria extends Model
 {
     protected $table = 'kriteria';
 
-    protected $primaryKey = 'id_kriteria';
-
     protected $fillable = [
         'kode_kriteria',
         'nama_kriteria',
@@ -18,11 +16,18 @@ class Kriteria extends Model
 
     public function elemenStandar()
     {
-        return $this->hasMany(ElemenStandar::class, 'id_kriteria', 'id_kriteria');
+        return $this->hasMany(ElemenStandar::class, 'id_kriteria');
     }
 
     public function indikator()
     {
-        return $this->hasMany(Indikator::class, 'id_indikator', 'id_indikator');
+        return $this->hasManyThrough(
+            Indikator::class,
+            ElemenStandar::class,
+            'id_kriteria', // FK di elemen_standar
+            'id_elemen',   // FK di indikator
+            'id',          // PK kriteria
+            'id'           // PK elemen_standar
+        );
     }
 }

@@ -3,12 +3,17 @@
 namespace App\Services;
 
 use App\Models\BobotPenilaian;
-use App\Models\PenilaianElemen;
 use App\Models\ElemenStandar;
 use Illuminate\Support\Facades\DB;
 
 class BobotPenilaianService
 {
+    protected $modelPenilaianElemen;
+
+    public function __construct($modelPenilaianElemen)
+    {
+        $this->modelPenilaianElemen = $modelPenilaianElemen;
+    }
     /**
      * Ambil bobot untuk elemen dan kategori tertentu
      */
@@ -32,7 +37,8 @@ class BobotPenilaianService
      */
     public function calculateByKriteria($asesmenId, $categoryId)
     {
-        $penilaians = PenilaianElemen::where('id_asesmen', $asesmenId)
+        $modelPenilaianElemen = $this->modelPenilaianElemen;
+        $penilaians = $modelPenilaianElemen::where('id_asesmen', $asesmenId)
             ->with(['elemenStandar.kriteria'])
             ->get();
 
@@ -40,13 +46,13 @@ class BobotPenilaianService
 
         foreach ($penilaians as $penilaian) {
             $bobot = $this->getBobotForCategory($penilaian->id_elemen, $categoryId);
-            
+
             if (!$bobot) {
                 continue;
             }
 
             $nilaiBobot = $this->calculateWeightedScore($penilaian->skor, $bobot->bobot);
-            
+
             $kriteriaId = $penilaian->elemenStandar->kriteria->id_kriteria ?? null;
             $kriteriaNama = $penilaian->elemenStandar->kriteria->nama_kriteria ?? 'Unknown';
 
@@ -83,7 +89,7 @@ class BobotPenilaianService
     public function calculateTotalScore($asesmenId, $categoryId)
     {
         $byKriteria = $this->calculateByKriteria($asesmenId, $categoryId);
-        
+
         $totalNilai = 0;
         $totalBobot = 0;
 

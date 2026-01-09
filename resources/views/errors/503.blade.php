@@ -6,7 +6,7 @@
 @section('illustration', 'https://demos.creative-tim.com/soft-ui-dashboard-pro/assets/img/illustrations/error-404.png')
 
 @section('message')
-Maaf, layanan DAISY sedang dalam pemeliharaan atau mengalami gangguan sementara. Kami sedang bekerja untuk mengembalikan layanan secepat mungkin.
+{{ $exception ? $exception->getMessage() : 'Maaf, layanan DAISY sedang dalam pemeliharaan atau mengalami gangguan sementara. Kami sedang bekerja untuk mengembalikan layanan secepat mungkin.' }}
 @endsection
 
 @section('actions')

@@ -12,7 +12,7 @@
 <!-- Modal for Month Details -->
 @if($month['count'] > 0)
 <div class="modal fade" id="monthModal{{ $month['month_num'] }}{{ $month['year'] }}" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header bg-warning">
                 <h5 class="modal-title">
@@ -28,7 +28,7 @@
                             <div>
                                 <h6 class="fw-bold mb-1">{{ $prog->name }}</h6>
                                 <p class="mb-1 text-muted">
-                                    {{ $prog->university->name }} - {{ $prog->degreeLevel->code }}
+                                    {{ $prog->university->name }} - {{ $prog->degreeLevel->alias }}
                                 </p>
                                 <small class="text-danger">
                                     <i class="bi bi-calendar-x"></i>

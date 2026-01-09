@@ -6,7 +6,7 @@
 @section('illustration', 'https://demos.creative-tim.com/soft-ui-dashboard-pro/assets/img/illustrations/error-404.png')
 
 @section('message')
-Maaf, Anda tidak memiliki izin untuk mengakses halaman ini. Silakan hubungi administrator jika Anda merasa ini adalah kesalahan.
+{!! $exception ? $exception->getMessage() : 'Maaf, Anda tidak memiliki izin untuk mengakses halaman ini. Silakan hubungi DE LAMDEPILAR jika Anda merasa ini adalah kesalahan.' !!}
 @endsection
 
 @section('actions')
@@ -28,7 +28,7 @@ Maaf, Anda tidak memiliki izin untuk mengakses halaman ini. Silakan hubungi admi
 @endsection
 
 @section('meta')
-Jika Anda memerlukan akses, hubungi administrator di
+Jika Anda memerlukan akses, hubungi DE LAMDEPILAR di
 @endsection
 
 @push('styles')

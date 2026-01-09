@@ -10,10 +10,16 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "barryvdh/laravel-dompdf": "^3.1",
+        "fahlisaputra/laravel-minify": "^1.2",
         "intervention/image": "^3.11",
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
         "maatwebsite/excel": "^3.1",
+        "mews/captcha": "^3.4",
+        "phpoffice/phpword": "^1.4",
+        "setasign/fpdf": "^1.8",
+        "setasign/fpdi": "^2.6",
         "yajra/laravel-datatables": "^12.0"
     },
     "require-dev": {
@@ -32,7 +38,9 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
-        }
+        },"files": [
+            "app/Helpers/RouteHelper.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

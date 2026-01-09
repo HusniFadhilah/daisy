@@ -2,17 +2,15 @@
 
 namespace App\Http\Controllers\Asesmen;
 
-use App\Models\User;
 use App\Models\Asesmen;
-use App\Models\Kriteria;
+use App\Helpers\RouteHelper;
 use Illuminate\Http\Request;
-use App\Models\ElemenStandar;
 use App\Models\AsesmenUserRole;
-use App\Models\PenilaianElemen;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use App\Jobs\SendPenawaranResponseEmail;
 
 class PenawaranController extends Controller
 {
@@ -43,33 +41,71 @@ class PenawaranController extends Controller
             ->orderBy('responded_at', 'desc')
             ->get();
 
-        return view('asesmen.ak.penawaran.index', compact('penawarans', 'riwayat'));
+        return view('asesmen.penawaran.index', compact('penawarans', 'riwayat'));
     }
 
-    public function cekPenawaran($id)
+    /**
+     * Show penawaran detail (generic untuk AK & AL)
+     */
+    public function show($token)
+    {
+        $user = Auth::user();
+        // Get assignment
+        $assignmentId = RouteHelper::decryptId($token);
+
+        // Get assignment
+        $assignment = AsesmenUserRole::where('id', $assignmentId)
+            ->where('id_user', $user->id)
+            ->with(['role', 'asesmen.studyProgram'])
+            ->firstOrFail();
+
+        $asesmen = $assignment->asesmen;
+
+        // ✅ If already accepted, redirect ke berkas
+        if ($assignment->status_penawaran === 'accepted') {
+            $route = $assignment->jenis_asesmen === 'ak'
+                ? 'ak.berkas.show'
+                : 'al.berkas.show';
+
+            return redirect()->route($route, $asesmen->id)
+                ->with('info', 'Penawaran sudah diterima. Silakan lanjutkan penilaian.');
+        }
+
+        // ✅ If rejected, show with info
+        if ($assignment->status_penawaran === 'rejected') {
+            return view('asesmen.penawaran.detail', compact('asesmen', 'assignment'))
+                ->with('info', 'Penawaran ini sudah ditolak sebelumnya.');
+        }
+
+        // ✅ Pending: show detail for response
+        return view('asesmen.penawaran.detail', compact('asesmen', 'assignment'));
+    }
+
+    public function cekPenawaran($idAsesmen, $jenisAsesmen)
     {
         $user = Auth::user();
 
-        $asesmen = Asesmen::findOrFail($id);
+        $asesmen = Asesmen::findOrFail($idAsesmen);
 
-        $penawaran = AsesmenUserRole::where('id_asesmen', $id)
+        $penawaran = AsesmenUserRole::where('id_asesmen', $idAsesmen)
+            ->where('jenis_asesmen', $jenisAsesmen)
             ->where('id_user', $user->id)
             ->with('role', 'asesmen')
             ->firstOrFail();
 
         // Kalau sudah accepted, langsung redirect ke berkas (biar tidak bolak-balik ke sini)
         if ($penawaran->status_penawaran === 'accepted') {
-            return redirect()->route('ak.berkas.show', $id);
+            return redirect()->route($jenisAsesmen . '.berkas.show', $idAsesmen);
         }
 
         // status: pending / rejected → tampilkan halaman "detail penawaran"
-        return view('asesmen.ak.penawaran.detail', compact('asesmen', 'penawaran'));
+        return view('asesmen.' . $jenisAsesmen . '.penawaran.detail', compact('asesmen', 'penawaran'));
     }
 
     /**
      * Terima penawaran asesmen
      */
-    public function acceptPenawaran(Request $request, $assignmentId)
+    public function acceptPenawaran(Request $request, $token)
     {
         $request->validate([
             'response_note' => 'nullable|string|max:1000',
@@ -77,7 +113,7 @@ class PenawaranController extends Controller
 
         try {
             $user = Auth::user();
-
+            $assignmentId = RouteHelper::decryptId($token);
             $assignment = AsesmenUserRole::where('id', $assignmentId)
                 ->where('id_user', $user->id)
                 ->where('status_penawaran', 'pending')
@@ -89,6 +125,15 @@ class PenawaranController extends Controller
                 'response_note' => $request->response_note,
                 'status_pekerjaan' => 'not_started',
             ]);
+
+            try {
+                SendPenawaranResponseEmail::dispatch($assignment, 'accepted');
+            } catch (\Exception $e) {
+                Log::error("Gagal dispatch email job accepted", [
+                    'assignment_id' => $assignment->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
 
             return response()->json([
                 'success' => true,
@@ -106,7 +151,7 @@ class PenawaranController extends Controller
     /**
      * Tolak penawaran asesmen
      */
-    public function rejectPenawaran(Request $request, $assignmentId)
+    public function rejectPenawaran(Request $request, $token)
     {
         $request->validate([
             'response_note' => 'required|string|max:1000',
@@ -114,7 +159,7 @@ class PenawaranController extends Controller
 
         try {
             $user = Auth::user();
-
+            $assignmentId = RouteHelper::decryptId($token);
             $assignment = AsesmenUserRole::where('id', $assignmentId)
                 ->where('id_user', $user->id)
                 ->where('status_penawaran', 'pending')
@@ -125,6 +170,15 @@ class PenawaranController extends Controller
                 'responded_at' => now(),
                 'response_note' => $request->response_note,
             ]);
+
+            try {
+                SendPenawaranResponseEmail::dispatch($assignment, 'rejected');
+            } catch (\Exception $e) {
+                Log::error("Gagal dispatch email job rejected", [
+                    'assignment_id' => $assignment->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
 
             return response()->json([
                 'success' => true,

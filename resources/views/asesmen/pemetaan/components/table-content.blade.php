@@ -11,7 +11,6 @@
             @foreach($urgentPrograms as $program)
             @php
             $daysLeft = floor(now()->diffInDays($program->tanggal_kedaluwarsa, false));
-            $monthsLeft = round($daysLeft / 30, 1);
             @endphp
             <div class="col-md-6 mb-3">
                 <div class="card timeline-card">
@@ -32,8 +31,8 @@
                         <div class="alert alert-warning alert-permanent mb-2 py-2">
                             <small>
                                 <i class="bi bi-clock"></i>
-                                <strong>Kedaluwarsa:</strong> {{ $program->tanggal_kedaluwarsa->format('d M Y') }}
-                                ({{ $monthsLeft }} bulan lagi)
+                                <strong>Kedaluwarsa:</strong> {{ \App\Libraries\Date::tglIndo($program->tanggal_kedaluwarsa) }}
+                                ({{ $daysLeft }} hari lagi)
                             </small>
                         </div>
                         <a href="{{ route('pemetaan.show', $program->id) }}" class="btn btn-sm btn-outline-primary w-100">
@@ -88,7 +87,7 @@
                             <small class="text-muted">{{ $program->university->name }}</small>
                         </td>
                         <td>
-                            <span class="badge bg-secondary">{{ $program->degreeLevel->code }}</span>
+                            <span class="badge bg-secondary">{{ $program->degreeLevel->alias }}</span>
                         </td>
                         <td>
                             @if($program->peringkat_akreditasi)
@@ -100,13 +99,12 @@
                             @endif
                         </td>
                         <td>
-                            <span class="status-badge status-{{ $program->status_kedaluwarsa == 'Aktif' ? 'aktif' : ($program->status_kedaluwarsa == 'Kedaluwarsa' ? 'kedaluwarsa' : 'belum') }} {{ $daysLeft && $daysLeft <= 90 ? 'status-urgent' : '' }}">
-                                {{ $program->status_kedaluwarsa }}
+                            <span class="status-badge status-{{ is_null($daysLeft) ? 'belum' : ($daysLeft < 0 ? 'kedaluwarsa' : 'aktif') }} {{ !is_null($daysLeft) && $daysLeft <= 90 && $daysLeft >= 0 ? 'status-urgent' : '' }}">{{ is_null($daysLeft) ? 'Belum Ditentukan' : ($daysLeft < 0 ? 'Kedaluwarsa' : 'Aktif') }}
                             </span>
                         </td>
                         <td>
                             @if($program->tanggal_kedaluwarsa)
-                            <small>{{ $program->tanggal_kedaluwarsa->format('d M Y') }}</small>
+                            <small>{{ \App\Libraries\Date::tglIndo($program->tanggal_kedaluwarsa) }}</small>
                             @else
                             <small class="text-muted">-</small>
                             @endif
@@ -117,7 +115,7 @@
                                 <div class="progress-bar progress-bar-custom bg-{{ $progressPercent > 50 ? 'success' : ($progressPercent > 20 ? 'warning' : 'danger') }}" style="width: {{ $progressPercent }}%">
                                 </div>
                             </div>
-                            <small class="text-muted">{{ round($daysLeft / 30) }} bulan</small>
+                            <small class="text-muted">{{ $daysLeft }} hari</small>
                             @elseif($daysLeft !== null && $daysLeft <= 0) <small class="text-danger fw-bold">Expired</small>
                                 @else
                                 <small class="text-muted">-</small>

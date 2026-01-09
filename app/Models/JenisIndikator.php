@@ -8,8 +8,6 @@ class JenisIndikator extends Model
 {
     protected $table = 'jenis_indikator';
 
-    protected $primaryKey = 'id_jenis';
-
     protected $fillable = [
         'nama_jenis',
         'keterangan',
@@ -17,6 +15,6 @@ class JenisIndikator extends Model
 
     public function indikator()
     {
-        return $this->hasMany(Indikator::class, 'id_jenis', 'id_jenis');
+        return $this->hasMany(Indikator::class, 'id_jenis');
     }
 }
