@@ -1,0 +1,155 @@
+@startuml Flowchart_Akreditasi_DAISY
+
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam ActivityBackgroundColor #E3F2FD
+skinparam ActivityBorderColor #1976D2
+skinparam ActivityDiamondBackgroundColor #FFF9C4
+skinparam ActivityDiamondBorderColor #F9A825
+
+title **DAISY - Flowchart Proses Akreditasi**\n
+
+|#E3F2FD| **TAHAP 1: KESIAPAN PROGRAM** |
+
+start
+
+:**1. DE Kirim Pengingat**
+DE mengingatkan Prodi
+tentang masa akreditasi;
+note right: Status: pengingat_dikirim
+
+:**2. Prodi Kirim Surat Permohonan**
+Prodi menulis surat permohonan
+akreditasi kepada DE;
+note right: Status: surat_permohonan_diterima
+
+:**3. DE Kirim Form Borang**
+DE menyampaikan form borang
+yang harus dilengkapi;
+note right: Status: borang_dikirim
+
+:**4. Prodi Upload Draft Borang**
+Prodi mengisi dan menyampaikan
+draft borang;
+note right: Status: draft_borang_diterima
+
+repeat
+  :**5. DE Review Kesiapan Borang**;
+  
+  if (Borang Siap?) then (Ya)
+    :**5a. DE Nyatakan SIAP**
+    + Kirim form pembayaran;
+    note right: Status: review_kesiapan_siap
+  else (Tidak)
+    :**5b. DE Nyatakan BELUM SIAP**
+    + Daftar perbaikan;
+    note right: Status: review_kesiapan_belum_siap
+    
+    :**Prodi Revisi Borang**;
+  endif
+repeat while (Borang Belum Siap?) is (Ya) not (Tidak)
+
+:**6. DE Kirim Hasil Review Final**
++ Instruksi pembayaran
++ Instruksi upload borang final;
+note right
+  **PENTING:**
+  Setelah upload borang final,
+  data tidak dapat direvisi
+end note
+
+:**7. Prodi Upload Bukti Bayar**;
+note right: Status: pembayaran_diterima
+
+:**DE Verifikasi Pembayaran**;
+
+:**Prodi Upload Borang Final**;
+note right: Status: borang_final_diterima
+
+:**8. DE Approve Lanjut ke AK**
+Borang diterima, lanjut ke
+tahap Asesmen Dokumen;
+note right: Status: pengajuan_completed
+
+|#E8F5E9| **TAHAP 2: ASESMEN KECUKUPAN (AK)** |
+
+:**1. DE Tawarkan Penilaian ke Asesor**
+Minimal 2 Asesor;
+note right: status_penawaran: pending
+
+repeat
+  if (Asesor Terima?) then (Ya)
+    :**2. Asesor Terima Penugasan**;
+    note right: status_penawaran: accepted
+  else (Tidak)
+    :**2. Asesor Tolak Penugasan**;
+    note right: status_penawaran: rejected
+    :**DE Cari Asesor Pengganti**;
+  endif
+repeat while (Cari Asesor Lain?) is (Ya) not (Tidak)
+
+:**3. DE Kirim Kertas Kerja**
++ Link sistem
++ Panduan penilaian;
+
+:**4. Asesor Melakukan Penilaian**
+Kertas kerja Excel atau Sistem;
+note right: status_pekerjaan: in_progress
+
+:**5. Asesor Submit Penilaian**
+Upload Excel / Submit di sistem;
+note right: status_pekerjaan: submitted
+
+:**6. DE Tawarkan Validasi ke Validator**
+Minimal 1 Validator;
+note right: status_penawaran: pending
+
+repeat
+  if (Validator Terima?) then (Ya)
+    :**7. Validator Terima Penugasan**;
+    note right: status_penawaran: accepted
+  else (Tidak)
+    :**7. Validator Tolak Penugasan**;
+    note right: status_penawaran: rejected
+    :**DE Cari Validator Pengganti**;
+  endif
+repeat while (Cari Validator Lain?) is (Ya) not (Tidak)
+
+:**8. DE Kirim Kertas Kerja Validator**;
+
+:**9. Validator Validasi Konsistensi**
+Cek konsistensi penilaian asesor;
+
+repeat
+  if (Semua Valid & Konsisten?) then (Ya)
+    :**10. Validator Approve**
+    Poin-poin penilaian SESUAI;
+    note right: status_pekerjaan: approved
+  else (Tidak)
+    :**10. Validator Request Revisi**
+    Poin-poin BELUM SESUAI;
+    note right: status_pekerjaan: revision_required
+    
+    :**Asesor Revisi Penilaian**;
+  endif
+repeat while (Perlu Revisi?) is (Ya) not (Tidak)
+
+:**11. Validator Lapor ke DE**
+AK telah divalidasi dan
+dinyatakan LOLOS untuk AL;
+
+:**DE Konfirmasi AK Selesai**;
+note right: AsesmenKecukupan status: completed
+
+|#FFF3E0| **TAHAP 3: ASESMEN LAPANGAN (AL)** |
+
+:**Lanjut ke Tahap AL**
+- Penjadwalan visitasi
+- Pelaksanaan visitasi lapangan
+- Penilaian AL oleh asesor
+- Validasi hasil AL
+- Keputusan akreditasi final;
+
+stop
+
+@enduml

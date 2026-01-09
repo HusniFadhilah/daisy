@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\{AsesmenController, AuthController, DashboardController, PenawaranController, PenugasanController, AKController, ALController, BandingController, PedomanController, DokumenController, PanduanController, BantuanController, ProfileController, SettingsController, ActivityController, TaskController, PasswordResetController, LaporanController, UniversityController, DegreeLevelController, StudyProgramController, KriteriaController, ElemenStandarController, JenisIndikatorController, IndikatorController, IndikatorPenilaianElemenController, BobotPenilaianController};
+use App\Http\Controllers\Prodi\PemetaanAkreditasiController;
 
 
 // Dashboard (awal)
@@ -30,10 +31,29 @@ Route::get('/reset-password/{token}', [PasswordResetController::class, 'showRese
 Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])
     ->name('password.update');
 
+// ===== TESTING ROUTES (NO AUTH) =====
+// Route khusus untuk testing di Postman tanpa authentication
+Route::prefix('api/test')->name('api.test.')->group(function () {
+    Route::get('/pemetaan/stats', [PemetaanAkreditasiController::class, 'getStatsForTesting'])->name('pemetaan.stats');
+    Route::get('/pemetaan/timeline/{periode?}', [PemetaanAkreditasiController::class, 'getTimelineForTesting'])->name('pemetaan.timeline');
+    Route::get('/pemetaan/calendar', [PemetaanAkreditasiController::class, 'getCalendarForTesting'])->name('pemetaan.calendar');
+    Route::get('/pemetaan/programs', [PemetaanAkreditasiController::class, 'getProgramsForTesting'])->name('pemetaan.programs');
+});
+
 Route::middleware(['auth', 'verified'])->group(function () {
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // PEMETAAN AKREDITASI
+    Route::prefix('pemetaan')->name('pemetaan.')->group(function () {
+        Route::get('/', [PemetaanAkreditasiController::class, 'index'])->name('index');
+        Route::get('/timeline/ajax', [PemetaanAkreditasiController::class, 'getTimelineAjax'])->name('timeline.ajax');
+        Route::get('/calendar/ajax', [PemetaanAkreditasiController::class, 'getCalendarAjax'])->name('calendar.ajax');
+        Route::get('/table/ajax', [PemetaanAkreditasiController::class, 'getTableAjax'])->name('table.ajax');
+        Route::get('/export', [PemetaanAkreditasiController::class, 'export'])->name('export');
+        Route::get('/{id}', [PemetaanAkreditasiController::class, 'show'])->name('show');
+    });
 
     // USER MANAGEMENT (Admin Only)
     Route::middleware('admin')->group(function () {

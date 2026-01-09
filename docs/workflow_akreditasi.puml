@@ -1,0 +1,199 @@
+@startuml Workflow_Akreditasi_DAISY
+
+!theme plain
+title **DAISY - Workflow Proses Akreditasi Program Studi**\n
+
+|#LightBlue| Desk Evaluator (DE) |
+|#LightGreen| Prodi/UPPS/PT |
+|#LightYellow| Asesor |
+|#LightCoral| Validator |
+
+== TAHAP 1: KESIAPAN PROGRAM ==
+
+|Desk Evaluator (DE)|
+start
+:1. Mengirim pengingat\nmasa akreditasi ke Prodi;
+note right
+  Status: **pengingat_dikirim**
+  Email: PengingatAkreditasi
+end note
+
+|Prodi/UPPS/PT|
+:2. Menulis surat permohonan\nakreditasi kepada DE;
+note left
+  Status: **surat_permohonan_diterima**
+end note
+
+|Desk Evaluator (DE)|
+:3. Menyampaikan form borang\nyang harus dilengkapi;
+note right
+  Status: **borang_dikirim**
+end note
+
+|Prodi/UPPS/PT|
+:4. Mengisi dan menyampaikan\nborang (draft);
+note left
+  Status: **draft_borang_diterima**
+end note
+
+|Desk Evaluator (DE)|
+:5. Review kesiapan borang;
+
+if (Borang siap?) then (Ya)
+  :5a. Menyampaikan hasil kesiapan\nSIAP untuk tahap AK\n+ Form pembayaran;
+  note right
+    Status: **review_kesiapan_siap**
+    Email: ReviewKesiapanNotifikasi
+  end note
+else (Tidak)
+  :5b. Menyampaikan bahwa\nborang BELUM SIAP\n+ Daftar perbaikan;
+  note right
+    Status: **review_kesiapan_belum_siap**
+  end note
+  
+  |Prodi/UPPS/PT|
+  :Melengkapi/revisi borang;
+  
+  |Desk Evaluator (DE)|
+  :Review ulang;
+  note right: Kembali ke langkah 5
+end if
+
+:6. Menyampaikan hasil review final\n+ Instruksi pembayaran\n+ Instruksi upload borang final;
+note right
+  **PENTING:**
+  Setelah upload, data kuantitatif
+  & kualitatif tidak dapat direvisi
+end note
+
+|Prodi/UPPS/PT|
+:7. Upload bukti pembayaran\n+ Upload borang final;
+note left
+  Status: **pembayaran_diterima**
+  → **borang_final_diterima**
+end note
+
+|Desk Evaluator (DE)|
+:8. Verifikasi pembayaran\n+ Konfirmasi borang diterima\n+ Lanjut ke tahap AK;
+note right
+  Status: **pengajuan_completed**
+  Email: PembayaranVerified
+end note
+
+== TAHAP 2: ASESMEN KECUKUPAN (AK) / ASESMEN DOKUMEN ==
+
+|Desk Evaluator (DE)|
+:1. Menawarkan penilaian\nakreditasi kepada Asesor;
+note right
+  Minimal: 2 Asesor
+  status_penawaran: **pending**
+end note
+
+|Asesor|
+if (Terima penawaran?) then (Ya)
+  :2. Menerima penugasan;
+  note left
+    status_penawaran: **accepted**
+  end note
+else (Tidak)
+  :2. Menolak penugasan;
+  note left
+    status_penawaran: **rejected**
+  end note
+  
+  |Desk Evaluator (DE)|
+  :Cari asesor pengganti;
+  note right: Kembali ke langkah 1
+endif
+
+|Desk Evaluator (DE)|
+:3. Mengirimkan kertas kerja/\nlink sistem + panduan penilaian;
+
+|Asesor|
+:4. Melakukan penilaian\npada kertas kerja\n(Excel atau Sistem);
+note left
+  status_pekerjaan: **in_progress**
+end note
+
+:5. Upload file Excel\n(jika pakai kertas kerja Excel)\natau Submit di sistem;
+note left
+  status_pekerjaan: **submitted**
+end note
+
+|Desk Evaluator (DE)|
+:6. Menawarkan validasi\npenilaian kepada Validator;
+note right
+  Minimal: 1 Validator
+  status_penawaran: **pending**
+end note
+
+|Validator|
+if (Terima penawaran?) then (Ya)
+  :7. Menerima penugasan validasi;
+  note left
+    status_penawaran: **accepted**
+  end note
+else (Tidak)
+  :7. Menolak penugasan;
+  note left
+    status_penawaran: **rejected**
+  end note
+  
+  |Desk Evaluator (DE)|
+  :Cari validator pengganti;
+  note right: Kembali ke langkah 6
+endif
+
+|Desk Evaluator (DE)|
+:8. Memberikan kertas kerja\nvalidator + akses sistem;
+
+|Validator|
+:9. Melakukan validasi konsistensi\npenilaian asesor;
+note left
+  status_pekerjaan: **validated**
+end note
+
+:10. Memberitahukan hasil validasi;
+
+if (Semua penilaian valid?) then (Ya)
+  :Poin-poin penilaian\nSUDAH SESUAI;
+  note left
+    status_pekerjaan: **approved**
+  end note
+else (Tidak)
+  :Poin-poin yang BELUM SESUAI\nperlu revisi oleh asesor;
+  note left
+    status_pekerjaan: **revision_required**
+  end note
+  
+  |Asesor|
+  :Revisi penilaian;
+  
+  |Validator|
+  :Validasi ulang;
+  note left: Kembali ke langkah 9
+endif
+
+:11. Melaporkan kepada DE:\nAK telah divalidasi dan\nLOLOS untuk AL;
+
+|Desk Evaluator (DE)|
+:Konfirmasi AK selesai\nSiap lanjut ke AL;
+note right
+  AsesmenKecukupan
+  status: **completed**
+end note
+
+stop
+
+== TAHAP 3: ASESMEN LAPANGAN (AL) ==
+
+note
+  Tahap selanjutnya:
+  - Penjadwalan visitasi
+  - Pelaksanaan visitasi lapangan
+  - Penilaian AL oleh asesor
+  - Validasi hasil AL
+  - Keputusan akreditasi final
+end note
+
+@enduml

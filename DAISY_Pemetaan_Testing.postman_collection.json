@@ -1,0 +1,473 @@
+{
+	"info": {
+		"_postman_id": "daisy-pemetaan-testing",
+		"name": "DAISY - Pemetaan Akreditasi Testing",
+		"description": "Collection untuk testing API Pemetaan Akreditasi tanpa autentikasi.\n\n**Base URL:** http://127.0.0.1:8000\n\n**Endpoint:**\n- GET /api/test/pemetaan/stats - Statistik keseluruhan\n- GET /api/test/pemetaan/timeline/{periode} - Timeline data\n- GET /api/test/pemetaan/calendar - Calendar 12 bulan\n- GET /api/test/pemetaan/programs - List programs dengan filter",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Get Statistik Keseluruhan",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 500ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(500);",
+							"});",
+							"",
+							"pm.test(\"Success is true\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.success).to.eql(true);",
+							"});",
+							"",
+							"pm.test(\"Data contains total_program_studi\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data.total_program_studi).to.exist;",
+							"});",
+							"",
+							"pm.test(\"Status breakdown exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data.status.aktif).to.exist;",
+							"    pm.expect(jsonData.data.status.kedaluwarsa).to.exist;",
+							"    pm.expect(jsonData.data.status.belum_terakreditasi).to.exist;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/test/pemetaan/stats",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"test",
+						"pemetaan",
+						"stats"
+					]
+				},
+				"description": "Mendapatkan statistik keseluruhan program studi:\n- Total program studi\n- Status (Aktif, Kedaluwarsa, Belum Terakreditasi)\n- Segera kedaluwarsa (3, 6, 12 bulan)\n- Breakdown by peringkat\n- Persentase masing-masing status"
+			},
+			"response": []
+		},
+		{
+			"name": "2. Get Timeline - Per Bulan",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Periode is 1bulan\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data.selected_periode).to.eql(\"1bulan\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/test/pemetaan/timeline/1bulan",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"test",
+						"pemetaan",
+						"timeline",
+						"1bulan"
+					]
+				},
+				"description": "Timeline data dengan periode per bulan (60 periode = 5 tahun)"
+			},
+			"response": []
+		},
+		{
+			"name": "2. Get Timeline - Per 3 Bulan (Default)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Timeline exists\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data.timeline).to.be.an('array');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/test/pemetaan/timeline/3bulan",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"test",
+						"pemetaan",
+						"timeline",
+						"3bulan"
+					]
+				},
+				"description": "Timeline data dengan periode per 3 bulan / Triwulan (20 periode = 5 tahun)"
+			},
+			"response": []
+		},
+		{
+			"name": "2. Get Timeline - Per 6 Bulan",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/test/pemetaan/timeline/6bulan",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"test",
+						"pemetaan",
+						"timeline",
+						"6bulan"
+					]
+				},
+				"description": "Timeline data dengan periode per 6 bulan / Semester (10 periode = 5 tahun)"
+			},
+			"response": []
+		},
+		{
+			"name": "2. Get Timeline - Per 12 Bulan",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/test/pemetaan/timeline/12bulan",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"test",
+						"pemetaan",
+						"timeline",
+						"12bulan"
+					]
+				},
+				"description": "Timeline data dengan periode per tahun (5 periode = 5 tahun)"
+			},
+			"response": []
+		},
+		{
+			"name": "3. Get Calendar (12 Bulan)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Calendar has 12 months\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data.total_months).to.eql(12);",
+							"    pm.expect(jsonData.data.calendar).to.be.an('array').with.lengthOf(12);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/test/pemetaan/calendar",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"test",
+						"pemetaan",
+						"calendar"
+					]
+				},
+				"description": "Data kalender 12 bulan ke depan dengan detail program studi yang kedaluwarsa per bulan"
+			},
+			"response": []
+		},
+		{
+			"name": "4. Get Programs - All (Limit 10)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Programs is an array\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data.programs).to.be.an('array');",
+							"});",
+							"",
+							"pm.test(\"Limit is respected\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data.programs.length).to.be.at.most(10);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/test/pemetaan/programs?limit=10",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"test",
+						"pemetaan",
+						"programs"
+					],
+					"query": [
+						{
+							"key": "limit",
+							"value": "10"
+						}
+					]
+				},
+				"description": "Mendapatkan list program studi tanpa filter, limit 10 data"
+			},
+			"response": []
+		},
+		{
+			"name": "4. Get Programs - Status Aktif",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/test/pemetaan/programs?status=Aktif&limit=5",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"test",
+						"pemetaan",
+						"programs"
+					],
+					"query": [
+						{
+							"key": "status",
+							"value": "Aktif"
+						},
+						{
+							"key": "limit",
+							"value": "5"
+						}
+					]
+				},
+				"description": "Filter program studi dengan status Aktif, limit 5"
+			},
+			"response": []
+		},
+		{
+			"name": "4. Get Programs - Status Kedaluwarsa",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/test/pemetaan/programs?status=Kedaluwarsa&limit=20",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"test",
+						"pemetaan",
+						"programs"
+					],
+					"query": [
+						{
+							"key": "status",
+							"value": "Kedaluwarsa"
+						},
+						{
+							"key": "limit",
+							"value": "20"
+						}
+					]
+				},
+				"description": "Filter program studi dengan status Kedaluwarsa (perlu reakreditasi)"
+			},
+			"response": []
+		},
+		{
+			"name": "4. Get Programs - Peringkat A",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/test/pemetaan/programs?peringkat=A&limit=20",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"test",
+						"pemetaan",
+						"programs"
+					],
+					"query": [
+						{
+							"key": "peringkat",
+							"value": "A"
+						},
+						{
+							"key": "limit",
+							"value": "20"
+						}
+					]
+				},
+				"description": "Filter program studi dengan peringkat A"
+			},
+			"response": []
+		},
+		{
+			"name": "4. Get Programs - Search Informatika",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/test/pemetaan/programs?search=informatika&limit=15",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"test",
+						"pemetaan",
+						"programs"
+					],
+					"query": [
+						{
+							"key": "search",
+							"value": "informatika"
+						},
+						{
+							"key": "limit",
+							"value": "15"
+						}
+					]
+				},
+				"description": "Search program studi yang mengandung kata 'informatika'"
+			},
+			"response": []
+		},
+		{
+			"name": "4. Get Programs - Multiple Filters",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/test/pemetaan/programs?status=Aktif&peringkat=B&sort_by=name&sort_order=asc&limit=10",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"test",
+						"pemetaan",
+						"programs"
+					],
+					"query": [
+						{
+							"key": "status",
+							"value": "Aktif"
+						},
+						{
+							"key": "peringkat",
+							"value": "B"
+						},
+						{
+							"key": "sort_by",
+							"value": "name"
+						},
+						{
+							"key": "sort_order",
+							"value": "asc"
+						},
+						{
+							"key": "limit",
+							"value": "10"
+						}
+					]
+				},
+				"description": "Filter kombinasi: Status Aktif + Peringkat B, diurutkan berdasarkan nama ascending"
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://127.0.0.1:8000",
+			"type": "default"
+		}
+	]
+}

@@ -1,0 +1,92 @@
+@startuml State_Akreditasi_DAISY
+
+!theme plain
+title **DAISY - State Diagram Status Pengajuan & Asesmen**
+
+state "TAHAP 1: KESIAPAN PROGRAM" as Tahap1 {
+    [*] --> pengingat_dikirim : DE kirim pengingat
+    
+    pengingat_dikirim : Menunggu respon Prodi
+    pengingat_dikirim --> surat_permohonan_diterima : Prodi kirim surat
+    
+    surat_permohonan_diterima : Surat permohonan masuk
+    surat_permohonan_diterima --> borang_dikirim : DE kirim form borang
+    
+    borang_dikirim : Form borang dikirim ke Prodi
+    borang_dikirim --> draft_borang_diterima : Prodi upload draft
+    
+    draft_borang_diterima : Draft borang masuk
+    draft_borang_diterima --> review_kesiapan_siap : DE: Siap
+    draft_borang_diterima --> review_kesiapan_belum_siap : DE: Belum siap
+    
+    review_kesiapan_belum_siap : Perlu revisi borang
+    review_kesiapan_belum_siap --> draft_borang_diterima : Prodi revisi & upload ulang
+    
+    review_kesiapan_siap : Siap lanjut, tunggu bayar
+    review_kesiapan_siap --> pembayaran_diterima : Prodi upload bukti bayar
+    
+    pembayaran_diterima : Pembayaran diterima
+    pembayaran_diterima --> borang_final_diterima : Prodi upload borang final
+    
+    borang_final_diterima : Borang final (FREEZE)
+    borang_final_diterima --> pengajuan_completed : DE approve
+    
+    pengajuan_completed : Siap lanjut ke AK
+}
+
+state "TAHAP 2: ASESMEN KECUKUPAN (AK)" as Tahap2 {
+    
+    state "Penawaran Asesor" as PA {
+        [*] --> pending_asesor
+        pending_asesor : Menunggu respon
+        pending_asesor --> accepted_asesor : Asesor terima
+        pending_asesor --> rejected_asesor : Asesor tolak
+        rejected_asesor --> pending_asesor : DE assign asesor baru
+    }
+    
+    state "Pekerjaan Asesor" as PkA {
+        [*] --> not_started
+        not_started : Belum mulai
+        not_started --> in_progress : Mulai penilaian
+        in_progress : Sedang dikerjakan
+        in_progress --> submitted : Submit penilaian
+    }
+    
+    state "Penawaran Validator" as PV {
+        [*] --> pending_validator
+        pending_validator : Menunggu respon
+        pending_validator --> accepted_validator : Validator terima
+        pending_validator --> rejected_validator : Validator tolak
+        rejected_validator --> pending_validator : DE assign validator baru
+    }
+    
+    state "Validasi" as Val {
+        submitted --> validated : Validator review
+        validated : Dalam proses validasi
+        validated --> approved : Valid & konsisten
+        validated --> revision_required : Ada inkonsistensi
+        revision_required : Perlu revisi asesor
+        revision_required --> in_progress : Asesor revisi
+    }
+    
+    approved : AK Lolos untuk AL
+}
+
+state "TAHAP 3: ASESMEN LAPANGAN (AL)" as Tahap3 {
+    state "Penugasan AL" as PAL {
+        [*] --> pending_al
+        pending_al --> accepted_al : Asesor AL terima
+    }
+    
+    state "Pekerjaan AL" as PkAL {
+        [*] --> jadwal_visitasi
+        jadwal_visitasi --> visitasi_progress : Pelaksanaan
+        visitasi_progress --> al_submitted : Submit hasil AL
+        al_submitted --> al_approved : Validasi lolos
+    }
+}
+
+Tahap1 --> Tahap2 : pengajuan_completed
+Tahap2 --> Tahap3 : AK approved
+
+@enduml
