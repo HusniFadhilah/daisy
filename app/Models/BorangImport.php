@@ -19,6 +19,9 @@ class BorangImport extends Model
         'parsed_tables',
         'parsing_notes',
         'parsing_errors',
+        'kata_pengantar',
+        'ringkasan',
+        'suplemen',
         'imported_by',
         'imported_at',
         'completed_at',
@@ -26,6 +29,7 @@ class BorangImport extends Model
 
     protected $casts = [
         'parsing_errors' => 'array',
+        'suplemen' => 'array',
         'imported_at' => 'datetime',
         'completed_at' => 'datetime',
     ];

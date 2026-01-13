@@ -283,8 +283,7 @@
      * Open Comparison Modal
      */
     async function openComparisonModal(idAsesmen) {
-        const modal = new bootstrap.Modal(document.getElementById('modalComparisonAsesor'));
-        modal.show();
+        const modal = showModalById('modalComparisonAsesor');
 
         // Show loading
         document.getElementById('loadingComparison').style.display = 'block';

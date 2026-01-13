@@ -57,7 +57,7 @@ return new class extends Migration
             $table->timestamp('tanggal_surat_permohonan')->nullable();
             $table->timestamp('tanggal_borang_dikirim')->nullable();
             $table->timestamp('tanggal_draft_borang')->nullable();
-            $table->timestamp('tanggal_review_kesiapan')->nullable();
+            // $table->timestamp('tanggal_review_kesiapan')->nullable();
             $table->timestamp('tanggal_pembayaran')->nullable();
             $table->timestamp('tanggal_borang_final')->nullable();
             $table->timestamp('tanggal_lanjut_ak')->nullable();
@@ -101,6 +101,8 @@ return new class extends Migration
                 'laporan_ak',
                 'laporan_al',
                 'sertifikat',
+                'data_kualitatif',
+                'data_kuantitatif',
                 'lainnya'
             ])->index();
 

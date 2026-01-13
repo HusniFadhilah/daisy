@@ -5,10 +5,57 @@
                 <i class="bi bi-clipboard-check"></i> Kertas Kerja Validator - Perbandingan Penilaian
                 <span class="badge bg-primary ms-2 mt-md-2">{{ $asesors->count() }} Asesor</span>
             </h5>
-            <div class="btn-group btn-group-sm ms-md-auto">
-                <button type="button" class="btn btn-outline-secondary" id="btnHighlightDiff" title="Highlight Perbedaan">
-                    <i class="bi bi-search"></i> Highlight Perbedaan
-                </button>
+            <div class="btn-group btn-group-sm btn-sm ms-md-auto">
+                <div class="dropdown">
+                    <button class="btn btn-success dropdown-toggle" type="button" id="btnDownloadPenilaian" data-bs-toggle="dropdown" aria-expanded="false" title="Download Penilaian">
+                        <i class="bi bi-download"></i> Download Penilaian
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="btnDownloadPenilaian">
+                        <li>
+                            <a class="dropdown-item" href="{{ route('ak.validasi.export.comparison', ['asesmen'=>$asesmen->id, 'mode'=>'split']) }}">
+                                Split (pisah kolom Pemenuhan & Pelampauan)
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ route('ak.validasi.export.comparison', ['asesmen'=>$asesmen->id, 'mode'=>'merged']) }}">
+                                Merged (gabungkan kolom Pemenuhan & Pelampauan)
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                {{-- ✅ Settings dropdown (cog) --}}
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary" type="button" id="btnMatrixSettings" data-bs-toggle="dropdown" aria-expanded="false" title="Pengaturan">
+                        <i class="bi bi-gear"></i>
+                    </button>
+
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="btnMatrixSettings">
+                        <li>
+                            <button class="dropdown-item" type="button" id="optHighlightDiff">
+                                <i class="bi bi-search me-2"></i> Highlight Perbedaan
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item" type="button" id="optToggleIndikator">
+                                <i class="bi bi-list-ul me-2"></i> Sembunyikan Indikator
+                            </button>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li>
+                            <button class="dropdown-item" type="button" data-view="split" id="optSplit">
+                                <i class="bi bi-layout-three-columns me-2"></i> Split (Pemenuhan & Pelampauan)
+                            </button>
+                        </li>
+                        <li>
+                            <button class="dropdown-item" type="button" data-view="merged" id="optMerged">
+                                <i class="bi bi-layout-sidebar-inset-reverse me-2"></i> Merged (Penilaian AK)
+                            </button>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
@@ -62,18 +109,16 @@
                 <thead>
                     <tr>
                         {{-- Fixed Columns --}}
-                        <th class="vm-header sticky-col sticky-header bg-primary" style="left: 0; min-width: 40px; z-index: 35;">
-                            <div class="text-center fw-bold">Kriteria</div>
-                        </th>
-                        <th class="vm-header sticky-col sticky-header bg-primary" style="left: 40px; min-width: 50px; z-index: 35;">
-                            <div class="text-center fw-bold">Kode<br>Elemen</div>
-                        </th>
-                        <th class="vm-header sticky-col sticky-header elemen-col bg-primary" style="left: 70px; max-width: 120px; z-index: 35;">
-                            <div class="fw-bold">Elemen Standar</div>
+                        <th class="vm-header sticky-col sticky-header elemen-col bg-primary" style="left: 0; min-width: 100px; z-index: 35;">
+                            <div class="corner-label">
+                                <small class="text-white fw-bold">Kriteria</small>
+                                <i class="bi bi-arrow-down-right text-white"></i>
+                                <small class="text-white fw-bold">Elemen</small>
+                            </div>
                         </th>
 
                         {{-- Collapsible Indikator Column --}}
-                        <th class="vm-header sticky-header indikator-col bg-primary" style="min-width: 180px; z-index: 30;" id="indikatorHeader">
+                        <th class="vm-header sticky-header indikator-col bg-primary" style="min-width: 150px; z-index: 30;" id="indikatorHeader">
                             <div class="fw-bold">
                                 <i class="bi bi-list-ul me-2"></i>Indikator Penilaian
                             </div>
@@ -85,7 +130,7 @@
                         $colors = ['#e3f2fd', '#fff3e0', '#e8f5e9', '#f3e5f5'];
                         $bgColor = $colors[$index % count($colors)];
                         @endphp
-                        <th class="vm-header sticky-header text-center" colspan="2" style="background: {{ $bgColor }}; z-index: 30;">
+                        <th class="vm-header sticky-header text-center vm-asesor-header" data-asesor="{{ $asesor->urutan_asesor }}" colspan="2" style="background: {{ $bgColor }}; z-index: 30;">
                             <div class="d-flex flex-column align-items-center">
                                 <div class="avatar-circle-sm mb-1" style="background: linear-gradient(135deg, #932136, #870820);">
                                     {{ substr($asesor->user->name, 0, 2) }}
@@ -105,8 +150,6 @@
                     {{-- Sub-header for Pemenuhan/Pelampauan --}}
                     <tr>
                         <th class="vm-subheader sticky-col sticky-header" style="left: 0; z-index: 34;"></th>
-                        <th class="vm-subheader sticky-col sticky-header" style="left: 40px; z-index: 34;"></th>
-                        <th class="vm-subheader sticky-col sticky-header" style="left: 70px; z-index: 34;"></th>
                         <th class="vm-subheader sticky-header indikator-col" style="z-index: 29;"></th>
 
                         {{-- Dynamic Asesor Sub-headers --}}
@@ -115,10 +158,10 @@
                         $colors = ['#e3f2fd', '#fff3e0', '#e8f5e9', '#f3e5f5'];
                         $bgColor = $colors[$index % count($colors)];
                         @endphp
-                        <th class="vm-subheader sticky-header text-center" style="background: {{ $bgColor }}; min-width: 100px; z-index: 29;">
+                        <th class="vm-subheader sticky-header text-center vm-subheader-pemenuhan" style="background: {{ $bgColor }}; min-width: 100px; z-index: 29;">
                             <small class="fw-bold">Pemenuhan</small>
                         </th>
-                        <th class="vm-subheader sticky-header text-center" style="background: {{ $bgColor }}; min-width: 100px; z-index: 29;">
+                        <th class="vm-subheader sticky-header text-center vm-subheader-pelampauan vm-col-pelampauan" style="background: {{ $bgColor }}; min-width: 100px; z-index: 29;">
                             <small class="fw-bold">Pelampauan</small>
                         </th>
                         @endforeach
@@ -144,7 +187,7 @@
                 $onclickPemenuhan = (isset($skor) && $skor != 4)
                 ? "onclick=\"showKomentarPopover(this, '{$asesor->name}', $skor, '".addslashes($komentar)."')\" title='Klik untuk lihat komentar'"
                 : '';
-                $textColor = $skor == 2 ? 'dark' : 'white';
+                $textColor = 'dark';
 
                 $cellPemenuhan = "<td class='vm-cell vm-score-cell vm-clickable' style='background: $bgPemenuhan;' data-asesor='$asesorNum' data-type='pemenuhan' data-skor='$skor' $onclickPemenuhan>"
                     . (isset($skor) && $skor != 4 ? "<small class='text-$textColor'>$komentar</small>" : '')
@@ -156,8 +199,8 @@
                 ? "onclick=\"showKomentarPopover(this, '{$asesor->name}', 4, '".addslashes($komentar)."')\" title='Klik untuk lihat komentar'"
                 : '';
 
-                $cellPelampauan = "<td class='vm-cell vm-score-cell vm-clickable' style='background: $bgPelampauan;' data-asesor='$asesorNum' data-type='pelampauan' data-skor='$skor' $onclickPelampauan>"
-                    . ($skor == 4 ? "<small class='text-white'>$komentar</small>" : '')
+                $cellPelampauan = "<td class='vm-cell vm-score-cell vm-clickable vm-col-pelampauan' style='background: $bgPelampauan;' data-asesor='$asesorNum' data-type='pelampauan' data-skor='$skor' $onclickPelampauan>"
+                    . ($skor == 4 ? "<small class='text-dark'>$komentar</small>" : '')
                     . "</td>";
 
                 return $cellPemenuhan . $cellPelampauan;
@@ -204,21 +247,15 @@
                     <tr class="validator-row" data-elemen-id="{{ $elemen->id }}" @if($hasDifference) data-has-diff="true" @endif>
 
                         {{-- Kriteria --}}
-                        @if($firstRow)
-                        <td class="vm-cell sticky-col" style="left: 0; z-index: 15;" rowspan="{{ $jumlahElemen }}">
-                            <span class="kriteria-badge">{{ $kriteria->kode_kriteria }}</span>
-                        </td>
-                        @php $firstRow = false; @endphp
-                        @endif
-
-                        {{-- Kode Elemen --}}
-                        <td class="vm-cell sticky-col text-center" style="left: 40px; z-index: 15;">
-                            <strong>{{ $elemen->kode_elemen }}</strong>
-                        </td>
-
-                        {{-- Elemen Standar --}}
-                        <td class="vm-cell sticky-col elemen-col" style="left: 70px; z-index: 15;">
-                            <div class="elemen-text">{{ $elemen->pernyataan_elemen }}</div>
+                        <td class="vm-cell sticky-col elemen-col" style="left: 0; z-index: 15;">
+                            <div class="info-elemen">
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <span class="kriteria-badge">{{ $kriteria->kode_kriteria }}</span>
+                                </div>
+                                <div class="elemen-text">
+                                    {{ $elemen->kode_elemen }} {{ $elemen->pernyataan_elemen }}
+                                </div>
+                            </div>
                         </td>
 
                         {{-- Indikator --}}
@@ -246,8 +283,27 @@
 
                         {{-- Validasi Status --}}
                         <td class="vm-cell vm-validasi-cell text-center">
-                            @if($validasi)
-                            @if($validasi->status_validasi == 'validated' || $validasi->status_validasi == 'approved')
+                            @php
+                            // ✅ Check for inconsistent validation
+                            $hasInconsistentValidation = false;
+                            $validatedCount = 0;
+                            $notValidatedCount = 0;
+
+                            foreach($asesors as $asesor) {
+                            $p = $penilaians[$asesor->id_user] ?? null;
+                            if ($p && in_array($p->status_validasi, ['validated', 'validated_diff', 'approved'])) {
+                            $validatedCount++;
+                            } elseif ($p && $p->status_validasi === 'not_validated') {
+                            $notValidatedCount++;
+                            }
+                            }
+
+                            $hasInconsistentValidation = $validatedCount > 0 && $notValidatedCount > 0;
+                            @endphp
+
+                            {{-- Regular validation button/status --}}
+                            @if($validasi && !$hasInconsistentValidation)
+                            @if(in_array($validasi->status_validasi,['validated','validated_diff','approved']))
                             <span class="badge bg-success">
                                 <i class="bi bi-check-circle"></i> Disetujui
                             </span>
@@ -447,6 +503,22 @@
         display: inline-block;
     }
 
+    /* Mode merged: sembunyikan semua kolom pelampauan */
+    .matrix-merged .vm-col-pelampauan {
+        display: none !important;
+    }
+
+    /* Optional: rapikan lebar pemenuhan saat merged */
+    .matrix-merged .vm-score-cell {
+        max-width: 200px;
+        min-width: 200px;
+    }
+
+    /* Mode hide indikator: sembunyikan semua kolom indikator */
+    .matrix-hide-indikator .indikator-col {
+        display: none !important;
+    }
+
     /* Difference Highlight */
     .validator-row[data-has-diff="true"] {
         background: #fff9e6 !important;
@@ -536,10 +608,12 @@
             setupHighlightDifferences();
             setupValidationButtons();
             updateValidatorStats();
+            setupMatrixViewOptions();
+            setupIndikatorToggle();
         }
 
         function setupHighlightDifferences() {
-            const btnHighlight = document.getElementById('btnHighlightDiff');
+            const btnHighlight = document.getElementById('optHighlightDiff');
             if (!btnHighlight) return;
 
             btnHighlight.addEventListener('click', function() {
@@ -592,6 +666,91 @@
             document.getElementById('statValidated').textContent = validated;
         }
     });
+
+    function setMatrixView(mode) {
+        const table = document.getElementById('validatorMatrix');
+        if (!table) return;
+
+        table.classList.remove('matrix-merged', 'matrix-split');
+
+        if (mode === 'merged') {
+            table.classList.add('matrix-merged');
+
+            // ✅ Header asesor: hanya ubah colspan 2 -> 1 (isi tetap!)
+            document.querySelectorAll('.vm-asesor-header').forEach(th => {
+                if (!th.dataset.originalColspan) th.dataset.originalColspan = th.getAttribute('colspan') || '2';
+                th.setAttribute('colspan', '1');
+            });
+
+            // ✅ Subheader pemenuhan jadi "Penilaian AK"
+            document.querySelectorAll('.vm-subheader-pemenuhan').forEach(th => {
+                if (!th.dataset.originalText) th.dataset.originalText = th.innerHTML;
+                th.innerHTML = `<small class="fw-bold">Penilaian AK</small>`;
+            });
+
+        } else {
+            table.classList.add('matrix-split');
+
+            // restore colspan
+            document.querySelectorAll('.vm-asesor-header').forEach(th => {
+                if (th.dataset.originalColspan) th.setAttribute('colspan', th.dataset.originalColspan);
+            });
+
+            // restore subheader pemenuhan
+            document.querySelectorAll('.vm-subheader-pemenuhan').forEach(th => {
+                if (th.dataset.originalText) th.innerHTML = th.dataset.originalText;
+            });
+        }
+
+        localStorage.setItem('validatorMatrixView', mode);
+    }
+
+    function setupMatrixViewOptions() {
+        const btnSplit = document.getElementById('optSplit');
+        const btnMerged = document.getElementById('optMerged');
+
+        if (btnSplit) btnSplit.addEventListener('click', () => setMatrixView('split'));
+        if (btnMerged) btnMerged.addEventListener('click', () => setMatrixView('merged'));
+
+        // default view (opsional)
+        const saved = localStorage.getItem('validatorMatrixView') || 'split';
+        setMatrixView(saved);
+    }
+
+
+    function setIndikatorVisible(visible) {
+        const table = document.getElementById('validatorMatrix');
+        if (!table) return;
+
+        const btn = document.getElementById('optToggleIndikator');
+
+        if (visible) {
+            table.classList.remove('matrix-hide-indikator');
+            if (btn) btn.innerHTML = `<i class="bi bi-list-ul me-2"></i> Sembunyikan Indikator`;
+            localStorage.setItem('validatorIndikatorVisible', '1');
+        } else {
+            table.classList.add('matrix-hide-indikator');
+            if (btn) btn.innerHTML = `<i class="bi bi-list-ul me-2"></i> Tampilkan Indikator`;
+            localStorage.setItem('validatorIndikatorVisible', '0');
+        }
+    }
+
+
+    function setupIndikatorToggle() {
+        const btn = document.getElementById('optToggleIndikator');
+        if (!btn) return;
+
+        btn.addEventListener('click', () => {
+            const table = document.getElementById('validatorMatrix');
+            const hidden = table.classList.contains('matrix-hide-indikator');
+            setIndikatorVisible(hidden); // kalau hidden => tampilkan
+        });
+
+        // restore dari localStorage (default: tampil)
+        const saved = localStorage.getItem('validatorIndikatorVisible');
+        if (saved === '0') setIndikatorVisible(false);
+        else setIndikatorVisible(true);
+    }
 
 </script>
 @endpush

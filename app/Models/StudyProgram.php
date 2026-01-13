@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 
 class StudyProgram extends Model
 {
@@ -18,6 +19,8 @@ class StudyProgram extends Model
         'peringkat_akreditasi',
         'tanggal_kedaluwarsa',
         'status_kedaluwarsa',
+        'is_active',
+        'is_example'
     ];
 
     protected $casts = [
@@ -91,4 +94,20 @@ class StudyProgram extends Model
             ->wherePivot('role_in_prodi', 'staff')
             ->wherePivot('is_active', true);
     }
+
+    public function scopeNonExample($query)
+    {
+        return $query->where('is_example', false);
+    }
+
+    // protected static function booted()
+    // {
+    //     static::addGlobalScope('exclude_example', function (Builder $builder) {
+    //         $builder->where(function ($q) {
+    //             $q->whereNull('is_example')
+    //                 ->orWhere('is_example', false)
+    //                 ->orWhere('is_example', 0);
+    //         });
+    //     });
+    // }
 }

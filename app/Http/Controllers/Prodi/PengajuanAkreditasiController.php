@@ -15,6 +15,7 @@ use App\Models\PengajuanAkreditasi;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
 use App\Http\Controllers\Controller;
+use App\Services\BorangMergeService;
 use Illuminate\Support\Facades\Auth;
 use App\Services\BorangExportService;
 use App\Services\BorangParserService;
@@ -25,6 +26,12 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 class PengajuanAkreditasiController extends Controller
 {
     use AuthorizesRequests;
+    protected $borangMergeService;
+
+    public function __construct(BorangMergeService $borangMergeService)
+    {
+        $this->borangMergeService = $borangMergeService;
+    }
     /**
      * Display a listing of pengajuan
      */
@@ -604,6 +611,28 @@ class PengajuanAkreditasiController extends Controller
         }
     }
 
+    public function checkBorangFiles($id)
+    {
+        try {
+            $pengajuan = PengajuanAkreditasi::findOrFail($id);
+            $this->authorize('view', $pengajuan);
+
+            $result = $this->borangMergeService->checkFilesComplete($pengajuan);
+
+            return response()->json($result);
+        } catch (\Exception $e) {
+            Log::error('Check borang files failed: ' . $e->getMessage(), [
+                'pengajuan_id' => $id,
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengecek kelengkapan file: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     /**
      * ✅ NEW: Show lembar pengesahan preview (PDF)
      */
@@ -683,107 +712,72 @@ class PengajuanAkreditasiController extends Controller
      */
     private function calculateBorangProgress($kriterias, $existingData)
     {
-        $totalFields = 0;
-        $filledFields = 0;
         $totalElemen = 0;
         $completedElemen = 0;
         $kriteriaProgress = [];
         $elemenProgress = [];
 
         foreach ($kriterias as $kriteria) {
-            $kriteriaTotal = 0;
-            $kriteriaFilled = 0;
             $kriteriaElemenTotal = 0;
             $kriteriaElemenComplete = 0;
 
             foreach ($kriteria->elemenStandar as $elemen) {
-                $elemenTotal = 0;
-                $elemenFilled = 0;
-
                 $totalElemen++;
                 $kriteriaElemenTotal++;
 
-                // ✅ Check description field (desc_{elemen_id})
+                // ✅ Check description
                 $descKey = 'desc_' . $elemen->id;
-                $elemenTotal++;
-                $totalFields++;
+                $hasDesc = isset($existingData[$descKey])
+                    && strlen(trim($existingData[$descKey])) > 20;
 
-                $hasDesc = false;
-                if (isset($existingData[$descKey])) {
-                    $descValue = trim($existingData[$descKey]);
-                    // Check if has meaningful content (not just placeholder/empty)
-                    if (!empty($descValue) && strlen($descValue) > 20) {
-                        $elemenFilled++;
-                        $filledFields++;
-                        $hasDesc = true;
-                    }
-                }
-
-                // ✅ Check dataset fields (tables)
+                // ✅ Check tables (if any)
                 $hasAllTables = true;
+                $tableCount = 0;
+
                 foreach ($elemen->datasetBorang as $dataset) {
                     if ($dataset->tipe_field === 'table') {
-                        $elemenTotal++;
-                        $totalFields++;
-
-                        if (isset($existingData[$dataset->kode])) {
-                            $tableValue = trim($existingData[$dataset->kode]);
-
-                            // ✅ Check if has REAL data (improved method)
-                            if ($this->hasTableData($tableValue)) {
-                                $elemenFilled++;
-                                $filledFields++;
-                            }
+                        $tableCount++;
+                        if (
+                            !isset($existingData[$dataset->kode]) ||
+                            !$this->hasTableData($existingData[$dataset->kode])
+                        ) {
+                            $hasAllTables = false;
                         }
                     }
                 }
 
-                // ✅ Elemen is complete if ALL fields are filled
-                $isElemenComplete = ($elemenFilled === $elemenTotal && $elemenTotal > 0);
+                // ✅ Elemen complete if has desc AND all tables filled
+                $isElemenComplete = $hasDesc && ($tableCount === 0 || $hasAllTables);
 
                 if ($isElemenComplete) {
                     $completedElemen++;
                     $kriteriaElemenComplete++;
                 }
 
-                // Store elemen progress
                 $elemenProgress[$elemen->id] = [
-                    'total' => $elemenTotal,
-                    'filled' => $elemenFilled,
-                    'percentage' => $elemenTotal > 0 ? round(($elemenFilled / $elemenTotal) * 100) : 0,
                     'is_complete' => $isElemenComplete,
                     'has_desc' => $hasDesc,
+                    'table_count' => $tableCount,
                     'has_all_tables' => $hasAllTables
                 ];
-
-                $kriteriaTotal += $elemenTotal;
-                $kriteriaFilled += $elemenFilled;
             }
 
-            // Store kriteria progress
             $kriteriaProgress[$kriteria->id] = [
-                'total_fields' => $kriteriaTotal,
-                'filled_fields' => $kriteriaFilled,
                 'total_elemen' => $kriteriaElemenTotal,
                 'completed_elemen' => $kriteriaElemenComplete,
-                'percentage' => $kriteriaTotal > 0 ? round(($kriteriaFilled / $kriteriaTotal) * 100) : 0,
+                'percentage' => $kriteriaElemenTotal > 0
+                    ? round(($kriteriaElemenComplete / $kriteriaElemenTotal) * 100)
+                    : 0,
             ];
         }
 
         return [
-            // ✅ Field-level metrics
-            'total_fields' => $totalFields,
-            'filled_fields' => $filledFields,
-            'remaining_fields' => $totalFields - $filledFields,
-            'field_percentage' => $totalFields > 0 ? round(($filledFields / $totalFields) * 100) : 0,
-
-            // ✅ Elemen-level metrics
             'total_elemen' => $totalElemen,
             'completed_elemen' => $completedElemen,
             'remaining_elemen' => $totalElemen - $completedElemen,
-            'elemen_percentage' => $totalElemen > 0 ? round(($completedElemen / $totalElemen) * 100) : 0,
-
-            // Detail
+            'elemen_percentage' => $totalElemen > 0
+                ? round(($completedElemen / $totalElemen) * 100)
+                : 0,
             'kriteria_progress' => $kriteriaProgress,
             'elemen_progress' => $elemenProgress,
         ];

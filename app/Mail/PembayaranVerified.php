@@ -27,6 +27,6 @@ class PembayaranVerified extends Mailable
             : 'Pembayaran Ditolak - Silakan Upload Ulang';
 
         return $this->subject($subject)
-            ->view('emails.pembayaran-verified');
+            ->view('emails.pengajuan.pembayaran-verified');
     }
 }

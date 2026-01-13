@@ -16,6 +16,8 @@ return new class extends Migration
             $table->id();
             $table->string('code');
             $table->string('name');
+            $table->boolean('is_active')->default(true)->index();
+            $table->boolean('is_example')->default(false)->index();
             $table->timestamps();
         });
 
@@ -25,6 +27,7 @@ return new class extends Migration
             $table->string('code', 15);
             $table->string('alias', 15);
             $table->string('name', 50)->nullable();
+            $table->boolean('is_active')->default(true)->index();
             $table->timestamps();
         });
 
@@ -33,6 +36,7 @@ return new class extends Migration
             $table->string('code', 10)->unique();
             $table->string('name', 100);
             $table->text('description')->nullable();
+            $table->boolean('is_active')->default(true)->index();
             $table->timestamps();
         });
 
@@ -50,6 +54,8 @@ return new class extends Migration
             $table->string('peringkat_akreditasi')->nullable();
             $table->date('tanggal_kedaluwarsa')->nullable();
             $table->enum('status_kedaluwarsa', ['Aktif', 'Kedaluwarsa', 'Belum Terakreditasi'])->default(null)->nullable();
+            $table->boolean('is_active')->default(true)->index();
+            $table->boolean('is_example')->default(false)->index();
             $table->timestamps();
 
             $table->index('category_id');

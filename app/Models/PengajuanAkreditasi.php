@@ -1,58 +1,114 @@
 <?php
+// app/Models/PengajuanAkreditasi.php
 
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PengajuanAkreditasi extends Model
 {
     protected $table = 'pengajuan_akreditasi';
 
+    public const DAFTAR_TEMPLATE = 'Template LED+Suplemen dan LKPS';
     // ============================================
-    // FILLABLE: Only user-input fields
+    // STATUS CONSTANTS (20 Steps)
+    // ============================================
+    public const STATUS_DRAFT = 'draft';
+
+    // Step 1
+    public const STATUS_PENGINGAT_DIKIRIM = 'pengingat_dikirim';
+
+    // Step 2
+    public const STATUS_SURAT_PERMOHONAN_DITERIMA = 'surat_permohonan_diterima';
+
+    // Step 3
+    public const STATUS_TEMPLATE_LED_DIKIRIM = 'template_led_dikirim';
+
+    // Step 4
+    public const STATUS_MENUNGGU_PEMBAYARAN = 'menunggu_pembayaran';
+    public const STATUS_PEMBAYARAN_DITERIMA = 'pembayaran_diterima';
+    public const STATUS_PEMBAYARAN_DIVERIFIKASI = 'pembayaran_diverifikasi';
+
+    // Step 5
+    public const STATUS_DRAFT_BORANG_DITERIMA = 'draft_borang_diterima';
+    public const STATUS_BORANG_ONLINE_SELESAI = 'borang_online_selesai';
+
+    // Step 6-7
+    public const STATUS_BORANG_VALIDATION_PENDING = 'borang_validation_pending';
+    public const STATUS_BORANG_IN_VALIDATION = 'borang_in_validation';
+    public const STATUS_BORANG_REVISION_REQUIRED = 'borang_revision_required';
+    public const STATUS_BORANG_VALIDATED = 'borang_validated';
+    public const STATUS_VALIDASI_BORANG_DILAPORKAN = 'validasi_borang_dilaporkan';
+
+    // Step 8-10
+    public const STATUS_ASESOR_AK_ASSIGNED = 'asesor_ak_assigned';
+    public const STATUS_AK_IN_PROGRESS = 'ak_in_progress';
+    public const STATUS_AK_SELESAI = 'ak_selesai';
+    public const STATUS_AK_DILAPORKAN = 'ak_dilaporkan';
+
+    // Step 11-13
+    public const STATUS_ASESOR_AL_ASSIGNED = 'asesor_al_assigned';
+    public const STATUS_AL_IN_PROGRESS = 'al_in_progress';
+    public const STATUS_AL_SELESAI = 'al_selesai';
+    public const STATUS_AL_DILAPORKAN = 'al_dilaporkan';
+
+    // Step 14-20
+    public const STATUS_HASIL_AKREDITASI_DIKIRIM = 'hasil_akreditasi_dikirim';
+    public const STATUS_MASA_SANGGAH = 'masa_sanggah';
+    public const STATUS_BANDING_DILAKSANAKAN = 'banding_dilaksanakan';
+    public const STATUS_BANDING_DILAPORKAN = 'banding_dilaporkan';
+    public const STATUS_HASIL_DITETAPKAN = 'hasil_ditetapkan';
+    public const STATUS_HASIL_DILAPORKAN = 'hasil_dilaporkan';
+    public const STATUS_ARSIP_DISIMPAN = 'arsip_disimpan';
+
+    // Special
+    public const STATUS_DITOLAK = 'ditolak';
+
+    // ============================================
+    // FILLABLE
     // ============================================
     protected $fillable = [
-        // Basic Info (user input)
         'nomor_pengajuan',
         'id_program_studi',
         'id_user_pengaju',
+        'id_de_assigned',
         'tahun_akreditasi',
         'jenis_akreditasi',
         'tanggal_pengajuan',
         'catatan_pengaju',
+        'status',
 
-        // Assignment (admin input)
-        'id_de_assigned',
-        // All tracking dates - should only be set via code
+        // Timeline fields
         'tanggal_pengingat',
         'tanggal_surat_permohonan',
-        'tanggal_borang_dikirim',
-        'tanggal_draft_borang',
-        'tanggal_review_kesiapan',
+        'tanggal_template_led_dikirim',
         'tanggal_pembayaran',
+        'tanggal_draft_borang',
         'tanggal_borang_final',
         'tanggal_lanjut_ak',
         'tanggal_validasi_borang_assigned',
         'tanggal_validasi_borang_selesai',
+        'tanggal_pelaporan_validasi_borang',
+        'tanggal_penugasan_asesor_ak',
+        'tanggal_validasi_ak',
         'tanggal_ak_mulai',
         'tanggal_ak_selesai',
+        'tanggal_pelaporan_ak',
+        'tanggal_penugasan_asesor_al',
+        'tanggal_pelaksanaan_al',
         'tanggal_al_mulai',
         'tanggal_al_selesai',
+        'tanggal_pelaporan_al',
         'tanggal_hasil_akreditasi',
+        'tanggal_masa_sanggah_mulai',
+        'tanggal_masa_sanggah_selesai',
         'tanggal_banding',
+        'tanggal_pelaksanaan_banding',
+        'tanggal_pelaporan_banding',
         'tanggal_penetapan',
         'tanggal_pengumuman',
+        'tanggal_pelaporan_hasil',
         'tanggal_penyimpanan',
-        // Status should be controlled
-        'status',
-    ];
-
-    // ============================================
-    // GUARDED: Protected from mass assignment
-    // ============================================
-    protected $guarded = [
-        'id',
     ];
 
     // ============================================
@@ -62,25 +118,39 @@ class PengajuanAkreditasi extends Model
         'tanggal_pengajuan' => 'date',
         'tanggal_pengingat' => 'datetime',
         'tanggal_surat_permohonan' => 'datetime',
-        'tanggal_borang_dikirim' => 'datetime',
-        'tanggal_draft_borang' => 'datetime',
-        'tanggal_review_kesiapan' => 'datetime',
+        'tanggal_template_led_dikirim' => 'datetime',
         'tanggal_pembayaran' => 'datetime',
+        'tanggal_draft_borang' => 'datetime',
         'tanggal_borang_final' => 'datetime',
         'tanggal_lanjut_ak' => 'datetime',
         'tanggal_validasi_borang_assigned' => 'datetime',
         'tanggal_validasi_borang_selesai' => 'datetime',
+        'tanggal_pelaporan_validasi_borang' => 'datetime',
+        'tanggal_penugasan_asesor_ak' => 'datetime',
+        'tanggal_validasi_ak' => 'datetime',
         'tanggal_ak_mulai' => 'datetime',
         'tanggal_ak_selesai' => 'datetime',
+        'tanggal_pelaporan_ak' => 'datetime',
+        'tanggal_penugasan_asesor_al' => 'datetime',
+        'tanggal_pelaksanaan_al' => 'datetime',
         'tanggal_al_mulai' => 'datetime',
         'tanggal_al_selesai' => 'datetime',
+        'tanggal_pelaporan_al' => 'datetime',
         'tanggal_hasil_akreditasi' => 'datetime',
+        'tanggal_masa_sanggah_mulai' => 'datetime',
+        'tanggal_masa_sanggah_selesai' => 'datetime',
         'tanggal_banding' => 'datetime',
+        'tanggal_pelaksanaan_banding' => 'datetime',
+        'tanggal_pelaporan_banding' => 'datetime',
         'tanggal_penetapan' => 'datetime',
         'tanggal_pengumuman' => 'datetime',
+        'tanggal_pelaporan_hasil' => 'datetime',
         'tanggal_penyimpanan' => 'datetime',
     ];
 
+    // ============================================
+    // RELATIONSHIPS (unchanged)
+    // ============================================
     public function asesmen()
     {
         return $this->hasOne(Asesmen::class, 'id_pengajuan');
@@ -89,17 +159,6 @@ class PengajuanAkreditasi extends Model
     public function studyProgram()
     {
         return $this->belongsTo(StudyProgram::class, 'id_program_studi');
-    }
-
-    public function programStudi()
-    {
-        return $this->belongsTo(StudyProgram::class, 'id_program_studi');
-    }
-
-    // Alias untuk backward compatibility
-    public function getProgramStudiAttribute()
-    {
-        return $this->studyProgram;
     }
 
     public function pengaju()
@@ -117,16 +176,6 @@ class PengajuanAkreditasi extends Model
         return $this->hasMany(PengajuanDokumen::class, 'id_pengajuan');
     }
 
-    public function borangData()
-    {
-        return $this->hasMany(BorangData::class, 'id_pengajuan');
-    }
-
-    public function reviewKesiapan()
-    {
-        return $this->hasMany(ReviewKesiapan::class, 'id_pengajuan');
-    }
-
     public function pembayaran()
     {
         return $this->hasOne(PembayaranAkreditasi::class, 'id_pengajuan');
@@ -137,68 +186,9 @@ class PengajuanAkreditasi extends Model
         return $this->hasMany(PengajuanStatusLog::class, 'id_pengajuan');
     }
 
-    public function scopeByProdi($query, $prodiId)
-    {
-        return $query->where('id_program_studi', $prodiId);
-    }
-
-    public function scopeByStatus($query, $status)
-    {
-        return $query->where('status', $status);
-    }
-
     public function borangImports()
     {
         return $this->hasMany(BorangImport::class, 'id_pengajuan');
-    }
-
-    /**
-     * Get borang validation (latest)
-     */
-    public function borangValidation()
-    {
-        return $this->hasOneThrough(
-            BorangValidation::class,
-            Asesmen::class,
-            'id_pengajuan',      // Foreign key on asesmen table
-            'id_pengajuan',      // Foreign key on borang_validations table
-            'id',                // Local key on pengajuan table
-            'id'                 // Local key on asesmen table
-        )->latest();
-    }
-
-    /**
-     * Get all borang validations (if reassigned multiple times)
-     */
-    public function borangValidations()
-    {
-        return $this->hasManyThrough(
-            BorangValidation::class,
-            Asesmen::class,
-            'id_pengajuan',
-            'id_pengajuan'
-        );
-    }
-
-    public function borangRevisionHistory()
-    {
-        return $this->hasMany(BorangRevisionHistory::class, 'id_pengajuan')
-            ->orderBy('revision_number', 'desc');
-    }
-
-    public function getLatestBorangRevision()
-    {
-        return $this->borangRevisionHistory()->first();
-    }
-
-    public function getTotalBorangRevisions()
-    {
-        return $this->borangRevisionHistory()->count();
-    }
-
-    public function hasBorangRevisions()
-    {
-        return $this->borangRevisionHistory()->exists();
     }
 
     public function latestBorangImport()
@@ -206,7 +196,21 @@ class PengajuanAkreditasi extends Model
         return $this->hasOne(BorangImport::class, 'id_pengajuan')->latest();
     }
 
-    // Helper Methods
+    public function borangValidators()
+    {
+        return $this->hasManyThrough(
+            AsesmenUserRole::class,
+            Asesmen::class,
+            'id_pengajuan',
+            'id_asesmen',
+            'id',
+            'id'
+        )->where('jenis_asesmen', 'dokumen');
+    }
+
+    // ============================================
+    // HELPER METHODS
+    // ============================================
     public static function generateNomorPengajuan()
     {
         $year = date('Y');
@@ -224,61 +228,16 @@ class PengajuanAkreditasi extends Model
         return sprintf('AK/%s/%03d', $year, $newNum);
     }
 
-    public function getStatusLabelAttribute()
-    {
-        return $this->statusMap()[$this->status]['label']
-            ?? ucfirst(str_replace('_', ' ', $this->status));
-    }
-
-    public function getStatusBadgeClassAttribute()
-    {
-        return $this->statusMap()[$this->status]['bg'] ?? 'bg-secondary';
-    }
-
-    public function getStatusIconAttribute()
-    {
-        return $this->statusMap()[$this->status]['icon'] ?? 'bi-question-circle';
-    }
-
-    /**
-     * Get current validator assignment for borang
-     */
-    public function currentBorangValidator()
-    {
-        return $this->hasOne(AsesmenUserRole::class, 'id_asesmen', 'id')
-            ->join('asesmens', 'asesmen_user_roles.id_asesmen', '=', 'asesmens.id')
-            ->where('asesmens.id_pengajuan', $this->id)
-            ->where('asesmen_user_roles.jenis_asesmen', 'borang')
-            ->whereIn('asesmen_user_roles.status_penawaran', ['pending', 'accepted'])
-            ->latest('asesmen_user_roles.created_at');
-    }
-
-    /**
-     * Get all borang validator assignments (including rejected)
-     */
-    public function borangValidators()
-    {
-        return $this->hasManyThrough(
-            AsesmenUserRole::class,
-            Asesmen::class,
-            'id_pengajuan', // FK on asesmens table
-            'id_asesmen',   // FK on asesmen_user_roles table
-            'id',           // Local key on pengajuan_akreditasi
-            'id'            // Local key on asesmens
-        )->where('jenis_asesmen', 'dokumen');
-    }
-
-    /**
-     * Check if validator can be assigned
-     */
     public function canAssignValidator(): bool
     {
-        // Borang harus completed
-        if (!in_array($this->status, ['borang_online_selesai', 'borang_validation_pending', 'borang_revision_required'])) {
+        if (!in_array($this->status, [
+            self::STATUS_BORANG_ONLINE_SELESAI,
+            self::STATUS_BORANG_VALIDATION_PENDING,
+            self::STATUS_BORANG_REVISION_REQUIRED
+        ])) {
             return false;
         }
 
-        // Must have borang import
         if (!$this->latestBorangImport) {
             return false;
         }
@@ -286,9 +245,6 @@ class PengajuanAkreditasi extends Model
         return true;
     }
 
-    /**
-     * Get active borang validator assignment
-     */
     public function getCurrentBorangValidator()
     {
         if (!$this->asesmen) {
@@ -296,150 +252,179 @@ class PengajuanAkreditasi extends Model
         }
 
         return $this->asesmen->userRoles()
-            ->with(['user', 'role', 'borangValidation.revisionHistory'])
+            ->with(['user', 'role_selected', 'borangValidation'])
             ->where('jenis_asesmen', 'dokumen')
             ->whereIn('status_penawaran', ['pending', 'accepted'])
             ->latest('created_at')
             ->first();
     }
 
-    /**
-     * Check if has active validator
-     */
-    public function hasActiveValidator(): bool
+    // ============================================
+    // ATTRIBUTES
+    // ============================================
+    public function getStatusLabelAttribute(): string
     {
-        return $this->getCurrentBorangValidator() !== null;
+        return self::statusMap()[$this->status]['label'] ?? ucwords(str_replace('_', ' ', $this->status));
     }
 
-    /**
-     * Check if user already assigned as validator
-     */
-    public function isUserAssignedAsValidator(int $userId): bool
+    public function getStatusBadgeClassAttribute(): string
     {
-        return $this->borangValidators()
-            ->where('id_user', $userId)
-            ->exists();
+        return self::statusMap()[$this->status]['bg'] ?? 'bg-secondary';
     }
 
-    /**
-     * Get active validator (accepted)
-     */
-    public function activeBorangValidator()
-    {
-        return $this->borangValidators()
-            ->where('status_penawaran', 'accepted')
-            ->first();
-    }
-
-    /**
-     * Count validators by status
-     */
-    public function countValidatorsByStatus(string $status): int
-    {
-        return $this->borangValidators()
-            ->where('status_penawaran', $status)
-            ->count();
-    }
-
+    // ============================================
+    // STATUS MAP (Updated for 20 steps)
+    // ============================================
     public static function statusMap(): array
     {
         return [
-            'draft' => [
+            self::STATUS_DRAFT => [
                 'label' => 'Draft',
                 'bg' => 'bg-secondary',
                 'icon' => 'bi-pencil',
             ],
-
-            'pengingat_dikirim' => [
-                'label' => 'Pengingat Masa Akreditasi Dikirim',
-                'bg' => 'bg-secondary',
+            self::STATUS_PENGINGAT_DIKIRIM => [
+                'label' => 'Pengingat Masa Akreditasi',
+                'bg' => 'bg-info',
                 'icon' => 'bi-bell',
             ],
-            'surat_permohonan_diterima' => [
-                'label' => 'Surat Permohonan PS Diterima',
-                'bg' => 'bg-info',
-                'icon' => 'bi-envelope-check',
-            ],
-
-            'borang_dikirim' => [
-                'label' => 'Penyampaian Template LED',
+            self::STATUS_SURAT_PERMOHONAN_DITERIMA => [
+                'label' => 'Surat Permohonan dari PS',
                 'bg' => 'bg-primary',
-                'icon' => 'bi-send',
+                'icon' => 'bi-envelope',
             ],
-            'draft_borang_diterima' => [
-                'label' => 'Dokumen Draft LED Diterima',
-                'bg' => 'bg-warning',
-                'icon' => 'bi-file-earmark-text',
+            self::STATUS_TEMPLATE_LED_DIKIRIM => [
+                'label' => 'Penyampaian Template LED+Suplemen dan LKPS',
+                'bg' => 'bg-primary',
+                'icon' => 'bi-file-earmark-arrow-down',
             ],
-
-            'review_kesiapan_belum_siap' => [
-                'label' => 'Review Kesiapan: Belum Siap',
-                'bg' => 'bg-danger',
-                'icon' => 'bi-x-circle',
-            ],
-            'review_kesiapan_siap' => [
-                'label' => 'Review Kesiapan: Siap',
-                'bg' => 'bg-success',
-                'icon' => 'bi-check-circle',
-            ],
-
-            'menunggu_pembayaran' => [
+            self::STATUS_MENUNGGU_PEMBAYARAN => [
                 'label' => 'Menunggu Pembayaran',
                 'bg' => 'bg-warning',
                 'icon' => 'bi-hourglass-split',
             ],
-            'pembayaran_diterima' => [
+            self::STATUS_PEMBAYARAN_DITERIMA => [
                 'label' => 'Pembayaran Diterima',
                 'bg' => 'bg-info',
                 'icon' => 'bi-credit-card',
             ],
-
-            'borang_final_diterima' => [
-                'label' => 'LED PS Final Diterima',
-                'bg' => 'bg-primary',
+            self::STATUS_PEMBAYARAN_DIVERIFIKASI => [
+                'label' => 'Validasi Pembayaran Selesai',
+                'bg' => 'bg-success',
+                'icon' => 'bi-check-circle',
+            ],
+            self::STATUS_DRAFT_BORANG_DITERIMA => [
+                'label' => 'Draft LED Diterima',
+                'bg' => 'bg-info',
                 'icon' => 'bi-file-earmark-check',
             ],
-            'borang_online_selesai' => [
-                'label' => 'LED PS Final Selesai',
+            self::STATUS_BORANG_ONLINE_SELESAI => [
+                'label' => 'LED Online Selesai',
                 'bg' => 'bg-success',
                 'icon' => 'bi-ui-checks',
             ],
-
-            'pengajuan_completed' => [
-                'label' => 'Pengajuan Akreditasi Selesai',
-                'bg' => 'bg-success',
-                'icon' => 'bi-check2-all',
+            self::STATUS_BORANG_VALIDATION_PENDING => [
+                'label' => 'Menunggu Validasi LED',
+                'bg' => 'bg-warning',
+                'icon' => 'bi-clock-history',
             ],
-
-            'ak_in_progress' => [
-                'label' => 'Proses Penilaian Dokumen (AK)',
+            self::STATUS_BORANG_IN_VALIDATION => [
+                'label' => 'Validasi LED Berlangsung',
+                'bg' => 'bg-info',
+                'icon' => 'bi-clipboard-check',
+            ],
+            self::STATUS_BORANG_REVISION_REQUIRED => [
+                'label' => 'LED Perlu Revisi',
+                'bg' => 'bg-danger',
+                'icon' => 'bi-exclamation-triangle',
+            ],
+            self::STATUS_BORANG_VALIDATED => [
+                'label' => 'LED Divalidasi',
+                'bg' => 'bg-success',
+                'icon' => 'bi-check-circle-fill',
+            ],
+            self::STATUS_VALIDASI_BORANG_DILAPORKAN => [
+                'label' => 'Pelaporan Validasi LED',
+                'bg' => 'bg-success',
+                'icon' => 'bi-file-earmark-text',
+            ],
+            self::STATUS_ASESOR_AK_ASSIGNED => [
+                'label' => 'Penugasan Asesor AK',
                 'bg' => 'bg-primary',
+                'icon' => 'bi-person-check',
+            ],
+            self::STATUS_AK_IN_PROGRESS => [
+                'label' => 'Validasi AK Berlangsung',
+                'bg' => 'bg-info',
                 'icon' => 'bi-clipboard-data',
             ],
-            'ak_completed' => [
-                'label' => 'Penilaian Dokumen (AK) Selesai',
+            self::STATUS_AK_SELESAI => [
+                'label' => 'Validasi AK Selesai',
                 'bg' => 'bg-success',
                 'icon' => 'bi-clipboard-check',
             ],
-
-            'al_in_progress' => [
-                'label' => 'Proses Asesmen Lapangan (AL)',
+            self::STATUS_AK_DILAPORKAN => [
+                'label' => 'Pelaporan AK',
+                'bg' => 'bg-success',
+                'icon' => 'bi-file-earmark-medical',
+            ],
+            self::STATUS_ASESOR_AL_ASSIGNED => [
+                'label' => 'Penugasan Asesor AL',
                 'bg' => 'bg-primary',
+                'icon' => 'bi-person-badge',
+            ],
+            self::STATUS_AL_IN_PROGRESS => [
+                'label' => 'Pelaksanaan AL Berlangsung',
+                'bg' => 'bg-info',
                 'icon' => 'bi-building',
             ],
-            'al_completed' => [
-                'label' => 'Asesmen Lapangan (AL) Selesai',
+            self::STATUS_AL_SELESAI => [
+                'label' => 'Pelaksanaan AL Selesai',
                 'bg' => 'bg-success',
                 'icon' => 'bi-building-check',
             ],
-
-            'selesai' => [
-                'label' => 'Asesmen Selesai',
-                'bg' => 'bg-dark',
-                'icon' => 'bi-flag-fill',
+            self::STATUS_AL_DILAPORKAN => [
+                'label' => 'Pelaporan AL',
+                'bg' => 'bg-success',
+                'icon' => 'bi-clipboard-data',
             ],
-            'ditolak' => [
-                'label' => 'Asesmen Ditolak',
+            self::STATUS_HASIL_AKREDITASI_DIKIRIM => [
+                'label' => 'Penyampaian Hasil Akreditasi',
+                'bg' => 'bg-warning',
+                'icon' => 'bi-envelope-paper',
+            ],
+            self::STATUS_MASA_SANGGAH => [
+                'label' => 'Masa Sanggah',
+                'bg' => 'bg-warning',
+                'icon' => 'bi-clock-history',
+            ],
+            self::STATUS_BANDING_DILAKSANAKAN => [
+                'label' => 'Pelaksanaan Banding',
+                'bg' => 'bg-danger',
+                'icon' => 'bi-arrow-repeat',
+            ],
+            self::STATUS_BANDING_DILAPORKAN => [
+                'label' => 'Pelaporan Banding',
+                'bg' => 'bg-danger',
+                'icon' => 'bi-file-earmark-ruled',
+            ],
+            self::STATUS_HASIL_DITETAPKAN => [
+                'label' => 'Penetapan Hasil Akreditasi',
+                'bg' => 'bg-success',
+                'icon' => 'bi-award',
+            ],
+            self::STATUS_HASIL_DILAPORKAN => [
+                'label' => 'Pelaporan Hasil Akreditasi',
+                'bg' => 'bg-success',
+                'icon' => 'bi-megaphone',
+            ],
+            self::STATUS_ARSIP_DISIMPAN => [
+                'label' => 'Penyimpanan Arsip',
+                'bg' => 'bg-dark',
+                'icon' => 'bi-archive',
+            ],
+            self::STATUS_DITOLAK => [
+                'label' => 'Ditolak',
                 'bg' => 'bg-danger',
                 'icon' => 'bi-x-octagon',
             ],

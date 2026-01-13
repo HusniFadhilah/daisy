@@ -75,18 +75,18 @@ $latestImport = $pengajuan->latestBorangImport;
         @endif
 
         <div class="d-flex gap-2 flex-wrap">
-            <a href="{{ route('pengajuan.borang-preview', $pengajuan->id) }}" class="btn btn-primary" target="_blank">
-                <i class="bi bi-eye"></i> Lihat Preview HTML
+            <a href="{{ route('pengajuan.borang-online', $pengajuan->id) }}" class="btn btn-primary" target="_blank">
+                <i class="bi bi-pencil-square"></i> Halaman Pengisian LED & LKPS
             </a>
 
             <!-- 🆕 TOMBOL UPLOAD ULANG -->
-            <button type="button" class="btn btn-outline-warning" onclick="showUploadUlangModal()">
+            {{-- <button type="button" class="btn btn-outline-warning" onclick="showUploadUlangModal()">
                 <i class="bi bi-arrow-repeat"></i> Upload Ulang Dokumen
             </button>
 
             <button type="button" class="btn btn-outline-success" onclick="processBorang({{ $pengajuan->id }})">
-                <i class="bi bi-gear"></i> Proses Ulang Data
-            </button>
+            <i class="bi bi-gear"></i> Proses Ulang Data
+            </button> --}}
 
             @if($latestImport->parsing_errors)
             <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalProcessingErrors">

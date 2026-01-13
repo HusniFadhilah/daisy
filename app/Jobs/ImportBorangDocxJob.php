@@ -53,6 +53,16 @@ class ImportBorangDocxJob implements ShouldQueue
 
             $phpWord = IOFactory::load($this->filePath);
 
+            $frontMatter = $this->extractFrontMatter($phpWord);
+
+            if ($borangImport) {
+                $borangImport->update([
+                    'kata_pengantar' => $frontMatter['kata_pengantar'] ?: null,
+                    'ringkasan'      => $frontMatter['ringkasan'] ?: null,
+                    'suplemen'       => !empty($frontMatter['suplemen']) ? $frontMatter['suplemen'] : null,
+                ]);
+            }
+
             $totalParsed = 0;
             $tableIndex = 0;
 
@@ -170,9 +180,12 @@ class ImportBorangDocxJob implements ShouldQueue
         $text = trim($text);
         if (empty($text)) return true;
 
-        $textLower = strtolower($text);
+        // ✅ skip template instruction persis ini
+        if (stripos($text, 'mohon jangan dihapus') !== false) {
+            return true;
+        }
 
-        // Skip ONLY specific patterns
+        $textLower = strtolower($text);
 
         // 1. Label italic di template (e.g., "Deskripsi legalitas program dan tata pamong.")
         if (preg_match('/^deskripsi\s+[a-z\s]+\.$/i', $text)) {
@@ -196,19 +209,30 @@ class ImportBorangDocxJob implements ShouldQueue
             }
         }
 
-        // 4. Single word labels (exact match only)
+        // 4. Single word labels
         $singleWords = ['deskripsi', 'tabel', 'keterangan', 'catatan', 'no', 'nama'];
         if (in_array($textLower, $singleWords)) {
             return true;
         }
 
-        // 5. Too short (< 10 chars likely noise)
+        // 5. Too short
         if (strlen($text) < 10) {
             return true;
         }
 
-        // ✅ Otherwise, it's real content
         return false;
+    }
+
+    private function stripTemplateInstructions(string $text): string
+    {
+        // hapus kalimat instruksi umum
+        $text = preg_replace('/\(?\s*mohon\s+jangan\s+dihapus\s*\)?/i', '', $text);
+
+        // hapus placeholder [....] pendek
+        $text = preg_replace('/\[[^\]]{1,200}\]/', '', $text);
+
+        // rapikan spasi dan baris
+        return $this->cleanText($text);
     }
 
     private function parseDescriptionBox($table, &$deskripsi, &$tablesBuffer)
@@ -331,16 +355,17 @@ class ImportBorangDocxJob implements ShouldQueue
 
         // ✅ Save description with consistent WHERE clause
         $descKey = 'desc_' . $elemen->id;
-        $cleanedDeskripsi = $this->cleanText($deskripsi);
+        $cleanedDeskripsi = $this->stripTemplateInstructions($deskripsi);
+        $cleanedDeskripsi = trim($cleanedDeskripsi);
 
         BorangData::updateOrCreate(
             [
                 'id_pengajuan' => $pengajuan->id,
-                'dataset_id' => $descKey  // ✅ 2 fields only
+                'dataset_id' => $descKey
             ],
             [
-                'nilai' => $cleanedDeskripsi,
-                'id_borang_import' => $borangImport ? $borangImport->id : null  // ✅ Saved in data
+                'nilai' => $cleanedDeskripsi !== '' ? $cleanedDeskripsi : null,
+                'id_borang_import' => $borangImport ? $borangImport->id : null
             ]
         );
         $savedCount++;
@@ -466,5 +491,102 @@ class ImportBorangDocxJob implements ShouldQueue
         }
 
         return '';
+    }
+
+    /**
+     * Extract Kata Pengantar, Ringkasan, Suplemen (simple mode-based)
+     * NOTE: diadaptasi dari BorangParserService
+     */
+    private function extractFrontMatter($phpWord): array
+    {
+        $kataPengantar = '';
+        $ringkasan = '';
+        $suplemen = [];
+
+        $mode = null; // kata_pengantar | ringkasan | suplemen | content
+
+        foreach ($phpWord->getSections() as $wordSection) {
+            foreach ($wordSection->getElements() as $element) {
+
+                // ✅ kalau table, ambil text dari dalam cell
+                if ($element instanceof \PhpOffice\PhpWord\Element\Table) {
+                    $text = trim($this->extractTableText($element));
+                } else {
+                    $text = trim($this->extractTextContent($element));
+                }
+
+                if ($text === '') continue;
+
+                // Header detectors
+                if (preg_match('/^KATA\s+PENGANTAR$/i', $text)) {
+                    $mode = 'kata_pengantar';
+                    continue;
+                }
+                if (preg_match('/^RINGKASAN$/i', $text)) {
+                    $mode = 'ringkasan';
+                    continue;
+                }
+                if (preg_match('/^Suplemen\s+Program\s+Studi/i', $text)) {
+                    $mode = 'suplemen';
+                    continue;
+                }
+
+                // ✅ FIX: terima D.1. atau D.1
+                if (preg_match('/^([DEPLIARK])\.(\d+)\.?\s+(.+)$/i', $text)) {
+                    $mode = 'content';
+                    continue;
+                }
+
+                if ($this->isInstructionText($text)) continue;
+
+                if ($mode === 'kata_pengantar')      $kataPengantar .= $text . "\n";
+                elseif ($mode === 'ringkasan')       $ringkasan     .= $text . "\n";
+                elseif ($mode === 'suplemen')        $suplemen[]     = $text;
+            }
+        }
+
+        return [
+            'kata_pengantar' => $this->cleanText($kataPengantar),
+            'ringkasan'      => $this->cleanText($ringkasan),
+            'suplemen'       => array_values(array_filter(array_map('trim', $suplemen))),
+        ];
+    }
+
+    /**
+     * Instruction text detection (diadaptasi dari BorangParserService)
+     */
+    private function isInstructionText(string $text): bool
+    {
+        $text = trim($text);
+
+        if (empty($text) || strlen($text) < 5) return true;
+
+        if (preg_match('/^Deskripsi\s+.+?\s*\(Mohon jangan dihapus\)\s*$/i', $text)) {
+            return true;
+        }
+
+        if (preg_match('/^\[Mohon isi.+?maksimal\s+\d+\s+kata.+?\]$/is', $text)) {
+            return true;
+        }
+
+        $instructionKeywords = [
+            'Mohon jangan dihapus',
+            'Mohon isi deskripsi di sini',
+            'maksimal 1000 kata',
+            'maksimal 500 kata',
+            'sesuai dengan kondisi program studi',
+        ];
+
+        foreach ($instructionKeywords as $keyword) {
+            if (stripos($text, $keyword) !== false) {
+                return true;
+            }
+        }
+
+        if (preg_match('/^\[.*?\]$/', $text) && strlen($text) < 200) {
+            return true;
+        }
+
+        return false;
     }
 }

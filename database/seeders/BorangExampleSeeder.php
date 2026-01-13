@@ -12,16 +12,24 @@ use PhpOffice\PhpWord\Style\Font;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpWord\SimpleType\Jc;
+use PhpOffice\PhpWord\SimpleType\DocProtect;
+use PhpOffice\PhpSpreadsheet\Style\Protection;
 
 class BorangExampleSeeder extends Seeder
 {
     protected PhpWord $phpWord;
 
     protected array $numberingRegistered = [];
+    protected array $borangDataMap = [];
     protected ?DegreeLevel $activeDegreeLevel = null;
     protected int $currentTableWidthTwips = 8900;
     protected bool $isLandscape = false;
     protected bool $hasRestartedContentNumbering = false;
+
+    protected int $pageHeightTwips = 16838;        // A4 portrait height
+    protected int $contentHeightTwips = 14838;     // height - (marginTop+marginBottom)
+    protected int $marginTopTwips = 1000;
+    protected int $marginBottomTwips = 1000;
 
     public function run(): void
     {
@@ -66,7 +74,7 @@ class BorangExampleSeeder extends Seeder
         $this->phpWord->getSettings()->setUpdateFields(true);
 
         $this->phpWord->addTitleStyle(1, ['bold' => true, 'size' => 14], ['spaceAfter' => 240]);
-        $this->phpWord->addTitleStyle(2, ['bold' => true, 'size' => 12], ['spaceAfter' => 180]);
+        $this->phpWord->addTitleStyle(2, ['bold' => true, 'size' => 11], ['spaceAfter' => 180]);
         $this->phpWord->addTitleStyle(3, ['bold' => false, 'size' => 11], ['spaceAfter' => 120]);
 
         // ✅ FONT Montserrat 11PT (SEPERTI TEMPLATE)
@@ -80,6 +88,11 @@ class BorangExampleSeeder extends Seeder
         $this->addDaftarIsiSection();
         $this->addContentPages();
         $this->addSuplemenSection();
+        // ✅ Add basic protection
+        // $this->protectDocumentBasic();
+
+        // ✅ Save protection instructions
+        $this->saveProtectionInstructions($degreeLevel->code);
 
         $objWriter = IOFactory::createWriter($this->phpWord, 'Word2007');
         $safeCode = $degreeLevel->code; // contoh: "s2-terapan" jadi "s2_terapan"
@@ -90,7 +103,6 @@ class BorangExampleSeeder extends Seeder
         }
 
         $objWriter->save($filePath);
-        $this->injectSumFields($filePath);
 
         $this->command->info("✅ Template DOCX dibuat untuk {$safeCode}: " . $filePath);
     }
@@ -254,45 +266,28 @@ class BorangExampleSeeder extends Seeder
             ['alignment' => Jc::CENTER, 'spaceAfter' => 500]
         );
 
-        // Paragraf 1
-        $section->addText(
+        // ✅ Default/placeholder kata pengantar (4 paragraf)
+        $defaultKataPengantar = [
             'Puji syukur kami panjatkan ke hadirat Tuhan Yang Maha Esa atas tersusunnya laporan ini sebagai bagian dari dokumentasi dan evaluasi kinerja Program Studi. Laporan ini disusun untuk memberikan gambaran menyeluruh mengenai capaian akademik, penelitian, pengabdian kepada masyarakat, serta kinerja mahasiswa dan dosen selama beberapa tahun terakhir.',
-            ['size' => 11],
-            ['alignment' => Jc::BOTH, 'spaceAfter' => 200]
-        );
-
-        // Paragraf 2
-        $section->addText(
             'Laporan ini memuat berbagai data terkait penerimaan mahasiswa, capaian pembelajaran, prestasi akademik, kegiatan penelitian dan pengabdian kepada masyarakat, serta kerja sama dengan pihak eksternal. Seluruh data disajikan secara sistematis dan berdasarkan catatan administrasi Program Studi, dengan harapan dapat menjadi bahan evaluasi dan perbaikan dalam rangka peningkatan mutu pendidikan.',
-            ['size' => 11],
-            ['alignment' => Jc::BOTH, 'spaceAfter' => 200]
-        );
-
-        // Paragraf 3
-        $section->addText(
             'Kami menyadari bahwa penyusunan laporan ini tidak lepas dari dukungan berbagai pihak. Oleh karena itu, kami menyampaikan apresiasi dan terima kasih kepada seluruh dosen, tenaga kependidikan, mahasiswa, serta mitra kerja yang telah berkontribusi dalam pengumpulan data dan penyusunan laporan ini.',
-            ['size' => 11],
-            ['alignment' => Jc::BOTH, 'spaceAfter' => 200]
-        );
-
-        // Paragraf 4
-        $section->addText(
             'Akhir kata, semoga laporan ini dapat memberikan manfaat sebagai sarana transparansi, evaluasi, dan peningkatan mutu Program Studi di masa yang akan datang.',
-            ['size' => 11],
-            ['alignment' => Jc::BOTH, 'spaceAfter' => 600]
-        );
+        ];
+
+        // ✅ Kotak + teks bawaan
+        $this->addFrontMatterDescBox($section, 'Kata Pengantar', 500, $defaultKataPengantar, false);
 
         // Penutup (kanan bawah)
         $section->addText(
             '[Nama Kota], [Tanggal Penyusunan]',
             ['size' => 11],
-            ['alignment' => Jc::END, 'spaceAfter' => 100]
+            ['alignment' => Jc::END, 'spaceBefore' => 400, 'spaceAfter' => 100]
         );
 
         $section->addText(
             'Ketua Program Studi',
             ['size' => 11],
-            ['alignment' => Jc::END, 'spaceAfter' => 600]
+            ['alignment' => Jc::END, 'spaceAfter' => 900]
         );
 
         $section->addText(
@@ -312,11 +307,22 @@ class BorangExampleSeeder extends Seeder
         ]);
         $this->applyFooterPageNumber($section, 'roman');
 
-        // Judul
         $section->addText(
             'RINGKASAN',
             ['size' => 14, 'bold' => true],
             ['alignment' => Jc::CENTER, 'spaceAfter' => 500]
+        );
+
+        // ✅ Kotak input seperti deskripsi box (max 1000 kata)
+        $this->addFrontMatterDescBox(
+            $section,
+            'Ringkasan (Mohon jangan dihapus)',
+            1000,
+            [],                      // tidak ada prefill
+            true,                    // fullHeight = true
+            1800,                    // reservedTopTwips (boleh adjust)
+            3000,                    // minBoxHeightTwips
+            "[Mohon isi ringkasan di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]"
         );
     }
 
@@ -458,140 +464,20 @@ class BorangExampleSeeder extends Seeder
             );
         }
     }
-
-    /**
-     * ✅ Kotak besar untuk deskripsi + TABEL
-     * - Portrait tables: masuk ke dalam kotak (table border)
-     * - Landscape tables: dibuat di section landscape khusus
-     * - Landscape berurutan: tetap dalam 1 section landscape (tanpa dobel section break)
-     * - Setelah landscape selesai: balik ke portrait section baru + buat ulang kotak supaya lanjut rapi
-     *
-     * PERBAIKAN: header elemen/kriteria tidak dicetak lagi di landscape (agar tidak double),
-     * karena sudah dicetak lewat addElemenBox() sebelum fungsi ini dipanggil.
-     */
-    private function addDeskripsiBox($section, $kriteria, $elemen)
-    {
-        // Helper untuk membuat (ulang) kotak deskripsi dan mengembalikan cell kontennya
-        $makeDeskripsiBox = function ($section) use ($elemen) {
-            $table = $section->addTable([
-                'borderSize' => 6,
-                'borderColor' => '000000',
-                'cellMargin' => 100,
-                'width' => 100 * 50,
-                'unit' => 'pct'
-            ]);
-
-            $table->addRow();
-            $cell = $table->addCell(9500);
-
-            $cell->addText(
-                'Deskripsi ' . strtolower($elemen->pernyataan_elemen),
-                ['size' => 11, 'italic' => true],
-                ['spaceAfter' => 200]
-            );
-
-            $cell->addText(
-                '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
-                ['size' => 11, 'color' => 'FF0000', 'italic' => true],
-                ['spaceAfter' => 300, 'alignment' => Jc::BOTH]
-            );
-
-            return $cell;
-        };
-
-        // Awal: berada di portrait section
-        $currentOrientation = 'portrait';
-        $cell = $makeDeskripsiBox($section);
-
-        if (!$elemen->datasetBorang || $elemen->datasetBorang->count() === 0) {
-            return $section;
-        }
-
-        $datasets = $elemen->datasetBorang->values(); // rapikan index 0..n-1
-
-        for ($i = 0; $i < $datasets->count(); $i++) {
-            $dataset = $datasets[$i];
-            if ($dataset->tipe_field !== 'table') continue;
-
-            $isLandscape = $this->shouldLandscape($dataset);
-
-            // =========================
-            // LANDSCAPE TABLES
-            // =========================
-            if ($isLandscape) {
-
-                // Jika belum landscape, pindah ke landscape section sekali saja
-                if ($currentOrientation !== 'landscape') {
-                    $section = $this->createLandscapeSection();
-                    $currentOrientation = 'landscape';
-
-                    // ❌ PERBAIKAN: jangan cetak ulang header kriteria/elemen di sini
-                    // karena sudah ada addElemenBox() di portrait sebelumnya.
-                }
-
-                // Judul per tabel (tetap ditampilkan)
-                $section->addText(
-                    $dataset->nama,
-                    ['size' => 11, 'bold' => true],
-                    ['spaceAfter' => 120]
-                );
-
-                // Render tabel di landscape section
-                $this->addDatasetTable($section, $dataset);
-
-                $section->addTextBreak(1);
-
-                // Peek next: kalau berikutnya bukan landscape, baru balik portrait
-                $next = $datasets->get($i + 1);
-                $nextIsLandscape = $next && $next->tipe_field === 'table' && $this->shouldLandscape($next);
-
-                if (!$nextIsLandscape) {
-                    // Balik ke portrait section baru (sekali)
-                    $section = $this->createPortraitSection();
-                    $currentOrientation = 'portrait';
-
-                    // Karena section baru, untuk menjaga format, buat ulang elemen box + kotak deskripsi
-                    $this->addElemenBox($section, $kriteria, $elemen);
-                    $section->addTextBreak(0.5);
-                    $cell = $makeDeskripsiBox($section);
-                }
-
-                continue;
-            }
-
-            // =========================
-            // PORTRAIT TABLES (di kotak)
-            // =========================
-            if ($currentOrientation !== 'portrait') {
-                // Safety: kalau entah bagaimana masih landscape, balik dulu
-                $section = $this->createPortraitSection();
-                $currentOrientation = 'portrait';
-
-                $this->addElemenBox($section, $kriteria, $elemen);
-                $section->addTextBreak(0.5);
-                $cell = $makeDeskripsiBox($section);
-            }
-
-            // Render tabel portrait di dalam kotak deskripsi
-            $cell->addText(
-                $dataset->nama,
-                ['size' => 11, 'bold' => true],
-                ['spaceAfter' => 100]
-            );
-
-            $this->addDatasetTable($cell, $dataset);
-            $cell->addTextBreak(1);
-        }
-
-        return $section;
-    }
-
     /**
      * Deskripsi box + tabel, semuanya dirender di SECTION YANG SAMA.
      * Tidak ada switching portrait/landscape di sini.
      */
     private function addDeskripsiBoxUnified($section, $kriteria, $elemen)
     {
+        $hasTable = $elemen->datasetBorang && $elemen->datasetBorang->contains(fn($d) => $d->tipe_field === 'table');
+
+        // ✅ kalau tidak ada table dataset: bikin 1 halaman penuh
+        if (!$hasTable) {
+            $this->addDeskripsiBoxFullPage($section, $kriteria, $elemen);
+            return;
+        }
+
         // Kotak deskripsi (border)
         $table = $section->addTable([
             'borderSize' => 6,
@@ -604,17 +490,17 @@ class BorangExampleSeeder extends Seeder
         $table->addRow();
         $cell = $table->addCell(9500);
 
-        $cell->addText(
-            'Deskripsi ' . strtolower($elemen->pernyataan_elemen),
-            ['size' => 11, 'italic' => true],
-            ['spaceAfter' => 200]
-        );
+        $run = $cell->addTextRun(['spaceAfter' => 200]);
 
-        $cell->addText(
-            '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
-            ['size' => 11, 'color' => 'FF0000', 'italic' => true],
-            ['spaceAfter' => 300, 'alignment' => Jc::BOTH]
-        );
+        $cell->addFormField('textinput')
+            ->setName('desc_' . $elemen->id)
+            ->setDefaultValue('[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]')
+            ->setMaxLength(5000);
+        // $cell->addText(
+        //     '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
+        //     ['size' => 11, 'color' => 'FF0000', 'italic' => true],
+        //     ['spaceAfter' => 300, 'alignment' => Jc::BOTH]
+        // );
 
         // Render semua tabel di dalam kotak yang sama
         if ($elemen->datasetBorang && $elemen->datasetBorang->count() > 0) {
@@ -1144,55 +1030,175 @@ class BorangExampleSeeder extends Seeder
         return false;
     }
 
-    private function createPortraitSection(
-        string $numberType = 'arabic',
-        bool $restartNumbering = false
-    ): \PhpOffice\PhpWord\Element\Section {
+    private function createPortraitSection(string $numberType = 'arabic', bool $restartNumbering = false)
+    {
         $this->isLandscape = false;
-        $this->currentTableWidthTwips = 8906;
+
+        $this->marginTopTwips = 1000;
+        $this->marginBottomTwips = 1000;
+
+        $this->pageHeightTwips = 16838; // A4 portrait ~ 11.69" * 1440
+        $this->contentHeightTwips = $this->pageHeightTwips - ($this->marginTopTwips + $this->marginBottomTwips);
 
         $section = $this->phpWord->addSection([
-            'orientation' => 'portrait',
-            'marginTop' => 1000,
-            'marginBottom' => 1000,
-            'marginLeft' => 1500,
-            'marginRight' => 1500,
+            'orientation'  => 'portrait',
+            'marginTop'    => $this->marginTopTwips,
+            'marginBottom' => $this->marginBottomTwips,
+            'marginLeft'   => 1500,
+            'marginRight'  => 1500,
         ]);
 
-        $this->applyFooterPageNumber(
-            $section,
-            $numberType,
-            $restartNumbering ? 1 : null
-        );
-
+        $this->applyFooterPageNumber($section, $numberType, $restartNumbering ? 1 : null);
         return $section;
     }
 
-    /**
-     * ✅ PERBAIKAN: Create Landscape Section dengan Page Number Control
-     */
-    private function createLandscapeSection(
-        string $numberType = 'arabic',
-        bool $restartNumbering = false
-    ): \PhpOffice\PhpWord\Element\Section {
+    private function createLandscapeSection(string $numberType = 'arabic', bool $restartNumbering = false)
+    {
         $this->isLandscape = true;
-        $this->currentTableWidthTwips = 14838;
+
+        $this->marginTopTwips = 500;
+        $this->marginBottomTwips = 500;
+
+        $this->pageHeightTwips = 11906; // A4 landscape height ~ 8.27" * 1440
+        $this->contentHeightTwips = $this->pageHeightTwips - ($this->marginTopTwips + $this->marginBottomTwips);
 
         $section = $this->phpWord->addSection([
-            'orientation' => 'landscape',
-            'marginTop' => 500,
-            'marginBottom' => 500,
-            'marginLeft' => 500,
-            'marginRight' => 500,
+            'orientation'  => 'landscape',
+            'marginTop'    => $this->marginTopTwips,
+            'marginBottom' => $this->marginBottomTwips,
+            'marginLeft'   => 500,
+            'marginRight'  => 500,
         ]);
 
-        $this->applyFooterPageNumber(
-            $section,
-            $numberType,
-            $restartNumbering ? 1 : null
+        $this->applyFooterPageNumber($section, $numberType, $restartNumbering ? 1 : null);
+        return $section;
+    }
+
+    private function addDeskripsiBoxFullPage($section, $kriteria, $elemen): void
+    {
+        /**
+         * Reservasi tinggi area atas (yang sudah terpakai):
+         * - Judul kriteria + subtitle
+         * - Judul elemen (di kotak elemen Anda)
+         * - spacing/textbreak
+         *
+         * Silakan adjust angka ini sampai pas dengan template Anda.
+         */
+        $reservedTopTwips = $this->isLandscape ? 2200 : 2600;
+
+        // Tinggi kotak deskripsi = sisa tinggi halaman konten
+        $boxHeight = max(2200, $this->contentHeightTwips - $reservedTopTwips);
+
+        // Outer table = kotak deskripsi
+        $table = $section->addTable([
+            'borderSize'  => 6,
+            'borderColor' => '000000',
+            'cellMargin'  => 100,
+            'width'       => 100 * 50,
+            'unit'        => 'pct',
+        ]);
+
+        // 1 baris saja, tapi tingginya dibuat "mengisi sisa halaman"
+        $table->addRow($boxHeight, ['exactHeight' => true]);
+        $cell = $table->addCell(9500, ['valign' => 'top']);
+
+        // Header kecil di dalam kotak
+        $cell->addText(
+            'Deskripsi ' . strtolower($elemen->pernyataan_elemen) . ' (Mohon jangan dihapus)',
+            ['size' => 11, 'italic' => true],
+            ['spaceAfter' => 200]
         );
 
-        return $section;
+        $descKey   = 'desc_' . $elemen->id;
+        $filled    = !empty(trim($this->borangDataMap[$descKey] ?? ''));
+        $deskripsi = $filled
+            ? $this->borangDataMap[$descKey]
+            : '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]';
+
+        $cell->addText(
+            $deskripsi,
+            [
+                'size'   => 11,
+                'color'  => $filled ? '000000' : 'FF0000',
+                'italic' => !$filled,
+            ],
+            ['alignment' => Jc::BOTH]
+        );
+    }
+
+    private function addFrontMatterDescBox(
+        \PhpOffice\PhpWord\Element\Section $section,
+        string $label,
+        int $maxWords,
+        array $prefillParagraphs = [],
+        bool $fullHeight = false,
+        int $reservedTopTwips = 1800,      // hanya dipakai kalau fullHeight = true
+        int $minBoxHeightTwips = 3000,     // hanya dipakai kalau fullHeight = true
+        ?string $emptyPlaceholder = null   // kalau null, auto pakai template umum
+    ): void {
+        // Placeholder default jika kosong
+        if ($emptyPlaceholder === null) {
+            $emptyPlaceholder = "[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal {$maxWords} kata)...]";
+        }
+
+        // Style table (samakan saja; kalau mau beda margin, bisa tambahkan argumen juga)
+        $tableStyle = [
+            'borderSize'  => 6,
+            'borderColor' => '000000',
+            'cellMargin'  => 110,
+            'width'       => 100 * 50,
+            'unit'        => 'pct',
+        ];
+
+        $table = $section->addTable($tableStyle);
+
+        // Kalau full height: pakai height sisa halaman
+        if ($fullHeight) {
+            $boxHeight = max($minBoxHeightTwips, $this->contentHeightTwips - $reservedTopTwips);
+            $table->addRow($boxHeight, ['exactHeight' => true]);
+        } else {
+            $table->addRow();
+        }
+
+        $cell = $table->addCell(9500, ['valign' => 'top']);
+
+        // Header kecil dalam kotak
+        $cell->addText(
+            $label,
+            ['size' => 11, 'italic' => true],
+            ['spaceAfter' => 200]
+        );
+
+        $hasPrefill = !empty(array_filter($prefillParagraphs, fn($p) => trim((string)$p) !== ''));
+
+        // Kalau tidak ada prefill: tampilkan placeholder 1 paragraf
+        if (!$hasPrefill) {
+            $cell->addText(
+                $emptyPlaceholder,
+                ['size' => 11, 'color' => 'FF0000', 'italic' => true],
+                ['alignment' => Jc::BOTH, 'spaceAfter' => 200]
+            );
+            return;
+        }
+
+        // Render paragraf bawaan (placeholder isi)
+        foreach ($prefillParagraphs as $p) {
+            $p = trim((string)$p);
+            if ($p === '') continue;
+
+            $cell->addText(
+                $p,
+                ['size' => 11, 'color' => 'FF0000', 'italic' => true],
+                ['alignment' => Jc::BOTH, 'spaceAfter' => 200]
+            );
+        }
+
+        // Hint limit kata
+        $cell->addText(
+            "(Maksimal {$maxWords} kata)",
+            ['size' => 10, 'color' => 'FF0000', 'italic' => true],
+            ['alignment' => Jc::END]
+        );
     }
 
     private function addRow(
@@ -1222,14 +1228,6 @@ class BorangExampleSeeder extends Seeder
 
         // Kolom Value
         $table->addCell(3200)->addText($value ?: ' ', ['size' => 11]);
-    }
-
-    private function switchToSection(string $orientation): \PhpOffice\PhpWord\Element\Section
-    {
-        if ($orientation === 'landscape') {
-            return $this->createLandscapeSection();
-        }
-        return $this->createPortraitSection();
     }
 
     private function resolveDatasetForDegree($dataset): object
@@ -1734,42 +1732,6 @@ class BorangExampleSeeder extends Seeder
         );
     }
 
-    /**
-     * ✅ Post-process: Replace placeholder dengan Word field code untuk SUM(ABOVE)
-     */
-    private function injectSumFields($filePath)
-    {
-        $zip = new \ZipArchive();
-
-        if ($zip->open($filePath) === true) {
-            // Read document.xml
-            $documentXml = $zip->getFromName('word/document.xml');
-
-            // ✅ Find placeholder dan replace dengan field code XML yang proper
-            $documentXml = preg_replace(
-                '/<w:t>SUMFIELD_PLACEHOLDER<\/w:t>/',
-                '<w:fldChar w:fldCharType="begin"/>' .
-                    '<w:instrText xml:space="preserve"> =SUM(ABOVE) \# "0" </w:instrText>' .
-                    '<w:fldChar w:fldCharType="separate"/>' .
-                    '<w:t>0</w:t>' .
-                    '<w:fldChar w:fldCharType="end"/>',
-                $documentXml
-            );
-
-            // Write back
-            $zip->deleteName('word/document.xml');
-            $zip->addFromString('word/document.xml', $documentXml);
-            $zip->close();
-        }
-    }
-
-    // Ubah addSumAboveField() jadi:
-    private function addSumAboveField($cell, array $fontStyle = [], array $paragraphStyle = []): void
-    {
-        // ✅ Tambahkan PLACEHOLDER yang akan diganti dengan field code di post-processing
-        $cell->addText('SUMFIELD_PLACEHOLDER', $fontStyle, $paragraphStyle);
-    }
-
     private function addDaftarIsiSection(): void
     {
         $section = $this->createPortraitSection('roman');
@@ -1840,5 +1802,83 @@ class BorangExampleSeeder extends Seeder
             is_numeric($pageNum) ? (string)$pageNum : $pageNum,
             ['size' => 11, 'bold' => $bold]
         );
+    }
+    /**
+     * ✅ Basic document protection
+     */
+    // private function protectDocumentBasic(): void
+    // {
+    //     $settings = $this->phpWord->getSettings();
+    //     $protection = new Protection();
+    //     $protection->setEditing(DocProtect::READ_ONLY);
+    //     $protection->setPassword('lamdepilar');
+    //     $settings->setDocumentProtection($protection);
+    // }
+
+    /**
+     * ✅ Save detailed protection instructions
+     */
+    private function saveProtectionInstructions(string $degreeCode): void
+    {
+        $guide = <<<'TXT'
+# 🔒 PANDUAN PROTECT TEMPLATE LED
+
+## Password Default
+**Password:** lamdepilar
+
+## Jenis Protection
+
+### 1. Basic Protection (Already Applied)
+- Seluruh dokumen READ-ONLY
+- User perlu unprotect dengan password untuk edit
+
+### 2. Advanced Protection (Manual Setup Required)
+
+Untuk allow edit HANYA di area tertentu:
+
+**Area yang BOLEH diedit:**
+- Halaman cover (nama prodi, tahun)
+- Lembar pengesahan (tanda tangan, nama)
+- Kotak deskripsi di setiap elemen (dalam border hitam)
+- Tabel data di setiap elemen
+- Bagian suplemen
+
+**Area yang DIKUNCI:**
+- Header/footer
+- Pernyataan standar
+- Indikator penilaian
+- Label dan instruksi
+
+**Cara Setup (Microsoft Word):**
+1. File → Info → Protect Document → Restrict Editing
+2. Pilih "Allow only this type of editing": Filling in forms
+3. Klik "Select sections..."
+4. Centang sections yang boleh diedit:
+   - Section 1 (Cover)
+   - Section 2 (Pengesahan)
+   - Kotak deskripsi (manual select)
+   - Suplemen section
+5. Klik "Yes, Start Enforcing Protection"
+6. Enter password: lamdepilar
+
+**Catatan:**
+- Protection berbasis section/region memerlukan manual setup
+- Alternatif: Use form fields untuk area editable
+- Atau: Provide separated template per section
+
+## Troubleshooting
+
+**Q: Saya lupa password?**
+A: Contact admin atau regenerate template
+
+**Q: Kotak deskripsi tidak bisa diedit?**
+A: Unprotect → Edit → Re-protect dengan exclude area tersebut
+
+TXT;
+        $guidePath = storage_path("app/public/templates/PROTECTION_GUIDE_{$degreeCode}.txt");
+        if (!file_exists(dirname($guidePath))) {
+            mkdir(dirname($guidePath), 0755, true);
+        }
+        file_put_contents($guidePath, $guide);
     }
 }

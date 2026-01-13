@@ -110,6 +110,9 @@ return new class extends Migration
             // Notes & Errors
             $table->text('parsing_notes')->nullable();
             $table->json('parsing_errors')->nullable();
+            $table->text('kata_pengantar')->nullable();
+            $table->text('ringkasan')->nullable();
+            $table->json('suplemen')->nullable();
 
             // Metadata
             $table->foreignId('imported_by')
@@ -121,56 +124,6 @@ return new class extends Migration
 
             $table->index(['id_pengajuan', 'status']);
             $table->index(['status']);
-        });
-
-        // ========================================
-        // 3. BORANG SECTIONS (Parsed Sections)
-        // ========================================
-        Schema::create('borang_sections', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('id_import')
-                ->constrained('borang_imports')
-                ->onDelete('cascade');
-            $table->foreignId('id_elemen')
-                ->nullable()
-                ->constrained('elemen_standar')
-                ->onDelete('set null');
-
-            $table->string('kode_section', 50); // D.1, E.1, etc.
-            $table->string('judul_section');
-            $table->longText('konten_narasi')->nullable();
-            $table->integer('position')->default(0);
-            $table->timestamps();
-
-            $table->index(['id_import', 'kode_section']);
-            $table->index(['id_elemen']);
-        });
-
-        // ========================================
-        // 4. BORANG TABLES (Parsed Tables)
-        // ========================================
-        Schema::create('borang_tables', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('id_section')
-                ->constrained('borang_sections')
-                ->onDelete('cascade');
-            $table->foreignId('id_dataset')
-                ->nullable()
-                ->constrained('dataset_borang')
-                ->onDelete('set null');
-
-            $table->string('kode_tabel', 50); // E.1.a, E.1.b, etc.
-            $table->string('judul_tabel')->nullable();
-            $table->integer('row_count')->default(0);
-            $table->integer('col_count')->default(0);
-            $table->json('headers')->nullable();
-            $table->longText('data')->nullable(); // Store as JSON or HTML
-            $table->longText('html_content')->nullable(); // Original HTML
-            $table->integer('position')->default(0);
-            $table->timestamps();
-
-            $table->index(['id_section', 'kode_tabel']);
-            $table->index(['id_dataset']);
         });
 
         // ========================================
@@ -209,13 +162,61 @@ return new class extends Migration
             $table->index(['id_borang_import']);
             $table->index(['dataset_id']);
         });
+
+        Schema::table('borang_validations', function (Blueprint $table) {
+            // Ganti checklist_items dengan struktur baru
+            $table->json('review_led')->nullable()
+                ->comment('Review per elemen: {elemen_id: {grade: A/B/C, catatan: string}}')
+                ->after('id_pengajuan');
+
+            $table->json('review_suplemen')->nullable()
+                ->comment('Review suplemen per elemen: {elemen_id: {grade: A/B/C, catatan: string}}')
+                ->after('review_led');
+
+            $table->json('review_lkps')->nullable()
+                ->comment('Review LKPS per indikator kuantitatif: {indikator_id: {grade: A/B/C, catatan: string}}')
+                ->after('review_suplemen');
+
+            // Catatan umum per kategori
+            $table->text('catatan_led')->nullable()->after('review_lkps');
+            $table->text('catatan_suplemen')->nullable()->after('catatan_led');
+            $table->text('catatan_lkps')->nullable()->after('catatan_suplemen');
+
+            // Statistik otomatis
+            $table->integer('total_elemen_led')->default(0)->after('total_sections');
+            $table->integer('total_elemen_suplemen')->default(0)->after('total_elemen_led');
+            $table->integer('total_indikator_lkps')->default(0)->after('total_elemen_suplemen');
+
+            $table->integer('reviewed_led')->default(0)->after('total_indikator_lkps');
+            $table->integer('reviewed_suplemen')->default(0)->after('reviewed_led');
+            $table->integer('reviewed_lkps')->default(0)->after('reviewed_suplemen');
+
+            // Drop old column
+            $table->dropColumn('checklist_items');
+        });
+
+        Schema::create('dataset_suplemen', function (Blueprint $table) {
+            $table->id();
+            $table->string('degree_level_code', 50); // d1, d2, d3, d4, s1, s1-terapan, s2, s2-terapan, s3, s3-terapan, profesi
+            $table->string('section_key', 100); // bagian_a_common, pemastian_cpl, dll
+            $table->string('content_type', 50); // list_item, paragraph, bullet
+            $table->integer('numbering_level')->default(0); // 0, 1, 2, 3
+            $table->text('text_content');
+            $table->json('formatting')->nullable(); // {size: 11, bold: true, spaceAfter: 120}
+            $table->integer('urutan')->default(0);
+            $table->unsignedBigInteger('parent_id')->nullable();
+            $table->timestamps();
+
+            $table->index(['degree_level_code', 'urutan']);
+            $table->foreign('parent_id')->references('id')->on('dataset_suplemen')->onDelete('cascade');
+        });
     }
 
     public function down()
     {
+        Schema::dropIfExists('dataset_suplemen');
+        Schema::dropIfExists('borang_validations');
         Schema::dropIfExists('borang_data');
-        Schema::dropIfExists('borang_tables');
-        Schema::dropIfExists('borang_sections');
         Schema::dropIfExists('borang_imports');
         Schema::dropIfExists('dataset_borang_degree_level');
         Schema::dropIfExists('dataset_borang');

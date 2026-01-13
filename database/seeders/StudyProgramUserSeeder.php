@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\University;
 use App\Models\StudyProgram;
 use Illuminate\Database\Seeder;
 
@@ -14,9 +15,121 @@ class StudyProgramUserSeeder extends Seeder
         $adminProdi1 = User::where('email', 'upps1@daisy.lamdepilar.or.id')->first();
         $adminProdi2 = User::where('email', 'upps2@daisy.lamdepilar.or.id')->first();
 
+        $universities = [
+            [
+                'code'       => 'EX-UNI-001',
+                'name'       => 'Universitas LAMDEPILAR',
+                'is_active'  => true,
+                'is_example' => true,
+            ],
+            [
+                'code'       => 'EX-UNI-002',
+                'name'       => 'Universitas Contoh ABCD',
+                'is_active'  => true,
+                'is_example' => true,
+            ],
+        ];
+
+        foreach ($universities as $university) {
+            University::create($university);
+        }
+
+        $u1 = University::withoutGlobalScopes()->where('code', 'EX-UNI-001')->first();
+        $u2 = University::withoutGlobalScopes()->where('code', 'EX-UNI-002')->first();
+
+        $studyPrograms = [
+            // =======================
+            // Universitas LAMDEPILAR
+            // =======================
+            [
+                'name'             => 'LAMDEPILAR (Contoh)',
+                'full_name'        => 'Program Studi LAMDEPILAR (Contoh)',
+                'code'             => 'LD-EX-001',
+                'id_university' => $u1->id,
+                'id_degree_level'  => 1, // S1
+                'category_id'      => 1,
+                'bentuk_pt'        => 'Universitas',
+                'email'            => 'lamdepilar@contoh.ac.id',
+                'peringkat_akreditasi' => 'A',
+                'tanggal_kedaluwarsa'  => now()->addYears(5),
+                'status_kedaluwarsa'   => 'Aktif',
+                'is_active'        => true,
+                'is_example'       => true,
+            ],
+            [
+                'name'             => 'ABCDE (Contoh)',
+                'full_name'        => 'Program Studi ABCDE (Contoh)',
+                'code'             => 'SI-EX-001',
+                'id_university' => $u1->id,
+                'id_degree_level'  => 1,
+                'category_id'      => 1,
+                'bentuk_pt'        => 'Universitas',
+                'email'            => 'abcde@contoh.ac.id',
+                'peringkat_akreditasi' => 'B',
+                'tanggal_kedaluwarsa'  => now()->addYears(4),
+                'status_kedaluwarsa'   => 'Aktif',
+                'is_active'        => true,
+                'is_example'       => true,
+            ],
+            [
+                // ❌ prodi NON-AKTIF
+                'name'             => 'Manajemen',
+                'full_name'        => 'Program Studi Manajemen',
+                'code'             => 'MNJ-EX-001',
+                'id_university' => $u1->id,
+                'id_degree_level'  => 1,
+                'category_id'      => 2,
+                'bentuk_pt'        => 'Universitas',
+                'email'            => 'manajemen@contoh.ac.id',
+                'peringkat_akreditasi' => null,
+                'tanggal_kedaluwarsa'  => null,
+                'status_kedaluwarsa'   => 'Belum Terakreditasi',
+                'is_active'        => false,
+                'is_example'       => true,
+            ],
+
+            // =======================
+            // Universitas Contoh ABCD
+            // =======================
+            [
+                'name'             => 'DEPILAR (Contoh)',
+                'full_name'        => 'Program Studi DEPILAR (Contoh)',
+                'code'             => 'DP-EX-002',
+                'id_university' => $u2->id,
+                'id_degree_level'  => 1,
+                'category_id'      => 2,
+                'bentuk_pt'        => 'Universitas',
+                'email'            => 'depilar@abcd.ac.id',
+                'peringkat_akreditasi' => 'A',
+                'tanggal_kedaluwarsa'  => now()->addYears(5),
+                'status_kedaluwarsa'   => 'Aktif',
+                'is_active'        => true,
+                'is_example'       => true,
+            ],
+            [
+                'name'             => 'Testing (Contoh)',
+                'full_name'        => 'Program Studi Testing (Contoh)',
+                'code'             => 'TEST-EX-002',
+                'id_university' => $u2->id,
+                'id_degree_level'  => 1,
+                'category_id'      => 3,
+                'bentuk_pt'        => 'Universitas',
+                'email'            => 'testing@abcd.ac.id',
+                'peringkat_akreditasi' => 'B',
+                'tanggal_kedaluwarsa'  => now(),
+                'status_kedaluwarsa'   => 'Kedaluwarsa',
+                'is_active'        => true,
+                'is_example'       => true,
+            ],
+        ];
+
+        foreach ($studyPrograms as $program) {
+            StudyProgram::create($program);
+        }
+
         // Get study programs
-        $prodi1 = StudyProgram::where('email', 's1arsitektur@universitasdiponegoro.ac.id')->first();
-        $prodi2 = StudyProgram::where('email', 's1arsitektur@universitasislamindonesia.ac.id')->first();
+        $prodi1 = StudyProgram::nonExample()->withoutGlobalScopes()->where('email', 'lamdepilar@contoh.ac.id')->first();
+        $prodi2 = StudyProgram::nonExample()->withoutGlobalScopes()->where('email', 'testing@abcd.ac.id')->first();
 
         if ($adminProdi1 && $prodi1) {
             // Admin Prodi 1 -> TI UGM & SI UGM

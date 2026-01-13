@@ -129,30 +129,65 @@
                     </div>
                 </div>
 
-                @if($currentAssignment->status_penawaran === 'pending')
-                <div class="alert alert-info alert-permanent mt-3 mb-0">
-                    <i class="bi bi-info-circle"></i>
-                    Validator sedang menunggu konfirmasi. Anda dapat reassign jika diperlukan.
-                </div>
-                @elseif($currentAssignment->status_penawaran === 'rejected')
-                <div class="alert alert-danger alert-permanent mt-3 mb-0">
-                    <i class="bi bi-x-circle"></i>
-                    Validator menolak penawaran. Silakan assign validator baru.
-                    @if($currentAssignment->response_note)
-                    <br><strong>Alasan:</strong> "{{ $currentAssignment->response_note }}"
+                {{-- ✅ ADD: Action Buttons based on status --}}
+                <div class="mt-3 pt-3 border-top">
+                    @if($currentAssignment->status_penawaran === 'pending')
+                    <div class="alert alert-info alert-permanent mb-3">
+                        <i class="bi bi-info-circle"></i>
+                        Validator sedang menunggu konfirmasi. Anda dapat <strong>membatalkan</strong> atau <strong>reassign</strong> jika diperlukan.
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <form action="{{ route('de.pengajuan.cancel-validator', $currentAssignment->id) }}" method="POST" class="d-inline">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Batalkan assignment validator ini? Email penawaran akan dibatalkan.')">
+                                <i class="bi bi-x-circle"></i> Batalkan Assignment
+                            </button>
+                        </form>
+
+                        <button type="button" class="btn btn-warning btn-sm" onclick="document.getElementById('assignForm').scrollIntoView({ behavior: 'smooth' })">
+                            <i class="bi bi-arrow-repeat"></i> Reassign ke Validator Lain
+                        </button>
+                    </div>
+
+                    @elseif($currentAssignment->status_penawaran === 'rejected')
+                    <div class="alert alert-danger alert-permanent mb-3">
+                        <i class="bi bi-x-circle"></i>
+                        Validator menolak penawaran. Silakan assign validator baru.
+                        @if($currentAssignment->response_note)
+                        <br><strong>Alasan:</strong> "{{ $currentAssignment->response_note }}"
+                        @endif
+                    </div>
+
+                    <button type="button" class="btn btn-primary btn-sm" onclick="document.getElementById('assignForm').scrollIntoView({ behavior: 'smooth' })">
+                        <i class="bi bi-person-plus"></i> Assign Validator Baru
+                    </button>
+
+                    @elseif($currentAssignment->status_penawaran === 'accepted')
+                    <div class="alert alert-success alert-permanent mb-3">
+                        <i class="bi bi-check-circle"></i>
+                        Validator sudah menerima penawaran dan sedang bekerja.
+                    </div>
+
+                    @if($currentAssignment->responded_at)
+                    <small class="text-muted">
+                        <i class="bi bi-clock"></i> Diterima pada: {{ $currentAssignment->responded_at->format('d M Y H:i') }}
+                    </small>
+                    @endif
+
+                    <div class="mt-2">
+                        <a href="{{ route('validator.borang.show', $currentAssignment->id) }}" class="btn btn-info btn-sm" target="_blank">
+                            <i class="bi bi-eye"></i> Lihat Progress Validasi
+                        </a>
+                    </div>
                     @endif
                 </div>
-                @else
-                <div class="alert alert-success alert-permanent mt-3 mb-0">
-                    <i class="bi bi-check-circle"></i>
-                    Validator sudah menerima penawaran dan sedang bekerja.
-                </div>
-                @endif
             </div>
             @endif
 
             {{-- Assign Form --}}
-            <div class="card">
+            <div class="card" id="assignForm">
                 <div class="card-header bg-success text-white">
                     <h5 class="mb-0">
                         <i class="bi bi-person-plus"></i>
@@ -170,16 +205,28 @@
                             </label>
                             <select name="id_validator" id="id_validator" class="form-select" required>
                                 <option value="">-- Pilih Validator --</option>
-                                @foreach($validators as $validator)
-                                <option value="{{ $validator->id }}" {{ $currentAssignment && $currentAssignment->id_user == $validator->id ? 'disabled' : '' }}>
+                                @forelse($validators as $validator)
+                                <option value="{{ $validator->id }}" data-email="{{ $validator->email }}" {{ $currentAssignment && $currentAssignment->id_user == $validator->id ? 'disabled' : '' }}>
                                     {{ $validator->name }} ({{ $validator->email }})
                                     {{ $currentAssignment && $currentAssignment->id_user == $validator->id ? '- CURRENT' : '' }}
                                 </option>
-                                @endforeach
+                                @empty
+                                <option value="" disabled>Tidak ada validator tersedia</option>
+                                @endforelse
                             </select>
                             <small class="text-muted">
                                 Pilih validator yang akan mereview LED
                             </small>
+                        </div>
+
+                        <div id="validatorPreview" style="display: none;" class="card bg-light mb-3">
+                            <div class="card-body">
+                                <h6 class="fw-bold">Validator Terpilih:</h6>
+                                <p class="mb-0">
+                                    <i class="bi bi-person"></i> <strong id="previewName">-</strong><br>
+                                    <i class="bi bi-envelope"></i> <span id="previewEmail">-</span>
+                                </p>
+                            </div>
                         </div>
 
                         {{-- Catatan DE --}}
@@ -243,11 +290,37 @@
 
 @push('scripts')
 <script>
+    // Submit form
     document.getElementById('assignValidatorForm').addEventListener('submit', async function(e) {
         e.preventDefault();
 
         const formData = new FormData(this);
         const data = Object.fromEntries(formData);
+
+        // Validation
+        if (!data.id_validator) {
+            Swal.fire({
+                icon: 'error'
+                , title: 'Error'
+                , text: 'Mohon pilih validator terlebih dahulu!'
+            });
+            return;
+        }
+
+        // Confirm
+        const selectedOption = document.getElementById('id_validator').selectedOptions[0];
+        const validatorName = selectedOption.text.split('(')[0].trim();
+
+        const result = await Swal.fire({
+            icon: 'question'
+            , title: 'Konfirmasi Assignment'
+            , html: `Assign validator <strong>${validatorName}</strong> untuk review LED?`
+            , showCancelButton: true
+            , confirmButtonText: 'Ya, Assign!'
+            , cancelButtonText: 'Batal'
+        });
+
+        if (!result.isConfirmed) return;
 
         const btnSubmit = document.getElementById('btnSubmit');
         btnSubmit.disabled = true;
@@ -264,21 +337,24 @@
                 , body: JSON.stringify(data)
             });
 
-            const result = await response.json();
+            const responseData = await response.json();
 
-            if (result.meta.status !== 'success') {
-                throw new Error(result.meta.message || 'Request gagal');
+            if (!responseData.meta || responseData.meta.status !== 'success') {
+                throw new Error(responseData.meta ? responseData.meta.message : 'Request gagal');
             }
 
             await Swal.fire({
                 icon: 'success'
                 , title: 'Berhasil!'
-                , html: result.meta.message
+                , html: responseData.meta.message
+                , timer: 2000
+                , showConfirmButton: false
             });
 
             window.location.href = '{{ route("de.pengajuan.show", $pengajuan->id) }}';
         } catch (error) {
-            console.log(error)
+            console.error('Assignment error:', error);
+
             Swal.fire({
                 icon: 'error'
                 , title: 'Gagal'
@@ -287,6 +363,19 @@
 
             btnSubmit.disabled = false;
             btnSubmit.innerHTML = '<i class="bi bi-send"></i> {{ $currentAssignment ? "Reassign Validator" : "Assign Validator" }}';
+        }
+    });
+
+    document.getElementById('id_validator').addEventListener('change', function() {
+        const preview = document.getElementById('validatorPreview');
+        const selectedOption = this.options[this.selectedIndex];
+
+        if (this.value) {
+            document.getElementById('previewName').textContent = selectedOption.text.split('(')[0].trim();
+            document.getElementById('previewEmail').textContent = selectedOption.dataset.email;
+            preview.style.display = 'block';
+        } else {
+            preview.style.display = 'none';
         }
     });
 

@@ -267,6 +267,10 @@ $authUser = Auth::user();
                                 <a href="{{ route($jenisAsesmen.'.validasi.asesor', ['idAsesmen' => $item['asesmen']->id, 'jenisAsesmen' => 'ak']) }}" class="btn btn-sm btn-outline-primary">
                                     <i class="bi bi-arrow-right"></i> Lihat Penilaian
                                 </a>
+                                @elseif ($jenisAsesmen == 'dokumen')
+                                <a href="{{ route('validator.borang.show',$item->id) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-arrow-right"></i> Lihat Penilaian
+                                </a>
                                 @endif
                                 @endif
                                 @endif

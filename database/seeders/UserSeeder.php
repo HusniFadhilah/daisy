@@ -167,6 +167,14 @@ class UserSeeder extends Seeder
                 'roles' => ['admin_prodi'],
             ],
             [
+                'name' => 'Keuangan LAMDEPILAR 1',
+                'email' => 'keuangan@daisy.lamdepilar.or.id',
+                'password' => Hash::make('=Secret1234'),
+                'role' => 'user',
+                'role_selected' => 'keuangan_lamdepilar',
+                'roles' => ['keuangan_lamdepilar'],
+            ],
+            [
                 'name' => 'Default User',
                 'email' => 'default@daisy.lamdepilar.or.id',
                 'password' => Hash::make('=Secret1234'),

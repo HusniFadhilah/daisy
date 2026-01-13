@@ -148,9 +148,22 @@ class AsesmenUserRole extends Model
         return $this->hasOne(BorangValidation::class, 'id_assignment');
     }
 
+    // ✅ ADD: Relasi ke pengajuan melalui asesmen
     public function pengajuan()
     {
-        return $this->belongsTo(PengajuanAkreditasi::class, 'id_pengajuan');
+        return $this->hasOneThrough(
+            PengajuanAkreditasi::class,
+            Asesmen::class,
+            'id', // Foreign key on asesmens table
+            'id', // Foreign key on pengajuan_akreditasi table
+            'id_asesmen', // Local key on asesmen_user_roles table
+            'id_pengajuan' // Local key on asesmens table
+        );
+    }
+
+    public function role_selected()
+    {
+        return $this->belongsTo(Role::class, 'id_role');
     }
 
     public function studyProgram()

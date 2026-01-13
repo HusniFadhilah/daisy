@@ -10,6 +10,7 @@ class DegreeLevel extends Model
         'code',
         'alias',
         'name',
+        'is_active',
     ];
 
     public function studyPrograms()

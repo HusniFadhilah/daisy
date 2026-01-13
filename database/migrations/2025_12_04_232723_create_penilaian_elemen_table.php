@@ -20,7 +20,7 @@ return new class extends Migration
             $table->text('komentar')->nullable()->comment('Deskripsi/justifikasi penilaian asesor');
             $table->enum('status', ['draft', 'submitted'])->default('draft');
             // Status validasi oleh validator
-            $table->enum('status_validasi', ['not_validated', 'validated', 'revision_required', 'approved'])
+            $table->enum('status_validasi', ['pending', 'not_validated', 'validated', 'validated_diff', 'revision_required', 'approved'])
                 ->default('not_validated');
             $table->integer('preferensi_skor')->nullable()->comment('Skor yang disarankan validator');
             $table->integer('skor_final')->nullable()->comment('Skor final yang disetujui validator');
@@ -59,7 +59,7 @@ return new class extends Migration
             $table->foreignId('id_elemen')->constrained('elemen_standar', 'id')->onDelete('cascade');
             $table->integer('skor')->nullable()->comment('0=Not Met, 1=Not Met, 2=Weakness, 3=Met');
             $table->text('komentar')->nullable()->comment('Deskripsi/justifikasi penilaian asesor');
-            $table->enum('status', ['draft', 'submitted'])->default('draft');
+            $table->enum('status', ['draft', 'submitted', 'approved'])->default('draft');
 
             $table->boolean('is_locked')->comment('0-false,1-true')->default(0);
             $table->timestamps();
@@ -97,7 +97,7 @@ return new class extends Migration
             $table->foreignId('id_validator')->nullable()->constrained('users', 'id')->onDelete('cascade');
 
             // Validasi Data
-            $table->enum('status_validasi', ['not_validated', 'validated', 'revision_required', 'approved'])
+            $table->enum('status_validasi', ['not_validated', 'validated', 'validated_diff', 'revision_required', 'approved'])
                 ->default('not_validated');
             $table->integer('skor_final')->nullable()->comment('Skor final yang disetujui validator');
             $table->text('catatan_validator')->nullable();

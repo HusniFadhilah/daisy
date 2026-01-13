@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Prodi\BorangUploadController;
 use App\Http\Controllers\Profile\{PasswordResetController, ProfileController};
 use App\Http\Controllers\Prodi\{DeskEvaluatorController, PengajuanAkreditasiController, PemetaanAkreditasiController};
 use App\Http\Controllers\Asesmen\{AsesmenController, AKController, ALController, ALDocumentController, BorangValidatorController, PenawaranController, ValidasiController};
@@ -165,14 +166,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::prefix('/berkas/{id}/documents')->name('berkas.documents.')->group(function () {
             Route::get('/', [ALDocumentController::class, 'index'])->name('index');
-            Route::post('/berita-acara', [ALDocumentController::class, 'uploadBeritaAcara'])->name('beritaAcara.upload');
-            Route::get('/berita-acara', [ALDocumentController::class, 'page'])->name('berkas.beritaAcara.page');
+            Route::post('/upload', [ALDocumentController::class, 'uploadDocument'])->name('upload');
+            Route::get('/list', [ALDocumentController::class, 'getFiles'])->name('list');
+            Route::get('/page', [ALDocumentController::class, 'page'])->name('berkas.page');
+            Route::post('/finalize', [ALDocumentController::class, 'finalize'])->name('finalize');
+            Route::post('/unfinalize', [ALDocumentController::class, 'unfinalize'])->name('unfinalize');
 
             Route::patch('/reorder', [ALDocumentController::class, 'reorder'])->name('reorder');
             Route::patch('/{docId}/toggle', [ALDocumentController::class, 'toggleActive'])->name('toggle');
 
             Route::get('/{docId}/download', [ALDocumentController::class, 'download'])->name('download');
-            Route::delete('/{docId}', [ALDocumentController::class, 'destroy'])->name('destroy');
+            Route::delete('/{docId}', [ALDocumentController::class, 'destroy'])->name('delete');
         });
     });
 
@@ -235,6 +239,42 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
             // === Dokumen Download ===
             Route::get('/dokumen/{id}/download', [PengajuanAkreditasiController::class, 'downloadDokumen'])->name('.dokumen.download');
+            // ========================================
+            // UPLOAD FILES (3 Jenis)
+            // ========================================
+
+            // 1. Upload Lembar Pengesahan (PDF)
+            Route::post('/{id}/upload-pengesahan', [
+                BorangUploadController::class,
+                'uploadPengesahan'
+            ])->name('.upload-pengesahan');
+
+            // 2. Upload Data Kualitatif (DOCX dengan parsing)
+            Route::post('/{id}/upload-kualitatif', [
+                BorangUploadController::class,
+                'uploadKualitatif'
+            ])->name('.upload-kualitatif');
+
+            // 3. Upload Data Kuantitatif (Excel tanpa parsing)
+            Route::post('/{id}/upload-kuantitatif', [
+                BorangUploadController::class,
+                'uploadKuantitatif'
+            ])->name('.upload-kuantitatif');
+
+            // Download file
+            Route::get('/{id}/dokumen/{dokumenId}/download', [
+                BorangUploadController::class,
+                'downloadDokumen'
+            ])->name('.download-dokumen');
+            Route::get(
+                '/{id}/borang-online/check-files',
+                [PengajuanAkreditasiController::class, 'checkBorangFiles']
+            )->name('.borang.check-files');
+            // Delete file
+            Route::delete('/{id}/dokumen/{dokumenId}', [
+                BorangUploadController::class,
+                'deleteDokumen'
+            ])->name('.delete-dokumen');
         });
 
         Route::middleware(['auth', 'role:admin_prodi,admin_univ,super_admin,asesi'])->group(function () {
@@ -266,8 +306,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ->name('.borang-view');
 
             // Review Kesiapan
-            Route::post('/{id}/review', [DeskEvaluatorController::class, 'reviewKesiapan'])
-                ->name('.review');
+            Route::post('/{id}/lapor-validasi', [DeskEvaluatorController::class, 'laporHasilValidasi'])->name('.lapor-validasi');
 
             // Verifikasi Pembayaran
             Route::post('/{id}/verifikasi-pembayaran', [DeskEvaluatorController::class, 'verifikasiPembayaran'])
@@ -286,27 +325,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
     });
 
-    Route::prefix('borang')->name('borang.')->group(function () {
-        // List assignments
-        Route::get('/', [BorangValidatorController::class, 'index'])
-            ->name('index');
+    // routes/web.php
 
-        // Review specific borang (check acceptance via middleware or controller)
-        Route::get('/{assignment}', [BorangValidatorController::class, 'show'])->whereNumber('assignment')
-            ->name('show')
-            ->middleware('penawaran.accepted:dokumen'); // ← NEW middleware check
+    Route::middleware(['auth'])->prefix('validator')->name('validator.')->group(function () {
+        Route::prefix('borang')->name('borang.')->group(function () {
+            Route::get('/', [BorangValidatorController::class, 'index'])->name('index');
+            Route::get('/{assignment}', [BorangValidatorController::class, 'show'])->name('show');
 
-        // Submit validation (approve/revision)
-        Route::post('/{assignment}/submit', [BorangValidatorController::class, 'submit'])
-            ->name('submit');
+            // ✅ NEW: Auto-save review per item
+            Route::post('/{assignment}/update-review', [BorangValidatorController::class, 'updateReview'])->name('update-review');
 
-        // Cancel validation (back to in_review)
-        Route::post('/{assignment}/cancel', [BorangValidatorController::class, 'cancel'])
-            ->name('cancel');
+            Route::post('/{assignment}/submit', [BorangValidatorController::class, 'submit'])->name('submit');
+            Route::get('/{assignment}/stats', [BorangValidatorController::class, 'getValidationStats'])->name('stats');
 
-        // Get validation stats (AJAX)
-        Route::get('/{assignment}/stats', [BorangValidatorController::class, 'getValidationStats'])
-            ->name('stats');
+            // ✅ NEW: Accept/Reject offer
+            Route::post('/{assignment}/respond-offer', [BorangValidatorController::class, 'respondOffer'])->name('respond-offer');
+        });
     });
 
     Route::middleware(['auth', 'role:super_admin,asesi'])->group(function () {

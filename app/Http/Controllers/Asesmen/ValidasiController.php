@@ -44,7 +44,7 @@ class ValidasiController extends Controller
             'id_asesmen',
             'id_asesor',
             DB::raw('COUNT(*) as total'),
-            DB::raw("SUM(CASE WHEN status_validasi IN ('validated','approved') THEN 1 ELSE 0 END) as validated"),
+            DB::raw("SUM(CASE WHEN status_validasi IN ('validated','validated_diff','approved') THEN 1 ELSE 0 END) as validated"),
             DB::raw("SUM(CASE WHEN status_validasi = 'revision_required' THEN 1 ELSE 0 END) as revision"),
             DB::raw("SUM(CASE WHEN status_validasi = 'pending' THEN 1 ELSE 0 END) as pending")
         )
@@ -153,43 +153,6 @@ class ValidasiController extends Controller
     }
 
     /**
-     * Calculate validation progress for specific asesor
-     */
-    private function calculateAsesorValidationProgress($idAsesmen, $idUser)
-    {
-        $totalPenilaian = PenilaianElemenAk::where('id_asesmen', $idAsesmen)
-            ->where('id_asesor', $idUser)
-            ->count();
-
-        $validatedCount = PenilaianElemenAk::where('id_asesmen', $idAsesmen)
-            ->where('id_asesor', $idUser)
-            ->whereIn('status_validasi', ['validated', 'approved'])
-            ->count();
-
-        $revisionCount = PenilaianElemenAk::where('id_asesmen', $idAsesmen)
-            ->where('id_asesor', $idUser)
-            ->where('status_validasi', 'revision_required')
-            ->count();
-
-        $pendingCount = PenilaianElemenAk::where('id_asesmen', $idAsesmen)
-            ->where('id_asesor', $idUser)
-            ->where('status_validasi', 'pending')
-            ->count();
-
-        $percentage = $totalPenilaian > 0
-            ? round(($validatedCount / $totalPenilaian) * 100, 1)
-            : 0;
-
-        return [
-            'total' => $totalPenilaian,
-            'validated' => $validatedCount,
-            'revision' => $revisionCount,
-            'pending' => $pendingCount,
-            'percentage' => $percentage,
-        ];
-    }
-
-    /**
      * Show validator dashboard with dynamic asesor support
      */
     public function asesor($idAsesmen, $jenisAsesmen = 'ak')
@@ -276,7 +239,7 @@ class ValidasiController extends Controller
             $items = $penilaianAll->where('id_asesor', $asesorId);
 
             $completed = $items->sum('count'); // semua yang punya skor
-            $validated = ($items->whereIn('status_validasi', ['validated', 'approved'])->sum('count'));
+            $validated = ($items->whereIn('status_validasi', ['validated', 'validated_diff', 'approved'])->sum('count'));
             $pending = $items->where('status_validasi', 'pending')->sum('count');
             $revision = $items->where('status_validasi', 'revision_required')->sum('count');
 
@@ -316,7 +279,7 @@ class ValidasiController extends Controller
                 // Cek jika semua asesor sudah dinilai DAN sudah divalidasi
                 if ($penilaians->count() === $asesors->count()) {
                     $allValidated = $penilaians->every(function ($p) {
-                        return in_array($p->status_validasi, ['validated', 'approved']);
+                        return in_array($p->status_validasi, ['validated', 'validated_diff', 'approved']);
                     });
 
                     if ($allValidated) {
@@ -417,7 +380,7 @@ class ValidasiController extends Controller
             // Get validasi data
             $validasi = PenilaianElemenAk::where('id_asesmen', $idAsesmen)
                 ->where('id_elemen', $elemenId)
-                ->whereIn('status_validasi', ['validated', 'revision_needed'])
+                ->whereIn('status_validasi', ['validated', 'validated_diff', 'revision_required'])
                 ->with('validator')
                 ->first();
 
@@ -495,21 +458,22 @@ class ValidasiController extends Controller
     public function validateElemen(Request $request, $idAsesmen, $elemenId)
     {
         $request->validate([
-            'status' => 'required|in:validated,revision_required',
+            'status' => 'required|in:validated,revision_required,validated_diff',
             'catatan_validator' => 'nullable|string',
-            'skor_final' => 'required_if:status,validated|integer|min:0|max:4',
-            'id_asesors' => 'required_if:status,revision_required|array',
+            'skor_final' => 'nullable|integer|min:0|max:4|required_if:status,validated',
+            'id_asesors' => 'nullable|array|required_if:status,revision_required',
             'id_asesors.*' => 'exists:users,id',
         ]);
 
         DB::beginTransaction();
         try {
-            if ($request->status === 'validated') {
+            $statusValidasi = $request->status;
+            if (in_array($request->status, ['validated', 'validated_diff'])) {
                 // Validate ALL asesors for this elemen
                 PenilaianElemenAk::where('id_asesmen', $idAsesmen)
                     ->where('id_elemen', $elemenId)
                     ->update([
-                        'status_validasi' => 'validated',
+                        'status_validasi' => $statusValidasi,
                         'skor_final' => $request->skor_final,
                         'catatan_validator' => $request->catatan_validator,
                         'validated_at' => now(),
@@ -550,9 +514,12 @@ class ValidasiController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => $request->status === 'validated'
+                'message' =>
+                $statusValidasi === 'validated'
                     ? 'Penilaian berhasil divalidasi'
-                    : 'Permintaan revisi berhasil dikirim ke asesor terpilih.',
+                    : ($statusValidasi === 'validated_diff'
+                        ? 'Penilaian berhasil divalidasi dengan perbedaan nilai'
+                        : 'Permintaan revisi berhasil dikirim ke asesor terpilih.'),
             ]);
         } catch (\Exception $e) {
             Log::error('Error validate elemen: ' . $e->getMessage());
@@ -605,7 +572,9 @@ class ValidasiController extends Controller
                         ->update([
                             'status_validasi' => 'validated',
                             'skor_final' => $agreedScore,
-                            'catatan_validator' => 'Auto-validated: Semua asesor memberikan nilai yang sama',
+                            'catatan_validator' => null,
+                            // 'catatan_validator' => 'Auto-validated: Semua asesor memberikan nilai yang sama',
+                            // 'catatan_validator' => 'Penilaian AK telah divalidasi, semua asesor telah memberikan penilaian yang sama dalam rentang yang dapat diterima',
                             'validated_at' => now(),
                             'validated_by' => Auth::id(),
                         ]);
@@ -654,7 +623,7 @@ class ValidasiController extends Controller
             foreach ($elemenIds as $elemenId) {
                 $validatedCount = PenilaianElemenAk::where('id_asesmen', $idAsesmen)
                     ->where('id_elemen', $elemenId)
-                    ->where('status_validasi', 'validated')
+                    ->whereIn('status_validasi', ['validated', 'validated_diff'])
                     ->count();
 
                 if ($validatedCount === $totalAsesors) {
@@ -714,16 +683,18 @@ class ValidasiController extends Controller
     /**
      * Export perbandingan penilaian ke Excel
      */
-    public function exportComparison($idAsesmen, $asesor1Id, $asesor2Id)
+    public function exportComparison(Request $request, Asesmen $asesmen)
     {
-        $asesmen = AsesmenUserRole::where('id_asesmen', $idAsesmen)
+        $asesors = AsesmenUserRole::where('id_asesmen', $asesmen->id)
             ->where('jenis_asesmen', 'ak')
-            ->firstOrFail()
-            ->asesmen;
+            ->where('status_penawaran', 'accepted')
+            ->whereHas('role', fn($q) => $q->where('name', 'asesor'))
+            ->with(['user', 'role'])
+            ->orderBy('urutan_asesor')
+            ->get();
+        $mode = $request->query('mode', 'split'); // merged/split | default: split
 
-        $penilaianExcelService = ValidasiExcelService::generateTemplate($asesmen, $asesor1Id, $asesor2Id);
-        $tempFile = $penilaianExcelService[0];
-        $filename = $penilaianExcelService[1];
+        [$tempFile, $filename] = ValidasiExcelService::generateTemplate($asesmen, $asesors, 'ak', $mode);
 
         return response()->download($tempFile, $filename)->deleteFileAfterSend(true);
     }

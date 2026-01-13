@@ -51,6 +51,10 @@ class RoleSeeder extends Seeder
                 'alias' => 'PS/UPPS/PT',
             ],
             [
+                'name' => 'keuangan_lamdepilar',
+                'alias' => 'Keuangan LAMDEPILAR',
+            ],
+            [
                 'name' => 'default',
                 'alias' => 'Default User',
             ],

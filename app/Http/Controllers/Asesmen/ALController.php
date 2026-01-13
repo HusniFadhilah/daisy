@@ -102,8 +102,8 @@ class ALController extends Controller
         $jenjangs = JenjangPenilaian::all();
         // Calculate progress
         $progress = $this->calculateProgressBulk([$asesmen->id], $user->id)[$asesmen->id];
-
-        return view('asesmen.al.berkas.show', compact('asesmen', 'kriterias', 'progress', 'jenjangs', 'step', 'needsRevisions'));
+        $isFinalized = $asesmen->status === 'completed';
+        return view('asesmen.al.berkas.show', compact('asesmen', 'kriterias', 'progress', 'jenjangs', 'step', 'needsRevisions', 'isFinalized'));
     }
 
     /**
@@ -295,12 +295,13 @@ class ALController extends Controller
             PenilaianElemenAl::where('id_asesmen', $idAsesmen)
                 ->where('id_asesor', $user->id)
                 ->update([
-                    'status' => 'submitted',
+                    'status' => 'approved',
                 ]);
 
             // Update assignment status
             $assignment->update([
-                'status_pekerjaan' => 'submitted',
+                // 'status_pekerjaan' => 'submitted',
+                'status_pekerjaan' => 'approved',
                 'submitted_at' => now(),
             ]);
 
@@ -308,7 +309,7 @@ class ALController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Penilaian berhasil di-submit! Menunggu validasi oleh DE LAMDEPILAR.',
+                'message' => $assignment->status_pekerjaan == 'submitted' ? 'Penilaian berhasil di-submit! Menunggu validasi oleh DE LAMDEPILAR.' : 'Penilaian berhasil di-submit dan difinalisasi!',
                 'submitted_at' => now()->format('d M Y H:i'),
             ]);
         } catch (\Exception $e) {
@@ -338,7 +339,7 @@ class ALController extends Controller
 
             // ✅ PERBAIKAN: Hanya cek yang benar-benar sudah VALIDATED (final)
             $hasValidated = PenilaianElemenAl::where('id_asesmen', $idAsesmen)
-                ->where('id_asesor', $user->id)
+                ->where('id_asesor', $user->id)->whereIn('status', ['approved'])
                 ->exists();
 
             if ($hasValidated) {
@@ -519,7 +520,7 @@ class ALController extends Controller
     /**
      * Export penilaian ke Excel (dengan data)
      */
-    public function exportExcel($idAsesmen)
+    public function exportExcel(Request $request, $idAsesmen)
     {
         try {
             $user = Auth::user();
@@ -529,13 +530,29 @@ class ALController extends Controller
                 $query->where('id_user', $user->id);
             })->findOrFail($idAsesmen);
 
-            $excelService = new PenilaianExcelService(PenilaianElemenAl::class);
-            $filePath = $excelService->generateWithData($asesmen, $user->id);
+            // Get mode from query parameter (template, full, personal)
+            $mode = $request->query('mode', 'full'); // default: full
+            $useColor = $request->query('color', 'false') === 'true';
+
+            // Validate mode
+            if (!in_array($mode, ['template', 'full', 'personal'])) {
+                return redirect()->back()->with('error', 'Mode download tidak valid');
+            }
+
+            // Create service dengan mode
+            $excelService = new PenilaianExcelService(PenilaianElemenAl::class, $mode, $useColor); // atau PenilaianElemenAl
+
+            // Generate file berdasarkan mode
+            if ($mode === 'template') {
+                $filePath = $excelService->generateTemplate($asesmen);
+            } else {
+                $filePath = $excelService->generateWithData($asesmen, $user->id);
+            }
 
             return response()->download($filePath, basename($filePath))->deleteFileAfterSend(true);
         } catch (\Exception $e) {
             Log::error($e);
-            return redirect()->back()->with('error', 'Gagal download data Excel: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal download Excel: ' . $e->getMessage());
         }
     }
 
@@ -962,7 +979,7 @@ class ALController extends Controller
         }
     }
 
-    public function uploadBeritaAcara(Request $request, $idAsesmen)
+    public function uploadDocument(Request $request, $idAsesmen)
     {
         $request->validate([
             'files' => 'required|array|min:1',

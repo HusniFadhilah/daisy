@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\DegreeLevel;
 use App\Models\DatasetBorang;
 use App\Models\ElemenStandar;
 use Illuminate\Database\Seeder;
@@ -9,294 +10,589 @@ use Illuminate\Support\Facades\DB;
 
 class DatasetBorangSeeder extends Seeder
 {
-    public function run(): void
+    /**
+     * DatasetBorangSeeder4 - Simplified Version
+     *
+     * Meminimalisir penggunaan colspan dan rowspan untuk:
+     * - Frontend rendering yang lebih mudah
+     * - Export Excel/PDF yang lebih simple
+     * - Form input yang lebih straightforward
+     * - Database handling yang lebih clean
+     */
+    public function run()
     {
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         DB::table('dataset_borang')->truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
-        // Elemen yang kamu minta
-        $targetKodeElemen = ['D.1', 'E.1', 'E.2', 'E.3', 'E.4', 'L.4', 'A.1'];
 
-        $elemens = ElemenStandar::query()
-            ->whereIn('kode_elemen', $targetKodeElemen)
-            ->orderBy('kode_elemen')
-            ->get();
+        // Seed all elements
+        $this->seedD1();
+        $this->seedD2();
+        $this->seedD3();
 
-        foreach ($elemens as $elemen) {
-            $this->seedOneElemen($elemen);
-        }
+        $this->seedE1();
+        $this->seedE2();
+        $this->seedE3();
+        $this->seedE4();
+        $this->seedE5();
+
+        $this->seedP1();
+        $this->seedP2();
+        $this->seedP3();
+        $this->seedP4();
+
+        $this->seedI1();
+        $this->seedI2();
+        $this->seedI3();
+
+        $this->seedL1();
+        $this->seedL2();
+        $this->seedL3();
+        $this->seedL4();
+
+        $this->seedA1();
+        $this->seedA2();
+        $this->seedA3();
+        $this->seedA4();
+        $this->seedA5();
+
+        $this->seedR1();
+        $this->seedR2();
+        $this->seedR3();
+        $this->seedR4();
+        $this->seedR5();
+        $this->seedR6();
     }
 
-    private function seedOneElemen(ElemenStandar $elemen): void
+    // ========================================
+    // D.1 - Legalitas Program dan Tata Pamong
+    // ========================================
+    private function seedD1()
     {
-        // Replace dataset ringkas lama (DESC + TBL)
-        DatasetBorang::query()
-            ->where('id_elemen', $elemen->id)
-            ->whereIn('kode', [
-                $elemen->kode_elemen . '.DESC',
-                $elemen->kode_elemen . '.TBL',
-            ])
-            ->delete();
+        $elemen = ElemenStandar::where('kode_elemen', 'D.1')->first();
+        if (!$elemen) return;
 
-        DatasetBorang::create([
-            'id_elemen'    => $elemen->id,
-            'kode'         => $elemen->kode_elemen . '.DESC',
-            'nama'         => 'Deskripsi ' . $elemen->kode_elemen,
-            'tipe_field'   => 'narasi',
-            'label_field'  => 'Deskripsi',
-            'placeholder'  => 'Tuliskan deskripsi sesuai kondisi program studi...',
-            'is_required'  => true,
-            'keterangan'   => 'Isi narasi sesuai indikator pada elemen ' . $elemen->kode_elemen,
-            'urutan'       => 1,
-        ]);
-
-        $cfg = $this->tableConfig($elemen->kode_elemen);
-
-        DatasetBorang::create([
-            'id_elemen'          => $elemen->id,
-            'kode'              => $elemen->kode_elemen . '.TBL',
-            'nama'              => $cfg['title'],
-            'tipe_field'        => 'table',
-            'label_field'       => $cfg['title'],
-            'is_required'       => true,
-            'expected_columns'  => $cfg['columns'],
-            'template_html' => $this->safeTemplateHtml(
-                $this->makeTemplateHtml($cfg['columns'], $cfg['sample_rows'] ?? []),
-                $cfg['columns']
-            ),
-            // 'template_html'     => $this->makeTemplateHtml($cfg['columns'], $cfg['sample_rows'] ?? []),
-            'keterangan'        => $cfg['note'] ?? ('Isi data tabel untuk elemen ' . $elemen->kode_elemen),
-            'urutan'            => 2,
-        ]);
+        // Deskripsi
+        // DatasetBorang::create([
+        //     'id_elemen' => $elemen->id,
+        //     'kode' => 'D.1.DESC',
+        //     'nama' => 'Deskripsi legalitas program dan tata pamong',
+        //     'tipe_field' => 'narasi',
+        //     'label_field' => 'Deskripsi',
+        //     'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
+        //     'is_required' => true,
+        //     'urutan' => 1,
+        // ]);
     }
 
-    private function safeTemplateHtml(string $html, array $expectedColumns): string
+    private function seedD2()
     {
-        // 1) HARD BLOCK merge
-        if (preg_match('/\b(colspan|rowspan)\s*=\s*["\']?\d+/i', $html)) {
-            // kalau ketemu merge, jatuhkan ke template polos yang pasti aman
-            return $this->makeTemplateHtml($expectedColumns, []);
-        }
+        $elemen = ElemenStandar::where('kode_elemen', 'D.2')->first();
+        if (!$elemen) return;
 
-        // 2) Pastikan benar-benar ada table/tr/td
-        if (!preg_match('/<table\b/i', $html) || !preg_match('/<tr\b/i', $html)) {
-            return $this->makeTemplateHtml($expectedColumns, []);
-        }
-
-        // 3) Normalisasi: ambil hanya <table> ... </table> pertama
-        if (preg_match('/<table\b[^>]*>.*<\/table>/is', $html, $m)) {
-            $html = $m[0];
-        }
-
-        // 4) Validasi tiap row: jumlah kolom harus sama dengan expected
-        $expectedCount = count($expectedColumns);
-
-        preg_match_all('/<tr\b[^>]*>(.*?)<\/tr>/is', $html, $rows);
-        if (empty($rows[1])) {
-            return $this->makeTemplateHtml($expectedColumns, []);
-        }
-
-        foreach ($rows[1] as $rowHtml) {
-            preg_match_all('/<t[hd]\b[^>]*>(.*?)<\/t[hd]>/is', $rowHtml, $cells);
-            $cellCount = count($cells[1] ?? []);
-
-            if ($expectedCount > 0 && $cellCount !== $expectedCount) {
-                // mismatch -> fallback aman
-                return $this->makeTemplateHtml($expectedColumns, []);
-            }
-        }
-
-        return $html;
+        // DatasetBorang::create([
+        //     'id_elemen' => $elemen->id,
+        //     'kode' => 'D.2.DESC',
+        //     'nama' => 'Deskripsi visi, misi, tujuan, dan strategi',
+        //     'tipe_field' => 'narasi',
+        //     'label_field' => 'Deskripsi',
+        //     'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
+        //     'is_required' => false,
+        //     'urutan' => 1,
+        // ]);
     }
 
-    private function tableConfig(string $kodeElemen): array
+    private function seedD3()
     {
-        $map = [
+        $elemen = ElemenStandar::where('kode_elemen', 'D.3')->first();
+        if (!$elemen) return;
 
-            // D.1 Tabel Daftar Program Studi di UPPS
-            'D.1' => [
-                'title' => 'D.1 Tabel Daftar Program Studi di UPPS',
-                'columns' => [
-                    'No',
-                    'Jenis Program',
-                    'Nama Program Studi',
-                    'No. SK Pendirian',
-                    'Lembaga Akreditasi',
-                    'Status/Peringkat',
-                    'No. dan Tgl. SK',
-                    'Tgl. Kadaluarsa (HH/BB/TTTT)',
-                ],
-                // kosongkan baris contoh biar user isi; atau kasih 12 baris kosong otomatis (template sudah bikin 3, kamu bisa tambah kalau mau)
-            ],
-
-            // E.1 pakai Tabel E.1.1 (Mahasiswa Penuh Waktu)
-            'E.1' => [
-                'title' => 'E.1.1 Tabel Mahasiswa Penuh Waktu',
-                'columns' => [
-                    'Tahun Akademik (Angkatan)',
-                    'Daya Tampung',
-                    'Pendaftar',
-                    'Lulus Seleksi',
-                    'Afirmasi',
-                    'Transfer',
-                    'Asing',
-                    'Aktif',
-                    'Tidak Aktif',
-                    'Lulus',
-                    'Gagal',
-                ],
-                'sample_rows' => [
-                    ['TS-4', '25', '100', '20', '1', '1', '1', '2', '1', '19', '1'],
-                    ['TS-3', '25', '200', '20', '1', '1', '1', '10', '1', '10', '1'],
-                    ['TS-2', '25', '239', '20', '1', '1', '1', '20', '1', '0', '1'],
-                    ['TS-1', '25', '333', '20', '2', '2', '2', '20', '2', '0', '2'],
-                    ['TS',   '25', '588', '20', '2', '2', '2', '20', '2', '0', '2'],
-                    ['Jumlah', '',  '1460', '100', '7', '7', '7', '72', '7', '29', '7'],
-                ],
-                'note' => 'Sumber: format E.1.1 (Admisi & registrasi mahasiswa penuh waktu).',
-            ],
-
-            // E.2 pakai Tabel E.2.1 (Rekapitulasi RPS)
-            'E.2' => [
-                'title' => 'E.2.1 Rekapitulasi Rencana Pembelajaran Semester',
-                'columns' => [
-                    'Nama Mata Kuliah',
-                    'Kode',
-                    'Semester',
-                    'Besar Kredit (sks)',
-                    'Model Pembelajaran',
-                    'Lama Tatap Muka (Menit)',
-                    'Sifat (Wajib/Pilihan)',
-                    'Bukti RPS (Tautan)',
-                ],
-            ],
-
-            // E.3 pakai Tabel E.3.1 (Kinerja Perkuliahan)
-            'E.3' => [
-                'title' => 'E.3.1 Rekapitulasi Kinerja Perkuliahan (TS)',
-                'columns' => [
-                    'Nama Mata Kuliah',
-                    'Kode',
-                    'Jumlah Peserta',
-                    'Pengambil Ulang (retaker)',
-                    'Rerata Kehadiran (%)',
-                    'Rasio Kelulusan (%)',
-                    'Evaluasi',
-                    'Tindak Lanjut',
-                ],
-                'sample_rows' => [
-                    [
-                        'Konstruksi Bangunan Gedung',
-                        'AR123',
-                        '30',
-                        '10',
-                        '60%',
-                        '75%',
-                        '25% ketidaklulusan karena membolos & tabrakan jadwal; 10 retaker lulus 50%',
-                        'Perbaikan penjadwalan & pendampingan asisten untuk retaker',
-                    ],
-                ],
-            ],
-
-            // E.4 pakai Tabel E.4.2 (Matriks CPL & MK)
-            'E.4' => [
-                'title' => 'E.4.2 Matriks Capaian Pembelajaran dan Mata Kuliah',
-                'columns' => [
-                    'Nama Mata Kuliah',
-                    'Kode',
-                    'CPL 01',
-                    'CPL 02',
-                    'CPL 03',
-                    'CPL 04',
-                    'CPL 05 dst.',
-                    'Keterangan',
-                ],
-                'sample_rows' => [
-                    ['Desain Produk 1', 'DP111', '', '40%', '', '', '20%', ''],
-                    ['Desain Produk 2', 'DP112', '', '30%', '', '', '20%', ''],
-                    ['Komunikasi Desain', 'DP234', '', '20%', '', '20%', '', ''],
-                    ['Teori Perencanaan Wilayah', 'PL111', '30%', '', '', '', '', ''],
-                    ['Proyek Perencanaan Wilayah 1', 'PL321', '', '40%', '', '', '', ''],
-                ],
-            ],
-
-            // L.4 pakai L.4.1 (Waktu tunggu)
-            'L.4' => [
-                'title' => 'L.4.1 Waktu Tunggu Lulusan',
-                'columns' => [
-                    'Tahun Lulus',
-                    'Jumlah Lulusan',
-                    'Jumlah Lulusan yang Terlacak',
-                    'WT < 6 bulan',
-                    '6 ≤ WT ≤ 18 bulan',
-                    'WT > 18 bulan',
-                ],
-                'sample_rows' => [
-                    ['TS-4', '', '', '', '', ''],
-                    ['TS-3', '', '', '', '', ''],
-                    ['TS-2', '', '', '', '', ''],
-                    ['Jumlah', '0', '0', '0', '0', '0'],
-                ],
-            ],
-
-            // A.1 Tabel Kemitraan & Kerjasama
-            'A.1' => [
-                'title' => 'A.1 Kemitraan dan Kerjasama',
-                'columns' => [
-                    'No',
-                    'Lembaga Mitra',
-                    'Tingkat Internasional',
-                    'Tingkat Nasional',
-                    'Tingkat Lokal/Wilayah',
-                    'Judul Kegiatan Kerjasama',
-                    'Manfaat bagi PS yang Diakreditasi',
-                    'Tanggal Awal (HH/BB/TTTT)',
-                    'Tanggal Akhir (HH/BB/TTTT)',
-                    'Durasi (tahun)',
-                    'Status Kerjasama',
-                    'Bukti Kerjasama',
-                ],
-            ],
-        ];
-
-        return $map[$kodeElemen] ?? [
-            'title' => 'Tabel ' . $kodeElemen,
-            'columns' => ['No', 'Keterangan', 'Data', 'Bukti/Link'],
-        ];
+        // DatasetBorang::create([
+        //     'id_elemen' => $elemen->id,
+        //     'kode' => 'D.3.DESC',
+        //     'nama' => 'Deskripsi kesesuaian visi keilmuan',
+        //     'tipe_field' => 'narasi',
+        //     'label_field' => 'Deskripsi',
+        //     'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
+        //     'is_required' => false,
+        //     'urutan' => 1,
+        // ]);
     }
 
-    private function makeTemplateHtml(array $columns, array $sampleRows = []): string
+    private function seedE1()
     {
-        $ths = '';
-        foreach ($columns as $col) {
-            $ths .= '<th>' . e($col) . '</th>';
-        }
+        $elemen = ElemenStandar::where('kode_elemen', 'E.1')->first();
+        if (!$elemen) return;
 
-        $rows = '';
-        if (!empty($sampleRows)) {
-            foreach ($sampleRows as $r) {
-                $rows .= '<tr>';
-                foreach ($columns as $i => $_) {
-                    $val = $r[$i] ?? '';
-                    $rows .= '<td>' . e($val) . '</td>';
-                }
-                $rows .= '</tr>';
-            }
-        } else {
-            // default 3 baris kosong
-            for ($i = 1; $i <= 3; $i++) {
-                $rows .= '<tr>';
-                foreach ($columns as $idx => $_) {
-                    $rows .= $idx === 0 ? '<td>' . $i . '</td>' : '<td></td>';
-                }
-                $rows .= '</tr>';
-            }
-        }
+        // DatasetBorang::create([
+        //     'id_elemen' => $elemen->id,
+        //     'kode' => 'E.1.DESC',
+        //     'nama' => 'Deskripsi kurikulum',
+        //     'tipe_field' => 'narasi',
+        //     'label_field' => 'Deskripsi',
+        //     'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
+        //     'is_required' => false,
+        //     'urutan' => 1,
+        // ]);
+    }
 
-        return '<table border="1" cellpadding="4" cellspacing="0"><thead><tr>'
-            . $ths
-            . '</tr></thead><tbody>'
-            . $rows
-            . '</tbody></table>';
+    // ========================================
+    // E.2 - Admisi Mahasiswa (FLAT VERSION)
+    // ========================================
+    private function seedE2()
+    {
+        $elemen = ElemenStandar::where('kode_elemen', 'E.2')->first();
+        if (!$elemen) return;
+
+        // DatasetBorang::create([
+        //     'id_elemen' => $elemen->id,
+        //     'kode' => 'E.2.DESC',
+        //     'nama' => 'Deskripsi admisi mahasiswa',
+        //     'tipe_field' => 'narasi',
+        //     'label_field' => 'Deskripsi',
+        //     'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
+        //     'is_required' => false,
+        //     'urutan' => 1,
+        // ]);
+    }
+
+    // ========================================
+    // E.3 - Proses dan Siklus Pembelajaran
+    // ========================================
+    private function seedE3()
+    {
+        $elemen = ElemenStandar::where('kode_elemen', 'E.3')->first();
+        if (!$elemen) return;
+
+        // DatasetBorang::create([
+        //     'id_elemen' => $elemen->id,
+        //     'kode' => 'E.3.DESC',
+        //     'nama' => 'Deskripsi proses dan siklus pembelajaran',
+        //     'tipe_field' => 'narasi',
+        //     'label_field' => 'Deskripsi',
+        //     'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
+        //     'is_required' => false,
+        //     'urutan' => 1,
+        // ]);
+    }
+
+    // ========================================
+    // E.4 - Penilaian dan Evaluasi
+    // ========================================
+    private function seedE4()
+    {
+        $elemen = ElemenStandar::where('kode_elemen', 'E.4')->first();
+        if (!$elemen) return;
+
+        // DatasetBorang::create([
+        //     'id_elemen' => $elemen->id,
+        //     'kode' => 'E.4.DESC',
+        //     'nama' => 'Deskripsi penilaian dan evaluasi',
+        //     'tipe_field' => 'narasi',
+        //     'label_field' => 'Deskripsi',
+        //     'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
+        //     'is_required' => false,
+        //     'urutan' => 1,
+        // ]);
+    }
+
+    // ========================================
+    // E.5 - Kompetensi Lulusan
+    // ========================================
+    private function seedE5()
+    {
+        $elemen = ElemenStandar::where('kode_elemen', 'E.5')->first();
+        if (!$elemen) return;
+
+        // DatasetBorang::create([
+        //     'id_elemen' => $elemen->id,
+        //     'kode' => 'E.5.DESC',
+        //     'nama' => 'Deskripsi kompetensi lulusan dan capaian pembelajaran',
+        //     'tipe_field' => 'narasi',
+        //     'label_field' => 'Deskripsi',
+        //     'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
+        //     'is_required' => false,
+        //     'urutan' => 1,
+        // ]);
+    }
+
+    // P, I, L, A sections (simplified)
+    private function seedP1()
+    {
+        $elemen = ElemenStandar::where('kode_elemen', 'P.1')->first();
+        if (!$elemen) return;
+
+        // DatasetBorang::create([
+        //     'id_elemen' => $elemen->id,
+        //     'kode' => 'P.1.DESC',
+        //     'nama' => 'Deskripsi dosen dan tenaga kependidikan',
+        //     'tipe_field' => 'narasi',
+        //     'label_field' => 'Deskripsi',
+        //     'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
+        //     'is_required' => false,
+        //     'urutan' => 1,
+        // ]);
+    }
+
+    private function seedP2()
+    {
+        $elemen = ElemenStandar::where('kode_elemen', 'P.2')->first();
+        if (!$elemen) return;
+
+        // DatasetBorang::create([
+        //     'id_elemen' => $elemen->id,
+        //     'kode' => 'P.2.DESC',
+        //     'nama' => 'Deskripsi sarana dan prasarana kerja',
+        //     'tipe_field' => 'narasi',
+        //     'label_field' => 'Deskripsi',
+        //     'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
+        //     'is_required' => false,
+        //     'urutan' => 1,
+        // ]);
+    }
+
+    private function seedP3()
+    {
+        $elemen = ElemenStandar::where('kode_elemen', 'P.3')->first();
+        if (!$elemen) return;
+
+        // DatasetBorang::create([
+        //     'id_elemen' => $elemen->id,
+        //     'kode' => 'P.3.DESC',
+        //     'nama' => 'Deskripsi pengembangan kapasitas',
+        //     'tipe_field' => 'narasi',
+        //     'label_field' => 'Deskripsi',
+        //     'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
+        //     'is_required' => false,
+        //     'urutan' => 1,
+        // ]);
+    }
+
+    private function seedP4()
+    {
+        $elemen = ElemenStandar::where('kode_elemen', 'P.4')->first();
+        if (!$elemen) return;
+
+        // DatasetBorang::create([
+        //     'id_elemen' => $elemen->id,
+        //     'kode' => 'P.4.DESC',
+        //     'nama' => 'Deskripsi kesejahteraan kerja',
+        //     'tipe_field' => 'narasi',
+        //     'label_field' => 'Deskripsi',
+        //     'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
+        //     'is_required' => false,
+        //     'urutan' => 1,
+        // ]);
+    }
+
+    private function seedI1()
+    {
+        $elemen = ElemenStandar::where('kode_elemen', 'I.1')->first();
+        if (!$elemen) return;
+
+        // DatasetBorang::create([
+        //     'id_elemen' => $elemen->id,
+        //     'kode' => 'I.1.DESC',
+        //     'nama' => 'Deskripsi sistem penjaminan mutu internal',
+        //     'tipe_field' => 'narasi',
+        //     'label_field' => 'Deskripsi',
+        //     'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
+        //     'is_required' => false,
+        //     'urutan' => 1,
+        // ]);
+    }
+
+    private function seedI2()
+    {
+        $elemen = ElemenStandar::where('kode_elemen', 'I.2')->first();
+        if (!$elemen) return;
+
+        // DatasetBorang::create([
+        //     'id_elemen' => $elemen->id,
+        //     'kode' => 'I.2.DESC',
+        //     'nama' => 'Deskripsi implementasi perbaikan berkelanjutan',
+        //     'tipe_field' => 'narasi',
+        //     'label_field' => 'Deskripsi',
+        //     'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
+        //     'is_required' => false,
+        //     'urutan' => 1,
+        // ]);
+    }
+
+    private function seedI3()
+    {
+        $elemen = ElemenStandar::where('kode_elemen', 'I.3')->first();
+        if (!$elemen) return;
+
+        // DatasetBorang::create([
+        //     'id_elemen' => $elemen->id,
+        //     'kode' => 'I.3.DESC',
+        //     'nama' => 'Deskripsi keterlibatan pengampu kepentingan dan penjaminan mutu eksternal',
+        //     'tipe_field' => 'narasi',
+        //     'label_field' => 'Deskripsi',
+        //     'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
+        //     'is_required' => false,
+        //     'urutan' => 1,
+        // ]);
+    }
+
+    private function seedL1()
+    {
+        $elemen = ElemenStandar::where('kode_elemen', 'L.1')->first();
+        if (!$elemen) return;
+
+        // DatasetBorang::create([
+        //     'id_elemen' => $elemen->id,
+        //     'kode' => 'L.1.DESC',
+        //     'nama' => 'Deskripsi sarana dan prasarana belajar',
+        //     'tipe_field' => 'narasi',
+        //     'label_field' => 'Deskripsi',
+        //     'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
+        //     'is_required' => false,
+        //     'urutan' => 1,
+        // ]);
+    }
+
+    private function seedL2()
+    {
+        $elemen = ElemenStandar::where('kode_elemen', 'L.2')->first();
+        if (!$elemen) return;
+
+        // DatasetBorang::create([
+        //     'id_elemen' => $elemen->id,
+        //     'kode' => 'L.2.DESC',
+        //     'nama' => 'Deskripsi sumber pengetahuan',
+        //     'tipe_field' => 'narasi',
+        //     'label_field' => 'Deskripsi',
+        //     'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
+        //     'is_required' => false,
+        //     'urutan' => 1,
+        // ]);
+    }
+
+    private function seedL3()
+    {
+        $elemen = ElemenStandar::where('kode_elemen', 'L.3')->first();
+        if (!$elemen) return;
+
+        // DatasetBorang::create([
+        //     'id_elemen' => $elemen->id,
+        //     'kode' => 'L.3.DESC',
+        //     'nama' => 'Deskripsi kepuasan mahasiswa dan alumni',
+        //     'tipe_field' => 'narasi',
+        //     'label_field' => 'Deskripsi',
+        //     'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
+        //     'is_required' => false,
+        //     'urutan' => 1,
+        // ]);
+    }
+
+    private function seedL4()
+    {
+        $elemen = ElemenStandar::where('kode_elemen', 'L.4')->first();
+        if (!$elemen) return;
+
+        // DatasetBorang::create([
+        //     'id_elemen' => $elemen->id,
+        //     'kode' => 'L.4.DESC',
+        //     'nama' => 'Deskripsi lulusan, kajian telusur, dan kepuasan pengguna',
+        //     'tipe_field' => 'narasi',
+        //     'label_field' => 'Deskripsi',
+        //     'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
+        //     'is_required' => false,
+        //     'urutan' => 1,
+        // ]);
+    }
+
+    private function seedA1()
+    {
+        $elemen = ElemenStandar::where('kode_elemen', 'A.1')->first();
+        if (!$elemen) return;
+
+        // DatasetBorang::create([
+        //     'id_elemen' => $elemen->id,
+        //     'kode' => 'A.1.DESC',
+        //     'nama' => 'Deskripsi organisasi dan tata kelola',
+        //     'tipe_field' => 'narasi',
+        //     'label_field' => 'Deskripsi',
+        //     'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
+        //     'is_required' => false,
+        //     'urutan' => 1,
+        // ]);
+    }
+
+    private function seedA2()
+    {
+        $elemen = ElemenStandar::where('kode_elemen', 'A.2')->first();
+        if (!$elemen) return;
+
+        // DatasetBorang::create([
+        //     'id_elemen' => $elemen->id,
+        //     'kode' => 'A.2.DESC',
+        //     'nama' => 'Deskripsi kerja sama dan kemitraan',
+        //     'tipe_field' => 'narasi',
+        //     'label_field' => 'Deskripsi',
+        //     'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
+        //     'is_required' => false,
+        //     'urutan' => 1,
+        // ]);
+    }
+
+    private function seedA3()
+    {
+        $elemen = ElemenStandar::where('kode_elemen', 'A.3')->first();
+        if (!$elemen) return;
+
+        // DatasetBorang::create([
+        //     'id_elemen' => $elemen->id,
+        //     'kode' => 'A.3.DESC',
+        //     'nama' => 'Deskripsi sistem dan manajemen informasi',
+        //     'tipe_field' => 'narasi',
+        //     'label_field' => 'Deskripsi',
+        //     'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
+        //     'is_required' => false,
+        //     'urutan' => 1,
+        // ]);
+    }
+
+    private function seedA4()
+    {
+        $elemen = ElemenStandar::where('kode_elemen', 'A.4')->first();
+        if (!$elemen) return;
+
+        // DatasetBorang::create([
+        //     'id_elemen' => $elemen->id,
+        //     'kode' => 'A.4.DESC',
+        //     'nama' => 'Deskripsi keselamatan dan kesehatan kerja serta kelestarian lingkungan',
+        //     'tipe_field' => 'narasi',
+        //     'label_field' => 'Deskripsi',
+        //     'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
+        //     'is_required' => false,
+        //     'urutan' => 1,
+        // ]);
+    }
+
+    private function seedA5()
+    {
+        $elemen = ElemenStandar::where('kode_elemen', 'A.5')->first();
+        if (!$elemen) return;
+
+        // DatasetBorang::create([
+        //     'id_elemen' => $elemen->id,
+        //     'kode' => 'A.5.DESC',
+        //     'nama' => 'Deskripsi keuangan, keberlanjutan, dan mitigasi risiko',
+        //     'tipe_field' => 'narasi',
+        //     'label_field' => 'Deskripsi',
+        //     'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
+        //     'is_required' => false,
+        //     'urutan' => 1,
+        // ]);
+    }
+
+    private function seedR1()
+    {
+        $elemen = ElemenStandar::where('kode_elemen', 'R.1')->first();
+        if (!$elemen) return;
+
+        // DatasetBorang::create([
+        //     'id_elemen' => $elemen->id,
+        //     'kode' => 'R.1.DESC',
+        //     'nama' => 'Deskripsi kebijakan penelitian',
+        //     'tipe_field' => 'narasi',
+        //     'label_field' => 'Deskripsi',
+        //     'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
+        //     'is_required' => false,
+        //     'urutan' => 1,
+        // ]);
+    }
+
+    private function seedR2()
+    {
+        $elemen = ElemenStandar::where('kode_elemen', 'R.2')->first();
+        if (!$elemen) return;
+
+        // DatasetBorang::create([
+        //     'id_elemen' => $elemen->id,
+        //     'kode' => 'R.2.DESC',
+        //     'nama' => 'Deskripsi proses penelitian',
+        //     'tipe_field' => 'narasi',
+        //     'label_field' => 'Deskripsi',
+        //     'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
+        //     'is_required' => false,
+        //     'urutan' => 1,
+        // ]);
+    }
+
+    private function seedR3()
+    {
+        $elemen = ElemenStandar::where('kode_elemen', 'R.3')->first();
+        if (!$elemen) return;
+
+        // DatasetBorang::create([
+        //     'id_elemen' => $elemen->id,
+        //     'kode' => 'R.3.DESC',
+        //     'nama' => 'Deskripsi luaran dan dampak penelitian',
+        //     'tipe_field' => 'narasi',
+        //     'label_field' => 'Deskripsi',
+        //     'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
+        //     'is_required' => false,
+        //     'urutan' => 1,
+        // ]);
+    }
+
+    private function seedR4()
+    {
+        $elemen = ElemenStandar::where('kode_elemen', 'R.4')->first();
+        if (!$elemen) return;
+
+        // DatasetBorang::create([
+        //     'id_elemen' => $elemen->id,
+        //     'kode' => 'R.4.DESC',
+        //     'nama' => 'Deskripsi kebijakan pengabdian kepada masyarakat',
+        //     'tipe_field' => 'narasi',
+        //     'label_field' => 'Deskripsi',
+        //     'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
+        //     'is_required' => false,
+        //     'urutan' => 1,
+        // ]);
+    }
+
+    private function seedR5()
+    {
+        $elemen = ElemenStandar::where('kode_elemen', 'R.5')->first();
+        if (!$elemen) return;
+
+        // DatasetBorang::create([
+        //     'id_elemen' => $elemen->id,
+        //     'kode' => 'R.5.DESC',
+        //     'nama' => 'Deskripsi proses pengabdian kepada masyarakat',
+        //     'tipe_field' => 'narasi',
+        //     'label_field' => 'Deskripsi',
+        //     'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
+        //     'is_required' => false,
+        //     'urutan' => 1,
+        // ]);
+    }
+
+    // ========================================
+    // R.6 - PENGABDIAN KEPADA MASYARAKAT (PkM)
+    // R.6.1.a - R.6.1.e (Ratio PkM)
+    // R.6.2.a - R.6.2.d (Bobot & Dampak Luaran PkM - Publikasi)
+    // ========================================
+    private function seedR6()
+    {
+        $elemen = ElemenStandar::where('kode_elemen', 'R.6')->first();
+        if (!$elemen) return;
+
+        // DatasetBorang::create([
+        //     'id_elemen' => $elemen->id,
+        //     'kode' => 'R.6.DESC',
+        //     'nama' => 'Deskripsi luaran dan dampak pengabdian kepada masyarakat',
+        //     'tipe_field' => 'narasi',
+        //     'label_field' => 'Deskripsi',
+        //     'placeholder' => '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
+        //     'is_required' => false,
+        //     'urutan' => 1,
+        // ]);
     }
 }

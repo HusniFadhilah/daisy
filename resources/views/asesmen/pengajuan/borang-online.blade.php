@@ -5,12 +5,9 @@
 @section('title', 'Isi Laporan Evaluasi Diri - ' . $pengajuan->studyProgram->name)
 
 @push('styles')
-{{-- CKEditor 5 CSS --}}
 <link href="https://cdn.jsdelivr.net/npm/tinymce@8.3.1/skins/ui/oxide/content.min.css" rel="stylesheet">
-{{-- <link rel="stylesheet" href="{{ asset('assets/css/ckeditor5.css') }}"> --}}
 
 <style>
-    /* CKEditor custom styling */
     .ck-editor__editable {
         min-height: 300px;
         max-height: 600px;
@@ -27,7 +24,6 @@
         box-shadow: 0 0 0 0.2rem rgba(147, 33, 54, 0.15);
     }
 
-    /* Table in editor */
     .ck-content .table {
         margin: 1rem 0;
     }
@@ -49,7 +45,6 @@
         text-align: left;
     }
 
-    /* Existing styles */
     .elemen-card {
         transition: all 0.3s ease;
         border-left: 4px solid transparent;
@@ -149,17 +144,53 @@
         opacity: 0.9;
     }
 
-    .import-export-section {
-        background: #f8f9fa;
-        padding: 1rem;
+    /* ✅ File Upload Card */
+    .upload-card {
+        border: 2px dashed #dee2e6;
         border-radius: 8px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s;
+        background: #fff;
+    }
+
+    .upload-card.clickable {
+        cursor: pointer;
+    }
+
+    .upload-card.clickable:hover {
+        border-color: #932136;
+        background: #f8f9fa;
+    }
+
+    .upload-card.has-file {
+        border-color: #28a745;
+        border-style: solid;
+        background: #f0fff4;
+    }
+
+    .upload-icon {
+        font-size: 3rem;
+        color: #6c757d;
         margin-bottom: 1rem;
     }
 
-    .action-buttons {
-        display: flex;
-        gap: 0.5rem;
-        flex-wrap: wrap;
+    .upload-card.has-file .upload-icon {
+        color: #28a745;
+    }
+
+    /* ✅ Front Matter & Suplemen Accordion */
+    .front-matter-card {
+        border-left: 4px solid #17a2b8;
+    }
+
+    .suplemen-card {
+        border-left: 4px solid #6f42c1;
+    }
+
+    .front-matter-card .card-header,
+    .suplemen-card .card-header {
+        background: #f8f9fa;
     }
 
 </style>
@@ -174,7 +205,7 @@
                 <div>
                     <h3 class="mb-1">Laporan Evaluasi Diri</h3>
                     <p class="text-muted mb-0">
-                        {{ $pengajuan->studyProgram->name }} - {{ $pengajuan->nomor_pengajuan }}
+                        Prodi {{ $pengajuan->studyProgram->name }} - Nomor: {{ $pengajuan->nomor_pengajuan }}
                     </p>
                 </div>
                 <a href="{{ route('pengajuan.show', $pengajuan->id) }}" class="btn btn-outline-secondary">
@@ -182,53 +213,40 @@
                 </a>
             </div>
 
-            {{-- ✅ Progress Section with Server Data --}}
+            {{-- ✅ Progress Section - ELEMEN ONLY --}}
             <div class="progress-card">
                 <div class="row align-items-center">
                     <div class="col-md-8">
-                        <h5 class="mb-3">Progress Pengisian Borang</h5>
+                        <h5 class="mb-3">Progress Pengisian Elemen</h5>
 
                         @php
-                        // ✅ Use field percentage for main progress bar
-                        $fieldPercentage = $progressData['field_percentage'];
                         $elemenPercentage = $progressData['elemen_percentage'];
-                        $barColor = $fieldPercentage === 100 ? 'bg-success' :
-                        ($fieldPercentage >= 75 ? 'bg-info' :
-                        ($fieldPercentage >= 50 ? 'bg-warning' : 'bg-danger'));
+                        $barColor = $elemenPercentage === 100 ? 'bg-success' :
+                        ($elemenPercentage >= 75 ? 'bg-info' :
+                        ($elemenPercentage >= 50 ? 'bg-warning' : 'bg-danger'));
                         @endphp
 
-                        {{-- Main Progress Bar (Field-based) --}}
-                        <div class="mb-2">
-                            <small class="text-white-70">Progress Elemen</small>
-                            <div class="progress" style="height: 20px; background-color: rgba(255,255,255,0.3);">
-                                <div class="progress-bar bg-light" role="progressbar" id="progressBarElemen" style="width: {{ $elemenPercentage }}%" data-initial-value="{{ $elemenPercentage }}">
-                                    <span id="progressPercentageElemen" style="font-weight: bold; font-size: 0.875rem;">{{ $elemenPercentage }}%</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- Secondary Progress Bar (Elemen-based) --}}
+                        {{-- Main Progress Bar (Elemen-based only) --}}
                         <div class="mb-3">
-                            <small class="text-white-70">Progress Bagian</small>
-                            <div class="progress" style="height: 25px; background-color: rgba(255,255,255,0.3);">
-                                <div class="progress-bar {{ $barColor }}" role="progressbar" id="progressBarFields" style="width: {{ $fieldPercentage }}%" data-initial-value="{{ $fieldPercentage }}">
-                                    <span id="progressPercentageFields" style="font-weight: bold;">{{ $fieldPercentage }}%</span>
+                            <div class="progress" style="height: 30px; background-color: rgba(255,255,255,0.3);">
+                                <div class="progress-bar {{ $barColor }}" role="progressbar" id="progressBarElemen" style="width: {{ $elemenPercentage }}%" data-initial-value="{{ $elemenPercentage }}">
+                                    <span id="progressPercentageElemen" style="font-weight: bold; font-size: 1rem;">{{ $elemenPercentage }}%</span>
                                 </div>
                             </div>
                         </div>
 
                         <div class="progress-stats">
-                            <div class="stat-item" title="Jumlah bagian/field yang sudah diisi dari total bagian">
-                                <span class="stat-number" id="progressCompletedFields">{{ $progressData['filled_fields'] }}</span>
-                                <span class="stat-label">Bagian Terisi</span>
+                            <div class="stat-item">
+                                <span class="stat-number" id="progressCompletedElemen">{{ $progressData['completed_elemen'] }}</span>
+                                <span class="stat-label">Elemen Lengkap</span>
                             </div>
                             <div class="stat-item">
-                                <span class="stat-number" id="progressRemainingFields">{{ $progressData['remaining_fields'] }}</span>
-                                <span class="stat-label">Bagian Tersisa</span>
+                                <span class="stat-number" id="progressRemainingElemen">{{ $progressData['total_elemen'] - $progressData['completed_elemen'] }}</span>
+                                <span class="stat-label">Elemen Tersisa</span>
                             </div>
                             <div class="stat-item">
-                                <span class="stat-number" id="progressTotalFields">{{ $progressData['total_fields'] }}</span>
-                                <span class="stat-label">Total Bagian</span>
+                                <span class="stat-number" id="progressTotalElemen">{{ $progressData['total_elemen'] }}</span>
+                                <span class="stat-label">Total Elemen</span>
                             </div>
                         </div>
                     </div>
@@ -240,37 +258,8 @@
                                 <small>Elemen Lengkap</small>
                             </div>
                         </div>
-                        <div class="mt-3 text-white">
-                            <small id="progressCountFields">{{ $progressData['filled_fields'] }}/{{ $progressData['total_fields'] }} Bagian</small>
-                        </div>
                     </div>
                 </div>
-            </div>
-
-            <div class="import-export-section">
-                <h6 class="mb-3"><i class="bi bi-file-earmark-arrow-up-fill"></i> Download / Upload Borang</h6>
-
-                <div class="action-buttons">
-                    {{-- Download Template --}}
-                    <a href="{{ route('pengajuan.borang.download-template', $pengajuan->id) }}" class="btn btn-outline-primary btn-sm">
-                        <i class="bi bi-download"></i> Download Template DOCX
-                    </a>
-
-                    {{-- Import DOCX --}}
-                    <button type="button" class="btn btn-primary btn-sm" id="btnImportDocx">
-                        <i class="bi bi-file-earmark-arrow-up"></i> Upload dari DOCX
-                    </button>
-
-                    {{-- Export DOCX --}}
-                    <a href="{{ route('pengajuan.borang.export-docx', $pengajuan->id) }}" class="btn btn-success btn-sm">
-                        <i class="bi bi-file-earmark-arrow-down"></i> Download ke DOCX
-                    </a>
-                </div>
-
-                <small class="text-muted d-block mt-2">
-                    <i class="bi bi-info-circle"></i>
-                    Download template, isi offline, lalu upload kembali. Atau isi online dan download hasilnya.
-                </small>
             </div>
         </div>
 
@@ -281,11 +270,10 @@
                         <i class="bi bi-check-circle"></i> Finalisasi & Submit Borang
                     </button>
                     <small class="d-block text-muted mt-1">
-                        <i class="bi bi-info-circle"></i> Pastikan semua bagian sudah diisi sebelum finalisasi
+                        <i class="bi bi-info-circle"></i> Pastikan semua elemen sudah diisi sebelum finalisasi
                     </small>
                 </div>
                 <div class="btn-group">
-                    {{-- ✅ Reset Button --}}
                     @if(in_array($pengajuan->status, ['borang_dikirim', 'draft_borang_diterima', 'borang_online_selesai', 'review_kesiapan_belum_siap']))
                     <button type="button" class="btn btn-outline-danger" id="btnResetBorang">
                         <i class="bi bi-arrow-clockwise"></i> Reset Borang
@@ -300,34 +288,204 @@
         </div>
     </div>
 
-    {{-- Alert Info --}}
-    <div class="alert alert-info alert-dismissible fade show" role="alert">
-        <i class="bi bi-info-circle me-2"></i>
-        <strong>Petunjuk:</strong>
-        <ol class="mb-0 mt-2">
-            <li>Isi <strong>deskripsi/narasi</strong> untuk setiap elemen standar</li>
-            <li>Isi <strong>tabel HTML</strong> menggunakan editor (klik pada tabel untuk mengedit)</li>
-            <li>Klik tombol <strong>"Simpan"</strong> setelah mengisi setiap bagian</li>
-            <li>Atau gunakan fitur <strong>Upload DOCX</strong> untuk mengisi dari file</li>
-            <li>Klik <strong>"Finalisasi & Submit"</strong> setelah semua bagian terisi</li>
-        </ol>
+    {{-- ✅ Upload Files Section --}}
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                <i class="bi bi-cloud-upload"></i> Upload File Laporan Evaluasi Diri dan LKPS
+            </h5>
+        </div>
+        <div class="card-body">
+
+            {{-- 2. Laporan Evaluasi Diri (Data Kualitatif) --}}
+            <div class="col-lg-12">
+                <div class="upload-card {{ isset($uploadedFiles['kualitatif']) && $uploadedFiles['kualitatif'] ? 'has-file' : '' }}">
+                    <div class="upload-icon">
+                        <i class="bi {{ isset($uploadedFiles['kualitatif']) && $uploadedFiles['kualitatif'] ? 'bi-file-earmark-check' : 'bi-file-word' }}"></i>
+                    </div>
+                    <h6 class="fw-bold">Laporan Evaluasi Diri</h6>
+
+                    @if(isset($uploadedFiles['kualitatif']) && $uploadedFiles['kualitatif'])
+                    <p class="text-success mb-2">
+                        <i class="bi bi-check-circle"></i> {{ $uploadedFiles['kualitatif']->original_filename }}
+                    </p>
+                    <small class="text-muted d-block mb-3">{{ $uploadedFiles['kualitatif']->created_at->diffForHumans() }}</small>
+                    @else
+                    <p class="text-muted small mb-3">File DOCX berisi deskripsi/narasi</p>
+                    @endif
+                    <div class="action-buttons">
+                        {{-- Download Template --}}
+                        <a href="{{ route('pengajuan.borang.download-template', $pengajuan->id) }}" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-download"></i> Download Template DOCX
+                        </a>
+
+                        {{-- Import DOCX --}}
+                        <button type="button" class="btn btn-primary btn-sm" id="btnImportDocx">
+                            <i class="bi bi-file-earmark-arrow-up"></i> Upload dari DOCX
+                        </button>
+
+                        {{-- Export DOCX --}}
+                        <a href="{{ route('pengajuan.borang.export-docx', $pengajuan->id) }}" class="btn btn-success btn-sm">
+                            <i class="bi bi-file-earmark-arrow-down"></i> Download ke DOCX
+                        </a>
+                    </div>
+
+                    <small class="text-muted d-block mt-2">
+                        <i class="bi bi-info-circle"></i>
+                        Download template, isi offline, lalu upload kembali. Atau isi online dan download hasilnya.
+                    </small>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                {{-- 1. Lembar Pengesahan --}}
+                <div class="col-md-6">
+                    <div class="upload-card clickable {{ isset($uploadedFiles['pengesahan']) && $uploadedFiles['pengesahan'] ? 'has-file' : '' }}" onclick="triggerUploadPengesahan()">
+                        <div class="upload-icon">
+                            <i class="bi {{ isset($uploadedFiles['pengesahan']) && $uploadedFiles['pengesahan'] ? 'bi-file-earmark-check' : 'bi-file-earmark-pdf' }}"></i>
+                        </div>
+                        <h6 class="fw-bold">Lembar Pengesahan</h6>
+                        @if(isset($uploadedFiles['pengesahan']) && $uploadedFiles['pengesahan'])
+                        <p class="text-success mb-2">
+                            <i class="bi bi-check-circle"></i> {{ $uploadedFiles['pengesahan']->original_filename }}
+                        </p>
+                        <small class="text-muted">{{ $uploadedFiles['pengesahan']->created_at->diffForHumans() }}</small>
+                        @else
+                        <p class="text-muted small mb-2">PDF yang sudah ditandatangani dan distempel</p>
+                        <button type="button" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-upload"></i> Upload PDF
+                        </button>
+                        @endif
+                    </div>
+                    <input type="file" id="inputPengesahan" class="d-none" accept=".pdf" onchange="handleUploadPengesahan(event)">
+                </div>
+                {{-- 3. LKPS (Data Kuantitatif) --}}
+                <div class="col-md-6">
+                    <div class="upload-card clickable {{ isset($uploadedFiles['kuantitatif']) && $uploadedFiles['kuantitatif'] ? 'has-file' : '' }}" onclick="triggerUploadKuantitatif()">
+                        <div class="upload-icon">
+                            <i class="bi {{ isset($uploadedFiles['kuantitatif']) && $uploadedFiles['kuantitatif'] ? 'bi-file-earmark-check' : 'bi-file-excel' }}"></i>
+                        </div>
+                        <h6 class="fw-bold">LKPS</h6>
+                        @if(isset($uploadedFiles['kuantitatif']) && $uploadedFiles['kuantitatif'])
+                        <p class="text-success mb-2">
+                            <i class="bi bi-check-circle"></i> {{ $uploadedFiles['kuantitatif']->original_filename }}
+                        </p>
+                        <small class="text-muted">{{ $uploadedFiles['kuantitatif']->created_at->diffForHumans() }}</small>
+                        @else
+                        <p class="text-muted small mb-2">File Excel berisi data tabel</p>
+                        <button type="button" class="btn btn-outline-success btn-sm">
+                            <i class="bi bi-upload"></i> Upload Excel
+                        </button>
+                        @endif
+                    </div>
+                    <input type="file" id="inputKuantitatif" class="d-none" accept=".xlsx,.xls" onchange="handleUploadKuantitatif(event)">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ✅ Alert Gabungan (Petunjuk + Catatan) --}}
+    <div class="alert alert-info alert-dismissible alert-permanent fade show" role="alert">
+        <div class="row">
+            <div class="col-md-6">
+                <h6 class="alert-heading"><i class="bi bi-info-circle me-2"></i>Petunjuk Pengisian:</h6>
+                <ol class="mb-0 small">
+                    <li>Isi <strong>Kata Pengantar</strong> dan <strong>Ringkasan</strong> di bagian atas</li>
+                    <li>Isi <strong>deskripsi/narasi</strong> untuk setiap elemen standar (D.1 - R.6)</li>
+                    <li>Isi <strong>tabel HTML</strong> menggunakan editor (klik pada tabel untuk mengedit)</li>
+                    <li>Isi <strong>Suplemen</strong> di bagian bawah sesuai jenjang program studi</li>
+                    <li>Data tersimpan otomatis setelah 2 detik tidak ada perubahan</li>
+                    <li>Klik <strong>"Finalisasi & Submit"</strong> setelah semua terisi</li>
+                </ol>
+            </div>
+            <div class="col-md-6 border-start">
+                <h6 class="alert-heading"><i class="bi bi-exclamation-triangle me-2"></i>Catatan Penting:</h6>
+                <ul class="mb-0 small">
+                    <li><strong>Lembar Pengesahan:</strong> Upload PDF yang sudah ditandatangani pimpinan</li>
+                    <li><strong>Laporan Evaluasi Diri:</strong> Upload DOCX dengan deskripsi setiap elemen - akan diproses otomatis</li>
+                    <li><strong>LKPS:</strong> Upload Excel dengan sheet terpisah untuk setiap tabel - hanya tersimpan sebagai file</li>
+                    <li><strong>Alternatif:</strong> Download template, isi offline, lalu upload kembali</li>
+                </ul>
+            </div>
+        </div>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 
-    {{-- ✅ Accordion per Kriteria with Server Progress --}}
+    {{-- ✅ ACCORDION 1: Kata Pengantar --}}
+    <div class="card mb-3 front-matter-card">
+        <div class="card-header" id="headingKataPengantar">
+            <button class="btn btn-link w-100 text-start collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseKataPengantar" aria-expanded="false" aria-controls="collapseKataPengantar">
+                <i class="bi bi-chevron-right me-2 chevron-icon"></i>
+                <strong><i class="bi bi-pen"></i> Kata Pengantar</strong>
+                <span class="badge bg-info float-end">Front Matter</span>
+            </button>
+        </div>
+        <div id="collapseKataPengantar" class="accordion-collapse collapse" aria-labelledby="headingKataPengantar">
+            <div class="card-body">
+                <label class="form-label fw-semibold">
+                    <i class="bi bi-pencil-square"></i> Kata Pengantar (maksimal 500 kata)
+                </label>
+                <textarea class="form-control auto-save-field" name="kata_pengantar" data-field-id="kata_pengantar" data-field-type="front_matter" rows="12" placeholder="Tuliskan kata pengantar laporan evaluasi diri di sini...">{{ $existingData['kata_pengantar'] ?? '' }}</textarea>
+                <small class="text-muted">
+                    <i class="bi bi-info-circle"></i>
+                    <span class="char-count">{{ strlen($existingData['kata_pengantar'] ?? '') }}</span>/500 kata
+                </small>
+                <div class="save-status text-muted mt-1">
+                    <i class="bi bi-cloud-check"></i>
+                    <span class="status-text">
+                        @if(isset($existingData['kata_pengantar']) && strlen($existingData['kata_pengantar']) > 20)
+                        Tersimpan
+                        @else
+                        Belum ada perubahan
+                        @endif
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ✅ ACCORDION 2: Ringkasan --}}
+    <div class="card mb-3 front-matter-card">
+        <div class="card-header" id="headingRingkasan">
+            <button class="btn btn-link w-100 text-start collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRingkasan" aria-expanded="false" aria-controls="collapseRingkasan">
+                <i class="bi bi-chevron-right me-2 chevron-icon"></i>
+                <strong><i class="bi bi-file-text"></i> Ringkasan</strong>
+                <span class="badge bg-info float-end">Front Matter</span>
+            </button>
+        </div>
+        <div id="collapseRingkasan" class="accordion-collapse collapse" aria-labelledby="headingRingkasan">
+            <div class="card-body">
+                <label class="form-label fw-semibold">
+                    <i class="bi bi-pencil-square"></i> Ringkasan Laporan (maksimal 1000 kata)
+                </label>
+                <textarea class="form-control auto-save-field" name="ringkasan" data-field-id="ringkasan" data-field-type="front_matter" rows="15" placeholder="Tuliskan ringkasan laporan evaluasi diri di sini...">{{ $existingData['ringkasan'] ?? '' }}</textarea>
+                <small class="text-muted">
+                    <i class="bi bi-info-circle"></i>
+                    <span class="char-count">{{ strlen($existingData['ringkasan'] ?? '') }}</span>/1000 kata
+                </small>
+                <div class="save-status text-muted mt-1">
+                    <i class="bi bi-cloud-check"></i>
+                    <span class="status-text">
+                        @if(isset($existingData['ringkasan']) && strlen($existingData['ringkasan']) > 20)
+                        Tersimpan
+                        @else
+                        Belum ada perubahan
+                        @endif
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ✅ ACCORDION 3-9: Kriteria (D, E, P, I, L, A, R) --}}
     <div class="accordion" id="accordionKriteria">
         @foreach($kriterias as $kriteria)
         @php
         $kProgress = $progressData['kriteria_progress'][$kriteria->id] ?? [
-        'total_fields' => 0,
-        'filled_fields' => 0,
         'total_elemen' => 0,
         'completed_elemen' => 0,
         'percentage' => 0,
         ];
-
-        $badgeClass = $kProgress['percentage'] === 100 ? 'bg-success' :
-        ($kProgress['percentage'] >= 50 ? 'bg-warning' : 'bg-secondary');
         @endphp
 
         <div class="card mb-3 kriteria-card" data-kriteria-id="{{ $kriteria->id }}">
@@ -339,19 +497,13 @@
                     </button>
                     <div class="d-flex gap-2 align-items-center">
                         {{-- Elemen Progress --}}
-                        <span class="badge {{ $kProgress['completed_elemen'] === $kProgress['total_elemen'] ? 'bg-success' : 'bg-info' }} kriteria-progress-elemen" title="Elemen yang sudah lengkap 100%" data-kriteria-id="{{ $kriteria->id }}" title="Elemen Lengkap">
+                        <span class="badge {{ $kProgress['completed_elemen'] === $kProgress['total_elemen'] ? 'bg-success' : 'bg-info' }} kriteria-progress-elemen" data-kriteria-id="{{ $kriteria->id }}" title="Elemen Lengkap">
                             <i class="bi bi-check-square"></i>
                             {{ $kProgress['completed_elemen'] }}/{{ $kProgress['total_elemen'] }}
                         </span>
 
-                        {{-- Field Progress --}}
-                        <span class="badge {{ $badgeClass }} kriteria-progress-fields" title="Total bagian/field yang terisi" data-kriteria-id="{{ $kriteria->id }}" title="Bagian Terisi" data-initial-filled="{{ $kProgress['filled_fields'] }}" data-initial-total="{{ $kProgress['total_fields'] }}">
-                            <i class="bi bi-list-check"></i>
-                            {{ $kProgress['filled_fields'] }}/{{ $kProgress['total_fields'] }}
-                        </span>
-
                         <small class="text-white">{{ $kProgress['percentage'] }}%</small>
-                        <button type="button" class="btn btn-sm btn-light" onclick="toggleKriteriaAccordion({{ $kriteria->id }})" title="Expand/Collapse Semua Pernyataan Standar">
+                        <button type="button" class="btn btn-sm btn-light" onclick="toggleKriteriaAccordion({{ $kriteria->id }})" title="Expand/Collapse Semua Elemen">
                             <i class="bi bi-arrows-expand"></i>
                         </button>
                     </div>
@@ -365,18 +517,12 @@
                     <div class="accordion" id="accordionElemen-{{ $kriteria->id }}">
                         @foreach($kriteria->elemenStandar as $elemen)
                         @php
-                        $eProgress = $progressData['elemen_progress'][$elemen->id] ?? [
-                        'total' => 1,
-                        'filled' => 0,
-                        'percentage' => 0,
-                        'is_complete' => false
-                        ];
-
+                        $eProgress = $progressData['elemen_progress'][$elemen->id] ?? ['is_complete' => false];
                         $hasData = $eProgress['is_complete'];
                         $elemenBadgeClass = $hasData ? 'bg-success' : 'bg-warning text-dark';
                         @endphp
 
-                        <div class="card mb-3 elemen-card @if($hasData) has-data @endif" data-elemen-id="{{ $elemen->id }}" data-initial-filled="{{ $eProgress['filled'] }}" data-initial-total="{{ $eProgress['total'] }}">
+                        <div class="card mb-3 elemen-card @if($hasData) has-data @endif" data-elemen-id="{{ $elemen->id }}">
                             {{-- Elemen Header --}}
                             <div class="card-header elemen-header" id="heading-elemen-{{ $elemen->id }}">
                                 <div class="d-md-flex justify-content-between align-items-center">
@@ -386,14 +532,11 @@
                                             <strong>{{ $elemen->pernyataan_elemen }}</strong>
                                         </div>
                                         <div class="ms-auto d-flex align-items-center gap-2">
-                                            <small class="text-muted elemen-progress-text">
-                                                {{ $eProgress['filled'] }}/{{ $eProgress['total'] }}
-                                            </small>
                                             <span class="badge {{ $elemenBadgeClass }} elemen-status-badge">
                                                 @if($hasData)
                                                 <i class="bi bi-check-circle"></i> Lengkap
                                                 @else
-                                                <i class="bi bi-clock"></i> {{ $eProgress['percentage'] }}%
+                                                <i class="bi bi-clock"></i> Belum Lengkap
                                                 @endif
                                             </span>
                                         </div>
@@ -407,12 +550,12 @@
                                     {{-- Deskripsi Narasi --}}
                                     <div class="mb-4">
                                         <label class="form-label fw-semibold">
-                                            <i class="bi bi-pencil-square"></i> Deskripsi/Narasi Elemen
+                                            <i class="bi bi-pencil-square"></i> Deskripsi/Narasi Elemen (maksimal 1000 kata)
                                         </label>
-                                        <textarea class="form-control auto-save-field" name="desc_{{ $elemen->id }}" data-field-id="desc_{{ $elemen->id }}" data-field-type="description" rows="6" placeholder="Tuliskan deskripsi/narasi untuk {{ $elemen->kode_elemen }} di sini...">{{ $existingData["desc_{$elemen->id}"] ?? '' }}</textarea>
+                                        <textarea class="form-control auto-save-field tinymce-editor" name="desc_{{ $elemen->id }}" data-field-id="desc_{{ $elemen->id }}" data-field-type="description" rows="15" placeholder="Tuliskan deskripsi/narasi untuk {{ $elemen->kode_elemen }} di sini (maksimal 1000 kata)...">{{ $existingData["desc_{$elemen->id}"] ?? '' }}</textarea>
                                         <small class="text-muted">
                                             <i class="bi bi-info-circle"></i>
-                                            <span class="char-count">{{ strlen($existingData["desc_{$elemen->id}"] ?? '') }}</span> karakter
+                                            <span class="char-count">{{ strlen($existingData["desc_{$elemen->id}"] ?? '') }}</span>/1000 kata
                                         </small>
                                         <div class="save-status text-muted mt-1">
                                             <i class="bi bi-cloud-check"></i>
@@ -426,14 +569,13 @@
                                         </div>
                                     </div>
 
-                                    {{-- Dataset Fields --}}
+                                    {{-- Dataset Fields (If Any) --}}
                                     @if($elemen->datasetBorang->count() > 0)
-                                    <div class="border-top pt-3">
-                                        <h6 class="mb-3">
-                                            <i class="bi bi-table"></i> Data Pendukung
-                                        </h6>
-
+                                    <div>
                                         @foreach($elemen->datasetBorang as $dataset)
+                                        @if(str_ends_with($dataset->kode, '.DESC'))
+                                        @continue
+                                        @endif
                                         <div class="dataset-field-wrapper">
                                             <label class="form-label fw-semibold">
                                                 {{ $dataset->nama }}
@@ -447,95 +589,102 @@
                                             @endif
 
                                             @if($dataset->tipe_field === 'table')
-                                            {{-- CKEditor for Table --}}
-                                            {{-- <div class="wysiwyg-editor" data-dataset-id="{{ $dataset->kode }}" data-field-type="table" data-template="{{ $dataset->expected_columns ? json_encode($dataset->expected_columns) : '' }}">
-                                            {!! $existingData[$dataset->kode] ?? $dataset->template_html ?? '' !!}
-                                        </div> --}}
-                                        <textarea id="editor_{{ \Illuminate\Support\Str::slug($dataset->kode, '_') }}" class="tinymce-editor" data-dataset-id="{{ $dataset->kode }}" data-field-type="table" data-template="{{ $dataset->expected_columns ? e(json_encode($dataset->expected_columns)) : '' }}">{!! $existingData[$dataset->kode] ?? $dataset->template_html ?? '' !!}</textarea>
-                                        <div class="editor-actions">
-                                            <small class="text-muted">
-                                                <i class="bi bi-info-circle"></i> Gunakan toolbar editor untuk mengedit tabel
-                                            </small>
-                                            <button type="button" class="btn btn-sm btn-primary btn-save-editor" data-dataset-id="{{ $dataset->kode }}">
-                                                <i class="bi bi-save"></i> Simpan
-                                            </button>
+                                            <textarea id="editor_{{ \Illuminate\Support\Str::slug($dataset->kode, '_') }}" class="tinymce-editor" data-dataset-id="{{ $dataset->kode }}" data-field-type="table" data-template="{{ $dataset->expected_columns ? e(json_encode($dataset->expected_columns)) : '' }}">{!! $existingData[$dataset->kode] ?? $dataset->template_html ?? '' !!}</textarea>
+                                            <div class="editor-actions">
+                                                <small class="text-muted">
+                                                    <i class="bi bi-info-circle"></i> Gunakan toolbar editor untuk mengedit tabel
+                                                </small>
+                                                <button type="button" class="btn btn-sm btn-primary btn-save-editor" data-dataset-id="{{ $dataset->kode }}">
+                                                    <i class="bi bi-save"></i> Simpan
+                                                </button>
+                                            </div>
+
+                                            <div class="save-status text-muted mt-1">
+                                                <i class="bi bi-cloud-check"></i>
+                                                <span class="status-text">
+                                                    @if(isset($existingData[$dataset->kode]))
+                                                    Tersimpan
+                                                    @else
+                                                    Belum ada data
+                                                    @endif
+                                                </span>
+                                            </div>
+
+                                            @elseif($dataset->tipe_field === 'narasi' || $dataset->tipe_field === 'textarea')
+                                            <textarea class="form-control auto-save-field" name="{{ $dataset->kode }}" data-field-id="{{ $dataset->kode }}" data-field-type="textarea" rows="4" placeholder="{{ $dataset->placeholder }}" @if($dataset->is_required) required @endif>{{ $existingData[$dataset->kode] ?? '' }}</textarea>
+
+                                            <div class="save-status text-muted mt-1">
+                                                <i class="bi bi-cloud-check"></i>
+                                                <span class="status-text">Belum ada perubahan</span>
+                                            </div>
+
+                                            @else
+                                            <input type="text" class="form-control auto-save-field" name="{{ $dataset->kode }}" data-field-id="{{ $dataset->kode }}" data-field-type="text" placeholder="{{ $dataset->placeholder }}" value="{{ $existingData[$dataset->kode] ?? '' }}" @if($dataset->is_required) required @endif>
+
+                                            <div class="save-status text-muted mt-1">
+                                                <i class="bi bi-cloud-check"></i>
+                                                <span class="status-text">Belum ada perubahan</span>
+                                            </div>
+                                            @endif
                                         </div>
-
-                                        <div class="save-status text-muted mt-1">
-                                            <i class="bi bi-cloud-check"></i>
-                                            <span class="status-text">
-                                                @if(isset($existingData[$dataset->kode]))
-                                                Tersimpan
-                                                @else
-                                                Belum ada data
-                                                @endif
-                                            </span>
-                                        </div>
-
-                                        @elseif($dataset->tipe_field === 'narasi' || $dataset->tipe_field === 'textarea')
-                                        {{-- Simple Textarea --}}
-                                        <textarea class="form-control auto-save-field" name="{{ $dataset->kode }}" data-field-id="{{ $dataset->kode }}" data-field-type="textarea" rows="4" placeholder="{{ $dataset->placeholder }}" @if($dataset->is_required) required @endif>{{ $existingData[$dataset->kode] ?? '' }}</textarea>
-
-                                        <div class="save-status text-muted mt-1">
-                                            <i class="bi bi-cloud-check"></i>
-                                            <span class="status-text">Belum ada perubahan</span>
-                                        </div>
-
-                                        @elseif($dataset->tipe_field === 'number')
-                                        <input type="number" class="form-control auto-save-field" name="{{ $dataset->kode }}" data-field-id="{{ $dataset->kode }}" data-field-type="number" placeholder="{{ $dataset->placeholder }}" value="{{ $existingData[$dataset->kode] ?? '' }}" @if($dataset->is_required) required @endif>
-
-                                        <div class="save-status text-muted mt-1">
-                                            <i class="bi bi-cloud-check"></i>
-                                            <span class="status-text">Belum ada perubahan</span>
-                                        </div>
-
-                                        @elseif($dataset->tipe_field === 'date')
-                                        <input type="date" class="form-control auto-save-field" name="{{ $dataset->kode }}" data-field-id="{{ $dataset->kode }}" data-field-type="date" value="{{ $existingData[$dataset->kode] ?? '' }}" @if($dataset->is_required) required @endif>
-
-                                        <div class="save-status text-muted mt-1">
-                                            <i class="bi bi-cloud-check"></i>
-                                            <span class="status-text">Belum ada perubahan</span>
-                                        </div>
-
-                                        @elseif($dataset->tipe_field === 'file')
-                                        <input type="file" class="form-control file-upload-field" name="{{ $dataset->kode }}" data-field-id="{{ $dataset->kode }}" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
-                                        @if(isset($existingData[$dataset->kode]))
-                                        <small class="text-success">
-                                            <i class="bi bi-check-circle"></i> File tersimpan
-                                        </small>
-                                        @endif
-
-                                        @else
-                                        <input type="text" class="form-control auto-save-field @error($dataset->kode) is-invalid @enderror" name="{{ $dataset->kode }}" data-field-id="{{ $dataset->kode }}" data-field-type="text" placeholder="{{ $dataset->placeholder }}" value="{{ $existingData[$dataset->kode] ?? '' }}" @if($dataset->is_required) required @endif>
-
-                                        <div class="save-status text-muted mt-1">
-                                            <i class="bi bi-cloud-check"></i>
-                                            <span class="status-text">Belum ada perubahan</span>
-                                        </div>
-                                        @endif
-
-                                        @if($dataset->keterangan)
-                                        <small class="text-muted d-block mt-1">
-                                            <i class="bi bi-lightbulb"></i> {{ $dataset->keterangan }}
-                                        </small>
-                                        @endif
-                                        @error($dataset->kode)
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
+                                        @endforeach
                                     </div>
-                                    @endforeach
+                                    @endif
                                 </div>
-                                @endif
                             </div>
                         </div>
+                        @endforeach
                     </div>
-                    @endforeach
+                </div>
+            </div>
+        </div>
+        @endforeach
+    </div>
+
+    {{-- ✅ ACCORDION 10: Suplemen --}}
+    <div class="card mb-3 suplemen-card">
+        <div class="card-header" id="headingSuplemen">
+            <button class="btn btn-link w-100 text-start collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSuplemen" aria-expanded="false" aria-controls="collapseSuplemen">
+                <i class="bi bi-chevron-right me-2 chevron-icon"></i>
+                <strong><i class="bi bi-plus-square"></i> Suplemen Program Studi</strong>
+                <span class="badge bg-secondary float-end">Opsional</span>
+            </button>
+        </div>
+        <div id="collapseSuplemen" class="accordion-collapse collapse" aria-labelledby="headingSuplemen">
+            <div class="card-body">
+                <div class="alert alert-info alert-permanent mb-3">
+                    <i class="bi bi-info-circle"></i>
+                    Isi bagian suplemen sesuai dengan jenjang program studi Anda (Diploma, Sarjana, Magister, atau Doktor)
+                </div>
+
+                <label class="form-label fw-semibold">
+                    <i class="bi bi-pencil-square"></i> Konten Suplemen
+                </label>
+                <textarea class="form-control auto-save-field" name="suplemen" data-field-id="suplemen" data-field-type="suplemen" rows="20" placeholder="Tuliskan konten suplemen sesuai jenjang program studi di sini...">{{ $existingData['suplemen'] ?? '' }}</textarea>
+                <small class="text-muted">
+                    <i class="bi bi-info-circle"></i>
+                    Contoh: Capaian Pembelajaran Lulusan (CPL), Susunan Materi Pembelajaran, Beban Belajar, dll.
+                </small>
+                <div class="save-status text-muted mt-1">
+                    <i class="bi bi-cloud-check"></i>
+                    <span class="status-text">
+                        @if(isset($existingData['suplemen']) && strlen($existingData['suplemen']) > 20)
+                        Tersimpan
+                        @else
+                        Belum ada perubahan
+                        @endif
+                    </span>
                 </div>
             </div>
         </div>
     </div>
-    @endforeach
 </div>
+
+{{-- Loading Overlay --}}
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner-border text-light" role="status" style="width: 3rem; height: 3rem;">
+        <span class="visually-hidden">Loading...</span>
+    </div>
 </div>
 
 {{-- Modal Import DOCX --}}
@@ -551,24 +700,18 @@
                     @csrf
                     <div class="mb-3">
                         <label class="form-label">Pilih File DOCX</label>
-                        <input type="file" class="form-control @error('docx_file') is-invalid @enderror" name="docx_file" accept=".docx,.doc" required>
+                        <input type="file" class="form-control" name="docx_file" accept=".docx,.doc" required>
                         <small class="text-muted">
                             Format: .docx atau .doc (Max 10MB)
                         </small>
-                        @error('docx_file')
-                        <span class="invalid-feedback" role="alert">
-                            {{ $message }}
-                        </span>
-                        @enderror
                     </div>
 
-                    <div class="alert alert-warning">
+                    <div class="alert alert-warning alert-permanent">
                         <i class="bi bi-exclamation-triangle"></i>
                         <strong>Perhatian:</strong>
                         <ul class="mb-0 mt-2">
                             <li>Data yang ada akan ditimpa dengan data dari file</li>
                             <li>Pastikan format file sesuai template</li>
-                            <li>Proses upload dan pembacaan data memerlukan waktu beberapa saat</li>
                         </ul>
                     </div>
                 </form>
@@ -582,49 +725,50 @@
         </div>
     </div>
 </div>
-
-{{-- Loading Overlay --}}
-<div class="loading-overlay" id="loadingOverlay">
-    <div class="spinner-border text-light" role="status" style="width: 3rem; height: 3rem;">
-        <span class="visually-hidden">Loading...</span>
-    </div>
-</div>
 @endsection
 
 @push('scripts')
-{{-- CKEditor 5 --}}
 <script src="https://cdn.jsdelivr.net/npm/tinymce@8.3.1/tinymce.min.js"></script>
-{{-- <script src="{{ asset('assets/js/ckeditor5.umd.js') }}"></script> --}}
 
 <script>
-    //const { ClassicEditor , Essentials , Bold , Italic , Font , Paragraph , Table , TableToolbar , Heading , List , Link , Alignment , Underline , Strikethrough , Indent , IndentBlock } = CKEDITOR;
-    //const licenseKeyCKEDITOR = 'eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3Njc3NDM5OTksImp0aSI6ImViNWYxM2ZjLWViMmEtNDNhZi05OGE2LTI1YjBmMTY4N2RhMyIsInVzYWdlRW5kcG9pbnQiOiJodHRwczovL3Byb3h5LWV2ZW50LmNrZWRpdG9yLmNvbSIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsiY2xvdWQiLCJkcnVwYWwiLCJzaCJdLCJ3aGl0ZUxhYmVsIjp0cnVlLCJsaWNlbnNlVHlwZSI6InRyaWFsIiwiZmVhdHVyZXMiOlsiKiJdLCJ2YyI6ImM2MjE0NTY3In0.rTMaN-qZUvY2yczKBRALkpIws_B92_gsnIJtG2pQvOikQvsYE8JoFXqwA_WxymhPtO7kjMQOV0s8FILQ8W1syA'
-
     document.addEventListener('DOMContentLoaded', function() {
         const pengajuanId = "{{ $pengajuan->id }}";
-
-        // ✅ Load server-side progress
         const initialProgress = @json($progressData);
-        const totalFields = initialProgress.total_fields;
 
         let saveTimeout;
-        let importStatusInterval = null;
         const AUTO_SAVE_DELAY = 2000;
         const editorInstances = {};
 
         // Initialize
         initializeAutoSave();
         initializeWYSIWYGEditors();
-        initializeFileUpload();
         initializeToggleButton();
         initializeFinalize();
         initializeResetBorang();
+        initializeChevronIcons();
         initializeImportExport();
+
+        // ✅ Initial progress update
+        updateProgress();
+
+        function initializeChevronIcons() {
+            document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(button => {
+                button.addEventListener('click', function() {
+                    const icon = this.querySelector('.chevron-icon');
+                    if (icon) {
+                        icon.classList.toggle('bi-chevron-right');
+                        icon.classList.toggle('bi-chevron-down');
+                    }
+                });
+            });
+        }
 
         function initializeWYSIWYGEditors() {
             const editorElements = document.querySelectorAll('textarea.tinymce-editor');
+            let initCount = 0;
+            const totalEditors = editorElements.length;
 
-            editorElements.forEach((el) => {
+            editorElements.forEach(function(el) {
                 const datasetId = el.dataset.datasetId;
 
                 tinymce.init({
@@ -637,14 +781,9 @@
                         'undo redo | bold italic underline strikethrough | alignleft aligncenter alignright | bullist numlist |'
                         , 'table | link | code'
                     ].join(' ')
-                    , content_style: `
-        table { border-collapse: collapse; width: 100%; }
-        td, th { border: 1px solid #ddd; padding: 8px; }
-        th { background: #f2f2f2; font-weight: bold; }
-      `
+                    , content_style: 'table { border-collapse: collapse; width: 100%; } td, th { border: 1px solid #ddd; padding: 8px; } th { background: #f2f2f2; font-weight: bold; }'
                     , setup: function(editor) {
                         editor.on('init', function() {
-                            // Jika kosong / terlalu pendek, isi template dari expected_columns
                             const existing = editor.getContent({
                                 format: 'html'
                             }).trim();
@@ -661,15 +800,29 @@
                                     }
                                 }
                             }
-
-                            // simpan instance
                             editorInstances[datasetId] = editor;
+
+                            // ✅ Count initialized editors
+                            initCount++;
+
+                            // ✅ Update progress when ALL editors are ready
+                            if (initCount === totalEditors) {
+                                setTimeout(function() {
+                                    updateProgress();
+                                }, 500);
+                            }
+
+                            // ✅ Update progress on content change
+                            editor.on('change keyup', function() {
+                                clearTimeout(saveTimeout);
+                                saveTimeout = setTimeout(function() {
+                                    updateProgress();
+                                }, 1000);
+                            });
                         });
                     }
                 });
             });
-
-            setTimeout(updateProgress, 1000);
         }
 
         function buildTemplateTable(columns) {
@@ -700,9 +853,6 @@
                 .replaceAll("'", '&#039;');
         }
 
-        /**
-         * ✅ Save editor button handler
-         */
         document.querySelectorAll('.btn-save-editor').forEach(btn => {
             btn.addEventListener('click', async function() {
                 const datasetId = this.dataset.datasetId;
@@ -713,8 +863,7 @@
                     return;
                 }
 
-                //const content = editor.getData(); // CKEditor 5
-                const content = editor.getContent(); // TinyMCE
+                const content = editor.getContent();
                 const wrapper = this.closest('.dataset-field-wrapper');
                 const statusElement = wrapper.querySelector('.status-text');
 
@@ -729,7 +878,6 @@
                         this.innerHTML = '<i class="bi bi-save"></i> Simpan';
                     }, 2000);
                 } catch (error) {
-                    console.log(error)
                     this.disabled = false;
                     this.innerHTML = '<i class="bi bi-save"></i> Simpan';
                     Swal.fire('Error', 'Gagal menyimpan: ' + error.message, 'error');
@@ -737,9 +885,6 @@
             });
         });
 
-        /**
-         * ✅ Auto-save field
-         */
         async function autoSaveField(fieldId, value, statusElement) {
             if (statusElement) {
                 statusElement.textContent = 'Menyimpan...';
@@ -768,6 +913,7 @@
                         statusElement.textContent = `Tersimpan pada ${now.toLocaleTimeString('id-ID')}`;
                         statusElement.className = 'status-text text-success';
                     }
+                    // ✅ Update progress setelah save berhasil
                     updateProgress();
                 } else {
                     throw new Error(data.message || 'Gagal menyimpan');
@@ -783,14 +929,12 @@
             }
         }
 
-        /**
-         * Auto-save text fields
-         */
         function initializeAutoSave() {
             document.querySelectorAll('.auto-save-field').forEach(field => {
                 field.addEventListener('input', function() {
                     clearTimeout(saveTimeout);
-                    const wrapper = field.closest('.mb-3, .mb-4, .dataset-field-wrapper');
+
+                    const wrapper = field.closest('.mb-3, .mb-4, .dataset-field-wrapper, .card-body');
                     const statusElement = wrapper ? wrapper.querySelector('.status-text') : null;
 
                     if (statusElement) {
@@ -798,254 +942,87 @@
                         statusElement.className = 'status-text text-warning';
                     }
 
-                    saveTimeout = setTimeout(() => saveField(this), AUTO_SAVE_DELAY);
-                });
-
-                // Character count
-                if (field.tagName === 'TEXTAREA') {
-                    field.addEventListener('input', function() {
-                        const wrapper = this.closest('.mb-3, .mb-4');
+                    // ✅ update char count (hanya textarea)
+                    if (field.tagName === 'TEXTAREA') {
                         const charCount = wrapper ? wrapper.querySelector('.char-count') : null;
                         if (charCount) {
-                            charCount.textContent = this.value.length;
+                            charCount.textContent = field.value.length;
                         }
-                    });
-                }
+                    }
+
+                    saveTimeout = setTimeout(() => saveField(field), AUTO_SAVE_DELAY);
+                });
             });
         }
 
         async function saveField(field) {
             const fieldId = field.dataset.fieldId;
             const value = field.value;
-            const wrapper = field.closest('.mb-3, .mb-4, .dataset-field-wrapper');
+            const wrapper = field.closest('.mb-3, .mb-4, .dataset-field-wrapper, .card-body');
             const statusElement = wrapper ? wrapper.querySelector('.status-text') : null;
 
             await autoSaveField(fieldId, value, statusElement);
         }
 
-        /**
-         * File upload
-         */
-        function initializeFileUpload() {
-            document.querySelectorAll('.file-upload-field').forEach(input => {
-                input.addEventListener('change', async function() {
-                    const file = this.files[0];
-                    if (!file) return;
-
-                    const formData = new FormData();
-                    formData.append('file', file);
-                    formData.append('dataset_id', this.dataset.fieldId);
-
-                    showLoading();
-
-                    try {
-                        const response = await fetch(`/pengajuan/${pengajuanId}/borang-online/upload`, {
-                            method: 'POST'
-                            , headers: {
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                                , 'Accept': 'application/json'
-                            }
-                            , body: formData
-                        });
-
-                        const data = await response.json();
-                        hideLoading();
-
-                        if (data.success) {
-                            Swal.fire({
-                                icon: 'success'
-                                , title: 'File Terupload!'
-                                , text: data.message
-                                , timer: 2000
-                                , showConfirmButton: false
-                            });
-                            updateProgress();
-                        } else {
-                            throw new Error(data.message || 'Upload gagal');
-                        }
-
-                    } catch (error) {
-                        hideLoading();
-                        Swal.fire('Error', error.message, 'error');
-                    }
-                });
-            });
-        }
-
-        /**
-         * ✅ Import/Export handlers
-         */
-        function initializeImportExport() {
-            document.getElementById('btnImportDocx').addEventListener('click', function() {
-                const modal = new bootstrap.Modal(document.getElementById('modalImportDocx'));
-                modal.show();
-            });
-
-            document.getElementById('btnSubmitImport').addEventListener('click', async function() {
-                const form = document.getElementById('formImportDocx');
-                const formData = new FormData(form);
-                const fileInput = form.querySelector('input[type="file"]');
-
-                if (!fileInput.files.length) {
-                    Swal.fire('Error', 'Pilih file DOCX terlebih dahulu', 'error');
-                    return;
-                }
-
-                this.disabled = true;
-                this.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Mengupload...';
-
-                try {
-                    const response = await fetch('/pengajuan/' + pengajuanId + '/borang/import-docx', {
-                        method: 'POST'
-                        , headers: {
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                            , 'Accept': 'application/json'
-                        }
-                        , body: formData
-                    });
-
-                    const data = await response.json();
-
-                    if (data.success) {
-                        bootstrap.Modal.getInstance(document.getElementById('modalImportDocx')).hide();
-                        showImportProgress(data.import_id);
-                    } else {
-                        throw new Error(data.message || 'Import gagal');
-                    }
-
-                } catch (error) {
-                    Swal.fire('Error', error.message, 'error');
-                    this.disabled = false;
-                    this.innerHTML = '<i class="bi bi-upload"></i> Upload Sekarang';
-                }
-            });
-        }
-
-        function showImportProgress(importId) {
-            Swal.fire({
-                title: 'Mengupload Borang...'
-                , html: `
-                    <div class="progress mb-3" style="height: 25px;">
-                        <div class="progress-bar progress-bar-striped progress-bar-animated"
-                             id="importProgressBar" role="progressbar" style="width: 0%">
-                            <span id="importProgressText">0%</span>
-                        </div>
-                    </div>
-                    <p><strong>Sections:</strong> <span id="importSections">0 / 0</span></p>
-                    <p><strong>Tables:</strong> <span id="importTables">0 / 0</span></p>
-                    <small class="text-muted">Proses upload dan pembacaan data...</small>
-                `
-                , allowOutsideClick: false
-                , showConfirmButton: false
-                , didOpen: () => {
-                    importStatusInterval = setInterval(() => checkImportStatus(importId), 2000);
-                }
-            });
-        }
-
-        async function checkImportStatus(importId) {
-            try {
-                const response = await fetch('/pengajuan/' + pengajuanId + '/borang/import-status/' + importId, {
-                    headers: {
-                        'Accept': 'application/json'
-                    }
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    const progress = data.progress;
-                    const percentage = Math.round((progress.tables.percentage + progress.sections.percentage) / 2);
-
-                    document.getElementById('importProgressBar').style.width = percentage + '%';
-                    document.getElementById('importProgressText').textContent = percentage + '%';
-                    document.getElementById('importSections').textContent =
-                        progress.sections.parsed + ' / ' + progress.sections.total;
-                    document.getElementById('importTables').textContent =
-                        progress.tables.parsed + ' / ' + progress.tables.total;
-
-                    if (data.status === 'completed') {
-                        clearInterval(importStatusInterval);
-                        Swal.fire({
-                            icon: 'success'
-                            , title: 'Proses Upload Berhasil!'
-                            , html: `
-                                <p><strong>${progress.sections.parsed} elemen</strong> berhasil diupload</p>
-                                <p><strong>${progress.tables.parsed} tabel</strong> data terisi</p>
-                                <p class="text-muted mt-2">Halaman akan dimuat ulang...</p>
-                            `
-                            , timer: 3000
-                            , showConfirmButton: false
-                            , allowOutsideClick: false
-                        }).then(() => {
-                            window.location.href = window.location.href + '?refreshed=' + Date.now();
-                        });
-
-                    } else if (data.status === 'failed') {
-                        clearInterval(importStatusInterval);
-                        Swal.fire('Error', 'Import gagal: ' + (data && data.errors && data.errors[0] && data.errors[0].message || 'Unknown'), 'error');
-                    }
-                }
-
-            } catch (error) {
-                clearInterval(importStatusInterval);
-                console.error('Check status error:', error);
-            }
-        }
-
-        /**
-         * ✅ Update progress - Client side fallback
-         */
         function updateProgress() {
-            let filledFieldsCount = 0;
-            let totalFieldsCount = 0;
             let completedElemenCount = 0;
             let totalElemenCount = 0;
 
-            // Process each elemen card
-            document.querySelectorAll('.elemen-card').forEach(card => {
+            document.querySelectorAll('.elemen-card').forEach(function(card) {
                 totalElemenCount++;
 
-                let elemenFilledCount = 0;
-                let elemenTotalCount = 0;
-
-                // ✅ 1. Count DESCRIPTION field (always 1 per elemen)
+                // ✅ Check deskripsi field - FIXED untuk TinyMCE
                 const descField = card.querySelector('textarea[data-field-type="description"]');
-                if (descField) {
-                    elemenTotalCount++;
-                    totalFieldsCount++;
+                let hasDescription = false;
 
-                    const descValue = descField.value.trim();
-                    if (descValue && descValue.length > 0) {
-                        elemenFilledCount++;
-                        filledFieldsCount++;
+                if (descField) {
+                    const descFieldId = descField.dataset.fieldId;
+                    let descValue = '';
+
+                    // ✅ Check if it's a TinyMCE editor
+                    if (editorInstances[descFieldId]) {
+                        descValue = editorInstances[descFieldId].getContent({
+                            format: 'text'
+                        }).trim();
+                    } else {
+                        descValue = descField.value.trim();
                     }
+
+                    hasDescription = (descValue && descValue.length > 20);
                 }
 
-                // ✅ 2. Count TABLE fields only (match server-side)
-                card.querySelectorAll('textarea.tinymce-editor[data-field-type="table"]').forEach(editorEl => {
-                    const datasetId = editorEl.dataset.datasetId;
-                    elemenTotalCount++;
-                    totalFieldsCount++;
+                // ✅ Check table fields (jika ada)
+                const tableFields = card.querySelectorAll('textarea[data-field-type="table"]');
+                let hasAllTables = true;
+                let tableCount = tableFields.length;
 
-                    if (editorInstances[datasetId]) {
-                        //const content = editorInstances[datasetId].getData().trim();
-                        const content = editorInstances[datasetId].getContent().trim();
+                if (tableCount > 0) {
+                    tableFields.forEach(function(tableField) {
+                        const datasetId = tableField.dataset.datasetId;
+                        const editor = editorInstances[datasetId];
 
-                        // Check if has real data (not just template)
-                        const hasRealData = content.length > 0 &&
-                            !content.includes('&nbsp;</td></tr></tbody></table>') &&
-                            !isEmptyTable(content);
+                        if (editor) {
+                            const content = editor.getContent();
+                            const hasData = hasTableData(content);
 
-                        if (hasRealData) {
-                            elemenFilledCount++;
-                            filledFieldsCount++;
+                            if (!hasData) {
+                                hasAllTables = false;
+                            }
+                        } else {
+                            // Fallback: check textarea value
+                            const content = tableField.value;
+                            if (!hasTableData(content)) {
+                                hasAllTables = false;
+                            }
                         }
-                    }
-                });
+                    });
+                }
 
-                // Check if elemen is complete
-                const isElemenComplete = (elemenFilledCount === elemenTotalCount && elemenTotalCount > 0);
+                // ✅ Elemen complete jika:
+                // 1. Ada description (mandatory)
+                // 2. Semua table terisi (jika ada table)
+                const isElemenComplete = hasDescription && (tableCount === 0 || hasAllTables);
+
                 if (isElemenComplete) {
                     completedElemenCount++;
                     card.classList.add('has-data');
@@ -1053,184 +1030,148 @@
                     card.classList.remove('has-data');
                 }
 
-                // Update elemen badge
-                updateElemenBadge(card, elemenFilledCount, elemenTotalCount, isElemenComplete);
+                updateElemenBadge(card, isElemenComplete);
             });
 
-            // Calculate percentages
-            const fieldPercentage = totalFieldsCount > 0 ? Math.round((filledFieldsCount / totalFieldsCount) * 100) : 0;
             const elemenPercentage = totalElemenCount > 0 ? Math.round((completedElemenCount / totalElemenCount) * 100) : 0;
 
-            // Update UI
-            updateProgressUI(filledFieldsCount, totalFieldsCount, fieldPercentage, completedElemenCount, totalElemenCount, elemenPercentage);
-
-            // Update kriteria progress
+            updateProgressUI(completedElemenCount, totalElemenCount, elemenPercentage);
             updateKriteriaProgress();
         }
 
-        /**
-         * ✅ Check if table is empty (only has template)
-         */
-        function isEmptyTable(htmlContent) {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(htmlContent, 'text/html');
-            const cells = doc.querySelectorAll('td');
+        // ✅ Helper: Check if table has real data
+        function hasTableData(tableHtml) {
+            if (!tableHtml || tableHtml.length < 100) return false;
+            if (tableHtml.indexOf('<table') === -1) return false;
 
-            let nonEmptyCells = 0;
-            let totalCells = 0;
+            // Extract td contents
+            const tdRegex = /<td[^>]*>(.*?)<\/td>/gi;
+            const matches = tableHtml.match(tdRegex);
 
-            cells.forEach(cell => {
-                totalCells++;
+            if (!matches || matches.length === 0) return false;
 
-                let text = cell.textContent.trim();
-                text = text.replace(/\s+/g, '');
-                text = text.replace(/\u00A0/g, ''); // Remove &nbsp;
+            let nonEmptyCount = 0;
 
-                // Skip if it's just a number (row numbering: 1, 2, 3)
-                if (/^\d+$/.test(text) && parseInt(text) <= 10) {
-                    return;
-                }
+            matches.forEach(match => {
+                // Remove tags
+                let content = match.replace(/<[^>]+>/g, '');
+                // Decode HTML entities
+                content = content.replace(/&nbsp;/g, '').replace(/&\w+;/g, '');
+                // Trim
+                content = content.trim();
 
-                if (text && text !== '') {
-                    nonEmptyCells++;
+                // Skip numbering (1, 2, 3, etc)
+                if (content && !/^\d+$/.test(content)) {
+                    nonEmptyCount++;
                 }
             });
 
-            // ✅ Need at least 3 cells with real data
-            return nonEmptyCells < 3;
+            // Has data if at least 3 meaningful cells
+            return nonEmptyCount >= 3;
         }
 
-        /**
-         * ✅ Update elemen badge
-         */
-        function updateElemenBadge(card, filled, total, isComplete) {
-            const progressText = card.querySelector('.elemen-progress-text');
+        function updateElemenBadge(card, isComplete) {
             const statusBadge = card.querySelector('.elemen-status-badge');
-
-            if (progressText) {
-                progressText.textContent = `${filled}/${total}`;
-            }
 
             if (statusBadge) {
                 if (isComplete) {
                     statusBadge.className = 'badge bg-success elemen-status-badge';
                     statusBadge.innerHTML = '<i class="bi bi-check-circle"></i> Lengkap';
                 } else {
-                    const percentage = total > 0 ? Math.round((filled / total) * 100) : 0;
                     statusBadge.className = 'badge bg-warning text-dark elemen-status-badge';
-                    statusBadge.innerHTML = `<i class="bi bi-clock"></i> ${percentage}%`;
+                    statusBadge.innerHTML = '<i class="bi bi-clock"></i> Belum Lengkap';
                 }
             }
         }
 
-        /**
-         * ✅ Update progress UI
-         */
-        function updateProgressUI(filledFields, totalFields, fieldPercentage, completedElemen, totalElemen, elemenPercentage) {
-            // Field Progress Bar
-            document.getElementById('progressBarFields').style.width = fieldPercentage + '%';
-            document.getElementById('progressPercentageFields').textContent = fieldPercentage + '%';
-            document.getElementById('progressCompletedFields').textContent = filledFields;
-            document.getElementById('progressRemainingFields').textContent = totalFields - filledFields;
-            document.getElementById('progressTotalFields').textContent = totalFields;
-            document.getElementById('progressCountFields').textContent = filledFields + '/' + totalFields + ' Bagian';
-
-            // Elemen Progress Bar
+        function updateProgressUI(completedElemen, totalElemen, elemenPercentage) {
             document.getElementById('progressBarElemen').style.width = elemenPercentage + '%';
             document.getElementById('progressPercentageElemen').textContent = elemenPercentage + '%';
+            document.getElementById('progressCompletedElemen').textContent = completedElemen;
+            document.getElementById('progressRemainingElemen').textContent = totalElemen - completedElemen;
+            document.getElementById('progressTotalElemen').textContent = totalElemen;
             document.getElementById('progressCountElemen').textContent = completedElemen + '/' + totalElemen;
 
-            // Update field progress bar color
-            const progressBarFields = document.getElementById('progressBarFields');
-            if (fieldPercentage === 100) {
-                progressBarFields.className = 'progress-bar bg-success';
-            } else if (fieldPercentage >= 75) {
-                progressBarFields.className = 'progress-bar bg-info';
-            } else if (fieldPercentage >= 50) {
-                progressBarFields.className = 'progress-bar bg-warning';
+            const progressBarElemen = document.getElementById('progressBarElemen');
+            if (elemenPercentage === 100) {
+                progressBarElemen.className = 'progress-bar bg-success';
+            } else if (elemenPercentage >= 75) {
+                progressBarElemen.className = 'progress-bar bg-info';
+            } else if (elemenPercentage >= 50) {
+                progressBarElemen.className = 'progress-bar bg-warning';
             } else {
-                progressBarFields.className = 'progress-bar bg-danger';
+                progressBarElemen.className = 'progress-bar bg-danger';
             }
         }
 
-        /**
-         * ✅ Update kriteria progress - Match server logic
-         */
         function updateKriteriaProgress() {
-            document.querySelectorAll('.kriteria-card').forEach(kriteriaCard => {
+            document.querySelectorAll('.kriteria-card').forEach(function(kriteriaCard) {
                 const elemenCards = kriteriaCard.querySelectorAll('.elemen-card');
 
-                let totalFields = 0;
-                let filledFields = 0;
                 let totalElemen = elemenCards.length;
                 let completedElemen = 0;
 
-                elemenCards.forEach(card => {
-                    let elemenFilled = 0;
-                    let elemenTotal = 0;
-                    let elemenTotalCount = 0;
-                    let totalFieldsCount = 0;
-
-                    // Count description
+                elemenCards.forEach(function(card) {
+                    // ✅ Re-check elemen completion - FIXED untuk TinyMCE
                     const descField = card.querySelector('textarea[data-field-type="description"]');
+                    let hasDescription = false;
+
                     if (descField) {
-                        elemenTotal++;
-                        const descValue = descField.value.trim();
-                        if (descValue && descValue.length > 20) {
-                            elemenFilled++;
+                        const descFieldId = descField.dataset.fieldId;
+                        let descValue = '';
+
+                        // ✅ Check if it's a TinyMCE editor
+                        if (editorInstances[descFieldId]) {
+                            descValue = editorInstances[descFieldId].getContent({
+                                format: 'text'
+                            }).trim();
+                        } else {
+                            descValue = descField.value.trim();
                         }
+
+                        hasDescription = (descValue && descValue.length > 20);
                     }
 
-                    // Count table fields only
-                    card.querySelectorAll('textarea.tinymce-editor[data-field-type="table"]').forEach(editorEl => {
-                        const datasetId = editorEl.dataset.datasetId;
-                        elemenTotalCount++;
-                        totalFieldsCount++;
+                    const tableFields = card.querySelectorAll('textarea[data-field-type="table"]');
+                    let hasAllTables = true;
 
-                        const editor = editorInstances[datasetId];
-                        if (editor) {
-                            const content = editor.getContent({
-                                format: 'html'
-                            }).trim();
-                            const hasRealData = content.length > 0 && !isEmptyTable(content);
-                            if (hasRealData) {
-                                elemenFilled++;
-                                filledFields++;
+                    if (tableFields.length > 0) {
+                        tableFields.forEach(function(tableField) {
+                            const datasetId = tableField.dataset.datasetId;
+                            const editor = editorInstances[datasetId];
+
+                            if (editor) {
+                                const content = editor.getContent();
+                                if (!hasTableData(content)) {
+                                    hasAllTables = false;
+                                }
+                            } else {
+                                if (!hasTableData(tableField.value)) {
+                                    hasAllTables = false;
+                                }
                             }
-                        }
-                    });
+                        });
+                    }
 
-                    totalFields += elemenTotal;
-                    filledFields += elemenFilled;
-
-                    // Check if elemen complete
-                    if (elemenFilled === elemenTotal && elemenTotal > 0) {
+                    const isComplete = hasDescription && (tableFields.length === 0 || hasAllTables);
+                    if (isComplete) {
                         completedElemen++;
                     }
                 });
 
-                // Update elemen badge
                 const elemenBadge = kriteriaCard.querySelector('.kriteria-progress-elemen');
                 if (elemenBadge) {
-                    elemenBadge.innerHTML = `<i class="bi bi-check-square"></i> ${completedElemen}/${totalElemen}`;
+                    elemenBadge.innerHTML = '<i class="bi bi-check-square"></i> ' + completedElemen + '/' + totalElemen;
                     elemenBadge.className = completedElemen === totalElemen && totalElemen > 0 ?
                         'badge bg-success kriteria-progress-elemen' :
                         'badge bg-info kriteria-progress-elemen';
                 }
 
-                // Update fields badge
-                const fieldsBadge = kriteriaCard.querySelector('.kriteria-progress-fields');
-                if (fieldsBadge) {
-                    fieldsBadge.innerHTML = `<i class="bi bi-list-check"></i> ${filledFields}/${totalFields}`;
-
-                    const percentage = totalFields > 0 ? Math.round((filledFields / totalFields) * 100) : 0;
-                    if (percentage === 100) {
-                        fieldsBadge.className = 'badge bg-success kriteria-progress-fields';
-                    } else if (percentage >= 50) {
-                        fieldsBadge.className = 'badge bg-warning kriteria-progress-fields';
-                    } else {
-                        fieldsBadge.className = 'badge bg-secondary kriteria-progress-fields';
-                    }
+                // ✅ Update percentage text
+                const percentageText = kriteriaCard.querySelector('.text-white');
+                if (percentageText && totalElemen > 0) {
+                    const percentage = Math.round((completedElemen / totalElemen) * 100);
+                    percentageText.textContent = percentage + '%';
                 }
             });
         }
@@ -1240,11 +1181,23 @@
             let isExpanded = false;
 
             btnToggle.addEventListener('click', function() {
+                // ✅ Toggle ALL accordions (Front Matter + Kriteria + Suplemen)
                 document.querySelectorAll('.accordion-collapse').forEach(accordion => {
                     const bsCollapse = bootstrap.Collapse.getOrCreateInstance(accordion, {
                         toggle: false
                     });
                     isExpanded ? bsCollapse.hide() : bsCollapse.show();
+                });
+
+                // ✅ Update chevron icons
+                document.querySelectorAll('.chevron-icon').forEach(icon => {
+                    if (isExpanded) {
+                        icon.classList.remove('bi-chevron-down');
+                        icon.classList.add('bi-chevron-right');
+                    } else {
+                        icon.classList.remove('bi-chevron-right');
+                        icon.classList.add('bi-chevron-down');
+                    }
                 });
 
                 isExpanded = !isExpanded;
@@ -1254,72 +1207,33 @@
             });
         }
 
-        /**
-         * ✅ Initialize reset borang
-         */
         function initializeResetBorang() {
             const btnReset = document.getElementById('btnResetBorang');
             if (!btnReset) return;
 
             btnReset.addEventListener('click', async function() {
+                const result = await Swal.fire({
+                    icon: 'warning'
+                    , title: 'Reset Borang?'
+                    , html: '<p>Semua data yang sudah diisi akan dihapus. Ketik <strong>RESET</strong> untuk konfirmasi:</p>'
+                    , input: 'text'
+                    , inputPlaceholder: 'Ketik RESET'
+                    , showCancelButton: true
+                    , confirmButtonColor: '#dc3545'
+                    , confirmButtonText: 'Ya, Reset!'
+                    , cancelButtonText: 'Batal'
+                    , inputValidator: (value) => {
+                        if (value !== 'RESET') {
+                            return 'Ketik "RESET" dengan benar!'
+                        }
+                    }
+                });
+
+                if (!result.isConfirmed) return;
+
+                showLoading();
+
                 try {
-                    // Get stats first
-                    const statsResponse = await fetch(`/pengajuan/${pengajuanId}/borang/stats`, {
-                        headers: {
-                            'Accept': 'application/json'
-                        }
-                    });
-
-                    const statsData = await statsResponse.json();
-
-                    if (!statsData.success) {
-                        throw new Error(statsData.message);
-                    }
-
-                    if (!statsData.stats.can_reset) {
-                        Swal.fire({
-                            icon: 'error'
-                            , title: 'Tidak Dapat Reset'
-                            , text: 'Status pengajuan tidak memungkinkan untuk reset borang.'
-                        });
-                        return;
-                    }
-
-                    // Show confirmation with stats
-                    const result = await Swal.fire({
-                        icon: 'warning'
-                        , title: 'Reset Borang?'
-                        , html: `
-                    <div class="text-start">
-                        <p class="mb-3"><strong>PERHATIAN!</strong> Tindakan ini akan menghapus:</p>
-                        <ul class="text-danger">
-                            <li><strong>${statsData.stats.total_data}</strong> data yang sudah diisi</li>
-                            <li><strong>${statsData.stats.total_imports}</strong> riwayat import</li>
-                            ${statsData.stats.draft_borang ? `<li>Draft LED: ${statsData.stats.draft_borang.filename}</li>` : ''}
-                        </ul>
-                        <p class="mt-3 text-muted">Anda harus mengisi ulang dari awal.</p>
-                        <p class="mt-3"><strong>Ketik "RESET" untuk konfirmasi:</strong></p>
-                    </div>
-                `
-                        , input: 'text'
-                        , inputPlaceholder: 'Ketik RESET'
-                        , showCancelButton: true
-                        , confirmButtonColor: '#dc3545'
-                        , cancelButtonColor: '#6c757d'
-                        , confirmButtonText: 'Ya, Reset!'
-                        , cancelButtonText: 'Batal'
-                        , inputValidator: (value) => {
-                            if (value !== 'RESET') {
-                                return 'Ketik "RESET" dengan benar!'
-                            }
-                        }
-                    });
-
-                    if (!result.isConfirmed) return;
-
-                    showLoading();
-
-                    // Perform reset
                     const response = await fetch(`/pengajuan/${pengajuanId}/borang/reset`, {
                         method: 'POST'
                         , headers: {
@@ -1339,19 +1253,11 @@
                         await Swal.fire({
                             icon: 'success'
                             , title: 'Borang Direset!'
-                            , html: `
-                        <p>Berhasil menghapus:</p>
-                        <ul>
-                            <li>${data.data.deleted_data} data entries</li>
-                            <li>${data.data.deleted_imports} import records</li>
-                        </ul>
-                        <p class="text-muted mt-2">Halaman akan dimuat ulang...</p>
-                    `
-                            , timer: 3000
+                            , text: 'Halaman akan dimuat ulang...'
+                            , timer: 2000
                             , showConfirmButton: false
                         });
 
-                        // Reload page
                         window.location.href = window.location.href + '?reset=1&t=' + Date.now();
                     } else {
                         throw new Error(data.message || 'Reset gagal');
@@ -1359,39 +1265,13 @@
 
                 } catch (error) {
                     hideLoading();
-                    Swal.fire({
-                        icon: 'error'
-                        , title: 'Error'
-                        , text: error.message || 'Terjadi kesalahan saat reset borang'
-                    });
+                    Swal.fire('Error', error.message, 'error');
                 }
             });
         }
 
         function initializeFinalize() {
             document.getElementById('btnFinalize').addEventListener('click', async function() {
-                // Count filled
-                let filledCount = 0;
-                document.querySelectorAll('.auto-save-field').forEach(field => {
-                    if (field.value.trim() !== '') filledCount++;
-                });
-                Object.keys(editorInstances).forEach(id => {
-                    const content = editorInstances[id].getContent({
-                        format: 'html'
-                    }).trim();
-                    if (content !== '' && !isEmptyTable(content)) filledCount++;
-                });
-
-                if (filledCount < totalFields) {
-                    Swal.fire({
-                        icon: 'warning'
-                        , title: 'Borang Belum Lengkap'
-                        , html: `<p>Anda baru mengisi <strong>${filledCount} dari ${totalFields}</strong> bagian.</p>`
-                        , confirmButtonColor: '#932136'
-                    });
-                    return;
-                }
-
                 const confirmed = await Swal.fire({
                     icon: 'question'
                     , title: 'Konfirmasi Finalisasi'
@@ -1439,27 +1319,18 @@
             });
         }
 
-        /**
-         * Toggle Kriteria Accordion
-         */
-        window.toggleKriteriaAccordion = function(kriteriaId, btn) {
+        window.toggleKriteriaAccordion = function(kriteriaId) {
             const kriteriaCollapse = document.getElementById(`collapse-kriteria-${kriteriaId}`);
             if (!kriteriaCollapse) return;
 
-            const kriteriaInstance = bootstrap.Collapse.getOrCreateInstance(
-                kriteriaCollapse, {
-                    toggle: false
-                }
-            );
-
+            const kriteriaInstance = bootstrap.Collapse.getOrCreateInstance(kriteriaCollapse, {
+                toggle: false
+            });
             const isOpen = kriteriaCollapse.classList.contains('show');
 
-            // 1️⃣ Toggle kriteria
             isOpen ? kriteriaInstance.hide() : kriteriaInstance.show();
 
-            // 2️⃣ Toggle semua elemen di dalam kriteria
             const elemenCollapses = kriteriaCollapse.querySelectorAll('.elemen-collapse');
-
             elemenCollapses.forEach(el => {
                 const instance = bootstrap.Collapse.getOrCreateInstance(el, {
                     toggle: false
@@ -1474,6 +1345,162 @@
 
         function hideLoading() {
             document.getElementById('loadingOverlay').classList.remove('show');
+        }
+
+        // ✅ Upload Handlers
+        window.triggerUploadPengesahan = () => document.getElementById('inputPengesahan').click();
+        window.triggerUploadKuantitatif = () => document.getElementById('inputKuantitatif').click();
+
+        window.handleUploadPengesahan = async (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!file.name.endsWith('.pdf')) {
+                Swal.fire('Error', 'File harus berformat PDF', 'error');
+                return;
+            }
+
+            await uploadFile(file, 'pengesahan', '{{ route("pengajuan.upload-pengesahan", $pengajuan->id) }}');
+        };
+
+        window.handleUploadKualitatif = async (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!file.name.endsWith('.docx')) {
+                Swal.fire('Error', 'File harus berformat DOCX', 'error');
+                return;
+            }
+
+            // Konfirmasi
+            const result = await Swal.fire({
+                icon: 'question'
+                , title: 'Upload Laporan Evaluasi Diri?'
+                , html: `
+                    <p>File: <strong>${file.name}</strong></p>
+                    <p>Ukuran: <strong>${formatFileSize(file.size)}</strong></p>
+                    <p class="text-warning mt-2">⚠️ Data yang ada akan ditimpa dengan data dari file</p>
+                `
+                , showCancelButton: true
+                , confirmButtonText: 'Ya, Upload & Proses'
+                , cancelButtonText: 'Batal'
+            });
+
+            if (!result.isConfirmed) return;
+
+            await uploadFile(file, 'file_kualitatif', '{{ route("pengajuan.upload-kualitatif", $pengajuan->id) }}');
+        };
+
+        window.handleUploadKuantitatif = async (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!file.name.match(/\.(xlsx|xls)$/)) {
+                Swal.fire('Error', 'File harus berformat Excel', 'error');
+                return;
+            }
+
+            const result = await Swal.fire({
+                icon: 'question'
+                , title: 'Upload Data Kuantitatif?'
+                , html: `
+                    <p>File: <strong>${file.name}</strong></p>
+                    <p>Ukuran: <strong>${formatFileSize(file.size)}</strong></p>
+                    <p class="text-muted mt-2">File akan disimpan (tidak diproses otomatis)</p>
+                `
+                , showCancelButton: true
+                , confirmButtonText: 'Ya, Upload'
+                , cancelButtonText: 'Batal'
+            });
+
+            if (!result.isConfirmed) return;
+
+            await uploadFile(file, 'file_kuantitatif', '{{ route("pengajuan.upload-kuantitatif", $pengajuan->id) }}');
+        };
+
+        async function uploadFile(file, fieldName, url) {
+            const formData = new FormData();
+            formData.append(fieldName, file);
+
+            showLoading();
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST'
+                    , headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        , 'Accept': 'application/json'
+                    }
+                    , body: formData
+                });
+
+                const data = await response.json();
+                hideLoading();
+
+                if (data.success) {
+                    Swal.fire('Success', 'File berhasil diupload!', 'success');
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    throw new Error(data.message || 'Upload gagal');
+                }
+            } catch (error) {
+                hideLoading();
+                Swal.fire('Error', error.message, 'error');
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        function initializeImportExport() {
+            document.getElementById('btnImportDocx').addEventListener('click', function() {
+                const modal = showModalById('modalImportDocx');
+            });
+
+            document.getElementById('btnSubmitImport').addEventListener('click', async function() {
+                const form = document.getElementById('formImportDocx');
+                const formData = new FormData(form);
+                const fileInput = form.querySelector('input[type="file"]');
+
+                if (!fileInput.files.length) {
+                    Swal.fire('Error', 'Pilih file DOCX terlebih dahulu', 'error');
+                    return;
+                }
+
+                this.disabled = true;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Mengupload...';
+
+                try {
+                    const response = await fetch('/pengajuan/' + pengajuanId + '/borang/import-docx', {
+                        method: 'POST'
+                        , headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            , 'Accept': 'application/json'
+                        }
+                        , body: formData
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        bootstrap.Modal.getInstance(document.getElementById('modalImportDocx')).hide();
+                        Swal.fire('Success', 'File berhasil diupload!', 'success');
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        throw new Error(data.message || 'Import gagal');
+                    }
+
+                } catch (error) {
+                    Swal.fire('Error', error.message, 'error');
+                    this.disabled = false;
+                    this.innerHTML = '<i class="bi bi-upload"></i> Upload Sekarang';
+                }
+            });
         }
     });
 

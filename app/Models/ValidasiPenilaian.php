@@ -57,7 +57,7 @@ class ValidasiPenilaian extends Model
      */
     public function scopeValidated($query)
     {
-        return $query->where('status_validasi', 'validated');
+        return $query->whereIn('status_validasi', ['validated', 'validated_diff']);
     }
 
     /**

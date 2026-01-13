@@ -68,7 +68,7 @@
                                 <input type="hidden" id="validasiElemenId">
 
                                 {{-- Quick Select Buttons (Dynamic) --}}
-                                <div class="mb-3">
+                                <div class="mb-3" id="quickSelectKategori" style="display: none;">
                                     <label class="form-label fw-bold">
                                         <i class="bi bi-lightning"></i> Quick Select Kategori:
                                     </label>
@@ -84,12 +84,15 @@
                                         </label>
                                         <select class="form-select" id="statusValidasi" required>
                                             <option value="">-- Pilih Status --</option>
-                                            <option value="validated">✅ Setujui Penilaian</option>
+                                            <option value="validated_diff">☑ Setujui Penilaian (dengan Perbedaan Nilai)</option>
+                                            @if (app()->environment('local'))
+                                            <option value="validated">✅ Setujui Penilaian (dengan Preferensi Skor)</option>
+                                            @endif
                                             <option value="revision_required">⚠️ Minta Revisi</option>
                                         </select>
                                     </div>
-
-                                    <div class="col-md-6 mb-3">
+                                    @if (app()->environment('local'))
+                                    <div class="col-md-6 mb-3" id="preferensiKategori" style="display: none;">
                                         <label class="form-label fw-bold">
                                             Preferensi Kategori
                                             <span class="text-danger" id="labelSkorRequired">*</span>
@@ -101,6 +104,7 @@
                                             @endforeach
                                         </select>
                                     </div>
+                                    @endif
                                 </div>
 
                                 {{-- Revision Section (shown when revision_required selected) --}}
@@ -118,11 +122,11 @@
                                 <div class="mb-3">
                                     <label class="form-label fw-bold">
                                         Catatan Validator
-                                        <span class="text-danger" id="labelCatatanRequired" style="display: none;">*</span>
+                                        <span class="text-danger" id="labelCatatanRequired">*</span>
                                     </label>
-                                    <textarea class="form-control" id="catatanValidator" rows="4" placeholder="Berikan catatan validasi atau alasan revisi..."></textarea>
+                                    <textarea class="form-control" id="catatanValidator" rows="4" placeholder="Berikan catatan validasi atau alasan revisi... (misalkan: Penilaian AK telah divalidasi, semua asesor telah memberikan penilaian dalam rentang yang dapat diterima)"></textarea>
                                     <small class="text-muted">
-                                        Catatan wajib diisi jika meminta revisi
+                                        Catatan wajib diisi
                                     </small>
                                 </div>
                             </form>

@@ -9,7 +9,6 @@ use App\Libraries\Fungsi;
 use App\Models\BorangImport;
 use App\Models\StudyProgram;
 use Illuminate\Http\Request;
-use App\Models\ReviewKesiapan;
 use App\Models\AsesmenUserRole;
 use App\Mail\PembayaranVerified;
 use App\Models\BorangValidation;
@@ -24,9 +23,6 @@ use App\Mail\BorangTemplateSentMail;
 use App\Models\PembayaranAkreditasi;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\ReviewKesiapanNotifikasi;
-use App\Jobs\SendPenawaranAsesmenEmail;
-use App\Notifications\ValidatorBorangAssignedNotification;
 
 class DeskEvaluatorController extends Controller
 {
@@ -49,7 +45,6 @@ class DeskEvaluatorController extends Controller
             'studyProgram.degreeLevel', // ✅ FIX
             'studyProgram.university',
             'pengaju',
-            'reviewKesiapan',
             'asesmen.userRoles' => function ($q) {
                 $q->where('jenis_asesmen', 'dokumen')
                     ->with(['user', 'role']);
@@ -102,11 +97,6 @@ class DeskEvaluatorController extends Controller
             },
             'dokumen' => function ($query) {
                 $query->with(['uploader' => function ($q) {
-                    $q->select('id', 'name', 'email');
-                }]);
-            },
-            'reviewKesiapan' => function ($query) {
-                $query->with(['reviewer' => function ($q) {
                     $q->select('id', 'name', 'email');
                 }]);
             },
@@ -197,7 +187,7 @@ class DeskEvaluatorController extends Controller
 
         $pengajuan = PengajuanAkreditasi::findOrFail($id);
         $degreeLevel = $pengajuan->studyProgram->degreeLevel->code;
-        if ($pengajuan->status !== 'surat_permohonan_diterima') {
+        if ($pengajuan->status !== PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA) {
             return back()->with('error', 'Status pengajuan tidak sesuai untuk kirim borang.');
         }
 
@@ -228,7 +218,7 @@ class DeskEvaluatorController extends Controller
                 $templateLink = $request->template_link;
 
                 // Create pseudo filename for record
-                $filename = 'borang_template_link_' . time() . '.url';
+                $filename = 'led_template_link_' . time() . '.url';
                 $pathFile = 'links/' . $filename; // Virtual path
                 $originalFilename = 'TEMPLATE_LEMBAR_EVALUASI_DIRI_' . $degreeLevel;
                 $mimeType = 'text/uri-list';
@@ -257,13 +247,13 @@ class DeskEvaluatorController extends Controller
             // ============================================
             $oldStatus = $pengajuan->status;
             $pengajuan->update([
-                'status' => 'borang_dikirim',
-                'tanggal_borang_dikirim' => now(),
+                'status' => PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM,
+                'tanggal_template_led_dikirim' => now(),
             ]);
 
             $keteranganLog = $metode === 'link'
-                ? "Template borang dikirim via link: {$templateLink}"
-                : "Template borang diupload: {$originalFilename}";
+                ? PengajuanAkreditasi::DAFTAR_TEMPLATE . " dikirim via link: {$templateLink}"
+                : PengajuanAkreditasi::DAFTAR_TEMPLATE . " diupload: {$originalFilename}";
 
             $this->logStatus($pengajuan, $oldStatus, 'borang_dikirim', $keteranganLog);
 
@@ -275,7 +265,7 @@ class DeskEvaluatorController extends Controller
                     new BorangTemplateSentMail($pengajuan, $dokumen, $metode)
                 );
             } catch (\Exception $e) {
-                Log::error('Failed to send Template LED email', [
+                Log::error('Failed to send ' . PengajuanAkreditasi::DAFTAR_TEMPLATE . ' email', [
                     'pengajuan_id' => $id,
                     'error' => $e->getMessage(),
                 ]);
@@ -285,12 +275,12 @@ class DeskEvaluatorController extends Controller
             DB::commit();
 
             $successMessage = $metode === 'link'
-                ? "Link Template LED berhasil dikirim ke prodi."
-                : "File Template LED berhasil dikirim ke prodi.";
+                ? "Link " . PengajuanAkreditasi::DAFTAR_TEMPLATE . " berhasil dikirim ke prodi."
+                : "File " . PengajuanAkreditasi::DAFTAR_TEMPLATE . " berhasil dikirim ke prodi.";
 
             return back()->with('success', $successMessage);
         } catch (\Exception $e) {
-            Log::error('Kirim Template LED failed', [
+            Log::error('Kirim ' . PengajuanAkreditasi::DAFTAR_TEMPLATE . ' failed', [
                 'pengajuan_id' => $id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -654,91 +644,6 @@ class DeskEvaluatorController extends Controller
     }
 
     /**
-     * Review kesiapan borang (Langkah 5a/5b)
-     */
-    public function reviewKesiapan(Request $request, $id)
-    {
-        $request->validate([
-            'hasil_review' => 'required|in:siap,belum_siap',
-            'catatan_review' => 'required|string',
-            'checklist' => 'nullable|array',
-            'jumlah_pembayaran' => 'required_if:hasil_review,siap|numeric|min:0',
-        ]);
-
-        $pengajuan = PengajuanAkreditasi::findOrFail($id);
-
-        if (!in_array($pengajuan->status, ['draft_borang_diterima', 'borang_online_selesai'])) {
-            return back()->with('error', 'Status pengajuan tidak sesuai untuk review.');
-        }
-
-        DB::beginTransaction();
-        try {
-            // Get review version
-            $versi = ReviewKesiapan::where('id_pengajuan', $pengajuan->id)->max('versi_review') + 1;
-
-            // Create review record
-            $review = ReviewKesiapan::create([ // ✅ ASSIGN ke variable
-                'id_pengajuan' => $pengajuan->id,
-                'id_reviewer' => Auth::id(),
-                'hasil_review' => $request->hasil_review,
-                'catatan_review' => $request->catatan_review,
-                'checklist_kesiapan' => $request->checklist,
-                'versi_review' => $versi,
-                'tanggal_review' => now(),
-            ]);
-
-            $oldStatus = $pengajuan->status;
-
-            if ($request->hasil_review === 'siap') {
-                // Langkah 5a: Siap lanjut
-                $pengajuan->update([
-                    'status' => 'review_kesiapan_siap',
-                    'tanggal_review_kesiapan' => now(),
-                ]);
-
-                // Create invoice pembayaran (Langkah 6)
-                PembayaranAkreditasi::create([
-                    'id_pengajuan' => $pengajuan->id,
-                    'nomor_invoice' => PembayaranAkreditasi::generateNomorInvoice(),
-                    'jumlah_pembayaran' => $request->jumlah_pembayaran,
-                    'status_pembayaran' => 'pending',
-                    'tanggal_jatuh_tempo' => now()->addDays(14),
-                ]);
-
-                // Update status ke menunggu pembayaran
-                $pengajuan->update(['status' => 'menunggu_pembayaran']);
-
-                $this->logStatus($pengajuan, $oldStatus, 'menunggu_pembayaran', 'Review: Siap lanjut, menunggu pembayaran');
-
-                $message = 'Review draft LED selesai. Invoice pembayaran telah dibuat. Sedang menunggu UPPS mengupload bukti pembayaran';
-            } else {
-                // Langkah 5b: Belum siap
-                $pengajuan->update([
-                    'status' => 'review_kesiapan_belum_siap',
-                    'tanggal_review_kesiapan' => now(),
-                ]);
-
-                $this->logStatus($pengajuan, $oldStatus, 'review_kesiapan_belum_siap', 'Review: Belum siap, perlu perbaikan');
-
-                $message = 'Review selesai. Borang LED BELUM SIAP dan perlu dilengkapi oleh prodi.';
-            }
-
-            DB::commit();
-
-            // ✅ FIX: Use $review variable
-            Mail::to($pengajuan->pengaju->email)->send(
-                new ReviewKesiapanNotifikasi($pengajuan, $review)
-            );
-
-            return back()->with('success', $message);
-        } catch (\Exception $e) {
-            Log::error($e);
-            DB::rollBack();
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
-        }
-    }
-
-    /**
      * Verifikasi pembayaran
      */
     public function verifikasiPembayaran(Request $request, $id)
@@ -805,39 +710,249 @@ class DeskEvaluatorController extends Controller
     }
 
     /**
-     * Approve untuk lanjut ke AK (Langkah 8)
+     * Approve untuk lanjut ke AK (Step 8)
+     * Syarat:
+     * - LED sudah divalidasi (borang_validated atau validasi_borang_dilaporkan)
+     * - Pembayaran sudah verified
      */
     public function approveLanjutAK($id)
     {
-        $pengajuan = PengajuanAkreditasi::findOrFail($id);
+        $pengajuan = PengajuanAkreditasi::with(['pembayaran'])->findOrFail($id);
 
-        if ($pengajuan->status !== 'borang_final_diterima') {
-            return back()->with('error', 'Status pengajuan tidak sesuai untuk approve.');
+        // ============================================
+        // VALIDATION CHECKS
+        // ============================================
+
+        // 1. Check status LED (harus validated)
+        if (!in_array($pengajuan->status, [
+            PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
+            PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN
+        ])) {
+            return back()->with('error', 'LED harus divalidasi oleh validator terlebih dahulu.');
         }
 
-        // Check if pembayaran verified
+        // 2. Check pembayaran (harus verified)
         if (!$pengajuan->pembayaran || $pengajuan->pembayaran->status_pembayaran !== 'verified') {
             return back()->with('error', 'Pembayaran belum diverifikasi.');
+        }
+
+        // 3. Optional: Check if validator approved (not just validated)
+        $validatorApproved = $pengajuan->borangValidators()
+            ->where('status_pekerjaan', 'approved')
+            ->exists();
+
+        if (!$validatorApproved) {
+            return back()->with('error', 'Validator belum menyetujui LED.');
         }
 
         DB::beginTransaction();
         try {
             $oldStatus = $pengajuan->status;
+
+            // Update to Step 8: Penugasan Asesor AK
             $pengajuan->update([
-                'status' => 'pengajuan_completed',
-                'tanggal_lanjut_ak' => now(),
+                'status' => PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
+                'tanggal_penugasan_asesor_ak' => now(),
             ]);
 
-            $this->logStatus($pengajuan, $oldStatus, 'pengajuan_completed', 'Disetujui lanjut ke tahap AK/Asesmen Dokumen');
-            // TODO: Create Asesmen record and assign asesor/validator
+            $this->logStatus(
+                $pengajuan,
+                $oldStatus,
+                PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
+                'LED divalidasi dan pembayaran verified. Disetujui lanjut ke tahap AK - Menunggu penugasan asesor'
+            );
 
             DB::commit();
 
-            return back()->with('success', 'Pengajuan disetujui dan akan dilanjutkan ke tahap AK/Asesmen Dokumen.');
+            return back()->with('success', 'Pengajuan disetujui untuk lanjut ke tahap AK. Silakan assign asesor untuk Asesmen Kecukupan.');
         } catch (\Exception $e) {
-            Log::error($e);
+            Log::error('Failed to approve lanjut AK', [
+                'pengajuan_id' => $id,
+                'error' => $e->getMessage(),
+            ]);
+
             DB::rollBack();
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+
+    /**
+     * Lapor hasil validasi LED (Step 7)
+     * Setelah validator approve, DE melaporkan hasil validasi
+     */
+    public function laporHasilValidasi($id)
+    {
+        $pengajuan = PengajuanAkreditasi::with(['borangValidators.borangValidation'])
+            ->findOrFail($id);
+
+        // Check status harus borang_validated
+        if ($pengajuan->status !== PengajuanAkreditasi::STATUS_BORANG_VALIDATED) {
+            return back()->with('error', 'LED belum divalidasi.');
+        }
+
+        // Check if validator approved
+        $validatorApproved = $pengajuan->borangValidators()
+            ->where('status_pekerjaan', 'approved')
+            ->exists();
+
+        if (!$validatorApproved) {
+            return back()->with('error', 'Validator belum menyetujui LED.');
+        }
+
+        DB::beginTransaction();
+        try {
+            $oldStatus = $pengajuan->status;
+
+            // Update to Step 7: Pelaporan Validasi LED
+            $pengajuan->update([
+                'status' => PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
+                'tanggal_pelaporan_validasi_borang' => now(),
+            ]);
+
+            $this->logStatus(
+                $pengajuan,
+                $oldStatus,
+                PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
+                'Pelaporan validasi LED selesai - siap untuk lanjut ke tahap berikutnya'
+            );
+
+            DB::commit();
+
+            return back()->with('success', 'Pelaporan hasil validasi LED berhasil. Silakan approve untuk lanjut ke tahap AK.');
+        } catch (\Exception $e) {
+            Log::error('Failed to lapor validasi', [
+                'pengajuan_id' => $id,
+                'error' => $e->getMessage(),
+            ]);
+
+            DB::rollBack();
+            return back()->with('error', 'Gagal melapor validasi: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * ✅ NEW: Handle borang revision notification to prodi
+     */
+    public function handleBorangRevision($id)
+    {
+        $pengajuan = PengajuanAkreditasi::with([
+            'studyProgram.university',
+            'studyProgram.degreeLevel',
+            'pengaju',
+            'borangValidators.borangValidation',
+            'borangValidators.user'
+        ])->findOrFail($id);
+
+        if ($pengajuan->status !== PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED) {
+            return back()->with('error', 'Status tidak sesuai.');
+        }
+
+        DB::beginTransaction();
+        try {
+            // Get validator assignment with revision
+            $validatorAssignment = $pengajuan->borangValidators()
+                ->where('status_pekerjaan', 'revision_required')
+                ->with(['user', 'borangValidation'])
+                ->first();
+
+            if (!$validatorAssignment || !$validatorAssignment->borangValidation) {
+                return back()->with('error', 'Data validasi tidak ditemukan.');
+            }
+
+            // Send email to prodi
+            Mail::to($pengajuan->pengaju->email)
+                ->queue(new \App\Mail\BorangRevisionNotification(
+                    $pengajuan,
+                    $validatorAssignment->borangValidation
+                ));
+
+            // Log the action
+            $this->logStatus(
+                $pengajuan,
+                $pengajuan->status,
+                $pengajuan->status,
+                'Notifikasi revisi dikirim ke prodi - ' . count($validatorAssignment->borangValidation->revision_points ?? []) . ' poin revisi'
+            );
+
+            DB::commit();
+
+            return back()->with('success', 'Notifikasi revisi berhasil dikirim ke prodi.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to handle borang revision', [
+                'pengajuan_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return back()->with('error', 'Gagal mengirim notifikasi: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Reassign to validator after prodi revision
+     */
+    public function reassignAfterRevision($id)
+    {
+        $pengajuan = PengajuanAkreditasi::with([
+            'studyProgram',
+            'borangValidators.user'
+        ])->findOrFail($id);
+
+        // Must be borang_online_selesai (prodi sudah revisi)
+        if ($pengajuan->status !== PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI) {
+            return back()->with('error', 'Status tidak sesuai untuk reassign.');
+        }
+
+        // Must have previous validator with revision_required
+        $previousValidator = $pengajuan->borangValidators()
+            ->where('status_pekerjaan', 'revision_required')
+            ->with('user')
+            ->first();
+
+        if (!$previousValidator) {
+            return back()->with('error', 'Tidak ada validator sebelumnya yang meminta revisi.');
+        }
+
+        DB::beginTransaction();
+        try {
+            // Reset validator status to pending for re-review
+            $previousValidator->update([
+                'status_penawaran' => 'pending',
+                'status_pekerjaan' => 'not_started',
+                'responded_at' => null,
+                'approved_at' => null,
+            ]);
+
+            // Update pengajuan status
+            $pengajuan->update([
+                'status' => PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
+            ]);
+
+            $this->logStatus(
+                $pengajuan,
+                PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
+                PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
+                'LED dikembalikan ke validator ' . $previousValidator->user->name . ' untuk review ulang setelah revisi'
+            );
+
+            // Send email to validator
+            Mail::to($previousValidator->user->email)
+                ->queue(new \App\Mail\BorangRevalidationRequest($pengajuan));
+
+            DB::commit();
+
+            return back()->with('success', 'LED berhasil dikembalikan ke validator untuk review ulang.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to reassign after revision', [
+                'pengajuan_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return back()->with('error', 'Gagal reassign: ' . $e->getMessage());
         }
     }
 
