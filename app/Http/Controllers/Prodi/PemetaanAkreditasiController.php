@@ -23,12 +23,12 @@ class PemetaanAkreditasiController extends Controller
 
         // Filter by university
         if ($request->filled('university_id')) {
-            $query->where('id_university', $request->university_id);
+            $query->where('id_univ', $request->university_id);
         }
 
         // Filter by degree level
         if ($request->filled('degree_level_id')) {
-            $query->where('id_degree_level', $request->degree_level_id);
+            $query->where('id_level', $request->degree_level_id);
         }
 
         // Filter by status kedaluwarsa
@@ -123,11 +123,11 @@ class PemetaanAkreditasiController extends Controller
 
         // Apply filters
         if ($request->filled('university_id')) {
-            $query->where('id_university', $request->university_id);
+            $query->where('id_univ', $request->university_id);
         }
 
         if ($request->filled('degree_level_id')) {
-            $query->where('id_degree_level', $request->degree_level_id);
+            $query->where('id_level', $request->degree_level_id);
         }
 
         if ($request->filled('status_kedaluwarsa')) {
@@ -179,24 +179,26 @@ class PemetaanAkreditasiController extends Controller
     private function calculateStatistics()
     {
         $today = Carbon::today();
+        $threeMonthsLater = now()->addMonths(3);
+        $sixMonthsLater = now()->addMonths(6);
+        $twelveMonthsLater = now()->addMonths(12);
 
-        // 🔥 1 QUERY SAJA
+        // 🔥 1 QUERY SAJA - Fixed SQL syntax for proper bindings
         $stats = StudyProgram::selectRaw("
         COUNT(*) as total,
-        SUM(status_kedaluwarsa = 'Aktif') as aktif,
-        SUM(status_kedaluwarsa = 'Belum Terakreditasi') as belum_terakreditasi,
-        SUM(tanggal_kedaluwarsa IS NOT NULL AND tanggal_kedaluwarsa <= ?) as kedaluwarsa,
-        SUM(tanggal_kedaluwarsa BETWEEN ? AND ?) as segera_3_bulan,
-        SUM(tanggal_kedaluwarsa BETWEEN ? AND ?) as segera_6_bulan,
-        SUM(tanggal_kedaluwarsa BETWEEN ? AND ?) as segera_12_bulan
+        SUM(CASE WHEN status_kadaluwarsa = 'Aktif' THEN 1 ELSE 0 END) as aktif,
+        SUM(CASE WHEN status_kadaluwarsa = 'Belum Terakreditasi' THEN 1 ELSE 0 END) as belum_terakreditasi,
+        SUM(CASE WHEN status_kadaluwarsa = 'Kedaluwarsa' THEN 1 ELSE 0 END) as kedaluwarsa,
+        SUM(CASE WHEN tanggal_kadaluwarsa BETWEEN ? AND ? THEN 1 ELSE 0 END) as segera_3_bulan,
+        SUM(CASE WHEN tanggal_kadaluwarsa BETWEEN ? AND ? THEN 1 ELSE 0 END) as segera_6_bulan,
+        SUM(CASE WHEN tanggal_kadaluwarsa BETWEEN ? AND ? THEN 1 ELSE 0 END) as segera_12_bulan
     ", [
-            $today,
             now(),
-            now()->addMonths(3),
+            $threeMonthsLater,
             now(),
-            now()->addMonths(6),
+            $sixMonthsLater,
             now(),
-            now()->addMonths(12),
+            $twelveMonthsLater,
         ])->first();
 
         // Count by peringkat (tetap 1 query terpisah, memang perlu group by)
@@ -230,7 +232,7 @@ class PemetaanAkreditasiController extends Controller
 
         // Check if ada pengajuan yang sedang berjalan
         $activePengajuan = PengajuanAkreditasi::where('id_program_studi', $id)
-            ->whereNotIn('status', ['ditolak', 'pengajuan_completed'])
+            ->whereNotIn('status', ['ditolak', 'lanjut_ke_ak'])
             ->latest()
             ->first();
 
@@ -262,7 +264,7 @@ class PemetaanAkreditasiController extends Controller
 
         // Range 5 tahun
         $startRange = now()->startOfDay();
-        $endRange   = now()->addYears(5)->endOfDay();
+        $endRange   = now()->copy()->addYears(5)->endOfDay();
 
         // 🔥 Ambil data SEKALI
         $programs = StudyProgram::with(['university', 'degreeLevel'])
@@ -377,4 +379,215 @@ class PemetaanAkreditasiController extends Controller
         // TODO: Implement Excel export
         return response()->json(['message' => 'Export feature coming soon']);
     }
+
+    // ========== TESTING METHODS (NO AUTH REQUIRED) ==========
+    
+    /**
+     * Get statistics for testing (Postman)
+     * Endpoint: GET /api/test/pemetaan/stats
+     */
+    public function getStatsForTesting()
+    {
+        $stats = $this->calculateStatistics();
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Statistik berhasil diambil',
+            'data' => [
+                'total_program_studi' => $stats['total'],
+                'status' => [
+                    'aktif' => $stats['aktif'],
+                    'kedaluwarsa' => $stats['kedaluwarsa'],
+                    'belum_terakreditasi' => $stats['belum_terakreditasi'],
+                ],
+                'segera_kedaluwarsa' => [
+                    'dalam_3_bulan' => $stats['segera_3_bulan'],
+                    'dalam_6_bulan' => $stats['segera_6_bulan'],
+                    'dalam_12_bulan' => $stats['segera_12_bulan'],
+                ],
+                'by_peringkat' => $stats['by_peringkat'],
+                'persentase' => [
+                    'aktif' => $stats['total'] > 0 ? round(($stats['aktif'] / $stats['total']) * 100, 2) : 0,
+                    'kedaluwarsa' => $stats['total'] > 0 ? round(($stats['kedaluwarsa'] / $stats['total']) * 100, 2) : 0,
+                    'belum_terakreditasi' => $stats['total'] > 0 ? round(($stats['belum_terakreditasi'] / $stats['total']) * 100, 2) : 0,
+                ],
+            ],
+            'timestamp' => now()->toIso8601String(),
+        ]);
+    }
+
+    /**
+     * Get timeline data for testing (Postman)
+     * Endpoint: GET /api/test/pemetaan/timeline/{periode}
+     * Periode options: 1bulan, 3bulan (default), 4bulan, 6bulan, 12bulan
+     */
+    public function getTimelineForTesting($periode = '3bulan')
+    {
+        $timelineData = $this->getTimelineData($periode);
+        
+        // Transform untuk response yang lebih bersih
+        $transformedTimeline = collect($timelineData['timeline'])->map(function ($item) {
+            return [
+                'period' => $item['period'],
+                'label' => $item['label'],
+                'start_date' => $item['start_date']->format('Y-m-d'),
+                'end_date' => $item['end_date']->format('Y-m-d'),
+                'count' => $item['count'],
+                'is_urgent' => $item['is_urgent'],
+                'programs' => $item['programs']->map(fn($p) => [
+                    'id' => $p->id,
+                    'name' => $p->name,
+                    'university' => $p->university->name,
+                    'degree_level' => $p->degreeLevel->name,
+                    'peringkat' => $p->peringkat_akreditasi,
+                    'tanggal_kedaluwarsa' => $p->tanggal_kedaluwarsa?->format('Y-m-d'),
+                    'status' => $p->status_kadaluwarsa,
+                ])->toArray(),
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Timeline data berhasil diambil',
+            'data' => [
+                'selected_periode' => $timelineData['selected_periode'],
+                'periode_label' => $timelineData['periode_label'],
+                'total_periods' => count($timelineData['timeline']),
+                'timeline' => $transformedTimeline,
+            ],
+            'timestamp' => now()->toIso8601String(),
+        ]);
+    }
+
+    /**
+     * Get calendar data for testing (Postman)
+     * Endpoint: GET /api/test/pemetaan/calendar
+     */
+    public function getCalendarForTesting()
+    {
+        $calendarData = $this->getCalendarData();
+        
+        // Transform untuk response yang lebih bersih
+        $transformedCalendar = collect($calendarData)->map(function ($item) {
+            return [
+                'month' => $item['month'],
+                'month_num' => $item['month_num'],
+                'year' => $item['year'],
+                'count' => $item['count'],
+                'programs' => $item['programs']->map(fn($p) => [
+                    'id' => $p->id,
+                    'name' => $p->name,
+                    'university' => $p->university->name,
+                    'degree_level' => $p->degreeLevel->name,
+                    'peringkat' => $p->peringkat_akreditasi,
+                    'tanggal_kedaluwarsa' => $p->tanggal_kedaluwarsa?->format('Y-m-d'),
+                    'status' => $p->status_kadaluwarsa,
+                ])->toArray(),
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Calendar data berhasil diambil (12 bulan ke depan)',
+            'data' => [
+                'total_months' => count($calendarData),
+                'calendar' => $transformedCalendar,
+            ],
+            'timestamp' => now()->toIso8601String(),
+        ]);
+    }
+
+    /**
+     * Get programs list with filters for testing (Postman)
+     * Endpoint: GET /api/test/pemetaan/programs
+     * Query params: status, peringkat, university_id, degree_level_id, search, limit
+     */
+    public function getProgramsForTesting(Request $request)
+    {
+        $query = StudyProgram::with(['university', 'degreeLevel', 'category']);
+
+        // Apply filters
+        if ($request->filled('status')) {
+            $query->where('status_kadaluwarsa', $request->status);
+        }
+
+        if ($request->filled('peringkat')) {
+            $query->where('peringkat_akreditasi', $request->peringkat);
+        }
+
+        if ($request->filled('university_id')) {
+            $query->where('id_univ', $request->university_id);
+        }
+
+        if ($request->filled('degree_level_id')) {
+            $query->where('id_level', $request->degree_level_id);
+        }
+
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        // Sort
+        $sortBy = $request->get('sort_by', 'tanggal_kedaluwarsa');
+        $sortOrder = $request->get('sort_order', 'asc');
+        
+        if ($sortBy === 'tanggal_kedaluwarsa') {
+            $query->orderByRaw('CASE WHEN tanggal_kedaluwarsa IS NULL THEN 1 ELSE 0 END')
+                ->orderBy('tanggal_kedaluwarsa', $sortOrder);
+        } else {
+            $query->orderBy($sortBy, $sortOrder);
+        }
+
+        // Limit
+        $limit = $request->get('limit', 10);
+        $programs = $query->limit($limit)->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Program studi berhasil diambil',
+            'data' => [
+                'total' => $programs->count(),
+                'limit' => $limit,
+                'filters_applied' => [
+                    'status' => $request->status,
+                    'peringkat' => $request->peringkat,
+                    'university_id' => $request->university_id,
+                    'degree_level_id' => $request->degree_level_id,
+                    'search' => $request->search,
+                    'sort_by' => $sortBy,
+                    'sort_order' => $sortOrder,
+                ],
+                'programs' => $programs->map(fn($p) => [
+                    'id' => $p->id,
+                    'name' => $p->name,
+                    'code' => $p->code,
+                    'university' => [
+                        'id' => $p->university->id,
+                        'name' => $p->university->name,
+                        'code' => $p->university->code,
+                    ],
+                    'degree_level' => [
+                        'id' => $p->degreeLevel->id,
+                        'name' => $p->degreeLevel->name,
+                        'code' => $p->degreeLevel->code,
+                    ],
+                    'category' => $p->category ? [
+                        'id' => $p->category->id,
+                        'name' => $p->category->name,
+                        'code' => $p->category->code,
+                    ] : null,
+                    'bentuk_pt' => $p->bentuk_pt,
+                    'email' => $p->email,
+                    'akreditasi' => [
+                        'peringkat' => $p->peringkat_akreditasi,
+                        'tanggal_kedaluwarsa' => $p->tanggal_kedaluwarsa?->format('Y-m-d'),
+                        'status' => $p->status_kadaluwarsa,
+                        'hari_tersisa' => $p->tanggal_kedaluwarsa ? now()->diffInDays($p->tanggal_kedaluwarsa, false) : null,
+                    ],
+                ])->toArray(),
+            ],
+            'timestamp' => now()->toIso8601String(),
+        ]);
+    }
 }
+

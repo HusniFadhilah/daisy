@@ -22,6 +22,13 @@ class User extends Authenticatable
         'is_multiple_role',
         'last_role_switch',
         'must_change_password',
+        'phone',
+        'address',
+        'institution',
+        'id_university',
+        'id_study_program',
+        'position',
+        'avatar',
     ];
 
     protected $hidden = [
@@ -46,6 +53,22 @@ class User extends Authenticatable
     {
         $roles = RoleSeeder::getRoles();
         return $roles->firstWhere('name', $this->role_selected)['alias'] ?? 'User';
+    }
+
+    /**
+     * Relasi ke University
+     */
+    public function university()
+    {
+        return $this->belongsTo(University::class, 'id_university');
+    }
+
+    /**
+     * Relasi ke StudyProgram
+     */
+    public function studyProgram()
+    {
+        return $this->belongsTo(StudyProgram::class, 'id_study_program');
     }
 
     /**

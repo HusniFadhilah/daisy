@@ -20,7 +20,7 @@ class UserController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = User::select('users.*');
+            $data = User::with(['university', 'studyProgram'])->select('users.*');
             
             return DataTables::of($data)
                 ->addIndexColumn()
@@ -55,7 +55,9 @@ class UserController extends Controller
      */
     public function create()
     {
-        return view('admin.users.create');
+        $universities = \App\Models\University::orderBy('name')->get();
+        $studyPrograms = \App\Models\StudyProgram::with(['degreeLevel', 'category'])->orderBy('name')->get();
+        return view('admin.users.create', compact('universities', 'studyPrograms'));
     }
 
     /**
@@ -71,6 +73,12 @@ class UserController extends Controller
             'role_selected' => 'required|in:super_admin,asesi,asesor,validator,verifikator,admin_univ,admin_prodi,default',
             'roles' => 'nullable|array',
             'roles.*' => 'in:super_admin,asesi,asesor,validator,verifikator,admin_univ,admin_prodi,default',
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string',
+            'institution' => 'nullable|string|max:255',
+            'id_university' => 'nullable|exists:universities,id',
+            'id_study_program' => 'nullable|exists:study_programs,id',
+            'position' => 'nullable|string|max:255',
         ]);
 
         // Set roles - jika tidak diisi, gunakan role_selected sebagai default
@@ -106,8 +114,10 @@ class UserController extends Controller
      */
     public function edit(string $id)
     {
-        $user = User::findOrFail($id);
-        return view('admin.users.edit', compact('user'));
+        $user = User::with(['university', 'studyProgram'])->findOrFail($id);
+        $universities = \App\Models\University::orderBy('name')->get();
+        $studyPrograms = \App\Models\StudyProgram::with(['degreeLevel', 'category'])->orderBy('name')->get();
+        return view('admin.users.edit', compact('user', 'universities', 'studyPrograms'));
     }
 
     /**
@@ -125,6 +135,12 @@ class UserController extends Controller
             'roles' => 'nullable|array',
             'roles.*' => 'in:super_admin,asesi,asesor,validator,verifikator,admin_univ,admin_prodi,default',
             'password' => 'nullable|string|min:8|confirmed',
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string',
+            'institution' => 'nullable|string|max:255',
+            'id_university' => 'nullable|exists:universities,id',
+            'id_study_program' => 'nullable|exists:study_programs,id',
+            'position' => 'nullable|string|max:255',
         ]);
 
         // Set roles - jika tidak diisi, gunakan role_selected sebagai default
@@ -183,9 +199,9 @@ class UserController extends Controller
     public function downloadTemplate()
     {
         $template = [
-            ['nama', 'email', 'password', 'role', 'role_aktif', 'semua_roles'],
-            ['John Doe', 'john@example.com', 'password123', 'user', 'asesi', 'asesi,asesor'],
-            ['Jane Smith', 'jane@example.com', 'password123', 'admin', 'admin_univ', 'admin_univ,validator'],
+            ['nama', 'email', 'password', 'role', 'role_aktif', 'semua_roles', 'no_telepon', 'alamat', 'institusi', 'id_universitas', 'id_program_studi', 'jabatan'],
+            ['John Doe', 'john@example.com', 'password123', 'user', 'asesi', 'asesi,asesor', '081234567890', 'Jl. Contoh No. 123', 'Universitas Contoh', '1', '1', 'Dosen'],
+            ['Jane Smith', 'jane@example.com', 'password123', 'admin', 'admin_univ', 'admin_univ,validator', '081234567891', 'Jl. Contoh No. 456', 'Universitas Contoh', '1', '2', 'Kaprodi'],
         ];
 
         return Excel::download(new class($template) implements FromArray, WithHeadings {

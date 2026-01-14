@@ -15,10 +15,12 @@ class BobotPenilaian extends Model
         'id_elemen',
         'id_category',
         'bobot',
+        'is_active',
     ];
 
     protected $casts = [
         'bobot' => 'integer',
+        'is_active' => 'boolean',
     ];
 
     /**
@@ -26,7 +28,7 @@ class BobotPenilaian extends Model
      */
     public function elemenStandar()
     {
-        return $this->belongsTo(ElemenStandar::class, 'id_elemen', 'id_elemen');
+        return $this->belongsTo(ElemenStandar::class, 'id_elemen', 'id');
     }
 
     /**

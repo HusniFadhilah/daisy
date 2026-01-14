@@ -9,6 +9,7 @@ class University extends Model
     protected $fillable = [
         'code',
         'name',
+        'logo_path',
     ];
 
     public function studyPrograms()

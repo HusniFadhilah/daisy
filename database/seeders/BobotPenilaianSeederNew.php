@@ -75,10 +75,13 @@ class BobotPenilaianSeederNew extends Seeder
         $skipped = 0;
 
         foreach ($bobotData as $data) {
-            $elemen = ElemenStandar::where('kode_elemen', $data['kode'])->first();
+            // Konversi kode D1 -> D.1 untuk match dengan database
+            $kodeElemen = preg_replace('/^([A-Z])(\d)$/', '$1.$2', $data['kode']);
+            
+            $elemen = ElemenStandar::where('kode_elemen', $kodeElemen)->first();
             
             if (!$elemen) {
-                $this->command->warn("Elemen {$data['kode']} tidak ditemukan, skip...");
+                $this->command->warn("Elemen {$kodeElemen} tidak ditemukan, skip...");
                 $skipped++;
                 continue;
             }
@@ -89,7 +92,7 @@ class BobotPenilaianSeederNew extends Seeder
                 if ($category && isset($data['bobot'][$categoryCode])) {
                     BobotPenilaian::updateOrCreate(
                         [
-                            'id_elemen' => $elemen->id_elemen,
+                            'id_elemen' => $elemen->id,
                             'id_category' => $category->id,
                         ],
                         [

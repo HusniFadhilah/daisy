@@ -162,10 +162,17 @@
     <div class="col-lg-4">
         <div class="card h-100">
             <div class="card-body text-center">
+                @if($user->role_selected === 'admin_prodi' && $user->university && $user->university->logo_path)
+                <div class="mb-3">
+                    <img src="{{ asset('storage/' . $user->university->logo_path) }}" alt="Logo {{ $user->university->name }}" 
+                         style="max-height: 80px; max-width: 200px; object-fit: contain;">
+                </div>
+                @endif
+                
                 <div class="avatar-section mb-2">
                     <div class="avatar-wrapper">
                         <div class="avatar-preview" id="avatarPreview">
-                            @if(isset($user->avatar))
+                            @if($user->avatar)
                             <img src="{{ asset('storage/' . $user->avatar) }}" alt="Avatar">
                             @else
                             {{ strtoupper(substr($user->name ?? 'U', 0, 1)) }}
@@ -179,6 +186,11 @@
                 </div>
                 <div class="profile-name">{{ $user->name ?? 'Nama User' }}</div>
                 <div class="profile-role">{{ $user->role_alias ?? 'Role User' }}</div>
+                @if($user->position)
+                <div class="profile-meta">
+                    <i class="bi bi-briefcase"></i> {{ $user->position }}
+                </div>
+                @endif
                 <div class="profile-meta">
                     Bergabung: {{ \App\Libraries\Date::tglIndo($user->created_at) }}
                 </div>
@@ -210,10 +222,64 @@
                             <i class="bi bi-shield-check"></i>
                             <div>
                                 <div class="info-item-label">Role</div>
-                                <div class="info-item-value">{{ $user->role ?? 'LAMDEPILAR' }}</div>
+                                <div class="info-item-value">{{ $user->role_alias ?? 'User' }}</div>
                             </div>
                         </div>
                     </div>
+                    
+                    @if($user->phone)
+                    <div class="col-sm-6">
+                        <div class="info-item">
+                            <i class="bi bi-telephone"></i>
+                            <div>
+                                <div class="info-item-label">No. Telepon</div>
+                                <div class="info-item-value">{{ $user->phone }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+                    
+                    @if($user->university)
+                    <div class="col-sm-6">
+                        <div class="info-item">
+                            <i class="bi bi-building"></i>
+                            <div>
+                                <div class="info-item-label">Universitas</div>
+                                <div class="info-item-value">{{ $user->university->name }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+                    
+                    @if($user->studyProgram)
+                    <div class="col-sm-6">
+                        <div class="info-item">
+                            <i class="bi bi-mortarboard"></i>
+                            <div>
+                                <div class="info-item-label">Program Studi</div>
+                                <div class="info-item-value">
+                                    {{ $user->studyProgram->name }} 
+                                    @if($user->studyProgram->degreeLevel)
+                                    ({{ $user->studyProgram->degreeLevel->alias }})
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+                    
+                    @if($user->studyProgram && $user->studyProgram->category)
+                    <div class="col-sm-6">
+                        <div class="info-item">
+                            <i class="bi bi-tag"></i>
+                            <div>
+                                <div class="info-item-label">Kategori Prodi</div>
+                                <div class="info-item-value">{{ $user->studyProgram->category->name }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+                    
                     <div class="col-sm-6">
                         <div class="info-item">
                             <i class="bi bi-calendar-check"></i>
@@ -297,13 +363,59 @@
                 </div>
 
                 <div class="col-md-6 mb-3">
-                    <label for="institution" class="form-label fw-semibold">Institusi</label>
+                    <label for="position" class="form-label fw-semibold">Jabatan</label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="bi bi-briefcase"></i>
+                        </span>
+                        <input type="text" class="form-control @error('position') is-invalid @enderror" id="position" name="position" value="{{ old('position', $user->position ?? '') }}" placeholder="Contoh: Ketua Program Studi">
+                        @error('position')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label for="id_university" class="form-label fw-semibold">Universitas</label>
                     <div class="input-group">
                         <span class="input-group-text">
                             <i class="bi bi-building"></i>
                         </span>
-                        <input type="text" class="form-control @error('institution') is-invalid @enderror" id="institution" name="institution" value="{{ old('institution', $user->institution ?? '') }}" placeholder="Nama institusi">
-                        @error('institution')
+                        <select class="form-select @error('id_university') is-invalid @enderror" id="id_university" name="id_university">
+                            <option value="">-- Pilih Universitas --</option>
+                            @foreach($universities as $univ)
+                            <option value="{{ $univ->id }}" {{ old('id_university', $user->id_university) == $univ->id ? 'selected' : '' }}>
+                                {{ $univ->name }}
+                            </option>
+                            @endforeach
+                        </select>
+                        @error('id_university')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label for="id_study_program" class="form-label fw-semibold">Program Studi</label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="bi bi-mortarboard"></i>
+                        </span>
+                        <select class="form-select @error('id_study_program') is-invalid @enderror" id="id_study_program" name="id_study_program">
+                            <option value="">-- Pilih Program Studi --</option>
+                            @foreach($studyPrograms as $prodi)
+                            <option value="{{ $prodi->id }}" 
+                                    data-university="{{ $prodi->id_university }}"
+                                    {{ old('id_study_program', $user->id_study_program) == $prodi->id ? 'selected' : '' }}>
+                                {{ $prodi->name }} 
+                                @if($prodi->degreeLevel)
+                                ({{ $prodi->degreeLevel->alias }})
+                                @endif
+                                - {{ $prodi->university->name ?? '' }}
+                            </option>
+                            @endforeach
+                        </select>
+                        @error('id_study_program')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
@@ -439,6 +551,32 @@
             e.preventDefault();
             alert('Format email tidak valid.');
             return false;
+        }
+    });
+
+    // Filter Program Studi berdasarkan Universitas
+    const universitySelect = document.getElementById('id_university');
+    const prodiSelect = document.getElementById('id_study_program');
+    const allProdiOptions = Array.from(prodiSelect.options);
+
+    universitySelect.addEventListener('change', function() {
+        const selectedUniversityId = this.value;
+        
+        // Clear current options except first one
+        prodiSelect.innerHTML = '<option value="">-- Pilih Program Studi --</option>';
+        
+        if (!selectedUniversityId) {
+            // Show all options if no university selected
+            allProdiOptions.slice(1).forEach(option => {
+                prodiSelect.appendChild(option.cloneNode(true));
+            });
+        } else {
+            // Filter by university
+            allProdiOptions.slice(1).forEach(option => {
+                if (option.dataset.university === selectedUniversityId) {
+                    prodiSelect.appendChild(option.cloneNode(true));
+                }
+            });
         }
     });
 

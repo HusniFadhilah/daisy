@@ -16,7 +16,7 @@ class UsersExport implements FromCollection, WithHeadings, WithMapping, WithStyl
      */
     public function collection()
     {
-        return User::all();
+        return User::with(['university', 'studyProgram'])->get();
     }
 
     /**
@@ -28,6 +28,14 @@ class UsersExport implements FromCollection, WithHeadings, WithMapping, WithStyl
             'ID',
             'Nama',
             'Email',
+            'No. Telepon',
+            'Alamat',
+            'Institusi',
+            'ID Universitas',
+            'Nama Universitas',
+            'ID Program Studi',
+            'Nama Program Studi',
+            'Jabatan',
             'Role',
             'Role Aktif',
             'Semua Roles',
@@ -46,6 +54,14 @@ class UsersExport implements FromCollection, WithHeadings, WithMapping, WithStyl
             $user->id,
             $user->name,
             $user->email,
+            $user->phone ?? '',
+            $user->address ?? '',
+            $user->institution ?? '',
+            $user->id_university ?? '',
+            $user->university ? $user->university->name : '',
+            $user->id_study_program ?? '',
+            $user->studyProgram ? $user->studyProgram->name : '',
+            $user->position ?? '',
             $user->role,
             $user->role_selected,
             implode(', ', $user->roles ?? []),

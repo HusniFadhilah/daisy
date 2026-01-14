@@ -107,6 +107,86 @@
                     @enderror
                 </div>
 
+                <hr class="my-4">
+                <h5 class="mb-3">Informasi Profil (Opsional)</h5>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="phone" class="form-label">No. Telepon</label>
+                        <input type="tel" class="form-control @error('phone') is-invalid @enderror"
+                               id="phone" name="phone" value="{{ old('phone') }}" placeholder="08123456789" maxlength="20">
+                        @error('phone')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="position" class="form-label">Jabatan</label>
+                        <input type="text" class="form-control @error('position') is-invalid @enderror"
+                               id="position" name="position" value="{{ old('position') }}" placeholder="Dosen/Kaprodi/Staff">
+                        @error('position')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="institution" class="form-label">Institusi</label>
+                    <input type="text" class="form-control @error('institution') is-invalid @enderror"
+                           id="institution" name="institution" value="{{ old('institution') }}" placeholder="Nama institusi">
+                    @error('institution')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="mb-3">
+                    <label for="address" class="form-label">Alamat</label>
+                    <textarea class="form-control @error('address') is-invalid @enderror"
+                              id="address" name="address" rows="3" placeholder="Alamat lengkap">{{ old('address') }}</textarea>
+                    @error('address')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="id_university" class="form-label">Universitas</label>
+                        <select class="form-select @error('id_university') is-invalid @enderror" id="id_university" name="id_university">
+                            <option value="">Pilih Universitas</option>
+                            @foreach($universities as $univ)
+                                <option value="{{ $univ->id }}" {{ old('id_university') == $univ->id ? 'selected' : '' }}>
+                                    {{ $univ->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('id_university')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="id_study_program" class="form-label">Program Studi</label>
+                        <select class="form-select @error('id_study_program') is-invalid @enderror" id="id_study_program" name="id_study_program">
+                            <option value="">Pilih Program Studi</option>
+                            @foreach($studyPrograms as $prodi)
+                                <option value="{{ $prodi->id }}" 
+                                        data-university="{{ $prodi->id_university }}"
+                                        {{ old('id_study_program') == $prodi->id ? 'selected' : '' }}>
+                                    {{ $prodi->name }}
+                                    @if($prodi->degreeLevel)
+                                        ({{ $prodi->degreeLevel->name }})
+                                    @endif
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('id_study_program')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
                 <div class="mb-3">
                     <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
                     <input type="password" class="form-control @error('password') is-invalid @enderror"
@@ -131,3 +211,34 @@
     </div>
 </div>
 @endsection
+@push('scripts')
+<script>
+$(document).ready(function() {
+    // Filter program studi based on selected university
+    $('#id_university').on('change', function() {
+        const selectedUnivId = $(this).val();
+        const prodiSelect = $('#id_study_program');
+        
+        if (!selectedUnivId) {
+            prodiSelect.find('option').show();
+            prodiSelect.val('');
+            return;
+        }
+        
+        // Hide all prodi options except the first (empty)
+        prodiSelect.find('option:not(:first)').hide();
+        
+        // Show only prodi for selected university
+        prodiSelect.find('option[data-university="' + selectedUnivId + '"]').show();
+        
+        // Reset selection
+        prodiSelect.val('');
+    });
+
+    // Trigger filter on page load if university is already selected
+    if ($('#id_university').val()) {
+        $('#id_university').trigger('change');
+    }
+});
+</script>
+@endpush

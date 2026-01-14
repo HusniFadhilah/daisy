@@ -22,7 +22,7 @@
                     <select name="id_elemen" class="form-select" id="filterElemen">
                         <option value="">Semua Elemen</option>
                         @foreach($elemens as $elemen)
-                        <option value="{{ $elemen->id_elemen }}" {{ request('id_elemen') == $elemen->id_elemen ? 'selected' : '' }}>
+                        <option value="{{ $elemen->id }}" {{ request('id_elemen') == $elemen->id ? 'selected' : '' }}>
                             {{ $elemen->kriteria->kode_kriteria ?? '' }}.{{ $elemen->kode_elemen }} - {{ $elemen->pernyataan_elemen }}
                         </option>
                         @endforeach
@@ -63,6 +63,7 @@
                             <th>Kategori</th>
                             <th>Asesmen</th>
                             <th>Bobot</th>
+                            <th>Status</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -166,10 +167,35 @@
 </div>
 @endsection
 
+@push('styles')
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
+@endpush
+
 @push('scripts')
+<!-- jQuery (jika belum ada) -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+
 <script>
+    console.log('Script loaded');
+    console.log('jQuery version:', typeof $ !== 'undefined' ? $.fn.jquery : 'jQuery not found');
+    console.log('Select2 exists:', typeof $.fn.select2 !== 'undefined');
+    console.log('DataTable exists:', typeof $.fn.DataTable !== 'undefined');
+    
     // Initialize Select2
     $(document).ready(function() {
+        console.log('Document ready - initializing components...');
         $('#filterElemen, #inputElemen, #inputCategory').select2({
             theme: 'bootstrap-5'
             , width: '100%'
@@ -207,6 +233,11 @@
                 , {
                     data: 'bobot'
                     , name: 'bobot'
+                }
+                , {
+                    data: 'status'
+                    , name: 'status'
+                    , orderable: false
                 }
                 , {
                     data: 'action'
@@ -249,6 +280,22 @@
                 }
             });
         }
+    }
+
+    function toggleActive(id) {
+        $.ajax({
+            url: '/bobot-penilaian/' + id + '/toggle'
+            , type: 'POST'
+            , data: {
+                _token: '{{ csrf_token() }}'
+            }
+            , success: function(response) {
+                $('#bobotTable').DataTable().ajax.reload();
+            }
+            , error: function(xhr) {
+                alert('Gagal mengubah status');
+            }
+        });
     }
 
     // Edit Bobot

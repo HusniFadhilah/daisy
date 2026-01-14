@@ -10,10 +10,21 @@ class BobotPenilaianService
 {
     protected $modelPenilaianElemen;
 
-    public function __construct($modelPenilaianElemen)
+    public function __construct()
     {
-        $this->modelPenilaianElemen = $modelPenilaianElemen;
+        // Model akan di-set secara dinamis melalui setModel()
+        $this->modelPenilaianElemen = null;
     }
+
+    /**
+     * Set model penilaian elemen secara dinamis
+     */
+    public function setModel($modelClass)
+    {
+        $this->modelPenilaianElemen = $modelClass;
+        return $this;
+    }
+
     /**
      * Ambil bobot untuk elemen dan kategori tertentu
      */
@@ -150,5 +161,13 @@ class BobotPenilaianService
         $bobot = BobotPenilaian::findOrFail($id);
         $bobot->delete();
         return true;
+    }
+
+    /**
+     * Cari bobot by ID
+     */
+    public function find($id)
+    {
+        return BobotPenilaian::find($id);
     }
 }

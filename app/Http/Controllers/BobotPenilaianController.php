@@ -34,20 +34,34 @@ class BobotPenilaianController extends Controller
             return DataTables::of($bobots)
                 ->addIndexColumn()
                 ->addColumn('elemen_standar', function ($row) {
-                    return $row->elemenStandar ? $row->elemenStandar->kode_elemen . ' - ' . $row->elemenStandar->nama_elemen : '-';
+                    return $row->elemenStandar ? $row->elemenStandar->kode_elemen . ' - ' . $row->elemenStandar->pernyataan_elemen : '-';
                 })
                 ->addColumn('category', function ($row) {
-                    return $row->category ? $row->category->category_name : '-';
+                    return $row->category ? $row->category->name : '-';
+                })
+                ->addColumn('status', function ($row) {
+                    if ($row->is_active) {
+                        return '<span class="badge bg-success">Aktif</span>';
+                    } else {
+                        return '<span class="badge bg-secondary">Nonaktif</span>';
+                    }
                 })
                 ->addColumn('asesmen', function ($row) {
-                    return $row->asesmen ? $row->asesmen->nama : '-';
+                    return '-'; // Bobot tidak terkait langsung dengan asesmen
                 })
                 ->addColumn('action', function ($row) {
                     $editBtn = '<a href="' . route('bobot-penilaian.edit', $row->id) . '" class="btn btn-sm btn-warning">Edit</a>';
                     $deleteBtn = '<button onclick="deleteRecord(' . $row->id . ')" class="btn btn-sm btn-danger">Delete</button>';
-                    return $editBtn . ' ' . $deleteBtn;
+                    
+                    if ($row->is_active) {
+                        $toggleBtn = '<button onclick="toggleActive(' . $row->id . ')" class="btn btn-sm btn-secondary">Nonaktifkan</button>';
+                    } else {
+                        $toggleBtn = '<button onclick="toggleActive(' . $row->id . ')" class="btn btn-sm btn-success">Aktifkan</button>';
+                    }
+                    
+                    return $editBtn . ' ' . $toggleBtn . ' ' . $deleteBtn;
                 })
-                ->rawColumns(['action'])
+                ->rawColumns(['status', 'action'])
                 ->make(true);
         }
 
@@ -62,6 +76,17 @@ class BobotPenilaianController extends Controller
         $asesmens = Asesmen::all();
 
         return view('bobot-penilaian.index', compact('bobots', 'elemens', 'categories', 'asesmens'));
+    }
+
+    /**
+     * Show the form for creating a new bobot
+     */
+    public function create()
+    {
+        $elemens = ElemenStandar::with('kriteria')->orderBy('kode_elemen')->get();
+        $categories = StudyProgramCategory::all();
+        
+        return view('bobot-penilaian.create', compact('elemens', 'categories'));
     }
 
     /**
@@ -91,6 +116,24 @@ class BobotPenilaianController extends Controller
                 ->with('error', 'Gagal menambahkan bobot penilaian: ' . $e->getMessage())
                 ->withInput();
         }
+    }
+
+    /**
+     * Show the form for editing the specified bobot
+     */
+    public function edit($id)
+    {
+        $bobot = $this->bobotService->find($id);
+        
+        if (!$bobot) {
+            return redirect()->route('bobot-penilaian.index')
+                ->with('error', 'Bobot penilaian tidak ditemukan');
+        }
+        
+        $elemens = ElemenStandar::with('kriteria')->orderBy('kode_elemen')->get();
+        $categories = StudyProgramCategory::all();
+        
+        return view('bobot-penilaian.edit', compact('bobot', 'elemens', 'categories'));
     }
 
     /**
@@ -176,6 +219,38 @@ class BobotPenilaianController extends Controller
 
             return redirect()->back()
                 ->with('error', 'Gagal menghitung bobot penilaian: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Toggle active status of bobot penilaian
+     */
+    public function toggleActive($id)
+    {
+        try {
+            $bobot = $this->bobotService->find($id);
+            
+            if (!$bobot) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Bobot penilaian tidak ditemukan'
+                ], 404);
+            }
+
+            $bobot->is_active = !$bobot->is_active;
+            $bobot->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Status berhasil diubah',
+                'is_active' => $bobot->is_active
+            ]);
+        } catch (\Exception $e) {
+            Log::error($e);
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengubah status: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

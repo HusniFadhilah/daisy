@@ -52,7 +52,13 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnErr
                 'role_selected' => $row['role_aktif'] ?? 'default',
                 'roles' => array_values(array_unique($roles)),
                 'is_multiple_role' => count($roles) > 1,
-                'must_change_password' => true, // Set true untuk user dari Excel
+                'must_change_password' => true,
+                'phone' => $row['no_telepon'] ?? null,
+                'address' => $row['alamat'] ?? null,
+                'institution' => $row['institusi'] ?? null,
+                'id_university' => !empty($row['id_universitas']) ? $row['id_universitas'] : null,
+                'id_study_program' => !empty($row['id_program_studi']) ? $row['id_program_studi'] : null,
+                'position' => $row['jabatan'] ?? null,
             ]
         );
     }
@@ -67,6 +73,12 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnErr
             'email' => 'required|email',
             'role' => 'nullable|in:admin,user',
             'role_aktif' => 'nullable|in:super_admin,asesi,asesor,validator,verifikator,admin_univ,admin_prodi,default',
+            'no_telepon' => 'nullable|string|max:20',
+            'alamat' => 'nullable|string',
+            'institusi' => 'nullable|string|max:255',
+            'id_universitas' => 'nullable|exists:universities,id',
+            'id_program_studi' => 'nullable|exists:study_programs,id',
+            'jabatan' => 'nullable|string|max:255',
         ];
     }
 
