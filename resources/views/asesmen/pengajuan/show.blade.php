@@ -4,21 +4,6 @@
 
 @push('styles')
 <style>
-    .timeline {
-        position: relative;
-        padding-left: 30px;
-    }
-
-    .timeline::before {
-        content: '';
-        position: absolute;
-        left: 8px;
-        top: 0;
-        bottom: 0;
-        width: 2px;
-        background: #e0e0e0;
-    }
-
     .timeline-item {
         position: relative;
         padding-bottom: 20px;
@@ -300,7 +285,7 @@
         <!-- Main Content -->
         <div class="col-md-8">
             <!-- ACTION: Upload/Isi Draft LED -->
-            @if(in_array($pengajuan->status, ['borang_dikirim', 'review_kesiapan_belum_siap']))
+            @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI && $pengajuan->pembayaran && $pengajuan->pembayaran->status_pembayaran === 'terverifikasi')
             <div class="card action-card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">
@@ -330,7 +315,7 @@
             @endif
 
             <!-- SECTION: Proses & Preview LED -->
-            @if(in_array($pengajuan->status, ['draft_borang_diterima', 'borang_online_selesai']))
+            @if(in_array($pengajuan->status, [\App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA, \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI]))
             @include('asesmen.pengajuan.components.modal-upload')
             @endif
 
@@ -428,7 +413,7 @@
             </div>
 
             <!-- ACTION: Upload Pembayaran -->
-            @if($pengajuan->status === 'menunggu_pembayaran')
+            @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_MENUNGGU_PEMBAYARAN)
             <div class="card action-card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">
@@ -486,8 +471,8 @@
             @endif
 
             <!-- ACTION: Upload Borang Final -->
-            @if($pengajuan->status === 'pembayaran_diterima' && $pengajuan->pembayaran && $pengajuan->pembayaran->status_pembayaran === 'verified')
-            <div class="card action-card mb-4">
+            @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_PEMBAYARAN_DITERIMA && $pengajuan->pembayaran && $pengajuan->pembayaran->status_pembayaran === 'terverifikasi')
+            {{-- <div class="card action-card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">
                         <i class="bi bi-file-check text-primary"></i>
@@ -503,90 +488,90 @@
                     </div>
 
                     <form action="{{ route('pengajuan.upload-final', $pengajuan->id) }}" method="POST" enctype="multipart/form-data">
-                        @csrf
-                        <div class="row g-3">
-                            <div class="col-md-8">
-                                <label class="form-label fw-bold">Borang Final (DOCX)</label>
-                                <input type="file" name="borang_final" class="form-control @error('borang_final') is-invalid @enderror" accept=".docx" required>
-                                <small class="text-muted">Format: DOCX | Max: 10 MB</small>
-                                @error('borang_final')
-                                <span class="invalid-feedback" role="alert">
-                                    {{ $message }}
-                                </span>
-                                @enderror
-                            </div>
-                            <div class="col-md-12">
-                                <label class="form-label fw-bold">Keterangan</label>
-                                <textarea name="keterangan" class="form-control @error('keterangan') is-invalid @enderror" rows="2"></textarea>
-                                @error('keterangan')
-                                <span class="invalid-feedback" role="alert">
-                                    {{ $message }}
-                                </span>
-                                @enderror
-                            </div>
-                            <div class="col-md-12">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="bi bi-upload"></i> Upload Borang Final
-                                </button>
-                            </div>
-                        </div>
-                    </form>
+            @csrf
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <label class="form-label fw-bold">Borang Final (DOCX)</label>
+                    <input type="file" name="borang_final" class="form-control @error('borang_final') is-invalid @enderror" accept=".docx" required>
+                    <small class="text-muted">Format: DOCX | Max: 10 MB</small>
+                    @error('borang_final')
+                    <span class="invalid-feedback" role="alert">
+                        {{ $message }}
+                    </span>
+                    @enderror
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label fw-bold">Keterangan</label>
+                    <textarea name="keterangan" class="form-control @error('keterangan') is-invalid @enderror" rows="2"></textarea>
+                    @error('keterangan')
+                    <span class="invalid-feedback" role="alert">
+                        {{ $message }}
+                    </span>
+                    @enderror
+                </div>
+                <div class="col-md-12">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-upload"></i> Upload Borang Final
+                    </button>
                 </div>
             </div>
-            @endif
-            <hr>
+            </form>
+        </div>
+    </div> --}}
+    @endif
+    <hr>
 
-            <!-- Informasi Pengajuan -->
-            <div class="card mb-4">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">
-                        <i class="bi bi-info-circle"></i> Informasi Pengajuan
-                    </h5>
+    <!-- Informasi Pengajuan -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                <i class="bi bi-info-circle"></i> Informasi Pengajuan
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="text-muted small">Program Studi</label>
+                    <p class="fw-bold mb-0">{{ $pengajuan->studyProgram->name }}</p>
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Program Studi</label>
-                            <p class="fw-bold mb-0">{{ $pengajuan->studyProgram->name }}</p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Universitas/Institut</label>
-                            <p class="fw-bold mb-0">{{ $pengajuan->studyProgram->university->name }}</p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Jenjang</label>
-                            <p class="fw-bold mb-0">{{ $pengajuan->studyProgram->degreeLevel->name }}</p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Tahun Akreditasi</label>
-                            <p class="fw-bold mb-0">{{ $pengajuan->tahun_akreditasi }}</p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Jenis Akreditasi</label>
-                            <p class="fw-bold mb-0">{{ ucfirst($pengajuan->jenis_akreditasi) }}</p>
-                        </div>
-                        @if($pengajuan->pengaju)
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Pengaju</label>
-                            <p class="fw-bold mb-0">{{ $pengajuan->pengaju->name }}</p>
-                        </div>
-                        @endif
-                        {{-- <div class="col-md-6 mb-3">
+                <div class="col-md-6 mb-3">
+                    <label class="text-muted small">Universitas/Institut</label>
+                    <p class="fw-bold mb-0">{{ $pengajuan->studyProgram->university->name }}</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="text-muted small">Jenjang</label>
+                    <p class="fw-bold mb-0">{{ $pengajuan->studyProgram->degreeLevel->name }}</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="text-muted small">Tahun Akreditasi</label>
+                    <p class="fw-bold mb-0">{{ $pengajuan->tahun_akreditasi }}</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="text-muted small">Jenis Akreditasi</label>
+                    <p class="fw-bold mb-0">{{ ucfirst($pengajuan->jenis_akreditasi) }}</p>
+                </div>
+                @if($pengajuan->pengaju)
+                <div class="col-md-6 mb-3">
+                    <label class="text-muted small">Pengaju</label>
+                    <p class="fw-bold mb-0">{{ $pengajuan->pengaju->name }}</p>
+                </div>
+                @endif
+                {{-- <div class="col-md-6 mb-3">
                             <label class="text-muted small">DE</label>
                             <p class="fw-bold mb-0">{{ $pengajuan->deskEvaluator->name ?? 'Belum ditugaskan' }}</p>
-                    </div> --}}
-                </div>
-
-                @if($pengajuan->catatan_pengaju)
-                <hr>
-                <label class="text-muted small">Catatan Pengaju</label>
-                <p class="mb-0">{{ $pengajuan->catatan_pengaju }}</p>
-                @endif
-            </div>
+            </div> --}}
         </div>
 
-        <!-- Review Kesiapan -->
-        @if($pengajuan->reviewKesiapan->count() > 0)
+        @if($pengajuan->catatan_pengaju)
+        <hr>
+        <label class="text-muted small">Catatan Pengaju</label>
+        <p class="mb-0">{{ $pengajuan->catatan_pengaju }}</p>
+        @endif
+    </div>
+</div>
+
+<!-- Review Kesiapan -->
+{{-- @if($pengajuan->reviewKesiapan->count() > 0)
         <div class="card mb-4">
             <div class="card-header bg-light">
                 <h5 class="mb-0">
@@ -596,455 +581,335 @@
             <div class="card-body">
                 @foreach($pengajuan->reviewKesiapan->sortByDesc('tanggal_review') as $review)
                 <div class="mb-3 pb-3 {{ !$loop->last ? 'border-bottom' : '' }}">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div>
-                            <span class="badge {{ $review->hasil_review === 'siap' ? 'bg-success' : 'bg-danger' }}">
-                                {{ $review->hasil_review === 'siap' ? 'SIAP' : 'BELUM SIAP' }}
-                            </span>
-                            <small class="text-muted ms-2">Versi {{ $review->versi_review }}</small>
-                        </div>
-                        <small class="text-muted">
-                            {{ $review->tanggal_review->format('d M Y H:i') }}
-                        </small>
-                    </div>
-                    <p class="mb-2"><strong>Reviewer:</strong> {{ $review->reviewer->name }}</p>
-                    <p class="mb-0"><strong>Catatan:</strong></p>
-                    <p class="text-muted">{{ $review->catatan_review }}</p>
-
-                    @if($review->checklist_kesiapan)
-                    <p class="mb-1"><strong>Checklist:</strong></p>
-                    <ul>
-                        @foreach($review->checklist_kesiapan as $item)
-                        <li>{{ $item }}</li>
-                        @endforeach
-                    </ul>
-                    @endif
-                </div>
-                @endforeach
-            </div>
-        </div>
-        @endif
-
-        <!-- Dokumen -->
-        <div class="card mb-4">
-            <div class="card-header bg-light">
-                <h5 class="mb-0">
-                    <i class="bi bi-folder"></i> Dokumen
-                </h5>
-            </div>
-            <div class="card-body">
-                @forelse($pengajuan->dokumen->groupBy('jenis_dokumen') as $jenis => $docs)
-                <div class="mb-3">
-                    <h6 class="fw-bold text-primary">
-                        {{ str_replace('_', ' ', ucwords($jenis)) }}
-                    </h6>
-                    <div class="table-responsive">
-                        <table class="table table-sm table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Nama File</th>
-                                    <th>Versi</th>
-                                    <th>Upload Oleh</th>
-                                    <th>Tanggal</th>
-                                    <th>Ukuran</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($docs as $doc)
-                                <tr>
-                                    <td>
-                                        {{ $doc->original_filename }}
-                                        @if($doc->is_latest)
-                                        <span class="badge bg-success">Latest</span>
-                                        @endif
-                                    </td>
-                                    <td>v{{ $doc->versi }}</td>
-                                    <td>{{ $doc->uploader->name ?? '-' }}</td>
-                                    <td>{{ $doc->created_at->format('d/m/Y H:i') }}</td>
-                                    <td>{{ $doc->file_size_formatted }}</td>
-                                    <td>
-                                        <a href="{{ $doc->download_url }}" class="btn btn-sm btn-primary">
-                                            <i class="bi bi-download"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                @empty
-                <p class="text-muted mb-0">Belum ada dokumen yang diupload.</p>
-                @endforelse
-            </div>
-        </div>
+<div class="d-flex justify-content-between align-items-start mb-2">
+    <div>
+        <span class="badge {{ $review->hasil_review === 'siap' ? 'bg-success' : 'bg-danger' }}">
+            {{ $review->hasil_review === 'siap' ? 'SIAP' : 'BELUM SIAP' }}
+        </span>
+        <small class="text-muted ms-2">Versi {{ $review->versi_review }}</small>
     </div>
+    <small class="text-muted">
+        {{ $review->tanggal_review->format('d M Y H:i') }}
+    </small>
+</div>
+<p class="mb-2"><strong>Reviewer:</strong> {{ $review->reviewer->name }}</p>
+<p class="mb-0"><strong>Catatan:</strong></p>
+<p class="text-muted">{{ $review->catatan_review }}</p>
 
-    <!-- Sidebar -->
-    <div class="col-md-4">
-        <!-- Timeline -->
-        <div class="card mb-4">
-            <div class="card-header bg-light">
-                <h5 class="mb-0">
-                    <i class="bi bi-clock-history"></i> Timeline Proses Akreditasi
-                </h5>
+@if($review->checklist_kesiapan)
+<p class="mb-1"><strong>Checklist:</strong></p>
+<ul>
+    @foreach($review->checklist_kesiapan as $item)
+    <li>{{ $item }}</li>
+    @endforeach
+</ul>
+@endif
+</div>
+@endforeach
+</div>
+</div>
+@endif --}}
+
+<!-- Dokumen -->
+<div class="card mb-4">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">
+            <i class="bi bi-folder"></i> Dokumen
+        </h5>
+    </div>
+    <div class="card-body">
+        @forelse($pengajuan->dokumen->groupBy('jenis_dokumen_alias') as $jenis => $docs)
+        <div class="mb-3">
+            <h6 class="fw-bold text-primary">
+                {{ str_replace('_', ' ', ucwords($jenis)) }}
+            </h6>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover">
+                    <thead>
+                        <tr>
+                            <th>Nama File</th>
+                            <th>Versi</th>
+                            <th>Upload Oleh</th>
+                            <th>Tanggal</th>
+                            <th>Ukuran</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($docs as $doc)
+                        <tr>
+                            <td>
+                                {{ $doc->original_filename }}
+                                @if($doc->is_latest)
+                                <span class="badge bg-success">Latest</span>
+                                @endif
+                            </td>
+                            <td>v{{ $doc->versi }}</td>
+                            <td>{{ $doc->uploader->name ?? '-' }}</td>
+                            <td>{{ $doc->created_at->format('d/m/Y H:i') }}</td>
+                            <td>{{ $doc->file_size_formatted }}</td>
+                            <td>
+                                <a href="{{ $doc->download_url }}" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-download"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
-            <div class="card-body">
-                @php
-                // Define timeline phases
-                $phases = [
-                [
-                'name' => 'Persiapan & Pengajuan',
-                'icon' => 'bi-clipboard-check',
-                'items' => [
+        </div>
+        @empty
+        <p class="text-muted mb-0">Belum ada dokumen yang diupload.</p>
+        @endforelse
+    </div>
+</div>
+</div>
+
+<!-- Sidebar -->
+<div class="col-md-4">
+    <!-- Timeline -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                <i class="bi bi-clock-history"></i> Timeline Proses Akreditasi
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="timeline">
+                @foreach([
+                // ========================================
+                // FASE 1: PERSIAPAN
+                // ========================================
                 [
                 'date' => $pengajuan->tanggal_pengingat,
                 'label' => 'Pengingat Masa Akreditasi',
                 'icon' => 'bi-bell',
-                'description' => 'Pengingat dikirim ke prodi'
+                'step' => 1
                 ],
                 [
                 'date' => $pengajuan->tanggal_surat_permohonan,
-                'label' => 'Surat Permohonan Diterima',
-                'icon' => 'bi-envelope-check',
-                'description' => 'Surat permohonan diajukan'
+                'label' => 'Surat Permohonan dari PS',
+                'icon' => 'bi-envelope',
+                'step' => 2
                 ],
                 [
-                'date' => $pengajuan->tanggal_borang_dikirim,
-                'label' => 'Template LED Diterima',
+                'date' => $pengajuan->tanggal_template_led_dikirim,
+                'label' => 'Penyampaian Template LED+Suplemen dan LKPS, Formulir Pembayaran',
                 'icon' => 'bi-file-earmark-arrow-down',
-                'description' => 'Template borang dikirim dari LAMDEPILAR'
+                'step' => 3
                 ],
-                ]
-                ],
-                [
-                'name' => 'Pengisian LED',
-                'icon' => 'bi-pencil-square',
-                'items' => [
-                [
-                'date' => $pengajuan->tanggal_draft_borang,
-                'label' => 'Draft LED Disubmit',
-                'icon' => 'bi-file-earmark-check',
-                'description' => 'Draft LED dikirim untuk review'
-                ],
-                ]
-                ],
-                [
-                'name' => 'Validasi LED',
-                'icon' => 'bi-clipboard-check',
-                'items' => [
-                [
-                'date' => $pengajuan->tanggal_validasi_borang_assigned,
-                'label' => 'Validator Di-assign',
-                'icon' => 'bi-person-check',
-                'description' => 'Validator ditugaskan untuk review LED'
-                ],
-                [
-                'date' => $pengajuan->tanggal_validasi_borang_selesai,
-                'label' => 'Validasi LED Selesai',
-                'icon' => 'bi-clipboard-check',
-                'description' => 'LED telah divalidasi'
-                ],
-                ]
-                ],
-                [
-                'name' => 'Review Kesiapan',
-                'icon' => 'bi-search',
-                'items' => [
-                [
-                'date' => $pengajuan->tanggal_review_kesiapan,
-                'label' => 'Review Kesiapan',
-                'icon' => 'bi-clipboard2-check',
-                'description' => 'LED direview oleh Desk Evaluator'
-                ],
-                ]
-                ],
-                [
-                'name' => 'Pembayaran',
-                'icon' => 'bi-credit-card',
-                'items' => [
                 [
                 'date' => $pengajuan->tanggal_pembayaran,
-                'label' => 'Pembayaran',
-                'icon' => 'bi-cash-coin',
-                'description' => 'Bukti pembayaran diupload',
-                'badge' => $pengajuan->pembayaran ? 'Rp ' . number_format($pengajuan->pembayaran->jumlah_pembayaran, 0, ',', '.') : null
+                'label' => 'Validasi Pembayaran',
+                'icon' => 'bi-credit-card-2-front',
+                'step' => 4
                 ],
                 [
-                // ✅ FIX: Gunakan optional chaining atau ternary
-                'date' => $pengajuan->pembayaran?->tanggal_verifikasi ?? null,
-                'label' => 'Verifikasi Pembayaran',
-                'icon' => 'bi-check-circle',
-                'description' => 'Pembayaran diverifikasi'
+                'date' => $pengajuan->tanggal_draft_borang,
+                'label' => 'Penerimaan draft LED+Suplemen dan LKPS dari Prodi',
+                'icon' => 'bi-file-earmark-check',
+                'step' => 5
                 ],
-                ]
-                ],
+
+                // ========================================
+                // FASE 2: VALIDASI LED
+                // ========================================
                 [
-                'name' => 'Finalisasi',
-                'icon' => 'bi-file-check',
-                'items' => [
-                [
-                'date' => $pengajuan->tanggal_borang_final,
-                'label' => 'LED Final Disubmit',
-                'icon' => 'bi-file-earmark-text',
-                'description' => 'LED final dikirim'
-                ],
-                [
-                'date' => $pengajuan->tanggal_lanjut_ak,
-                'label' => 'Approved untuk AK',
-                'icon' => 'bi-check-circle',
-                'description' => 'Disetujui lanjut ke Asesmen Kecukupan'
-                ],
-                ]
-                ],
-                [
-                'name' => 'Asesmen Kecukupan (AK)',
-                'icon' => 'bi-file-earmark-medical',
-                'items' => [
-                [
-                'date' => $pengajuan->tanggal_ak_mulai,
-                'label' => 'Proses AK Dimulai',
-                'icon' => 'bi-play-circle',
-                'description' => 'Penilaian dokumen dimulai'
-                ],
-                [
-                'date' => $pengajuan->tanggal_ak_selesai,
-                'label' => 'Hasil AK Divalidasi',
+                'date' => $pengajuan->tanggal_validasi_borang_assigned,
+                'label' => 'Validasi LED+Suplemen dan LKPS',
                 'icon' => 'bi-clipboard-check',
-                'description' => 'Hasil AK telah divalidasi'
-                ],
-                ]
+                'step' => 6,
+                'color' => 'primary'
                 ],
                 [
-                'name' => 'Asesmen Lapangan (AL)',
+                'date' => $pengajuan->tanggal_pelaporan_validasi_borang,
+                'label' => 'Pelaporan Validasi LED+Suplemen dan LKPS',
+                'icon' => 'bi-file-earmark-text',
+                'step' => 7,
+                'color' => 'primary'
+                ],
+
+                // ========================================
+                // FASE 3: ASESMEN KECUKUPAN (AK)
+                // ========================================
+                [
+                'date' => $pengajuan->tanggal_penugasan_asesor_ak,
+                'label' => 'Penugasan Asesor untuk AK',
+                'icon' => 'bi-person-check',
+                'step' => 8,
+                'color' => 'success'
+                ],
+                [
+                'date' => $pengajuan->tanggal_validasi_ak,
+                'label' => 'Validasi AK',
+                'icon' => 'bi-clipboard2-check',
+                'step' => 9,
+                'color' => 'success'
+                ],
+                [
+                'date' => $pengajuan->tanggal_pelaporan_ak,
+                'label' => 'Pelaporan AK',
+                'icon' => 'bi-file-earmark-medical',
+                'step' => 10,
+                'color' => 'success'
+                ],
+
+                // ========================================
+                // FASE 4: ASESMEN LAPANGAN (AL)
+                // ========================================
+                [
+                'date' => $pengajuan->tanggal_penugasan_asesor_al,
+                'label' => 'Penugasan Asesor untuk AL',
+                'icon' => 'bi-person-badge',
+                'step' => 11,
+                'color' => 'info'
+                ],
+                [
+                'date' => $pengajuan->tanggal_pelaksanaan_al,
+                'label' => 'Pelaksanaan AL dan Penyampaian Berita Acara AL',
                 'icon' => 'bi-building',
-                'items' => [
-                [
-                'date' => $pengajuan->tanggal_al_mulai,
-                'label' => 'Proses AL Dimulai',
-                'icon' => 'bi-geo-alt',
-                'description' => 'Visitasi lapangan dimulai'
+                'step' => 12,
+                'color' => 'info'
                 ],
                 [
-                'date' => $pengajuan->tanggal_al_selesai,
-                'label' => 'Hasil AL Divalidasi',
+                'date' => $pengajuan->tanggal_pelaporan_al,
+                'label' => 'Pelaporan AL',
                 'icon' => 'bi-clipboard-data',
-                'description' => 'Hasil AL telah divalidasi'
+                'step' => 13,
+                'color' => 'info'
                 ],
-                ]
-                ],
-                [
-                'name' => 'Penyelesaian',
-                'icon' => 'bi-trophy',
-                'items' => [
+
+                // ========================================
+                // FASE 5: PENYELESAIAN
+                // ========================================
                 [
                 'date' => $pengajuan->tanggal_hasil_akreditasi,
-                'label' => 'Hasil Akreditasi Diterima',
+                'label' => 'Penyampaian Hasil Akreditasi',
                 'icon' => 'bi-envelope-paper',
-                'description' => 'Penyampaian hasil akreditasi'
+                'step' => 14,
+                'color' => 'warning'
                 ],
                 [
-                'date' => $pengajuan->tanggal_banding,
-                'label' => 'Banding (Opsional)',
+                'date' => $pengajuan->tanggal_masa_sanggah_mulai,
+                'label' => 'Masa Sanggah',
+                'icon' => 'bi-clock-history',
+                'step' => 15,
+                'color' => 'warning',
+                ],
+                [
+                'date' => $pengajuan->tanggal_pelaksanaan_banding,
+                'label' => 'Pelaksanaan Banding',
                 'icon' => 'bi-arrow-repeat',
-                'description' => 'Pengajuan banding',
-                'optional' => true
+                'step' => 16,
+                'color' => 'danger',
+                ],
+                [
+                'date' => $pengajuan->tanggal_pelaporan_banding,
+                'label' => 'Pelaporan Banding',
+                'icon' => 'bi-file-earmark-ruled',
+                'step' => 17,
+                'color' => 'danger',
                 ],
                 [
                 'date' => $pengajuan->tanggal_penetapan,
-                'label' => 'Penetapan Hasil',
+                'label' => 'Penetapan Hasil Akreditasi',
                 'icon' => 'bi-award',
-                'description' => 'Hasil akreditasi ditetapkan'
+                'step' => 18,
+                'color' => 'success'
                 ],
                 [
-                'date' => $pengajuan->tanggal_pengumuman,
-                'label' => 'Pengumuman Hasil',
+                'date' => $pengajuan->tanggal_pelaporan_hasil,
+                'label' => 'Pelaporan Hasil Akreditasi',
                 'icon' => 'bi-megaphone',
-                'description' => 'Hasil akreditasi diumumkan'
+                'step' => 19,
+                'color' => 'success'
                 ],
-                ]
+                [
+                'date' => $pengajuan->tanggal_penyimpanan,
+                'label' => 'Penyimpanan Arsip Pelaksanaan Akreditasi',
+                'icon' => 'bi-archive',
+                'step' => 20,
+                'color' => 'secondary'
                 ],
-                ];
-                @endphp
-
-                @foreach($phases as $phase)
+                ] as $item)
                 @php
-                // Calculate phase completion
-                $totalItems = count($phase['items']);
-                $completedItems = collect($phase['items'])->filter(fn($item) => $item['date'] !== null)->count();
-                $phasePercentage = $totalItems > 0 ? round(($completedItems / $totalItems) * 100) : 0;
-                $phaseStatus = $phasePercentage === 100 ? 'completed' : ($phasePercentage > 0 ? 'in-progress' : 'pending');
-
-                // Find current item
-                $hasIncomplete = collect($phase['items'])->filter(fn($item) => $item['date'] === null)->count() > 0;
-                $hasSomeComplete = $completedItems > 0;
-                $isCurrentPhase = $hasIncomplete && $hasSomeComplete;
+                $isCompleted = $item['date'] !== null;
+                $iconColor = $isCompleted ? 'text-success' : 'text-muted';
+                $itemColor = $item['color'] ?? ($isCompleted ? 'success' : 'muted');
+                $isOptional = $item['optional'] ?? false;
                 @endphp
 
-                <div class="timeline-section">
-                    {{-- Phase Header --}}
-                    <div class="timeline-phase-header {{ $phaseStatus }}">
-                        <i class="{{ $phase['icon'] }}"></i>
-                        <span class="flex-grow-1">{{ $phase['name'] }}</span>
-                        <span class="badge bg-white text-dark">{{ $completedItems }}/{{ $totalItems }}</span>
+                <div class="d-flex mb-3 {{ $isOptional && !$isCompleted ? 'opacity-50' : '' }}">
+                    <div class="me-3">
+                        @if($isCompleted)
+                        <i class="bi bi-check-circle-fill {{ $iconColor }}" style="font-size: 1.2rem;"></i>
+                        @else
+                        <i class="bi bi-circle {{ $iconColor }}"></i>
+                        @endif
                     </div>
-
-                    {{-- Phase Items --}}
-                    <div class="timeline-items">
-                        @foreach($phase['items'] as $item)
-                        @php
-                        $isCompleted = $item['date'] !== null;
-                        $isOptional = $item['optional'] ?? false;
-
-                        // Determine if this is the current active item
-                        $isCurrent = false;
-                        if (!$isCompleted && $loop->first && $phaseStatus === 'in-progress') {
-                        $isCurrent = true;
-                        } elseif (!$isCompleted && $loop->index > 0) {
-                        $prevItem = $phase['items'][$loop->index - 1];
-                        if ($prevItem['date'] !== null) {
-                        $isCurrent = true;
-                        }
-                        }
-
-                        $itemStatus = $isCompleted ? 'completed' : ($isCurrent ? 'current' : 'pending');
-                        @endphp
-
-                        <div class="timeline-item {{ $itemStatus }} {{ $isOptional && !$isCompleted ? 'opacity-50' : '' }}">
-                            {{-- Icon --}}
-                            <div class="timeline-item-icon">
-                                @if($isCompleted)
-                                <i class="bi bi-check-lg"></i>
-                                @elseif($isCurrent)
-                                <i class="bi bi-arrow-right"></i>
-                                @else
-                                <i class="bi bi-circle"></i>
-                                @endif
-                            </div>
-
-                            {{-- Content --}}
-                            <div class="timeline-item-content">
-                                <div class="timeline-item-label">
-                                    <i class="{{ $item['icon'] }}"></i>
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong class="{{ $isCompleted ? 'text-' . $itemColor : 'text-muted' }}">
+                                    <i class="{{ $item['icon'] ?? 'bi-circle' }} me-1"></i>
                                     {{ $item['label'] }}
                                     @if($isOptional)
-                                    <span class="badge bg-secondary timeline-badge">Opsional</span>
+                                    <span class="badge bg-secondary ms-1">Opsional</span>
                                     @endif
-                                    @if($isCurrent)
-                                    <span class="badge bg-warning timeline-badge">Aktif</span>
-                                    @endif
-                                    @if(isset($item['badge']) && $item['badge'])
-                                    <span class="badge bg-info timeline-badge">{{ $item['badge'] }}</span>
-                                    @endif
-                                </div>
-
-                                @if($isCompleted && $item['date'])
-                                <div class="timeline-item-date">
-                                    <i class="bi bi-calendar-check"></i>
-                                    @php
-                                    $tanggal = $item['date'] instanceof \Carbon\Carbon
-                                    ? $item['date']
-                                    : \Carbon\Carbon::parse($item['date']);
-                                    @endphp
-                                    {{ $tanggal->format('d M Y') }}
-                                    <span class="mx-1">•</span>
-                                    <i class="bi bi-clock"></i>
-                                    {{ $tanggal->format('H:i') }} WIB
-                                </div>
-                                @endif
+                                </strong>
                             </div>
+                            @if($isCompleted)
+                            <span class="badge bg-{{ $itemColor }}">
+                                {{ $item['date']->format('d M Y') }}
+                            </span>
+                            @endif
                         </div>
-                        @endforeach
-                    </div>
-
-                    {{-- Phase Progress Bar --}}
-                    <div class="phase-progress">
-                        <small class="text-muted">Progress fase: {{ $phasePercentage }}%</small>
-                        <div class="phase-progress-bar">
-                            <div class="phase-progress-fill bg-{{ $phaseStatus === 'completed' ? 'success' : 'warning' }}" style="width: {{ $phasePercentage }}%"></div>
-                        </div>
+                        @if($isCompleted)
+                        <small class="text-muted">
+                            <i class="bi bi-clock"></i> {{ $item['date']->format('H:i') }} WIB
+                        </small>
+                        @endif
                     </div>
                 </div>
                 @endforeach
-
-                {{-- Overall Progress Summary --}}
-                <div class="card bg-light mt-4">
-                    <div class="card-body">
-                        @php
-                        $allPhases = collect($phases);
-                        $totalPhases = $allPhases->count();
-                        $completedPhases = 0;
-
-                        foreach($phases as $phase) {
-                        $totalItems = count($phase['items']);
-                        $completedItems = collect($phase['items'])->filter(fn($item) => $item['date'] !== null)->count();
-                        if ($totalItems > 0 && $completedItems === $totalItems) {
-                        $completedPhases++;
-                        }
-                        }
-
-                        $overallPercentage = $totalPhases > 0 ? round(($completedPhases / $totalPhases) * 100) : 0;
-                        @endphp
-
-                        <h6 class="fw-bold mb-3">
-                            <i class="bi bi-graph-up"></i> Progress Keseluruhan
-                        </h6>
-
-                        <div class="progress" style="height: 25px;">
-                            <div class="progress-bar bg-success progress-bar-striped" role="progressbar" style="width: {{ $overallPercentage }}%" aria-valuenow="{{ $overallPercentage }}" aria-valuemin="0" aria-valuemax="100">
-                                <strong>{{ $overallPercentage }}%</strong>
-                            </div>
-                        </div>
-
-                        <div class="row text-center mt-3">
-                            <div class="col-6">
-                                <h4 class="mb-0 text-success">{{ $completedPhases }}</h4>
-                                <small class="text-muted">Fase Selesai</small>
-                            </div>
-                            <div class="col-6">
-                                <h4 class="mb-0 text-primary">{{ $totalPhases - $completedPhases }}</h4>
-                                <small class="text-muted">Fase Tersisa</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Status Log -->
-        <div class="card">
-            <div class="card-header bg-light">
-                <h5 class="mb-0">
-                    <i class="bi bi-list-check"></i> Log Aktivitas
-                </h5>
-            </div>
-            <div class="card-body" style="max-height: 400px; overflow-y: auto;">
-                @forelse($pengajuan->statusLog->sortByDesc('changed_at') as $log)
-                <div class="mb-3 pb-3 {{ !$loop->last ? 'border-bottom' : '' }}">
-                    <div class="d-flex justify-content-between">
-                        <small class="text-muted">
-                            {{ $log->changed_at->format('d/m/Y H:i') }}
-                        </small>
-                        <small class="text-muted">
-                            {{ $log->changedBy->name }}
-                        </small>
-                    </div>
-                    <p class="mb-0 small">
-                        <span class="badge bg-secondary">{{ str_replace('_', ' ', $log->status_from) }}</span>
-                        <i class="bi bi-arrow-right"></i>
-                        <span class="badge bg-primary">{{ str_replace('_', ' ', $log->status_to) }}</span>
-                    </p>
-                    @if($log->keterangan)
-                    <small class="text-muted">{{ $log->keterangan }}</small>
-                    @endif
-                </div>
-                @empty
-                <p class="text-muted small mb-0">Belum ada aktivitas</p>
-                @endforelse
             </div>
         </div>
     </div>
+
+    <!-- Status Log -->
+    <div class="card">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                <i class="bi bi-list-check"></i> Log Aktivitas
+            </h5>
+        </div>
+        <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+            @forelse($pengajuan->statusLog->sortByDesc('changed_at') as $log)
+            <div class="mb-3 pb-3 {{ !$loop->last ? 'border-bottom' : '' }}">
+                <div class="d-flex justify-content-between">
+                    <small class="text-muted">
+                        {{ $log->changed_at->format('d/m/Y H:i') }}
+                    </small>
+                    <small class="text-muted">
+                        {{ $log->changedBy->name }}
+                    </small>
+                </div>
+                <p class="mb-0 small">
+                    <span class="badge bg-secondary">{{ str_replace('_', ' ', $log->status_from) }}</span>
+                    <i class="bi bi-arrow-right"></i>
+                    <span class="badge bg-primary">{{ str_replace('_', ' ', $log->status_to) }}</span>
+                </p>
+                @if($log->keterangan)
+                <small class="text-muted">{{ $log->keterangan }}</small>
+                @endif
+            </div>
+            @empty
+            <p class="text-muted small mb-0">Belum ada aktivitas</p>
+            @endforelse
+        </div>
+    </div>
+</div>
 </div>
 </div>
 @push('scripts')
@@ -1262,86 +1127,6 @@
                 btn.disabled = false;
                 btn.innerHTML = '<i class="bi bi-gear"></i> Proses & Validasi Borang';
             }
-        }
-    }
-
-    function triggerUploadKualitatif() {
-        document.getElementById('inputKualitatif').click();
-    }
-
-    async function handleUploadKualitatif(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        // Validate
-        if (!file.name.endsWith('.docx')) {
-            Swal.fire('Error', 'File harus berformat DOCX', 'error');
-            return;
-        }
-
-        if (file.size > 10 * 1024 * 1024) {
-            Swal.fire('Error', 'Ukuran file maksimal 10MB', 'error');
-            return;
-        }
-
-        // Show confirmation
-        const result = await Swal.fire({
-            icon: 'question'
-            , title: 'Upload Data Kualitatif?'
-            , html: `
-            <p>File: <strong>${file.name}</strong></p>
-            <p>Ukuran: <strong>${formatFileSize(file.size)}</strong></p>
-            <p class="text-muted mt-2">Data deskripsi akan diproses dan diisi otomatis</p>
-        `
-            , showCancelButton: true
-            , confirmButtonText: 'Ya, Upload'
-            , cancelButtonText: 'Batal'
-        });
-
-        if (!result.isConfirmed) return;
-
-        // Upload
-        const formData = new FormData();
-        formData.append('file_kualitatif', file);
-
-        showLoading();
-
-        try {
-            const response = await fetch('{{ route("pengajuan.upload-kualitatif", $pengajuan->id) }}', {
-                method: 'POST'
-                , headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    , 'Accept': 'application/json'
-                }
-                , body: formData
-            });
-
-            const data = await response.json();
-            hideLoading();
-
-            if (data.success) {
-                // Show import progress
-                showImportProgress('kualitatif', data.data.dokumen_id);
-
-                Swal.fire({
-                    icon: 'info'
-                    , title: 'Sedang Diproses'
-                    , text: 'File sedang diproses di background...'
-                    , showConfirmButton: false
-                    , allowOutsideClick: false
-                    , didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
-
-                // Start polling
-                pollImportStatus(data.data.dokumen_id, 'kualitatif');
-            } else {
-                throw new Error(data.message || 'Upload gagal');
-            }
-        } catch (error) {
-            hideLoading();
-            Swal.fire('Error', error.message, 'error');
         }
     }
 

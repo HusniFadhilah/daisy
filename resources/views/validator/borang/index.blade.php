@@ -2,7 +2,7 @@
 
 @extends('layouts.template.app')
 
-@section('title', 'Validasi Borang')
+@section('title', 'Validasi Dokumen')
 
 @section('content')
 <div class="container-fluid py-3">
@@ -11,8 +11,8 @@
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h3 class="mb-1">Validasi Borang Akreditasi</h3>
-                    <p class="text-muted mb-0">Daftar pengajuan yang Anda validasi sebagai Validator Borang</p>
+                    <h3 class="mb-1">Validasi Dokumen Akreditasi</h3>
+                    <p class="text-muted mb-0">Daftar pengajuan yang Anda validasi sebagai Validator Dokumen</p>
                 </div>
                 <a href="{{ route('penawaran') }}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left"></i> Kembali
@@ -91,7 +91,7 @@
     {{-- Assignment List --}}
     <div class="card">
         <div class="card-header bg-light">
-            <h5 class="mb-0"><i class="bi bi-file-earmark-text"></i> Daftar Borang</h5>
+            <h5 class="mb-0"><i class="bi bi-file-earmark-text"></i> Daftar Dokumen</h5>
         </div>
         <div class="card-body">
             @if($assignments->count() > 0)
@@ -102,7 +102,7 @@
                             <th>Nomor Pengajuan</th>
                             <th>Program Studi</th>
                             <th>Jenjang</th>
-                            <th>Status Borang</th>
+                            <th>Status Dokumen</th>
                             <th>Status Validasi</th>
                             <th>Tanggal Ditugaskan</th>
                             <th>Aksi</th>
@@ -160,7 +160,7 @@
             </div>
             @else
             <div class="alert alert-info">
-                <i class="bi bi-info-circle"></i> Belum ada borang yang ditugaskan untuk Anda validasi.
+                <i class="bi bi-info-circle"></i> Belum ada dokumen yang ditugaskan untuk Anda validasi.
             </div>
             @endif
         </div>

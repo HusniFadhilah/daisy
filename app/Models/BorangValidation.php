@@ -52,16 +52,27 @@ class BorangValidation extends Model
      */
     public function getProgressPercentage(): array
     {
-        $totalItems = $this->total_elemen_led + $this->total_elemen_suplemen + $this->total_indikator_lkps;
-        $reviewedItems = $this->reviewed_led + $this->reviewed_suplemen + $this->reviewed_lkps;
+        $ledTotal = (int) $this->total_elemen_led;
+        $supTotal = (int) $this->total_elemen_suplemen;
+        $lkpsTotal = (int) $this->total_indikator_lkps;
+
+        $ledReviewed = (int) $this->reviewed_led;
+        $supReviewed = (int) $this->reviewed_suplemen;
+        $lkpsReviewed = (int) $this->reviewed_lkps;
+
+        $total = $ledTotal + $supTotal + $lkpsTotal;
+        $reviewed = $ledReviewed + $supReviewed + $lkpsReviewed;
+
+        $pct = fn(int $rev, int $tot) => $tot > 0 ? (int) round(($rev / $tot) * 100) : 100;
 
         return [
-            'total' => $totalItems,
-            'reviewed' => $reviewedItems,
-            'percentage' => $totalItems > 0 ? round(($reviewedItems / $totalItems) * 100, 2) : 0,
-            'led_percentage' => $this->total_elemen_led > 0 ? round(($this->reviewed_led / $this->total_elemen_led) * 100, 2) : 0,
-            'suplemen_percentage' => $this->total_elemen_suplemen > 0 ? round(($this->reviewed_suplemen / $this->total_elemen_suplemen) * 100, 2) : 0,
-            'lkps_percentage' => $this->total_indikator_lkps > 0 ? round(($this->reviewed_lkps / $this->total_indikator_lkps) * 100, 2) : 0,
+            'total' => $total,
+            'reviewed' => $reviewed,
+            'percentage' => $total > 0 ? (int) round(($reviewed / $total) * 100) : 100,
+
+            'led_percentage' => $pct($ledReviewed, $ledTotal),
+            'suplemen_percentage' => $pct($supReviewed, $supTotal),
+            'lkps_percentage' => $pct($lkpsReviewed, $lkpsTotal),
         ];
     }
 
@@ -70,9 +81,10 @@ class BorangValidation extends Model
      */
     public function isCompletelyReviewed(): bool
     {
-        return ($this->reviewed_led === $this->total_elemen_led) &&
-            ($this->reviewed_suplemen === $this->total_elemen_suplemen) &&
-            ($this->reviewed_lkps === $this->total_indikator_lkps);
+        return
+            (int)$this->reviewed_led >= (int)$this->total_elemen_led &&
+            (int)$this->reviewed_suplemen >= (int)$this->total_elemen_suplemen &&
+            (int)$this->reviewed_lkps >= (int)$this->total_indikator_lkps;
     }
 
     /**

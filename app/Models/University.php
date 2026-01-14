@@ -10,6 +10,7 @@ class University extends Model
     protected $fillable = [
         'code',
         'name',
+        'logo_path',
         'is_active',
         'is_example'
     ];

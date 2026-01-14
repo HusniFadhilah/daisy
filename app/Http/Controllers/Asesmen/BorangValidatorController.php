@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use App\Models\DatasetSuplemen;
 
 class BorangValidatorController extends Controller
 {
@@ -117,27 +118,49 @@ class BorangValidatorController extends Controller
         }
 
         $pengajuan = $assignment->asesmen->pengajuan;
+        if (!$pengajuan) abort(404, 'Pengajuan tidak ditemukan');
 
-        if (!$pengajuan) {
-            abort(404, 'Pengajuan tidak ditemukan');
-        }
+        $degreeCode = $this->mapDegreeCode($pengajuan->studyProgram->degreeLevel);
 
-        $degreeLevelId = $pengajuan->studyProgram->degreeLevel->id;
-
-        // ============================================
-        // GET KRITERIAS WITH ELEMEN & INDIKATOR
-        // ============================================
+        /**
+         * ✅ LKPS WAJIB kuantitatif saja
+         * -> eager load indikator dengan filter id_jenis = 2
+         */
         $kriterias = \App\Models\Kriteria::with([
-            'elemenStandar' => function ($q) {
-                $q->orderBy('kode_elemen');
-            },
+            'elemenStandar',
             'elemenStandar.indikator' => function ($q) {
-                $q->where('id_jenis', 2) // Only kuantitatif untuk LKPS
-                    ->orderBy('kode_indikator');
+                $q->where('id_jenis', 2)->orderBy('kode_indikator');
             },
-        ])
-            ->orderBy('kode_kriteria')
+        ])->orderBy('kode_kriteria')->get();
+
+        /**
+         * ✅ Suplemen: section_key = header tidak ikut ditampilkan & tidak ikut dihitung
+         */
+        $suplemenItems = DatasetSuplemen::query()
+            ->where('degree_level_code', $degreeCode)
+            ->where('content_type', 'list_item')
+            ->where('section_key', '!=', 'header')
+            ->orderBy('urutan')
             ->get();
+
+        $suplemenGrouped = $suplemenItems->groupBy('section_key');
+        $totalElemenSuplemen = $suplemenItems->count();
+
+        // ==========================================================
+        // ✅ HITUNG TOTAL (LED, SUPLEMEN, LKPS KUANTITATIF)
+        //   (harus dihitung ulang, karena record lama bisa total=0)
+        // ==========================================================
+        $totalElemenLed = 0;
+        $totalIndikatorLkpsKuant = 0;
+
+        foreach ($kriterias as $kriteria) {
+            $totalElemenLed += $kriteria->elemenStandar->count();
+
+            foreach ($kriteria->elemenStandar as $elemen) {
+                // indikator sudah difilter kuantitatif (id_jenis=2)
+                $totalIndikatorLkpsKuant += $elemen->indikator->count();
+            }
+        }
 
         // ============================================
         // INITIALIZE OR GET VALIDATION
@@ -145,49 +168,83 @@ class BorangValidatorController extends Controller
         $validation = $assignment->borangValidation;
 
         if (!$validation) {
-            // Count totals
-            $totalElemenLed = 0;
-            $totalElemenSuplemen = 0;
-            $totalIndikatorLkps = 0;
-
-            foreach ($kriterias as $kriteria) {
-                $elemenCount = $kriteria->elemenStandar->count();
-                $totalElemenLed += $elemenCount;
-                $totalElemenSuplemen += $elemenCount;
-
-                foreach ($kriteria->elemenStandar as $elemen) {
-                    $totalIndikatorLkps += $elemen->indikator->count();
-                }
-            }
-
+            // buat record baru
             $validation = BorangValidation::create([
                 'id_assignment' => $assignment->id,
                 'id_pengajuan' => $pengajuan->id,
                 'total_elemen_led' => $totalElemenLed,
                 'total_elemen_suplemen' => $totalElemenSuplemen,
-                'total_indikator_lkps' => $totalIndikatorLkps,
+                'total_indikator_lkps' => $totalIndikatorLkpsKuant,
                 'reviewed_led' => 0,
                 'reviewed_suplemen' => 0,
                 'reviewed_lkps' => 0,
             ]);
+        } else {
+            /**
+             * ✅ SYNC UNTUK RECORD LAMA:
+             * - total LED bisa 0 (seperti kasus screenshot)
+             * - total suplemen dulu mungkin dihitung dari elemen LED
+             * - total LKPS harus kuantitatif saja
+             *
+             * Reviewed juga dijaga agar tidak melebihi total baru.
+             */
+            $needUpdate =
+                (int)$validation->total_elemen_led !== (int)$totalElemenLed ||
+                (int)$validation->total_elemen_suplemen !== (int)$totalElemenSuplemen ||
+                (int)$validation->total_indikator_lkps !== (int)$totalIndikatorLkpsKuant;
 
-            $assignment->refresh();
+            if ($needUpdate) {
+                $validation->update([
+                    'total_elemen_led' => $totalElemenLed,
+                    'total_elemen_suplemen' => $totalElemenSuplemen,
+                    'total_indikator_lkps' => $totalIndikatorLkpsKuant,
+
+                    'reviewed_led' => min((int)$validation->reviewed_led, (int)$totalElemenLed),
+                    'reviewed_suplemen' => min((int)$validation->reviewed_suplemen, (int)$totalElemenSuplemen),
+                    'reviewed_lkps' => min((int)$validation->reviewed_lkps, (int)$totalIndikatorLkpsKuant),
+                ]);
+            }
         }
+
+        $validation->refresh();
+        $assignment->refresh();
 
         // ============================================
         // GET UPLOADED FILES
         // ============================================
         $uploadedFiles = [
+            'led' => $pengajuan->dokumen()
+                ->where('is_latest', true)
+                ->whereIn('jenis_dokumen', [
+                    'data_kualitatif',
+                    'draft_borang',
+                    'borang_final',
+                ])
+                ->latest()
+                ->first(),
+
+            'suplemen' => $pengajuan->dokumen()
+                ->where('is_latest', true)
+                ->whereIn('jenis_dokumen', [
+                    'data_suplemen',
+                    'suplemen',
+                    'file_suplemen',
+                    'dokumen_pendukung',
+                ])
+                ->latest()
+                ->first(),
+
+            'lkps' => $pengajuan->dokumen()
+                ->where('is_latest', true)
+                ->whereIn('jenis_dokumen', [
+                    'data_kuantitatif',
+                    'kuantitatif',
+                ])
+                ->latest()
+                ->first(),
+
             'pengesahan' => $pengajuan->dokumen()
                 ->where('jenis_dokumen', 'pengesahan')
-                ->where('is_latest', true)
-                ->first(),
-            'draft_borang' => $pengajuan->dokumen()
-                ->where('jenis_dokumen', 'draft_borang')
-                ->where('is_latest', true)
-                ->first(),
-            'lkps_excel' => $pengajuan->dokumen()
-                ->where('jenis_dokumen', 'kuantitatif')
                 ->where('is_latest', true)
                 ->first(),
         ];
@@ -199,12 +256,10 @@ class BorangValidatorController extends Controller
             ->get()
             ->keyBy('dataset_id');
 
-        // Attach borang data to each elemen
         foreach ($kriterias as $kriteria) {
             foreach ($kriteria->elemenStandar as $elemen) {
                 $elemen->setRelation('borangData', collect());
 
-                // Add description data if exists
                 $descKey = 'desc_' . $elemen->id;
                 if (isset($borangDataCollection[$descKey])) {
                     $elemen->borangData->push($borangDataCollection[$descKey]);
@@ -221,7 +276,11 @@ class BorangValidatorController extends Controller
             'validation',
             'kriterias',
             'uploadedFiles',
-            'progress'
+            'progress',
+            'suplemenItems',
+            'suplemenGrouped',
+            'degreeCode',
+            'totalElemenSuplemen'
         ));
     }
 
@@ -257,6 +316,20 @@ class BorangValidatorController extends Controller
 
             $category = $request->category;
             $itemId = $request->item_id;
+
+            if ($category === 'lkps') {
+                $isValid = \App\Models\Indikator::query()
+                    ->where('id', $itemId)
+                    ->where('id_jenis', 2) // ✅ hanya kuantitatif
+                    ->exists();
+
+                if (!$isValid) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Indikator LKPS tidak valid (bukan indikator kuantitatif).',
+                    ], 422);
+                }
+            }
 
             DB::beginTransaction();
 
@@ -379,7 +452,7 @@ class BorangValidatorController extends Controller
                 if (!$validation->isValidationPassed()) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'Masih ada item dengan grade A atau B. Gunakan "Request Revision" atau ubah grade menjadi C.',
+                        'message' => 'Masih ada item dengan grade B atau C. Gunakan "Request Revision" atau ubah grade menjadi A.',
                     ], 422);
                 }
 
@@ -455,11 +528,15 @@ class BorangValidatorController extends Controller
                 if (!empty($needsRevision['suplemen'])) {
                     $revisionPoints[] = '=== REVISI SUPLEMEN ===';
                     foreach ($needsRevision['suplemen'] as $item) {
-                        $elemen = \App\Models\ElemenStandar::find($item['elemen_id']);
-                        $gradeLabel = BorangValidation::getGradeLabel($item['grade']);
-                        $elemenLabel = $elemen ? "{$elemen->kode_elemen} - {$elemen->pernyataan_elemen}" : "Elemen ID: {$item['elemen_id']}";
 
-                        $point = "Suplemen - {$elemenLabel}: {$gradeLabel}";
+                        $gradeLabel = BorangValidation::getGradeLabel($item['grade']); // ✅ WAJIB
+                        $ds = DatasetSuplemen::find($item['elemen_id']); // elemen_id = item suplemen id
+
+                        $label = $ds
+                            ? ("[" . $ds->section_key . "] " . $ds->text_content)
+                            : ("Item Suplemen ID: " . $item['elemen_id']);
+
+                        $point = "Suplemen - {$label}: {$gradeLabel}";
                         if (!empty($item['catatan'])) {
                             $point .= " - {$item['catatan']}";
                         }
@@ -655,5 +732,21 @@ class BorangValidatorController extends Controller
                 'message' => 'Gagal merespon penawaran: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+    private function mapDegreeCode($degreeLevel): string
+    {
+        // Sesuaikan field yang ada di tabel degree_levels Anda (code/name)
+        $raw = strtolower((string) ($degreeLevel->code ?? $degreeLevel->name ?? ''));
+
+        // Normalisasi beberapa kemungkinan penamaan
+        $raw = str_replace([' ', '_'], '-', $raw);
+
+        // Contoh mapping jika di DB Anda ternyata "d4" disebut "s1-terapan"
+        // Anda bisa tambah mapping lain sesuai data nyata Anda.
+        return match ($raw) {
+            'sarjana-terapan', 's1-terapan' => 'd4',
+            default => $raw,
+        };
     }
 }

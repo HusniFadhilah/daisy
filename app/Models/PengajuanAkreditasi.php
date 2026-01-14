@@ -22,11 +22,12 @@ class PengajuanAkreditasi extends Model
     public const STATUS_SURAT_PERMOHONAN_DITERIMA = 'surat_permohonan_diterima';
 
     // Step 3
-    public const STATUS_TEMPLATE_LED_DIKIRIM = 'template_led_dikirim';
+    public const STATUS_TEMPLATE_LED_DIKIRIM = 'template_borang_dikirim';
 
     // Step 4
     public const STATUS_MENUNGGU_PEMBAYARAN = 'menunggu_pembayaran';
     public const STATUS_PEMBAYARAN_DITERIMA = 'pembayaran_diterima';
+    public const STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN = 'menunggu_verifikasi_pembayaran';
     public const STATUS_PEMBAYARAN_DIVERIFIKASI = 'pembayaran_diverifikasi';
 
     // Step 5
@@ -38,6 +39,7 @@ class PengajuanAkreditasi extends Model
     public const STATUS_BORANG_IN_VALIDATION = 'borang_in_validation';
     public const STATUS_BORANG_REVISION_REQUIRED = 'borang_revision_required';
     public const STATUS_BORANG_VALIDATED = 'borang_validated';
+    public const STATUS_DRAFT_BORANG_FINAL_DITERIMA = 'borang_final_diterima';
     public const STATUS_VALIDASI_BORANG_DILAPORKAN = 'validasi_borang_dilaporkan';
 
     // Step 8-10
@@ -55,11 +57,14 @@ class PengajuanAkreditasi extends Model
     // Step 14-20
     public const STATUS_HASIL_AKREDITASI_DIKIRIM = 'hasil_akreditasi_dikirim';
     public const STATUS_MASA_SANGGAH = 'masa_sanggah';
+    public const STATUS_BANDING_DIAJUKAN = 'banding_diajukan';
     public const STATUS_BANDING_DILAKSANAKAN = 'banding_dilaksanakan';
     public const STATUS_BANDING_DILAPORKAN = 'banding_dilaporkan';
     public const STATUS_HASIL_DITETAPKAN = 'hasil_ditetapkan';
+    public const STATUS_HASIL_DIUMUMKAN = 'hasil_diumumkan';
     public const STATUS_HASIL_DILAPORKAN = 'hasil_dilaporkan';
     public const STATUS_ARSIP_DISIMPAN = 'arsip_disimpan';
+    public const STATUS_SELESAI = 'selesai';
 
     // Special
     public const STATUS_DITOLAK = 'ditolak';
@@ -72,6 +77,7 @@ class PengajuanAkreditasi extends Model
         'id_program_studi',
         'id_user_pengaju',
         'id_de_assigned',
+        'id_validator_assigned',
         'tahun_akreditasi',
         'jenis_akreditasi',
         'tanggal_pengajuan',
@@ -171,14 +177,24 @@ class PengajuanAkreditasi extends Model
         return $this->belongsTo(User::class, 'id_de_assigned');
     }
 
+    public function validator()
+    {
+        return $this->belongsTo(User::class, 'id_validator_assigned');
+    }
+
     public function dokumen()
     {
         return $this->hasMany(PengajuanDokumen::class, 'id_pengajuan');
     }
 
-    public function pembayaran()
+    // public function pembayaran()
+    // {
+    //     return $this->hasOne(PembayaranAkreditasi::class, 'id_pengajuan');
+    // }
+
+    public function borangData()
     {
-        return $this->hasOne(PembayaranAkreditasi::class, 'id_pengajuan');
+        return $this->hasMany(BorangData::class, 'id_pengajuan');
     }
 
     public function statusLog()
@@ -189,6 +205,11 @@ class PengajuanAkreditasi extends Model
     public function borangImports()
     {
         return $this->hasMany(BorangImport::class, 'id_pengajuan');
+    }
+
+    public function pembayaran()
+    {
+        return $this->hasOne(PengajuanPembayaran::class, 'id_pengajuan', 'id');
     }
 
     public function latestBorangImport()
@@ -214,7 +235,7 @@ class PengajuanAkreditasi extends Model
     public static function generateNomorPengajuan()
     {
         $year = date('Y');
-        $lastNumber = self::where('nomor_pengajuan', 'like', "AK/$year/%")
+        $lastNumber = self::where('nomor_pengajuan', 'like', "ASM/$year/%")
             ->orderBy('nomor_pengajuan', 'desc')
             ->first();
 
@@ -257,6 +278,44 @@ class PengajuanAkreditasi extends Model
             ->whereIn('status_penawaran', ['pending', 'accepted'])
             ->latest('created_at')
             ->first();
+    }
+
+    /**
+     * Check if has active validator
+     */
+    public function hasActiveValidator(): bool
+    {
+        return $this->getCurrentBorangValidator() !== null;
+    }
+
+    /**
+     * Check if user already assigned as validator
+     */
+    public function isUserAssignedAsValidator(int $userId): bool
+    {
+        return $this->borangValidators()
+            ->where('id_user', $userId)
+            ->exists();
+    }
+
+    /**
+     * Get active validator (accepted)
+     */
+    public function activeBorangValidator()
+    {
+        return $this->borangValidators()
+            ->where('status_penawaran', 'accepted')
+            ->first();
+    }
+
+    /**
+     * Count validators by status
+     */
+    public function countValidatorsByStatus(string $status): int
+    {
+        return $this->borangValidators()
+            ->where('status_penawaran', $status)
+            ->count();
     }
 
     // ============================================

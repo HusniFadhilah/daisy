@@ -19,258 +19,202 @@ class BorangUploadController extends Controller
 {
     use AuthorizesRequests;
     /**
-     * ✅ STANDARD: Upload Lembar Pengesahan (PDF)
+     * Fungsi generik untuk upload dokumen
      */
-    public function uploadPengesahan(Request $request, $id)
-    {
-        $request->validate([
-            'pengesahan' => 'required|file|mimes:pdf|max:5120', // 5MB
-        ]);
+    protected function uploadDokumen(
+        Request $request,
+        PengajuanAkreditasi $pengajuan,
+        string $fieldName,
+        string $jenisDokumen,
+        string $folder,
+        bool $isAddVersion = false,
+        array $validations = [],
+        string $defaultKeterangan = ''
+    ) {
+        $request->validate(array_merge([$fieldName => 'required|file'], $validations));
+
+        DB::beginTransaction();
 
         try {
-            $authId = auth()->id();
-            $pengajuan = PengajuanAkreditasi::findOrFail($id);
-            $this->authorize('update', $pengajuan);
+            $userId = auth()->id();
 
-            DB::beginTransaction();
-
-            // Mark previous as not latest
-            PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
-                ->where('jenis_dokumen', 'pengesahan')
-                ->update(['is_latest' => false]);
-
-            // Upload file
-            $file = $request->file('pengesahan');
-            $filename = 'pengesahan_' . time() . '.pdf';
-            $path = $file->storeAs('pengajuan/' . $pengajuan->id . '/pengesahan', $filename, 'public');
-
-            // ✅ STANDARD: Create document record
-            $dokumen = PengajuanDokumen::create([
+            $latest = PengajuanDokumen::where([
                 'id_pengajuan' => $pengajuan->id,
-                'jenis_dokumen' => 'pengesahan', // ✅ Konsisten
-                'nama_file' => $filename,
-                'path_file' => $path,
-                'original_filename' => $file->getClientOriginalName(),
-                'file_size' => $file->getSize(),
-                'mime_type' => $file->getMimeType(),
-                'uploaded_by' => $authId,
-                'keterangan' => 'Lembar pengesahan yang sudah ditandatangani',
-                'versi' => 1,
-                'is_latest' => true,
-            ]);
+                'jenis_dokumen' => $jenisDokumen,
+                'is_latest' => true
+            ])->first();
 
-            // Log activity
-            PengajuanStatusLog::create([
-                'id_pengajuan' => $pengajuan->id,
-                'status_from' => $pengajuan->status,
-                'status_to' => $pengajuan->status,
-                'changed_by' => $authId,
-                'changed_at' => now(),
-                'keterangan' => 'Lembar pengesahan diupload: ' . $file->getClientOriginalName(),
-            ]);
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Lembar pengesahan berhasil diupload',
-                'data' => [
-                    'dokumen_id' => $dokumen->id,
-                    'filename' => $dokumen->original_filename,
-                    'file_size' => $this->formatFileSize($dokumen->file_size),
-                    'uploaded_at' => $dokumen->created_at->format('d M Y H:i'),
-                ]
-            ]);
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            Log::error('Upload pengesahan failed: ' . $e->getMessage(), [
-                'pengajuan_id' => $id,
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal upload lembar pengesahan: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * ✅ STANDARD: Upload Data Kualitatif (DOCX) - Auto process
-     */
-    public function uploadKualitatif(Request $request, $id)
-    {
-        $request->validate([
-            'file_kualitatif' => 'required|file|mimes:docx|max:10240', // 10MB
-        ]);
-
-        try {
-            $authId = auth()->id();
-            $pengajuan = PengajuanAkreditasi::findOrFail($id);
-            $this->authorize('update', $pengajuan);
-
-            DB::beginTransaction();
-
-            // Mark previous as not latest
-            PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
-                ->where('jenis_dokumen', 'data_kualitatif')
-                ->update(['is_latest' => false]);
-
-            // Upload file
-            $file = $request->file('file_kualitatif');
-            $filename = 'kualitatif_' . time() . '.docx';
-            $path = $file->storeAs('pengajuan/' . $pengajuan->id . '/kualitatif', $filename, 'public');
-
-            // ✅ STANDARD: Create document record
-            $dokumen = PengajuanDokumen::create([
-                'id_pengajuan' => $pengajuan->id,
-                'jenis_dokumen' => 'data_kualitatif', // ✅ Konsisten
-                'nama_file' => $filename,
-                'path_file' => $path,
-                'original_filename' => $file->getClientOriginalName(),
-                'file_size' => $file->getSize(),
-                'mime_type' => $file->getMimeType(),
-                'uploaded_by' => $authId,
-                'keterangan' => 'Laporan Evaluasi Diri (Data Kualitatif)',
-                'versi' => 1,
-                'is_latest' => true,
-            ]);
-
-            // ✅ Auto-process DOCX
-            try {
-                $parserService = new BorangParserService();
-                $import = $parserService->parseBorangDOCX($dokumen);
-
-                Log::info('Kualitatif DOCX parsed successfully', [
-                    'pengajuan_id' => $id,
-                    'import_id' => $import->id,
-                    'sections' => $import->total_sections,
-                    'tables' => $import->total_tables
-                ]);
-
-                $processingMessage = "File diupload dan diproses: {$import->parsed_sections}/{$import->total_sections} sections";
-            } catch (\Exception $parseError) {
-                Log::warning('DOCX parsing failed, but file uploaded', [
-                    'pengajuan_id' => $id,
-                    'error' => $parseError->getMessage()
-                ]);
-
-                $processingMessage = 'File diupload. Data akan diproses manual.';
+            // Tentukan versi
+            if ($isAddVersion || !$latest) {
+                $versi = ($latest->versi ?? 0) + 1;
+                if ($latest) $latest->update(['is_latest' => false]);
+            } else {
+                $versi = $latest->versi;
             }
 
-            // Log activity
+            $file = $request->file($fieldName);
+            $filename = "{$jenisDokumen}_v{$versi}_" . time() . "." . $file->getClientOriginalExtension();
+            $path = $file->storeAs("pengajuan/{$pengajuan->id}/{$folder}", $filename, 'public');
+
+            $dokumen = PengajuanDokumen::updateOrCreate(
+                ['id' => $latest && !$isAddVersion ? $latest->id : null],
+                [
+                    'id_pengajuan' => $pengajuan->id,
+                    'jenis_dokumen' => $jenisDokumen,
+                    'nama_file' => $filename,
+                    'path_file' => $path,
+                    'original_filename' => $file->getClientOriginalName(),
+                    'file_size' => $file->getSize(),
+                    'mime_type' => $file->getMimeType(),
+                    'uploaded_by' => $userId,
+                    'keterangan' => $request->keterangan ?? ($defaultKeterangan ?? "{$jenisDokumen} v{$versi}"),
+                    'versi' => $versi,
+                    'is_latest' => true,
+                ]
+            );
+
+            // Log status
             PengajuanStatusLog::create([
                 'id_pengajuan' => $pengajuan->id,
                 'status_from' => $pengajuan->status,
                 'status_to' => $pengajuan->status,
-                'changed_by' => $authId,
+                'changed_by' => $userId,
                 'changed_at' => now(),
-                'keterangan' => 'Laporan Evaluasi Diri diupload: ' . $file->getClientOriginalName(),
+                'keterangan' => ($isAddVersion ? 'Upload versi baru' : 'Update tanpa versi') .
+                    " {$jenisDokumen} (v{$versi})",
             ]);
 
             DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Laporan Evaluasi Diri berhasil diupload dan diproses',
+                'message' => $isAddVersion
+                    ? ucfirst($jenisDokumen) . " diupload (v{$versi})"
+                    : ucfirst($jenisDokumen) . " diperbarui (v{$versi})",
                 'data' => [
                     'dokumen_id' => $dokumen->id,
-                    'filename' => $dokumen->original_filename,
-                    'file_size' => $this->formatFileSize($dokumen->file_size),
-                    'uploaded_at' => $dokumen->created_at->format('d M Y H:i'),
-                    'processing_note' => $processingMessage ?? 'File diupload'
+                    'versi' => $versi
                 ]
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
-
-            Log::error('Upload kualitatif failed: ' . $e->getMessage(), [
-                'pengajuan_id' => $id,
-                'trace' => $e->getTraceAsString()
-            ]);
+            Log::error("Upload {$jenisDokumen} error", ['error' => $e]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal upload file: ' . $e->getMessage()
+                'message' => $e->getMessage()
             ], 500);
         }
     }
 
     /**
-     * ✅ STANDARD: Upload Data Kuantitatif (Excel) - Store only
+     * Fungsi khusus untuk pengesahan
      */
-    public function uploadKuantitatif(Request $request, $id)
+    public function uploadPengesahan(Request $request, $id, $isAddVersion = false)
     {
-        $request->validate([
-            'file_kuantitatif' => 'required|file|mimes:xlsx,xls|max:10240', // 10MB
-        ]);
+        $pengajuan = PengajuanAkreditasi::findOrFail($id);
+        $this->authorize('update', $pengajuan);
 
+        return $this->uploadDokumen(
+            $request,
+            $pengajuan,
+            'pengesahan',
+            'lembar_pengesahan',
+            'pengesahan',
+            $isAddVersion,
+            ['pengesahan' => 'mimes:pdf|max:5120']
+        );
+    }
+
+    /**
+     * Fungsi khusus untuk kuantitatif
+     */
+    public function uploadKuantitatif(Request $request, $id, $isAddVersion = false)
+    {
+        $pengajuan = PengajuanAkreditasi::findOrFail($id);
+        $this->authorize('update', $pengajuan);
+
+        return $this->uploadDokumen(
+            $request,
+            $pengajuan,
+            'file_kuantitatif',
+            'data_kuantitatif',
+            'kuantitatif',
+            $isAddVersion,
+            ['file_kuantitatif' => 'mimes:xls,xlsx|max:10240']
+        );
+    }
+
+    /**
+     * Fungsi khusus untuk suplemen
+     */
+    public function uploadSuplemen(Request $request, $id, $isAddVersion = true)
+    {
+        $pengajuan = PengajuanAkreditasi::findOrFail($id);
+        $this->authorize('update', $pengajuan);
+
+        return $this->uploadDokumen(
+            $request,
+            $pengajuan,
+            'file_suplemen',
+            'data_suplemen',
+            'suplemen',
+            $isAddVersion,
+            ['file_suplemen' => 'mimes:pdf,doc,docx,xls,xlsx,zip,rar|max:20480']
+        );
+    }
+
+    /**
+     * ✅ Get file history for specific document type
+     */
+    public function getFileHistory(Request $request, $id)
+    {
         try {
-            $authId = auth()->id();
             $pengajuan = PengajuanAkreditasi::findOrFail($id);
-            $this->authorize('update', $pengajuan);
+            $this->authorize('view', $pengajuan);
 
-            DB::beginTransaction();
+            $jenisDokumen = $request->get('jenis'); // pengesahan, kualitatif, kuantitatif
 
-            // Mark previous as not latest
-            PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
-                ->where('jenis_dokumen', 'data_kuantitatif')
-                ->update(['is_latest' => false]);
+            // Map frontend names to DB names
+            $jenisMap = [
+                'pengesahan' => 'lembar_pengesahan',
+                'kualitatif' => 'data_kualitatif',
+                'kuantitatif' => 'data_kuantitatif',
+            ];
 
-            // Upload file
-            $file = $request->file('file_kuantitatif');
-            $filename = 'kuantitatif_' . time() . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('pengajuan/' . $pengajuan->id . '/kuantitatif', $filename, 'public');
+            $dbJenis = $jenisMap[$jenisDokumen] ?? $jenisDokumen;
 
-            // ✅ STANDARD: Create document record
-            $dokumen = PengajuanDokumen::create([
-                'id_pengajuan' => $pengajuan->id,
-                'jenis_dokumen' => 'data_kuantitatif', // ✅ Konsisten
-                'nama_file' => $filename,
-                'path_file' => $path,
-                'original_filename' => $file->getClientOriginalName(),
-                'file_size' => $file->getSize(),
-                'mime_type' => $file->getMimeType(),
-                'uploaded_by' => $authId,
-                'keterangan' => 'LKPS (Data Kuantitatif)',
-                'versi' => 1,
-                'is_latest' => true,
-            ]);
-
-            // Log activity
-            PengajuanStatusLog::create([
-                'id_pengajuan' => $pengajuan->id,
-                'status_from' => $pengajuan->status,
-                'status_to' => $pengajuan->status,
-                'changed_by' => $authId,
-                'changed_at' => now(),
-                'keterangan' => 'LKPS diupload: ' . $file->getClientOriginalName(),
-            ]);
-
-            DB::commit();
+            $dokumens = PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
+                ->where('jenis_dokumen', $dbJenis)
+                ->with('uploader:id,name')
+                ->orderBy('versi', 'desc')
+                ->get()
+                ->map(function ($dok) {
+                    return [
+                        'id' => $dok->id,
+                        'versi' => $dok->versi,
+                        'filename' => $dok->original_filename,
+                        'file_size' => $this->formatFileSize($dok->file_size),
+                        'uploaded_by' => $dok->uploader->name ?? 'Unknown',
+                        'uploaded_at' => $dok->created_at->format('d M Y H:i'),
+                        'is_latest' => $dok->is_latest,
+                        'keterangan' => $dok->keterangan,
+                        'download_url' => route('pengajuan.download-dokumen', [$dok->id_pengajuan, $dok->id]),
+                    ];
+                });
 
             return response()->json([
                 'success' => true,
-                'message' => 'LKPS berhasil diupload',
-                'data' => [
-                    'dokumen_id' => $dokumen->id,
-                    'filename' => $dokumen->original_filename,
-                    'file_size' => $this->formatFileSize($dokumen->file_size),
-                    'uploaded_at' => $dokumen->created_at->format('d M Y H:i'),
-                ]
+                'data' => $dokumens
             ]);
         } catch (\Exception $e) {
-            DB::rollBack();
-
-            Log::error('Upload kuantitatif failed: ' . $e->getMessage(), [
-                'pengajuan_id' => $id,
-                'trace' => $e->getTraceAsString()
+            Log::error('Get file history failed', [
+                'error' => $e->getMessage()
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal upload file: ' . $e->getMessage()
+                'message' => $e->getMessage()
             ], 500);
         }
     }
@@ -283,7 +227,6 @@ class BorangUploadController extends Controller
         try {
             $pengajuan = PengajuanAkreditasi::findOrFail($id);
 
-            // Lebih aman: pakai constraints + firstOrFail (bukan findOrFail)
             $dokumen = PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
                 ->where('id', $dokumenId)
                 ->firstOrFail();
@@ -326,7 +269,15 @@ class BorangUploadController extends Controller
                 ->where('id', $dokumenId)
                 ->firstOrFail();
 
-            // Hapus file fisik kalau memang file-based
+            // ✅ Don't allow deletion of latest version
+            if ($dokumen->is_latest) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak dapat menghapus versi terbaru. Upload versi baru terlebih dahulu.',
+                ], 422);
+            }
+
+            // Hapus file fisik
             if ($dokumen->path_file && Storage::disk('public')->exists($dokumen->path_file)) {
                 Storage::disk('public')->delete($dokumen->path_file);
             }
@@ -360,4 +311,82 @@ class BorangUploadController extends Controller
 
         return round($bytes / pow($k, $i), 2) . ' ' . $sizes[$i];
     }
+
+    /**
+     * ✅ STANDARD: Upload Data Kuantitatif (Excel) - Store only
+     */
+    // public function uploadKuantitatif(Request $request, $id)
+    // {
+    //     $request->validate([
+    //         'file_kuantitatif' => 'required|file|mimes:xlsx,xls|max:10240', // 10MB
+    //     ]);
+
+    //     try {
+    //         $authId = auth()->id();
+    //         $pengajuan = PengajuanAkreditasi::findOrFail($id);
+    //         $this->authorize('update', $pengajuan);
+
+    //         DB::beginTransaction();
+
+    //         // Mark previous as not latest
+    //         PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
+    //             ->where('jenis_dokumen', 'data_kuantitatif')
+    //             ->update(['is_latest' => false]);
+
+    //         // Upload file
+    //         $file = $request->file('file_kuantitatif');
+    //         $filename = 'kuantitatif_' . time() . '.' . $file->getClientOriginalExtension();
+    //         $path = $file->storeAs('pengajuan/' . $pengajuan->id . '/kuantitatif', $filename, 'public');
+
+    //         // ✅ STANDARD: Create document record
+    //         $dokumen = PengajuanDokumen::create([
+    //             'id_pengajuan' => $pengajuan->id,
+    //             'jenis_dokumen' => 'data_kuantitatif', // ✅ Konsisten
+    //             'nama_file' => $filename,
+    //             'path_file' => $path,
+    //             'original_filename' => $file->getClientOriginalName(),
+    //             'file_size' => $file->getSize(),
+    //             'mime_type' => $file->getMimeType(),
+    //             'uploaded_by' => $authId,
+    //             'keterangan' => 'LKPS (Data Kuantitatif)',
+    //             'versi' => 1,
+    //             'is_latest' => true,
+    //         ]);
+
+    //         // Log activity
+    //         PengajuanStatusLog::create([
+    //             'id_pengajuan' => $pengajuan->id,
+    //             'status_from' => $pengajuan->status,
+    //             'status_to' => $pengajuan->status,
+    //             'changed_by' => $authId,
+    //             'changed_at' => now(),
+    //             'keterangan' => 'LKPS diupload: ' . $file->getClientOriginalName(),
+    //         ]);
+
+    //         DB::commit();
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => 'LKPS berhasil diupload',
+    //             'data' => [
+    //                 'dokumen_id' => $dokumen->id,
+    //                 'filename' => $dokumen->original_filename,
+    //                 'file_size' => $this->formatFileSize($dokumen->file_size),
+    //                 'uploaded_at' => $dokumen->created_at->format('d M Y H:i'),
+    //             ]
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+
+    //         Log::error('Upload kuantitatif failed: ' . $e->getMessage(), [
+    //             'pengajuan_id' => $id,
+    //             'trace' => $e->getTraceAsString()
+    //         ]);
+
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Gagal upload file: ' . $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
 }

@@ -130,14 +130,14 @@
                                 </span>
                             </td>
                             <td>
-                                @if($pengajuan->reviewKesiapan->last())
+                                {{-- @if($pengajuan->reviewKesiapan->last())
                                 <small>
                                     <i class="bi bi-calendar"></i>
                                     {{ $pengajuan->reviewKesiapan->last()->tanggal_review->format('d/m/Y') }}
                                 </small>
                                 @else
                                 <small class="text-muted">Belum ada review</small>
-                                @endif
+                                @endif --}}
                             </td>
                             <td>
                                 <a href="{{ route('de.pengajuan.show', $pengajuan->id) }}" class="btn btn-sm btn-primary">

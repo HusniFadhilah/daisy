@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Prodi\BorangUploadController;
+use App\Http\Controllers\Prodi\PengajuanBorangController;
+use App\Http\Controllers\Keuangan\ValidasiPembayaranController;
 use App\Http\Controllers\Profile\{PasswordResetController, ProfileController};
 use App\Http\Controllers\Prodi\{DeskEvaluatorController, PengajuanAkreditasiController, PemetaanAkreditasiController};
 use App\Http\Controllers\Asesmen\{AsesmenController, AKController, ALController, ALDocumentController, BorangValidatorController, PenawaranController, ValidasiController};
@@ -237,44 +239,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
             // === Borang Final ===
             Route::post('/{id}/upload-final', [PengajuanAkreditasiController::class, 'uploadBorangFinal'])->name('.upload-final');
 
-            // === Dokumen Download ===
-            Route::get('/dokumen/{id}/download', [PengajuanAkreditasiController::class, 'downloadDokumen'])->name('.dokumen.download');
             // ========================================
             // UPLOAD FILES (3 Jenis)
             // ========================================
 
-            // 1. Upload Lembar Pengesahan (PDF)
-            Route::post('/{id}/upload-pengesahan', [
-                BorangUploadController::class,
-                'uploadPengesahan'
-            ])->name('.upload-pengesahan');
+            // Upload dokumen
+            Route::post('/{id}/upload-pengesahan', [BorangUploadController::class, 'uploadPengesahan'])->name('.upload-pengesahan');
+            Route::post('/{id}/upload-suplemen',   [BorangUploadController::class, 'uploadSuplemen'])->name('.upload-suplemen');
+            Route::post('/{id}/upload-kualitatif', [BorangUploadController::class, 'uploadKualitatif']);
+            Route::post('/{id}/upload-kuantitatif', [BorangUploadController::class, 'uploadKuantitatif'])->name('.upload-kuantitatif');
 
-            // 2. Upload Data Kualitatif (DOCX dengan parsing)
-            Route::post('/{id}/upload-kualitatif', [
-                BorangUploadController::class,
-                'uploadKualitatif'
-            ])->name('.upload-kualitatif');
+            // Dokumen action
+            Route::get('/{id}/dokumen/{dokumenId}/download', [BorangUploadController::class, 'downloadDokumen'])->name('.download-dokumen');
+            Route::delete('/{id}/dokumen/{dokumenId}',       [BorangUploadController::class, 'deleteDokumen'])->name('.delete-dokumen');
 
-            // 3. Upload Data Kuantitatif (Excel tanpa parsing)
-            Route::post('/{id}/upload-kuantitatif', [
-                BorangUploadController::class,
-                'uploadKuantitatif'
-            ])->name('.upload-kuantitatif');
+            // Borang online
+            Route::get('/{id}/borang-online/check-files', [PengajuanAkreditasiController::class, 'checkBorangFiles'])
+                ->name('.borang.check-files');
 
-            // Download file
-            Route::get('/{id}/dokumen/{dokumenId}/download', [
-                BorangUploadController::class,
-                'downloadDokumen'
-            ])->name('.download-dokumen');
-            Route::get(
-                '/{id}/borang-online/check-files',
-                [PengajuanAkreditasiController::class, 'checkBorangFiles']
-            )->name('.borang.check-files');
-            // Delete file
-            Route::delete('/{id}/dokumen/{dokumenId}', [
-                BorangUploadController::class,
-                'deleteDokumen'
-            ])->name('.delete-dokumen');
+            Route::get('/pengajuan/{pengajuan}/validation-summary', [PengajuanBorangController::class, 'validationSummary'])
+                ->name('.validation-summary');
         });
 
         Route::middleware(['auth', 'role:admin_prodi,admin_univ,super_admin,asesi'])->group(function () {
@@ -283,6 +267,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{id}/borang/export-docx', [PengajuanAkreditasiController::class, 'exportBorangDocx'])
                 ->name('.borang.export-docx');
         });
+        // === Dokumen Download ===
+        Route::get('/dokumen/{id}/download', [PengajuanAkreditasiController::class, 'downloadDokumen'])->name('.dokumen.download');
     });
 
     // ========== DE ROUTES - Desk Evaluator ==========
@@ -308,6 +294,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             // Review Kesiapan
             Route::post('/{id}/lapor-validasi', [DeskEvaluatorController::class, 'laporHasilValidasi'])->name('.lapor-validasi');
 
+            Route::post('/{id}/kirim-formulir-pembayaran', [DeskEvaluatorController::class, 'kirimFormulirPembayaran'])
+                ->name('.kirim-formulir-pembayaran');
+
             // Verifikasi Pembayaran
             Route::post('/{id}/verifikasi-pembayaran', [DeskEvaluatorController::class, 'verifikasiPembayaran'])
                 ->name('.verifikasi-pembayaran');
@@ -324,6 +313,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ->name('.reassign-validator');
         });
     });
+
+    Route::prefix('keuangan')
+        ->name('keuangan.')
+        ->group(function () {
+
+            Route::prefix('pembayaran')->name('pembayaran.')->group(function () {
+                Route::get('/', [ValidasiPembayaranController::class, 'index'])->name('index');
+                Route::get('/{id}', [ValidasiPembayaranController::class, 'show'])->name('show');
+
+                Route::get('/{id}/download-bukti', [ValidasiPembayaranController::class, 'downloadBukti'])
+                    ->name('download-bukti');
+
+                Route::post('/{id}/verify', [ValidasiPembayaranController::class, 'verify'])
+                    ->name('verify');
+            });
+        });
 
     // routes/web.php
 

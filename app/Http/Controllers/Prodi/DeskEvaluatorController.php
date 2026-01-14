@@ -20,7 +20,6 @@ use App\Models\PengajuanAkreditasi;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\Mail\BorangTemplateSentMail;
-use App\Models\PembayaranAkreditasi;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 
@@ -143,6 +142,7 @@ class DeskEvaluatorController extends Controller
                     'nomor_pengajuan' => PengajuanAkreditasi::generateNomorPengajuan(),
                     'id_program_studi' => $prodi->id,
                     'id_de_assigned' => Auth::id(),
+                    'id_validator_assigned' => Auth::id(),
                     'tahun_akreditasi' => date('Y'),
                     'status' => 'pengingat_dikirim',
                     'tanggal_pengingat' => now(),
@@ -172,28 +172,32 @@ class DeskEvaluatorController extends Controller
     public function kirimFormBorang(Request $request, $id)
     {
         $request->validate([
-            'metode_kirim' => 'required|in:link,upload',
-            'template_link' => 'required_if:metode_kirim,link|nullable|url|max:500',
-            'borang_template' => 'required_if:metode_kirim,upload|nullable|file|mimes:docx,doc|max:10240',
-            'keterangan' => 'nullable|string|max:1000',
-        ], [
-            'metode_kirim.required' => 'Pilih metode pengiriman template',
-            'template_link.required_if' => 'Masukkan URL template LED',
-            'template_link.url' => 'Format URL tidak valid',
-            'borang_template.required_if' => 'Upload file template LED',
-            'borang_template.mimes' => 'File harus berformat DOCX atau DOC',
-            'borang_template.max' => 'Ukuran file maksimal 10 MB',
+            'metode_kirim'    => 'required|in:link,upload',
+            'template_link'   => 'required_if:metode_kirim,link|nullable|url|max:500',
+            'borang_template' => 'required_if:metode_kirim,upload|nullable|file|mimes:docx,doc,rar,zip,pdf,xlsx,xls|max:10240',
+            'keterangan'      => 'nullable|string|max:1000',
         ]);
-
-        $pengajuan = PengajuanAkreditasi::findOrFail($id);
-        $degreeLevel = $pengajuan->studyProgram->degreeLevel->code;
-        if ($pengajuan->status !== PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA) {
-            return back()->with('error', 'Status pengajuan tidak sesuai untuk kirim borang.');
-        }
 
         DB::beginTransaction();
         try {
-            $metode = $request->metode_kirim;
+            $pengajuan = \App\Models\PengajuanAkreditasi::query()
+                ->with(['studyProgram.degreeLevel', 'pengaju'])
+                ->lockForUpdate()
+                ->findOrFail($id);
+
+            if ($pengajuan->status !== \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA) {
+                DB::rollBack();
+                return back()->with('error', 'Status pengajuan tidak sesuai untuk kirim template.');
+            }
+
+            // hindari ?. : ambil degree level dengan aman
+            $degreeLevel = '-';
+            if ($pengajuan->studyProgram && $pengajuan->studyProgram->degreeLevel) {
+                $degreeLevel = $pengajuan->studyProgram->degreeLevel->code;
+            }
+
+            $metode = $request->input('metode_kirim');
+
             $pathFile = null;
             $filename = null;
             $originalFilename = null;
@@ -201,12 +205,13 @@ class DeskEvaluatorController extends Controller
             $mimeType = null;
             $templateLink = null;
 
-            // ============================================
-            // PROCESS BASED ON METHOD
-            // ============================================
             if ($metode === 'upload') {
-                // ✅ UPLOAD FILE
                 $file = $request->file('borang_template');
+                if (!$file) {
+                    DB::rollBack();
+                    return back()->with('error', 'File template tidak ditemukan.');
+                }
+
                 $filename = 'borang_template_' . time() . '.' . $file->getClientOriginalExtension();
                 $pathFile = $file->storeAs('pengajuan/' . $pengajuan->id . '/template', $filename, 'public');
 
@@ -214,81 +219,204 @@ class DeskEvaluatorController extends Controller
                 $fileSize = $file->getSize();
                 $mimeType = $file->getMimeType();
             } else {
-                // ✅ LINK
-                $templateLink = $request->template_link;
+                $templateLink = $request->input('template_link');
+                if (!$templateLink) {
+                    DB::rollBack();
+                    return back()->with('error', 'URL template wajib diisi.');
+                }
 
-                // Create pseudo filename for record
                 $filename = 'led_template_link_' . time() . '.url';
-                $pathFile = 'links/' . $filename; // Virtual path
+                $pathFile = 'links/' . $filename;
+
                 $originalFilename = 'TEMPLATE_LEMBAR_EVALUASI_DIRI_' . $degreeLevel;
                 $mimeType = 'text/uri-list';
                 $fileSize = strlen($templateLink);
             }
 
-            // ============================================
-            // CREATE DOCUMENT RECORD
-            // ============================================
-            $dokumen = PengajuanDokumen::create([
-                'id_pengajuan' => $pengajuan->id,
-                'jenis_dokumen' => 'borang_template',
-                'nama_file' => $filename,
-                'path_file' => $pathFile,
-                'original_filename' => $originalFilename,
-                'file_size' => $fileSize,
-                'mime_type' => $mimeType,
-                'uploaded_by' => Auth::id(),
-                'keterangan' => $request->keterangan,
-                'is_latest' => true,
-                'template_link' => $templateLink, // ✅ Store link if applicable
+            // set dokumen lama is_latest = false
+            \App\Models\PengajuanDokumen::query()
+                ->where('id_pengajuan', $pengajuan->id)
+                ->where('jenis_dokumen', 'borang_template')
+                ->update(['is_latest' => false]);
+
+            $dokumen = \App\Models\PengajuanDokumen::create([
+                'id_pengajuan'       => $pengajuan->id,
+                'jenis_dokumen'      => 'borang_template',
+                'nama_file'          => $filename,
+                'path_file'          => $pathFile,
+                'original_filename'  => $originalFilename,
+                'file_size'          => $fileSize,
+                'mime_type'          => $mimeType,
+                'uploaded_by'        => Auth::id(),
+                'keterangan'         => $request->input('keterangan'),
+                'is_latest'          => true,
+                'template_link'      => $templateLink,
             ]);
 
-            // ============================================
-            // UPDATE STATUS
-            // ============================================
-            $oldStatus = $pengajuan->status;
-            $pengajuan->update([
-                'status' => PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM,
-                'tanggal_template_led_dikirim' => now(),
-            ]);
+            $keteranganLog = ($metode === 'link')
+                ? "Template LED/LKPS dikirim via link: {$templateLink}"
+                : "Template LED/LKPS diupload: {$originalFilename}";
 
-            $keteranganLog = $metode === 'link'
-                ? PengajuanAkreditasi::DAFTAR_TEMPLATE . " dikirim via link: {$templateLink}"
-                : PengajuanAkreditasi::DAFTAR_TEMPLATE . " diupload: {$originalFilename}";
+            $this->logStatus($pengajuan, $pengajuan->status, $pengajuan->status, $keteranganLog);
 
-            $this->logStatus($pengajuan, $oldStatus, 'borang_dikirim', $keteranganLog);
+            // Gate final: kalau kedua dokumen sudah ada, status jadi MENUNGGU_PEMBAYARAN
+            $this->tryUpdateStatusMenungguPembayaran($pengajuan);
 
-            // ============================================
-            // SEND EMAIL NOTIFICATION
-            // ============================================
+            // kirim email (tidak menggagalkan transaksi kalau error)
             try {
-                Mail::to($pengajuan->pengaju->email)->send(
-                    new BorangTemplateSentMail($pengajuan, $dokumen, $metode)
-                );
+                if ($pengajuan->pengaju) {
+                    Mail::to($pengajuan->pengaju->email)->send(
+                        new \App\Mail\BorangTemplateSentMail($pengajuan, $dokumen, $metode)
+                    );
+                }
             } catch (\Exception $e) {
-                Log::error('Failed to send ' . PengajuanAkreditasi::DAFTAR_TEMPLATE . ' email', [
+                Log::error('Failed to send template email', [
                     'pengajuan_id' => $id,
                     'error' => $e->getMessage(),
                 ]);
-                // Don't fail the whole process
             }
 
             DB::commit();
-
-            $successMessage = $metode === 'link'
-                ? "Link " . PengajuanAkreditasi::DAFTAR_TEMPLATE . " berhasil dikirim ke prodi."
-                : "File " . PengajuanAkreditasi::DAFTAR_TEMPLATE . " berhasil dikirim ke prodi.";
-
-            return back()->with('success', $successMessage);
+            return back()->with('success', 'Template LED/LKPS berhasil dikirim. Status akan menjadi Menunggu Pembayaran setelah formulir pembayaran juga dikirim.');
         } catch (\Exception $e) {
-            Log::error('Kirim ' . PengajuanAkreditasi::DAFTAR_TEMPLATE . ' failed', [
-                'pengajuan_id' => $id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
             DB::rollBack();
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
+    }
+
+    public function kirimFormulirPembayaran(Request $request, $id)
+    {
+        $request->validate([
+            'metode_kirim_pembayaran'     => 'required|in:link,upload',
+            'pembayaran_link'             => 'required_if:metode_kirim_pembayaran,link|nullable|url|max:500',
+            'formulir_pembayaran_file'    => 'required_if:metode_kirim_pembayaran,upload|nullable|file|max:10240|mimes:pdf,doc,docx,xls,xlsx,zip,rar',
+            'keterangan_pembayaran'       => 'nullable|string|max:2000',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $pengajuan = \App\Models\PengajuanAkreditasi::query()
+                ->with(['studyProgram', 'pengaju'])
+                ->lockForUpdate()
+                ->findOrFail($id);
+
+            if ($pengajuan->status !== \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA) {
+                DB::rollBack();
+                return back()->with('error', 'Status pengajuan tidak sesuai untuk kirim formulir pembayaran.');
+            }
+
+            $metode = $request->input('metode_kirim_pembayaran');
+
+            $pathFile = null;
+            $filename = null;
+            $originalFilename = null;
+            $fileSize = null;
+            $mimeType = null;
+            $externalUrl = null;
+
+            if ($metode === 'link') {
+                $externalUrl = $request->input('pembayaran_link');
+                if (!$externalUrl) {
+                    DB::rollBack();
+                    return back()->with('error', 'URL formulir pembayaran wajib diisi.');
+                }
+
+                $filename = 'formulir_pembayaran_link_' . time() . '.url';
+                $pathFile = 'links/' . $filename;
+
+                $originalFilename = 'FORMULIR_PEMBAYARAN (LINK)';
+                $mimeType = 'text/uri-list';
+                $fileSize = strlen($externalUrl);
+            } else {
+                $file = $request->file('formulir_pembayaran_file');
+                if (!$file) {
+                    DB::rollBack();
+                    return back()->with('error', 'File formulir pembayaran tidak ditemukan.');
+                }
+
+                $filename = 'formulir_pembayaran_' . time() . '.' . $file->getClientOriginalExtension();
+                $pathFile = $file->storeAs('pengajuan/' . $pengajuan->id . '/formulir-pembayaran', $filename, 'public');
+
+                $originalFilename = $file->getClientOriginalName();
+                $fileSize = $file->getSize();
+                $mimeType = $file->getMimeType();
+            }
+
+            \App\Models\PengajuanDokumen::query()
+                ->where('id_pengajuan', $pengajuan->id)
+                ->where('jenis_dokumen', 'formulir_pembayaran')
+                ->update(['is_latest' => false]);
+
+            $dokumen = \App\Models\PengajuanDokumen::create([
+                'id_pengajuan'       => $pengajuan->id,
+                'jenis_dokumen'      => 'formulir_pembayaran',
+                'nama_file'          => $filename,
+                'path_file'          => $pathFile,
+                'original_filename'  => $originalFilename,
+                'file_size'          => $fileSize,
+                'mime_type'          => $mimeType,
+                'uploaded_by'        => Auth::id(),
+                'keterangan'         => $request->input('keterangan_pembayaran'),
+                'is_latest'          => true,
+                'template_link'      => $externalUrl, // reuse kolom untuk simpan link jika metode=link
+            ]);
+
+            $keteranganLog = ($metode === 'link')
+                ? "Formulir pembayaran dikirim via link: {$externalUrl}"
+                : "Formulir pembayaran diupload: {$originalFilename}";
+
+            $this->logStatus($pengajuan, $pengajuan->status, $pengajuan->status, $keteranganLog);
+
+            // Gate final: kalau kedua dokumen sudah ada, status jadi MENUNGGU_PEMBAYARAN
+            $this->tryUpdateStatusMenungguPembayaran($pengajuan);
+
+            DB::commit();
+            return back()->with('success', 'Formulir pembayaran berhasil dikirim. Status akan menjadi Menunggu Pembayaran setelah template LED/LKPS juga dikirim.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Status akhir harus MENUNGGU_PEMBAYARAN jika:
+     * - borang_template ada
+     * - formulir_pembayaran ada
+     */
+    private function tryUpdateStatusMenungguPembayaran(\App\Models\PengajuanAkreditasi $pengajuan): void
+    {
+        $hasTemplate = \App\Models\PengajuanDokumen::query()
+            ->where('id_pengajuan', $pengajuan->id)
+            ->where('jenis_dokumen', 'borang_template')
+            ->exists();
+
+        $hasFormPembayaran = \App\Models\PengajuanDokumen::query()
+            ->where('id_pengajuan', $pengajuan->id)
+            ->where('jenis_dokumen', 'formulir_pembayaran')
+            ->exists();
+
+        if (!$hasTemplate || !$hasFormPembayaran) {
+            return;
+        }
+
+        // hanya naikkan jika masih di tahap surat permohonan diterima
+        if ($pengajuan->status !== \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA) {
+            return;
+        }
+
+        $oldStatus = $pengajuan->status;
+
+        $pengajuan->update([
+            'status' => \App\Models\PengajuanAkreditasi::STATUS_MENUNGGU_PEMBAYARAN,
+            'tanggal_template_led_dikirim' => now(), // atau buat field baru jika perlu
+        ]);
+
+        $this->logStatus(
+            $pengajuan,
+            $oldStatus,
+            \App\Models\PengajuanAkreditasi::STATUS_MENUNGGU_PEMBAYARAN,
+            'Template LED/LKPS dan formulir pembayaran sudah lengkap. Menunggu pembayaran dari prodi.'
+        );
     }
 
     /**
@@ -732,7 +860,7 @@ class DeskEvaluatorController extends Controller
         }
 
         // 2. Check pembayaran (harus verified)
-        if (!$pengajuan->pembayaran || $pengajuan->pembayaran->status_pembayaran !== 'verified') {
+        if (!$pengajuan->pembayaran || $pengajuan->pembayaran->status_pembayaran !== 'terverifikasi') {
             return back()->with('error', 'Pembayaran belum diverifikasi.');
         }
 
@@ -759,7 +887,7 @@ class DeskEvaluatorController extends Controller
                 $pengajuan,
                 $oldStatus,
                 PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
-                'LED divalidasi dan pembayaran verified. Disetujui lanjut ke tahap AK - Menunggu penugasan asesor'
+                'LED divalidasi dan pembayaran terverifikasi. Disetujui lanjut ke tahap AK - Menunggu penugasan asesor'
             );
 
             DB::commit();

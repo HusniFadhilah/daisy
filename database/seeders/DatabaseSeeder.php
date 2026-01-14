@@ -36,6 +36,7 @@ class DatabaseSeeder extends Seeder
             AsesmenUserRoleSeeder::class,
             // PengajuanAkreditasiSeeder::class,
             DatasetBorangSeeder::class,
+            DatasetSuplemenSeeder::class,
             BorangExampleSeeder::class,
         ]);
     }

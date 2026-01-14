@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('id_program_studi')->constrained('study_programs')->onDelete('cascade');
             $table->foreignId('id_user_pengaju')->default(null)->nullable()->constrained('users')->comment('User dari prodi yang mengajukan');
             $table->foreignId('id_de_assigned')->default(null)->nullable()->constrained('users')->comment('DE yang ditugaskan');
+            $table->foreignId('id_validator_assigned')->default(null)->nullable()->constrained('users')->comment('Validator yang ditugaskan');
 
             // Data Pengajuan
             $table->year('tahun_akreditasi');
@@ -28,58 +29,82 @@ return new class extends Migration
                 'draft',
                 'pengingat_dikirim',
                 'surat_permohonan_diterima',
-                'borang_dikirim',
+                'template_borang_dikirim',
+                'menunggu_pembayaran',
+                'pembayaran_diterima',
+                'menunggu_verifikasi_pembayaran',
+                'pembayaran_diverifikasi',
                 'draft_borang_diterima',
                 'borang_online_selesai',
                 'borang_validation_pending',
                 'borang_in_validation',
                 'borang_revision_required',
                 'borang_validated',
-                'review_kesiapan_belum_siap',
-                'review_kesiapan_siap',
-                'menunggu_pembayaran',
-                'pembayaran_diterima',
+                // 'review_kesiapan_belum_siap',
+                // 'review_kesiapan_siap',
+                'validasi_borang_dilaporkan',
+                'asesor_ak_assigned',
                 'borang_final_diterima',
                 'pengajuan_completed',
                 'ak_in_progress',
-                'ak_completed',
+                'ak_selesai',
+                'ak_dilaporkan',
+                'asesor_al_assigned',
                 'al_in_progress',
-                'al_completed',
+                'al_selesai',
+                'al_dilaporkan',
                 'hasil_diumumkan',
+                'hasil_akreditasi_dikirim',
+                'masa_sanggah',
                 'banding_diajukan',
+                'banding_dilaksanakan',
                 'hasil_ditetapkan',
+                'hasil_dilaporkan',
+                'arsip_disimpan',
                 'selesai',
-                'ditolak'
+                'ditolak',
             ])->default('pengingat_dikirim');
 
             // Tracking
             $table->timestamp('tanggal_pengingat')->nullable();
             $table->timestamp('tanggal_surat_permohonan')->nullable();
-            $table->timestamp('tanggal_borang_dikirim')->nullable();
-            $table->timestamp('tanggal_draft_borang')->nullable();
-            // $table->timestamp('tanggal_review_kesiapan')->nullable();
+            $table->timestamp('tanggal_template_led_dikirim')->nullable();
             $table->timestamp('tanggal_pembayaran')->nullable();
+            $table->timestamp('tanggal_draft_borang')->nullable();
             $table->timestamp('tanggal_borang_final')->nullable();
+            // $table->timestamp('tanggal_review_kesiapan')->nullable();
             $table->timestamp('tanggal_lanjut_ak')->nullable();
 
             // ===== Timeline baru =====
             // Borang validation
             $table->timestamp('tanggal_validasi_borang_assigned')->nullable()->comment('Tanggal validator di-assign untuk review LED');
             $table->timestamp('tanggal_validasi_borang_selesai')->nullable()->comment('Tanggal validator approve/request revision LED');
+            $table->timestamp('tanggal_pelaporan_validasi_borang')->nullable();
 
             // AK Timeline
+            $table->timestamp('tanggal_penugasan_asesor_ak')->nullable();
             $table->timestamp('tanggal_ak_mulai')->nullable()->comment('Tanggal mulai proses AK/Penilaian Dokumen');
             $table->timestamp('tanggal_ak_selesai')->nullable()->comment('Tanggal selesai validasi hasil AK');
+            $table->timestamp('tanggal_pelaporan_ak')->nullable()->comment('Tanggal selesai pelaporan hasil AK');
+            $table->timestamp('tanggal_validasi_ak')->nullable();
 
             // AL Timeline
+            $table->timestamp('tanggal_penugasan_asesor_al')->nullable();
+            $table->timestamp('tanggal_pelaksanaan_al')->nullable();
             $table->timestamp('tanggal_al_mulai')->nullable()->comment('Tanggal mulai proses AL/Asesmen Lapangan');
             $table->timestamp('tanggal_al_selesai')->nullable()->comment('Tanggal selesai validasi hasil AL');
+            $table->timestamp('tanggal_pelaporan_al')->nullable();
 
             // Final Timeline
             $table->timestamp('tanggal_hasil_akreditasi')->nullable()->comment('Tanggal penyampaian hasil akreditasi');
+            $table->timestamp('tanggal_masa_sanggah_mulai')->nullable();
+            $table->timestamp('tanggal_masa_sanggah_selesai')->nullable();
             $table->timestamp('tanggal_banding')->nullable()->comment('Tanggal pengajuan banding (optional)');
+            $table->timestamp('tanggal_pelaksanaan_banding')->nullable();
+            $table->timestamp('tanggal_pelaporan_banding')->nullable();
             $table->timestamp('tanggal_penetapan')->nullable()->comment('Tanggal penetapan hasil akreditasi');
             $table->timestamp('tanggal_pengumuman')->nullable()->comment('Tanggal pengumuman hasil akreditasi');
+            $table->timestamp('tanggal_pelaporan_hasil')->nullable();
             $table->timestamp('tanggal_penyimpanan')->nullable()->comment('Tanggal penyimpanan berkas akreditasi');
 
             $table->timestamps();
@@ -93,6 +118,7 @@ return new class extends Migration
                 'surat_permohonan',
                 'surat_tugas',
                 'borang_template',
+                'formulir_pembayaran',
                 'draft_borang',
                 'borang_final',
                 'bukti_pembayaran',
@@ -103,6 +129,7 @@ return new class extends Migration
                 'sertifikat',
                 'data_kualitatif',
                 'data_kuantitatif',
+                'data_suplemen',
                 'lainnya'
             ])->index();
 
@@ -159,6 +186,48 @@ return new class extends Migration
             $table->timestamps();
         });
 
+        Schema::create('pengajuan_pembayaran', function (Blueprint $table) {
+            $table->id();
+
+            // Relasi ke pengajuan akreditasi
+            $table->foreignId('id_pengajuan')
+                ->constrained('pengajuan_akreditasi')
+                ->cascadeOnDelete();
+
+            // Informasi pembayaran
+            $table->string('nomor_invoice')->unique();
+            $table->decimal('jumlah_pembayaran', 15, 2);
+
+            // Tanggal
+            $table->date('tanggal_jatuh_tempo')->nullable();
+            $table->date('tanggal_pembayaran')->nullable();
+
+            // Status pembayaran
+            $table->enum('status_pembayaran', [
+                'menunggu',
+                'dibayar',
+                'ditolak',
+                'terverifikasi',
+            ])->default('menunggu');
+
+            // Bukti & verifikasi
+            $table->string('bukti_path')->nullable();
+            $table->text('catatan_verifikasi')->nullable();
+            $table->text('alasan_penolakan')->nullable();
+
+            // Verifikator
+            $table->foreignId('verified_by')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
+
+            $table->timestamps();
+
+            // Index tambahan (opsional tapi disarankan)
+            $table->index('status_pembayaran');
+            $table->index('tanggal_pembayaran');
+        });
+
         Schema::create('pengajuan_status_log', function (Blueprint $table) {
             $table->id();
             $table->foreignId('id_pengajuan')->constrained('pengajuan_akreditasi')->onDelete('cascade');
@@ -200,6 +269,7 @@ return new class extends Migration
     {
         Schema::dropIfExists('study_program_users');
         Schema::dropIfExists('pengajuan_status_log');
+        Schema::dropIfExists('pengajuan_pembayaran');
         Schema::dropIfExists('pembayaran_akreditasi');
         Schema::dropIfExists('review_kesiapan');
         Schema::dropIfExists('pengajuan_dokumen');

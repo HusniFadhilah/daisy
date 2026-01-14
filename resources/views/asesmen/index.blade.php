@@ -29,7 +29,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2><i class="bi bi-clipboard-data"></i> Kelola Asesmen</h2>
-            <p class="text-muted mb-0">Atur asesmen akreditasi dan assign asesor</p>
+            <p class="text-muted mb-0">Atur asesmen akreditasi dan tugaskan asesor</p>
         </div>
         <a href="{{ route('asesmen.create') }}" class="btn btn-primary">
             <i class="bi bi-plus-lg"></i> Buat Asesmen Baru
@@ -131,7 +131,7 @@
                             </td>
                             <td>
                                 <div class="btn-group btn-group-sm">
-                                    <a href="{{ route('asesmen.show', $asesmen->id) }}" class="btn btn-outline-primary" data-bs-toggle="tooltip" title="Detail & Assign Asesor">
+                                    <a href="{{ route('asesmen.show', $asesmen->id) }}" class="btn btn-outline-primary" data-bs-toggle="tooltip" title="Detail & Tugaskan Asesor">
                                         <i class="bi bi-eye"></i>
                                     </a>
                                     <a href="{{ route('asesmen.edit', $asesmen->id) }}" class="btn btn-outline-secondary" data-bs-toggle="tooltip" title="Edit">

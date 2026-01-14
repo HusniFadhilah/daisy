@@ -72,7 +72,6 @@ class BorangParserService
             $this->log("Saved {$savedCount} sections to BorangData");
 
             return $import->fresh();
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -639,7 +638,7 @@ class BorangParserService
 
     private function detectSectionHeader(string $text): ?array
     {
-        if (preg_match('/^([DEPLIARK])\.(\d+)\s+(.+)$/i', $text, $matches)) {
+        if (preg_match('/^([DEPILAR])\.(\d+)\s+(.+)$/i', $text, $matches)) {
             return [
                 'kode' => strtoupper($matches[1]) . '.' . $matches[2],
                 'judul' => trim($matches[3]),

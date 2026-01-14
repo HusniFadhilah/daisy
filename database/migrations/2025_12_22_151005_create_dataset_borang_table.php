@@ -200,7 +200,7 @@ return new class extends Migration
             $table->string('degree_level_code', 50); // d1, d2, d3, d4, s1, s1-terapan, s2, s2-terapan, s3, s3-terapan, profesi
             $table->string('section_key', 100); // bagian_a_common, pemastian_cpl, dll
             $table->string('content_type', 50); // list_item, paragraph, bullet
-            $table->integer('numbering_level')->default(0); // 0, 1, 2, 3
+            $table->integer('numbering_level')->nullable(); // 0, 1, 2, 3
             $table->text('text_content');
             $table->json('formatting')->nullable(); // {size: 11, bold: true, spaceAfter: 120}
             $table->integer('urutan')->default(0);

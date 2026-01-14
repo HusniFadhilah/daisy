@@ -3,13 +3,17 @@
 
 namespace App\Services;
 
+use Imagick;
+use App\Libraries\Date;
 use App\Models\Kriteria;
 use App\Models\BorangData;
 use App\Models\DegreeLevel;
 use PhpOffice\PhpWord\PhpWord;
+use App\Models\PengajuanDokumen;
 use PhpOffice\PhpWord\IOFactory;
 use PhpOffice\PhpWord\Style\Font;
 use App\Models\PengajuanAkreditasi;
+use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpWord\SimpleType\Jc;
 
 class BorangExportService
@@ -32,16 +36,22 @@ class BorangExportService
     public function __construct($pengajuan)
     {
         $this->pengajuan = $pengajuan;
-        $this->phpWord = new PhpWord();
 
-        // Load existing borang data
-        $borangData = BorangData::where('id_pengajuan', $pengajuan->id)->get();
-        foreach ($borangData as $data) {
-            $this->borangDataMap[$data->dataset_id] = $data->value;
-        }
+        // ✅ set active degree level
+        $this->activeDegreeLevel = $pengajuan->degreeLevel;
+        // atau jika relasinya beda: DegreeLevel::find($pengajuan->id_degree_level)
+
+        $this->phpWord = new PhpWord();
+        $this->phpWord->getSettings()->setUpdateFields(true);
+
+        $this->phpWord->addTitleStyle(1, ['bold' => true, 'size' => 14], ['spaceAfter' => 240]);
+        $this->phpWord->addTitleStyle(2, ['bold' => true, 'size' => 11], ['spaceAfter' => 180]);
+        $this->phpWord->addTitleStyle(3, ['bold' => false, 'size' => 11], ['spaceAfter' => 120]);
 
         $this->phpWord->setDefaultFontName('Montserrat');
         $this->phpWord->setDefaultFontSize(11);
+
+        $this->loadBorangDataMap(); // pindahkan ke fungsi biar rapi
     }
 
     public function generate()
@@ -50,8 +60,11 @@ class BorangExportService
         $this->addLembarPengesahan();
         $this->addKataPengantarSection();
         $this->addRingkasanSection();
+        $this->addDaftarIsiSection();
         $this->addContentPages();
         $this->addSuplemenSection();
+        // optional
+        $this->cleanupTmpPdfImages();
 
         return $this->phpWord;
     }
@@ -80,11 +93,9 @@ class BorangExportService
         $section->addTextBreak(6);
 
         // ✅ LOGO (bisa diganti dengan image jika ada)
-        if ($this->pengajuan->studyProgram->university->logo) {
-            $section->addImage(
-                storage_path('app/public/' . $this->pengajuan->studyProgram->university->logo),
-                ['width' => 100, 'height' => 100, 'alignment' => Jc::CENTER]
-            );
+        if ($this->pengajuan->studyProgram->university->logo_path) {
+            $logoPath = storage_path('app/public/' . $this->pengajuan->studyProgram->university->logo_path);
+            $this->addLogoFlexible($section, $logoPath, 200, 200);
         } else {
             $section->addText(
                 '[LOGO UNIVERSITAS]',
@@ -123,11 +134,20 @@ class BorangExportService
 
         // ✅ TAHUN PENGAJUAN
         $textRun = $section->addTextRun(['alignment' => Jc::CENTER]);
-        $textRun->addText(date('F, Y', strtotime($this->pengajuan->created_at)), ['size' => 12]);
+        $textRun->addText(Date::bulanTahun($this->pengajuan->created_at), ['size' => 12]);
     }
 
     private function addLembarPengesahan()
     {
+        $pdfPath = $this->getPengajuanDokumenPath('lembar_pengesahan');
+
+        if ($pdfPath) {
+            // ✅ tampilkan PDF dari DB sebagai halaman-halaman word
+            // lembar pengesahan termasuk front matter => roman
+            $this->addPdfAsImagesToWord($pdfPath, 'roman');
+            return;
+        }
+
         $section = $this->phpWord->addSection([
             'marginTop' => 1000,
             'marginBottom' => 1000,
@@ -230,45 +250,30 @@ class BorangExportService
             ['alignment' => Jc::CENTER, 'spaceAfter' => 500]
         );
 
-        // Paragraf 1
-        $section->addText(
+        // ✅ Default/placeholder kata pengantar (4 paragraf)
+        $defaultKataPengantar = [
             'Puji syukur kami panjatkan ke hadirat Tuhan Yang Maha Esa atas tersusunnya laporan ini sebagai bagian dari dokumentasi dan evaluasi kinerja Program Studi. Laporan ini disusun untuk memberikan gambaran menyeluruh mengenai capaian akademik, penelitian, pengabdian kepada masyarakat, serta kinerja mahasiswa dan dosen selama beberapa tahun terakhir.',
-            ['size' => 11],
-            ['alignment' => Jc::BOTH, 'spaceAfter' => 200]
-        );
-
-        // Paragraf 2
-        $section->addText(
             'Laporan ini memuat berbagai data terkait penerimaan mahasiswa, capaian pembelajaran, prestasi akademik, kegiatan penelitian dan pengabdian kepada masyarakat, serta kerja sama dengan pihak eksternal. Seluruh data disajikan secara sistematis dan berdasarkan catatan administrasi Program Studi, dengan harapan dapat menjadi bahan evaluasi dan perbaikan dalam rangka peningkatan mutu pendidikan.',
-            ['size' => 11],
-            ['alignment' => Jc::BOTH, 'spaceAfter' => 200]
-        );
-
-        // Paragraf 3
-        $section->addText(
             'Kami menyadari bahwa penyusunan laporan ini tidak lepas dari dukungan berbagai pihak. Oleh karena itu, kami menyampaikan apresiasi dan terima kasih kepada seluruh dosen, tenaga kependidikan, mahasiswa, serta mitra kerja yang telah berkontribusi dalam pengumpulan data dan penyusunan laporan ini.',
-            ['size' => 11],
-            ['alignment' => Jc::BOTH, 'spaceAfter' => 200]
-        );
-
-        // Paragraf 4
-        $section->addText(
             'Akhir kata, semoga laporan ini dapat memberikan manfaat sebagai sarana transparansi, evaluasi, dan peningkatan mutu Program Studi di masa yang akan datang.',
-            ['size' => 11],
-            ['alignment' => Jc::BOTH, 'spaceAfter' => 600]
-        );
+        ];
+
+        [$prefill, $placeholder, $isPlaceholder] = $this->getFieldPrefill($this->borangDataMap, 'kata_pengantar', $defaultKataPengantar, 500);
+
+        // ✅ Kotak + teks bawaan
+        $this->addFrontMatterDescBox($section, 'Kata Pengantar', 500, $prefill, false, 1800, 3000, $placeholder, $isPlaceholder);
 
         // Penutup (kanan bawah)
         $section->addText(
             '[Nama Kota], [Tanggal Penyusunan]',
             ['size' => 11],
-            ['alignment' => Jc::END, 'spaceAfter' => 100]
+            ['alignment' => Jc::END, 'spaceBefore' => 400, 'spaceAfter' => 100]
         );
 
         $section->addText(
             'Ketua Program Studi',
             ['size' => 11],
-            ['alignment' => Jc::END, 'spaceAfter' => 600]
+            ['alignment' => Jc::END, 'spaceAfter' => 900]
         );
 
         $section->addText(
@@ -288,12 +293,49 @@ class BorangExportService
         ]);
         $this->applyFooterPageNumber($section, 'roman');
 
-        // Judul
         $section->addText(
             'RINGKASAN',
             ['size' => 14, 'bold' => true],
             ['alignment' => Jc::CENTER, 'spaceAfter' => 500]
         );
+
+        [$prefill, $placeholder, $isPlaceholder] = $this->getFieldPrefill($this->borangDataMap, 'ringkasan');
+
+        // ✅ Kotak input seperti deskripsi box (max 1000 kata)
+        $this->addFrontMatterDescBox(
+            $section,
+            'Ringkasan (Mohon jangan dihapus)',
+            1000,
+            $prefill,
+            true,
+            1800,
+            3000,
+            $placeholder,
+            $isPlaceholder
+        );
+    }
+
+    private function getFieldPrefill(
+        array $borangDataMap,
+        string $key,
+        string|array|null $default = null,
+        int $maxWords = 1000
+    ): array {
+        $value = trim((string)($borangDataMap[$key] ?? ''));
+
+        if ($value !== '') {
+            return [[$value], null, false]; // ✅ false = BUKAN placeholder
+        }
+
+        if (is_array($default)) {
+            return [$default, null, true]; // ✅ default paragraf = placeholder/template
+        }
+
+        $placeholder = is_string($default)
+            ? $default
+            : "[Mohon isi {$key} di sini sesuai dengan kondisi program studi (maksimal {$maxWords} kata)...]";
+
+        return [[], $placeholder, true]; // ✅ placeholder
     }
 
     private function addContentPages()
@@ -306,9 +348,12 @@ class BorangExportService
 
         foreach ($kriterias as $indexKriteria => $kriteria) {
 
-            // Section utama (portrait) untuk teks kriteria + pernyataan + indikator
-            $section = $this->createPortraitSection();
-
+            // Section utama untuk teks kriteria + pernyataan + indikator (portrait)
+            $restartNumbering = $indexKriteria == 0 && !$this->hasRestartedContentNumbering;
+            $section = $this->createPortraitSection('arabic', $restartNumbering);
+            if ($restartNumbering) {
+                $this->hasRestartedContentNumbering = true;
+            }
             // Header kriteria
             $section->addTitle($kriteria->kode_kriteria . '. ' . $kriteria->nama_kriteria, 1);
 
@@ -334,8 +379,8 @@ class BorangExportService
 
                 // ✅ Detail section: portrait/landscape sesuai kebutuhan elemen (seperti Seeder)
                 $detailSection = $this->elemenNeedsLandscape($elemen)
-                    ? $this->createLandscapeSection()
-                    : $this->createPortraitSection();
+                    ? $this->createLandscapeSection('arabic')
+                    : $this->createPortraitSection('arabic');
 
                 // Kotak header elemen
                 $this->addElemenBox($detailSection, $kriteria, $elemen);
@@ -411,7 +456,10 @@ class BorangExportService
 
                 $cell->addText($dataset->nama, ['size' => 11, 'bold' => true], ['spaceAfter' => 100]);
 
-                $tableData = $this->borangDataMap[$dataset->kode] ?? null;
+                $tableData =
+                    $this->borangDataMap['dataset_kode:' . $dataset->kode] ??
+                    $this->borangDataMap['dataset_id:' . $dataset->id] ??
+                    null;
 
                 if ($tableData) {
                     $this->addHtmlTableToCell($cell, $tableData);
@@ -593,6 +641,14 @@ class BorangExportService
 
     private function addSuplemenSection()
     {
+        $pdfPath = $this->getPengajuanDokumenPath('data_suplemen');
+
+        if ($pdfPath) {
+            // suplemen masuk konten utama? kamu sekarang pakai arabic
+            $this->addPdfAsImagesToWord($pdfPath, 'arabic');
+            return;
+        }
+
         $section = $this->phpWord->addSection([
             'marginTop' => 1000,
             'marginBottom' => 1000,
@@ -1352,5 +1408,377 @@ class BorangExportService
                 'spaceAfter' => 80
             ]
         );
+    }
+
+    private function addLogoFlexible($section, $logoPath, $maxWidth = 200, $maxHeight = 200)
+    {
+        if (!file_exists($logoPath)) return;
+
+        [$origWidth, $origHeight] = getimagesize($logoPath);
+        $ratio = $origWidth / $origHeight;
+
+        if ($ratio > 1) {          // Landscape
+            $width = $maxWidth;
+            $height = $maxWidth / $ratio;
+        } elseif ($ratio < 1) {    // Portrait
+            $height = $maxHeight;
+            $width = $maxHeight * $ratio;
+        } else {                   // Square
+            $width = $maxWidth;
+            $height = $maxHeight;
+        }
+
+        $section->addImage($logoPath, [
+            'width' => $width,
+            'height' => $height,
+            'alignment' => Jc::CENTER
+        ]);
+    }
+
+    private function loadBorangDataMap(): void
+    {
+        // kalau relasi dataset borang namanya "datasetBorang", pakai with
+        $borangData = BorangData::with('datasetBorang')
+            ->where('id_pengajuan', $this->pengajuan->id)
+            ->get();
+
+        foreach ($borangData as $row) {
+            // 1) key utama: dataset_id (STRING seperti ringkasan, kata_pengantar, desc_27, suplemen)
+            if (!empty($row->dataset_id)) {
+                $this->borangDataMap[$row->dataset_id] = $row->nilai;
+            }
+
+            // 2) key by FK dataset borang (kalau kamu butuh match via id_dataset_borang)
+            if (!empty($row->id_dataset_borang)) {
+                $this->borangDataMap['dataset_id:' . $row->id_dataset_borang] = $row->nilai;
+            }
+
+            // 3) key by kode dataset (untuk tabel)
+            if ($row->datasetBorang?->kode) {
+                $this->borangDataMap['dataset_kode:' . $row->datasetBorang->kode] = $row->nilai;
+            }
+        }
+    }
+
+    private function addDaftarIsiSection(): void
+    {
+        $section = $this->createPortraitSection('roman');
+
+        // ===== JUDUL DAFTAR ISI =====
+        $section->addText(
+            'DAFTAR ISI',
+            ['bold' => true, 'size' => 14],
+            ['alignment' => Jc::CENTER, 'spaceAfter' => 500]
+        );
+
+        // ===== SETUP TAB STYLE (untuk dots leader) =====
+        $tocStyle = [
+            'spaceAfter' => 100,
+            'tabs' => [
+                new \PhpOffice\PhpWord\Style\Tab('right', 9000, 'dot')
+            ]
+        ];
+
+        // ===== FRONT MATTER (Manual Entries dengan Roman numerals) =====
+        $this->addTOCLine($section, 'Halaman Cover', '', $tocStyle);
+        $this->addTOCLine($section, 'Halaman Pengesahan', 'i', $tocStyle);
+        $this->addTOCLine($section, 'Kata Pengantar', 'ii', $tocStyle);
+        $this->addTOCLine($section, 'Ringkasan', 'iii', $tocStyle);
+        $this->addTOCLine($section, 'Daftar Isi', 'iv', $tocStyle);
+        // $this->addTOCLine($section, 'Daftar Gambar', 'v', $tocStyle);
+        // $this->addTOCLine($section, 'Daftar Tabel', 'vi', $tocStyle);
+
+        $section->addTextBreak(1);
+
+        // ===== KONTEN UTAMA (TOC Otomatis dari Heading) =====
+        // TOC otomatis akan menampilkan Kriteria D, E, P, I, L, A, R dengan halaman Arabic
+        $section->addTOC(
+            ['size' => 11],
+            ['tabLeader' => \PhpOffice\PhpWord\Style\TOC::TAB_LEADER_DOT],
+            1,  // Level 1 (Kriteria)
+            3   // Sampai Level 3 (sub-elemen)
+        );
+
+        $section->addTextBreak(2);
+
+        // ===== INSTRUKSI UPDATE =====
+        $section->addText(
+            '* Untuk mengupdate nomor halaman konten: klik kanan pada daftar isi > Update Field atau tekan Ctrl+A lalu F9',
+            ['size' => 9, 'italic' => true, 'color' => '555555'],
+            ['alignment' => Jc::CENTER]
+        );
+    }
+
+    /**
+     * Helper untuk menambahkan satu baris TOC manual
+     */
+    private function addTOCLine($section, $title, $pageNum, $style, $bold = false)
+    {
+        $textRun = $section->addTextRun($style);
+
+        // Title
+        $textRun->addText(
+            $title,
+            ['size' => 11, 'bold' => $bold]
+        );
+
+        // Tab (dots leader otomatis dari TabStop)
+        $textRun->addText("\t");
+
+        // Page number
+        $textRun->addText(
+            is_numeric($pageNum) ? (string)$pageNum : $pageNum,
+            ['size' => 11, 'bold' => $bold]
+        );
+    }
+
+    private function addFrontMatterDescBox(
+        \PhpOffice\PhpWord\Element\Section $section,
+        string $label,
+        int $maxWords,
+        array $prefillParagraphs = [],
+        bool $fullHeight = false,
+        int $reservedTopTwips = 1800,
+        int $minBoxHeightTwips = 3000,
+        ?string $emptyPlaceholder = null,
+        bool $isPlaceholder = true // ✅ tambahan
+    ): void {
+
+        if ($emptyPlaceholder === null) {
+            $emptyPlaceholder = "[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal {$maxWords} kata)...]";
+        }
+
+        $tableStyle = [
+            'borderSize'  => 6,
+            'borderColor' => '000000',
+            'cellMargin'  => 110,
+            'width'       => 100 * 50,
+            'unit'        => 'pct',
+        ];
+
+        $table = $section->addTable($tableStyle);
+
+        if ($fullHeight) {
+            $boxHeight = max($minBoxHeightTwips, $this->contentHeightTwips - $reservedTopTwips);
+            $table->addRow($boxHeight, ['exactHeight' => true]);
+        } else {
+            $table->addRow();
+        }
+
+        $cell = $table->addCell(9500, ['valign' => 'top']);
+
+        $cell->addText(
+            $label,
+            ['size' => 11, 'italic' => true],
+            ['spaceAfter' => 200]
+        );
+
+        $hasPrefill = !empty(array_filter($prefillParagraphs, fn($p) => trim((string)$p) !== ''));
+
+        // kalau kosong -> tampil placeholder merah
+        if (!$hasPrefill) {
+            $cell->addText(
+                $emptyPlaceholder,
+                ['size' => 11, 'color' => 'FF0000', 'italic' => true],
+                ['alignment' => Jc::BOTH, 'spaceAfter' => 200]
+            );
+            // ✅ tampilkan hint max kata hanya kalau placeholder
+            $cell->addText(
+                "(Maksimal {$maxWords} kata)",
+                ['size' => 10, 'color' => 'FF0000', 'italic' => true],
+                ['alignment' => Jc::END]
+            );
+            return;
+        }
+
+        // ✅ kalau ada prefill: style tergantung placeholder atau data asli
+        $textStyle = $isPlaceholder
+            ? ['size' => 11, 'color' => 'FF0000', 'italic' => true]
+            : ['size' => 11, 'color' => '000000', 'italic' => false];
+
+        foreach ($prefillParagraphs as $p) {
+            $p = trim((string)$p);
+            if ($p === '') continue;
+
+            $cell->addText(
+                $p,
+                $textStyle,
+                ['alignment' => Jc::BOTH, 'spaceAfter' => 200]
+            );
+        }
+
+        // ✅ hint max kata hanya untuk placeholder/template
+        if ($isPlaceholder) {
+            $cell->addText(
+                "(Maksimal {$maxWords} kata)",
+                ['size' => 10, 'color' => 'FF0000', 'italic' => true],
+                ['alignment' => Jc::END]
+            );
+        }
+    }
+
+    private function getPengajuanDokumenPath(string $jenis): ?string
+    {
+        $doc = PengajuanDokumen::query()
+            ->where('id_pengajuan', $this->pengajuan->id)
+            ->where('jenis_dokumen', $jenis)
+            ->latest('id')
+            ->first();
+        if (!$doc) return null;
+
+        // ✅ sesuaikan kolom path kamu: kadang namanya 'path' / 'file_path' / 'lokasi'
+        $relativePath = $doc->path_file ?? null;
+        if (!$relativePath) return null;
+
+        // Umumnya file disimpan di storage/app/public/...
+        $fullPath = storage_path('app/public/' . ltrim($relativePath, '/'));
+
+        return file_exists($fullPath) ? $fullPath : null;
+    }
+
+    /**
+     * Convert PDF menjadi image per halaman (PNG).
+     * Return array path PNG.
+     */
+    private function pdfToPngPages(string $pdfPath, int $dpi = 200): array
+    {
+        if (!extension_loaded('imagick')) {
+            $section = $this->phpWord->addSection();
+            $section->addText('⚠ Dokumen PDF tidak dapat dimuat karena Imagick belum tersedia.', ['color' => 'FF0000']);
+            return [];
+        }
+
+        if (!file_exists($pdfPath)) {
+            throw new \RuntimeException("File PDF tidak ditemukan: {$pdfPath}");
+        }
+        $this->ensureGhostscriptLocal();
+
+        $tmpDir = storage_path('app/tmp_pdf_export');
+        if (!is_dir($tmpDir)) {
+            mkdir($tmpDir, 0777, true);
+        }
+
+        try {
+            $imagick = new \Imagick();
+            $imagick->setResolution($dpi, $dpi);
+            $imagick->setOption('pdf:use-cropbox', 'true');
+            $imagick->readImage($pdfPath);
+
+            $pages = [];
+            foreach ($imagick as $i => $page) {
+                $page->setImageFormat('png');
+                $page->setImageCompressionQuality(90);
+
+                $out = $tmpDir . '/' . md5($pdfPath) . "_page_" . $i . ".png";
+                $page->writeImage($out);
+                $pages[] = $out;
+            }
+
+            // $imagick->clear();
+            // $imagick->destroy();
+
+            return $pages;
+        } catch (\ImagickException $e) {
+            throw new \RuntimeException("Gagal convert PDF ke PNG: " . $e->getMessage(), 0, $e);
+        }
+    }
+
+    /**
+     * Sisipkan PDF sebagai halaman-halaman gambar di Word.
+     * Cocok untuk "lembar_pengesahan" & "suplemen".
+     *
+     * - $numberType: 'roman' atau 'arabic'
+     * - $restartAt: kalau mau restart numbering dari 1 (opsional)
+     */
+    private function addPdfAsImagesToWord(
+        string $pdfPath,
+        string $numberType = 'roman',
+        ?int $restartAt = null,
+        int $dpi = 200
+    ): void {
+        $images = $this->pdfToPngPages($pdfPath, $dpi);
+
+        foreach ($images as $idx => $imgPath) {
+            $section = $this->phpWord->addSection([
+                'marginTop' => 700,
+                'marginBottom' => 700,
+                'marginLeft' => 700,
+                'marginRight' => 700,
+            ]);
+
+            // restart hanya di halaman pertama insert pdf (kalau diminta)
+            $this->applyFooterPageNumber($section, $numberType, ($idx === 0 ? $restartAt : null));
+
+            // width ini biasanya cukup pas A4 dengan margin 700
+            // kalau terlalu besar/kecil tinggal adjust
+            $imgPath = $this->persistImage($imgPath);
+
+            $section->addImage($imgPath, [
+                'width' => 520,
+                'alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER,
+            ]);
+        }
+    }
+
+    /**
+     * Optional: bersihkan file png sementara
+     */
+    private function cleanupTmpPdfImages(): void
+    {
+        $tmpDir = storage_path('app/tmp_pdf_export');
+        if (!is_dir($tmpDir)) return;
+
+        foreach (glob($tmpDir . '/*.png') as $f) {
+            @unlink($f);
+        }
+    }
+
+    private function ensureGhostscriptLocal(): void
+    {
+        $gsBin = public_path('gs/gs10.01.1/bin');
+        $gsBinReal = realpath($gsBin) ?: $gsBin;
+
+        $gsExe = $gsBinReal . DIRECTORY_SEPARATOR . 'gs.exe';
+        $gsWin = $gsBinReal . DIRECTORY_SEPARATOR . 'gswin64c.exe';
+
+        if (!file_exists($gsExe) && file_exists($gsWin)) {
+            // ✅ bikin gs.exe agar ImageMagick bisa menemukan "gs"
+            @copy($gsWin, $gsExe);
+        }
+
+        if (!file_exists($gsExe) && !file_exists($gsWin)) {
+            throw new \RuntimeException("Ghostscript tidak ditemukan di: {$gsBinReal}");
+        }
+
+        // ✅ env khusus untuk ImageMagick/Imagick (penting di Windows)
+        putenv("MAGICK_GHOSTSCRIPT_PATH={$gsBinReal}");
+        $_SERVER['MAGICK_GHOSTSCRIPT_PATH'] = $gsBinReal;
+        $_ENV['MAGICK_GHOSTSCRIPT_PATH'] = $gsBinReal;
+
+        // ✅ tambahkan ke PATH proses ini
+        $path = getenv('PATH') ?: '';
+        if (stripos($path, $gsBinReal) === false) {
+            $newPath = $gsBinReal . ';' . $path;
+            putenv("PATH={$newPath}");
+            $_SERVER['PATH'] = $newPath;
+            $_ENV['PATH'] = $newPath;
+        }
+    }
+
+    private function persistImage(string $path): string
+    {
+        if (!file_exists($path)) {
+            throw new \RuntimeException("Image not found: {$path}");
+        }
+
+        $dir = storage_path("app/public/export_images/{$this->pengajuan->id}");
+        if (!is_dir($dir)) {
+            mkdir($dir, 0777, true);
+        }
+
+        $newPath = $dir . '/' . basename($path);
+        copy($path, $newPath);
+
+        return $newPath;
     }
 }

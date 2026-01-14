@@ -23,7 +23,7 @@
             'step' => 2
             ],
             [
-            'date' => $pengajuan->tanggal_borang_dikirim,
+            'date' => $pengajuan->tanggal_template_led_dikirim,
             'label' => 'Penyampaian Template LED+Suplemen dan LKPS, Formulir Pembayaran',
             'icon' => 'bi-file-earmark-arrow-down',
             'step' => 3

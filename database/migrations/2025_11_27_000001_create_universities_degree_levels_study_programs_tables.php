@@ -16,6 +16,7 @@ return new class extends Migration
             $table->id();
             $table->string('code');
             $table->string('name');
+            $table->string('logo_path')->nullable();
             $table->boolean('is_active')->default(true)->index();
             $table->boolean('is_example')->default(false)->index();
             $table->timestamps();

@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpWord\SimpleType\Jc;
 use PhpOffice\PhpWord\SimpleType\DocProtect;
 use PhpOffice\PhpSpreadsheet\Style\Protection;
+use App\Models\DatasetSuplemen;
 
 class BorangExampleSeeder extends Seeder
 {
@@ -811,48 +812,11 @@ class BorangExampleSeeder extends Seeder
 
         $code = $this->normalizeDegreeCode($this->activeDegreeLevel?->code);
 
-        // Pilih konten suplemen sesuai degree
-        switch ($code) {
-            case 'd1':
-            case 'd2':
-            case 'd3':
-                $this->renderSuplemenDiploma123($section, $numberingName);
-                break;
-
-            case 'd4':
-            case 's1-terapan':
-                $this->renderSuplemenSarjanaTerapan($section, $numberingName);
-                break;
-
-            case 's1':
-                $this->renderSuplemenSarjana($section, $numberingName);
-                break;
-
-            case 'profesi':
-                $this->renderSuplemenProfesi($section, $numberingName);
-                break;
-
-            case 's2':
-                $this->renderSuplemenMagister($section, $numberingName);
-                break;
-
-            case 's2-terapan':
-                $this->renderSuplemenMagisterTerapan($section, $numberingName);
-                break;
-
-            case 's3':
-                $this->renderSuplemenDoktor($section, $numberingName);
-                break;
-
-            case 's3-terapan':
-                $this->renderSuplemenDoktorTerapan($section, $numberingName);
-                break;
-
-            default:
-                // fallback: kalau kode tidak dikenali, tampilkan yang umum (mis. sarjana)
-                $this->renderSuplemenSarjana($section, $numberingName);
-                break;
-        }
+        $this->renderSuplemenFromDatabase(
+            $section,
+            $numberingName,
+            $code
+        );
     }
 
     // private function addSuplemenSection()
@@ -1730,6 +1694,62 @@ class BorangExampleSeeder extends Seeder
                 'spaceAfter' => 80
             ]
         );
+    }
+
+    private function renderSuplemenFromDatabase(
+        $section,
+        string $numberingName,
+        string $degreeCode
+    ): void {
+        $items = DatasetSuplemen::where('degree_level_code', $degreeCode)
+            ->orderBy('urutan')
+            ->get();
+
+        foreach ($items as $item) {
+            $format = $item->formatting ?? [];
+
+            switch ($item->content_type) {
+                case 'list_item':
+                    $section->addListItem(
+                        $item->text_content,
+                        $item->numbering_level,
+                        ['size' => 11, 'bold' => $format['bold'] ?? false],
+                        $numberingName,
+                        [
+                            'spaceAfter' => $format['spaceAfter'] ?? null,
+                        ]
+                    );
+                    break;
+
+                case 'paragraph':
+                    $section->addText(
+                        $item->text_content,
+                        ['size' => 11],
+                        [
+                            'alignment'   => Jc::BOTH,
+                            'indentation' => [
+                                'left' => $format['indentation'] ?? 0
+                            ],
+                            'spaceAfter'  => $format['spaceAfter'] ?? 0,
+                        ]
+                    );
+                    break;
+
+                case 'bullet':
+                    $section->addText(
+                        '• ' . $item->text_content,
+                        ['size' => 11],
+                        [
+                            'alignment'   => Jc::BOTH,
+                            'indentation' => [
+                                'left' => $format['indentation'] ?? 1080
+                            ],
+                            'spaceAfter' => $format['spaceAfter'] ?? 80,
+                        ]
+                    );
+                    break;
+            }
+        }
     }
 
     private function addDaftarIsiSection(): void
