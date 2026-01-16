@@ -217,7 +217,7 @@
 
     <div class="footer">
         <p>Email ini dikirim secara otomatis oleh sistem LAMDEPILAR</p>
-        <p>&copy; {{ date('Y') }} LAMDEPILAR - Lembaga Akreditasi Mandiri Pendidikan Tinggi</p>
+        <p>&copy; {{ date('Y') }} Lembaga Akreditasi Mandiri Desain Perencanaan Lingkungan Arsitektur (LAMDEPILAR)</p>
     </div>
 </body>
 </html>

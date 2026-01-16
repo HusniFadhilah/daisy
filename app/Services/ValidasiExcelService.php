@@ -529,16 +529,36 @@ class ValidasiExcelService
     /**
      * Save spreadsheet
      */
-    private function saveSpreadsheet(Spreadsheet $spreadsheet, string $prefix, string $code): string
+    private function saveSpreadsheet(Spreadsheet $spreadsheet, string $prefix, $code = null): string
     {
-        $filename = $prefix . $code . '.xlsx';
-        $tempDir = storage_path('app/temp');
-        $tempPath = $tempDir . DIRECTORY_SEPARATOR . $filename;
-
-        if (!file_exists($tempDir)) {
-            mkdir($tempDir, 0777, true);
+        // 1) sanitize code agar tidak jadi folder (ASM/2026/001 -> ASM-2026-001)
+        $safeCode = null;
+        if (!empty($code)) {
+            $safeCode = str_replace(['\\', '/', ':', '*', '?', '"', '<', '>', '|'], '-', (string) $code);
+            $safeCode = preg_replace('/-+/', '-', $safeCode);
+            $safeCode = trim($safeCode, '-');
         }
 
+        // 2) pastikan prefix juga aman (jaga-jaga)
+        $safePrefix = str_replace(['\\', '/', ':', '*', '?', '"', '<', '>', '|'], '-', $prefix);
+
+        // 3) bentuk filename
+        $date = date('Ymd');
+        $filename = $safeCode
+            ? "{$safePrefix}{$safeCode}_{$date}.xlsx"
+            : "{$safePrefix}.xlsx";
+
+        // 4) base temp dir
+        $baseDir = storage_path('app/temp');
+        $tempPath = $baseDir . DIRECTORY_SEPARATOR . $filename;
+
+        // 5) pastikan foldernya ada (recursive)
+        $dir = dirname($tempPath);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0777, true);
+        }
+
+        // 6) save
         $writer = new Xlsx($spreadsheet);
         $writer->save($tempPath);
 

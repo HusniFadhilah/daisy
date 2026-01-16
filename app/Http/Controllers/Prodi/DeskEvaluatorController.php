@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Prodi;
 
+use Carbon\Carbon;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\Asesmen;
@@ -17,6 +18,7 @@ use App\Mail\PengingatAkreditasi;
 use App\Helpers\ResponseFormatter;
 use Illuminate\Support\Facades\DB;
 use App\Models\PengajuanAkreditasi;
+use App\Models\PengajuanPembayaran;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\Mail\BorangTemplateSentMail;
@@ -212,7 +214,7 @@ class DeskEvaluatorController extends Controller
                     return back()->with('error', 'File template tidak ditemukan.');
                 }
 
-                $filename = 'borang_template_' . time() . '.' . $file->getClientOriginalExtension();
+                $filename = 'template_dokumen_akreditasi_' . time() . '.' . $file->getClientOriginalExtension();
                 $pathFile = $file->storeAs('pengajuan/' . $pengajuan->id . '/template', $filename, 'public');
 
                 $originalFilename = $file->getClientOriginalName();
@@ -290,7 +292,10 @@ class DeskEvaluatorController extends Controller
             'metode_kirim_pembayaran'     => 'required|in:link,upload',
             'pembayaran_link'             => 'required_if:metode_kirim_pembayaran,link|nullable|url|max:500',
             'formulir_pembayaran_file'    => 'required_if:metode_kirim_pembayaran,upload|nullable|file|max:10240|mimes:pdf,doc,docx,xls,xlsx,zip,rar',
-            'keterangan_pembayaran'       => 'nullable|string|max:2000',
+            'nomor_invoice' => 'required|string|max:20',
+            'jatuh_tempo_hari' => 'required|integer|min:1|max:30',
+            'jumlah_pembayaran' => 'required|numeric|min:0',
+            'keterangan_pembayaran' => 'nullable|string|max:2000',
         ]);
 
         DB::beginTransaction();
@@ -321,10 +326,10 @@ class DeskEvaluatorController extends Controller
                     return back()->with('error', 'URL formulir pembayaran wajib diisi.');
                 }
 
-                $filename = 'formulir_pembayaran_link_' . time() . '.url';
+                $filename = 'template_formulir_pembayaran_link_' . time() . '.url';
                 $pathFile = 'links/' . $filename;
 
-                $originalFilename = 'FORMULIR_PEMBAYARAN (LINK)';
+                $originalFilename = 'TEMPLATE_FORMULIR_PEMBAYARAN (LINK)';
                 $mimeType = 'text/uri-list';
                 $fileSize = strlen($externalUrl);
             } else {
@@ -334,7 +339,7 @@ class DeskEvaluatorController extends Controller
                     return back()->with('error', 'File formulir pembayaran tidak ditemukan.');
                 }
 
-                $filename = 'formulir_pembayaran_' . time() . '.' . $file->getClientOriginalExtension();
+                $filename = 'template_formulir_pembayaran_' . time() . '.' . $file->getClientOriginalExtension();
                 $pathFile = $file->storeAs('pengajuan/' . $pengajuan->id . '/formulir-pembayaran', $filename, 'public');
 
                 $originalFilename = $file->getClientOriginalName();
@@ -344,12 +349,12 @@ class DeskEvaluatorController extends Controller
 
             \App\Models\PengajuanDokumen::query()
                 ->where('id_pengajuan', $pengajuan->id)
-                ->where('jenis_dokumen', 'formulir_pembayaran')
+                ->where('jenis_dokumen', 'template_formulir_pembayaran')
                 ->update(['is_latest' => false]);
 
             $dokumen = \App\Models\PengajuanDokumen::create([
                 'id_pengajuan'       => $pengajuan->id,
-                'jenis_dokumen'      => 'formulir_pembayaran',
+                'jenis_dokumen'      => 'template_formulir_pembayaran',
                 'nama_file'          => $filename,
                 'path_file'          => $pathFile,
                 'original_filename'  => $originalFilename,
@@ -364,6 +369,16 @@ class DeskEvaluatorController extends Controller
             $keteranganLog = ($metode === 'link')
                 ? "Formulir pembayaran dikirim via link: {$externalUrl}"
                 : "Formulir pembayaran diupload: {$originalFilename}";
+            $pembayaran = PengajuanPembayaran::updateOrCreate(
+                ['id_pengajuan' => $pengajuan->id],
+                [
+                    // Isi default minimal (sesuaikan kebutuhan Anda)
+                    'status_pembayaran' => 'menunggu',   // atau 'menunggu_pembayaran'
+                    'nomor_invoice' => $request->nomor_invoice, // kalau ada
+                    'tanggal_jatuh_tempo' => Carbon::now()->addDays((int) $request->jatuh_tempo_hari), // kalau ada
+                    'jumlah_pembayaran' => $request->jumlah_pembayaran,
+                ]
+            );
 
             $this->logStatus($pengajuan, $pengajuan->status, $pengajuan->status, $keteranganLog);
 
@@ -392,7 +407,7 @@ class DeskEvaluatorController extends Controller
 
         $hasFormPembayaran = \App\Models\PengajuanDokumen::query()
             ->where('id_pengajuan', $pengajuan->id)
-            ->where('jenis_dokumen', 'formulir_pembayaran')
+            ->where('jenis_dokumen', 'template_formulir_pembayaran')
             ->exists();
 
         if (!$hasTemplate || !$hasFormPembayaran) {
@@ -495,7 +510,7 @@ class DeskEvaluatorController extends Controller
         // VALIDATION CHECKS
         // ============================================
         if (!$pengajuan->canAssignValidator()) {
-            return ResponseFormatter::error(null, 'Pengajuan tidak dapat di-assign validator.', 422);
+            return ResponseFormatter::error(null, 'Pengajuan tidak dapat ditugaskan oleh validator.', 422);
         }
 
         // Check if validator user exists and has validator role
@@ -508,7 +523,7 @@ class DeskEvaluatorController extends Controller
         // PREVENT DUPLICATE ASSIGNMENT
         // ============================================
         if ($pengajuan->isUserAssignedAsValidator($validator->id)) {
-            return ResponseFormatter::error(null, 'Validator ini sudah pernah di-assign untuk pengajuan ini.', 422);
+            return ResponseFormatter::error(null, 'Validator ini sudah pernah ditugaskan untuk pengajuan ini.', 422);
         }
 
         DB::beginTransaction();
@@ -520,9 +535,10 @@ class DeskEvaluatorController extends Controller
                 $asesmen = Asesmen::create([
                     'id_pengajuan' => $pengajuan->id,
                     'id_study_program' => $pengajuan->id_program_studi,
-                    'code' => 'ASM-' . $pengajuan->nomor_pengajuan,
+                    'code' => $pengajuan->nomor_pengajuan,
                     'name' => 'Asesmen ' . $pengajuan->studyProgram->name . ' - ' . $pengajuan->tahun_akreditasi,
-                    'description' => 'Asesmen untuk pengajuan ' . $pengajuan->nomor_pengajuan,
+                    // 'description' => 'Asesmen untuk pengajuan ' . $pengajuan->nomor_pengajuan,
+                    'description' => 'Asesmen untuk pengajuan akreditasi prodi ' . $pengajuan->studyProgram->name ?? '',
                     'status' => 'active',
                 ]);
             } else {
@@ -579,15 +595,15 @@ class DeskEvaluatorController extends Controller
             // ============================================
             $oldStatus = $pengajuan->status;
             $pengajuan->update([
-                'status' => 'borang_validation_pending',
+                'status' => \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
                 'tanggal_validasi_borang_assigned' => now(),
             ]);
 
             $this->logStatus(
                 $pengajuan,
                 $oldStatus,
-                'borang_validation_pending',
-                "Validator {$validator->name} di-assign untuk review LED. " . ($request->catatan_de ?? '')
+                \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
+                "Validator {$validator->name} ditugaskan untuk review LED. " . ($request->catatan_de ?? '')
             );
 
             // ============================================
@@ -609,7 +625,7 @@ class DeskEvaluatorController extends Controller
 
             DB::commit();
 
-            return ResponseFormatter::success(['assignment_id' => $assignment->id, 'validator' => $validator->name], "Validator {$validator->name} berhasil di-assign. Email penawaran sedang diproses.");
+            return ResponseFormatter::success(['assignment_id' => $assignment->id, 'validator' => $validator->name], "Validator {$validator->name} berhasil ditugaskan. Email penawaran sedang diproses.");
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Failed to assign borang validator', [
@@ -640,7 +656,7 @@ class DeskEvaluatorController extends Controller
         // VALIDATION: Can only reassign if NOT accepted
         // ============================================
         if ($oldAssignment->status_penawaran === 'accepted') {
-            return ResponseFormatter::error(null, 'Tidak dapat reassign validator yang sudah diterima.', 422);
+            return ResponseFormatter::error(null, 'Tidak dapat menugaskan ulang validator yang sudah diterima.', 422);
         }
 
         // Check validator role
@@ -653,7 +669,7 @@ class DeskEvaluatorController extends Controller
         // PREVENT DUPLICATE
         // ============================================
         if ($pengajuan->isUserAssignedAsValidator($newValidator->id)) {
-            return ResponseFormatter::error(null, 'Validator ini sudah pernah di-assign.', 422);
+            return ResponseFormatter::error(null, 'Validator ini sudah pernah ditugaskan.', 422);
         }
 
         DB::beginTransaction();
@@ -685,7 +701,7 @@ class DeskEvaluatorController extends Controller
 
             // Update status
             $pengajuan->update([
-                'status' => 'borang_validation_pending',
+                'status' => \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
                 'tanggal_validasi_borang_assigned' => now(),
             ]);
 
@@ -694,7 +710,7 @@ class DeskEvaluatorController extends Controller
                 $pengajuan,
                 $pengajuan->status,
                 'borang_validation_pending',
-                "Validator di-reassign ke {$newValidator->name}. " . ($request->catatan_de ?? '')
+                "Validator ditugaskan ulang ke {$newValidator->name}. " . ($request->catatan_de ?? '')
             );
 
             // Send email
@@ -713,7 +729,7 @@ class DeskEvaluatorController extends Controller
             }
 
             DB::commit();
-            return ResponseFormatter::success(null, "Validator berhasil di-reassign ke {$newValidator->name}.");
+            return ResponseFormatter::success(null, "Validator berhasil ditugaskan ulang ke {$newValidator->name}.");
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Failed to reassign validator', [
@@ -722,7 +738,7 @@ class DeskEvaluatorController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return ResponseFormatter::error(null, 'Gagal reassign validator: ' . $e->getMessage(), 500);
+            return ResponseFormatter::error(null, 'Gagal menugaskan ulang validator: ' . $e->getMessage(), 500);
         }
     }
 
@@ -735,7 +751,7 @@ class DeskEvaluatorController extends Controller
         $pengajuan = $assignment->asesmen->pengajuan;
 
         if ($assignment->status_penawaran !== 'pending') {
-            return ResponseFormatter::error(null, 'Hanya assignment pending yang dapat dibatalkan.', 422);
+            return ResponseFormatter::error(null, 'Hanya penugasan yang berstatus "menunggu" yang dapat dibatalkan.', 422);
         }
 
         DB::beginTransaction();
@@ -753,13 +769,13 @@ class DeskEvaluatorController extends Controller
 
             if (!$hasOtherValidators) {
                 $pengajuan->update([
-                    'status' => 'borang_online_selesai',
+                    'status' => \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
                 ]);
             }
 
             DB::commit();
 
-            return ResponseFormatter::success(null, 'Assignment validator berhasil dibatalkan.');
+            return ResponseFormatter::success(null, 'Penugasan validator berhasil dibatalkan.');
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Failed to cancel validator assignment', [
@@ -767,7 +783,7 @@ class DeskEvaluatorController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return ResponseFormatter::error(null, 'Gagal membatalkan assignment.', 500);
+            return ResponseFormatter::error(null, 'Gagal membatalkan penugasan.', 500);
         }
     }
 
@@ -879,20 +895,20 @@ class DeskEvaluatorController extends Controller
 
             // Update to Step 8: Penugasan Asesor AK
             $pengajuan->update([
-                'status' => PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
+                'status' => PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED,
                 'tanggal_penugasan_asesor_ak' => now(),
             ]);
 
             $this->logStatus(
                 $pengajuan,
                 $oldStatus,
-                PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
+                PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED,
                 'LED divalidasi dan pembayaran terverifikasi. Disetujui lanjut ke tahap AK - Menunggu penugasan asesor'
             );
 
             DB::commit();
 
-            return back()->with('success', 'Pengajuan disetujui untuk lanjut ke tahap AK. Silakan assign asesor untuk Asesmen Kecukupan.');
+            return back()->with('success', 'Pengajuan disetujui untuk lanjut ke tahap AK. Silakan tugaskan asesor untuk Asesmen Kecukupan.');
         } catch (\Exception $e) {
             Log::error('Failed to approve lanjut AK', [
                 'pengajuan_id' => $id,

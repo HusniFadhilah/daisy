@@ -126,7 +126,7 @@
             </div>
 
             <div style="background: white; padding: 20px; margin: 20px 0;">
-                <p><strong>Catatan Review:</strong></p>
+                <p><strong>Catatan Review/Validasi:</strong></p>
                 <p style="white-space: pre-line;">{{ $review->catatan_review }}</p>
             </div>
 
@@ -155,7 +155,7 @@
             <div style="background: #f8d7da; padding: 15px; border-left: 4px solid #dc3545; margin: 20px 0;">
                 <p><strong>Langkah Selanjutnya:</strong></p>
                 <ol>
-                    <li>Perbaiki borang sesuai catatan review</li>
+                    <li>Perbaiki borang sesuai catatan review/validasi</li>
                     <li>Upload draft LED yang telah diperbaiki</li>
                     <li>Menunggu review kembali dari DE</li>
                 </ol>

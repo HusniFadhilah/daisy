@@ -51,7 +51,7 @@
                 <i class="bi bi-list-check"></i>
                 Daftar Pembayaran
             </h5>
-            <span class="badge bg-warning text-dark">Menunggu Verifikasi</span>
+            {{-- <span class="badge bg-warning text-dark">Menunggu Verifikasi</span> --}}
         </div>
 
         <div class="card-body p-0">

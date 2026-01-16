@@ -1437,3 +1437,13 @@ button[aria-expanded="true"] .chevron-icon {
     top: 0;
     left: 100%;
 }
+
+.dropdown-wrap {
+    max-width: 400px;
+    white-space: normal;
+}
+
+.dropdown-wrap .dropdown-item {
+    white-space: normal;
+    word-break: break-word;
+}

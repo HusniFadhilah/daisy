@@ -136,7 +136,6 @@
                 <div class="col-12 mb-md-0">
                     {{-- Status Indicator --}}
                     @php
-                    $assignment = $asesmen->userRoles->where('id_user', Auth::id())->first();
                     $statusPekerjaan = $assignment->status_pekerjaan ?? 'not_started';
                     $isSubmittedOnly = $statusPekerjaan === 'submitted';
                     $isSubmitted = isset($assignment) && in_array($statusPekerjaan, ['submitted', 'approved', 'validated']);
@@ -1248,7 +1247,7 @@
                         <div class="text-center">
                             <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
                             <p class="mt-3">${data.message}</p>
-                            <div class="alert alert-info mt-3">
+                            <div class="alert alert-info alert-permanent mt-3">
                                 <small>
                                     <i class="bi bi-clock"></i> Di-submit pada: ${data.submitted_at}
                                 </small>
@@ -1807,7 +1806,7 @@
                         , html: `
                     <div class="text-start">
                         <p><strong>Penilaian ini sudah divalidasi dan disetujui oleh validator.</strong></p>
-                        <div class="alert alert-info mt-3">
+                        <div class="alert alert-info alert-permanent mt-3">
                             <i class="bi bi-info-circle me-2"></i>
                             <small>
                                 <strong>Validator:</strong> ${data.validator_name}<br>
@@ -2222,7 +2221,7 @@
                     </div>
                 </div>
 
-                <div class="alert alert-success">
+                <div class="alert alert-success alert-permanent">
                     <p class="mb-0 small">
                         Waktu selesai: ${data.completed_at}
                     </p>
@@ -2266,7 +2265,7 @@
                     <h4 class="text-danger">Import Gagal</h4>
                 </div>
 
-                <div class="alert alert-danger">
+                <div class="alert alert-danger alert-permanent">
                     <strong>Error:</strong>
                     <ul class="mb-0 mt-2">
                         ${data.errors.map(err => `<li>${err}</li>`).join('')}
@@ -2304,7 +2303,7 @@
                 }
             } catch (error) {
                 document.getElementById('historyContent').innerHTML = `
-                <div class="alert alert-danger">
+                <div class="alert alert-danger alert-permanent">
                     <i class="bi bi-exclamation-triangle"></i>
                     Gagal memuat riwayat: ${error.message}
                 </div>
@@ -2320,7 +2319,7 @@
 
             if (logs.length === 0) {
                 content.innerHTML = `
-                <div class="alert alert-info">
+                <div class="alert alert-info alert-permanent">
                     <i class="bi bi-info-circle"></i>
                     Belum ada riwayat upload excel.
                 </div>
@@ -2526,7 +2525,7 @@
 
         function showAlert(elementId, type, message) {
             const alert = document.getElementById(elementId);
-            alert.className = `alert alert-${type}`;
+            alert.className = `alert alert-${type} alert-permanent`;
             alert.innerHTML = `<i class="bi bi-${type === 'danger' ? 'exclamation-triangle' : 'info-circle'}"></i> ${message}`;
             alert.classList.remove('d-none');
         }
@@ -2597,7 +2596,7 @@
             <div class="text-start">
                 <p><strong>PERHATIAN:</strong> Anda akan menghapus <strong class="text-danger">${completed} penilaian</strong> yang sudah dibuat!</p>
 
-                <div class="alert alert-danger mt-3">
+                <div class="alert alert-danger alert-permanent mt-3">
                     <i class="bi bi-exclamation-triangle me-2"></i>
                     <strong>Tindakan ini TIDAK DAPAT dibatalkan!</strong>
                 </div>
@@ -2686,7 +2685,7 @@
                     <div class="text-center">
                         <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
                         <p class="mt-3">${data.message}</p>
-                        <div class="alert alert-info mt-3">
+                        <div class="alert alert-info alert-permanent mt-3">
                             <i class="bi bi-info-circle"></i>
                             <strong>${data.deleted_count} penilaian</strong> telah dihapus.
                             Progress kembali ke 0%.
@@ -2901,7 +2900,7 @@
         }
 
         const warningDiv = document.createElement('div');
-        warningDiv.className = 'alert alert-warning validated-warning mt-3';
+        warningDiv.className = 'alert alert-warning alert-permanent validated-warning mt-3';
         warningDiv.innerHTML = `
         <i class="bi bi-lock-fill me-2"></i>
         <strong>Penilaian Terkunci</strong><br>
@@ -2929,7 +2928,7 @@
      */
     function showSuccessIndicator(elemenCard) {
         const successBadge = document.createElement('div');
-        successBadge.className = 'alert alert-success alert-dismissible fade show mt-2';
+        successBadge.className = 'alert alert-success alert-dismissible alert-permanent fade show mt-2';
         successBadge.innerHTML = `
         <i class="bi bi-check-circle-fill me-2"></i>
         <strong>Revisi Berhasil Disimpan!</strong>

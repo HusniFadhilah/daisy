@@ -102,7 +102,6 @@
 @endpush
 
 @php
-$assignment = $asesmen->userRoles->where('id_user', Auth::id())->first();
 $statusPekerjaan = $assignment->status_pekerjaan ?? 'not_started';
 $isSubmittedOnly = $statusPekerjaan === 'submitted';
 $isSubmitted = isset($assignment) && in_array($statusPekerjaan, ['submitted', 'approved', 'validated']);
@@ -1159,7 +1158,7 @@ $isComplete = $progress['percentage'] == 100;
                         <div class="text-center">
                             <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
                             <p class="mt-3">${data.message}</p>
-                            <div class="alert alert-info mt-3">
+                            <div class="alert alert-info alert-permanent mt-3">
                                 <small>
                                     <i class="bi bi-clock"></i> Di-submit pada: ${data.submitted_at}
                                 </small>
@@ -1989,7 +1988,7 @@ $isComplete = $progress['percentage'] == 100;
                     </div>
                 </div>
 
-                <div class="alert alert-success">
+                <div class="alert alert-success alert-permanent">
                     <p class="mb-0 small">
                         Waktu selesai: ${data.completed_at}
                     </p>
@@ -2033,7 +2032,7 @@ $isComplete = $progress['percentage'] == 100;
                     <h4 class="text-danger">Import Gagal</h4>
                 </div>
 
-                <div class="alert alert-danger">
+                <div class="alert alert-danger alert-permanent">
                     <strong>Error:</strong>
                     <ul class="mb-0 mt-2">
                         ${data.errors.map(err => `<li>${err}</li>`).join('')}
@@ -2071,7 +2070,7 @@ $isComplete = $progress['percentage'] == 100;
                 }
             } catch (error) {
                 document.getElementById('historyContent').innerHTML = `
-                <div class="alert alert-danger">
+                <div class="alert alert-danger alert-permanent">
                     <i class="bi bi-exclamation-triangle"></i>
                     Gagal memuat riwayat: ${error.message}
                 </div>
@@ -2087,7 +2086,7 @@ $isComplete = $progress['percentage'] == 100;
 
             if (logs.length === 0) {
                 content.innerHTML = `
-                <div class="alert alert-info">
+                <div class="alert alert-info alert-permanent">
                     <i class="bi bi-info-circle"></i>
                     Belum ada riwayat upload excel.
                 </div>
@@ -2221,7 +2220,7 @@ $isComplete = $progress['percentage'] == 100;
 
                 // Add info message
                 const infoDiv = document.createElement('div');
-                infoDiv.className = 'alert alert-info mt-2';
+                infoDiv.className = 'alert alert-info alert-permanent mt-2';
                 infoDiv.innerHTML = '<i class="bi bi-info-circle"></i> Penilaian sudah di-submit, tidak bisa diedit.';
                 form.appendChild(infoDiv);
             });
@@ -2293,7 +2292,7 @@ $isComplete = $progress['percentage'] == 100;
 
         function showAlert(elementId, type, message) {
             const alert = document.getElementById(elementId);
-            alert.className = `alert alert-${type}`;
+            alert.className = `alert alert-${type} alert-permanent`;
             alert.innerHTML = `<i class="bi bi-${type === 'danger' ? 'exclamation-triangle' : 'info-circle'}"></i> ${message}`;
             alert.classList.remove('d-none');
         }
@@ -2364,7 +2363,7 @@ $isComplete = $progress['percentage'] == 100;
             <div class="text-start">
                 <p><strong>PERHATIAN:</strong> Anda akan menghapus <strong class="text-danger">${completed} penilaian</strong> yang sudah dibuat!</p>
 
-                <div class="alert alert-danger mt-3">
+                <div class="alert alert-danger alert-permanent mt-3">
                     <i class="bi bi-exclamation-triangle me-2"></i>
                     <strong>Tindakan ini TIDAK DAPAT dibatalkan!</strong>
                 </div>
@@ -2453,7 +2452,7 @@ $isComplete = $progress['percentage'] == 100;
                     <div class="text-center">
                         <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
                         <p class="mt-3">${data.message}</p>
-                        <div class="alert alert-info mt-3">
+                        <div class="alert alert-info alert-permanent mt-3">
                             <i class="bi bi-info-circle"></i>
                             <strong>${data.deleted_count} penilaian</strong> telah dihapus.
                             Progress kembali ke 0%.

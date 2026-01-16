@@ -206,7 +206,7 @@ class PenilaianExcelService
         $printRange = "A1:{$printAreaLastCol}{$printAreaLastRow}";
         // $sheet->getStyle($printRange)->getBorders()->getAllBorders()
         //     ->setBorderStyle(Border::BORDER_THIN)
-        //     ->getColor()->setARGB('FF000000');
+        //     ->getColor()->setARGB('FF1F4E79');
 
         // Set page setup
         $sheet->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE);
@@ -449,21 +449,38 @@ class PenilaianExcelService
     }
 
     /**
-     * Simpan spreadsheet ke storage/app/temp
+     * Simpan spreadsheet ke storage/app/temp (aman untuk Windows & code yg mengandung slash)
      */
     private function saveSpreadsheet(Spreadsheet $spreadsheet, string $prefix, $code = null): string
     {
-        if ($code)
-            $filename = $prefix . $code . '_' . date('Ymd') . '.xlsx';
-        else
-            $filename = $prefix . '.xlsx';
-        $tempDir = storage_path('app/temp');
-        $tempPath = $tempDir . DIRECTORY_SEPARATOR . $filename;
-
-        if (!file_exists($tempDir)) {
-            mkdir($tempDir, 0777, true);
+        // 1) sanitize code agar tidak jadi folder (ASM/2026/001 -> ASM-2026-001)
+        $safeCode = null;
+        if (!empty($code)) {
+            $safeCode = str_replace(['\\', '/', ':', '*', '?', '"', '<', '>', '|'], '-', (string) $code);
+            $safeCode = preg_replace('/-+/', '-', $safeCode);
+            $safeCode = trim($safeCode, '-');
         }
 
+        // 2) pastikan prefix juga aman (jaga-jaga)
+        $safePrefix = str_replace(['\\', '/', ':', '*', '?', '"', '<', '>', '|'], '-', $prefix);
+
+        // 3) bentuk filename
+        $date = date('Ymd');
+        $filename = $safeCode
+            ? "{$safePrefix}{$safeCode}_{$date}.xlsx"
+            : "{$safePrefix}.xlsx";
+
+        // 4) base temp dir
+        $baseDir = storage_path('app/temp');
+        $tempPath = $baseDir . DIRECTORY_SEPARATOR . $filename;
+
+        // 5) pastikan foldernya ada (recursive)
+        $dir = dirname($tempPath);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0777, true);
+        }
+
+        // 6) save
         $writer = new Xlsx($spreadsheet);
         $writer->save($tempPath);
 
@@ -566,7 +583,7 @@ class PenilaianExcelService
         $sheet->getStyle('B4')->applyFromArray([
             'font' => [
                 'bold' => true,
-                'color' => ['argb' => 'FFFF0000'], // merah
+                'color' => ['argb' => 'FF1F4E79'], // biru
                 'size' => 12
             ],
             'alignment' => [
@@ -639,7 +656,7 @@ class PenilaianExcelService
             'font' => [
                 'bold' => true,
                 'size' => 24,
-                'color' => ['argb' => 'FF000000']
+                'color' => ['argb' => 'FF1F4E79']
             ],
             'alignment' => [
                 'horizontal' => Alignment::HORIZONTAL_CENTER,
@@ -659,7 +676,7 @@ class PenilaianExcelService
             'font' => [
                 'bold' => true,
                 'size' => 20,
-                'color' => ['argb' => 'FF000000']
+                'color' => ['argb' => 'FF1F4E79']
             ],
             'alignment' => [
                 'horizontal' => Alignment::HORIZONTAL_CENTER,
@@ -682,7 +699,7 @@ class PenilaianExcelService
             'font' => [
                 'bold' => true,
                 'size' => 20,
-                'color' => ['argb' => 'FF000000']
+                'color' => ['argb' => 'FF1F4E79']
             ],
             'alignment' => [
                 'horizontal' => Alignment::HORIZONTAL_CENTER,
@@ -755,7 +772,7 @@ class PenilaianExcelService
             $sheet->getStyle("G{$row}:L{$row}")->applyFromArray([
                 'font' => [
                     'size' => 14,
-                    'color' => ['argb' => 'FF000000']
+                    'color' => ['argb' => 'FF1F4E79']
                 ],
                 'alignment' => [
                     'horizontal' => Alignment::HORIZONTAL_LEFT,
@@ -768,7 +785,7 @@ class PenilaianExcelService
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => Border::BORDER_THIN,
-                        'color' => ['argb' => 'FF000000']
+                        'color' => ['argb' => 'FF1F4E79']
                     ]
                 ]
             ]);
@@ -861,7 +878,7 @@ class PenilaianExcelService
             $sheet->getStyle("T{$row}:X{$row}")->applyFromArray([
                 'font' => [
                     'size' => 14,
-                    'color' => ['argb' => 'FF000000']
+                    'color' => ['argb' => 'FF1F4E79']
                 ],
                 'alignment' => [
                     'horizontal' => Alignment::HORIZONTAL_LEFT,
@@ -874,7 +891,7 @@ class PenilaianExcelService
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => Border::BORDER_THIN,
-                        'color' => ['argb' => 'FF000000']
+                        'color' => ['argb' => 'FF1F4E79']
                     ]
                 ]
             ]);
@@ -1038,7 +1055,7 @@ class PenilaianExcelService
         $printRange = "A1:{$printAreaLastCol}{$printAreaLastRow}";
         // $sheet->getStyle($printRange)->getBorders()->getAllBorders()
         //     ->setBorderStyle(Border::BORDER_THIN)
-        //     ->getColor()->setARGB('FF000000');
+        //     ->getColor()->setARGB('FF1F4E79');
 
         // Set page setup
         $sheet->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE);
@@ -1377,19 +1394,19 @@ class PenilaianExcelService
             $condL->setConditionType(Conditional::CONDITION_EXPRESSION);
             $condL->addCondition("=LEN(INDEX('Kertas Kerja {$penilaianName} Asesor'!\$L:\$L,MATCH(\$E{$startRow},'Kertas Kerja {$penilaianName} Asesor'!\$E:\$E,0)+{$asesorRowOffset}))>0");
             $condL->getStyle()->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFdcedc8');
-            // $condL->getStyle()->getFont()->setBold(true)->getColor()->setARGB('FF000000');
+            // $condL->getStyle()->getFont()->setBold(true)->getColor()->setARGB('FF1F4E79');
 
             $condK = new Conditional();
             $condK->setConditionType(Conditional::CONDITION_EXPRESSION);
             $condK->addCondition("=LEN(INDEX('Kertas Kerja {$penilaianName} Asesor'!\$K:\$K,MATCH(\$E{$startRow},'Kertas Kerja {$penilaianName} Asesor'!\$E:\$E,0)+{$asesorRowOffset}))>0");
             $condK->getStyle()->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFfff9c4');
-            // $condK->getStyle()->getFont()->setBold(true)->getColor()->setARGB('FF000000');
+            // $condK->getStyle()->getFont()->setBold(true)->getColor()->setARGB('FF1F4E79');
 
             $condJ = new Conditional();
             $condJ->setConditionType(Conditional::CONDITION_EXPRESSION);
             $condJ->addCondition("=LEN(INDEX('Kertas Kerja {$penilaianName} Asesor'!\$J:\$J,MATCH(\$E{$startRow},'Kertas Kerja {$penilaianName} Asesor'!\$E:\$E,0)+{$asesorRowOffset}))>0");
             $condJ->getStyle()->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFffe0b2');
-            // $condJ->getStyle()->getFont()->setBold(true)->getColor()->setARGB('FF000000');
+            // $condJ->getStyle()->getFont()->setBold(true)->getColor()->setARGB('FF1F4E79');
 
             $condI = new Conditional();
             $condI->setConditionType(Conditional::CONDITION_EXPRESSION);
@@ -1596,7 +1613,7 @@ class PenilaianExcelService
                         //     ->getFont()
                         //     ->setBold(false)
                         //     ->getColor()
-                        //     ->setARGB('FF000000');
+                        //     ->setARGB('FF1F4E79');
                     }
                 } else {
                     $sheet->setCellValue("G{$row}", '');
@@ -1631,7 +1648,7 @@ class PenilaianExcelService
             'font' => [
                 'bold' => true,
                 'size' => 10,
-                'color' => ['argb' => 'FF000000'],
+                'color' => ['argb' => 'FF1F4E79'],
             ],
             'alignment' => [
                 'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
@@ -1835,7 +1852,7 @@ class PenilaianExcelService
             'borders' => [
                 'outline' => [
                     'borderStyle' => Border::BORDER_DOTTED,
-                    'color' => ['argb' => 'FF000000'],
+                    'color' => ['argb' => 'FF1F4E79'],
                 ],
             ],
         ]);

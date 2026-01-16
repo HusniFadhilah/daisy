@@ -33,7 +33,7 @@
 @section('content')
 <div class="container-fluid py-3">
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h2>
                 <i class="bi bi-file-earmark-text"></i>
@@ -45,7 +45,7 @@
             </p>
         </div>
         <div>
-            <span class="badge {{ $pengajuan->status_badge_class }} fs-6">
+            <span class="badge {{ $pengajuan->status_badge_class }} fs-6 text-wrap">
                 {{ $pengajuan->status_label }}
             </span>
         </div>
@@ -55,250 +55,346 @@
         <!-- Main Content -->
         <div class="col-md-12 col-lg-8">
             <!-- ACTION: Kirim Form LED (Langkah 3) -->
-            @if($pengajuan->status === 'surat_permohonan_diterima')
-            <div class="card action-card mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">
-                        <i class="bi bi-file-earmark-arrow-down"></i>
-                        Aksi Diperlukan: Kirim Form LED
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <p class="mb-3">
-                        Surat permohonan telah diterima. Kirimkan form Template LED+Suplemen dan LKPS ke prodi untuk dilengkapi.
-                    </p>
-
-                    <form action="{{ route('de.pengajuan.kirim-borang', $pengajuan->id) }}" method="POST" enctype="multipart/form-data" id="formKirimBorang">
-                        @csrf
-
-                        {{-- Pilihan Metode Pengiriman --}}
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">
-                                Metode Pengiriman Template <span class="text-danger">*</span>
-                            </label>
-                            <div class="btn-group w-100" role="group">
-                                <input type="radio" class="btn-check" name="metode_kirim" id="metodeLink" value="link" checked>
-                                <label class="btn btn-outline-primary" for="metodeLink">
-                                    <i class="bi bi-link-45deg"></i> Kirim Link Template
-                                </label>
-
-                                <input type="radio" class="btn-check" name="metode_kirim" id="metodeUpload" value="upload">
-                                <label class="btn btn-outline-primary" for="metodeUpload">
-                                    <i class="bi bi-cloud-upload"></i> Upload File Template
-                                </label>
-                            </div>
-                        </div>
-
-                        {{-- OPTION 1: Link Template --}}
-                        <div id="divLink" class="mb-4">
-                            <div class="card bg-light">
-                                <div class="card-body">
-                                    <h6 class="fw-bold mb-3">
-                                        <i class="bi bi-link"></i> Link Template LED+Suplemen dan LKPS
-                                    </h6>
-
-                                    <div class="mb-3">
-                                        <label class="form-label fw-bold">
-                                            URL Template <span class="text-danger">*</span>
-                                        </label>
-                                        <div class="input-group">
-                                            <span class="input-group-text">
-                                                <i class="bi bi-globe"></i>
-                                            </span>
-                                            <input type="url" name="template_link" id="template_link" class="form-control" value="{{ url('pengajuan/' . $pengajuan->id . '/borang/download-template') }}" placeholder="https://example.com/template.docx">
-                                        </div>
-                                        <small class="text-muted">
-                                            Link ke Template LED+Suplemen dan LKPS yang dapat diakses oleh prodi
-                                        </small>
-                                    </div>
-
-                                    <div class="alert alert-info alert-permanent mb-0">
-                                        <strong><i class="bi bi-info-circle"></i> Default Template:</strong>
-                                        <p class="mb-2">
-                                            Template default tersedia di:
-                                            <a href="{{ route('pengajuan.borang.download-template', $pengajuan->id) }}" target="_blank" class="alert-link">
-                                                <i class="bi bi-download"></i> Download Preview
-                                            </a>
-                                        </p>
-                                        <div class="d-flex gap-2">
-                                            <button type="button" class="btn btn-sm btn-primary" onclick="useDefaultLink()">
-                                                <i class="bi bi-arrow-clockwise"></i> Gunakan Link Default
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearLink()">
-                                                <i class="bi bi-x-circle"></i> Kosongkan
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- OPTION 2: Upload File --}}
-                        <div id="divUpload" class="mb-4" style="display: none;">
-                            <div class="card bg-light">
-                                <div class="card-body">
-                                    <h6 class="fw-bold mb-3">
-                                        <i class="bi bi-cloud-upload"></i> Upload File Template
-                                    </h6>
-
-                                    <div class="mb-3">
-                                        <label class="form-label fw-bold">
-                                            File Template LED+Suplemen dan LKPS, formulir pembayaran <span class="text-danger">*</span>
-                                        </label>
-                                        <input type="file" name="borang_template" id="borang_template" class="form-control" accept=".docx,.doc,.zip,.rar,.pdf,.xlsx">
-                                        <small class="text-muted">
-                                            Format: ZIP/RAR | Maksimal: 10 MB
-                                        </small>
-                                    </div>
-
-                                    <div class="alert alert-warning alert-permanent mb-0">
-                                        <i class="bi bi-exclamation-triangle"></i>
-                                        <strong>Perhatian:</strong> File yang diupload akan disimpan di server
-                                        dan dapat didownload oleh prodi.
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- Keterangan (untuk kedua metode) --}}
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Keterangan</label>
-                            <textarea name="keterangan" class="form-control" rows="3" placeholder="Petunjuk pengisian atau informasi tambahan untuk prodi..."></textarea>
-                            <small class="text-muted">
-                                Keterangan akan dikirim bersama notifikasi email ke prodi
-                            </small>
-                        </div>
-
-                        {{-- Preview Info --}}
-                        <div class="card border-info mb-3">
-                            <div class="card-body">
-                                <h6 class="fw-bold text-info mb-2">
-                                    <i class="bi bi-info-circle"></i> Yang Akan Terjadi:
-                                </h6>
-                                <ul class="mb-0 small">
-                                    <li id="infoMetode">Link template akan dikirim ke email prodi</li>
-                                    <li>Prodi dapat mengakses template melalui link/download file</li>
-                                    <li>Status pengajuan akan diupdate ke <code>Penyampaian Template LED+Suplemen dan LKPS</code></li>
-                                    <li>Notifikasi email akan dikirim ke UPPS</li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        {{-- Submit Button --}}
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary" id="btnSubmit">
-                                <i class="bi bi-send"></i> Kirim Template ke Prodi
-                            </button>
-                            <button type="reset" class="btn btn-outline-secondary">
-                                <i class="bi bi-arrow-counterclockwise"></i> Reset
-                            </button>
-                        </div>
-                    </form>
+            @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA)
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="mb-0"> <i class="bi bi-receipt"></i> Aksi Diperlukan: Kirim Template LED+Suplemen dan LKPS, Formulir Pembayaran </h5>
                 </div>
             </div>
-            @endif
-
-            {{-- ACTION: Kirim Formulir Pembayaran (terpisah dari template LED/LKPS) --}}
-            @if($pengajuan->status === 'surat_permohonan_diterima')
-            <div class="card action-card mb-4">
-                <div class="card-header bg-success text-white">
-                    <h5 class="mb-0">
-                        <i class="bi bi-receipt"></i>
-                        Aksi Diperlukan: Kirim Formulir Pembayaran
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <p class="mb-3">
-                        Kirimkan formulir pembayaran ke prodi. Formulir ini terpisah dari Template LED+Suplemen dan LKPS.
-                    </p>
-
-                    <form action="{{ route('de.pengajuan.kirim-formulir-pembayaran', $pengajuan->id) }}" method="POST" enctype="multipart/form-data" id="formKirimFormulirPembayaran">
-                        @csrf
-
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">
-                                Metode Pengiriman Formulir <span class="text-danger">*</span>
-                            </label>
-                            <div class="btn-group w-100" role="group">
-                                <input type="radio" class="btn-check" name="metode_kirim_pembayaran" id="metodePembayaranLink" value="link" checked>
-                                <label class="btn btn-outline-success" for="metodePembayaranLink">
-                                    <i class="bi bi-link-45deg"></i> Kirim Link Formulir
-                                </label>
-
-                                <input type="radio" class="btn-check" name="metode_kirim_pembayaran" id="metodePembayaranUpload" value="upload">
-                                <label class="btn btn-outline-success" for="metodePembayaranUpload">
-                                    <i class="bi bi-cloud-upload"></i> Upload File Formulir
-                                </label>
-                            </div>
+            <ul class="nav nav-tabs mb-3" id="aksiPengajuanTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="tab-template" data-bs-toggle="tab" data-bs-target="#pane-template" type="button" role="tab">
+                        <i class="bi bi-file-earmark-arrow-down"></i> Template LED & LKPS
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="tab-pembayaran" data-bs-toggle="tab" data-bs-target="#pane-pembayaran" type="button" role="tab">
+                        <i class="bi bi-receipt"></i> Formulir Pembayaran
+                    </button>
+                </li>
+            </ul>
+            <div class="tab-content" id="aksiPengajuanTabContent">
+                {{-- ========================================= --}}
+                {{-- TAB 1: TEMPLATE LED + SUPLEMEN + LKPS --}}
+                {{-- ========================================= --}}
+                <div class="tab-pane fade show active" id="pane-template" role="tabpanel">
+                    <div class="card action-card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="bi bi-file-earmark-arrow-down"></i>
+                                Kirim Template LED+Suplemen dan LKPS
+                            </h5>
                         </div>
+                        <div class="card-body">
+                            <p class="mb-3">
+                                Surat permohonan telah diterima. Kirimkan form Template LED+Suplemen dan LKPS ke prodi untuk dilengkapi.
+                            </p>
 
-                        {{-- OPTION 1: Link --}}
-                        <div id="divPembayaranLink" class="mb-4">
-                            <div class="card bg-light">
-                                <div class="card-body">
-                                    <h6 class="fw-bold mb-3">
-                                        <i class="bi bi-link"></i> Link Formulir Pembayaran
-                                    </h6>
+                            <form action="{{ route('de.pengajuan.kirim-borang', $pengajuan->id) }}" method="POST" enctype="multipart/form-data" id="formKirimBorang">
+                                @csrf
 
-                                    <div class="mb-3">
-                                        <label class="form-label fw-bold">
-                                            URL Formulir <span class="text-danger">*</span>
+                                {{-- Pilihan Metode Pengiriman --}}
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">
+                                        Metode Pengiriman Template <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="btn-group w-100" role="group">
+                                        <input type="radio" class="btn-check @error('metode_kirim') is-invalid @enderror" name="metode_kirim" id="metodeLink" value="link" {{ old('metode_kirim', 'link') == 'link' ? 'checked' : '' }}>
+                                        <label class="btn btn-outline-primary" for="metodeLink">
+                                            <i class="bi bi-link-45deg"></i> Kirim Link Template
                                         </label>
-                                        <div class="input-group">
-                                            <span class="input-group-text">
-                                                <i class="bi bi-globe"></i>
-                                            </span>
-                                            <input type="url" name="pembayaran_link" id="pembayaran_link" class="form-control" placeholder="https://.../formulir_pembayaran.pdf">
+
+                                        <input type="radio" class="btn-check @error('metode_kirim') is-invalid @enderror" name="metode_kirim" id="metodeUpload" value="upload" {{ old('metode_kirim') == 'upload' ? 'checked' : '' }}>
+                                        <label class="btn btn-outline-primary" for="metodeUpload">
+                                            <i class="bi bi-cloud-upload"></i> Upload File Template
+                                        </label>
+                                    </div>
+                                    @error('metode_kirim')
+                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                {{-- OPTION 1: Link Template --}}
+                                <div id="divLink" class="mb-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <h6 class="fw-bold mb-3">
+                                                <i class="bi bi-link"></i> Link Template LED+Suplemen dan LKPS
+                                            </h6>
+
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold">
+                                                    URL Template <span class="text-danger">*</span>
+                                                </label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text">
+                                                        <i class="bi bi-globe"></i>
+                                                    </span>
+                                                    <input type="url" name="template_link" id="template_link" class="form-control @error('template_link') is-invalid @enderror" value="{{ old('template_link', url('pengajuan/' . $pengajuan->id . '/borang/download-template')) }}" placeholder="https://example.com/template.docx">
+                                                </div>
+                                                @error('template_link')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                                <small class="text-muted">
+                                                    Link ke Template LED+Suplemen dan LKPS yang dapat diakses oleh prodi
+                                                </small>
+                                            </div>
+
+                                            <div class="alert alert-info alert-permanent mb-0">
+                                                <strong><i class="bi bi-info-circle"></i> Default Template:</strong>
+                                                <p class="mb-2">
+                                                    Template default tersedia di:
+                                                    <a href="{{ route('pengajuan.borang.download-template', $pengajuan->id) }}" target="_blank" class="alert-link">
+                                                        <i class="bi bi-download"></i> Download Preview
+                                                    </a>
+                                                </p>
+                                                <div class="d-flex gap-2">
+                                                    <button type="button" class="btn btn-sm btn-primary" onclick="useDefaultLink()">
+                                                        <i class="bi bi-arrow-clockwise"></i> Gunakan Link Default
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearLink()">
+                                                        <i class="bi bi-x-circle"></i> Kosongkan
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <small class="text-muted">
-                                            Link formulir pembayaran yang dapat diakses prodi
-                                        </small>
                                     </div>
                                 </div>
-                            </div>
+
+                                {{-- OPTION 2: Upload File --}}
+                                <div id="divUpload" class="mb-4" style="display: none;">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <h6 class="fw-bold mb-3">
+                                                <i class="bi bi-cloud-upload"></i> Upload File Template
+                                            </h6>
+
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold">
+                                                    File Template LED+Suplemen dan LKPS, formulir pembayaran <span class="text-danger">*</span>
+                                                </label>
+                                                <input type="file" name="borang_template" id="borang_template" class="form-control @error('borang_template') is-invalid @enderror" accept=".docx,.doc,.zip,.rar,.pdf,.xlsx">
+                                                @error('borang_template')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                                <small class="text-muted">
+                                                    Format: ZIP/RAR | Maksimal: 10 MB
+                                                </small>
+                                            </div>
+
+                                            <div class="alert alert-warning alert-permanent mb-0">
+                                                <i class="bi bi-exclamation-triangle"></i>
+                                                <strong>Perhatian:</strong> File yang diupload akan disimpan di server
+                                                dan dapat didownload oleh prodi.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {{-- Keterangan --}}
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Keterangan</label>
+                                    <textarea name="keterangan" class="form-control @error('keterangan') is-invalid @enderror" rows="3" placeholder="Petunjuk pengisian atau informasi tambahan untuk prodi...">{{ old('keterangan') }}</textarea>
+                                    @error('keterangan')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <small class="text-muted">
+                                        Keterangan akan dikirim bersama notifikasi email ke prodi
+                                    </small>
+                                </div>
+
+                                {{-- Preview Info --}}
+                                <div class="card border-info mb-3">
+                                    <div class="card-body">
+                                        <h6 class="fw-bold text-info mb-2">
+                                            <i class="bi bi-info-circle"></i> Yang Akan Terjadi:
+                                        </h6>
+                                        <ul class="mb-0 small">
+                                            <li id="infoMetode">Link template akan dikirim ke email prodi</li>
+                                            <li>Prodi dapat mengakses template melalui link/download file</li>
+                                            <li>Status pengajuan akan diupdate ke <code>Penyampaian Template LED+Suplemen dan LKPS</code></li>
+                                            <li>Notifikasi email akan dikirim ke UPPS</li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                {{-- Submit Button --}}
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary" id="btnSubmit">
+                                        <i class="bi bi-send"></i> Kirim Template ke Prodi
+                                    </button>
+                                    <button type="reset" class="btn btn-outline-secondary">
+                                        <i class="bi bi-arrow-counterclockwise"></i> Reset
+                                    </button>
+                                </div>
+                            </form>
                         </div>
+                    </div>
+                </div>
 
-                        {{-- OPTION 2: Upload --}}
-                        <div id="divPembayaranUpload" class="mb-4" style="display:none;">
-                            <div class="card bg-light">
-                                <div class="card-body">
-                                    <h6 class="fw-bold mb-3">
-                                        <i class="bi bi-cloud-upload"></i> Upload File Formulir Pembayaran
-                                    </h6>
+                {{-- ========================================= --}}
+                {{-- TAB 2: FORMULIR PEMBAYARAN --}}
+                {{-- ========================================= --}}
+                <div class="tab-pane fade" id="pane-pembayaran" role="tabpanel">
+                    <div class="card action-card mb-4">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">
+                                <i class="bi bi-receipt"></i>
+                                Kirim Formulir Pembayaran
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-3">
+                                Kirimkan formulir pembayaran ke prodi. Formulir ini terpisah dari Template LED+Suplemen dan LKPS.
+                            </p>
 
-                                    <div class="mb-3">
-                                        <label class="form-label fw-bold">
-                                            File Formulir <span class="text-danger">*</span>
+                            <form action="{{ route('de.pengajuan.kirim-formulir-pembayaran', $pengajuan->id) }}" method="POST" enctype="multipart/form-data" id="formKirimFormulirPembayaran">
+                                @csrf
+
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">
+                                        Metode Pengiriman Formulir <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="btn-group w-100" role="group">
+                                        <input type="radio" class="btn-check @error('metode_kirim_pembayaran') is-invalid @enderror" name="metode_kirim_pembayaran" id="metodePembayaranLink" value="link" {{ old('metode_kirim_pembayaran', 'link') == 'link' ? 'checked' : '' }}>
+                                        <label class="btn btn-outline-success" for="metodePembayaranLink">
+                                            <i class="bi bi-link-45deg"></i> Kirim Link Formulir
                                         </label>
-                                        <input type="file" name="formulir_pembayaran_file" id="formulir_pembayaran_file" class="form-control" accept=".pdf,.doc,.docx,.xls,.xlsx,.zip,.rar">
+
+                                        <input type="radio" class="btn-check @error('metode_kirim_pembayaran') is-invalid @enderror" name="metode_kirim_pembayaran" id="metodePembayaranUpload" value="upload" {{ old('metode_kirim_pembayaran') == 'upload' ? 'checked' : '' }}>
+                                        <label class="btn btn-outline-success" for="metodePembayaranUpload">
+                                            <i class="bi bi-cloud-upload"></i> Upload File Formulir
+                                        </label>
+                                    </div>
+                                    @error('metode_kirim_pembayaran')
+                                    <div class="text-danger mt-1">
+                                        {{ $message }}
+                                    </div>
+                                    @enderror
+                                </div>
+
+                                {{-- OPTION 1: Link --}}
+                                <div id="divPembayaranLink" class="mb-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <h6 class="fw-bold mb-3">
+                                                <i class="bi bi-link"></i> Link Formulir Pembayaran
+                                            </h6>
+
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold">
+                                                    URL Formulir <span class="text-danger">*</span>
+                                                </label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text">
+                                                        <i class="bi bi-globe"></i>
+                                                    </span>
+                                                    <input type="url" name="pembayaran_link" id="pembayaran_link" class="form-control @error('pembayaran_link') is-invalid @enderror" placeholder="https://.../formulir_pembayaran.pdf" value="{{ old('pembayaran_link') }}">
+                                                </div>
+                                                @error('pembayaran_link')
+                                                <div class="invalid-feedback">
+                                                    {{ $message }}
+                                                </div>
+                                                @enderror
+                                                <small class="text-muted">
+                                                    Link formulir pembayaran yang dapat diakses prodi
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {{-- OPTION 2: Upload --}}
+                                <div id="divPembayaranUpload" class="mb-4" style="display:none;">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <h6 class="fw-bold mb-3">
+                                                <i class="bi bi-cloud-upload"></i> Upload File Formulir Pembayaran
+                                            </h6>
+
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold">
+                                                    File Formulir <span class="text-danger">*</span>
+                                                </label>
+                                                <input type="file" name="formulir_pembayaran_file" id="formulir_pembayaran_file" class="form-control @error('formulir_pembayaran_file') is-invalid @enderror" accept=".pdf,.doc,.docx,.xls,.xlsx,.zip,.rar">
+                                                @error('formulir_pembayaran_file')
+                                                <div class="invalid-feedback">
+                                                    {{ $message }}
+                                                </div>
+                                                @enderror
+                                                <small class="text-muted">
+                                                    Format: PDF/DOCX/XLSX/ZIP/RAR | Maksimal: 10 MB
+                                                </small>
+                                            </div>
+
+                                            <div class="alert alert-warning alert-permanent mb-0">
+                                                <i class="bi bi-exclamation-triangle"></i>
+                                                <strong>Perhatian:</strong> File akan disimpan di server dan dapat didownload oleh prodi.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">
+                                            Nomor Invoice <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" name="nomor_invoice" class="form-control @error('nomor_invoice') is-invalid @enderror" placeholder="Masukkan nomor invoice..." value="{{ old('nomor_invoice') }}">
+                                        @error('nomor_invoice')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                        @enderror
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">
+                                            Jatuh Tempo (Hari) <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="number" name="jatuh_tempo_hari" class="form-control @error('jatuh_tempo_hari') is-invalid @enderror" value="{{ old('jatuh_tempo_hari', 7) }}" min="1" max="30">
+                                        @error('jatuh_tempo_hari')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                        @enderror
                                         <small class="text-muted">
-                                            Format: PDF/DOCX/XLSX/ZIP/RAR | Maksimal: 10 MB
+                                            Jumlah hari dari hari ini. Default: 7 hari.
                                         </small>
                                     </div>
 
-                                    <div class="alert alert-warning alert-permanent mb-0">
-                                        <i class="bi bi-exclamation-triangle"></i>
-                                        <strong>Perhatian:</strong> File akan disimpan di server dan dapat didownload oleh prodi.
+                                    <div class="col-md-12 mb-3">
+                                        <label class="form-label fw-bold">
+                                            Biaya Pembayaran Akreditasi (Rp) <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="number" name="jumlah_pembayaran" class="form-control @error('jumlah_pembayaran') is-invalid @enderror" value="{{ old('jumlah_pembayaran', 53000000) }}" step="100000" min="0">
+                                        @error('jumlah_pembayaran')
+                                        <div class="invalid-feedback">
+                                            {{ $message }}
+                                        </div>
+                                        @enderror
+                                        <small class="text-muted">
+                                            Default: Rp 53.000.000,- (sesuai ketentuan)
+                                        </small>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
 
-                        {{-- Keterangan --}}
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Keterangan</label>
-                            <textarea name="keterangan_pembayaran" class="form-control" rows="3" placeholder="Petunjuk pembayaran / rekening / hal yang perlu diperhatikan..."></textarea>
-                        </div>
+                                {{-- Keterangan --}}
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Keterangan</label>
+                                    <textarea name="keterangan_pembayaran" class="form-control" rows="3" placeholder="Petunjuk pembayaran / rekening / hal yang perlu diperhatikan..."></textarea>
+                                </div>
 
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-success" id="btnSubmitPembayaran">
-                                <i class="bi bi-send"></i> Kirim Formulir Pembayaran
-                            </button>
-                            <button type="reset" class="btn btn-outline-secondary">
-                                <i class="bi bi-arrow-counterclockwise"></i> Reset
-                            </button>
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-success" id="btnSubmitPembayaran">
+                                        <i class="bi bi-send"></i> Kirim Formulir Pembayaran
+                                    </button>
+                                    <button type="reset" class="btn btn-outline-secondary">
+                                        <i class="bi bi-arrow-counterclockwise"></i> Reset
+                                    </button>
+                                </div>
+                            </form>
                         </div>
-                    </form>
+                    </div>
                 </div>
             </div>
             @endif
@@ -341,7 +437,7 @@
             @endif
 
             <!-- ACTION: Approve Lanjut ke AK (Langkah 8) -->
-            @if($pengajuan->status === 'borang_final_diterima')
+            @if(in_array($pengajuan->status,[\App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN]))
             <div class="card action-card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">
@@ -349,8 +445,8 @@
                         Aksi Diperlukan: Approve Lanjut ke Tahap AK
                     </h5>
                     <p class="mb-3">
-                        LED final telah diterima dan pembayaran telah diverifikasi.
-                        Setujui untuk melanjutkan ke tahap AK/Asesmen Dokumen.
+                        Pembayaran telah diverifikasi oleh bagian keuangan, LED+Suplemen dan LKPS final telah diterima, serta pelaporan validasi LED+Suplemen dan LKPS telah selesai dilaksanakan. Selanjutnya, dapat dilanjutkan untuk tahap penugasan Asesor untuk Asesmen Kecukupan (AK)
+                        Silahkan setujui untuk melanjutkan ke tahap AK/Asesmen Dokumen.
                     </p>
 
                     <div class="alert alert-warning alert-permanent">
@@ -369,7 +465,7 @@
             </div>
             @endif
 
-            @if($pengajuan->status === 'pengajuan_completed')
+            @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED)
             <div class="card action-card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">
@@ -418,15 +514,33 @@
             </div>
             @endif
 
+            @if(in_array($pengajuan->status,[\App\Models\PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,\App\Models\PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,\App\Models\PengajuanAkreditasi::STATUS_AK_SELESAI,\App\Models\PengajuanAkreditasi::STATUS_AK_DILAPORKAN,\App\Models\PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,\App\Models\PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,\App\Models\PengajuanAkreditasi::STATUS_AL_SELESAI,\App\Models\PengajuanAkreditasi::STATUS_AL_DILAPORKAN]))
+            <div class="card action-card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        {{ $pengajuan->status_label }}
+                    </h5>
+                    <div class="d-flex gap-2 mt-3">
+                        <a href="{{ route('asesmen.show', $pengajuan->asesmen->id) }}" class="btn btn-primary">
+                            <i class="bi bi-eye"></i> Lihat Detail Asesmen
+                        </a>
+                        <a href="{{ route('asesmen.edit', $pengajuan->asesmen->id) }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-pencil"></i> Edit Asesmen
+                        </a>
+                    </div>
+                </div>
+            </div>
+            @endif
             {{-- ============================================
      SECTION: VALIDATOR BORANG (if applicable)
      ============================================ --}}
             @if(in_array($pengajuan->status, [
-            'borang_online_selesai',
-            'borang_validation_pending',
-            'borang_in_validation',
-            'borang_revision_required',
-            'borang_validated'
+            \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
+            \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
+            \App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
+            \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,
+            \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED
             ]) && $pengajuan->latestBorangImport)
 
             <div class="card mb-4 border-primary">
@@ -526,27 +640,27 @@
                                     Menunggu validator menerima penawaran
                                 </span>
                                 @elseif($currentValidator->status_penawaran === 'rejected')
-                                <a href="{{ route('de.pengajuan.assign-validator.form', $pengajuan->id) }}" class="btn btn-warning btn-sm">
+                                <a href="{{ route('de.pengajuan.assign-validator.form', $pengajuan->id) }}" class="btn btn-warning btn-sm mt-3">
                                     <i class="bi bi-arrow-repeat"></i>
                                     Tugaskan Validator Baru
                                 </a>
                                 @elseif($currentValidator->status_penawaran === 'accepted')
                                 @if($currentValidator->borangValidation)
-                                <a href="{{ route('validator.borang.show', $currentValidator->id) }}" class="btn btn-primary btn-sm" target="_blank">
+                                <a href="{{ route('validator.borang.show', $currentValidator->id) }}" class="btn btn-primary btn-sm mt-3" target="_blank">
                                     <i class="bi bi-eye"></i>
                                     Lihat Progress Validasi
                                 </a>
                                 @endif
                                 @endif
-                            </div>
 
-                            {{-- Validation Details (if available) --}}
-                            @if($currentValidator->borangValidation && $currentValidator->status_pekerjaan !== 'not_started')
-                            <button class="btn btn-outline-primary mt-3" data-bs-toggle="modal" data-bs-target="#modalRevisi">
-                                <i class="bi bi-clipboard-data"></i> Lihat Detail Revisi
-                            </button>
-                            @include('asesmen.de.modal-revisi')
-                            @endif
+                                {{-- Validation Details (if available) --}}
+                                @if($currentValidator->borangValidation && $currentValidator->status_pekerjaan !== 'not_started')
+                                <button class="btn btn-outline-primary btn-sm mt-3" data-bs-toggle="modal" data-bs-target="#modalRevisi">
+                                    <i class="bi bi-clipboard-data"></i> Lihat Detail Revisi
+                                </button>
+                                @include('asesmen.de.modal-revisi')
+                                @endif
+                            </div>
                         </div>
                     </div>
 
@@ -673,13 +787,13 @@
 
                     @if($pengajuan->pembayaran->catatan_verifikasi)
                     <hr>
-                    <label class="text-muted small">Catatan Verifikasi</label>
+                    <label class="text-muted small">Catatan Verifikasi (dari Keuangan)</label>
                     <p class="mb-0">{{ $pengajuan->pembayaran->catatan_verifikasi }}</p>
                     @endif
 
                     @if($pengajuan->pembayaran->alasan_penolakan)
                     <hr>
-                    <label class="text-muted small text-danger">Alasan Penolakan</label>
+                    <label class="text-muted small text-danger">Alasan Penolakan (dari Keuangan)</label>
                     <p class="mb-0 text-danger">{{ $pengajuan->pembayaran->alasan_penolakan }}</p>
                     @endif
                 </div>
@@ -734,7 +848,7 @@
         </h5>
     </div>
     <div class="card-body">
-        @forelse($pengajuan->dokumen->groupBy('jenis_dokumen') as $jenis => $docs)
+        @forelse($pengajuan->dokumen->groupBy('jenis_dokumen_alias') as $jenis => $docs)
         <div class="mb-3">
             <h6 class="fw-bold text-primary">
                 {{ str_replace('_', ' ', ucwords($jenis)) }}
@@ -820,8 +934,8 @@
                 'label' => 'Validasi Pembayaran',
                 'icon' => 'bi-credit-card-2-front',
                 'step' => 4,
-                'is_complete' => $pengajuan->status == 'menunggu_pembayaran' ? false:true,
-                'color' => $pengajuan->status == 'menunggu_pembayaran'?'warning':'success'
+                'is_complete' => $pengajuan->status == \App\Models\PengajuanAkreditasi::STATUS_MENUNGGU_PEMBAYARAN ? false:true,
+                'color' => $pengajuan->status == \App\Models\PengajuanAkreditasi::STATUS_MENUNGGU_PEMBAYARAN?'warning':'success'
                 ],
                 [
                 'date' => $pengajuan->tanggal_draft_borang,
@@ -838,14 +952,14 @@
                 'label' => 'Validasi LED+Suplemen dan LKPS',
                 'icon' => 'bi-clipboard-check',
                 'step' => 6,
-                'color' => 'primary'
+                'color' => 'success'
                 ],
                 [
                 'date' => $pengajuan->tanggal_pelaporan_validasi_borang,
                 'label' => 'Pelaporan Validasi LED+Suplemen dan LKPS',
                 'icon' => 'bi-file-earmark-text',
                 'step' => 7,
-                'color' => 'primary'
+                'color' => 'success'
                 ],
 
                 // ========================================
@@ -881,21 +995,21 @@
                 'label' => 'Penugasan Asesor untuk AL',
                 'icon' => 'bi-person-badge',
                 'step' => 11,
-                'color' => 'info'
+                'color' => 'success'
                 ],
                 [
-                'date' => $pengajuan->tanggal_pelaksanaan_al,
+                'date' => $pengajuan->tanggal_pelaksanaan_al ?? $pengajuan->tanggal_al_selesai,
                 'label' => 'Pelaksanaan AL dan Penyampaian Berita Acara AL',
                 'icon' => 'bi-building',
                 'step' => 12,
-                'color' => 'info'
+                'color' => 'success'
                 ],
                 [
                 'date' => $pengajuan->tanggal_pelaporan_al,
                 'label' => 'Pelaporan AL',
                 'icon' => 'bi-clipboard-data',
                 'step' => 13,
-                'color' => 'info'
+                'color' => 'success'
                 ],
 
                 // ========================================
@@ -906,28 +1020,28 @@
                 'label' => 'Penyampaian Hasil Akreditasi',
                 'icon' => 'bi-envelope-paper',
                 'step' => 14,
-                'color' => 'warning'
+                'color' => 'success'
                 ],
                 [
                 'date' => $pengajuan->tanggal_masa_sanggah_mulai,
                 'label' => 'Masa Sanggah',
                 'icon' => 'bi-clock-history',
                 'step' => 15,
-                'color' => 'warning',
+                'color' => 'success',
                 ],
                 [
                 'date' => $pengajuan->tanggal_pelaksanaan_banding,
                 'label' => 'Pelaksanaan Banding',
                 'icon' => 'bi-arrow-repeat',
                 'step' => 16,
-                'color' => 'danger',
+                'color' => 'success',
                 ],
                 [
                 'date' => $pengajuan->tanggal_pelaporan_banding,
                 'label' => 'Pelaporan Banding',
                 'icon' => 'bi-file-earmark-ruled',
                 'step' => 17,
-                'color' => 'danger',
+                'color' => 'success',
                 ],
                 [
                 'date' => $pengajuan->tanggal_penetapan,
@@ -948,7 +1062,7 @@
                 'label' => 'Penyimpanan Arsip Pelaksanaan Akreditasi',
                 'icon' => 'bi-archive',
                 'step' => 20,
-                'color' => 'secondary'
+                'color' => 'success'
                 ],
                 ] as $item)
                 @php
@@ -1011,9 +1125,9 @@
                     </small>
                 </div>
                 <p class="mb-1 small">
-                    <span class="badge bg-secondary">{{ str_replace('_', ' ', $log->status_from) }}</span>
+                    <span class="badge bg-secondary">{{ str_replace('_', ' ', $log->status_from_label) }}</span>
                     <i class="bi bi-arrow-right"></i>
-                    <span class="badge bg-primary">{{ str_replace('_', ' ', $log->status_to) }}</span>
+                    <span class="badge bg-primary">{{ str_replace('_', ' ', $log->status_to_label) }}</span>
                 </p>
                 @if($log->keterangan)
                 <small class="text-muted">{{ $log->keterangan }}</small>

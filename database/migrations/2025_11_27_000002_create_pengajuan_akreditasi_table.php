@@ -42,10 +42,10 @@ return new class extends Migration
                 'borang_validated',
                 // 'review_kesiapan_belum_siap',
                 // 'review_kesiapan_siap',
-                'validasi_borang_dilaporkan',
-                'asesor_ak_assigned',
                 'borang_final_diterima',
+                'validasi_borang_dilaporkan',
                 'pengajuan_completed',
+                'asesor_ak_assigned',
                 'ak_in_progress',
                 'ak_selesai',
                 'ak_dilaporkan',
@@ -118,6 +118,7 @@ return new class extends Migration
                 'surat_permohonan',
                 'surat_tugas',
                 'borang_template',
+                'template_formulir_pembayaran',
                 'formulir_pembayaran',
                 'draft_borang',
                 'borang_final',
@@ -200,7 +201,7 @@ return new class extends Migration
 
             // Tanggal
             $table->date('tanggal_jatuh_tempo')->nullable();
-            $table->date('tanggal_pembayaran')->nullable();
+            $table->dateTime('tanggal_pembayaran')->nullable();
 
             // Status pembayaran
             $table->enum('status_pembayaran', [

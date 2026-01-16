@@ -2,7 +2,7 @@
 
 @extends('layouts.template.app')
 
-@section('title', 'Validasi Dokumen')
+@section('title', 'Review/Validasi Dokumen')
 
 @section('content')
 <div class="container-fluid py-3">
@@ -11,8 +11,8 @@
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h3 class="mb-1">Validasi Dokumen Akreditasi</h3>
-                    <p class="text-muted mb-0">Daftar pengajuan yang Anda validasi sebagai Validator Dokumen</p>
+                    <h3 class="mb-1">Review/Validasi Dokumen Akreditasi</h3>
+                    <p class="text-muted mb-0">Daftar pengajuan yang Anda review/validasi sebagai Validator Dokumen</p>
                 </div>
                 <a href="{{ route('penawaran') }}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left"></i> Kembali
@@ -23,7 +23,7 @@
 
     {{-- Stats Cards --}}
     <div class="row mb-4">
-        <div class="col-md-3">
+        <div class="col-lg-3 mb-3">
             <div class="card border-warning">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
@@ -39,7 +39,7 @@
             </div>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-lg-3 mb-3">
             <div class="card border-info">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
@@ -55,7 +55,7 @@
             </div>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-lg-3 mb-3">
             <div class="card border-danger">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
@@ -71,7 +71,7 @@
             </div>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-lg-3 mb-3">
             <div class="card border-success">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
@@ -137,7 +137,7 @@
                                 @elseif($pengajuan->status === 'borang_revision_required')
                                 <span class="badge bg-warning text-dark">Perlu Revisi</span>
                                 @else
-                                <span class="badge bg-secondary">{{ ucfirst($pengajuan->status) }}</span>
+                                <span class="badge bg-secondary">{{ ucfirst($pengajuan->status_label) }}</span>
                                 @endif
                             </td>
                             <td>{!! $statusBadge[$assignment->status_pekerjaan] !!}</td>
@@ -148,6 +148,12 @@
                                 <a href="{{ route('validator.borang.show', $assignment->id) }}" class="btn btn-sm btn-primary">
                                     <i class="bi bi-eye"></i> Review
                                 </a>
+
+                                @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED)
+                                <button type="button" class="btn btn-sm btn-success mt-1 js-laporkan-validasi" data-assignment-id="{{ $assignment->id }}" data-nomor="{{ $pengajuan->nomor_pengajuan }}">
+                                    <i class="bi bi-send-check"></i> Laporkan Validasi
+                                </button>
+                                @endif
                             </td>
                         </tr>
                         @endforeach
@@ -167,3 +173,80 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('click', async (e) => {
+            const btn = e.target.closest('.js-laporkan-validasi');
+            if (!btn) return;
+
+            const assignmentId = btn.dataset.assignmentId;
+            const nomor = btn.dataset.nomor || '';
+
+            const result = await Swal.fire({
+                icon: 'question'
+                , title: 'Laporkan Validasi?'
+                , html: `Anda yakin ingin melaporkan hasil validasi untuk <b>${nomor}</b>?<br>Status pengajuan akan berubah menjadi <b>Pelaporan Validasi LED+Suplemen dan LKPS Selesai Dilaporkan</b>.`
+                , showCancelButton: true
+                , confirmButtonText: 'Ya, Laporkan'
+                , cancelButtonText: 'Batal'
+                , reverseButtons: true
+            , });
+
+            if (!result.isConfirmed) return;
+
+            btn.disabled = true;
+            const oldHtml = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Memproses...';
+
+            try {
+                const url = @json(route('validator.borang.laporkan-validasi', ['assignment' => '__ID__']));
+                const endpoint = url.replace('__ID__', assignmentId);
+
+                const res = await fetch(endpoint, {
+                    method: 'POST'
+                    , headers: {
+                        'Accept': 'application/json'
+                        , 'Content-Type': 'application/json'
+                        , 'X-CSRF-TOKEN': @json(csrf_token())
+                    , }
+                    , body: JSON.stringify({})
+                , });
+
+                const data = await res.json();
+
+                if (!res.ok || !data.success) {
+                    await Swal.fire({
+                        icon: 'error'
+                        , title: 'Gagal'
+                        , text: data.message || 'Gagal melaporkan validasi.'
+                    , });
+                    return;
+                }
+
+                await Swal.fire({
+                    icon: 'success'
+                    , title: 'Berhasil'
+                    , text: data.message || 'Validasi berhasil dilaporkan.'
+                , });
+
+                // bisa reload supaya status di tabel update
+                window.location.reload();
+
+            } catch (err) {
+                console.error(err);
+                await Swal.fire({
+                    icon: 'error'
+                    , title: 'Error'
+                    , text: 'Terjadi error saat mengirim permintaan.'
+                , });
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = oldHtml;
+            }
+        });
+    });
+
+</script>
+@endpush

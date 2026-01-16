@@ -10,15 +10,15 @@
                     <button class="btn btn-success dropdown-toggle" type="button" id="btnDownloadPenilaian" data-bs-toggle="dropdown" aria-expanded="false" title="Download Penilaian">
                         <i class="bi bi-download"></i> Download Penilaian
                     </button>
-                    <ul class="dropdown-menu" aria-labelledby="btnDownloadPenilaian">
+                    <ul class="dropdown-menu dropdown-wrap" aria-labelledby="btnDownloadPenilaian">
                         <li>
                             <a class="dropdown-item" href="{{ route('ak.validasi.export.comparison', ['asesmen'=>$asesmen->id, 'mode'=>'split']) }}">
-                                Split (pisah kolom Pemenuhan & Pelampauan)
+                                Download tampilan Split (pisah kolom Pemenuhan & Pelampauan)
                             </a>
                         </li>
                         <li>
                             <a class="dropdown-item" href="{{ route('ak.validasi.export.comparison', ['asesmen'=>$asesmen->id, 'mode'=>'merged']) }}">
-                                Merged (gabungkan kolom Pemenuhan & Pelampauan)
+                                Download tampilan Merged (gabungkan kolom Pemenuhan & Pelampauan)
                             </a>
                         </li>
                     </ul>

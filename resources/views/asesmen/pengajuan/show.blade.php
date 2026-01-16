@@ -264,7 +264,7 @@
 @section('content')
 <div class="container-fluid py-3">
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h2>
                 <i class="bi bi-file-earmark-text"></i>
@@ -275,7 +275,7 @@
             </p>
         </div>
         <div>
-            <span class="badge {{ $pengajuan->status_badge_class }} fs-6">
+            <span class="badge {{ $pengajuan->status_badge_class }} fs-6 text-wrap">
                 {{ $pengajuan->status_label }}
             </span>
         </div>
@@ -285,7 +285,7 @@
         <!-- Main Content -->
         <div class="col-md-8">
             <!-- ACTION: Upload/Isi Draft LED -->
-            @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI && $pengajuan->pembayaran && $pengajuan->pembayaran->status_pembayaran === 'terverifikasi')
+            @if(($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI && $pengajuan->pembayaran && $pengajuan->pembayaran->status_pembayaran === 'terverifikasi')||$pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED)
             <div class="card action-card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">
@@ -317,6 +317,34 @@
             <!-- SECTION: Proses & Preview LED -->
             @if(in_array($pengajuan->status, [\App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA, \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI]))
             @include('asesmen.pengajuan.components.modal-upload')
+            @endif
+
+            @if(in_array($pengajuan->status, [\App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED]))
+            <div class="alert alert-warning alert-permanent">
+                <i class="bi bi-info-circle"></i>
+                Sedang menunggu pelaporan LED+Suplemen dan LKPS selesai
+            </div>
+            @endif
+
+            @if(in_array($pengajuan->status, [\App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,\App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION]))
+            <div class="alert alert-warning alert-permanent">
+                <i class="bi bi-info-circle"></i>
+                Sedang menunggu proses valdasi LED+Suplemen dan LKPS selesai
+            </div>
+            @endif
+
+            @if(in_array($pengajuan->status, [\App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED]))
+            <div class="alert alert-warning alert-permanent">
+                <i class="bi bi-info-circle"></i>
+                Terdapat revisi dokumen LED+Suplemen dan LKPS. Mohon periksa kembali dan lakukan revisi dokumen berdasarkan catatan oleh reviewer
+            </div>
+            @endif
+
+            @if(in_array($pengajuan->status, [\App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN]))
+            <div class="alert alert-info alert-permanent">
+                <i class="bi bi-info-circle"></i>
+                Dokumen LED+Suplemen dan LKPS telah selesai divalidasi dan diproses. Selanjutnya akan dilakukan penugasan Asesor untuk Asesmen Kecukupan
+            </div>
             @endif
 
             <!-- 🆕 MODAL UPLOAD ULANG -->
@@ -439,11 +467,21 @@
 
                     <form action="{{ route('pengajuan.upload-pembayaran', $pengajuan->id) }}" method="POST" enctype="multipart/form-data">
                         @csrf
-                        <div class="row g-3">
+                        <div class="row g-3 mt-3">
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Tanggal Pembayaran</label>
                                 <input type="date" name="tanggal_pembayaran" class="form-control @error('tanggal_pembayaran') is-invalid @enderror" value="{{ date('Y-m-d') }}" required>
                                 @error('tanggal_pembayaran')
+                                <span class="invalid-feedback" role="alert">
+                                    {{ $message }}
+                                </span>
+                                @enderror
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Formulir Pembayaran yang Telah Diisi</label>
+                                <input type="file" name="formulir_pembayaran" class="form-control @error('formulir_pembayaran') is-invalid @enderror" accept=".pdf" required>
+                                <small class="text-muted">Format: PDF | Max: 5 MB</small>
+                                @error('formulir_pembayaran')
                                 <span class="invalid-feedback" role="alert">
                                     {{ $message }}
                                 </span>
@@ -458,6 +496,10 @@
                                     {{ $message }}
                                 </span>
                                 @enderror
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold">Catatan Pembayaran</label>
+                                <textarea name="catatan_pembayaran" class="form-control" rows="3" placeholder="Masukkan catatan pembayaran di sini (apabila ada)"></textarea>
                             </div>
                             <div class="col-md-12">
                                 <button type="submit" class="btn btn-success">
@@ -896,9 +938,9 @@
                     </small>
                 </div>
                 <p class="mb-0 small">
-                    <span class="badge bg-secondary">{{ str_replace('_', ' ', $log->status_from) }}</span>
+                    <span class="badge bg-secondary">{{ str_replace('_', ' ', $log->status_from_label) }}</span>
                     <i class="bi bi-arrow-right"></i>
-                    <span class="badge bg-primary">{{ str_replace('_', ' ', $log->status_to) }}</span>
+                    <span class="badge bg-primary">{{ str_replace('_', ' ', $log->status_to_label) }}</span>
                 </p>
                 @if($log->keterangan)
                 <small class="text-muted">{{ $log->keterangan }}</small>

@@ -607,6 +607,7 @@ class ValidasiController extends Controller
     {
         DB::beginTransaction();
         try {
+            $asesmen = Asesmen::findOrFail($idAsesmen);
             // Check if all elemen are validated
             $totalElemen = ElemenStandar::count();
 
@@ -663,7 +664,8 @@ class ValidasiController extends Controller
                 ->update([
                     'is_locked' => true,
                 ]);
-
+            if ($asesmen->pengajuan)
+                $asesmen->pengajuan->update(['tanggal_validasi_ak' => now()]);
             DB::commit();
 
             return response()->json([

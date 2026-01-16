@@ -29,7 +29,7 @@ class ValidasiPembayaranController extends Controller
             ])
             // ->where('status', PengajuanAkreditasi::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN)
             ->whereHas('pembayaran', function ($p) {
-                $p->where('status_pembayaran', 'dibayar');
+                // $p->where('status_pembayaran', 'dibayar');
             });
 
         if (!empty($q)) {
@@ -182,7 +182,7 @@ class ValidasiPembayaranController extends Controller
 
             // ✅ Redirect sukses
             return redirect()
-                ->route('keuangan.pembayaran.show', $pengajuan->id)
+                ->route('keuangan.pembayaran.index')
                 ->with(
                     'success',
                     $statusInput === 'terverifikasi'

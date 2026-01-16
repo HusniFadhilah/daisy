@@ -14,6 +14,8 @@
             <div class="modal-body">
 
                 {{-- Catatan Validator --}}
+                @if(false)
+
                 @if($currentValidator->borangValidation->catatan_validator)
                 <div class="alert alert-info">
                     <strong>Catatan Validator:</strong><br>
@@ -80,6 +82,7 @@
                     </div>
 
                 </div>
+                @endif
             </div>
 
             {{-- Footer --}}

@@ -238,15 +238,15 @@
                         <div class="progress-stats">
                             <div class="stat-item">
                                 <span class="stat-number" id="progressCompletedElemen">{{ $progressData['completed_elemen'] }}</span>
-                                <span class="stat-label">Elemen Lengkap</span>
+                                <span class="stat-label">Review Elemen Lengkap</span>
                             </div>
                             <div class="stat-item">
                                 <span class="stat-number" id="progressRemainingElemen">{{ $progressData['total_elemen'] - $progressData['completed_elemen'] }}</span>
-                                <span class="stat-label">Elemen Tersisa</span>
+                                <span class="stat-label">Review Elemen Tersisa</span>
                             </div>
                             <div class="stat-item">
                                 <span class="stat-number" id="progressTotalElemen">{{ $progressData['total_elemen'] }}</span>
-                                <span class="stat-label">Total Elemen</span>
+                                <span class="stat-label">Total Review Elemen</span>
                             </div>
                         </div>
                     </div>
@@ -255,7 +255,7 @@
                         <div class="stat-circle">
                             <div class="circle-content">
                                 <h2 class="mb-0" id="progressCountElemen">{{ $progressData['completed_elemen'] }}/{{ $progressData['total_elemen'] }}</h2>
-                                <small>Elemen Lengkap</small>
+                                <small>Review Elemen Lengkap</small>
                             </div>
                         </div>
                     </div>
@@ -276,7 +276,7 @@
                 <div class="btn-group">
                     @if(in_array($pengajuan->status, ['borang_dikirim', 'draft_borang_diterima', 'borang_online_selesai', 'review_kesiapan_belum_siap']))
                     <button type="button" class="btn btn-outline-danger" id="btnResetBorang">
-                        <i class="bi bi-arrow-clockwise"></i> Reset Borang
+                        <i class="bi bi-arrow-clockwise"></i> Reset LED+Suplemen
                     </button>
                     @endif
 
@@ -288,10 +288,11 @@
         </div>
     </div>
 
+    @if (in_array($pengajuan->status,['borang_revision_required']))
     <div class="card mb-4" id="validationCard">
         <div class="card-header bg-light d-flex justify-content-between align-items-center">
             <h5 class="mb-0">
-                <i class="bi bi-clipboard-check"></i> Hasil Validasi Borang
+                <i class="bi bi-clipboard-check"></i> Hasil Validasi LED+Suplemen dan LKPS
             </h5>
             <span class="badge bg-secondary" id="validationBadge">Memuat...</span>
         </div>
@@ -340,6 +341,12 @@
                 <hr>
 
                 <div class="mb-2">
+                    <h6 class="mb-2"><i class="bi bi-list-check"></i> Poin Revisi</h6>
+                    <div id="valRevisionList" class="d-none"></div>
+                    <div id="valRevisionEmpty" class="text-muted d-none">Tidak ada poin revisi.</div>
+                </div>
+
+                <div class="mb-2">
                     <small class="text-muted">Catatan Validator (Keseluruhan)</small>
                     <div class="border rounded p-2 bg-white" id="valNoteAll">-</div>
                 </div>
@@ -366,6 +373,7 @@
             </div>
         </div>
     </div>
+    @endif
 
     {{-- ✅ Upload Files Section --}}
     <div class="card mb-4">
@@ -614,7 +622,7 @@
                     </button>
                     <div class="d-flex gap-2 align-items-center">
                         {{-- Elemen Progress --}}
-                        <span class="badge {{ $kProgress['completed_elemen'] === $kProgress['total_elemen'] ? 'bg-success' : 'bg-info' }} kriteria-progress-elemen" data-kriteria-id="{{ $kriteria->id }}" title="Elemen Lengkap">
+                        <span class="badge {{ $kProgress['completed_elemen'] === $kProgress['total_elemen'] ? 'bg-success' : 'bg-info' }} kriteria-progress-elemen" data-kriteria-id="{{ $kriteria->id }}" title="Review Elemen Lengkap">
                             <i class="bi bi-check-square"></i>
                             {{ $kProgress['completed_elemen'] }}/{{ $kProgress['total_elemen'] }}
                         </span>
@@ -819,7 +827,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-file-earmark-arrow-up"></i> Upload Borang dari DOCX</h5>
+                <h5 class="modal-title"><i class="bi bi-file-earmark-arrow-up"></i> Upload LED dari DOCX</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -863,6 +871,7 @@ $pengajuanId = $pengajuan->id;
     document.addEventListener('DOMContentLoaded', function() {
         const pengajuanId = "{{ $pengajuan->id }}";
         const initialProgress = @json($progressData);
+        const showHasilValidasiBorang = "{{ in_array($pengajuan->status,['borang_revision_required']) }}"
 
         let saveTimeout, progressTimeout;
         const AUTO_SAVE_DELAY = 2000;
@@ -878,7 +887,9 @@ $pengajuanId = $pengajuan->id;
         initializeChevronIcons();
         initializeImportExport();
         initializeManualSaveButtons();
-        fetchValidationSummary();
+        if (showHasilValidasiBorang) {
+            fetchValidationSummary().then(() => fetchValidationDetails()).catch(console.error);
+        }
 
         // ✅ Initial progress update
         updateProgress();
@@ -915,6 +926,16 @@ $pengajuanId = $pengajuan->id;
                     ].join(' ')
                     , content_style: 'table { border-collapse: collapse; width: 100%; } td, th { border: 1px solid #ddd; padding: 8px; } th { background: #f2f2f2; font-weight: bold; }'
                     , setup: function(editor) {
+                        const updateCounter = () => {
+                            const wrapper = el.closest('.mb-3, .mb-4, .dataset-field-wrapper, .card-body');
+                            const counterEl = wrapper ? wrapper.querySelector('.char-count') : null;
+                            if (!counterEl) return;
+
+                            const plainText = editor.getContent({
+                                format: 'text'
+                            });
+                            counterEl.textContent = countWords(plainText);
+                        };
                         editor.on('init', function() {
                             const existing = editor.getContent({
                                 format: 'html'
@@ -943,6 +964,11 @@ $pengajuanId = $pengajuan->id;
                                     updateProgress();
                                 }, 500);
                             }
+                            updateCounter();
+                        });
+
+                        editor.on('input keyup change SetContent', function() {
+                            updateCounter();
                         });
 
                         editor.on('input change keyup', function() {
@@ -950,10 +976,7 @@ $pengajuanId = $pengajuan->id;
 
                             clearTimeout(saveTimeout);
 
-                            // key editor (desc_xxx atau dataset kode tabel)
                             const key = el.dataset.fieldId || el.dataset.datasetId;
-
-                            // cari status element (wrapper sama seperti autosave textarea biasa)
                             const wrapper = el.closest('.mb-3, .mb-4, .dataset-field-wrapper, .card-body');
                             const statusElement = wrapper ? wrapper.querySelector('.status-text') : null;
 
@@ -962,17 +985,8 @@ $pengajuanId = $pengajuan->id;
                                 statusElement.className = 'status-text text-warning';
                             }
 
-                            // update word count (lihat bagian #2)
-                            const counterEl = wrapper ? wrapper.querySelector('.char-count') : null;
-                            if (counterEl) {
-                                const plainText = editor.getContent({
-                                    format: 'text'
-                                });
-                                counterEl.textContent = countWords(plainText);
-                            }
-
                             saveTimeout = setTimeout(function() {
-                                const value = editor.getContent(); // simpan html (biar format tidak hilang)
+                                const value = editor.getContent();
                                 autoSaveField(key, value, statusElement);
                             }, AUTO_SAVE_DELAY);
                         });
@@ -1396,7 +1410,7 @@ $pengajuanId = $pengajuan->id;
             btnReset.addEventListener('click', async function() {
                 const result = await Swal.fire({
                     icon: 'warning'
-                    , title: 'Reset Borang?'
+                    , title: 'Reset Pengisian LED+Suplemen?'
                     , html: '<p>Semua data yang sudah diisi akan dihapus. Ketik <strong>RESET</strong> untuk konfirmasi:</p>'
                     , input: 'text'
                     , inputPlaceholder: 'Ketik RESET'
@@ -1434,7 +1448,7 @@ $pengajuanId = $pengajuan->id;
                     if (data.success) {
                         await Swal.fire({
                             icon: 'success'
-                            , title: 'Borang Direset!'
+                            , title: 'LED+Suplemen Direset!'
                             , text: 'Halaman akan dimuat ulang...'
                             , timer: 2000
                             , showConfirmButton: false
@@ -1457,7 +1471,21 @@ $pengajuanId = $pengajuan->id;
                 const confirmed = await Swal.fire({
                     icon: 'question'
                     , title: 'Konfirmasi Finalisasi'
-                    , html: '<p><strong>Submit laporan evaluasi diri?</strong></p>'
+                    , html: `
+        <div style="text-align:left">
+          <p><strong>Anda akan melakukan submit Laporan Evaluasi Diri (LED) + Suplemen dan LKPS.</strong></p>
+
+          <ul style="margin:0 0 10px 18px; padding:0">
+            <li>Pastikan seluruh <strong>elemen</strong> sudah berstatus <strong>Lengkap</strong>.</li>
+            <li>Pastikan file <strong>Lembar Pengesahan</strong>, <strong>Suplemen (PDF)</strong>, dan <strong>LKPS (Excel)</strong> sudah diupload.</li>
+            <li>Setelah submit, data akan dianggap <strong>final</strong> dan proses akan dilanjutkan ke tahap berikutnya (Validasi LED+Suplemen dan LKPS).</li>
+          </ul>
+
+          <p style="margin:0">
+            Lanjutkan finalisasi sekarang?
+          </p>
+        </div>
+      `
                     , showCancelButton: true
                     , confirmButtonText: 'Ya, Finalisasi'
                     , cancelButtonText: 'Batal'
@@ -1670,7 +1698,7 @@ $pengajuanId = $pengajuan->id;
         }
 
         async function fetchValidationSummary() {
-            const url = @json(route('pengajuan.validation-summary', $pengajuanId));
+            const url = @json(route('pengajuan.borang.validation-summary', $pengajuanId));
 
             const elLoading = document.getElementById('validationLoading');
             const elContent = document.getElementById('validationContent');
@@ -1679,12 +1707,22 @@ $pengajuanId = $pengajuan->id;
             const elBadge = document.getElementById('validationBadge');
 
             // reset state
-            elLoading.classList.remove('d-none');
-            elContent.classList.add('d-none');
-            elEmpty.classList.add('d-none');
-            elError.classList.add('d-none');
-            elBadge.className = 'badge bg-secondary';
-            elBadge.textContent = 'Memuat...';
+            if (elLoading) {
+                elLoading.classList.remove('d-none');
+            }
+            if (elContent) {
+                elContent.classList.add('d-none');
+            }
+            if (elEmpty) {
+                elEmpty.classList.add('d-none');
+            }
+            if (elError) {
+                elError.classList.add('d-none');
+            }
+            if (elBadge) {
+                elBadge.className = 'badge bg-secondary';
+                elBadge.textContent = 'Memuat...';
+            }
 
             try {
                 const res = await fetch(url, {
@@ -1696,7 +1734,7 @@ $pengajuanId = $pengajuan->id;
                 const data = await res.json();
                 if (!res.ok || !data.success) throw new Error(data.message || 'Request gagal');
 
-                elLoading.classList.add('d-none');
+                if (elLoading) elLoading.classList.add('d-none');
 
                 if (!data.has_validation) {
                     elEmpty.classList.remove('d-none');
@@ -1752,6 +1790,250 @@ $pengajuanId = $pengajuan->id;
                 elBadge.className = 'badge bg-danger';
                 elBadge.textContent = 'Error';
             }
+        }
+
+        function isKategoriA(grade) {
+            return String(grade || '').toUpperCase() === 'A';
+        }
+
+        function hasCatatan(x) {
+            return !!(x && x.catatan && String(x.catatan).trim().length);
+        }
+
+        function isSudahTepat(x) {
+            return normalizeGrade(x.grade) === 'A' && x.needs_revision == false;
+        }
+
+        function normalizeGrade(grade) {
+            const g = String(grade || '').trim().toUpperCase();
+            const m = g.match(/[ABC]/); // ambil A/B/C pertama
+            return m ? m[0] : '';
+        }
+
+        // item masuk "Perlu revisi" kalau:
+        // - grade B/C, atau
+        // - needs_revision true, atau
+        // - ada catatan (meskipun grade kosong)
+        function isPerluRevisi(x) {
+            const g = normalizeGrade(x.grade);
+            return x.needs_revision === true || g === 'B' || g === 'C';
+        }
+
+        function kategoriReviewLabel(grade) {
+            const g = String(grade || '').toUpperCase();
+            if (g === 'A') return 'Sudah tepat';
+            if (g === 'B') return 'Kurang lengkap, perlu melengkapi';
+            if (g === 'C') return 'Perlu diperbaiki';
+            return grade ? `${g}` : '-';
+        }
+
+        function kategoriBadgeClass(grade) {
+            const g = String(grade || '').toUpperCase();
+            if (g === 'A') return 'bg-success';
+            if (g === 'B') return 'bg-warning text-dark';
+            if (g === 'C') return 'bg-danger';
+            return 'bg-secondary';
+        }
+
+        async function fetchValidationDetails() {
+            const url = @json(route('pengajuan.borang.validation-details', $pengajuanId));
+
+            const listEl = document.getElementById('valRevisionList');
+            const emptyEl = document.getElementById('valRevisionEmpty');
+
+            // reset
+            listEl.classList.add('d-none');
+            emptyEl.classList.add('d-none');
+            listEl.innerHTML = '';
+
+            const res = await fetch(url, {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+            const data = await res.json();
+            if (!res.ok || !data.success) throw new Error(data.message || 'Gagal ambil detail validasi');
+
+            if (!data.has_validation) {
+                emptyEl.classList.remove('d-none');
+                return;
+            }
+            const items = data.items || {};
+
+            // ambil semua items dulu (tanpa filter), nanti kita split ke 2 tab
+            const ledAll = (items.led || []);
+            const suplemenAll = (items.suplemen || []);
+            const lkpsAll = (items.lkps || []);
+
+            // split: Perlu Revisi vs Sudah Tepat
+            const ledRevisi = ledAll.filter(isPerluRevisi);
+            const suplemenRevisi = suplemenAll.filter(isPerluRevisi);
+            const lkpsRevisi = lkpsAll.filter(isPerluRevisi);
+
+            const ledOk = ledAll.filter(isSudahTepat);
+            const suplemenOk = suplemenAll.filter(isSudahTepat);
+            const lkpsOk = lkpsAll.filter(isSudahTepat);
+
+            const totalRevisi = ledRevisi.length + suplemenRevisi.length + lkpsRevisi.length;
+            const totalOk = ledOk.length + suplemenOk.length + lkpsOk.length;
+
+            // kalau dua-duanya kosong -> empty
+            if (totalRevisi === 0 && totalOk === 0) {
+                emptyEl.classList.remove('d-none');
+                return;
+            }
+
+            // helper render section
+            function renderSection(title, arr, withOpenBtn) {
+                if (!arr.length) return '';
+                let out = `<div class="mb-3">
+                <div class="fw-semibold mb-1">${title}</div>
+                <ul class="list-group">`;
+
+                arr.forEach(it => {
+                    out += `
+                <li class="list-group-item d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="fw-semibold">${escapeHtml(it.label)}</div>
+                        <div class="small text-muted">
+                            Kategori review:
+                            <span class="badge ${kategoriBadgeClass(it.grade)}">${escapeHtml(kategoriReviewLabel(it.grade))}</span>
+                        </div>
+                        ${it.catatan ? `<div class="small mt-1">${escapeHtml(it.catatan)}</div>` : ''}
+                    </div>
+                    ${withOpenBtn ? `
+                    <button class="btn btn-sm btn-outline-primary" onclick="openElemen(${it.id})">
+                        <i class="bi bi-arrow-down-circle"></i> Buka Elemen
+                    </button>` : ''}
+                </li>`;
+                });
+
+                out += `</ul></div>`;
+                return out;
+            }
+
+            // ==== TAB HTML ====
+            let html = `
+            <ul class="nav nav-tabs" id="revTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link ${totalRevisi ? 'active' : ''}" id="tab-revisi" data-bs-toggle="tab" data-bs-target="#pane-revisi" type="button" role="tab">
+                Perlu revisi <span class="badge bg-danger ms-1">${totalRevisi}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link ${!totalRevisi ? 'active' : ''}" id="tab-ok" data-bs-toggle="tab" data-bs-target="#pane-ok" type="button" role="tab">
+                Sudah tepat <span class="badge bg-success ms-1">${totalOk}</span>
+                </button>
+            </li>
+            </ul>
+
+            <div class="tab-content border border-top-0 rounded-bottom p-3" id="revTabContent">
+
+            <div class="tab-pane fade ${totalRevisi ? 'show active' : ''}" id="pane-revisi" role="tabpanel">
+                ${totalRevisi === 0 ? `<div class="text-muted">Tidak ada item yang perlu revisi.</div>` : `
+                ${renderSection('Revisi LED', ledRevisi, true)}
+                ${renderSection('Revisi Suplemen', suplemenRevisi, false)}
+                ${renderSection('Revisi LKPS', lkpsRevisi, false)}
+                `}
+            </div>
+
+            <div class="tab-pane fade ${!totalRevisi ? 'show active' : ''}" id="pane-ok" role="tabpanel">
+                ${totalOk === 0 ? `<div class="text-muted">Belum ada item kategori A (Sudah tepat).</div>` : `
+                ${renderSection('LED - Sudah tepat', ledOk, true)}
+                ${renderSection('Suplemen - Sudah tepat', suplemenOk, false)}
+                ${renderSection('LKPS - Sudah tepat', lkpsOk, false)}
+                `}
+            </div>
+
+            </div>
+            `;
+
+            listEl.innerHTML = html;
+            listEl.classList.remove('d-none');
+        }
+
+        window.openElemen = function(elemenId) {
+            const card = document.querySelector('.elemen-card[data-elemen-id="' + elemenId + '"]');
+            if (!card) return;
+
+            // 1) buka accordion parent kriteria (kalau masih tertutup)
+            let kriteriaBody = null;
+            const kriteriaCard = card.closest('.kriteria-card');
+            if (kriteriaCard) {
+                kriteriaBody = kriteriaCard.querySelector('.accordion-collapse');
+            }
+
+            if (kriteriaBody) {
+                const kriteriaInstance = bootstrap.Collapse.getOrCreateInstance(kriteriaBody, {
+                    toggle: false
+                });
+                kriteriaInstance.show();
+
+                // opsional: set chevron icon kriteria ke down
+                let kriteriaHeaderBtn = null;
+                if (kriteriaBody.parentElement) {
+                    kriteriaHeaderBtn = kriteriaBody.parentElement.querySelector('.kriteria-btn');
+                }
+
+                if (kriteriaHeaderBtn) {
+                    const kriteriaChevron = kriteriaHeaderBtn.querySelector('.chevron-icon');
+                    if (kriteriaChevron) {
+                        kriteriaChevron.classList.remove('bi-chevron-right');
+                        kriteriaChevron.classList.add('bi-chevron-down');
+                    }
+                }
+            }
+
+            // 2) buka elemen collapse
+            const elemenCollapse =
+                document.getElementById('collapse-elemen-' + elemenId) ||
+                card.querySelector('.elemen-collapse');
+
+            const openElemenCollapse = function() {
+                if (elemenCollapse) {
+                    const elemenInstance = bootstrap.Collapse.getOrCreateInstance(elemenCollapse, {
+                        toggle: false
+                    });
+                    elemenInstance.show();
+
+                    // opsional: set chevron icon elemen ke down
+                    const elemenHeaderBtn = card.querySelector('.elemen-btn');
+                    if (elemenHeaderBtn) {
+                        const elemenChevron = elemenHeaderBtn.querySelector('.chevron-icon');
+                        if (elemenChevron) {
+                            elemenChevron.classList.remove('bi-chevron-right');
+                            elemenChevron.classList.add('bi-chevron-down');
+                        }
+                    }
+                }
+
+                // 3) scroll + highlight
+                card.scrollIntoView({
+                    behavior: 'smooth'
+                    , block: 'start'
+                });
+
+                card.classList.add('border', 'border-danger');
+                setTimeout(function() {
+                    card.classList.remove('border', 'border-danger');
+                }, 2000);
+            };
+
+            // kasih delay kalau parent kriteria dibuka dulu
+            if (kriteriaBody) {
+                setTimeout(openElemenCollapse, 250);
+            } else {
+                openElemenCollapse();
+            }
+        };
+
+        function escapeHtml(str) {
+            return String(str || '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
         }
     });
 

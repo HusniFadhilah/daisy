@@ -34,6 +34,7 @@ class PengajuanDokumen extends Model
         'surat_permohonan'             => 'Surat Permohonan PS',
         'surat_tugas'                  => 'Surat Tugas',
         'borang_template'              => 'Template LED+Suplemen dan LKPS',
+        'template_formulir_pembayaran' => 'Template Formulir Pembayaran',
         'formulir_pembayaran'          => 'Formulir Pembayaran',
         'draft_borang'                 => 'Draft LED+Suplemen dan LKPS',
         'borang_final'                 => 'LED+Suplemen dan LKPS Final',

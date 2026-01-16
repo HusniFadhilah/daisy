@@ -8,6 +8,7 @@ use App\Models\AsesmenDocument;
 use App\Models\AsesmenLapangan;
 use App\Models\AsesmenUserRole;
 use Illuminate\Support\Facades\DB;
+use App\Models\PengajuanAkreditasi;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -261,10 +262,10 @@ class ALDocumentController extends Controller
 
             // 5. Update tanggal selesai AL di pengajuan_akreditasi (jika ada)
             if ($asesmen->id_pengajuan) {
-                \App\Models\PengajuanAkreditasi::where('id', $asesmen->id_pengajuan)
+                PengajuanAkreditasi::where('id', $asesmen->id_pengajuan)
                     ->update([
                         'tanggal_al_selesai' => now(),
-                        'status' => 'al_completed' // atau status lain sesuai workflow
+                        'status' => PengajuanAkreditasi::STATUS_AL_SELESAI // atau status lain sesuai workflow
                     ]);
             }
 
@@ -324,7 +325,7 @@ class ALDocumentController extends Controller
 
             // 4. Update pengajuan_akreditasi (jika ada)
             if ($asesmen->id_pengajuan) {
-                \App\Models\PengajuanAkreditasi::where('id', $asesmen->id_pengajuan)
+                PengajuanAkreditasi::where('id', $asesmen->id_pengajuan)
                     ->update([
                         'tanggal_al_selesai' => null,
                         'status' => 'al_in_progress'

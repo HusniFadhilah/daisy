@@ -41,6 +41,7 @@ class PengajuanAkreditasi extends Model
     public const STATUS_BORANG_VALIDATED = 'borang_validated';
     public const STATUS_DRAFT_BORANG_FINAL_DITERIMA = 'borang_final_diterima';
     public const STATUS_VALIDASI_BORANG_DILAPORKAN = 'validasi_borang_dilaporkan';
+    public const STATUS_PENGAJUAN_COMPLETED = 'pengajuan_completed';
 
     // Step 8-10
     public const STATUS_ASESOR_AK_ASSIGNED = 'asesor_ak_assigned';
@@ -133,8 +134,8 @@ class PengajuanAkreditasi extends Model
         'tanggal_validasi_borang_selesai' => 'datetime',
         'tanggal_pelaporan_validasi_borang' => 'datetime',
         'tanggal_penugasan_asesor_ak' => 'datetime',
-        'tanggal_validasi_ak' => 'datetime',
         'tanggal_ak_mulai' => 'datetime',
+        'tanggal_validasi_ak' => 'datetime',
         'tanggal_ak_selesai' => 'datetime',
         'tanggal_pelaporan_ak' => 'datetime',
         'tanggal_penugasan_asesor_al' => 'datetime',
@@ -246,7 +247,7 @@ class PengajuanAkreditasi extends Model
             $newNum = 1;
         }
 
-        return sprintf('AK/%s/%03d', $year, $newNum);
+        return sprintf('ASM/%s/%03d', $year, $newNum);
     }
 
     public function canAssignValidator(): bool
@@ -373,37 +374,42 @@ class PengajuanAkreditasi extends Model
                 'icon' => 'bi-check-circle',
             ],
             self::STATUS_DRAFT_BORANG_DITERIMA => [
-                'label' => 'Draft LED Diterima',
+                'label' => 'File LED+Suplemen dan LKPS Diterima',
                 'bg' => 'bg-info',
                 'icon' => 'bi-file-earmark-check',
             ],
             self::STATUS_BORANG_ONLINE_SELESAI => [
-                'label' => 'LED Online Selesai',
+                'label' => 'LED+Suplemen dan LKPS Diterima',
                 'bg' => 'bg-success',
                 'icon' => 'bi-ui-checks',
             ],
             self::STATUS_BORANG_VALIDATION_PENDING => [
-                'label' => 'Menunggu Validasi LED',
+                'label' => 'Menunggu Validasi LED+Suplemen dan LKPS',
                 'bg' => 'bg-warning',
                 'icon' => 'bi-clock-history',
             ],
             self::STATUS_BORANG_IN_VALIDATION => [
-                'label' => 'Validasi LED Berlangsung',
+                'label' => 'Validasi LED+Suplemen dan LKPS Berlangsung',
                 'bg' => 'bg-info',
                 'icon' => 'bi-clipboard-check',
             ],
             self::STATUS_BORANG_REVISION_REQUIRED => [
-                'label' => 'LED Perlu Revisi',
+                'label' => 'LED+Suplemen atau LKPS Perlu Revisi',
                 'bg' => 'bg-danger',
                 'icon' => 'bi-exclamation-triangle',
             ],
             self::STATUS_BORANG_VALIDATED => [
-                'label' => 'LED Divalidasi',
+                'label' => 'LED+Suplemen dan LKPS Divalidasi',
                 'bg' => 'bg-success',
                 'icon' => 'bi-check-circle-fill',
             ],
             self::STATUS_VALIDASI_BORANG_DILAPORKAN => [
-                'label' => 'Pelaporan Validasi LED',
+                'label' => 'Pelaporan Validasi LED+Suplemen dan LKPS',
+                'bg' => 'bg-success',
+                'icon' => 'bi-file-earmark-text',
+            ],
+            self::STATUS_PENGAJUAN_COMPLETED => [
+                'label' => 'Proses Penugasan Asesor AK',
                 'bg' => 'bg-success',
                 'icon' => 'bi-file-earmark-text',
             ],
@@ -438,7 +444,7 @@ class PengajuanAkreditasi extends Model
                 'icon' => 'bi-building',
             ],
             self::STATUS_AL_SELESAI => [
-                'label' => 'Pelaksanaan AL Selesai',
+                'label' => 'Pelaksanaan AL dan Penyampaian Berita Acara AL Selesai',
                 'bg' => 'bg-success',
                 'icon' => 'bi-building-check',
             ],

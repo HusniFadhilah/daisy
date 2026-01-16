@@ -775,7 +775,15 @@ class PengajuanAkreditasiController extends Controller
     {
         $request->validate([
             'dataset_id' => 'required|string',
-            'value' => 'required'
+            'value' => [
+                'required',
+                function ($attribute, $value, $fail) {
+                    $wordCount = str_word_count(strip_tags($value));
+                    if ($wordCount > 1000) {
+                        $fail('Isi maksimal 1000 kata. Saat ini: ' . $wordCount . ' kata.');
+                    }
+                },
+            ],
         ]);
 
         try {
@@ -1138,6 +1146,7 @@ class PengajuanAkreditasiController extends Controller
     {
         $request->validate([
             'docx_file' => 'required|file|mimes:doc,docx|max:10240',
+            'keterangan' => 'nullable|string|max:255',
         ]);
 
         DB::beginTransaction();
@@ -1151,21 +1160,30 @@ class PengajuanAkreditasiController extends Controller
                 abort(403, 'Tidak memiliki akses');
             }
 
-            // Ambil dokumen latest
+            // Ambil dokumen versi terbaru
             $latestDoc = PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
                 ->where('jenis_dokumen', 'data_kualitatif')
                 ->where('is_latest', true)
                 ->first();
 
-            // Tentukan versi
+            // Tentukan versi dan dokumen ID
             if ($isAddVersion) {
+                // Tambah versi baru
                 $versi = ($latestDoc->versi ?? 0) + 1;
-                if ($latestDoc) $latestDoc->update(['is_latest' => false]);
-            } else {
-                if (!$latestDoc) {
-                    throw new \Exception('Dokumen versi terbaru tidak ditemukan');
+                if ($latestDoc) {
+                    $latestDoc->update(['is_latest' => false]);
                 }
-                $versi = $latestDoc->versi;
+                $dokumenId = null; // create new
+            } else {
+                // Re-upload versi existing
+                if (!$latestDoc) {
+                    // Jika belum ada dokumen, buat versi pertama otomatis
+                    $versi = 1;
+                    $dokumenId = null;
+                } else {
+                    $versi = $latestDoc->versi;
+                    $dokumenId = $latestDoc->id;
+                }
             }
 
             // Simpan file
@@ -1173,43 +1191,45 @@ class PengajuanAkreditasiController extends Controller
             $filename = "kualitatif_v{$versi}_" . time() . ".docx";
             $path = $file->storeAs("pengajuan/{$pengajuan->id}/kualitatif", $filename, 'public');
 
+            Log::error($path);
             // Simpan / update dokumen
             $dokumen = PengajuanDokumen::updateOrCreate(
-                ['id' => $isAddVersion ? null : $latestDoc->id],
+                ['id' => $dokumenId],
                 [
-                    'id_pengajuan' => $pengajuan->id,
-                    'jenis_dokumen' => 'data_kualitatif',
-                    'nama_file' => $filename,
-                    'path_file' => $path,
+                    'id_pengajuan'      => $pengajuan->id,
+                    'jenis_dokumen'     => 'data_kualitatif',
+                    'nama_file'         => $filename,
+                    'path_file'         => $path,
                     'original_filename' => $file->getClientOriginalName(),
-                    'file_size' => $file->getSize(),
-                    'mime_type' => $file->getMimeType(),
-                    'uploaded_by' => $user->id,
-                    'keterangan' => $request->keterangan ?? "Laporan Evaluasi Diri v{$versi}",
-                    'versi' => $versi,
-                    'is_latest' => true,
+                    'file_size'         => $file->getSize(),
+                    'mime_type'         => $file->getMimeType(),
+                    'uploaded_by'       => $user->id,
+                    'keterangan'        => $request->keterangan ?? "Laporan Evaluasi Diri v{$versi}",
+                    'versi'             => $versi,
+                    'is_latest'         => true,
                 ]
             );
 
-            // Import record
+            // Catat import borang (pending)
             $import = BorangImport::create([
-                'id_pengajuan' => $pengajuan->id,
+                'id_pengajuan'      => $pengajuan->id,
                 'original_filename' => $file->getClientOriginalName(),
-                'stored_path' => $path,
-                'status' => 'pending',
-                'imported_by' => $user->id,
+                'stored_path'       => $path,
+                'status'            => 'pending',
+                'imported_by'       => $user->id,
             ]);
 
+            // Dispatch job import borang
             ImportBorangDocxJob::dispatch($pengajuan->id, storage_path("app/public/{$path}"));
 
-            // Log
+            // Log status upload/re-upload
             PengajuanStatusLog::create([
                 'id_pengajuan' => $pengajuan->id,
-                'status_from' => $pengajuan->status,
-                'status_to' => $pengajuan->status,
-                'changed_by' => $user->id,
-                'changed_at' => now(),
-                'keterangan' => ($isAddVersion ? 'Upload versi baru' : 'Re-upload') .
+                'status_from'  => $pengajuan->status,
+                'status_to'    => $pengajuan->status,
+                'changed_by'   => $user->id,
+                'changed_at'   => now(),
+                'keterangan'   => ($isAddVersion ? 'Upload versi baru' : 'Re-upload') .
                     " (v{$versi}) : {$file->getClientOriginalName()}",
             ]);
 
@@ -1222,7 +1242,7 @@ class PengajuanAkreditasiController extends Controller
                     : "Re-upload berhasil (versi {$versi})",
                 'data' => [
                     'dokumen_id' => $dokumen->id,
-                    'versi' => $versi
+                    'versi'      => $versi,
                 ]
             ]);
         } catch (\Throwable $e) {
@@ -1235,7 +1255,6 @@ class PengajuanAkreditasiController extends Controller
             ], 500);
         }
     }
-
 
     /**
      * Check import status
@@ -1274,40 +1293,42 @@ class PengajuanAkreditasiController extends Controller
     /**
      * Download template DOCX
      */
-    public function downloadBorangTemplate($id)
-    {
-        try {
-            $pengajuan = PengajuanAkreditasi::findOrFail($id);
-            $degreeLevel = $pengajuan->studyProgram->degreeLevel->code;
-            $fileName = 'TEMPLATE_LAPORAN_EVALUASI_DIRI_' . $degreeLevel . '.docx';
-            $templatePath = storage_path('app/public/templates/' . $fileName);
+    // public function downloadBorangTemplate($id)
+    // {
+    //     try {
+    //         Log::error($id);
+    //         $pengajuan = PengajuanAkreditasi::findOrFail($id);
+    //         $degreeLevel = $pengajuan->studyProgram->degreeLevel->code;
+    //         $fileName = 'TEMPLATE_LAPORAN_EVALUASI_DIRI_' . $degreeLevel . '.docx';
+    //         $templatePath = storage_path('app/public/templates/' . $fileName);
 
-            if (!file_exists($templatePath)) {
-                Artisan::call('borang:generate-template', [
-                    '--degree_level' => $degreeLevel,
-                ]);
+    //         if (!file_exists($templatePath)) {
+    //             Log::error($templatePath);
+    //             Artisan::call('borang:generate-template', [
+    //                 '--degree_level' => $degreeLevel,
+    //             ]);
 
-                if (!file_exists($templatePath)) {
-                    throw new \RuntimeException("Template belum berhasil dibuat: {$templatePath}");
-                }
-            }
+    //             if (!file_exists($templatePath)) {
+    //                 throw new \RuntimeException("Template belum berhasil dibuat: {$templatePath}");
+    //             }
+    //         }
+    //         Log::error($templatePath);
+    //         return response()->download($templatePath, $fileName);
+    //     } catch (\Exception $e) {
+    //         Log::error('Download template DOCX Error', [
+    //             'error' => $e->getMessage()
+    //         ]);
 
-            return response()->download($templatePath, $fileName);
-        } catch (\Exception $e) {
-            Log::error('Download template DOCX Error', [
-                'error' => $e->getMessage()
-            ]);
+    //         $previous = URL::previous();
+    //         $current = request()->fullUrl();
 
-            $previous = URL::previous();
-            $current = request()->fullUrl();
+    //         if (!$previous || rtrim($previous, '/') === rtrim($current, '/')) {
+    //             abort(500, 'Gagal mendownload template: ' . $e->getMessage());
+    //         }
 
-            if (!$previous || rtrim($previous, '/') === rtrim($current, '/')) {
-                abort(500, 'Gagal mendownload template: ' . $e->getMessage());
-            }
-
-            return redirect()->to($previous)->with('error', 'Gagal mendownload template: ' . $e->getMessage());
-        }
-    }
+    //         return redirect()->to($previous)->with('error', 'Gagal mendownload template: ' . $e->getMessage());
+    //     }
+    // }
 
     /**
      * Export borang yang sudah diisi ke DOCX
@@ -1396,8 +1417,9 @@ class PengajuanAkreditasiController extends Controller
     public function uploadBuktiPembayaran(Request $request, $id)
     {
         $request->validate([
-            'bukti_pembayaran'   => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'tanggal_pembayaran' => 'required|date',
+            'tanggal_pembayaran'    => 'required|date',
+            'formulir_pembayaran'   => 'required|file|mimes:pdf|max:5120',
+            'bukti_pembayaran'      => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
 
         $pengajuan = PengajuanAkreditasi::with('pembayaran')->findOrFail($id);
@@ -1409,75 +1431,76 @@ class PengajuanAkreditasiController extends Controller
 
         DB::beginTransaction();
         try {
-            // 1) Upload file bukti pembayaran (dokumen)
-            $file = $request->file('bukti_pembayaran');
-            $filename = 'bukti_bayar_' . time() . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs("pengajuan/{$pengajuan->id}/pembayaran", $filename, 'public');
+            // === Upload formulir pembayaran ===
+            $formulirFile = $request->file('formulir_pembayaran');
+            $formulirFilename = 'formulir_bayar_' . time() . '.' . $formulirFile->getClientOriginalExtension();
+            $formulirPath = $formulirFile->storeAs("pengajuan/{$pengajuan->id}/pembayaran", $formulirFilename, 'public');
 
-            // Nonaktifkan dokumen bukti pembayaran sebelumnya (biar latest konsisten)
+            PengajuanDokumen::create([
+                'id_pengajuan'      => $pengajuan->id,
+                'jenis_dokumen'     => 'formulir_pembayaran',
+                'nama_file'         => $formulirFilename,
+                'path_file'         => $formulirPath,
+                'original_filename' => $formulirFile->getClientOriginalName(),
+                'file_size'         => $formulirFile->getSize(),
+                'mime_type'         => $formulirFile->getMimeType(),
+                'uploaded_by'       => Auth::id(),
+                'is_latest'         => true,
+            ]);
+
+            // === Upload bukti pembayaran ===
+            $buktiFile = $request->file('bukti_pembayaran');
+            $buktiFilename = 'bukti_bayar_' . time() . '.' . $buktiFile->getClientOriginalExtension();
+            $buktiPath = $buktiFile->storeAs("pengajuan/{$pengajuan->id}/pembayaran", $buktiFilename, 'public');
+
+            // Tandai dokumen bukti pembayaran sebelumnya tidak terbaru
             PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
                 ->where('jenis_dokumen', 'bukti_pembayaran')
                 ->update(['is_latest' => false]);
 
             PengajuanDokumen::create([
-                'id_pengajuan'        => $pengajuan->id,
-                'jenis_dokumen'       => 'bukti_pembayaran',
-                'nama_file'           => $filename,
-                'path_file'           => $path,
-                'original_filename'   => $file->getClientOriginalName(),
-                'file_size'           => $file->getSize(),
-                'mime_type'           => $file->getMimeType(),
-                'uploaded_by'         => Auth::id(),
-                'is_latest'           => true,
+                'id_pengajuan'      => $pengajuan->id,
+                'jenis_dokumen'     => 'bukti_pembayaran',
+                'nama_file'         => $buktiFilename,
+                'path_file'         => $buktiPath,
+                'original_filename' => $buktiFile->getClientOriginalName(),
+                'file_size'         => $buktiFile->getSize(),
+                'mime_type'         => $buktiFile->getMimeType(),
+                'uploaded_by'       => Auth::id(),
+                'is_latest'         => true,
             ]);
 
-            // 2) ✅ Pastikan record pembayaran ada (create jika belum ada)
-            $pembayaran = PengajuanPembayaran::firstOrCreate(
+            // === Update atau buat record pembayaran ===
+            $pembayaran = PengajuanPembayaran::updateOrCreate(
                 ['id_pengajuan' => $pengajuan->id],
                 [
-                    // Isi default minimal (sesuaikan kebutuhan Anda)
-                    'status_pembayaran' => 'menunggu',   // atau 'menunggu_pembayaran'
-                    'nomor_invoice' => 'INV-' . Auth::id(), // kalau ada
-                    'jumlah_pembayaran' => 10000000,
+                    'status_pembayaran'  => 'dibayar',
+                    'tanggal_pembayaran' => $request->tanggal_pembayaran,
+                    'bukti_path'         => $buktiPath,
+                    'formulir_path'      => $formulirPath,
+                    'nomor_invoice'      => $pengajuan->pembayaran->nomor_invoice ?? 'INV-' . Auth::id(),
+                    'jumlah_pembayaran'  => $pengajuan->pembayaran->jumlah_pembayaran ?? 53000000,
                 ]
             );
 
-            // 3) Update pembayaran menjadi "dibayar"
-            $pembayaran->update([
-                'status_pembayaran'      => 'dibayar',
-                'tanggal_pembayaran'     => $request->tanggal_pembayaran,
-                // ✅ simpan path bukti di tabel pembayaran agar keuangan mudah ambil dari relasi
-                'bukti_path'  => $path, // atau 'bukti_path' sesuai kolom Anda
-            ]);
-
-            // 4) Update status pengajuan: tetap menunggu verifikasi (jangan langsung diterima)
+            // === Update status pengajuan ===
             $oldStatus = $pengajuan->status;
-
-            // Pilih salah satu:
-            // a) tetap STATUS_MENUNGGU_PEMBAYARAN tapi pembayaran.status=dibayar
-            // b) pakai status baru misal STATUS_PEMBAYARAN_DIBAYAR / STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN
-            // Saya sarankan opsi (b) agar jelas.
-
-            $newStatus = defined(PengajuanAkreditasi::class . '::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN')
-                ? PengajuanAkreditasi::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN
-                : $oldStatus;
+            $newStatus = PengajuanAkreditasi::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN ?? $oldStatus;
 
             $pengajuan->update([
                 'status' => $newStatus,
-                // kalau Anda punya tanggal khusus untuk "upload bukti" pisahkan dari tanggal verifikasi
-                // 'tanggal_upload_pembayaran' => now(),
             ]);
 
             $this->logStatus(
                 $pengajuan,
                 $oldStatus,
                 $newStatus,
-                'Bukti pembayaran diupload oleh prodi (status pembayaran: dibayar)'
+                'Bukti pembayaran dan formulir diupload oleh prodi.'
             );
 
             DB::commit();
 
-            return back()->with('success', 'Bukti pembayaran berhasil diupload. Menunggu verifikasi dari Keuangan.');
+            return back()->with('success', 'Bukti dan formulir pembayaran berhasil diupload. Menunggu verifikasi dari Keuangan.');
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Upload bukti pembayaran failed', ['error' => $e->getMessage()]);
@@ -1577,7 +1600,7 @@ class PengajuanAkreditasiController extends Controller
         // if (!$hasAccess) {
         //     abort(403, 'Anda tidak memiliki akses untuk mengunduh dokumen ini.');
         // }
-
+        // dd($dokumen->path_file);
         if (!Storage::disk('public')->exists($dokumen->path_file)) {
             abort(404, 'File tidak ditemukan.');
         }

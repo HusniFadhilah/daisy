@@ -258,7 +258,7 @@ $draftBorang = $pengajuan->dokumen->where('jenis_dokumen', 'draft_borang')->wher
                     {{-- Catatan Review --}}
                     <div class="mb-3">
                         <label class="form-label fw-bold">
-                            Catatan Review <span class="text-danger">*</span>
+                            Catatan Review/Validasi <span class="text-danger">*</span>
                         </label>
                         <textarea name="catatan_review" class="form-control" rows="5" required placeholder="Berikan catatan detail tentang hasil review (minimal 20 karakter)"></textarea>
                     </div>
@@ -364,13 +364,13 @@ $draftBorang = $pengajuan->dokumen->where('jenis_dokumen', 'draft_borang')->wher
 
             if (!hasil) {
                 e.preventDefault();
-                alert('Mohon pilih hasil review!');
+                alert('Mohon pilih hasil review/validasi!');
                 return false;
             }
 
             if (catatan.length < 20) {
                 e.preventDefault();
-                alert('Catatan review minimal 20 karakter!');
+                alert('Catatan review/validasi minimal 20 karakter!');
                 return false;
             }
 

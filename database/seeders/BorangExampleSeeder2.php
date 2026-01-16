@@ -1,33 +1,31 @@
 <?php
-// app/Services/BorangExportService.php
 
-namespace App\Services;
+namespace Database\Seeders;
 
-use Imagick;
-use ImagickException;
-use App\Libraries\Date;
 use App\Models\Kriteria;
-use App\Models\BorangData;
 use App\Models\DegreeLevel;
+use Illuminate\Support\Str;
 use PhpOffice\PhpWord\PhpWord;
-use App\Models\PengajuanDokumen;
+use Illuminate\Database\Seeder;
 use PhpOffice\PhpWord\IOFactory;
 use PhpOffice\PhpWord\Style\Font;
-use App\Models\PengajuanAkreditasi;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpWord\SimpleType\Jc;
+use PhpOffice\PhpWord\SimpleType\DocProtect;
+use PhpOffice\PhpSpreadsheet\Style\Protection;
+use App\Models\DatasetSuplemen;
 
-class BorangExportService
+class BorangExampleSeeder2 extends Seeder
 {
     protected PhpWord $phpWord;
 
     protected array $numberingRegistered = [];
+    protected array $borangDataMap = [];
     protected ?DegreeLevel $activeDegreeLevel = null;
     protected int $currentTableWidthTwips = 8900;
     protected bool $isLandscape = false;
     protected bool $hasRestartedContentNumbering = false;
-    protected $pengajuan;
-    protected $borangDataMap = [];
 
     protected int $pageHeightTwips = 16838;        // A4 portrait height
     protected int $contentHeightTwips = 14838;     // height - (marginTop+marginBottom)
@@ -35,29 +33,56 @@ class BorangExportService
     protected int $marginBottomTwips = 1000;
     protected string $templateBlue = '1F4E79';
 
-    public function __construct($pengajuan)
+    public function run(): void
     {
-        $this->pengajuan = $pengajuan;
+        // default behavior kalau dipanggil via db:seed
+        $degreeLevels = DegreeLevel::all();
 
-        // ✅ set active degree level
-        $this->activeDegreeLevel = $pengajuan->degreeLevel;
-        // atau jika relasinya beda: DegreeLevel::find($pengajuan->id_degree_level)
+        if ($degreeLevels->isEmpty()) {
+            $this->command?->warn('Degree level belum ada di database.');
+            return;
+        }
 
+        foreach ($degreeLevels as $level) {
+            $this->runForDegree($level);
+        }
+    }
+
+    public function runWithCodes(array $codes): void
+    {
+        $codes = collect($codes)
+            ->map(fn($s) => strtolower(trim((string) $s)))
+            ->filter()
+            ->values()
+            ->all();
+
+        $degreeLevels = DegreeLevel::whereIn('code', $codes)->get();
+
+        if ($degreeLevels->isEmpty()) {
+            $this->command?->warn('Degree level tidak ditemukan untuk opsi tersebut.');
+            return;
+        }
+
+        foreach ($degreeLevels as $level) {
+            $this->runForDegree($level);
+        }
+    }
+
+    public function runForDegree(DegreeLevel $degreeLevel): void
+    {
+        $this->activeDegreeLevel = $degreeLevel;
         $this->phpWord = new PhpWord();
+        $this->numberingRegistered = [];
         $this->phpWord->getSettings()->setUpdateFields(true);
 
         $this->phpWord->addTitleStyle(1, ['bold' => true, 'size' => 14, 'color' => $this->templateBlue], ['spaceAfter' => 240]);
         $this->phpWord->addTitleStyle(2, ['bold' => true, 'size' => 11, 'color' => $this->templateBlue], ['spaceAfter' => 180]);
         $this->phpWord->addTitleStyle(3, ['bold' => false, 'size' => 11, 'color' => $this->templateBlue], ['spaceAfter' => 120]);
 
+        // ✅ FONT Montserrat 11PT (SEPERTI TEMPLATE)
         $this->phpWord->setDefaultFontName('Montserrat');
         $this->phpWord->setDefaultFontSize(11);
 
-        $this->loadBorangDataMap(); // pindahkan ke fungsi biar rapi
-    }
-
-    public function generate()
-    {
         $this->addCoverPage();
         $this->addLembarPengesahan();
         $this->addKataPengantarSection();
@@ -65,16 +90,23 @@ class BorangExportService
         $this->addDaftarIsiSection();
         $this->addContentPages();
         $this->addSuplemenSection();
-        // optional
-        $this->cleanupTmpPdfImages();
+        // ✅ Add basic protection
+        // $this->protectDocumentBasic();
 
-        return $this->phpWord;
-    }
+        // ✅ Save protection instructions
+        $this->saveProtectionInstructions($degreeLevel->code);
 
-    public function save($filePath)
-    {
         $objWriter = IOFactory::createWriter($this->phpWord, 'Word2007');
+        $safeCode = $degreeLevel->code; // contoh: "s2-terapan" jadi "s2_terapan"
+        $filePath = storage_path("app/public/templates/test_TEMPLATE_LAPORAN_EVALUASI_DIRI_{$safeCode}.docx");
+
+        if (!file_exists(dirname($filePath))) {
+            mkdir(dirname($filePath), 0755, true);
+        }
+
         $objWriter->save($filePath);
+
+        $this->command->info("✅ Template DOCX dibuat untuk {$safeCode}: " . $filePath);
     }
 
     private function addCoverPage()
@@ -94,17 +126,12 @@ class BorangExportService
 
         $section->addTextBreak(6);
 
-        // ✅ LOGO (bisa diganti dengan image jika ada)
-        if ($this->pengajuan->studyProgram->university->logo_path) {
-            $logoPath = storage_path('app/public/' . $this->pengajuan->studyProgram->university->logo_path);
-            $this->addLogoFlexible($section, $logoPath, 200, 200);
-        } else {
-            $section->addText(
-                '[LOGO UNIVERSITAS]',
-                ['size' => 14, 'bold' => true],
-                ['alignment' => Jc::CENTER]
-            );
-        }
+        // Logo placeholder
+        $section->addText(
+            '[LOGO UNIVERSITAS]',
+            ['size' => 14, 'bold' => true],
+            ['alignment' => Jc::CENTER]
+        );
 
         $section->addTextBreak(5);
 
@@ -116,40 +143,29 @@ class BorangExportService
 
         $section->addTextBreak(1);
 
-        // ✅ NAMA PRODI DARI DATABASE
         $section->addText(
-            strtoupper($this->pengajuan->studyProgram->name),
+            '[NAMA PROGRAM STUDI]',
             ['size' => 14],
             ['alignment' => Jc::CENTER]
         );
 
         $section->addTextBreak(8);
 
-        // ✅ UNIVERSITAS DARI DATABASE
         $section->addText(
-            strtoupper($this->pengajuan->studyProgram->university->name ?? 'UNIVERSITAS'),
+            'UNIVERSITAS/INSTITUT ..................................',
             ['size' => 12],
             ['alignment' => Jc::CENTER]
         );
 
         $section->addTextBreak(1);
 
-        // ✅ TAHUN PENGAJUAN
         $textRun = $section->addTextRun(['alignment' => Jc::CENTER]);
-        $textRun->addText(Date::bulanTahun($this->pengajuan->created_at), ['size' => 12]);
+        $textRun->addText('Bulan, ', ['size' => 12]);
+        $textRun->addText('Tahun', ['size' => 12]);
     }
 
     private function addLembarPengesahan()
     {
-        $pdfPath = $this->getPengajuanDokumenPath('lembar_pengesahan');
-
-        if ($pdfPath) {
-            // ✅ tampilkan PDF dari DB sebagai halaman-halaman word
-            // lembar pengesahan termasuk front matter => roman
-            $this->addPdfAsImagesToWord($pdfPath, 'roman');
-            return;
-        }
-
         $section = $this->phpWord->addSection([
             'marginTop' => 1000,
             'marginBottom' => 1000,
@@ -260,10 +276,8 @@ class BorangExportService
             'Akhir kata, semoga laporan ini dapat memberikan manfaat sebagai sarana transparansi, evaluasi, dan peningkatan mutu Program Studi di masa yang akan datang.',
         ];
 
-        [$prefill, $placeholder, $isPlaceholder] = $this->getFieldPrefill($this->borangDataMap, 'kata_pengantar', $defaultKataPengantar, 500);
-
         // ✅ Kotak + teks bawaan
-        $this->addFrontMatterDescBox($section, 'Kata Pengantar', 500, $prefill, false, 1800, 3000, $placeholder, $isPlaceholder);
+        $this->addFrontMatterDescBox($section, 'Kata Pengantar', 500, $defaultKataPengantar, false);
 
         // Penutup (kanan bawah)
         $section->addText(
@@ -301,50 +315,24 @@ class BorangExportService
             ['alignment' => Jc::CENTER, 'spaceAfter' => 500]
         );
 
-        [$prefill, $placeholder, $isPlaceholder] = $this->getFieldPrefill($this->borangDataMap, 'ringkasan');
-
         // ✅ Kotak input seperti deskripsi box (max 1000 kata)
         $this->addFrontMatterDescBox(
             $section,
             'Ringkasan (Mohon jangan dihapus)',
             1000,
-            $prefill,
-            true,
-            1800,
-            3000,
-            $placeholder,
-            $isPlaceholder
+            [],                      // tidak ada prefill
+            true,                    // fullHeight = true
+            1800,                    // reservedTopTwips (boleh adjust)
+            3000,                    // minBoxHeightTwips
+            "[Mohon isi ringkasan di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]"
         );
-    }
-
-    private function getFieldPrefill(
-        array $borangDataMap,
-        string $key,
-        string|array|null $default = null,
-        int $maxWords = 1000
-    ): array {
-        $value = trim((string)($borangDataMap[$key] ?? ''));
-
-        if ($value !== '') {
-            return [[$value], null, false]; // ✅ false = BUKAN placeholder
-        }
-
-        if (is_array($default)) {
-            return [$default, null, true]; // ✅ default paragraf = placeholder/template
-        }
-
-        $placeholder = is_string($default)
-            ? $default
-            : "[Mohon isi {$key} di sini sesuai dengan kondisi program studi (maksimal {$maxWords} kata)...]";
-
-        return [[], $placeholder, true]; // ✅ placeholder
     }
 
     private function addContentPages()
     {
         $kriterias = Kriteria::with([
             'elemenStandar.pernyataan',
-            'elemenStandar.indikator.jenisIndikator',
+            'elemenStandar.indikator',
             'elemenStandar.datasetBorang'
         ])->get();
 
@@ -353,9 +341,7 @@ class BorangExportService
             // Section utama untuk teks kriteria + pernyataan + indikator (portrait)
             $restartNumbering = $indexKriteria == 0 && !$this->hasRestartedContentNumbering;
             $section = $this->createPortraitSection('arabic', $restartNumbering);
-            if ($restartNumbering) {
-                $this->hasRestartedContentNumbering = true;
-            }
+
             // Header kriteria
             $section->addTitle($kriteria->kode_kriteria . '. ' . $kriteria->nama_kriteria, 1);
 
@@ -379,23 +365,25 @@ class BorangExportService
                 $section->addTextBreak(1);
                 $this->addUraianIndikator($section, $elemen);
 
-                // ✅ Detail section: portrait/landscape sesuai kebutuhan elemen (seperti Seeder)
+                // ✅ HAPUS pagebreak manual di sini
+                // $section->addPageBreak();
+
+                // ✅ Buat detail section (portrait/landscape) untuk ElemenBox + Deskripsi + tabel menyatu
                 $detailSection = $this->elemenNeedsLandscape($elemen)
                     ? $this->createLandscapeSection('arabic')
                     : $this->createPortraitSection('arabic');
 
-                // Kotak header elemen
                 $this->addElemenBox($detailSection, $kriteria, $elemen);
-                $detailSection->addTextBreak(1);
+                $detailSection->addTextBreak(0.5);
+                $this->addDeskripsiBoxUnified($detailSection, $kriteria, $elemen);
 
-                // Kotak deskripsi + tabel menyatu (terisi data bila ada)
-                $this->addDeskripsiBoxUnifiedWithData($detailSection, $kriteria, $elemen);
-
-                // ✅ Jangan bikin section baru kalau elemen terakhir (hindari halaman kosong)
+                // ✅ PENTING: Jangan buat section baru kalau ini elemen terakhir,
+                // karena akan menghasilkan halaman kosong.
                 if (!$isLastElemen) {
+                    // Siapkan section portrait baru untuk elemen berikutnya
                     $section = $this->createPortraitSection();
 
-                    // (opsional) cetak ulang header kriteria supaya rapi di halaman berikutnya
+                    // (Opsional) Anda bisa tulis header kriteria lagi, kalau Anda ingin muncul di tiap halaman
                     $section->addText(
                         $kriteria->kode_kriteria . '. ' . $kriteria->nama_kriteria,
                         ['size' => 11, 'bold' => true, 'color' => $this->templateBlue],
@@ -412,116 +400,8 @@ class BorangExportService
     }
 
     /**
-     * ✅ Kotak deskripsi dengan data terisi dari database
+     * ✅ Kotak kecil untuk elemen
      */
-    private function addDeskripsiBoxUnifiedWithData($section, $kriteria, $elemen): void
-    {
-        $hasTable = $elemen->datasetBorang && $elemen->datasetBorang->contains(fn($d) => $d->tipe_field === 'table');
-
-        // ✅ kalau tidak ada table dataset: bikin 1 halaman penuh
-        if (!$hasTable) {
-            $this->addDeskripsiBoxFullPage($section, $kriteria, $elemen);
-            return;
-        }
-
-        $table = $section->addTable([
-            'borderSize' => 6,
-            'borderColor' => '000000',
-            'cellMargin' => 100,
-            'width' => 100 * 50,
-            'unit' => 'pct'
-        ]);
-
-        $table->addRow();
-        $cell = $table->addCell(9500);
-
-        $cell->addText(
-            'Deskripsi ' . strtolower($elemen->pernyataan_elemen),
-            ['size' => 11, 'italic' => true],
-            ['spaceAfter' => 200]
-        );
-
-        // ambil deskripsi dari map Anda
-        $descKey   = 'desc_' . $elemen->id;
-        $deskripsi = $this->borangDataMap[$descKey] ?? '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]';
-
-        $cell->addText(
-            $deskripsi,
-            ['size' => 11, 'color' => empty($this->borangDataMap[$descKey]) ? '000000' : '000000', 'italic' => empty($this->borangDataMap[$descKey])],
-            ['spaceAfter' => 300, 'alignment' => Jc::BOTH]
-        );
-
-        // render semua tabel di dalam kotak yang sama (seperti seeder addDeskripsiBoxUnified)
-        if ($elemen->datasetBorang && $elemen->datasetBorang->count() > 0) {
-            foreach ($elemen->datasetBorang as $dataset) {
-                if ($dataset->tipe_field !== 'table') continue;
-
-                $cell->addText($dataset->nama, ['size' => 11, 'bold' => true], ['spaceAfter' => 100]);
-
-                $tableData =
-                    $this->borangDataMap['dataset_kode:' . $dataset->kode] ??
-                    $this->borangDataMap['dataset_id:' . $dataset->id] ??
-                    null;
-
-                if ($tableData) {
-                    $this->addHtmlTableToCell($cell, $tableData);
-                } else {
-                    $this->addDatasetTable($cell, $dataset);
-                }
-
-                $cell->addTextBreak(1);
-            }
-        }
-    }
-
-
-    /**
-     * ✅ Convert HTML table string to PhpWord table
-     */
-    private function addHtmlTableToCell($cell, $htmlTable)
-    {
-        // Simple HTML parser untuk extract table data
-        preg_match_all('/<tr[^>]*>(.*?)<\/tr>/is', $htmlTable, $rows);
-
-        if (empty($rows[1])) {
-            return;
-        }
-
-        $tableStyle = [
-            'borderSize' => 6,
-            'borderColor' => '000000',
-            'cellMargin' => 80,
-            'width' => 100,
-            'unit' => 'pct',
-        ];
-
-        $dataTable = $cell->addTable($tableStyle);
-
-        foreach ($rows[1] as $rowIndex => $rowHtml) {
-            // Extract cells
-            preg_match_all('/<t[hd][^>]*>(.*?)<\/t[hd]>/is', $rowHtml, $cells);
-
-            if (empty($cells[1])) continue;
-
-            $dataTable->addRow($rowIndex === 0 ? 400 : 350);
-
-            foreach ($cells[1] as $cellHtml) {
-                $cellText = strip_tags($cellHtml);
-                $cellText = html_entity_decode($cellText);
-                $cellText = trim($cellText);
-
-                $cellStyle = $rowIndex === 0 ? ['bgColor' => 'D3D3D3'] : [];
-                $fontStyle = $rowIndex === 0 ? ['bold' => true, 'size' => 10] : ['size' => 10];
-
-                $tableCell = $dataTable->addCell(null, $cellStyle);
-                $tableCell->addText($cellText, $fontStyle, ['alignment' => Jc::CENTER]);
-            }
-        }
-    }
-
-    // ✅ Methods lainnya sama seperti BorangExampleSeeder
-    // (addElemenBox, addDatasetTable, addPernyataanStandar, etc)
-
     private function addElemenBox($section, $kriteria, $elemen)
     {
         $table = $section->addTable([
@@ -586,134 +466,247 @@ class BorangExportService
             );
         }
     }
-
-    private function addDatasetTable($cell, $dataset)
+    /**
+     * Deskripsi box + tabel, semuanya dirender di SECTION YANG SAMA.
+     * Tidak ada switching portrait/landscape di sini.
+     */
+    private function addDeskripsiBoxUnified($section, $kriteria, $elemen)
     {
-        $columns = $dataset->expected_columns ?? ['No', 'Keterangan', 'Data'];
-        $columnCount = count($columns);
+        $hasTable = $elemen->datasetBorang && $elemen->datasetBorang->contains(fn($d) => $d->tipe_field === 'table');
 
-        $tableStyle = [
-            'borderSize' => 6,
-            'borderColor' => '000000',
-            'cellMargin' => 80,
-            'width' => 100,
-            'unit' => 'pct',
-        ];
-
-        $dataTable = $cell->addTable($tableStyle);
-
-        // Header
-        $dataTable->addRow(400);
-        foreach ($columns as $col) {
-            $headerCell = $dataTable->addCell(
-                intval(100 / $columnCount),
-                ['bgColor' => 'D3D3D3', 'valign' => 'center']
-            );
-            $headerCell->addText($col, ['bold' => true, 'size' => 10], ['alignment' => Jc::CENTER]);
+        // ✅ kalau tidak ada table dataset: bikin 1 halaman penuh
+        if (!$hasTable) {
+            $this->addDeskripsiBoxFullPage($section, $kriteria, $elemen);
+            return;
         }
 
-        // Empty rows
-        for ($i = 1; $i <= 3; $i++) {
-            $dataTable->addRow(350);
-            foreach ($columns as $index => $col) {
-                $rowCell = $dataTable->addCell(intval(100 / $columnCount));
-                $rowCell->addText(
-                    $index === 0 ? (string)$i : '',
+        // Kotak deskripsi (border)
+        $table = $section->addTable([
+            'borderSize' => 6,
+            'borderColor' => '000000',
+            'cellMargin' => 100,
+            'width' => 100 * 50,
+            'unit' => 'pct'
+        ]);
+
+        $table->addRow();
+        $cell = $table->addCell(9500);
+
+        $run = $cell->addTextRun(['spaceAfter' => 200]);
+
+        $cell->addFormField('textinput')
+            ->setName('desc_' . $elemen->id)
+            ->setDefaultValue('[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]')
+            ->setMaxLength(5000);
+        // $cell->addText(
+        //     '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
+        //     ['size' => 11, 'color' => '000000', 'italic' => true],
+        //     ['spaceAfter' => 300, 'alignment' => Jc::BOTH]
+        // );
+
+        // Render semua tabel di dalam kotak yang sama
+        if ($elemen->datasetBorang && $elemen->datasetBorang->count() > 0) {
+            foreach ($elemen->datasetBorang as $dataset) {
+                if ($dataset->tipe_field !== 'table') continue;
+
+                $cell->addText(
+                    $dataset->nama,
+                    ['size' => 11, 'bold' => true],
+                    ['spaceAfter' => 100]
+                );
+
+                // addDatasetTable() Anda sudah mendukung container = Cell
+                $this->addDatasetTable($cell, $dataset);
+
+                $cell->addTextBreak(1);
+            }
+        }
+    }
+
+    private function addDatasetTable($container, $dataset)
+    {
+        $resolved = $this->resolveDatasetForDegree($dataset);
+
+        $columns = $resolved->expected_columns ?? $dataset->expected_columns ?? ['No', 'Keterangan', 'Data'];
+        $rows    = $resolved->expected_rows    ?? $dataset->expected_rows    ?? $this->resolveExpectedRows($dataset);
+
+        if (!is_array($columns) || count($columns) === 0) $columns = ['No', 'Keterangan', 'Data'];
+        if (!is_array($rows) || count($rows) === 0) $rows = [null, null, null];
+
+        // ====== SMART WIDTH (simulate Word AutoFit) ======
+        $tableWidth = $this->currentTableWidthTwips;
+        $colWidths  = $this->computeSmartColumnWidthsTwips($columns, $tableWidth);
+
+        $tableStyle = [
+            'borderSize'  => 6,
+            'borderColor' => '000000',
+            'cellMargin'  => 80,
+            'width'       => $tableWidth,
+            'unit'        => \PhpOffice\PhpWord\SimpleType\TblWidth::TWIP,
+            'layout'      => \PhpOffice\PhpWord\Style\Table::LAYOUT_FIXED,
+        ];
+
+        $table = $container->addTable($tableStyle);
+
+        // ================= HEADER =================
+        $headerFontSize = $this->isLandscape ? 9 : 10;
+
+        $table->addRow(400);
+        foreach ($columns as $i => $col) {
+            $cell = $table->addCell($colWidths[$i], [
+                'bgColor'  => 'D3D3D3',
+                'valign'   => 'center',
+                'wordWrap' => true,
+            ]);
+
+            $cell->addText(
+                (string) $col,
+                ['bold' => true, 'size' => $headerFontSize],
+                ['alignment' => Jc::CENTER]
+            );
+        }
+
+        // ================= ROWS =================
+        $firstColName = strtolower(trim((string)($columns[0] ?? '')));
+        $isNoColumn   = in_array($firstColName, ['no', 'no.', 'nomor', 'number'], true);
+
+        foreach ($rows as $rowIndex => $rowLabel) {
+            $table->addRow(350);
+
+            $label = is_string($rowLabel) ? trim($rowLabel) : $rowLabel;
+            $isJumlah    = is_string($label) && preg_match('/^Jumlah$/i', $label);
+            $isRekap     = is_string($label) && preg_match('/^Rekapitulasi$/i', $label);
+            $isYellowRow = $isJumlah || $isRekap;
+
+            foreach ($columns as $colIndex => $col) {
+                $cellStyle = ['wordWrap' => true] + ($isYellowRow ? ['bgColor' => 'FFF2CC'] : []);
+                $cell = $table->addCell($colWidths[$colIndex], $cellStyle);
+
+                // Kolom pertama: label TS/ Jumlah / Rekapitulasi atau nomor
+                if ($colIndex === 0) {
+                    $text = '';
+
+                    if ($rowLabel !== null && $rowLabel !== '') {
+                        $text = (string) $rowLabel;
+                    } elseif ($isNoColumn) {
+                        $text = (string) ($rowIndex + 1);
+                    }
+
+                    $isSpecial = is_string($text) && preg_match('/^TS(-\d+)?$|^Jumlah$|^Rekapitulasi$/i', $text);
+
+                    $cell->addText(
+                        $text,
+                        ['size' => 10] + ($isSpecial ? ['bold' => true] : []),
+                        ['alignment' => Jc::CENTER]
+                    );
+
+                    continue;
+                }
+
+                // ✅ Baris "Jumlah": masukkan field Word SUM(ABOVE)
+                if ($isJumlah || $isRekap) {
+                    // Cell kosong dengan highlight kuning
+                    $cell->addText(
+                        '',
+                        ['size' => 10, 'bold' => true],
+                        ['alignment' => Jc::CENTER]
+                    );
+                    continue;
+                }
+
+                // (Opsional) Rekapitulasi: tetap placeholder Σ
+                $cell->addText(
+                    '',
                     ['size' => 10],
-                    ['alignment' => $index === 0 ? Jc::CENTER : Jc::START]
+                    ['alignment' => Jc::START]
                 );
             }
         }
     }
 
-    private function getKriteriaSubtitle($kodeKriteria)
+    /**
+     * Heuristik lebar kolom: makin panjang header → makin lebar.
+     * Kolom No dibuat kecil, kolom berisi "Akreditasi"/"Status"/"Peringkat"/"No. dan Tgl." diboost.
+     */
+    private function computeSmartColumnWidthsTwips(array $columns, int $tableWidthTwips): array
     {
-        $subtitles = [
-            'D' => 'Differentiation of the mission',
-            'E' => 'Education, Evaluation System, and Learning Outcomes',
-            'P' => 'Human Resource Development',
-            'I' => 'Internalization of Quality Assurance',
-            'L' => 'Learning Environment and Resources',
-            'A' => 'Accountability, Governance, and Cooperation',
-            'R' => 'Research, Community Service, and Academic Atmosphere'
-        ];
+        $min = 700;   // minimum per kolom (twips)
+        $max = 4200;  // maksimum per kolom (twips)
 
-        return $subtitles[$kodeKriteria] ?? '';
+        $weights = [];
+        foreach ($columns as $col) {
+            $h = trim((string)$col);
+            $lh = mb_strtolower($h);
+
+            // base weight dari panjang teks
+            $w = max(2.0, min(12.0, mb_strlen($h) / 3.0));
+
+            // heuristik khusus
+            if (preg_match('/^(no|no\.|nomor|number)$/i', $h)) $w = 1.2;                 // "No" super kecil
+            if (str_contains($lh, 'akreditasi')) $w += 3.5;
+            if (str_contains($lh, 'status')) $w += 2.0;
+            if (str_contains($lh, 'peringkat')) $w += 2.0;
+            if (str_contains($lh, 'no.')) $w += 1.5;
+            if (str_contains($lh, 'tgl')) $w += 1.5;
+            if (str_contains($lh, 'nama')) $w += 1.2;
+            if (str_contains($lh, 'program studi')) $w += 1.5;
+
+            $weights[] = $w;
+        }
+
+        $sum = array_sum($weights);
+        if ($sum <= 0) $sum = 1;
+
+        // alokasi twips berdasarkan bobot
+        $widths = [];
+        $remaining = $tableWidthTwips;
+
+        foreach ($weights as $i => $w) {
+            $alloc = (int) floor(($w / $sum) * $tableWidthTwips);
+            $alloc = max($min, min($max, $alloc));
+            $widths[$i] = $alloc;
+            $remaining -= $alloc;
+        }
+
+        // distribusi sisa (agar total pas tableWidthTwips)
+        $i = 0;
+        while ($remaining !== 0 && count($widths) > 0) {
+            $idx = $i % count($widths);
+
+            if ($remaining > 0 && $widths[$idx] < $max) {
+                $widths[$idx] += 1;
+                $remaining -= 1;
+            } elseif ($remaining < 0 && $widths[$idx] > $min) {
+                $widths[$idx] -= 1;
+                $remaining += 1;
+            }
+
+            $i++;
+            if ($i > 200000) break; // safety
+        }
+
+        return $widths;
     }
 
-    private function addSuplemenSection()
+    /**
+     * Resolve expected rows:
+     * - kalau dataset->expected_rows terisi, pakai itu
+     * - kalau kosong/null, fallback 3 baris default (1..3)
+     */
+    private function resolveExpectedRows($dataset): array
     {
-        $pdfPath = $this->getPengajuanDokumenPath('data_suplemen');
+        $rows = $dataset->expected_rows ?? null;
 
-        if ($pdfPath) {
-            // suplemen masuk konten utama? kamu sekarang pakai arabic
-            $this->addPdfAsImagesToWord($pdfPath, 'arabic');
-            return;
+        if (is_array($rows) && count($rows) > 0) {
+            // Normalisasi: pastikan semuanya string (kecuali null)
+            return array_map(function ($r) {
+                if ($r === null) return null;
+                return is_string($r) ? $r : (string) $r;
+            }, $rows);
         }
 
-        $section = $this->phpWord->addSection([
-            'marginTop' => 1000,
-            'marginBottom' => 1000,
-            'marginLeft' => 1500,
-            'marginRight' => 1500,
-        ]);
-        $this->applyFooterPageNumber($section, 'arabic');
-
-        $numberingName = 'suplemenNumbering';
-        $this->ensureNumberingStyle($numberingName, [
-            'type' => 'multilevel',
-            'levels' => [
-                ['level' => 0, 'format' => 'upperRoman',  'text' => '%1.', 'left' => 360,  'hanging' => 360, 'tabPos' => 720],
-                ['level' => 1, 'format' => 'upperLetter', 'text' => '%2.', 'left' => 720,  'hanging' => 360, 'tabPos' => 1080],
-                ['level' => 2, 'format' => 'decimal',     'text' => '%3.', 'left' => 1080, 'hanging' => 360, 'tabPos' => 1440],
-                ['level' => 3, 'format' => 'lowerLetter', 'text' => '%4.', 'left' => 1440, 'hanging' => 360, 'tabPos' => 1800],
-            ],
-        ]);
-
-        $code = $this->normalizeDegreeCode($this->activeDegreeLevel?->code);
-
-        // Pilih konten suplemen sesuai degree
-        switch ($code) {
-            case 'd1':
-            case 'd2':
-            case 'd3':
-                $this->renderSuplemenDiploma123($section, $numberingName);
-                break;
-
-            case 'd4':
-            case 's1-terapan':
-                $this->renderSuplemenSarjanaTerapan($section, $numberingName);
-                break;
-
-            case 's1':
-                $this->renderSuplemenSarjana($section, $numberingName);
-                break;
-
-            case 'profesi':
-                $this->renderSuplemenProfesi($section, $numberingName);
-                break;
-
-            case 's2':
-                $this->renderSuplemenMagister($section, $numberingName);
-                break;
-
-            case 's2-terapan':
-                $this->renderSuplemenMagisterTerapan($section, $numberingName);
-                break;
-
-            case 's3':
-                $this->renderSuplemenDoktor($section, $numberingName);
-                break;
-
-            case 's3-terapan':
-                $this->renderSuplemenDoktorTerapan($section, $numberingName);
-                break;
-
-            default:
-                // fallback: kalau kode tidak dikenali, tampilkan yang umum (mis. sarjana)
-                $this->renderSuplemenSarjana($section, $numberingName);
-                break;
-        }
+        // Default lama: 3 baris dummy
+        return [null, null, null];
     }
 
     /**
@@ -723,7 +716,7 @@ class BorangExportService
     {
         $section->addText(
             'Pernyataan Standar',
-            ['size' => 11, 'bold' => true, 'underline' => Font::UNDERLINE_SINGLE, 'color' => $this->templateBlue],
+            ['size' => 11, 'bold' => true, 'underline' => Font::UNDERLINE_SINGLE],
             ['spaceAfter' => 200]
         );
 
@@ -752,12 +745,12 @@ class BorangExportService
     {
         $section->addText(
             'Uraian Indikator Penilaian',
-            ['size' => 11, 'bold' => true, 'color' => $this->templateBlue, 'underline' => Font::UNDERLINE_SINGLE],
+            ['size' => 11, 'bold' => true, 'underline' => Font::UNDERLINE_SINGLE, 'color' => $this->templateBlue],
             ['spaceAfter' => 200]
         );
 
         if (!$elemen->indikator || $elemen->indikator->count() === 0) {
-            $section->addText('[Tidak ada indikator]', ['size' => 11, 'italic' => true, 'color' => '000000']);
+            $section->addText('[Tidak ada indikator]', ['size' => 11, 'italic' => true, 'color' => $this->templateBlue]);
             return;
         }
 
@@ -780,7 +773,7 @@ class BorangExportService
             $text = trim($indikator->deskripsi_indikator);
 
             if (preg_match('/^(.*?Penilaian berfokus pada:)/s', $text, $m)) {
-                $section->addText(trim($m[1]), ['size' => 11, 'color' => $this->templateBlue], ['alignment' => Jc::BOTH, 'spaceAfter' => 150]);
+                $section->addText(trim($m[1]), ['size' => 11], ['alignment' => Jc::BOTH, 'spaceAfter' => 150]);
             }
 
             preg_match_all('/\(\d+\)\.\s*(.*?)(?=\(\d+\)\.|$)/s', $text, $matches);
@@ -797,6 +790,147 @@ class BorangExportService
         }
     }
 
+    private function addSuplemenSection()
+    {
+        $section = $this->phpWord->addSection([
+            'marginTop' => 1000,
+            'marginBottom' => 1000,
+            'marginLeft' => 1500,
+            'marginRight' => 1500,
+        ]);
+        $this->applyFooterPageNumber($section, 'arabic');
+
+        $numberingName = 'suplemenNumbering';
+        $this->ensureNumberingStyle($numberingName, [
+            'type' => 'multilevel',
+            'levels' => [
+                ['level' => 0, 'format' => 'upperRoman',  'text' => '%1.', 'left' => 360,  'hanging' => 360, 'tabPos' => 720],
+                ['level' => 1, 'format' => 'upperLetter', 'text' => '%2.', 'left' => 720,  'hanging' => 360, 'tabPos' => 1080],
+                ['level' => 2, 'format' => 'decimal',     'text' => '%3.', 'left' => 1080, 'hanging' => 360, 'tabPos' => 1440],
+                ['level' => 3, 'format' => 'lowerLetter', 'text' => '%4.', 'left' => 1440, 'hanging' => 360, 'tabPos' => 1800],
+            ],
+        ]);
+
+        $code = $this->normalizeDegreeCode($this->activeDegreeLevel?->code);
+
+        $this->renderSuplemenFromDatabase(
+            $section,
+            $numberingName,
+            $code
+        );
+    }
+
+    // private function addSuplemenSection()
+    // {
+    //     $section = $this->phpWord->addSection([
+    //         'marginTop' => 1000,
+    //         'marginBottom' => 1000,
+    //         'marginLeft' => 1500,
+    //         'marginRight' => 1500,
+    //     ]);
+
+    //     // Multilevel: I. / A. / 1. / a.
+    //     $numberingName = 'suplemenNumbering';
+    //     $this->ensureNumberingStyle($numberingName, [
+    //         'type' => 'multilevel',
+    //         'levels' => [
+    //             ['level' => 0, 'format' => 'upperRoman',  'text' => '%1.', 'left' => 360,  'hanging' => 360, 'tabPos' => 720],
+    //             ['level' => 1, 'format' => 'upperLetter', 'text' => '%2.', 'left' => 720,  'hanging' => 360, 'tabPos' => 1080],
+    //             ['level' => 2, 'format' => 'decimal',     'text' => '%3.', 'left' => 1080, 'hanging' => 360, 'tabPos' => 1440],
+    //             ['level' => 3, 'format' => 'lowerLetter', 'text' => '%4.', 'left' => 1440, 'hanging' => 360, 'tabPos' => 1800],
+    //         ],
+    //     ]);
+
+    //     // I. (bold)
+    //     $section->addListItem(
+    //         'Suplemen Program Studi Diploma Satu, Diploma Dua, Diploma Tiga',
+    //         0,
+    //         ['size' => 11, 'bold' => true],
+    //         $numberingName,
+    //         ['spaceAfter' => 120]
+    //     );
+
+    //     // A. (bold)  ✅ harus bold
+    //     $section->addListItem(
+    //         'Deskripsi Capaian Pembelajaran Lulusan, Susunan, Materi Pembelajaran, Beban Belajar, Rencana Pembelajaran',
+    //         1,
+    //         ['size' => 11, 'bold' => true],
+    //         $numberingName,
+    //         ['spaceAfter' => 80]
+    //     );
+
+    //     // 1., 2., a., b., dst (contoh ringkas sesuai screenshot kamu)
+    //     $section->addListItem('Capaian Pembelajaran Lulusan (CPL)', 2, ['size' => 11], $numberingName);
+    //     $section->addListItem('Susunan Materi Pembelajaran Untuk Mencapai CPL', 2, ['size' => 11], $numberingName);
+
+    //     $section->addListItem('Matakuliah', 3, ['size' => 11], $numberingName);
+    //     $section->addListItem('Modul', 3, ['size' => 11], $numberingName);
+    //     $section->addListItem('Blok tematik; dan/atau', 3, ['size' => 11], $numberingName);
+    //     $section->addListItem('Bentuk lain', 3, ['size' => 11], $numberingName);
+
+    //     $section->addListItem('Beban Belajar dan Masa Tempuh', 2, ['size' => 11], $numberingName);
+    //     $section->addListItem('Rencana Pembelajaran', 2, ['size' => 11], $numberingName);
+
+    //     $section->addTextBreak(1);
+
+    //     // B. (bold) ✅ harus bold
+    //     $section->addListItem(
+    //         'Pemastian Capaian Pembelajaran Lulusan',
+    //         1,
+    //         ['size' => 11, 'bold' => true],
+    //         $numberingName,
+    //         ['spaceAfter' => 80]
+    //     );
+
+    //     // B.1 dst -> di screenshot kamu jadi 1.,2.,3. (level decimal)
+    //     $section->addListItem('Pemenuhan Beban Belajar', 2, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
+
+    //     // paragraf isi (bukan list) -> indent agar sejajar dengan teks setelah "1."
+    //     $section->addText(
+    //         'Kuliah, responsi, tutorial, seminar, praktikum, praktik, studio, penelitian, perancangan, pengembangan, tugas akhir, pelatihan bela negara, pertukaran pelajar, magang, wirausaha, pengabdian kepada masyarakat, dan/atau bentuk pembelajaran lain.',
+    //         ['size' => 11],
+    //         ['alignment' => Jc::BOTH, 'indentation' => ['left' => 1080], 'spaceAfter' => 120]
+    //     );
+
+    //     $section->addListItem('Magang', 2, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
+    //     $section->addText(
+    //         'Kegiatan magang di dunia usaha, dunia industri, dan dunia kerja yang relevan pada program Diploma Satu, Diploma Dua, dan Diploma Tiga (Durasi dan Beban belajar)',
+    //         ['size' => 11],
+    //         ['alignment' => Jc::BOTH, 'indentation' => ['left' => 1080], 'spaceAfter' => 120]
+    //     );
+
+    //     $section->addListItem('Penilaian Hasil Belajar', 2, ['size' => 11], $numberingName, ['spaceAfter' => 60]);
+
+    //     // a. b. c. d. (level 3)
+    //     $section->addListItem('Test', 3, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
+    //     $section->addListItem('Non Test', 3, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
+    //     $section->addListItem('Observasi', 3, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
+    //     $section->addListItem(
+    //         'Tugas akhir dalam bentuk prototipe, proyek, atau bentuk tugas akhir lainnya yang sejenis, baik secara individu maupun berkelompok, untuk program Diploma Tiga',
+    //         3,
+    //         ['size' => 11],
+    //         $numberingName,
+    //         ['spaceAfter' => 40]
+    //     );
+    // }
+
+    /**
+     * Helper untuk subtitle kriteria
+     */
+    private function getKriteriaSubtitle($kodeKriteria)
+    {
+        $subtitles = [
+            'D' => 'Differentiation of the mission',
+            'E' => 'Education, Evaluation System, and Learning Outcomes',
+            'P' => 'Human Resource Development',
+            'I' => 'Internalization of Quality Assurance',
+            'L' => 'Learning Environment and Resources',
+            'A' => 'Accountability, Governance, and Cooperation',
+            'R' => 'Research, Community Service, and Academic Atmosphere'
+        ];
+
+        return $subtitles[$kodeKriteria] ?? '';
+    }
 
     private function addFormLine($section, $label, $hasRedText = false, $alignment = Jc::START)
     {
@@ -883,9 +1017,6 @@ class BorangExportService
         return $section;
     }
 
-    /**
-     * ✅ PERBAIKAN: Create Landscape Section dengan Page Number Control
-     */
     private function createLandscapeSection(string $numberType = 'arabic', bool $restartNumbering = false)
     {
         $this->isLandscape = true;
@@ -938,7 +1069,7 @@ class BorangExportService
 
         // Header kecil di dalam kotak
         $cell->addText(
-            'Deskripsi ' . strtolower($elemen->pernyataan_elemen),
+            'Deskripsi ' . strtolower($elemen->pernyataan_elemen) . ' (Mohon jangan dihapus)',
             ['size' => 11, 'italic' => true],
             ['spaceAfter' => 200]
         );
@@ -957,6 +1088,81 @@ class BorangExportService
                 'italic' => !$filled,
             ],
             ['alignment' => Jc::BOTH]
+        );
+    }
+
+    private function addFrontMatterDescBox(
+        \PhpOffice\PhpWord\Element\Section $section,
+        string $label,
+        int $maxWords,
+        array $prefillParagraphs = [],
+        bool $fullHeight = false,
+        int $reservedTopTwips = 1800,      // hanya dipakai kalau fullHeight = true
+        int $minBoxHeightTwips = 3000,     // hanya dipakai kalau fullHeight = true
+        ?string $emptyPlaceholder = null   // kalau null, auto pakai template umum
+    ): void {
+        // Placeholder default jika kosong
+        if ($emptyPlaceholder === null) {
+            $emptyPlaceholder = "[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal {$maxWords} kata)...]";
+        }
+
+        // Style table (samakan saja; kalau mau beda margin, bisa tambahkan argumen juga)
+        $tableStyle = [
+            'borderSize'  => 6,
+            'borderColor' => '000000',
+            'cellMargin'  => 110,
+            'width'       => 100 * 50,
+            'unit'        => 'pct',
+        ];
+
+        $table = $section->addTable($tableStyle);
+
+        // Kalau full height: pakai height sisa halaman
+        if ($fullHeight) {
+            $boxHeight = max($minBoxHeightTwips, $this->contentHeightTwips - $reservedTopTwips);
+            $table->addRow($boxHeight, ['exactHeight' => false]);
+        } else {
+            $table->addRow();
+        }
+
+        $cell = $table->addCell(9500, ['valign' => 'top']);
+
+        // Header kecil dalam kotak
+        $cell->addText(
+            $label,
+            ['size' => 11, 'italic' => true],
+            ['spaceAfter' => 200]
+        );
+
+        $hasPrefill = !empty(array_filter($prefillParagraphs, fn($p) => trim((string)$p) !== ''));
+
+        // Kalau tidak ada prefill: tampilkan placeholder 1 paragraf
+        if (!$hasPrefill) {
+            $cell->addText(
+                $emptyPlaceholder,
+                ['size' => 11, 'color' => '000000', 'italic' => true],
+                ['alignment' => Jc::BOTH, 'spaceAfter' => 200]
+            );
+            return;
+        }
+
+        // Render paragraf bawaan (placeholder isi)
+        foreach ($prefillParagraphs as $p) {
+            $p = trim((string)$p);
+            if ($p === '') continue;
+
+            $cell->addText(
+                $p,
+                ['size' => 11, 'color' => '000000', 'italic' => true],
+                ['alignment' => Jc::BOTH, 'spaceAfter' => 200]
+            );
+        }
+
+        // Hint limit kata
+        $cell->addText(
+            "(Maksimal {$maxWords} kata)",
+            ['size' => 10, 'color' => '000000', 'italic' => true],
+            ['alignment' => Jc::END]
         );
     }
 
@@ -988,6 +1194,85 @@ class BorangExportService
         // Kolom Value
         $table->addCell(3200)->addText($value ?: ' ', ['size' => 11]);
     }
+
+    private function resolveDatasetForDegree($dataset): object
+    {
+        // default: pakai dataset as-is
+        $resolved = (object)[
+            'expected_columns' => $dataset->expected_columns,
+            'expected_rows'    => $dataset->expected_rows,
+            'template_html'    => $dataset->template_html,
+        ];
+
+        // kalau tidak ada degree aktif, atau dataset tidak variant-aware → return default
+        if (!$this->activeDegreeLevel || empty($dataset->has_degree_variants)) {
+            return $resolved;
+        }
+
+        // ambil override dari pivot
+        $pivot = DB::table('dataset_borang_degree_level')
+            ->where('id_dataset_borang', $dataset->id)
+            ->where('id_degree_level', $this->activeDegreeLevel->id)
+            ->first();
+
+        // kalau tidak ada override untuk degree tersebut, fallback ke default
+        if (!$pivot) {
+            return $resolved;
+        }
+
+        // decode json kolom
+        $resolved->expected_columns = $pivot->expected_columns ? json_decode($pivot->expected_columns, true) : $resolved->expected_columns;
+
+        // IMPORTANT:
+        // tabel pivot Anda tidak punya expected_rows.
+        // Maka expected_rows bisa tetap ambil dari dataset master,
+        // atau Anda bisa derive dari template_html (lebih rumit).
+        // Saran: tambahkan kolom expected_rows di pivot jika memang perlu.
+        $resolved->template_html = $pivot->template_html ?? $resolved->template_html;
+
+        // Jika Anda ingin per-degree juga beda rows (seperti L.4.a D1 vs D2),
+        // yang paling rapi: tambahkan kolom expected_rows di dataset_borang_degree_level.
+        // Untuk sementara, kita bisa pakai aturan sederhana berdasarkan kode tabel:
+        if ($dataset->kode === 'L.4.a') {
+            $resolved->expected_rows = $this->getRowsL4aByDegree($this->activeDegreeLevel->code);
+        }
+
+        if ($dataset->kode === 'E.2.2' || $dataset->kode === 'E.3.b') {
+            // samakan dengan aturan masa studi (lihat fungsi di bawah)
+            $resolved->expected_rows = $this->getRowsE22ByDegree($this->activeDegreeLevel->code);
+        }
+
+        return $resolved;
+    }
+
+    private function getRowsL4aByDegree(string $code): array
+    {
+        return match ($code) {
+            'd1' => ['TS-3', 'TS-2', 'Jumlah'],
+            'd2' => ['TS-4', 'TS-3', 'TS-2', 'Jumlah'],
+            'd3' => ['TS-4', 'TS-3', 'TS-2', 'Jumlah'],
+            'd4' => ['TS-4', 'TS-3', 'TS-2', 'Jumlah'],
+            's1' => ['TS-4', 'TS-3', 'TS-2', 'Jumlah'],
+            default => ['TS-4', 'TS-3', 'TS-2', 'Jumlah'],
+        };
+    }
+
+    private function getRowsE22ByDegree(string $code): array
+    {
+        // Ini hanya placeholder rows; struktur kolomnya yang utama berbeda per instrumen.
+        // Kalau Anda butuh rows persis seperti format instrumen (TS-6, TS-5, dst),
+        // Anda bisa definisikan sesuai kebutuhan.
+        return match ($code) {
+            'd1' => ['TS-1', 'TS'],
+            'd2' => ['TS-2', 'TS-1', 'TS'],
+            'd3' => ['TS-4', 'TS-3', 'TS-2', 'TS-1', 'TS'],
+            'd4', 's1' => ['TS-6', 'TS-5', 'TS-4', 'TS-3', 'TS-2', 'TS-1', 'TS'],
+            's2', 's2-terapan' => ['TS-4', 'TS-3', 'TS-2', 'TS-1', 'TS'],
+            's3', 's3-terapan' => ['TS-5', 'TS-4', 'TS-3', 'TS-2', 'TS-1', 'TS'],
+            default => ['TS-4', 'TS-3', 'TS-2', 'TS-1', 'TS'],
+        };
+    }
+
 
     private function normalizeDegreeCode(?string $code): string
     {
@@ -1412,52 +1697,58 @@ class BorangExportService
         );
     }
 
-    private function addLogoFlexible($section, $logoPath, $maxWidth = 200, $maxHeight = 200)
-    {
-        if (!file_exists($logoPath)) return;
-
-        [$origWidth, $origHeight] = getimagesize($logoPath);
-        $ratio = $origWidth / $origHeight;
-
-        if ($ratio > 1) {          // Landscape
-            $width = $maxWidth;
-            $height = $maxWidth / $ratio;
-        } elseif ($ratio < 1) {    // Portrait
-            $height = $maxHeight;
-            $width = $maxHeight * $ratio;
-        } else {                   // Square
-            $width = $maxWidth;
-            $height = $maxHeight;
-        }
-
-        $section->addImage($logoPath, [
-            'width' => $width,
-            'height' => $height,
-            'alignment' => Jc::CENTER
-        ]);
-    }
-
-    private function loadBorangDataMap(): void
-    {
-        // kalau relasi dataset borang namanya "datasetBorang", pakai with
-        $borangData = BorangData::with('datasetBorang')
-            ->where('id_pengajuan', $this->pengajuan->id)
+    private function renderSuplemenFromDatabase(
+        $section,
+        string $numberingName,
+        string $degreeCode
+    ): void {
+        $items = DatasetSuplemen::where('degree_level_code', $degreeCode)
+            ->orderBy('urutan')
             ->get();
 
-        foreach ($borangData as $row) {
-            // 1) key utama: dataset_id (STRING seperti ringkasan, kata_pengantar, desc_27, suplemen)
-            if (!empty($row->dataset_id)) {
-                $this->borangDataMap[$row->dataset_id] = $row->nilai;
-            }
+        foreach ($items as $item) {
+            $format = $item->formatting ?? [];
 
-            // 2) key by FK dataset borang (kalau kamu butuh match via id_dataset_borang)
-            if (!empty($row->id_dataset_borang)) {
-                $this->borangDataMap['dataset_id:' . $row->id_dataset_borang] = $row->nilai;
-            }
+            switch ($item->content_type) {
+                case 'list_item':
+                    $section->addListItem(
+                        $item->text_content,
+                        $item->numbering_level,
+                        ['size' => 11, 'bold' => $format['bold'] ?? false],
+                        $numberingName,
+                        [
+                            'spaceAfter' => $format['spaceAfter'] ?? null,
+                        ]
+                    );
+                    break;
 
-            // 3) key by kode dataset (untuk tabel)
-            if ($row->datasetBorang?->kode) {
-                $this->borangDataMap['dataset_kode:' . $row->datasetBorang->kode] = $row->nilai;
+                case 'paragraph':
+                    $section->addText(
+                        $item->text_content,
+                        ['size' => 11],
+                        [
+                            'alignment'   => Jc::BOTH,
+                            'indentation' => [
+                                'left' => $format['indentation'] ?? 0
+                            ],
+                            'spaceAfter'  => $format['spaceAfter'] ?? 0,
+                        ]
+                    );
+                    break;
+
+                case 'bullet':
+                    $section->addText(
+                        '• ' . $item->text_content,
+                        ['size' => 11],
+                        [
+                            'alignment'   => Jc::BOTH,
+                            'indentation' => [
+                                'left' => $format['indentation'] ?? 1080
+                            ],
+                            'spaceAfter' => $format['spaceAfter'] ?? 80,
+                        ]
+                    );
+                    break;
             }
         }
     }
@@ -1533,254 +1824,82 @@ class BorangExportService
             ['size' => 11, 'bold' => $bold]
         );
     }
-
-    private function addFrontMatterDescBox(
-        \PhpOffice\PhpWord\Element\Section $section,
-        string $label,
-        int $maxWords,
-        array $prefillParagraphs = [],
-        bool $fullHeight = false,
-        int $reservedTopTwips = 1800,
-        int $minBoxHeightTwips = 3000,
-        ?string $emptyPlaceholder = null,
-        bool $isPlaceholder = true // ✅ tambahan
-    ): void {
-
-        if ($emptyPlaceholder === null) {
-            $emptyPlaceholder = "[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal {$maxWords} kata)...]";
-        }
-
-        $tableStyle = [
-            'borderSize'  => 6,
-            'borderColor' => '000000',
-            'cellMargin'  => 110,
-            'width'       => 100 * 50,
-            'unit'        => 'pct',
-        ];
-
-        $table = $section->addTable($tableStyle);
-
-        if ($fullHeight) {
-            $boxHeight = max($minBoxHeightTwips, $this->contentHeightTwips - $reservedTopTwips);
-            $table->addRow($boxHeight, ['exactHeight' => false]);
-        } else {
-            $table->addRow();
-        }
-
-        $cell = $table->addCell(9500, ['valign' => 'top']);
-
-        $cell->addText(
-            $label,
-            ['size' => 11, 'italic' => true],
-            ['spaceAfter' => 200]
-        );
-
-        $hasPrefill = !empty(array_filter($prefillParagraphs, fn($p) => trim((string)$p) !== ''));
-
-        // kalau kosong -> tampil placeholder merah
-        if (!$hasPrefill) {
-            $cell->addText(
-                $emptyPlaceholder,
-                ['size' => 11, 'color' => '000000', 'italic' => true],
-                ['alignment' => Jc::BOTH, 'spaceAfter' => 200]
-            );
-            // ✅ tampilkan hint max kata hanya kalau placeholder
-            $cell->addText(
-                "(Maksimal {$maxWords} kata)",
-                ['size' => 10, 'color' => '000000', 'italic' => true],
-                ['alignment' => Jc::END]
-            );
-            return;
-        }
-
-        // ✅ kalau ada prefill: style tergantung placeholder atau data asli
-        $textStyle = $isPlaceholder
-            ? ['size' => 11, 'color' => '000000', 'italic' => true]
-            : ['size' => 11, 'color' => '000000', 'italic' => false];
-
-        foreach ($prefillParagraphs as $p) {
-            $p = trim((string)$p);
-            if ($p === '') continue;
-
-            $cell->addText(
-                $p,
-                $textStyle,
-                ['alignment' => Jc::BOTH, 'spaceAfter' => 200]
-            );
-        }
-
-        // ✅ hint max kata hanya untuk placeholder/template
-        if ($isPlaceholder) {
-            $cell->addText(
-                "(Maksimal {$maxWords} kata)",
-                ['size' => 10, 'color' => '000000', 'italic' => true],
-                ['alignment' => Jc::END]
-            );
-        }
-    }
-
-    private function getPengajuanDokumenPath(string $jenis): ?string
-    {
-        $doc = PengajuanDokumen::query()
-            ->where('id_pengajuan', $this->pengajuan->id)
-            ->where('jenis_dokumen', $jenis)
-            ->latest('id')
-            ->first();
-        if (!$doc) return null;
-
-        // ✅ sesuaikan kolom path kamu: kadang namanya 'path' / 'file_path' / 'lokasi'
-        $relativePath = $doc->path_file ?? null;
-        if (!$relativePath) return null;
-
-        // Umumnya file disimpan di storage/app/public/...
-        $fullPath = storage_path('app/public/' . ltrim($relativePath, '/'));
-
-        return file_exists($fullPath) ? $fullPath : null;
-    }
+    /**
+     * ✅ Basic document protection
+     */
+    // private function protectDocumentBasic(): void
+    // {
+    //     $settings = $this->phpWord->getSettings();
+    //     $protection = new Protection();
+    //     $protection->setEditing(DocProtect::READ_ONLY);
+    //     $protection->setPassword('lamdepilar');
+    //     $settings->setDocumentProtection($protection);
+    // }
 
     /**
-     * Convert PDF menjadi image per halaman (PNG).
-     * Return array path PNG.
+     * ✅ Save detailed protection instructions
      */
-    private function pdfToPngPages(string $pdfPath, int $dpi = 200): array
+    private function saveProtectionInstructions(string $degreeCode): void
     {
-        if (!extension_loaded('imagick')) {
-            $section = $this->phpWord->addSection();
-            $section->addText('⚠ Dokumen PDF tidak dapat dimuat karena Imagick belum tersedia.', ['color' => '000000']);
-            return [];
+        $guide = <<<'TXT'
+# 🔒 PANDUAN PROTECT TEMPLATE LED
+
+## Password Default
+**Password:** lamdepilar
+
+## Jenis Protection
+
+### 1. Basic Protection (Already Applied)
+- Seluruh dokumen READ-ONLY
+- User perlu unprotect dengan password untuk edit
+
+### 2. Advanced Protection (Manual Setup Required)
+
+Untuk allow edit HANYA di area tertentu:
+
+**Area yang BOLEH diedit:**
+- Halaman cover (nama prodi, tahun)
+- Lembar pengesahan (tanda tangan, nama)
+- Kotak deskripsi di setiap elemen (dalam border hitam)
+- Tabel data di setiap elemen
+- Bagian suplemen
+
+**Area yang DIKUNCI:**
+- Header/footer
+- Pernyataan standar
+- Indikator penilaian
+- Label dan instruksi
+
+**Cara Setup (Microsoft Word):**
+1. File → Info → Protect Document → Restrict Editing
+2. Pilih "Allow only this type of editing": Filling in forms
+3. Klik "Select sections..."
+4. Centang sections yang boleh diedit:
+   - Section 1 (Cover)
+   - Section 2 (Pengesahan)
+   - Kotak deskripsi (manual select)
+   - Suplemen section
+5. Klik "Yes, Start Enforcing Protection"
+6. Enter password: lamdepilar
+
+**Catatan:**
+- Protection berbasis section/region memerlukan manual setup
+- Alternatif: Use form fields untuk area editable
+- Atau: Provide separated template per section
+
+## Troubleshooting
+
+**Q: Saya lupa password?**
+A: Contact admin atau regenerate template
+
+**Q: Kotak deskripsi tidak bisa diedit?**
+A: Unprotect → Edit → Re-protect dengan exclude area tersebut
+
+TXT;
+        $guidePath = storage_path("app/public/templates/PROTECTION_GUIDE_{$degreeCode}.txt");
+        if (!file_exists(dirname($guidePath))) {
+            mkdir(dirname($guidePath), 0755, true);
         }
-
-        if (!file_exists($pdfPath)) {
-            throw new \RuntimeException("File PDF tidak ditemukan: {$pdfPath}");
-        }
-        $this->ensureGhostscriptLocal();
-
-        $tmpDir = storage_path('app/tmp_pdf_export');
-        if (!is_dir($tmpDir)) {
-            mkdir($tmpDir, 0777, true);
-        }
-
-        try {
-            $imagick = new \Imagick();
-            $imagick->setResolution($dpi, $dpi);
-            $imagick->setOption('pdf:use-cropbox', 'true');
-            $imagick->readImage($pdfPath);
-
-            $pages = [];
-            foreach ($imagick as $i => $page) {
-                $page->setImageFormat('png');
-                $page->setImageCompressionQuality(90);
-
-                $out = $tmpDir . '/' . md5($pdfPath) . "_page_" . $i . ".png";
-                $page->writeImage($out);
-                $pages[] = $out;
-            }
-
-            $imagick->clear();
-            $imagick->destroy();
-
-            return $pages;
-        } catch (ImagickException $e) {
-            throw new \RuntimeException("Gagal convert PDF ke PNG: " . $e->getMessage(), 0, $e);
-        }
-    }
-
-    /**
-     * Sisipkan PDF sebagai halaman-halaman gambar di Word.
-     * Cocok untuk "lembar_pengesahan" & "suplemen".
-     *
-     * - $numberType: 'roman' atau 'arabic'
-     * - $restartAt: kalau mau restart numbering dari 1 (opsional)
-     */
-    private function addPdfAsImagesToWord(
-        string $pdfPath,
-        string $numberType = 'roman',
-        ?int $restartAt = null,
-        int $dpi = 200
-    ): void {
-        $images = $this->pdfToPngPages($pdfPath, $dpi);
-
-        foreach ($images as $idx => $imgPath) {
-            $section = $this->phpWord->addSection([
-                'marginTop' => 700,
-                'marginBottom' => 700,
-                'marginLeft' => 700,
-                'marginRight' => 700,
-            ]);
-
-            // restart hanya di halaman pertama insert pdf (kalau diminta)
-            $this->applyFooterPageNumber($section, $numberType, ($idx === 0 ? $restartAt : null));
-
-            // width ini biasanya cukup pas A4 dengan margin 700
-            // kalau terlalu besar/kecil tinggal adjust
-            $imgPath = $this->persistImage($imgPath);
-
-            $section->addImage($imgPath, [
-                'width' => 520,
-                'alignment' => \PhpOffice\PhpWord\SimpleType\Jc::CENTER,
-            ]);
-        }
-    }
-
-    /**
-     * Optional: bersihkan file png sementara
-     */
-    private function cleanupTmpPdfImages(): void
-    {
-        $tmpDir = storage_path('app/tmp_pdf_export');
-        if (!is_dir($tmpDir)) return;
-
-        foreach (glob($tmpDir . '/*.png') as $f) {
-            @unlink($f);
-        }
-    }
-
-    private function ensureGhostscriptLocal(): void
-    {
-        $gsBin = public_path('gs/gs10.01.1/bin');
-        $gsBinReal = realpath($gsBin) ?: $gsBin;
-
-        $gsExe = $gsBinReal . DIRECTORY_SEPARATOR . 'gs.exe';
-        $gsWin = $gsBinReal . DIRECTORY_SEPARATOR . 'gswin64c.exe';
-
-        if (!file_exists($gsExe) && file_exists($gsWin)) {
-            // ✅ bikin gs.exe agar ImageMagick bisa menemukan "gs"
-            @copy($gsWin, $gsExe);
-        }
-
-        if (!file_exists($gsExe) && !file_exists($gsWin)) {
-            throw new \RuntimeException("Ghostscript tidak ditemukan di: {$gsBinReal}");
-        }
-
-        // ✅ env khusus untuk ImageMagick/Imagick (penting di Windows)
-        putenv("MAGICK_GHOSTSCRIPT_PATH={$gsBinReal}");
-        $_SERVER['MAGICK_GHOSTSCRIPT_PATH'] = $gsBinReal;
-        $_ENV['MAGICK_GHOSTSCRIPT_PATH'] = $gsBinReal;
-
-        // ✅ tambahkan ke PATH proses ini
-        $path = getenv('PATH') ?: '';
-        if (stripos($path, $gsBinReal) === false) {
-            $newPath = $gsBinReal . ';' . $path;
-            putenv("PATH={$newPath}");
-            $_SERVER['PATH'] = $newPath;
-            $_ENV['PATH'] = $newPath;
-        }
-    }
-
-    private function persistImage(string $path): string
-    {
-        if (!file_exists($path)) {
-            throw new \RuntimeException("Image not found: {$path}");
-        }
-
-        $dir = storage_path("app/public/export_images/{$this->pengajuan->id}");
-        if (!is_dir($dir)) {
-            mkdir($dir, 0777, true);
-        }
-
-        $newPath = $dir . '/' . basename($path);
-        copy($path, $newPath);
-
-        return $newPath;
+        file_put_contents($guidePath, $guide);
     }
 }

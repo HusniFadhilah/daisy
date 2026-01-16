@@ -1,7 +1,7 @@
 {{-- resources/views/validator/borang/show.blade.php --}}
 @extends('layouts.template.app')
 
-@section('title', 'Review LED - ' . $pengajuan->nomor_pengajuan)
+@section('title', 'Review/Validasi LED+Suplemen dan LKPS - ' . $pengajuan->nomor_pengajuan)
 
 @push('styles')
 <style>
@@ -32,7 +32,7 @@
         <div>
             <h2>
                 <i class="bi bi-clipboard-check"></i>
-                Review LED
+                Review/Validasi LED+Suplemen dan LKPS
             </h2>
             <p class="text-muted mb-0">
                 {{ $pengajuan->studyProgram->name }} - {{ $pengajuan->tahun_akreditasi }}
@@ -123,7 +123,7 @@
             <div class="row g-3">
 
                 {{-- LED --}}
-                <div class="col-md-4">
+                <div class="col-lg-4">
                     <div class="border rounded p-3 h-100">
                         <div class="d-flex align-items-start gap-3">
 
@@ -160,7 +160,7 @@
                 </div>
 
                 {{-- Suplemen --}}
-                <div class="col-md-4">
+                <div class="col-lg-4">
                     <div class="border rounded p-3 h-100">
                         <div class="d-flex align-items-start gap-3">
 
@@ -197,7 +197,7 @@
                 </div>
 
                 {{-- LKPS --}}
-                <div class="col-md-4">
+                <div class="col-lg-4">
                     <div class="border rounded p-3 h-100">
                         <div class="d-flex align-items-start gap-3">
 
@@ -260,6 +260,91 @@
         </div>
     </div>
 
+    {{-- Excel Import/Export --}}
+    <div class="card mb-4 border-primary">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="bi bi-file-earmark-excel"></i> Upload/Download Excel Review/Validasi
+            </h5>
+            <span class="badge bg-light text-dark">Opsional</span>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info alert-permanent mb-3">
+                <i class="bi bi-info-circle"></i>
+                <strong>Tips:</strong> Anda dapat melakukan review/validasi melalui Excel untuk mempermudah proses.
+                Download template, isi review/validasi, lalu upload kembali ke sistem.
+            </div>
+
+            <div class="row g-3">
+                {{-- Download Section --}}
+                <div class="col-lg-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <i class="bi bi-download"></i> Download Excel
+                            </h6>
+                            <p class="card-text text-muted small">
+                                Download file Excel untuk review/validasi offline
+                            </p>
+
+                            <div class="btn-group w-100" role="group">
+                                <a href="{{ route('validator.borang.download-template', $assignment->id) }}" class="btn btn-outline-primary">
+                                    <i class="bi bi-file-earmark"></i> Template Kosong
+                                </a>
+                                <a href="{{ route('validator.borang.download-review', $assignment->id) }}" class="btn btn-outline-success">
+                                    <i class="bi bi-file-earmark-check"></i> Hasil Review/Validasi Anda
+                                </a>
+                            </div>
+
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    <strong>Template Kosong:</strong> File Excel baru tanpa isian<br>
+                                    <strong>Hasil Review/Validasi:</strong> File Excel berisi review/validasi yang sudah Anda isi
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Upload Section --}}
+                <div class="col-lg-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <i class="bi bi-upload"></i> Upload Excel
+                            </h6>
+                            <p class="card-text text-muted small">
+                                Upload file Excel yang sudah diisi untuk diproses
+                            </p>
+
+                            <form action="{{ route('validator.borang.upload-review', $assignment->id) }}" method="POST" enctype="multipart/form-data" id="formUploadReview">
+                                @csrf
+
+                                <div class="mb-3">
+                                    <input type="file" class="form-control" name="file" id="fileReview" accept=".xlsx,.xls" required>
+                                    <div class="form-text">
+                                        Format: .xlsx atau .xls (Maks. 10MB)
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary w-100" id="btnUploadReview">
+                                    <i class="bi bi-upload"></i> Upload File
+                                </button>
+                            </form>
+
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    <i class="bi bi-info-circle"></i>
+                                    Data yang diupload akan digabungkan dengan review/validasi online yang sudah ada
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- Review Content --}}
     <div class="row">
         <div class="col-12">
@@ -267,12 +352,53 @@
             {{-- Global Controls --}}
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div class="btn-group">
-                    <button type="button" class="btn btn-outline-primary btn-sm" id="btnExpandAll">
+                    <button type="button" class="btn btn-outline-primary btn-sm" id="btnToggleAll">
                         <i class="bi bi-arrows-expand"></i> Expand All
                     </button>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" id="btnCollapseAll">
-                        <i class="bi bi-arrows-collapse"></i> Collapse All
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-danger btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" id="btnResetDropdown">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reset
+                        </button>
+                        <ul class="dropdown-menu" id="resetDropdownMenu">
+                            <li>
+                                <button class="dropdown-item" type="button" data-reset-target="active" id="reset-active">
+                                    Reset Tab Aktif
+                                </button>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <button class="dropdown-item" type="button" data-reset-target="led" id="reset-led">
+                                    Reset LED
+                                </button>
+                            </li>
+                            <li>
+                                <button class="dropdown-item" type="button" data-reset-target="suplemen" id="reset-suplemen">
+                                    Reset Suplemen
+                                </button>
+                            </li>
+                            <li>
+                                <button class="dropdown-item" type="button" data-reset-target="lkps" id="reset-lkps">
+                                    Reset LKPS
+                                </button>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <button class="dropdown-item text-danger fw-semibold" type="button" data-reset-target="all" id="reset-all">
+                                    Reset SEMUA (LED + Suplemen + LKPS)
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+
+                    @if(app()->environment('local'))
+                    <button type="button" class="btn btn-outline-danger btn-sm" id="btnAutoTestReview">
+                        <i class="bi bi-lightning-charge"></i> Auto Test Review
                     </button>
+                    @endif
                 </div>
 
                 <div class="d-flex align-items-center gap-2">
@@ -319,7 +445,7 @@
                                 $reviewData = $validation->review_led ?? [];
                                 $isReviewed = isset($reviewData[$elemen->id]);
                                 $badgeClass = $isReviewed ? 'bg-success' : 'bg-warning text-dark';
-                                $badgeText = $isReviewed ? 'Lengkap' : 'Belum Lengkap';
+                                $badgeText = $isReviewed ? 'Review/Validasi Lengkap' : 'Review/Validasi Belum Lengkap';
                                 @endphp
 
                                 <div class="accordion-item elemen-accordion-item" data-tab="led" data-elemen-id="{{ $elemen->id }}" data-required-count="1" data-reviewed-count="{{ $isReviewed ? 1 : 0 }}">
@@ -368,7 +494,7 @@
                     }
                     $isComplete = ($required === 0) ? true : ($reviewedCount === $required);
                     $badgeClass = $isComplete ? 'bg-success' : 'bg-warning text-dark';
-                    $badgeText = $isComplete ? 'Lengkap' : 'Belum Lengkap';
+                    $badgeText = $isComplete ? 'Review/Validasi Lengkap' : 'Review/Validasi Belum Lengkap';
                     @endphp
 
                     <div class="card mb-3">
@@ -386,7 +512,7 @@
                                 @php
                                 $isReviewedItem = isset($reviewData[$it->id]);
                                 $itemBadgeClass = $isReviewedItem ? 'bg-success' : 'bg-warning text-dark';
-                                $itemBadgeText = $isReviewedItem ? 'Lengkap' : 'Belum Lengkap';
+                                $itemBadgeText = $isReviewedItem ? 'Review/Validasi Lengkap' : 'Review/Validasi Belum Lengkap';
                                 @endphp
 
                                 <div class="accordion-item elemen-accordion-item" data-tab="suplemen" data-elemen-id="{{ $it->id }}" data-required-count="1" data-reviewed-count="{{ $isReviewedItem ? 1 : 0 }}">
@@ -417,7 +543,7 @@
                         </div>
                     </div>
                     @empty
-                    <div class="alert alert-secondary">
+                    <div class="alert alert-secondary alert-permanent">
                         Dataset Suplemen untuk jenjang <strong>{{ $pengajuan->studyProgram->degreeLevel->code }}</strong> belum tersedia.
                     </div>
                     @endforelse
@@ -428,6 +554,12 @@
       ========================== --}}
                 <div class="tab-pane fade" id="pane-lkps" role="tabpanel" aria-labelledby="tab-lkps">
                     @foreach($kriterias as $kriteria)
+                    @php
+                    // Filter elemen yang punya indikator kuantitatif
+                    $elemenWithIndikator = $kriteria->elemenStandar->filter(fn($elemen) => $elemen->indikator->count() > 0);
+                    @endphp
+
+                    @if($elemenWithIndikator->isNotEmpty())
                     <div class="card mb-3">
                         <div class="card-header bg-success text-white">
                             <h5 class="mb-0">{{ $kriteria->kode_kriteria }} - {{ $kriteria->nama_kriteria }}</h5>
@@ -435,8 +567,7 @@
 
                         <div class="card-body">
                             <div class="accordion" id="acc-lkps-{{ $kriteria->id }}">
-                                @foreach($kriteria->elemenStandar as $elemen)
-
+                                @foreach($elemenWithIndikator as $elemen)
                                 @php
                                 $indikators = $elemen->indikator ?? collect();
                                 $required = $indikators->count();
@@ -447,7 +578,7 @@
                                 }
                                 $isComplete = ($required > 0) ? ($reviewedCount === $required) : true;
                                 $badgeClass = $isComplete ? 'bg-success' : 'bg-warning text-dark';
-                                $badgeText = $isComplete ? 'Lengkap' : 'Belum Lengkap';
+                                $badgeText = $isComplete ? 'Review/Validasi Lengkap' : 'Review/Validasi Belum Lengkap';
                                 @endphp
 
                                 <div class="accordion-item elemen-accordion-item" data-tab="lkps" data-elemen-id="{{ $elemen->id }}" data-required-count="{{ $required }}" data-reviewed-count="{{ $reviewedCount }}">
@@ -456,20 +587,11 @@
                                             <span class="badge bg-light text-dark">{{ $elemen->kode_elemen }}</span>
                                             <span class="flex-grow-1"><strong>{{ $elemen->pernyataan_elemen }}</strong></span>
                                             <span class="badge {{ $badgeClass }} elemen-status-badge">{{ $badgeText }}</span>
-                                            @if($required > 0)
                                             <span class="badge bg-dark ms-2 elemen-lkps-counter">{{ $reviewedCount }}/{{ $required }}</span>
-                                            @else
-                                            <span class="badge bg-secondary ms-2">Tidak ada indikator kuantitatif</span>
-                                            @endif
                                         </button>
                                     </h2>
                                     <div id="c-lkps-{{ $elemen->id }}" class="accordion-collapse collapse" aria-labelledby="h-lkps-{{ $elemen->id }}" data-bs-parent="#acc-lkps-{{ $kriteria->id }}">
                                         <div class="accordion-body">
-                                            @if($required === 0)
-                                            <div class="alert alert-secondary mb-0">
-                                                Tidak ada indikator kuantitatif untuk elemen ini.
-                                            </div>
-                                            @else
                                             @foreach($indikators as $indikator)
                                             <div class="border rounded p-3 mb-3">
                                                 <div class="d-flex justify-content-between align-items-start">
@@ -485,12 +607,11 @@
                                                     'itemId' => $indikator->id,
                                                     'validation' => $validation,
                                                     'assignmentId' => $assignment->id,
-                                                    'elemenId' => $elemen->id, // untuk update counter per-elemen
+                                                    'elemenId' => $elemen->id,
                                                     ])
                                                 </div>
                                             </div>
                                             @endforeach
-                                            @endif
                                         </div>
                                     </div>
                                 </div>
@@ -498,6 +619,7 @@
                             </div>
                         </div>
                     </div>
+                    @endif
                     @endforeach
                 </div>
 
@@ -510,21 +632,21 @@
                         <i class="bi bi-send-check"></i> Finalisasi & Kirim
                     </h5>
                     <span class="badge bg-light text-dark" id="finalStatusBadge">
-                        {{ $validation->isCompletelyReviewed() ? 'Review Lengkap' : 'Review Belum Lengkap' }}
+                        {{ $validation->isCompletelyReviewed() ? 'Review/Validasi Lengkap' : 'Review/Validasi Belum Lengkap' }}
                     </span>
                 </div>
                 <div class="card-body">
 
                     <div class="row">
-                        <div class="col-md-4 mb-3">
+                        <div class="col-lg-4 mb-3">
                             <label class="form-label fw-bold">Catatan Umum LED</label>
                             <textarea id="catatan_led" class="form-control" rows="3" placeholder="Catatan umum untuk LED...">{{ $validation->catatan_led }}</textarea>
                         </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-lg-4 mb-3">
                             <label class="form-label fw-bold">Catatan Umum Suplemen</label>
                             <textarea id="catatan_suplemen" class="form-control" rows="3" placeholder="Catatan umum untuk Suplemen...">{{ $validation->catatan_suplemen }}</textarea>
                         </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-lg-4 mb-3">
                             <label class="form-label fw-bold">Catatan Umum LKPS</label>
                             <textarea id="catatan_lkps" class="form-control" rows="3" placeholder="Catatan umum untuk LKPS...">{{ $validation->catatan_lkps }}</textarea>
                         </div>
@@ -567,18 +689,15 @@ $assignmentId = $assignment->id;
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const ASSIGNMENT_ID = @json($assignmentId);
+
         // =============== PICK ACTION (NO SUBMIT) ===============
         let pickedAction = null; // 'approve' | 'revision'
+        const isEnvLocal = @json($isEnvLocal); // boolean
+        const izinkan = true;
 
-        const btnPickApprove = document.getElementById('btnPickApprove');
-        const btnPickRevision = document.getElementById('btnPickRevision');
-        const pickedBadge = document.getElementById('pickedActionBadge');
-        const btnSubmitFinal = document.getElementById('btnSubmitFinal');
-
-        renderPickedAction();
-
-        // =============== TAB STATE ===============
+        // =============== TAB STATE (single source of truth) ===============
         let activeTab = 'led';
+
         const tabMap = {
             'tab-led': {
                 tab: 'led'
@@ -592,45 +711,99 @@ $assignmentId = $assignment->id;
                 tab: 'lkps'
                 , label: 'LKPS'
             }
-        };
+        , };
 
-        document.querySelectorAll('#reviewTabs button[data-bs-toggle="tab"]').forEach(btn => {
-            btn.addEventListener('shown.bs.tab', (e) => {
-                const id = e.target.id;
-                activeTab = tabMap[id] ? tabMap[id].tab : 'led';
-                document.getElementById('activeTabLabel').textContent = 'Tab: ' + (tabMap[id] ? tabMap[id].label : 'LED');
-                updateTabReviewedInfo();
-            });
+        const paneByTab = {
+            led: '#pane-led'
+            , suplemen: '#pane-suplemen'
+            , lkps: '#pane-lkps'
+        , };
+
+        function getPaneId(tab = activeTab) {
+            return paneByTab[tab] || '#pane-led';
+        }
+
+        function labelByTab(tab) {
+            return tab === 'led' ? 'LED' : (tab === 'suplemen' ? 'Suplemen' : 'LKPS');
+        }
+
+        // =============== DOM REFS ===============
+        const btnPickApprove = document.getElementById('btnPickApprove');
+        const btnPickRevision = document.getElementById('btnPickRevision');
+        const pickedBadge = document.getElementById('pickedActionBadge');
+        const btnSubmitFinal = document.getElementById('btnSubmitFinal');
+        const btnToggleAll = document.getElementById('btnToggleAll');
+        const btnAutoTestReview = document.getElementById('btnAutoTestReview');
+        const btnResetDropdown = document.getElementById('btnResetDropdown');
+        const resetDropdownMenu = document.getElementById('resetDropdownMenu');
+
+        // Upload form refs
+        const formUpload = document.getElementById('formUploadReview');
+        const btnUpload = document.getElementById('btnUploadReview');
+        const fileInput = document.getElementById('fileReview');
+
+        // =============== RENDER PICKED ACTION ===============
+        function renderPickedAction() {
+            if (!pickedAction) {
+                pickedBadge.textContent = 'Aksi belum dipilih';
+                pickedBadge.className = 'badge bg-secondary';
+                btnSubmitFinal.disabled = true;
+
+                btnPickApprove.className = 'btn btn-outline-success';
+                btnPickRevision.className = 'btn btn-outline-warning';
+                return;
+            }
+
+            btnSubmitFinal.disabled = false;
+
+            if (pickedAction === 'approve') {
+                pickedBadge.textContent = 'Aksi terpilih: APPROVE';
+                pickedBadge.className = 'badge bg-success';
+                btnPickApprove.className = 'btn btn-success';
+                btnPickRevision.className = 'btn btn-outline-warning';
+            } else {
+                pickedBadge.textContent = 'Aksi terpilih: REQUEST REVISION';
+                pickedBadge.className = 'badge bg-warning text-dark';
+                btnPickRevision.className = 'btn btn-warning';
+                btnPickApprove.className = 'btn btn-outline-success';
+            }
+        }
+
+        renderPickedAction();
+
+        btnPickApprove.addEventListener('click', () => {
+            pickedAction = 'approve';
+            renderPickedAction();
         });
 
-        function updateTabReviewedInfo() {
-            const items = document.querySelectorAll(`.elemen-accordion-item[data-tab="${activeTab}"]`);
-            let total = 0
-                , complete = 0;
-            items.forEach(it => {
-                total++;
-                const req = parseInt(it.dataset.requiredCount || '0', 10);
-                const rev = parseInt(it.dataset.reviewedCount || '0', 10);
-                const isComplete = (req === 0) ? true : (rev >= req);
-                if (isComplete) complete++;
-            });
-            document.getElementById('tabReviewedInfo').textContent = `Elemen lengkap: ${complete}/${total}`;
-        }
-        updateTabReviewedInfo();
+        btnPickRevision.addEventListener('click', () => {
+            pickedAction = 'revision';
+            renderPickedAction();
+        });
 
-        // =============== EXPAND / COLLAPSE ALL (ONLY ACTIVE TAB) ===============
-        function setAllCollapse(expand) {
-            const paneId = activeTab === 'led' ? '#pane-led' : (activeTab === 'suplemen' ? '#pane-suplemen' : '#pane-lkps');
-            document.querySelectorAll(`${paneId} .accordion-collapse`).forEach(el => {
-                const inst = bootstrap.Collapse.getOrCreateInstance(el, {
-                    toggle: false
-                });
-                expand ? inst.show() : inst.hide();
+        // =============== UPLOAD VALIDATION ===============
+        if (formUpload) {
+            formUpload.addEventListener('submit', function(e) {
+                if (!fileInput.files.length) {
+                    e.preventDefault();
+                    alert('Pilih file Excel terlebih dahulu');
+                    return;
+                }
+
+                const file = fileInput.files[0];
+                const maxSize = 10 * 1024 * 1024; // 10MB
+
+                if (file.size > maxSize) {
+                    e.preventDefault();
+                    alert('Ukuran file terlalu besar (maksimal 10MB)');
+                    return;
+                }
+
+                // Show loading
+                btnUpload.disabled = true;
+                btnUpload.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Uploading...';
             });
         }
-
-        document.getElementById('btnExpandAll').addEventListener('click', () => setAllCollapse(true));
-        document.getElementById('btnCollapseAll').addEventListener('click', () => setAllCollapse(false));
 
         // =============== FINAL SUBMIT (JSON) ===============
         async function submitFinal(action) {
@@ -675,7 +848,12 @@ $assignmentId = $assignment->id;
             }
         }
 
-        // helper global dipakai partial utk update status elemen
+        btnSubmitFinal.addEventListener('click', () => {
+            if (!pickedAction) return;
+            submitFinal(pickedAction);
+        });
+
+        // =============== UPDATE ELEMEN STATUS (GLOBAL) ===============
         window.__updateElemenStatus = function({
             tab
             , elemenId
@@ -696,110 +874,647 @@ $assignmentId = $assignment->id;
 
             if (badge) {
                 badge.className = 'badge elemen-status-badge ' + (isComplete ? 'bg-success' : 'bg-warning text-dark');
-                badge.textContent = isComplete ? 'Lengkap' : 'Belum Lengkap';
+                badge.textContent = isComplete ? 'Review/Validasi Lengkap' : 'Review/Validasi Belum Lengkap';
             }
-            if (counter) {
-                counter.textContent = `${reviewedCount}/${requiredCount}`;
-            }
+            if (counter) counter.textContent = `${reviewedCount}/${requiredCount}`;
 
             updateTabReviewedInfo();
         };
 
-        function renderPickedAction() {
-            if (!pickedAction) {
-                pickedBadge.textContent = 'Aksi belum dipilih';
-                pickedBadge.className = 'badge bg-secondary';
-                btnSubmitFinal.disabled = true;
+        // =============== REFRESH STATS (GENERIC) ===============
+        async function refreshStats() {
+            const url = @json(route('validator.borang.stats', $assignmentId));
 
-                btnPickApprove.className = 'btn btn-outline-success';
-                btnPickRevision.className = 'btn btn-outline-warning';
+            try {
+                const res = await fetch(url, {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Gagal ambil statistik');
+
+                const sections = [{
+                        key: 'led'
+                        , prefix: 'led'
+                    }
+                    , {
+                        key: 'suplemen'
+                        , prefix: 'suplemen'
+                    }
+                    , {
+                        key: 'lkps'
+                        , prefix: 'lkps'
+                    }
+                , ];
+
+                sections.forEach(({
+                    key
+                    , prefix
+                }) => {
+                    const s = data[key];
+                    if (!s) return;
+
+                    const elReviewed = document.getElementById(`count-${prefix}-reviewed`);
+                    const elTotal = document.getElementById(`count-${prefix}-total`);
+                    const elPercent = document.getElementById(`percent-${prefix}`);
+                    const elBar = document.getElementById(`bar-${prefix}`);
+
+                    if (elReviewed) elReviewed.textContent = s.reviewed;
+                    if (elTotal) elTotal.textContent = s.total;
+                    if (elPercent) elPercent.textContent = s.percentage;
+                    if (elBar) elBar.style.width = s.percentage + '%';
+                });
+
+                // TOTAL
+                document.getElementById('percent-total').textContent = data.percentage;
+                document.getElementById('bar-total').style.width = data.percentage + '%';
+                document.getElementById('count-total-reviewed').textContent = data.reviewed;
+                document.getElementById('count-total').textContent = data.total;
+
+                // Final badge
+                const badge = document.getElementById('finalStatusBadge');
+                if (data.is_complete) {
+                    badge.textContent = 'Review/Validasi Lengkap';
+                    badge.className = 'badge bg-success';
+                } else {
+                    badge.textContent = 'Review/Validasi Belum Lengkap';
+                    badge.className = 'badge bg-warning text-dark';
+                }
+            } catch (err) {
+                console.error('refreshStats error:', err);
+            }
+        }
+
+        // =============== TAB INFO (ELEMN COMPLETE COUNT) ===============
+        function updateTabReviewedInfo() {
+            const items = document.querySelectorAll(`.elemen-accordion-item[data-tab="${activeTab}"]`);
+            let total = 0
+                , complete = 0;
+
+            items.forEach(it => {
+                total++;
+                const req = parseInt(it.dataset.requiredCount || '0', 10);
+                const rev = parseInt(it.dataset.reviewedCount || '0', 10);
+                const isComplete = (req === 0) ? true : (rev >= req);
+                if (isComplete) complete++;
+            });
+
+            const info = document.getElementById('tabReviewedInfo');
+            if (info) info.textContent = `Elemen lengkap: ${complete}/${total}`;
+        }
+
+        // =============== EXPAND / COLLAPSE ALL (ONLY ACTIVE TAB) ===============
+        function getCollapsesInTab(tab = activeTab) {
+            const paneId = getPaneId(tab);
+            return Array.from(document.querySelectorAll(`${paneId} .accordion-collapse`));
+        }
+
+        function isAllExpandedInTab(tab = activeTab) {
+            const collapses = getCollapsesInTab(tab);
+            if (collapses.length === 0) return false;
+            return collapses.every(el => el.classList.contains('show'));
+        }
+
+        function setAllCollapse(expand, tab = activeTab) {
+            const collapses = getCollapsesInTab(tab);
+            collapses.forEach(el => {
+                const inst = bootstrap.Collapse.getOrCreateInstance(el, {
+                    toggle: false
+                });
+                expand ? inst.show() : inst.hide();
+            });
+        }
+
+        function updateToggleAllButton() {
+            if (!btnToggleAll) return;
+            const allExpanded = isAllExpandedInTab(activeTab);
+
+            if (allExpanded) {
+                btnToggleAll.className = 'btn btn-outline-secondary btn-sm';
+                btnToggleAll.innerHTML = '<i class="bi bi-arrows-collapse"></i> Collapse All';
+            } else {
+                btnToggleAll.className = 'btn btn-outline-primary btn-sm';
+                btnToggleAll.innerHTML = '<i class="bi bi-arrows-expand"></i> Expand All';
+            }
+        }
+
+        if (btnToggleAll) {
+            btnToggleAll.addEventListener('click', () => {
+                const allExpanded = isAllExpandedInTab(activeTab);
+                setAllCollapse(!allExpanded, activeTab);
+                setTimeout(updateToggleAllButton, 50);
+            });
+
+            document.addEventListener('shown.bs.collapse', (e) => {
+                if (e.target && e.target.classList.contains('accordion-collapse')) updateToggleAllButton();
+            });
+            document.addEventListener('hidden.bs.collapse', (e) => {
+                if (e.target && e.target.classList.contains('accordion-collapse')) updateToggleAllButton();
+            });
+        }
+
+        // =============== RESET DROPDOWN HELPERS ===============
+        function hasReviewItemInTab(tab) {
+            const paneId = getPaneId(tab);
+            return document.querySelectorAll(`${paneId} .review-item`).length > 0;
+        }
+
+        function hasAnyReviewItem() {
+            return ['led', 'suplemen', 'lkps'].some(t => hasReviewItemInTab(t));
+        }
+
+        function setDropdownItemDisabled(btn, disabled, title) {
+            if (!btn) return;
+            btn.disabled = disabled;
+            btn.classList.toggle('disabled', disabled);
+            if (disabled && title) btn.setAttribute('title', title);
+            if (!disabled) btn.removeAttribute('title');
+        }
+
+        function updateResetDropdownState() {
+            const any = hasAnyReviewItem();
+
+            if (btnResetDropdown) {
+                btnResetDropdown.disabled = !any;
+                btnResetDropdown.classList.toggle('disabled', !any);
+                if (!any) btnResetDropdown.setAttribute('title', 'Tidak ada item untuk di-reset');
+                else btnResetDropdown.removeAttribute('title');
+            }
+
+            const config = [{
+                    id: 'reset-active'
+                    , enabled: hasReviewItemInTab(activeTab)
+                    , title: 'Tab ini kosong'
+                }
+                , {
+                    id: 'reset-led'
+                    , enabled: hasReviewItemInTab('led')
+                    , title: 'LED kosong'
+                }
+                , {
+                    id: 'reset-suplemen'
+                    , enabled: hasReviewItemInTab('suplemen')
+                    , title: 'Suplemen kosong'
+                }
+                , {
+                    id: 'reset-lkps'
+                    , enabled: hasReviewItemInTab('lkps')
+                    , title: 'LKPS kosong'
+                }
+                , {
+                    id: 'reset-all'
+                    , enabled: any
+                    , title: 'Tidak ada item untuk di-reset'
+                }
+            , ];
+
+            config.forEach(({
+                id
+                , enabled
+                , title
+            }) => {
+                setDropdownItemDisabled(document.getElementById(id), !enabled, title);
+            });
+        }
+
+        // =============== RESET UI LOCAL ===============
+        function resetAllInTab(tab) {
+            const paneId = getPaneId(tab);
+
+            // 1) reset grade + catatan + status
+            const wraps = document.querySelectorAll(`${paneId} .review-item`);
+            wraps.forEach(wrap => {
+                wrap.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('active'));
+
+                const note = wrap.querySelector('.catatan-input');
+                if (note) {
+                    note.value = '';
+                    note.dispatchEvent(new Event('input', {
+                        bubbles: true
+                    }));
+                    note.dispatchEvent(new Event('change', {
+                        bubbles: true
+                    }));
+                }
+
+                const status = wrap.querySelector('.status-text');
+                if (status) status.innerHTML = '<i class="bi bi-pencil"></i> Belum disimpan';
+            });
+
+            // 2) reset badge & counter per elemen
+            const elemenItems = document.querySelectorAll(`${paneId} .elemen-accordion-item`);
+            elemenItems.forEach(el => {
+                const req = parseInt(el.dataset.requiredCount || '0', 10);
+                el.dataset.reviewedCount = '0';
+
+                const badge = el.querySelector('.elemen-status-badge');
+                const counter = el.querySelector('.elemen-lkps-counter');
+
+                const isComplete = (req === 0);
+                if (badge) {
+                    badge.className = 'badge elemen-status-badge ' + (isComplete ? 'bg-success' : 'bg-warning text-dark');
+                    badge.textContent = isComplete ? 'Review/Validasi Lengkap' : 'Review/Validasi Belum Lengkap';
+                }
+                if (counter) counter.textContent = `0/${req}`;
+            });
+        }
+
+        // =============== RESET TO SERVER ===============
+        async function resetToServer(target) {
+            // target: 'active' | 'led' | 'suplemen' | 'lkps' | 'all'
+            const category = (target === 'active') ? activeTab : target;
+
+            // guard: kalau kosong, jangan jalan
+            const hasItem = (category === 'all') ? hasAnyReviewItem() : hasReviewItemInTab(category);
+            if (!hasItem) {
+                alert('Tidak ada item untuk di-reset pada pilihan ini.');
                 return;
             }
 
-            btnSubmitFinal.disabled = false;
+            const label = (category === 'all') ? 'SEMUA (LED + Suplemen + LKPS)' : labelByTab(category);
 
-            if (pickedAction === 'approve') {
-                pickedBadge.textContent = 'Aksi terpilih: APPROVE';
-                pickedBadge.className = 'badge bg-success';
-                btnPickApprove.className = 'btn btn-success';
-                btnPickRevision.className = 'btn btn-outline-warning';
-            } else {
-                pickedBadge.textContent = 'Aksi terpilih: REQUEST REVISION';
-                pickedBadge.className = 'badge bg-warning text-dark';
-                btnPickRevision.className = 'btn btn-warning';
-                btnPickApprove.className = 'btn btn-outline-success';
+            const resetNotes = confirm(`Reset ${label} juga termasuk Catatan Umum? (OK=ya, Cancel=tidak)`);
+            const ok = confirm(`Yakin reset ${label}? Ini langsung menghapus review di DB.`);
+            if (!ok) return;
+
+            const url = @json(route('validator.borang.reset-review', $assignmentId));
+
+            try {
+                const res = await fetch(url, {
+                    method: 'POST'
+                    , headers: {
+                        'Content-Type': 'application/json'
+                        , 'Accept': 'application/json'
+                        , 'X-CSRF-TOKEN': @json(csrf_token())
+                    }
+                    , body: JSON.stringify({
+                        category: category, // 'led'|'suplemen'|'lkps'|'all'
+                        reset_notes: resetNotes
+                    })
+                });
+
+                const data = await res.json();
+                if (!res.ok || !data.success) {
+                    alert(data.message || 'Gagal reset');
+                    return;
+                }
+
+                // reset UI lokal
+                if (category === 'all') {
+                    ['led', 'suplemen', 'lkps'].forEach(t => resetAllInTab(t));
+                } else {
+                    resetAllInTab(category);
+                }
+
+                // reset catatan umum jika diminta
+                if (resetNotes) {
+                    if (category === 'all' || category === 'led') document.getElementById('catatan_led').value = '';
+                    if (category === 'all' || category === 'suplemen') document.getElementById('catatan_suplemen').value = '';
+                    if (category === 'all' || category === 'lkps') document.getElementById('catatan_lkps').value = '';
+                }
+
+                await refreshStats();
+
+                updateTabReviewedInfo();
+                updateToggleAllButton();
+                updateResetDropdownState();
+
+                alert(data.message || `Reset ${label} berhasil`);
+            } catch (err) {
+                console.error(err);
+                alert('Terjadi error saat reset');
             }
         }
 
-        btnPickApprove.addEventListener('click', () => {
-            pickedAction = 'approve';
-            renderPickedAction();
+        // bind reset dropdown (single binding)
+        if (resetDropdownMenu) {
+            resetDropdownMenu.querySelectorAll('button[data-reset-target]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    resetToServer(btn.dataset.resetTarget);
+                });
+            });
+        }
+
+        // =============== TAB CHANGE LISTENER ===============
+        document.querySelectorAll('#reviewTabs button[data-bs-toggle="tab"]').forEach(btn => {
+            btn.addEventListener('shown.bs.tab', (e) => {
+                const id = e.target.id;
+                activeTab = tabMap[id] ? tabMap[id].tab : 'led';
+
+                const label = document.getElementById('activeTabLabel');
+                if (label) label.textContent = 'Tab: ' + (tabMap[id] ? tabMap[id].label : 'LED');
+
+                updateTabReviewedInfo();
+                updateToggleAllButton();
+                updateResetDropdownState();
+            });
         });
 
-        btnPickRevision.addEventListener('click', () => {
-            pickedAction = 'revision';
-            renderPickedAction();
-        })
+        // =============== EVENT DELEGATION: CLICK GRADE ===============
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.review-item .grade-btn');
+            if (!btn) return;
 
-        // =============== FINAL SUBMIT (ONLY HERE) ===============
-        btnSubmitFinal.addEventListener('click', () => {
-            if (!pickedAction) return;
-            submitFinal(pickedAction); // gunakan fungsi submitFinal yang sudah ada
+            const wrap = btn.closest('.review-item');
+            if (!wrap) return;
+
+            wrap.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            const status = wrap.querySelector('.status-text');
+            if (status) status.innerHTML = '<i class="bi bi-pencil"></i> Belum disimpan';
         });
-    });
 
-    async function refreshStats() {
-        const url = @json(route('validator.borang.stats', $assignmentId));
+        // =============== EVENT DELEGATION: SAVE REVIEW ===============
+        document.addEventListener('click', async (e) => {
+            const btn = e.target.closest('.review-item .btn-save-review');
+            if (!btn) return;
 
-        try {
-            const res = await fetch(url, {
-                headers: {
-                    'Accept': 'application/json'
+            const wrap = btn.closest('.review-item');
+            if (!wrap) return;
+
+            const category = wrap.dataset.category;
+            const itemId = parseInt(wrap.dataset.itemId, 10);
+            const elemenId = wrap.dataset.elemenId ? parseInt(wrap.dataset.elemenId, 10) : null;
+
+            const active = wrap.querySelector('.grade-btn.active');
+            const grade = active ? active.dataset.grade : null;
+            const catatanInput = (wrap.querySelector('.catatan-input') || {}).value
+            const catatan = catatanInput ? catatanInput : '';
+
+            if (!grade) {
+                alert('Pilih grade terlebih dahulu.');
+                return;
+            }
+
+            const status = wrap.querySelector('.status-text');
+            const originalBtn = btn.innerHTML;
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Menyimpan...';
+            if (status) status.innerHTML = '<i class="bi bi-hourglass-split"></i> Menyimpan...';
+
+            try {
+                const url = @json(route("validator.borang.update-review", $assignmentId));
+                const res = await fetch(url, {
+                    method: 'POST'
+                    , headers: {
+                        'Content-Type': 'application/json'
+                        , 'Accept': 'application/json'
+                        , 'X-CSRF-TOKEN': @json(csrf_token())
+                    }
+                    , body: JSON.stringify({
+                        category: category
+                        , item_id: itemId
+                        , grade: grade
+                        , catatan: catatan
+                    })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok || !data.success) {
+                    if (status) status.innerHTML = '<i class="bi bi-x-circle text-danger"></i> ' + (data.message || 'Gagal menyimpan');
+                    return;
                 }
+
+                if (status) status.innerHTML = '<i class="bi bi-check-circle text-success"></i> Tersimpan';
+
+                // update status elemen (badge lengkap/belum lengkap)
+                if (category === 'led' || category === 'suplemen') {
+                    if (typeof window.__updateElemenStatus === 'function') {
+                        window.__updateElemenStatus({
+                            tab: category
+                            , elemenId: itemId
+                            , reviewedCount: 1
+                            , requiredCount: 1
+                        });
+                    }
+                }
+
+                // LKPS: hitung ulang indikator dalam elemen (UI-side)
+                if (category === 'lkps' && elemenId) {
+                    const allInElemen = document.querySelectorAll(`.review-item[data-category="lkps"][data-elemen-id="${elemenId}"]`);
+                    const requiredCount = allInElemen.length;
+                    let reviewedCount = 0;
+
+                    allInElemen.forEach(x => {
+                        const activeGrade = x.querySelector('.grade-btn.active');
+                        if (activeGrade) {
+                            const statusText = x.querySelector('.status-text');
+                            const st = statusText ? statusText.innerText : '';
+                            if (st.includes('Tersimpan')) reviewedCount++;
+                        }
+                    });
+
+                    reviewedCount = Math.min(requiredCount, Math.max(reviewedCount, 1));
+
+                    if (typeof window.__updateElemenStatus === 'function') {
+                        window.__updateElemenStatus({
+                            tab: 'lkps'
+                            , elemenId
+                            , reviewedCount
+                            , requiredCount
+                        });
+                    }
+                }
+
+                await refreshStats();
+            } catch (err) {
+                console.error(err);
+                if (status) status.innerHTML = '<i class="bi bi-x-circle text-danger"></i> Error';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalBtn;
+            }
+        });
+
+        // =============== AUTO TEST HELPERS ===============
+        function pickWeightedGrade() {
+            const r = Math.random();
+            if (r < 0.85) return 'A';
+            if (r < 0.95) return 'B';
+            return 'C';
+        }
+
+        function randomNoteByGrade(grade) {
+            const notesA = [
+                "Sudah tepat. Narasi jelas dan eviden mendukung."
+                , "Sudah sesuai. Data konsisten dan dapat diverifikasi."
+                , "Sudah baik. Struktur rapi dan informasi memadai."
+                , "Tepat. Kesesuaian indikator dan bukti pendukung sudah ok."
+                , "Baik. Tidak ada catatan signifikan."
+            ];
+            const notesB = [
+                "Kurang lengkap. Mohon tambahkan bukti/tautan pendukung."
+                , "Kurang lengkap. Perlu penjelasan lebih detail pada bagian tertentu."
+                , "Masih kurang. Mohon lengkapi data/angka agar konsisten."
+                , "Kurang lengkap. Perlu rujukan dokumen pendukung yang relevan."
+                , "Mohon lengkapi narasi dan pastikan periode data jelas."
+            ];
+            const notesC = [
+                "Perlu diperbaiki. Ada ketidaksesuaian narasi dengan eviden."
+                , "Perlu perbaikan. Angka/indikator tidak konsisten, mohon koreksi."
+                , "Perlu diperbaiki. Bukti tidak mendukung pernyataan yang ditulis."
+                , "Perlu perbaikan. Struktur dan penjelasan belum sesuai ketentuan."
+                , "Perlu diperbaiki. Mohon revisi agar selaras dengan dokumen pendukung."
+            ];
+            const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+            if (grade === 'A') return pick(notesA);
+            if (grade === 'B') return pick(notesB);
+            return pick(notesC);
+        }
+
+        function buildGeneralNoteFromStats(label, stats) {
+            const pct = (x) => stats.total ? Math.round((x / stats.total) * 100) : 0;
+            const aPct = pct(stats.A);
+            const bPct = pct(stats.B);
+            const cPct = pct(stats.C);
+
+            let tone = 'positive';
+            if (stats.C > 0 || cPct >= 5) tone = 'critical';
+            else if (stats.B > 0 || bPct >= 10) tone = 'mixed';
+
+            if (tone === 'positive') {
+                return `${label}: Mayoritas sudah tepat (A ${aPct}%). Secara umum sudah baik dan konsisten, eviden mendukung. Pastikan final check konsistensi angka/rujukan.`;
+            }
+            if (tone === 'mixed') {
+                return `${label}: Umumnya sudah tepat (A ${aPct}%), namun masih ada yang kurang lengkap (B ${bPct}%). Mohon lengkapi bukti pendukung/penjelasan pada item terkait, serta cek konsistensi periode data.`;
+            }
+            return `${label}: Ditemukan beberapa item perlu perbaikan (C ${cPct}%) dan/atau kurang lengkap (B ${bPct}%). Mohon revisi agar narasi selaras dengan eviden, perbaiki inkonsistensi angka, dan lengkapi dokumen pendukung.`;
+        }
+
+        function sleep(ms) {
+            return new Promise(r => setTimeout(r, ms));
+        }
+
+        async function runAutoTestReview() {
+            if (isEnvLocal !== true || izinkan !== true) {
+                alert('Auto Test hanya boleh dijalankan di ENV local dan izinkan=true');
+                return;
+            }
+
+            // expand semua pane supaya semua review-item ter-render
+            ['led', 'suplemen', 'lkps'].forEach(t => {
+                document.querySelectorAll(`${getPaneId(t)} .accordion-collapse`).forEach(el => {
+                    bootstrap.Collapse.getOrCreateInstance(el, {
+                        toggle: false
+                    }).show();
+                });
             });
 
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Gagal ambil statistik');
+            await sleep(200);
 
-            // LED
-            document.getElementById('count-led-reviewed').textContent = data.led.reviewed;
-            document.getElementById('count-led-total').textContent = data.led.total;
-            document.getElementById('percent-led').textContent = data.led.percentage;
-            document.getElementById('bar-led').style.width = data.led.percentage + '%';
+            const stats = {
+                led: {
+                    A: 0
+                    , B: 0
+                    , C: 0
+                    , total: 0
+                }
+                , suplemen: {
+                    A: 0
+                    , B: 0
+                    , C: 0
+                    , total: 0
+                }
+                , lkps: {
+                    A: 0
+                    , B: 0
+                    , C: 0
+                    , total: 0
+                }
+                , all: {
+                    A: 0
+                    , B: 0
+                    , C: 0
+                    , total: 0
+                }
+            };
 
-            // Suplemen
-            document.getElementById('count-suplemen-reviewed').textContent = data.suplemen.reviewed;
-            document.getElementById('count-suplemen-total').textContent = data.suplemen.total;
-            document.getElementById('percent-suplemen').textContent = data.suplemen.percentage;
-            document.getElementById('bar-suplemen').style.width = data.suplemen.percentage + '%';
+            const items = document.querySelectorAll('.review-item');
 
-            // LKPS
-            document.getElementById('count-lkps-reviewed').textContent = data.lkps.reviewed;
-            document.getElementById('count-lkps-total').textContent = data.lkps.total;
-            document.getElementById('percent-lkps').textContent = data.lkps.percentage;
-            document.getElementById('bar-lkps').style.width = data.lkps.percentage + '%';
+            for (const wrap of items) {
+                const category = wrap.dataset.category;
+                const grade = pickWeightedGrade();
 
-            // TOTAL
-            document.getElementById('percent-total').textContent = data.percentage;
-            document.getElementById('bar-total').style.width = data.percentage + '%';
-            document.getElementById('count-total-reviewed').textContent = data.reviewed;
-            document.getElementById('count-total').textContent = data.total;
+                const btnGrade = wrap.querySelector(`.js-grade-btn[data-grade="${grade}"]`);
+                if (btnGrade) {
+                    btnGrade.click();
+                    await sleep(20);
+                }
 
-            // Final badge
-            const badge = document.getElementById('finalStatusBadge');
-            if (data.is_complete) {
-                badge.textContent = 'Review Lengkap';
-                badge.className = 'badge bg-success';
-            } else {
-                badge.textContent = 'Review Belum Lengkap';
-                badge.className = 'badge bg-warning text-dark';
+                const note = wrap.querySelector('.js-review-note');
+                if (note) {
+                    note.value = randomNoteByGrade(grade);
+                    note.dispatchEvent(new Event('input', {
+                        bubbles: true
+                    }));
+                    note.dispatchEvent(new Event('change', {
+                        bubbles: true
+                    }));
+                    await sleep(20);
+                }
+
+                const btnSave = wrap.querySelector('.btn-save-review');
+                if (btnSave) {
+                    btnSave.click();
+                    await sleep(80);
+                }
+
+                if (stats[category]) {
+                    stats[category][grade]++;
+                    stats[category].total++;
+                }
+                stats.all[grade]++;
+                stats.all.total++;
             }
 
-        } catch (err) {
-            console.error('refreshStats error:', err);
+            const catLed = document.getElementById('catatan_led');
+            const catSup = document.getElementById('catatan_suplemen');
+            const catLkps = document.getElementById('catatan_lkps');
+            const catAll = document.getElementById('catatan_validator');
+
+            if (catLed) catLed.value = buildGeneralNoteFromStats('Catatan Umum LED', stats.led);
+            if (catSup) catSup.value = buildGeneralNoteFromStats('Catatan Umum Suplemen', stats.suplemen);
+            if (catLkps) catLkps.value = buildGeneralNoteFromStats('Catatan Umum LKPS', stats.lkps);
+
+            if (catAll) {
+                catAll.value =
+                    buildGeneralNoteFromStats('Catatan Validator (Keseluruhan)', stats.all) +
+                    `\n\nRingkasan distribusi (TOTAL ${stats.all.total} item): A=${stats.all.A}, B=${stats.all.B}, C=${stats.all.C}.`;
+            }
+
+            [catLed, catSup, catLkps, catAll].forEach(el => {
+                if (!el) return;
+                el.dispatchEvent(new Event('input', {
+                    bubbles: true
+                }));
+                el.dispatchEvent(new Event('change', {
+                    bubbles: true
+                }));
+            });
+
+            updateTabReviewedInfo();
+            updateToggleAllButton();
+            updateResetDropdownState();
+            await refreshStats();
+
+            alert(`Auto Test Review selesai. LED: A${stats.led.A}/B${stats.led.B}/C${stats.led.C}, Suplemen: A${stats.suplemen.A}/B${stats.suplemen.B}/C${stats.suplemen.C}, LKPS: A${stats.lkps.A}/B${stats.lkps.B}/C${stats.lkps.C}`);
         }
-    }
+
+        if (btnAutoTestReview) {
+            btnAutoTestReview.addEventListener('click', () => runAutoTestReview().catch(console.error));
+        }
+
+        // =============== INIT UI STATE ===============
+        updateTabReviewedInfo();
+        updateToggleAllButton();
+        updateResetDropdownState();
+    });
 
 </script>
 @endpush
+
 @endsection

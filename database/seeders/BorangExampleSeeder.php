@@ -31,6 +31,7 @@ class BorangExampleSeeder extends Seeder
     protected int $contentHeightTwips = 14838;     // height - (marginTop+marginBottom)
     protected int $marginTopTwips = 1000;
     protected int $marginBottomTwips = 1000;
+    protected string $templateBlue = '1F4E79';
 
     public function run(): void
     {
@@ -74,9 +75,9 @@ class BorangExampleSeeder extends Seeder
         $this->numberingRegistered = [];
         $this->phpWord->getSettings()->setUpdateFields(true);
 
-        $this->phpWord->addTitleStyle(1, ['bold' => true, 'size' => 14], ['spaceAfter' => 240]);
-        $this->phpWord->addTitleStyle(2, ['bold' => true, 'size' => 11], ['spaceAfter' => 180]);
-        $this->phpWord->addTitleStyle(3, ['bold' => false, 'size' => 11], ['spaceAfter' => 120]);
+        $this->phpWord->addTitleStyle(1, ['bold' => true, 'size' => 14, 'color' => $this->templateBlue], ['spaceAfter' => 240]);
+        $this->phpWord->addTitleStyle(2, ['bold' => true, 'size' => 11, 'color' => $this->templateBlue], ['spaceAfter' => 180]);
+        $this->phpWord->addTitleStyle(3, ['bold' => false, 'size' => 11, 'color' => $this->templateBlue], ['spaceAfter' => 120]);
 
         // ✅ FONT Montserrat 11PT (SEPERTI TEMPLATE)
         $this->phpWord->setDefaultFontName('Montserrat');
@@ -346,7 +347,7 @@ class BorangExampleSeeder extends Seeder
 
             $section->addText(
                 '(' . $this->getKriteriaSubtitle($kriteria->kode_kriteria) . ')',
-                ['size' => 11, 'italic' => true],
+                ['size' => 11, 'italic' => true, 'color' => $this->templateBlue],
                 ['spaceAfter' => 200]
             );
 
@@ -385,12 +386,12 @@ class BorangExampleSeeder extends Seeder
                     // (Opsional) Anda bisa tulis header kriteria lagi, kalau Anda ingin muncul di tiap halaman
                     $section->addText(
                         $kriteria->kode_kriteria . '. ' . $kriteria->nama_kriteria,
-                        ['size' => 11, 'bold' => true],
+                        ['size' => 11, 'bold' => true, 'color' => $this->templateBlue],
                         ['spaceAfter' => 100]
                     );
                     $section->addText(
                         '(' . $this->getKriteriaSubtitle($kriteria->kode_kriteria) . ')',
-                        ['size' => 11, 'italic' => true],
+                        ['size' => 11, 'italic' => true, 'color' => $this->templateBlue],
                         ['spaceAfter' => 200]
                     );
                 }
@@ -493,15 +494,15 @@ class BorangExampleSeeder extends Seeder
 
         $run = $cell->addTextRun(['spaceAfter' => 200]);
 
-        $cell->addFormField('textinput')
-            ->setName('desc_' . $elemen->id)
-            ->setDefaultValue('[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]')
-            ->setMaxLength(5000);
-        // $cell->addText(
-        //     '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
-        //     ['size' => 11, 'color' => 'FF0000', 'italic' => true],
-        //     ['spaceAfter' => 300, 'alignment' => Jc::BOTH]
-        // );
+        // $cell->addFormField('textinput')
+        //     ->setName('desc_' . $elemen->id)
+        //     ->setDefaultValue('[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]')
+        //     ->setMaxLength(5000);
+        $cell->addText(
+            '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
+            ['size' => 11, 'color' => '000000', 'italic' => true],
+            ['spaceAfter' => 300, 'alignment' => Jc::BOTH]
+        );
 
         // Render semua tabel di dalam kotak yang sama
         if ($elemen->datasetBorang && $elemen->datasetBorang->count() > 0) {
@@ -715,7 +716,12 @@ class BorangExampleSeeder extends Seeder
     {
         $section->addText(
             'Pernyataan Standar',
-            ['size' => 11, 'bold' => true, 'underline' => Font::UNDERLINE_SINGLE],
+            [
+                'size' => 11,
+                'bold' => true,
+                'underline' => Font::UNDERLINE_SINGLE,
+                'color' => $this->templateBlue
+            ],
             ['spaceAfter' => 200]
         );
 
@@ -724,14 +730,18 @@ class BorangExampleSeeder extends Seeder
                 // ✅ JUSTIFY TEXT
                 $section->addText(
                     $pernyataan->pernyataan,
-                    ['size' => 11],
+                    ['size' => 11, 'color' => $this->templateBlue],
                     ['alignment' => Jc::BOTH, 'spaceAfter' => 200] // BOTH = Justify
                 );
             }
         } else {
             $section->addText(
                 '[Tidak ada pernyataan standar]',
-                ['size' => 11, 'italic' => true, 'color' => 'FF0000'],
+                [
+                    'size' => 11,
+                    'italic' => true,
+                    'color' => $this->templateBlue
+                ],
                 ['spaceAfter' => 200]
             );
         }
@@ -744,12 +754,21 @@ class BorangExampleSeeder extends Seeder
     {
         $section->addText(
             'Uraian Indikator Penilaian',
-            ['size' => 11, 'bold' => true, 'underline' => Font::UNDERLINE_SINGLE],
+            [
+                'size' => 11,
+                'bold' => true,
+                'underline' => Font::UNDERLINE_SINGLE,
+                'color' => $this->templateBlue
+            ],
             ['spaceAfter' => 200]
         );
 
         if (!$elemen->indikator || $elemen->indikator->count() === 0) {
-            $section->addText('[Tidak ada indikator]', ['size' => 11, 'italic' => true, 'color' => 'FF0000']);
+            $section->addText('[Tidak ada indikator]', [
+                'size' => 11,
+                'italic' => true,
+                'color' => $this->templateBlue
+            ]);
             return;
         }
 
@@ -772,7 +791,13 @@ class BorangExampleSeeder extends Seeder
             $text = trim($indikator->deskripsi_indikator);
 
             if (preg_match('/^(.*?Penilaian berfokus pada:)/s', $text, $m)) {
-                $section->addText(trim($m[1]), ['size' => 11], ['alignment' => Jc::BOTH, 'spaceAfter' => 150]);
+                $section->addText(trim($m[1]), [
+                    'size' => 11,
+                    'color' => $this->templateBlue
+                ], [
+                    'alignment' => Jc::BOTH,
+                    'spaceAfter' => 150,
+                ]);
             }
 
             preg_match_all('/\(\d+\)\.\s*(.*?)(?=\(\d+\)\.|$)/s', $text, $matches);
@@ -781,9 +806,15 @@ class BorangExampleSeeder extends Seeder
                 $section->addListItem(
                     $item,
                     0,
-                    ['size' => 11],
+                    [
+                        'size' => 11,
+                        'color' => $this->templateBlue
+                    ],
                     $numberingName,
-                    ['alignment' => Jc::BOTH, 'spaceAfter' => 120]
+                    [
+                        'alignment' => Jc::BOTH,
+                        'spaceAfter' => 120
+                    ]
                 );
             }
         }
@@ -1063,13 +1094,17 @@ class BorangExampleSeeder extends Seeder
         ]);
 
         // 1 baris saja, tapi tingginya dibuat "mengisi sisa halaman"
-        $table->addRow($boxHeight, ['exactHeight' => true]);
+        $table->addRow($boxHeight, ['exactHeight' => false]);
         $cell = $table->addCell(9500, ['valign' => 'top']);
 
         // Header kecil di dalam kotak
         $cell->addText(
             'Deskripsi ' . strtolower($elemen->pernyataan_elemen) . ' (Mohon jangan dihapus)',
-            ['size' => 11, 'italic' => true],
+            [
+                'size' => 11,
+                'italic' => true,
+                'color' => '000000'
+            ],
             ['spaceAfter' => 200]
         );
 
@@ -1083,7 +1118,7 @@ class BorangExampleSeeder extends Seeder
             $deskripsi,
             [
                 'size'   => 11,
-                'color'  => $filled ? '000000' : 'FF0000',
+                'color'  => $filled ? '000000' : '000000',
                 'italic' => !$filled,
             ],
             ['alignment' => Jc::BOTH]
@@ -1119,7 +1154,7 @@ class BorangExampleSeeder extends Seeder
         // Kalau full height: pakai height sisa halaman
         if ($fullHeight) {
             $boxHeight = max($minBoxHeightTwips, $this->contentHeightTwips - $reservedTopTwips);
-            $table->addRow($boxHeight, ['exactHeight' => true]);
+            $table->addRow($boxHeight, ['exactHeight' => false]);
         } else {
             $table->addRow();
         }
@@ -1139,7 +1174,7 @@ class BorangExampleSeeder extends Seeder
         if (!$hasPrefill) {
             $cell->addText(
                 $emptyPlaceholder,
-                ['size' => 11, 'color' => 'FF0000', 'italic' => true],
+                ['size' => 11, 'color' => '000000', 'italic' => true],
                 ['alignment' => Jc::BOTH, 'spaceAfter' => 200]
             );
             return;
@@ -1152,7 +1187,7 @@ class BorangExampleSeeder extends Seeder
 
             $cell->addText(
                 $p,
-                ['size' => 11, 'color' => 'FF0000', 'italic' => true],
+                ['size' => 11, 'color' => '000000', 'italic' => true],
                 ['alignment' => Jc::BOTH, 'spaceAfter' => 200]
             );
         }
@@ -1160,7 +1195,7 @@ class BorangExampleSeeder extends Seeder
         // Hint limit kata
         $cell->addText(
             "(Maksimal {$maxWords} kata)",
-            ['size' => 10, 'color' => 'FF0000', 'italic' => true],
+            ['size' => 10, 'color' => '000000', 'italic' => true],
             ['alignment' => Jc::END]
         );
     }
@@ -1181,7 +1216,7 @@ class BorangExampleSeeder extends Seeder
             $run->addText($labelRed, [
                 'size' => 11,
                 'underline' => \PhpOffice\PhpWord\Style\Font::UNDERLINE_SINGLE,
-                'color' => 'FF0000'
+                'color' => '000000'
             ]);
         } else {
             $cell->addText($labelNormal, ['size' => 11]);

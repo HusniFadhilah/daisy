@@ -22,6 +22,11 @@ class PengajuanPembayaran extends Model
         'verified_by',
     ];
 
+    protected $casts = [
+        'tanggal_jatuh_tempo' => 'date',
+        'tanggal_pembayaran' => 'datetime',
+    ];
+
     public function pengajuan()
     {
         return $this->belongsTo(\App\Models\PengajuanAkreditasi::class, 'id_pengajuan', 'id');

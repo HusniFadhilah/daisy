@@ -101,7 +101,7 @@ class BorangValidation extends Model
         // LED
         if ($this->review_led) {
             foreach ($this->review_led as $elemenId => $review) {
-                if (in_array($review['grade'] ?? null, ['A', 'B'])) {
+                if (in_array($review['grade'] ?? null, ['B', 'C'])) {
                     $needsRevision['led'][] = [
                         'elemen_id' => $elemenId,
                         'grade' => $review['grade'],
@@ -114,7 +114,7 @@ class BorangValidation extends Model
         // Suplemen
         if ($this->review_suplemen) {
             foreach ($this->review_suplemen as $elemenId => $review) {
-                if (in_array($review['grade'] ?? null, ['A', 'B'])) {
+                if (in_array($review['grade'] ?? null, ['B', 'C'])) {
                     $needsRevision['suplemen'][] = [
                         'elemen_id' => $elemenId,
                         'grade' => $review['grade'],
@@ -127,7 +127,7 @@ class BorangValidation extends Model
         // LKPS
         if ($this->review_lkps) {
             foreach ($this->review_lkps as $indikatorId => $review) {
-                if (in_array($review['grade'] ?? null, ['A', 'B'])) {
+                if (in_array($review['grade'] ?? null, ['B', 'C'])) {
                     $needsRevision['lkps'][] = [
                         'indikator_id' => $indikatorId,
                         'grade' => $review['grade'],

@@ -30,4 +30,14 @@ class PengajuanStatusLog extends Model
     {
         return $this->belongsTo(PengajuanAkreditasi::class, 'id_pengajuan');
     }
+
+    public function getStatusFromLabelAttribute(): string
+    {
+        return PengajuanAkreditasi::statusMap()[$this->status_from]['label'] ?? ucwords(str_replace('_', ' ', $this->status_from));
+    }
+
+    public function getStatusToLabelAttribute(): string
+    {
+        return PengajuanAkreditasi::statusMap()[$this->status_to]['label'] ?? ucwords(str_replace('_', ' ', $this->status_to));
+    }
 }

@@ -257,8 +257,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{id}/borang-online/check-files', [PengajuanAkreditasiController::class, 'checkBorangFiles'])
                 ->name('.borang.check-files');
 
-            Route::get('/pengajuan/{pengajuan}/validation-summary', [PengajuanBorangController::class, 'validationSummary'])
-                ->name('.validation-summary');
+            Route::get('/{id}/validation-summary', [PengajuanBorangController::class, 'validationSummary'])
+                ->name('.borang.validation-summary');
+
+            Route::get('/{id}/validation-details', [PengajuanBorangController::class, 'validationDetails'])
+                ->name('.borang.validation-details');
         });
 
         Route::middleware(['auth', 'role:admin_prodi,admin_univ,super_admin,asesi'])->group(function () {
@@ -345,6 +348,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
             // ✅ NEW: Accept/Reject offer
             Route::post('/{assignment}/respond-offer', [BorangValidatorController::class, 'respondOffer'])->name('respond-offer');
+            Route::get('/{assignment}/download-template', [BorangValidatorController::class, 'downloadTemplate'])->name('download-template');
+            Route::get('/{assignment}/download-review', [BorangValidatorController::class, 'downloadReview'])->name('download-review');
+            Route::post('/{assignment}/upload-review', [BorangValidatorController::class, 'uploadReview'])->name('upload-review');
+            Route::post('/{assignment}/reset-review', [BorangValidatorController::class, 'resetReview'])->name('reset-review');
+            Route::post('/{assignment}/laporkan-validasi', [BorangValidatorController::class, 'laporkanValidasi'])->name('laporkan-validasi');
         });
     });
 
