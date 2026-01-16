@@ -4,21 +4,6 @@
 
 @push('styles')
 <style>
-    .timeline {
-        position: relative;
-        padding-left: 30px;
-    }
-
-    .timeline::before {
-        content: '';
-        position: absolute;
-        left: 8px;
-        top: 0;
-        bottom: 0;
-        width: 2px;
-        background: #e0e0e0;
-    }
-
     .timeline-item {
         position: relative;
         padding-bottom: 20px;
@@ -45,6 +30,170 @@
     .action-card {
         border-left: 4px solid #0d6efd;
         animation: slideIn 0.3s ease;
+    }
+
+    /* Timeline Styles */
+    .timeline-section {
+        position: relative;
+        margin-bottom: 2rem;
+    }
+
+    .timeline-phase-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .timeline-phase-header.completed {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    }
+
+    .timeline-phase-header.in-progress {
+        background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+    }
+
+    .timeline-items {
+        position: relative;
+        padding-left: 2rem;
+    }
+
+    .timeline-items::before {
+        content: '';
+        position: absolute;
+        left: 0.5rem;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #e0e0e0;
+    }
+
+    .timeline-item {
+        position: relative;
+        padding-bottom: 1.5rem;
+        display: flex;
+        gap: 1rem;
+    }
+
+    .timeline-item-icon {
+        position: absolute;
+        left: -1.65rem;
+        top: 0.25rem;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        background: #fff;
+        border: 3px solid #e0e0e0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1;
+        transition: all 0.3s;
+    }
+
+    .timeline-item.completed .timeline-item-icon {
+        background: #28a745;
+        border-color: #28a745;
+        color: white;
+    }
+
+    .timeline-item.pending .timeline-item-icon {
+        background: #f8f9fa;
+        border-color: #dee2e6;
+        color: #adb5bd;
+    }
+
+    .timeline-item.current .timeline-item-icon {
+        background: #ffc107;
+        border-color: #ffc107;
+        color: white;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+
+        0%,
+        100% {
+            box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7);
+        }
+
+        50% {
+            box-shadow: 0 0 0 10px rgba(255, 193, 7, 0);
+        }
+    }
+
+    .timeline-item-content {
+        flex: 1;
+        background: #f8f9fa;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        border-left: 3px solid #dee2e6;
+        transition: all 0.3s;
+    }
+
+    .timeline-item.completed .timeline-item-content {
+        background: #d4edda;
+        border-left-color: #28a745;
+    }
+
+    .timeline-item.current .timeline-item-content {
+        background: #fff3cd;
+        border-left-color: #ffc107;
+    }
+
+    .timeline-item-content:hover {
+        transform: translateX(5px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .timeline-item-label {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .timeline-item-date {
+        font-size: 0.875rem;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .timeline-item.completed .timeline-item-date {
+        color: #155724;
+    }
+
+    .timeline-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+    }
+
+    .phase-progress {
+        margin-top: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .phase-progress-bar {
+        height: 4px;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 2px;
+        overflow: hidden;
+        margin-top: 0.25rem;
+    }
+
+    .phase-progress-fill {
+        height: 100%;
+        background: white;
+        transition: width 0.3s;
     }
 
     @keyframes slideIn {
@@ -115,7 +264,7 @@
 @section('content')
 <div class="container-fluid py-3">
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h2>
                 <i class="bi bi-file-earmark-text"></i>
@@ -126,7 +275,7 @@
             </p>
         </div>
         <div>
-            <span class="badge {{ $pengajuan->status_badge_class }} fs-6">
+            <span class="badge {{ $pengajuan->status_badge_class }} fs-6 text-wrap">
                 {{ $pengajuan->status_label }}
             </span>
         </div>
@@ -136,122 +285,29 @@
         <!-- Main Content -->
         <div class="col-md-8">
             <!-- ACTION: Upload/Isi Draft LED -->
-            @if(in_array($pengajuan->status, ['borang_dikirim', 'review_kesiapan_belum_siap']))
+            @if(($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI && $pengajuan->pembayaran && $pengajuan->pembayaran->status_pembayaran === 'terverifikasi')||$pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED)
             <div class="card action-card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">
                         <i class="bi bi-exclamation-circle text-warning"></i>
-                        Aksi Diperlukan: Lengkapi Draft LED
+                        Aksi Diperlukan: Lengkapi LED & LKPS
                     </h5>
-                    <p class="mb-3">
-                        Anda dapat melengkapi borang dengan 2 cara:
+
+                    <p class="text-muted mb-3">
+                        Silakan lengkapi LED dan LKPS melalui form pengisian di sistem, ataupun upload file secara langsung.
                     </p>
 
-                    <!-- Nav Tabs -->
-                    <ul class="nav nav-tabs mb-3" id="borangTabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="upload-tab" data-bs-toggle="tab" data-bs-target="#upload-panel" type="button">
-                                <i class="bi bi-upload"></i> Upload DOCX
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="online-tab" data-bs-toggle="tab" data-bs-target="#online-panel" type="button">
-                                <i class="bi bi-pencil-square"></i> Isi Online
-                            </button>
-                        </li>
-                    </ul>
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <i class="bi bi-pencil-square fs-1 text-primary mb-3"></i>
+                            <h5 class="mb-2">Pengisian LED & LKPS</h5>
+                            <p class="text-muted mb-3">
+                                Mohon isi dan lengkapi seluruh data LED (kualitatif) dan LKPS (kuantitatif) terlebih dahulu.
+                            </p>
 
-                    <!-- Tab Content -->
-                    <div class="tab-content" id="borangTabContent">
-                        <!-- Upload DOCX Panel -->
-                        <div class="tab-pane fade show active" id="upload-panel">
-                            <div class="alert alert-info alert-permanent">
-                                <i class="bi bi-info-circle"></i>
-                                <strong>Format yang diterima:</strong> DOCX (Microsoft Word)
-                                <ul class="mb-0 mt-2">
-                                    <li>Bagian diawali dengan kode (contoh: <code>D.1 Legalitas Program</code>)</li>
-                                    <li>Tabel didahului marker <strong>"Mohon isi di sini"</strong></li>
-                                    <li>Header tabel format: <code>Tabel E.1.1 - Judul Tabel</code></li>
-                                </ul>
-                            </div>
-
-                            <div class="alert alert-success alert-permanent mb-3">
-                                <i class="bi bi-download"></i>
-                                <strong>Belum punya template?</strong> Download template LED resmi.
-                                <br>
-                                <a href="{{ route('pengajuan.template.download') }}" class="btn btn-sm btn-success mt-2">
-                                    <i class="bi bi-download"></i> Download Template LED DOCX
-                                </a>
-                            </div>
-
-                            <form id="formUploadBorang" enctype="multipart/form-data">
-                                @csrf
-                                <!-- Upload Area -->
-                                <div class="upload-area mb-3" id="uploadArea">
-                                    <i class="bi bi-cloud-upload fs-1 text-muted"></i>
-                                    <p class="mb-2"><strong>Klik atau drag & drop file di sini</strong></p>
-                                    <p class="text-muted small mb-2">Format: DOCX | Max: 10 MB</p>
-                                    <input type="file" id="inputDraftBorang" name="draft_borang" class="d-none" accept=".docx">
-                                    <button type="button" class="btn btn-primary btn-sm" onclick="document.getElementById('inputDraftBorang').click()">
-                                        <i class="bi bi-folder2-open"></i> Pilih File
-                                    </button>
-                                </div>
-
-                                <!-- File Preview -->
-                                <div id="filePreview" class="file-preview-card d-none mb-3">
-                                    <i class="bi bi-file-earmark-word fs-1 text-success"></i>
-                                    <p class="mb-1 mt-2"><strong id="fileName"></strong></p>
-                                    <p class="text-muted small mb-2" id="fileSize"></p>
-                                    <div class="d-flex gap-2 justify-content-center">
-                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeFile()">
-                                            <i class="bi bi-trash"></i> Hapus
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="document.getElementById('inputDraftBorang').click()">
-                                            <i class="bi bi-arrow-repeat"></i> Ganti File
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- Keterangan -->
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold">Keterangan (Opsional)</label>
-                                    <textarea name="keterangan" class="form-control @error('keterangan') is-invalid @enderror" rows="2" placeholder="Catatan terkait draft LED"></textarea>
-                                    @error('keterangan')
-                                    <span class="invalid-feedback" role="alert">
-                                        {{ $message }}
-                                    </span>
-                                    @enderror
-                                </div>
-
-                                <!-- Submit Buttons -->
-                                <div class="d-flex gap-2">
-                                    <button type="submit" class="btn btn-primary" id="btnUploadBorang" disabled>
-                                        <i class="bi bi-upload"></i> Upload Draft LED
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-
-                        <!-- Isi Online Panel -->
-                        <div class="tab-pane fade" id="online-panel">
-                            <div class="alert alert-info alert-permanent">
-                                <i class="bi bi-info-circle"></i>
-                                <strong>Isi borang langsung di web</strong><br>
-                                Sistem akan memandu Anda mengisi setiap bagian borang secara terstruktur.
-                            </div>
-
-                            <div class="card bg-light">
-                                <div class="card-body text-center">
-                                    <i class="bi bi-pencil-square fs-1 text-primary mb-3"></i>
-                                    <h5>Form Isian Borang Online</h5>
-                                    <p class="text-muted mb-3">
-                                        Isi laporan evaluasi diri secara langsung dengan form yang terstruktur
-                                    </p>
-                                    <a href="{{ route('pengajuan.borang-online', $pengajuan->id) }}" class="btn btn-primary">
-                                        <i class="bi bi-pencil-square"></i> Mulai Mengisi Borang Online
-                                    </a>
-                                </div>
-                            </div>
+                            <a href="{{ route('pengajuan.borang-online', $pengajuan->id) }}" class="btn btn-primary">
+                                <i class="bi bi-pencil-square"></i> Buka Halaman Pengisian LED & LKPS
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -259,8 +315,36 @@
             @endif
 
             <!-- SECTION: Proses & Preview LED -->
-            @if(in_array($pengajuan->status, ['draft_borang_diterima', 'borang_online_selesai']))
+            @if(in_array($pengajuan->status, [\App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA, \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI]))
             @include('asesmen.pengajuan.components.modal-upload')
+            @endif
+
+            @if(in_array($pengajuan->status, [\App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED]))
+            <div class="alert alert-warning alert-permanent">
+                <i class="bi bi-info-circle"></i>
+                Sedang menunggu pelaporan LED+Suplemen dan LKPS selesai
+            </div>
+            @endif
+
+            @if(in_array($pengajuan->status, [\App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,\App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION]))
+            <div class="alert alert-warning alert-permanent">
+                <i class="bi bi-info-circle"></i>
+                Sedang menunggu proses valdasi LED+Suplemen dan LKPS selesai
+            </div>
+            @endif
+
+            @if(in_array($pengajuan->status, [\App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED]))
+            <div class="alert alert-warning alert-permanent">
+                <i class="bi bi-info-circle"></i>
+                Terdapat revisi dokumen LED+Suplemen dan LKPS. Mohon periksa kembali dan lakukan revisi dokumen berdasarkan catatan oleh reviewer
+            </div>
+            @endif
+
+            @if(in_array($pengajuan->status, [\App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN]))
+            <div class="alert alert-info alert-permanent">
+                <i class="bi bi-info-circle"></i>
+                Dokumen LED+Suplemen dan LKPS telah selesai divalidasi dan diproses. Selanjutnya akan dilakukan penugasan Asesor untuk Asesmen Kecukupan
+            </div>
             @endif
 
             <!-- 🆕 MODAL UPLOAD ULANG -->
@@ -357,7 +441,7 @@
             </div>
 
             <!-- ACTION: Upload Pembayaran -->
-            @if($pengajuan->status === 'menunggu_pembayaran')
+            @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_MENUNGGU_PEMBAYARAN)
             <div class="card action-card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">
@@ -383,11 +467,21 @@
 
                     <form action="{{ route('pengajuan.upload-pembayaran', $pengajuan->id) }}" method="POST" enctype="multipart/form-data">
                         @csrf
-                        <div class="row g-3">
+                        <div class="row g-3 mt-3">
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Tanggal Pembayaran</label>
                                 <input type="date" name="tanggal_pembayaran" class="form-control @error('tanggal_pembayaran') is-invalid @enderror" value="{{ date('Y-m-d') }}" required>
                                 @error('tanggal_pembayaran')
+                                <span class="invalid-feedback" role="alert">
+                                    {{ $message }}
+                                </span>
+                                @enderror
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Formulir Pembayaran yang Telah Diisi</label>
+                                <input type="file" name="formulir_pembayaran" class="form-control @error('formulir_pembayaran') is-invalid @enderror" accept=".pdf" required>
+                                <small class="text-muted">Format: PDF | Max: 5 MB</small>
+                                @error('formulir_pembayaran')
                                 <span class="invalid-feedback" role="alert">
                                     {{ $message }}
                                 </span>
@@ -404,6 +498,10 @@
                                 @enderror
                             </div>
                             <div class="col-md-12">
+                                <label class="form-label fw-bold">Catatan Pembayaran</label>
+                                <textarea name="catatan_pembayaran" class="form-control" rows="3" placeholder="Masukkan catatan pembayaran di sini (apabila ada)"></textarea>
+                            </div>
+                            <div class="col-md-12">
                                 <button type="submit" class="btn btn-success">
                                     <i class="bi bi-upload"></i> Upload Bukti Pembayaran
                                 </button>
@@ -415,8 +513,8 @@
             @endif
 
             <!-- ACTION: Upload Borang Final -->
-            @if($pengajuan->status === 'pembayaran_diterima' && $pengajuan->pembayaran && $pengajuan->pembayaran->status_pembayaran === 'verified')
-            <div class="card action-card mb-4">
+            @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_PEMBAYARAN_DITERIMA && $pengajuan->pembayaran && $pengajuan->pembayaran->status_pembayaran === 'terverifikasi')
+            {{-- <div class="card action-card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">
                         <i class="bi bi-file-check text-primary"></i>
@@ -432,85 +530,90 @@
                     </div>
 
                     <form action="{{ route('pengajuan.upload-final', $pengajuan->id) }}" method="POST" enctype="multipart/form-data">
-                        @csrf
-                        <div class="row g-3">
-                            <div class="col-md-8">
-                                <label class="form-label fw-bold">Borang Final (DOCX)</label>
-                                <input type="file" name="borang_final" class="form-control @error('borang_final') is-invalid @enderror" accept=".docx" required>
-                                <small class="text-muted">Format: DOCX | Max: 10 MB</small>
-                                @error('borang_final')
-                                <span class="invalid-feedback" role="alert">
-                                    {{ $message }}
-                                </span>
-                                @enderror
-                            </div>
-                            <div class="col-md-12">
-                                <label class="form-label fw-bold">Keterangan</label>
-                                <textarea name="keterangan" class="form-control @error('keterangan') is-invalid @enderror" rows="2"></textarea>
-                                @error('keterangan')
-                                <span class="invalid-feedback" role="alert">
-                                    {{ $message }}
-                                </span>
-                                @enderror
-                            </div>
-                            <div class="col-md-12">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="bi bi-upload"></i> Upload Borang Final
-                                </button>
-                            </div>
-                        </div>
-                    </form>
+            @csrf
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <label class="form-label fw-bold">Borang Final (DOCX)</label>
+                    <input type="file" name="borang_final" class="form-control @error('borang_final') is-invalid @enderror" accept=".docx" required>
+                    <small class="text-muted">Format: DOCX | Max: 10 MB</small>
+                    @error('borang_final')
+                    <span class="invalid-feedback" role="alert">
+                        {{ $message }}
+                    </span>
+                    @enderror
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label fw-bold">Keterangan</label>
+                    <textarea name="keterangan" class="form-control @error('keterangan') is-invalid @enderror" rows="2"></textarea>
+                    @error('keterangan')
+                    <span class="invalid-feedback" role="alert">
+                        {{ $message }}
+                    </span>
+                    @enderror
+                </div>
+                <div class="col-md-12">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-upload"></i> Upload Borang Final
+                    </button>
                 </div>
             </div>
-            @endif
+            </form>
+        </div>
+    </div> --}}
+    @endif
+    <hr>
 
-            <!-- Informasi Pengajuan -->
-            <div class="card mb-4">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">
-                        <i class="bi bi-info-circle"></i> Informasi Pengajuan
-                    </h5>
+    <!-- Informasi Pengajuan -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                <i class="bi bi-info-circle"></i> Informasi Pengajuan
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="text-muted small">Program Studi</label>
+                    <p class="fw-bold mb-0">{{ $pengajuan->studyProgram->name }}</p>
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Program Studi</label>
-                            <p class="fw-bold mb-0">{{ $pengajuan->studyProgram->name }}</p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Jenjang</label>
-                            <p class="fw-bold mb-0">{{ $pengajuan->studyProgram->degreeLevel->name }}</p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Tahun Akreditasi</label>
-                            <p class="fw-bold mb-0">{{ $pengajuan->tahun_akreditasi }}</p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Jenis Akreditasi</label>
-                            <p class="fw-bold mb-0">{{ ucfirst($pengajuan->jenis_akreditasi) }}</p>
-                        </div>
-                        @if($pengajuan->pengaju)
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Pengaju</label>
-                            <p class="fw-bold mb-0">{{ $pengajuan->pengaju->name }}</p>
-                        </div>
-                        @endif
-                        {{-- <div class="col-md-6 mb-3">
+                <div class="col-md-6 mb-3">
+                    <label class="text-muted small">Universitas/Institut</label>
+                    <p class="fw-bold mb-0">{{ $pengajuan->studyProgram->university->name }}</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="text-muted small">Jenjang</label>
+                    <p class="fw-bold mb-0">{{ $pengajuan->studyProgram->degreeLevel->name }}</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="text-muted small">Tahun Akreditasi</label>
+                    <p class="fw-bold mb-0">{{ $pengajuan->tahun_akreditasi }}</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="text-muted small">Jenis Akreditasi</label>
+                    <p class="fw-bold mb-0">{{ ucfirst($pengajuan->jenis_akreditasi) }}</p>
+                </div>
+                @if($pengajuan->pengaju)
+                <div class="col-md-6 mb-3">
+                    <label class="text-muted small">Pengaju</label>
+                    <p class="fw-bold mb-0">{{ $pengajuan->pengaju->name }}</p>
+                </div>
+                @endif
+                {{-- <div class="col-md-6 mb-3">
                             <label class="text-muted small">DE</label>
                             <p class="fw-bold mb-0">{{ $pengajuan->deskEvaluator->name ?? 'Belum ditugaskan' }}</p>
-                    </div> --}}
-                </div>
-
-                @if($pengajuan->catatan_pengaju)
-                <hr>
-                <label class="text-muted small">Catatan Pengaju</label>
-                <p class="mb-0">{{ $pengajuan->catatan_pengaju }}</p>
-                @endif
-            </div>
+            </div> --}}
         </div>
 
-        <!-- Review Kesiapan -->
-        @if($pengajuan->reviewKesiapan->count() > 0)
+        @if($pengajuan->catatan_pengaju)
+        <hr>
+        <label class="text-muted small">Catatan Pengaju</label>
+        <p class="mb-0">{{ $pengajuan->catatan_pengaju }}</p>
+        @endif
+    </div>
+</div>
+
+<!-- Review Kesiapan -->
+{{-- @if($pengajuan->reviewKesiapan->count() > 0)
         <div class="card mb-4">
             <div class="card-header bg-light">
                 <h5 class="mb-0">
@@ -520,210 +623,335 @@
             <div class="card-body">
                 @foreach($pengajuan->reviewKesiapan->sortByDesc('tanggal_review') as $review)
                 <div class="mb-3 pb-3 {{ !$loop->last ? 'border-bottom' : '' }}">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div>
-                            <span class="badge {{ $review->hasil_review === 'siap' ? 'bg-success' : 'bg-danger' }}">
-                                {{ $review->hasil_review === 'siap' ? 'SIAP' : 'BELUM SIAP' }}
-                            </span>
-                            <small class="text-muted ms-2">Versi {{ $review->versi_review }}</small>
-                        </div>
-                        <small class="text-muted">
-                            {{ $review->tanggal_review->format('d M Y H:i') }}
-                        </small>
-                    </div>
-                    <p class="mb-2"><strong>Reviewer:</strong> {{ $review->reviewer->name }}</p>
-                    <p class="mb-0"><strong>Catatan:</strong></p>
-                    <p class="text-muted">{{ $review->catatan_review }}</p>
+<div class="d-flex justify-content-between align-items-start mb-2">
+    <div>
+        <span class="badge {{ $review->hasil_review === 'siap' ? 'bg-success' : 'bg-danger' }}">
+            {{ $review->hasil_review === 'siap' ? 'SIAP' : 'BELUM SIAP' }}
+        </span>
+        <small class="text-muted ms-2">Versi {{ $review->versi_review }}</small>
+    </div>
+    <small class="text-muted">
+        {{ $review->tanggal_review->format('d M Y H:i') }}
+    </small>
+</div>
+<p class="mb-2"><strong>Reviewer:</strong> {{ $review->reviewer->name }}</p>
+<p class="mb-0"><strong>Catatan:</strong></p>
+<p class="text-muted">{{ $review->catatan_review }}</p>
 
-                    @if($review->checklist_kesiapan)
-                    <p class="mb-1"><strong>Checklist:</strong></p>
-                    <ul>
-                        @foreach($review->checklist_kesiapan as $item)
-                        <li>{{ $item }}</li>
+@if($review->checklist_kesiapan)
+<p class="mb-1"><strong>Checklist:</strong></p>
+<ul>
+    @foreach($review->checklist_kesiapan as $item)
+    <li>{{ $item }}</li>
+    @endforeach
+</ul>
+@endif
+</div>
+@endforeach
+</div>
+</div>
+@endif --}}
+
+<!-- Dokumen -->
+<div class="card mb-4">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">
+            <i class="bi bi-folder"></i> Dokumen
+        </h5>
+    </div>
+    <div class="card-body">
+        @forelse($pengajuan->dokumen->groupBy('jenis_dokumen_alias') as $jenis => $docs)
+        <div class="mb-3">
+            <h6 class="fw-bold text-primary">
+                {{ str_replace('_', ' ', ucwords($jenis)) }}
+            </h6>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover">
+                    <thead>
+                        <tr>
+                            <th>Nama File</th>
+                            <th>Versi</th>
+                            <th>Upload Oleh</th>
+                            <th>Tanggal</th>
+                            <th>Ukuran</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($docs as $doc)
+                        <tr>
+                            <td>
+                                {{ $doc->original_filename }}
+                                @if($doc->is_latest)
+                                <span class="badge bg-success">Latest</span>
+                                @endif
+                            </td>
+                            <td>v{{ $doc->versi }}</td>
+                            <td>{{ $doc->uploader->name ?? '-' }}</td>
+                            <td>{{ $doc->created_at->format('d/m/Y H:i') }}</td>
+                            <td>{{ $doc->file_size_formatted }}</td>
+                            <td>
+                                <a href="{{ $doc->download_url }}" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-download"></i>
+                                </a>
+                            </td>
+                        </tr>
                         @endforeach
-                    </ul>
-                    @endif
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        @empty
+        <p class="text-muted mb-0">Belum ada dokumen yang diupload.</p>
+        @endforelse
+    </div>
+</div>
+</div>
+
+<!-- Sidebar -->
+<div class="col-md-4">
+    <!-- Timeline -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                <i class="bi bi-clock-history"></i> Timeline Proses Akreditasi
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="timeline">
+                @foreach([
+                // ========================================
+                // FASE 1: PERSIAPAN
+                // ========================================
+                [
+                'date' => $pengajuan->tanggal_pengingat,
+                'label' => 'Pengingat Masa Akreditasi',
+                'icon' => 'bi-bell',
+                'step' => 1
+                ],
+                [
+                'date' => $pengajuan->tanggal_surat_permohonan,
+                'label' => 'Surat Permohonan dari PS',
+                'icon' => 'bi-envelope',
+                'step' => 2
+                ],
+                [
+                'date' => $pengajuan->tanggal_template_led_dikirim,
+                'label' => 'Penyampaian Template LED+Suplemen dan LKPS, Formulir Pembayaran',
+                'icon' => 'bi-file-earmark-arrow-down',
+                'step' => 3
+                ],
+                [
+                'date' => $pengajuan->tanggal_pembayaran,
+                'label' => 'Validasi Pembayaran',
+                'icon' => 'bi-credit-card-2-front',
+                'step' => 4
+                ],
+                [
+                'date' => $pengajuan->tanggal_draft_borang,
+                'label' => 'Penerimaan draft LED+Suplemen dan LKPS dari Prodi',
+                'icon' => 'bi-file-earmark-check',
+                'step' => 5
+                ],
+
+                // ========================================
+                // FASE 2: VALIDASI LED
+                // ========================================
+                [
+                'date' => $pengajuan->tanggal_validasi_borang_assigned,
+                'label' => 'Validasi LED+Suplemen dan LKPS',
+                'icon' => 'bi-clipboard-check',
+                'step' => 6,
+                'color' => 'primary'
+                ],
+                [
+                'date' => $pengajuan->tanggal_pelaporan_validasi_borang,
+                'label' => 'Pelaporan Validasi LED+Suplemen dan LKPS',
+                'icon' => 'bi-file-earmark-text',
+                'step' => 7,
+                'color' => 'primary'
+                ],
+
+                // ========================================
+                // FASE 3: ASESMEN KECUKUPAN (AK)
+                // ========================================
+                [
+                'date' => $pengajuan->tanggal_penugasan_asesor_ak,
+                'label' => 'Penugasan Asesor untuk AK',
+                'icon' => 'bi-person-check',
+                'step' => 8,
+                'color' => 'success'
+                ],
+                [
+                'date' => $pengajuan->tanggal_validasi_ak,
+                'label' => 'Validasi AK',
+                'icon' => 'bi-clipboard2-check',
+                'step' => 9,
+                'color' => 'success'
+                ],
+                [
+                'date' => $pengajuan->tanggal_pelaporan_ak,
+                'label' => 'Pelaporan AK',
+                'icon' => 'bi-file-earmark-medical',
+                'step' => 10,
+                'color' => 'success'
+                ],
+
+                // ========================================
+                // FASE 4: ASESMEN LAPANGAN (AL)
+                // ========================================
+                [
+                'date' => $pengajuan->tanggal_penugasan_asesor_al,
+                'label' => 'Penugasan Asesor untuk AL',
+                'icon' => 'bi-person-badge',
+                'step' => 11,
+                'color' => 'info'
+                ],
+                [
+                'date' => $pengajuan->tanggal_pelaksanaan_al,
+                'label' => 'Pelaksanaan AL dan Penyampaian Berita Acara AL',
+                'icon' => 'bi-building',
+                'step' => 12,
+                'color' => 'info'
+                ],
+                [
+                'date' => $pengajuan->tanggal_pelaporan_al,
+                'label' => 'Pelaporan AL',
+                'icon' => 'bi-clipboard-data',
+                'step' => 13,
+                'color' => 'info'
+                ],
+
+                // ========================================
+                // FASE 5: PENYELESAIAN
+                // ========================================
+                [
+                'date' => $pengajuan->tanggal_hasil_akreditasi,
+                'label' => 'Penyampaian Hasil Akreditasi',
+                'icon' => 'bi-envelope-paper',
+                'step' => 14,
+                'color' => 'warning'
+                ],
+                [
+                'date' => $pengajuan->tanggal_masa_sanggah_mulai,
+                'label' => 'Masa Sanggah',
+                'icon' => 'bi-clock-history',
+                'step' => 15,
+                'color' => 'warning',
+                ],
+                [
+                'date' => $pengajuan->tanggal_pelaksanaan_banding,
+                'label' => 'Pelaksanaan Banding',
+                'icon' => 'bi-arrow-repeat',
+                'step' => 16,
+                'color' => 'danger',
+                ],
+                [
+                'date' => $pengajuan->tanggal_pelaporan_banding,
+                'label' => 'Pelaporan Banding',
+                'icon' => 'bi-file-earmark-ruled',
+                'step' => 17,
+                'color' => 'danger',
+                ],
+                [
+                'date' => $pengajuan->tanggal_penetapan,
+                'label' => 'Penetapan Hasil Akreditasi',
+                'icon' => 'bi-award',
+                'step' => 18,
+                'color' => 'success'
+                ],
+                [
+                'date' => $pengajuan->tanggal_pelaporan_hasil,
+                'label' => 'Pelaporan Hasil Akreditasi',
+                'icon' => 'bi-megaphone',
+                'step' => 19,
+                'color' => 'success'
+                ],
+                [
+                'date' => $pengajuan->tanggal_penyimpanan,
+                'label' => 'Penyimpanan Arsip Pelaksanaan Akreditasi',
+                'icon' => 'bi-archive',
+                'step' => 20,
+                'color' => 'secondary'
+                ],
+                ] as $item)
+                @php
+                $isCompleted = $item['date'] !== null;
+                $iconColor = $isCompleted ? 'text-success' : 'text-muted';
+                $itemColor = $item['color'] ?? ($isCompleted ? 'success' : 'muted');
+                $isOptional = $item['optional'] ?? false;
+                @endphp
+
+                <div class="d-flex mb-3 {{ $isOptional && !$isCompleted ? 'opacity-50' : '' }}">
+                    <div class="me-3">
+                        @if($isCompleted)
+                        <i class="bi bi-check-circle-fill {{ $iconColor }}" style="font-size: 1.2rem;"></i>
+                        @else
+                        <i class="bi bi-circle {{ $iconColor }}"></i>
+                        @endif
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong class="{{ $isCompleted ? 'text-' . $itemColor : 'text-muted' }}">
+                                    <i class="{{ $item['icon'] ?? 'bi-circle' }} me-1"></i>
+                                    {{ $item['label'] }}
+                                    @if($isOptional)
+                                    <span class="badge bg-secondary ms-1">Opsional</span>
+                                    @endif
+                                </strong>
+                            </div>
+                            @if($isCompleted)
+                            <span class="badge bg-{{ $itemColor }}">
+                                {{ $item['date']->format('d M Y') }}
+                            </span>
+                            @endif
+                        </div>
+                        @if($isCompleted)
+                        <small class="text-muted">
+                            <i class="bi bi-clock"></i> {{ $item['date']->format('H:i') }} WIB
+                        </small>
+                        @endif
+                    </div>
                 </div>
                 @endforeach
             </div>
         </div>
-        @endif
-
-        <!-- Dokumen -->
-        <div class="card mb-4">
-            <div class="card-header bg-light">
-                <h5 class="mb-0">
-                    <i class="bi bi-folder"></i> Dokumen
-                </h5>
-            </div>
-            <div class="card-body">
-                @forelse($pengajuan->dokumen->groupBy('jenis_dokumen') as $jenis => $docs)
-                <div class="mb-3">
-                    <h6 class="fw-bold text-primary">
-                        {{ str_replace('_', ' ', ucwords($jenis)) }}
-                    </h6>
-                    <div class="table-responsive">
-                        <table class="table table-sm table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Nama File</th>
-                                    <th>Versi</th>
-                                    <th>Upload Oleh</th>
-                                    <th>Tanggal</th>
-                                    <th>Ukuran</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($docs as $doc)
-                                <tr>
-                                    <td>
-                                        {{ $doc->original_filename }}
-                                        @if($doc->is_latest)
-                                        <span class="badge bg-success">Latest</span>
-                                        @endif
-                                    </td>
-                                    <td>v{{ $doc->versi }}</td>
-                                    <td>{{ $doc->uploader->name }}</td>
-                                    <td>{{ $doc->created_at->format('d/m/Y H:i') }}</td>
-                                    <td>{{ $doc->file_size_formatted }}</td>
-                                    <td>
-                                        <a href="{{ $doc->download_url }}" class="btn btn-sm btn-primary">
-                                            <i class="bi bi-download"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                @empty
-                <p class="text-muted mb-0">Belum ada dokumen yang diupload.</p>
-                @endforelse
-            </div>
-        </div>
     </div>
 
-    <!-- Sidebar -->
-    <div class="col-md-4">
-        <!-- Timeline -->
-        <div class="card mb-4">
-            <div class="card-header bg-light">
-                <h5 class="mb-0">
-                    <i class="bi bi-clock-history"></i> Timeline Proses
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="timeline">
-                    <div class="timeline-item {{ $pengajuan->tanggal_pengingat ? 'completed' : '' }}">
-                        <strong>Pengingat Dikirim</strong>
-                        @if($pengajuan->tanggal_pengingat)
-                        <small class="d-block text-muted">
-                            {{ $pengajuan->tanggal_pengingat->format('d M Y H:i') }}
-                        </small>
-                        @endif
-                    </div>
-
-                    <div class="timeline-item {{ $pengajuan->tanggal_surat_permohonan ? 'completed' : '' }}">
-                        <strong>Surat Permohonan</strong>
-                        @if($pengajuan->tanggal_surat_permohonan)
-                        <small class="d-block text-muted">
-                            {{ $pengajuan->tanggal_surat_permohonan->format('d M Y H:i') }}
-                        </small>
-                        @endif
-                    </div>
-
-                    <div class="timeline-item {{ $pengajuan->tanggal_borang_dikirim ? 'completed' : '' }}">
-                        <strong>Borang Dikirim</strong>
-                        @if($pengajuan->tanggal_borang_dikirim)
-                        <small class="d-block text-muted">
-                            {{ $pengajuan->tanggal_borang_dikirim->format('d M Y H:i') }}
-                        </small>
-                        @endif
-                    </div>
-
-                    <div class="timeline-item {{ $pengajuan->tanggal_draft_borang ? 'completed' : '' }}">
-                        <strong>Draft LED Diterima</strong>
-                        @if($pengajuan->tanggal_draft_borang)
-                        <small class="d-block text-muted">
-                            {{ $pengajuan->tanggal_draft_borang->format('d M Y H:i') }}
-                        </small>
-                        @endif
-                    </div>
-
-                    <div class="timeline-item {{ $pengajuan->tanggal_review_kesiapan ? 'completed' : '' }}">
-                        <strong>Review Kesiapan</strong>
-                        @if($pengajuan->tanggal_review_kesiapan)
-                        <small class="d-block text-muted">
-                            {{ $pengajuan->tanggal_review_kesiapan->format('d M Y H:i') }}
-                        </small>
-                        @endif
-                    </div>
-
-                    <div class="timeline-item {{ $pengajuan->tanggal_pembayaran ? 'completed' : '' }}">
-                        <strong>Pembayaran</strong>
-                        @if($pengajuan->tanggal_pembayaran)
-                        <small class="d-block text-muted">
-                            {{ $pengajuan->tanggal_pembayaran->format('d M Y H:i') }}
-                        </small>
-                        @endif
-                    </div>
-
-                    <div class="timeline-item {{ $pengajuan->tanggal_borang_final ? 'completed' : '' }}">
-                        <strong>Borang Final</strong>
-                        @if($pengajuan->tanggal_borang_final)
-                        <small class="d-block text-muted">
-                            {{ $pengajuan->tanggal_borang_final->format('d M Y H:i') }}
-                        </small>
-                        @endif
-                    </div>
-
-                    <div class="timeline-item {{ $pengajuan->tanggal_lanjut_ak ? 'completed' : '' }}">
-                        <strong>Lanjut ke AK</strong>
-                        @if($pengajuan->tanggal_lanjut_ak)
-                        <small class="d-block text-muted">
-                            {{ $pengajuan->tanggal_lanjut_ak->format('d M Y H:i') }}
-                        </small>
-                        @endif
-                    </div>
-                </div>
-            </div>
+    <!-- Status Log -->
+    <div class="card">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                <i class="bi bi-list-check"></i> Log Aktivitas
+            </h5>
         </div>
-
-        <!-- Status Log -->
-        <div class="card">
-            <div class="card-header bg-light">
-                <h5 class="mb-0">
-                    <i class="bi bi-list-check"></i> Log Aktivitas
-                </h5>
-            </div>
-            <div class="card-body" style="max-height: 400px; overflow-y: auto;">
-                @forelse($pengajuan->statusLog->sortByDesc('changed_at') as $log)
-                <div class="mb-3 pb-3 {{ !$loop->last ? 'border-bottom' : '' }}">
-                    <div class="d-flex justify-content-between">
-                        <small class="text-muted">
-                            {{ $log->changed_at->format('d/m/Y H:i') }}
-                        </small>
-                        <small class="text-muted">
-                            {{ $log->changedBy->name }}
-                        </small>
-                    </div>
-                    <p class="mb-0 small">
-                        <span class="badge bg-secondary">{{ str_replace('_', ' ', $log->status_from) }}</span>
-                        <i class="bi bi-arrow-right"></i>
-                        <span class="badge bg-primary">{{ str_replace('_', ' ', $log->status_to) }}</span>
-                    </p>
-                    @if($log->keterangan)
-                    <small class="text-muted">{{ $log->keterangan }}</small>
-                    @endif
+        <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+            @forelse($pengajuan->statusLog->sortByDesc('changed_at') as $log)
+            <div class="mb-3 pb-3 {{ !$loop->last ? 'border-bottom' : '' }}">
+                <div class="d-flex justify-content-between">
+                    <small class="text-muted">
+                        {{ $log->changed_at->format('d/m/Y H:i') }}
+                    </small>
+                    <small class="text-muted">
+                        {{ $log->changedBy->name }}
+                    </small>
                 </div>
-                @empty
-                <p class="text-muted small mb-0">Belum ada aktivitas</p>
-                @endforelse
+                <p class="mb-0 small">
+                    <span class="badge bg-secondary">{{ str_replace('_', ' ', $log->status_from_label) }}</span>
+                    <i class="bi bi-arrow-right"></i>
+                    <span class="badge bg-primary">{{ str_replace('_', ' ', $log->status_to_label) }}</span>
+                </p>
+                @if($log->keterangan)
+                <small class="text-muted">{{ $log->keterangan }}</small>
+                @endif
             </div>
+            @empty
+            <p class="text-muted small mb-0">Belum ada aktivitas</p>
+            @endforelse
         </div>
     </div>
+</div>
 </div>
 </div>
 @push('scripts')
@@ -830,7 +1058,6 @@
         btnUploadBorang.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mengupload...';
 
         try {
-            console.log(formData)
             const response = await fetch('{{ route("pengajuan.upload-draft", $pengajuan->id) }}', {
                 method: 'POST'
                 , body: formData
@@ -840,7 +1067,6 @@
             });
 
             const data = await response.json();
-            console.log(data)
 
             if (data.success || response.ok) {
                 alert('✅ Draft LED berhasil diupload!');
@@ -945,6 +1171,101 @@
             }
         }
     }
+
+    // ✅ Upload Kuantitatif Handler
+    function triggerUploadKuantitatif() {
+        document.getElementById('inputKuantitatif').click();
+    }
+
+    async function handleUploadKuantitatif(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // Validate
+        if (!file.name.match(/\.(xlsx|xls)$/)) {
+            Swal.fire('Error', 'File harus berformat Excel (.xlsx atau .xls)', 'error');
+            return;
+        }
+
+        if (file.size > 10 * 1024 * 1024) {
+            Swal.fire('Error', 'Ukuran file maksimal 10MB', 'error');
+            return;
+        }
+
+        // Show confirmation
+        const result = await Swal.fire({
+            icon: 'question'
+            , title: 'Upload Data Kuantitatif?'
+            , html: `
+            <p>File: <strong>${file.name}</strong></p>
+            <p>Ukuran: <strong>${formatFileSize(file.size)}</strong></p>
+            <p class="text-muted mt-2">Data tabel akan diproses dan diisi otomatis</p>
+        `
+            , showCancelButton: true
+            , confirmButtonText: 'Ya, Upload'
+            , cancelButtonText: 'Batal'
+        });
+
+        if (!result.isConfirmed) return;
+
+        // Upload
+        const formData = new FormData();
+        formData.append('file_kuantitatif', file);
+
+        showLoading();
+
+        try {
+            const response = await fetch('{{ route("pengajuan.upload-kuantitatif", $pengajuan->id) }}', {
+                method: 'POST'
+                , headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    , 'Accept': 'application/json'
+                }
+                , body: formData
+            });
+
+            const data = await response.json();
+            hideLoading();
+
+            if (data.success) {
+                // Show import progress
+                showImportProgress('kuantitatif', data.data.dokumen_id);
+
+                Swal.fire({
+                    icon: 'info'
+                    , title: 'Sedang Diproses'
+                    , text: 'File sedang diproses di background...'
+                    , showConfirmButton: false
+                    , allowOutsideClick: false
+                    , didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Start polling
+                pollImportStatus(data.data.dokumen_id, 'kuantitatif');
+            } else {
+                throw new Error(data.message || 'Upload gagal');
+            }
+        } catch (error) {
+            hideLoading();
+            Swal.fire('Error', error.message, 'error');
+        }
+    }
+    // Smooth scroll to current phase
+    document.addEventListener('DOMContentLoaded', function() {
+        const currentItem = document.querySelector('.timeline-item.current');
+        if (currentItem) {
+            currentItem.scrollIntoView({
+                behavior: 'smooth'
+                , block: 'center'
+            });
+        }
+    });
+
+    // Tooltip untuk timeline items
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
 
 </script>
 @endpush

@@ -19,7 +19,7 @@ class PemetaanAkreditasiController extends Controller
     public function index(Request $request)
     {
         // Build query
-        $query = StudyProgram::with(['university', 'degreeLevel']);
+        $query = StudyProgram::nonExample()->with(['university', 'degreeLevel']);
 
         // Filter by university
         if ($request->filled('university_id')) {
@@ -63,7 +63,7 @@ class PemetaanAkreditasiController extends Controller
         $stats = $this->calculateStatistics();
 
         // Get filter data
-        $universities = University::orderBy('name')->get();
+        $universities = University::nonExample()->orderBy('name')->get();
         $degreeLevels = DegreeLevel::orderBy('code')->get();
 
         // Get urgent items (kedaluwarsa dalam 6 bulan)
@@ -119,7 +119,7 @@ class PemetaanAkreditasiController extends Controller
     public function getTableAjax(Request $request)
     {
         // Build query
-        $query = StudyProgram::with(['university', 'degreeLevel']);
+        $query = StudyProgram::nonExample()->with(['university', 'degreeLevel']);
 
         // Apply filters
         if ($request->filled('university_id')) {
@@ -156,7 +156,7 @@ class PemetaanAkreditasiController extends Controller
         $studyPrograms = $query->paginate(20);
 
         // Get urgent programs
-        $urgentPrograms = StudyProgram::with(['university', 'degreeLevel'])
+        $urgentPrograms = StudyProgram::nonExample()->with(['university', 'degreeLevel'])
             ->where('tanggal_kedaluwarsa', '<=', now()->addMonths(6))
             ->where('tanggal_kedaluwarsa', '>=', now())
             ->orderBy('tanggal_kedaluwarsa')
@@ -184,7 +184,7 @@ class PemetaanAkreditasiController extends Controller
         $twelveMonthsLater = now()->addMonths(12);
 
         // 🔥 1 QUERY SAJA - Fixed SQL syntax for proper bindings
-        $stats = StudyProgram::selectRaw("
+        $stats = StudyProgram::nonExample()->selectRaw("
         COUNT(*) as total,
         SUM(CASE WHEN status_kadaluwarsa = 'Aktif' THEN 1 ELSE 0 END) as aktif,
         SUM(CASE WHEN status_kadaluwarsa = 'Belum Terakreditasi' THEN 1 ELSE 0 END) as belum_terakreditasi,
@@ -202,7 +202,7 @@ class PemetaanAkreditasiController extends Controller
         ])->first();
 
         // Count by peringkat (tetap 1 query terpisah, memang perlu group by)
-        $byPeringkat = StudyProgram::select('peringkat_akreditasi', DB::raw('count(*) as total'))
+        $byPeringkat = StudyProgram::nonExample()->select('peringkat_akreditasi', DB::raw('count(*) as total'))
             ->whereNotNull('peringkat_akreditasi')
             ->groupBy('peringkat_akreditasi')
             ->pluck('total', 'peringkat_akreditasi')
@@ -225,7 +225,7 @@ class PemetaanAkreditasiController extends Controller
      */
     public function show($id)
     {
-        $studyProgram = StudyProgram::with([
+        $studyProgram = StudyProgram::nonExample()->with([
             'university',
             'degreeLevel',
         ])->findOrFail($id);
@@ -267,7 +267,7 @@ class PemetaanAkreditasiController extends Controller
         $endRange   = now()->copy()->addYears(5)->endOfDay();
 
         // 🔥 Ambil data SEKALI
-        $programs = StudyProgram::with(['university', 'degreeLevel'])
+        $programs = StudyProgram::nonExample()->with(['university', 'degreeLevel'])
             ->whereBetween('tanggal_kedaluwarsa', [$startRange, $endRange])
             ->orderBy('tanggal_kedaluwarsa')
             ->get();
@@ -334,7 +334,7 @@ class PemetaanAkreditasiController extends Controller
         $endRange = now()->copy()->addMonths(12)->endOfMonth();
 
         // 🔥 Ambil semua program sekali saja
-        $allPrograms = StudyProgram::with(['university', 'degreeLevel'])
+        $allPrograms = StudyProgram::nonExample()->with(['university', 'degreeLevel'])
             ->whereBetween('tanggal_kedaluwarsa', [$startRange, $endRange])
             ->orderBy('tanggal_kedaluwarsa')
             ->get();
@@ -381,7 +381,7 @@ class PemetaanAkreditasiController extends Controller
     }
 
     // ========== TESTING METHODS (NO AUTH REQUIRED) ==========
-    
+
     /**
      * Get statistics for testing (Postman)
      * Endpoint: GET /api/test/pemetaan/stats
@@ -389,7 +389,7 @@ class PemetaanAkreditasiController extends Controller
     public function getStatsForTesting()
     {
         $stats = $this->calculateStatistics();
-        
+
         return response()->json([
             'success' => true,
             'message' => 'Statistik berhasil diambil',
@@ -424,7 +424,7 @@ class PemetaanAkreditasiController extends Controller
     public function getTimelineForTesting($periode = '3bulan')
     {
         $timelineData = $this->getTimelineData($periode);
-        
+
         // Transform untuk response yang lebih bersih
         $transformedTimeline = collect($timelineData['timeline'])->map(function ($item) {
             return [
@@ -466,7 +466,7 @@ class PemetaanAkreditasiController extends Controller
     public function getCalendarForTesting()
     {
         $calendarData = $this->getCalendarData();
-        
+
         // Transform untuk response yang lebih bersih
         $transformedCalendar = collect($calendarData)->map(function ($item) {
             return [
@@ -530,7 +530,7 @@ class PemetaanAkreditasiController extends Controller
         // Sort
         $sortBy = $request->get('sort_by', 'tanggal_kedaluwarsa');
         $sortOrder = $request->get('sort_order', 'asc');
-        
+
         if ($sortBy === 'tanggal_kedaluwarsa') {
             $query->orderByRaw('CASE WHEN tanggal_kedaluwarsa IS NULL THEN 1 ELSE 0 END')
                 ->orderBy('tanggal_kedaluwarsa', $sortOrder);
@@ -590,4 +590,3 @@ class PemetaanAkreditasiController extends Controller
         ]);
     }
 }
-

@@ -15,6 +15,12 @@ class Asesmen extends Model
         'kode_panel',
         'tanggal_mulai',
         'tanggal_selesai',
+        'status',
+    ];
+
+    protected $casts = [
+        'tanggal_mulai' => 'date',
+        'tanggal_selesai' => 'date',
     ];
 
     public function pengajuan()
@@ -37,6 +43,24 @@ class Asesmen extends Model
         return $this->hasMany(AsesmenUserRole::class, 'id_asesmen');
     }
 
+    /**
+     * Relasi ke Asesmen Kecukupan (AK)
+     * 1 Asesmen bisa punya 1 AK
+     */
+    public function asesmenKecukupan()
+    {
+        return $this->hasOne(AsesmenKecukupan::class, 'id_asesmen');
+    }
+
+    /**
+     * Relasi ke Asesmen Lapangan (AL)
+     * 1 Asesmen bisa punya 1 AL
+     */
+    public function asesmenLapangan()
+    {
+        return $this->hasOne(AsesmenLapangan::class, 'id_asesmen');
+    }
+
     public function penilaianElemenAk()
     {
         return $this->hasMany(new PenilaianElemenAk, 'id_asesmen');
@@ -45,6 +69,35 @@ class Asesmen extends Model
     public function penilaianElemenAl()
     {
         return $this->hasMany(PenilaianElemenAl::class, 'id_asesmen');
+    }
+
+    /**
+     * Asesor AK saja
+     */
+    public function asesorAK()
+    {
+        return $this->hasMany(AsesmenUserRole::class, 'id_asesmen')
+            ->where('jenis_asesmen', 'ak');
+    }
+
+    /**
+     * Asesor AL saja
+     */
+    public function asesorAL()
+    {
+        return $this->hasMany(AsesmenUserRole::class, 'id_asesmen')
+            ->where('jenis_asesmen', 'al');
+    }
+
+    /**
+     * Validator saja
+     */
+    public function validators()
+    {
+        return $this->hasMany(AsesmenUserRole::class, 'id_asesmen')
+            ->whereHas('role', function ($query) {
+                $query->where('name', 'validator');
+            });
     }
 
     public function users()

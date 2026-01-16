@@ -24,9 +24,36 @@ class PengajuanDokumen extends Model
         'is_latest',
     ];
 
+    protected $appends = ['jenis_dokumen_alias'];
+
     protected $casts = [
         'is_latest' => 'boolean',
     ];
+
+    public const JENIS_DOKUMEN_ALIAS = [
+        'surat_permohonan'             => 'Surat Permohonan PS',
+        'surat_tugas'                  => 'Surat Tugas',
+        'borang_template'              => 'Template LED+Suplemen dan LKPS',
+        'template_formulir_pembayaran' => 'Template Formulir Pembayaran',
+        'formulir_pembayaran'          => 'Formulir Pembayaran',
+        'draft_borang'                 => 'Draft LED+Suplemen dan LKPS',
+        'borang_final'                 => 'LED+Suplemen dan LKPS Final',
+        'bukti_pembayaran'             => 'Bukti Pembayaran',
+        'lembar_pengesahan'            => 'Lembar Pengesahan LED+Suplemen Dan LKPS',
+        'dokumen_pendukung'            => 'Dokumen Pendukung',
+        'laporan_ak'                   => 'Laporan Asesmen Kecukupan (AK)',
+        'laporan_al'                   => 'Laporan Asesmen Lapangan (AL)',
+        'sertifikat'                   => 'Sertifikat Akreditasi',
+        'data_kualitatif'              => 'Laporan Evaluasi Diri (LED)+Suplemen',
+        'data_kuantitatif'             => 'Laporan Kinerja Program Studi (LKPS)',
+        'lainnya'                      => 'Dokumen Lainnya',
+    ];
+
+    public function getJenisDokumenAliasAttribute(): string
+    {
+        return self::JENIS_DOKUMEN_ALIAS[$this->jenis_dokumen]
+            ?? ucwords(str_replace('_', ' ', $this->jenis_dokumen));
+    }
 
     // Relations
     public function pengajuan()

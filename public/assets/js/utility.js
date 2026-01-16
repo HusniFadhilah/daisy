@@ -171,23 +171,24 @@ function showToast(type, message) {
  */
 function getSkorColorJS(skor) {
     const colors = {
-        0: '#f44336', // Red
-        1: '#ff9800', // Orange
-        2: '#ffeb3b', // Yellow
-        3: '#8bc34a', // Light Green
-        4: '#4caf50', // Dark Green
+        0: '#f5c6cb', // Red
+        1: '#ffe0b2', // Orange
+        2: '#fff9c4', // Yellow
+        3: '#dcedc8', // Light Green
+        4: '#c8e6c9', // Dark Green
     };
 
     return colors[skor] || '#e0e0e0';
 }
 
 function textColorByBgJS(hex) {
-    hex = hex.replace('#', '');
-    return (parseInt(hex.substr(0, 2), 16) * 0.299 +
-        parseInt(hex.substr(2, 2), 16) * 0.587 +
-        parseInt(hex.substr(4, 2), 16) * 0.114) > 186
-        ? '#000'
-        : '#fff';
+    return '#000';
+    // hex = hex.replace('#', '');
+    // return (parseInt(hex.substr(0, 2), 16) * 0.299 +
+    //     parseInt(hex.substr(2, 2), 16) * 0.587 +
+    //     parseInt(hex.substr(4, 2), 16) * 0.114) > 186
+    //     ? '#000'
+    //     : '#fff';
 }
 
 function getSkorLabel(skor) {
@@ -284,3 +285,13 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 5000);
     });
 });
+
+function showModalById(id) {
+    const el = document.getElementById(id);
+    const modal = bootstrap.Modal.getOrCreateInstance(el, {
+        backdrop: true,
+        keyboard: true
+    });
+    modal.show();
+    return modal;
+}

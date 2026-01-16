@@ -31,7 +31,7 @@ class PengajuanAkreditasiPolicy
 
         // DE can view if assigned
         // if ($user->hasRole('asesi')) {
-        //     return $pengajuan->id_de_assigned === $user->id;
+        //     return $pengajuan->id_de_assigned === $user->id ||$pengajuan->id_validator_assigned === $user->id;
         // }
 
         // Admin can view all
@@ -82,7 +82,7 @@ class PengajuanAkreditasiPolicy
      */
     public function review(User $user, PengajuanAkreditasi $pengajuan)
     {
-        return $user->hasRole(['asesi', 'super_admin']) && $pengajuan->id_de_assigned === $user->id;
+        return $user->hasRole(['asesi', 'super_admin', 'validator']) && $pengajuan->id_de_assigned === $user->id || $pengajuan->id_validator_assigned === $user->id;
     }
 
     /**
@@ -90,7 +90,7 @@ class PengajuanAkreditasiPolicy
      */
     public function verifyPayment(User $user, PengajuanAkreditasi $pengajuan)
     {
-        return $user->hasRole(['asesi', 'super_admin']) && $pengajuan->id_de_assigned === $user->id;
+        return $user->hasRole(['asesi', 'super_admin', 'validator']) && $pengajuan->id_de_assigned === $user->id || $pengajuan->id_validator_assigned === $user->id;
     }
 
     /**
@@ -98,7 +98,7 @@ class PengajuanAkreditasiPolicy
      */
     public function approveToAK(User $user, PengajuanAkreditasi $pengajuan)
     {
-        return $user->hasRole(['asesi', 'super_admin']) && $pengajuan->id_de_assigned === $user->id;
+        return $user->hasRole(['asesi', 'super_admin', 'validator']) && $pengajuan->id_de_assigned === $user->id || $pengajuan->id_validator_assigned === $user->id;
     }
 
     /**

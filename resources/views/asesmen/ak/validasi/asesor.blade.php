@@ -160,6 +160,7 @@
         </div>
         <div class="card-body">
             <div class="row g-3">
+                @if (app()->environment('local'))
                 <div class="col-md-6">
                     <button type="button" class="btn btn-outline-success w-100" id="btnValidateAllAgreed" {{ $isApproved ? 'disabled' : '' }}>
                         <i class="bi bi-check-circle"></i>
@@ -167,6 +168,7 @@
                         <small>Otomatis approve nilai yang sama dari semua asesor</small>
                     </button>
                 </div>
+                @endif
                 <div class="col-md-6">
                     <button type="button" class="btn btn-outline-warning w-100" id="btnReviewDifferences">
                         <i class="bi bi-exclamation-triangle"></i>
@@ -317,6 +319,7 @@
 
 @push('scripts')
 <script>
+    const envIsLocal = "{{ app()->environment('local') }}"
     const idAsesmen = "{{ $asesmen->id }}";
     const jenisAsesmen = "{{ $jenisAsesmen }}";
 
@@ -516,8 +519,7 @@
      * ============================================
      */
     async function openValidationModal(elemenId) {
-        const modal = new bootstrap.Modal(document.getElementById('modalValidasiDetail'));
-        modal.show();
+        const modal = showModalById('modalValidasiDetail');
 
         document.getElementById('loadingDetail').style.display = 'block';
         document.getElementById('detailContainer').style.display = 'none';
@@ -639,8 +641,7 @@
             const btnApproveAll = document.getElementById('btnApproveAll');
             if (btnApproveAll) {
                 btnApproveAll.addEventListener('click', function() {
-                    const modal = new bootstrap.Modal(document.getElementById('approveAllModal'));
-                    modal.show();
+                    const modal = showModalById('approveAllModal');
                 });
             }
 
@@ -713,47 +714,57 @@
         function setupModalEventListeners() {
             const statusValidasi = document.getElementById('statusValidasi');
             if (statusValidasi) {
-                statusValidasi.addEventListener('change', function() {
-                    const btnRevision = document.getElementById('btnSaveRevision');
-                    const btnValidasi = document.getElementById('btnSaveValidasi');
-                    const revisionSection = document.getElementById('revisionSection');
-                    const labelRequired = document.getElementById('labelCatatanRequired');
+                ['change', 'keyup'].forEach(event => {
+                    statusValidasi.addEventListener(event, function() {
+                        const btnRevision = document.getElementById('btnSaveRevision');
+                        const btnValidasi = document.getElementById('btnSaveValidasi');
+                        const revisionSection = document.getElementById('revisionSection');
+                        const labelRequired = document.getElementById('labelCatatanRequired');
+                        const quickSelectKategori = document.getElementById('quickSelectKategori');
+                        const preferensiKategori = document.getElementById('preferensiKategori');
 
-                    if (this.value === 'revision_required') {
-                        btnRevision.style.display = 'inline-block';
-                        btnValidasi.style.display = 'none';
-                        revisionSection.style.display = 'block';
                         labelRequired.style.display = 'inline';
+                        if (this.value === 'revision_required') {
+                            btnRevision.style.display = 'inline-block';
+                            btnValidasi.style.display = 'none';
+                            revisionSection.style.display = 'block';
 
-                        // Add danger border to all asesor cards
-                        document.querySelectorAll('.asesor-card').forEach(card => {
-                            card.classList.add('border-danger');
-                        });
-                    } else {
-                        btnRevision.style.display = 'none';
-                        btnValidasi.style.display = 'inline-block';
-                        revisionSection.style.display = 'none';
-                        labelRequired.style.display = 'none';
+                            // Add danger border to all asesor cards
+                            document.querySelectorAll('.asesor-card').forEach(card => {
+                                card.classList.add('border-danger');
+                            });
+                        } else {
+                            btnRevision.style.display = 'none';
+                            btnValidasi.style.display = 'inline-block';
+                            revisionSection.style.display = 'none';
 
-                        // Remove danger border
-                        document.querySelectorAll('.asesor-card').forEach(card => {
-                            card.classList.remove('border-danger');
-                        });
-                    }
+                            // Remove danger border
+                            document.querySelectorAll('.asesor-card').forEach(card => {
+                                card.classList.remove('border-danger');
+                            });
+                        }
+                        if (['validated', 'revision_required'].includes(this.value)) {
+                            quickSelectKategori.style.display = 'block';
+                            preferensiKategori.style.display = 'block';
+                        } else {
+                            quickSelectKategori.style.display = 'none';
+                            preferensiKategori.style.display = 'none';
+                        }
+                    });
                 });
             }
 
             const btnSaveValidasi = document.getElementById('btnSaveValidasi');
             if (btnSaveValidasi) {
                 btnSaveValidasi.addEventListener('click', function() {
-                    submitValidasi('validated');
+                    submitValidasi();
                 });
             }
 
             const btnSaveRevision = document.getElementById('btnSaveRevision');
             if (btnSaveRevision) {
                 btnSaveRevision.addEventListener('click', function() {
-                    submitValidasi('revision_required');
+                    submitValidasi();
                 });
             }
         }
@@ -763,24 +774,22 @@
          * SUBMIT VALIDASI
          * ============================================
          */
-        async function submitValidasi(status) {
+        async function submitValidasi() {
             const elemenId = document.getElementById('validasiElemenId').value;
             const skorFinal = document.getElementById('skorFinal').value;
             const statusValidasi = document.getElementById('statusValidasi').value;
             const catatanValidator = document.getElementById('catatanValidator').value;
-
             // ✅ Build payload based on status
             let payload = {
-                status: status
+                status: statusValidasi
                 , skor_final: skorFinal
                 , catatan_validator: catatanValidator
             };
 
-            if (status === 'revision_required') {
+            if (statusValidasi === 'revision_required') {
                 const selectedChecks = Array.from(
                     document.querySelectorAll('input[name="asesor_target_revisi[]"]:checked')
                 );
-
                 if (selectedChecks.length === 0) {
                     Swal.fire({
                         icon: 'warning'
@@ -810,7 +819,7 @@
                 });
                 return;
             }
-            if (!skorFinal) {
+            if (!skorFinal && statusValidasi == 'validated') {
                 Swal.fire({
                     icon: 'warning'
                     , title: 'Preferensi Kategori Diperlukan'
@@ -819,20 +828,25 @@
                 return;
             }
 
-            let confirmText = `Anda akan menyetujui penilaian dengan kategori: ${skorFinal}`;
-            if (status === 'revision_required') {
+            let confirmText = `Anda akan menyetujui penilaian ${statusValidasi === 'validated'? `dengan preferensi kategori: ${skorFinal}`: 'ini'}`;
+            if (statusValidasi === 'revision_required') {
                 const selectedAsesors = Array.from(
                     document.querySelectorAll('input[name="asesor_target_revisi[]"]:checked')
                 ).map(cb => cb.dataset.nama);
                 confirmText = `Anda akan meminta revisi kepada: ${selectedAsesors.join(', ')}`;
             }
-
+            const labelConfirm =
+                statusValidasi === 'validated' ?
+                'Ya, Setujui' :
+                statusValidasi === 'validated_diff' ?
+                'Setujui dengan perbedaan nilai' :
+                'Ya, Minta Revisi';
             const confirmResult = await Swal.fire({
                 icon: 'question'
-                , title: status === 'validated' ? 'Setujui Penilaian?' : 'Minta Revisi?'
+                , title: ['validated', 'validated_diff'].includes(statusValidasi) ? 'Setujui Penilaian?' : 'Minta Revisi?'
                 , text: confirmText
                 , showCancelButton: true
-                , confirmButtonText: status === 'validated' ? 'Ya, Setujui' : 'Ya, Minta Revisi'
+                , confirmButtonText: labelConfirm
                 , cancelButtonText: 'Batal'
             });
 
@@ -978,8 +992,7 @@
      * ============================================
      */
     async function showValidasiDetail(elemenId, validasiId) {
-        const modal = new bootstrap.Modal(document.getElementById('modalDetailValidasi'));
-        modal.show();
+        const modal = showModalById('modalDetailValidasi');
 
         document.getElementById('loadingDetailValidasi').style.display = 'block';
         document.getElementById('contentDetailValidasi').style.display = 'none';
@@ -1043,8 +1056,11 @@
         }
 
         // Validasi info
-        const statusBadge = validasi.status_validasi === 'validated' ?
+        const statusBadge =
+            validasi.status_validasi === 'validated' ?
             '<span class="badge bg-success">✅ Disetujui</span>' :
+            validasi.status_validasi === 'validated_diff' ?
+            '<span class="badge bg-info text-dark">ℹ️ Disetujui (Berbeda)</span>' :
             '<span class="badge bg-warning text-dark">⚠️ Perlu Revisi</span>';
 
         const detailValidasiStatus = document.getElementById('detailValidasiStatus');
@@ -1052,9 +1068,21 @@
             detailValidasiStatus.innerHTML = statusBadge;
         }
 
-        const skorBadge = document.getElementById('badgeSkorFinal');
-        skorBadge.textContent = validasi.skor_final || '-';
-        skorBadge.className = `badge ${getSkorBadgeClass(validasi.skor_final)}`;
+        if (validasi.skor_final && envIsLocal) {
+            document.querySelectorAll('.detailValidasiSkor').forEach(e => {
+                e.classList.remove('d-none');
+            });
+            const skorBadge = document.getElementById('badgeSkorFinal');
+            if (skorBadge) {
+                skorBadge.textContent = validasi.skor_final || '-';
+                skorBadge.className = `badge ${getSkorBadgeClass(validasi.skor_final)}`;
+
+            }
+        } else {
+            document.querySelectorAll('.detailValidasiSkor').forEach(e => {
+                e.classList.add('d-none');
+            });
+        }
 
         const detailValidasiValidator = document.getElementById('detailValidasiValidator');
         if (detailValidasiValidator) {

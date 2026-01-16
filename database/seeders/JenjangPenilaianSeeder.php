@@ -14,11 +14,11 @@ class JenjangPenilaianSeeder extends Seeder
     public function run(): void
     {
         $jenjangPenilaian = [
-            ['name' => 'Tidak Memenuhi (Not Met)', 'skor' => 0, 'color' => '#ff0000'],
-            ['name' => 'Belum Memenuhi (Not Met)', 'skor' => 1, 'color' => '#ffc000'],
-            ['name' => 'Lemah (Weakness/Cause of Concern)', 'skor' => 2, 'color' => '#daf2d0'],
-            ['name' => 'Memenuhi (Met)', 'skor' => 3, 'color' => '#00b050'],
-            ['name' => 'Pelampauan Standar', 'skor' => 4, 'color' => '#3c7d22'],
+            ['name' => 'Tidak Memenuhi (Not Met)', 'skor' => 0, 'color' => '#f5c6cb'],
+            ['name' => 'Belum Memenuhi (Not Met)', 'skor' => 1, 'color' => '#ffe0b2'],
+            ['name' => 'Lemah (Weakness/Cause of Concern)', 'skor' => 2, 'color' => '#fff9c4'],
+            ['name' => 'Memenuhi (Met)', 'skor' => 3, 'color' => '#dcedc8'],
+            ['name' => 'Pelampauan Standar', 'skor' => 4, 'color' => '#c8e6c9'],
         ];
 
         $timestamp = Carbon::now();

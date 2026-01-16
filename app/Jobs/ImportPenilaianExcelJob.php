@@ -23,6 +23,7 @@ class ImportPenilaianExcelJob implements ShouldQueue
     public $tries   = 3;
 
     protected $modelPenilaianElemen;
+    protected $penilaianName;
     protected $filePath;
     protected $idAsesmen;
     protected $userId;
@@ -31,6 +32,7 @@ class ImportPenilaianExcelJob implements ShouldQueue
     public function __construct($modelPenilaianElemen, $filePath, $idAsesmen, $userId, $importLogId)
     {
         $this->modelPenilaianElemen    = $modelPenilaianElemen;
+        $this->penilaianName = $modelPenilaianElemen == \App\Models\PenilaianElemenAl::class ? 'AL' : 'AK';
         $this->filePath    = $filePath;
         $this->idAsesmen   = $idAsesmen;
         $this->userId      = $userId;
@@ -54,10 +56,10 @@ class ImportPenilaianExcelJob implements ShouldQueue
 
             $fullPath    = Storage::path($this->filePath);
             $spreadsheet = IOFactory::load($fullPath);
-            $worksheet   = $spreadsheet->getSheetByName('Kertas Kerja AK Asesor');
+            $worksheet   = $spreadsheet->getSheetByName('Kertas Kerja ' . $this->penilaianName . ' Asesor');
 
             if (!$worksheet) {
-                throw new \Exception('Sheet "Kertas Kerja AK Asesor" tidak ditemukan');
+                throw new \Exception('Sheet "Kertas Kerja ' . $this->penilaianName . ' Asesor" tidak ditemukan');
             }
 
             $totalRows    = 0;

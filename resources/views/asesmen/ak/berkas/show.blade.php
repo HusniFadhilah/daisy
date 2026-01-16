@@ -23,6 +23,28 @@
         }
     }
 
+    #alertSubmitReminder {
+        animation: pulseAlert 2s ease-in-out infinite;
+        border-left: 5px solid #ff9800;
+    }
+
+    @keyframes pulseAlert {
+
+        0%,
+        100% {
+            box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.4);
+        }
+
+        50% {
+            box-shadow: 0 0 15px 5px rgba(255, 152, 0, 0.2);
+        }
+    }
+
+    /* Stop animation when dismissed */
+    #alertSubmitReminder.alert-dismissible:not(.show) {
+        animation: none;
+    }
+
     /* Panduan Penilaian Table */
     .panduan-penilaian-wrapper .table {
         font-size: 13px;
@@ -114,21 +136,89 @@
                 <div class="col-12 mb-md-0">
                     {{-- Status Indicator --}}
                     @php
-                    $assignment = $asesmen->userRoles->where('id_user', Auth::id())->first();
                     $statusPekerjaan = $assignment->status_pekerjaan ?? 'not_started';
                     $isSubmittedOnly = $statusPekerjaan === 'submitted';
                     $isSubmitted = isset($assignment) && in_array($statusPekerjaan, ['submitted', 'approved', 'validated']);
                     $isApproved = $statusPekerjaan === 'approved';
                     $needsRevision = $statusPekerjaan === 'revision_required';
+                    $hasRevisionRequests = $countNeedsRevisions > 0;
+                    $isComplete = $progress['percentage'] == 100;
                     @endphp
 
-                    @if($isSubmittedOnly && !$isApproved && app()->environment('local'))
+                    @if($hasRevisionRequests)
+                    <div class="alert alert-warning alert-dismissible alert-permanent mb-3">
+                        <div class="d-flex align-items-start">
+                            <div class="flex-shrink-0">
+                                <i class="bi bi-exclamation-triangle-fill fs-3 me-3"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h5 class="alert-heading mb-2">
+                                    <i class="bi bi-pencil-square"></i> Ada {{ $countNeedsRevisions }} Permintaan Revisi!
+                                </h5>
+                                <p class="mb-2">
+                                    Validator meminta Anda merevisi <strong>{{ $countNeedsRevisions }} elemen penilaian</strong>.
+                                    Silakan selesaikan semua revisi terlebih dahulu sebelum melakukan finalisasi.
+                                </p>
+                                <hr>
+                                <div class="mb-0">
+                                    <small class="text-muted">
+                                        <i class="bi bi-info-circle"></i>
+                                        Tombol <strong>Finalisasi</strong>, <strong>Upload Excel</strong>, dan <strong>Reset All</strong>
+                                        dinonaktifkan sampai semua revisi selesai.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    @endif
+
+                    @if(!$isSubmittedOnly && !$isApproved && $isComplete && !$hasRevisionRequests)
+                    <div class="alert alert-warning alert-dismissible alert-permanent mb-3" id="alertSubmitReminder">
+                        <div class="d-flex align-items-start">
+                            <div class="flex-shrink-0">
+                                <i class="bi bi-exclamation-triangle-fill fs-3 me-3"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h5 class="alert-heading mb-2">
+                                    <i class="bi bi-check-circle"></i> Penilaian Sudah Lengkap!
+                                </h5>
+                                <p class="mb-2">
+                                    Anda telah menyelesaikan <strong>semua {{ $progress['total'] }} elemen penilaian</strong>.
+                                    Segera lakukan <strong>Finalisasi dan Kirim</strong> agar penilaian Anda dapat divalidasi oleh validator.
+                                </p>
+                                <hr>
+                                <div class="mb-0">
+                                    <small class="text-muted">
+                                        <i class="bi bi-info-circle"></i> Penilaian belum akan tersimpan secara permanen sampai di-submit
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    @endif
+
+                    @if(!$isSubmittedOnly && !$isApproved && !$isComplete && $progress['percentage'] > 0)
+                    <div class="alert alert-info alert-dismissible alert-permanent mb-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Progress Penilaian:</strong>
+                        Anda sudah menilai {{ $progress['completed'] }} dari {{ $progress['total'] }} elemen
+                        (<strong>{{ $progress['percentage'] }}%</strong>).
+                        Selesaikan <strong>{{ $progress['remaining'] }} elemen</strong> lagi untuk dapat melakukan finalisasi.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    @endif
+
+                    @if($isSubmittedOnly && !$isApproved)
                     <div class="alert alert-info alert-permanent alert-dismissible mb-3">
                         <i class="bi bi-info-circle me-2"></i>
                         <strong>Sudah Di-Submit!</strong> Penilaian Anda sedang menunggu validasi dari validator.
+                        @if(app()->environment('local'))
                         <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="btnUnsubmit">
                             <i class="bi bi-arrow-counterclockwise"></i> Batalkan Submit
                         </button>
+                        @endif
                     </div>
                     @endif
 
@@ -145,7 +235,7 @@
                         <!-- Finalisasi -->
                         <div>
                             @if(!$isSubmittedOnly && !$isApproved)
-                            <button class="btn btn-success w-md-100 w-md-auto" id="btnSubmit">
+                            <button class="btn btn-success w-md-100 w-md-auto" id="btnSubmit" {{ $hasRevisionRequests ? 'disabled' : '' }}>
                                 <i class="bi bi-check-circle"></i> Finalisasi dan Kirim
                             </button>
 
@@ -182,23 +272,33 @@
                                     <hr class="dropdown-divider">
                                 </li>
 
+                                <!-- Download Template -->
                                 <li>
-                                    <a class="dropdown-item" id="btnDownloadTemplate">
+                                    <a class="dropdown-item" href="{{ route('ak.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'template']) }}" id="btnDownloadTemplate">
                                         <i class="bi bi-file-earmark-text text-info"></i> Download Template
                                         <small class="d-block text-muted">Format Excel sebagai template</small>
                                     </a>
                                 </li>
 
+                                <!-- Hasil Penilaian - Lengkap -->
                                 <li>
-                                    <a class="dropdown-item" id="btnDownloadData">
-                                        <i class="bi bi-file-earmark-excel text-success"></i> Hasil Penilaian Anda
-                                        <small class="d-block text-muted">Data Excel penilaian Anda</small>
+                                    <a class="dropdown-item btnDownloadData" data-mode="full" href="{{ route('ak.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'full']) }}">
+                                        <i class="bi bi-file-earmark-spreadsheet text-primary"></i> Hasil Penilaian Lengkap
+                                        <small class="d-block text-muted">Menu + Kertas Kerja + Semua Asesor</small>
+                                    </a>
+                                </li>
+
+                                <!-- Hasil Penilaian - Personal -->
+                                <li>
+                                    <a class="dropdown-item btnDownloadData" data-mode="personal" href="{{ route('ak.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'personal']) }}">
+                                        <i class="bi bi-person-check text-success"></i> Hasil Penilaian Anda
+                                        <small class="d-block text-muted">Hanya Sheet Penilaian Anda</small>
                                     </a>
                                 </li>
                             </ul>
 
                             <!-- Upload -->
-                            <button class="btn btn-outline-primary" id="btnImport" {{ $isSubmittedOnly || $isApproved ? 'disabled' : '' }}>
+                            <button class="btn btn-outline-primary" id="btnImport" {{ ($isSubmittedOnly || $isApproved || $hasRevisionRequests) ? 'disabled' : '' }} title="{{ $hasRevisionRequests ? 'Selesaikan revisi terlebih dahulu' : '' }}">
                                 <i class="bi bi-upload"></i> Upload Excel
                             </button>
 
@@ -236,17 +336,27 @@
                                 <small class="text-muted">Progress</small>
                             </div>
                         </div>
+                        @if($hasRevisionRequests)
+                        <div class="mt-3 pt-3 border-top">
+                            <div class="text-center">
+                                <h3 class="mb-0 text-warning" id="summaryRevisions">
+                                    <b>{{ $countNeedsRevisions }}</b>
+                                </h3>
+                                <small class="text-muted">Perlu Revisi</small>
+                            </div>
+                        </div>
+                        @endif
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    @if($needsRevisions->count() > 0)
+    @if($countNeedsRevisions > 0)
     <div class="card mb-4 border-warning">
         <div class="card-header bg-warning text-dark">
             <h5 class="mb-0">
                 <i class="bi bi-exclamation-triangle"></i>
-                Permintaan Revisi dari Validator ({{ $needsRevisions->count() }} Elemen)
+                Permintaan Revisi dari Validator ({{ $countNeedsRevisions }} Elemen)
             </h5>
         </div>
         <div class="card-body">
@@ -414,6 +524,8 @@
                         return $ind->jenisIndikator &&
                         stripos($ind->jenisIndikator->nama_jenis, 'kualitatif') !== false;
                         })->count() : 0;
+                        $validatedBy = $penilaianElemenAk->validator->name ?? 'N/A';
+                        $isIndikatorPenilaianExists = $elemen->indikatorPenilaian && count($elemen->indikatorPenilaian) > 0;
                         @endphp
 
                         <div class="card mb-3 elemen-card @if($hasPenilaian) has-penilaian @endif" data-elemen-id="{{ $elemen->id }}">
@@ -548,7 +660,7 @@
                                     </div>
                                 </div>
 
-                                @if($elemen->indikatorPenilaian && $elemen->indikatorPenilaian->count() > 0)
+                                @if($isIndikatorPenilaianExists)
                                 @php
                                 // Group berdasarkan jenjang
                                 $grouped = $elemen->indikatorPenilaian->groupBy('id_jenjang_penilaian');
@@ -694,7 +806,7 @@
                                                 <div class="row mt-3">
                                                     <div class="col-md-6">
                                                         <small class="text-muted">
-                                                            <i class="bi bi-person"></i> <strong>Validator:</strong> {{ $penilaianElemenAk->validator->name ?? 'N/A' }}
+                                                            <i class="bi bi-person"></i> <strong>Validator:</strong> {{ $validatedBy }}
                                                         </small>
                                                     </div>
                                                     <div class="col-md-6 text-end">
@@ -705,9 +817,13 @@
                                                 </div>
                                             </div>
                                             @endif
+
+                                            @php
+                                            $notAllowedEdit = $hasPenilaian && in_array($penilaianElemenAk->status_validasi, ['validated', 'validated_diff', 'approved'])
+                                            @endphp
                                             <form class="form-penilaian" data-elemen-id="{{ $elemen->id }}">
                                                 <div class="row mb-3">
-                                                    <div class="col-md-4">
+                                                    <div class="col-md-12 mb-3">
                                                         <label class="form-label fw-semibold">
                                                             <i class="bi bi-star me-1"></i> Pilih Kategori Penilaian
                                                         </label>
@@ -720,11 +836,11 @@
                                                             @endforeach
                                                         </select>
                                                     </div>
-                                                    <div class="col-md-8">
+                                                    <div class="col-md-12 komentar-section">
                                                         <label class="form-label fw-semibold">
                                                             <i class="bi bi-chat-left-text me-1"></i> Komentar/Justifikasi Penilaian
                                                         </label>
-                                                        <textarea class="form-control komentar-textarea" name="komentar" rows="4" placeholder="Berikan justifikasi dan analisis penilaian berdasarkan seluruh indikator di bawah ini..." maxlength="2000" required>{{ $hasPenilaian ? $penilaianElemenAk->komentar : '' }}</textarea>
+                                                        <textarea class="form-control komentar-textarea" name="komentar" rows="15" placeholder="Berikan justifikasi dan analisis penilaian berdasarkan seluruh indikator di bawah ini..." maxlength="2000" required {{ $notAllowedEdit ? 'disabled':'' }}>{{ $hasPenilaian ? $penilaianElemenAk->komentar : '' }}</textarea>
                                                         <small class="text-muted">
                                                             <i class="bi bi-info-circle me-1" title="Batas maksimal komentar adalah 2000 karakter"></i>
                                                             <span class="char-count">{{ $hasPenilaian ? strlen($penilaianElemenAk->komentar) : 0 }}</span> / 2000 karakter
@@ -745,13 +861,23 @@
                                                     </div>
                                                     <div class="btn-group ms-md-auto">
                                                         <button type="button" class="btn btn-sm btn-outline-secondary btn-reset">
-                                                            <i class="bi bi-arrow-counterclockwise"></i> Reset
+                                                            <i class="bi bi-arrow-counterclockwise" {{ $notAllowedEdit ? 'disabled':'' }}></i> Reset
                                                         </button>
                                                         <button type="submit" class="btn btn-sm btn-primary btn-save">
-                                                            <i class="bi bi-cloud-upload"></i> Simpan
+                                                            <i class="bi bi-cloud-upload" {{ $notAllowedEdit ? 'disabled':'' }}></i> Simpan
                                                         </button>
                                                     </div>
                                                 </div>
+                                                @if($notAllowedEdit)
+                                                <div class="alert alert-info alert-permanent">
+                                                    <i class="bi bi-lock-fill me-2"></i>
+                                                    <strong>Penilaian Terkunci</strong><br>
+                                                    <small>
+                                                        Sudah divalidasi oleh <strong>{{ $validatedBy }}</strong>
+                                                        pada {{ \App\Libraries\Date::tglWaktu($penilaianElemenAk->validated_at) }}
+                                                    </small>
+                                                </div>
+                                                @endif
                                             </form>
                                         </div>
                                     </div>
@@ -923,6 +1049,7 @@
 
         const checkStatusPekerjaan = @json($isSubmitted);
         const needsRevision = @json($needsRevision);
+        const hasRevisionRequests = @json($hasRevisionRequests);
         let saveTimeout;
         let isSaving = false;
         const AUTO_SAVE_DELAY = 2000;
@@ -974,6 +1101,8 @@
             // Submit Penilaian
             const btnSubmit = document.getElementById('btnSubmit');
             if (btnSubmit) btnSubmit.addEventListener('click', submitPenilaian);
+            const btnSubmitFromAlert = document.getElementById('btnSubmitFromAlert');
+            if (btnSubmitFromAlert) btnSubmitFromAlert.addEventListener('click', submitPenilaian);
             const btnUnsubmit = document.getElementById('btnUnsubmit');
             if (btnUnsubmit) btnUnsubmit.addEventListener('click', unSubmitPenilaian);
 
@@ -1002,7 +1131,9 @@
 
             // Download Template
             document.getElementById('btnDownloadTemplate').addEventListener('click', downloadTemplate);
-            document.getElementById('btnDownloadData').addEventListener('click', downloadDataExcel);
+            document.querySelectorAll('.btnDownloadData').forEach(btn => {
+                btn.addEventListener('click', downloadDataExcel);
+            });
         }
 
         /**
@@ -1116,7 +1247,7 @@
                         <div class="text-center">
                             <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
                             <p class="mt-3">${data.message}</p>
-                            <div class="alert alert-info mt-3">
+                            <div class="alert alert-info alert-permanent mt-3">
                                 <small>
                                     <i class="bi bi-clock"></i> Di-submit pada: ${data.submitted_at}
                                 </small>
@@ -1491,7 +1622,7 @@
 
             document.querySelectorAll('.komentar-textarea').forEach(textarea => {
                 const counter = textarea
-                    .closest('.col-md-8')
+                    .closest('.komentar-section')
                     .querySelector('.char-count');
 
                 textarea.addEventListener('input', function() {
@@ -1579,7 +1710,11 @@
                 });
 
                 const data = await response.json();
-
+                if (!response.ok && data.error_type === 'already_validated') {
+                    showValidatedWarning(data, form, idElemen);
+                    isSaving = false;
+                    return;
+                }
                 if (data.success) {
                     const now = new Date();
                     const timeStr = now.toLocaleString('id-ID', {
@@ -1589,10 +1724,24 @@
                         , hour: '2-digit'
                         , minute: '2-digit'
                     });
-                    updateSaveStatus(form, `Tersimpan otomatis pada ${timeStr}`, 'text-success');
+                    const statusMessage = data && data.revision_info && data.revision_info.was_revised ?
+                        `✅ Revisi tersimpan pada ${timeStr} - Menunggu validasi ulang` :
+                        `Tersimpan otomatis pada ${timeStr}`;
+
+                    updateSaveStatus(form, statusMessage, 'text-success');
                     setElemenStatus(idElemen, true);
                     if (data.progress) {
                         updateProgressPenilaian(data.progress);
+                    }
+                    // ✅ Update revision count
+                    if (data.needs_revision_count !== undefined) {
+                        updateRevisionCount(data.needs_revision_count);
+                    }
+                    // ✅ Remove from revision table if was revised
+                    if (data && data.revision_info && data.revision_info.was_revised) {
+                        removeFromRevisionTable(idElemen);
+                        clearRevisionUI(idElemen);
+                        showToast('Revisi berhasil disimpan! Menunggu validasi ulang', 'success');
                     }
                     if (typeof window.updateMatrixCell === 'function') {
                         window.updateMatrixCell(idElemen, formData.get('skor'));
@@ -1649,12 +1798,54 @@
                 });
 
                 const data = await response.json();
+                hideLoading();
+                if (!response.ok && data.error_type === 'already_validated') {
+                    await Swal.fire({
+                        icon: 'warning'
+                        , title: 'Penilaian Sudah Divalidasi'
+                        , html: `
+                    <div class="text-start">
+                        <p><strong>Penilaian ini sudah divalidasi dan disetujui oleh validator.</strong></p>
+                        <div class="alert alert-info alert-permanent mt-3">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <small>
+                                <strong>Validator:</strong> ${data.validator_name}<br>
+                                <strong>Tanggal:</strong> ${formatDateTime(data.validated_at)}
+                            </small>
+                        </div>
+                        <p class="text-muted mb-0">
+                            Penilaian yang sudah divalidasi tidak dapat diubah untuk menjaga integritas hasil asesmen.
+                        </p>
+                    </div>
+                `
+                        , confirmButtonText: 'Mengerti'
+                        , confirmButtonColor: '#932136'
+                    });
 
+                    // ✅ Revert form to original values
+                    const originalSkor = form.querySelector('.skor-select').getAttribute('data-original-skor');
+                    const originalKomentar = form.querySelector('.komentar-textarea').getAttribute('data-original-komentar');
+
+                    if (originalSkor) {
+                        form.querySelector('.skor-select').value = originalSkor;
+                    }
+                    if (originalKomentar) {
+                        form.querySelector('.komentar-textarea').value = originalKomentar;
+                    }
+
+                    return;
+                }
                 if (data.success) {
-                    Swal.fire({
+                    const successTitle = data && data.revision_info && data.revision_info.was_revised ?
+                        'Revisi Berhasil Disimpan!' :
+                        'Berhasil!';
+                    const successText = data && data.revision_info && data.revision_info.was_revised ?
+                        'Revisi Anda telah disimpan dan menunggu validasi ulang dari validator' :
+                        'Penilaian berhasil disimpan';
+                    await Swal.fire({
                         icon: 'success'
-                        , title: 'Berhasil!'
-                        , text: 'Penilaian berhasil disimpan'
+                        , title: successTitle
+                        , text: successText
                         , timer: 2000
                         , showConfirmButton: false
                     });
@@ -1681,6 +1872,15 @@
                     }
                     if (data.progress) {
                         updateProgressPenilaian(data.progress);
+                    }
+                    // ✅ Update revision count
+                    if (data.needs_revision_count !== undefined) {
+                        updateRevisionCount(data.needs_revision_count);
+                    }
+                    // ✅ Remove from revision table
+                    if (data && data.revision_info && data.revision_info.was_revised) {
+                        removeFromRevisionTable(idElemen);
+                        clearRevisionUI(idElemen);
                     }
                     if (typeof window.updateMatrixCell === 'function') {
                         window.updateMatrixCell(idElemen, skor);
@@ -1709,9 +1909,67 @@
         }
 
         function updateCharCount(textarea) {
-            const charCount = textarea.closest('.col-md-8').querySelector('.char-count');
+            const charCount = textarea.closest('.komentar-section').querySelector('.char-count');
             if (charCount) {
                 charCount.textContent = textarea.value.length;
+            }
+        }
+
+        function removeFromRevisionTable(idElemen) {
+            const rows = document.querySelectorAll('.card.border-warning table tbody tr');
+
+            rows.forEach(row => {
+                const button = row.querySelector(`[data-elemen-id="${idElemen}"]`);
+                if (button) {
+                    row.style.transition = 'opacity 0.3s ease-out';
+                    row.style.opacity = '0';
+
+                    setTimeout(() => {
+                        row.remove();
+
+                        const tbody = row.closest('tbody');
+                        if (tbody && tbody.children.length === 0) {
+                            const card = tbody.closest('.card.border-warning');
+                            if (card) {
+                                card.style.display = 'none';
+                            }
+                        }
+                    }, 300);
+                }
+            });
+        }
+
+        function updateRevisionCount(count) {
+            const revisionCard = document.querySelector('.card.border-warning .card-header h5');
+            if (revisionCard) {
+                const countText = revisionCard.textContent;
+                const newText = countText.replace(/\(\d+ Elemen\)/, `(${count} Elemen)`);
+                revisionCard.textContent = newText;
+
+                if (count === 0) {
+                    const card = revisionCard.closest('.card.border-warning');
+                    if (card) {
+                        card.style.display = 'none';
+
+                        Swal.fire({
+                            icon: 'success'
+                            , title: 'Semua Revisi Selesai!'
+                            , text: 'Anda telah menyelesaikan semua permintaan revisi dari validator'
+                            , timer: 3000
+                            , showConfirmButton: false
+                        });
+                    }
+                }
+            }
+            const summaryRevisions = document.getElementById('summaryRevisions');
+            if (summaryRevisions) {
+                summaryRevisions.innerHTML = `<b>${count}</b>`;
+
+                // Hide revision summary if count is 0
+                const revisionSummary = summaryRevisions.closest('.mt-3.pt-3.border-top');
+                if (revisionSummary) {
+                    revisionSummary.style.display = count === 0 ? 'none' : 'block';
+                }
             }
         }
 
@@ -1742,7 +2000,24 @@
             if (progressCount) {
                 progressCount.textContent = progress.completed + '/' + progress.total;
             }
+            // Update summary stats
+            const summaryTotal = document.getElementById('summaryTotal');
+            const summaryCompleted = document.getElementById('summaryCompleted');
+            const summaryRemaining = document.getElementById('summaryRemaining');
+            const summaryPercentage = document.getElementById('summaryPercentage');
 
+            if (summaryTotal) summaryTotal.innerHTML = '<b>' + progress.total + '</b>';
+            if (summaryCompleted) summaryCompleted.innerHTML = '<b>' + progress.completed + '</b>';
+            if (summaryRemaining) summaryRemaining.innerHTML = '<b>' + progress.remaining + '</b>';
+            if (summaryPercentage) summaryPercentage.innerHTML = '<b>' + progress.percentage + '%</b>';
+            const alertSubmitReminder = document.getElementById('alertSubmitReminder');
+            if (alertSubmitReminder) {
+                if (progress.percentage === 100) {
+                    alertSubmitReminder.style.display = 'block';
+                } else {
+                    alertSubmitReminder.style.display = 'none';
+                }
+            }
             updateAllProgress();
         }
 
@@ -1891,10 +2166,10 @@
         /**
          * Download Data (Excel with Penilaian)
          */
-        function downloadDataExcel() {
+        function downloadDataExcel(e) {
             showLoading();
-
-            window.location.href = `/ak/berkas/${idAsesmen}/export`;
+            const mode = e.currentTarget.dataset.mode;
+            window.location.href = `/ak/berkas/${idAsesmen}/export?mode=${mode}`;
 
             setTimeout(() => {
                 hideLoading();
@@ -1935,18 +2210,18 @@
                     <div class="col-md-4">
                         <div class="p-3 bg-light rounded">
                             <h3 class="text-success mb-0">${data.imported_rows}</h3>
-                            <small class="text-muted">Penilaian Elemen Berhasil DiSimpan</small>
+                            <small class="text-muted">Penilaian Elemen Berhasil Disimpan</small>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="p-3 bg-light rounded">
                             <h3 class="text-danger mb-0">${data.failed_rows}</h3>
-                            <small class="text-muted">Penilaian Elemen Gagal DiSimpan</small>
+                            <small class="text-muted">Penilaian Elemen Gagal Disimpan</small>
                         </div>
                     </div>
                 </div>
 
-                <div class="alert alert-success">
+                <div class="alert alert-success alert-permanent">
                     <p class="mb-0 small">
                         Waktu selesai: ${data.completed_at}
                     </p>
@@ -1990,7 +2265,7 @@
                     <h4 class="text-danger">Import Gagal</h4>
                 </div>
 
-                <div class="alert alert-danger">
+                <div class="alert alert-danger alert-permanent">
                     <strong>Error:</strong>
                     <ul class="mb-0 mt-2">
                         ${data.errors.map(err => `<li>${err}</li>`).join('')}
@@ -2009,8 +2284,7 @@
          * Show Import History
          */
         async function importHistoryExcel() {
-            const modal = new bootstrap.Modal(document.getElementById('historyModal'));
-            modal.show();
+            const modal = showModalById('historyModal');
 
             // Load history
             try {
@@ -2029,7 +2303,7 @@
                 }
             } catch (error) {
                 document.getElementById('historyContent').innerHTML = `
-                <div class="alert alert-danger">
+                <div class="alert alert-danger alert-permanent">
                     <i class="bi bi-exclamation-triangle"></i>
                     Gagal memuat riwayat: ${error.message}
                 </div>
@@ -2045,7 +2319,7 @@
 
             if (logs.length === 0) {
                 content.innerHTML = `
-                <div class="alert alert-info">
+                <div class="alert alert-info alert-permanent">
                     <i class="bi bi-info-circle"></i>
                     Belum ada riwayat upload excel.
                 </div>
@@ -2179,7 +2453,7 @@
 
                 // Add info message
                 const infoDiv = document.createElement('div');
-                infoDiv.className = 'alert alert-info mt-2';
+                infoDiv.className = 'alert alert-info alert-permanent mt-2';
                 infoDiv.innerHTML = '<i class="bi bi-info-circle"></i> Penilaian sudah di-submit, tidak bisa diedit.';
                 form.appendChild(infoDiv);
             });
@@ -2251,7 +2525,7 @@
 
         function showAlert(elementId, type, message) {
             const alert = document.getElementById(elementId);
-            alert.className = `alert alert-${type}`;
+            alert.className = `alert alert-${type} alert-permanent`;
             alert.innerHTML = `<i class="bi bi-${type === 'danger' ? 'exclamation-triangle' : 'info-circle'}"></i> ${message}`;
             alert.classList.remove('d-none');
         }
@@ -2322,7 +2596,7 @@
             <div class="text-start">
                 <p><strong>PERHATIAN:</strong> Anda akan menghapus <strong class="text-danger">${completed} penilaian</strong> yang sudah dibuat!</p>
 
-                <div class="alert alert-danger mt-3">
+                <div class="alert alert-danger alert-permanent mt-3">
                     <i class="bi bi-exclamation-triangle me-2"></i>
                     <strong>Tindakan ini TIDAK DAPAT dibatalkan!</strong>
                 </div>
@@ -2411,7 +2685,7 @@
                     <div class="text-center">
                         <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
                         <p class="mt-3">${data.message}</p>
-                        <div class="alert alert-info mt-3">
+                        <div class="alert alert-info alert-permanent mt-3">
                             <i class="bi bi-info-circle"></i>
                             <strong>${data.deleted_count} penilaian</strong> telah dihapus.
                             Progress kembali ke 0%.
@@ -2570,6 +2844,109 @@
             });
             anyOpen ? bsCollapse.hide() : bsCollapse.show();
         });
+    }
+
+    /**
+     * ✅ NEW: Clear Revision UI After Successful Save
+     */
+    function clearRevisionUI(idElemen) {
+        const elemenCard = document.querySelector(`.elemen-card[data-elemen-id="${idElemen}"]`);
+        if (!elemenCard) return;
+
+        // 1. Remove "Perlu Revisi" badge
+        const revisionBadge = elemenCard.querySelector('.badge.bg-warning.text-dark.float-end');
+        if (revisionBadge && revisionBadge.textContent.includes('Perlu Revisi')) {
+            revisionBadge.remove();
+        }
+
+        // 2. Remove revision alert (catatan validator)
+        const revisionAlert = elemenCard.querySelector('.alert.alert-warning.alert-permanent');
+        if (revisionAlert) {
+            // Fade out animation
+            revisionAlert.style.transition = 'opacity 0.3s ease-out';
+            revisionAlert.style.opacity = '0';
+
+            setTimeout(() => {
+                revisionAlert.remove();
+            }, 300);
+        }
+
+        // 3. Change card border from warning to success
+        const penilaianCard = elemenCard.querySelector('.penilaian-form-wrapper .card');
+        if (penilaianCard) {
+            penilaianCard.classList.remove('border-warning');
+            penilaianCard.classList.add('border-success');
+
+            // Change card header background
+            const cardHeader = penilaianCard.querySelector('.card-header');
+            if (cardHeader) {
+                cardHeader.classList.remove('bg-warning');
+                cardHeader.classList.add('bg-success');
+            }
+        }
+
+        // 4. Show success indicator
+        showSuccessIndicator(elemenCard);
+    }
+
+    /**
+     * ✅ NEW: Show warning for validated penilaian
+     */
+    function showValidatedWarning(data, form, idElemen) {
+        // Show inline warning in form
+        const existingWarning = form.querySelector('.validated-warning');
+        if (existingWarning) {
+            existingWarning.remove();
+        }
+
+        const warningDiv = document.createElement('div');
+        warningDiv.className = 'alert alert-warning alert-permanent validated-warning mt-3';
+        warningDiv.innerHTML = `
+        <i class="bi bi-lock-fill me-2"></i>
+        <strong>Penilaian Terkunci</strong><br>
+        <small>
+            Sudah divalidasi oleh <strong>${data.validator_name}</strong> pada ${formatDateTime(data.validated_at)}
+        </small>
+    `;
+
+        form.appendChild(warningDiv);
+
+        // Disable inputs
+        form.querySelectorAll('select, textarea, button[type="submit"]').forEach(el => {
+            el.disabled = true;
+        });
+
+        // Scroll to warning
+        warningDiv.scrollIntoView({
+            behavior: 'smooth'
+            , block: 'center'
+        });
+    }
+
+    /**
+     * Show temporary success indicator after revision
+     */
+    function showSuccessIndicator(elemenCard) {
+        const successBadge = document.createElement('div');
+        successBadge.className = 'alert alert-success alert-dismissible alert-permanent fade show mt-2';
+        successBadge.innerHTML = `
+        <i class="bi bi-check-circle-fill me-2"></i>
+        <strong>Revisi Berhasil Disimpan!</strong>
+        Penilaian Anda menunggu validasi ulang dari validator.
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+        const formWrapper = elemenCard.querySelector('.penilaian-form-wrapper .card-body');
+        if (formWrapper) {
+            // Insert at the beginning of card-body
+            formWrapper.insertBefore(successBadge, formWrapper.firstChild);
+
+            // Auto dismiss after 5 seconds
+            setTimeout(() => {
+                const alert = bootstrap.Alert.getOrCreateInstance(successBadge);
+                alert.close();
+            }, 5000);
+        }
     }
 
 </script>

@@ -89,7 +89,8 @@ class AKController extends Controller
             'elemenStandar.indikatorPenilaian.jenjangPenilaian',
             'elemenStandar.penilaianElemenAk' => function ($query) use ($asesmen, $user) {
                 $query->where('id_asesmen', $asesmen->id)
-                    ->where('id_asesor', $user->id);
+                    ->where('id_asesor', $user->id)
+                    ->with('validator');
             }
         ])->get();
 
@@ -98,12 +99,13 @@ class AKController extends Controller
             ->where('status_validasi', 'revision_required')
             ->with('elemen.kriteria')
             ->get();
+        $countNeedsRevisions = $needsRevisions->count();
         $jenjangs = JenjangPenilaian::all();
         $pluckColorSkor = $jenjangs->pluck('color', 'skor');
         // Calculate progress
         $progress = $this->calculateProgressBulk([$asesmen->id], $user->id)[$asesmen->id];
 
-        return view('asesmen.ak.berkas.show', compact('asesmen', 'kriterias', 'progress', 'jenjangs', 'pluckColorSkor', 'needsRevisions'));
+        return view('asesmen.ak.berkas.show', compact('asesmen', 'kriterias', 'progress', 'jenjangs', 'pluckColorSkor', 'needsRevisions', 'countNeedsRevisions', 'assignment'));
     }
 
     /**
@@ -122,16 +124,59 @@ class AKController extends Controller
             $user = Auth::user();
 
             // Verify user has access
-            $hasAccess = AsesmenUserRole::where('id_asesmen', $idAsesmen)
+            $assignment = AsesmenUserRole::where('id_asesmen', $idAsesmen)
                 ->where('id_user', $user->id)
                 ->where('jenis_asesmen', 'ak')
-                ->exists();
+                ->first();
 
-            if (!$hasAccess) {
+            if (!$assignment) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Anda tidak memiliki akses ke asesmen ini'
                 ], 403);
+            }
+
+            // ✅ Check if already validated/approved
+            $existingPenilaian = PenilaianElemenAk::where('id_asesmen', $idAsesmen)
+                ->where('id_asesor', $user->id)
+                ->where('id_elemen', $request->id_elemen)
+                ->first();
+
+            // ✅ PREVENT UPDATE if validated/approved (except revision_required)
+            if ($existingPenilaian) {
+                $validatedStatuses = ['validated', 'validated_diff', 'approved'];
+
+                if (in_array($existingPenilaian->status_validasi, $validatedStatuses)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Penilaian sudah divalidasi dan disetujui oleh validator. Tidak dapat diubah lagi.',
+                        'error_type' => 'already_validated',
+                        'validated_at' => $existingPenilaian->validated_at,
+                        'validator_name' => $existingPenilaian->validator->name ?? 'Validator',
+                    ], 422);
+                }
+            }
+
+            // ✅ Check if submitted or approved assignment (except revision_required)
+            if (in_array($assignment->status_pekerjaan, ['submitted', 'approved'])) {
+                $needsRevision = $existingPenilaian &&
+                    $existingPenilaian->status_validasi === 'revision_required';
+
+                if (!$needsRevision) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Penilaian sudah di-submit dan tidak bisa diubah'
+                    ], 403);
+                }
+            }
+
+            // Check if this elemen has revision_required status
+            $wasRevisionRequired = false;
+            $validatorId = null;
+
+            if ($existingPenilaian && $existingPenilaian->status_validasi === 'revision_required') {
+                $wasRevisionRequired = true;
+                $validatorId = $existingPenilaian->id_validator;
             }
 
             // Update or create penilaian
@@ -146,20 +191,42 @@ class AKController extends Controller
                     'komentar' => $request->komentar,
                     'status' => 'draft',
 
-                    'status_validasi' => 'not_validated',
-                    'catatan_validator' => null,
+                    'status_validasi' => $wasRevisionRequired ? 'pending' : 'not_validated',
+                    'catatan_validator' => $wasRevisionRequired ? null : ($existingPenilaian->catatan_validator ?? null),
+                    'preferensi_skor' => $wasRevisionRequired ? null : ($existingPenilaian->preferensi_skor ?? null),
+                    'validated_at' => $wasRevisionRequired ? null : ($existingPenilaian->validated_at ?? null),
                     'validated_by' => null,
-                    'validated_at' => null,
                     'skor_final' => null,
-                    'revision_count' => DB::raw('revision_count + 1'),
+                    'revision_count' => $existingPenilaian
+                        ? ($wasRevisionRequired ? $existingPenilaian->revision_count + 1 : $existingPenilaian->revision_count)
+                        : 0,
                 ]
             );
 
-            // Calculate new progress
+            // ✅ Count revisions yang masih diperlukan
+            $needsRevisionCount = PenilaianElemenAk::where('id_asesmen', $idAsesmen)
+                ->where('id_asesor', $user->id)
+                ->where('status_validasi', 'revision_required')
+                ->count();
+
+            // ✅✅ GUNAKAN METHOD EXISTING (LEBIH BAIK!)
             $progress = $this->calculateProgressBulk([$idAsesmen], $user->id)[$idAsesmen];
 
             // Get skor label and class for response
             $skorInfo = JenjangPenilaian::getSkorInfo($request->skor);
+
+            // ✅ Prepare revision info if was revised
+            $revisionInfo = null;
+            if ($wasRevisionRequired) {
+                $revisionInfo = [
+                    'was_revised' => true,
+                    'validator_id' => $validatorId,
+                    'remaining_revisions' => $needsRevisionCount,
+                    'new_status' => 'pending',
+                ];
+            }
+
+            DB::commit();
 
             return response()->json([
                 'success' => true,
@@ -167,6 +234,8 @@ class AKController extends Controller
                 'data' => $penilaian,
                 'progress' => $progress,
                 'skor_info' => $skorInfo,
+                'revision_info' => $revisionInfo,
+                'needs_revision_count' => $needsRevisionCount,
             ]);
         } catch (\Exception $e) {
             Log::error($e);
@@ -346,7 +415,7 @@ class AKController extends Controller
             // ✅ PERBAIKAN: Hanya cek yang benar-benar sudah VALIDATED (final)
             $hasValidated = PenilaianElemenAk::where('id_asesmen', $idAsesmen)
                 ->where('id_asesor', $user->id)
-                ->where('status_validasi', 'validated')  // ← UBAH INI
+                ->whereIn('status_validasi', ['validated', 'validated_diff'])  // ← UBAH INI
                 ->exists();
 
             if ($hasValidated) {
@@ -527,7 +596,7 @@ class AKController extends Controller
     /**
      * Export penilaian ke Excel (dengan data)
      */
-    public function exportExcel($idAsesmen)
+    public function exportExcel(Request $request, $idAsesmen)
     {
         try {
             $user = Auth::user();
@@ -537,13 +606,29 @@ class AKController extends Controller
                 $query->where('id_user', $user->id);
             })->findOrFail($idAsesmen);
 
-            $excelService = new PenilaianExcelService(PenilaianElemenAk::class);
-            $filePath = $excelService->generateWithData($asesmen, $user->id);
+            // Get mode from query parameter (template, full, personal)
+            $mode = $request->query('mode', 'full'); // default: full
+            $useColor = $request->query('color', 'true') === 'true';
+
+            // Validate mode
+            if (!in_array($mode, ['template', 'full', 'personal'])) {
+                return redirect()->back()->with('error', 'Mode download tidak valid');
+            }
+
+            // Create service dengan mode
+            $excelService = new PenilaianExcelService(PenilaianElemenAk::class, $mode, $useColor);
+
+            // Generate file berdasarkan mode
+            if ($mode === 'template') {
+                $filePath = $excelService->generateTemplate($asesmen);
+            } else {
+                $filePath = $excelService->generateWithData($asesmen, $user->id);
+            }
 
             return response()->download($filePath, basename($filePath))->deleteFileAfterSend(true);
         } catch (\Exception $e) {
             Log::error($e);
-            return redirect()->back()->with('error', 'Gagal download data Excel: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal download Excel: ' . $e->getMessage());
         }
     }
 

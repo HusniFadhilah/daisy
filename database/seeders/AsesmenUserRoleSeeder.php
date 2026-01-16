@@ -4,10 +4,11 @@ namespace Database\Seeders;
 
 use App\Models\Asesmen;
 use App\Libraries\Fungsi;
-use App\Models\AsesmenKecukupan;
+use App\Models\StudyProgram;
 use App\Models\AsesmenLapangan;
 use App\Models\AsesmenUserRole;
 use Illuminate\Database\Seeder;
+use App\Models\AsesmenKecukupan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
@@ -25,11 +26,11 @@ class AsesmenUserRoleSeeder extends Seeder
         // 1. ASESMEN MAGISTER ILMU LINGKUNGAN
         // ============================================
         $asesmenMil = Asesmen::insertGetId([
-            'id_study_program' => 676,
+            'id_study_program' => StudyProgram::where('email', 'lamdepilar@contoh.ac.id')->firstOrFail()->id,
             'code' => 'ASM-' . Fungsi::uniqueCode(5),
             'kode_panel' => 'T01-P001',
-            'name' => 'Penilaian Akreditasi Prodi LAMDEPILAR 2025',
-            'description' => 'Penilaian akreditasi Prodi LAMDEPILAR untuk tahun 2025-2030',
+            'name' => 'Penilaian Akreditasi Prodi LAMDEPILAR (Contoh) 2026',
+            'description' => 'Penilaian akreditasi Prodi LAMDEPILAR untuk tahun 2026-2030',
             'tanggal_mulai'   => now(),
             'tanggal_selesai' => now()->addMonths(2),
             'created_at' => now(),
@@ -116,11 +117,12 @@ class AsesmenUserRoleSeeder extends Seeder
         // 2. ASESMEN TEKNIK INFORMATIKA
         // ============================================
         $asesmenTI = Asesmen::insertGetId([
-            'id_study_program' => null, // Bisa null jika belum ada program studi
+            'id_study_program' => StudyProgram::where('email', 'testing@abcd.ac.id')->firstOrFail()->id,
+            // 'id_study_program' => null, // Bisa null jika belum ada program studi
             'code' => 'ASM-' . Fungsi::uniqueCode(5),
             'kode_panel' => 'T01-P002',
-            'name' => 'Penilaian Akreditasi Prodi ABCD 2025',
-            'description' => 'Asesmen akreditasi Prodi ABCD untuk periode 2025-2030',
+            'name' => 'Penilaian Akreditasi Prodi ABCD 2026',
+            'description' => 'Asesmen akreditasi Prodi ABCD untuk periode 2026-2030',
             'tanggal_mulai'   => now(),
             'tanggal_selesai' => now()->addMonths(2),
             'created_at' => now(),
@@ -207,7 +209,8 @@ class AsesmenUserRoleSeeder extends Seeder
         // 3. EXAMPLE: ASESMEN DENGAN 3 ASESOR
         // ============================================
         $asesmenMulti = Asesmen::insertGetId([
-            'id_study_program' => null,
+            'id_study_program' => StudyProgram::where('email', 'depilar@abcd.ac.id')->firstOrFail()->id,
+            // 'id_study_program' => null,
             'code' => 'ASM-' . Fungsi::uniqueCode(5),
             'kode_panel' => 'T01-P003',
             'name' => 'Asesmen dengan Multiple Asesor (Testing)',

@@ -47,6 +47,10 @@
 </ul> --}}
 
 <!-- Proses AK -->
+<a href="{{ route('validator.borang.index') }}" class="nav-link {{ request()->routeIs('validator.borang*') || request()->routeIs('validator.borang') ? 'active' : '' }}">
+    <span class="menu-icon">📋</span>
+    <span>Review/Validasi Dokumen</span>
+</a>
 <a href="{{ route('ak.validasi.index') }}" class="nav-link {{ request()->routeIs('ak*') ? 'active' : '' }}">
     <span class="menu-icon">📝</span>
     <span>Proses AK</span>

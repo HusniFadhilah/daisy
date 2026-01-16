@@ -31,7 +31,7 @@
         <div class="card-header bg-warning">
             <h5 class="mb-0">
                 <i class="bi bi-exclamation-triangle"></i>
-                Panduan Assignment & Persyaratan
+                Panduan Penugasan & Persyaratan
             </h5>
         </div>
         <div class="card-body">
@@ -81,10 +81,10 @@
 
                         <div class="col-md-6 my-2">
                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h6 class="fw-bold mb-3">Yang Sudah Di-assign (AK):</h6>
+                                <h6 class="fw-bold mb-3">Yang Sudah Ditugaskan (AK):</h6>
                                 <div class="btn-group btn-group-sm">
                                     <button type="button" class="btn btn-outline-secondary" id="btnReorderAK" title="Reorder Asesor" onclick="reorderAsesor({ asesmenId: {{ $asesmen->id }}, jenisAsesmen: 'ak' })">
-                                        <i class="bi bi-arrow-down-up"></i> Reorder Asesor
+                                        <i class="bi bi-arrow-down-up"></i> Urutkan Ulang Asesor
                                     </button>
                                 </div>
                             </div>
@@ -129,7 +129,7 @@
 
                         <div class="col-md-6 my-2">
                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h6 class="fw-bold mb-3">Yang Sudah Di-assign (AL):</h6>
+                                <h6 class="fw-bold mb-3">Yang Sudah Ditugaskan (AL):</h6>
                                 <div class="btn-group btn-group-sm">
                                     <button type="button" class="btn btn-outline-secondary" id="btnReorderAL" title="Reorder Asesor" onclick="reorderAsesor({ asesmenId: {{ $asesmen->id }}, jenisAsesmen: 'al' })">
                                         <i class="bi bi-arrow-down-up"></i> Reorder Asesor
@@ -163,7 +163,7 @@
         </h5>
         <p class="mb-0">
             Terdapat <strong>{{ $asesmen->userRoles->where('status_penawaran', 'rejected')->count() }}</strong> user yang menolak penawaran.
-            Silakan assign pengganti atau hapus assignment yang ditolak.
+            Silakan tugaskan pengganti atau hapus penugasan yang ditolak.
         </p>
         <hr>
         <div class="mb-0">
@@ -177,7 +177,7 @@
                     @endif
                 </div>
                 <button class="btn btn-sm btn-warning" onclick="reassignUser({{ $rejected->id }}, '{{ $rejected->user->name }}', '{{ $rejected->jenis_asesmen }}')">
-                    <i class="bi bi-arrow-repeat"></i> Reassign
+                    <i class="bi bi-arrow-repeat"></i> Tugaskan ulang
                 </button>
             </div>
             @endforeach
@@ -271,7 +271,7 @@
             <!-- Assign User Card -->
             <div class="card mb-4">
                 <div class="card-header bg-success text-white">
-                    <h5 class="mb-0"><i class="bi bi-person-plus"></i> Assign Role Baru</h5>
+                    <h5 class="mb-0"><i class="bi bi-person-plus"></i> Tugaskan Role Baru</h5>
                 </div>
                 <div class="card-body">
                     <form id="assignForm" onsubmit="assignUser(event)">
@@ -307,7 +307,7 @@
                             <div class="col-md-2">
                                 <label class="form-label">&nbsp;</label>
                                 <button type="submit" class="btn btn-success w-100">
-                                    <i class="bi bi-plus-circle"></i> Assign
+                                    <i class="bi bi-plus-circle"></i> Tugaskan
                                 </button>
                             </div>
                         </div>
@@ -441,7 +441,7 @@
                                     </td>
                                     <td>
                                         @if($statusPenawaran === 'rejected')
-                                        <button type="button" class="btn btn-sm btn-warning" onclick="reassignUser({{ $userRole->id }}, '{{ $userRole->user->name }}', '{{ $userRole->jenis_asesmen }}')" data-bs-toggle="tooltip" title="Re-assign">
+                                        <button type="button" class="btn btn-sm btn-warning" onclick="reassignUser({{ $userRole->id }}, '{{ $userRole->user->name }}', '{{ $userRole->jenis_asesmen }}')" data-bs-toggle="tooltip" title="Tugaskan ulang">
                                             <i class="bi bi-arrow-repeat"></i>
                                         </button>
                                         @endif
@@ -454,7 +454,7 @@
                                 <tr>
                                     <td colspan="9" class="text-center py-4">
                                         <i class="bi bi-people" style="font-size: 3rem; color: #ccc;"></i>
-                                        <p class="text-muted mt-2">Belum ada user ditugaskan. Assign user di atas.</p>
+                                        <p class="text-muted mt-2">Belum ada user ditugaskan. Tugaskan user di atas.</p>
                                     </td>
                                 </tr>
                                 @endforelse
@@ -502,7 +502,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
                     <button type="submit" class="btn btn-success">
-                        <i class="bi bi-check-circle"></i> Assign Semua
+                        <i class="bi bi-check-circle"></i> Tugaskan Semua
                     </button>
                 </div>
             </form>
@@ -765,7 +765,7 @@
                         <small>
                             Saat ini: Asesor ${status.current.asesor} ${jenisAsesmen == 'ak' ? '| Validator: '+status.current.validator:''}
                         </small>
-                        <br><small class="text-muted">Semua role yang diassign harus menyetujuinya, atau cari user lain</small>
+                        <br><small class="text-muted">Semua role yang ditugaskan harus menyetujuinya, atau cari user lain</small>
                     </div>
                 </div>
             `;
@@ -823,7 +823,7 @@
             assignmentsContainer.innerHTML = `
                 <div class="text-center text-muted py-3">
                     <i class="bi bi-inbox" style="font-size: 2rem;"></i>
-                    <p class="mb-0 mt-2">Belum ada yang di-assign untuk ${prefix}</p>
+                    <p class="mb-0 mt-2">Belum ada yang ditugaskan untuk ${prefix}</p>
                 </div>
             `;
         }
@@ -1047,9 +1047,9 @@
         const confirmed = await Swal.fire({
             icon: 'question'
             , title: 'Konfirmasi'
-            , text: `Assign ${userIds.length} user(s) ke asesmen ini?`
+            , text: `Tugaskan ${userIds.length} user(s) ke asesmen ini?`
             , showCancelButton: true
-            , confirmButtonText: 'Ya, Assign'
+            , confirmButtonText: 'Ya, Tugaskan'
             , cancelButtonText: 'Batal'
         });
 
@@ -1098,7 +1098,7 @@
         const result = await Swal.fire({
             icon: 'question'
             , title: `Reorder Asesor ${jenisAsesmen.toUpperCase()}?`
-            , text: 'Urutan asesor akan diatur ulang berdasarkan waktu assignment (yang paling awal = Asesor 1)'
+            , text: 'Urutan asesor akan diatur ulang berdasarkan waktu penugasan (yang paling awal = Asesor 1)'
             , showCancelButton: true
             , confirmButtonText: 'Ya, Reorder'
             , cancelButtonText: 'Batal'
@@ -1282,7 +1282,7 @@
         const {
             value: newUserId
         } = await Swal.fire({
-            title: 'Reassign User'
+            title: 'Tugaskan Ulang User'
             , html: `
             <p>Pilih pengganti untuk <strong>${userName}</strong> (${jenisAsesmen.toUpperCase()}):</p>
             <select id="newUserId" class="form-select">
@@ -1293,7 +1293,7 @@
             </select>
         `
             , showCancelButton: true
-            , confirmButtonText: 'Reassign'
+            , confirmButtonText: 'Tugaskan ulang'
             , cancelButtonText: 'Batal'
             , preConfirm: () => {
                 const select = document.getElementById('newUserId');

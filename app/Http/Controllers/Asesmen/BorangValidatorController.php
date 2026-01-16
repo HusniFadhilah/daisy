@@ -1,60 +1,85 @@
 <?php
+// app/Http/Controllers/Asesmen/BorangValidatorController.php
 
 namespace App\Http\Controllers\Asesmen;
 
 use Illuminate\Http\Request;
 use App\Models\AsesmenUserRole;
+use App\Models\DatasetSuplemen;
+use Illuminate\Validation\Rule;
 use App\Models\BorangValidation;
 use Illuminate\Support\Facades\DB;
 use App\Models\PengajuanAkreditasi;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Schema;
+use App\Services\BorangValidationExcelService;
 
 class BorangValidatorController extends Controller
 {
+    protected $excelService;
+
+    public function __construct(BorangValidationExcelService $excelService)
+    {
+        $this->excelService = $excelService;
+    }
+
     /**
-     * List semua borang yang di-assign (follow ValidasiController pattern)
+     * List semua borang yang di-assign
      */
     public function index()
     {
         $user = Auth::user();
 
-        // ✅ REUSE: Query pattern sama dengan AK validation
         $assignments = AsesmenUserRole::with([
-            'pengajuan.studyProgram',
-            'pengajuan.latestBorangImport',
-            'asesmen',
+            'asesmen.pengajuan.studyProgram.degreeLevel',
+            'asesmen.pengajuan.studyProgram.university',
+            'role_selected',
+            'borangValidation',
         ])
             ->where('id_user', $user->id)
-            ->whereHas('role_selected', fn($q) => $q->where('name', 'validator'))
-            ->where('jenis_asesmen', 'dokumen') // ← Only borang validations
+            ->whereHas('role_selected', function ($q) {
+                $q->where('name', 'validator');
+            })
+            ->where('jenis_asesmen', 'dokumen')
             ->orderByRaw("
-            CASE status_pekerjaan
-                WHEN 'not_started' THEN 1
-                WHEN 'in_progress' THEN 2
-                WHEN 'submitted' THEN 3
-                WHEN 'revision_required' THEN 4
-                WHEN 'approved' THEN 5
-            END
-        ")
+                CASE status_penawaran
+                    WHEN 'pending' THEN 1
+                    WHEN 'accepted' THEN 2
+                    WHEN 'rejected' THEN 3
+                END,
+                CASE status_pekerjaan
+                    WHEN 'not_started' THEN 1
+                    WHEN 'in_progress' THEN 2
+                    WHEN 'revision_required' THEN 3
+                    WHEN 'submitted' THEN 4
+                    WHEN 'approved' THEN 5
+                END
+            ")
             ->paginate(10);
 
-        // Calculate stats (same pattern)
+        // Calculate stats
         $stats = [
             'pending' => AsesmenUserRole::where('id_user', $user->id)
+                ->whereHas('role_selected', fn($q) => $q->where('name', 'validator'))
                 ->where('jenis_asesmen', 'dokumen')
-                ->where('status_pekerjaan', 'not_started')
+                ->where('status_penawaran', 'pending')
                 ->count(),
             'in_review' => AsesmenUserRole::where('id_user', $user->id)
+                ->whereHas('role_selected', fn($q) => $q->where('name', 'validator'))
                 ->where('jenis_asesmen', 'dokumen')
+                ->where('status_penawaran', 'accepted')
                 ->where('status_pekerjaan', 'in_progress')
                 ->count(),
             'revision' => AsesmenUserRole::where('id_user', $user->id)
+                ->whereHas('role_selected', fn($q) => $q->where('name', 'validator'))
                 ->where('jenis_asesmen', 'dokumen')
                 ->where('status_pekerjaan', 'revision_required')
                 ->count(),
             'approved' => AsesmenUserRole::where('id_user', $user->id)
+                ->whereHas('role_selected', fn($q) => $q->where('name', 'validator'))
                 ->where('jenis_asesmen', 'dokumen')
                 ->where('status_pekerjaan', 'approved')
                 ->count(),
@@ -64,89 +89,383 @@ class BorangValidatorController extends Controller
     }
 
     /**
-     * Show borang for validation (follow asesor() pattern)
+     * Show borang for validation
      */
     public function show($idAssignment)
     {
         $user = Auth::user();
 
         $assignment = AsesmenUserRole::with([
-            'pengajuan.studyProgram',
-            'pengajuan.latestBorangImport',
-            'pengajuan.borangData',
-            'borangValidation', // NEW relation
+            'asesmen.pengajuan.studyProgram.degreeLevel',
+            'asesmen.pengajuan.studyProgram.university',
+            'asesmen.pengajuan.dokumen' => function ($q) {
+                $q->where('is_latest', true)
+                    ->whereIn('jenis_dokumen', ['pengesahan', 'draft_borang']);
+            },
+            'asesmen.pengajuan.latestBorangImport',
+            'borangValidation',
+            'role_selected',
+            'user',
         ])
             ->where('id_user', $user->id)
+            ->whereHas('role_selected', function ($q) {
+                $q->where('name', 'validator');
+            })
             ->where('jenis_asesmen', 'dokumen')
             ->findOrFail($idAssignment);
 
-        // ✅ Auto-update status (same pattern as AK)
+        // Check status penawaran
+        if ($assignment->status_penawaran !== 'accepted') {
+            return redirect()->route('validator.borang.index')
+                ->with('error', 'Anda harus menerima penawaran terlebih dahulu.');
+        }
+
+        // Auto-update status to in_progress
         if ($assignment->status_pekerjaan === 'not_started') {
             $assignment->update([
                 'status_pekerjaan' => 'in_progress',
-                'started_at' => now(),
             ]);
         }
 
-        $pengajuan = $assignment->pengajuan;
-        $validation = $assignment->borangValidation;
+        $pengajuan = $assignment->asesmen->pengajuan;
+        if (!$pengajuan) abort(404, 'Pengajuan tidak ditemukan');
 
-        // Get borang data
-        $kriterias = $pengajuan->studyProgram->kriterias()
-            ->with([
-                'elemenStandar.datasetBorang',
-                'elemenStandar.borangData' => function ($query) use ($pengajuan) {
-                    $query->where('id_pengajuan', $pengajuan->id);
-                }
-            ])
+        $degreeCode = $this->mapDegreeCode($pengajuan->studyProgram->degreeLevel);
+
+        /**
+         * ✅ LKPS WAJIB kuantitatif saja
+         * -> eager load indikator dengan filter id_jenis = 2
+         */
+        $kriterias = \App\Models\Kriteria::with([
+            'elemenStandar',
+            'elemenStandar.indikator' => function ($q) {
+                $q->where('id_jenis', 2)->orderBy('kode_indikator');
+            },
+        ])->get();
+
+        /**
+         * ✅ Suplemen: section_key = header tidak ikut ditampilkan & tidak ikut dihitung
+         */
+        $suplemenItems = DatasetSuplemen::query()
+            ->where('degree_level_code', $degreeCode)
+            ->where('content_type', 'list_item')
+            ->where('section_key', '!=', 'header')
+            ->orderBy('urutan')
             ->get();
 
-        // Checklist template
-        $checklistTemplate = [
-            'completeness' => 'Kelengkapan data sesuai template',
-            'accuracy' => 'Keakuratan data yang diisi',
-            'narrative' => 'Kualitas narasi/deskripsi',
-            'tables' => 'Kelengkapan tabel data',
-            'formatting' => 'Format penulisan sesuai panduan',
+        $suplemenGrouped = $suplemenItems->groupBy('section_key');
+        $totalElemenSuplemen = $suplemenItems->count();
+
+        // ==========================================================
+        // ✅ HITUNG TOTAL (LED, SUPLEMEN, LKPS KUANTITATIF)
+        //   (harus dihitung ulang, karena record lama bisa total=0)
+        // ==========================================================
+        $totalElemenLed = 0;
+        $totalIndikatorLkpsKuant = 0;
+
+        foreach ($kriterias as $kriteria) {
+            $totalElemenLed += $kriteria->elemenStandar->count();
+
+            foreach ($kriteria->elemenStandar as $elemen) {
+                // indikator sudah difilter kuantitatif (id_jenis=2)
+                $totalIndikatorLkpsKuant += $elemen->indikator->count();
+            }
+        }
+
+        // ============================================
+        // INITIALIZE OR GET VALIDATION
+        // ============================================
+        $validation = $assignment->borangValidation;
+
+        if (!$validation) {
+            // buat record baru
+            $validation = BorangValidation::create([
+                'id_assignment' => $assignment->id,
+                'id_pengajuan' => $pengajuan->id,
+                'total_elemen_led' => $totalElemenLed,
+                'total_elemen_suplemen' => $totalElemenSuplemen,
+                'total_indikator_lkps' => $totalIndikatorLkpsKuant,
+                'reviewed_led' => 0,
+                'reviewed_suplemen' => 0,
+                'reviewed_lkps' => 0,
+            ]);
+        } else {
+            /**
+             * ✅ SYNC UNTUK RECORD LAMA:
+             * - total LED bisa 0 (seperti kasus screenshot)
+             * - total suplemen dulu mungkin dihitung dari elemen LED
+             * - total LKPS harus kuantitatif saja
+             *
+             * Reviewed juga dijaga agar tidak melebihi total baru.
+             */
+            $needUpdate =
+                (int)$validation->total_elemen_led !== (int)$totalElemenLed ||
+                (int)$validation->total_elemen_suplemen !== (int)$totalElemenSuplemen ||
+                (int)$validation->total_indikator_lkps !== (int)$totalIndikatorLkpsKuant;
+
+            if ($needUpdate) {
+                $validation->update([
+                    'total_elemen_led' => $totalElemenLed,
+                    'total_elemen_suplemen' => $totalElemenSuplemen,
+                    'total_indikator_lkps' => $totalIndikatorLkpsKuant,
+
+                    'reviewed_led' => min((int)$validation->reviewed_led, (int)$totalElemenLed),
+                    'reviewed_suplemen' => min((int)$validation->reviewed_suplemen, (int)$totalElemenSuplemen),
+                    'reviewed_lkps' => min((int)$validation->reviewed_lkps, (int)$totalIndikatorLkpsKuant),
+                ]);
+            }
+        }
+
+        $validation->refresh();
+        $assignment->refresh();
+
+        // ============================================
+        // GET UPLOADED FILES
+        // ============================================
+        $uploadedFiles = [
+            'led' => $pengajuan->dokumen()
+                ->where('is_latest', true)
+                ->whereIn('jenis_dokumen', [
+                    'data_kualitatif',
+                    'draft_borang',
+                    'borang_final',
+                ])
+                ->latest()
+                ->first(),
+
+            'suplemen' => $pengajuan->dokumen()
+                ->where('is_latest', true)
+                ->whereIn('jenis_dokumen', [
+                    'data_suplemen',
+                    'suplemen',
+                    'file_suplemen',
+                    'dokumen_pendukung',
+                ])
+                ->latest()
+                ->first(),
+
+            'lkps' => $pengajuan->dokumen()
+                ->where('is_latest', true)
+                ->whereIn('jenis_dokumen', [
+                    'data_kuantitatif',
+                    'kuantitatif',
+                ])
+                ->latest()
+                ->first(),
+
+            'pengesahan' => $pengajuan->dokumen()
+                ->where('jenis_dokumen', 'pengesahan')
+                ->where('is_latest', true)
+                ->first(),
         ];
 
+        // ============================================
+        // GET BORANG DATA (for LED content)
+        // ============================================
+        $borangDataCollection = \App\Models\BorangData::where('id_pengajuan', $pengajuan->id)
+            ->get()
+            ->keyBy('dataset_id');
+
+        foreach ($kriterias as $kriteria) {
+            foreach ($kriteria->elemenStandar as $elemen) {
+                $elemen->setRelation('borangData', collect());
+
+                $descKey = 'desc_' . $elemen->id;
+                if (isset($borangDataCollection[$descKey])) {
+                    $elemen->borangData->push($borangDataCollection[$descKey]);
+                }
+            }
+        }
+
+        // Get progress
+        $progress = $validation->getProgressPercentage();
+        $isEnvLocal = app()->environment() === 'local';
         return view('validator.borang.show', compact(
             'assignment',
             'pengajuan',
             'validation',
             'kriterias',
-            'checklistTemplate'
+            'uploadedFiles',
+            'progress',
+            'suplemenItems',
+            'suplemenGrouped',
+            'degreeCode',
+            'totalElemenSuplemen',
+            'isEnvLocal'
         ));
     }
 
     /**
-     * Submit validation (follow validateElemen pattern)
+     * Update review (autosave per item) - AJAX
+     */
+    public function updateReview(Request $request, $idAssignment)
+    {
+        $request->validate([
+            'category' => 'required|in:led,suplemen,lkps',
+            'item_id' => 'required|integer',
+            'grade' => 'required|in:A,B,C',
+            'catatan' => 'nullable|string|max:500',
+        ]);
+
+        try {
+            $user = Auth::user();
+
+            $assignment = AsesmenUserRole::with('borangValidation')
+                ->where('id_user', $user->id)
+                ->whereHas('role_selected', fn($q) => $q->where('name', 'validator'))
+                ->where('jenis_asesmen', 'dokumen')
+                ->findOrFail($idAssignment);
+
+            $validation = $assignment->borangValidation;
+
+            if (!$validation) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation record tidak ditemukan',
+                ], 404);
+            }
+
+            $category = $request->category;
+            $itemId = $request->item_id;
+
+            if ($category === 'lkps') {
+                $isValid = \App\Models\Indikator::query()
+                    ->where('id', $itemId)
+                    ->where('id_jenis', 2) // ✅ hanya kuantitatif
+                    ->exists();
+
+                if (!$isValid) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Indikator LKPS tidak valid (bukan indikator kuantitatif).',
+                    ], 422);
+                }
+            }
+
+            DB::beginTransaction();
+
+            // Get current review data
+            $reviewField = "review_{$category}";
+            $reviewedField = "reviewed_{$category}";
+            $currentReview = $validation->$reviewField ?? [];
+
+            // Check if this is a new review
+            $isNewReview = !isset($currentReview[$itemId]);
+
+            // Update review
+            $currentReview[$itemId] = [
+                'grade' => $request->grade,
+                'catatan' => $request->catatan,
+                'reviewed_at' => now()->toDateTimeString(),
+                'reviewed_by' => $user->name,
+            ];
+
+            // Update validation
+            $updateData = [
+                $reviewField => $currentReview,
+            ];
+
+            // Increment reviewed count if new
+            if ($isNewReview) {
+                $updateData[$reviewedField] = $validation->$reviewedField + 1;
+            }
+
+            $validation->update($updateData);
+
+            // Get fresh progress
+            $progress = $validation->fresh()->getProgressPercentage();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Review berhasil disimpan',
+                'progress' => $progress,
+                'is_complete' => $validation->fresh()->isCompletelyReviewed(),
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to update review', [
+                'assignment_id' => $idAssignment,
+                'category' => $request->category,
+                'item_id' => $request->item_id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menyimpan review: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Submit final validation
      */
     public function submit(Request $request, $idAssignment)
     {
         $request->validate([
             'action' => 'required|in:approve,revision',
-            'catatan_validator' => 'required|string|min:20|max:5000',
-            'checklist' => 'nullable|array',
-            'revision_points' => 'required_if:action,revision|array',
+            'catatan_validator' => 'nullable|string|max:5000',
+            'catatan_led' => 'nullable|string|max:2000',
+            'catatan_suplemen' => 'nullable|string|max:2000',
+            'catatan_lkps' => 'nullable|string|max:2000',
         ]);
 
         try {
             DB::beginTransaction();
 
             $user = Auth::user();
-            $assignment = AsesmenUserRole::where('id_user', $user->id)
+
+            $assignment = AsesmenUserRole::with([
+                'asesmen.pengajuan.studyProgram',
+                'asesmen.pengajuan.pengaju',
+                'borangValidation',
+            ])
+                ->where('id_user', $user->id)
+                ->whereHas('role_selected', fn($q) => $q->where('name', 'validator'))
                 ->where('jenis_asesmen', 'dokumen')
                 ->findOrFail($idAssignment);
 
+            $pengajuan = $assignment->asesmen->pengajuan;
+
+            if (!$pengajuan) {
+                throw new \Exception('Pengajuan tidak ditemukan');
+            }
+
             $validation = $assignment->borangValidation;
 
+            if (!$validation) {
+                throw new \Exception('Validation record tidak ditemukan');
+            }
+
+            // Check if review complete
+            if (!$validation->isCompletelyReviewed()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Mohon selesaikan review untuk semua item sebelum submit.',
+                ], 422);
+            }
+
+            // Update catatan umum
+            $validation->update([
+                'catatan_validator' => $request->catatan_validator,
+                'catatan_led' => $request->catatan_led,
+                'catatan_suplemen' => $request->catatan_suplemen,
+                'catatan_lkps' => $request->catatan_lkps,
+            ]);
+
             if ($request->action === 'approve') {
-                // ✅ APPROVE (same pattern as AK)
-                $validation->update([
-                    'catatan_validator' => $request->catatan_validator,
-                    'checklist_items' => $request->checklist,
-                ]);
+                // ============================================
+                // APPROVE - All items must be grade C
+                // ============================================
+                if (!$validation->isValidationPassed()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Masih ada item dengan kategori review "Kurang tepat, perlu melengkapi" atau "Perlu diperbaiki". Gunakan "Request Revision" atau ubah grade menjadi kategori review "Sudah tepat".',
+                    ], 422);
+                }
 
                 $assignment->update([
                     'status_pekerjaan' => 'approved',
@@ -154,29 +473,255 @@ class BorangValidatorController extends Controller
                     'approved_by' => $user->id,
                 ]);
 
-                $assignment->pengajuan->update([
-                    'status' => 'borang_validated',
+                $pengajuan->update([
+                    'status' => PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
                     'tanggal_validasi_borang_selesai' => now(),
                 ]);
 
-                $message = 'Borang berhasil disetujui!';
+                // Log status
+                $pengajuan->statusLog()->create([
+                    'status_from' => $pengajuan->getOriginal('status'),
+                    'status_to' => PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
+                    'changed_by' => $user->id,
+                    'keterangan' => 'LED divalidasi dan disetujui oleh validator ' . $user->name,
+                    'changed_at' => now(),
+                ]);
+
+                // Send email notification
+                try {
+                    Mail::to($pengajuan->pengaju->email)
+                        ->queue(new \App\Mail\BorangValidationApproved($pengajuan, $validation));
+                } catch (\Exception $e) {
+                    Log::error('Failed to send approval email', [
+                        'pengajuan_id' => $pengajuan->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+
+                $message = 'LED berhasil divalidasi dan disetujui.';
             } else {
-                // ❌ REQUEST REVISION (same pattern as AK)
+                // ============================================
+                // REVISION REQUIRED - Build revision points
+                // ============================================
+                $needsRevision = $validation->getNeedsRevisionItems();
+
+                if (
+                    empty($needsRevision['led']) &&
+                    empty($needsRevision['suplemen']) &&
+                    empty($needsRevision['lkps'])
+                ) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Tidak ada item yang perlu direvisi. Silakan approve atau ubah grade item yang perlu diperbaiki.',
+                    ], 422);
+                }
+
+                // Build revision points array
+                $revisionPoints = [];
+
+                // LED revisions
+                if (!empty($needsRevision['led'])) {
+                    $revisionPoints[] = '=== REVISI LED ===';
+                    foreach ($needsRevision['led'] as $item) {
+                        $elemen = \App\Models\ElemenStandar::find($item['elemen_id']);
+                        $gradeLabel = BorangValidation::getGradeLabel($item['grade']);
+                        $elemenLabel = $elemen ? "{$elemen->kode_elemen} - {$elemen->pernyataan_elemen}" : "Elemen ID: {$item['elemen_id']}";
+
+                        $point = "LED - {$elemenLabel}: {$gradeLabel}";
+                        if (!empty($item['catatan'])) {
+                            $point .= " - {$item['catatan']}";
+                        }
+                        $revisionPoints[] = $point;
+                    }
+                }
+
+                // Suplemen revisions
+                if (!empty($needsRevision['suplemen'])) {
+                    $revisionPoints[] = '=== REVISI SUPLEMEN ===';
+                    foreach ($needsRevision['suplemen'] as $item) {
+
+                        $gradeLabel = BorangValidation::getGradeLabel($item['grade']); // ✅ WAJIB
+                        $ds = DatasetSuplemen::find($item['elemen_id']); // elemen_id = item suplemen id
+
+                        $label = $ds
+                            ? ("[" . $ds->section_key . "] " . $ds->text_content)
+                            : ("Item Suplemen ID: " . $item['elemen_id']);
+
+                        $point = "Suplemen - {$label}: {$gradeLabel}";
+                        if (!empty($item['catatan'])) {
+                            $point .= " - {$item['catatan']}";
+                        }
+                        $revisionPoints[] = $point;
+                    }
+                }
+
+                // LKPS revisions
+                if (!empty($needsRevision['lkps'])) {
+                    $revisionPoints[] = '=== REVISI LKPS ===';
+                    foreach ($needsRevision['lkps'] as $item) {
+                        $indikator = \App\Models\Indikator::find($item['indikator_id']);
+                        $gradeLabel = BorangValidation::getGradeLabel($item['grade']);
+                        $indikatorLabel = $indikator ? "{$indikator->kode_indikator} - {$indikator->deskripsi_indikator}" : "Indikator ID: {$item['indikator_id']}";
+
+                        $point = "LKPS - {$indikatorLabel}: {$gradeLabel}";
+                        if (!empty($item['catatan'])) {
+                            $point .= " - {$item['catatan']}";
+                        }
+                        $revisionPoints[] = $point;
+                    }
+                }
+
                 $validation->update([
-                    'catatan_validator' => $request->catatan_validator,
-                    'checklist_items' => $request->checklist,
-                    'revision_points' => $request->revision_points,
+                    'revision_points' => $revisionPoints,
                 ]);
 
                 $assignment->update([
                     'status_pekerjaan' => 'revision_required',
                 ]);
 
-                $assignment->pengajuan->update([
-                    'status' => 'borang_revision_required',
+                $pengajuan->update([
+                    'status' => PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,
                 ]);
 
-                $message = 'Permintaan revisi berhasil dikirim!';
+                // Log status
+                $pengajuan->statusLog()->create([
+                    'status_from' => $pengajuan->getOriginal('status'),
+                    'status_to' => PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,
+                    'changed_by' => $user->id,
+                    'keterangan' => 'Validator ' . $user->name . ' meminta revisi LED - ' . count($revisionPoints) . ' poin revisi',
+                    'changed_at' => now(),
+                ]);
+
+                // Send email notification - will be handled by DE
+
+                $message = 'Permintaan revisi berhasil dikirim.';
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'redirect' => route('validator.borang.index'),
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Submit borang validation failed', [
+                'assignment_id' => $idAssignment,
+                'action' => $request->action,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal submit validasi: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get validation stats (AJAX)
+     */
+    public function getValidationStats($idAssignment)
+    {
+        try {
+            $assignment = AsesmenUserRole::with([
+                'asesmen.pengajuan.studyProgram.degreeLevel',
+                'borangValidation',
+            ])
+                ->where('id_user', Auth::id())
+                ->findOrFail($idAssignment);
+
+            $validation = $assignment->borangValidation;
+
+            if (!$validation) {
+                return response()->json([
+                    'error' => 'Validation record tidak ditemukan'
+                ], 404);
+            }
+
+            $progress = $validation->getProgressPercentage();
+            $needsRevision = $validation->getNeedsRevisionItems();
+
+            return response()->json([
+                'total' => $progress['total'],
+                'reviewed' => $progress['reviewed'],
+                'percentage' => $progress['percentage'],
+                'led' => [
+                    'total' => $validation->total_elemen_led,
+                    'reviewed' => $validation->reviewed_led,
+                    'percentage' => $progress['led_percentage'],
+                    'needs_revision' => count($needsRevision['led']),
+                ],
+                'suplemen' => [
+                    'total' => $validation->total_elemen_suplemen,
+                    'reviewed' => $validation->reviewed_suplemen,
+                    'percentage' => $progress['suplemen_percentage'],
+                    'needs_revision' => count($needsRevision['suplemen']),
+                ],
+                'lkps' => [
+                    'total' => $validation->total_indikator_lkps,
+                    'reviewed' => $validation->reviewed_lkps,
+                    'percentage' => $progress['lkps_percentage'],
+                    'needs_revision' => count($needsRevision['lkps']),
+                ],
+                'is_complete' => $validation->isCompletelyReviewed(),
+                'is_passed' => $validation->isValidationPassed(),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Get validation stats failed', [
+                'assignment_id' => $idAssignment,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'error' => 'Gagal mengambil statistik: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Accept/Reject assignment offer
+     */
+    public function respondOffer(Request $request, $idAssignment)
+    {
+        $request->validate([
+            'action' => 'required|in:accept,reject',
+            'response_note' => 'nullable|string|max:500',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $user = Auth::user();
+
+            $assignment = AsesmenUserRole::with('asesmen.pengajuan')
+                ->where('id_user', $user->id)
+                ->where('status_penawaran', 'pending')
+                ->findOrFail($idAssignment);
+
+            if ($request->action === 'accept') {
+                $assignment->update([
+                    'status_penawaran' => 'accepted',
+                    'status_pekerjaan' => 'not_started',
+                    'responded_at' => now(),
+                    'response_note' => $request->response_note,
+                ]);
+
+                $assignment->asesmen->pengajuan->update([
+                    'status' => PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
+                ]);
+
+                $message = 'Penawaran diterima. Silakan mulai review LED.';
+            } else {
+                $assignment->update([
+                    'status_penawaran' => 'rejected',
+                    'responded_at' => now(),
+                    'response_note' => $request->response_note,
+                ]);
+
+                $message = 'Penawaran ditolak.';
             }
 
             DB::commit();
@@ -187,12 +732,347 @@ class BorangValidatorController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Submit borang validation failed: ' . $e->getMessage());
+            Log::error('Respond offer failed', [
+                'assignment_id' => $idAssignment,
+                'action' => $request->action,
+                'error' => $e->getMessage(),
+            ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal submit validasi: ' . $e->getMessage(),
+                'message' => 'Gagal merespon penawaran: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Download template Excel kosong
+     */
+    public function downloadTemplate($idAssignment)
+    {
+        try {
+            $user = Auth::user();
+
+            $assignment = AsesmenUserRole::with([
+                'asesmen.pengajuan.studyProgram.degreeLevel',
+                'borangValidation',
+            ])
+                ->where('id_user', $user->id)
+                ->whereHas('role_selected', fn($q) => $q->where('name', 'validator'))
+                ->where('jenis_asesmen', 'dokumen')
+                ->findOrFail($idAssignment);
+
+            $result = $this->excelService->generateExcel($assignment, false);
+
+            if (!$result['success']) {
+                return back()->with('error', $result['message']);
+            }
+
+            return response()->download($result['file'], $result['filename'])->deleteFileAfterSend(true);
+        } catch (\Exception $e) {
+            Log::error('Download template failed', [
+                'assignment_id' => $idAssignment,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->with('error', 'Gagal download template: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Download hasil review yang sudah ada
+     */
+    public function downloadReview($idAssignment)
+    {
+        try {
+            $user = Auth::user();
+
+            $assignment = AsesmenUserRole::with([
+                'asesmen.pengajuan.studyProgram.degreeLevel',
+                'borangValidation',
+            ])
+                ->where('id_user', $user->id)
+                ->whereHas('role_selected', fn($q) => $q->where('name', 'validator'))
+                ->where('jenis_asesmen', 'dokumen')
+                ->findOrFail($idAssignment);
+
+            $result = $this->excelService->generateExcel($assignment, true);
+
+            if (!$result['success']) {
+                return back()->with('error', $result['message']);
+            }
+
+            return response()->download($result['file'], $result['filename'])->deleteFileAfterSend(true);
+        } catch (\Exception $e) {
+            Log::error('Download review failed', [
+                'assignment_id' => $idAssignment,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->with('error', 'Gagal download review: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Upload/Import Excel review
+     */
+    public function uploadReview(Request $request, $idAssignment)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls|max:10240',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $user = Auth::user();
+
+            $assignment = AsesmenUserRole::with('borangValidation')
+                ->where('id_user', $user->id)
+                ->whereHas('role_selected', fn($q) => $q->where('name', 'validator'))
+                ->where('jenis_asesmen', 'dokumen')
+                ->findOrFail($idAssignment);
+
+            $file = $request->file('file');
+            $result = $this->excelService->importExcel($assignment, $file->getPathname());
+
+            if (!$result['success']) {
+                DB::rollBack();
+                return back()->with('error', $result['message']);
+            }
+
+            DB::commit();
+
+            return back()->with('success', $result['message']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Upload review failed', [
+                'assignment_id' => $idAssignment,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return back()->with('error', 'Gagal upload review: ' . $e->getMessage());
+        }
+    }
+
+    public function resetReview(Request $request, $idAssignment)
+    {
+        $request->validate([
+            'category' => ['required', Rule::in(['led', 'suplemen', 'lkps', 'all'])],
+            'reset_notes' => ['nullable', 'boolean'],
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $user = Auth::user();
+
+            $assignment = AsesmenUserRole::with('borangValidation')
+                ->where('id_user', $user->id)
+                ->whereHas('role_selected', fn($q) => $q->where('name', 'validator'))
+                ->where('jenis_asesmen', 'dokumen')
+                ->where('status_penawaran', 'accepted') // ✅ biar konsisten dgn show()
+                ->findOrFail($idAssignment);
+
+            $validation = $assignment->borangValidation;
+            if (!$validation) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation record tidak ditemukan',
+                ], 404);
+            }
+
+            $category = $request->input('category');
+            $resetNotes = $request->boolean('reset_notes');
+
+            // ======================
+            // ✅ RESET ALL
+            // ======================
+            if ($category === 'all') {
+                $update = [
+                    'review_led' => [],
+                    'review_suplemen' => [],
+                    'review_lkps' => [],
+                    'reviewed_led' => 0,
+                    'reviewed_suplemen' => 0,
+                    'reviewed_lkps' => 0,
+                ];
+
+                if ($resetNotes) {
+                    $update['catatan_led'] = null;
+                    $update['catatan_suplemen'] = null;
+                    $update['catatan_lkps'] = null;
+
+                    // opsional kalau kamu mau ikut reset catatan validator
+                    // $update['catatan_validator'] = null;
+                }
+
+                // opsional: kalau ada revision_points biar gak nyangkut
+                if (Schema::hasColumn('borang_validations', 'revision_points')) {
+                    $update['revision_points'] = [];
+                }
+
+                $validation->update($update);
+            }
+            // ======================
+            // ✅ RESET PER-KATEGORI
+            // ======================
+            else {
+                $reviewField = "review_{$category}";
+                $reviewedField = "reviewed_{$category}";
+
+                $noteField = match ($category) {
+                    'led' => 'catatan_led',
+                    'suplemen' => 'catatan_suplemen',
+                    'lkps' => 'catatan_lkps',
+                };
+
+                $update = [
+                    $reviewField => [],
+                    $reviewedField => 0,
+                ];
+
+                if ($resetNotes) {
+                    $update[$noteField] = null; // atau ''
+                }
+
+                $validation->update($update);
+            }
+
+            $fresh = $validation->fresh();
+            $progress = $fresh->getProgressPercentage();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => $category === 'all'
+                    ? 'Review semua kategori berhasil di-reset.'
+                    : "Review {$category} berhasil di-reset.",
+                'progress' => $progress,
+                'is_complete' => $fresh->isCompletelyReviewed(),
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Reset review failed', [
+                'assignment_id' => $idAssignment,
+                'category' => $request->category ?? null,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal reset review: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function laporkanValidasi(Request $request, $idAssignment)
+    {
+        try {
+            DB::beginTransaction();
+
+            $user = Auth::user();
+
+            $assignment = AsesmenUserRole::with([
+                'asesmen.pengajuan',
+                'role_selected',
+            ])
+                ->where('id_user', $user->id)
+                ->whereHas('role_selected', fn($q) => $q->where('name', 'validator'))
+                ->where('jenis_asesmen', 'dokumen')
+                ->findOrFail($idAssignment);
+
+            // pastikan offer accepted
+            if ($assignment->status_penawaran !== 'accepted') {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Penawaran belum diterima.',
+                ], 422);
+            }
+
+            $pengajuan = $assignment->asesmen->pengajuan;
+            if (!$pengajuan) {
+                throw new \Exception('Pengajuan tidak ditemukan');
+            }
+
+            // hanya boleh lapor kalau sudah divalidasi (disesuaikan)
+            if ($pengajuan->status !== PengajuanAkreditasi::STATUS_BORANG_VALIDATED) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pengajuan belum berada pada status "LED+Suplemen dan LKPS Divalidasi".',
+                ], 422);
+            }
+
+            // idempotent: kalau sudah dilaporkan, jangan error
+            if ($pengajuan->status === PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN) {
+                DB::commit();
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Validasi sudah pernah dilaporkan.',
+                ]);
+            }
+
+            $statusFrom = $pengajuan->status;
+
+            $pengajuan->update([
+                'status' => PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
+                'tanggal_pelaporan_validasi_borang' => now(),
+            ]);
+
+            // (opsional) status pekerjaan assignment bisa kamu set jadi submitted/approved dll
+            // contoh kalau kamu punya status "submitted":
+            // $assignment->update(['status_pekerjaan' => 'submitted']);
+
+            // log status
+            $pengajuan->statusLog()->create([
+                'status_from' => $statusFrom,
+                'status_to' => PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
+                'changed_by' => $user->id,
+                'keterangan' => 'Pelaporan validasi LED+Suplemen dan LKPS  oleh validator ' . $user->name,
+                'changed_at' => now(),
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Validasi LED+Suplemen dan LKPS  berhasil dilaporkan. Status pengajuan telah diperbarui.',
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Laporkan validasi LED+Suplemen dan LKPS  failed', [
+                'assignment_id' => $idAssignment,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal melaporkan validasi: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    private function mapDegreeCode($degreeLevel): string
+    {
+        // Sesuaikan field yang ada di tabel degree_levels Anda (code/name)
+        $raw = strtolower((string) ($degreeLevel->code ?? $degreeLevel->name ?? ''));
+
+        // Normalisasi beberapa kemungkinan penamaan
+        $raw = str_replace([' ', '_'], '-', $raw);
+
+        // Contoh mapping jika di DB Anda ternyata "d4" disebut "s1-terapan"
+        // Anda bisa tambah mapping lain sesuai data nyata Anda.
+        return match ($raw) {
+            'sarjana-terapan', 's1-terapan' => 'd4',
+            default => $raw,
+        };
     }
 }

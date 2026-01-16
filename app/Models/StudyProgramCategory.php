@@ -10,6 +10,7 @@ class StudyProgramCategory extends Model
         'code',
         'name',
         'description',
+        'is_active',
     ];
 
     /**

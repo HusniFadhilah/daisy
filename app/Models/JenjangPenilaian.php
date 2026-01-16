@@ -64,27 +64,27 @@ class JenjangPenilaian extends Model
         $skorMapping = [
             0 => [
                 'label' => ($isFull ? '0 - ' : '') . 'Tidak Memenuhi (Not Met)',
-                'color' => '#f44336',
+                'color' => '#f5c6cb',
                 'class' => 'danger',
             ],
             1 => [
                 'label' => ($isFull ? '1 - ' : '') . 'Belum Memenuhi (Not Met)',
-                'color' => '#ff9800',
+                'color' => '#ffe0b2',
                 'class' => 'warning',
             ],
             2 => [
                 'label' => ($isFull ? '2 - ' : '') . 'Lemah (Weakness/Cause of Concern)',
-                'color' => '#ffeb3b',
+                'color' => '#fff9c4',
                 'class' => 'warning',
             ],
             3 => [
                 'label' => ($isFull ? '3 - ' : '') . 'Memenuhi (Met)',
-                'color' => '#8bc34a',
+                'color' => '#dcedc8',
                 'class' => 'success',
             ],
             4 => [
                 'label' => ($isFull ? '4 - ' : '') . 'Pelampauan Standar (Exceeding Standard)',
-                'color' => '#4caf50',
+                'color' => '#c8e6c9',
                 'class' => 'success',
             ],
         ];
@@ -99,11 +99,11 @@ class JenjangPenilaian extends Model
     public static function getSkorColor($skor)
     {
         $colors = [
-            0 => '#f44336', // Red - Not Met
-            1 => '#ff9800', // Orange - Not Met
-            2 => '#ffeb3b', // Yellow - Weakness
-            3 => '#8bc34a', // Light Green - Met
-            4 => '#4caf50', // Dark Green - Exceeding
+            0 => '#f5c6cb', // Red - Not Met
+            1 => '#ffe0b2', // Orange - Not Met
+            2 => '#fff9c4', // Yellow - Weakness
+            3 => '#dcedc8', // Light Green - Met
+            4 => '#c8e6c9', // Dark Green - Exceeding
         ];
 
         return $colors[$skor] ?? 'e0e0e0';
@@ -111,11 +111,12 @@ class JenjangPenilaian extends Model
 
     public static function textColorByBg($hex)
     {
-        $hex = ltrim($hex, '#');
-        return (hexdec(substr($hex, 0, 2)) * 0.299 +
-            hexdec(substr($hex, 2, 2)) * 0.587 +
-            hexdec(substr($hex, 4, 2)) * 0.114) > 186
-            ? '#000'
-            : '#fff';
+        return '#000';
+        // $hex = ltrim($hex, '#');
+        // return (hexdec(substr($hex, 0, 2)) * 0.299 +
+        //     hexdec(substr($hex, 2, 2)) * 0.587 +
+        //     hexdec(substr($hex, 4, 2)) * 0.114) > 186
+        //     ? '#000'
+        //     : '#fff';
     }
 }

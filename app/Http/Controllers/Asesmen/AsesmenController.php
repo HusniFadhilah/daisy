@@ -314,7 +314,7 @@ class AsesmenController extends Controller
             if ($exists) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'User sudah di-assign dengan role ini untuk ' . strtoupper($request->jenis_asesmen)
+                    'message' => 'User sudah ditugaskan dengan role ini untuk ' . strtoupper($request->jenis_asesmen)
                 ], 422);
             }
 
@@ -393,7 +393,7 @@ class AsesmenController extends Controller
             try {
                 SendPenawaranAsesmenEmail::dispatch($assignment);
             } catch (\Exception $e) {
-                // Email gagal di-dispatch, tapi assignment tetap berhasil
+                // Email gagal di-dispatch, tapi penugasan tetap berhasil
                 Log::error("Gagal dispatch email job penawaran", [
                     'assignment_id' => $assignment->id,
                     'error' => $e->getMessage(),
@@ -402,7 +402,7 @@ class AsesmenController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => "User {$user->name} berhasil di-assign sebagai {$role->alias} untuk " .
+                'message' => "User {$user->name} berhasil ditugaskan sebagai {$role->alias} untuk " .
                     strtoupper($request->jenis_asesmen) .
                     ($urutanAsesor ? " (Asesor {$urutanAsesor})" : "") .
                     ". Email penawaran telah dikirim.",
@@ -477,7 +477,7 @@ class AsesmenController extends Controller
     }
 
     /**
-     * Get assignment requirements status
+     * Get penugasan requirements status
      */
     public function getRequirementsStatus($id, $jenisAsesmen)
     {
@@ -637,7 +637,7 @@ class AsesmenController extends Controller
         try {
             $assignment = AsesmenUserRole::findOrFail($request->assignment_id);
 
-            // Verify assignment belongs to this asesmen
+            // Verify penugasan belongs to this asesmen
             if ($assignment->id_asesmen != $id) {
                 return response()->json([
                     'success' => false,
@@ -672,7 +672,7 @@ class AsesmenController extends Controller
     public function removeUser($id, $userId)
     {
         try {
-            // Get the assignment to check jenis_asesmen
+            // Get the penugasan to check jenis_asesmen
             $assignment = AsesmenUserRole::where('id_asesmen', $id)
                 ->where('id_user', $userId)
                 ->first();
@@ -708,7 +708,7 @@ class AsesmenController extends Controller
                 $currentCount = AsesmenUserRole::where('id_asesmen', $id)
                     ->where('jenis_asesmen', $jenisAsesmen)
                     ->where('id_role', $roleId)
-                    ->where('status_penawaran', 'accepted')
+                    ->whereIn('status_penawaran', ['accepted', 'pending'])
                     ->count();
 
                 // Check minimum requirements
@@ -767,11 +767,11 @@ class AsesmenController extends Controller
 
             $oldAssignment = AsesmenUserRole::findOrFail($request->assignment_id);
 
-            // Verify old assignment is rejected
+            // Verify old penugasan is rejected
             if ($oldAssignment->status_penawaran !== 'rejected') {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Hanya assignment yang ditolak yang bisa di-reassign'
+                    'message' => 'Hanya penugasan yang ditolak yang bisa ditugaskan ulang'
                 ], 422);
             }
 
@@ -785,7 +785,7 @@ class AsesmenController extends Controller
             if ($exists) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'User sudah di-assign dengan role ini'
+                    'message' => 'User sudah ditugaskan dengan role ini'
                 ], 422);
             }
 
@@ -957,9 +957,9 @@ class AsesmenController extends Controller
 
             DB::commit();
 
-            $message = "Berhasil assign {$assignedCount} user.";
+            $message = "Berhasil menugaskan {$assignedCount} user.";
             if ($skippedCount > 0) {
-                $message .= " {$skippedCount} user di-skip (sudah di-assign).";
+                $message .= " {$skippedCount} user di-skip (sudah ditugaskan).";
             }
 
             return response()->json([
@@ -975,7 +975,7 @@ class AsesmenController extends Controller
             DB::rollBack();
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal bulk assign: ' . $e->getMessage()
+                'message' => 'Gagal menugaskan secara serentak: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -1048,7 +1048,7 @@ class AsesmenController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => "Validator {$validator->name} berhasil di-assign untuk review LED.",
+                'message' => "Validator {$validator->name} berhasil ditugaskan untuk review/validasi LED.",
                 'data' => [
                     'assignment' => $assignment,
                     'validation' => $validation,
@@ -1096,7 +1096,7 @@ class AsesmenController extends Controller
     }
 
     /**
-     * Search users for assignment (AJAX)
+     * Search users for penugasan (AJAX)
      */
     public function searchUsers(Request $request)
     {

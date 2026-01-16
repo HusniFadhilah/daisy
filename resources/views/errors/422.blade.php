@@ -76,7 +76,7 @@ $message = $exception ? $exception->getMessage() : $defaultMessage;
 <div class="help-text mt-4">
     <small class="text-muted">
         <i class="bi bi-question-circle"></i>
-        Jika Anda memerlukan bantuan atau ada kendala, silakan hubungi DE LAMDEPILAR sistem.
+        Jika Anda memerlukan bantuan atau ada kendala, silakan hubungi DE LAMDEPILAR.
     </small>
 </div>
 @endsection

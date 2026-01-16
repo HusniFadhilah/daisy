@@ -6,11 +6,8 @@ use App\Models\University;
 use App\Models\DegreeLevel;
 use App\Models\StudyProgram;
 use Illuminate\Http\Request;
-<<<<<<<< HEAD:app/Http/Controllers/UniversityController.php
 use Yajra\DataTables\Facades\DataTables;
-========
 use App\Http\Controllers\Controller;
->>>>>>>> origin/main:app/Http/Controllers/Master/UniversityController.php
 
 class UniversityController extends Controller
 {
@@ -31,30 +28,27 @@ class UniversityController extends Controller
      */
     public function index(Request $request)
     {
-<<<<<<<< HEAD:app/Http/Controllers/UniversityController.php
         if ($request->ajax()) {
             $data = University::withCount('studyPrograms')->select('universities.*');
-            
+
             return DataTables::of($data)
                 ->addIndexColumn()
-                ->addColumn('study_programs_count', function($row){
+                ->addColumn('study_programs_count', function ($row) {
                     return $row->study_programs_count;
                 })
-                ->addColumn('action', function($row){
+                ->addColumn('action', function ($row) {
                     $btn = '<div class="btn-group" role="group">';
-                    $btn .= '<a href="'.route('universities.edit', $row->id).'" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>';
-                    $btn .= '<button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord('.$row->id.')"><i class="bi bi-trash"></i></button>';
+                    $btn .= '<a href="' . route('universities.edit', $row->id) . '" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>';
+                    $btn .= '<button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord(' . $row->id . ')"><i class="bi bi-trash"></i></button>';
                     $btn .= '</div>';
                     return $btn;
                 })
                 ->rawColumns(['action'])
                 ->make(true);
         }
-        
-========
+
         $universities = University::withCount('studyPrograms')->get();
 
->>>>>>>> origin/main:app/Http/Controllers/Master/UniversityController.php
         if ($request->wantsJson()) {
             $universities = University::withCount('studyPrograms')->get();
             return response()->json([
@@ -62,13 +56,7 @@ class UniversityController extends Controller
                 'data' => $universities
             ]);
         }
-<<<<<<<< HEAD:app/Http/Controllers/UniversityController.php
-        
-        return view('universitas.index');
-========
-
         return view('universitas.index', compact('universities'));
->>>>>>>> origin/main:app/Http/Controllers/Master/UniversityController.php
     }
 
     /**

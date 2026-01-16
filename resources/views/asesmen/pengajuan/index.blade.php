@@ -68,7 +68,7 @@
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <h5 class="card-title mb-0">{{ $pengajuan->nomor_pengajuan }}</h5>
                         <span class="badge {{ $pengajuan->status_badge_class }}">
-                            {{ $pengajuan->status_label }}
+                            {{ $pengajuan->status_label_short }}
                         </span>
                     </div>
 

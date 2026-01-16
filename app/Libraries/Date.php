@@ -149,9 +149,9 @@ class Date
         return $d . " " . $m . " " . $y;
     }
 
-    public static function bulanTahun($date)
+    public static function bulanTahun($date, $isComma = false)
     {
-        return self::bulan($date) . ' ' . self::tahun($date);
+        return self::bulan($date) . ($isComma ? ',' : '') . ' ' . self::tahun($date);
     }
 
     public static function tglWaktu($date, $lang = 'id', $isFull = true)

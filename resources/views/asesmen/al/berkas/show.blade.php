@@ -102,12 +102,12 @@
 @endpush
 
 @php
-$assignment = $asesmen->userRoles->where('id_user', Auth::id())->first();
 $statusPekerjaan = $assignment->status_pekerjaan ?? 'not_started';
 $isSubmittedOnly = $statusPekerjaan === 'submitted';
 $isSubmitted = isset($assignment) && in_array($statusPekerjaan, ['submitted', 'approved', 'validated']);
 $isApproved = $statusPekerjaan === 'approved';
 $needsRevision = $statusPekerjaan === 'revision_required';
+$isComplete = $progress['percentage'] == 100;
 @endphp
 
 @section('content')
@@ -128,7 +128,7 @@ $needsRevision = $statusPekerjaan === 'revision_required';
                 <div class="step-line"></div>
 
                 {{-- STEP 2 --}}
-                <a href="{{ route('al.berkas.show', ['idAsesmen' => $asesmen->id, 'step' => 2]) }}" class="text-decoration-none d-flex align-items-center gap-2">
+                <a href="{{ route('al.berkas.show', ['idAsesmen' => $asesmen->id, 'step' => 2]) }}" class="text-decoration-none d-flex align-items-center gap-2 {{ !($isSubmittedOnly && !$isApproved) ? 'disabled-link' : '' }}" {{ !($isSubmittedOnly && !$isApproved) ? 'disabled' : '' }}>
                     <span class="step-circle {{ $step === 2 ? 'active' : 'inactive' }}">2</span>
                     <div>
                         <div class="fw-bold {{ $step === 2 ? '' : 'text-muted' }}">Hasil dan Berita Acara Asesmen Lapangan (AL)</div>
@@ -189,20 +189,59 @@ $needsRevision = $statusPekerjaan === 'revision_required';
             <div class="row align-items-center my-2">
                 <div class="col-12 mb-md-0">
                     {{-- Status Indicator --}}
-                    @if($isSubmittedOnly && !$isApproved && app()->environment('local'))
+                    @if(!$isSubmittedOnly && !$isApproved && $isComplete)
+                    <div class="alert alert-warning alert-dismissible alert-permanent mb-3" id="alertSubmitReminder">
+                        <div class="d-flex align-items-start">
+                            <div class="flex-shrink-0">
+                                <i class="bi bi-exclamation-triangle-fill fs-3 me-3"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h5 class="alert-heading mb-2">
+                                    <i class="bi bi-check-circle"></i> Penilaian Sudah Lengkap!
+                                </h5>
+                                <p class="mb-2">
+                                    Anda telah menyelesaikan <strong>semua {{ $progress['total'] }} elemen penilaian</strong>.
+                                    Segera lakukan <strong>Finalisasi dan Kirim</strong> agar penilaian Anda dapat divalidasi oleh DE LAMDEPILAR.
+                                </p>
+                                <hr>
+                                <div class="mb-0">
+                                    <small class="text-muted">
+                                        <i class="bi bi-info-circle"></i> Penilaian belum akan tersimpan secara permanen sampai di-submit
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    @endif
+
+                    @if(!$isSubmittedOnly && !$isApproved && !$isComplete && $progress['percentage'] > 0)
+                    <div class="alert alert-info alert-dismissible alert-permanent mb-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Progress Penilaian:</strong>
+                        Anda sudah menilai {{ $progress['completed'] }} dari {{ $progress['total'] }} elemen
+                        (<strong>{{ $progress['percentage'] }}%</strong>).
+                        Selesaikan <strong>{{ $progress['remaining'] }} elemen</strong> lagi untuk dapat melakukan finalisasi.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    @endif
+
+                    @if($isSubmittedOnly && !$isApproved)
                     <div class="alert alert-info alert-permanent alert-dismissible mb-3">
                         <i class="bi bi-info-circle me-2"></i>
-                        <strong>Sudah Di-Submit!</strong> Penilaian Anda sedang menunggu persetujuan dari DE LAMDEPILAR.
-                        <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="btnUnsubmit">
+                        <strong>Sudah Di-Submit!</strong> Penilaian Anda sedang menunggu validasi dari DE LAMDEPILAR.
+                        @if(app()->environment('local'))
+                        <button type="button" class="btn btn-sm btn-outline-secondary ms-2 mt-2" id="btnUnsubmit">
                             <i class="bi bi-arrow-counterclockwise"></i> Batalkan Submit
                         </button>
+                        @endif
                     </div>
                     @endif
 
                     @if($isApproved)
                     <div class="alert alert-success alert-permanent alert-dismissible mb-3">
                         <i class="bi bi-check-circle me-2"></i>
-                        <strong>Penilaian Disetujui!</strong> Penilaian Anda pada tahap Asesmen Lapangan (AL) telah divalidasi dan disetujui oleh DE LAMDEPILAR.
+                        <strong>Penilaian Disetujui!</strong> Penilaian Anda pada tahap Asesmen Lapangan (AL) telah divalidasi dan disetujui oleh DE LAMDEPILAR. Silahkan unduh file Hasil penilaian lengkap di <a href="{{ route('al.berkas.export', $asesmen->id) }}" class="alert-link">link ini</a>. Tanda tangani, lalu upload ulang di step ke-2 (Hasil dan berita acara Asesmen Lapangan) di halaman ini.
                     </div>
                     @endif
 
@@ -248,17 +287,27 @@ $needsRevision = $statusPekerjaan === 'revision_required';
                                     <hr class="dropdown-divider">
                                 </li>
 
+                                <!-- Download Template -->
                                 <li>
-                                    <a class="dropdown-item" id="btnDownloadTemplate">
+                                    <a class="dropdown-item" href="{{ route('al.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'template']) }}" id="btnDownloadTemplate">
                                         <i class="bi bi-file-earmark-text text-info"></i> Download Template
                                         <small class="d-block text-muted">Format Excel sebagai template</small>
                                     </a>
                                 </li>
 
+                                <!-- Hasil Penilaian - Lengkap -->
                                 <li>
-                                    <a class="dropdown-item" id="btnDownloadData">
-                                        <i class="bi bi-file-earmark-excel text-success"></i> Hasil Penilaian Anda
-                                        <small class="d-block text-muted">Data Excel penilaian Anda</small>
+                                    <a class="dropdown-item btnDownloadData" data-mode="full" href="{{ route('al.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'full']) }}">
+                                        <i class="bi bi-file-earmark-spreadsheet text-primary"></i> Hasil Penilaian Lengkap
+                                        <small class="d-block text-muted">Menu + Kertas Kerja + Semua Asesor</small>
+                                    </a>
+                                </li>
+
+                                <!-- Hasil Penilaian - Personal -->
+                                <li>
+                                    <a class="dropdown-item btnDownloadData" data-mode="personal" href="{{ route('al.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'personal']) }}">
+                                        <i class="bi bi-person-check text-success"></i> Hasil Penilaian Anda
+                                        <small class="d-block text-muted">Hanya Sheet Penilaian Anda</small>
                                     </a>
                                 </li>
                             </ul>
@@ -693,7 +742,7 @@ $needsRevision = $statusPekerjaan === 'revision_required';
                                             @endif
                                             <form class="form-penilaian" data-elemen-id="{{ $elemen->id }}">
                                                 <div class="row mb-3">
-                                                    <div class="col-md-4">
+                                                    <div class="col-md-12 mb-3">
                                                         <label class="form-label fw-semibold">
                                                             <i class="bi bi-star me-1"></i> Pilih Kategori Penilaian
                                                         </label>
@@ -706,11 +755,11 @@ $needsRevision = $statusPekerjaan === 'revision_required';
                                                             @endforeach
                                                         </select>
                                                     </div>
-                                                    <div class="col-md-8">
+                                                    <div class="col-md-12 komentar-section">
                                                         <label class="form-label fw-semibold">
                                                             <i class="bi bi-chat-left-text me-1"></i> Komentar/Justifikasi Penilaian
                                                         </label>
-                                                        <textarea class="form-control komentar-textarea" name="komentar" rows="4" placeholder="Berikan justifikasi dan analisis penilaian berdasarkan seluruh indikator di bawah ini..." required>{{ $hasPenilaian ? $penilaianElemenAl->komentar : '' }}</textarea>
+                                                        <textarea class="form-control komentar-textarea" name="komentar" rows="15" placeholder="Berikan justifikasi dan analisis penilaian berdasarkan seluruh indikator di bawah ini..." required>{{ $hasPenilaian ? $penilaianElemenAl->komentar : '' }}</textarea>
                                                         <small class="text-muted">
                                                             <i class="bi bi-info-circle me-1"></i>
                                                             <span class="char-count">{{ $hasPenilaian ? strlen($penilaianElemenAl->komentar) : 0 }}</span> karakter
@@ -752,88 +801,8 @@ $needsRevision = $statusPekerjaan === 'revision_required';
     </div>
     @endforeach
     @elseif($step === 2)
-    <div class="card shadow-sm">
-        <div class="card-header bg-white d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">
-                <i class="bi bi-folder2-open"></i> Hasil dan Berita Acara Asesmen Lapangan (AL)
-            </h5>
-
-            <a href="{{ route('al.berkas.laporanPdf', $asesmen->id) }}" class="btn btn-primary">
-                <i class="bi bi-file-earmark-pdf"></i> Download Laporan PDF
-            </a>
-        </div>
-
-        <div class="card-body">
-            {{-- Upload BA --}}
-            <div class="alert alert-info alert-permanent">
-                <i class="bi bi-info-circle"></i>
-                Upload file Hasil dan Berita Acara Asesmen Lapangan (AL) (PDF). File ini akan digabungkan otomatis dengan lampiran di bagian akhir laporan.
-            </div>
-
-            <form action="{{ route('al.berkas.documents.beritaAcara.upload', $asesmen->id) }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                <div class="row g-2 align-items-end">
-                    <div class="col-md-8">
-                        <label class="form-label fw-semibold">Upload Hasil dan Berita Acara Asesmen Lapangan (AL) (PDF)</label>
-                        <input type="file" name="files[]" class="form-control" accept="application/pdf" multiple required>
-                        {{-- <small class="text-muted">Bisa multiple file (akan diurutkan berdasarkan waktu upload / atau custom order kalau kamu buat).</small> --}}
-                    </div>
-                    <div class="col-md-4">
-                        <button class="btn btn-success w-100">
-                            <i class="bi bi-upload"></i> Upload
-                        </button>
-                    </div>
-                </div>
-            </form>
-
-            {{-- <hr> --}}
-
-            {{-- List file BA --}}
-            {{-- <h6 class="fw-bold mb-2"><i class="bi bi-list-ul"></i> Daftar Berita Acara</h6>
-
-            @if(empty($beritaAcaraFiles) || count($beritaAcaraFiles) === 0)
-            <div class="alert alert-secondary alert-permanent mb-0">
-                Belum ada file berita acara yang diupload.
-            </div>
-            @else
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>File</th>
-                            <th>Uploaded</th>
-                            <th class="text-end">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($beritaAcaraFiles as $f)
-                        <tr>
-                            <td>
-                                <i class="bi bi-file-earmark-pdf text-danger"></i>
-                                {{ $f['name'] }}
-            </td>
-            <td><small class="text-muted">{{ $f['uploaded_at'] }}</small></td>
-            <td class="text-end">
-                <a class="btn btn-sm btn-outline-primary" href="{{ $f['url'] }}" target="_blank">
-                    <i class="bi bi-eye"></i> Lihat
-                </a>
-                <form class="d-inline" method="POST" action="{{ route('al.berkas.beritaAcara.delete', [$asesmen->id, $f['id']]) }}" onsubmit="return confirm('Hapus file ini?')">
-                    @csrf
-                    @method('DELETE')
-                    <button class="btn btn-sm btn-outline-danger">
-                        <i class="bi bi-trash"></i> Hapus
-                    </button>
-                </form>
-            </td>
-            </tr>
-            @endforeach
-            </tbody>
-            </table>
-        </div>
-        @endif --}}
-    </div>
-</div>
-@endif
+    @include('asesmen.al.components.berita-acara')
+    @endif
 </div>
 
 <!-- Floating Action Button -->
@@ -1051,7 +1020,8 @@ $needsRevision = $statusPekerjaan === 'revision_required';
             if (btnExport) btnExport.addEventListener('click', exportExcel);
 
             // Import Excel
-            document.getElementById('btnImport').addEventListener('click', function() {
+            const btnImport = document.getElementById('btnImport');
+            if (btnImport) btnImport.addEventListener('click', function() {
                 // Reset form
                 document.getElementById('importForm').reset();
                 document.getElementById('fileInfo').classList.add('d-none');
@@ -1063,7 +1033,8 @@ $needsRevision = $statusPekerjaan === 'revision_required';
                 const modal = new bootstrap.Modal(importModal);
                 modal.show();
             });
-            document.getElementById('btnImportHistory').addEventListener('click', importHistoryExcel);
+            const btnImportHistory = document.getElementById('btnImportHistory');
+            if (btnImportHistory) btnImportHistory.addEventListener('click', importHistoryExcel);
             const btnResetAll = document.getElementById('btnResetAll');
             if (btnResetAll) btnResetAll.addEventListener('click', resetAllPenilaian);
             // Import Form Submit
@@ -1071,7 +1042,9 @@ $needsRevision = $statusPekerjaan === 'revision_required';
 
             // Download Template
             document.getElementById('btnDownloadTemplate').addEventListener('click', downloadTemplate);
-            document.getElementById('btnDownloadData').addEventListener('click', downloadDataExcel);
+            document.querySelectorAll('.btnDownloadData').forEach(btn => {
+                btn.addEventListener('click', downloadDataExcel);
+            });
         }
 
         /**
@@ -1185,7 +1158,7 @@ $needsRevision = $statusPekerjaan === 'revision_required';
                         <div class="text-center">
                             <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
                             <p class="mt-3">${data.message}</p>
-                            <div class="alert alert-info mt-3">
+                            <div class="alert alert-info alert-permanent mt-3">
                                 <small>
                                     <i class="bi bi-clock"></i> Di-submit pada: ${data.submitted_at}
                                 </small>
@@ -1556,12 +1529,16 @@ $needsRevision = $statusPekerjaan === 'revision_required';
          * Initialize Character Counters
          */
         function initializeCharCounters() {
+            const MAX_CHAR = 2000;
+
             document.querySelectorAll('.komentar-textarea').forEach(textarea => {
+                const counter = textarea
+                    .closest('.komentar-section')
+                    .querySelector('.char-count');
+
                 textarea.addEventListener('input', function() {
-                    const charCount = this.closest('.col-md-8').querySelector('.char-count');
-                    if (charCount) {
-                        charCount.textContent = this.value.length;
-                    }
+                    if (this.value.length > MAX_CHAR) this.value = this.value.substring(0, MAX_CHAR);
+                    if (counter) counter.textContent = this.value.length;
                 });
             });
         }
@@ -1774,7 +1751,7 @@ $needsRevision = $statusPekerjaan === 'revision_required';
         }
 
         function updateCharCount(textarea) {
-            const charCount = textarea.closest('.col-md-8').querySelector('.char-count');
+            const charCount = textarea.closest('.komentar-section').querySelector('.char-count');
             if (charCount) {
                 charCount.textContent = textarea.value.length;
             }
@@ -1956,10 +1933,10 @@ $needsRevision = $statusPekerjaan === 'revision_required';
         /**
          * Download Data (Excel with Penilaian)
          */
-        function downloadDataExcel() {
+        function downloadDataExcel(e) {
             showLoading();
-
-            window.location.href = `/al/berkas/${idAsesmen}/export`;
+            const mode = e.currentTarget.dataset.mode;
+            window.location.href = `/al/berkas/${idAsesmen}/export?mode=${mode}`;
 
             setTimeout(() => {
                 hideLoading();
@@ -2000,18 +1977,18 @@ $needsRevision = $statusPekerjaan === 'revision_required';
                     <div class="col-md-4">
                         <div class="p-3 bg-light rounded">
                             <h3 class="text-success mb-0">${data.imported_rows}</h3>
-                            <small class="text-muted">Penilaian Elemen Berhasil DiSimpan</small>
+                            <small class="text-muted">Penilaian Elemen Berhasil Disimpan</small>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="p-3 bg-light rounded">
                             <h3 class="text-danger mb-0">${data.failed_rows}</h3>
-                            <small class="text-muted">Penilaian Elemen Gagal DiSimpan</small>
+                            <small class="text-muted">Penilaian Elemen Gagal Disimpan</small>
                         </div>
                     </div>
                 </div>
 
-                <div class="alert alert-success">
+                <div class="alert alert-success alert-permanent">
                     <p class="mb-0 small">
                         Waktu selesai: ${data.completed_at}
                     </p>
@@ -2055,7 +2032,7 @@ $needsRevision = $statusPekerjaan === 'revision_required';
                     <h4 class="text-danger">Import Gagal</h4>
                 </div>
 
-                <div class="alert alert-danger">
+                <div class="alert alert-danger alert-permanent">
                     <strong>Error:</strong>
                     <ul class="mb-0 mt-2">
                         ${data.errors.map(err => `<li>${err}</li>`).join('')}
@@ -2074,8 +2051,7 @@ $needsRevision = $statusPekerjaan === 'revision_required';
          * Show Import History
          */
         async function importHistoryExcel() {
-            const modal = new bootstrap.Modal(document.getElementById('historyModal'));
-            modal.show();
+            const modal = showModalById('historyModal');
 
             // Load history
             try {
@@ -2094,7 +2070,7 @@ $needsRevision = $statusPekerjaan === 'revision_required';
                 }
             } catch (error) {
                 document.getElementById('historyContent').innerHTML = `
-                <div class="alert alert-danger">
+                <div class="alert alert-danger alert-permanent">
                     <i class="bi bi-exclamation-triangle"></i>
                     Gagal memuat riwayat: ${error.message}
                 </div>
@@ -2110,7 +2086,7 @@ $needsRevision = $statusPekerjaan === 'revision_required';
 
             if (logs.length === 0) {
                 content.innerHTML = `
-                <div class="alert alert-info">
+                <div class="alert alert-info alert-permanent">
                     <i class="bi bi-info-circle"></i>
                     Belum ada riwayat upload excel.
                 </div>
@@ -2244,7 +2220,7 @@ $needsRevision = $statusPekerjaan === 'revision_required';
 
                 // Add info message
                 const infoDiv = document.createElement('div');
-                infoDiv.className = 'alert alert-info mt-2';
+                infoDiv.className = 'alert alert-info alert-permanent mt-2';
                 infoDiv.innerHTML = '<i class="bi bi-info-circle"></i> Penilaian sudah di-submit, tidak bisa diedit.';
                 form.appendChild(infoDiv);
             });
@@ -2316,7 +2292,7 @@ $needsRevision = $statusPekerjaan === 'revision_required';
 
         function showAlert(elementId, type, message) {
             const alert = document.getElementById(elementId);
-            alert.className = `alert alert-${type}`;
+            alert.className = `alert alert-${type} alert-permanent`;
             alert.innerHTML = `<i class="bi bi-${type === 'danger' ? 'exclamation-triangle' : 'info-circle'}"></i> ${message}`;
             alert.classList.remove('d-none');
         }
@@ -2387,7 +2363,7 @@ $needsRevision = $statusPekerjaan === 'revision_required';
             <div class="text-start">
                 <p><strong>PERHATIAN:</strong> Anda akan menghapus <strong class="text-danger">${completed} penilaian</strong> yang sudah dibuat!</p>
 
-                <div class="alert alert-danger mt-3">
+                <div class="alert alert-danger alert-permanent mt-3">
                     <i class="bi bi-exclamation-triangle me-2"></i>
                     <strong>Tindakan ini TIDAK DAPAT dibatalkan!</strong>
                 </div>
@@ -2476,7 +2452,7 @@ $needsRevision = $statusPekerjaan === 'revision_required';
                     <div class="text-center">
                         <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
                         <p class="mt-3">${data.message}</p>
-                        <div class="alert alert-info mt-3">
+                        <div class="alert alert-info alert-permanent mt-3">
                             <i class="bi bi-info-circle"></i>
                             <strong>${data.deleted_count} penilaian</strong> telah dihapus.
                             Progress kembali ke 0%.

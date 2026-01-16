@@ -53,6 +53,9 @@ class ImportBorangDocxJob implements ShouldQueue
 
             $phpWord = IOFactory::load($this->filePath);
 
+            $frontMatter = $this->extractFrontMatter($phpWord);
+            $this->saveFrontMatterToBorangData($pengajuan, $frontMatter, $borangImport);
+
             $totalParsed = 0;
             $tableIndex = 0;
 
@@ -79,7 +82,7 @@ class ImportBorangDocxJob implements ShouldQueue
                                     $this->parseCell($cell, $deskripsi, $tablesBuffer);
                                 }
                             } else {
-                                Log::warning("│ ⚠️  Table has < 2 rows");
+                                // Log::warning("│ ⚠️  Table has < 2 rows");
                             }
 
                             // Save
@@ -170,9 +173,12 @@ class ImportBorangDocxJob implements ShouldQueue
         $text = trim($text);
         if (empty($text)) return true;
 
-        $textLower = strtolower($text);
+        // ✅ skip template instruction persis ini
+        if (stripos($text, 'mohon jangan dihapus') !== false) {
+            return true;
+        }
 
-        // Skip ONLY specific patterns
+        $textLower = strtolower($text);
 
         // 1. Label italic di template (e.g., "Deskripsi legalitas program dan tata pamong.")
         if (preg_match('/^deskripsi\s+[a-z\s]+\.$/i', $text)) {
@@ -196,19 +202,30 @@ class ImportBorangDocxJob implements ShouldQueue
             }
         }
 
-        // 4. Single word labels (exact match only)
+        // 4. Single word labels
         $singleWords = ['deskripsi', 'tabel', 'keterangan', 'catatan', 'no', 'nama'];
         if (in_array($textLower, $singleWords)) {
             return true;
         }
 
-        // 5. Too short (< 10 chars likely noise)
+        // 5. Too short
         if (strlen($text) < 10) {
             return true;
         }
 
-        // ✅ Otherwise, it's real content
         return false;
+    }
+
+    private function stripTemplateInstructions(string $text): string
+    {
+        // hapus kalimat instruksi umum
+        $text = preg_replace('/\(?\s*mohon\s+jangan\s+dihapus\s*\)?/i', '', $text);
+
+        // hapus placeholder [....] pendek
+        $text = preg_replace('/\[[^\]]{1,200}\]/', '', $text);
+
+        // rapikan spasi dan baris
+        return $this->cleanText($text);
     }
 
     private function parseDescriptionBox($table, &$deskripsi, &$tablesBuffer)
@@ -331,16 +348,17 @@ class ImportBorangDocxJob implements ShouldQueue
 
         // ✅ Save description with consistent WHERE clause
         $descKey = 'desc_' . $elemen->id;
-        $cleanedDeskripsi = $this->cleanText($deskripsi);
+        $cleanedDeskripsi = $this->stripTemplateInstructions($deskripsi);
+        $cleanedDeskripsi = trim($cleanedDeskripsi);
 
         BorangData::updateOrCreate(
             [
                 'id_pengajuan' => $pengajuan->id,
-                'dataset_id' => $descKey  // ✅ 2 fields only
+                'dataset_id' => $descKey
             ],
             [
-                'nilai' => $cleanedDeskripsi,
-                'id_borang_import' => $borangImport ? $borangImport->id : null  // ✅ Saved in data
+                'nilai' => $cleanedDeskripsi !== '' ? $cleanedDeskripsi : null,
+                'id_borang_import' => $borangImport ? $borangImport->id : null
             ]
         );
         $savedCount++;
@@ -466,5 +484,297 @@ class ImportBorangDocxJob implements ShouldQueue
         }
 
         return '';
+    }
+
+    /**
+     * Extract Kata Pengantar, Ringkasan, Suplemen (simple mode-based)
+     * NOTE: diadaptasi dari BorangParserService
+     */
+    private function extractFrontMatter($phpWord): array
+    {
+        $kataPengantar = '';
+        $ringkasan = '';
+        $suplemen = [];
+
+        $mode = null; // kata_pengantar | ringkasan | suplemen | stop
+
+        foreach ($phpWord->getSections() as $wordSection) {
+            foreach ($wordSection->getElements() as $element) {
+
+                // Ambil text dari element (table/paragraph)
+                $text = trim($this->flattenElementText($element));
+
+                if ($text === '') continue;
+
+                // ===== STOP FRONT MATTER =====
+                // Begitu masuk daftar isi atau heading bab utama, stop mengumpulkan ringkasan/kata pengantar
+                if ($this->isTocBlock($text)) {
+                    $mode = 'stop';
+                    continue;
+                }
+
+                // Judul bab utama seperti: "D. Diferensiasi Misi", "E. Edukasi ..."
+                if (preg_match('/^([DEPILAR])\.\s+.+$/i', $text)) {
+                    $mode = 'stop';
+                    continue;
+                }
+
+                // Sub-bab utama seperti: "D.1. ..." atau "1. D.1. ..."
+                if (preg_match('/^(\d+\.\s*)?([DEPILAR])\.(\d+)\.?\s+.+$/i', $text)) {
+                    $mode = 'stop';
+                    continue;
+                }
+
+                if ($mode === 'stop') {
+                    continue;
+                }
+
+                // ===== HEADER DETECTORS =====
+                if (preg_match('/^KATA\s+PENGANTAR$/i', $text)) {
+                    $mode = 'kata_pengantar';
+                    continue;
+                }
+                if (preg_match('/\bringkasan\b/i', $text) && strlen($text) <= 80) {
+                    $mode = 'ringkasan';
+                    continue;
+                }
+                if (preg_match('/^Suplemen\s+Program\s+Studi/i', $text)) {
+                    $mode = 'suplemen';
+                    continue;
+                }
+                // ===== SKIP INSTRUCTION / PLACEHOLDER =====
+                // ===== FRONT MATTER CLEANUP (jangan skip total) =====
+                if ($mode === 'kata_pengantar' || $mode === 'ringkasan' || $mode === 'suplemen') {
+                    $text = $this->cleanFrontMatterText($text);
+                    if ($text === '') continue;
+                } else {
+                    if ($this->isInstructionText($text)) continue;
+                }
+
+                // ===== SKIP JUDUL ULANG =====
+                // Setelah heading "KATA PENGANTAR" biasanya ada baris "Kata Pengantar"
+                if ($mode === 'kata_pengantar' && preg_match('/^Kata\s+Pengantar$/i', $text)) {
+                    continue;
+                }
+                // Setelah heading "RINGKASAN" biasanya ada baris "Ringkasan (Mohon jangan dihapus)"
+                if ($mode === 'ringkasan' && preg_match('/^Ringkasan\b/i', $text)) {
+                    continue;
+                }
+                // ===== APPEND =====
+                if ($mode === 'kata_pengantar') {
+                    $kataPengantar .= $text . "\n";
+                } elseif ($mode === 'ringkasan') {
+                    $ringkasan .= $text . "\n";
+                } elseif ($mode === 'suplemen') {
+                    $suplemen[] = $text;
+                }
+            }
+        }
+
+        return [
+            'kata_pengantar' => $this->cleanText($kataPengantar),
+            'ringkasan'      => $this->cleanText($ringkasan),
+            'suplemen'       => array_values(array_filter(array_map('trim', $suplemen))),
+        ];
+    }
+
+    /**
+     * Instruction text detection (diadaptasi dari BorangParserService)
+     */
+    private function isInstructionText(string $text): bool
+    {
+        $text = trim($text);
+
+        if (empty($text) || strlen($text) < 5) return true;
+
+        if (preg_match('/^Deskripsi\s+.+?\s*\(Mohon jangan dihapus\)\s*$/i', $text)) {
+            return true;
+        }
+
+        if (preg_match('/^\[Mohon isi.+?maksimal\s+\d+\s+kata.+?\]$/is', $text)) {
+            return true;
+        }
+
+        $instructionKeywords = [
+            'Mohon jangan dihapus',
+            'Mohon isi deskripsi di sini',
+            'maksimal 1000 kata',
+            'maksimal 500 kata',
+            'sesuai dengan kondisi program studi',
+        ];
+
+        foreach ($instructionKeywords as $keyword) {
+            if (stripos($text, $keyword) !== false) {
+                return true;
+            }
+        }
+
+        if (preg_match('/^\[.*?\]$/', $text) && strlen($text) < 200) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function isTocBlock(string $text): bool
+    {
+        $t = strtolower(trim(preg_replace('/\s+/', ' ', $text)));
+
+        // 1) kata kunci utama
+        if (preg_match('/\bdaftar isi\b/i', $t)) return true;
+
+        // 2) pola baris TOC yang sering muncul di template (Halaman, Cover, Pengesahan, dst)
+        if (preg_match('/\bhalaman\b/i', $t) && preg_match('/\bcover|pengesahan|kata|ringkasan|daftar\b/i', $t)) {
+            return true;
+        }
+
+        // 3) titik-titik TOC ".... 12"
+        if (preg_match('/\.{3,}\s*\d+$/', $t)) return true;
+
+        return false;
+    }
+
+    private function saveFrontMatterToBorangData($pengajuan, array $frontMatter, $borangImport = null): void
+    {
+        // 1) Kata Pengantar
+        BorangData::updateOrCreate(
+            [
+                'id_pengajuan' => $pengajuan->id,
+                'dataset_id'   => 'kata_pengantar',
+            ],
+            [
+                'nilai'            => $frontMatter['kata_pengantar'] !== '' ? $frontMatter['kata_pengantar'] : null,
+                'id_borang_import' => $borangImport?->id,
+                'is_template'      => false,
+                // 'id_dataset_borang' => null, // kalau kolom ini ada & nullable biarkan
+            ]
+        );
+
+        // 2) Ringkasan
+        BorangData::updateOrCreate(
+            [
+                'id_pengajuan' => $pengajuan->id,
+                'dataset_id'   => 'ringkasan',
+            ],
+            [
+                'nilai'            => $frontMatter['ringkasan'] !== '' ? $frontMatter['ringkasan'] : null,
+                'id_borang_import' => $borangImport?->id,
+                'is_template'      => false,
+            ]
+        );
+
+        // 3) Suplemen (disimpan JSON biar rapi)
+        $suplemenArr = $frontMatter['suplemen'] ?? [];
+        $suplemenArr = is_array($suplemenArr) ? array_values(array_filter(array_map('trim', $suplemenArr))) : [];
+
+        BorangData::updateOrCreate(
+            [
+                'id_pengajuan' => $pengajuan->id,
+                'dataset_id'   => 'suplemen',
+            ],
+            [
+                'nilai'            => !empty($suplemenArr) ? json_encode($suplemenArr, JSON_UNESCAPED_UNICODE) : null,
+                'id_borang_import' => $borangImport?->id,
+                'is_template'      => false,
+            ]
+        );
+    }
+
+    private function flattenElementText($element): string
+    {
+        if ($element === null) return '';
+
+        // Text
+        if ($element instanceof \PhpOffice\PhpWord\Element\Text) {
+            return (string) $element->getText();
+        }
+
+        // PreserveText (kadang dipakai untuk field/spacing)
+        if ($element instanceof \PhpOffice\PhpWord\Element\PreserveText) {
+            $text = $element->getText();
+
+            // getText() bisa array atau string
+            if (is_array($text)) {
+                return implode('', array_map('strval', $text));
+            }
+
+            return (string) $text;
+        }
+
+        // TextRun: gabungkan semua anaknya
+        if ($element instanceof \PhpOffice\PhpWord\Element\TextRun) {
+            $out = '';
+            foreach ($element->getElements() as $child) {
+                $out .= $this->flattenElementText($child);
+                // kasih spasi pemisah biar gak nempel
+                $out .= ' ';
+            }
+            return trim($out);
+        }
+
+        // ListItem mirip TextRun
+        if ($element instanceof \PhpOffice\PhpWord\Element\ListItem) {
+            $out = '';
+            foreach ($element->getElements() as $child) {
+                $out .= $this->flattenElementText($child) . ' ';
+            }
+            return trim($out);
+        }
+
+        // TextBreak: jadikan newline
+        if ($element instanceof \PhpOffice\PhpWord\Element\TextBreak) {
+            return "\n";
+        }
+
+        // Table: gabungkan semua cell
+        if ($element instanceof \PhpOffice\PhpWord\Element\Table) {
+            $out = '';
+            foreach ($element->getRows() as $row) {
+                foreach ($row->getCells() as $cell) {
+                    foreach ($cell->getElements() as $child) {
+                        $out .= $this->flattenElementText($child) . ' ';
+                    }
+                    $out .= "\n";
+                }
+            }
+            return trim($out);
+        }
+
+        // Generic fallback: kalau punya getElements(), flatten juga
+        if (method_exists($element, 'getElements')) {
+            $out = '';
+            foreach ($element->getElements() as $child) {
+                $out .= $this->flattenElementText($child) . ' ';
+            }
+            return trim($out);
+        }
+
+        return '';
+    }
+
+    private function cleanFrontMatterText(string $text): string
+    {
+        $text = preg_replace('/\s+/', ' ', trim($text)); // normalize spasi dulu
+
+        // buang frasa instruksi meski spasi acak/pecah
+        $noSpace = preg_replace('/\s+/', '', strtolower($text));
+        if (strpos($noSpace, 'mohonjangan') !== false) {
+            $text = preg_replace('/\(\s*mohon\s*jangan\s*d[ií]h?a?p?u?\s*s[^)]*\)/i', '', $text);
+            $text = preg_replace('/mohon\s*jangan\s*d[ií]h?a?p?u?\s*s/i', '', $text);
+        }
+
+        // buang "(Maksimal 500 kata)"
+        $text = preg_replace('/\(\s*maksimal\s+\d+\s+kata\s*\)/i', '', $text);
+
+        // buang label "Kata Pengantar" / "Ringkasan" kalau menempel di awal kalimat
+        $text = preg_replace('/^\s*kata\s+pengantar\s*[:\-]?\s*/i', '', $text);
+        $text = preg_replace('/^\s*ringkasan\s*[:\-]?\s*/i', '', $text);
+
+        // rapikan spasi sebelum tanda baca
+        $text = preg_replace('/\s+([,.;:!?])/', '$1', $text);
+        // rapikan spasi ganda
+        $text = preg_replace('/\s{2,}/', ' ', $text);
+
+        return trim($text);
     }
 }

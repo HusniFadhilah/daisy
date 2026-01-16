@@ -38,6 +38,7 @@ class PengajuanAkreditasiSeeder extends Seeder
                 'id_program_studi' => $prodi->id,
                 'id_user_pengaju' => $userProdi->id,
                 'id_de_assigned' => $de->id,
+                'id_validator_assigned' => $de->id,
                 'tahun_akreditasi' => 2024,
                 'jenis_akreditasi' => 'baru',
                 'status' => $status,

@@ -1,5 +1,3 @@
-{{-- resources/views/asesmen/ak/validasi/asesor.blade.php --}}
-
 @extends('layouts.template.app')
 
 @section('title', 'Validasi Laporan Evaluasi Diri - ' . $asesmen->name)
@@ -516,8 +514,7 @@
      * ============================================
      */
     async function openValidationModal(elemenId) {
-        const modal = new bootstrap.Modal(document.getElementById('modalValidasiDetail'));
-        modal.show();
+        const modal = showModalById('modalValidasiDetail');
 
         document.getElementById('loadingDetail').style.display = 'block';
         document.getElementById('detailContainer').style.display = 'none';
@@ -639,8 +636,7 @@
             const btnApproveAll = document.getElementById('btnApproveAll');
             if (btnApproveAll) {
                 btnApproveAll.addEventListener('click', function() {
-                    const modal = new bootstrap.Modal(document.getElementById('approveAllModal'));
-                    modal.show();
+                    const modal = showModalById('approveAllModal');
                 });
             }
 
@@ -978,8 +974,7 @@
      * ============================================
      */
     async function showValidasiDetail(elemenId, validasiId) {
-        const modal = new bootstrap.Modal(document.getElementById('modalDetailValidasi'));
-        modal.show();
+        const modal = showModalById('modalDetailValidasi');
 
         document.getElementById('loadingDetailValidasi').style.display = 'block';
         document.getElementById('contentDetailValidasi').style.display = 'none';

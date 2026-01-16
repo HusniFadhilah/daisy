@@ -31,11 +31,13 @@ class DatabaseSeeder extends Seeder
             IndikatorSeeder::class,
             JenjangPenilaianSeeder::class,
             IndikatorPenilaianElemenSeeder::class,
-            AsesmenUserRoleSeeder::class,
-            StudyProgramUserSeeder::class,
             AkreditasiSeeder::class,
+            StudyProgramUserSeeder::class,
+            AsesmenUserRoleSeeder::class,
             // PengajuanAkreditasiSeeder::class,
-            DatasetBorangSeeder3::class,
+            DatasetBorangSeeder::class,
+            DatasetSuplemenSeeder::class,
+            BorangExampleSeeder::class,
         ]);
     }
     /**

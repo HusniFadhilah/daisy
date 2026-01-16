@@ -165,7 +165,7 @@
         @forelse($asesmens as $asesmen)
         @php
         $statusInfo = $asesmen->statusInfo;
-        $assignment = $asesmen->userRoles->first();
+        $assignment = $asesmen->userRoles->where('jenis_asesmen','al')->first();
         @endphp
         <div class="col-md-6 col-lg-6 col-xl-4 mb-4">
             <div class="card asesmen-card h-100">
