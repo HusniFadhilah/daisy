@@ -9,7 +9,7 @@
         <h2>Selamat Datang Kembali, {{ auth()->user()->name ?? 'Dr. Eng. Maryono' }}! 👋</h2>
         <p>Anda memiliki {{ $penawaranBaru ?? 2 }} penawaran baru, dan {{ $penugasanAktif ?? 1 }} tugas aktif. Mari kita selesaikan tugas ini dengan senyum 😊</p>
         <div class="d-flex gap-2 flex-wrap">
-            <a href="{{ route('penawaran.baru') }}" class="quick-btn">📨 Lihat Penawaran</a>
+            <a href="{{ route('penawaran') }}" class="quick-btn">📨 Lihat Penawaran</a>
             <a href="{{ route('ak.berkas') }}" class="quick-btn">📝 Lanjutkan Penilaian</a>
             <a href="{{ route('laporan') }}" class="quick-btn">📊 Lihat Laporan</a>
         </div>
@@ -331,10 +331,11 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    var changePasswordModal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
-    changePasswordModal.show();
-});
+    document.addEventListener('DOMContentLoaded', function() {
+        var changePasswordModal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
+        changePasswordModal.show();
+    });
+
 </script>
 @endif
 

@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('id_elemen')->constrained('elemen_standar')->onDelete('cascade');
             $table->foreignId('id_category')->constrained('study_program_categories')->onDelete('cascade');
             $table->integer('bobot');
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
 
             // Indexes

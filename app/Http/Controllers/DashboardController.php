@@ -119,7 +119,7 @@ class DashboardController extends Controller
         $prosesAK = 1;
         $notificationCount = 4;
 
-        return view('user.dashboard', compact(
+        return view('admin.dashboard', compact(
             'stats',
             'additionalStats',
             'recentActivities',
@@ -226,7 +226,7 @@ class DashboardController extends Controller
         $prosesAK = 2;
         $notificationCount = 8;
 
-        return view('user.dashboard', compact(
+        return view('admin.dashboard', compact(
             'stats',
             'additionalStats',
             'recentActivities',
@@ -333,7 +333,7 @@ class DashboardController extends Controller
         $prosesAK = 4;
         $notificationCount = 11;
 
-        return view('user.dashboard', compact(
+        return view('admin.dashboard', compact(
             'stats',
             'additionalStats',
             'recentActivities',
@@ -440,7 +440,7 @@ class DashboardController extends Controller
         $prosesAK = 5;
         $notificationCount = 9;
 
-        return view('user.dashboard', compact(
+        return view('admin.dashboard', compact(
             'stats',
             'additionalStats',
             'recentActivities',
@@ -519,7 +519,7 @@ class DashboardController extends Controller
         $prosesAK = 3;
         $notificationCount = 5;
 
-        return view('user.dashboard', compact(
+        return view('admin.dashboard', compact(
             'stats',
             'additionalStats',
             'recentActivities',

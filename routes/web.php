@@ -13,57 +13,77 @@ use App\Http\Controllers\{AuthController, BobotPenilaianController, DashboardCon
 
 // Dashboard (awal)
 Route::get('/', function () {
-    return view('home');
+    return redirect()->route('login');
 })->name('home');
+Route::get('/under-development', function () {
+    return abort(503, '🚧 Fitur Sedang Dalam Pengembangan. Silakan kembali lagi nanti.');
+})->name('under.development');
+Route::get('/reload-captcha', function () {
+    return response()->json([
+        'captcha' => captcha_img('flat')
+    ]);
+});
 
 // LOGIN / REGISTER
-Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'login'])->name('login.post');
-Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
-Route::post('/register', [AuthController::class, 'register'])->name('register.post');
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+    // Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+    // Route::post('/register', [AuthController::class, 'register'])->name('register.post');
 
-// CHANGE PASSWORD FIRST TIME
-Route::get('/change-password-first', [AuthController::class, 'showChangePasswordFirst'])->name('change.password.first')->middleware('auth');
-Route::post('/change-password-first', [AuthController::class, 'changePasswordFirst'])->name('change.password.first.post')->middleware('auth');
-Route::post('/change-password-skip', [AuthController::class, 'skipChangePassword'])->name('change.password.skip')->middleware('auth');
+    // FORGOT PASSWORD
+    Route::get('/forgot-password', [PasswordResetController::class, 'showForgot'])
+        ->name('password.request');
 
-// FORGOT PASSWORD
-Route::get('/forgot-password', [PasswordResetController::class, 'showForgot'])
-    ->name('password.request');
+    Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])
+        ->name('password.email');
 
-Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])
-    ->name('password.email');
+    // RESET PASSWORD
+    Route::get('/reset-password/{token}', [PasswordResetController::class, 'showReset'])
+        ->name('password.reset');
 
-// RESET PASSWORD
-Route::get('/reset-password/{token}', [PasswordResetController::class, 'showReset'])
-    ->name('password.reset');
+    Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])
+        ->name('password.update');
 
-Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])
-    ->name('password.update');
-
-// ===== TESTING ROUTES (NO AUTH) =====
-// Route khusus untuk testing di Postman tanpa authentication
-Route::prefix('api/test')->name('api.test.')->group(function () {
-    Route::get('/pemetaan/stats', [PemetaanAkreditasiController::class, 'getStatsForTesting'])->name('pemetaan.stats');
-    Route::get('/pemetaan/timeline/{periode?}', [PemetaanAkreditasiController::class, 'getTimelineForTesting'])->name('pemetaan.timeline');
-    Route::get('/pemetaan/calendar', [PemetaanAkreditasiController::class, 'getCalendarForTesting'])->name('pemetaan.calendar');
-    Route::get('/pemetaan/programs', [PemetaanAkreditasiController::class, 'getProgramsForTesting'])->name('pemetaan.programs');
+    // ===== TESTING ROUTES (NO AUTH) =====
+    // Route khusus untuk testing di Postman tanpa authentication
+    Route::prefix('api/test')->name('api.test.')->group(function () {
+        Route::get('/pemetaan/stats', [PemetaanAkreditasiController::class, 'getStatsForTesting'])->name('pemetaan.stats');
+        Route::get('/pemetaan/timeline/{periode?}', [PemetaanAkreditasiController::class, 'getTimelineForTesting'])->name('pemetaan.timeline');
+        Route::get('/pemetaan/calendar', [PemetaanAkreditasiController::class, 'getCalendarForTesting'])->name('pemetaan.calendar');
+        Route::get('/pemetaan/programs', [PemetaanAkreditasiController::class, 'getProgramsForTesting'])->name('pemetaan.programs');
+    });
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
-
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::get('/select-role', [AuthController::class, 'showRoleSelection'])->name('select.role');
+    Route::post('/select-role', [AuthController::class, 'selectRole'])->name('select.role.post');
+
+    // CHANGE PASSWORD FIRST TIME
+    Route::get('/change-password-first', [AuthController::class, 'showChangePasswordFirst'])->name('change.password.first')->middleware('auth');
+    Route::post('/change-password-first', [AuthController::class, 'changePasswordFirst'])->name('change.password.first.post')->middleware('auth');
+    Route::post('/change-password-skip', [AuthController::class, 'skipChangePassword'])->name('change.password.skip')->middleware('auth');
+
+    Route::middleware('admin')->group(function () {
+        // USER MANAGEMENT (Admin Only)
+        Route::resource('users', App\Http\Controllers\UserController::class);
+        // INDIKATOR MANAGEMENT (Admin Only)
+        Route::resource('kriteria', KriteriaController::class);
+        Route::resource('elemen-standar', ElemenStandarController::class);
+        Route::resource('indikator', IndikatorController::class);
+    });
 
     // PEMETAAN AKREDITASI
-    Route::prefix('pemetaan')->name('pemetaan.')->group(function () {
+    Route::prefix('pemetaan')->name('pemetaan.')->middleware(['auth'])->group(function () {
         Route::get('/', [PemetaanAkreditasiController::class, 'index'])->name('index');
+        Route::get('/{id}', [PemetaanAkreditasiController::class, 'show'])->name('show');
         Route::get('/timeline/ajax', [PemetaanAkreditasiController::class, 'getTimelineAjax'])->name('timeline.ajax');
         Route::get('/calendar/ajax', [PemetaanAkreditasiController::class, 'getCalendarAjax'])->name('calendar.ajax');
         Route::get('/table/ajax', [PemetaanAkreditasiController::class, 'getTableAjax'])->name('table.ajax');
-        Route::get('/export', [PemetaanAkreditasiController::class, 'export'])->name('export');
-        Route::get('/{id}', [PemetaanAkreditasiController::class, 'show'])->name('show');
+        Route::get('/export/excel', [PemetaanAkreditasiController::class, 'export'])->name('export');
     });
 
     // PENGAJUAN AKREDITASI (DE)
@@ -80,20 +100,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/users/{user}', [App\Http\Controllers\UserController::class, 'destroy'])->name('users.destroy');
     });
 
-    // INDIKATOR MANAGEMENT (Admin Only)
-    Route::middleware('admin')->group(function () {
-        Route::resource('kriteria', KriteriaController::class);
-        Route::resource('elemen-standar', ElemenStandarController::class);
-        Route::resource('indikator', IndikatorController::class);
-    });
-
     // PENAWARAN ASESMEN
-    Route::prefix('penawaran')->name('penawaran.')->group(function () {
-        Route::get('/baru', [PenawaranController::class, 'baru'])->name('baru');
-        Route::get('/riwayat', [PenawaranController::class, 'riwayat'])->name('riwayat');
-        Route::get('/{id}', [PenawaranController::class, 'show'])->name('show');
-        Route::post('/{id}/terima', [PenawaranController::class, 'terima'])->name('terima');
-        Route::post('/{id}/tolak', [PenawaranController::class, 'tolak'])->name('tolak');
+    Route::prefix('penawaran')->name('penawaran')->group(function () {
+        Route::get('/', [PenawaranController::class, 'index']);
+        Route::get('/{idAsesmen}/berkas/{jenisAsesmen}/cek-penawaran', [PenawaranController::class, 'cekPenawaran'])->name('.berkas.cekPenawaran');
+        Route::get('/{token}', [PenawaranController::class, 'show'])->name('.show');
+        Route::post('/{token}/accept', [PenawaranController::class, 'acceptPenawaran'])
+            ->name('.accept');
+        Route::post('/{token}/reject', [PenawaranController::class, 'rejectPenawaran'])
+            ->name('.reject');
     });
 
     // PENUGASAN ASESMEN
@@ -106,60 +121,78 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // PROSES AK
-    Route::prefix('ak')->name('ak.')->middleware(['auth'])->group(function () {
-
+    Route::prefix('ak')->name('ak.')->group(function () {
         Route::get('/berkas', [AKController::class, 'berkas'])->name('berkas');
-        Route::get('/berkas/{id}', [AKController::class, 'showBerkas'])->name('berkas.show');
-        Route::post('/berkas/{id}/nilai', [AKController::class, 'simpanNilai'])->name('berkas.nilai');
+        Route::middleware('penawaran.accepted:ak')->group(function () {
+            Route::get('/berkas/{idAsesmen}', [AKController::class, 'showBerkas'])->name('berkas.show');
+            Route::post('/berkas/{idAsesmen}/nilai', [AKController::class, 'simpanNilai'])->name('berkas.nilai');
+        });
+        Route::get('/berkas/{idAsesmen}/template', [AKController::class, 'downloadTemplate'])
+            ->name('berkas.template');
+        Route::get('/berkas/{idAsesmen}/export', [AKController::class, 'exportExcel'])
+            ->name('berkas.export');
+        Route::post('/berkas/{idAsesmen}/import', [AKController::class, 'importExcel'])
+            ->name('berkas.import');
+        Route::get('/import-status/{idAsesmen}', [AKController::class, 'checkImportStatus'])
+            ->name('import.status');
+        Route::post('/berkas/{idAsesmen}/submit', [AKController::class, 'submitPenilaian'])
+            ->name('berkas.submit');
+        Route::post('/berkas/{idAsesmen}/unsubmit', [AKController::class, 'unsubmitPenilaian'])
+            ->name('berkas.unsubmit');
+        Route::get('/berkas/{idAsesmen}/import-history', [AKController::class, 'importHistory'])
+            ->name('berkas.import-history');
+        Route::delete('/berkas/{idAsesmen}/reset-all', [AKController::class, 'resetAllPenilaian'])
+            ->name('berkas.reset-all');
 
-        Route::get('/split', [AKController::class, 'split'])->name('split');
-        Route::get('/split/{id}', [AKController::class, 'showSplit'])->name('split.show');
-        Route::post('/split/{id}/rekonsiliasi', [AKController::class, 'rekonsiliasi'])->name('split.rekonsiliasi');
+        Route::get('/berkas/{asesmen}/comparison-data', [AKController::class, 'getComparisonData'])->name('berkas.comparison-data');
 
-        Route::get('/upload', [AKController::class, 'upload'])->name('upload');
-        Route::post('/upload', [AKController::class, 'storeUpload'])->name('upload.store');
-        Route::delete('/upload/{id}', [AKController::class, 'deleteUpload'])->name('upload.delete');
-
-        Route::get('/validasi', [AKController::class, 'validasi'])->name('validasi');
-        Route::get('/validasi/{id}', [AKController::class, 'showValidasi'])->name('validasi.show');
+        Route::prefix('validasi')->name('validasi.')->group(function () {
+            Route::middleware(['auth', 'role:validator'])->group(function () {
+                Route::get('/', [ValidasiController::class, 'index'])->name('index');
+                Route::middleware('penawaran.accepted:ak')->group(function () {
+                    Route::get('/{idAsesmen}/{jenisAsesmen?}', [ValidasiController::class, 'asesor'])->name('asesor')->where('jenisAsesmen', 'ak|al');
+                    Route::get('/{asesmen}/detail/{elemen}', [ValidasiController::class, 'getValidasiDetail'])->name('detail');
+                });
+            });
+            Route::get('/{asesmen}/asesor', [ValidasiController::class, 'showAsesorComparison'])
+                ->name('asesor.comparison');
+            Route::get('/{asesmen}/elemen/{elemen}', [ValidasiController::class, 'getElemenDetail'])
+                ->name('elemen.detail');
+            Route::get('/{asesmen}/export-comparison', [ValidasiController::class, 'exportComparison'])
+                ->name('export.comparison');
+            Route::post('/{asesmen}/elemen/{elemen}/validate', [ValidasiController::class, 'validateElemen'])
+                ->name('elemen.validate');
+            Route::post('/{asesmen}/validate-agreed', [ValidasiController::class, 'validateAllAgreed'])
+                ->name('validate-agreed');
+            Route::post('/{asesmen}/asesor/approve', [ValidasiController::class, 'approveAllPenilaian'])
+                ->name('asesor.approve');
+        });
     });
 
-    Route::resource('asesmen', AsesmenController::class);
-    Route::resource('kriteria', KriteriaController::class);
-    Route::resource('elemen', ElemenStandarController::class);
-    Route::resource('jenis-indikator', JenisIndikatorController::class);
-    Route::resource('indikator', IndikatorController::class);
-
-    // Dashboard Overview
-    Route::get('/asesmen/dashboard', [AsesmenController::class, 'dashboard'])
-        ->name('asesmen.dashboard');
-
-    // CRUD Assessment
-    Route::resource('asesmen', AsesmenController::class);
-
-    // Assignment Management (AJAX Endpoints)
-    Route::post('/asesmen/{id}/assign-user', [AsesmenController::class, 'assignUser'])
-        ->name('asesmen.assign-user');
-
-    Route::post('/asesmen/{id}/bulk-assign', [AsesmenController::class, 'bulkAssign'])
-        ->name('asesmen.bulk-assign');
-
-    Route::post('/asesmen/{id}/update-role', [AsesmenController::class, 'updateUserRole'])
-        ->name('asesmen.update-role');
-
-    Route::delete('/asesmen/{id}/remove-user/{userId}', [AsesmenController::class, 'removeUser'])
-        ->name('asesmen.remove-user');
-
-    // Search Users (AJAX)
-    Route::get('/asesmen/search-users', [AsesmenController::class, 'searchUsers'])
-        ->name('asesmen.search-users');
-
-    // PROSES AL
     Route::prefix('al')->name('al.')->group(function () {
         Route::get('/berkas', [ALController::class, 'berkas'])->name('berkas');
-        Route::get('/jadwal', [ALController::class, 'jadwal'])->name('jadwal');
-        Route::get('/jadwal/{id}', [ALController::class, 'showJadwal'])->name('jadwal.show');
-        Route::post('/jadwal/{id}/konfirmasi', [ALController::class, 'konfirmasiJadwal'])->name('jadwal.konfirmasi');
+        Route::middleware('penawaran.accepted:al')->group(function () {
+            Route::get('/berkas/{idAsesmen}', [ALController::class, 'showBerkas'])->name('berkas.show');
+            Route::post('/berkas/{idAsesmen}/nilai', [ALController::class, 'simpanNilai'])->name('berkas.nilai');
+        });
+        Route::get('/berkas/{idAsesmen}/template', [ALController::class, 'downloadTemplate'])
+            ->name('berkas.template');
+        Route::get('/berkas/{idAsesmen}/export', [ALController::class, 'exportExcel'])
+            ->name('berkas.export');
+        Route::post('/berkas/{idAsesmen}/import', [ALController::class, 'importExcel'])
+            ->name('berkas.import');
+        Route::get('/import-status/{idAsesmen}', [ALController::class, 'checkImportStatus'])
+            ->name('import.status');
+        Route::post('/berkas/{idAsesmen}/submit', [ALController::class, 'submitPenilaian'])
+            ->name('berkas.submit');
+        Route::post('/berkas/{idAsesmen}/unsubmit', [ALController::class, 'unsubmitPenilaian'])
+            ->name('berkas.unsubmit');
+        Route::get('/berkas/{idAsesmen}/import-history', [ALController::class, 'importHistory'])
+            ->name('berkas.import-history');
+        Route::delete('/berkas/{idAsesmen}/reset-all', [ALController::class, 'resetAllPenilaian'])
+            ->name('berkas.reset-all');
+        Route::get('/berkas/{asesmen}/comparison-data', [AKController::class, 'getComparisonData'])->name('berkas.comparison-data');
+        Route::get('/berkas/{id}/laporan-pdf', [ALController::class, 'exportLaporanPdf'])->name('berkas.laporanPdf');
 
         Route::prefix('/berkas/{id}/documents')->name('berkas.documents.')->group(function () {
             Route::get('/', [ALDocumentController::class, 'index'])->name('index');
@@ -169,9 +202,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/finalize', [ALDocumentController::class, 'finalize'])->name('finalize');
             Route::post('/unfinalize', [ALDocumentController::class, 'unfinalize'])->name('unfinalize');
 
-            Route::get('/upload', [ALController::class, 'upload'])->name('upload');
-            Route::post('/upload', [ALController::class, 'storeUpload'])->name('upload.store');
-            Route::delete('/upload/{id}', [ALController::class, 'deleteUpload'])->name('upload.delete');
+            Route::patch('/reorder', [ALDocumentController::class, 'reorder'])->name('reorder');
+            Route::patch('/{docId}/toggle', [ALDocumentController::class, 'toggleActive'])->name('toggle');
 
             Route::get('/{docId}/download', [ALDocumentController::class, 'download'])->name('download');
             Route::delete('/{docId}', [ALDocumentController::class, 'destroy'])->name('delete');
@@ -253,11 +285,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{id}/borang-online/check-files', [PengajuanAkreditasiController::class, 'checkBorangFiles'])
                 ->name('.borang.check-files');
 
-            Route::get('/{id}/validation-summary', [PengajuanBorangController::class, 'validationSummary'])
-                ->name('.borang.validation-summary');
-
-            Route::get('/{id}/validation-details', [PengajuanBorangController::class, 'validationDetails'])
-                ->name('.borang.validation-details');
+            Route::get('/pengajuan/{pengajuan}/validation-summary', [PengajuanBorangController::class, 'validationSummary'])
+                ->name('.validation-summary');
         });
 
         Route::middleware(['auth', 'role:admin_prodi,admin_univ,super_admin,asesi'])->group(function () {
@@ -344,63 +373,124 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
             // ✅ NEW: Accept/Reject offer
             Route::post('/{assignment}/respond-offer', [BorangValidatorController::class, 'respondOffer'])->name('respond-offer');
-            Route::get('/{assignment}/download-template', [BorangValidatorController::class, 'downloadTemplate'])->name('download-template');
-            Route::get('/{assignment}/download-review', [BorangValidatorController::class, 'downloadReview'])->name('download-review');
-            Route::post('/{assignment}/upload-review', [BorangValidatorController::class, 'uploadReview'])->name('upload-review');
-            Route::post('/{assignment}/reset-review', [BorangValidatorController::class, 'resetReview'])->name('reset-review');
-            Route::post('/{assignment}/laporkan-validasi', [BorangValidatorController::class, 'laporkanValidasi'])->name('laporkan-validasi');
         });
     });
 
-    // PANDUAN PENGGUNAAN DAISY
-    Route::prefix('panduan')->group(function () {
-        Route::get('/', [PanduanController::class, 'index'])->name('panduan.index');
-        Route::get('/', [PanduanController::class, 'index'])->name('panduan'); // alias
-        Route::get('/{slug}', [PanduanController::class, 'show'])->name('panduan.show');
+    Route::middleware(['auth', 'role:super_admin,asesi'])->group(function () {
+        Route::resource('asesmen', AsesmenController::class);
+        Route::resource('kriteria', KriteriaController::class);
+        Route::resource('elemen', ElemenStandarController::class);
+        Route::resource('jenis-indikator', JenisIndikatorController::class);
+        Route::resource('indikator', IndikatorController::class);
+
+        // Dashboard Overview
+        Route::prefix('asesmen')->name('asesmen')->group(function () {
+            Route::get('/dashboard', [AsesmenController::class, 'dashboard'])->name('.dashboard');
+            // Assignment Management (AJAX Endpoints)
+            Route::post('/{id}/assign-user', [AsesmenController::class, 'assignUser'])->name('.assign-user');
+            Route::post('/{id}/bulk-assign', [AsesmenController::class, 'bulkAssign'])->name('.bulk-assign');
+            Route::post('/{id}/reassign-user', [AsesmenController::class, 'reassignUser'])->name('.reassign-user');
+            Route::post('/{id}/update-role', [AsesmenController::class, 'updateUserRole'])->name('.update-role');
+            Route::delete('/{id}/remove-user/{userId}', [AsesmenController::class, 'removeUser'])->name('.remove-user');
+            // Search Users (AJAX)
+            Route::get('/search-users', [AsesmenController::class, 'searchUsers'])->name('.search-users');
+            Route::post('/{id}/send-documents', [AsesmenController::class, 'sendDocuments'])->name('.send-documents');
+
+            Route::get('/{id}/requirements/{jenisAsesmen}', [AsesmenController::class, 'getRequirementsStatus'])->name('.requirements')->where('jenisAsesmen', 'ak|al');
+            Route::get('/{id}/rejected/{jenisAsesmen}', [AsesmenController::class, 'getRejectedAssignments'])->name('.rejected')->where('jenisAsesmen', 'ak|al');
+            Route::get('/{id}/assignments/{jenisAsesmen}', [AsesmenController::class, 'getAssignments'])->name('.assignments')->where('jenisAsesmen', 'ak|al');
+            Route::post('/{id}/reorder-asesor', [AsesmenController::class, 'reorderAsesor'])->name('reorder-asesor');
+        });
     });
 
-    // BANTUAN LAYANAN
-    Route::prefix('bantuan')->group(function () {
-        Route::get('/', [BantuanController::class, 'index'])->name('bantuan.index');
-        Route::get('/', [BantuanController::class, 'index'])->name('bantuan'); // alias
-        Route::post('/tiket', [BantuanController::class, 'createTicket'])->name('bantuan.tiket.create');
-        Route::get('/tiket/{id}', [BantuanController::class, 'showTicket'])->name('bantuan.tiket.show');
-        Route::post('/tiket/{id}/reply', [BantuanController::class, 'replyTicket'])->name('bantuan.tiket.reply');
+    Route::middleware('under.dev')->group(function () {
+        // PENUGASAN BANDING
+        Route::prefix('banding')->group(function () {
+            Route::get('/', [BandingController::class, 'index'])
+                ->name('banding.index'); // nama resmi
+            Route::get('/', [BandingController::class, 'index'])
+                ->name('banding'); // alias tanpa .index
+            Route::get('/{id}', [BandingController::class, 'show'])->name('banding.show');
+            Route::post('/{id}/terima', [BandingController::class, 'terima'])->name('banding.terima');
+            Route::post('/{id}/tolak', [BandingController::class, 'tolak'])->name('banding.tolak');
+            Route::post('/{id}/submit', [BandingController::class, 'submit'])->name('banding.submit');
+        });
+
+        // PEDOMAN AK
+        Route::prefix('pedoman')->group(function () {
+            Route::get('/', [PedomanController::class, 'index'])->name('pedoman.index');
+            Route::get('/', [PedomanController::class, 'index'])->name('pedoman'); // alias
+            Route::get('/{kategori}', [PedomanController::class, 'kategori'])->name('pedoman.kategori');
+            Route::get('/{kategori}/{id}/download', [PedomanController::class, 'download'])->name('pedoman.download');
+        });
+
+        // DOKUMEN ADMINISTRASI AL
+        Route::prefix('dokumen')->name('dokumen.')->group(function () {
+            Route::get('/panduan', [DokumenController::class, 'panduan'])->name('panduan');
+            Route::get('/panduan/{id}/download', [DokumenController::class, 'downloadPanduan'])->name('panduan.download');
+
+            Route::get('/instrumen', [DokumenController::class, 'instrumen'])->name('instrumen');
+            Route::get('/instrumen/{id}/download', [DokumenController::class, 'downloadInstrumen'])->name('instrumen.download');
+
+            Route::get('/template', [DokumenController::class, 'template'])->name('template');
+            Route::get('/template/{id}/download', [DokumenController::class, 'downloadTemplate'])->name('template.download');
+
+            Route::get('/surat', [DokumenController::class, 'surat'])->name('surat');
+            Route::get('/surat/{id}/download', [DokumenController::class, 'downloadSurat'])->name('surat.download');
+        });
+
+        // PANDUAN PENGGUNAAN DAISY
+        Route::prefix('panduan')->group(function () {
+            Route::get('/', [PanduanController::class, 'index'])->name('panduan.index');
+            Route::get('/', [PanduanController::class, 'index'])->name('panduan'); // alias
+            Route::get('/{slug}', [PanduanController::class, 'show'])->name('panduan.show');
+        });
+
+        // BANTUAN LAYANAN
+        Route::prefix('bantuan')->group(function () {
+            Route::get('/', [BantuanController::class, 'index'])->name('bantuan.index');
+            Route::get('/', [BantuanController::class, 'index'])->name('bantuan'); // alias
+            Route::post('/tiket', [BantuanController::class, 'createTicket'])->name('bantuan.tiket.create');
+            Route::get('/tiket/{id}', [BantuanController::class, 'showTicket'])->name('bantuan.tiket.show');
+            Route::post('/tiket/{id}/reply', [BantuanController::class, 'replyTicket'])->name('bantuan.tiket.reply');
+        });
+
+        Route::prefix('settings')->group(function () {
+            Route::get('/', [SettingsController::class, 'index'])->name('settings.index');
+            Route::get('/', [SettingsController::class, 'index'])->name('settings'); // alias
+            Route::put('/', [SettingsController::class, 'update'])->name('settings.update');
+            Route::post('/notification', [SettingsController::class, 'updateNotification'])->name('settings.notification');
+        });
+
+        // AKTIVITAS & TUGAS
+        Route::get('/aktivitas', [ActivityController::class, 'index'])->name('aktivitas');
+        Route::get('/aktivitas/{id}', [ActivityController::class, 'show'])->name('aktivitas.show');
+
+        Route::get('/tugas', [TaskController::class, 'index'])->name('tugas');
+        Route::get('/tugas/{id}', [TaskController::class, 'show'])->name('tugas.show');
+        Route::post('/tugas/{id}/complete', [TaskController::class, 'complete'])->name('tugas.complete');
+
+        // LAPORAN
+        Route::prefix('laporan')->group(function () {
+            Route::get('/', [LaporanController::class, 'index'])->name('laporan.index');
+            Route::get('/', [LaporanController::class, 'index'])->name('laporan'); // alias
+            Route::get('/statistik', [LaporanController::class, 'statistik'])->name('laporan.statistik');
+            Route::get('/kinerja', [LaporanController::class, 'kinerja'])->name('laporan.kinerja');
+            Route::get('/export', [LaporanController::class, 'export'])->name('laporan.export');
+        });
     });
 
     // PROFIL & PENGATURAN
-    Route::prefix('profile')->group(function () {
-        Route::get('/', [ProfileController::class, 'index'])->name('profile.index');
-        Route::get('/', [ProfileController::class, 'index'])->name('profile'); // alias
-        Route::put('/', [ProfileController::class, 'update'])->name('profile.update');
-        Route::post('/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar');
+    Route::prefix('profile')->name('profile')->group(function () {
+        Route::get('/', [ProfileController::class, 'index'])->name('.index');
+        Route::get('/', [ProfileController::class, 'index']); // alias
+        Route::put('/', [ProfileController::class, 'update'])->name('.update');
+        Route::post('/avatar', [ProfileController::class, 'updateAvatar'])->name('.avatar');
 
-        Route::get('/password', [ProfileController::class, 'passwordForm'])->name('profile.password');
-        Route::put('/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
-    });
-
-    Route::prefix('settings')->group(function () {
-        Route::get('/', [SettingsController::class, 'index'])->name('settings.index');
-        Route::get('/', [SettingsController::class, 'index'])->name('settings'); // alias
-        Route::put('/', [SettingsController::class, 'update'])->name('settings.update');
-        Route::post('/notification', [SettingsController::class, 'updateNotification'])->name('settings.notification');
-    });
-
-    // AKTIVITAS & TUGAS
-    Route::get('/aktivitas', [ActivityController::class, 'index'])->name('aktivitas');
-    Route::get('/aktivitas/{id}', [ActivityController::class, 'show'])->name('aktivitas.show');
-
-    Route::get('/tugas', [TaskController::class, 'index'])->name('tugas');
-    Route::get('/tugas/{id}', [TaskController::class, 'show'])->name('tugas.show');
-    Route::post('/tugas/{id}/complete', [TaskController::class, 'complete'])->name('tugas.complete');
-
-    // LAPORAN
-    Route::prefix('laporan')->group(function () {
-        Route::get('/', [LaporanController::class, 'index'])->name('laporan.index');
-        Route::get('/', [LaporanController::class, 'index'])->name('laporan'); // alias
-        Route::get('/statistik', [LaporanController::class, 'statistik'])->name('laporan.statistik');
-        Route::get('/kinerja', [LaporanController::class, 'kinerja'])->name('laporan.kinerja');
-        Route::get('/export', [LaporanController::class, 'export'])->name('laporan.export');
+        Route::get('/password', [ProfileController::class, 'passwordForm'])->name('.password');
+        Route::put('/password', [ProfileController::class, 'updatePassword'])->name('.password.update');
+        Route::post('/switch-role', [ProfileController::class, 'switchRole'])->name('.switch-role');
+        Route::get('/available-roles', [ProfileController::class, 'getAvailableRoles'])->name('.available-roles');
     });
 
     // INDIKATOR MANAGEMENT (Kriteria, Elemen Standar, Indikator)
@@ -420,8 +510,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // BOBOT PENILAIAN
         Route::resource('bobot-penilaian', BobotPenilaianController::class);
-        Route::post('/bobot-penilaian/{id}/toggle', [BobotPenilaianController::class, 'toggleActive'])
-            ->name('bobot-penilaian.toggle');
         Route::get('/bobot-penilaian/hitung/{asesmenId}/{categoryId}', [BobotPenilaianController::class, 'calculate'])
             ->name('bobot-penilaian.calculate');
     });
@@ -442,3 +530,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
         })->name('notifications.readAll');
     });
 });
+
+Route::get('/preview/email/penawaran/{assignment}', function (\App\Models\AsesmenUserRole $assignment) {
+    return new \App\Mail\PenawaranAsesmenMail($assignment);
+})->name('email.preview.penawaran');
+
+Route::get('clearcache', function () {
+    Illuminate\Support\Facades\Artisan::call('cache:clear');
+    Illuminate\Support\Facades\Artisan::call('route:clear');
+    Illuminate\Support\Facades\Artisan::call('view:clear');
+    Illuminate\Support\Facades\Artisan::call('config:clear');
+    Illuminate\Support\Facades\Artisan::call('config:cache');
+    Illuminate\Support\Facades\Artisan::call('config:cache');
+});
+
+Route::get('/debug/dataset-borang', [\App\Http\Controllers\DatasetBorangController::class, 'index'])->name('debug.dataset-borang.index');

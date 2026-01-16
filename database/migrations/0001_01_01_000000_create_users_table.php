@@ -22,6 +22,13 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
+            $table->string('phone', 20)->nullable();
+            $table->text('address')->nullable();
+            $table->string('institution')->nullable();
+            $table->foreignId('id_university')->nullable()->constrained('universities')->onDelete('set null');
+            $table->foreignId('id_study_program')->nullable()->constrained('study_programs')->onDelete('set null');
+            $table->string('position')->nullable(); // Untuk jabatan seperti Kaprodi
+            $table->string('avatar')->nullable();
             $table->enum('role', ['admin', 'user'])->default('user');
             $table->enum('role_selected', ['super_admin', 'asesi', 'asesor', 'validator', 'verifikator', 'admin_univ', 'admin_prodi', 'keuangan_lamdepilar', 'default'])->default('default');
             $table->json('roles')->nullable();
@@ -29,6 +36,7 @@ return new class extends Migration
             $table->timestamp('last_role_switch')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->boolean('must_change_password')->default(false);
             $table->rememberToken();
             $table->timestamps();
         });
