@@ -1,7 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\{AsesmenController, AuthController, DashboardController, PenawaranController, PenugasanController, AKController, ALController, BandingController, PedomanController, DokumenController, PanduanController, BantuanController, SettingsController, ActivityController, TaskController, LaporanController, UniversityController, DegreeLevelController, StudyProgramController, KriteriaController, ElemenStandarController, JenisIndikatorController, IndikatorController, IndikatorPenilaianElemenController, BobotPenilaianController, DEController};
+use App\Http\Controllers\{AsesmenController, AuthController, DashboardController, PenawaranController, PenugasanController, AKController, ALController, BandingController, PedomanController, DokumenController, PanduanController, BantuanController, SettingsController, ActivityController, TaskController, LaporanController, DegreeLevelController, KriteriaController, ElemenStandarController, JenisIndikatorController, IndikatorController, IndikatorPenilaianElemenController, BobotPenilaianController, DEController};
+use App\Http\Controllers\Master\{UniversityController, StudyProgramController};
 use App\Http\Controllers\Prodi\PemetaanAkreditasiController;
 use App\Http\Controllers\Profile\{ProfileController, PasswordResetController};
 

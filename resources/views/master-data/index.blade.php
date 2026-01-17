@@ -44,6 +44,7 @@
                                     <th>No</th>
                                     <th>Kode</th>
                                     <th>Nama Universitas</th>
+                                    <th>Email</th>
                                     <th>Jumlah Prodi</th>
                                     <th>Aksi</th>
                                 </tr>
@@ -53,12 +54,20 @@
                                 <tr>
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ $university->code }}</td>
-                                    <td>{{ $university->name }}</td>
+                                    <td>
+                                        <a href="{{ route('universities.show', $university->id) }}">
+                                            {{ $university->name }}
+                                        </a>
+                                    </td>
+                                    <td>{{ $university->email ?? '-' }}</td>
                                     <td>
                                         <span class="badge bg-info">{{ $university->study_programs_count }}</span>
                                     </td>
                                     <td>
                                         <div class="btn-group" role="group">
+                                            <a href="{{ route('universities.show', $university->id) }}" class="btn btn-sm btn-info text-white" title="Detail">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
                                             <a href="{{ route('universities.edit', $university->id) }}" class="btn btn-sm btn-warning text-white" title="Edit">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
@@ -74,7 +83,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="5" class="text-center">Belum ada data universitas</td>
+                                    <td colspan="6" class="text-center">Belum ada data universitas</td>
                                 </tr>
                                 @endforelse
                             </tbody>

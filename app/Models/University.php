@@ -10,6 +10,7 @@ class University extends Model
         'code',
         'name',
         'logo_path',
+        'email',
     ];
 
     public function studyPrograms()

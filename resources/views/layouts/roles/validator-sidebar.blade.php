@@ -1,53 +1,13 @@
-<!-- Penawaran Asesmen -->
-<a href="{{ route('penawaran') }}" class="nav-link {{ request()->routeIs('penawaran*') ? 'active' : '' }}">
-    <span class="menu-icon">📨</span>
-    <span>Penawaran Asesmen</span>
-</a>
-
-{{-- <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'penawaran-submenu')">
-    <span class="menu-icon">📨</span>
-    <span>Penawaran Asesmen</span>
-    <span class="badge bg-danger menu-badge">{{ $penawaranBaru ?? 2 }}</span>
-</a>
-<ul class="submenu nav flex-column" id="penawaran-submenu">
-    <li>
-        <a href="{{ route('asesmen.index') }}" class="nav-link">
-            Daftar Penawaran Baru
-        </a>
-    </li>
-    <li>
-        <a href="{{ route('penawaran.riwayat') }}" class="nav-link">
-            Riwayat Penawaran
-        </a>
-    </li>
-</ul> --}}
-
-<!-- Penugasan Asesmen -->
-{{-- <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'penugasan-submenu')">
-    <span class="menu-icon">📋</span>
-    <span>Penugasan Asesmen</span>
-    <span class="badge bg-success menu-badge">{{ $penugasanAktif ?? 1 }}</span>
-</a>
-<ul class="submenu nav flex-column" id="penugasan-submenu">
-    <li>
-        <a href="{{ route('penugasan.aktif') }}" class="nav-link">
-            Penugasan Aktif
-        </a>
-    </li>
-    <li>
-        <a href="{{ route('penugasan.selesai') }}" class="nav-link">
-            Penugasan Selesai
-        </a>
-    </li>
-    <li>
-        <a href="{{ route('penugasan.riwayat') }}" class="nav-link">
-            Riwayat Penugasan
-        </a>
-    </li>
-</ul> --}}
-
-<!-- Proses AK -->
+<!-- Validasi AK -->
+@if(Route::has('ak.validasi.index'))
 <a href="{{ route('ak.validasi.index') }}" class="nav-link {{ request()->routeIs('ak*') ? 'active' : '' }}">
+    <span class="menu-icon">📝</span>
+    <span>Validasi AK</span>
+    @if(isset($penugasanAktif) && $penugasanAktif > 0)
+        <span class="badge bg-warning menu-badge">{{ $penugasanAktif }}</span>
+    @endif
+</a>
+@endif
     <span class="menu-icon">📝</span>
     <span>Proses AK</span>
 </a>

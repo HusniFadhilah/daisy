@@ -13,7 +13,43 @@ class UniversitySeeder extends Seeder
      */
     public function run(): void
     {
-        $universities = [
+        $emailCsvPath = database_path('seeders/data/DATA_UNIV_EMAIL_LENGKAP.csv');
+        
+        // Baca file email untuk mapping
+        $emailMapping = [];
+        if (file_exists($emailCsvPath)) {
+            if (($emailHandle = fopen($emailCsvPath, 'r')) !== false) {
+                $emailHeader = fgetcsv($emailHandle, 0, ',');
+                while (($emailRow = fgetcsv($emailHandle, 0, ',')) !== false) {
+                    if (count($emailRow) >= 3) {
+                        $emailData = array_combine($emailHeader, $emailRow);
+                        $univName = trim($emailData['Nama Perguruan Tinggi'] ?? '');
+                        $email = trim($emailData['Email Resmi / Humas'] ?? '');
+                        if (!empty($univName)) {
+                            $emailMapping[$univName] = (!empty($email)) ? $email : '-';
+                        }
+                    }
+                }
+                fclose($emailHandle);
+            }
+        }
+        
+        // Update email untuk universitas yang sudah ada
+        $this->command->info("Updating university emails...");
+        $updated = 0;
+        foreach ($emailMapping as $univName => $email) {
+            $result = DB::table('universities')
+                ->where('name', $univName)
+                ->update(['email' => $email, 'updated_at' => Carbon::now()]);
+            if ($result) {
+                $updated++;
+            }
+        }
+        $this->command->info("Updated {$updated} universities with email data");
+        
+        // Data universitas hanya untuk referensi - tidak digunakan lagi
+        // Hanya update email saja, tidak insert data baru
+        /* $universities = [
             ['name' => 'Universitas Nusa Cendana', 'code' => 'UNDANA'],
             ['name' => 'Universitas Fajar', 'code' => 'UNIFA'],
             ['name' => 'Universitas Merdeka Surabaya', 'code' => 'UNMERBAYA'],
@@ -425,10 +461,19 @@ class UniversitySeeder extends Seeder
         $timestamp = Carbon::now();
 
         foreach ($universities as &$university) {
+            // Tambahkan email dari mapping
+            $university['email'] = $emailMapping[$university['name']] ?? '-';
             $university['created_at'] = $timestamp;
             $university['updated_at'] = $timestamp;
         }
 
-        DB::table('universities')->insert($universities);
+        // Insert hanya jika belum ada
+        foreach ($universities as $university) {
+            DB::table('universities')->updateOrInsert(
+                ['name' => $university['name']],
+                $university
+            );
+        }
+        */ // End comment - data universitas tidak digunakan
     }
 }

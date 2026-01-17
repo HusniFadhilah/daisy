@@ -6,11 +6,8 @@ use App\Models\University;
 use App\Models\DegreeLevel;
 use App\Models\StudyProgram;
 use Illuminate\Http\Request;
-<<<<<<<< HEAD:app/Http/Controllers/UniversityController.php
-use Yajra\DataTables\Facades\DataTables;
-========
 use App\Http\Controllers\Controller;
->>>>>>>> origin/main:app/Http/Controllers/Master/UniversityController.php
+use Yajra\DataTables\Facades\DataTables;
 
 class UniversityController extends Controller
 {
@@ -31,7 +28,6 @@ class UniversityController extends Controller
      */
     public function index(Request $request)
     {
-<<<<<<<< HEAD:app/Http/Controllers/UniversityController.php
         if ($request->ajax()) {
             $data = University::withCount('studyPrograms')->select('universities.*');
             
@@ -51,24 +47,16 @@ class UniversityController extends Controller
                 ->make(true);
         }
         
-========
         $universities = University::withCount('studyPrograms')->get();
 
->>>>>>>> origin/main:app/Http/Controllers/Master/UniversityController.php
         if ($request->wantsJson()) {
-            $universities = University::withCount('studyPrograms')->get();
             return response()->json([
                 'success' => true,
                 'data' => $universities
             ]);
         }
-<<<<<<<< HEAD:app/Http/Controllers/UniversityController.php
-        
-        return view('universitas.index');
-========
 
         return view('universitas.index', compact('universities'));
->>>>>>>> origin/main:app/Http/Controllers/Master/UniversityController.php
     }
 
     /**
@@ -87,6 +75,7 @@ class UniversityController extends Controller
         $validated = $request->validate([
             'code' => 'required|string|max:255',
             'name' => 'required|string|max:255',
+            'email' => 'nullable|email|max:255',
         ]);
 
         $university = University::create($validated);
@@ -108,19 +97,26 @@ class UniversityController extends Controller
      */
     public function show($id)
     {
-        $university = University::find($id);
+        $university = University::withCount('studyPrograms')->with('studyPrograms.degreeLevel')->find($id);
 
         if (!$university) {
-            return response()->json([
-                'success' => false,
-                'message' => 'University not found'
-            ], 404);
+            if (request()->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'University not found'
+                ], 404);
+            }
+            abort(404);
         }
 
-        return response()->json([
-            'success' => true,
-            'data' => $university
-        ]);
+        if (request()->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'data' => $university
+            ]);
+        }
+
+        return view('universitas.show', compact('university'));
     }
 
     /**
@@ -139,6 +135,7 @@ class UniversityController extends Controller
         $validated = $request->validate([
             'code' => 'required|string|max:255',
             'name' => 'required|string|max:255',
+            'email' => 'nullable|email|max:255',
         ]);
 
         $university = University::find($id);
