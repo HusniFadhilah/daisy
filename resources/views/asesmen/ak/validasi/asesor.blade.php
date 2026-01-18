@@ -108,11 +108,46 @@
 
         {{-- Action Buttons --}}
         <div class="card-footer bg-white py-3">
+            @php
+            $jenisPelaporan = $jenisAsesmen; // ak | al
+            $assignmentIdPelaporan = $assignment->id;
+
+            $typeDoc = $jenisPelaporan === 'ak' ? 'laporan_validasi_ak' : 'laporan_al';
+
+            $sudahDilaporkan = \App\Models\AsesmenDocument::where('id_asesmen', $assignment->id_asesmen)
+            ->where('type', $typeDoc)
+            ->where('is_active', true)
+            ->exists();
+
+            $nomorTampil = '';
+            if ($asesmen->pengajuan && $asesmen->pengajuan->nomor_pengajuan) $nomorTampil = $asesmen->pengajuan->nomor_pengajuan;
+            if (!$nomorTampil && isset($asesmen->code)) $nomorTampil = $asesmen->code;
+            if (!$nomorTampil) $nomorTampil = $asesmen->name;
+
+            $labelBtn = $jenisPelaporan === 'ak' ? 'Pelaporan AK' : 'Pelaporan AL';
+            @endphp
+
             @if($isApproved)
             <div class="alert alert-success alert-permanent mb-3">
                 <i class="bi bi-check-circle me-2"></i>
                 <strong>Penilaian Telah Disetujui!</strong>
-                <p class="mb-0">Validasi telah diselesaikan dan lolos untuk tahap selanjutnya (Asesmen Lapangan/AL).</p>
+                <p class="mb-0">Validasi {{ $sudahDilaporkan ? 'dan Pelaporan AK ' : '' }}telah diselesaikan dan lolos untuk tahap selanjutnya (Asesmen Lapangan/AL). {{ !$sudahDilaporkan ? 'Silahkan buat & finalisasi Pelaporan AK' : '' }}</p>
+
+                @if($sudahDilaporkan)
+                <div class="mt-2">
+                    <span class="badge bg-success text-wrap">
+                        <i class="bi bi-check-circle"></i> {{ $labelBtn }} telah Dibuat
+                    </span>
+                </div>
+                @endif
+
+                @if(!$sudahDilaporkan)
+                <div class="mt-2">
+                    <button type="button" class="btn btn-sm btn-success js-open-pelaporan" data-type="{{ $jenisPelaporan }}" data-assignment-id="{{ $assignmentIdPelaporan }}" data-nomor="{{ $nomorTampil }}">
+                        <i class="bi bi-file-earmark-text"></i> {{ $labelBtn }}
+                    </button>
+                </div>
+                @endif
             </div>
             @endif
 
@@ -318,6 +353,28 @@
 @endpush
 
 @push('scripts')
+<script>
+    window.PELAPORAN_CFG = window.PELAPORAN_CFG || {};
+
+    window.PELAPORAN_CFG.ak = {
+        title: 'Rekap AK dan Validasi AK'
+        , fileLabel: 'Laporan Validasi Asesmen Kecukupan (AK)'
+        , finalizeLabel: 'Validasi AK Dilaporkan'
+        , upload: @json(route('pelaporan.validasiAk.upload', ['assignment' => '__ID__']))
+        , finalize: @json(route('pelaporan.validasiAk.finalize', ['assignment' => '__ID__']))
+    };
+
+    window.PELAPORAN_CFG.al = {
+        title: 'Pelaporan AL'
+        , fileLabel: 'Laporan Asesmen Lapangan (AL)'
+        , finalizeLabel: 'AL Dilaporkan'
+        , upload: @json(route('pelaporan.al.upload', ['assignment' => '__ID__']))
+        , finalize: @json(route('pelaporan.al.finalize', ['assignment' => '__ID__']))
+    };
+
+</script>
+
+<script src="{{ asset('assets/js/pelaporan.js') }}"></script>
 <script>
     const envIsLocal = "{{ app()->environment('local') }}"
     const idAsesmen = "{{ $asesmen->id }}";

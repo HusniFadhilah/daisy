@@ -117,7 +117,7 @@ return new class extends Migration
             $table->string('koordinat')->nullable()->comment('GPS coordinates if applicable');
 
             // Status
-            $table->enum('status', ['draft', 'active', 'completed', 'cancelled'])
+            $table->enum('status', ['draft', 'active', 'finalized', 'completed', 'cancelled'])
                 ->default('draft')
                 ->comment('Status of Asesmen Lapangan');
 
@@ -131,11 +131,10 @@ return new class extends Migration
             $table->text('link_dokumentasi')->nullable()->comment('Link to documentation/photos');
 
             // Completion tracking
+            $table->timestamp('finalized_at')->nullable()->comment('When AL was finalized');
+            $table->foreignId('finalized_by')->nullable()->constrained('users')->onDelete('set null')->comment('Who finalized this AL');
             $table->timestamp('completed_at')->nullable()->comment('When AL was completed');
-            $table->foreignId('completed_by')->nullable()
-                ->constrained('users')
-                ->onDelete('set null')
-                ->comment('Who completed this AL');
+            $table->foreignId('completed_by')->nullable()->constrained('users')->onDelete('set null')->comment('Who completed this AL');
 
             // Timestamps
             $table->timestamps();

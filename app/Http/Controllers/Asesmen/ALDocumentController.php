@@ -247,6 +247,11 @@ class ALDocumentController extends Controller
                 ]);
 
             // 5. Update tanggal selesai AL di pengajuan_akreditasi (jika ada)
+            $asesmen->asesmenLapangan->update([
+                'status' => 'finalized',
+                'finalized_at' => now(),
+                'finalized_by' => $user->id
+            ]);
             if ($asesmen->pengajuan)
                 $asesmen->pengajuan->checkUpdateStatusAKAL('al', 'status_asesor_selesai');
 
@@ -290,8 +295,8 @@ class ALDocumentController extends Controller
             if ($asesmenLapangan) {
                 $asesmenLapangan->update([
                     'status' => 'active',
-                    'completed_at' => null,
-                    'completed_by' => null,
+                    'finalized_at' => null,
+                    'finalized_by' => null,
                 ]);
             }
 

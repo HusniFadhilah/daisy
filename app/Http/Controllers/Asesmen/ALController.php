@@ -105,7 +105,7 @@ class ALController extends Controller
         $jenjangs = JenjangPenilaian::all();
         // Calculate progress
         $progress = $this->calculateProgressBulk([$asesmen->id], $user->id)[$asesmen->id];
-        $isFinalized = $asesmen->status === 'completed';
+        $isFinalized = in_array($asesmen->asesmenLapangan->status, ['completed', 'finalized']);
         $uploadedFiles = $asesmen->pengajuan ? $asesmen->pengajuan->getUploadedDocuments() : null;
         return view('asesmen.al.berkas.show', compact('asesmen', 'kriterias', 'progress', 'jenjangs', 'step', 'needsRevisions', 'isFinalized', 'assignment', 'uploadedFiles'));
     }

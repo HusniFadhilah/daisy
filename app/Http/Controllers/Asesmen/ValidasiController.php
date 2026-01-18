@@ -319,6 +319,7 @@ class ValidasiController extends Controller
         }
 
         return view('asesmen.ak.validasi.asesor', compact(
+            'assignment',
             'asesmen',
             'asesmenDetail',
             'jenisAsesmen',

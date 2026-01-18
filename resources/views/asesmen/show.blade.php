@@ -282,6 +282,8 @@
                                     <option value="">-- Pilih --</option>
                                     <option value="ak">Asesmen Kecukupan (AK)</option>
                                     <option value="al">Asesmen Lapangan (AL)</option>
+                                    <option value="dokumen">Asesmen Dokumen</option>
+                                    <option value="rekap">Rekap Asesmen</option>
                                 </select>
                             </div>
                             <div class="col-md-4">

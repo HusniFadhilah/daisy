@@ -88,7 +88,9 @@
             });
 
             if (!confirm.isConfirmed) {
-                return Swal.fire('Tersimpan', 'Laporan sudah diunggah. Anda bisa finalisasi kapan saja.', 'info');
+                await Swal.fire('Tersimpan', 'Laporan sudah diunggah. Anda bisa finalisasi kapan saja.', 'info');
+                window.location.reload();
+                return;
             }
 
             const finUrl = buildUrl(cfg.finalize, assignmentId);

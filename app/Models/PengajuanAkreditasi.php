@@ -785,6 +785,7 @@ class PengajuanAkreditasi extends Model
 
             8 => [
                 'warning' => [self::STATUS_ASESOR_AK_ASSIGNED, self::STATUS_AK_IN_PROGRESS],
+                'success' => [self::STATUS_AK_ON_VALIDATION],
             ],
 
             9 => [
@@ -797,10 +798,12 @@ class PengajuanAkreditasi extends Model
             ],
 
             11 => [
-                'warning' => [self::STATUS_ASESOR_AL_ASSIGNED, self::STATUS_AL_IN_PROGRESS, self::STATUS_AL_SELESAI],
+                'warning' => [self::STATUS_ASESOR_AL_ASSIGNED],
+                'success' => [self::STATUS_AL_IN_PROGRESS],
             ],
 
             12 => [
+                'warning' => [self::STATUS_AL_IN_PROGRESS],
                 'success' => [self::STATUS_AL_SELESAI],
             ],
 

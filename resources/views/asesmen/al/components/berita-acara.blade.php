@@ -3,6 +3,11 @@
     <i class="bi bi-info-circle me-2"></i>
     Silahkan finalisasi Hasil dan Berita Acara Asesmen Lapangan (AL) dengan klik tombol "Finalisasi Berita Acara" di bawah ini
 </div>
+@else
+<div class="alert alert-success alert-permanent alert-dismissible mb-3">
+    <i class="bi bi-check-circle me-2"></i>
+    Hasil dan Berita Acara Asesmen Lapangan (AL) telah difinalisasi. Terima kasih atas partisipasi Anda dalam menjadi Asesor di Asesmen ini.
+</div>
 @endif
 
 <div class="card shadow-sm">
