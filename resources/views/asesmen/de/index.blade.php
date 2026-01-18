@@ -98,7 +98,7 @@
                 <table class="table table-hover">
                     <thead class="table-light">
                         <tr>
-                            <th>No. Pengajuan</th>
+                            <th>Pengajuan</th>
                             <th>Program Studi</th>
                             <th>Jenis</th>
                             <th>Tahun</th>
@@ -111,7 +111,8 @@
                         @forelse($pengajuans as $pengajuan)
                         <tr>
                             <td>
-                                <strong>{{ $pengajuan->nomor_pengajuan }}</strong>
+                                <p>{{ $pengajuan->judul }}</p>
+                                <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
                             </td>
                             <td>
                                 {{ $pengajuan->studyProgram->degreeLevel->name }} - {{ $pengajuan->studyProgram->name }}

@@ -1,5 +1,5 @@
 {{-- VERIFIKASI PEMBAYARAN --}}
-@if($pengajuan->status === 'pembayaran_diterima' && $pengajuan->pembayaran && $pengajuan->pembayaran->status_pembayaran === 'dibayar')
+@if($pengajuan->status === 'pembayaran_diterima' && $pengajuan->pembayaran && $pengajuan->pembayaran->status_pembayaran === 'menunggu_verifikasi')
 <div class="card action-card mb-4">
     <div class="card-header bg-success text-white">
         <h5 class="mb-0">

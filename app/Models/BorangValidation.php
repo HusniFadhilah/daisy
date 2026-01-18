@@ -28,6 +28,9 @@ class BorangValidation extends Model
         'reviewed_led',
         'reviewed_suplemen',
         'reviewed_lkps',
+        'final_action',
+        'id_validator_assigned',
+        'validated_at',
     ];
 
     protected $casts = [
@@ -45,6 +48,11 @@ class BorangValidation extends Model
     public function pengajuan()
     {
         return $this->belongsTo(PengajuanAkreditasi::class, 'id_pengajuan');
+    }
+
+    public function validator()
+    {
+        return $this->belongsTo(User::class, 'id_validator_assigned');
     }
 
     /**

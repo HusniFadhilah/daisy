@@ -1,5 +1,3 @@
-{{-- resources/views/asesmen/pengajuan/borang-online.blade.php --}}
-
 @extends('layouts.template.app')
 
 @section('title', 'Isi Laporan Evaluasi Diri - ' . $pengajuan->studyProgram->name)
@@ -196,6 +194,19 @@
 </style>
 @endpush
 
+@php
+$lockBorang = in_array($pengajuan->status, [
+\App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
+\App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
+\App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
+\App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
+\App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
+\App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_FINAL_DITERIMA,
+\App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
+\App\Models\PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED,
+]);
+@endphp
+
 @section('content')
 <div class="container-fluid py-3">
     {{-- Header Card --}}
@@ -266,29 +277,42 @@
         <div class="card-footer bg-white">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
+
+                    @if($lockBorang)
+                    <div class="alert alert-warning alert-permanent mb-0 py-2">
+                        <i class="bi bi-hourglass-split"></i>
+                        Sedang menunggu Validasi LED+Suplemen dan LKPS
+                        @if(app()->environment('local'))
+                        <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="btnUnsubmit">
+                            <i class="bi bi-arrow-counterclockwise"></i> Batalkan Submit
+                        </button>
+                        @endif
+                    </div>
+
+                    <button class="btn btn-secondary mt-2" disabled>
+                        <i class="bi bi-check-circle"></i> Finalisasi & Submit LED+Suplemen dan LKPS
+                    </button>
+                    @else
+                    @if($pengajuan->status == \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED)
+                    <div class="alert alert-warning alert-permanent py-2">
+                        <i class="bi bi-info-circle"></i>
+                        Terdapat permintaan revisi LED+Suplemen, LKPS oleh Validator. Mohon cermati poin revisi setiap elemen, kemudian lakukan perbaikan dan simpan perubahan. Lalu lakukan finalisasi & submit dokumen
+                    </div>
+                    @endif
                     <button class="btn btn-success" id="btnFinalize">
                         <i class="bi bi-check-circle"></i> Finalisasi & Submit LED+Suplemen dan LKPS
                     </button>
                     <small class="d-block text-muted mt-1">
                         <i class="bi bi-info-circle"></i> Pastikan semua elemen sudah diisi sebelum finalisasi
                     </small>
-                </div>
-                <div class="btn-group">
-                    @if(in_array($pengajuan->status, ['borang_dikirim', 'draft_borang_diterima', 'borang_online_selesai', 'review_kesiapan_belum_siap']))
-                    <button type="button" class="btn btn-outline-danger" id="btnResetBorang">
-                        <i class="bi bi-arrow-clockwise"></i> Reset LED+Suplemen
-                    </button>
                     @endif
 
-                    <button type="button" class="btn btn-outline-primary" id="btnToggleAll">
-                        <i class="bi bi-arrows-expand"></i> Expand All
-                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    @if (in_array($pengajuan->status,['borang_revision_required']))
+    @if (in_array($pengajuan->status,[\App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,\App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED]))
     <div class="card mb-4" id="validationCard">
         <div class="card-header bg-light d-flex justify-content-between align-items-center">
             <h5 class="mb-0">
@@ -298,7 +322,7 @@
         </div>
         <div class="card-body">
             <div id="validationLoading" class="text-muted">
-                <span class="spinner-border spinner-border-sm me-2"></span> Mengambil data validasi...
+                <span class="spinner-border spinner-border-sm me-2"></span> Memuat data validasi...
             </div>
 
             <div id="validationContent" class="d-none">
@@ -342,6 +366,25 @@
 
                 <div class="mb-2">
                     <h6 class="mb-2"><i class="bi bi-list-check"></i> Poin Revisi</h6>
+
+                    <div id="valRevisionSkeleton" class="d-none">
+                        <div class="sk-card">
+                            <div class="skeleton sk-line lg sk-w-40"></div>
+                            <div class="skeleton sk-line sk-w-75"></div>
+                            <div class="skeleton sk-line sm sk-w-60"></div>
+                        </div>
+                        <div class="sk-card">
+                            <div class="skeleton sk-line lg sk-w-30"></div>
+                            <div class="skeleton sk-line sk-w-90"></div>
+                            <div class="skeleton sk-line sm sk-w-60"></div>
+                        </div>
+                        <div class="sk-card">
+                            <div class="skeleton sk-line lg sk-w-20"></div>
+                            <div class="skeleton sk-line sk-w-75"></div>
+                            <div class="skeleton sk-line sm sk-w-60"></div>
+                        </div>
+                    </div>
+
                     <div id="valRevisionList" class="d-none"></div>
                     <div id="valRevisionEmpty" class="text-muted d-none">Tidak ada poin revisi.</div>
                 </div>
@@ -391,7 +434,7 @@
                         <div class="upload-icon">
                             <i class="bi {{ isset($uploadedFiles['kualitatif']) && $uploadedFiles['kualitatif'] ? 'bi-file-earmark-check' : 'bi-file-word' }}"></i>
                         </div>
-                        <h6 class="fw-bold">Laporan Evaluasi Diri</h6>
+                        <h6 class="fw-bold">Laporan Evaluasi Diri (LED)</h6>
 
                         @if(isset($uploadedFiles['kualitatif']) && $uploadedFiles['kualitatif'])
                         <p class="text-success mb-2">
@@ -403,17 +446,17 @@
                         @endif
                         <div class="action-buttons">
                             {{-- Download Template --}}
-                            <a href="{{ route('pengajuan.borang.download-template', $pengajuan->id) }}" class="btn btn-outline-primary btn-sm">
+                            <a href="{{ route('pengajuan.borang.download-template', $pengajuan->id) }}" class="btn btn-outline-primary btn-sm my-1">
                                 <i class="bi bi-download"></i> Download Template DOCX
                             </a>
 
                             {{-- Import DOCX --}}
-                            <button type="button" class="btn btn-primary btn-sm" id="btnImportDocx">
+                            <button type="button" class="btn btn-primary btn-sm my-1" id="btnImportDocx" {{ $lockBorang ? 'disabled' : '' }}>
                                 <i class="bi bi-file-earmark-arrow-up"></i> Upload dari DOCX
                             </button>
 
                             {{-- Export DOCX --}}
-                            <a href="{{ route('pengajuan.borang.export-docx', $pengajuan->id) }}" class="btn btn-success btn-sm">
+                            <a href="{{ route('pengajuan.borang.export-docx', $pengajuan->id) }}" class="btn btn-success btn-sm my-1">
                                 <i class="bi bi-file-earmark-arrow-down"></i> Download ke DOCX
                             </a>
                         </div>
@@ -425,7 +468,7 @@
                     </div>
                 </div>
                 <div class="col-lg-4">
-                    <div class="upload-card h-100 clickable {{ isset($uploadedFiles['suplemen']) && $uploadedFiles['suplemen'] ? 'has-file' : '' }}" onclick="triggerUploadSuplemen()">
+                    <div class="upload-card h-100 {{ !$lockBorang ? 'clickable' : '' }} {{ isset($uploadedFiles['suplemen']) && $uploadedFiles['suplemen'] ? 'has-file' : '' }}" @if(!$lockBorang) onclick="triggerUploadSuplemen()" @endif style="{{ $lockBorang ? 'opacity:.65; pointer-events:none;' : '' }}">
                         <div class="upload-icon">
                             <i class="bi {{ isset($uploadedFiles['suplemen']) && $uploadedFiles['suplemen'] ? 'bi-file-earmark-check' : 'bi-file-earmark-pdf' }}"></i>
                         </div>
@@ -442,18 +485,18 @@
                         </button>
                         @endif
                     </div>
-                    <input type="file" id="inputSuplemen" class="d-none" accept=".pdf" onchange="handleUploadSuplemen(event)">
+                    <input type="file" id="inputSuplemen" class="d-none" accept=".pdf" onchange="handleUploadSuplemen(event)" {{ $lockBorang ? 'disabled' : '' }}>
                 </div>
             </div>
 
             <div class="row g-0 align-items-stretch">
                 {{-- 1. Lembar Pengesahan --}}
                 <div class="col-md-6">
-                    <div class="upload-card h-100 clickable {{ isset($uploadedFiles['pengesahan']) && $uploadedFiles['pengesahan'] ? 'has-file' : '' }}" onclick="triggerUploadPengesahan()">
+                    <div class="upload-card h-100 {{ !$lockBorang ? 'clickable' : '' }} {{ isset($uploadedFiles['pengesahan']) && $uploadedFiles['pengesahan'] ? 'has-file' : '' }}" @if(!$lockBorang) onclick="triggerUploadPengesahan()" @endif style="{{ $lockBorang ? 'opacity:.65; pointer-events:none;' : '' }}">
                         <div class="upload-icon">
                             <i class="bi {{ isset($uploadedFiles['pengesahan']) && $uploadedFiles['pengesahan'] ? 'bi-file-earmark-check' : 'bi-file-earmark-pdf' }}"></i>
                         </div>
-                        <h6 class="fw-bold">Lembar Pengesahan</h6>
+                        <h6 class="fw-bold">Lembar Pengesahan LED</h6>
                         @if(isset($uploadedFiles['pengesahan']) && $uploadedFiles['pengesahan'])
                         <p class="text-success mb-2">
                             <i class="bi bi-check-circle"></i> {{ $uploadedFiles['pengesahan']->original_filename }}
@@ -470,18 +513,18 @@
                 </div>
                 {{-- 3. LKPS (Data Kuantitatif) --}}
                 <div class="col-md-6">
-                    <div class="upload-card h-100 clickable {{ isset($uploadedFiles['kuantitatif']) && $uploadedFiles['kuantitatif'] ? 'has-file' : '' }}" onclick="triggerUploadKuantitatif()">
+                    <div class="upload-card h-100 {{ !$lockBorang ? 'clickable' : '' }} {{ isset($uploadedFiles['kuantitatif']) && $uploadedFiles['kuantitatif'] ? 'has-file' : '' }}" @if(!$lockBorang) onclick="triggerUploadKuantitatif()" @endif style="{{ $lockBorang ? 'opacity:.65; pointer-events:none;' : '' }}">
                         <div class="upload-icon">
                             <i class="bi {{ isset($uploadedFiles['kuantitatif']) && $uploadedFiles['kuantitatif'] ? 'bi-file-earmark-check' : 'bi-file-excel' }}"></i>
                         </div>
-                        <h6 class="fw-bold">LKPS</h6>
+                        <h6 class="fw-bold">Laporan Kinerja Program Studi (LKPS)</h6>
                         @if(isset($uploadedFiles['kuantitatif']) && $uploadedFiles['kuantitatif'])
                         <p class="text-success mb-2">
                             <i class="bi bi-check-circle"></i> {{ $uploadedFiles['kuantitatif']->original_filename }}
                         </p>
                         <small class="text-muted">{{ $uploadedFiles['kuantitatif']->created_at->diffForHumans() }}</small>
                         @else
-                        <p class="text-muted small mb-2">File Excel berisi data tabel</p>
+                        <p class="text-muted small mb-2">File Excel berisi data tabel (sesuai template)</p>
                         <button type="button" class="btn btn-outline-success btn-sm">
                             <i class="bi bi-upload"></i> Upload Excel
                         </button>
@@ -494,30 +537,51 @@
     </div>
 
     {{-- ✅ Alert Gabungan (Petunjuk + Catatan) --}}
-    <div class="alert alert-info alert-dismissible alert-permanent fade show" role="alert">
-        <div class="row">
-            <div class="col-md-6">
-                <h6 class="alert-heading"><i class="bi bi-info-circle me-2"></i>Petunjuk Pengisian:</h6>
-                <ol class="mb-0 small">
-                    <li>Isi <strong>Kata Pengantar</strong> dan <strong>Ringkasan</strong> di bagian atas</li>
-                    <li>Isi <strong>deskripsi/narasi</strong> untuk setiap elemen standar (D.1 - R.6)</li>
-                    <li>Isi <strong>tabel HTML</strong> menggunakan editor (klik pada tabel untuk mengedit)</li>
-                    <li>Isi <strong>Suplemen</strong> di bagian bawah sesuai jenjang program studi</li>
-                    <li>Data tersimpan otomatis setelah 2 detik tidak ada perubahan</li>
-                    <li>Klik <strong>"Finalisasi & Submit"</strong> setelah semua terisi</li>
-                </ol>
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-white border-bottom py-2">
+            <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-card-checklist"></i> Elemen Penilaian
+                </h5>
+                <div class="btn-group btn-group-sm flex-wrap">
+                    @if(in_array($pengajuan->status, [\App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA, \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI, \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,\App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION, \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED]))
+                    <button type="button" class="btn btn-outline-danger" id="btnResetBorang">
+                        <i class="bi bi-arrow-clockwise"></i> Reset LED+Suplemen
+                    </button>
+                    @endif
+
+                    <button type="button" class="btn btn-outline-primary" id="btnToggleAll">
+                        <i class="bi bi-arrows-expand"></i> Expand All
+                    </button>
+                </div>
             </div>
-            <div class="col-md-6 border-start">
-                <h6 class="alert-heading"><i class="bi bi-exclamation-triangle me-2"></i>Catatan Penting:</h6>
-                <ul class="mb-0 small">
-                    <li><strong>Lembar Pengesahan:</strong> Upload PDF yang sudah ditandatangani pimpinan</li>
-                    <li><strong>Laporan Evaluasi Diri:</strong> Upload DOCX dengan deskripsi setiap elemen - akan diproses otomatis</li>
-                    <li><strong>LKPS:</strong> Upload Excel dengan sheet terpisah untuk setiap tabel - hanya tersimpan sebagai file</li>
-                    <li><strong>Alternatif:</strong> Download template, isi offline, lalu upload kembali</li>
-                </ul>
+            <div class="card-body px-2 pb-0">
+                <div class="alert alert-info alert-dismissible alert-permanent fade show" role="alert">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="alert-heading"><i class="bi bi-info-circle me-2"></i>Petunjuk Pengisian:</h6>
+                            <ol class="mb-0 small">
+                                <li>Isi <strong>Kata Pengantar</strong> dan <strong>Ringkasan</strong> di bagian atas</li>
+                                <li>Isi <strong>deskripsi/narasi</strong> untuk setiap elemen standar (D.1 - R.6)</li>
+                                {{-- <li>Isi <strong>tabel HTML</strong> menggunakan editor (klik pada tabel untuk mengedit)</li> --}}
+                                <li>Klik tombol <strong>Simpan</strong> pada setiap elemen untuk menyimpan perubahan</li>
+                                <li>Klik <strong>"Finalisasi & Submit"</strong> setelah semua terisi</li>
+                            </ol>
+                        </div>
+                        <div class="col-md-6 border-start">
+                            <h6 class="alert-heading"><i class="bi bi-exclamation-triangle me-2"></i>Catatan Penting:</h6>
+                            <ul class="mb-0 small">
+                                <li><strong>Lembar Pengesahan:</strong> Upload PDF yang sudah ditandatangani pimpinan</li>
+                                <li><strong>Laporan Evaluasi Diri:</strong> Upload DOCX dengan deskripsi setiap elemen - akan diproses otomatis</li>
+                                <li><strong>LKPS:</strong> Upload Excel dengan sheet terpisah untuk setiap tabel - hanya tersimpan sebagai file</li>
+                                <li><strong>Alternatif:</strong> Download template, isi offline, lalu upload kembali</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
             </div>
         </div>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 
     {{-- ✅ ACCORDION 1: Kata Pengantar --}}
@@ -526,7 +590,7 @@
             <button class="btn btn-link w-100 text-start collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseKataPengantar" aria-expanded="false" aria-controls="collapseKataPengantar">
                 <i class="bi bi-chevron-right me-2 chevron-icon"></i>
                 <strong><i class="bi bi-pen"></i> Kata Pengantar</strong>
-                <span class="badge bg-info float-end">Front Matter</span>
+                <span class="badge bg-info float-end">Halaman Depan</span>
             </button>
         </div>
         <div id="collapseKataPengantar" class="accordion-collapse collapse" aria-labelledby="headingKataPengantar">
@@ -536,7 +600,7 @@
                         <i class="bi bi-pencil-square"></i> Kata Pengantar (maksimal 500 kata)
                     </label>
 
-                    <button type="button" class="btn btn-sm btn-primary btn-save-field" data-target-field="kata_pengantar">
+                    <button type="button" class="btn btn-sm btn-primary btn-save-field" data-target-field="kata_pengantar" {{ $lockBorang ? 'disabled' : '' }}>
                         <i class="bi bi-save"></i> Simpan
                     </button>
                 </div>
@@ -577,7 +641,7 @@
                         <i class="bi bi-pencil-square"></i> Ringkasan Laporan (maksimal 1000 kata)
                     </label>
 
-                    <button type="button" class="btn btn-sm btn-primary btn-save-field" data-target-field="ringkasan">
+                    <button type="button" class="btn btn-sm btn-primary btn-save-field" data-target-field="ringkasan" {{ $lockBorang ? 'disabled' : '' }}>
                         <i class="bi bi-save"></i> Simpan
                     </button>
                 </div>
@@ -679,7 +743,7 @@
                                                 <i class="bi bi-pencil-square"></i> Deskripsi/Narasi Elemen (maksimal 1000 kata)
                                             </label>
 
-                                            <button type="button" class="btn btn-sm btn-primary btn-save-field" data-target-field="desc_{{ $elemen->id }}">
+                                            <button type="button" class="btn btn-sm btn-primary btn-save-field" data-target-field="desc_{{ $elemen->id }}" {{ $lockBorang ? 'disabled' : '' }}>
                                                 <i class="bi bi-save"></i> Simpan
                                             </button>
                                         </div>
@@ -714,7 +778,7 @@
                                                     @if($dataset->is_required) <span class="text-danger">*</span> @endif
                                                 </label>
 
-                                                <button type="button" class="btn btn-sm btn-primary btn-save-field" data-target-field="{{ $dataset->kode }}">
+                                                <button type="button" class="btn btn-sm btn-primary btn-save-field" data-target-field="{{ $dataset->kode }}" {{ $lockBorang ? 'disabled' : '' }}>
                                                     <i class="bi bi-save"></i> Simpan
                                                 </button>
                                             </div>
@@ -729,7 +793,7 @@
                                                 <small class="text-muted">
                                                     <i class="bi bi-info-circle"></i> Gunakan toolbar editor untuk mengedit tabel
                                                 </small>
-                                                <button type="button" class="btn btn-sm btn-primary btn-save-editor" data-dataset-id="{{ $dataset->kode }}">
+                                                <button type="button" class="btn btn-sm btn-primary btn-save-editor" data-dataset-id="{{ $dataset->kode }}" {{ $lockBorang ? 'disabled' : '' }}>
                                                     <i class="bi bi-save"></i> Simpan
                                                 </button>
                                             </div>
@@ -746,7 +810,7 @@
                                             </div>
 
                                             @elseif($dataset->tipe_field === 'narasi' || $dataset->tipe_field === 'textarea')
-                                            <textarea class="form-control auto-save-field" name="{{ $dataset->kode }}" data-field-id="{{ $dataset->kode }}" data-field-type="textarea" rows="4" placeholder="{{ $dataset->placeholder }}" @if($dataset->is_required) required @endif>{{ $existingData[$dataset->kode] ?? '' }}</textarea>
+                                            <textarea class="form-control auto-save-field" name="{{ $dataset->kode }}" data-field-id="{{ $dataset->kode }}" data-field-type="textarea" rows="4" placeholder="{{ $dataset->placeholder }}" @if($dataset->is_required) required @endif {{ $lockBorang ? 'readonly' : '' }}>{{ $existingData[$dataset->kode] ?? '' }}</textarea>
 
                                             <div class="save-status text-muted mt-1">
                                                 <i class="bi bi-cloud-check"></i>
@@ -864,11 +928,13 @@
 
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/tinymce@8.3.1/tinymce.min.js"></script>
+<script src="{{ asset('assets/js/tinymce.js') }}"></script>
 @php
 $pengajuanId = $pengajuan->id;
 @endphp
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        const LOCK_BORANG = @json($lockBorang);
         const pengajuanId = "{{ $pengajuan->id }}";
         const initialProgress = @json($progressData);
         const showHasilValidasiBorang = "{{ in_array($pengajuan->status,['borang_revision_required']) }}"
@@ -877,6 +943,7 @@ $pengajuanId = $pengajuan->id;
         const AUTO_SAVE_DELAY = 2000;
         const AUTOSAVE_ENABLED = false;
         const editorInstances = {};
+        const csrf = getCsrf()
 
         // Initialize
         initializeAutoSave();
@@ -906,6 +973,10 @@ $pengajuanId = $pengajuan->id;
             });
         }
 
+        function getCsrf() {
+            return '{{ csrf_token() }}';
+        }
+
         function initializeWYSIWYGEditors() {
             const editorElements = document.querySelectorAll('textarea.tinymce-editor');
             let initCount = 0;
@@ -919,12 +990,16 @@ $pengajuanId = $pengajuan->id;
                     , target: el
                     , menubar: false
                     , height: 550
-                    , plugins: 'table lists link code'
+                    , plugins: 'table lists link code image'
                     , toolbar: [
                         'undo redo | bold italic underline strikethrough | alignleft aligncenter alignright | bullist numlist |'
-                        , 'table | link | code'
+                        , 'table | link | image | code'
                     ].join(' ')
                     , content_style: 'table { border-collapse: collapse; width: 100%; } td, th { border: 1px solid #ddd; padding: 8px; } th { background: #f2f2f2; font-weight: bold; }'
+                    , paste_data_images: true
+                    , convert_urls: false
+                    , automatic_uploads: false
+                    , relative_urls: false
                     , setup: function(editor) {
                         const updateCounter = () => {
                             const wrapper = el.closest('.mb-3, .mb-4, .dataset-field-wrapper, .card-body');
@@ -937,6 +1012,9 @@ $pengajuanId = $pengajuan->id;
                             counterEl.textContent = countWords(plainText);
                         };
                         editor.on('init', function() {
+                            if (LOCK_BORANG) {
+                                editor.setMode('readonly');
+                            }
                             const existing = editor.getContent({
                                 format: 'html'
                             }).trim();
@@ -954,6 +1032,10 @@ $pengajuanId = $pengajuan->id;
                                 }
                             }
                             editorInstances[key] = editor;
+
+                            editor._imgSnapshot = extractImgSrcs(editor.getContent({
+                                format: 'html'
+                            }));
 
                             // ✅ Count initialized editors
                             initCount++;
@@ -984,10 +1066,12 @@ $pengajuanId = $pengajuan->id;
                                 statusElement.textContent = 'Menyimpan...';
                                 statusElement.className = 'status-text text-warning';
                             }
-
                             saveTimeout = setTimeout(function() {
                                 const value = editor.getContent();
-                                autoSaveField(key, value, statusElement);
+                                autoSaveField(key, value, statusElement).then(() => {
+                                    // update snapshot sesudah autosave berhasil
+                                    editor._imgSnapshot = extractImgSrcs(value);
+                                });
                             }, AUTO_SAVE_DELAY);
                         });
                     }
@@ -1113,11 +1197,39 @@ $pengajuanId = $pengajuan->id;
         async function manualSaveByFieldId(fieldId, statusElement = null, buttonEl = null) {
             // kalau TinyMCE
             if (editorInstances[fieldId]) {
-                const html = editorInstances[fieldId].getContent();
+                const editor = editorInstances[fieldId];
+
+                // 1) ambil snapshot sebelum save (fallback kalau belum ada)
+                const before = editor._imgSnapshot || extractImgSrcs(editor.getContent({
+                    format: 'html'
+                }));
+
+                // 2) konten terbaru
+                const html = editor.getContent({
+                    format: 'html'
+                });
+                const after = extractImgSrcs(html);
+
+                // 3) save ke server dulu
                 await autoSaveField(fieldId, html, statusElement);
+
+                // 4) setelah sukses -> hitung removed
+                for (const src of before) {
+                    if (!after.has(src)) {
+                        // aman: hanya delete kalau tidak dipakai di editor lain
+                        if (!isSrcUsedInOtherEditors(editorInstances, src, fieldId)) {
+                            deleteImageOnServer(`/tinymce/pengajuan/${pengajuanId}/image-delete`, csrf, src);
+                        }
+                    }
+                }
+
+                // 5) update snapshot terbaru
+                editor._imgSnapshot = after;
+
                 return;
             }
 
+            // non-tinymce field
             const field = findFieldById(fieldId);
             if (!field) throw new Error(`Field tidak ditemukan: ${fieldId}`);
 
@@ -1558,11 +1670,21 @@ $pengajuanId = $pengajuan->id;
         }
 
         // ✅ Upload Handlers
-        window.triggerUploadPengesahan = () => document.getElementById('inputPengesahan').click();
-        window.triggerUploadSuplemen = () => document.getElementById('inputSuplemen').click();
-        window.triggerUploadKuantitatif = () => document.getElementById('inputKuantitatif').click();
+        window.triggerUploadPengesahan = () => {
+            if (LOCK_BORANG) return;
+            document.getElementById('inputPengesahan').click();
+        };
+        window.triggerUploadSuplemen = () => {
+            if (LOCK_BORANG) return;
+            document.getElementById('inputSuplemen').click();
+        };
+        window.triggerUploadKuantitatif = () => {
+            if (LOCK_BORANG) return;
+            document.getElementById('inputKuantitatif').click();
+        };
 
         window.handleUploadPengesahan = async (event) => {
+            if (LOCK_BORANG) return;
             const file = event.target.files[0];
             if (!file) return;
 
@@ -1574,6 +1696,7 @@ $pengajuanId = $pengajuan->id;
             await uploadFile(file, 'pengesahan', '{{ route("pengajuan.upload-pengesahan", $pengajuan->id) }}');
         };
         window.handleUploadSuplemen = async (event) => {
+            if (LOCK_BORANG) return;
             const file = event.target.files[0];
             if (!file) return;
 
@@ -1586,6 +1709,7 @@ $pengajuanId = $pengajuan->id;
         };
 
         window.handleUploadKuantitatif = async (event) => {
+            if (LOCK_BORANG) return;
             const file = event.target.files[0];
             if (!file) return;
 
@@ -1643,14 +1767,6 @@ $pengajuanId = $pengajuan->id;
             }
         }
 
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-        }
-
         function initializeImportExport() {
             document.getElementById('btnImportDocx').addEventListener('click', function() {
                 const modal = showModalById('modalImportDocx');
@@ -1683,10 +1799,15 @@ $pengajuanId = $pengajuan->id;
 
                     if (data.success) {
                         bootstrap.Modal.getInstance(document.getElementById('modalImportDocx')).hide();
-                        Swal.fire('Success', 'File berhasil diupload!', 'success');
-                        setTimeout(() => window.location.reload(), 1500);
-                    } else {
-                        throw new Error(data.message || 'Import gagal');
+
+                        const importId = data.data ? data.data.import_id : null;
+                        if (importId) {
+                            await Swal.fire('Diproses', 'File sudah diterima. Sedang diproses...', 'info');
+                            pollImport(importId);
+                        } else {
+                            Swal.fire('Success', 'File berhasil diupload!', 'success');
+                            setTimeout(() => window.location.reload(), 1500);
+                        }
                     }
 
                 } catch (error) {
@@ -1695,6 +1816,62 @@ $pengajuanId = $pengajuan->id;
                     this.innerHTML = '<i class="bi bi-upload"></i> Upload Sekarang';
                 }
             });
+        }
+
+        async function pollImport(importId) {
+            showLoading();
+
+            const MAX_DURATION = 3000;
+            const INTERVAL = 1000;
+            const startTime = Date.now();
+
+            while (Date.now() - startTime < MAX_DURATION) {
+                await new Promise(r => setTimeout(r, INTERVAL));
+
+                let data;
+                try {
+                    const res = await fetch(`/pengajuan/${pengajuanId}/borang/import-status/${importId}`, {
+                        headers: {
+                            Accept: 'application/json'
+                        }
+                    });
+                    data = await res.json();
+                } catch (e) {
+                    console.error('Polling error:', e);
+                    continue;
+                }
+
+                if (!data || !data.success) continue;
+
+                // ambil status tanpa ?? dan ?.
+                const st = data.status || (data.data && data.data.status) || (data.import && data.import.status);
+
+                if (!st) continue;
+
+                if (st === 'completed') {
+                    hideLoading();
+                    await Swal.fire('Selesai', 'Upload DOCX selesai. Halaman akan dimuat ulang.', 'success');
+                    window.location.reload();
+                    return;
+                }
+
+                if (st === 'failed') {
+                    hideLoading();
+                    await Swal.fire('Gagal', (data.errors && data.errors.error) || data.error || 'Upload gagal', 'error');
+                    return;
+                }
+            }
+
+            hideLoading();
+            await Swal.fire({
+                icon: 'warning'
+                , title: 'Masih Diproses'
+                , html: ` <p>Proses upload dan pembacaan data masih berjalan dan belum ada perubahan status.</p> <p class="mb-0"> Silakan <strong>refresh halaman</strong> untuk melihat hasil terbaru. </p> `
+                , confirmButtonText: 'Refresh Sekarang'
+                , confirmButtonColor: '#0d6efd'
+            });
+
+            window.location.reload();
         }
 
         async function fetchValidationSummary() {
@@ -1772,10 +1949,10 @@ $pengajuanId = $pengajuan->id;
                     elBadge.textContent = v.is_complete ? 'Lengkap (Belum Submit)' : 'Belum Lengkap';
                 } else if (v.final_action === 'approve') {
                     elBadge.className = 'badge bg-success';
-                    elBadge.textContent = 'Disubmit: Approve';
+                    elBadge.textContent = 'Disubmit (Telah Disetujui)';
                 } else if (v.final_action === 'revision') {
                     elBadge.className = 'badge bg-warning text-dark';
-                    elBadge.textContent = 'Disubmit: Revisi';
+                    elBadge.textContent = 'Disubmit (Perlu Revisi)';
                 } else {
                     elBadge.className = 'badge bg-secondary';
                     elBadge.textContent = 'Status';
@@ -1842,9 +2019,14 @@ $pengajuanId = $pengajuan->id;
             const emptyEl = document.getElementById('valRevisionEmpty');
 
             // reset
+            const skEl = document.getElementById('valRevisionSkeleton');
+
+            // reset + show skeleton
             listEl.classList.add('d-none');
             emptyEl.classList.add('d-none');
             listEl.innerHTML = '';
+
+            if (skEl) skEl.classList.remove('d-none');
 
             const res = await fetch(url, {
                 headers: {
@@ -1855,6 +2037,7 @@ $pengajuanId = $pengajuan->id;
             if (!res.ok || !data.success) throw new Error(data.message || 'Gagal ambil detail validasi');
 
             if (!data.has_validation) {
+                if (skEl) skEl.classList.add('d-none');
                 emptyEl.classList.remove('d-none');
                 return;
             }
@@ -1862,7 +2045,10 @@ $pengajuanId = $pengajuan->id;
 
             // ambil semua items dulu (tanpa filter), nanti kita split ke 2 tab
             const ledAll = (items.led || []);
-            const suplemenAll = (items.suplemen || []);
+            const suplemenAll = (items.suplemen || []).map(it => ({
+                ...it
+                , label: formatSuplemenLabel(it)
+            }));
             const lkpsAll = (items.lkps || []);
 
             // split: Perlu Revisi vs Sudah Tepat
@@ -1879,8 +2065,28 @@ $pengajuanId = $pengajuan->id;
 
             // kalau dua-duanya kosong -> empty
             if (totalRevisi === 0 && totalOk === 0) {
+                if (skEl) skEl.classList.add('d-none');
                 emptyEl.classList.remove('d-none');
                 return;
+            }
+
+            function formatSuplemenLabel(it) {
+                // ambil judul aslinya tanpa prefix [xxx]
+                const raw = (it.label || '').replace(/^\[[^\]]+\]\s*/i, '').trim();
+
+                // kalau section bentuknya bagian_a -> Bagian A
+                const m = (it.section || '').match(/^bagian_([a-z])$/i);
+                if (m) {
+                    return `Bagian ${m[1].toUpperCase()} - ${raw}`;
+                }
+
+                // selain itu, bikin prefix dari section: pemastian_cpl -> Pemastian Cpl
+                if (it.section) {
+                    return `${titleCaseWords(it.section)} - ${raw}`;
+                }
+
+                // fallback kalau section kosong
+                return raw || it.label || '';
             }
 
             // helper render section
@@ -1947,7 +2153,7 @@ $pengajuanId = $pengajuan->id;
 
             </div>
             `;
-
+            if (skEl) skEl.classList.add('d-none');
             listEl.innerHTML = html;
             listEl.classList.remove('d-none');
         }

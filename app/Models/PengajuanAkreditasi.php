@@ -46,6 +46,7 @@ class PengajuanAkreditasi extends Model
     // Step 8-10
     public const STATUS_ASESOR_AK_ASSIGNED = 'asesor_ak_assigned';
     public const STATUS_AK_IN_PROGRESS = 'ak_in_progress';
+    public const STATUS_AK_ON_VALIDATION = 'ak_on_validation';
     public const STATUS_AK_SELESAI = 'ak_selesai';
     public const STATUS_AK_DILAPORKAN = 'ak_dilaporkan';
 
@@ -203,6 +204,11 @@ class PengajuanAkreditasi extends Model
         return $this->hasMany(PengajuanStatusLog::class, 'id_pengajuan');
     }
 
+    public function borangValidation()
+    {
+        return $this->hasOne(BorangValidation::class, 'id_pengajuan');
+    }
+
     public function borangImports()
     {
         return $this->hasMany(BorangImport::class, 'id_pengajuan');
@@ -233,21 +239,38 @@ class PengajuanAkreditasi extends Model
     // ============================================
     // HELPER METHODS
     // ============================================
-    public static function generateNomorPengajuan()
+    public static function generateNomorPengajuan(?string $jenisAkreditasi = null): string
     {
         $year = date('Y');
-        $lastNumber = self::where('nomor_pengajuan', 'like', "ASM/$year/%")
+
+        $jenis = strtolower($jenisAkreditasi ?? request('jenis_akreditasi') ?? '');
+
+        // Kode jenis (baru = default, TANPA kode)
+        $kodeJenis = match ($jenis) {
+            'perpanjangan' => 'PRP',
+            're-akreditasi', 'reakreditasi', 're_akreditasi' => 'REA',
+            default => null, // BARU
+        };
+
+        // Prefix pencarian
+        $prefix = $kodeJenis
+            ? "ASM/{$year}/{$kodeJenis}/"
+            : "ASM/{$year}/";
+
+        $last = self::where('nomor_pengajuan', 'like', $prefix . '%')
             ->orderBy('nomor_pengajuan', 'desc')
             ->first();
 
-        if ($lastNumber) {
-            $lastNum = (int) substr($lastNumber->nomor_pengajuan, -3);
+        $newNum = 1;
+        if ($last) {
+            $lastNum = (int) substr($last->nomor_pengajuan, -3);
             $newNum = $lastNum + 1;
-        } else {
-            $newNum = 1;
         }
 
-        return sprintf('ASM/%s/%03d', $year, $newNum);
+        // Format akhir
+        return $kodeJenis
+            ? sprintf('ASM/%s/%s/%03d', $year, $kodeJenis, $newNum)
+            : sprintf('ASM/%s/%03d', $year, $newNum);
     }
 
     public function canAssignValidator(): bool
@@ -319,6 +342,97 @@ class PengajuanAkreditasi extends Model
             ->count();
     }
 
+    public function setValidatorAssigned($idUser)
+    {
+        $this->update([
+            'id_validator_assigned' => $idUser
+        ]);
+        $this->borangValidation->update(['id_validator_assigned' => $idUser]);
+    }
+
+    public function checkUpdateStatusAKAL($jenisAsesmen, $statusToUpdate, $idUser = null)
+    {
+        if ($statusToUpdate == 'status_asesor_assigned') {
+            if ($jenisAsesmen == 'ak') {
+                if ($this->status == PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED)
+                    $this->update([
+                        'status' => PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
+                        'tanggal_penugasan_asesor_ak' => now(),
+                    ]);
+            }
+            if ($jenisAsesmen == 'al') {
+                if ($this->status == PengajuanAkreditasi::STATUS_AK_DILAPORKAN)
+                    $this->update([
+                        'status' => PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
+                        'tanggal_penugasan_asesor_al' => now()
+                    ]);
+            }
+        }
+        if ($statusToUpdate == 'status_asesor_in_progress') {
+            if ($jenisAsesmen == 'ak') {
+                if ($this->status == PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED)
+                    $this->update(['status' => PengajuanAkreditasi::STATUS_AK_IN_PROGRESS, 'tanggal_ak_mulai' => now()]);
+            }
+            if ($jenisAsesmen == 'al') {
+                if ($this->status == PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED)
+                    $this->update(['status' => PengajuanAkreditasi::STATUS_AL_IN_PROGRESS, 'tanggal_al_mulai' => now()]);
+            }
+        }
+        if ($statusToUpdate == 'status_asesor_on_validation') {
+            if ($jenisAsesmen == 'ak') {
+                if ($this->status == PengajuanAkreditasi::STATUS_AK_IN_PROGRESS)
+                    $this->update(['status' => PengajuanAkreditasi::STATUS_AK_ON_VALIDATION, 'tanggal_validasi_ak' => now()]);
+            }
+        }
+        if ($statusToUpdate == 'status_asesor_selesai') {
+            if ($jenisAsesmen == 'ak') {
+                if ($this->status == PengajuanAkreditasi::STATUS_AK_ON_VALIDATION)
+                    $this->update(['status' => PengajuanAkreditasi::STATUS_AK_SELESAI, 'tanggal_ak_selesai' => now()]);
+            }
+            if ($jenisAsesmen == 'al') {
+                if ($this->status == PengajuanAkreditasi::STATUS_AL_IN_PROGRESS)
+                    $this->update(['status' => PengajuanAkreditasi::STATUS_AL_SELESAI, 'tanggal_al_selesai' => now()]);
+            }
+        }
+        if ($statusToUpdate == 'status_asesor_dilaporkan') {
+            if ($jenisAsesmen == 'ak') {
+                if ($this->status == PengajuanAkreditasi::STATUS_AK_SELESAI)
+                    $this->update(['status' => PengajuanAkreditasi::STATUS_AK_DILAPORKAN, 'tanggal_pelaporan_ak' => now()]);
+            }
+            if ($jenisAsesmen == 'al') {
+                if ($this->status == PengajuanAkreditasi::STATUS_AL_SELESAI)
+                    $this->update(['status' => PengajuanAkreditasi::STATUS_AL_DILAPORKAN, 'tanggal_pelaporan_al' => now()]);
+            }
+        }
+    }
+
+    public function canBeReported(string $jenisAsesmen): bool
+    {
+        return match ($jenisAsesmen) {
+            'ak' => $this->status === self::STATUS_AK_SELESAI
+                && is_null($this->tanggal_pelaporan_ak),
+
+            'al' => $this->status === self::STATUS_AL_SELESAI
+                && is_null($this->tanggal_pelaporan_al),
+
+            'dokumen' => in_array($this->status, [
+                self::STATUS_BORANG_VALIDATED,
+                self::STATUS_DRAFT_BORANG_FINAL_DITERIMA,
+            ], true)
+                && is_null($this->tanggal_pelaporan_validasi_borang),
+
+            default => false,
+        };
+    }
+
+    public function getPelaporanBadge(string $jenis): ?string
+    {
+        if ($jenis === 'dokumen' && $this->tanggal_pelaporan_validasi_borang) return 'Pelaporan Dokumen telah Dibuat';
+        if ($jenis === 'ak' && $this->tanggal_pelaporan_ak) return 'Pelaporan AK telah Dibuat';
+        if ($jenis === 'al' && $this->tanggal_pelaporan_al) return 'Pelaporan AL telah Dibuat';
+        return null;
+    }
+
     // ============================================
     // ATTRIBUTES
     // ============================================
@@ -327,9 +441,43 @@ class PengajuanAkreditasi extends Model
         return self::statusMap()[$this->status]['label'] ?? ucwords(str_replace('_', ' ', $this->status));
     }
 
+    public function getJudulAttribute(): string
+    {
+        $pengajuan = $this;
+        $prodi = $pengajuan->studyProgram->name ?? '-';
+
+        $jenis = strtolower($pengajuan->jenis_akreditasi ?? '');
+
+        $prefix = match ($jenis) {
+            'perpanjangan' => 'Perpanjangan Akreditasi Prodi',
+            're-akreditasi', 'reakreditasi', 're_akreditasi' => 'Re-Akreditasi Prodi',
+            'baru' => 'Pengajuan Akreditasi Prodi',
+            default => 'Akreditasi Prodi',
+        };
+
+        $tahun = $pengajuan->tahun_akreditasi ? ' ' . $pengajuan->tahun_akreditasi : '';
+        $judul = "{$prefix} {$prodi}{$tahun}";
+        return $judul;
+    }
+
     public function getStatusBadgeClassAttribute(): string
     {
         return self::statusMap()[$this->status]['bg'] ?? 'bg-secondary';
+    }
+
+    public function getUploadedDocuments()
+    {
+        $dokumens = $this->dokumen()
+            ->where('is_latest', true)
+            ->latest()
+            ->get();
+        $uploadedFiles = [
+            'led' => $dokumens->whereIn('jenis_dokumen', ['data_kualitatif', 'draft_borang', 'borang_final',])->first(),
+            'suplemen' => $dokumens->whereIn('jenis_dokumen', ['data_suplemen', 'suplemen', 'file_suplemen', 'dokumen_pendukung',])->first(),
+            'lkps' => $dokumens->whereIn('jenis_dokumen', ['data_kuantitatif', 'kuantitatif',])->first(),
+            'pengesahan' => $dokumens->where('jenis_dokumen', 'pengesahan')->first(),
+        ];
+        return $uploadedFiles;
     }
 
     // ============================================
@@ -368,6 +516,11 @@ class PengajuanAkreditasi extends Model
                 'bg' => 'bg-info',
                 'icon' => 'bi-credit-card',
             ],
+            self::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN => [
+                'label' => 'Menunggu Verifikasi Pembayaran',
+                'bg' => 'bg-warning',
+                'icon' => 'bi-shield-exclamation',
+            ],
             self::STATUS_PEMBAYARAN_DIVERIFIKASI => [
                 'label' => 'Validasi Pembayaran Selesai',
                 'bg' => 'bg-success',
@@ -403,6 +556,11 @@ class PengajuanAkreditasi extends Model
                 'bg' => 'bg-success',
                 'icon' => 'bi-check-circle-fill',
             ],
+            self::STATUS_DRAFT_BORANG_FINAL_DITERIMA => [
+                'label' => 'Draft Final LED+Suplemen dan LKPS Diterima',
+                'bg' => 'bg-info',
+                'icon' => 'bi-file-earmark-arrow-up',
+            ],
             self::STATUS_VALIDASI_BORANG_DILAPORKAN => [
                 'label' => 'Pelaporan Validasi LED+Suplemen dan LKPS',
                 'bg' => 'bg-success',
@@ -419,9 +577,14 @@ class PengajuanAkreditasi extends Model
                 'icon' => 'bi-person-check',
             ],
             self::STATUS_AK_IN_PROGRESS => [
-                'label' => 'Validasi AK Berlangsung',
+                'label' => 'Penugasan Asesor AK Berlangsung',
                 'bg' => 'bg-info',
                 'icon' => 'bi-clipboard-data',
+            ],
+            self::STATUS_AK_ON_VALIDATION => [
+                'label' => 'Validasi AK Berlangsung',
+                'bg' => 'bg-warning',
+                'icon' => 'bi-clipboard2-check',
             ],
             self::STATUS_AK_SELESAI => [
                 'label' => 'Validasi AK Selesai',
@@ -429,7 +592,7 @@ class PengajuanAkreditasi extends Model
                 'icon' => 'bi-clipboard-check',
             ],
             self::STATUS_AK_DILAPORKAN => [
-                'label' => 'Pelaporan AK',
+                'label' => 'Pelaporan AK Selesai',
                 'bg' => 'bg-success',
                 'icon' => 'bi-file-earmark-medical',
             ],
@@ -449,7 +612,7 @@ class PengajuanAkreditasi extends Model
                 'icon' => 'bi-building-check',
             ],
             self::STATUS_AL_DILAPORKAN => [
-                'label' => 'Pelaporan AL',
+                'label' => 'Pelaporan AL Selesai',
                 'bg' => 'bg-success',
                 'icon' => 'bi-clipboard-data',
             ],
@@ -462,6 +625,11 @@ class PengajuanAkreditasi extends Model
                 'label' => 'Masa Sanggah',
                 'bg' => 'bg-warning',
                 'icon' => 'bi-clock-history',
+            ],
+            self::STATUS_BANDING_DIAJUKAN => [
+                'label' => 'Banding Diajukan',
+                'bg' => 'bg-danger',
+                'icon' => 'bi-file-earmark-break',
             ],
             self::STATUS_BANDING_DILAKSANAKAN => [
                 'label' => 'Pelaksanaan Banding',
@@ -478,6 +646,11 @@ class PengajuanAkreditasi extends Model
                 'bg' => 'bg-success',
                 'icon' => 'bi-award',
             ],
+            self::STATUS_HASIL_DIUMUMKAN => [
+                'label' => 'Hasil Akreditasi Diumumkan',
+                'bg' => 'bg-primary',
+                'icon' => 'bi-megaphone-fill',
+            ],
             self::STATUS_HASIL_DILAPORKAN => [
                 'label' => 'Pelaporan Hasil Akreditasi',
                 'bg' => 'bg-success',
@@ -488,11 +661,205 @@ class PengajuanAkreditasi extends Model
                 'bg' => 'bg-dark',
                 'icon' => 'bi-archive',
             ],
+            self::STATUS_SELESAI => [
+                'label' => 'Proses Akreditasi Selesai',
+                'bg' => 'bg-success',
+                'icon' => 'bi-check-circle-fill',
+            ],
             self::STATUS_DITOLAK => [
                 'label' => 'Ditolak',
                 'bg' => 'bg-danger',
                 'icon' => 'bi-x-octagon',
             ],
         ];
+    }
+
+    public function timelineItems(): array
+    {
+        $items = [
+            1 => ['date' => $this->tanggal_pengingat, 'label' => 'Pengingat Masa Akreditasi', 'icon' => 'bi-bell'],
+            2 => ['date' => $this->tanggal_surat_permohonan, 'label' => 'Surat Permohonan dari PS', 'icon' => 'bi-envelope'],
+            3 => ['date' => $this->tanggal_template_led_dikirim, 'label' => 'Penyampaian Template LED+Suplemen dan LKPS, formulir pembayaran', 'icon' => 'bi-file-earmark-arrow-down'],
+            4 => ['date' => $this->tanggal_pembayaran, 'label' => 'Validasi pembayaran', 'icon' => 'bi-credit-card-2-front'],
+            5 => ['date' => $this->tanggal_draft_borang, 'label' => 'Penerimaan draft LED+Suplemen dan LKPS dari Prodi', 'icon' => 'bi-file-earmark-check'],
+            6 => ['date' => $this->tanggal_validasi_borang_assigned, 'label' => 'Validasi LED+Suplemen dan LKPS', 'icon' => 'bi-clipboard-check'],
+            7 => ['date' => $this->tanggal_pelaporan_validasi_borang, 'label' => 'Pelaporan Validasi LED+Suplemen dan LKPS', 'icon' => 'bi-file-earmark-text'],
+            8 => ['date' => $this->tanggal_penugasan_asesor_ak, 'label' => 'Penugasan asesor untuk AK', 'icon' => 'bi-person-check'],
+            9 => ['date' => $this->tanggal_validasi_ak, 'label' => 'Validasi AK', 'icon' => 'bi-clipboard2-check'],
+            10 => ['date' => $this->tanggal_pelaporan_ak, 'label' => 'Pelaporan AK', 'icon' => 'bi-file-earmark-medical'],
+            11 => ['date' => $this->tanggal_penugasan_asesor_al, 'label' => 'Penugasan asesor untuk AL', 'icon' => 'bi-person-badge'],
+            12 => ['date' => ($this->tanggal_pelaksanaan_al ?? $this->tanggal_al_selesai), 'label' => 'Pelaksanaan AL dan penyampaian berita acara AL', 'icon' => 'bi-building'],
+            13 => ['date' => $this->tanggal_pelaporan_al, 'label' => 'Pelaporan AL', 'icon' => 'bi-clipboard-data'],
+            14 => ['date' => $this->tanggal_hasil_akreditasi, 'label' => 'Penyampaian hasil akreditasi', 'icon' => 'bi-envelope-paper'],
+            15 => ['date' => $this->tanggal_masa_sanggah_mulai, 'label' => 'Masa sanggah', 'icon' => 'bi-clock-history'],
+            16 => ['date' => $this->tanggal_pelaksanaan_banding, 'label' => 'Pelaksanaan banding', 'icon' => 'bi-arrow-repeat'],
+            17 => ['date' => $this->tanggal_pelaporan_banding, 'label' => 'Pelaporan banding', 'icon' => 'bi-file-earmark-ruled'],
+            18 => ['date' => $this->tanggal_penetapan, 'label' => 'Penetapan hasil akreditasi', 'icon' => 'bi-award'],
+            19 => ['date' => $this->tanggal_pelaporan_hasil, 'label' => 'Pelaporan hasil akreditasi', 'icon' => 'bi-megaphone'],
+            20 => ['date' => $this->tanggal_penyimpanan, 'label' => 'Penyimpanan arsip pelaksanaan akreditasi', 'icon' => 'bi-archive'],
+        ];
+
+        $meta = $this->currentTimelineMeta();
+        $currentStep = $meta['step'];
+        $currentColor = $meta['color']; // warning|success
+
+        // Special case: ditolak
+        if ($this->status === self::STATUS_DITOLAK) {
+            foreach ($items as $step => &$item) {
+                $item['color'] = 'secondary';
+                $item['state'] = 'future';
+            }
+            unset($item);
+
+            // kalau mau: tampilkan badge khusus "Ditolak" di UI, atau set step terakhir jadi danger
+            return $items;
+        }
+
+        // Jika status di step ini "success", artinya step tsb sudah tuntas,
+        // maka "current" pindah ke step berikutnya (kecuali sudah step 20)
+        if ($currentColor === 'success' && $currentStep < 20 && $this->status !== self::STATUS_SELESAI) {
+            $currentStep++;
+            $currentColor = 'warning'; // step berikutnya dianggap progress (kuning)
+        }
+
+        foreach ($items as $step => &$item) {
+            if ($step < $currentStep) {
+                $item['color'] = 'success';
+                $item['state'] = 'done';
+            } elseif ($step === $currentStep) {
+                $item['color'] = $currentColor; // sesuai tabel kamu
+                $item['state'] = 'current';
+            } else {
+                $item['color'] = 'secondary';
+                $item['state'] = 'future';
+            }
+        }
+        unset($item);
+
+        return $items;
+    }
+
+    public static function statusTimelineRuleMap(): array
+    {
+        return [
+            // step => [ 'warning' => [...], 'success' => [...] ]
+
+            1 => [
+                'warning' => [self::STATUS_DRAFT],
+                'success' => [self::STATUS_PENGINGAT_DIKIRIM],
+            ],
+
+            2 => [
+                'success' => [self::STATUS_SURAT_PERMOHONAN_DITERIMA],
+            ],
+
+            3 => [
+                'success' => [self::STATUS_TEMPLATE_LED_DIKIRIM],
+            ],
+
+            4 => [
+                'warning' => [
+                    self::STATUS_MENUNGGU_PEMBAYARAN,
+                    self::STATUS_PEMBAYARAN_DITERIMA,
+                    self::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN,
+                ],
+                'success' => [self::STATUS_PEMBAYARAN_DIVERIFIKASI],
+            ],
+
+            5 => [
+                'success' => [self::STATUS_DRAFT_BORANG_DITERIMA, self::STATUS_BORANG_ONLINE_SELESAI],
+            ],
+
+            6 => [
+                'warning' => [
+                    self::STATUS_BORANG_VALIDATION_PENDING,
+                    self::STATUS_BORANG_IN_VALIDATION,
+                    self::STATUS_BORANG_REVISION_REQUIRED,
+                ],
+                'success' => [self::STATUS_BORANG_VALIDATED, self::STATUS_DRAFT_BORANG_FINAL_DITERIMA],
+            ],
+
+            7 => [
+                'success' => [self::STATUS_VALIDASI_BORANG_DILAPORKAN, self::STATUS_PENGAJUAN_COMPLETED],
+            ],
+
+            8 => [
+                'warning' => [self::STATUS_ASESOR_AK_ASSIGNED, self::STATUS_AK_IN_PROGRESS],
+            ],
+
+            9 => [
+                'warning' => [self::STATUS_AK_ON_VALIDATION],
+                'success' => [self::STATUS_AK_SELESAI],
+            ],
+
+            10 => [
+                'success' => [self::STATUS_AK_DILAPORKAN],
+            ],
+
+            11 => [
+                'warning' => [self::STATUS_ASESOR_AL_ASSIGNED, self::STATUS_AL_IN_PROGRESS, self::STATUS_AL_SELESAI],
+            ],
+
+            12 => [
+                'success' => [self::STATUS_AL_SELESAI],
+            ],
+
+            13 => [
+                'success' => [self::STATUS_AL_DILAPORKAN],
+            ],
+
+            14 => [
+                'success' => [self::STATUS_HASIL_AKREDITASI_DIKIRIM],
+            ],
+
+            15 => [
+                'success' => [self::STATUS_MASA_SANGGAH],
+            ],
+
+            16 => [
+                'warning' => [self::STATUS_BANDING_DIAJUKAN],
+                'success' => [self::STATUS_BANDING_DILAKSANAKAN],
+            ],
+
+            17 => [
+                'success' => [self::STATUS_BANDING_DILAPORKAN],
+            ],
+
+            18 => [
+                'warning' => [self::STATUS_HASIL_DITETAPKAN],
+                'success' => [self::STATUS_HASIL_DIUMUMKAN],
+            ],
+
+            19 => [
+                'success' => [self::STATUS_HASIL_DILAPORKAN],
+            ],
+
+            20 => [
+                'success' => [self::STATUS_ARSIP_DISIMPAN, self::STATUS_SELESAI],
+            ],
+        ];
+    }
+
+    /**
+     * Return: ['step' => int, 'color' => 'warning|success']
+     * color = warna step saat ini sesuai status (bukan berdasarkan date)
+     */
+    public function currentTimelineMeta(): array
+    {
+        $status = $this->status;
+        $rules = self::statusTimelineRuleMap();
+
+        foreach ($rules as $step => $cfg) {
+            foreach (['warning', 'success'] as $color) {
+                $list = $cfg[$color] ?? [];
+                if (in_array($status, $list, true)) {
+                    return ['step' => $step, 'color' => $color];
+                }
+            }
+        }
+
+        // fallback aman: kalau status nggak terdaftar di rules
+        // anggap masih di step 1 dan sedang progress
+        return ['step' => 1, 'color' => 'warning'];
     }
 }

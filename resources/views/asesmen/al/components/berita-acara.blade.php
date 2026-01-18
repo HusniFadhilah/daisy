@@ -1,10 +1,17 @@
+@if(!$isFinalized)
+<div class="alert alert-info alert-permanent alert-dismissible mb-3">
+    <i class="bi bi-info-circle me-2"></i>
+    Silahkan finalisasi Hasil dan Berita Acara Asesmen Lapangan (AL) dengan klik tombol "Finalisasi Berita Acara" di bawah ini
+</div>
+@endif
+
 <div class="card shadow-sm">
     <div class="card-header bg-white d-flex justify-content-between align-items-center">
         <h5 class="mb-0">
             <i class="bi bi-folder2-open"></i> Hasil dan Berita Acara Asesmen Lapangan (AL)
         </h5>
         @if(!$isFinalized)
-        <button type="button" class="btn btn-primary btn-sm" onclick="handleFinalize()">
+        <button type="button" class="btn btn-primary btn-sm" onclick="handleFinalize(event)">
             <i class="bi bi-check-circle-fill me-2"></i> Finalisasi Berita Acara
         </button>
         @else
@@ -56,7 +63,7 @@
                 <i class="bi bi-info-circle"></i>
                 Upload file Hasil dan Berita Acara Asesmen Lapangan (AL) (PDF).
                 Format file yang harus ditanda-tangani dapat didownload pada
-                <a href="{{ route('al.berkas.export', $asesmen->id) }}" class="alert-link">
+                <a href="{{ route('al.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'personal']) }}" class="alert-link">
                     link ini
                 </a>.
             </div>
@@ -304,47 +311,74 @@
         };
     }
 
-    function handleFinalize() {
-        if (!confirm('Apakah Anda yakin ingin memfinalisasi Berita Acara AL?')) {
-            return;
-        }
+    function handleFinalize(event) {
+        event.preventDefault();
 
-        // Show loading
-        const btn = event.target;
-        const originalText = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Memproses...';
+        Swal.fire({
+            title: 'Finalisasi Berita Acara?'
+            , text: 'Setelah difinalisasi, data tidak dapat diubah.'
+            , icon: 'warning'
+            , showCancelButton: true
+            , confirmButtonText: 'Ya, Finalisasi'
+            , cancelButtonText: 'Batal'
+            , confirmButtonColor: '#198754'
+            , cancelButtonColor: '#6c757d'
+        }).then((result) => {
+            if (!result.isConfirmed) return;
 
-        fetch(finalizeUrl, {
-                method: 'POST'
-                , headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    , 'Accept': 'application/json'
-                    , 'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                btn.disabled = false;
-                btn.innerHTML = originalText;
+            const btn = event.target;
+            const originalText = btn.innerHTML;
 
-                if (data.success) {
-                    showAlert('success', data.message);
+            // Loading button
+            btn.disabled = true;
+            btn.innerHTML =
+                '<span class="spinner-border spinner-border-sm me-2"></span>Memproses...';
 
-                    // Redirect atau reload setelah 2 detik
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 2000);
-                } else {
-                    showAlert('danger', data.message || 'Gagal memfinalisasi dokumen');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                btn.disabled = false;
-                btn.innerHTML = originalText;
-                showAlert('danger', 'Terjadi kesalahan saat memfinalisasi dokumen');
-            });
+            fetch(finalizeUrl, {
+                    method: 'POST'
+                    , headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        , 'Accept': 'application/json'
+                        , 'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success'
+                            , title: 'Berhasil'
+                            , text: data.message
+                            , timer: 2000
+                            , showConfirmButton: false
+                        });
+
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 2000);
+                    } else {
+                        Swal.fire({
+                            icon: 'error'
+                            , title: 'Gagal'
+                            , text: data.message || 'Gagal memfinalisasi dokumen'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+
+                    Swal.fire({
+                        icon: 'error'
+                        , title: 'Error'
+                        , text: 'Terjadi kesalahan saat memfinalisasi dokumen'
+                    });
+                });
+        });
     }
 
     function showAlert(type, message) {

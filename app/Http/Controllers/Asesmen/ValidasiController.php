@@ -308,6 +308,16 @@ class ValidasiController extends Controller
         });
         $jenjangs = JenjangPenilaian::all();
 
+        if ($assignment->status_pekerjaan === 'not_started') {
+            $assignment->update([
+                'status_pekerjaan' => 'in_progress',
+                'started_at' => now(), // Opsional: track kapan mulai
+            ]);
+            if ($assignment->asesmen->pengajuan) {
+                $assignment->asesmen->pengajuan->checkUpdateStatusAKAL('ak', 'status_asesor_on_validation');
+            }
+        }
+
         return view('asesmen.ak.validasi.asesor', compact(
             'asesmen',
             'asesmenDetail',
@@ -664,8 +674,9 @@ class ValidasiController extends Controller
                 ->update([
                     'is_locked' => true,
                 ]);
-            if ($asesmen->pengajuan)
-                $asesmen->pengajuan->update(['tanggal_validasi_ak' => now()]);
+            if ($asesmen->pengajuan) {
+                $asesmen->pengajuan->checkUpdateStatusAKAL('ak', 'status_asesor_selesai');
+            }
             DB::commit();
 
             return response()->json([

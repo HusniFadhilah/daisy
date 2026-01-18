@@ -1,12 +1,11 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Prodi\BorangUploadController;
-use App\Http\Controllers\Prodi\PengajuanBorangController;
+use App\Http\Controllers\TinyMceImageController;
 use App\Http\Controllers\Keuangan\ValidasiPembayaranController;
 use App\Http\Controllers\Profile\{PasswordResetController, ProfileController};
-use App\Http\Controllers\Prodi\{DeskEvaluatorController, PengajuanAkreditasiController, PemetaanAkreditasiController};
-use App\Http\Controllers\Asesmen\{AsesmenController, AKController, ALController, ALDocumentController, BorangValidatorController, PenawaranController, ValidasiController};
+use App\Http\Controllers\Prodi\{DeskEvaluatorController, PengajuanAkreditasiController, PemetaanAkreditasiController, PengajuanBorangController, BorangUploadController};
+use App\Http\Controllers\Asesmen\{AsesmenController, AKController, ALController, ALDocumentController, BorangValidatorController, PenawaranController, PelaporanController, ValidasiController};
 use App\Http\Controllers\Master\{ElemenStandarController, JenisIndikatorController, IndikatorController, IndikatorPenilaianElemenController, KriteriaController, UniversityController, StudyProgramController};
 use App\Http\Controllers\{AuthController, BobotPenilaianController, DashboardController, PenugasanController, BandingController, PedomanController, DokumenController, PanduanController, BantuanController, SettingsController, ActivityController, TaskController, LaporanController, DegreeLevelController};
 
@@ -53,6 +52,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/select-role', [AuthController::class, 'showRoleSelection'])->name('select.role');
     Route::post('/select-role', [AuthController::class, 'selectRole'])->name('select.role.post');
 
+    Route::post('/tinymce/{folder}/{id}/image-upload', [TinyMceImageController::class, 'upload'])->name('tinymce.image.upload');
+    Route::delete('/tinymce/{folder}/{id}/image-delete', [TinyMceImageController::class, 'delete'])->name('tinymce.image.delete');
     Route::middleware('admin')->group(function () {
         // USER MANAGEMENT (Admin Only)
         Route::resource('users', App\Http\Controllers\UserController::class);
@@ -209,6 +210,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/{id}/borang-online/save-all', [PengajuanAkreditasiController::class, 'saveBorangOnline'])
                 ->name('.borang-online.save-all');
             Route::post('/{id}/borang-online/submit', [PengajuanAkreditasiController::class, 'submitBorangOnline'])->name('.submit');
+            Route::post('/{id}/borang-online/unsubmit', [PengajuanAkreditasiController::class, 'unsubmitBorangOnline'])->name('.unsubmit');
             Route::get('/{id}/borang-preview', [PengajuanAkreditasiController::class, 'showBorangHTML'])->name('.borang-preview');
 
             // === Borang Online (Alternative) ===
@@ -338,7 +340,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['auth'])->prefix('validator')->name('validator.')->group(function () {
         Route::prefix('borang')->name('borang.')->group(function () {
             Route::get('/', [BorangValidatorController::class, 'index'])->name('index');
-            Route::get('/{assignment}', [BorangValidatorController::class, 'show'])->name('show');
 
             // ✅ NEW: Auto-save review per item
             Route::post('/{assignment}/update-review', [BorangValidatorController::class, 'updateReview'])->name('update-review');
@@ -353,6 +354,34 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/{assignment}/upload-review', [BorangValidatorController::class, 'uploadReview'])->name('upload-review');
             Route::post('/{assignment}/reset-review', [BorangValidatorController::class, 'resetReview'])->name('reset-review');
             Route::post('/{assignment}/laporkan-validasi', [BorangValidatorController::class, 'laporkanValidasi'])->name('laporkan-validasi');
+
+            Route::get('/{assignment}', [BorangValidatorController::class, 'show'])->name('show');
+        });
+    });
+
+    Route::prefix('/pelaporan/{assignment}')->name('pelaporan.')->group(function () {
+        Route::prefix('/borang')->name('borang.')->group(function () {
+            Route::post('/upload', [PelaporanController::class, 'uploadLaporanValidasi'])->name('upload');
+            Route::post('/finalize', [PelaporanController::class, 'finalizePelaporanValidasi'])->name('finalize');
+            Route::get('/', [PelaporanController::class, 'getPelaporanValidasi'])->name('show');
+        });
+
+        Route::prefix('/validasi-ak')->name('validasiAk.')->group(function () {
+            Route::post('/upload',   [PelaporanController::class, 'uploadLaporanValidasiAK'])->name('upload');
+            Route::post('/finalize', [PelaporanController::class, 'finalizeValidasiAK'])->name('finalize');
+            Route::get('/',          [PelaporanController::class, 'getPelaporanValidasiAK'])->name('show');
+        });
+
+        Route::prefix('/ak')->name('ak.')->group(function () {
+            Route::post('/upload',   [PelaporanController::class, 'uploadLaporanAK'])->name('upload');
+            Route::post('/finalize', [PelaporanController::class, 'finalizePelaporanAK'])->name('finalize');
+            Route::get('/',          [PelaporanController::class, 'getPelaporanAK'])->name('show');
+        });
+
+        Route::prefix('/al')->name('al.')->group(function () {
+            Route::post('/upload',   [PelaporanController::class, 'uploadLaporanAL'])->name('upload');
+            Route::post('/finalize', [PelaporanController::class, 'finalizePelaporanAL'])->name('finalize');
+            Route::get('/',          [PelaporanController::class, 'getPelaporanAL'])->name('show');
         });
     });
 

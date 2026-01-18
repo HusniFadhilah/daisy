@@ -62,28 +62,50 @@
     <!-- List -->
     <div class="row">
         @forelse($pengajuans as $pengajuan)
+        @php
+        $timeline = $pengajuan->timelineItems();
+        $currentItem = collect($timeline)->firstWhere('state', 'current');
+
+        // fallback aman
+        if(!$currentItem){
+        $currentItem = collect($timeline)->lastWhere('state', 'done') ?? collect($timeline)->first();
+        }
+
+        $isDone = ($currentItem['state'] ?? null) === 'done';
+        $isCurrent = ($currentItem['state'] ?? null) === 'current';
+        $itemColor = $currentItem['color'] ?? 'secondary';
+
+        // icon sesuai pola yang kamu mau
+        $iconClass = $isDone ? 'bi-check-circle-fill' : ($isCurrent ? 'bi-hourglass-split' : 'bi-circle');
+        $iconColor = $isDone ? 'text-success' : ($isCurrent ? 'text-' . $itemColor : 'text-muted');
+        $judulPengajuan = $pengajuan->judul;
+        @endphp
         <div class="col-md-6 col-lg-4 mb-4">
             <div class="card h-100 {{ $pengajuan->status === 'pengingat_dikirim' && is_null($pengajuan->id_user_pengaju) ? 'border-warning' : '' }}">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-3">
-                        <h5 class="card-title mb-0">{{ $pengajuan->nomor_pengajuan }}</h5>
-                        <span class="badge {{ $pengajuan->status_badge_class }}">
-                            {{ $pengajuan->status_label_short }}
-                        </span>
+                        <div class="me-2" style="min-width:0;">
+                            <h5 class="card-title mb-1 text-wrap" title="{{ $judulPengajuan }}">
+                                {{ $judulPengajuan }}
+                            </h5>
+
+                            <small class="text-muted d-block text-wrap" title="{{ $pengajuan->studyProgram->university->name ?? '' }}">
+                                {{ $pengajuan->studyProgram->university->name ?? '' }}
+                            </small>
+
+                            <small class="text-muted d-block">
+                                <i class="bi bi-hash"></i> {{ $pengajuan->nomor_pengajuan }}
+                            </small>
+                        </div>
                     </div>
 
-                    <p class="mb-2">
-                        <strong>{{ $pengajuan->studyProgram->name }}</strong>
-                    </p>
+                    {{-- Badge status: dibatasi supaya tidak keluar kotak --}}
+                    <span class="badge bg-{{ $itemColor }} text-wrap text-center" style="white-space: normal; line-height: 1.1;" title="{{ $currentItem['label'] }}">
+                        <i class="bi {{ $iconClass }} text-white me-1"></i>
+                        {{ $currentItem['label'] }}
+                    </span>
 
-                    <div class="mb-3">
-                        @if($pengajuan->tahun_akreditasi)
-                        <small class="text-muted d-block">
-                            <i class="bi bi-calendar"></i>
-                            Tahun: {{ $pengajuan->tahun_akreditasi }}
-                        </small>
-                        @endif
-
+                    <div class="my-3">
                         @if($pengajuan->jenis_akreditasi)
                         <small class="text-muted d-block">
                             <i class="bi bi-tag"></i>
@@ -91,17 +113,25 @@
                         </small>
                         @endif
 
-                        <small class="text-muted">
+                        @if($pengajuan->tahun_akreditasi)
+                        <small class="text-muted d-block">
+                            <i class="bi bi-calendar"></i>
+                            Tahun: {{ $pengajuan->tahun_akreditasi }}
+                        </small>
+                        @endif
+
+                        {{-- Tampilkan tanggal hanya sekali --}}
+                        <small class="text-muted d-block">
                             <i class="bi bi-clock"></i>
-                            {{ \App\Libraries\Date::tglIndo($pengajuan->created_at) }}
+                            Diajukan: {{ \App\Libraries\Date::tglIndo($pengajuan->created_at) }}
                         </small>
 
-                        @if($pengajuan->deskEvaluator)
+                        {{-- @if($pengajuan->deskEvaluator)
                         <small class="text-muted d-block">
                             <i class="bi bi-person"></i>
                             DE: {{ $pengajuan->deskEvaluator->name }}
                         </small>
-                        @endif
+                        @endif --}}
                     </div>
 
                     {{-- ✅ BUTTON BERBEDA UNTUK STATUS PENGINGAT_DIKIRIM --}}

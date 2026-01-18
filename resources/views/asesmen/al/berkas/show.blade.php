@@ -241,7 +241,7 @@ $isComplete = $progress['percentage'] == 100;
                     @if($isApproved)
                     <div class="alert alert-success alert-permanent alert-dismissible mb-3">
                         <i class="bi bi-check-circle me-2"></i>
-                        <strong>Penilaian Disetujui!</strong> Penilaian Anda pada tahap Asesmen Lapangan (AL) telah divalidasi dan disetujui oleh DE LAMDEPILAR. Silahkan unduh file Hasil penilaian lengkap di <a href="{{ route('al.berkas.export', $asesmen->id) }}" class="alert-link">link ini</a>. Tanda tangani, lalu upload ulang di step ke-2 (Hasil dan berita acara Asesmen Lapangan) di halaman ini.
+                        <strong>Penilaian Disetujui!</strong> Penilaian Anda pada tahap Asesmen Lapangan (AL) telah divalidasi dan disetujui oleh DE LAMDEPILAR. Silahkan unduh file Hasil penilaian lengkap di <a href="{{ route('al.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'personal']) }}" class="alert-link">link ini</a>. Tanda tangani, lalu upload ulang di step ke-2 (Hasil dan berita acara Asesmen Lapangan) di halaman <a href="{{ route('al.berkas.show', ['idAsesmen' => $asesmen->id, 'step' => '2']) }}" class="alert-link">berikut ini</a>.
                     </div>
                     @endif
 
@@ -357,6 +357,9 @@ $isComplete = $progress['percentage'] == 100;
         </div>
     </div>
 
+    @if(isset($asesmen->pengajuan))
+    @include('asesmen.ak.components.documents')
+    @endif
     <!-- ========== HEATMAP MATRIX (ENHANCED) ========== -->
     @include('asesmen.al.components.heatmap-matrix')
 
@@ -1041,7 +1044,8 @@ $isComplete = $progress['percentage'] == 100;
             document.getElementById('importForm').addEventListener('submit', importExcel);
 
             // Download Template
-            document.getElementById('btnDownloadTemplate').addEventListener('click', downloadTemplate);
+            const btnDownloadTemplate = document.getElementById('btnDownloadTemplate')
+            if (btnDownloadTemplate) btnDownloadTemplate.addEventListener('click', downloadTemplate);
             document.querySelectorAll('.btnDownloadData').forEach(btn => {
                 btn.addEventListener('click', downloadDataExcel);
             });
@@ -1579,21 +1583,42 @@ $isComplete = $progress['percentage'] == 100;
                 });
 
                 // Reset form
+
                 btnReset.addEventListener('click', function() {
-                    if (confirm('Apakah Anda yakin ingin mereset penilaian ini?')) {
-                        form.reset();
-                        updateCharCount(komentarTextarea);
-                        updateSaveStatus(form, 'Belum ada penilaian', 'text-muted');
+                    Swal.fire({
+                        title: 'Yakin ingin mereset?'
+                        , text: 'Semua penilaian yang sudah diisi akan dihapus.'
+                        , icon: 'warning'
+                        , showCancelButton: true
+                        , confirmButtonText: 'Ya, Reset'
+                        , cancelButtonText: 'Batal'
+                        , confirmButtonColor: '#dc3545'
+                        , cancelButtonColor: '#6c757d'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.reset();
+                            updateCharCount(komentarTextarea);
+                            updateSaveStatus(form, 'Belum ada penilaian', 'text-muted');
 
-                        const card = form.closest('.indikator-card');
-                        card.classList.remove('has-penilaian');
+                            const card = form.closest('.indikator-card');
+                            card.classList.remove('has-penilaian');
 
-                        const badge = card.querySelector('.badge.bg-success');
-                        if (badge) {
-                            badge.className = 'badge bg-warning text-dark';
-                            badge.innerHTML = '<i class="bi bi-clock"></i> Belum Dinilai';
+                            const badge = card.querySelector('.badge.bg-success');
+                            if (badge) {
+                                badge.className = 'badge bg-warning text-dark';
+                                badge.innerHTML = '<i class="bi bi-clock"></i> Belum Dinilai';
+                            }
+
+                            // Optional: notifikasi sukses kecil
+                            Swal.fire({
+                                icon: 'success'
+                                , title: 'Berhasil'
+                                , text: 'Penilaian berhasil direset.'
+                                , timer: 1500
+                                , showConfirmButton: false
+                            });
                         }
-                    }
+                    });
                 });
             });
         }

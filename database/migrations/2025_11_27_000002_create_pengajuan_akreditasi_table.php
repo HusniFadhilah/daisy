@@ -47,6 +47,7 @@ return new class extends Migration
                 'pengajuan_completed',
                 'asesor_ak_assigned',
                 'ak_in_progress',
+                'ak_on_validation',
                 'ak_selesai',
                 'ak_dilaporkan',
                 'asesor_al_assigned',
@@ -71,22 +72,22 @@ return new class extends Migration
             $table->timestamp('tanggal_template_led_dikirim')->nullable();
             $table->timestamp('tanggal_pembayaran')->nullable();
             $table->timestamp('tanggal_draft_borang')->nullable();
-            $table->timestamp('tanggal_borang_final')->nullable();
-            // $table->timestamp('tanggal_review_kesiapan')->nullable();
-            $table->timestamp('tanggal_lanjut_ak')->nullable();
 
             // ===== Timeline baru =====
             // Borang validation
             $table->timestamp('tanggal_validasi_borang_assigned')->nullable()->comment('Tanggal validator di-assign untuk review LED');
+            $table->timestamp('tanggal_borang_final')->nullable();
+            // $table->timestamp('tanggal_review_kesiapan')->nullable();
             $table->timestamp('tanggal_validasi_borang_selesai')->nullable()->comment('Tanggal validator approve/request revision LED');
             $table->timestamp('tanggal_pelaporan_validasi_borang')->nullable();
+            $table->timestamp('tanggal_lanjut_ak')->nullable();
 
             // AK Timeline
             $table->timestamp('tanggal_penugasan_asesor_ak')->nullable();
             $table->timestamp('tanggal_ak_mulai')->nullable()->comment('Tanggal mulai proses AK/Penilaian Dokumen');
+            $table->timestamp('tanggal_validasi_ak')->nullable()->comment('Tanggal mulai validasi hasil AK');
             $table->timestamp('tanggal_ak_selesai')->nullable()->comment('Tanggal selesai validasi hasil AK');
             $table->timestamp('tanggal_pelaporan_ak')->nullable()->comment('Tanggal selesai pelaporan hasil AK');
-            $table->timestamp('tanggal_validasi_ak')->nullable();
 
             // AL Timeline
             $table->timestamp('tanggal_penugasan_asesor_al')->nullable();
@@ -168,25 +169,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('pembayaran_akreditasi', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('id_pengajuan')->constrained('pengajuan_akreditasi')->onDelete('cascade');
-
-            $table->string('nomor_invoice')->unique();
-            $table->decimal('jumlah_pembayaran', 15, 2);
-            $table->enum('status_pembayaran', ['pending', 'dibayar', 'verified', 'ditolak'])->default('pending');
-
-            $table->timestamp('tanggal_jatuh_tempo')->nullable();
-            $table->timestamp('tanggal_pembayaran')->nullable();
-            $table->timestamp('tanggal_verifikasi')->nullable();
-
-            $table->foreignId('verified_by')->nullable()->constrained('users');
-            $table->text('catatan_verifikasi')->nullable();
-            $table->text('alasan_penolakan')->nullable();
-
-            $table->timestamps();
-        });
-
         Schema::create('pengajuan_pembayaran', function (Blueprint $table) {
             $table->id();
 
@@ -202,17 +184,20 @@ return new class extends Migration
             // Tanggal
             $table->date('tanggal_jatuh_tempo')->nullable();
             $table->dateTime('tanggal_pembayaran')->nullable();
+            $table->dateTime('tanggal_verifikasi')->nullable();
 
             // Status pembayaran
             $table->enum('status_pembayaran', [
-                'menunggu',
-                'dibayar',
+                'menunggu_pembayaran',
+                'menunggu_verifikasi',
+                'upload_ulang',
                 'ditolak',
                 'terverifikasi',
-            ])->default('menunggu');
+            ])->default('pending');
 
             // Bukti & verifikasi
             $table->string('bukti_path')->nullable();
+            $table->text('catatan_pembayaran')->nullable();
             $table->text('catatan_verifikasi')->nullable();
             $table->text('alasan_penolakan')->nullable();
 

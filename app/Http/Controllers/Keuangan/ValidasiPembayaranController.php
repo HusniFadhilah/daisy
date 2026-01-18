@@ -14,8 +14,8 @@ use Illuminate\Support\Facades\Storage;
 class ValidasiPembayaranController extends Controller
 {
     /**
-     * List pembayaran yang perlu divalidasi (status dibayar).
-     * Filter utama: pengajuan.status = MENUNGGU_PEMBAYARAN + pembayaran.status_pembayaran = dibayar
+     * List pembayaran yang perlu divalidasi (status menunggu_verifikasi).
+     * Filter utama: pengajuan.status = MENUNGGU_VERIFIKASI_PEMBAYARAN + pembayaran.status_pembayaran = menunggu_verifikasi
      */
     public function index(Request $request)
     {
@@ -29,7 +29,7 @@ class ValidasiPembayaranController extends Controller
             ])
             // ->where('status', PengajuanAkreditasi::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN)
             ->whereHas('pembayaran', function ($p) {
-                // $p->where('status_pembayaran', 'dibayar');
+                // $p->where('status_pembayaran', 'menunggu_verifikasi');
             });
 
         if (!empty($q)) {
@@ -107,16 +107,15 @@ class ValidasiPembayaranController extends Controller
      * Input:
      * - status: verified | ditolak
      * - catatan_verifikasi (required)
-     * - alasan_penolakan (required jika ditolak)
      */
     public function verify(Request $request, $id)
     {
         try {
             // ✅ Validasi input
             $request->validate([
-                'status_pembayaran'   => 'required|in:terverifikasi,ditolak',
+                'status_pembayaran'   => 'required|in:menunggu_verifikasi,terverifikasi,upload_ulang,ditolak',
                 'catatan_verifikasi'  => 'required|string|min:5|max:2000',
-                'alasan_penolakan'    => 'required_if:status_pembayaran,ditolak|nullable|string|max:2000',
+                // 'alasan_penolakan'    => 'required_if:status_pembayaran,ditolak|nullable|string|max:2000',
             ]);
 
             // ✅ Ambil pengajuan + pembayaran
@@ -126,26 +125,30 @@ class ValidasiPembayaranController extends Controller
                 return back()->with('error', 'Pembayaran tidak ditemukan.');
             }
 
-            if ($pengajuan->pembayaran->status_pembayaran !== 'dibayar') {
-                return back()->with('error', 'Pembayaran tidak dalam status "dibayar".');
+            if ($pengajuan->pembayaran->status_pembayaran !== 'menunggu_verifikasi') {
+                return back()->with('error', 'Pembayaran tidak dalam status "menunggu_verifikasi".');
             }
 
             $statusInput = $request->input('status_pembayaran');
+            $messages = [
+                'terverifikasi' => 'Pembayaran diverifikasi oleh Keuangan.',
+                'upload_ulang'  => 'Keuangan meminta upload ulang bukti pembayaran.',
+            ];
+
+            $message = $messages[$statusInput] ?? 'Status pembayaran tidak diketahui.';
 
             // 🔐 Transaction
-            DB::transaction(function () use ($request, $pengajuan, $statusInput) {
+            DB::transaction(function () use ($request, $pengajuan, $statusInput, $message) {
                 $pembayaran = $pengajuan->pembayaran;
 
                 $pembayaran->status_pembayaran   = $statusInput;
                 $pembayaran->catatan_verifikasi = $request->catatan_verifikasi;
-                $pembayaran->alasan_penolakan   = $statusInput === 'ditolak'
-                    ? $request->alasan_penolakan
-                    : null;
+                // $pembayaran->alasan_penolakan   = $statusInput === 'ditolak'? $request->alasan_penolakan: null;
 
                 $pembayaran->verified_by = auth()->id();
 
-                if (array_key_exists('verified_at', $pembayaran->getAttributes())) {
-                    $pembayaran->verified_at = now();
+                if (array_key_exists('tanggal_verifikasi', $pembayaran->getAttributes())) {
+                    $pembayaran->tanggal_verifikasi = now();
                 }
 
                 $pembayaran->save();
@@ -161,6 +164,10 @@ class ValidasiPembayaranController extends Controller
                     }
                 }
 
+                if ($statusInput === 'upload_ulang') {
+                    $pengajuan->status = PengajuanAkreditasi::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN;
+                }
+
                 if ($statusInput === 'ditolak') {
                     $pengajuan->status = PengajuanAkreditasi::STATUS_MENUNGGU_PEMBAYARAN;
                 }
@@ -173,9 +180,7 @@ class ValidasiPembayaranController extends Controller
                         $pengajuan,
                         $oldStatus,
                         $pengajuan->status,
-                        $statusInput === 'terverifikasi'
-                            ? 'Pembayaran diverifikasi oleh Keuangan.'
-                            : 'Pembayaran ditolak oleh Keuangan.'
+                        $message
                     );
                 }
             });
@@ -185,9 +190,7 @@ class ValidasiPembayaranController extends Controller
                 ->route('keuangan.pembayaran.index')
                 ->with(
                     'success',
-                    $statusInput === 'terverifikasi'
-                        ? 'Pembayaran berhasil diverifikasi.'
-                        : 'Pembayaran berhasil ditolak.'
+                    $message
                 );
         } catch (\Throwable $e) {
 

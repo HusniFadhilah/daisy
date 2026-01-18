@@ -15,8 +15,10 @@ class PengajuanPembayaran extends Model
         'jumlah_pembayaran',
         'tanggal_jatuh_tempo',
         'tanggal_pembayaran',
+        'tanggal_verifikasi',
         'status_pembayaran',
         'bukti_path',
+        'catatan_pembayaran',
         'catatan_verifikasi',
         'alasan_penolakan',
         'verified_by',
@@ -25,6 +27,7 @@ class PengajuanPembayaran extends Model
     protected $casts = [
         'tanggal_jatuh_tempo' => 'date',
         'tanggal_pembayaran' => 'datetime',
+        'tanggal_verifikasi' => 'datetime',
     ];
 
     public function pengajuan()

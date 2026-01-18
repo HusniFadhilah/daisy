@@ -295,3 +295,13 @@ function showModalById(id) {
     modal.show();
     return modal;
 }
+
+function titleCaseWords(s) {
+    return (s || '')
+        .replace(/_/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .split(' ')
+        .map(w => w ? (w[0].toUpperCase() + w.slice(1)) : '')
+        .join(' ');
+}

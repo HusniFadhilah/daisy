@@ -1,3 +1,7 @@
+@php
+$viewMode = request('view') === 'split' ? 'split' : 'merged'; // split | merged
+@endphp
+
 <div class="card mb-4 shadow-sm">
     <div class="card-header bg-white border-bottom">
         <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-2">
@@ -105,7 +109,7 @@
 
         {{-- Validator Matrix Table --}}
         <div class="validator-matrix-wrapper" style="overflow-x: auto; overflow-y: auto; max-height: 800px;">
-            <table class="validator-matrix-table" id="validatorMatrix">
+            <table class="validator-matrix-table {{ $viewMode === 'merged' ? 'matrix-merged' : 'matrix-split' }}" id="validatorMatrix">
                 <thead>
                     <tr>
                         {{-- Fixed Columns --}}
@@ -130,7 +134,7 @@
                         $colors = ['#e3f2fd', '#fff3e0', '#e8f5e9', '#f3e5f5'];
                         $bgColor = $colors[$index % count($colors)];
                         @endphp
-                        <th class="vm-header sticky-header text-center vm-asesor-header" data-asesor="{{ $asesor->urutan_asesor }}" colspan="2" style="background: {{ $bgColor }}; z-index: 30;">
+                        <th class="vm-header sticky-header text-center vm-asesor-header" data-asesor="{{ $asesor->urutan_asesor }}" colspan="{{ $viewMode === 'merged' ? 1 : 2 }}" style="background: {{ $bgColor }}; z-index: 30;">
                             <div class="d-flex flex-column align-items-center">
                                 <div class="avatar-circle-sm mb-1" style="background: linear-gradient(135deg, #932136, #870820);">
                                     {{ substr($asesor->user->name, 0, 2) }}
@@ -158,12 +162,19 @@
                         $colors = ['#e3f2fd', '#fff3e0', '#e8f5e9', '#f3e5f5'];
                         $bgColor = $colors[$index % count($colors)];
                         @endphp
+
+                        @if($viewMode === 'merged')
+                        <th class="vm-subheader sticky-header text-center vm-subheader-pemenuhan" style="background: {{ $bgColor }}; min-width: 200px; z-index: 29;">
+                            <small class="fw-bold">Penilaian AK</small>
+                        </th>
+                        @else
                         <th class="vm-subheader sticky-header text-center vm-subheader-pemenuhan" style="background: {{ $bgColor }}; min-width: 100px; z-index: 29;">
                             <small class="fw-bold">Pemenuhan</small>
                         </th>
                         <th class="vm-subheader sticky-header text-center vm-subheader-pelampauan vm-col-pelampauan" style="background: {{ $bgColor }}; min-width: 100px; z-index: 29;">
                             <small class="fw-bold">Pelampauan</small>
                         </th>
+                        @endif
                         @endforeach
 
                         {{-- Validasi --}}
@@ -178,22 +189,33 @@
                 $warnaSkor = $jenjangs->pluck('color', 'skor');
 
                 // Helper function untuk render cell skor
-                function renderScoreCellDynamic($penilaian, $asesor, $asesorNum, $warnaSkor) {
+                function renderScoreCellDynamic($penilaian, $asesor, $asesorNum, $warnaSkor, $mode = 'merged') {
                 $skor = $penilaian->skor ?? null;
                 $komentar = $penilaian->komentar ?? '';
 
-                // Pemenuhan (skor != 4)
+                // ✅ MODE MERGED: 1 kolom Penilaian AK, warna ikut skor (termasuk skor=4)
+                if ($mode === 'merged') {
+                $bg = (isset($skor) ? ($warnaSkor[$skor] ?? '#e0e0e0') : '#e0e0e0');
+
+                $onclick = (isset($skor))
+                ? "onclick=\"showKomentarPopover(this, '{$asesor->name}', $skor, '".addslashes($komentar)."')\" title='Klik untuk lihat komentar'"
+                : '';
+
+                return "<td class='vm-cell vm-score-cell vm-clickable' style='background: $bg;' data-asesor='$asesorNum' data-type='ak' data-skor='$skor' $onclick>"
+                    . (isset($skor) ? "<small class='text-dark'>$komentar</small>" : '')
+                    . "</td>";
+                }
+
+                // ✅ MODE SPLIT (seperti sekarang)
                 $bgPemenuhan = (isset($skor) && $skor != 4) ? ($warnaSkor[$skor] ?? '') : '#e0e0e0';
                 $onclickPemenuhan = (isset($skor) && $skor != 4)
                 ? "onclick=\"showKomentarPopover(this, '{$asesor->name}', $skor, '".addslashes($komentar)."')\" title='Klik untuk lihat komentar'"
                 : '';
-                $textColor = 'dark';
 
                 $cellPemenuhan = "<td class='vm-cell vm-score-cell vm-clickable' style='background: $bgPemenuhan;' data-asesor='$asesorNum' data-type='pemenuhan' data-skor='$skor' $onclickPemenuhan>"
-                    . (isset($skor) && $skor != 4 ? "<small class='text-$textColor'>$komentar</small>" : '')
+                    . (isset($skor) && $skor != 4 ? "<small class='text-dark'>$komentar</small>" : '')
                     . "</td>";
 
-                // Pelampauan (skor == 4)
                 $bgPelampauan = ($skor == 4) ? ($warnaSkor[4] ?? '') : '#e0e0e0';
                 $onclickPelampauan = ($skor == 4)
                 ? "onclick=\"showKomentarPopover(this, '{$asesor->name}', 4, '".addslashes($komentar)."')\" title='Klik untuk lihat komentar'"
@@ -278,7 +300,13 @@
 
                         {{-- Dynamic Asesor Skor Columns --}}
                         @foreach($asesors as $asesor)
-                        {!! renderScoreCellDynamic($penilaians[$asesor->id_user] ?? new stdClass(), $asesor->user, $asesor->urutan_asesor, $warnaSkor) !!}
+                        {!! renderScoreCellDynamic(
+                        $penilaians[$asesor->id_user] ?? new stdClass(),
+                        $asesor->user,
+                        $asesor->urutan_asesor,
+                        $warnaSkor,
+                        $viewMode
+                        ) !!}
                         @endforeach
 
                         {{-- Validasi Status --}}
@@ -701,22 +729,25 @@
                 if (th.dataset.originalText) th.innerHTML = th.dataset.originalText;
             });
         }
+    }
 
-        localStorage.setItem('validatorMatrixView', mode);
+    function updateViewInUrl(mode) {
+        const url = new URL(window.location.href);
+
+        // default merged tanpa param
+        if (mode === 'merged') url.searchParams.delete('view');
+        else url.searchParams.set('view', 'split');
+
+        window.location.href = url.toString();
     }
 
     function setupMatrixViewOptions() {
         const btnSplit = document.getElementById('optSplit');
         const btnMerged = document.getElementById('optMerged');
 
-        if (btnSplit) btnSplit.addEventListener('click', () => setMatrixView('split'));
-        if (btnMerged) btnMerged.addEventListener('click', () => setMatrixView('merged'));
-
-        // default view (opsional)
-        const saved = localStorage.getItem('validatorMatrixView') || 'split';
-        setMatrixView(saved);
+        if (btnSplit) btnSplit.addEventListener('click', () => updateViewInUrl('split'));
+        if (btnMerged) btnMerged.addEventListener('click', () => updateViewInUrl('merged'));
     }
-
 
     function setIndikatorVisible(visible) {
         const table = document.getElementById('validatorMatrix');

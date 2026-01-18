@@ -34,7 +34,7 @@ class PengajuanAkreditasiSeeder extends Seeder
 
         foreach ($statuses as $index => $status) {
             PengajuanAkreditasi::create([
-                'nomor_pengajuan' => 'AK/2024/' . str_pad($index + 1, 3, '0', STR_PAD_LEFT),
+                'nomor_pengajuan' => PengajuanAkreditasi::generateNomorPengajuan(),
                 'id_program_studi' => $prodi->id,
                 'id_user_pengaju' => $userProdi->id,
                 'id_de_assigned' => $de->id,

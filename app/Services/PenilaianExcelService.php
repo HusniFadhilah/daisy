@@ -20,6 +20,7 @@ use PhpOffice\PhpSpreadsheet\RichText\RichText;
 use PhpOffice\PhpSpreadsheet\Style\Conditional;
 use PhpOffice\PhpSpreadsheet\Cell\DataValidation;
 use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
+use PhpOffice\PhpSpreadsheet\Shared\Drawing as SharedDrawing;
 
 class PenilaianExcelService
 {
@@ -91,7 +92,7 @@ class PenilaianExcelService
         // Buat sheet Penilaian Personal
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Penilaian ' . ucfirst($this->penilaianFullName));
-        $sheet->getSheetView()->setZoomScale(70);
+        self::addLogoAndZoom($sheet, 70, 'B2', null, 35);
 
         // Set column widths - hanya sampai kolom G
         $sheet->getColumnDimension('A')->setWidth(5);
@@ -187,11 +188,11 @@ class PenilaianExcelService
         $sheet = $spreadsheet->createSheet();
         $sheet->setTitle('Kertas Kerja ' . $penilaianName . ' Asesor');
         $spreadsheet->setActiveSheetIndex(1);
-        $sheet->getSheetView()->setZoomScale(60);
+        self::addLogoAndZoom($sheet, 60);
 
         $this->setColumnWidths($sheet);
         $this->buildHeaders($sheet, $asesmen, $isTemplateOnly);
-        $this->setTanggalCetak($sheet, 'B1:F1');
+        // $this->setTanggalCetak($sheet, 'B1:F1');
 
         // ✅ TAMBAHKAN: Render rows dan set print area
         $lastRow = $this->renderElemenRows($sheet, $asesmen, $userId, $isTemplateOnly);
@@ -224,24 +225,24 @@ class PenilaianExcelService
 
         $this->buildPenilaianJenisSheet($spreadsheet, $asesmen, $penilaianName, $isTemplateOnly, $userId); // ✅ Pass userId
 
-        // 🔐 AKTIFKAN SHEET PROTECTION untuk Sheet Kertas Kerja
-        $sheet->getProtection()->setSheet(true);
-        $sheet->getProtection()->setPassword('lamdepilar');
+        // // 🔐 AKTIFKAN SHEET PROTECTION untuk Sheet Kertas Kerja
+        // $sheet->getProtection()->setSheet(true);
+        // $sheet->getProtection()->setPassword('lamdepilar');
 
-        // ✅ Permissions: Boleh resize, tidak boleh delete
-        $sheet->getProtection()->setFormatColumns(true);  // Boleh resize lebar kolom
-        $sheet->getProtection()->setFormatRows(true);     // Boleh resize tinggi baris
-        $sheet->getProtection()->setInsertColumns(false); // Tidak boleh insert kolom
-        $sheet->getProtection()->setDeleteColumns(false); // Tidak boleh delete kolom
-        $sheet->getProtection()->setInsertRows(false);    // Tidak boleh insert baris
-        $sheet->getProtection()->setDeleteRows(false);    // Tidak boleh delete baris
-        $sheet->getProtection()->setSort(false);          // Tidak boleh sort
-        $sheet->getProtection()->setAutoFilter(false);    // Tidak boleh autofilter
-        $sheet->getProtection()->setFormatCells(true);   // Tidak boleh format cells (butuh password)
+        // // ✅ Permissions: Boleh resize, tidak boleh delete
+        // $sheet->getProtection()->setFormatColumns(true);  // Boleh resize lebar kolom
+        // $sheet->getProtection()->setFormatRows(true);     // Boleh resize tinggi baris
+        // $sheet->getProtection()->setInsertColumns(false); // Tidak boleh insert kolom
+        // $sheet->getProtection()->setDeleteColumns(false); // Tidak boleh delete kolom
+        // $sheet->getProtection()->setInsertRows(false);    // Tidak boleh insert baris
+        // $sheet->getProtection()->setDeleteRows(false);    // Tidak boleh delete baris
+        // $sheet->getProtection()->setSort(false);          // Tidak boleh sort
+        // $sheet->getProtection()->setAutoFilter(false);    // Tidak boleh autofilter
+        // $sheet->getProtection()->setFormatCells(true);   // Tidak boleh format cells (butuh password)
 
-        // ✅ User bisa select locked & unlocked cells
-        $sheet->getProtection()->setSelectLockedCells(false);
-        $sheet->getProtection()->setSelectUnlockedCells(false);
+        // // ✅ User bisa select locked & unlocked cells
+        // $sheet->getProtection()->setSelectLockedCells(false);
+        // $sheet->getProtection()->setSelectUnlockedCells(false);
 
         return [$spreadsheet, $sheet];
     }
@@ -360,6 +361,12 @@ class PenilaianExcelService
 
                 // ========== 6) Merge B–H antar 2 baris (rowspan effect) ==========
                 $this->mergeTwoRowBlock($sheet, $templateRow, $asesorRow);
+
+                // ✅ FONT COLOR untuk ISI (bukan header), kolom B–F setelah baris 7
+                $sheet->getStyle("B{$templateRow}:F{$asesorRow}")
+                    ->getFont()
+                    ->getColor()
+                    ->setARGB('FF31869B');
 
                 // align B–H gabungan 2 baris
                 $sheet->getStyle("B{$templateRow}:H{$asesorRow}")
@@ -639,7 +646,15 @@ class PenilaianExcelService
     {
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Menu');
-        $sheet->getSheetView()->setZoomScale(80);
+        $sheet->mergeCells('A1:A2');
+        $sheet->getStyle('A1:D2')->applyFromArray([
+            'fill' => [
+                'fillType' => Fill::FILL_SOLID,
+                'startColor' => [
+                    'argb' => 'FFFBD4B4',
+                ],
+            ],
+        ]);
 
         // Hide gridlines
         $sheet->setShowGridlines(false);
@@ -649,14 +664,21 @@ class PenilaianExcelService
             $sheet->getColumnDimension($col)->setWidth(8);
         }
 
+        // set row height yang mempengaruhi area logo
+        $sheet->getRowDimension(1)->setRowHeight(30);
+        $sheet->getRowDimension(2)->setRowHeight(28);
+
+        // BARU pasang logo supaya hitung px-nya pakai ukuran final
+        self::addLogoAndZoom($sheet, 80, 'B1', 'D2');
+        $this->setTanggalCetak($sheet, 'AA1:AE1');
         // ===== ROW 1: AKREDITASI PERGURUAN TINGGI (Orange) =====
-        $sheet->mergeCells('A1:Y1');
-        $sheet->setCellValue('A1', 'AKREDITASI PERGURUAN TINGGI');
-        $sheet->getStyle('A1')->applyFromArray([
+        $sheet->mergeCells('E1:Y1');
+        $sheet->setCellValue('E1', 'AKREDITASI PERGURUAN TINGGI');
+        $sheet->getStyle('E1')->applyFromArray([
             'font' => [
                 'bold' => true,
                 'size' => 24,
-                'color' => ['argb' => 'FF1F4E79']
+                'color' => ['argb' => '000000']
             ],
             'alignment' => [
                 'horizontal' => Alignment::HORIZONTAL_CENTER,
@@ -664,19 +686,19 @@ class PenilaianExcelService
             ],
             'fill' => [
                 'fillType' => Fill::FILL_SOLID,
-                'startColor' => ['argb' => 'FFF79646']
+                'startColor' => ['argb' => 'FFFBD4B4']
             ]
         ]);
         $sheet->getRowDimension(1)->setRowHeight(30);
 
         // ===== ROW 2: BADAN AKREDITASI NASIONAL (Peach) =====
-        $sheet->mergeCells('A2:Y2');
-        $sheet->setCellValue('A2', 'Lembaga Akreditasi Mandiri Desain Perencanaan Lingkungan Arsitektur (LAMDEPILAR)');
-        $sheet->getStyle('A2')->applyFromArray([
+        $sheet->mergeCells('E2:Y2');
+        $sheet->setCellValue('E2', 'Lembaga Akreditasi Mandiri Desain Perencanaan Lingkungan Arsitektur (LAMDEPILAR)');
+        $sheet->getStyle('E2')->applyFromArray([
             'font' => [
                 'bold' => true,
                 'size' => 20,
-                'color' => ['argb' => 'FF1F4E79']
+                'color' => ['argb' => '000000']
             ],
             'alignment' => [
                 'horizontal' => Alignment::HORIZONTAL_CENTER,
@@ -693,13 +715,22 @@ class PenilaianExcelService
         $sheet->getRowDimension(3)->setRowHeight(5);
 
         // ===== ROW 4: PERGURUAN TINGGI AKADEMIK (Light Green) =====
-        $sheet->mergeCells('A4:Y4');
-        $sheet->setCellValue('A4', 'PERGURUAN TINGGI AKADEMIK');
-        $sheet->getStyle('A4')->applyFromArray([
+        $sheet->mergeCells('A4:C4');
+        $sheet->getStyle('A4:C4')->applyFromArray([
+            'fill' => [
+                'fillType' => Fill::FILL_SOLID,
+                'startColor' => [
+                    'argb' => 'FFEAF1DD',
+                ],
+            ],
+        ]);
+        $sheet->mergeCells('D4:Y4');
+        $sheet->setCellValue('D4', 'PERGURUAN TINGGI AKADEMIK');
+        $sheet->getStyle('D4')->applyFromArray([
             'font' => [
                 'bold' => true,
                 'size' => 20,
-                'color' => ['argb' => 'FF1F4E79']
+                'color' => ['argb' => '000000']
             ],
             'alignment' => [
                 'horizontal' => Alignment::HORIZONTAL_CENTER,
@@ -772,7 +803,7 @@ class PenilaianExcelService
             $sheet->getStyle("G{$row}:L{$row}")->applyFromArray([
                 'font' => [
                     'size' => 14,
-                    'color' => ['argb' => 'FF1F4E79']
+                    'color' => ['argb' => '000000']
                 ],
                 'alignment' => [
                     'horizontal' => Alignment::HORIZONTAL_LEFT,
@@ -878,7 +909,7 @@ class PenilaianExcelService
             $sheet->getStyle("T{$row}:X{$row}")->applyFromArray([
                 'font' => [
                     'size' => 14,
-                    'color' => ['argb' => 'FF1F4E79']
+                    'color' => ['rgb' => '000000']
                 ],
                 'alignment' => [
                     'horizontal' => Alignment::HORIZONTAL_LEFT,
@@ -934,6 +965,25 @@ class PenilaianExcelService
         foreach ([8, 10, 12, 14, 22, 24] as $row) {
             $sheet->getRowDimension($row)->setRowHeight(6);
         }
+
+        // =====================
+        // PRINT SETUP MENU SHEET
+        // =====================
+        $sheet->getPageSetup()->setPrintArea('A1:Y27');
+
+        // Landscape + A4 + fit to 1 page width (tinggi biarkan auto)
+        $sheet->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE);
+        $sheet->getPageSetup()->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_A4);
+        $sheet->getPageSetup()->setFitToWidth(1);
+        $sheet->getPageSetup()->setFitToHeight(0);
+
+        // Margin 0 semua
+        $sheet->getPageMargins()->setTop(0);
+        $sheet->getPageMargins()->setRight(0);
+        $sheet->getPageMargins()->setLeft(0);
+        $sheet->getPageMargins()->setBottom(0);
+        $sheet->getPageMargins()->setHeader(0);
+        $sheet->getPageMargins()->setFooter(0);
     }
 
     /**
@@ -945,15 +995,12 @@ class PenilaianExcelService
 
         // Bagian italic
         $italicText = $richText->createTextRun("Tuliskan pernyataan penilaian pada kolom ini apabila:\n\n");
-        $italicText->getFont()->setItalic(true);
+        $italicText->getFont()->setItalic(true)->getColor()->setARGB('FF1F4E79');
 
         // Bagian deskripsi (normal)
-        if ($deskripsi) {
-            $richText->createText($deskripsi);
-        } else {
-            $richText->createText("skor {$skor}");
-        }
-
+        $desc = $deskripsi ?: "skor {$skor}";
+        $descRun = $richText->createTextRun($desc);
+        $descRun->getFont()->getColor()->setARGB('FF31869B');
         return $richText;
     }
 
@@ -995,7 +1042,7 @@ class PenilaianExcelService
         // Buat sheet baru
         $sheet = $spreadsheet->createSheet();
         $sheet->setTitle('Penilaian ' . ucfirst($this->penilaianFullName));
-        $sheet->getSheetView()->setZoomScale(60);
+        self::addLogoAndZoom($sheet, 60);
 
         // Set column widths - fixed columns dulu
         $sheet->getColumnDimension('A')->setWidth(5);
@@ -1361,6 +1408,10 @@ class PenilaianExcelService
                     ->getAlignment()
                     ->setVertical(Alignment::VERTICAL_TOP)
                     ->setWrapText(true);
+                $sheet->getStyle("B{$currentRow}:F{$currentRow}")
+                    ->getFont()
+                    ->getColor()
+                    ->setARGB('FF31869B');
 
                 $currentRow++;
                 $penilaianAsesorRow += 2;
@@ -1626,6 +1677,12 @@ class PenilaianExcelService
                     ->setVertical(Alignment::VERTICAL_TOP)
                     ->setWrapText(true);
 
+                // SET FONT ISI
+                $sheet->getStyle("B{$row}:F{$row}")
+                    ->getFont()
+                    ->getColor()
+                    ->setARGB('FF31869B');
+
                 $currentRow++;
                 $isFirstElemen = false;
             }
@@ -1888,5 +1945,94 @@ class PenilaianExcelService
     {
         // $kategori = \App\Models\JenjangPenilaian::getSkorLabelAttribute($skor);
         return $komentar;
+    }
+
+    private function addLogoAndZoom(
+        $sheet,
+        int $zoomScale = 60,
+        string $coordinates = 'B2',
+        ?string $endCell = null,
+        int $logoHeight = 40
+    ): void {
+        $sheet->getSheetView()->setZoomScale($zoomScale);
+
+        $path = public_path('assets/images/logo.png');
+        if (!file_exists($path)) {
+            return;
+        }
+
+        $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
+        $drawing->setName('Logo');
+        $drawing->setDescription('Company Logo');
+        $drawing->setPath($path);
+
+        $drawing->setResizeProportional(true);
+        $drawing->setHeight($logoHeight);
+
+        if ($endCell !== null) {
+            [$colStart, $rowStart] = Coordinate::coordinateFromString($coordinates);
+            [$colEnd,   $rowEnd]   = Coordinate::coordinateFromString($endCell);
+
+            $startColIdx = Coordinate::columnIndexFromString($colStart);
+            $endColIdx   = Coordinate::columnIndexFromString($colEnd);
+
+            // default font (wajib untuk konversi width excel -> px)
+            $defaultFont = $sheet->getParent()->getDefaultStyle()->getFont();
+
+            // Total width area (px) - pakai width final kolom (fallback ke default)
+            $totalWidthPx = 0;
+            for ($col = $startColIdx; $col <= $endColIdx; $col++) {
+                $letter = Coordinate::stringFromColumnIndex($col);
+
+                $w = $sheet->getColumnDimension($letter)->getWidth();
+                if ($w <= 0) {
+                    $w = $sheet->getDefaultColumnDimension()->getWidth();
+                }
+
+                $totalWidthPx += SharedDrawing::cellDimensionToPixels($w, $defaultFont);
+            }
+
+            // Total height area (px) - pakai height final row (fallback ke default)
+            $totalHeightPx = 0;
+            for ($row = $rowStart; $row <= $rowEnd; $row++) {
+                $h = $sheet->getRowDimension($row)->getRowHeight();
+                if ($h <= 0) {
+                    $h = $sheet->getDefaultRowDimension()->getRowHeight();
+                    if ($h <= 0) $h = 15;
+                }
+
+                $totalHeightPx += SharedDrawing::pointsToPixels($h);
+            }
+
+            // Ukuran logo (px) dari file asli + target height $logoHeightpx
+            $targetHeightPx = $logoHeight;
+            $logoWidth = 120;
+            $logoHeight = $logoHeight;
+
+            $imgSize = @getimagesize($path);
+            if ($imgSize !== false) {
+                [$imgW, $imgH] = $imgSize;
+                if ($imgH > 0) {
+                    $scale = $targetHeightPx / $imgH;
+                    $logoWidth  = (int) round($imgW * $scale);
+                    $logoHeight = (int) round($imgH * $scale);
+                }
+            }
+
+            // Anchor di startCell, offset ke tengah area
+            $drawing->setCoordinates($coordinates);
+            $drawing->setOffsetX((int) round(($totalWidthPx  - $logoWidth)  / 2));
+            $drawing->setOffsetY((int) round(($totalHeightPx - $logoHeight) / 2));
+
+            // Biar behave seperti "di-merge area" (bergerak & ikut ukuran cell)
+            $drawing->setEditAs(\PhpOffice\PhpSpreadsheet\Worksheet\Drawing::EDIT_AS_ONECELL);
+        } else {
+            // JANGAN DIUBAH (sesuai request)
+            $drawing->setCoordinates($coordinates);
+            $drawing->setOffsetX(2);
+            $drawing->setOffsetY(2);
+        }
+
+        $drawing->setWorksheet($sheet);
     }
 }

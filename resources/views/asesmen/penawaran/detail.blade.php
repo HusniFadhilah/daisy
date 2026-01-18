@@ -184,8 +184,11 @@
                 });
 
                 // Redirect ke berkas
-                const route = '{{ $assignment->jenis_asesmen }}' === 'ak' ?
-                    "{{ route('ak.berkas.show', $asesmen->id) }}" : "{{ route('al.berkas.show', $asesmen->id) }}";
+                const route = '{{ $assignment->jenis_asesmen }}' === 'dokumen' ?
+                    "{{ route('validator.borang.show', $assignment->id) }}" :
+                    ('{{ $assignment->jenis_asesmen }}' === 'ak' ?
+                        "{{ route('ak.berkas.show', $asesmen->id) }}" :
+                        "{{ route('al.berkas.show', $asesmen->id) }}");
                 window.location.href = route;
             } else {
                 throw new Error(data.message);

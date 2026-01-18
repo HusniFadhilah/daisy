@@ -389,7 +389,8 @@ class AsesmenController extends Controller
             $missingRequirements = $request->jenis_asesmen === 'ak'
                 ? $asesmenKecukupan->getMissingRequirements()
                 : $asesmenLapangan->getMissingRequirements();
-
+            if ($asesmen->pengajuan)
+                $asesmen->pengajuan->checkUpdateStatusAKAL($request->jenis_asesmen, 'status_asesor_assigned');
             try {
                 SendPenawaranAsesmenEmail::dispatch($assignment);
             } catch (\Exception $e) {
@@ -641,7 +642,7 @@ class AsesmenController extends Controller
             if ($assignment->id_asesmen != $id) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Assignment tidak valid'
+                    'message' => 'Penugasan tidak valid'
                 ], 422);
             }
 
@@ -680,7 +681,7 @@ class AsesmenController extends Controller
             if (!$assignment) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Assignment tidak ditemukan'
+                    'message' => 'Penugasan tidak ditemukan'
                 ], 404);
             }
 
@@ -1005,7 +1006,7 @@ class AsesmenController extends Controller
             if ($existingValidator) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Pengajuan sudah memiliki validator borang.',
+                    'message' => 'Pengajuan sudah memiliki validator dokumen.',
                 ], 422);
             }
 
@@ -1015,9 +1016,9 @@ class AsesmenController extends Controller
                 $asesmen = Asesmen::create([
                     'id_pengajuan' => $idPengajuan,
                     'id_study_program' => $pengajuan->id_program_studi,
-                    'code' => 'ASM-' . Fungsi::uniqueCode(5),
-                    'name' => 'Asesmen - ' . $pengajuan->nomor_pengajuan,
-                    'description' => 'Asesmen untuk validasi LED',
+                    'code' => $pengajuan->nomor_pengajuan,
+                    'name' => $pengajuan->judul,
+                    'description' => $pengajuan->judul,
                 ]);
             }
 

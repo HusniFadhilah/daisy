@@ -512,7 +512,7 @@ class PengajuanAkreditasiController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Laporan Evaluasi Diri berhasil disubmit!',
+                'message' => 'Laporan Evaluasi Diri, Suplemen, dan LKPS berhasil disubmit!',
                 'data' => [
                     'status' => $pengajuan->status,
                     'submitted_at' => now()->format('d M Y H:i'),
@@ -530,6 +530,101 @@ class PengajuanAkreditasiController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal submit borang: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function unsubmitBorangOnline(Request $request, $id)
+    {
+        $request->validate([
+            'keterangan' => 'nullable|string|max:1000',
+        ]);
+
+        try {
+            $pengajuan = PengajuanAkreditasi::findOrFail($id);
+            $this->authorize('update', $pengajuan);
+
+            // Hanya boleh unsubmit kalau masih di tahap submit borang (belum validasi berjalan)
+            $allowed = [
+                PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
+                PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
+            ];
+
+            if (!in_array($pengajuan->status, $allowed, true)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak bisa unsubmit pada status saat ini.'
+                ], 422);
+            }
+
+            // Kalau sudah masuk validasi/revisi/validated dll, jangan boleh unsubmit
+            $blocked = [
+                PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
+                PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
+                PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,
+                PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
+                PengajuanAkreditasi::STATUS_DRAFT_BORANG_FINAL_DITERIMA,
+                PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
+                PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED,
+            ];
+
+            if (in_array($pengajuan->status, $blocked, true)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak bisa unsubmit karena sudah masuk tahap validasi/lanjutan.'
+                ], 422);
+            }
+
+            DB::beginTransaction();
+
+            // rollback status pengajuan
+            $oldStatus = $pengajuan->status;
+
+            $pengajuan->update([
+                // Balik ke tahap sebelum submit
+                'status' => PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
+
+                // Pilih salah satu:
+                // 1) null-kan supaya dianggap belum submit
+                'tanggal_draft_borang' => null,
+
+                // atau 2) kalau kamu mau tetap simpan histori submit pertama, comment baris atas
+                // 'tanggal_draft_borang' => $pengajuan->tanggal_draft_borang,
+            ]);
+
+            $ket = $request->input('keterangan');
+            $msg = 'Submit LED+Suplemen dan LKPS dibatalkan (unsubmit).'
+                . ($ket ? ' Catatan: ' . $ket : '');
+
+            $this->logStatus(
+                $pengajuan,
+                $oldStatus,
+                PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
+                $msg
+            );
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Submit LED+Suplemen dan LKPS berhasil dibatalkan.',
+                'data' => [
+                    'status' => $pengajuan->status,
+                    'unsubmitted_at' => now()->format('d M Y H:i'),
+                ]
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Unsubmit borang online failed', [
+                'pengajuan_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal unsubmit borang: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -780,7 +875,7 @@ class PengajuanAkreditasiController extends Controller
                 function ($attribute, $value, $fail) {
                     $wordCount = str_word_count(strip_tags($value));
                     if ($wordCount > 1000) {
-                        $fail('Isi maksimal 1000 kata. Saat ini: ' . $wordCount . ' kata.');
+                        $fail('Batas maksimal pengisian di bagian ini adalah 1000 kata. Saat ini: ' . $wordCount . ' kata.');
                     }
                 },
             ],
@@ -995,13 +1090,6 @@ class PengajuanAkreditasiController extends Controller
 
             DB::commit();
 
-            Log::info('Borang reset successfully', [
-                'pengajuan_id' => $pengajuan->id,
-                'user_id' => $authId,
-                'deleted_data' => $deletedData,
-                'deleted_imports' => $deletedImports,
-            ]);
-
             return response()->json([
                 'success' => true,
                 'message' => 'Borang berhasil direset!',
@@ -1153,6 +1241,12 @@ class PengajuanAkreditasiController extends Controller
 
         try {
             $pengajuan = PengajuanAkreditasi::findOrFail($id);
+            if (in_array($pengajuan->status, [
+                PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
+                PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
+            ])) {
+                return response()->json(['success' => false, 'message' => 'Sedang menunggu validasi LED+Suplemen, dan LKPS. Perubahan dokumen tidak diizinkan untuk sementara.'], 403);
+            }
             $user = auth()->user();
 
             // Authorization
@@ -1190,8 +1284,6 @@ class PengajuanAkreditasiController extends Controller
             $file = $request->file('docx_file');
             $filename = "kualitatif_v{$versi}_" . time() . ".docx";
             $path = $file->storeAs("pengajuan/{$pengajuan->id}/kualitatif", $filename, 'public');
-
-            Log::error($path);
             // Simpan / update dokumen
             $dokumen = PengajuanDokumen::updateOrCreate(
                 ['id' => $dokumenId],
@@ -1217,11 +1309,12 @@ class PengajuanAkreditasiController extends Controller
                 'stored_path'       => $path,
                 'status'            => 'pending',
                 'imported_by'       => $user->id,
+                'imported_at'       =>  now(),
             ]);
 
             // Dispatch job import borang
-            ImportBorangDocxJob::dispatch($pengajuan->id, storage_path("app/public/{$path}"));
-
+            ImportBorangDocxJob::dispatch($import->id, $pengajuan->id, storage_path("app/public/{$path}"));
+            $import->update(['status' => 'processing']);
             // Log status upload/re-upload
             PengajuanStatusLog::create([
                 'id_pengajuan' => $pengajuan->id,
@@ -1241,8 +1334,9 @@ class PengajuanAkreditasiController extends Controller
                     ? "Upload berhasil (versi {$versi})"
                     : "Re-upload berhasil (versi {$versi})",
                 'data' => [
+                    'import_id' => $import->id,
                     'dokumen_id' => $dokumen->id,
-                    'versi'      => $versi,
+                    'versi' => $versi,
                 ]
             ]);
         } catch (\Throwable $e) {
@@ -1262,6 +1356,8 @@ class PengajuanAkreditasiController extends Controller
     public function checkImportStatus($id, $importId)
     {
         try {
+            $pengajuan = PengajuanAkreditasi::findOrFail($id);
+            $this->authorize('update', $pengajuan);
             $borangImport = BorangImport::findOrFail($importId);
 
             return response()->json([
@@ -1293,42 +1389,39 @@ class PengajuanAkreditasiController extends Controller
     /**
      * Download template DOCX
      */
-    // public function downloadBorangTemplate($id)
-    // {
-    //     try {
-    //         Log::error($id);
-    //         $pengajuan = PengajuanAkreditasi::findOrFail($id);
-    //         $degreeLevel = $pengajuan->studyProgram->degreeLevel->code;
-    //         $fileName = 'TEMPLATE_LAPORAN_EVALUASI_DIRI_' . $degreeLevel . '.docx';
-    //         $templatePath = storage_path('app/public/templates/' . $fileName);
+    public function downloadBorangTemplate($id)
+    {
+        try {
+            $pengajuan = PengajuanAkreditasi::findOrFail($id);
+            $degreeLevel = $pengajuan->studyProgram->degreeLevel->code;
+            $fileName = 'TEMPLATE_LAPORAN_EVALUASI_DIRI_' . $degreeLevel . '.docx';
+            $templatePath = storage_path('app/public/templates/' . $fileName);
 
-    //         if (!file_exists($templatePath)) {
-    //             Log::error($templatePath);
-    //             Artisan::call('borang:generate-template', [
-    //                 '--degree_level' => $degreeLevel,
-    //             ]);
+            if (!file_exists($templatePath)) {
+                Artisan::call('borang:generate-template', [
+                    '--degree_level' => $degreeLevel,
+                ]);
 
-    //             if (!file_exists($templatePath)) {
-    //                 throw new \RuntimeException("Template belum berhasil dibuat: {$templatePath}");
-    //             }
-    //         }
-    //         Log::error($templatePath);
-    //         return response()->download($templatePath, $fileName);
-    //     } catch (\Exception $e) {
-    //         Log::error('Download template DOCX Error', [
-    //             'error' => $e->getMessage()
-    //         ]);
+                if (!file_exists($templatePath)) {
+                    throw new \RuntimeException("Template belum berhasil dibuat: {$templatePath}");
+                }
+            }
+            return response()->download($templatePath, $fileName);
+        } catch (\Exception $e) {
+            Log::error('Download template DOCX Error', [
+                'error' => $e->getMessage()
+            ]);
 
-    //         $previous = URL::previous();
-    //         $current = request()->fullUrl();
+            $previous = URL::previous();
+            $current = request()->fullUrl();
 
-    //         if (!$previous || rtrim($previous, '/') === rtrim($current, '/')) {
-    //             abort(500, 'Gagal mendownload template: ' . $e->getMessage());
-    //         }
+            if (!$previous || rtrim($previous, '/') === rtrim($current, '/')) {
+                abort(500, 'Gagal mendownload template: ' . $e->getMessage());
+            }
 
-    //         return redirect()->to($previous)->with('error', 'Gagal mendownload template: ' . $e->getMessage());
-    //     }
-    // }
+            return redirect()->to($previous)->with('error', 'Gagal mendownload template: ' . $e->getMessage());
+        }
+    }
 
     /**
      * Export borang yang sudah diisi ke DOCX
@@ -1344,8 +1437,9 @@ class PengajuanAkreditasiController extends Controller
 
             $exportService = new BorangExportService($pengajuan);
             $phpWord = $exportService->generate();
+            // $exportService->cleanupTmpPdfImages();
 
-            $fileName = 'LAPORAN_EVALUASI_DIRI_' . str_replace('/', '_', $pengajuan->nomor_pengajuan) . '_' . date('Y-m-d') . '.docx';
+            $fileName = 'LAPORAN_EVALUASI_DIRI_' . Str::slug($pengajuan->studyProgram->name) . '_' . date('Y-m-d') . '.docx';
             $tempFile = storage_path('app/temp/' . $fileName);
 
             if (!file_exists(dirname($tempFile))) {
@@ -1425,9 +1519,10 @@ class PengajuanAkreditasiController extends Controller
         $pengajuan = PengajuanAkreditasi::with('pembayaran')->findOrFail($id);
         $this->authorize('update', $pengajuan);
 
-        if ($pengajuan->status !== PengajuanAkreditasi::STATUS_MENUNGGU_PEMBAYARAN) {
-            return back()->with('error', 'Status pengajuan tidak sesuai untuk upload bukti pembayaran.');
-        }
+        if ($pengajuan->pembayaran && $pengajuan->pembayaran->status == 'menunggu_pembayaran')
+            if ($pengajuan->status !== PengajuanAkreditasi::STATUS_MENUNGGU_PEMBAYARAN) {
+                return back()->with('error', 'Status pengajuan tidak sesuai untuk upload bukti pembayaran.');
+            }
 
         DB::beginTransaction();
         try {
@@ -1474,12 +1569,13 @@ class PengajuanAkreditasiController extends Controller
             $pembayaran = PengajuanPembayaran::updateOrCreate(
                 ['id_pengajuan' => $pengajuan->id],
                 [
-                    'status_pembayaran'  => 'dibayar',
+                    'status_pembayaran'  => 'menunggu_verifikasi',
                     'tanggal_pembayaran' => $request->tanggal_pembayaran,
                     'bukti_path'         => $buktiPath,
                     'formulir_path'      => $formulirPath,
                     'nomor_invoice'      => $pengajuan->pembayaran->nomor_invoice ?? 'INV-' . Auth::id(),
                     'jumlah_pembayaran'  => $pengajuan->pembayaran->jumlah_pembayaran ?? 53000000,
+                    'catatan_pembayaran'  => $request->catatan_pembayaran,
                 ]
             );
 

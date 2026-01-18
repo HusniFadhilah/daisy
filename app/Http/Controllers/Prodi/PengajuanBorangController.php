@@ -104,7 +104,7 @@ class PengajuanBorangController extends Controller
         // Ambil label biar enak ditampilkan
         $elemenMap = ElemenStandar::whereIn('id', array_map('intval', array_keys($reviewLed)))->get()->keyBy('id');
         $suplemenMap = DatasetSuplemen::whereIn('id', array_map('intval', array_keys($reviewSuplemen)))->get()->keyBy('id');
-        $indikatorMap = Indikator::whereIn('id', array_map('intval', array_keys($reviewLkps)))->get()->keyBy('id');
+        $indikatorMap = Indikator::with(['elemenStandar:id,kode_elemen,pernyataan_elemen'])->whereIn('id', array_map('intval', array_keys($reviewLkps)))->get(['id', 'id_elemen', 'kode_indikator'])->keyBy('id');
 
         $items = [
             'led' => [],
@@ -139,10 +139,14 @@ class PengajuanBorangController extends Controller
 
         foreach ($reviewLkps as $indikatorId => $r) {
             $i = $indikatorMap->get((int)$indikatorId);
+            $e = $i?->elemenStandar;
+
             $items['lkps'][] = [
                 'id' => (int)$indikatorId,
                 'kode' => $i?->kode_indikator,
-                'label' => $i ? ($i->kode_indikator . ' - ' . $i->deskripsi_indikator) : ('Indikator ID ' . $indikatorId),
+                'label' => $e
+                    ? ($e->kode_elemen . ' - ' . $e->pernyataan_elemen)
+                    : ('Indikator ID ' . $indikatorId),
                 'grade' => $r['grade'] ?? null,
                 'catatan' => $r['catatan'] ?? null,
                 'needs_revision' => in_array(($r['grade'] ?? ''), ['B', 'C']),

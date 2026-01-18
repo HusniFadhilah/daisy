@@ -333,7 +333,7 @@ class BorangValidationExcelService
         $sheet->getStyle('D2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
         $sheet->mergeCells('D3:F3');
-        $sheet->setCellValue('D3', 'Tabel Validasi Suplemen - ' . strtoupper($degreeCode));
+        $sheet->setCellValue('D3', 'Tabel Validasi LKPS Prodi ' . ($pengajuan->studyProgram->name ?? ''));
         $sheet->getStyle('D3')->getFont()->setBold(true)->setSize(12);
         $sheet->getStyle('D3')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
@@ -426,7 +426,7 @@ class BorangValidationExcelService
         $sheet->getStyle('D2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
         $sheet->mergeCells('D3:I3');
-        $sheet->setCellValue('D3', 'Tabel Validasi LKPS (Kuantitatif) Prodi ' . ($pengajuan->studyProgram->name ?? ''));
+        $sheet->setCellValue('D3', 'Tabel Validasi LKPS Prodi ' . ($pengajuan->studyProgram->name ?? ''));
         $sheet->getStyle('D3')->getFont()->setBold(true)->setSize(12);
         $sheet->getStyle('D3')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 

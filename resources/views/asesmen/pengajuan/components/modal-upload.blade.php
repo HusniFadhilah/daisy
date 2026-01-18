@@ -38,114 +38,114 @@ $latestImport = $pengajuan->latestBorangImport;
         <!-- Already Processed -->
         <div class="alert alert-success alert-permanent">
             <i class="bi bi-check-circle"></i>
-            <strong>LED+Suplemen, dan LKPS Anda sudah diproses!</strong>
+            <strong>LED+Suplemen, dan LKPS Anda telah berhasil diupload!</strong>
             <br>
             <small class="text-muted">
                 Terakhir diproses: {{ $latestImport->imported_at->diffForHumans() }}
             </small>
         </div>
 
-        <div class="processing-stats mb-3">
+        {{-- <div class="processing-stats mb-3">
             <div class="row">
                 <div class="col-3 stat-item">
                     <h4>{{ $latestImport->total_sections }}</h4>
-                    <small>Bagian</small>
-                </div>
-                <div class="col-3 stat-item">
-                    <h4>{{ $latestImport->total_tables }}</h4>
-                    <small>Total Tabel</small>
-                </div>
-                <div class="col-3 stat-item">
-                    <h4>{{ $latestImport->parsed_tables }}</h4>
-                    <small>Terproses</small>
-                </div>
-                <div class="col-3 stat-item">
-                    <h4>{{ $latestImport->completion_percentage }}%</h4>
-                    <small>Kelengkapan</small>
-                </div>
-            </div>
-        </div>
+        <small>Bagian</small>
+    </div>
+    <div class="col-3 stat-item">
+        <h4>{{ $latestImport->total_tables }}</h4>
+        <small>Total Tabel</small>
+    </div>
+    <div class="col-3 stat-item">
+        <h4>{{ $latestImport->parsed_tables }}</h4>
+        <small>Terproses</small>
+    </div>
+    <div class="col-3 stat-item">
+        <h4>{{ $latestImport->completion_percentage }}%</h4>
+        <small>Kelengkapan</small>
+    </div>
+</div>
+</div> --}}
 
-        @if($latestImport->status === 'failed')
-        <div class="alert alert-danger alert-permanent">
-            <i class="bi bi-exclamation-triangle"></i>
-            <strong>Pembacaan Data Gagal!</strong><br>
-            {{ $latestImport->parsing_notes }}
-        </div>
-        @endif
+@if($latestImport->status === 'failed')
+<div class="alert alert-danger alert-permanent">
+    <i class="bi bi-exclamation-triangle"></i>
+    <strong>Pembacaan Data Gagal!</strong><br>
+    {{ $latestImport->parsing_notes }}
+</div>
+@endif
 
-        <div class="d-flex gap-2 flex-wrap">
-            <a href="{{ route('pengajuan.borang-online', $pengajuan->id) }}" class="btn btn-primary" target="_blank">
-                <i class="bi bi-pencil-square"></i> Halaman Pengisian LED & LKPS
-            </a>
+<div class="d-flex gap-2 flex-wrap">
+    <a href="{{ route('pengajuan.borang-online', $pengajuan->id) }}" class="btn btn-primary" target="_blank">
+        <i class="bi bi-pencil-square"></i> Halaman Pengisian LED & LKPS
+    </a>
 
-            <!-- 🆕 TOMBOL UPLOAD ULANG -->
-            {{-- <button type="button" class="btn btn-outline-warning" onclick="showUploadUlangModal()">
+    <!-- 🆕 TOMBOL UPLOAD ULANG -->
+    {{-- <button type="button" class="btn btn-outline-warning" onclick="showUploadUlangModal()">
                 <i class="bi bi-arrow-repeat"></i> Upload Ulang Dokumen
             </button>
 
             <button type="button" class="btn btn-outline-success" onclick="processBorang({{ $pengajuan->id }})">
-            <i class="bi bi-gear"></i> Proses Ulang Data
-            </button> --}}
+    <i class="bi bi-gear"></i> Proses Ulang Data
+    </button> --}}
 
-            @if($latestImport->parsing_errors)
-            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalProcessingErrors">
-                <i class="bi bi-bug"></i> Lihat Error Detail
-            </button>
-            @endif
-        </div>
+    @if($latestImport->parsing_errors)
+    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalProcessingErrors">
+        <i class="bi bi-bug"></i> Lihat Error Detail
+    </button>
+    @endif
+</div>
 
-        @elseif($draftBorang)
-        <!-- Not Processed Yet -->
-        <div class="alert alert-info alert-permanent">
-            <i class="bi bi-info-circle"></i>
-            <strong>Draft LED Anda sudah diupload!</strong><br>
-            File: <strong>{{ $draftBorang->original_filename }}</strong> ({{ $draftBorang->file_size_formatted }})
-        </div>
+@elseif($draftBorang)
+<!-- Not Processed Yet -->
+<div class="alert alert-info alert-permanent">
+    <i class="bi bi-info-circle"></i>
+    <strong>Draft LED Anda sudah diupload!</strong><br>
+    File: <strong>{{ $draftBorang->original_filename }}</strong> ({{ $draftBorang->file_size_formatted }})
+</div>
 
-        <div class="card bg-light mb-3">
-            <div class="card-body">
-                <h6 class="fw-bold mb-3">
-                    <i class="bi bi-gear"></i> Apa yang dilakukan oleh sistem?
-                </h6>
-                <div class="row">
-                    <div class="col-md-6">
-                        <ol class="mb-0">
-                            <li>Membaca struktur dokumen DOCX</li>
-                            <li>Mendeteksi bagian (D.1, E.1, dll)</li>
-                            <li>Mengekstrak tabel setelah marker</li>
-                        </ol>
-                    </div>
-                    <div class="col-md-6">
-                        <ol start="4" class="mb-0">
-                            <li>Mapping ke master elemen & dataset</li>
-                            <li>Validasi struktur data</li>
-                            <li>Generate preview HTML</li>
-                        </ol>
-                    </div>
-                </div>
+<div class="card bg-light mb-3">
+    <div class="card-body">
+        <h6 class="fw-bold mb-3">
+            <i class="bi bi-gear"></i> Apa yang dilakukan oleh sistem?
+        </h6>
+        <div class="row">
+            <div class="col-md-6">
+                <ol class="mb-0">
+                    <li>Membaca struktur dokumen DOCX</li>
+                    <li>Mendeteksi bagian (D.1, E.1, dll)</li>
+                    <li>Mengekstrak tabel setelah marker</li>
+                </ol>
+            </div>
+            <div class="col-md-6">
+                <ol start="4" class="mb-0">
+                    <li>Mapping ke master elemen & dataset</li>
+                    <li>Validasi struktur data</li>
+                    <li>Generate preview HTML</li>
+                </ol>
             </div>
         </div>
-
-        <div class="d-flex gap-2 flex-wrap">
-            <button type="button" class="btn btn-success" onclick="processBorang({{ $pengajuan->id }})" id="btnProcessBorang">
-                <i class="bi bi-gear"></i> Proses & Validasi Borang
-            </button>
-
-            <!-- 🆕 TOMBOL UPLOAD ULANG -->
-            <button type="button" class="btn btn-outline-warning" onclick="showUploadUlangModal()">
-                <i class="bi bi-arrow-repeat"></i> Upload Ulang Dokumen
-            </button>
-        </div>
-
-        <div id="processResult" class="mt-3" style="display: none;"></div>
-        @else
-        <div class="alert alert-warning alert-permanent">
-            <i class="bi bi-exclamation-triangle"></i>
-            Upload draft LED terlebih dahulu untuk melakukan pembacaan data.
-        </div>
-        @endif
     </div>
+</div>
+
+<div class="d-flex gap-2 flex-wrap">
+    <button type="button" class="btn btn-success" onclick="processBorang({{ $pengajuan->id }})" id="btnProcessBorang">
+        <i class="bi bi-gear"></i> Proses & Validasi Borang
+    </button>
+
+    <!-- 🆕 TOMBOL UPLOAD ULANG -->
+    <button type="button" class="btn btn-outline-warning" onclick="showUploadUlangModal()">
+        <i class="bi bi-arrow-repeat"></i> Upload Ulang Dokumen
+    </button>
+</div>
+
+<div id="processResult" class="mt-3" style="display: none;"></div>
+@else
+<div class="alert alert-warning alert-permanent">
+    <i class="bi bi-exclamation-triangle"></i>
+    Upload draft LED terlebih dahulu untuk melakukan pembacaan data.
+</div>
+@endif
+</div>
 </div>
 
 <!-- 🆕 MODAL UPLOAD ULANG -->
