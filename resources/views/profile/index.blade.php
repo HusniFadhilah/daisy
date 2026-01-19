@@ -164,11 +164,10 @@
             <div class="card-body text-center">
                 @if($user->role_selected === 'admin_prodi' && $user->university && $user->university->logo_path)
                 <div class="mb-3">
-                    <img src="{{ asset('storage/' . $user->university->logo_path) }}" alt="Logo {{ $user->university->name }}" 
-                         style="max-height: 80px; max-width: 200px; object-fit: contain;">
+                    <img src="{{ asset('storage/' . $user->university->logo_path) }}" alt="Logo {{ $user->university->name }}" style="max-height: 80px; max-width: 200px; object-fit: contain;">
                 </div>
                 @endif
-                
+
                 <div class="avatar-section mb-2">
                     <div class="avatar-wrapper">
                         <div class="avatar-preview" id="avatarPreview">
@@ -226,7 +225,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     @if($user->phone)
                     <div class="col-sm-6">
                         <div class="info-item">
@@ -238,7 +237,7 @@
                         </div>
                     </div>
                     @endif
-                    
+
                     @if($user->university)
                     <div class="col-sm-6">
                         <div class="info-item">
@@ -250,7 +249,7 @@
                         </div>
                     </div>
                     @endif
-                    
+
                     @if($user->studyProgram)
                     <div class="col-sm-6">
                         <div class="info-item">
@@ -258,7 +257,7 @@
                             <div>
                                 <div class="info-item-label">Program Studi</div>
                                 <div class="info-item-value">
-                                    {{ $user->studyProgram->name }} 
+                                    {{ $user->studyProgram->name }}
                                     @if($user->studyProgram->degreeLevel)
                                     ({{ $user->studyProgram->degreeLevel->alias }})
                                     @endif
@@ -267,7 +266,7 @@
                         </div>
                     </div>
                     @endif
-                    
+
                     @if($user->studyProgram && $user->studyProgram->category)
                     <div class="col-sm-6">
                         <div class="info-item">
@@ -279,7 +278,7 @@
                         </div>
                     </div>
                     @endif
-                    
+
                     <div class="col-sm-6">
                         <div class="info-item">
                             <i class="bi bi-calendar-check"></i>
@@ -404,10 +403,8 @@
                         <select class="form-select @error('id_study_program') is-invalid @enderror" id="id_study_program" name="id_study_program">
                             <option value="">-- Pilih Program Studi --</option>
                             @foreach($studyPrograms as $prodi)
-                            <option value="{{ $prodi->id }}" 
-                                    data-university="{{ $prodi->id_university }}"
-                                    {{ old('id_study_program', $user->id_study_program) == $prodi->id ? 'selected' : '' }}>
-                                {{ $prodi->name }} 
+                            <option value="{{ $prodi->id }}" data-university="{{ $prodi->id_university }}" {{ old('id_study_program', $user->id_study_program) == $prodi->id ? 'selected' : '' }}>
+                                {{ $prodi->name }}
                                 @if($prodi->degreeLevel)
                                 ({{ $prodi->degreeLevel->alias }})
                                 @endif
@@ -435,7 +432,7 @@
                 </div>
             </div>
 
-            <div class="alert alert-info mb-0 mt-2">
+            <div class="alert alert-info alert-permanent mb-0 mt-2">
                 <i class="bi bi-info-circle me-2"></i>
                 <strong>Catatan:</strong> Untuk mengubah password, gunakan menu
                 <a href="{{ route('profile.password') }}" class="alert-link">Ubah Password</a>.
@@ -561,10 +558,10 @@
 
     universitySelect.addEventListener('change', function() {
         const selectedUniversityId = this.value;
-        
+
         // Clear current options except first one
         prodiSelect.innerHTML = '<option value="">-- Pilih Program Studi --</option>';
-        
+
         if (!selectedUniversityId) {
             // Show all options if no university selected
             allProdiOptions.slice(1).forEach(option => {
