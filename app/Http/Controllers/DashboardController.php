@@ -22,19 +22,19 @@ class DashboardController extends Controller
     {
         // Data untuk statistik utama
         $stats = [
-            'penawaran' => 2,
-            'penugasan_aktif' => 1,
-            'progress' => 65,
-            'proses_ak' => 1,
-            'deadline_days' => 12,
-            'total_selesai' => 24,
-            'persentase_kenaikan' => 12,
+            'penawaran' => 0,
+            'penugasan_aktif' => 0,
+            'progress' => 0,
+            'proses_ak' => 0,
+            'deadline_days' => 0,
+            'total_selesai' => 0,
+            'persentase_kenaikan' => 0,
         ];
 
         // Data untuk statistik tambahan
         $additionalStats = [
-            'total_prodi' => 156,
-            'akurasi' => '98.5',
+            'total_prodi' => 801,
+            'akurasi' => '100',
             'waktu_rata' => '5.2',
             'peningkatan' => 15,
             'unread_messages' => 3,

@@ -193,7 +193,7 @@ return new class extends Migration
                 'upload_ulang',
                 'ditolak',
                 'terverifikasi',
-            ])->default('pending');
+            ])->default('menunggu_pembayaran');
 
             // Bukti & verifikasi
             $table->string('bukti_path')->nullable();
