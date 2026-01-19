@@ -23,6 +23,9 @@ class StudyProgramController extends Controller
 
             return DataTables::of($data)
                 ->addIndexColumn()
+                ->editColumn('name', function ($row) {
+                    return '<a href="' . route('study-programs.show', $row->id) . '">' . $row->name . '</a>';
+                })
                 ->addColumn('university_name', function ($row) {
                     return $row->university ? $row->university->name : '-';
                 })
@@ -48,12 +51,13 @@ class StudyProgramController extends Controller
                 })
                 ->addColumn('action', function ($row) {
                     $btn = '<div class="btn-group" role="group">';
+                    $btn .= '<a href="' . route('study-programs.show', $row->id) . '" class="btn btn-sm btn-info text-white"><i class="bi bi-eye"></i></a>';
                     $btn .= '<a href="' . route('study-programs.edit', $row->id) . '" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>';
                     $btn .= '<button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord(' . $row->id . ')"><i class="bi bi-trash"></i></button>';
                     $btn .= '</div>';
                     return $btn;
                 })
-                ->rawColumns(['peringkat', 'action'])
+                ->rawColumns(['name', 'peringkat', 'action'])
                 ->make(true);
         }
 
@@ -104,19 +108,26 @@ class StudyProgramController extends Controller
      */
     public function show($id)
     {
-        $studyProgram = StudyProgram::with(['university', 'degreeLevel'])->find($id);
+        $studyProgram = StudyProgram::with(['university', 'degreeLevel', 'category'])->find($id);
 
         if (!$studyProgram) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Study Program not found'
-            ], 404);
+            if (request()->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Study Program not found'
+                ], 404);
+            }
+            abort(404);
         }
 
-        return response()->json([
-            'success' => true,
-            'data' => $studyProgram
-        ]);
+        if (request()->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'data' => $studyProgram
+            ]);
+        }
+
+        return view('prodi.show', compact('studyProgram'));
     }
 
     /**
