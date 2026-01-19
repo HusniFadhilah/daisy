@@ -4,6 +4,7 @@
 namespace App\Http\Controllers\Asesmen;
 
 use Illuminate\Http\Request;
+use App\Models\AsesmenDocument;
 use App\Models\AsesmenUserRole;
 use App\Models\DatasetSuplemen;
 use Illuminate\Validation\Rule;
@@ -15,6 +16,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use App\Services\BorangValidationExcelService;
 
 class BorangValidatorController extends Controller
@@ -222,42 +224,7 @@ class BorangValidatorController extends Controller
         // ============================================
         // GET UPLOADED FILES
         // ============================================
-        $uploadedFiles = [
-            'led' => $pengajuan->dokumen()
-                ->where('is_latest', true)
-                ->whereIn('jenis_dokumen', [
-                    'data_kualitatif',
-                    'draft_borang',
-                    'borang_final',
-                ])
-                ->latest()
-                ->first(),
-
-            'suplemen' => $pengajuan->dokumen()
-                ->where('is_latest', true)
-                ->whereIn('jenis_dokumen', [
-                    'data_suplemen',
-                    'suplemen',
-                    'file_suplemen',
-                    'dokumen_pendukung',
-                ])
-                ->latest()
-                ->first(),
-
-            'lkps' => $pengajuan->dokumen()
-                ->where('is_latest', true)
-                ->whereIn('jenis_dokumen', [
-                    'data_kuantitatif',
-                    'kuantitatif',
-                ])
-                ->latest()
-                ->first(),
-
-            'pengesahan' => $pengajuan->dokumen()
-                ->where('jenis_dokumen', 'pengesahan')
-                ->where('is_latest', true)
-                ->first(),
-        ];
+        $uploadedFiles = $pengajuan->getUploadedDocuments();
 
         // ============================================
         // GET BORANG DATA (for LED content)
@@ -379,7 +346,7 @@ class BorangValidatorController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Review berhasil disimpan',
+                'message' => 'Review/validasi berhasil disimpan',
                 'progress' => $progress,
                 'is_complete' => $validation->fresh()->isCompletelyReviewed(),
             ]);
@@ -395,7 +362,7 @@ class BorangValidatorController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal menyimpan review: ' . $e->getMessage(),
+                'message' => 'Gagal menyimpan review/validasi: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -454,6 +421,7 @@ class BorangValidatorController extends Controller
                 'catatan_led' => $request->catatan_led,
                 'catatan_suplemen' => $request->catatan_suplemen,
                 'catatan_lkps' => $request->catatan_lkps,
+                'final_action' => $request->action,
             ]);
 
             if ($request->action === 'approve') {
@@ -463,7 +431,7 @@ class BorangValidatorController extends Controller
                 if (!$validation->isValidationPassed()) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'Masih ada item dengan kategori review "Kurang tepat, perlu melengkapi" atau "Perlu diperbaiki". Gunakan "Request Revision" atau ubah grade menjadi kategori review "Sudah tepat".',
+                        'message' => 'Masih ada item dengan kategori review "Kurang tepat, perlu melengkapi" atau "Perlu diperbaiki". Ubah kategori review setiap elemen menjadi "Sudah tepat" & Simpan data. Atau pada saat submit final, pilih "Minta Revisi" jika masih ada revisi',
                     ], 422);
                 }
 
@@ -516,64 +484,99 @@ class BorangValidatorController extends Controller
                     ], 422);
                 }
 
-                // Build revision points array
+                // 1) Kumpulkan semua ID
+                $ledElemenIds = collect($needsRevision['led'] ?? [])
+                    ->pluck('elemen_id')
+                    ->filter()
+                    ->unique()
+                    ->values();
+
+                $suplemenIds = collect($needsRevision['suplemen'] ?? [])
+                    ->pluck('elemen_id') // elemen_id = dataset_suplemen id
+                    ->filter()
+                    ->unique()
+                    ->values();
+
+                $lkpsIndikatorIds = collect($needsRevision['lkps'] ?? [])
+                    ->pluck('indikator_id')
+                    ->filter()
+                    ->unique()
+                    ->values();
+
+                // 2) Query sekali (bulk) + keyBy untuk lookup cepat
+                $elemenMap = \App\Models\ElemenStandar::query()
+                    ->whereIn('id', $ledElemenIds)
+                    ->get(['id', 'kode_elemen', 'pernyataan_elemen'])
+                    ->keyBy('id');
+
+                $suplemenMap = DatasetSuplemen::query()
+                    ->whereIn('id', $suplemenIds)
+                    ->get(['id', 'section_key', 'text_content'])
+                    ->keyBy('id');
+
+                // LKPS: eager load elemenStandar supaya tidak memicu query tambahan saat akses relasi
+                $indikatorMap = \App\Models\Indikator::query()
+                    ->with(['elemenStandar:id,kode_elemen,pernyataan_elemen'])
+                    ->whereIn('id', $lkpsIndikatorIds)
+                    ->get(['id', 'id_elemen']) // sesuaikan kolom FK kamu
+                    ->keyBy('id');
+
+                // 3) Build revision points tanpa query di dalam loop
                 $revisionPoints = [];
 
-                // LED revisions
+                // LED
                 if (!empty($needsRevision['led'])) {
                     $revisionPoints[] = '=== REVISI LED ===';
                     foreach ($needsRevision['led'] as $item) {
-                        $elemen = \App\Models\ElemenStandar::find($item['elemen_id']);
+                        $elemen = $elemenMap->get($item['elemen_id']);
                         $gradeLabel = BorangValidation::getGradeLabel($item['grade']);
-                        $elemenLabel = $elemen ? "{$elemen->kode_elemen} - {$elemen->pernyataan_elemen}" : "Elemen ID: {$item['elemen_id']}";
+
+                        $elemenLabel = $elemen
+                            ? "{$elemen->kode_elemen} - {$elemen->pernyataan_elemen}"
+                            : "Elemen ID: {$item['elemen_id']}";
 
                         $point = "LED - {$elemenLabel}: {$gradeLabel}";
-                        if (!empty($item['catatan'])) {
-                            $point .= " - {$item['catatan']}";
-                        }
+                        if (!empty($item['catatan'])) $point .= " - {$item['catatan']}";
                         $revisionPoints[] = $point;
                     }
                 }
 
-                // Suplemen revisions
+                // SUPLEMEN
                 if (!empty($needsRevision['suplemen'])) {
                     $revisionPoints[] = '=== REVISI SUPLEMEN ===';
                     foreach ($needsRevision['suplemen'] as $item) {
-
-                        $gradeLabel = BorangValidation::getGradeLabel($item['grade']); // ✅ WAJIB
-                        $ds = DatasetSuplemen::find($item['elemen_id']); // elemen_id = item suplemen id
+                        $gradeLabel = BorangValidation::getGradeLabel($item['grade']);
+                        $ds = $suplemenMap->get($item['elemen_id']);
 
                         $label = $ds
                             ? ("[" . $ds->section_key . "] " . $ds->text_content)
                             : ("Item Suplemen ID: " . $item['elemen_id']);
 
                         $point = "Suplemen - {$label}: {$gradeLabel}";
-                        if (!empty($item['catatan'])) {
-                            $point .= " - {$item['catatan']}";
-                        }
+                        if (!empty($item['catatan'])) $point .= " - {$item['catatan']}";
                         $revisionPoints[] = $point;
                     }
                 }
 
-                // LKPS revisions
+                // LKPS
                 if (!empty($needsRevision['lkps'])) {
                     $revisionPoints[] = '=== REVISI LKPS ===';
                     foreach ($needsRevision['lkps'] as $item) {
-                        $indikator = \App\Models\Indikator::find($item['indikator_id']);
+                        $indikator = $indikatorMap->get($item['indikator_id']);
                         $gradeLabel = BorangValidation::getGradeLabel($item['grade']);
-                        $indikatorLabel = $indikator ? "{$indikator->kode_indikator} - {$indikator->deskripsi_indikator}" : "Indikator ID: {$item['indikator_id']}";
+
+                        $es = $indikator?->elemenStandar; // sudah eager-loaded
+                        $indikatorLabel = $es
+                            ? "{$es->kode_elemen} - {$es->pernyataan_elemen}"
+                            : "Indikator ID: {$item['indikator_id']}";
 
                         $point = "LKPS - {$indikatorLabel}: {$gradeLabel}";
-                        if (!empty($item['catatan'])) {
-                            $point .= " - {$item['catatan']}";
-                        }
+                        if (!empty($item['catatan'])) $point .= " - {$item['catatan']}";
                         $revisionPoints[] = $point;
                     }
                 }
 
-                $validation->update([
-                    'revision_points' => $revisionPoints,
-                ]);
+                $validation->update(['revision_points' => $revisionPoints]);
 
                 $assignment->update([
                     'status_pekerjaan' => 'revision_required',
@@ -967,95 +970,6 @@ class BorangValidatorController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal reset review: ' . $e->getMessage(),
-            ], 500);
-        }
-    }
-
-    public function laporkanValidasi(Request $request, $idAssignment)
-    {
-        try {
-            DB::beginTransaction();
-
-            $user = Auth::user();
-
-            $assignment = AsesmenUserRole::with([
-                'asesmen.pengajuan',
-                'role_selected',
-            ])
-                ->where('id_user', $user->id)
-                ->whereHas('role_selected', fn($q) => $q->where('name', 'validator'))
-                ->where('jenis_asesmen', 'dokumen')
-                ->findOrFail($idAssignment);
-
-            // pastikan offer accepted
-            if ($assignment->status_penawaran !== 'accepted') {
-                DB::rollBack();
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Penawaran belum diterima.',
-                ], 422);
-            }
-
-            $pengajuan = $assignment->asesmen->pengajuan;
-            if (!$pengajuan) {
-                throw new \Exception('Pengajuan tidak ditemukan');
-            }
-
-            // hanya boleh lapor kalau sudah divalidasi (disesuaikan)
-            if ($pengajuan->status !== PengajuanAkreditasi::STATUS_BORANG_VALIDATED) {
-                DB::rollBack();
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Pengajuan belum berada pada status "LED+Suplemen dan LKPS Divalidasi".',
-                ], 422);
-            }
-
-            // idempotent: kalau sudah dilaporkan, jangan error
-            if ($pengajuan->status === PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN) {
-                DB::commit();
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Validasi sudah pernah dilaporkan.',
-                ]);
-            }
-
-            $statusFrom = $pengajuan->status;
-
-            $pengajuan->update([
-                'status' => PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
-                'tanggal_pelaporan_validasi_borang' => now(),
-            ]);
-
-            // (opsional) status pekerjaan assignment bisa kamu set jadi submitted/approved dll
-            // contoh kalau kamu punya status "submitted":
-            // $assignment->update(['status_pekerjaan' => 'submitted']);
-
-            // log status
-            $pengajuan->statusLog()->create([
-                'status_from' => $statusFrom,
-                'status_to' => PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
-                'changed_by' => $user->id,
-                'keterangan' => 'Pelaporan validasi LED+Suplemen dan LKPS  oleh validator ' . $user->name,
-                'changed_at' => now(),
-            ]);
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Validasi LED+Suplemen dan LKPS  berhasil dilaporkan. Status pengajuan telah diperbarui.',
-            ]);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Laporkan validasi LED+Suplemen dan LKPS  failed', [
-                'assignment_id' => $idAssignment,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal melaporkan validasi: ' . $e->getMessage(),
             ], 500);
         }
     }

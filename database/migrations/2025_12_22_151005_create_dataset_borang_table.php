@@ -163,36 +163,54 @@ return new class extends Migration
             $table->index(['dataset_id']);
         });
 
-        Schema::table('borang_validations', function (Blueprint $table) {
-            // Ganti checklist_items dengan struktur baru
+
+        Schema::create('borang_validations', function (Blueprint $table) {
+            $table->id();
+
+            // ✅ Link to assignment (reuse existing table)
+            $table->foreignId('id_assignment')
+                ->constrained('asesmen_user_roles')
+                ->onDelete('cascade');
+
+            $table->foreignId('id_pengajuan')
+                ->constrained('pengajuan_akreditasi')
+                ->onDelete('cascade');
+
+            // Validation checklist (flexible JSON)
             $table->json('review_led')->nullable()
-                ->comment('Review per elemen: {elemen_id: {grade: A/B/C, catatan: string}}')
-                ->after('id_pengajuan');
+                ->comment('Review per elemen: {elemen_id: {grade: A/B/C, catatan: string}}');
 
             $table->json('review_suplemen')->nullable()
-                ->comment('Review suplemen per elemen: {elemen_id: {grade: A/B/C, catatan: string}}')
-                ->after('review_led');
+                ->comment('Review suplemen per elemen: {elemen_id: {grade: A/B/C, catatan: string}}');
 
             $table->json('review_lkps')->nullable()
-                ->comment('Review LKPS per indikator kuantitatif: {indikator_id: {grade: A/B/C, catatan: string}}')
-                ->after('review_suplemen');
-
+                ->comment('Review LKPS per indikator kuantitatif: {indikator_id: {grade: A/B/C, catatan: string}}');
+            $table->json('revision_points')->nullable(); // Per-section revisions
             // Catatan umum per kategori
-            $table->text('catatan_led')->nullable()->after('review_lkps');
-            $table->text('catatan_suplemen')->nullable()->after('catatan_led');
-            $table->text('catatan_lkps')->nullable()->after('catatan_suplemen');
+            $table->text('catatan_led')->nullable();
+            $table->text('catatan_suplemen')->nullable();
+            $table->text('catatan_lkps')->nullable();
+            $table->text('catatan_validator')->nullable();
 
             // Statistik otomatis
-            $table->integer('total_elemen_led')->default(0)->after('total_sections');
-            $table->integer('total_elemen_suplemen')->default(0)->after('total_elemen_led');
-            $table->integer('total_indikator_lkps')->default(0)->after('total_elemen_suplemen');
+            $table->integer('total_sections')->default(0);
+            $table->integer('validated_sections')->default(0);
+            $table->integer('total_elemen_led')->default(0);
+            $table->integer('total_elemen_suplemen')->default(0);
+            $table->integer('total_indikator_lkps')->default(0);
 
-            $table->integer('reviewed_led')->default(0)->after('total_indikator_lkps');
-            $table->integer('reviewed_suplemen')->default(0)->after('reviewed_led');
-            $table->integer('reviewed_lkps')->default(0)->after('reviewed_suplemen');
+            $table->integer('reviewed_led')->default(0);
+            $table->integer('reviewed_suplemen')->default(0);
+            $table->integer('reviewed_lkps')->default(0);
+            $table->foreignId('id_validator_assigned')->nullable()->constrained('users', 'id')->onDelete('set null');
+            $table->timestamp('validated_at')->nullable();
+            $table->enum('final_action', [
+                'approve',
+                'revision',
+            ])->default('revision');
+            $table->timestamps();
 
-            // Drop old column
-            $table->dropColumn('checklist_items');
+            $table->index(['id_assignment', 'id_pengajuan']);
         });
 
         Schema::create('dataset_suplemen', function (Blueprint $table) {
@@ -210,10 +228,32 @@ return new class extends Migration
             $table->index(['degree_level_code', 'urutan']);
             $table->foreign('parent_id')->references('id')->on('dataset_suplemen')->onDelete('cascade');
         });
+
+        // ========================================
+        // 3. NEW TABLE: borang_revision_history
+        // ========================================
+        Schema::create('borang_revision_history', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('id_pengajuan')
+                ->constrained('pengajuan_akreditasi')
+                ->onDelete('cascade');
+            $table->foreignId('id_validation')
+                ->constrained('borang_validations')
+                ->onDelete('cascade');
+
+            $table->integer('revision_number')->default(1);
+            $table->json('revised_sections')->nullable();
+            $table->text('revision_notes')->nullable();
+
+            $table->foreignId('revised_by')->constrained('users');
+            $table->timestamp('revised_at');
+            $table->timestamps();
+        });
     }
 
     public function down()
     {
+        Schema::dropIfExists('borang_revision_history');
         Schema::dropIfExists('dataset_suplemen');
         Schema::dropIfExists('borang_validations');
         Schema::dropIfExists('borang_data');

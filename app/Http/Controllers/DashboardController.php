@@ -38,86 +38,93 @@ class DashboardController extends Controller
             'penawaran' => 0,
             'penugasan_aktif' => 0,
             'progress' => 0,
-            'proses_ak' => 1,
-            'deadline_days' => 45,
-            'total_selesai' => 3,
-            'persentase_kenaikan' => 50,
+            'proses_ak' => 0,
+            'deadline_days' => 0,
+            'total_selesai' => 0,
+            'persentase_kenaikan' => 0,
         ];
 
         $additionalStats = [
-            'total_prodi' => 5,
+            'total_prodi' => 801,
             'akurasi' => '100',
-            'waktu_rata' => '30',
-            'peningkatan' => 25,
-            'unread_messages' => 2,
+            'waktu_rata' => '5.2',
+            'peningkatan' => 15,
+            'unread_messages' => 5,
         ];
 
         $recentActivities = [
             (object)[
-                'type' => 'success',
-                'icon' => '✅',
-                'title' => 'Dokumen Akreditasi Disetujui',
-                'description' => 'Berkas akreditasi Program Studi S1 Teknik Informatika telah diverifikasi dan disetujui',
-                'time' => '3 jam yang lalu',
-            ],
-            (object)[
                 'type' => 'primary',
-                'icon' => '📄',
-                'title' => 'Dokumen Diunggah',
-                'description' => 'Anda telah mengunggah dokumen pendukung untuk kriteria 5 - Sumber Daya Manusia',
-                'time' => '1 hari yang lalu',
+                'icon' => '📝',
+                'title' => 'Hasil AK Berhasil Diunggah',
+                'description' => 'Anda telah mengunggah hasil penilaian AK untuk Program Studi S2 Ilmu Lingkungan - Universitas Diponegoro',
+                'time' => '2 jam yang lalu',
             ],
             (object)[
                 'type' => 'warning',
                 'icon' => '⚠️',
-                'title' => 'Dokumen Perlu Dilengkapi',
-                'description' => 'Masih ada 2 dokumen wajib yang belum diunggah untuk kriteria 3',
-                'time' => '2 hari yang lalu',
-            ],
-            (object)[
-                'type' => 'info',
-                'icon' => '📊',
-                'title' => 'Jadwal Visitasi Ditentukan',
-                'description' => 'Asesmen Lapangan dijadwalkan pada tanggal 20-22 Februari 2026',
-                'time' => '3 hari yang lalu',
+                'title' => 'Terdeteksi Split Nilai',
+                'description' => 'Terdapat 3 deskriptor dengan perbedaan penilaian. Silakan lakukan rekonsiliasi dengan partner asesor.',
+                'time' => '5 jam yang lalu',
             ],
             (object)[
                 'type' => 'success',
-                'icon' => '🎯',
-                'title' => 'Pengajuan Akreditasi Diterima',
-                'description' => 'Pengajuan akreditasi Program Studi S1 Teknik Informatika telah diterima dan diproses',
-                'time' => '5 hari yang lalu',
+                'icon' => '✉️',
+                'title' => 'Penawaran Asesmen Diterima',
+                'description' => 'Anda telah menerima penawaran asesmen untuk S1 Teknik Informatika - Universitas Bina Nusantara',
+                'time' => '1 hari yang lalu',
+            ],
+            (object)[
+                'type' => 'primary',
+                'icon' => '💬',
+                'title' => 'Pesan Baru dari Partner',
+                'description' => 'Dr. Paulus mengirim pesan terkait rekonsiliasi nilai pada butir F1|81|8.3.1',
+                'time' => '1 hari yang lalu',
+            ],
+            (object)[
+                'type' => 'success',
+                'icon' => '📊',
+                'title' => 'Validasi AK Selesai',
+                'description' => 'Hasil AK untuk S1 Manajemen - Universitas Pelita Harapan telah divalidasi oleh Dewan Eksekutif',
+                'time' => '2 hari yang lalu',
             ],
         ];
 
         $upcomingTasks = [
             (object)[
-                'title' => 'Lengkapi Dokumen Kriteria 3',
+                'title' => 'Upload Hasil Penilaian AK',
                 'priority' => 'high',
-                'description' => '2 dokumen wajib masih belum diunggah',
-                'deadline' => '20 Februari 2026',
-                'days_left' => 35,
+                'description' => 'S2 Ilmu Lingkungan - Universitas Diponegoro',
+                'deadline' => '25 Januari 2026',
+                'days_left' => 10,
             ],
             (object)[
-                'title' => 'Siapkan Visitasi Lapangan',
-                'priority' => 'medium',
-                'description' => 'Persiapan ruangan, dokumen fisik, dan jadwal asesmen lapangan',
-                'deadline' => '18 Februari 2026',
-                'days_left' => 33,
+                'title' => 'Rekonsiliasi Split Nilai',
+                'priority' => 'high',
+                'description' => '3 deskriptor perlu didiskusikan dengan Dr. Paulus',
+                'deadline' => '23 Januari 2026',
+                'days_left' => 8,
             ],
             (object)[
-                'title' => 'Validasi Data PDDIKTI',
+                'title' => 'Visitasi AL',
                 'priority' => 'medium',
-                'description' => 'Pastikan data di PDDIKTI sesuai dengan dokumen akreditasi',
-                'deadline' => '28 Februari 2026',
-                'days_left' => 43,
+                'description' => 'Asesmen Lapangan - S1 Teknik Informatika Universitas Bina Nusantara',
+                'deadline' => '28-30 Januari 2026',
+                'days_left' => 13,
+            ],
+            (object)[
+                'title' => 'Tanggapi Penawaran Baru',
+                'priority' => 'low',
+                'description' => '3 penawaran asesmen menunggu respon',
+                'deadline' => '5 Februari 2026',
+                'days_left' => 21,
             ],
         ];
 
-        $penawaranBaru = 0;
-        $penugasanAktif = 0;
-        $prosesAK = 1;
-        $notificationCount = 4;
+        $penawaranBaru = 3;
+        $penugasanAktif = 2;
+        $prosesAK = 2;
+        $notificationCount = 8;
 
         return view('admin.dashboard', compact(
             'stats',
@@ -226,7 +233,7 @@ class DashboardController extends Controller
         $prosesAK = 2;
         $notificationCount = 8;
 
-        return view('admin.dashboard', compact(
+        return view('user.dashboard', compact(
             'stats',
             'additionalStats',
             'recentActivities',

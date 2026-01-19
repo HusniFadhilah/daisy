@@ -432,6 +432,9 @@
     </div>
     @endif
 
+    @if(isset($asesmen->pengajuan))
+    @include('asesmen.ak.components.documents')
+    @endif
     <!-- ========== HEATMAP MATRIX (ENHANCED) ========== -->
     @include('asesmen.ak.components.heatmap-matrix')
 

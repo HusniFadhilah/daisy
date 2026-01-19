@@ -277,7 +277,16 @@ class BorangExampleSeeder extends Seeder
         ];
 
         // ✅ Kotak + teks bawaan
-        $this->addFrontMatterDescBox($section, 'Kata Pengantar', 500, $defaultKataPengantar, false);
+        $this->addFrontMatterDescBox(
+            $section,
+            'Kata Pengantar (Mohon jangan dihapus)',
+            500,
+            [],                      // tidak ada prefill
+            false,                    // fullHeight = true
+            1800,                    // reservedTopTwips (boleh adjust)
+            10000,                    // minBoxHeightTwips
+            "[Mohon isi kata pengantar di sini (maksimal 500 kata)...]"
+        );
 
         // Penutup (kanan bawah)
         $section->addText(
@@ -500,7 +509,7 @@ class BorangExampleSeeder extends Seeder
         //     ->setMaxLength(5000);
         $cell->addText(
             '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
-            ['size' => 11, 'color' => '000000', 'italic' => true],
+            ['size' => 11, 'color' => $this->templateBlue, 'italic' => false],
             ['spaceAfter' => 300, 'alignment' => Jc::BOTH]
         );
 
@@ -850,100 +859,6 @@ class BorangExampleSeeder extends Seeder
         );
     }
 
-    // private function addSuplemenSection()
-    // {
-    //     $section = $this->phpWord->addSection([
-    //         'marginTop' => 1000,
-    //         'marginBottom' => 1000,
-    //         'marginLeft' => 1500,
-    //         'marginRight' => 1500,
-    //     ]);
-
-    //     // Multilevel: I. / A. / 1. / a.
-    //     $numberingName = 'suplemenNumbering';
-    //     $this->ensureNumberingStyle($numberingName, [
-    //         'type' => 'multilevel',
-    //         'levels' => [
-    //             ['level' => 0, 'format' => 'upperRoman',  'text' => '%1.', 'left' => 360,  'hanging' => 360, 'tabPos' => 720],
-    //             ['level' => 1, 'format' => 'upperLetter', 'text' => '%2.', 'left' => 720,  'hanging' => 360, 'tabPos' => 1080],
-    //             ['level' => 2, 'format' => 'decimal',     'text' => '%3.', 'left' => 1080, 'hanging' => 360, 'tabPos' => 1440],
-    //             ['level' => 3, 'format' => 'lowerLetter', 'text' => '%4.', 'left' => 1440, 'hanging' => 360, 'tabPos' => 1800],
-    //         ],
-    //     ]);
-
-    //     // I. (bold)
-    //     $section->addListItem(
-    //         'Suplemen Program Studi Diploma Satu, Diploma Dua, Diploma Tiga',
-    //         0,
-    //         ['size' => 11, 'bold' => true],
-    //         $numberingName,
-    //         ['spaceAfter' => 120]
-    //     );
-
-    //     // A. (bold)  ✅ harus bold
-    //     $section->addListItem(
-    //         'Deskripsi Capaian Pembelajaran Lulusan, Susunan, Materi Pembelajaran, Beban Belajar, Rencana Pembelajaran',
-    //         1,
-    //         ['size' => 11, 'bold' => true],
-    //         $numberingName,
-    //         ['spaceAfter' => 80]
-    //     );
-
-    //     // 1., 2., a., b., dst (contoh ringkas sesuai screenshot kamu)
-    //     $section->addListItem('Capaian Pembelajaran Lulusan (CPL)', 2, ['size' => 11], $numberingName);
-    //     $section->addListItem('Susunan Materi Pembelajaran Untuk Mencapai CPL', 2, ['size' => 11], $numberingName);
-
-    //     $section->addListItem('Matakuliah', 3, ['size' => 11], $numberingName);
-    //     $section->addListItem('Modul', 3, ['size' => 11], $numberingName);
-    //     $section->addListItem('Blok tematik; dan/atau', 3, ['size' => 11], $numberingName);
-    //     $section->addListItem('Bentuk lain', 3, ['size' => 11], $numberingName);
-
-    //     $section->addListItem('Beban Belajar dan Masa Tempuh', 2, ['size' => 11], $numberingName);
-    //     $section->addListItem('Rencana Pembelajaran', 2, ['size' => 11], $numberingName);
-
-    //     $section->addTextBreak(1);
-
-    //     // B. (bold) ✅ harus bold
-    //     $section->addListItem(
-    //         'Pemastian Capaian Pembelajaran Lulusan',
-    //         1,
-    //         ['size' => 11, 'bold' => true],
-    //         $numberingName,
-    //         ['spaceAfter' => 80]
-    //     );
-
-    //     // B.1 dst -> di screenshot kamu jadi 1.,2.,3. (level decimal)
-    //     $section->addListItem('Pemenuhan Beban Belajar', 2, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-
-    //     // paragraf isi (bukan list) -> indent agar sejajar dengan teks setelah "1."
-    //     $section->addText(
-    //         'Kuliah, responsi, tutorial, seminar, praktikum, praktik, studio, penelitian, perancangan, pengembangan, tugas akhir, pelatihan bela negara, pertukaran pelajar, magang, wirausaha, pengabdian kepada masyarakat, dan/atau bentuk pembelajaran lain.',
-    //         ['size' => 11],
-    //         ['alignment' => Jc::BOTH, 'indentation' => ['left' => 1080], 'spaceAfter' => 120]
-    //     );
-
-    //     $section->addListItem('Magang', 2, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-    //     $section->addText(
-    //         'Kegiatan magang di dunia usaha, dunia industri, dan dunia kerja yang relevan pada program Diploma Satu, Diploma Dua, dan Diploma Tiga (Durasi dan Beban belajar)',
-    //         ['size' => 11],
-    //         ['alignment' => Jc::BOTH, 'indentation' => ['left' => 1080], 'spaceAfter' => 120]
-    //     );
-
-    //     $section->addListItem('Penilaian Hasil Belajar', 2, ['size' => 11], $numberingName, ['spaceAfter' => 60]);
-
-    //     // a. b. c. d. (level 3)
-    //     $section->addListItem('Test', 3, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-    //     $section->addListItem('Non Test', 3, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-    //     $section->addListItem('Observasi', 3, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-    //     $section->addListItem(
-    //         'Tugas akhir dalam bentuk prototipe, proyek, atau bentuk tugas akhir lainnya yang sejenis, baik secara individu maupun berkelompok, untuk program Diploma Tiga',
-    //         3,
-    //         ['size' => 11],
-    //         $numberingName,
-    //         ['spaceAfter' => 40]
-    //     );
-    // }
-
     /**
      * Helper untuk subtitle kriteria
      */
@@ -1103,7 +1018,7 @@ class BorangExampleSeeder extends Seeder
             [
                 'size' => 11,
                 'italic' => true,
-                'color' => '000000'
+                'color' => $this->templateBlue
             ],
             ['spaceAfter' => 200]
         );
@@ -1119,7 +1034,7 @@ class BorangExampleSeeder extends Seeder
             [
                 'size'   => 11,
                 'color'  => $filled ? '000000' : '000000',
-                'italic' => !$filled,
+                // 'italic' => !$filled,
             ],
             ['alignment' => Jc::BOTH]
         );
@@ -1133,7 +1048,8 @@ class BorangExampleSeeder extends Seeder
         bool $fullHeight = false,
         int $reservedTopTwips = 1800,      // hanya dipakai kalau fullHeight = true
         int $minBoxHeightTwips = 3000,     // hanya dipakai kalau fullHeight = true
-        ?string $emptyPlaceholder = null   // kalau null, auto pakai template umum
+        ?string $emptyPlaceholder = null,
+        bool $isPlaceholder = false // ✅ tambahan
     ): void {
         // Placeholder default jika kosong
         if ($emptyPlaceholder === null) {
@@ -1156,7 +1072,7 @@ class BorangExampleSeeder extends Seeder
             $boxHeight = max($minBoxHeightTwips, $this->contentHeightTwips - $reservedTopTwips);
             $table->addRow($boxHeight, ['exactHeight' => false]);
         } else {
-            $table->addRow();
+            $table->addRow($minBoxHeightTwips, ['exactHeight' => false]);
         }
 
         $cell = $table->addCell(9500, ['valign' => 'top']);
@@ -1164,7 +1080,7 @@ class BorangExampleSeeder extends Seeder
         // Header kecil dalam kotak
         $cell->addText(
             $label,
-            ['size' => 11, 'italic' => true],
+            ['size' => 11, 'italic' => true, 'color' => $this->templateBlue],
             ['spaceAfter' => 200]
         );
 
@@ -1174,7 +1090,7 @@ class BorangExampleSeeder extends Seeder
         if (!$hasPrefill) {
             $cell->addText(
                 $emptyPlaceholder,
-                ['size' => 11, 'color' => '000000', 'italic' => true],
+                ['size' => 11, 'color' => '000000'],
                 ['alignment' => Jc::BOTH, 'spaceAfter' => 200]
             );
             return;
@@ -1187,17 +1103,19 @@ class BorangExampleSeeder extends Seeder
 
             $cell->addText(
                 $p,
-                ['size' => 11, 'color' => '000000', 'italic' => true],
+                ['size' => 11, 'color' => '000000'],
                 ['alignment' => Jc::BOTH, 'spaceAfter' => 200]
             );
         }
 
-        // Hint limit kata
-        $cell->addText(
-            "(Maksimal {$maxWords} kata)",
-            ['size' => 10, 'color' => '000000', 'italic' => true],
-            ['alignment' => Jc::END]
-        );
+        // ✅ hint max kata hanya untuk placeholder/template
+        if ($isPlaceholder) {
+            $cell->addText(
+                "(Maksimal {$maxWords} kata)",
+                ['size' => 10, 'color' => '000000'],
+                ['alignment' => Jc::END]
+            );
+        }
     }
 
     private function addRow(
@@ -1334,403 +1252,6 @@ class BorangExampleSeeder extends Seeder
         return strtolower($c);
     }
 
-    private function renderSuplemenDiploma123($section, string $numberingName): void
-    {
-        $section->addListItem(
-            'Suplemen Program Studi Diploma Satu, Diploma Dua, Diploma Tiga',
-            0,
-            ['size' => 11, 'bold' => true],
-            $numberingName,
-            ['spaceAfter' => 120]
-        );
-
-        $this->renderSuplemenBagianACommon($section, $numberingName);
-
-        $section->addTextBreak(1);
-
-        $section->addListItem('Pemastian Capaian Pembelajaran Lulusan', 1, ['size' => 11, 'bold' => true], $numberingName, ['spaceAfter' => 80]);
-
-        $section->addListItem('Pemenuhan Beban Belajar', 2, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $this->addSuplemenParagraphIndented(
-            $section,
-            'Kuliah, responsi, tutorial, seminar, praktikum, praktik, studio, penelitian, perancangan, pengembangan, tugas akhir, pelatihan bela negara, pertukaran pelajar, magang, wirausaha, pengabdian kepada masyarakat, dan/atau bentuk pembelajaran lain.'
-        );
-
-        $section->addListItem('Magang', 2, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $this->addSuplemenParagraphIndented(
-            $section,
-            'Kegiatan magang di dunia usaha, dunia industri, dan dunia kerja yang relevan pada program Diploma Satu, Diploma Dua, dan Diploma Tiga (Durasi dan Beban belajar).'
-        );
-
-        $section->addListItem('Penilaian Hasil Belajar', 2, ['size' => 11], $numberingName, ['spaceAfter' => 60]);
-        $section->addListItem('Test', 3, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $section->addListItem('Non Test', 3, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $section->addListItem('Observasi', 3, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $section->addListItem(
-            'Tugas akhir dalam bentuk prototipe, proyek, atau bentuk tugas akhir lainnya yang sejenis, baik secara individu maupun berkelompok, untuk program Diploma Tiga',
-            3,
-            ['size' => 11],
-            $numberingName,
-            ['spaceAfter' => 40]
-        );
-    }
-
-    private function renderSuplemenSarjanaTerapan($section, string $numberingName): void
-    {
-        $section->addListItem(
-            'Suplemen Program Studi Diploma Empat/Sarjana Terapan',
-            0,
-            ['size' => 11, 'bold' => true],
-            $numberingName,
-            ['spaceAfter' => 120]
-        );
-
-        $this->renderSuplemenBagianACommon($section, $numberingName);
-
-        $section->addTextBreak(1);
-
-        $section->addListItem('Pemastian Capaian Pembelajaran Lulusan', 1, ['size' => 11, 'bold' => true], $numberingName, ['spaceAfter' => 80]);
-
-        $section->addListItem('Pemenuhan Beban Belajar', 2, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $this->addSuplemenParagraphIndented(
-            $section,
-            'Kuliah, responsi, tutorial, seminar, praktikum, praktik, studio, penelitian, perancangan, pengembangan, tugas akhir, pelatihan bela negara, pertukaran pelajar, magang, wirausaha, pengabdian kepada masyarakat, dan/atau bentuk pembelajaran lain.'
-        );
-
-        $section->addListItem(
-            'Magang dan/atau Kerja Praktek, Studio dan/atau Praktikum, Kuliah Kerja Nyata/KKN, Kuliah Kerja Lapangan (KKL)',
-            2,
-            ['size' => 11],
-            $numberingName,
-            ['spaceAfter' => 40]
-        );
-
-        // bullet (pakai text biasa agar cepat)
-        $this->addSuplemenBulletIndented($section, 'Kegiatan Magang dan/atau Kerja Praktek di dunia usaha, dunia industri, atau dunia kerja yang relevan pada program Sarjana Terapan (Durasi dan Beban belajar).');
-        $this->addSuplemenBulletIndented($section, 'Kegiatan Studio dan/atau Praktikum yang relevan pada program Sarjana Terapan (Durasi dan Beban belajar).');
-        $this->addSuplemenBulletIndented($section, 'Kegiatan Kuliah Kerja Nyata/KKN yang relevan pada program Sarjana Terapan (Durasi dan Beban belajar).');
-        $this->addSuplemenBulletIndented($section, 'Kegiatan Kuliah Kerja Lapangan/KKL yang relevan pada program Sarjana Terapan (Durasi dan Beban belajar).');
-
-        $section->addListItem('Penilaian Hasil Belajar', 2, ['size' => 11], $numberingName, ['spaceAfter' => 60]);
-        $section->addListItem('Test', 3, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $section->addListItem('Non Test', 3, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $section->addListItem('Observasi', 3, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $section->addListItem(
-            'Tugas akhir dalam bentuk prototipe, proyek, atau bentuk tugas akhir lainnya yang sejenis, baik secara individu maupun berkelompok, untuk Diploma Empat/Sarjana Terapan',
-            3,
-            ['size' => 11],
-            $numberingName,
-            ['spaceAfter' => 40]
-        );
-    }
-
-    private function renderSuplemenSarjana($section, string $numberingName): void
-    {
-        $section->addListItem(
-            'Suplemen Program Studi Sarjana',
-            0,
-            ['size' => 11, 'bold' => true],
-            $numberingName,
-            ['spaceAfter' => 120]
-        );
-
-        $this->renderSuplemenBagianACommon($section, $numberingName);
-
-        $section->addTextBreak(1);
-
-        $section->addListItem('Pemastian Capaian Pembelajaran Lulusan', 1, ['size' => 11, 'bold' => true], $numberingName, ['spaceAfter' => 80]);
-
-        $section->addListItem('Pemenuhan Beban Belajar', 2, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $this->addSuplemenParagraphIndented(
-            $section,
-            'Kuliah, responsi, tutorial, seminar, praktikum, praktik, studio, penelitian, perancangan, pengembangan, tugas akhir, pelatihan bela negara, pertukaran pelajar, magang, wirausaha, pengabdian kepada masyarakat, dan/atau bentuk pembelajaran lain.'
-        );
-
-        $section->addListItem('Studio, Praktikum, Magang, Kuliah Kerja Nyata/KKN, Kuliah Kerja Lapangan (KKL)', 2, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $this->addSuplemenBulletIndented($section, 'Kegiatan Studio dan/atau Praktikum yang relevan pada program Sarjana (Durasi dan Beban belajar).');
-        $this->addSuplemenBulletIndented($section, 'Kegiatan Magang dan/atau Kerja Praktek di dunia usaha, dunia industri, atau dunia kerja yang relevan pada program Sarjana (Durasi dan Beban belajar).');
-        $this->addSuplemenBulletIndented($section, 'Kegiatan Kuliah Kerja Nyata/KKN yang relevan pada program Sarjana (Durasi dan Beban belajar).');
-        $this->addSuplemenBulletIndented($section, 'Kegiatan Kuliah Kerja Lapangan/KKL yang relevan pada program Sarjana (Durasi dan Beban belajar).');
-
-        $section->addListItem('Skripsi, prototipe, proyek, tugas akhir, kurikulum berbasis proyek', 2, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $this->addSuplemenBulletIndented($section, 'Bentuk skripsi, prototipe, proyek, atau bentuk tugas akhir lainnya yang sejenis baik secara individu maupun berkelompok.');
-        $this->addSuplemenBulletIndented($section, 'Penerapan kurikulum berbasis proyek atau bentuk pembelajaran lainnya yang sejenis dan asesmen yang dapat menunjukkan kompetensi lulusan.');
-
-        $section->addListItem('Penilaian Hasil Belajar', 2, ['size' => 11], $numberingName, ['spaceAfter' => 60]);
-        $section->addListItem('Test', 3, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $section->addListItem('Non Test', 3, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $section->addListItem('Observasi', 3, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $section->addListItem(
-            'Tugas akhir dalam bentuk prototipe, proyek, atau bentuk tugas akhir lainnya yang sejenis, baik secara individu maupun berkelompok, untuk Sarjana',
-            3,
-            ['size' => 11],
-            $numberingName,
-            ['spaceAfter' => 40]
-        );
-    }
-
-    private function renderSuplemenProfesi($section, string $numberingName): void
-    {
-        $section->addListItem(
-            'Suplemen Program Studi Profesi',
-            0,
-            ['size' => 11, 'bold' => true],
-            $numberingName,
-            ['spaceAfter' => 120]
-        );
-
-        $this->renderSuplemenBagianACommon($section, $numberingName);
-
-        $section->addTextBreak(1);
-
-        $section->addListItem('Pemastian Capaian Pembelajaran Lulusan', 1, ['size' => 11, 'bold' => true], $numberingName, ['spaceAfter' => 80]);
-
-        $section->addListItem('Pemenuhan Beban Belajar', 2, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $this->addSuplemenParagraphIndented(
-            $section,
-            'Kuliah, responsi, tutorial, seminar, praktikum, praktik, studio, penelitian, perancangan, pengembangan, tugas akhir, pelatihan bela negara, pertukaran pelajar, magang, wirausaha, pengabdian kepada masyarakat, dan/atau bentuk pembelajaran lain.'
-        );
-
-        $section->addListItem('Praktek, Studio', 2, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $this->addSuplemenBulletIndented($section, 'Kegiatan Praktek profesi di dunia usaha, dunia industri, atau dunia kerja yang relevan pada program profesi (Durasi dan Beban belajar).');
-        $this->addSuplemenBulletIndented($section, 'Kegiatan Studio yang mendukung dan/atau relevan dengan kegiatan praktek profesi pada program Profesi (Durasi dan Beban belajar).');
-
-        $section->addListItem('Tugas Akhir', 2, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $this->addSuplemenBulletIndented($section, 'Tugas akhir dalam bentuk prototipe, proyek, atau bentuk tugas akhir lainnya yang sejenis, yang relevan pada program Profesi.');
-
-        $section->addListItem('Penilaian Hasil Belajar', 2, ['size' => 11], $numberingName, ['spaceAfter' => 60]);
-        $section->addListItem('Test', 3, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $section->addListItem('Non Test', 3, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $section->addListItem('Observasi', 3, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $section->addListItem(
-            'Tugas akhir dalam bentuk prototipe, proyek, atau bentuk tugas akhir lainnya yang sejenis, baik secara individu maupun berkelompok, untuk Profesi',
-            3,
-            ['size' => 11],
-            $numberingName,
-            ['spaceAfter' => 40]
-        );
-    }
-
-    private function renderSuplemenMagister($section, string $numberingName): void
-    {
-        $section->addListItem(
-            'Suplemen Program Studi Magister',
-            0,
-            ['size' => 11, 'bold' => true],
-            $numberingName,
-            ['spaceAfter' => 120]
-        );
-
-        $this->renderSuplemenBagianACommon($section, $numberingName);
-
-        $section->addTextBreak(1);
-
-        $section->addListItem('Pemastian Capaian Pembelajaran Lulusan', 1, ['size' => 11, 'bold' => true], $numberingName, ['spaceAfter' => 80]);
-
-        $section->addListItem('Pemenuhan Beban Belajar', 2, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $this->addSuplemenParagraphIndented(
-            $section,
-            'Kuliah, responsi, tutorial, seminar, praktikum, praktik, studio, penelitian, perancangan, pengembangan, tugas akhir, pelatihan bela negara, pertukaran pelajar, magang, wirausaha, pengabdian kepada masyarakat, dan/atau bentuk pembelajaran lain.'
-        );
-
-        $section->addListItem('Studio dan/atau Praktikum, Penelitian, Perancangan', 2, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $this->addSuplemenBulletIndented($section, 'Kegiatan Studio dan/atau Praktikum yang relevan pada program Magister (Durasi dan Beban belajar).');
-        $this->addSuplemenBulletIndented($section, 'Kegiatan Penelitian yang relevan pada Program Magister (Durasi dan Beban belajar).');
-        $this->addSuplemenBulletIndented($section, 'Kegiatan Perancangan yang relevan pada program Magister (Durasi dan Beban belajar).');
-
-        $section->addListItem('Tugas Akhir', 2, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $this->addSuplemenBulletIndented($section, 'Tugas akhir dalam bentuk tesis, prototipe, proyek, atau bentuk tugas akhir lainnya yang sejenis.');
-
-        $section->addListItem('Penilaian Hasil Belajar', 2, ['size' => 11], $numberingName, ['spaceAfter' => 60]);
-        $section->addListItem('Test', 3, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $section->addListItem('Non Test', 3, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $section->addListItem('Observasi', 3, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $section->addListItem(
-            'Tugas akhir dalam bentuk tesis, prototipe, proyek, atau bentuk tugas akhir lainnya yang sejenis untuk program Magister',
-            3,
-            ['size' => 11],
-            $numberingName,
-            ['spaceAfter' => 40]
-        );
-    }
-
-    private function renderSuplemenMagisterTerapan($section, string $numberingName): void
-    {
-        $section->addListItem(
-            'Suplemen Program Studi Magister Terapan',
-            0,
-            ['size' => 11, 'bold' => true],
-            $numberingName,
-            ['spaceAfter' => 120]
-        );
-
-        $this->renderSuplemenBagianACommon($section, $numberingName);
-
-        $section->addTextBreak(1);
-
-        $section->addListItem('Pemastian Capaian Pembelajaran Lulusan', 1, ['size' => 11, 'bold' => true], $numberingName, ['spaceAfter' => 80]);
-
-        $section->addListItem('Pemenuhan Beban Belajar', 2, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $this->addSuplemenParagraphIndented(
-            $section,
-            'Kuliah, responsi, tutorial, seminar, praktikum, praktik, studio, penelitian, perancangan, pengembangan, tugas akhir, pelatihan bela negara, pertukaran pelajar, magang, wirausaha, pengabdian kepada masyarakat, dan/atau bentuk pembelajaran lain.'
-        );
-
-        $section->addListItem('Studio dan/atau Praktikum, Perancangan, Praktek', 2, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $this->addSuplemenBulletIndented($section, 'Kegiatan Studio dan/atau Praktikum yang relevan pada program Magister Terapan (Durasi dan Beban belajar).');
-        $this->addSuplemenBulletIndented($section, 'Kegiatan Perancangan yang pada program Magister Terapan (Durasi dan Beban belajar).');
-        $this->addSuplemenBulletIndented($section, 'Kegiatan Praktek di dunia usaha, dunia industri, atau dunia kerja yang relevan pada program profesi (Durasi dan Beban belajar).');
-
-        $section->addListItem('Tugas Akhir', 2, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $this->addSuplemenBulletIndented($section, 'Tugas akhir dalam bentuk tesis, prototipe, proyek, atau bentuk tugas akhir lainnya yang sejenis.');
-
-        $section->addListItem('Penilaian Hasil Belajar', 2, ['size' => 11], $numberingName, ['spaceAfter' => 60]);
-        $section->addListItem('Test', 3, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $section->addListItem('Non Test', 3, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $section->addListItem('Observasi', 3, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $section->addListItem(
-            'Tugas akhir dalam bentuk tesis, prototipe, proyek, atau bentuk tugas akhir lainnya yang sejenis untuk program Magister Terapan',
-            3,
-            ['size' => 11],
-            $numberingName,
-            ['spaceAfter' => 40]
-        );
-    }
-
-    private function renderSuplemenDoktor($section, string $numberingName): void
-    {
-        $section->addListItem(
-            'Suplemen Program Studi Doktor',
-            0,
-            ['size' => 11, 'bold' => true],
-            $numberingName,
-            ['spaceAfter' => 120]
-        );
-
-        $this->renderSuplemenBagianACommon($section, $numberingName);
-
-        $section->addTextBreak(1);
-
-        $section->addListItem('Pemastian Capaian Pembelajaran Lulusan', 1, ['size' => 11, 'bold' => true], $numberingName, ['spaceAfter' => 80]);
-
-        $section->addListItem('Pemenuhan Beban Belajar', 2, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $this->addSuplemenParagraphIndented(
-            $section,
-            'Kuliah, responsi, tutorial, seminar, praktikum, praktik, studio, penelitian, perancangan, pengembangan, tugas akhir, pelatihan bela negara, pertukaran pelajar, magang, wirausaha, pengabdian kepada masyarakat, dan/atau bentuk pembelajaran lain.'
-        );
-
-        $section->addListItem('Penelitian, Perancangan', 2, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $this->addSuplemenBulletIndented($section, 'Kegiatan Penelitian relevan pada program Doktor (Durasi dan Beban belajar).');
-        $this->addSuplemenBulletIndented($section, 'Kegiatan Perancangan yang relevan pada program Doktor (Durasi dan Beban belajar).');
-
-        $section->addListItem('Tugas Akhir', 2, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $this->addSuplemenBulletIndented($section, 'Tugas akhir dalam bentuk disertasi, prototipe, proyek, atau bentuk tugas akhir lainnya yang sejenis.');
-
-        $section->addListItem('Penilaian Hasil Belajar', 2, ['size' => 11], $numberingName, ['spaceAfter' => 60]);
-        $section->addListItem('Test', 3, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $section->addListItem('Non Test', 3, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $section->addListItem('Observasi', 3, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $section->addListItem(
-            'Tugas akhir dalam bentuk disertasi, prototipe, proyek, atau bentuk tugas akhir lainnya yang sejenis untuk program Doktor',
-            3,
-            ['size' => 11],
-            $numberingName,
-            ['spaceAfter' => 40]
-        );
-    }
-
-    private function renderSuplemenDoktorTerapan($section, string $numberingName): void
-    {
-        $section->addListItem(
-            'Suplemen Program Studi Doktor Terapan',
-            0,
-            ['size' => 11, 'bold' => true],
-            $numberingName,
-            ['spaceAfter' => 120]
-        );
-
-        $this->renderSuplemenBagianACommon($section, $numberingName);
-
-        $section->addTextBreak(1);
-
-        $section->addListItem('Pemastian Capaian Pembelajaran Lulusan', 1, ['size' => 11, 'bold' => true], $numberingName, ['spaceAfter' => 80]);
-
-        $section->addListItem('Pemenuhan Beban Belajar', 2, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $this->addSuplemenParagraphIndented(
-            $section,
-            'Kuliah, responsi, tutorial, seminar, praktikum, praktik, studio, penelitian, perancangan, pengembangan, tugas akhir, pelatihan bela negara, pertukaran pelajar, magang, wirausaha, pengabdian kepada masyarakat, dan/atau bentuk pembelajaran lain.'
-        );
-
-        $section->addListItem('Studio dan/atau Praktikum, Perancangan, Praktek', 2, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $this->addSuplemenBulletIndented($section, 'Kegiatan Studio dan/atau Praktikum yang relevan pada program Doktor Terapan (Durasi dan Beban belajar).');
-        $this->addSuplemenBulletIndented($section, 'Kegiatan Perancangan yang pada program Doktor Terapan (Durasi dan Beban belajar).');
-        $this->addSuplemenBulletIndented($section, 'Kegiatan Praktek di dunia usaha, dunia industri, atau dunia kerja yang relevan pada program Doktor Terapan (Durasi dan Beban belajar).');
-
-        $section->addListItem('Tugas Akhir', 2, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $this->addSuplemenBulletIndented($section, 'Tugas akhir dalam bentuk Disertasi, prototipe, proyek, atau bentuk tugas akhir lainnya yang sejenis.');
-
-        $section->addListItem('Penilaian Hasil Belajar', 2, ['size' => 11], $numberingName, ['spaceAfter' => 60]);
-        $section->addListItem('Test', 3, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $section->addListItem('Non Test', 3, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $section->addListItem('Observasi', 3, ['size' => 11], $numberingName, ['spaceAfter' => 40]);
-        $section->addListItem(
-            'Tugas akhir dalam bentuk Disertasi, prototipe, proyek, atau bentuk tugas akhir lainnya yang sejenis untuk program Doktor Terapan',
-            3,
-            ['size' => 11],
-            $numberingName,
-            ['spaceAfter' => 40]
-        );
-    }
-
-    private function renderSuplemenBagianACommon($section, string $numberingName): void
-    {
-        $section->addListItem(
-            'Deskripsi Capaian Pembelajaran Lulusan, Susunan Materi Pembelajaran, Beban Belajar, Rencana Pembelajaran',
-            1,
-            ['size' => 11, 'bold' => true],
-            $numberingName,
-            ['spaceAfter' => 80]
-        );
-
-        $section->addListItem('Capaian Pembelajaran Lulusan (CPL)', 2, ['size' => 11], $numberingName);
-        $section->addListItem('Susunan Materi Pembelajaran Untuk Mencapai CPL', 2, ['size' => 11], $numberingName);
-
-        $section->addListItem('Matakuliah', 3, ['size' => 11], $numberingName);
-        $section->addListItem('Modul', 3, ['size' => 11], $numberingName);
-        $section->addListItem('Blok tematik; dan/atau', 3, ['size' => 11], $numberingName);
-        $section->addListItem('Bentuk lain', 3, ['size' => 11], $numberingName);
-
-        $section->addListItem('Beban Belajar dan Masa Tempuh', 2, ['size' => 11], $numberingName);
-        $section->addListItem('Rencana Pembelajaran', 2, ['size' => 11], $numberingName);
-    }
-
-    private function addSuplemenParagraphIndented($section, string $text): void
-    {
-        $section->addText(
-            $text,
-            ['size' => 11],
-            [
-                'alignment' => Jc::BOTH,
-                'indentation' => ['left' => 1080],
-                'spaceAfter' => 120
-            ]
-        );
-    }
-
-    private function addSuplemenBulletIndented($section, string $text): void
-    {
-        // bullet manual "•" seperti contoh Anda
-        $section->addText(
-            "• " . $text,
-            ['size' => 11],
-            [
-                'alignment' => Jc::BOTH,
-                'indentation' => ['left' => 1080],
-                'spaceAfter' => 80
-            ]
-        );
-    }
-
     private function renderSuplemenFromDatabase(
         $section,
         string $numberingName,
@@ -1748,7 +1269,7 @@ class BorangExampleSeeder extends Seeder
                     $section->addListItem(
                         $item->text_content,
                         $item->numbering_level,
-                        ['size' => 11, 'bold' => $format['bold'] ?? false],
+                        ['size' => 11, 'bold' => $format['bold'] ?? false, 'color' => $this->templateBlue],
                         $numberingName,
                         [
                             'spaceAfter' => $format['spaceAfter'] ?? null,
@@ -1759,7 +1280,7 @@ class BorangExampleSeeder extends Seeder
                 case 'paragraph':
                     $section->addText(
                         $item->text_content,
-                        ['size' => 11],
+                        ['size' => 11, 'color' => $this->templateBlue],
                         [
                             'alignment'   => Jc::BOTH,
                             'indentation' => [
@@ -1773,7 +1294,7 @@ class BorangExampleSeeder extends Seeder
                 case 'bullet':
                     $section->addText(
                         '• ' . $item->text_content,
-                        ['size' => 11],
+                        ['size' => 11, 'color' => $this->templateBlue],
                         [
                             'alignment'   => Jc::BOTH,
                             'indentation' => [

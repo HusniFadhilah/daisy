@@ -276,6 +276,11 @@ class AsesmenUserRole extends Model
         return Crypt::encryptString($this->id);
     }
 
+    public function getJenisAsesmenLabelAttribute(): string
+    {
+        return $this->jenis_asesmen == 'dokumen' ? ucfirst($this->jenis_asesmen) : strtoupper($this->jenis_asesmen);
+    }
+
     public function getStatusLabelAttribute(): string
     {
         return $this->status_meta['label'];

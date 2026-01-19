@@ -1447,3 +1447,73 @@ button[aria-expanded="true"] .chevron-icon {
     white-space: normal;
     word-break: break-word;
 }
+
+/* Skeleton base */
+.skeleton {
+    position: relative;
+    overflow: hidden;
+    background: #e9ecef;
+    border-radius: 6px;
+}
+
+.skeleton::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -150px;
+    width: 150px;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, .6), rgba(255, 255, 255, 0));
+    animation: shimmer 1.1s infinite;
+}
+
+@keyframes shimmer {
+    100% {
+        transform: translateX(300%);
+    }
+}
+
+.sk-line {
+    height: 12px;
+    margin: 8px 0;
+}
+
+.sk-line.sm {
+    height: 10px;
+}
+
+.sk-line.lg {
+    height: 16px;
+}
+
+.sk-w-20 {
+    width: 20%;
+}
+
+.sk-w-30 {
+    width: 30%;
+}
+
+.sk-w-40 {
+    width: 40%;
+}
+
+.sk-w-60 {
+    width: 60%;
+}
+
+.sk-w-75 {
+    width: 75%;
+}
+
+.sk-w-90 {
+    width: 90%;
+}
+
+.sk-card {
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 10px;
+    background: #fff;
+}

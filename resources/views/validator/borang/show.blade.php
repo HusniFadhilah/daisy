@@ -30,12 +30,12 @@
     {{-- Header --}}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2>
+            <h3>
                 <i class="bi bi-clipboard-check"></i>
                 Review/Validasi LED+Suplemen dan LKPS
-            </h2>
+            </h3>
             <p class="text-muted mb-0">
-                {{ $pengajuan->studyProgram->name }} - {{ $pengajuan->tahun_akreditasi }}
+                {{ $pengajuan->judul }}
             </p>
         </div>
         <a href="{{ route('validator.borang.index') }}" class="btn btn-secondary">
@@ -120,119 +120,68 @@
         </div>
 
         <div class="card-body">
+            @php
+            $docCards = [
+            'led' => [
+            'label' => 'LED',
+            'btn_class' => 'btn-primary',
+            'empty_text' => 'Belum ada file LED diupload.',
+            ],
+            'suplemen' => [
+            'label' => 'Suplemen',
+            'btn_class' => 'btn-info text-white',
+            'empty_text' => 'Belum ada file suplemen diupload.',
+            ],
+            'lkps' => [
+            'label' => 'LKPS',
+            'btn_class' => 'btn-success',
+            'empty_text' => 'Belum ada file LKPS diupload.',
+            ],
+            ];
+            @endphp
             <div class="row g-3">
+                @foreach($docCards as $key => $config)
+                @php $file = $uploadedFiles[$key] ?? null; @endphp
 
-                {{-- LED --}}
                 <div class="col-lg-4">
                     <div class="border rounded p-3 h-100">
                         <div class="d-flex align-items-start gap-3">
 
                             {{-- Icon --}}
-                            <i class="bi {{ !empty($uploadedFiles['led']) ? $uploadedFiles['led']->file_icon_class : 'bi-file-earmark' }} fs-4 flex-shrink-0"></i>
+                            <i class="bi {{ $file?->file_icon_class ?? 'bi-file-earmark' }} fs-4 flex-shrink-0"></i>
 
                             {{-- Text --}}
                             <div class="flex-grow-1">
-                                <div class="fw-bold mb-1">LED</div>
+                                <div class="fw-bold mb-1">{{ $config['label'] }}</div>
 
-                                @if(!empty($uploadedFiles['led']))
+                                @if($file)
                                 <div class="small fw-semibold text-break">
-                                    {{ $uploadedFiles['led']->original_filename }}
+                                    {{ $file->original_filename }}
                                 </div>
                                 <div class="text-muted small">
-                                    {{ $uploadedFiles['led']->file_size_formatted }} •
-                                    {{ $uploadedFiles['led']->created_at->diffForHumans() }}
+                                    {{ $file->file_size_formatted }} •
+                                    {{ $file->created_at->diffForHumans() }}
                                 </div>
                                 @else
-                                <div class="text-muted small">Belum ada file LED diupload.</div>
+                                <div class="text-muted small">
+                                    {{ $config['empty_text'] }}
+                                </div>
                                 @endif
                             </div>
 
                             {{-- Button --}}
-                            @if(!empty($uploadedFiles['led']) && $uploadedFiles['led']->download_url)
+                            @if($file && $file->download_url)
                             <div class="flex-shrink-0">
-                                <a class="btn btn-sm btn-primary" href="{{ $uploadedFiles['led']->download_url }}" target="_blank" rel="noopener">
+                                <a class="btn btn-sm {{ $config['btn_class'] }}" href="{{ $file->download_url }}" target="_blank" rel="noopener">
                                     <i class="bi bi-download"></i> Buka
                                 </a>
                             </div>
                             @endif
+
                         </div>
                     </div>
                 </div>
-
-                {{-- Suplemen --}}
-                <div class="col-lg-4">
-                    <div class="border rounded p-3 h-100">
-                        <div class="d-flex align-items-start gap-3">
-
-                            {{-- Icon --}}
-                            <i class="bi {{ !empty($uploadedFiles['suplemen']) ? $uploadedFiles['suplemen']->file_icon_class : 'bi-file-earmark' }} fs-4 flex-shrink-0"></i>
-
-                            {{-- Text --}}
-                            <div class="flex-grow-1">
-                                <div class="fw-bold mb-1">Suplemen</div>
-
-                                @if(!empty($uploadedFiles['suplemen']))
-                                <div class="small fw-semibold text-break">
-                                    {{ $uploadedFiles['suplemen']->original_filename }}
-                                </div>
-                                <div class="text-muted small">
-                                    {{ $uploadedFiles['suplemen']->file_size_formatted }} •
-                                    {{ $uploadedFiles['suplemen']->created_at->diffForHumans() }}
-                                </div>
-                                @else
-                                <div class="text-muted small">Belum ada file suplemen diupload.</div>
-                                @endif
-                            </div>
-
-                            {{-- Button --}}
-                            @if(!empty($uploadedFiles['suplemen']) && $uploadedFiles['suplemen']->download_url)
-                            <div class="flex-shrink-0">
-                                <a class="btn btn-sm btn-info text-white" href="{{ $uploadedFiles['suplemen']->download_url }}" target="_blank" rel="noopener">
-                                    <i class="bi bi-download"></i> Buka
-                                </a>
-                            </div>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-
-                {{-- LKPS --}}
-                <div class="col-lg-4">
-                    <div class="border rounded p-3 h-100">
-                        <div class="d-flex align-items-start gap-3">
-
-                            {{-- Icon --}}
-                            <i class="bi {{ !empty($uploadedFiles['lkps']) ? $uploadedFiles['lkps']->file_icon_class : 'bi-file-earmark' }} fs-4 flex-shrink-0"></i>
-
-                            {{-- Text --}}
-                            <div class="flex-grow-1">
-                                <div class="fw-bold mb-1">LKPS</div>
-
-                                @if(!empty($uploadedFiles['lkps']))
-                                <div class="small fw-semibold text-break">
-                                    {{ $uploadedFiles['lkps']->original_filename }}
-                                </div>
-                                <div class="text-muted small">
-                                    {{ $uploadedFiles['lkps']->file_size_formatted }} •
-                                    {{ $uploadedFiles['lkps']->created_at->diffForHumans() }}
-                                </div>
-                                @else
-                                <div class="text-muted small">Belum ada file LKPS diupload.</div>
-                                @endif
-                            </div>
-
-                            {{-- Button --}}
-                            @if(!empty($uploadedFiles['lkps']) && $uploadedFiles['lkps']->download_url)
-                            <div class="flex-shrink-0">
-                                <a class="btn btn-sm btn-success" href="{{ $uploadedFiles['lkps']->download_url }}" target="_blank" rel="noopener">
-                                    <i class="bi bi-download"></i> Buka
-                                </a>
-                            </div>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-
+                @endforeach
             </div>
 
             {{-- Optional: pengesahan --}}
@@ -660,11 +609,11 @@
                     <div class="d-flex gap-2">
                         {{-- Pilih aksi (tidak submit) --}}
                         <button type="button" class="btn btn-outline-success" id="btnPickApprove">
-                            <i class="bi bi-check-circle"></i> Pilih Approve
+                            <i class="bi bi-check-circle"></i> Pilih Setujui Dokumen
                         </button>
 
                         <button type="button" class="btn btn-outline-warning" id="btnPickRevision">
-                            <i class="bi bi-exclamation-triangle"></i> Pilih Request Revision
+                            <i class="bi bi-exclamation-triangle"></i> Pilih Minta Revisi
                         </button>
 
                         <span class="badge bg-secondary" id="pickedActionBadge">
@@ -757,12 +706,12 @@ $assignmentId = $assignment->id;
             btnSubmitFinal.disabled = false;
 
             if (pickedAction === 'approve') {
-                pickedBadge.textContent = 'Aksi terpilih: APPROVE';
+                pickedBadge.textContent = 'Aksi terpilih: SETUJUI DOKUMEN';
                 pickedBadge.className = 'badge bg-success';
                 btnPickApprove.className = 'btn btn-success';
                 btnPickRevision.className = 'btn btn-outline-warning';
             } else {
-                pickedBadge.textContent = 'Aksi terpilih: REQUEST REVISION';
+                pickedBadge.textContent = 'Aksi terpilih: MINTA REVISI DOKUMEN';
                 pickedBadge.className = 'badge bg-warning text-dark';
                 btnPickRevision.className = 'btn btn-warning';
                 btnPickApprove.className = 'btn btn-outline-success';
@@ -808,9 +757,20 @@ $assignmentId = $assignment->id;
         // =============== FINAL SUBMIT (JSON) ===============
         async function submitFinal(action) {
             const msg = action === 'approve' ?
-                'Approve validasi? Semua item harus grade A.' :
-                'Request revision? Item dengan grade B/C akan dikirim ke prodi.';
-            if (!confirm(msg)) return;
+                'Semua item harus kategori <strong>Sudah Tepat</strong>.' :
+                'Item dengan kategori <strong>Kurang Lengkap, Perlu Melengkapi</strong> atau <strong>Perlu diperbaiki</strong> akan dikirim ke prodi.';
+
+            const result = await Swal.fire({
+                title: action === 'approve' ? 'Setujui Validasi?' : 'Minta Prodi Merevisi?'
+                , html: msg
+                , icon: action === 'approve' ? 'question' : 'warning'
+                , showCancelButton: true
+                , confirmButtonText: 'Ya, lanjutkan'
+                , cancelButtonText: 'Batal'
+                , reverseButtons: true
+            });
+
+            if (!result.isConfirmed) return;
 
             const payload = {
                 action
@@ -836,11 +796,19 @@ $assignmentId = $assignment->id;
                 const data = await res.json();
 
                 if (!res.ok || !data.success) {
-                    alert(data.message || 'Gagal submit');
+                    Swal.fire({
+                        icon: 'error'
+                        , title: 'Gagal'
+                        , text: data.message || 'Gagal submit'
+                    });
                     return;
                 }
 
-                alert(data.message || 'Berhasil');
+                Swal.fire({
+                    icon: 'success'
+                    , title: 'Berhasil'
+                    , text: data.message || 'Data berhasil diproses'
+                });
                 if (data.redirect) window.location.href = data.redirect;
             } catch (err) {
                 console.error(err);
@@ -1244,7 +1212,11 @@ $assignmentId = $assignment->id;
             const catatan = catatanInput ? catatanInput : '';
 
             if (!grade) {
-                alert('Pilih grade terlebih dahulu.');
+                Swal.fire({
+                    icon: 'warning'
+                    , title: 'Perhatian'
+                    , text: 'Pilih kategori penilaian terlebih dahulu.'
+                });
                 return;
             }
 

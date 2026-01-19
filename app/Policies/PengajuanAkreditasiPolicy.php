@@ -90,7 +90,7 @@ class PengajuanAkreditasiPolicy
      */
     public function verifyPayment(User $user, PengajuanAkreditasi $pengajuan)
     {
-        return $user->hasRole(['asesi', 'super_admin', 'validator']) && $pengajuan->id_de_assigned === $user->id || $pengajuan->id_validator_assigned === $user->id;
+        return $user->hasRole(['asesi', 'super_admin', 'validator', 'keuangan_lamdepilar']) && $pengajuan->id_de_assigned === $user->id || $pengajuan->id_validator_assigned === $user->id;
     }
 
     /**
@@ -107,7 +107,7 @@ class PengajuanAkreditasiPolicy
     public function resetBorang(User $user, PengajuanAkreditasi $pengajuan)
     {
         // Only prodi who owns this pengajuan can reset
-        if ($user->role !== 'admin_prodi') {
+        if (in_array(!$user->role_selected, ['admin_prodi', 'admin_univ'])) {
             return false;
         }
 

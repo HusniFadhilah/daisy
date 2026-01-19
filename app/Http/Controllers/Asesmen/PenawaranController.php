@@ -35,13 +35,13 @@ class PenawaranController extends Controller
             ->get();
 
         // Get penawaran yang sudah direspon
-        $riwayat = AsesmenUserRole::where('id_user', $user->id)
+        $assignments = AsesmenUserRole::where('id_user', $user->id)
             ->whereIn('status_penawaran', ['accepted', 'rejected'])
             ->with(['asesmen', 'role'])
             ->orderBy('responded_at', 'desc')
             ->get();
 
-        return view('asesmen.penawaran.index', compact('penawarans', 'riwayat'));
+        return view('asesmen.penawaran.index', compact('penawarans', 'assignments'));
     }
 
     /**
@@ -63,11 +63,18 @@ class PenawaranController extends Controller
 
         // ✅ If already accepted, redirect ke berkas
         if ($assignment->status_penawaran === 'accepted') {
-            $route = $assignment->jenis_asesmen === 'ak'
-                ? 'ak.berkas.show'
-                : 'al.berkas.show';
+            if ($assignment->jenis_asesmen === 'dokumen') {
+                $route = 'validator.borang.show';
+                $param = $assignment->id;
+            } elseif ($assignment->jenis_asesmen === 'ak') {
+                $route = 'ak.berkas.show';
+                $param = $asesmen->id;
+            } else {
+                $route = 'al.berkas.show';
+                $param = $asesmen->id;
+            }
 
-            return redirect()->route($route, $asesmen->id)
+            return redirect()->route($route, $param)
                 ->with('info', 'Penawaran sudah diterima. Silakan lanjutkan penilaian.');
         }
 
@@ -125,6 +132,11 @@ class PenawaranController extends Controller
                 'response_note' => $request->response_note,
                 'status_pekerjaan' => 'not_started',
             ]);
+
+            if ($assignment->jenis_asesmen == 'dokumen') {
+                $pengajuan = $assignment->pengajuan;
+                $pengajuan->setValidatorAssigned($user->id);
+            }
 
             try {
                 SendPenawaranResponseEmail::dispatch($assignment, 'accepted');

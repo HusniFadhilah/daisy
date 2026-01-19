@@ -27,6 +27,8 @@ class AsesmenLapangan extends Model
         'hasil_asesmen',
         'link_laporan',
         'link_dokumentasi',
+        'finalized_at',
+        'finalized_by',
         'completed_at',
         'completed_by',
     ];
@@ -34,6 +36,7 @@ class AsesmenLapangan extends Model
     protected $casts = [
         'tanggal_mulai' => 'date',
         'tanggal_selesai' => 'date',
+        'finalized_at' => 'datetime',
         'completed_at' => 'datetime',
     ];
 

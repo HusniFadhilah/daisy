@@ -169,6 +169,9 @@ class StudyProgramUserSeeder extends Seeder
          * ======================================================
          */
         $mappings = [
+            'upps1@daisy.lamdepilar.or.id'        => 's1@lamdepilar.ac.id',
+            'upps2@daisy.lamdepilar.or.id'        => 'manajemen@contoh.ac.id',
+            'upps3@daisy.lamdepilar.or.id'        => 'abcde@contoh.ac.id',
             'uppsd3@daisy.lamdepilar.or.id'        => 'd3@lamdepilar.ac.id',
             'uppss1@daisy.lamdepilar.or.id'        => 's1@lamdepilar.ac.id',
             'uppss2@daisy.lamdepilar.or.id'        => 's2@lamdepilar.ac.id',

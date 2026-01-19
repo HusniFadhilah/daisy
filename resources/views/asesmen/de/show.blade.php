@@ -399,40 +399,46 @@
             </div>
             @endif
 
-            {{-- @include('asesmen.de.review-kesiapan') --}}
-
             <!-- ACTION: Verifikasi Pembayaran -->
-            @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_PEMBAYARAN_DITERIMA && $pengajuan->pembayaran && $pengajuan->pembayaran->status_pembayaran === 'dibayar')
-            <div class="card action-card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="bi bi-credit-card text-success"></i>
-                        Aksi Diperlukan: Verifikasi Pembayaran
-                    </h5>
+            @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_MENUNGGU_PEMBAYARAN)
+            <div class="alert alert-info alert-permanent">
+                <i class="bi bi-info-circle"></i>
+                Sedang menunggu pembayaran dilakukan oleh Prodi {{ $pengajuan->studyProgram->name }}
+            </div>
+            @endif
 
-                    <div class="alert alert-info alert-permanent">
-                        <strong>Invoice:</strong> {{ $pengajuan->pembayaran->nomor_invoice }}<br>
-                        <strong>Jumlah:</strong> Rp {{ number_format($pengajuan->pembayaran->jumlah_pembayaran, 0, ',', '.') }}<br>
-                        <strong>Tanggal Pembayaran:</strong> {{ \App\Libraries\Date::tglIndo($pengajuan->pembayaran->tanggal_pembayaran) }}
-                    </div>
+            @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN)
+            @if($pengajuan->pembayaran && $pengajuan->pembayaran->status_pembayaran === 'menunggu_verifikasi')
+            <div class="alert alert-info alert-permanent">
+                <i class="bi bi-info-circle"></i>
+                Sedang menunggu verifikasi pembayaran oleh bagian keuangan LAMDEPILAR
+            </div>
+            @elseif($pengajuan->pembayaran && $pengajuan->pembayaran->status_pembayaran === 'upload_ulang')
+            <div class="alert alert-warning alert-permanent">
+                <i class="bi bi-info-circle"></i>
+                Sedang menunggu upload ulang formulir pembayaran dan bukti pembayaran oleh Prodi {{ $pengajuan->studyProgram->name }}
+            </div>
+            @endif
+            @endif
 
-                    <form action="{{ route('de.pengajuan.verifikasi-pembayaran', $pengajuan->id) }}" method="POST">
-                        @csrf
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Catatan Verifikasi</label>
-                            <textarea name="catatan_verifikasi" class="form-control" rows="3" required></textarea>
-                        </div>
+            @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI && $pengajuan->pembayaran && $pengajuan->pembayaran->status_pembayaran === 'terverifikasi')
+            <div class="alert alert-info alert-permanent">
+                <i class="bi bi-info-circle"></i>
+                Sedang menunggu Prodi mengupload draft LED+Suplemen, dan LKPS
+            </div>
+            @endif
 
-                        <div class="d-flex gap-2">
-                            <button type="submit" name="status" value="verified" class="btn btn-success">
-                                <i class="bi bi-check-circle"></i> Verifikasi & Setujui
-                            </button>
-                            <button type="submit" name="status" value="ditolak" class="btn btn-danger">
-                                <i class="bi bi-x-circle"></i> Tolak Pembayaran
-                            </button>
-                        </div>
-                    </form>
-                </div>
+            @if(in_array($pengajuan->status, [\App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA, \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI]))
+            <div class="alert alert-info alert-permanent">
+                <i class="bi bi-info-circle"></i>
+                Silahkan tugaskan Validator untuk melakukan validasi dokumen LED+Suplemen, dan LKPS yang telah diupload oleh prodi
+            </div>
+            @endif
+
+            @if(in_array($pengajuan->status, [\App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED]))
+            <div class="alert alert-warning alert-permanent">
+                <i class="bi bi-info-circle"></i>
+                Sedang menunggu pelaporan LED+Suplemen dan LKPS selesai
             </div>
             @endif
 
@@ -478,6 +484,7 @@
                     <div class="alert alert-success alert-permanent">
                         <i class="bi bi-check-circle"></i>
                         <strong>Asesmen sudah dibuat:</strong> {{ $pengajuan->asesmen->name }}
+                        <p class="mb-0">Silahkan tugaskan Asesor di halaman "Lihat Detail Asesmen", atau edit deskripsi asesmen terlebih dahulu</p>
                     </div>
                     <div class="d-flex gap-2">
                         <a href="{{ route('asesmen.show', $pengajuan->asesmen->id) }}" class="btn btn-primary">
@@ -514,20 +521,75 @@
             </div>
             @endif
 
-            @if(in_array($pengajuan->status,[\App\Models\PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,\App\Models\PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,\App\Models\PengajuanAkreditasi::STATUS_AK_SELESAI,\App\Models\PengajuanAkreditasi::STATUS_AK_DILAPORKAN,\App\Models\PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,\App\Models\PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,\App\Models\PengajuanAkreditasi::STATUS_AL_SELESAI,\App\Models\PengajuanAkreditasi::STATUS_AL_DILAPORKAN]))
+            @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AK_DILAPORKAN)
             <div class="card action-card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">
                         <i class="bi bi-check-circle-fill text-success"></i>
-                        {{ $pengajuan->status_label }}
+                        Lanjut ke Tahap AL, Tugaskan Asesor AL
                     </h5>
-                    <div class="d-flex gap-2 mt-3">
+
+                    {{-- Jika sudah ada asesmen --}}
+                    <div class="alert alert-success alert-permanent">
+                        <i class="bi bi-check-circle"></i>
+                        <strong>Asesmen Kecukupan telah selesai dilaksanakan & dilaporkan</strong>
+                        <p class="mb-0">Silahkan tugaskan Asesor AL di halaman "Lihat Detail Asesmen"</p>
+                    </div>
+                    <div class="d-flex gap-2">
                         <a href="{{ route('asesmen.show', $pengajuan->asesmen->id) }}" class="btn btn-primary">
                             <i class="bi bi-eye"></i> Lihat Detail Asesmen
                         </a>
-                        <a href="{{ route('asesmen.edit', $pengajuan->asesmen->id) }}" class="btn btn-outline-secondary">
-                            <i class="bi bi-pencil"></i> Edit Asesmen
-                        </a>
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            @if(in_array($pengajuan->status,[
+            \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
+            \App\Models\PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
+            \App\Models\PengajuanAkreditasi::STATUS_AK_ON_VALIDATION,
+            \App\Models\PengajuanAkreditasi::STATUS_AK_SELESAI,
+            \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
+            \App\Models\PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
+            \App\Models\PengajuanAkreditasi::STATUS_AL_SELESAI,
+            ]))
+            <div class="alert alert-info alert-permanent border-start border-4 border-primary mb-4">
+                <div class="d-flex align-items-start">
+                    <i class="bi bi-info-circle-fill fs-4 me-3 text-primary"></i>
+
+                    <div class="flex-grow-1">
+                        <h5 class="mb-1 fw-semibold">
+                            Proses Asesmen Sedang Berjalan
+                        </h5>
+
+                        <p class="mb-2">
+                            Status pengajuan saat ini:
+                            <strong class="text-dark">{{ $pengajuan->status_label }}</strong>
+                        </p>
+
+                        <ul class="mb-2 ps-3 small">
+                            <li>
+                                Tim asesor telah <strong>ditugaskan</strong> dan sedang melakukan
+                                <strong>penilaian terhadap LED, Suplemen, dan LKPS</strong>.
+                            </li>
+                            <li>
+                                Selama proses asesmen berlangsung, <strong>data pengajuan bersifat terkunci</strong>
+                                dan tidak dapat diubah.
+                            </li>
+                            <li>
+                                Hasil asesmen akan tersedia setelah proses ini selesai dan dilaporkan.
+                            </li>
+                        </ul>
+
+                        <div class="d-flex flex-wrap gap-2 mt-2">
+                            <a href="{{ route('asesmen.show', $pengajuan->asesmen->id) }}" class="btn btn-sm btn-primary">
+                                <i class="bi bi-eye"></i> Lihat Detail Asesmen
+                            </a>
+
+                            <a href="{{ route('asesmen.edit', $pengajuan->asesmen->id) }}" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-pencil"></i> Edit Asesmen
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -688,51 +750,6 @@
             </div>
             @endif
 
-            <!-- Informasi Pengajuan -->
-            <div class="card mb-4">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">
-                        <i class="bi bi-info-circle"></i> Informasi Pengajuan
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Nomor Pengajuan</label>
-                            <p class="fw-bold mb-0">{{ $pengajuan->nomor_pengajuan }}</p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Program Studi</label>
-                            <p class="fw-bold mb-0">{{ $pengajuan->studyProgram->name }}</p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Jenjang</label>
-                            <p class="fw-bold mb-0">{{ $pengajuan->studyProgram->degreeLevel->name }}</p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Tahun Akreditasi</label>
-                            <p class="fw-bold mb-0">{{ $pengajuan->tahun_akreditasi }}</p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Jenis Akreditasi</label>
-                            <p class="fw-bold mb-0">{{ ucfirst($pengajuan->jenis_akreditasi) }}</p>
-                        </div>
-                        @if($pengajuan->pengaju)
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Pengaju</label>
-                            <p class="fw-bold mb-0">{{ $pengajuan->pengaju->name }}</p>
-                        </div>
-                        @endif
-                    </div>
-
-                    @if($pengajuan->catatan_pengaju)
-                    <hr>
-                    <label class="text-muted small">Catatan Pengaju</label>
-                    <p class="mb-0">{{ $pengajuan->catatan_pengaju }}</p>
-                    @endif
-                </div>
-            </div>
-
             <!-- Pembayaran Info -->
             @if($pengajuan->pembayaran)
             <div class="card mb-4">
@@ -769,7 +786,7 @@
                         </div>
                         @if($pengajuan->pembayaran->tanggal_pembayaran)
                         <div class="col-md-6 mb-2">
-                            <label class="text-muted small">Tanggal Pembayaran</label>
+                            <label class="text-muted small">Tanggal Pembayaran dari Prodi</label>
                             <p class="fw-bold mb-0">
                                 {{ \App\Libraries\Date::tglIndo($pengajuan->pembayaran->tanggal_pembayaran) }}
                             </p>
@@ -785,6 +802,12 @@
                         @endif
                     </div>
 
+                    @if($pengajuan->pembayaran->catatan_pembayaran)
+                    <hr>
+                    <label class="text-muted small">Catatan Pembayaran (dari Prodi)</label>
+                    <p class="mb-0">{{ $pengajuan->pembayaran->catatan_pembayaran }}</p>
+                    @endif
+
                     @if($pengajuan->pembayaran->catatan_verifikasi)
                     <hr>
                     <label class="text-muted small">Catatan Verifikasi (dari Keuangan)</label>
@@ -799,6 +822,56 @@
                 </div>
             </div>
             @endif
+
+            <!-- Informasi Pengajuan -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle"></i> Informasi Pengajuan
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Nomor Pengajuan</label>
+                            <p class="fw-bold mb-0">{{ $pengajuan->nomor_pengajuan }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Program Studi</label>
+                            <p class="fw-bold mb-0">{{ $pengajuan->studyProgram->name }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Universitas/Institut</label>
+                            <p class="fw-bold mb-0">{{ $pengajuan->studyProgram->university->name }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Jenjang</label>
+                            <p class="fw-bold mb-0">{{ $pengajuan->studyProgram->degreeLevel->name }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Tahun Akreditasi</label>
+                            <p class="fw-bold mb-0">{{ $pengajuan->tahun_akreditasi }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Jenis Akreditasi</label>
+                            <p class="fw-bold mb-0">{{ ucfirst($pengajuan->jenis_akreditasi) }}</p>
+                        </div>
+                        @if($pengajuan->pengaju)
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Pengaju</label>
+                            <p class="fw-bold mb-0">{{ $pengajuan->pengaju->name }}</p>
+                            <small class="text-wrap">{{ $pengajuan->pengaju->email }}</small>
+                        </div>
+                        @endif
+                    </div>
+
+                    @if($pengajuan->catatan_pengaju)
+                    <hr>
+                    <label class="text-muted small">Catatan Pengaju</label>
+                    <p class="mb-0">{{ $pengajuan->catatan_pengaju }}</p>
+                    @endif
+                </div>
+            </div>
 
             <!-- Review History -->
             {{-- @if($pengajuan->reviewKesiapan->count() > 0)
@@ -907,197 +980,41 @@
         </div>
         <div class="card-body">
             <div class="timeline">
-                @foreach([
-                // ========================================
-                // FASE 1: PERSIAPAN
-                // ========================================
-                [
-                'date' => $pengajuan->tanggal_pengingat,
-                'label' => 'Pengingat Masa Akreditasi',
-                'icon' => 'bi-bell',
-                'step' => 1
-                ],
-                [
-                'date' => $pengajuan->tanggal_surat_permohonan,
-                'label' => 'Surat Permohonan dari PS',
-                'icon' => 'bi-envelope',
-                'step' => 2
-                ],
-                [
-                'date' => $pengajuan->tanggal_template_led_dikirim,
-                'label' => 'Penyampaian Template LED+Suplemen dan LKPS, Formulir Pembayaran',
-                'icon' => 'bi-file-earmark-arrow-down',
-                'step' => 3
-                ],
-                [
-                'date' => $pengajuan->tanggal_pembayaran,
-                'label' => 'Validasi Pembayaran',
-                'icon' => 'bi-credit-card-2-front',
-                'step' => 4,
-                'is_complete' => $pengajuan->status == \App\Models\PengajuanAkreditasi::STATUS_MENUNGGU_PEMBAYARAN ? false:true,
-                'color' => $pengajuan->status == \App\Models\PengajuanAkreditasi::STATUS_MENUNGGU_PEMBAYARAN?'warning':'success'
-                ],
-                [
-                'date' => $pengajuan->tanggal_draft_borang,
-                'label' => 'Penerimaan draft LED+Suplemen dan LKPS dari Prodi',
-                'icon' => 'bi-file-earmark-check',
-                'step' => 5
-                ],
-
-                // ========================================
-                // FASE 2: VALIDASI LED
-                // ========================================
-                [
-                'date' => $pengajuan->tanggal_validasi_borang_assigned,
-                'label' => 'Validasi LED+Suplemen dan LKPS',
-                'icon' => 'bi-clipboard-check',
-                'step' => 6,
-                'color' => 'success'
-                ],
-                [
-                'date' => $pengajuan->tanggal_pelaporan_validasi_borang,
-                'label' => 'Pelaporan Validasi LED+Suplemen dan LKPS',
-                'icon' => 'bi-file-earmark-text',
-                'step' => 7,
-                'color' => 'success'
-                ],
-
-                // ========================================
-                // FASE 3: ASESMEN KECUKUPAN (AK)
-                // ========================================
-                [
-                'date' => $pengajuan->tanggal_penugasan_asesor_ak,
-                'label' => 'Penugasan Asesor untuk AK',
-                'icon' => 'bi-person-check',
-                'step' => 8,
-                'color' => 'success'
-                ],
-                [
-                'date' => $pengajuan->tanggal_validasi_ak,
-                'label' => 'Validasi AK',
-                'icon' => 'bi-clipboard2-check',
-                'step' => 9,
-                'color' => 'success'
-                ],
-                [
-                'date' => $pengajuan->tanggal_pelaporan_ak,
-                'label' => 'Pelaporan AK',
-                'icon' => 'bi-file-earmark-medical',
-                'step' => 10,
-                'color' => 'success'
-                ],
-
-                // ========================================
-                // FASE 4: ASESMEN LAPANGAN (AL)
-                // ========================================
-                [
-                'date' => $pengajuan->tanggal_penugasan_asesor_al,
-                'label' => 'Penugasan Asesor untuk AL',
-                'icon' => 'bi-person-badge',
-                'step' => 11,
-                'color' => 'success'
-                ],
-                [
-                'date' => $pengajuan->tanggal_pelaksanaan_al ?? $pengajuan->tanggal_al_selesai,
-                'label' => 'Pelaksanaan AL dan Penyampaian Berita Acara AL',
-                'icon' => 'bi-building',
-                'step' => 12,
-                'color' => 'success'
-                ],
-                [
-                'date' => $pengajuan->tanggal_pelaporan_al,
-                'label' => 'Pelaporan AL',
-                'icon' => 'bi-clipboard-data',
-                'step' => 13,
-                'color' => 'success'
-                ],
-
-                // ========================================
-                // FASE 5: PENYELESAIAN
-                // ========================================
-                [
-                'date' => $pengajuan->tanggal_hasil_akreditasi,
-                'label' => 'Penyampaian Hasil Akreditasi',
-                'icon' => 'bi-envelope-paper',
-                'step' => 14,
-                'color' => 'success'
-                ],
-                [
-                'date' => $pengajuan->tanggal_masa_sanggah_mulai,
-                'label' => 'Masa Sanggah',
-                'icon' => 'bi-clock-history',
-                'step' => 15,
-                'color' => 'success',
-                ],
-                [
-                'date' => $pengajuan->tanggal_pelaksanaan_banding,
-                'label' => 'Pelaksanaan Banding',
-                'icon' => 'bi-arrow-repeat',
-                'step' => 16,
-                'color' => 'success',
-                ],
-                [
-                'date' => $pengajuan->tanggal_pelaporan_banding,
-                'label' => 'Pelaporan Banding',
-                'icon' => 'bi-file-earmark-ruled',
-                'step' => 17,
-                'color' => 'success',
-                ],
-                [
-                'date' => $pengajuan->tanggal_penetapan,
-                'label' => 'Penetapan Hasil Akreditasi',
-                'icon' => 'bi-award',
-                'step' => 18,
-                'color' => 'success'
-                ],
-                [
-                'date' => $pengajuan->tanggal_pelaporan_hasil,
-                'label' => 'Pelaporan Hasil Akreditasi',
-                'icon' => 'bi-megaphone',
-                'step' => 19,
-                'color' => 'success'
-                ],
-                [
-                'date' => $pengajuan->tanggal_penyimpanan,
-                'label' => 'Penyimpanan Arsip Pelaksanaan Akreditasi',
-                'icon' => 'bi-archive',
-                'step' => 20,
-                'color' => 'success'
-                ],
-                ] as $item)
+                @foreach($pengajuan->timelineItems() as $step => $item)
                 @php
-                $isCompleted = $item['date'] !== null;
-                $iconColor = $isCompleted ? 'text-success' : 'text-muted';
-                $itemColor = $item['color'] ?? ($isCompleted ? 'success' : 'muted');
-                $isOptional = $item['optional'] ?? false;
+                $isDone = $item['state'] === 'done';
+                $isCurrent = $item['state'] === 'current';
+                $itemColor = $item['color']; // success|warning|secondary
+
+                $iconColor = $isDone ? 'text-success' : ($isCurrent ? 'text-' . $itemColor : 'text-muted');
                 @endphp
 
-                <div class="d-flex mb-3 {{ $isOptional && !$isCompleted ? 'opacity-50' : '' }}">
+                <div class="d-flex mb-3">
                     <div class="me-3">
-                        @if($isCompleted)
-                        <i class="bi bi-check-circle-fill {{ $iconColor }}" style="font-size: 1.2rem;"></i>
+                        @if($isDone)
+                        <i class="bi bi-check-circle-fill {{ $iconColor }}" style="font-size:1.2rem;"></i>
+                        @elseif($isCurrent)
+                        <i class="bi bi-hourglass-split {{ $iconColor }}" style="font-size:1.2rem;"></i>
                         @else
                         <i class="bi bi-circle {{ $iconColor }}"></i>
                         @endif
                     </div>
+
                     <div class="flex-grow-1">
                         <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <strong class="{{ $isCompleted ? 'text-' . $itemColor : 'text-muted' }}">
-                                    <i class="{{ $item['icon'] ?? 'bi-circle' }} me-1"></i>
-                                    {{ $item['label'] }}
-                                    @if($isOptional)
-                                    <span class="badge bg-secondary ms-1">Opsional</span>
-                                    @endif
-                                </strong>
-                            </div>
-                            @if($isCompleted)
+                            <strong class="{{ ($isDone || $isCurrent) ? 'text-'.$itemColor : 'text-muted' }}">
+                                <i class="{{ $item['icon'] }} me-1"></i>
+                                {{ $item['label'] }}
+                            </strong>
+
+                            @if($item['date'])
                             <span class="badge bg-{{ $itemColor }}">
                                 {{ $item['date']->format('d M Y') }}
                             </span>
                             @endif
                         </div>
-                        @if($isCompleted)
+
+                        @if($item['date'])
                         <small class="text-muted">
                             <i class="bi bi-clock"></i> {{ $item['date']->format('H:i') }} WIB
                         </small>

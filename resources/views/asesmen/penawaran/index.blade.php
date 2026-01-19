@@ -59,7 +59,7 @@ $authUser = Auth::user();
         <div class="col-md-4 col-lg-3 mb-2">
             <div class="card text-center border-success">
                 <div class="card-body">
-                    <h3 class="text-success mb-0">{{ $riwayat->where('status_penawaran', 'accepted')->count() }}</h3>
+                    <h3 class="text-success mb-0">{{ $assignments->where('status_penawaran', 'accepted')->count() }}</h3>
                     <small class="text-muted">Diterima</small>
                 </div>
             </div>
@@ -67,7 +67,7 @@ $authUser = Auth::user();
         <div class="col-md-4 col-lg-3 mb-2">
             <div class="card text-center border-danger">
                 <div class="card-body">
-                    <h3 class="text-danger mb-0">{{ $riwayat->where('status_penawaran', 'rejected')->count() }}</h3>
+                    <h3 class="text-danger mb-0">{{ $assignments->where('status_penawaran', 'rejected')->count() }}</h3>
                     <small class="text-muted">Ditolak</small>
                 </div>
             </div>
@@ -75,7 +75,7 @@ $authUser = Auth::user();
         <div class="col-md-4 col-lg-3 mb-2">
             <div class="card text-center border-primary">
                 <div class="card-body">
-                    <h3 class="text-primary mb-0">{{ $riwayat->where('status_pekerjaan', 'submitted')->count() }}</h3>
+                    <h3 class="text-primary mb-0">{{ $assignments->where('status_pekerjaan', 'submitted')->count() }}</h3>
                     <small class="text-muted">Sudah Submit</small>
                 </div>
             </div>
@@ -99,7 +99,7 @@ $authUser = Auth::user();
                             <div class="d-flex justify-content-between align-items-start mb-3">
                                 <div class="flex-grow-1">
                                     <h5 class="card-title mb-1 text-primary">{{ $penawaran->asesmen->name }}</h5>
-                                    <span class="badge bg-primary">{{ $penawaran->role->alias.' '.ucfirst($penawaran->jenis_asesmen) }}</span>
+                                    <span class="badge bg-primary">{{ $penawaran->role->alias.' '.$penawaran->jenis_asesmen_label }}</span>
                                 </div>
                                 <span class="badge bg-warning status-badge">
                                     <i class="bi bi-clock-history"></i> Pending
@@ -188,7 +188,7 @@ $authUser = Auth::user();
     @endif
 
     <!-- Riwayat Penawaran -->
-    @if($riwayat->count() > 0)
+    @if($assignments->count() > 0)
     <div class="card">
         <div class="card-header bg-white">
             <h5 class="mb-0"><i class="bi bi-clock-history"></i> Riwayat Penawaran</h5>
@@ -209,25 +209,28 @@ $authUser = Auth::user();
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($riwayat as $key=> $item)
+                        @foreach($assignments as $key=> $assignment)
                         @php
-                        $idAsesors = $item->where('id_asesmen',$item->id_asesmen)->whereNot('id_user', $authUser->id)->pluck('id_user');
-                        $jenisAsesmen = $item->jenis_asesmen;
+                        $idAsesors = $assignment->where('id_asesmen',$assignment->id_asesmen)->whereNot('id_user', $authUser->id)->pluck('id_user');
+                        $jenisAsesmen = $assignment->jenis_asesmen; // dokumen | ak | al
+                        $asesmen = $assignment->asesmen;
+                        $pengajuan = $asesmen->pengajuan;
+                        $badgePelaporan = $asesmen->pengajuan? $asesmen->pengajuan->getPelaporanBadge($assignment->jenis_asesmen): null;
                         @endphp
                         <tr>
                             <td>{{ $key+1 }}</td>
                             <td>
-                                <div class="fw-semibold">{{ $item->asesmen->name }}</div>
+                                <div class="fw-semibold">{{ $pengajuan ? $pengajuan->judul : $asesmen->name }}</div>
                                 <small class="text-muted text-block">
                                     <i class="bi bi-building"></i>
-                                    {{ $item->asesmen->studyProgram->full_name ?? 'N/A' }}
+                                    {{ $asesmen->studyProgram->full_name ?? 'N/A' }}
                                 </small>
                             </td>
                             <td>
-                                <span class="badge bg-primary">{{ $item->role->alias.' '.ucfirst($jenisAsesmen) }}</span>
+                                <span class="badge bg-primary">{{ $assignment->role->alias.' '.$assignment->jenis_asesmen_label }}</span>
                             </td>
                             <td>
-                                @if($item->status_penawaran === 'accepted')
+                                @if($assignment->status_penawaran === 'accepted')
                                 <span class="badge bg-success">
                                     <i class="bi bi-check-circle"></i> Diterima
                                 </span>
@@ -238,40 +241,55 @@ $authUser = Auth::user();
                                 @endif
                             </td>
                             <td>
-                                @if($item->status_pekerjaan && $item->status_penawaran === 'accepted')
-                                <span class="badge bg-{{ $item->status_badge }}">
-                                    {{ $item->status_label }}
+                                @if($assignment->status_pekerjaan && $assignment->status_penawaran === 'accepted')
+                                <span class="badge bg-{{ $assignment->status_badge }}">
+                                    {{ $assignment->status_label }}
                                 </span>
                                 @else
                                 <span class="text-muted">-</span>
                                 @endif
+
+                                @if($badgePelaporan)
+                                <span class="badge bg-success text-wrap mt-2">
+                                    <i class="bi bi-check-circle"></i>
+                                    {{ $badgePelaporan }}
+                                </span>
+                                @endif
                             </td>
                             <td>
-                                @if($item->response_note)
-                                <small>{{ Str::limit($item->response_note, 50) }}</small>
+                                @if($assignment->response_note)
+                                <small>{{ Str::limit($assignment->response_note, 50) }}</small>
                                 @else
                                 <small class="text-muted">-</small>
                                 @endif
                             </td>
                             <td>
-                                <small>{{ $item->responded_at ? \App\Libraries\Date::tglWaktu($item->responded_at) : '-' }}</small>
+                                <small>{{ $assignment->responded_at ? \App\Libraries\Date::tglWaktu($assignment->responded_at) : '-' }}</small>
                             </td>
                             <td>
-                                @if($item->status_penawaran === 'accepted')
+                                @if($assignment->status_penawaran === 'accepted')
                                 @if($authUser->role_selected == 'asesor')
-                                <a href="{{ route($jenisAsesmen.'.berkas.show',$item->id_asesmen) }}" class="btn btn-sm btn-outline-primary">
+                                <a href="{{ route($jenisAsesmen.'.berkas.show',$assignment->id_asesmen) }}" class="btn btn-sm btn-outline-primary">
                                     <i class="bi bi-arrow-right"></i> Lihat Penilaian
                                 </a>
                                 @elseif($authUser->role_selected == 'validator')
                                 @if ($jenisAsesmen == 'ak')
-                                <a href="{{ route($jenisAsesmen.'.validasi.asesor', ['idAsesmen' => $item['asesmen']->id, 'jenisAsesmen' => 'ak']) }}" class="btn btn-sm btn-outline-primary">
+                                <a href="{{ route($jenisAsesmen.'.validasi.asesor', ['idAsesmen' => $assignment['asesmen']->id, 'jenisAsesmen' => 'ak']) }}" class="btn btn-sm btn-outline-primary">
                                     <i class="bi bi-arrow-right"></i> Lihat Penilaian
                                 </a>
                                 @elseif ($jenisAsesmen == 'dokumen')
-                                <a href="{{ route('validator.borang.show',$item->id) }}" class="btn btn-sm btn-outline-primary">
+                                <a href="{{ route('validator.borang.show',$assignment->id) }}" class="btn btn-sm btn-outline-primary">
                                     <i class="bi bi-arrow-right"></i> Lihat Penilaian
                                 </a>
                                 @endif
+
+                                @if($asesmen->pengajuan?->canBeReported($assignment->jenis_asesmen))
+                                <button type="button" class="btn btn-sm btn-success mt-2 js-open-pelaporan" data-type="{{ $assignment->jenis_asesmen }}" data-assignment-id="{{ $assignment->id }}" data-nomor="{{ $asesmen->pengajuan->nomor_pengajuan ?? $asesmen->code }}">
+                                    <i class="bi bi-file-earmark-text"></i>
+                                    Pelaporan {{ $assignment->jenis_asesmen_label }}
+                                </button>
+                                @endif
+
                                 @endif
                                 @endif
                             </td>
@@ -354,6 +372,7 @@ $authUser = Auth::user();
 </div>
 
 @push('scripts')
+<script src="{{ asset('assets/js/pelaporan.js') }}"></script>
 <script>
     let currentPenawaranId = null;
 
@@ -472,6 +491,148 @@ $authUser = Auth::user();
             btn.innerHTML = '<i class="bi bi-x-circle"></i> Tolak Penawaran';
         }
     });
+
+    document.addEventListener('click', async function(e) {
+        const btn = e.target.closest('.js-open-pelaporan');
+        if (!btn) return;
+
+        const assignmentId = btn.dataset.assignmentId;
+        const jenis = btn.dataset.type;
+        const nomor = btn.dataset.nomor ? btn.dataset.nomor : '';
+
+        const CONFIG = {
+            dokumen: {
+                label: 'Laporan Validasi LED + Suplemen & LKPS'
+                , upload: @json(route('pelaporan.borang.upload', ['assignment' => '__ID__']))
+                , finalize: @json(route('pelaporan.borang.finalize', ['assignment' => '__ID__']))
+            , }
+            , ak: {
+                label: 'Laporan Validasi Asesmen Kecukupan (AK)'
+                , upload: @json(route('pelaporan.validasiAk.upload', ['assignment' => '__ID__']))
+                , finalize: @json(route('pelaporan.validasiAk.finalize', ['assignment' => '__ID__']))
+            , }
+            , al: {
+                label: 'Laporan Asesmen Lapangan (AL)'
+                , upload: @json(route('pelaporan.al.upload', ['assignment' => '__ID__']))
+                , finalize: @json(route('pelaporan.al.finalize', ['assignment' => '__ID__']))
+            , }
+        , };
+
+        if (!CONFIG[jenis]) return;
+
+        const uploadUrl = CONFIG[jenis].upload.replace('__ID__', assignmentId);
+        const finalizeUrl = CONFIG[jenis].finalize.replace('__ID__', assignmentId);
+
+        // ===== STEP 1: UPLOAD =====
+        const file = await pickPdf(CONFIG[jenis].label);
+        if (!file) return;
+
+        const uploadResult = await uploadFile(uploadUrl, file);
+        if (!uploadResult.success) {
+            Swal.fire('Gagal', uploadResult.message, 'error');
+            return;
+        }
+
+        // ===== STEP 2: FINALIZE =====
+        const ok = await confirmFinalize(uploadResult.filename, nomor);
+        if (!ok) {
+            Swal.fire('Tersimpan', 'File sudah diunggah. Anda bisa finalisasi nanti.', 'info');
+            return;
+        }
+
+        const finalizeResult = await post(finalizeUrl);
+        if (!finalizeResult.success) {
+            Swal.fire('Gagal', finalizeResult.message, 'error');
+            return;
+        }
+
+        Swal.fire('Berhasil', finalizeResult.message, 'success')
+            .then(() => location.reload());
+    });
+
+    // =======================
+    // HELPERS
+    // =======================
+
+    async function pickPdf(label) {
+        const res = await Swal.fire({
+            title: 'Pelaporan'
+            , html: `
+            <div class="text-start">
+                <p>Upload <b>${label}</b></p>
+                <input id="plFile" type="file" class="form-control" accept="application/pdf">
+                <small class="text-muted">PDF, maksimal 5MB</small>
+            </div>
+        `
+            , showCancelButton: true
+            , confirmButtonText: 'Upload'
+            , cancelButtonText: 'Batal'
+            , preConfirm: function() {
+                const f = document.getElementById('plFile').files[0];
+                if (!f) return Swal.showValidationMessage('Silahkan pilih file Laporan dalam bentuk PDF');
+                if (f.type !== 'application/pdf') return Swal.showValidationMessage('File laporan harus berformat PDF');
+                if (f.size > 5 * 1024 * 1024) return Swal.showValidationMessage('File laporan maksimal 5MB');
+                return f;
+            }
+        });
+
+        return res.value;
+    }
+
+    async function uploadFile(url, file) {
+        const fd = new FormData();
+        fd.append('file', file);
+
+        const res = await fetch(url, {
+            method: 'POST'
+            , headers: {
+                'X-CSRF-TOKEN': @json(csrf_token())
+                , 'Accept': 'application/json'
+            }
+            , body: fd
+        });
+
+        const json = await res.json();
+        return {
+            success: res.ok && json.success
+            , message: json.message ? json.message : 'Upload gagal'
+            , filename: json.doc && json.doc.original_name ? json.doc.original_name : 'laporan'
+        };
+    }
+
+    async function confirmFinalize(filename, nomor) {
+        const res = await Swal.fire({
+            icon: 'question'
+            , title: 'Finalisasi Pelaporan?'
+            , html: `
+            <div class="text-start">
+                <p>File <b>${filename}</b> berhasil diunggah.</p>
+                <p>Status <b>${nomor}</b> akan diperbarui.</p>
+            </div>
+        `
+            , showCancelButton: true
+            , confirmButtonText: 'Finalisasi'
+            , cancelButtonText: 'Nanti'
+        });
+
+        return res.isConfirmed === true;
+    }
+
+    async function post(url) {
+        const res = await fetch(url, {
+            method: 'POST'
+            , headers: {
+                'X-CSRF-TOKEN': @json(csrf_token())
+                , 'Accept': 'application/json'
+            }
+        });
+
+        const json = await res.json();
+        return {
+            success: res.ok && json.success
+            , message: json.message ? json.message : 'Gagal'
+        };
+    }
 
 </script>
 @endpush

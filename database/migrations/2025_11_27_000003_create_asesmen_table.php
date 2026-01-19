@@ -117,7 +117,7 @@ return new class extends Migration
             $table->string('koordinat')->nullable()->comment('GPS coordinates if applicable');
 
             // Status
-            $table->enum('status', ['draft', 'active', 'completed', 'cancelled'])
+            $table->enum('status', ['draft', 'active', 'finalized', 'completed', 'cancelled'])
                 ->default('draft')
                 ->comment('Status of Asesmen Lapangan');
 
@@ -131,11 +131,10 @@ return new class extends Migration
             $table->text('link_dokumentasi')->nullable()->comment('Link to documentation/photos');
 
             // Completion tracking
+            $table->timestamp('finalized_at')->nullable()->comment('When AL was finalized');
+            $table->foreignId('finalized_by')->nullable()->constrained('users')->onDelete('set null')->comment('Who finalized this AL');
             $table->timestamp('completed_at')->nullable()->comment('When AL was completed');
-            $table->foreignId('completed_by')->nullable()
-                ->constrained('users')
-                ->onDelete('set null')
-                ->comment('Who completed this AL');
+            $table->foreignId('completed_by')->nullable()->constrained('users')->onDelete('set null')->comment('Who completed this AL');
 
             // Timestamps
             $table->timestamps();
@@ -243,56 +242,6 @@ return new class extends Migration
 
             // Boleh banyak file aktif -> JANGAN unique (id_asesmen,type)
             $table->index(['id_asesmen', 'type', 'is_active', 'sort_order']);
-        });
-
-        Schema::create('borang_validations', function (Blueprint $table) {
-            $table->id();
-
-            // ✅ Link to assignment (reuse existing table)
-            $table->foreignId('id_assignment')
-                ->constrained('asesmen_user_roles')
-                ->onDelete('cascade');
-
-            $table->foreignId('id_pengajuan')
-                ->constrained('pengajuan_akreditasi')
-                ->onDelete('cascade');
-
-            // Validation checklist (flexible JSON)
-            $table->json('checklist_items')->nullable();
-            $table->json('revision_points')->nullable(); // Per-section revisions
-            $table->text('catatan_validator')->nullable();
-
-            // Progress tracking
-            $table->integer('total_sections')->default(0);
-            $table->integer('validated_sections')->default(0);
-
-            // Status handled by asesmen_user_roles.status_pekerjaan
-            // No need to duplicate status here!
-
-            $table->timestamps();
-
-            $table->index(['id_assignment', 'id_pengajuan']);
-        });
-
-        // ========================================
-        // 3. NEW TABLE: borang_revision_history
-        // ========================================
-        Schema::create('borang_revision_history', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('id_pengajuan')
-                ->constrained('pengajuan_akreditasi')
-                ->onDelete('cascade');
-            $table->foreignId('id_validation')
-                ->constrained('borang_validations')
-                ->onDelete('cascade');
-
-            $table->integer('revision_number')->default(1);
-            $table->json('revised_sections')->nullable();
-            $table->text('revision_notes')->nullable();
-
-            $table->foreignId('revised_by')->constrained('users');
-            $table->timestamp('revised_at');
-            $table->timestamps();
         });
     }
 

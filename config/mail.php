@@ -122,5 +122,6 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
-    'admin_email' => env('MAIL_FROM_ADDRESS', 'sekretariat@lamdepilar.or.id'),
+    // 'admin_email' => env('MAIL_FROM_ADDRESS', 'sekretariat@lamdepilar.or.id'),
+    'admin_email' => env('MAIL_FROM_ADDRESS', 'info@dipowastebank.com'),
 ];

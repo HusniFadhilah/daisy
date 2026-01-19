@@ -7,11 +7,12 @@ use App\Models\Asesmen;
 use App\Models\Kriteria;
 use App\Models\Indikator;
 use Illuminate\Http\Request;
-use setasign\Fpdi\Tcpdf\Fpdi;
 use App\Models\ElemenStandar;
+use setasign\Fpdi\Tcpdf\Fpdi;
+use App\Models\AsesmenDocument;
 use App\Models\AsesmenUserRole;
-use App\Models\PenilaianElemenAl;
 use App\Models\JenjangPenilaian;
+use App\Models\PenilaianElemenAl;
 use App\Models\PenilaianImportLog;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -80,6 +81,8 @@ class ALController extends Controller
                 'status_pekerjaan' => 'in_progress',
                 'started_at' => now(), // Opsional: track kapan mulai
             ]);
+            if ($assignment->asesmen->pengajuan)
+                $assignment->asesmen->pengajuan->checkUpdateStatusAKAL('al', 'status_asesor_in_progress');
         }
 
         $asesmen = $assignment->asesmen;
@@ -102,8 +105,9 @@ class ALController extends Controller
         $jenjangs = JenjangPenilaian::all();
         // Calculate progress
         $progress = $this->calculateProgressBulk([$asesmen->id], $user->id)[$asesmen->id];
-        $isFinalized = $asesmen->status === 'completed';
-        return view('asesmen.al.berkas.show', compact('asesmen', 'kriterias', 'progress', 'jenjangs', 'step', 'needsRevisions', 'isFinalized', 'assignment'));
+        $isFinalized = in_array($asesmen->asesmenLapangan->status, ['completed', 'finalized']);
+        $uploadedFiles = $asesmen->pengajuan ? $asesmen->pengajuan->getUploadedDocuments() : null;
+        return view('asesmen.al.berkas.show', compact('asesmen', 'kriterias', 'progress', 'jenjangs', 'step', 'needsRevisions', 'isFinalized', 'assignment', 'uploadedFiles'));
     }
 
     /**
@@ -304,6 +308,9 @@ class ALController extends Controller
                 'status_pekerjaan' => 'approved',
                 'submitted_at' => now(),
             ]);
+
+            if ($assignment->asesmen->pengajuan)
+                $assignment->asesmen->pengajuan->checkUpdateStatusAKAL('al', 'status_asesor_selesai');
 
             DB::commit();
 
@@ -977,42 +984,6 @@ class ALController extends Controller
             $pdf->AddPage($orientation, [$size['width'], $size['height']]);
             $pdf->useTemplate($tplId);
         }
-    }
-
-    public function uploadDocument(Request $request, $idAsesmen)
-    {
-        $request->validate([
-            'files' => 'required|array|min:1',
-            'files.*' => 'file|mimes:pdf|max:20480',
-            'titles' => 'nullable|array',
-            'titles.*' => 'nullable|string|max:255',
-        ]);
-
-        $asesmen = \App\Models\Asesmen::findOrFail($idAsesmen);
-
-        // ambil urutan terakhir untuk type berita_acara
-        $lastOrder = $asesmen->documents()
-            ->where('type', 'berita_acara')
-            ->max('sort_order') ?? 0;
-
-        foreach ($request->file('files') as $idx => $file) {
-            $storedPath = $file->store('asesmen/berita_acara', 'public');
-
-            $asesmen->documents()->create([
-                'type' => 'berita_acara',
-                'title' => $request->titles[$idx] ?? $file->getClientOriginalName(),
-                'sort_order' => $lastOrder + ($idx + 1),
-                'path' => $storedPath,
-                'original_name' => $file->getClientOriginalName(),
-                'size' => $file->getSize(),
-                'mime' => $file->getMimeType(),
-                'is_active' => true,
-                'uploaded_by' => \Illuminate\Support\Facades\Auth::id(),
-                'uploaded_at' => now(),
-            ]);
-        }
-
-        return back()->with('success', 'Berita acara berhasil diupload.');
     }
 
     // public function exportLaporanPdf($idAsesmen)

@@ -11,8 +11,10 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
+use PhpOffice\PhpSpreadsheet\Shared\Drawing as SharedDrawing;
 
 class ValidasiExcelService
 {
@@ -49,7 +51,7 @@ class ValidasiExcelService
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Validasi Penilaian ' . strtoupper($jenisAsesmen));
-        $sheet->getSheetView()->setZoomScale(60);
+        self::addLogoAndZoom($sheet, 60);
 
         // Set column widths
         $service->setColumnWidths($sheet, $asesors->count());
@@ -582,5 +584,94 @@ class ValidasiExcelService
     private function getTextColorByBg(string $hex): string
     {
         return \App\Models\JenjangPenilaian::textColorByBg($hex);
+    }
+
+    public static function addLogoAndZoom(
+        $sheet,
+        int $zoomScale = 60,
+        string $coordinates = 'B2',
+        ?string $endCell = null,
+        int $logoHeight = 40
+    ): void {
+        $sheet->getSheetView()->setZoomScale($zoomScale);
+
+        $path = public_path('assets/images/logo.png');
+        if (!file_exists($path)) {
+            return;
+        }
+
+        $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
+        $drawing->setName('Logo');
+        $drawing->setDescription('Company Logo');
+        $drawing->setPath($path);
+
+        $drawing->setResizeProportional(true);
+        $drawing->setHeight($logoHeight);
+
+        if ($endCell !== null) {
+            [$colStart, $rowStart] = Coordinate::coordinateFromString($coordinates);
+            [$colEnd,   $rowEnd]   = Coordinate::coordinateFromString($endCell);
+
+            $startColIdx = Coordinate::columnIndexFromString($colStart);
+            $endColIdx   = Coordinate::columnIndexFromString($colEnd);
+
+            // default font (wajib untuk konversi width excel -> px)
+            $defaultFont = $sheet->getParent()->getDefaultStyle()->getFont();
+
+            // Total width area (px) - pakai width final kolom (fallback ke default)
+            $totalWidthPx = 0;
+            for ($col = $startColIdx; $col <= $endColIdx; $col++) {
+                $letter = Coordinate::stringFromColumnIndex($col);
+
+                $w = $sheet->getColumnDimension($letter)->getWidth();
+                if ($w <= 0) {
+                    $w = $sheet->getDefaultColumnDimension()->getWidth();
+                }
+
+                $totalWidthPx += SharedDrawing::cellDimensionToPixels($w, $defaultFont);
+            }
+
+            // Total height area (px) - pakai height final row (fallback ke default)
+            $totalHeightPx = 0;
+            for ($row = $rowStart; $row <= $rowEnd; $row++) {
+                $h = $sheet->getRowDimension($row)->getRowHeight();
+                if ($h <= 0) {
+                    $h = $sheet->getDefaultRowDimension()->getRowHeight();
+                    if ($h <= 0) $h = 15;
+                }
+
+                $totalHeightPx += SharedDrawing::pointsToPixels($h);
+            }
+
+            // Ukuran logo (px) dari file asli + target height $logoHeightpx
+            $targetHeightPx = $logoHeight;
+            $logoWidth = 120;
+            $logoHeight = $logoHeight;
+
+            $imgSize = @getimagesize($path);
+            if ($imgSize !== false) {
+                [$imgW, $imgH] = $imgSize;
+                if ($imgH > 0) {
+                    $scale = $targetHeightPx / $imgH;
+                    $logoWidth  = (int) round($imgW * $scale);
+                    $logoHeight = (int) round($imgH * $scale);
+                }
+            }
+
+            // Anchor di startCell, offset ke tengah area
+            $drawing->setCoordinates($coordinates);
+            $drawing->setOffsetX((int) round(($totalWidthPx  - $logoWidth)  / 2));
+            $drawing->setOffsetY((int) round(($totalHeightPx - $logoHeight) / 2));
+
+            // Biar behave seperti "di-merge area" (bergerak & ikut ukuran cell)
+            $drawing->setEditAs(\PhpOffice\PhpSpreadsheet\Worksheet\Drawing::EDIT_AS_ONECELL);
+        } else {
+            // JANGAN DIUBAH (sesuai request)
+            $drawing->setCoordinates($coordinates);
+            $drawing->setOffsetX(2);
+            $drawing->setOffsetY(2);
+        }
+
+        $drawing->setWorksheet($sheet);
     }
 }

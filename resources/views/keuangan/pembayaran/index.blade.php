@@ -17,17 +17,6 @@
         </div>
     </div>
 
-    @if(session('success'))
-    <div class="alert alert-success alert-permanent">
-        <i class="bi bi-check-circle"></i> {{ session('success') }}
-    </div>
-    @endif
-    @if(session('error'))
-    <div class="alert alert-danger alert-permanent">
-        <i class="bi bi-x-circle"></i> {{ session('error') }}
-    </div>
-    @endif
-
     <div class="card mb-4">
         <div class="card-body">
             <form method="GET" action="{{ route('keuangan.pembayaran.index') }}">
@@ -60,7 +49,7 @@
                     <thead class="table-light">
                         <tr>
                             <th width="40">#</th>
-                            <th>Nomor Pengajuan</th>
+                            <th>Pengajuan</th>
                             <th>Program Studi</th>
                             <th>Universitas</th>
                             <th>Invoice</th>
@@ -79,8 +68,8 @@
                             </td>
 
                             <td>
-                                <strong>{{ $item->nomor_pengajuan }}</strong><br>
-                                <small class="text-muted">{{ $item->tahun_akreditasi }}</small>
+                                <p>{{ $item->judul }}</p>
+                                <small class="text-muted">{{ $item->nomor_pengajuan }}</small>
                             </td>
 
                             <td>{{ optional($item->studyProgram)->name ?? '-' }}</td>
@@ -94,7 +83,7 @@
 
                             <td>
                                 @if(optional($pembayaran)->tanggal_pembayaran)
-                                {{ \App\Libraries\Date::tglIndo($pembayaran->tanggal_pembayaran) }}
+                                {{ \App\Libraries\Date::tglwaktu($pembayaran->tanggal_pembayaran) }}
                                 @else
                                 -
                                 @endif

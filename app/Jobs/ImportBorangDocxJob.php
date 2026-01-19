@@ -24,9 +24,11 @@ class ImportBorangDocxJob implements ShouldQueue
 
     protected $pengajuanId;
     protected $filePath;
+    protected $importId;
 
-    public function __construct($pengajuanId, $filePath)
+    public function __construct($importId, $pengajuanId, $filePath)
     {
+        $this->importId = $importId;
         $this->pengajuanId = $pengajuanId;
         $this->filePath = $filePath;
     }
@@ -42,10 +44,9 @@ class ImportBorangDocxJob implements ShouldQueue
 
             $pengajuan = PengajuanAkreditasi::findOrFail($this->pengajuanId);
 
-            $borangImport = BorangImport::where('id_pengajuan', $this->pengajuanId)
-                ->where('status', 'pending')
-                ->latest()
-                ->first();
+            $borangImport = BorangImport::where('id', $this->importId)
+                ->where('id_pengajuan', $this->pengajuanId)
+                ->firstOrFail();
 
             if ($borangImport) {
                 $borangImport->markAsProcessing();
@@ -111,11 +112,6 @@ class ImportBorangDocxJob implements ShouldQueue
                     'completed_at' => now(),
                 ]);
             }
-
-            $pengajuan->update([
-                'borang_status' => 'imported',
-                'borang_imported_at' => now()
-            ]);
 
             if (file_exists($this->filePath)) {
                 @unlink($this->filePath);

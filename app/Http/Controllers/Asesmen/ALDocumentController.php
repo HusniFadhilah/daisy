@@ -236,20 +236,6 @@ class ALDocumentController extends Controller
 
             // 2. Update Asesmen (main table)
             $asesmen = Asesmen::findOrFail($idAsesmen);
-            $asesmen->update([
-                'status' => 'completed'
-            ]);
-
-            // 3. Update Asesmen Lapangan
-            $asesmenLapangan = AsesmenLapangan::where('id_asesmen', $idAsesmen)->first();
-
-            if ($asesmenLapangan) {
-                $asesmenLapangan->update([
-                    'status' => 'completed',
-                    'completed_at' => now(),
-                    'completed_by' => $user->id,
-                ]);
-            }
 
             // 4. Update Asesmen User Roles (semua asesor AL)
             AsesmenUserRole::where('id_asesmen', $idAsesmen)
@@ -261,13 +247,13 @@ class ALDocumentController extends Controller
                 ]);
 
             // 5. Update tanggal selesai AL di pengajuan_akreditasi (jika ada)
-            if ($asesmen->id_pengajuan) {
-                PengajuanAkreditasi::where('id', $asesmen->id_pengajuan)
-                    ->update([
-                        'tanggal_al_selesai' => now(),
-                        'status' => PengajuanAkreditasi::STATUS_AL_SELESAI // atau status lain sesuai workflow
-                    ]);
-            }
+            $asesmen->asesmenLapangan->update([
+                'status' => 'finalized',
+                'finalized_at' => now(),
+                'finalized_by' => $user->id
+            ]);
+            if ($asesmen->pengajuan)
+                $asesmen->pengajuan->checkUpdateStatusAKAL('al', 'status_asesor_selesai');
 
             DB::commit();
 
@@ -309,8 +295,8 @@ class ALDocumentController extends Controller
             if ($asesmenLapangan) {
                 $asesmenLapangan->update([
                     'status' => 'active',
-                    'completed_at' => null,
-                    'completed_by' => null,
+                    'finalized_at' => null,
+                    'finalized_by' => null,
                 ]);
             }
 

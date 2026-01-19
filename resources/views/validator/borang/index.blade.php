@@ -103,7 +103,7 @@
                             <th>Program Studi</th>
                             <th>Jenjang</th>
                             <th>Status Dokumen</th>
-                            <th>Status Validasi</th>
+                            <th>Status Validasi Dokumen</th>
                             <th>Tanggal Ditugaskan</th>
                             <th>Aksi</th>
                         </tr>
@@ -115,13 +115,15 @@
                         $statusBadge = [
                         'not_started' => '<span class="badge bg-warning text-dark"><i class="bi bi-clock"></i> Belum Dimulai</span>',
                         'in_progress' => '<span class="badge bg-info"><i class="bi bi-eye"></i> Sedang Review</span>',
-                        'revision_required' => '<span class="badge bg-danger"><i class="bi bi-exclamation-triangle"></i> Perlu Revisi</span>',
-                        'approved' => '<span class="badge bg-success"><i class="bi bi-check-circle"></i> Disetujui</span>',
+                        'revision_required' => '<span class="badge bg-danger"><i class="bi bi-exclamation-triangle"></i> Prodi Perlu Revisi</span>',
+                        'approved' => '<span class="badge bg-success"><i class="bi bi-check-circle"></i> Disetujui Validator</span>',
                         ];
+                        $badgePelaporan = $pengajuan? $pengajuan->getPelaporanBadge($assignment->jenis_asesmen): null;
                         @endphp
                         <tr>
                             <td>
-                                <strong>{{ $pengajuan->nomor_pengajuan }}</strong>
+                                {{ $pengajuan->judul }}
+                                <small>No: {{ $pengajuan->nomor_pengajuan }}</small>
                             </td>
                             <td>
                                 {{ $pengajuan->studyProgram->name }}
@@ -132,27 +134,44 @@
                                 <span class="badge bg-primary">{{ $pengajuan->studyProgram->degreeLevel->name }}</span>
                             </td>
                             <td>
-                                @if($pengajuan->status === 'borang_online_selesai')
+                                @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI)
                                 <span class="badge bg-success">Selesai Diisi</span>
-                                @elseif($pengajuan->status === 'borang_revision_required')
-                                <span class="badge bg-warning text-dark">Perlu Revisi</span>
+                                @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED)
+                                <span class="badge bg-warning text-dark text-wrap">Dokumen LED+Suplemen dan LKPS Perlu Revisi</span>
                                 @else
                                 <span class="badge bg-secondary">{{ ucfirst($pengajuan->status_label) }}</span>
                                 @endif
                             </td>
-                            <td>{!! $statusBadge[$assignment->status_pekerjaan] !!}</td>
                             <td>
-                                {{ $assignment->assigned_at ? $assignment->assigned_at->format('d M Y H:i') : '-' }}
+                                {!! $statusBadge[$assignment->status_pekerjaan] !!}
+                                @if($badgePelaporan)
+                                <span class="badge bg-success text-wrap mt-2">
+                                    <i class="bi bi-check-circle"></i>
+                                    {{ $badgePelaporan }}
+                                </span>
+                                @endif
                             </td>
                             <td>
-                                <a href="{{ route('validator.borang.show', $assignment->id) }}" class="btn btn-sm btn-primary">
-                                    <i class="bi bi-eye"></i> Review
+                                {{ $assignment->created_at ? $assignment->created_at->format('d M Y H:i') : '-' }}
+                            </td>
+                            <td>
+                                @if(in_array($pengajuan->status,[\App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING]))
+                                <a href="{{ route('penawaran.show', ['token' => $assignment->token]) }}" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-eye"></i> Lihat Penawaran
                                 </a>
+                                @else
+                                <a href="{{ route('validator.borang.show', $assignment->id) }}" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-eye"></i> Lihat Review/Validasi
+                                </a>
+                                @endif
 
-                                @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED)
-                                <button type="button" class="btn btn-sm btn-success mt-1 js-laporkan-validasi" data-assignment-id="{{ $assignment->id }}" data-nomor="{{ $pengajuan->nomor_pengajuan }}">
-                                    <i class="bi bi-send-check"></i> Laporkan Validasi
-                                </button>
+                                @if(in_array($pengajuan->status, [
+                                \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
+                                \App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_FINAL_DITERIMA,
+                                ]))
+                                @if(is_null($pengajuan->tanggal_pelaporan_validasi_borang))
+                                <button type="button" class="btn btn-sm btn-success mt-2 js-open-pelaporan" data-type="borang" data-assignment-id="{{ $assignment->id }}" data-nomor="{{ $pengajuan->nomor_pengajuan }}"> <i class="bi bi-file-earmark-text"></i> Pelaporan Validasi </button>
+                                @endif
                                 @endif
                             </td>
                         </tr>
@@ -165,7 +184,7 @@
                 {{ $assignments->links() }}
             </div>
             @else
-            <div class="alert alert-info">
+            <div class="alert alert-info alert-permanent">
                 <i class="bi bi-info-circle"></i> Belum ada dokumen yang ditugaskan untuk Anda validasi.
             </div>
             @endif
@@ -175,78 +194,17 @@
 @endsection
 
 @push('scripts')
+<script src="{{ asset('assets/js/pelaporan.js') }}"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        document.addEventListener('click', async (e) => {
-            const btn = e.target.closest('.js-laporkan-validasi');
-            if (!btn) return;
-
-            const assignmentId = btn.dataset.assignmentId;
-            const nomor = btn.dataset.nomor || '';
-
-            const result = await Swal.fire({
-                icon: 'question'
-                , title: 'Laporkan Validasi?'
-                , html: `Anda yakin ingin melaporkan hasil validasi untuk <b>${nomor}</b>?<br>Status pengajuan akan berubah menjadi <b>Pelaporan Validasi LED+Suplemen dan LKPS Selesai Dilaporkan</b>.`
-                , showCancelButton: true
-                , confirmButtonText: 'Ya, Laporkan'
-                , cancelButtonText: 'Batal'
-                , reverseButtons: true
-            , });
-
-            if (!result.isConfirmed) return;
-
-            btn.disabled = true;
-            const oldHtml = btn.innerHTML;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Memproses...';
-
-            try {
-                const url = @json(route('validator.borang.laporkan-validasi', ['assignment' => '__ID__']));
-                const endpoint = url.replace('__ID__', assignmentId);
-
-                const res = await fetch(endpoint, {
-                    method: 'POST'
-                    , headers: {
-                        'Accept': 'application/json'
-                        , 'Content-Type': 'application/json'
-                        , 'X-CSRF-TOKEN': @json(csrf_token())
-                    , }
-                    , body: JSON.stringify({})
-                , });
-
-                const data = await res.json();
-
-                if (!res.ok || !data.success) {
-                    await Swal.fire({
-                        icon: 'error'
-                        , title: 'Gagal'
-                        , text: data.message || 'Gagal melaporkan validasi.'
-                    , });
-                    return;
-                }
-
-                await Swal.fire({
-                    icon: 'success'
-                    , title: 'Berhasil'
-                    , text: data.message || 'Validasi berhasil dilaporkan.'
-                , });
-
-                // bisa reload supaya status di tabel update
-                window.location.reload();
-
-            } catch (err) {
-                console.error(err);
-                await Swal.fire({
-                    icon: 'error'
-                    , title: 'Error'
-                    , text: 'Terjadi error saat mengirim permintaan.'
-                , });
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = oldHtml;
-            }
-        });
-    });
+    window.PELAPORAN_CFG = {
+        borang: {
+            upload: @json(route('pelaporan.borang.upload', ['assignment' => '__ID__']))
+            , finalize: @json(route('pelaporan.borang.finalize', ['assignment' => '__ID__']))
+            , title: 'Pelaporan Validasi'
+            , fileLabel: 'Laporan Validasi LED + Suplemen & LKPS'
+            , finalizeLabel: 'Pelaporan Validasi LED+Suplemen dan LKPS'
+        }
+    };
 
 </script>
 @endpush

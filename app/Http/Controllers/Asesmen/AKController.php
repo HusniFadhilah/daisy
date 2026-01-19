@@ -78,6 +78,8 @@ class AKController extends Controller
                 'status_pekerjaan' => 'in_progress',
                 'started_at' => now(), // Opsional: track kapan mulai
             ]);
+            if ($assignment->asesmen->pengajuan)
+                $assignment->asesmen->pengajuan->checkUpdateStatusAKAL('ak', 'status_asesor_in_progress');
         }
 
         $asesmen = $assignment->asesmen;
@@ -104,8 +106,8 @@ class AKController extends Controller
         $pluckColorSkor = $jenjangs->pluck('color', 'skor');
         // Calculate progress
         $progress = $this->calculateProgressBulk([$asesmen->id], $user->id)[$asesmen->id];
-
-        return view('asesmen.ak.berkas.show', compact('asesmen', 'kriterias', 'progress', 'jenjangs', 'pluckColorSkor', 'needsRevisions', 'countNeedsRevisions', 'assignment'));
+        $uploadedFiles = $asesmen->pengajuan ? $asesmen->pengajuan->getUploadedDocuments() : null;
+        return view('asesmen.ak.berkas.show', compact('asesmen', 'kriterias', 'progress', 'jenjangs', 'pluckColorSkor', 'needsRevisions', 'countNeedsRevisions', 'assignment', 'uploadedFiles'));
     }
 
     /**

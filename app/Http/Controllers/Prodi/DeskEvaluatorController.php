@@ -146,7 +146,7 @@ class DeskEvaluatorController extends Controller
                     'id_de_assigned' => Auth::id(),
                     'id_validator_assigned' => Auth::id(),
                     'tahun_akreditasi' => date('Y'),
-                    'status' => 'pengingat_dikirim',
+                    'status' => PengajuanAkreditasi::STATUS_PENGINGAT_DIKIRIM,
                     'tanggal_pengingat' => now(),
                 ]);
 
@@ -155,7 +155,7 @@ class DeskEvaluatorController extends Controller
                     Mail::to($user->email)->send(new PengingatAkreditasi($pengajuan, $request->pesan_pengingat));
                 }
 
-                $this->logStatus($pengajuan, null, 'pengingat_dikirim', 'Pengingat dikirim ke ' . $prodi->name);
+                $this->logStatus($pengajuan, null, PengajuanAkreditasi::STATUS_PENGINGAT_DIKIRIM, 'Pengingat dikirim ke ' . $prodi->name);
             }
 
             DB::commit();
@@ -281,6 +281,7 @@ class DeskEvaluatorController extends Controller
             DB::commit();
             return back()->with('success', 'Template LED/LKPS berhasil dikirim. Status akan menjadi Menunggu Pembayaran setelah formulir pembayaran juga dikirim.');
         } catch (\Exception $e) {
+            Log::error($e);
             DB::rollBack();
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
@@ -292,7 +293,7 @@ class DeskEvaluatorController extends Controller
             'metode_kirim_pembayaran'     => 'required|in:link,upload',
             'pembayaran_link'             => 'required_if:metode_kirim_pembayaran,link|nullable|url|max:500',
             'formulir_pembayaran_file'    => 'required_if:metode_kirim_pembayaran,upload|nullable|file|max:10240|mimes:pdf,doc,docx,xls,xlsx,zip,rar',
-            'nomor_invoice' => 'required|string|max:20',
+            'nomor_invoice' => 'required|string|max:20|unique:pengajuan_pembayaran,nomor_invoice',
             'jatuh_tempo_hari' => 'required|integer|min:1|max:30',
             'jumlah_pembayaran' => 'required|numeric|min:0',
             'keterangan_pembayaran' => 'nullable|string|max:2000',
@@ -373,7 +374,7 @@ class DeskEvaluatorController extends Controller
                 ['id_pengajuan' => $pengajuan->id],
                 [
                     // Isi default minimal (sesuaikan kebutuhan Anda)
-                    'status_pembayaran' => 'menunggu',   // atau 'menunggu_pembayaran'
+                    'status_pembayaran' => 'menunggu_pembayaran',   // atau 'menunggu_pembayaran'
                     'nomor_invoice' => $request->nomor_invoice, // kalau ada
                     'tanggal_jatuh_tempo' => Carbon::now()->addDays((int) $request->jatuh_tempo_hari), // kalau ada
                     'jumlah_pembayaran' => $request->jumlah_pembayaran,
@@ -388,6 +389,7 @@ class DeskEvaluatorController extends Controller
             DB::commit();
             return back()->with('success', 'Formulir pembayaran berhasil dikirim. Status akan menjadi Menunggu Pembayaran setelah template LED/LKPS juga dikirim.');
         } catch (\Exception $e) {
+            Log::error($e);
             DB::rollBack();
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
@@ -536,9 +538,9 @@ class DeskEvaluatorController extends Controller
                     'id_pengajuan' => $pengajuan->id,
                     'id_study_program' => $pengajuan->id_program_studi,
                     'code' => $pengajuan->nomor_pengajuan,
-                    'name' => 'Asesmen ' . $pengajuan->studyProgram->name . ' - ' . $pengajuan->tahun_akreditasi,
+                    'name' => $pengajuan->judul,
                     // 'description' => 'Asesmen untuk pengajuan ' . $pengajuan->nomor_pengajuan,
-                    'description' => 'Asesmen untuk pengajuan akreditasi prodi ' . $pengajuan->studyProgram->name ?? '',
+                    'description' => $pengajuan->judul,
                     'status' => 'active',
                 ]);
             } else {
@@ -585,6 +587,7 @@ class DeskEvaluatorController extends Controller
             // ============================================
             BorangValidation::create([
                 'id_assignment' => $assignment->id,
+                'id_pengajuan' => $pengajuan->id,
                 'id_pengajuan' => $pengajuan->id,
                 'total_sections' => $pengajuan->latestBorangImport->total_sections ?? 0,
                 'validated_sections' => 0,
@@ -770,6 +773,7 @@ class DeskEvaluatorController extends Controller
             if (!$hasOtherValidators) {
                 $pengajuan->update([
                     'status' => \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
+                    'id_validator_assigned' => null,
                 ]);
             }
 
@@ -784,72 +788,6 @@ class DeskEvaluatorController extends Controller
             ]);
 
             return ResponseFormatter::error(null, 'Gagal membatalkan penugasan.', 500);
-        }
-    }
-
-    /**
-     * Verifikasi pembayaran
-     */
-    public function verifikasiPembayaran(Request $request, $id)
-    {
-        $request->validate([
-            'status' => 'required|in:verified,ditolak',
-            'catatan_verifikasi' => 'required|string',
-        ]);
-
-        $pengajuan = PengajuanAkreditasi::findOrFail($id);
-        $pembayaran = $pengajuan->pembayaran;
-
-        if (!$pembayaran || $pembayaran->status_pembayaran !== 'dibayar') {
-            return back()->with('error', 'Pembayaran belum diupload atau sudah diverifikasi.');
-        }
-
-        DB::beginTransaction();
-        try {
-            if ($request->status === 'verified') {
-                $pembayaran->update([
-                    'status_pembayaran' => 'verified',
-                    'tanggal_verifikasi' => now(),
-                    'verified_by' => Auth::id(),
-                    'catatan_verifikasi' => $request->catatan_verifikasi,
-                ]);
-
-                // ✅ UPDATE: Log status untuk tracking
-                $this->logStatus($pengajuan, $pengajuan->status, $pengajuan->status, 'Pembayaran diverifikasi, siap upload borang final');
-
-                // ✅ ADD: Send email notification
-                Mail::to($pengajuan->pengaju->email)->send(
-                    new PembayaranVerified($pengajuan, true)
-                );
-
-                $message = 'Pembayaran berhasil diverifikasi. Prodi dapat upload borang final.';
-            } else {
-                $pembayaran->update([
-                    'status_pembayaran' => 'ditolak',
-                    'tanggal_verifikasi' => now(),
-                    'verified_by' => Auth::id(),
-                    'alasan_penolakan' => $request->catatan_verifikasi,
-                ]);
-
-                $pengajuan->update(['status' => 'menunggu_pembayaran']);
-
-                $this->logStatus($pengajuan, 'pembayaran_diterima', 'menunggu_pembayaran', 'Pembayaran ditolak: ' . $request->catatan_verifikasi);
-
-                // ✅ ADD: Send email notification
-                Mail::to($pengajuan->pengaju->email)->send(
-                    new PembayaranVerified($pengajuan, false)
-                );
-
-                $message = 'Pembayaran ditolak. Prodi perlu upload ulang bukti pembayaran.';
-            }
-
-            DB::commit();
-
-            return back()->with('success', $message);
-        } catch (\Exception $e) {
-            Log::error($e);
-            DB::rollBack();
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 
@@ -896,7 +834,7 @@ class DeskEvaluatorController extends Controller
             // Update to Step 8: Penugasan Asesor AK
             $pengajuan->update([
                 'status' => PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED,
-                'tanggal_penugasan_asesor_ak' => now(),
+                'tanggal_lanjut_ak' => now(),
             ]);
 
             $this->logStatus(
