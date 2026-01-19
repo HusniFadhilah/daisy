@@ -1,21 +1,14 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-<<<<<<< HEAD
 use App\Http\Controllers\Prodi\BorangUploadController;
 use App\Http\Controllers\Prodi\PengajuanBorangController;
 use App\Http\Controllers\Keuangan\ValidasiPembayaranController;
-use App\Http\Controllers\Profile\{PasswordResetController, ProfileController};
 use App\Http\Controllers\Prodi\{DeskEvaluatorController, PengajuanAkreditasiController, PemetaanAkreditasiController};
 use App\Http\Controllers\Asesmen\{AsesmenController, AKController, ALController, ALDocumentController, BorangValidatorController, PenawaranController, ValidasiController};
 use App\Http\Controllers\Master\{ElemenStandarController, JenisIndikatorController, IndikatorController, IndikatorPenilaianElemenController, KriteriaController, UniversityController, StudyProgramController};
 use App\Http\Controllers\{AuthController, BobotPenilaianController, DashboardController, PenugasanController, BandingController, PedomanController, DokumenController, PanduanController, BantuanController, SettingsController, ActivityController, TaskController, LaporanController, DegreeLevelController, DEController};
-=======
-use App\Http\Controllers\{AsesmenController, AuthController, DashboardController, PenawaranController, PenugasanController, AKController, ALController, BandingController, PedomanController, DokumenController, PanduanController, BantuanController, SettingsController, ActivityController, TaskController, LaporanController, DegreeLevelController, KriteriaController, ElemenStandarController, JenisIndikatorController, IndikatorController, IndikatorPenilaianElemenController, BobotPenilaianController, DEController};
-use App\Http\Controllers\Master\{UniversityController, StudyProgramController};
-use App\Http\Controllers\Prodi\PemetaanAkreditasiController;
 use App\Http\Controllers\Profile\{ProfileController, PasswordResetController};
->>>>>>> da91e6368fb0de03f51dbf978df1c408083c7e57
 
 
 // Dashboard (awal)

@@ -6,13 +6,8 @@ use App\Models\University;
 use App\Models\DegreeLevel;
 use App\Models\StudyProgram;
 use Illuminate\Http\Request;
-<<<<<<< HEAD
 use Yajra\DataTables\Facades\DataTables;
 use App\Http\Controllers\Controller;
-=======
-use App\Http\Controllers\Controller;
-use Yajra\DataTables\Facades\DataTables;
->>>>>>> da91e6368fb0de03f51dbf978df1c408083c7e57
 
 class UniversityController extends Controller
 {
@@ -51,11 +46,7 @@ class UniversityController extends Controller
                 ->rawColumns(['action'])
                 ->make(true);
         }
-<<<<<<< HEAD
 
-=======
-        
->>>>>>> da91e6368fb0de03f51dbf978df1c408083c7e57
         $universities = University::withCount('studyPrograms')->get();
 
         if ($request->wantsJson()) {
@@ -64,10 +55,6 @@ class UniversityController extends Controller
                 'data' => $universities
             ]);
         }
-<<<<<<< HEAD
-=======
-
->>>>>>> da91e6368fb0de03f51dbf978df1c408083c7e57
         return view('universitas.index', compact('universities'));
     }
 

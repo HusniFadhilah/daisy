@@ -11,12 +11,9 @@ class University extends Model
         'code',
         'name',
         'logo_path',
-<<<<<<< HEAD
         'is_active',
-        'is_example'
-=======
+        'is_example',
         'email',
->>>>>>> da91e6368fb0de03f51dbf978df1c408083c7e57
     ];
 
     public function studyPrograms()

@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <!-- Penawaran Asesmen -->
 <a href="{{ route('penawaran') }}" class="nav-link {{ request()->routeIs('penawaran*') ? 'active' : '' }}">
     <span class="menu-icon">📨</span>
@@ -52,21 +51,16 @@
     <span class="menu-icon">📋</span>
     <span>Review/Validasi Dokumen</span>
 </a>
-=======
 <!-- Validasi AK -->
 @if(Route::has('ak.validasi.index'))
->>>>>>> da91e6368fb0de03f51dbf978df1c408083c7e57
 <a href="{{ route('ak.validasi.index') }}" class="nav-link {{ request()->routeIs('ak*') ? 'active' : '' }}">
     <span class="menu-icon">📝</span>
     <span>Validasi AK</span>
     @if(isset($penugasanAktif) && $penugasanAktif > 0)
-        <span class="badge bg-warning menu-badge">{{ $penugasanAktif }}</span>
+    <span class="badge bg-warning menu-badge">{{ $penugasanAktif }}</span>
     @endif
 </a>
 @endif
-    <span class="menu-icon">📝</span>
-    <span>Proses AK</span>
-</a>
 {{-- <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'ak-submenu')">
     <span class="menu-icon">📝</span>
     <span>Proses AK</span>

@@ -9,41 +9,35 @@
         <h2>Selamat Datang Kembali, {{ auth()->user()->name }}! 👋</h2>
         <p>
             @if(auth()->user()->role_selected === 'asesi' || auth()->user()->role_selected === 'admin_prodi')
-                Anda memiliki {{ $prosesAK ?? 0 }} proses akreditasi aktif. Mari selesaikan persiapan dengan baik 😊
+            Anda memiliki {{ $prosesAK ?? 0 }} proses akreditasi aktif. Mari selesaikan persiapan dengan baik 😊
             @elseif(auth()->user()->role_selected === 'asesor')
-                Anda memiliki {{ $penawaranBaru ?? 0 }} penawaran baru, dan {{ $penugasanAktif ?? 0 }} tugas aktif. Mari kita selesaikan tugas ini dengan senyum 😊
+            Anda memiliki {{ $penawaranBaru ?? 0 }} penawaran baru, dan {{ $penugasanAktif ?? 0 }} tugas aktif. Mari kita selesaikan tugas ini dengan senyum 😊
             @elseif(auth()->user()->role_selected === 'validator')
-                Anda memiliki {{ $penugasanAktif ?? 0 }} dokumen untuk divalidasi. Mari pastikan kualitas hasil asesmen 😊
+            Anda memiliki {{ $penugasanAktif ?? 0 }} dokumen untuk divalidasi. Mari pastikan kualitas hasil asesmen 😊
             @elseif(auth()->user()->role_selected === 'verifikator')
-                Anda memiliki {{ $penugasanAktif ?? 0 }} dokumen untuk verifikasi final. Mari pastikan keputusan yang tepat 😊
+            Anda memiliki {{ $penugasanAktif ?? 0 }} dokumen untuk verifikasi final. Mari pastikan keputusan yang tepat 😊
             @else
-                Selamat bekerja dan semoga hari Anda menyenangkan 😊
+            Selamat bekerja dan semoga hari Anda menyenangkan 😊
             @endif
         </p>
         <div class="d-flex gap-2 flex-wrap">
-<<<<<<< HEAD
-            <a href="{{ route('penawaran') }}" class="quick-btn">📨 Lihat Penawaran</a>
-            <a href="{{ route('ak.berkas') }}" class="quick-btn">📝 Lanjutkan Penilaian</a>
-            <a href="{{ route('laporan') }}" class="quick-btn">📊 Lihat Laporan</a>
-=======
             @if(auth()->user()->role_selected === 'asesor')
-                @if(Route::has('penawaran.baru'))
-                    <a href="{{ route('penawaran.baru') }}" class="quick-btn">📨 Lihat Penawaran</a>
-                @endif
-                @if(Route::has('ak.berkas'))
-                    <a href="{{ route('ak.berkas') }}" class="quick-btn">📝 Lanjutkan Penilaian</a>
-                @endif
+            @if(Route::has('penawaran.baru'))
+            <a href="{{ route('penawaran.baru') }}" class="quick-btn">📨 Lihat Penawaran</a>
+            @endif
+            @if(Route::has('ak.berkas'))
+            <a href="{{ route('ak.berkas') }}" class="quick-btn">📝 Lanjutkan Penilaian</a>
+            @endif
             @elseif(auth()->user()->role_selected === 'validator' || auth()->user()->role_selected === 'verifikator')
-                @if(Route::has('penugasan.aktif'))
-                    <a href="{{ route('penugasan.aktif') }}" class="quick-btn">📋 Tugas Aktif</a>
-                @endif
+            @if(Route::has('penugasan.aktif'))
+            <a href="{{ route('penugasan.aktif') }}" class="quick-btn">📋 Tugas Aktif</a>
+            @endif
             @elseif(auth()->user()->role_selected === 'asesi' || auth()->user()->role_selected === 'admin_prodi')
-                <a href="{{ route('pemetaan.index') }}" class="quick-btn">📄 Kelola Dokumen</a>
+            <a href="{{ route('pemetaan.index') }}" class="quick-btn">📄 Kelola Dokumen</a>
             @endif
             @if(Route::has('laporan'))
-                <a href="{{ route('laporan') }}" class="quick-btn">📊 Lihat Laporan</a>
+            <a href="{{ route('laporan') }}" class="quick-btn">📊 Lihat Laporan</a>
             @endif
->>>>>>> da91e6368fb0de03f51dbf978df1c408083c7e57
         </div>
     </div>
 </section>
@@ -123,7 +117,7 @@
             <div class="card-header custom-header">
                 <h3>Aktivitas Terkini</h3>
                 @if(Route::has('aktivitas'))
-                    <a href="{{ route('aktivitas') }}" class="card-link">Lihat Semua →</a>
+                <a href="{{ route('aktivitas') }}" class="card-link">Lihat Semua →</a>
                 @endif
             </div>
             <div class="card-body">
@@ -198,7 +192,7 @@
             <div class="card-header custom-header">
                 <h3>Tugas Mendatang</h3>
                 @if(Route::has('tugas'))
-                    <a href="{{ route('tugas') }}" class="card-link">Lihat Semua →</a>
+                <a href="{{ route('tugas') }}" class="card-link">Lihat Semua →</a>
                 @endif
             </div>
             <div class="card-body">
