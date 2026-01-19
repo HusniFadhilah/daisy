@@ -503,7 +503,7 @@ class PelaporanController extends Controller
 
             $assignment = AsesmenUserRole::with(['asesmen.pengajuan', 'role'])
                 ->where('id_user', $user->id)
-                ->whereHas('role', fn($q) => $q->where('name', 'asesor'))
+                ->whereHas('role', fn($q) => $q->where('name', 'validator'))
                 ->where('jenis_asesmen', 'al')
                 ->findOrFail($idAssignment);
 
@@ -571,7 +571,7 @@ class PelaporanController extends Controller
 
             $assignment = AsesmenUserRole::with(['asesmen.pengajuan', 'role'])
                 ->where('id_user', $user->id)
-                ->whereHas('role', fn($q) => $q->where('name', 'asesor'))
+                ->whereHas('role', fn($q) => $q->where('name', 'validator'))
                 ->where('jenis_asesmen', 'al')
                 ->findOrFail($idAssignment);
 
@@ -607,7 +607,7 @@ class PelaporanController extends Controller
                     'status_from' => $statusFrom,
                     'status_to'   => PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
                     'changed_by'  => $user->id,
-                    'keterangan'  => 'Pelaporan AL difinalisasi asesor ' . $user->name,
+                    'keterangan'  => 'Pelaporan AL difinalisasi oleh ' . $user->name,
                     'changed_at'  => now(),
                 ]);
             }

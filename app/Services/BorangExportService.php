@@ -1379,34 +1379,63 @@ class BorangExportService
 
     private function ensureGhostscriptLocal(): void
     {
-        $gsBin = public_path('gs/gs10.01.1/bin');
+        // Pakai path stabil kalau kamu memilih Opsi B:
+        $gsBin = public_path('gs/bin');
+
+        // Kalau kamu tetap mau pakai folder versi, ganti ke:
+        // $gsBin = public_path('gs/gs10.02.1/bin');
+
         $gsBinReal = realpath($gsBin) ?: $gsBin;
 
-        $gsExe = $gsBinReal . DIRECTORY_SEPARATOR . 'gs.exe';
-        $gsWin = $gsBinReal . DIRECTORY_SEPARATOR . 'gswin64c.exe';
-
-        if (!file_exists($gsExe) && file_exists($gsWin)) {
-            // ✅ bikin gs.exe agar ImageMagick bisa menemukan "gs"
-            @copy($gsWin, $gsExe);
+        // Tentukan nama executable sesuai OS
+        if (PHP_OS_FAMILY === 'Windows') {
+            $gsCandidates = [
+                $gsBinReal . DIRECTORY_SEPARATOR . 'gswin64c.exe',
+                $gsBinReal . DIRECTORY_SEPARATOR . 'gswin32c.exe',
+                $gsBinReal . DIRECTORY_SEPARATOR . 'gs.exe', // optional alias
+            ];
+            $pathSeparator = ';';
+        } else {
+            // Linux/macOS
+            $gsCandidates = [
+                $gsBinReal . DIRECTORY_SEPARATOR . 'gs',
+                // fallback: yang ada di sistem
+                trim((string) shell_exec('command -v gs')),
+            ];
+            $pathSeparator = ':';
         }
 
-        if (!file_exists($gsExe) && !file_exists($gsWin)) {
-            throw new \RuntimeException("Ghostscript tidak ditemukan di: {$gsBinReal}");
+        // Cari gs yang benar-benar ada
+        $gsFound = null;
+        foreach ($gsCandidates as $cand) {
+            if ($cand && file_exists($cand)) {
+                $gsFound = $cand;
+                break;
+            }
         }
 
-        // ✅ env khusus untuk ImageMagick/Imagick (penting di Windows)
-        putenv("MAGICK_GHOSTSCRIPT_PATH={$gsBinReal}");
-        $_SERVER['MAGICK_GHOSTSCRIPT_PATH'] = $gsBinReal;
-        $_ENV['MAGICK_GHOSTSCRIPT_PATH'] = $gsBinReal;
+        if (!$gsFound) {
+            throw new \RuntimeException("Ghostscript tidak ditemukan. Cek symlink/paket gs. Base dir: {$gsBinReal}");
+        }
 
-        // ✅ tambahkan ke PATH proses ini
+        // Pastikan executable (Linux)
+        if (PHP_OS_FAMILY !== 'Windows') {
+            @chmod($gsFound, 0755);
+        }
+
+        // Tambahkan folder gs ke PATH proses PHP supaya ImageMagick/Imagick bisa panggil `gs`
         $path = getenv('PATH') ?: '';
         if (stripos($path, $gsBinReal) === false) {
-            $newPath = $gsBinReal . ';' . $path;
+            $newPath = $gsBinReal . $pathSeparator . $path;
             putenv("PATH={$newPath}");
             $_SERVER['PATH'] = $newPath;
             $_ENV['PATH'] = $newPath;
         }
+
+        // Set env yang sering dipakai ImageMagick (aman di Windows & Linux)
+        putenv("MAGICK_GHOSTSCRIPT_PATH={$gsBinReal}");
+        $_SERVER['MAGICK_GHOSTSCRIPT_PATH'] = $gsBinReal;
+        $_ENV['MAGICK_GHOSTSCRIPT_PATH'] = $gsBinReal;
     }
 
     private function persistImage(string $path): string
