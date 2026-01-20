@@ -117,10 +117,10 @@
                             {{-- Tombol aksi hanya muncul kalau masih pending --}}
                             @if($penawaran->status_penawaran === null || $penawaran->status_penawaran === 'pending')
                             <div class="d-grid gap-2">
-                                <button type="button" class="btn btn-success" onclick="acceptPenawaran({{ $penawaran->id }}, '{{ $penawaran->role->alias }}')">
+                                <button type="button" class="btn btn-success" onclick="acceptPenawaran('{{ $penawaran->token }}', '{{ $penawaran->role->alias }}')">
                                     <i class="bi bi-check-circle"></i> Terima Penawaran
                                 </button>
-                                <button type="button" class="btn btn-outline-danger" onclick="rejectPenawaran({{ $penawaran->id }}, '{{ $asesmen->name }}')">
+                                <button type="button" class="btn btn-outline-danger" onclick="rejectPenawaran('{{ $penawaran->token }}', '{{ $asesmen->name }}')">
                                     <i class="bi bi-x-circle"></i> Tolak Penawaran
                                 </button>
                             </div>

@@ -10,7 +10,7 @@
             <p class="text-muted mb-0">Manajemen data pengguna sistem</p>
         </div>
         <div class="d-flex gap-2">
-            <a href="{{ route('users.create') }}" class="btn btn-primary btn-lg shadow-sm">
+            <a href="{{ route('users.create') }}" class="btn btn-primary btn-sm shadow-sm">
                 <i class="fas fa-user-plus me-2"></i> Tambah Pengguna
             </a>
             <div class="btn-group shadow-sm" role="group">
@@ -94,66 +94,90 @@
 
 @push('scripts')
 <script>
-$(document).ready(function() {
-    $.ajaxSetup({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        }
-    });
-    
-    $('#users-table').DataTable({
-        processing: true,
-        serverSide: true,
-        ajax: {
-            url: '{{ route('users.index') }}',
-            error: function (xhr, error, thrown) {
-                console.error('DataTables Error:', error, thrown);
-                console.error('Response:', xhr.responseText);
-                alert('Error loading data. Check console for details.');
-            }
-        },
-        columns: [
-            {data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false},
-            {data: 'name', name: 'name'},
-            {data: 'email', name: 'email'},
-            {data: 'role', name: 'role'},
-            {
-                data: 'role_selected', 
-                name: 'role_selected',
-                render: function(data, type, row) {
-                    let html = '<span class="badge bg-info">' + (row.role_alias || data) + '</span>';
-                    if (row.is_multiple_role) {
-                        html += '<br><small class="text-muted"><i class="bi bi-person-badge"></i> Multiple</small>';
-                    }
-                    return html;
-                }
-            },
-            {data: 'created_at', name: 'created_at'},
-            {data: 'action', name: 'action', orderable: false, searchable: false}
-        ],
-        language: {
-            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json'
-        }
-    });
-});
-
-function deleteRecord(id) {
-    if (confirm('Yakin ingin menghapus pengguna ini?')) {
-        $.ajax({
-            url: '{{ url('users') }}/' + id,
-            type: 'DELETE',
-            data: {
-                _token: '{{ csrf_token() }}'
-            },
-            success: function(result) {
-                $('#users-table').DataTable().ajax.reload();
-                alert('Pengguna berhasil dihapus');
-            },
-            error: function(xhr) {
-                alert('Error: ' + xhr.responseJSON.message);
+    $(document).ready(function() {
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             }
         });
+
+        $('#users-table').DataTable({
+            processing: true
+            , serverSide: true
+            , ajax: {
+                url: '{{ route('
+                users.index ') }}'
+                , error: function(xhr, error, thrown) {
+                    console.error('DataTables Error:', error, thrown);
+                    console.error('Response:', xhr.responseText);
+                    alert('Error loading data. Check console for details.');
+                }
+            }
+            , columns: [{
+                    data: 'DT_RowIndex'
+                    , name: 'DT_RowIndex'
+                    , orderable: false
+                    , searchable: false
+                }
+                , {
+                    data: 'name'
+                    , name: 'name'
+                }
+                , {
+                    data: 'email'
+                    , name: 'email'
+                }
+                , {
+                    data: 'role'
+                    , name: 'role'
+                }
+                , {
+                    data: 'role_selected'
+                    , name: 'role_selected'
+                    , render: function(data, type, row) {
+                        let html = '<span class="badge bg-info">' + (row.role_alias || data) + '</span>';
+                        if (row.is_multiple_role) {
+                            html += '<br><small class="text-muted"><i class="bi bi-person-badge"></i> Multiple</small>';
+                        }
+                        return html;
+                    }
+                }
+                , {
+                    data: 'created_at'
+                    , name: 'created_at'
+                }
+                , {
+                    data: 'action'
+                    , name: 'action'
+                    , orderable: false
+                    , searchable: false
+                }
+            ]
+            , language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json'
+            }
+        });
+    });
+
+    function deleteRecord(id) {
+        if (confirm('Yakin ingin menghapus pengguna ini?')) {
+            $.ajax({
+                url: '{{ url('
+                users ') }}/' + id
+                , type: 'DELETE'
+                , data: {
+                    _token: '{{ csrf_token() }}'
+                }
+                , success: function(result) {
+                    $('#users-table').DataTable().ajax.reload();
+                    alert('Pengguna berhasil dihapus');
+                }
+                , error: function(xhr) {
+                    alert('Error: ' + xhr.responseJSON.message);
+                }
+            });
+        }
     }
-}
+
 </script>
 @endpush

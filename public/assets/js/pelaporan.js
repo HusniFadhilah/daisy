@@ -46,9 +46,10 @@
             title: cfg.title,
             html: `
         <div class="text-start">
-          <p class="mb-2">Upload <b>${cfg.fileLabel}</b> <small class="text-muted">(PDF, max 5MB)</small></p>
+          <p class="mb-3">Upload <b>${cfg.fileLabel}</b> <small class="text-muted">(PDF, max 5MB)</small></p>
           <input id="pvFile" type="file" class="form-control" accept="application/pdf">
-          <div class="form-text mt-2">Setelah upload berhasil, Anda bisa finalisasi.</div>
+          <div class="form-text mt-3" style="white-space: pre-line;">${cfg.additionalDescription || ''}</div>
+          <div class="form-text mt-3">Setelah upload berhasil, Anda bisa finalisasi.</div>
         </div>
       `,
             showCancelButton: true,

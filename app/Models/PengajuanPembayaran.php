@@ -32,11 +32,11 @@ class PengajuanPembayaran extends Model
 
     public function pengajuan()
     {
-        return $this->belongsTo(\App\Models\PengajuanAkreditasi::class, 'id_pengajuan', 'id');
+        return $this->belongsTo(PengajuanAkreditasi::class, 'id_pengajuan', 'id');
     }
 
     public function verifier()
     {
-        return $this->belongsTo(\App\Models\User::class, 'verified_by');
+        return $this->belongsTo(User::class, 'verified_by');
     }
 }

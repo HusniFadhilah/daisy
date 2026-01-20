@@ -168,7 +168,14 @@ class AsesmenUserRole extends Model
 
     public function studyProgram()
     {
-        return $this->belongsTo(StudyProgram::class, 'id_study_program');
+        return $this->hasOneThrough(
+            StudyProgram::class,
+            Asesmen::class,
+            'id',              // FK di asesmens yang dituju oleh asesmen_user_roles.id_asesmen
+            'id',              // PK study_programs
+            'id_asesmen',      // local key di asesmen_user_roles
+            'id_study_program' // FK di asesmens ke study_programs
+        );
     }
 
     public function asesmenKecukupan()

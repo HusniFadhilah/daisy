@@ -166,10 +166,10 @@ $authUser = Auth::user();
                             <hr>
 
                             <div class="d-grid gap-2">
-                                <button type="button" class="btn btn-success" onclick="acceptPenawaran({{ $penawaran->id }}, '{{ $penawaran->role->alias }}')">
+                                <button type="button" class="btn btn-success" onclick="acceptPenawaran('{{ $penawaran->token }}', '{{ $penawaran->role->alias }}')">
                                     <i class="bi bi-check-circle"></i> Terima Penawaran
                                 </button>
-                                <button type="button" class="btn btn-outline-danger" onclick="rejectPenawaran({{ $penawaran->id }}, '{{ $penawaran->asesmen->name }}')">
+                                <button type="button" class="btn btn-outline-danger" onclick="rejectPenawaran('{{ $penawaran->token }}', '{{ $penawaran->asesmen->name }}')">
                                     <i class="bi bi-x-circle"></i> Tolak Penawaran
                                 </button>
                             </div>

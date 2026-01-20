@@ -14,21 +14,21 @@
                 </div>
                 <div class="card-body p-4">
                     @if(session('info'))
-                        <div class="alert alert-info alert-dismissible fade show" role="alert">
-                            <i class="fas fa-info-circle me-2"></i>{{ session('info') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
+                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>{{ session('info') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
                     @endif
 
                     @if($errors->any())
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <ul class="mb-0">
-                                @foreach($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <ul class="mb-0">
+                            @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
                     @endif
 
                     <form action="{{ route('change.password.first.post') }}" method="POST">
@@ -38,8 +38,7 @@
                                 <i class="fas fa-lock me-1"></i> Password Lama
                             </label>
                             <div class="input-group">
-                                <input type="password" class="form-control @error('current_password') is-invalid @enderror" 
-                                       id="current_password" name="current_password" required>
+                                <input type="password" class="form-control @error('current_password') is-invalid @enderror" id="current_password" name="current_password" required>
                                 <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('current_password')">
                                     <i class="fas fa-eye" id="current_password-icon"></i>
                                 </button>
@@ -52,8 +51,7 @@
                                 <i class="fas fa-key me-1"></i> Password Baru
                             </label>
                             <div class="input-group">
-                                <input type="password" class="form-control @error('new_password') is-invalid @enderror" 
-                                       id="new_password" name="new_password" required>
+                                <input type="password" class="form-control @error('new_password') is-invalid @enderror" id="new_password" name="new_password" required>
                                 <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('new_password')">
                                     <i class="fas fa-eye" id="new_password-icon"></i>
                                 </button>
@@ -66,8 +64,7 @@
                                 <i class="fas fa-check-circle me-1"></i> Konfirmasi Password Baru
                             </label>
                             <div class="input-group">
-                                <input type="password" class="form-control @error('new_password') is-invalid @enderror" 
-                                       id="new_password_confirmation" name="new_password_confirmation" required>
+                                <input type="password" class="form-control @error('new_password') is-invalid @enderror" id="new_password_confirmation" name="new_password_confirmation" required>
                                 <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('new_password_confirmation')">
                                     <i class="fas fa-eye" id="new_password_confirmation-icon"></i>
                                 </button>
@@ -75,7 +72,7 @@
                         </div>
 
                         <div class="d-grid gap-2 mb-3">
-                            <button type="submit" class="btn btn-primary btn-lg">
+                            <button type="submit" class="btn btn-primary btn-sm">
                                 <i class="fas fa-save me-2"></i> Ganti Password
                             </button>
                         </div>
@@ -102,20 +99,21 @@
 
 @push('scripts')
 <script>
-function togglePassword(fieldId) {
-    const field = document.getElementById(fieldId);
-    const icon = document.getElementById(fieldId + '-icon');
-    
-    if (field.type === 'password') {
-        field.type = 'text';
-        icon.classList.remove('fa-eye');
-        icon.classList.add('fa-eye-slash');
-    } else {
-        field.type = 'password';
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
+    function togglePassword(fieldId) {
+        const field = document.getElementById(fieldId);
+        const icon = document.getElementById(fieldId + '-icon');
+
+        if (field.type === 'password') {
+            field.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            field.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
     }
-}
+
 </script>
 @endpush
 @endsection

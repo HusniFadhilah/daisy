@@ -1,13 +1,11 @@
 <!-- Penawaran Asesmen -->
-@if(Route::has('penawaran.baru'))
-<a href="{{ route('penawaran.baru') }}" class="nav-link {{ request()->routeIs('penawaran*') ? 'active' : '' }}">
+<a href="{{ route('penawaran') }}" class="nav-link {{ request()->routeIs('penawaran*') ? 'active' : '' }}">
     <span class="menu-icon">📨</span>
     <span>Penawaran Asesmen</span>
     @if(isset($penawaranBaru) && $penawaranBaru > 0)
-        <span class="badge bg-danger menu-badge">{{ $penawaranBaru }}</span>
+    <span class="badge bg-danger menu-badge">{{ $penawaranBaru }}</span>
     @endif
 </a>
-@endif
 
 {{-- <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'penawaran-submenu')">
     <span class="menu-icon">📨</span>
@@ -57,7 +55,7 @@
     <span class="menu-icon">📝</span>
     <span>Proses AK</span>
     @if(isset($prosesAK) && $prosesAK > 0)
-        <span class="badge bg-warning menu-badge">{{ $prosesAK }}</span>
+    <span class="badge bg-warning menu-badge">{{ $prosesAK }}</span>
     @endif
 </a>
 @endif

@@ -19,10 +19,15 @@
 <!-- Penugasan Banding -->
 <a href="{{ route('banding') }}" class="nav-link {{ request()->routeIs('banding') ? 'active' : '' }}">
     <span class="menu-icon">🤝</span>
-    <span>Penugasan Banding</span>
+    <span>Pengajuan Banding</span>
 </a>
 
 <!-- Pedoman AK -->
+<a href="{{ route('pedoman') }}" class="nav-link {{ request()->routeIs('pedoman') ? 'active' : '' }}">
+    <span class="menu-icon">📁</span>
+    <span>Template LED+Suplemen, dan LKPS</span>
+</a>
+
 <a href="{{ route('pedoman') }}" class="nav-link {{ request()->routeIs('pedoman') ? 'active' : '' }}">
     <span class="menu-icon">❓</span>
     <span>Pedoman AK</span>

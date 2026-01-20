@@ -121,10 +121,10 @@ class DashboardController extends Controller
             ],
         ];
 
-        $penawaranBaru = 3;
-        $penugasanAktif = 2;
-        $prosesAK = 2;
-        $notificationCount = 8;
+        $penawaranBaru = 0;
+        $penugasanAktif = 0;
+        $prosesAK = 0;
+        $notificationCount = 0;
 
         return view('admin.dashboard', compact(
             'stats',
@@ -228,12 +228,12 @@ class DashboardController extends Controller
             ],
         ];
 
-        $penawaranBaru = 3;
-        $penugasanAktif = 2;
-        $prosesAK = 2;
-        $notificationCount = 8;
+        $penawaranBaru = 0;
+        $penugasanAktif = 0;
+        $prosesAK = 0;
+        $notificationCount = 0;
 
-        return view('user.dashboard', compact(
+        return view('admin.dashboard', compact(
             'stats',
             'additionalStats',
             'recentActivities',
@@ -336,9 +336,9 @@ class DashboardController extends Controller
         ];
 
         $penawaranBaru = 0;
-        $penugasanAktif = 4;
-        $prosesAK = 4;
-        $notificationCount = 11;
+        $penugasanAktif = 0;
+        $prosesAK = 0;
+        $notificationCount = 0;
 
         return view('admin.dashboard', compact(
             'stats',
@@ -443,9 +443,9 @@ class DashboardController extends Controller
         ];
 
         $penawaranBaru = 0;
-        $penugasanAktif = 5;
-        $prosesAK = 5;
-        $notificationCount = 9;
+        $penugasanAktif = 0;
+        $prosesAK = 0;
+        $notificationCount = 0;
 
         return view('admin.dashboard', compact(
             'stats',
@@ -523,8 +523,8 @@ class DashboardController extends Controller
 
         $penawaranBaru = 0;
         $penugasanAktif = 0;
-        $prosesAK = 3;
-        $notificationCount = 5;
+        $prosesAK = 0;
+        $notificationCount = 0;
 
         return view('admin.dashboard', compact(
             'stats',
@@ -606,10 +606,10 @@ class DashboardController extends Controller
             ],
         ];
 
-        $penawaranBaru = 2;
-        $penugasanAktif = 1;
-        $prosesAK = 1;
-        $notificationCount = 5;
+        $penawaranBaru = 0;
+        $penugasanAktif = 0;
+        $prosesAK = 0;
+        $notificationCount = 0;
 
         return view('admin.dashboard', compact(
             'stats',

@@ -106,7 +106,7 @@ class BorangExampleSeeder extends Seeder
 
         $objWriter->save($filePath);
 
-        $this->command->info("✅ Template DOCX dibuat untuk {$safeCode}: " . $filePath);
+        // $this->command->info("✅ Template DOCX dibuat untuk {$safeCode}: " . $filePath);
     }
 
     private function addCoverPage()

@@ -32,7 +32,7 @@ class ElemenStandar extends Model
 
     public function penilaianElemenAk()
     {
-        return $this->hasMany(new PenilaianElemenAk, 'id_elemen');
+        return $this->hasMany(PenilaianElemenAk::class, 'id_elemen');
     }
 
     public function penilaianElemenAl()

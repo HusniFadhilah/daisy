@@ -27,7 +27,7 @@ class StudyProgramSeeder extends Seeder
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         $this->command->info("Membaca file CSV akreditasi...");
-        
+
         // Baca file email untuk mapping
         $emailMapping = [];
         if (file_exists($emailCsvPath)) {
@@ -164,7 +164,7 @@ class StudyProgramSeeder extends Seeder
                     $skipped++;
                     continue;
                 }
-                
+
                 // Ambil email dari mapping
                 $emailKey = $universityName . '|' . $programName . '|' . $degreeLevelCode;
                 $email = $emailMapping[$emailKey] ?? '-';
@@ -178,7 +178,7 @@ class StudyProgramSeeder extends Seeder
                 if (!$universityId || !$degreeLevelId) {
                     $skipped++;
                     if (!$universityId) {
-                        $this->command->warn("Universitas tidak ditemukan: {$universityName}");
+                        // $this->command->warn("Universitas tidak ditemukan: {$universityName}");
                     }
                     if (!$degreeLevelId) {
                         $this->command->warn("Jenjang tidak ditemukan: {$degreeLevelCode}");
@@ -192,7 +192,7 @@ class StudyProgramSeeder extends Seeder
                     'code' => trim($programCode ?: 'N/A'),
                     'id_university' => $universityId,
                     'id_degree_level' => $degreeLevelId,
-                    'category_id' => $categoryId,
+                    'id_category' => $categoryId,
                     'bentuk_pt' => $bentukPT,
                     'email' => $email,
                     'peringkat_akreditasi' => $peringkatAkreditasi,

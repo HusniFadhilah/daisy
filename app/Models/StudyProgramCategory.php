@@ -18,7 +18,7 @@ class StudyProgramCategory extends Model
      */
     public function studyPrograms()
     {
-        return $this->hasMany(StudyProgram::class, 'category_id');
+        return $this->hasMany(StudyProgram::class, 'id_category');
     }
 
     /**

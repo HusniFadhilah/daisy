@@ -115,11 +115,19 @@ class DeskEvaluatorController extends Controller
 
         $currentValidator = $pengajuan->getCurrentBorangValidator();
         $canAssignValidator = $pengajuan->canAssignValidator();
+        $currentStep = $pengajuan->getCurrentStepNumber();
+        $nextAllowedStatuses = $pengajuan->getNextAllowedStatuses();
+        $canProceedToHasilAkreditasi = $pengajuan->canStartHasilAkreditasi();
+        $canProceedToMasaSanggah = $pengajuan->canStartMasaSanggah();
 
         return view('asesmen.de.show', compact(
             'pengajuan',
             'currentValidator',
-            'canAssignValidator'
+            'canAssignValidator',
+            'currentStep',
+            'nextAllowedStatuses',
+            'canProceedToHasilAkreditasi',
+            'canProceedToMasaSanggah'
         ));
     }
 
@@ -144,7 +152,6 @@ class DeskEvaluatorController extends Controller
                     'nomor_pengajuan' => PengajuanAkreditasi::generateNomorPengajuan(),
                     'id_program_studi' => $prodi->id,
                     'id_de_assigned' => Auth::id(),
-                    'id_validator_assigned' => Auth::id(),
                     'tahun_akreditasi' => date('Y'),
                     'status' => PengajuanAkreditasi::STATUS_PENGINGAT_DIKIRIM,
                     'tanggal_pengingat' => now(),
@@ -182,12 +189,12 @@ class DeskEvaluatorController extends Controller
 
         DB::beginTransaction();
         try {
-            $pengajuan = \App\Models\PengajuanAkreditasi::query()
+            $pengajuan = PengajuanAkreditasi::query()
                 ->with(['studyProgram.degreeLevel', 'pengaju'])
                 ->lockForUpdate()
                 ->findOrFail($id);
 
-            if ($pengajuan->status !== \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA) {
+            if ($pengajuan->status !== PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA) {
                 DB::rollBack();
                 return back()->with('error', 'Status pengajuan tidak sesuai untuk kirim template.');
             }
@@ -301,12 +308,12 @@ class DeskEvaluatorController extends Controller
 
         DB::beginTransaction();
         try {
-            $pengajuan = \App\Models\PengajuanAkreditasi::query()
+            $pengajuan = PengajuanAkreditasi::query()
                 ->with(['studyProgram', 'pengaju'])
                 ->lockForUpdate()
                 ->findOrFail($id);
 
-            if ($pengajuan->status !== \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA) {
+            if ($pengajuan->status !== PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA) {
                 DB::rollBack();
                 return back()->with('error', 'Status pengajuan tidak sesuai untuk kirim formulir pembayaran.');
             }
@@ -417,21 +424,21 @@ class DeskEvaluatorController extends Controller
         }
 
         // hanya naikkan jika masih di tahap surat permohonan diterima
-        if ($pengajuan->status !== \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA) {
+        if ($pengajuan->status !== PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA) {
             return;
         }
 
         $oldStatus = $pengajuan->status;
 
         $pengajuan->update([
-            'status' => \App\Models\PengajuanAkreditasi::STATUS_MENUNGGU_PEMBAYARAN,
+            'status' => PengajuanAkreditasi::STATUS_MENUNGGU_PEMBAYARAN,
             'tanggal_template_led_dikirim' => now(), // atau buat field baru jika perlu
         ]);
 
         $this->logStatus(
             $pengajuan,
             $oldStatus,
-            \App\Models\PengajuanAkreditasi::STATUS_MENUNGGU_PEMBAYARAN,
+            PengajuanAkreditasi::STATUS_MENUNGGU_PEMBAYARAN,
             'Template LED/LKPS dan formulir pembayaran sudah lengkap. Menunggu pembayaran dari prodi.'
         );
     }
@@ -506,7 +513,8 @@ class DeskEvaluatorController extends Controller
             'catatan_de' => 'nullable|string|max:1000',
         ]);
 
-        $pengajuan = PengajuanAkreditasi::with(['latestBorangImport'])->findOrFail($id);
+        DB::beginTransaction();
+        $pengajuan = PengajuanAkreditasi::with('latestBorangImport')->lockForUpdate()->findOrFail($id);
 
         // ============================================
         // VALIDATION CHECKS
@@ -528,7 +536,6 @@ class DeskEvaluatorController extends Controller
             return ResponseFormatter::error(null, 'Validator ini sudah pernah ditugaskan untuk pengajuan ini.', 422);
         }
 
-        DB::beginTransaction();
         try {
             // ============================================
             // AUTO-CREATE ASESMEN IF NOT EXISTS
@@ -588,7 +595,6 @@ class DeskEvaluatorController extends Controller
             BorangValidation::create([
                 'id_assignment' => $assignment->id,
                 'id_pengajuan' => $pengajuan->id,
-                'id_pengajuan' => $pengajuan->id,
                 'total_sections' => $pengajuan->latestBorangImport->total_sections ?? 0,
                 'validated_sections' => 0,
             ]);
@@ -598,14 +604,14 @@ class DeskEvaluatorController extends Controller
             // ============================================
             $oldStatus = $pengajuan->status;
             $pengajuan->update([
-                'status' => \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
+                'status' => PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
                 'tanggal_validasi_borang_assigned' => now(),
             ]);
 
             $this->logStatus(
                 $pengajuan,
                 $oldStatus,
-                \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
+                PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
                 "Validator {$validator->name} ditugaskan untuk review LED. " . ($request->catatan_de ?? '')
             );
 
@@ -703,16 +709,17 @@ class DeskEvaluatorController extends Controller
             ]);
 
             // Update status
+            $oldStatus = $pengajuan->status;
             $pengajuan->update([
-                'status' => \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
+                'status' => PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
                 'tanggal_validasi_borang_assigned' => now(),
             ]);
 
             // Log
             $this->logStatus(
                 $pengajuan,
-                $pengajuan->status,
-                'borang_validation_pending',
+                $oldStatus,
+                PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
                 "Validator ditugaskan ulang ke {$newValidator->name}. " . ($request->catatan_de ?? '')
             );
 
@@ -772,7 +779,7 @@ class DeskEvaluatorController extends Controller
 
             if (!$hasOtherValidators) {
                 $pengajuan->update([
-                    'status' => \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
+                    'status' => PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
                     'id_validator_assigned' => null,
                 ]);
             }
@@ -896,12 +903,12 @@ class DeskEvaluatorController extends Controller
                 $pengajuan,
                 $oldStatus,
                 PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
-                'Pelaporan validasi LED selesai - siap untuk lanjut ke tahap berikutnya'
+                'Laporan Kesiapan LED Program Studi (LKLED) selesai - siap untuk lanjut ke tahap berikutnya'
             );
 
             DB::commit();
 
-            return back()->with('success', 'Pelaporan hasil validasi LED berhasil. Silakan approve untuk lanjut ke tahap AK.');
+            return back()->with('success', 'Laporan Kesiapan LED Program Studi (LKLED) berhasil diproses. Silakan approve untuk lanjut ke tahap AK.');
         } catch (\Exception $e) {
             Log::error('Failed to lapor validasi', [
                 'pengajuan_id' => $id,

@@ -58,7 +58,7 @@ class AsesmenController extends Controller
             }
 
             // Check status
-            if ($pengajuan->status !== 'pengajuan_completed') {
+            if ($pengajuan->status !== PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED) {
                 return redirect()
                     ->route('de.pengajuan.show', $pengajuan->id)
                     ->with('error', 'Pengajuan belum disetujui untuk lanjut ke AK.');

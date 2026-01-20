@@ -94,7 +94,7 @@
                 </div>
                 <div class="col-md-5">
                     <label class="form-label">Pilih Kategori</label>
-                    <select name="category_id" class="form-select" required>
+                    <select name="id_category" class="form-select" required>
                         <option value="">-- Pilih Kategori --</option>
                         @foreach($categories as $category)
                         <option value="{{ $category->id }}">{{ $category->name }}</option>
@@ -192,7 +192,7 @@
     console.log('jQuery version:', typeof $ !== 'undefined' ? $.fn.jquery : 'jQuery not found');
     console.log('Select2 exists:', typeof $.fn.select2 !== 'undefined');
     console.log('DataTable exists:', typeof $.fn.DataTable !== 'undefined');
-    
+
     // Initialize Select2
     $(document).ready(function() {
         console.log('Document ready - initializing components...');
@@ -325,7 +325,7 @@
         e.preventDefault();
 
         const asesmenId = $('[name="asesmen_id"]').val();
-        const categoryId = $('[name="category_id"]').val();
+        const categoryId = $('[name="id_category"]').val();
 
         if (!asesmenId || !categoryId) {
             alert('Pilih asesmen dan kategori terlebih dahulu');

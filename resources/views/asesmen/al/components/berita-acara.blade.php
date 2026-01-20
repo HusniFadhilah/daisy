@@ -1,7 +1,7 @@
 @if(!$isFinalized)
 <div class="alert alert-info alert-permanent alert-dismissible mb-3">
     <i class="bi bi-info-circle me-2"></i>
-    Silahkan finalisasi Hasil dan Berita Acara Asesmen Lapangan (AL) dengan klik tombol "Finalisasi Berita Acara" di bawah ini
+    Silahkan finalisasi Hasil dan Berita Acara Asesmen Lapangan (AL) setelah Anda mengupload file Hasil dan Berita Acara Asesmen Lapangan (AL) (PDF). Dengan mengklik tombol "Finalisasi Berita Acara" di bawah ini
 </div>
 @else
 <div class="alert alert-success alert-permanent alert-dismissible mb-3">
@@ -27,20 +27,6 @@
     </div>
 
     <div class="card-body">
-        @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show">
-            <i class="bi bi-check-circle"></i> {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-        @endif
-
-        @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show">
-            <i class="bi bi-exclamation-circle"></i> {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-        @endif
-
         {{-- Skeleton Loading --}}
         <div id="skeletonLoading">
             <div class="alert alert-info alert-permanent placeholder-glow">

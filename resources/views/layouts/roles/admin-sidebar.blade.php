@@ -1,7 +1,7 @@
 <!-- Penawaran Asesmen -->
 <a href="{{ route('pemetaan.index') }}" class="nav-link {{ request()->routeIs('pemetaan*') ? 'active' : '' }}">
     <span class="menu-icon">🗺️</span>
-    <span>Pemetaan Akreditasi</span>
+    <span>Pengingat Masa Akreditasi</span>
 </a>
 <a href="{{ route('de.pengajuan') }}" class="nav-link {{ request()->routeIs('de*') ? 'active' : '' }}">
     <span class="menu-icon">📋</span>

@@ -50,18 +50,6 @@
         </div>
     </div>
 
-    <!-- Quick Actions -->
-    <div class="card mb-4">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0"><i class="bi bi-lightning"></i> Quick Actions</h5>
-        </div>
-        <div class="card-body">
-            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalKirimPengingat">
-                <i class="bi bi-bell"></i> Kirim Pengingat Akreditasi
-            </button>
-        </div>
-    </div>
-
     <!-- Filter -->
     <div class="card mb-4">
         <div class="card-body">
@@ -164,56 +152,6 @@
                 {{ $pengajuans->links() }}
             </div>
             @endif
-        </div>
-    </div>
-</div>
-
-<!-- Modal Kirim Pengingat -->
-<div class="modal fade" id="modalKirimPengingat" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-            <form action="{{ route('de.pengajuan.kirim-pengingat') }}" method="POST">
-                @csrf
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title">
-                        <i class="bi bi-bell"></i> Kirim Pengingat Akreditasi
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Pilih Program Studi</label>
-                        <div style="max-height: 200px; overflow-y: auto; border: 1px solid #dee2e6; padding: 10px; border-radius: 4px;">
-                            @foreach(\App\Models\StudyProgram::with('degreeLevel')->get() as $prodi)
-                            <div class="form-check">
-                                <input type="checkbox" class="form-check-input" name="id_program_studi[]" value="{{ $prodi->id }}" id="prodi{{ $prodi->id }}">
-                                <label class="form-check-label" for="prodi{{ $prodi->id }}">
-                                    {{ $prodi->full_name }}
-                                </label>
-                            </div>
-                            @endforeach
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Pesan Pengingat</label>
-                        <textarea name="pesan_pengingat" class="form-control" rows="5" required>Kepada Yth. Program Studi,
-
-Masa akreditasi program studi Anda akan segera berakhir. Kami mengingatkan untuk segera mempersiapkan dan mengajukan permohonan akreditasi.
-
-Terima kasih atas perhatiannya.
-
-Hormat kami,
-Dewan Eksekutif (DE) LAMDEPILAR</textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-send"></i> Kirim Pengingat
-                    </button>
-                </div>
-            </form>
         </div>
     </div>
 </div>

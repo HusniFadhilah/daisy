@@ -3,6 +3,7 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 
 class PengajuanAkreditasi extends Model
@@ -473,9 +474,11 @@ class PengajuanAkreditasi extends Model
             ->get();
         $uploadedFiles = [
             'led' => $dokumens->whereIn('jenis_dokumen', ['data_kualitatif', 'draft_borang', 'borang_final',])->first(),
-            'suplemen' => $dokumens->whereIn('jenis_dokumen', ['data_suplemen', 'suplemen', 'file_suplemen', 'dokumen_pendukung',])->first(),
+            'suplemen' => $dokumens->whereIn('jenis_dokumen', ['data_suplemen', 'suplemen', 'file_suplemen', 'dokumen_pendukung'])->first(),
             'lkps' => $dokumens->whereIn('jenis_dokumen', ['data_kuantitatif', 'kuantitatif',])->first(),
             'pengesahan' => $dokumens->where('jenis_dokumen', 'pengesahan')->first(),
+            'bukti_pembayaran' => $dokumens->where('jenis_dokumen', 'bukti_pembayaran')->first(),
+            'surat_permohonan' => $dokumens->where('jenis_dokumen', 'surat_permohonan')->first(),
         ];
         return $uploadedFiles;
     }
@@ -864,5 +867,166 @@ class PengajuanAkreditasi extends Model
         // fallback aman: kalau status nggak terdaftar di rules
         // anggap masih di step 1 dan sedang progress
         return ['step' => 1, 'color' => 'warning'];
+    }
+
+    /**
+     * ✅ Status transition rules (which status can go to which)
+     */
+    public static function allowedStatusTransitions(): array
+    {
+        return [
+            // Steps 1-13 (existing)
+            self::STATUS_DRAFT => [self::STATUS_PENGINGAT_DIKIRIM],
+            self::STATUS_PENGINGAT_DIKIRIM => [self::STATUS_SURAT_PERMOHONAN_DITERIMA],
+            self::STATUS_SURAT_PERMOHONAN_DITERIMA => [self::STATUS_TEMPLATE_LED_DIKIRIM, self::STATUS_MENUNGGU_PEMBAYARAN],
+            self::STATUS_TEMPLATE_LED_DIKIRIM => [self::STATUS_MENUNGGU_PEMBAYARAN],
+            self::STATUS_MENUNGGU_PEMBAYARAN => [self::STATUS_PEMBAYARAN_DITERIMA, self::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN],
+            self::STATUS_PEMBAYARAN_DITERIMA => [self::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN],
+            self::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN => [self::STATUS_PEMBAYARAN_DIVERIFIKASI, self::STATUS_MENUNGGU_PEMBAYARAN],
+            self::STATUS_PEMBAYARAN_DIVERIFIKASI => [self::STATUS_DRAFT_BORANG_DITERIMA],
+            self::STATUS_DRAFT_BORANG_DITERIMA => [self::STATUS_BORANG_ONLINE_SELESAI],
+            self::STATUS_BORANG_ONLINE_SELESAI => [self::STATUS_BORANG_VALIDATION_PENDING],
+            self::STATUS_BORANG_VALIDATION_PENDING => [self::STATUS_BORANG_IN_VALIDATION],
+            self::STATUS_BORANG_IN_VALIDATION => [self::STATUS_BORANG_REVISION_REQUIRED, self::STATUS_BORANG_VALIDATED],
+            self::STATUS_BORANG_REVISION_REQUIRED => [self::STATUS_BORANG_ONLINE_SELESAI],
+            self::STATUS_BORANG_VALIDATED => [self::STATUS_DRAFT_BORANG_FINAL_DITERIMA, self::STATUS_VALIDASI_BORANG_DILAPORKAN],
+            self::STATUS_DRAFT_BORANG_FINAL_DITERIMA => [self::STATUS_VALIDASI_BORANG_DILAPORKAN],
+            self::STATUS_VALIDASI_BORANG_DILAPORKAN => [self::STATUS_PENGAJUAN_COMPLETED],
+            self::STATUS_PENGAJUAN_COMPLETED => [self::STATUS_ASESOR_AK_ASSIGNED],
+            self::STATUS_ASESOR_AK_ASSIGNED => [self::STATUS_AK_IN_PROGRESS],
+            self::STATUS_AK_IN_PROGRESS => [self::STATUS_AK_ON_VALIDATION],
+            self::STATUS_AK_ON_VALIDATION => [self::STATUS_AK_SELESAI],
+            self::STATUS_AK_SELESAI => [self::STATUS_AK_DILAPORKAN],
+            self::STATUS_AK_DILAPORKAN => [self::STATUS_ASESOR_AL_ASSIGNED],
+            self::STATUS_ASESOR_AL_ASSIGNED => [self::STATUS_AL_IN_PROGRESS],
+            self::STATUS_AL_IN_PROGRESS => [self::STATUS_AL_SELESAI],
+            self::STATUS_AL_SELESAI => [self::STATUS_AL_DILAPORKAN],
+
+            // ✅ NEW: Steps 14-20 (SEQUENTIAL ENFORCEMENT)
+            self::STATUS_AL_DILAPORKAN => [self::STATUS_HASIL_AKREDITASI_DIKIRIM], // 13 → 14 ONLY
+
+            self::STATUS_HASIL_AKREDITASI_DIKIRIM => [self::STATUS_MASA_SANGGAH], // 14 → 15 ONLY
+
+            self::STATUS_MASA_SANGGAH => [
+                self::STATUS_BANDING_DIAJUKAN,  // 15 → 16 (if banding)
+                self::STATUS_HASIL_DITETAPKAN    // 15 → 18 (skip banding)
+            ],
+
+            self::STATUS_BANDING_DIAJUKAN => [self::STATUS_BANDING_DILAKSANAKAN], // 16 → 17
+            self::STATUS_BANDING_DILAKSANAKAN => [self::STATUS_BANDING_DILAPORKAN], // 17 → 18
+            self::STATUS_BANDING_DILAPORKAN => [self::STATUS_HASIL_DITETAPKAN], // 18 → 19
+
+            self::STATUS_HASIL_DITETAPKAN => [self::STATUS_HASIL_DIUMUMKAN], // 18 → 19
+            self::STATUS_HASIL_DIUMUMKAN => [self::STATUS_HASIL_DILAPORKAN], // 19 → 20
+            self::STATUS_HASIL_DILAPORKAN => [self::STATUS_ARSIP_DISIMPAN], // 20 → 21
+            self::STATUS_ARSIP_DISIMPAN => [self::STATUS_SELESAI], // 21 → DONE
+
+            self::STATUS_SELESAI => [], // Terminal state
+            self::STATUS_DITOLAK => [], // Terminal state
+        ];
+    }
+
+    /**
+     * ✅ Get current step number (1–20) from statusTimelineRuleMap
+     */
+    public function getCurrentStepNumber(): int
+    {
+        $currentStatus = $this->status;
+
+        foreach (self::statusTimelineRuleMap() as $step => $rules) {
+
+            foreach ($rules as $statuses) {
+                if (in_array($currentStatus, $statuses, true)) {
+                    return $step;
+                }
+            }
+        }
+
+        return 0; // fallback jika status tidak ditemukan
+    }
+
+    /**
+     * ✅ Check if transition is allowed
+     */
+    public function canTransitionTo(string $newStatus): bool
+    {
+        $allowedTransitions = self::allowedStatusTransitions();
+
+        // Current status not in rules (shouldn't happen)
+        if (!isset($allowedTransitions[$this->status])) {
+            return false;
+        }
+
+        return in_array($newStatus, $allowedTransitions[$this->status], true);
+    }
+
+    /**
+     * ✅ Get next allowed statuses
+     */
+    public function getNextAllowedStatuses(): array
+    {
+        $allowedTransitions = self::allowedStatusTransitions();
+        return $allowedTransitions[$this->status] ?? [];
+    }
+
+    /**
+     * ✅ Safe status update with validation
+     */
+    public function updateStatusSafely(string $newStatus, ?string $note = null): bool
+    {
+        if (!$this->canTransitionTo($newStatus)) {
+            throw new \InvalidArgumentException(
+                "Cannot transition from {$this->status} to {$newStatus}. " .
+                    "Allowed: " . implode(', ', $this->getNextAllowedStatuses())
+            );
+        }
+
+        DB::beginTransaction();
+        try {
+            $oldStatus = $this->status;
+
+            $this->update(['status' => $newStatus]);
+
+            // Log transition
+            $this->statusLog()->create([
+                'status_from' => $oldStatus,
+                'status_to' => $newStatus,
+                'changed_by' => auth()->id(),
+                'changed_at' => now(),
+                'keterangan' => $note,
+            ]);
+
+            DB::commit();
+            return true;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    /**
+     * ✅ Check if step 14 can be started
+     */
+    public function canStartHasilAkreditasi(): bool
+    {
+        return $this->status === self::STATUS_AL_DILAPORKAN
+            && $this->tanggal_pelaporan_al !== null;
+    }
+
+    /**
+     * ✅ Check if step 15 (masa sanggah) can be started
+     */
+    public function canStartMasaSanggah(): bool
+    {
+        return $this->status === self::STATUS_HASIL_AKREDITASI_DIKIRIM
+            && $this->tanggal_hasil_akreditasi !== null;
+    }
+
+    /**
+     * ✅ Check if banding is submitted during masa sanggah
+     */
+    public function hasBanding(): bool
+    {
+        return $this->tanggal_banding !== null;
     }
 }

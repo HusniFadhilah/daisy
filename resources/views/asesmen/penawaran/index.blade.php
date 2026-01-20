@@ -101,7 +101,7 @@ $authUser = Auth::user();
                                     <h5 class="card-title mb-1 text-primary">{{ $penawaran->asesmen->name }}</h5>
                                     <span class="badge bg-primary">{{ $penawaran->role->alias.' '.$penawaran->jenis_asesmen_label }}</span>
                                 </div>
-                                <span class="badge bg-warning status-badge">
+                                <span class="badge bg-warning status-badge ps-2">
                                     <i class="bi bi-clock-history"></i> Pending
                                 </span>
                             </div>
@@ -502,21 +502,49 @@ $authUser = Auth::user();
 
         const CONFIG = {
             dokumen: {
-                label: 'Laporan Validasi LED + Suplemen & LKPS'
+                title: 'Pelaporan Validasi LED+Suplemen, dan LKPS'
+                , label: 'Laporan Kesiapan LED Program Studi (LKLED)'
                 , upload: @json(route('pelaporan.borang.upload', ['assignment' => '__ID__']))
                 , finalize: @json(route('pelaporan.borang.finalize', ['assignment' => '__ID__']))
-            , }
+                , fileLabel: 'Laporan Kesiapan LED Program Studi (LKLED)'
+                , finalizeLabel: 'Laporan Kesiapan LED Program Studi (LKLED)'
+                , additionalDescription: `Dokumen yang sudah digabungkan, yang diperlukan isinya adalah:
+                • Surat Permohonan PS untuk Akreditasi
+                • Surat Balasan DE untuk menyusun LED
+                • Bukti Pembayaran Akreditasi
+                • Dokumen LED yang telah memenuhi standar untuk dilakukan Penilaian Kecukupan (AK)`
+            }
             , ak: {
-                label: 'Laporan Validasi Asesmen Kecukupan (AK)'
+                title: 'Pelaporan Validasi Asesmen Kecukupan'
+                , label: 'Laporan Penilaian Kecukupan LED Program Studi (LHK)'
                 , upload: @json(route('pelaporan.validasiAk.upload', ['assignment' => '__ID__']))
                 , finalize: @json(route('pelaporan.validasiAk.finalize', ['assignment' => '__ID__']))
-            , }
+                , fileLabel: 'Laporan Penilaian Kecukupan LED Program Studi (LHK)'
+                , finalizeLabel: 'Laporan Penilaian Kecukupan LED Program Studi (LHK) telah selesai'
+                , additionalDescription: `Dokumen yang sudah digabungkan, yang diperlukan isinya adalah:
+                •	Penunjukan tugas Asesor untuk melaksanakan Penilaian LED
+                •	Proses penilaian LED oleh Asesor.
+                •	Validasi Penilaian Kecukupan Asesor oleh Validator
+                •	Penyampaian Informasi Kepada DE untuk dilakukan tahap Asesmen Lapangan`
+            }
             , al: {
-                label: 'Laporan Asesmen Lapangan (AL)'
+                title: 'Rekap AL dan Pelaporan AL'
+                , label: 'Laporan Hasil Asesmen Lapangan Program Studi (LHA)'
                 , upload: @json(route('pelaporan.al.upload', ['assignment' => '__ID__']))
                 , finalize: @json(route('pelaporan.al.finalize', ['assignment' => '__ID__']))
-            , }
-        , };
+                , fileLabel: 'Laporan Hasil Asesmen Lapangan Program Studi (LHA)'
+                , finalizeLabel: 'Pelaporan AL Telah Selesai'
+                , additionalDescription: `Dokumen yang sudah digabungkan, yang diperlukan isinya adalah:
+                •	Penunjukan tugas Asesor untuk melaksanakan Penilaian LED
+                •	Proses peneliaan LED oleh Asesor.
+                •	Validasi Penilaian Kecukupan Asesor Oleh Validator
+                •	Penyampaian Informasi Kepada DE tentang:
+                    o	Lokasi AL
+                    o	Perjalan asesor ke lokasi AL
+                    o	Berita Acara yang menyatakan AL telah dilaksanakan dan disepakati
+                •	Rekomendasi Penetapan Hasil Akreditasi`
+            }
+        };
 
         if (!CONFIG[jenis]) return;
 
@@ -524,7 +552,7 @@ $authUser = Auth::user();
         const finalizeUrl = CONFIG[jenis].finalize.replace('__ID__', assignmentId);
 
         // ===== STEP 1: UPLOAD =====
-        const file = await pickPdf(CONFIG[jenis].label);
+        const file = await pickPdf(CONFIG[jenis]);
         if (!file) return;
 
         const uploadResult = await uploadFile(uploadUrl, file);
@@ -554,24 +582,38 @@ $authUser = Auth::user();
     // HELPERS
     // =======================
 
-    async function pickPdf(label) {
+    async function pickPdf(cfg) {
         const res = await Swal.fire({
-            title: 'Pelaporan'
+            title: cfg.title || 'Pelaporan'
             , html: `
             <div class="text-start">
-                <p>Upload <b>${label}</b></p>
-                <input id="plFile" type="file" class="form-control" accept="application/pdf">
-                <small class="text-muted">PDF, maksimal 5MB</small>
+                <p class="mb-3">
+                    Upload <b>${cfg.label}</b>
+                    <small class="text-muted">(PDF, maksimal 5MB)</small>
+                </p>
+
+                <input id="plFile" type="file"
+                       class="form-control"
+                       accept="application/pdf">
+
+                ${
+                    cfg.additionalDescription
+                        ? `<div class="form-text mt-2" style="white-space: pre-line;">
+                            ${cfg.additionalDescription}
+                           </div>`
+                        : ''
+                }
             </div>
         `
             , showCancelButton: true
             , confirmButtonText: 'Upload'
             , cancelButtonText: 'Batal'
             , preConfirm: function() {
-                const f = document.getElementById('plFile').files[0];
-                if (!f) return Swal.showValidationMessage('Silahkan pilih file Laporan dalam bentuk PDF');
-                if (f.type !== 'application/pdf') return Swal.showValidationMessage('File laporan harus berformat PDF');
-                if (f.size > 5 * 1024 * 1024) return Swal.showValidationMessage('File laporan maksimal 5MB');
+                const plFile = document.getElementById('plFile')
+                const f = plFile && plFile.files ? plFile.files[0] : null;
+                if (!f) return Swal.showValidationMessage('Silahkan pilih file PDF');
+                if (f.type !== 'application/pdf') return Swal.showValidationMessage('File harus PDF');
+                if (f.size > 5 * 1024 * 1024) return Swal.showValidationMessage('Ukuran maksimal 5MB');
                 return f;
             }
         });

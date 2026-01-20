@@ -25,24 +25,25 @@ return new class extends Migration
             });
         }
 
-        // Create degree_levels table
-        if (!Schema::hasTable('degree_levels')) {
-            Schema::create('degree_levels', function (Blueprint $table) {
-                $table->id();
-                $table->string('code', 15);
-                $table->string('alias', 15);
-                $table->string('name', 50)->nullable();
-                $table->boolean('is_active')->default(true)->index();
-                $table->timestamps();
-            });
-        }
-
         if (!Schema::hasTable('study_program_categories')) {
             Schema::create('study_program_categories', function (Blueprint $table) {
                 $table->id();
                 $table->string('code', 10)->unique();
                 $table->string('name', 100);
                 $table->text('description')->nullable();
+                $table->timestamps();
+            });
+        }
+
+        // Create degree_levels table
+        if (!Schema::hasTable('degree_levels')) {
+            Schema::create('degree_levels', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('id_category')->nullable()->constrained('study_program_categories')->onDelete('set null');
+                $table->string('code', 15);
+                $table->string('alias', 15);
+                $table->string('name', 50)->nullable();
+                $table->boolean('is_active')->default(true)->index();
                 $table->timestamps();
             });
         }
@@ -56,7 +57,7 @@ return new class extends Migration
                 $table->string('code');
                 $table->foreignId('id_university')->constrained('universities')->onDelete('cascade');
                 $table->foreignId('id_degree_level')->constrained('degree_levels')->onDelete('cascade');
-                $table->foreignId('category_id')->nullable()->constrained('study_program_categories')->onDelete('set null');
+                $table->foreignId('id_category')->nullable()->constrained('study_program_categories')->onDelete('set null');
                 $table->enum('bentuk_pt', ['Universitas', 'Institut', 'Sekolah Tinggi', 'Politeknik', 'Akademi'])->nullable();
                 $table->string('email')->nullable();
                 $table->string('peringkat_akreditasi')->nullable();
@@ -66,7 +67,7 @@ return new class extends Migration
                 $table->boolean('is_example')->default(false)->index();
                 $table->timestamps();
 
-                $table->index('category_id');
+                $table->index('id_category');
             });
         }
     }
@@ -77,8 +78,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('study_programs');
-        Schema::dropIfExists('study_program_categories');
         Schema::dropIfExists('degree_levels');
+        Schema::dropIfExists('study_program_categories');
         Schema::dropIfExists('universities');
     }
 };

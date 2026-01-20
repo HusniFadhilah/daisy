@@ -73,11 +73,11 @@ class AkreditasiSeeder extends Seeder
                         'code' => $code,
                         'name' => $universitas,
                     ]);
-                    $this->command->info("Created university: {$universitas} ({$code})");
+                    // $this->command->info("Created university: {$universitas} ({$code})");
                 }
 
                 // Find degree level
-                $degreeLevel = \App\Models\DegreeLevel::where('name', $jenjangMapped)->first();
+                $degreeLevel = \App\Models\DegreeLevel::where('code', $jenjangMapped)->first();
                 if (!$degreeLevel) {
                     $errors[] = "Jenjang tidak ditemukan: {$jenjang} ({$jenjangMapped}) untuk {$programStudi}";
                     $notFound++;
@@ -105,7 +105,7 @@ class AkreditasiSeeder extends Seeder
                         'status_kedaluwarsa' => $status,
                     ]);
                     $created++;
-                    $this->command->info("Created program: {$programStudi} ({$jenjang}) - {$universitas}");
+                    // $this->command->info("Created program: {$programStudi} ({$jenjang}) - {$universitas}");
                 } else {
                     // Update existing study program
                     $studyProgram->update([
@@ -177,16 +177,20 @@ class AkreditasiSeeder extends Seeder
     private function mapJenjang($jenjang): string
     {
         $mappings = [
-            'S1' => 'Sarjana (Strata 1)',
-            'S2' => 'Magister (Strata 2)',
-            'S3' => 'Doktor (Strata 3)',
-            'D-III' => 'Diploma III',
-            'D-IV' => 'Diploma IV / Sarjana Terapan',
-            'D3' => 'Diploma III',
-            'D4' => 'Diploma IV / Sarjana Terapan',
-            'STr' => 'Diploma IV / Sarjana Terapan',
-            'S2 Terapan' => 'Magister Terapan (Strata 2)',
-            'S3 Terapan' => 'Doktor Terapan (Strata 3)',
+            'S1' => 's1',
+            'S2' => 's2',
+            'S3' => 's3',
+            'D-I' => 'd1',
+            'D-II' => 'd2',
+            'D-III' => 'd3',
+            'D-IV' => 'd4',
+            'D1' => 'd1',
+            'D2' => 'd2',
+            'D3' => 'd3',
+            'D4' => 'd4',
+            'STr' => 'd4',
+            'S2 Terapan' => 's2-terapan',
+            'S3 Terapan' => 's3-terapan',
         ];
 
         return $mappings[$jenjang] ?? $jenjang;

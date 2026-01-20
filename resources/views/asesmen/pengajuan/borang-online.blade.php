@@ -1013,7 +1013,7 @@ $pengajuanId = $pengajuan->id;
                         };
                         editor.on('init', function() {
                             if (LOCK_BORANG) {
-                                editor.setMode('readonly');
+                                editor.mode.set('readonly');
                             }
                             const existing = editor.getContent({
                                 format: 'html'
@@ -1579,7 +1579,8 @@ $pengajuanId = $pengajuan->id;
         }
 
         function initializeFinalize() {
-            document.getElementById('btnFinalize').addEventListener('click', async function() {
+            const btnFinalize = document.getElementById('btnFinalize')
+            if (btnFinalize) btnFinalize.addEventListener('click', async function() {
                 const confirmed = await Swal.fire({
                     icon: 'question'
                     , title: 'Konfirmasi Finalisasi'

@@ -180,23 +180,23 @@ class PemetaanAkreditasiController extends Controller
     {
         $today = Carbon::today();
         $threeMonthsLater = now()->addMonths(3);
-        $sixMonthsLater = now()->addMonths(6);
+        $sevenMonthsLater = now()->addMonths(7);
         $twelveMonthsLater = now()->addMonths(12);
 
         // 🔥 1 QUERY SAJA - Fixed SQL syntax for proper bindings
         $stats = StudyProgram::nonExample()->selectRaw("
         COUNT(*) as total,
-        SUM(CASE WHEN status_kadaluwarsa = 'Aktif' THEN 1 ELSE 0 END) as aktif,
-        SUM(CASE WHEN status_kadaluwarsa = 'Belum Terakreditasi' THEN 1 ELSE 0 END) as belum_terakreditasi,
-        SUM(CASE WHEN status_kadaluwarsa = 'Kedaluwarsa' THEN 1 ELSE 0 END) as kedaluwarsa,
-        SUM(CASE WHEN tanggal_kadaluwarsa BETWEEN ? AND ? THEN 1 ELSE 0 END) as segera_3_bulan,
-        SUM(CASE WHEN tanggal_kadaluwarsa BETWEEN ? AND ? THEN 1 ELSE 0 END) as segera_6_bulan,
-        SUM(CASE WHEN tanggal_kadaluwarsa BETWEEN ? AND ? THEN 1 ELSE 0 END) as segera_12_bulan
+        SUM(CASE WHEN status_kedaluwarsa = 'Aktif' THEN 1 ELSE 0 END) as aktif,
+        SUM(CASE WHEN status_kedaluwarsa = 'Belum Terakreditasi' THEN 1 ELSE 0 END) as belum_terakreditasi,
+        SUM(CASE WHEN status_kedaluwarsa = 'Kedaluwarsa' THEN 1 ELSE 0 END) as kedaluwarsa,
+        SUM(CASE WHEN tanggal_kedaluwarsa BETWEEN ? AND ? THEN 1 ELSE 0 END) as segera_3_bulan,
+        SUM(CASE WHEN tanggal_kedaluwarsa BETWEEN ? AND ? THEN 1 ELSE 0 END) as segera_7_bulan,
+        SUM(CASE WHEN tanggal_kedaluwarsa BETWEEN ? AND ? THEN 1 ELSE 0 END) as segera_12_bulan
     ", [
             now(),
             $threeMonthsLater,
             now(),
-            $sixMonthsLater,
+            $sevenMonthsLater,
             now(),
             $twelveMonthsLater,
         ])->first();
@@ -214,7 +214,7 @@ class PemetaanAkreditasiController extends Controller
             'kedaluwarsa' => (int) $stats->kedaluwarsa,
             'belum_terakreditasi' => (int) $stats->belum_terakreditasi,
             'segera_3_bulan' => (int) $stats->segera_3_bulan,
-            'segera_6_bulan' => (int) $stats->segera_6_bulan,
+            'segera_7_bulan' => (int) $stats->segera_7_bulan,
             'segera_12_bulan' => (int) $stats->segera_12_bulan,
             'by_peringkat' => $byPeringkat,
         ];
@@ -402,7 +402,7 @@ class PemetaanAkreditasiController extends Controller
                 ],
                 'segera_kedaluwarsa' => [
                     'dalam_3_bulan' => $stats['segera_3_bulan'],
-                    'dalam_6_bulan' => $stats['segera_6_bulan'],
+                    'dalam_7_bulan' => $stats['segera_7_bulan'],
                     'dalam_12_bulan' => $stats['segera_12_bulan'],
                 ],
                 'by_peringkat' => $stats['by_peringkat'],
@@ -441,7 +441,7 @@ class PemetaanAkreditasiController extends Controller
                     'degree_level' => $p->degreeLevel->name,
                     'peringkat' => $p->peringkat_akreditasi,
                     'tanggal_kedaluwarsa' => $p->tanggal_kedaluwarsa?->format('Y-m-d'),
-                    'status' => $p->status_kadaluwarsa,
+                    'status' => $p->status_kedaluwarsa,
                 ])->toArray(),
             ];
         });
@@ -481,7 +481,7 @@ class PemetaanAkreditasiController extends Controller
                     'degree_level' => $p->degreeLevel->name,
                     'peringkat' => $p->peringkat_akreditasi,
                     'tanggal_kedaluwarsa' => $p->tanggal_kedaluwarsa?->format('Y-m-d'),
-                    'status' => $p->status_kadaluwarsa,
+                    'status' => $p->status_kedaluwarsa,
                 ])->toArray(),
             ];
         });
@@ -508,7 +508,7 @@ class PemetaanAkreditasiController extends Controller
 
         // Apply filters
         if ($request->filled('status')) {
-            $query->where('status_kadaluwarsa', $request->status);
+            $query->where('status_kedaluwarsa', $request->status);
         }
 
         if ($request->filled('peringkat')) {
@@ -581,7 +581,7 @@ class PemetaanAkreditasiController extends Controller
                     'akreditasi' => [
                         'peringkat' => $p->peringkat_akreditasi,
                         'tanggal_kedaluwarsa' => $p->tanggal_kedaluwarsa?->format('Y-m-d'),
-                        'status' => $p->status_kadaluwarsa,
+                        'status' => $p->status_kedaluwarsa,
                         'hari_tersisa' => $p->tanggal_kedaluwarsa ? now()->diffInDays($p->tanggal_kedaluwarsa, false) : null,
                     ],
                 ])->toArray(),

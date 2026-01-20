@@ -13,7 +13,7 @@ class StudyProgram extends Model
         'code',
         'id_university',
         'id_degree_level',
-        'category_id',
+        'id_category',
         'bentuk_pt',
         'email',
         'peringkat_akreditasi',
@@ -39,7 +39,7 @@ class StudyProgram extends Model
 
     public function category()
     {
-        return $this->belongsTo(StudyProgramCategory::class, 'category_id');
+        return $this->belongsTo(StudyProgramCategory::class, 'id_category');
     }
     /**
      * Relasi Many-to-Many dengan Users

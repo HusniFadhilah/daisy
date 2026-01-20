@@ -1,6 +1,6 @@
 @extends('layouts.template.app')
 
-@section('title', 'Pemetaan Status Akreditasi')
+@section('title', 'Pengingat Masa Akreditasi')
 
 @push('styles')
 <style>
@@ -270,12 +270,13 @@
     <!-- Statistics Cards -->
     <div class="row mb-4">
         <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                 <div class="card-body text-white">
+                    <h6 class="mb-1 opacity-75">Total Program Studi</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="mb-1 opacity-75">Total Program Studi</h6>
                             <h2 class="mb-0 fw-bold">{{ $stats['total'] }}</h2>
+                            <small class="opacity-75">Total prodi yang terdata pada Daisy</small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
                             <i class="bi bi-book"></i>
@@ -286,15 +287,16 @@
         </div>
 
         <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card stat-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
                 <div class="card-body text-white">
+                    <h6 class="mb-1 opacity-75">Akreditasi Aktif</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="mb-1 opacity-75">Akreditasi Aktif</h6>
                             <h2 class="mb-0 fw-bold">{{ $stats['aktif'] }}</h2>
-                            <small class="opacity-75">
+                            <small class="opacity-75">Prodi yang akreditasinya masih aktif</small>
+                            {{-- <small class="opacity-75">
                                 {{ $stats['total'] > 0 ? round(($stats['aktif'] / $stats['total']) * 100, 1) : 0 }}%
-                            </small>
+                            </small> --}}
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
                             <i class="bi bi-check-circle"></i>
@@ -305,11 +307,28 @@
         </div>
 
         <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card stat-card" style="background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);">
+            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #e35821ff 0%, #aa4d0aff 100%);">
                 <div class="card-body text-white">
+                    <h6 class="mb-1 opacity-75">Pengingat Masa Akreditasi</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="mb-1 opacity-75">Kedaluwarsa</h6>
+                            <h2 class="mb-0 fw-bold">{{ $stats['segera_7_bulan'] }}</h2>
+                            <small class="opacity-75">PS perlu diingatkan tentang masa kedaluwarsa akreditasi</small>
+                        </div>
+                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
+                            <i class="bi bi-exclamation-triangle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);">
+                <div class="card-body text-white">
+                    <h6 class="mb-1 opacity-75">Kedaluwarsa</h6>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['kedaluwarsa'] }}</h2>
                             <small class="opacity-75">Perlu reakreditasi</small>
                         </div>
@@ -322,11 +341,11 @@
         </div>
 
         <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card stat-card" style="background: linear-gradient(135deg, #868f96 0%, #596164 100%);">
+            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #868f96 0%, #596164 100%);">
                 <div class="card-body text-white">
+                    <h6 class="mb-1 opacity-75">Belum Terakreditasi</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="mb-1 opacity-75">Belum Terakreditasi</h6>
                             <h2 class="mb-0 fw-bold">{{ $stats['belum_terakreditasi'] }}</h2>
                             <small class="opacity-75">Perlu diajukan</small>
                         </div>
@@ -339,16 +358,14 @@
         </div>
     </div>
 
-
     <!-- Urgent Alerts -->
-    @if($stats['segera_3_bulan'] > 0 || $stats['segera_6_bulan'] > 0)
+    @if($stats['segera_7_bulan'] > 0)
     <div class="row mb-4">
         <div class="col-12">
             <div class="alert alert-warning alert-dismissible alert-permanent fade show" style="border-left: 4px solid #ffc107;">
                 <i class="bi bi-exclamation-triangle-fill me-2"></i>
                 <strong>Perhatian!</strong>
-                Ada <strong>{{ $stats['segera_3_bulan'] }}</strong> prodi yang akan kedaluwarsa dalam 3 bulan
-                dan <strong>{{ $stats['segera_6_bulan'] }}</strong> prodi dalam 6 bulan.
+                Ada <strong>{{ $stats['segera_7_bulan'] }}</strong> prodi dalam 7 bulan.
                 <a href="#urgent-section" class="alert-link ms-2">Lihat Detail →</a>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
@@ -356,26 +373,33 @@
     </div>
     @endif
 
-    <ul class="nav nav-tabs mb-4" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active position-relative" id="timeline-tab" data-bs-toggle="tab" data-bs-target="#timeline-view" type="button">
-                <i class="bi bi-calendar-week"></i> Timeline View
-                {{-- @if($stats['segera_6_bulan'] > 0)
-                <span class="badge-count">{{ $stats['segera_6_bulan'] }}</span>
-                @endif --}}
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="calendar-tab" data-bs-toggle="tab" data-bs-target="#calendar-view" type="button">
-                <i class="bi bi-calendar3"></i> Calendar View
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="table-tab" data-bs-toggle="tab" data-bs-target="#table-view" type="button">
-                <i class="bi bi-table"></i> Table View
-            </button>
-        </li>
-    </ul>
+    <!-- Quick Actions -->
+    <div class="d-flex align-items-center mb-4">
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active position-relative" id="timeline-tab" data-bs-toggle="tab" data-bs-target="#timeline-view" type="button">
+                    <i class="bi bi-calendar-week"></i> Timeline View
+                </button>
+            </li>
+
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="calendar-tab" data-bs-toggle="tab" data-bs-target="#calendar-view" type="button">
+                    <i class="bi bi-calendar3"></i> Calendar View
+                </button>
+            </li>
+
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="table-tab" data-bs-toggle="tab" data-bs-target="#table-view" type="button">
+                    <i class="bi bi-table"></i> Table View
+                </button>
+            </li>
+        </ul>
+
+        <!-- tombol kanan -->
+        <button type="button" class="btn btn-success ms-auto" data-bs-toggle="modal" data-bs-target="#modalKirimPengingat">
+            <i class="bi bi-bell"></i> Kirim Pengingat Akreditasi
+        </button>
+    </div>
 
     <!-- Tab Contents -->
     <div class="tab-content">
@@ -581,6 +605,56 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Kirim Pengingat -->
+<div class="modal fade" id="modalKirimPengingat" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <form action="{{ route('de.pengajuan.kirim-pengingat') }}" method="POST">
+                @csrf
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-bell"></i> Kirim Pengingat Akreditasi
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Pilih Program Studi</label>
+                        <div style="max-height: 200px; overflow-y: auto; border: 1px solid #dee2e6; padding: 10px; border-radius: 4px;">
+                            @foreach(\App\Models\StudyProgram::with('degreeLevel')->get() as $prodi)
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" name="id_program_studi[]" value="{{ $prodi->id }}" id="prodi{{ $prodi->id }}">
+                                <label class="form-check-label" for="prodi{{ $prodi->id }}">
+                                    {{ $prodi->full_name }}
+                                </label>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Pesan Pengingat</label>
+                        <textarea name="pesan_pengingat" class="form-control" rows="5" required>Kepada Yth. Program Studi,
+
+Masa akreditasi program studi Anda akan segera berakhir. Kami mengingatkan untuk segera mempersiapkan dan mengajukan permohonan akreditasi.
+
+Terima kasih atas perhatiannya.
+
+Hormat kami,
+Dewan Eksekutif (DE) LAMDEPILAR</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-send"></i> Kirim Pengingat
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

@@ -67,7 +67,7 @@ class PelaporanController extends Controller
             $payload = [
                 'id_asesmen' => $assignment->id_asesmen,
                 'type' => 'laporan_validasi_borang',
-                'title' => $request->title ?: 'Laporan Validasi LED+Suplemen & LKPS',
+                'title' => $request->title ?: 'Laporan Kesiapan LED Program Studi (LKLED)',
                 'sort_order' => 1,
                 'path' => $path,
                 'original_name' => $file->getClientOriginalName(),
@@ -91,7 +91,7 @@ class PelaporanController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Laporan Validasi LED+Suplemen & LKPS berhasil diupload.',
+                'message' => 'Laporan Kesiapan LED Program Studi (LKLED) berhasil diupload.',
                 'doc' => [
                     'title' => $doc->title,
                     'original_name' => $doc->original_name,
@@ -168,7 +168,7 @@ class PelaporanController extends Controller
                 'status_from' => $statusFrom,
                 'status_to' => PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
                 'changed_by' => $user->id,
-                'keterangan' => 'Pelaporan validasi LED+Suplemen & LKPS difinalisasi oleh validator ' . $user->name,
+                'keterangan' => 'Laporan Kesiapan LED Program Studi (LKLED) difinalisasi oleh validator ' . $user->name,
                 'changed_at' => now(),
             ]);
 
@@ -529,7 +529,7 @@ class PelaporanController extends Controller
             $payload = [
                 'id_asesmen'     => $assignment->id_asesmen,
                 'type'           => 'laporan_al',
-                'title'          => $request->title ?: 'Laporan Asesmen Lapangan (AL)',
+                'title'          => $request->title ?: 'Laporan Hasil Asesmen Lapangan Program Studi (LHA)',
                 'sort_order'     => 1,
                 'path'           => $path,
                 'original_name'  => $file->getClientOriginalName(),

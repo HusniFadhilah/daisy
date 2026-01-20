@@ -124,14 +124,14 @@
             if (!$nomorTampil && isset($asesmen->code)) $nomorTampil = $asesmen->code;
             if (!$nomorTampil) $nomorTampil = $asesmen->name;
 
-            $labelBtn = $jenisPelaporan === 'ak' ? 'Pelaporan AK' : 'Pelaporan AL';
+            $labelBtn = $jenisPelaporan === 'ak' ? 'Laporan Penilaian Kecukupan LED Program Studi (LHK)' : 'Pelaporan AL';
             @endphp
 
             @if($isApproved)
             <div class="alert alert-success alert-permanent mb-3">
                 <i class="bi bi-check-circle me-2"></i>
                 <strong>Penilaian Telah Disetujui!</strong>
-                <p class="mb-0">Validasi {{ $sudahDilaporkan ? 'dan Pelaporan AK ' : '' }}telah diselesaikan dan lolos untuk tahap selanjutnya (Asesmen Lapangan/AL). {{ !$sudahDilaporkan ? 'Silahkan buat & finalisasi Pelaporan AK' : '' }}</p>
+                <p class="mb-0">Validasi {{ $sudahDilaporkan ? 'dan Pelaporan AK ' : '' }}telah diselesaikan dan lolos untuk tahap selanjutnya (Asesmen Lapangan/AL). {{ !$sudahDilaporkan ? 'Silahkan buat & finalisasi Laporan Penilaian Kecukupan LED Program Studi (LHK) pada tombol di bawah berikut' : '' }}</p>
 
                 @if($sudahDilaporkan)
                 <div class="mt-2">
@@ -358,18 +358,34 @@
 
     window.PELAPORAN_CFG.ak = {
         title: 'Rekap AK dan Validasi AK'
-        , fileLabel: 'Laporan Validasi Asesmen Kecukupan (AK)'
-        , finalizeLabel: 'Validasi AK Dilaporkan'
+        , label: 'Laporan Penilaian Kecukupan LED Program Studi (LHK)'
         , upload: @json(route('pelaporan.validasiAk.upload', ['assignment' => '__ID__']))
         , finalize: @json(route('pelaporan.validasiAk.finalize', ['assignment' => '__ID__']))
+        , fileLabel: 'Laporan Penilaian Kecukupan LED Program Studi (LHK) telah selesai'
+        , finalizeLabel: 'Asesmen Kecukupan telah Dilaporkan'
+        , additionalDescription: `Dokumen yang sudah digabungkan, yang diperlukan isinya adalah:
+        •	Penunjukan tugas Asesor untuk melaksanakan Penilaian LED
+        •	Proses penilaian LED oleh Asesor.
+        •	Validasi Penilaian Kecukupan Asesor oleh Validator
+        •	Penyampaian Informasi Kepada DE untuk dilakukan tahap Asesmen Lapangan`
     };
 
     window.PELAPORAN_CFG.al = {
-        title: 'Pelaporan AL'
-        , fileLabel: 'Laporan Asesmen Lapangan (AL)'
-        , finalizeLabel: 'AL Dilaporkan'
+        title: 'Rekap AL dan Pelaporan AL'
+        , label: 'Laporan Hasil Asesmen Lapangan Program Studi (LHA)'
         , upload: @json(route('pelaporan.al.upload', ['assignment' => '__ID__']))
         , finalize: @json(route('pelaporan.al.finalize', ['assignment' => '__ID__']))
+        , fileLabel: 'Laporan Hasil Asesmen Lapangan Program Studi (LHA)'
+        , finalizeLabel: 'Pelaporan AL Telah Selesai'
+        , additionalDescription: `Dokumen yang sudah digabungkan, yang diperlukan isinya adalah:
+        •	Penunjukan tugas Asesor untuk melaksanakan Penilaian LED
+        •	Proses peneliaan LED oleh Asesor.
+        •	Validasi Penilaian Kecukupan Asesor Oleh Validator
+        •	Penyampaian Informasi Kepada DE tentang:
+            o	Lokasi AL
+            o	Perjalan asesor ke lokasi AL
+            o	Berita Acara yang menyatakan AL telah dilaksanakan dan disepakati
+        •	Rekomendasi Penetapan Hasil Akreditasi`
     };
 
 </script>

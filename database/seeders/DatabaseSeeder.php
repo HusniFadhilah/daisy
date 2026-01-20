@@ -20,10 +20,10 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RoleSeeder::class,
             UserSeeder::class,
+            StudyProgramCategorySeeder::class,
             DegreeLevelSeeder::class,
             UniversitySeeder::class,
             StudyProgramSeeder::class,
-            StudyProgramCategorySeeder::class,
             KriteriaSeeder::class,
             ElemenStandarSeeder::class,
             PernyataanSeeder::class,
@@ -38,6 +38,7 @@ class DatabaseSeeder extends Seeder
             DatasetBorangSeeder::class,
             DatasetSuplemenSeeder::class,
             BorangExampleSeeder::class,
+            BobotPenilaianSeeder::class,
         ]);
     }
     /**

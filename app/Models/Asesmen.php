@@ -63,7 +63,7 @@ class Asesmen extends Model
 
     public function penilaianElemenAk()
     {
-        return $this->hasMany(new PenilaianElemenAk, 'id_asesmen');
+        return $this->hasMany(PenilaianElemenAk::class, 'id_asesmen');
     }
 
     public function penilaianElemenAl()
@@ -110,6 +110,7 @@ class Asesmen extends Model
         )
             ->withPivot([
                 'id_role',
+                'jenis_asesmen',
                 'status_penawaran',
                 'responded_at',
                 'response_note',

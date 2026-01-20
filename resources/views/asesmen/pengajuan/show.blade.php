@@ -266,12 +266,12 @@
     <!-- Header -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
-            <h2>
+            <h4>
                 <i class="bi bi-file-earmark-text"></i>
-                {{ $pengajuan->nomor_pengajuan }}
-            </h2>
+                {{ $pengajuan->judul }}
+            </h4>
             <p class="text-muted mb-0">
-                {{ $pengajuan->studyProgram->name }} - {{ $pengajuan->tahun_akreditasi }}
+                Nomor: {{ $pengajuan->nomor_pengajuan }}
             </p>
         </div>
         <div>

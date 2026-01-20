@@ -106,8 +106,9 @@ class ALController extends Controller
         // Calculate progress
         $progress = $this->calculateProgressBulk([$asesmen->id], $user->id)[$asesmen->id];
         $isFinalized = in_array($asesmen->asesmenLapangan->status, ['completed', 'finalized']);
+        $isInProgress = $asesmen->asesmenLapangan->isInProgress();
         $uploadedFiles = $asesmen->pengajuan ? $asesmen->pengajuan->getUploadedDocuments() : null;
-        return view('asesmen.al.berkas.show', compact('asesmen', 'kriterias', 'progress', 'jenjangs', 'step', 'needsRevisions', 'isFinalized', 'assignment', 'uploadedFiles'));
+        return view('asesmen.al.berkas.show', compact('asesmen', 'kriterias', 'progress', 'jenjangs', 'step', 'needsRevisions', 'isFinalized', 'assignment', 'uploadedFiles', 'isInProgress'));
     }
 
     /**

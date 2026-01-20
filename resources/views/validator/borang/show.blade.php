@@ -123,7 +123,7 @@
             @php
             $docCards = [
             'led' => [
-            'label' => 'LED',
+            'label' => 'Laporan Evaluasi Diri (LED)',
             'btn_class' => 'btn-primary',
             'empty_text' => 'Belum ada file LED diupload.',
             ],
@@ -133,9 +133,19 @@
             'empty_text' => 'Belum ada file suplemen diupload.',
             ],
             'lkps' => [
-            'label' => 'LKPS',
+            'label' => 'Laporan Kinerja Program Studi (LKPS)',
             'btn_class' => 'btn-success',
             'empty_text' => 'Belum ada file LKPS diupload.',
+            ],
+            'bukti_pembayaran' => [
+            'label' => 'Bukti Pembayaran Akreditasi',
+            'btn_class' => 'btn-info',
+            'empty_text' => 'Belum ada file Bukti Pembayaran diupload.',
+            ],
+            'surat_permohonan' => [
+            'label' => 'Surat Permohonan PS untuk Akreditasi',
+            'btn_class' => 'btn-primary',
+            'empty_text' => 'Belum ada file Surat Permohonan PS diupload.',
             ],
             ];
             @endphp

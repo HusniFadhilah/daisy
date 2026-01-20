@@ -17,7 +17,7 @@ class EnsurePenawaranAcceptedMiddleware
      * Supports 3 types of validation:
      * - AK: /ak/berkas/{idAsesmen} → jenis_asesmen = 'ak'
      * - AL: /al/berkas/{idAsesmen} → jenis_asesmen = 'al'
-     * - Borang: /validator/borang/{assignment} → jenis_asesmen = 'borang'
+     * - Dokumen: /validator/borang/{assignment} → jenis_asesmen = 'dokumen'
      */
     public function handle(Request $request, Closure $next, $jenisAsesmen = 'ak')
     {
@@ -44,7 +44,7 @@ class EnsurePenawaranAcceptedMiddleware
             $assignmentId = $request->route('assignment');
 
             if (!$assignmentId) {
-                abort(403, 'Parameter assignment tidak ditemukan.');
+                abort(403, 'Parameter penugasan tidak ditemukan.');
             }
 
             // Find assignment by ID

@@ -198,11 +198,17 @@
 <script>
     window.PELAPORAN_CFG = {
         borang: {
-            upload: @json(route('pelaporan.borang.upload', ['assignment' => '__ID__']))
+            title: 'Pelaporan Validasi LED+Suplemen, dan LKPS'
+            , label: 'Laporan Kesiapan LED Program Studi (LKLED)'
+            , upload: @json(route('pelaporan.borang.upload', ['assignment' => '__ID__']))
             , finalize: @json(route('pelaporan.borang.finalize', ['assignment' => '__ID__']))
-            , title: 'Pelaporan Validasi'
-            , fileLabel: 'Laporan Validasi LED + Suplemen & LKPS'
-            , finalizeLabel: 'Pelaporan Validasi LED+Suplemen dan LKPS'
+            , fileLabel: 'Laporan Kesiapan LED Program Studi (LKLED)'
+            , finalizeLabel: 'Laporan Kesiapan LED Program Studi (LKLED)'
+            , additionalDescription: `Dokumen yang sudah digabungkan, yang diperlukan isinya adalah:
+            • Surat Permohonan PS untuk Akreditasi
+            • Surat Balasan DE untuk menyusun LED
+            • Bukti Pembayaran Akreditasi
+            • Dokumen LED yang telah memenuhi standar untuk dilakukan Penilaian Kecukupan (AK)`
         }
     };
 

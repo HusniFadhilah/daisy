@@ -9,11 +9,14 @@
         <div class="col">
             <nav class="d-none d-md-block mb-1">
                 <ol class="breadcrumb mb-0">
+                    @if($asesmen->pengajuan)
+                    <li class="breadcrumb-item"><a href="{{ route('de.pengajuan.show',$asesmen->pengajuan->id) }}">Pengajuan</a></li>
+                    @endif
                     <li class="breadcrumb-item"><a href="{{ route('asesmen.index') }}">Asesmen</a></li>
                     <li class="breadcrumb-item active">{{ $asesmen->name }}</li>
                 </ol>
             </nav>
-            <h3 class="mb-0 text-wrap">{{ $asesmen->name }}</h3>
+            <h4 class="mb-0 text-wrap">{{ $asesmen->name }}</h4>
         </div>
         <div class="col-auto">
             <div class="btn-group">
@@ -26,6 +29,21 @@
             </div>
         </div>
     </div>
+
+    @if(in_array($asesmen->status, ['completed', 'archived']))
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">
+                <i class="bi bi-calculator"></i> Hasil Akreditasi
+            </h5>
+        </div>
+        <div class="card-body">
+            <a href="{{ route('hasil-akreditasi.show', $asesmen->id) }}" class="btn btn-primary">
+                <i class="bi bi-eye"></i> Lihat Hasil & Perhitungan Skor
+            </a>
+        </div>
+    </div>
+    @endif
 
     <div class="card mb-4 border-warning" id="requirementsPanel">
         <div class="card-header bg-warning">

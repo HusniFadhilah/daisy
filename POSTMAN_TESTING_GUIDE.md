@@ -446,7 +446,7 @@ php artisan route:cache
 php artisan serve
 ```
 
-### Error: "Column not found: status_kadaluwarsa"
+### Error: "Column not found: status_kedaluwarsa"
 ```bash
 php artisan migrate
 ```

@@ -8,6 +8,7 @@ class DegreeLevel extends Model
 {
     protected $fillable = [
         'code',
+        'id_category',
         'alias',
         'name',
         'is_active',
@@ -16,5 +17,10 @@ class DegreeLevel extends Model
     public function studyPrograms()
     {
         return $this->hasMany(StudyProgram::class, 'id_degree_level');
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(StudyProgramCategory::class, 'id_category');
     }
 }

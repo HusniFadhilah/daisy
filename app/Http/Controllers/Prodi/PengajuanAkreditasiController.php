@@ -244,7 +244,9 @@ class PengajuanAkreditasiController extends Controller
         // Check authorization
         $this->authorize('view', $pengajuan);
 
-        return view('asesmen.pengajuan.show', compact('pengajuan'));
+        return view('asesmen.pengajuan.show', compact(
+            'pengajuan',
+        ));
     }
 
     /**
@@ -657,8 +659,8 @@ class PengajuanAkreditasiController extends Controller
     public function previewLembarPengesahan($id)
     {
         $pengajuan = PengajuanAkreditasi::with([
-            'programStudi.university',
-            'programStudi.degreeLevel'
+            'studyProgram.university',
+            'studyProgram.degreeLevel'
         ])->findOrFail($id);
 
         $this->authorize('view', $pengajuan);
@@ -1519,10 +1521,10 @@ class PengajuanAkreditasiController extends Controller
         $pengajuan = PengajuanAkreditasi::with('pembayaran')->findOrFail($id);
         $this->authorize('update', $pengajuan);
 
-        if ($pengajuan->pembayaran && $pengajuan->pembayaran->status == 'menunggu_pembayaran')
-            if ($pengajuan->status !== PengajuanAkreditasi::STATUS_MENUNGGU_PEMBAYARAN) {
+        if ($pengajuan->pembayaran && $pengajuan->pembayaran->status == 'menunggu_pembayaran') {
+            if ($pengajuan->status !== PengajuanAkreditasi::STATUS_MENUNGGU_PEMBAYARAN)
                 return back()->with('error', 'Status pengajuan tidak sesuai untuk upload bukti pembayaran.');
-            }
+        }
 
         DB::beginTransaction();
         try {
@@ -1624,7 +1626,7 @@ class PengajuanAkreditasiController extends Controller
             $this->authorize('update', $pengajuan);
 
             if (
-                $pengajuan->status !== 'pembayaran_diterima' ||
+                $pengajuan->status !== PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI ||
                 $pengajuan->pembayaran->status_pembayaran !== 'terverifikasi'
             ) {
                 return back()->with('error', 'Pembayaran harus diverifikasi terlebih dahulu.');

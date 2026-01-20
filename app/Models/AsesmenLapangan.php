@@ -125,13 +125,13 @@ class AsesmenLapangan extends Model
         ]);
     }
 
-    public function isScheduled()
-    {
-        return $this->status === 'scheduled';
-    }
-
     public function isInProgress()
     {
-        return $this->status === 'in_progress';
+        return $this->status === 'active';
+    }
+
+    public function isFinalized()
+    {
+        return $this->status === 'finalized';
     }
 }

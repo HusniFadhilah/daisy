@@ -35,13 +35,12 @@
     <!-- Header -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
-            <h2>
+            <h4>
                 <i class="bi bi-file-earmark-text"></i>
-                {{ $pengajuan->nomor_pengajuan }}
-            </h2>
+                {{ $pengajuan->judul }}
+            </h4>
             <p class="text-muted mb-0">
-                {{ $pengajuan->studyProgram->name }} -
-                {{ $pengajuan->tahun_akreditasi }}
+                Nomor: {{ $pengajuan->nomor_pengajuan }}
             </p>
         </div>
         <div>
@@ -130,7 +129,7 @@
                                                     <span class="input-group-text">
                                                         <i class="bi bi-globe"></i>
                                                     </span>
-                                                    <input type="url" name="template_link" id="template_link" class="form-control @error('template_link') is-invalid @enderror" value="{{ old('template_link', url('pengajuan/' . $pengajuan->id . '/borang/download-template')) }}" placeholder="https://example.com/template.docx">
+                                                    <input type="url" name="template_link" id="template_link" class="form-control @error('template_link') is-invalid @enderror" value="{{ old('template_link', route('pengajuan.borang.download-template', $pengajuan->id)) }}" placeholder="https://example.com/template.docx">
                                                 </div>
                                                 @error('template_link')
                                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -451,7 +450,7 @@
                         Aksi Diperlukan: Approve Lanjut ke Tahap AK
                     </h5>
                     <p class="mb-3">
-                        Pembayaran telah diverifikasi oleh bagian keuangan, LED+Suplemen dan LKPS final telah diterima, serta pelaporan validasi LED+Suplemen dan LKPS telah selesai dilaksanakan. Selanjutnya, dapat dilanjutkan untuk tahap penugasan Asesor untuk Asesmen Kecukupan (AK)
+                        Pembayaran telah diverifikasi oleh bagian keuangan, LED+Suplemen dan LKPS final telah diterima, serta Laporan Kesiapan LED Program Studi (LKLED) telah selesai diproses. Selanjutnya, dapat dilanjutkan untuk tahap penugasan Asesor untuk Asesmen Kecukupan (AK)
                         Silahkan setujui untuk melanjutkan ke tahap AK/Asesmen Dokumen.
                     </p>
 
@@ -544,6 +543,52 @@
             </div>
             @endif
 
+            @if($currentStep >= 13 && $canProceedToHasilAkreditasi)
+            <div class="card action-card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-award text-success"></i>
+                        Aksi Diperlukan: Sampaikan Hasil Akreditasi (Step 14)
+                    </h5>
+
+                    <p class="mb-3">
+                        Proses asesmen telah selesai. Silakan sampaikan hasil akreditasi kepada program studi.
+                    </p>
+
+                    <div class="alert alert-info alert-permanent">
+                        <i class="bi bi-info-circle"></i>
+                        Setelah hasil disampaikan, masa sanggah (7 hari) akan dimulai otomatis.
+                    </div>
+
+                    <a href="{{ route('hasil-akreditasi.show', $pengajuan->asesmen->id) }}" class="btn btn-primary">
+                        <i class="bi bi-file-earmark-check"></i> Lihat Hasil Sementara & Perhitungan Skor
+                    </a>
+                </div>
+            </div>
+            @endif
+
+            @if($currentStep >= 14 && $canProceedToMasaSanggah)
+            <div class="card action-card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-clock-history text-warning"></i>
+                        Masa Sanggah (Step 15)
+                    </h5>
+
+                    <p class="mb-3">
+                        Hasil telah disampaikan. Mulai masa sanggah untuk memberikan kesempatan prodi mengajukan banding.
+                    </p>
+
+                    <form action="{{ route('hasil-akreditasi.start-masa-sanggah', $pengajuan->id) }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-play-circle"></i> Mulai Masa Sanggah (7 Hari)
+                        </button>
+                    </form>
+                </div>
+            </div>
+            @endif
+
             @if(in_array($pengajuan->status,[
             \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
             \App\Models\PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
@@ -594,6 +639,7 @@
                 </div>
             </div>
             @endif
+
             {{-- ============================================
      SECTION: VALIDATOR BORANG (if applicable)
      ============================================ --}}
@@ -1167,7 +1213,7 @@
     // Use default link
     function useDefaultLink() {
         const template_link = document.getElementById('template_link');
-        if (template_link) template_link.value = "{{ url('pengajuan/' . $pengajuan->id . '/borang/download-template') }}";
+        if (template_link) template_link.value = "{{ route('pengajuan.borang.download-template', $pengajuan->id) }}";
     }
 
     // Clear link

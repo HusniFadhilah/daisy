@@ -48,6 +48,7 @@ $authUser = Auth::user();
         </a>
 
         <!-- Profil & Pengaturan -->
+        @if(in_array($authUser->role_selected,['super_admin']))
         <a href="#" class="nav-link {{ request()->routeIs('profile*') ? 'active' : '' }}" onclick="toggleSubmenu(event, 'profil-submenu')">
             <span class="menu-icon">👤</span>
             <span>Profil & Pengaturan</span>
@@ -69,6 +70,7 @@ $authUser = Auth::user();
                 </a>
             </li>
         </ul>
+        @endif
 
         <!-- Keluar -->
         <a href="{{ route('logout') }}" class="nav-link text-danger" onclick="event.preventDefault(); document.getElementById('logout-form-sidebar').submit();">

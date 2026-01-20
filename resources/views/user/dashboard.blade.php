@@ -342,12 +342,12 @@
                     Apakah Anda ingin mengganti password sekarang?
                 </p>
                 <div class="d-grid gap-2">
-                    <a href="{{ route('change.password.first') }}" class="btn btn-primary btn-lg">
+                    <a href="{{ route('change.password.first') }}" class="btn btn-primary btn-sm">
                         <i class="fas fa-check-circle me-2"></i>Ya, Ganti Sekarang
                     </a>
                     <form action="{{ route('change.password.skip') }}" method="POST" class="d-inline">
                         @csrf
-                        <button type="submit" class="btn btn-outline-secondary btn-lg w-100">
+                        <button type="submit" class="btn btn-outline-secondary btn-sm w-100">
                             <i class="fas fa-times-circle me-2"></i>Tidak, Nanti Saja
                         </button>
                     </form>

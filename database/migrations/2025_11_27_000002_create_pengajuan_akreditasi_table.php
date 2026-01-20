@@ -108,6 +108,13 @@ return new class extends Migration
             $table->timestamp('tanggal_pelaporan_hasil')->nullable();
             $table->timestamp('tanggal_penyimpanan')->nullable()->comment('Tanggal penyimpanan berkas akreditasi');
 
+            $table->string('peringkat_final')->nullable();
+            $table->decimal('skor_final', 6, 2)->nullable();
+            $table->integer('masa_berlaku_tahun')->default(null)->nullable();
+            $table->text('catatan_hasil')->nullable();
+            $table->text('alasan_banding')->nullable();
+            $table->enum('hasil_banding', ['diterima', 'ditolak'])->nullable();
+
             $table->timestamps();
         });
 
