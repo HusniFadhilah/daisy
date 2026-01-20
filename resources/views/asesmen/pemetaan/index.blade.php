@@ -274,8 +274,8 @@
                 <div class="card-body text-white">
                     <h6 class="mb-1 opacity-75">Total Program Studi</h6>
                     <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['total'] }}</h2>
+                        <div class="">
+                            <h2 class="mb-2 fw-bold">{{ $stats['total'] }}</h2>
                             <small class="opacity-75">Total prodi yang terdata pada Daisy</small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
@@ -291,8 +291,8 @@
                 <div class="card-body text-white">
                     <h6 class="mb-1 opacity-75">Akreditasi Aktif</h6>
                     <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['aktif'] }}</h2>
+                        <div class="">
+                            <h2 class="mb-2 fw-bold">{{ $stats['aktif'] }}</h2>
                             <small class="opacity-75">Prodi yang akreditasinya masih aktif</small>
                             {{-- <small class="opacity-75">
                                 {{ $stats['total'] > 0 ? round(($stats['aktif'] / $stats['total']) * 100, 1) : 0 }}%
@@ -313,7 +313,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['segera_7_bulan'] }}</h2>
-                            <small class="opacity-75">PS perlu diingatkan tentang masa kedaluwarsa akreditasi</small>
+                            <small class="opacity-75">PS yang perlu diingatkan tentang masa akreditasi berakhir dalam 7 bulan dari sekarang</small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
                             <i class="bi bi-exclamation-triangle"></i>
@@ -330,7 +330,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['kedaluwarsa'] }}</h2>
-                            <small class="opacity-75">Perlu reakreditasi</small>
+                            <small class="opacity-75">PS yang masa akreditasinya telah kedaluwarsa dari sekarang</small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
                             <i class="bi bi-exclamation-triangle"></i>
@@ -347,7 +347,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['belum_terakreditasi'] }}</h2>
-                            <small class="opacity-75">Perlu diajukan</small>
+                            <small class="opacity-75">PS yang perlu diajukan akreditasi</small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
                             <i class="bi bi-hourglass-split"></i>
@@ -365,8 +365,8 @@
             <div class="alert alert-warning alert-dismissible alert-permanent fade show" style="border-left: 4px solid #ffc107;">
                 <i class="bi bi-exclamation-triangle-fill me-2"></i>
                 <strong>Perhatian!</strong>
-                Ada <strong>{{ $stats['segera_7_bulan'] }}</strong> prodi dalam 7 bulan.
-                <a href="#urgent-section" class="alert-link ms-2">Lihat Detail →</a>
+                Ada <strong>{{ $stats['segera_7_bulan'] }}</strong> prodi yang perlu diingatkan tentang masa akreditasi berakhir dalam 7 bulan dari sekarang.
+                <a href="#urgent-section" class="alert-link ms-2" data-bs-toggle="modal" data-bs-target="#periodModal2">Lihat Detail →</a>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         </div>
@@ -638,10 +638,9 @@
 
                     <div class="mb-3">
                         <label class="form-label fw-bold">Pesan Pengingat</label>
-                        <textarea name="pesan_pengingat" class="form-control" rows="5" required>Kepada Yth. Program Studi,
+                        <textarea name="pesan_pengingat" class="form-control" rows="8" required>Yth. Unit Pengelola Program Studi,
 
 Masa akreditasi program studi Anda akan segera berakhir. Kami mengingatkan untuk segera mempersiapkan dan mengajukan permohonan akreditasi.
-
 Terima kasih atas perhatiannya.
 
 Hormat kami,

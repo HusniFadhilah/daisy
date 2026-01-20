@@ -19,21 +19,21 @@
                 <div class="auth-feature">
                     <div class="auth-feature-icon">🎓</div>
                     <div class="auth-feature-text">
-                        <h4>Sistem Terakreditasi</h4>
-                        <p>Kelola akreditasi program studi dengan mudah</p>
+                        <h4>Manajemen Akreditasi</h4>
+                        <p>Membantu pengelolaan data akreditasi program studi</p>
                     </div>
                 </div>
                 <div class="auth-feature">
                     <div class="auth-feature-icon">📊</div>
                     <div class="auth-feature-text">
-                        <h4>Dashboard Lengkap</h4>
-                        <p>Monitor progress dan statistik real-time</p>
+                        <h4>Dashboard Informasi</h4>
+                        <p>Menyajikan ringkasan progres dan data pendukung</p>
                     </div>
                 </div>
                 <div class="auth-feature">
                     <div class="auth-feature-icon">🔒</div>
                     <div class="auth-feature-text">
-                        <h4>Aman & Terpercaya</h4>
+                        <h4>Keamanan Data</h4>
                         <p>Data terenkripsi dengan standar keamanan yang memadai</p>
                     </div>
                 </div>

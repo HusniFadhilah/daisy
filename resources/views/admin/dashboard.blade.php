@@ -17,150 +17,240 @@ $authUser = auth()->user();
     </section>
 
     <!-- Stats Grid -->
+    @if(in_array($authUser->role_selected,['super_admin','asesi']))
+    <div class="row g-4 mb-4">
+        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+            <div class="stat-card warning">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-title">Pengingat Masa Akreditasi</div>
+                        <div class="stat-value">{{ $stats['penawaran'] ?? 0 }}</div>
+                        <small>PS yang perlu diingatkan tentang masa akreditasi berakhir dalam 7 bulan dari sekarang</small>
+                    </div>
+                    <div class="stat-icon">📨</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+            <div class="stat-card info">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-title">Penerimaan Dokumen Akreditasi Prodi</div>
+                        <div class="stat-value">{{ $stats['penawaran'] ?? 0 }}</div>
+                        <small>Jumlah dokumen LED+Suplemen, dan LKPS yang telah diterima dari prodi</small>
+                    </div>
+                    <div class="stat-icon"><i class="bi bi-file-earmark-check text-white"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-title">Penawaran Menunggu</div>
+                        <div class="stat-value">{{ $stats['penawaran'] ?? 0 }}</div>
+                        <small>Validator/Asesor yang telah ditugaskan, tetapi statusnya masih menunggu diterima (Ybs belum menyetujui/menolak tawaran)</small>
+                    </div>
+                    <div class="stat-icon"><i class="bi bi-hourglass-split text-white"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+            <div class="stat-card success">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-title">Penugasan Aktif</div>
+                        <div class="stat-value">{{ $stats['penugasan_aktif'] ?? 0 }}</div>
+                        <small>Validator/Asesor yang telah ditugaskan, dan sedang melaksanakan asesmen</small>
+                    </div>
+                    <div class="stat-icon">✅</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+            <div class="stat-card warning">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-title">Proses AK Berlangsung</div>
+                        <div class="stat-value">{{ $stats['proses_ak'] ?? 0 }}</div>
+                        <small>Jumlah Asesmen Kecukupan yang sedang berlangsung</small>
+                    </div>
+                    <div class="stat-icon">⏳</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+            <div class="stat-card primary">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-title">Proses AL Berlangsung</div>
+                        <div class="stat-value">{{ $stats['proses_ak'] ?? 0 }}</div>
+                        <small>Jumlah Asesmen Lapangan yang sedang berlangsung</small>
+                    </div>
+                    <div class="stat-icon">⏳</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+            <div class="stat-card info">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-title">Total Selesai Tahun Ini</div>
+                        <div class="stat-value">{{ $stats['total_selesai'] ?? 0 }}</div>
+                        <small>Jumlah Pengajuan Akreditasi yang selesai (sampai tahap pelaporan dan penyimpanan arsip) di tahun ini</small>
+                    </div>
+                    <div class="stat-icon">🎯</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    @if(in_array($authUser->role_selected,['validator','asesor']))
     <div class="row g-4 mb-4">
         <div class="col-12 col-md-6 col-lg-4 col-xl-3">
             <div class="stat-card">
                 <div class="stat-header">
                     <div>
                         <div class="stat-title">Penawaran Menunggu</div>
+                        <div class="stat-value">0
+                        </div>
+                    </div>
+                    <div class="stat-icon">📨</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+            <div class="stat-card info">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-title">Penugasan Aktif</div>
+                        <div class="stat-value">0</div>
+                    </div>
+                    <div class="stat-icon">⏳</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+            <div class="stat-card success">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-title">Penugasan Selesai</div>
+                        <div class="stat-value">0</div>
+                    </div>
+                    <div class="stat-icon">✅</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    @if(in_array($authUser->role_selected,['admin_prodi','admin_univ']))
+    <div class="row g-4 mb-4">
+        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-title">Pengajuan Akreditasi Berjalan</div>
                         <div class="stat-value">{{ $stats['penawaran'] ?? 0 }}
                         </div>
-                        {{-- <div class="stat-change">↑ {{ $stats['penawaran'] ?? 0 }} penawaran baru
-                    </div> --}}
+                    </div>
+                    <div class="stat-icon">📨</div>
                 </div>
-                <div class="stat-icon">📨</div>
             </div>
-            {{-- <div class="progress">
-                    <div class="progress-bar" role="progressbar" style="width: 40%" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
-                </div> --}}
         </div>
-    </div>
 
-    <div class="col-12 col-md-6 col-lg-4 col-xl-3">
-        <div class="stat-card success">
-            <div class="stat-header">
-                <div>
-                    <div class="stat-title">Penugasan Aktif</div>
-                    <div class="stat-value">{{ $stats['penugasan_aktif'] ?? 0 }}</div>
-                    {{-- <div class="stat-change">Progress {{ $stats['progress'] ?? 0 }}%
-                </div> --}}
+        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+            <div class="stat-card success">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-title">Pengajuan Akreditasi Selesai</div>
+                        <div class="stat-value">{{ $stats['penugasan_aktif'] ?? 0 }}</div>
+                    </div>
+                    <div class="stat-icon">✅</div>
+                </div>
             </div>
-            <div class="stat-icon">✅</div>
         </div>
-        {{-- <div class="progress">
-                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ $stats['progress'] ?? 0 }}%" aria-valuenow="{{ $stats['progress'] ?? 0 }}" aria-valuemin="0" aria-valuemax="100">
     </div>
-</div> --}}
-</div>
-</div>
+    @endif
 
-<div class="col-12 col-md-6 col-lg-4 col-xl-3">
-    <div class="stat-card warning">
-        <div class="stat-header">
-            <div>
-                <div class="stat-title">Proses AK Berlangsung</div>
-                <div class="stat-value">{{ $stats['proses_ak'] ?? 0 }}</div>
-                {{-- <div class="stat-change">Deadline {{ $stats['deadline_days'] ?? 0 }} hari lagi
-            </div> --}}
-        </div>
-        <div class="stat-icon">⏳</div>
-    </div>
-    {{-- <div class="progress">
-                    <div class="progress-bar bg-warning" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
-                </div> --}}
-</div>
-</div>
-
-<div class="col-12 col-md-6 col-lg-4 col-xl-3">
-    <div class="stat-card warning">
-        <div class="stat-header">
-            <div>
-                <div class="stat-title">Proses AL Berlangsung</div>
-                <div class="stat-value">{{ $stats['proses_ak'] ?? 0 }}</div>
-                {{-- <div class="stat-change">Deadline {{ $stats['deadline_days'] ?? 0 }} hari lagi
-            </div> --}}
-        </div>
-        <div class="stat-icon">⏳</div>
-    </div>
-    {{-- <div class="progress">
-                    <div class="progress-bar bg-warning" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
-                </div> --}}
-</div>
-</div>
-
-<div class="col-12 col-md-6 col-lg-4 col-xl-3">
-    <div class="stat-card info">
-        <div class="stat-header">
-            <div>
-                <div class="stat-title">Total Selesai Tahun Ini</div>
-                <div class="stat-value">{{ $stats['total_selesai'] ?? 0 }}</div>
-                {{-- <div class="stat-change">↑ {{ $stats['persentase_kenaikan'] ?? 0 }}% dari tahun lalu
-            </div> --}}
-        </div>
-        <div class="stat-icon">🎯</div>
-    </div>
-    {{-- <div class="progress">
-            <div class="progress-bar" role="progressbar" style="width: 85%" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100"></div>
-        </div> --}}
-</div>
-</div>
-</div>
-
-{{-- <!-- Additional Stats -->
-<div class="row g-4">
-    <div class="col-12 col-md-6 col-lg-4 col-xl-3">
-        <div class="stat-card">
-            <div class="stat-header">
-                <div>
-                    <div class="stat-title">Total Program Studi Dinilai</div>
-                    <div class="stat-value">{{ $additionalStats['total_prodi'] ?? 156 }}
-</div>
-<div class="stat-change">↑ Sepanjang karir</div>
-</div>
-<div class="stat-icon">🎓</div>
-</div>
-</div>
-</div>
-
-<div class="col-12 col-md-6 col-lg-4 col-xl-3">
-    <div class="stat-card success">
-        <div class="stat-header">
-            <div>
-                <div class="stat-title">Tingkat Akurasi</div>
-                <div class="stat-value">{{ $additionalStats['akurasi'] ?? '98.5' }}%</div>
-                <div class="stat-change">↑ Sangat baik</div>
+    @if(in_array($authUser->role_selected,['keuangan_lamdepilar']))
+    <div class="row g-4 mb-4">
+        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-title">Pembayaran Perlu Diverifikasi</div>
+                        <div class="stat-value">{{ $stats['penawaran'] ?? 0 }}
+                        </div>
+                    </div>
+                    <div class="stat-icon">⏳</div>
+                </div>
             </div>
-            <div class="stat-icon">⭐</div>
         </div>
-    </div>
-</div>
 
-<div class="col-12 col-md-6 col-lg-4 col-xl-3">
-    <div class="stat-card info">
-        <div class="stat-header">
-            <div>
-                <div class="stat-title">Waktu Rata-rata AK</div>
-                <div class="stat-value" style="font-size: 28px;">{{ $additionalStats['waktu_rata'] ?? '5.2' }} hari</div>
-                <div class="stat-change">↓ Lebih cepat {{ $additionalStats['peningkatan'] ?? 15 }}%</div>
+        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+            <div class="stat-card success">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-title">Total Pembayaran Selesai Diverifikasi</div>
+                        <div class="stat-value">{{ $stats['penugasan_aktif'] ?? 0 }}</div>
+                    </div>
+                    <div class="stat-icon">✅</div>
+                </div>
             </div>
-            <div class="stat-icon">⚡</div>
         </div>
     </div>
+    @endif
 </div>
 
-<div class="col-12 col-md-6 col-lg-4 col-xl-3">
-    <div class="stat-card warning">
-        <div class="stat-header">
-            <div>
-                <div class="stat-title">Pesan Belum Dibaca</div>
-                <div class="stat-value">{{ $additionalStats['unread_messages'] ?? 3 }}</div>
-                <div class="stat-change">Butuh perhatian</div>
+<!-- Modal Notifikasi Ganti Password -->
+@if(auth()->check() && auth()->user()->must_change_password)
+<div class="modal fade" id="changePasswordModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-body text-center p-5">
+                <div class="mb-4">
+                    <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                        <i class="fas fa-key fa-3x text-warning"></i>
+                    </div>
+                </div>
+                <h4 class="fw-bold mb-3">Ganti Password?</h4>
+                <p class="text-muted mb-4">
+                    Untuk keamanan akun Anda, disarankan untuk mengganti password default.<br>
+                    Apakah Anda ingin mengganti password sekarang?
+                </p>
+                <div class="d-grid gap-2">
+                    <a href="{{ route('change.password.first') }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-check-circle me-2"></i>Ya, Ganti Sekarang
+                    </a>
+                    <form action="{{ route('change.password.skip') }}" method="POST" class="d-inline">
+                        @csrf
+                        <button type="submit" class="btn btn-outline-secondary btn-sm w-100">
+                            <i class="fas fa-times-circle me-2"></i>Tidak, Nanti Saja
+                        </button>
+                    </form>
+                </div>
+                <p class="text-muted small mt-3 mb-0">
+                    <i class="fas fa-info-circle me-1"></i>Anda dapat mengganti password kapan saja dari menu profil
+                </p>
             </div>
-            <div class="stat-icon">📬</div>
         </div>
     </div>
 </div>
-</div> --}}
 
-</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var changePasswordModal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
+        changePasswordModal.show();
+    });
+
+</script>
+@endif
 @endsection

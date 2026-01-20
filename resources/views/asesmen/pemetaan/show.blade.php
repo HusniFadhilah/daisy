@@ -7,7 +7,7 @@
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ route('pemetaan.index') }}">Pemetaan Akreditasi</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('pemetaan.index') }}">Pengingat Masa Akreditasi</a></li>
             <li class="breadcrumb-item active">{{ $studyProgram->name }}</li>
         </ol>
     </nav>
@@ -20,10 +20,10 @@
                 {{ $studyProgram->degreeLevel->name }} - {{ $studyProgram->university->name }}
             </p>
         </div>
-        @if(!$activePengajuan && ($studyProgram->status_kedaluwarsa != 'Aktif' || floor(now()->diffInDays($studyProgram->tanggal_kedaluwarsa, false)) <= 180)) <a href="{{ route('pengajuan.create', ['study_program_id' => $studyProgram->id]) }}" class="btn btn-success">
-            <i class="bi bi-plus-circle"></i> Ajukan Akreditasi
-            </a>
-            @endif
+        {{-- @if(!$activePengajuan && ($studyProgram->status_kedaluwarsa != 'Aktif' || floor(now()->diffInDays($studyProgram->tanggal_kedaluwarsa, false)) <= 180)) <a href="{{ route('pengajuan.create', ['study_program_id' => $studyProgram->id]) }}" class="btn btn-success">
+        <i class="bi bi-plus-circle"></i> Kirim Pengingat Akreditasi
+        </a>
+        @endif --}}
     </div>
 
     <div class="row">

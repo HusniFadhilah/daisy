@@ -12,7 +12,7 @@
 
     <!-- Statistics -->
     <div class="row mb-4">
-        <div class="col-md-3">
+        <div class="col-lg-2 col-md-3">
             <div class="card border-primary">
                 <div class="card-body text-center">
                     <i class="bi bi-files" style="font-size: 2rem; color: #0d6efd;"></i>
@@ -21,7 +21,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-lg-2 col-md-3">
             <div class="card border-warning">
                 <div class="card-body text-center">
                     <i class="bi bi-clock-history" style="font-size: 2rem; color: #ffc107;"></i>
@@ -30,7 +30,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-lg-2 col-md-3">
             <div class="card border-info">
                 <div class="card-body text-center">
                     <i class="bi bi-credit-card" style="font-size: 2rem; color: #0dcaf0;"></i>
@@ -39,12 +39,30 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-lg-2 col-md-3">
+            <div class="card border-info">
+                <div class="card-body text-center">
+                    <i class="bi bi-info-circle" style="font-size: 2rem; color: #28a745;"></i>
+                    <h3 class="mt-2 mb-0">{{ $stats['siap_lanjut'] }}</h3>
+                    <p class="text-muted mb-0">Total Lanjut AK (saat ini)</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-3">
+            <div class="card border-primary">
+                <div class="card-body text-center">
+                    <i class="bi bi-info-circle" style="font-size: 2rem; color: #28a745;"></i>
+                    <h3 class="mt-2 mb-0">{{ $stats['siap_lanjut'] }}</h3>
+                    <p class="text-muted mb-0">Total Lanjut ke AL (saat ini)</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-3">
             <div class="card border-success">
                 <div class="card-body text-center">
                     <i class="bi bi-check-circle" style="font-size: 2rem; color: #28a745;"></i>
                     <h3 class="mt-2 mb-0">{{ $stats['siap_lanjut'] }}</h3>
-                    <p class="text-muted mb-0">Siap Lanjut AK</p>
+                    <p class="text-muted mb-0">Total Selesai Pelaporan</p>
                 </div>
             </div>
         </div>

@@ -234,7 +234,7 @@
                         <div class="d-flex justify-content-between">
                             <small class="text-muted">
                                 <i class="bi bi-person-badge"></i>
-                                <strong>{{ $assignment->role->alias ?? 'N/A' }}</strong>
+                                <strong>{{ $assignment->role->alias ?? 'N/A' }} {{ $assignment->jenis_asesmen_label }}</strong>
                             </small>
                             <small class="text-muted">
                                 <i class="bi bi-calendar3"></i>

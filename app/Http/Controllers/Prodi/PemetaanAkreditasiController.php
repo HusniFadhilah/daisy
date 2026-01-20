@@ -71,7 +71,7 @@ class PemetaanAkreditasiController extends Controller
             ->filter(fn($p) => $p->tanggal_kedaluwarsa >= now() && $p->tanggal_kedaluwarsa <= now()->addMonths(6))
             ->take(10);
 
-        $periode = $request->get('periode', '3bulan'); // default 3 bulan
+        $periode = $request->get('periode', '6bulan'); // default 6 bulan
         $timelineData = $this->getTimelineData($periode);
         $calendarData = $this->getCalendarData();
 
@@ -89,7 +89,7 @@ class PemetaanAkreditasiController extends Controller
 
     public function getTimelineAjax(Request $request)
     {
-        $periode = $request->get('periode', '3bulan');
+        $periode = $request->get('periode', '6bulan');
         $timelineData = $this->getTimelineData($periode);
 
         // Return HTML rendered untuk timeline cards
@@ -259,7 +259,7 @@ class PemetaanAkreditasiController extends Controller
             '12bulan' => ['months' => 12, 'label' => 'Per Tahun'],
         ];
 
-        $selectedPeriode = $periodes[$periode] ?? $periodes['3bulan'];
+        $selectedPeriode = $periodes[$periode] ?? $periodes['6bulan'];
         $monthsPerPeriod = $selectedPeriode['months'];
 
         // Range 5 tahun
@@ -365,7 +365,7 @@ class PemetaanAkreditasiController extends Controller
 
     public function getTimelineView(Request $request)
     {
-        $periode = $request->get('periode', '3bulan');
+        $periode = $request->get('periode', '6bulan');
         $timelineData = $this->getTimelineData($periode);
 
         return response()->json($timelineData);
@@ -421,7 +421,7 @@ class PemetaanAkreditasiController extends Controller
      * Endpoint: GET /api/test/pemetaan/timeline/{periode}
      * Periode options: 1bulan, 3bulan (default), 4bulan, 6bulan, 12bulan
      */
-    public function getTimelineForTesting($periode = '3bulan')
+    public function getTimelineForTesting($periode = '6bulan')
     {
         $timelineData = $this->getTimelineData($periode);
 
