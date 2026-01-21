@@ -672,7 +672,7 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
         try {
             loadingOverlay.classList.remove('d-none');
 
-            const response = await fetch(`{{ route('pemetaan.timeline.ajax') }}?periode=${periode}`, {
+            const response = await fetch(`{{ route('de.pemetaan.timeline.ajax') }}?periode=${periode}`, {
                 method: 'GET'
                 , headers: {
                     'X-Requested-With': 'XMLHttpRequest'
@@ -712,7 +712,7 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
         try {
             loadingOverlay.classList.remove('d-none');
 
-            const response = await fetch(`{{ route('pemetaan.calendar.ajax') }}`, {
+            const response = await fetch(`{{ route('de.pemetaan.calendar.ajax') }}`, {
                 method: 'GET'
                 , headers: {
                     'X-Requested-With': 'XMLHttpRequest'
@@ -753,7 +753,7 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
             // Build query string
             const queryString = new URLSearchParams(params).toString();
 
-            const response = await fetch(`{{ route('pemetaan.table.ajax') }}?${queryString}`, {
+            const response = await fetch(`{{ route('de.pemetaan.table.ajax') }}?${queryString}`, {
                 method: 'GET'
                 , headers: {
                     'X-Requested-With': 'XMLHttpRequest'

@@ -66,7 +66,7 @@
             <p><strong>{{ $pengajuan->studyProgram->name }}</strong></p>
 
             <div class="info-box">
-                <p><strong>Nomor Pengajuan:</strong> {{ $pengajuan->nomor_pengajuan }}</p>
+                <p><strong>Nomor Permohonan:</strong> {{ $pengajuan->nomor_pengajuan }}</p>
                 <p><strong>Tahun Akreditasi:</strong> {{ $pengajuan->tahun_akreditasi }}</p>
             </div>
 

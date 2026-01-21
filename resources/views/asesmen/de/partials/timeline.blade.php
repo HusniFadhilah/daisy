@@ -17,7 +17,7 @@
             'step' => 1
             ],
             [
-            'date' => $pengajuan->tanggal_surat_permohonan,
+            'date' => $pengajuan->tanggal_surat_permohonan_dikirim,
             'label' => 'Surat Permohonan dari PS',
             'icon' => 'bi-envelope',
             'step' => 2

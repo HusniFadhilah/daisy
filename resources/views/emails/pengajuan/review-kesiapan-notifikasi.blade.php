@@ -118,7 +118,7 @@
             </center>
 
             <div class="info-box">
-                <p><strong>Nomor Pengajuan:</strong> {{ $pengajuan->nomor_pengajuan }}</p>
+                <p><strong>Nomor Permohonan:</strong> {{ $pengajuan->nomor_pengajuan }}</p>
                 <p><strong>Program Studi:</strong> {{ $pengajuan->studyProgram->name }}</p>
                 <p><strong>Versi Review:</strong> {{ $review->versi_review }}</p>
                 <p><strong>Tanggal Review:</strong> {{ $review->tanggal_review->format('d F Y H:i') }}</p>
@@ -126,7 +126,7 @@
             </div>
 
             <div style="background: white; padding: 20px; margin: 20px 0;">
-                <p><strong>Catatan Review/Validasi:</strong></p>
+                <p><strong>Catatan Validasi:</strong></p>
                 <p style="white-space: pre-line;">{{ $review->catatan_review }}</p>
             </div>
 
@@ -148,16 +148,16 @@
                     <li>Lakukan pembayaran akreditasi sesuai invoice yang telah dikirimkan</li>
                     <li>Upload bukti pembayaran</li>
                     <li>Setelah pembayaran diverifikasi, upload borang final</li>
-                    <li>Pengajuan akan dilanjutkan ke tahap AK/Asesmen Dokumen</li>
+                    <li>Permohonan akreditasi akan dilanjutkan ke tahap AK/Asesmen Dokumen</li>
                 </ol>
             </div>
             @else
             <div style="background: #f8d7da; padding: 15px; border-left: 4px solid #dc3545; margin: 20px 0;">
                 <p><strong>Langkah Selanjutnya:</strong></p>
                 <ol>
-                    <li>Perbaiki borang sesuai catatan review/validasi</li>
+                    <li>Perbaiki borang sesuai catatan validasi</li>
                     <li>Upload draft LED yang telah diperbaiki</li>
-                    <li>Menunggu review kembali dari DE</li>
+                    <li>Menunggu Validasi kembali dari DE</li>
                 </ol>
             </div>
             @endif

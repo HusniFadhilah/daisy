@@ -1,6 +1,6 @@
 @extends('layouts.template.app')
 
-@section('title', isset($pengajuan) ? 'Lengkapi Pengajuan Akreditasi' : 'Ajukan Akreditasi Baru')
+@section('title', isset($pengajuan) ? 'Lengkapi Permohonan Akreditasi' : 'Permohonan Akreditasi Baru')
 
 @section('content')
 <div class="container-fluid py-3">
@@ -8,17 +8,17 @@
     <div class="mb-4">
         <h2>
             <i class="bi bi-file-earmark-plus"></i>
-            {{ isset($pengajuan) ? 'Lengkapi Pengajuan Akreditasi' : 'Ajukan Akreditasi Baru' }}
+            {{ isset($pengajuan) ? 'Lengkapi Permohonan Akreditasi' : 'Permohonan Akreditasi Baru' }}
         </h2>
         <p class="text-muted">
-            {{ isset($pengajuan) ? 'Lengkapi data pengajuan yang telah dibuat oleh DE' : 'Lengkapi formulir di bawah untuk mengajukan permohonan akreditasi' }}
+            {{ isset($pengajuan) ? 'Lengkapi data permohonan dari pengingat yang telah dibuat oleh DE' : 'Lengkapi formulir di bawah untuk mengajukan permohonan akreditasi' }}
         </p>
     </div>
 
     @if(isset($pengajuan))
     <div class="alert alert-info alert-permanent">
         <i class="bi bi-info-circle"></i>
-        <strong>Informasi:</strong> Pengajuan ini telah dibuat oleh <strong>{{ $pengajuan->deskEvaluator->name }}</strong>@if ($pengajuan->tanggal_pengingat) pada {{ $pengajuan->tanggal_pengingat->format('d F Y') }}@endif. Silakan lengkapi data di bawah untuk melanjutkan proses akreditasi.
+        <strong>Informasi:</strong> sebelumnya, pengingat akreditasi telah dibuat oleh <strong>{{ $pengajuan->deskEvaluator->name }}</strong>@if ($pengajuan->tanggal_pengingat) pada {{ $pengajuan->tanggal_pengingat->format('d F Y') }}@endif. Silakan lengkapi data di bawah untuk melanjutkan proses akreditasi.
     </div>
     @endif
 
@@ -41,7 +41,7 @@
 
                         {{-- Show existing nomor pengajuan --}}
                         <div class="alert alert-secondary alert-permanent">
-                            <strong>Nomor Pengajuan:</strong> {{ $pengajuan->nomor_pengajuan }}
+                            <strong>Nomor:</strong> {{ $pengajuan->nomor_pengajuan }}
                         </div>
                         @endif
 
@@ -96,8 +96,8 @@
                                 <option value="perpanjangan" {{ old('jenis_akreditasi') == 'perpanjangan' ? 'selected' : '' }}>
                                     Perpanjangan
                                 </option>
-                                <option value="re-akreditasi" {{ old('jenis_akreditasi') == 're-akreditasi' ? 'selected' : '' }}>
-                                    Re-Akreditasi
+                                <option value="menuju_unggul" {{ old('jenis_akreditasi') == 'menuju_unggul' ? 'selected' : '' }}>
+                                    Akreditasi Menuju Unggul
                                 </option>
                             </select>
                             @error('jenis_akreditasi')
@@ -162,7 +162,7 @@
                     </h6>
                 </div>
                 <div class="card-body">
-                    <h6 class="fw-bold">Alur Pengajuan Akreditasi</h6>
+                    <h6 class="fw-bold">Alur Permohonan Akreditasi</h6>
                     <div class="timeline">
                         @php
                         $timelineItems = [
@@ -176,7 +176,7 @@
                         'step' => 1
                         ],
                         [
-                        'date' => optional($pengajuan)->tanggal_surat_permohonan,
+                        'date' => optional($pengajuan)->tanggal_surat_permohonan_dikirim,
                         'label' => 'Surat Permohonan dari PS',
                         'icon' => 'bi-envelope',
                         'step' => 2

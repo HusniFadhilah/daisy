@@ -129,11 +129,11 @@
     <div class="content">
         <div class="success-badge">
             <strong>🎉 Selamat!</strong><br>
-            LED Anda telah divalidasi dan disetujui oleh validator. Pengajuan akreditasi dapat dilanjutkan ke tahap berikutnya.
+            LED Anda telah divalidasi dan disetujui oleh validator. Permohonan akreditasi dapat dilanjutkan ke tahap berikutnya.
         </div>
 
         <div class="info-box">
-            <p><strong>Nomor Pengajuan:</strong> {{ $pengajuan->nomor_pengajuan }}</p>
+            <p><strong>Nomor Permohonan:</strong> {{ $pengajuan->nomor_pengajuan }}</p>
             <p><strong>Program Studi:</strong> {{ $studyProgram->name }}</p>
             <p><strong>Jenjang:</strong> {{ $studyProgram->degreeLevel->name }}</p>
             <p><strong>Tahun Akreditasi:</strong> {{ $pengajuan->tahun_akreditasi }}</p>
@@ -196,14 +196,14 @@
 
         <h3>🎯 Langkah Selanjutnya:</h3>
         <ol>
-            <li>Desk Evaluator akan melapor hasil validasi</li>
+            <li>Validator akan melapor hasil validasi ke Dewan Eksekutif (DE)</li>
             <li>Pastikan pembayaran sudah dilakukan</li>
             <li>Tunggu approval untuk lanjut ke tahap Asesmen Kecukupan (AK)</li>
         </ol>
 
         <center>
-            <a href="{{ url('/pengajuan/' . $pengajuan->id) }}" class="btn">
-                📋 Lihat Detail Pengajuan
+            <a href="{{ url('/permohonan-akreditasi/' . $pengajuan->id) }}" class="btn">
+                📋 Lihat Detail Permohonan Akreditasi
             </a>
         </center>
 

@@ -1,17 +1,17 @@
 @extends('layouts.template.app')
 
-@section('title', 'Pengajuan Akreditasi')
+@section('title', 'Permohonan Akreditasi')
 
 @section('content')
 <div class="container-fluid py-3">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2><i class="bi bi-file-earmark-text"></i> Pengajuan Akreditasi</h2>
-            <p class="text-muted mb-0">Kelola pengajuan akreditasi program studi</p>
+            <h2><i class="bi bi-file-earmark-text"></i> Permohonan Akreditasi</h2>
+            <p class="text-muted mb-0">Kelola permohonan akreditasi program studi</p>
         </div>
         <a href="{{ route('pengajuan.create') }}" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> Ajukan Akreditasi Baru
+            <i class="bi bi-plus-circle"></i> Permohonan Akreditasi Baru
         </a>
     </div>
 
@@ -64,7 +64,7 @@
         @forelse($pengajuans as $pengajuan)
         @php
         $timeline = $pengajuan->timelineItems();
-        $currentItem = collect($timeline)->firstWhere('state', 'current');
+        $currentItem = collect($timeline)->firstWhere('state', 'done');
 
         // fallback aman
         if(!$currentItem){
@@ -81,7 +81,7 @@
         $judulPengajuan = $pengajuan->judul;
         @endphp
         <div class="col-md-6 col-lg-4 mb-4">
-            <div class="card h-100 {{ $pengajuan->status === 'pengingat_dikirim' && is_null($pengajuan->id_user_pengaju) ? 'border-warning' : '' }}">
+            <div class="card h-100 {{ $pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_PENGINGAT_DIKIRIM && is_null($pengajuan->id_user_pengaju) ? 'border-warning' : '' }}">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div class="me-2" style="min-width:0;">
@@ -137,7 +137,7 @@
                     {{-- ✅ BUTTON BERBEDA UNTUK STATUS PENGINGAT_DIKIRIM --}}
                     @if($pengajuan->status === 'pengingat_dikirim' && is_null($pengajuan->id_user_pengaju))
                     <a href="{{ route('pengajuan.create', ['pengajuan_id' => $pengajuan->id]) }}" class="btn btn-warning btn-sm w-100">
-                        <i class="bi bi-pencil-square"></i> Lengkapi Data Pengajuan
+                        <i class="bi bi-pencil-square"></i> Lengkapi Data Permohonan Akreditasi
                     </a>
                     @else
                     <a href="{{ route('pengajuan.show', $pengajuan->id) }}" class="btn btn-primary btn-sm w-100">
@@ -152,9 +152,9 @@
             <div class="card">
                 <div class="card-body text-center py-5">
                     <i class="bi bi-inbox" style="font-size: 4rem; color: #ccc;"></i>
-                    <p class="text-muted mt-3">Belum ada pengajuan akreditasi</p>
+                    <p class="text-muted mt-3">Belum ada permohonan akreditasi</p>
                     <a href="{{ route('pengajuan.create') }}" class="btn btn-primary">
-                        <i class="bi bi-plus-circle"></i> Ajukan Sekarang
+                        <i class="bi bi-plus-circle"></i> Buat Permohonan Akreditasi
                     </a>
                 </div>
             </div>

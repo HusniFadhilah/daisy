@@ -84,8 +84,11 @@
                                     </small>
                                 </td>
                                 <td>
-                                    <a href="{{ route('pemetaan.show', $prog->id) }}" class="btn btn-sm btn-primary">
-                                        <i class="bi bi-eye"></i>
+                                    <button type="button" class="btn btn-success btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#modalKirimPengingat" data-id-study-program="{{ $prog->id }}">
+                                        <i class="bi bi-bell"></i> Kirim Pengingat
+                                    </button>
+                                    <a href="{{ route('de.pemetaan.show', $prog->id) }}" class="btn btn-sm btn-primary">
+                                        <i class="bi bi-eye"></i> Detail
                                     </a>
                                 </td>
                             </tr>

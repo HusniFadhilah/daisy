@@ -51,6 +51,12 @@ h5 {
 }
 
 /* Custom Bootstrap Overrides */
+.btn-xs {
+    padding: .2rem .45rem;
+    font-size: .75rem;
+    border-radius: .5rem;
+}
+
 .btn-primary {
     background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
     border: none;

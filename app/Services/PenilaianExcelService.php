@@ -932,7 +932,7 @@ class PenilaianExcelService
 
         // ===== FOOTNOTE TS (Row 23) =====
         $sheet->mergeCells('B23:L23');
-        $sheet->setCellValue('B23', '*) TS = Tahun akademik penuh terakhir saat pengajuan usulan akreditasi');
+        $sheet->setCellValue('B23', '*) TS = Tahun akademik penuh terakhir saat permohonan akreditasi');
         $sheet->getStyle('B23')->applyFromArray([
             'font' => [
                 'italic' => true,

@@ -1,6 +1,6 @@
 @extends('layouts.template.app')
 
-@section('title', 'Detail Pengajuan - ' . $pengajuan->nomor_pengajuan)
+@section('title', 'Detail Permohonan Akreditasi - ' . $pengajuan->nomor_pengajuan)
 
 @push('styles')
 <style>
@@ -40,7 +40,7 @@
                 {{ $pengajuan->judul }}
             </h4>
             <p class="text-muted mb-0">
-                Nomor: {{ $pengajuan->nomor_pengajuan }}
+                Nomor: {{ $pengajuan->nomor_pengajuan}}
             </p>
         </div>
         <div>
@@ -211,7 +211,7 @@
                                         <ul class="mb-0 small">
                                             <li id="infoMetode">Link template akan dikirim ke email prodi</li>
                                             <li>Prodi dapat mengakses template melalui link/download file</li>
-                                            <li>Status pengajuan akan diupdate ke <code>Penyampaian Template LED+Suplemen dan LKPS</code></li>
+                                            <li>Status Permohonan akreditasi akan diupdate ke <code>Penyampaian Template LED+Suplemen dan LKPS</code></li>
                                             <li>Notifikasi email akan dikirim ke UPPS</li>
                                         </ul>
                                     </div>
@@ -457,10 +457,10 @@
                     <div class="alert alert-warning alert-permanent">
                         <i class="bi bi-exclamation-triangle"></i>
                         <strong>Perhatian:</strong> Pastikan semua dokumen telah lengkap dan sesuai
-                        sebelum menyetujui pengajuan ini ke tahap AK.
+                        sebelum menyetujui Permohonan akreditasi ini ke tahap AK.
                     </div>
 
-                    <form action="{{ route('de.pengajuan.approve-ak', $pengajuan->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menyetujui pengajuan ini untuk lanjut ke tahap AK?')">
+                    <form action="{{ route('de.pengajuan.approve-ak', $pengajuan->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menyetujui Permohonan akreditasi ini untuk lanjut ke tahap AK?')">
                         @csrf
                         <button type="submit" class="btn btn-success btn-md">
                             <i class="bi bi-check-circle"></i> Setujui & Lanjutkan ke Tahap AK
@@ -475,7 +475,7 @@
                 <div class="card-body">
                     <h5 class="card-title">
                         <i class="bi bi-check-circle-fill text-success"></i>
-                        Pengajuan Disetujui - Lanjut ke Tahap AK
+                        Permohonan Akreditasi Disetujui - Lanjut ke Tahap AK
                     </h5>
 
                     @if($pengajuan->asesmen)
@@ -608,7 +608,7 @@
                         </h5>
 
                         <p class="mb-2">
-                            Status pengajuan saat ini:
+                            Status permohonan akreditasi saat ini:
                             <strong class="text-dark">{{ $pengajuan->status_label }}</strong>
                         </p>
 
@@ -618,7 +618,7 @@
                                 <strong>penilaian terhadap LED, Suplemen, dan LKPS</strong>.
                             </li>
                             <li>
-                                Selama proses asesmen berlangsung, <strong>data pengajuan bersifat terkunci</strong>
+                                Selama proses asesmen berlangsung, <strong>data Permohonan akreditasi bersifat terkunci</strong>
                                 dan tidak dapat diubah.
                             </li>
                             <li>
@@ -873,13 +873,13 @@
             <div class="card mb-4">
                 <div class="card-header bg-light">
                     <h5 class="mb-0">
-                        <i class="bi bi-info-circle"></i> Informasi Pengajuan
+                        <i class="bi bi-info-circle"></i> Informasi Permohonan Akreditasi
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Nomor Pengajuan</label>
+                            <label class="text-muted small">Nomor Permohonan</label>
                             <p class="fw-bold mb-0">{{ $pengajuan->nomor_pengajuan }}</p>
                         </div>
                         <div class="col-md-6 mb-3">
@@ -1132,7 +1132,7 @@
         resultDiv.innerHTML = '<div class="alert alert-info"><i class="bi bi-hourglass-split"></i> Memproses dokumen, mohon tunggu...</div>';
 
         try {
-            const response = await fetch(`/de/pengajuan/${pengajuanId}/borang/${dokumenId}/parse`, {
+            const response = await fetch(`/de/permohonan-akreditasi/${pengajuanId}/borang/${dokumenId}/parse`, {
                 method: 'POST'
                 , headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'

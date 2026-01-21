@@ -1,13 +1,13 @@
 @extends('layouts.template.app')
 
-@section('title', 'Dashboard Pengajuan Akreditasi')
+@section('title', 'Permohonan Akreditasi PS')
 
 @section('content')
 <div class="container-fluid py-3">
     <!-- Header -->
     <div class="mb-4">
-        <h2><i class="bi bi-clipboard-data"></i> Dashboard Pengajuan Akreditasi</h2>
-        <p class="text-muted mb-0">Kelola pengajuan akreditasi dan review kesiapan program studi</p>
+        <h2><i class="bi bi-clipboard-data"></i> Permohonan Akreditasi PS</h2>
+        <p class="text-muted mb-0">Kelola permohonan akreditasi Program Studi</p>
     </div>
 
     <!-- Statistics -->
@@ -17,7 +17,7 @@
                 <div class="card-body text-center">
                     <i class="bi bi-files" style="font-size: 2rem; color: #0d6efd;"></i>
                     <h3 class="mt-2 mb-0">{{ $stats['total'] }}</h3>
-                    <p class="text-muted mb-0">Total Pengajuan</p>
+                    <p class="text-muted mb-0">Total Permohonan</p>
                 </div>
             </div>
         </div>
@@ -26,7 +26,7 @@
                 <div class="card-body text-center">
                     <i class="bi bi-clock-history" style="font-size: 2rem; color: #ffc107;"></i>
                     <h3 class="mt-2 mb-0">{{ $stats['menunggu_review'] }}</h3>
-                    <p class="text-muted mb-0">Menunggu Review</p>
+                    <p class="text-muted mb-0">Menunggu Validasi</p>
                 </div>
             </div>
         </div>
@@ -73,7 +73,7 @@
         <div class="card-body">
             <form method="GET" class="row g-3">
                 <div class="col-md-4">
-                    <input type="text" name="search" class="form-control" placeholder="Cari nomor pengajuan atau prodi..." value="{{ request('search') }}">
+                    <input type="text" name="search" class="form-control" placeholder="Cari nomor permohonan akreditasi atau prodi..." value="{{ request('search') }}">
                 </div>
                 <div class="col-md-3">
                     <select name="status" class="form-select">
@@ -104,7 +104,7 @@
                 <table class="table table-hover">
                     <thead class="table-light">
                         <tr>
-                            <th>Pengajuan</th>
+                            <th>Permohonan</th>
                             <th>Program Studi</th>
                             <th>Jenis</th>
                             <th>Tahun</th>
@@ -147,9 +147,17 @@
                                 @endif --}}
                             </td>
                             <td>
-                                <a href="{{ route('de.pengajuan.show', $pengajuan->id) }}" class="btn btn-sm btn-primary">
+                                <a href="{{ route('de.pengajuan.show', $pengajuan->id) }}" class="btn btn-sm btn-info my-1">
                                     <i class="bi bi-eye"></i> Detail
                                 </a>
+                                <form action="{{ route('de.pengajuan.destroy', $pengajuan->id) }}" method="POST" class="d-inline form-delete">
+                                    @csrf
+                                    @method('DELETE')
+
+                                    <button type="submit" class="btn btn-sm btn-danger my-1">
+                                        <i class="bi bi-trash"></i> Hapus
+                                    </button>
+                                </form>
                             </td>
                         </tr>
                         @empty
@@ -174,3 +182,32 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.form-delete').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                Swal.fire({
+                    title: 'Yakin ingin menghapus?'
+                    , text: 'Data yang sudah dihapus tidak dapat dikembalikan.'
+                    , icon: 'warning'
+                    , showCancelButton: true
+                    , confirmButtonColor: '#d33'
+                    , cancelButtonColor: '#6c757d'
+                    , confirmButtonText: 'Ya, hapus'
+                    , cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
+    });
+
+</script>
+
+@endpush

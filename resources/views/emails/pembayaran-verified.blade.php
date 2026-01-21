@@ -97,7 +97,7 @@
                 <p><strong>Langkah Selanjutnya:</strong></p>
                 <ol>
                     <li>Login ke sistem</li>
-                    <li>Buka detail pengajuan Anda</li>
+                    <li>Buka detail Permohonan Akreditasi Anda</li>
                     <li>Upload <strong>Borang Final</strong> yang telah lengkap</li>
                     <li><strong>PENTING:</strong> Pastikan tidak ada revisi data kuantitatif/kualitatif</li>
                 </ol>
@@ -112,7 +112,7 @@
             <p>Pembayaran akreditasi Anda <strong>DITOLAK</strong> oleh DE.</p>
 
             <div class="info-box">
-                <p><strong>Nomor Pengajuan:</strong> {{ $pengajuan->nomor_pengajuan }}</p>
+                <p><strong>Nomor Permohonan:</strong> {{ $pengajuan->nomor_pengajuan }}</p>
                 <p><strong>Invoice:</strong> {{ $pengajuan->pembayaran->nomor_invoice }}</p>
                 <p><strong>Status:</strong> <span style="color: #dc3545;">DITOLAK</span></p>
             </div>

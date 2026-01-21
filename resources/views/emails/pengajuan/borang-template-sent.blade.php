@@ -1,4 +1,4 @@
-{{-- resources/views/emails/pengajuan/borang-template-sent.blade.php --}}
+{{-- resources/views/emails/permohonan-akreditasi/borang-template-sent.blade.php --}}
 <!DOCTYPE html>
 <html>
 <head>
@@ -110,14 +110,14 @@
         <p>Halo <strong>{{ $pengajuan->pengaju->name }}</strong>,</p>
 
         <p>
-            Desk Evaluator (DE) telah mengirimkan template LED untuk pengajuan akreditasi program studi Anda.
+            Desk Evaluator (DE) telah mengirimkan template LED untuk permohonan akreditasi program studi Anda.
         </p>
 
-        {{-- Detail Pengajuan --}}
+        {{-- Detail Permohonan akreditasi --}}
         <div class="info-box">
-            <h3>📋 Detail Pengajuan</h3>
+            <h3>📋 Detail Permohonan Akreditasi</h3>
             <div class="info-row">
-                <span class="info-label">Nomor Pengajuan:</span>
+                <span class="info-label">Nomor Permohonan Akreditasi:</span>
                 {{ $pengajuan->nomor_pengajuan }}
             </div>
             <div class="info-row">

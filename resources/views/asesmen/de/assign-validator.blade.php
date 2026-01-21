@@ -26,12 +26,12 @@
             <div class="card mb-4">
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-info-circle"></i> Informasi Pengajuan
+                        <i class="bi bi-info-circle"></i> Informasi Permohonan Akreditasi
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <label class="text-muted small">Nomor Pengajuan</label>
+                        <label class="text-muted small">Nomor Permohonan Akreditasi</label>
                         <p class="fw-bold mb-0">{{ $pengajuan->nomor_pengajuan }}</p>
                     </div>
                     <div class="mb-3">
@@ -247,7 +247,7 @@
                                 <li>Sistem akan membuat asesmen (jika belum ada)</li>
                                 <li>Penugasan dengan <code>jenis_asesmen = 'dokumen'</code> akan dibuat</li>
                                 <li>Email penawaran akan dikirim ke validator</li>
-                                <li>Status pengajuan akan diupdate ke <code>Validator LED Ditugaskan</code></li>
+                                <li>Status Permohonan akreditasi akan diupdate ke <code>Validator LED Ditugaskan</code></li>
                                 @if($currentAssignment && $currentAssignment->status_penawaran === 'pending')
                                 <li class="text-warning"><strong>Penugasan lama yang pending akan dihapus</strong></li>
                                 @endif

@@ -100,7 +100,7 @@
         </div>
 
         <div class="info-box">
-            <p><strong>Nomor Pengajuan:</strong> {{ $pengajuan->nomor_pengajuan }}</p>
+            <p><strong>Nomor Permohonan:</strong> {{ $pengajuan->nomor_pengajuan }}</p>
             <p><strong>Program Studi:</strong> {{ $studyProgram->name }}</p>
             <p><strong>Jenjang:</strong> {{ $studyProgram->degreeLevel->name }}</p>
             <p><strong>Universitas:</strong> {{ $studyProgram->university->name }}</p>

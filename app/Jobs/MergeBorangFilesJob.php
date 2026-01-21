@@ -28,11 +28,11 @@ class MergeBorangFilesJob implements ShouldQueue
         try {
             $pengajuan = PengajuanAkreditasi::findOrFail($this->pengajuanId);
 
-            Log::info("Starting merge job for pengajuan: {$this->pengajuanId}");
+            Log::info("Starting merge job for Permohonan akreditasi: {$this->pengajuanId}");
 
             $result = $mergeService->mergeBorangFiles($pengajuan);
 
-            // Update pengajuan with merged file info
+            // Update Permohonan akreditasi with merged file info
             $pengajuan->update([
                 'merged_file_path' => $result['file_path'],
                 'merge_status' => 'completed',

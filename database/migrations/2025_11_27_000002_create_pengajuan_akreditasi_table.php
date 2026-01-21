@@ -20,7 +20,7 @@ return new class extends Migration
 
             // Data Pengajuan
             $table->year('tahun_akreditasi');
-            $table->enum('jenis_akreditasi', ['baru', 'perpanjangan', 're-akreditasi']);
+            $table->enum('jenis_akreditasi', ['baru', 'perpanjangan', 'menuju_unggul']);
             $table->date('tanggal_pengajuan')->nullable();
             $table->text('catatan_pengaju')->nullable();
 
@@ -28,7 +28,9 @@ return new class extends Migration
             $table->enum('status', [
                 'draft',
                 'pengingat_dikirim',
+                'surat_permohonan_dikirim',
                 'surat_permohonan_diterima',
+                'surat_permohonan_ditolak',
                 'template_borang_dikirim',
                 'menunggu_pembayaran',
                 'pembayaran_diterima',
@@ -68,7 +70,9 @@ return new class extends Migration
 
             // Tracking
             $table->timestamp('tanggal_pengingat')->nullable();
-            $table->timestamp('tanggal_surat_permohonan')->nullable();
+            $table->timestamp('tanggal_surat_permohonan_dikirim')->nullable();
+            $table->timestamp('tanggal_surat_permohonan_diterima')->nullable();
+            $table->timestamp('tanggal_surat_permohonan_ditolak')->nullable();
             $table->timestamp('tanggal_template_led_dikirim')->nullable();
             $table->timestamp('tanggal_pembayaran')->nullable();
             $table->timestamp('tanggal_draft_borang')->nullable();
@@ -179,7 +183,7 @@ return new class extends Migration
         Schema::create('pengajuan_pembayaran', function (Blueprint $table) {
             $table->id();
 
-            // Relasi ke pengajuan akreditasi
+            // Relasi ke permohonan akreditasi
             $table->foreignId('id_pengajuan')
                 ->constrained('pengajuan_akreditasi')
                 ->cascadeOnDelete();

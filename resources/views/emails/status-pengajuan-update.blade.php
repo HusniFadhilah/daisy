@@ -74,10 +74,10 @@
         <div class="content">
             <p>Yth. Tim {{ $pengajuan->studyProgram->name }},</p>
 
-            <p>Status pengajuan akreditasi Anda telah diupdate:</p>
+            <p>Status permohonan akreditasi Anda telah diupdate:</p>
 
             <div class="info-box">
-                <p><strong>Nomor Pengajuan:</strong> {{ $pengajuan->nomor_pengajuan }}</p>
+                <p><strong>Nomor Permohonan:</strong> {{ $pengajuan->nomor_pengajuan }}</p>
                 <p><strong>Program Studi:</strong> {{ $pengajuan->studyProgram->name }}</p>
                 <p><strong>Status Baru:</strong>
                     <span class="status-badge">{{ str_replace('_', ' ', strtoupper($statusBaru)) }}</span>

@@ -130,7 +130,7 @@ class BorangValidatorController extends Controller
         }
 
         $pengajuan = $assignment->asesmen->pengajuan;
-        if (!$pengajuan) abort(404, 'Pengajuan tidak ditemukan');
+        if (!$pengajuan) abort(404, 'Permohonan akreditasi tidak ditemukan');
 
         $degreeCode = $this->mapDegreeCode($pengajuan->studyProgram->degreeLevel);
 
@@ -346,7 +346,7 @@ class BorangValidatorController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Review/validasi berhasil disimpan',
+                'message' => 'Validasi berhasil disimpan',
                 'progress' => $progress,
                 'is_complete' => $validation->fresh()->isCompletelyReviewed(),
             ]);
@@ -362,7 +362,7 @@ class BorangValidatorController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal menyimpan review/validasi: ' . $e->getMessage(),
+                'message' => 'Gagal menyimpan validasi: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -398,7 +398,7 @@ class BorangValidatorController extends Controller
             $pengajuan = $assignment->asesmen->pengajuan;
 
             if (!$pengajuan) {
-                throw new \Exception('Pengajuan tidak ditemukan');
+                throw new \Exception('Permohonan akreditasi tidak ditemukan');
             }
 
             $validation = $assignment->borangValidation;
@@ -680,6 +680,152 @@ class BorangValidatorController extends Controller
 
             return response()->json([
                 'error' => 'Gagal mengambil statistik: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getValidationSummary($idAssignment)
+    {
+        try {
+            $assignment = AsesmenUserRole::with([
+                'asesmen.pengajuan.studyProgram.degreeLevel',
+                'borangValidation',
+            ])
+                ->where('id_user', Auth::id())
+                ->findOrFail($idAssignment);
+
+            $validation = $assignment->borangValidation;
+            if (!$validation) {
+                return response()->json(['error' => 'Validation record tidak ditemukan'], 404);
+            }
+
+            // ✅ Ambil kriterias sama persis seperti Blade Anda
+            $kriterias = \App\Models\Kriteria::with([
+                'elemenStandar',
+                'elemenStandar.indikator' => function ($q) {
+                    $q->where('id_jenis', 2)->orderBy('kode_indikator');
+                },
+            ])->get();
+
+            $reviewLed = $validation->review_led ?? [];
+            $reviewSup = $validation->review_suplemen ?? [];
+            $reviewLkps = $validation->review_lkps ?? [];
+
+            $extract = function ($r) {
+                if (!$r) return [null, ''];
+                if (is_array($r)) return [$r['grade'] ?? null, $r['catatan'] ?? ''];
+                return [$r, ''];
+            };
+
+            $rows = [];
+
+            // ================= LED (ElemenStandar) =================
+            foreach ($kriterias as $kriteria) {
+                foreach (($kriteria->elemenStandar ?? collect()) as $elemen) {
+                    $r = $reviewLed[$elemen->id] ?? null;
+                    [$grade, $catatan] = $extract($r);
+
+                    $rows[] = [
+                        'category' => 'led',
+                        'group' => $kriteria->kode_kriteria ?? null,
+                        'kode' => $elemen->kode_elemen ?? null,
+                        'judul' => $elemen->pernyataan_elemen ?? null,
+                        'item_id' => $elemen->id,
+                        'reviewed' => (bool) $r,
+                        'grade' => in_array($grade, ['A', 'B', 'C'], true) ? $grade : null,
+                        'catatan' => $catatan,
+                        'anchor' => "h-led-{$elemen->id}", // ✅ sesuai Blade
+                    ];
+                }
+            }
+
+            $degreeLevelCode = $assignment->asesmen->pengajuan->studyProgram->degreeLevel->code ?? null;
+
+            if ($degreeLevelCode) {
+                $suplemenItems = DatasetSuplemen::query()
+                    ->where('degree_level_code', $degreeLevelCode)
+                    ->where('content_type', '!=', 'header')   // pakai kolom yang memang ada
+                    ->orderBy('section_key')                  // ganti dari section -> section_key
+                    ->orderBy('urutan')
+                    ->get();
+
+                foreach ($suplemenItems as $it) {
+                    $r = $reviewSup[$it->id] ?? null;
+                    [$grade, $catatan] = $extract($r);
+
+                    $rows[] = [
+                        'category' => 'suplemen',
+                        'group' => $it->section_key,           // ganti dari section -> section_key
+                        'kode' => "#{$it->urutan}",
+                        'judul' => $it->text_content,
+                        'item_id' => $it->id,
+                        'reviewed' => (bool) $r,
+                        'grade' => in_array($grade, ['A', 'B', 'C'], true) ? $grade : null,
+                        'catatan' => $catatan,
+                        'anchor' => "h-suplemen-ds-{$it->id}",
+                    ];
+                }
+            }
+
+            // ================= LKPS (Indikator id_jenis=2) =================
+            foreach ($kriterias as $kriteria) {
+                foreach (($kriteria->elemenStandar ?? collect()) as $elemen) {
+                    $indikators = $elemen->indikator ?? collect(); // sudah terfilter id_jenis=2
+                    if ($indikators->count() === 0) continue;
+
+                    foreach ($indikators as $ind) {
+                        $r = $reviewLkps[$ind->id] ?? null;
+                        [$grade, $catatan] = $extract($r);
+
+                        $rows[] = [
+                            'category' => 'lkps',
+                            'group' => $kriteria->kode_kriteria ?? null,
+                            'kode' => $ind->kode_indikator ?? null,
+                            'judul' => $ind->deskripsi_indikator ?? null,
+                            'item_id' => $ind->id,
+                            'reviewed' => (bool) $r,
+                            'grade' => in_array($grade, ['A', 'B', 'C'], true) ? $grade : null,
+                            'catatan' => $catatan,
+                            // LKPS Anda anchor-nya ke header elemen (bukan indikator),
+                            // karena di Blade: id="h-lkps-{{ $elemen->id }}"
+                            'anchor' => "h-lkps-{$elemen->id}",
+                            'elemen_id' => $elemen->id,
+                        ];
+                    }
+                }
+            }
+
+            // ================= Rekap =================
+            $rekap = [
+                'total' => count($rows),
+                'reviewed' => 0,
+                'unreviewed' => 0,
+                'A' => 0,
+                'B' => 0,
+                'C' => 0,
+            ];
+
+            foreach ($rows as $x) {
+                if (!$x['reviewed']) {
+                    $rekap['unreviewed']++;
+                    continue;
+                }
+                $rekap['reviewed']++;
+                if ($x['grade']) $rekap[$x['grade']]++;
+            }
+
+            return response()->json([
+                'rekap' => $rekap,
+                'rows' => $rows,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Get validation summary failed', [
+                'assignment_id' => $idAssignment,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'error' => 'Gagal mengambil summary: ' . $e->getMessage()
             ], 500);
         }
     }

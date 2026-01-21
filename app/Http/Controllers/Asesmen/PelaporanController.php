@@ -40,9 +40,9 @@ class PelaporanController extends Controller
             }
 
             $pengajuan = $assignment->asesmen->pengajuan;
-            if (!$pengajuan) throw new \Exception('Pengajuan tidak ditemukan');
+            if (!$pengajuan) throw new \Exception('Permohonan akreditasi tidak ditemukan');
 
-            // ✅ hanya boleh upload ketika status pengajuan VALIDATED / BORANG_FINAL_DITERIMA
+            // ✅ hanya boleh upload ketika status Permohonan akreditasi VALIDATED / BORANG_FINAL_DITERIMA
             // if (!in_array($pengajuan->status, [
             //     PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
             //     PengajuanAkreditasi::STATUS_DRAFT_BORANG_FINAL_DITERIMA,
@@ -54,7 +54,7 @@ class PelaporanController extends Controller
             // }
 
             $file = $request->file('file');
-            $path = $file->store("pengajuan/{$pengajuan->id}/laporan-validasi", 'public');
+            $path = $file->store("permohonan-akreditasi/{$pengajuan->id}/laporan-validasi", 'public');
 
             // ✅ satu file saja: update kalau sudah ada, create kalau belum
             $doc = AsesmenDocument::query()
@@ -124,7 +124,7 @@ class PelaporanController extends Controller
             }
 
             $pengajuan = $assignment->asesmen->pengajuan;
-            if (!$pengajuan) throw new \Exception('Pengajuan tidak ditemukan');
+            if (!$pengajuan) throw new \Exception('Permohonan akreditasi tidak ditemukan');
 
             // ✅ hanya boleh finalize dari 2 status ini
             // if (!in_array($pengajuan->status, [
@@ -133,7 +133,7 @@ class PelaporanController extends Controller
             // ], true)) {
             //     return response()->json([
             //         'success' => false,
-            //         'message' => 'Status pengajuan tidak memenuhi syarat untuk pelaporan.',
+            //         'message' => 'Status Permohonan akreditasi tidak memenuhi syarat untuk pelaporan.',
             //     ], 422);
             // }
 
@@ -176,7 +176,7 @@ class PelaporanController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Pelaporan validasi berhasil difinalisasi. Status pengajuan telah diperbarui.',
+                'message' => 'Pelaporan validasi berhasil difinalisasi. Status Permohonan akreditasi telah diperbarui.',
             ]);
         } catch (\Throwable $e) {
             DB::rollBack();
@@ -219,7 +219,7 @@ class PelaporanController extends Controller
             if (!$pengajuan)
                 $path = $file->store("asesmen/{$assignment->asesmen->id}/laporan-validasi-ak", 'public');
             else
-                $path = $file->store("pengajuan/{$pengajuan->id}/laporan-validasi-ak", 'public');
+                $path = $file->store("permohonan-akreditasi/{$pengajuan->id}/laporan-validasi-ak", 'public');
 
             $doc = AsesmenDocument::query()
                 ->where('id_asesmen', $assignment->id_asesmen)
@@ -370,10 +370,10 @@ class PelaporanController extends Controller
     //         }
 
     //         $pengajuan = $assignment->asesmen?->pengajuan;
-    //         if (!$pengajuan) throw new \Exception('Pengajuan tidak ditemukan');
+    //         if (!$pengajuan) throw new \Exception('Permohonan akreditasi tidak ditemukan');
 
     //         $file = $request->file('file');
-    //         $path = $file->store("pengajuan/{$pengajuan->id}/laporan-ak", 'public');
+    //         $path = $file->store("permohonan-akreditasi/{$pengajuan->id}/laporan-ak", 'public');
 
     //         $doc = AsesmenDocument::query()
     //             ->where('id_asesmen', $assignment->id_asesmen)
@@ -436,7 +436,7 @@ class PelaporanController extends Controller
     //         }
 
     //         $pengajuan = $assignment->asesmen?->pengajuan;
-    //         if (!$pengajuan) throw new \Exception('Pengajuan tidak ditemukan');
+    //         if (!$pengajuan) throw new \Exception('Permohonan akreditasi tidak ditemukan');
 
     //         $docExists = AsesmenDocument::query()
     //             ->where('id_asesmen', $assignment->id_asesmen)
@@ -471,7 +471,7 @@ class PelaporanController extends Controller
     //         DB::commit();
     //         return response()->json([
     //             'success' => true,
-    //             'message' => 'Pelaporan AK berhasil difinalisasi. Status pengajuan menjadi AK DILAPORKAN.',
+    //             'message' => 'Pelaporan AK berhasil difinalisasi. Status Permohonan akreditasi menjadi AK DILAPORKAN.',
     //         ]);
     //     } catch (\Throwable $e) {
     //         DB::rollBack();
@@ -517,7 +517,7 @@ class PelaporanController extends Controller
             if (!$pengajuan)
                 $path = $file->store("asesmen/{$assignment->asesmen->id}/laporan-al", 'public');
             else
-                $path = $file->store("pengajuan/{$pengajuan->id}/laporan-al", 'public');
+                $path = $file->store("permohonan-akreditasi/{$pengajuan->id}/laporan-al", 'public');
 
             $doc = AsesmenDocument::query()
                 ->where('id_asesmen', $assignment->id_asesmen)
@@ -629,7 +629,7 @@ class PelaporanController extends Controller
             DB::commit();
             return response()->json([
                 'success' => true,
-                'message' => 'Pelaporan AL berhasil difinalisasi. Status pengajuan menjadi AL DILAPORKAN.',
+                'message' => 'Pelaporan AL berhasil difinalisasi. Status Permohonan akreditasi menjadi AL DILAPORKAN.',
             ]);
         } catch (\Throwable $e) {
             DB::rollBack();

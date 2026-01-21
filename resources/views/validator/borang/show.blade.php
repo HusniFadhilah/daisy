@@ -1,7 +1,7 @@
 {{-- resources/views/validator/borang/show.blade.php --}}
 @extends('layouts.template.app')
 
-@section('title', 'Review/Validasi LED+Suplemen dan LKPS - ' . $pengajuan->nomor_pengajuan)
+@section('title', 'Validasi LED+Suplemen dan LKPS - ' . $pengajuan->nomor_pengajuan)
 
 @push('styles')
 <style>
@@ -22,6 +22,38 @@
         height: 100px;
     }
 
+    .progress-grade-footer {
+        display: flex;
+        justify-content: center;
+        gap: .75rem;
+        flex-wrap: wrap;
+        padding: .4rem .75rem;
+    }
+
+    .progress-grade-footer .legend-badge {
+        margin-right: 0;
+    }
+
+    .monitoring-scroll {
+        max-height: 360px;
+        /* silakan ubah: 300-500 */
+        overflow-y: auto;
+    }
+
+    .legend-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        margin-right: .5rem;
+    }
+
+    .legend-dot {
+        width: .65rem;
+        height: .65rem;
+        border-radius: 999px;
+        display: inline-block;
+    }
+
 </style>
 @endpush
 
@@ -32,7 +64,7 @@
         <div>
             <h3>
                 <i class="bi bi-clipboard-check"></i>
-                Review/Validasi LED+Suplemen dan LKPS
+                Validasi LED+Suplemen dan LKPS
             </h3>
             <p class="text-muted mb-0">
                 {{ $pengajuan->judul }}
@@ -58,6 +90,19 @@
                     </div>
                     <small><span id="percent-led">{{ $progress['led_percentage'] }}</span>%</small>
                 </div>
+                <div class="card-footer bg-white border-0">
+                    <div class="progress-grade-footer small">
+                        <span class="legend-badge">
+                            <span class="legend-dot bg-primary"></span> A (Sudah Tepat): <strong id="led-a">0</strong>
+                        </span>
+                        <span class="legend-badge">
+                            <span class="legend-dot bg-warning"></span> B (Kurang Lengkap): <strong id="led-b">0</strong>
+                        </span>
+                        <span class="legend-badge">
+                            <span class="legend-dot bg-danger"></span> C (Perlu Diperbaiki): <strong id="led-c">0</strong>
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -74,6 +119,19 @@
                     </div>
                     <small><span id="percent-suplemen">{{ $progress['suplemen_percentage'] }}</span>%</small>
                 </div>
+                <div class="card-footer bg-white border-0">
+                    <div class="progress-grade-footer small">
+                        <span class="legend-badge">
+                            <span class="legend-dot bg-primary"></span> A (Sudah Tepat): <strong id="suplemen-a">0</strong>
+                        </span>
+                        <span class="legend-badge">
+                            <span class="legend-dot bg-warning"></span> B (Kurang Lengkap): <strong id="suplemen-b">0</strong>
+                        </span>
+                        <span class="legend-badge">
+                            <span class="legend-dot bg-danger"></span> C (Perlu Diperbaiki): <strong id="suplemen-c">0</strong>
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -89,6 +147,19 @@
                         <div class="progress-bar bg-success" id="bar-lkps" style="width: {{ $progress['lkps_percentage'] }}%"></div>
                     </div>
                     <small><span id="percent-lkps">{{ $progress['lkps_percentage'] }}</span>%</small>
+                </div>
+                <div class="card-footer bg-white border-0">
+                    <div class="progress-grade-footer small">
+                        <span class="legend-badge">
+                            <span class="legend-dot bg-primary"></span> A (Sudah Tepat): <strong id="lkps-a">0</strong>
+                        </span>
+                        <span class="legend-badge">
+                            <span class="legend-dot bg-warning"></span> B (Kurang Lengkap): <strong id="lkps-b">0</strong>
+                        </span>
+                        <span class="legend-badge">
+                            <span class="legend-dot bg-danger"></span> C (Perlu Diperbaiki): <strong id="lkps-c">0</strong>
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -109,6 +180,8 @@
             </div>
         </div>
     </div>
+
+    {{-- @include('validator.borang.partials.monitoring-review') --}}
 
     {{-- Dokumen yang diupload Prodi --}}
     <div class="card mb-4">
@@ -223,15 +296,15 @@
     <div class="card mb-4 border-primary">
         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
             <h5 class="mb-0">
-                <i class="bi bi-file-earmark-excel"></i> Upload/Download Excel Review/Validasi
+                <i class="bi bi-file-earmark-excel"></i> Upload/Download Excel Validasi
             </h5>
             <span class="badge bg-light text-dark">Opsional</span>
         </div>
         <div class="card-body">
             <div class="alert alert-info alert-permanent mb-3">
                 <i class="bi bi-info-circle"></i>
-                <strong>Tips:</strong> Anda dapat melakukan review/validasi melalui Excel untuk mempermudah proses.
-                Download template, isi review/validasi, lalu upload kembali ke sistem.
+                <strong>Tips:</strong> Anda dapat melakukan validasi melalui Excel untuk mempermudah proses.
+                Download template, isi validasi, lalu upload kembali ke sistem.
             </div>
 
             <div class="row g-3">
@@ -243,7 +316,7 @@
                                 <i class="bi bi-download"></i> Download Excel
                             </h6>
                             <p class="card-text text-muted small">
-                                Download file Excel untuk review/validasi offline
+                                Download file Excel untuk validasi offline
                             </p>
 
                             <div class="btn-group w-100" role="group">
@@ -251,14 +324,14 @@
                                     <i class="bi bi-file-earmark"></i> Template Kosong
                                 </a>
                                 <a href="{{ route('validator.borang.download-review', $assignment->id) }}" class="btn btn-outline-success">
-                                    <i class="bi bi-file-earmark-check"></i> Hasil Review/Validasi Anda
+                                    <i class="bi bi-file-earmark-check"></i> Hasil Validasi Anda
                                 </a>
                             </div>
 
                             <div class="mt-2">
                                 <small class="text-muted">
                                     <strong>Template Kosong:</strong> File Excel baru tanpa isian<br>
-                                    <strong>Hasil Review/Validasi:</strong> File Excel berisi review/validasi yang sudah Anda isi
+                                    <strong>Hasil Validasi:</strong> File Excel berisi validasi yang sudah Anda isi
                                 </small>
                             </div>
                         </div>
@@ -294,7 +367,7 @@
                             <div class="mt-2">
                                 <small class="text-muted">
                                     <i class="bi bi-info-circle"></i>
-                                    Data yang diupload akan digabungkan dengan review/validasi online yang sudah ada
+                                    Data yang diupload akan digabungkan dengan validasi online yang sudah ada
                                 </small>
                             </div>
                         </div>
@@ -404,7 +477,7 @@
                                 $reviewData = $validation->review_led ?? [];
                                 $isReviewed = isset($reviewData[$elemen->id]);
                                 $badgeClass = $isReviewed ? 'bg-success' : 'bg-warning text-dark';
-                                $badgeText = $isReviewed ? 'Review/Validasi Lengkap' : 'Review/Validasi Belum Lengkap';
+                                $badgeText = $isReviewed ? 'Validasi Lengkap' : 'Validasi Belum Lengkap';
                                 @endphp
 
                                 <div class="accordion-item elemen-accordion-item" data-tab="led" data-elemen-id="{{ $elemen->id }}" data-required-count="1" data-reviewed-count="{{ $isReviewed ? 1 : 0 }}">
@@ -453,7 +526,7 @@
                     }
                     $isComplete = ($required === 0) ? true : ($reviewedCount === $required);
                     $badgeClass = $isComplete ? 'bg-success' : 'bg-warning text-dark';
-                    $badgeText = $isComplete ? 'Review/Validasi Lengkap' : 'Review/Validasi Belum Lengkap';
+                    $badgeText = $isComplete ? 'Validasi Lengkap' : 'Validasi Belum Lengkap';
                     @endphp
 
                     <div class="card mb-3">
@@ -471,7 +544,7 @@
                                 @php
                                 $isReviewedItem = isset($reviewData[$it->id]);
                                 $itemBadgeClass = $isReviewedItem ? 'bg-success' : 'bg-warning text-dark';
-                                $itemBadgeText = $isReviewedItem ? 'Review/Validasi Lengkap' : 'Review/Validasi Belum Lengkap';
+                                $itemBadgeText = $isReviewedItem ? 'Validasi Lengkap' : 'Validasi Belum Lengkap';
                                 @endphp
 
                                 <div class="accordion-item elemen-accordion-item" data-tab="suplemen" data-elemen-id="{{ $it->id }}" data-required-count="1" data-reviewed-count="{{ $isReviewedItem ? 1 : 0 }}">
@@ -537,7 +610,7 @@
                                 }
                                 $isComplete = ($required > 0) ? ($reviewedCount === $required) : true;
                                 $badgeClass = $isComplete ? 'bg-success' : 'bg-warning text-dark';
-                                $badgeText = $isComplete ? 'Review/Validasi Lengkap' : 'Review/Validasi Belum Lengkap';
+                                $badgeText = $isComplete ? 'Validasi Lengkap' : 'Validasi Belum Lengkap';
                                 @endphp
 
                                 <div class="accordion-item elemen-accordion-item" data-tab="lkps" data-elemen-id="{{ $elemen->id }}" data-required-count="{{ $required }}" data-reviewed-count="{{ $reviewedCount }}">
@@ -591,7 +664,7 @@
                         <i class="bi bi-send-check"></i> Finalisasi & Kirim
                     </h5>
                     <span class="badge bg-light text-dark" id="finalStatusBadge">
-                        {{ $validation->isCompletelyReviewed() ? 'Review/Validasi Lengkap' : 'Review/Validasi Belum Lengkap' }}
+                        {{ $validation->isCompletelyReviewed() ? 'Validasi Lengkap' : 'Validasi Belum Lengkap' }}
                     </span>
                 </div>
                 <div class="card-body">
@@ -695,6 +768,9 @@ $assignmentId = $assignment->id;
         const btnAutoTestReview = document.getElementById('btnAutoTestReview');
         const btnResetDropdown = document.getElementById('btnResetDropdown');
         const resetDropdownMenu = document.getElementById('resetDropdownMenu');
+        const monitoringCollapse = document.getElementById('monitoringCollapse');
+        const iconToggle = document.getElementById('iconToggleMonitoring');
+        const btnToggleMon = document.getElementById('btnToggleMonitoring');
 
         // Upload form refs
         const formUpload = document.getElementById('formUploadReview');
@@ -852,7 +928,7 @@ $assignmentId = $assignment->id;
 
             if (badge) {
                 badge.className = 'badge elemen-status-badge ' + (isComplete ? 'bg-success' : 'bg-warning text-dark');
-                badge.textContent = isComplete ? 'Review/Validasi Lengkap' : 'Review/Validasi Belum Lengkap';
+                badge.textContent = isComplete ? 'Validasi Lengkap' : 'Validasi Belum Lengkap';
             }
             if (counter) counter.textContent = `${reviewedCount}/${requiredCount}`;
 
@@ -913,10 +989,10 @@ $assignmentId = $assignment->id;
                 // Final badge
                 const badge = document.getElementById('finalStatusBadge');
                 if (data.is_complete) {
-                    badge.textContent = 'Review/Validasi Lengkap';
+                    badge.textContent = 'Validasi Lengkap';
                     badge.className = 'badge bg-success';
                 } else {
-                    badge.textContent = 'Review/Validasi Belum Lengkap';
+                    badge.textContent = 'Validasi Belum Lengkap';
                     badge.className = 'badge bg-warning text-dark';
                 }
             } catch (err) {
@@ -1092,7 +1168,7 @@ $assignmentId = $assignment->id;
                 const isComplete = (req === 0);
                 if (badge) {
                     badge.className = 'badge elemen-status-badge ' + (isComplete ? 'bg-success' : 'bg-warning text-dark');
-                    badge.textContent = isComplete ? 'Review/Validasi Lengkap' : 'Review/Validasi Belum Lengkap';
+                    badge.textContent = isComplete ? 'Validasi Lengkap' : 'Validasi Belum Lengkap';
                 }
                 if (counter) counter.textContent = `0/${req}`;
             });
@@ -1153,7 +1229,7 @@ $assignmentId = $assignment->id;
                 }
 
                 await refreshStats();
-
+                await loadMonitoringTable();
                 updateTabReviewedInfo();
                 updateToggleAllButton();
                 updateResetDropdownState();
@@ -1303,6 +1379,7 @@ $assignmentId = $assignment->id;
                 }
 
                 await refreshStats();
+                await loadMonitoringTable();
             } catch (err) {
                 console.error(err);
                 if (status) status.innerHTML = '<i class="bi bi-x-circle text-danger"></i> Error';
@@ -1482,6 +1559,7 @@ $assignmentId = $assignment->id;
             updateToggleAllButton();
             updateResetDropdownState();
             await refreshStats();
+            await loadMonitoringTable();
 
             alert(`Auto Test Review selesai. LED: A${stats.led.A}/B${stats.led.B}/C${stats.led.C}, Suplemen: A${stats.suplemen.A}/B${stats.suplemen.B}/C${stats.suplemen.C}, LKPS: A${stats.lkps.A}/B${stats.lkps.B}/C${stats.lkps.C}`);
         }
@@ -1490,7 +1568,195 @@ $assignmentId = $assignment->id;
             btnAutoTestReview.addEventListener('click', () => runAutoTestReview().catch(console.error));
         }
 
+        if (monitoringCollapse && iconToggle && btnToggleMon) {
+            monitoringCollapse.addEventListener('shown.bs.collapse', () => {
+                iconToggle.className = 'bi bi-chevron-up';
+                const span = btnToggleMon.querySelector('span')
+                if (span) span.replaceChildren(document.createTextNode('Sembunyikan'));
+            });
+            monitoringCollapse.addEventListener('hidden.bs.collapse', () => {
+                iconToggle.className = 'bi bi-chevron-down';
+                const span = btnToggleMon.querySelector('span')
+                if (span) span.replaceChildren(document.createTextNode('Tampilkan'));
+            });
+        }
+
+        async function loadMonitoringTable() {
+            const url = @json(route('validator.borang.summary', $assignmentId));
+
+            const bodyLed = document.getElementById('monitoringBodyLed');
+            const bodySup = document.getElementById('monitoringBodySuplemen');
+            const bodyLkps = document.getElementById('monitoringBodyLkps');
+
+            // fallback kalau markup belum diganti
+            const legacyBody = document.getElementById('monitoringBody');
+
+            const setLoading = (el, cols) => {
+                if (!el) return;
+                el.innerHTML = `<tr><td colspan="${cols}" class="text-muted">Memuat...</td></tr>`;
+            };
+
+            setLoading(bodyLed, 7);
+            setLoading(bodySup, 7);
+            setLoading(bodyLkps, 7);
+            if (legacyBody) legacyBody.innerHTML = `<tr><td colspan="8" class="text-muted">Memuat...</td></tr>`;
+
+            try {
+                const res = await fetch(url, {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data ? data.error : 'Gagal ambil summary');
+
+                // rekap: hanya total/reviewed/unreviewed
+                const mTotal = document.getElementById('m-total')
+                if (mTotal) mTotal.textContent = `Total: ${data.rekap.total}`;
+                const mReviewed = document.getElementById('m-reviewed')
+                if (mReviewed) mReviewed.textContent = `Reviewed: ${data.rekap.reviewed}`;
+                const mUnreviewed = document.getElementById('m-unreviewed')
+                if (mUnreviewed) mUnreviewed.textContent = `Belum: ${data.rekap.unreviewed}`;
+
+                const rows = Array.isArray(data.rows) ? data.rows : [];
+
+                const byCat = {
+                    led: rows.filter(r => r.category === 'led')
+                    , suplemen: rows.filter(r => r.category === 'suplemen')
+                    , lkps: rows.filter(r => r.category === 'lkps')
+                , };
+
+                const countGrades = (arr) => {
+                    const out = {
+                        A: 0
+                        , B: 0
+                        , C: 0
+                    };
+                    arr.forEach(r => {
+                        if (r && (r.grade === 'A' || r.grade === 'B' || r.grade === 'C')) out[r.grade]++;
+                    });
+                    return out;
+                };
+
+                const setText = (id, val) => {
+                    const el = document.getElementById(id);
+                    if (el) el.textContent = String(val ? val : 0);
+                };
+
+                const ledG = countGrades(byCat.led);
+                const supG = countGrades(byCat.suplemen);
+                const lkpsG = countGrades(byCat.lkps);
+
+                setText('led-a', ledG.A);
+                setText('led-b', ledG.B);
+                setText('led-c', ledG.C);
+                setText('suplemen-a', supG.A);
+                setText('suplemen-b', supG.B);
+                setText('suplemen-c', supG.C);
+                setText('lkps-a', lkpsG.A);
+                setText('lkps-b', lkpsG.B);
+                setText('lkps-c', lkpsG.C);
+
+                const renderRows = (arr) => {
+                    if (!arr.length) {
+                        return `<tr><td colspan="7" class="text-muted">Tidak ada data.</td></tr>`;
+                    }
+
+                    return arr.map(r => {
+                        const status = r.reviewed ?
+                            `<span class="badge bg-success">Sudah</span>` :
+                            `<span class="badge bg-secondary">Belum</span>`;
+
+                        const grade = r.grade || '-';
+                        const gradeBadge =
+                            grade === 'A' ? `<span class="badge bg-primary">A</span>` :
+                            grade === 'B' ? `<span class="badge bg-warning text-dark">B</span>` :
+                            grade === 'C' ? `<span class="badge bg-danger">C</span>` :
+                            `<span class="text-muted">-</span>`;
+
+                        const cat = (r.catatan || '').toString();
+                        const catShort = cat.length > 70 ? cat.slice(0, 70) + '…' : (cat || '-');
+
+                        const safeTitle = cat.replaceAll('"', '&quot;');
+
+                        return `
+          <tr>
+            <td>${r.group ?? '-'}</td>
+            <td>${r.kode ?? '-'}</td>
+            <td>${(r.judul ?? '').toString()}</td>
+            <td>${status}</td>
+            <td>${gradeBadge}</td>
+            <td title="${safeTitle}">${catShort}</td>
+            <td>
+              <button class="btn btn-sm btn-outline-primary js-jump" data-anchor="${r.anchor}">
+                <i class="bi bi-box-arrow-in-right"></i> Lihat detail
+              </button>
+            </td>
+          </tr>
+        `;
+                    }).join('');
+                };
+
+                if (bodyLed) bodyLed.innerHTML = renderRows(byCat.led);
+                if (bodySup) bodySup.innerHTML = renderRows(byCat.suplemen);
+                if (bodyLkps) bodyLkps.innerHTML = renderRows(byCat.lkps);
+
+                // optional: kalau masih ada table lama
+                if (legacyBody) {
+                    legacyBody.innerHTML = rows.length ?
+                        `<tr><td colspan="8" class="text-muted">Monitoring sudah dipisah per tab.</td></tr>` :
+                        `<tr><td colspan="8" class="text-muted">Tidak ada data.</td></tr>`;
+                }
+
+            } catch (err) {
+                console.error(err);
+
+                const fail = (el, cols) => {
+                    if (!el) return;
+                    el.innerHTML = `<tr><td colspan="${cols}" class="text-danger">Gagal memuat monitoring.</td></tr>`;
+                };
+
+                fail(bodyLed, 7);
+                fail(bodySup, 7);
+                fail(bodyLkps, 7);
+                if (legacyBody) legacyBody.innerHTML = `<tr><td colspan="8" class="text-danger">Gagal memuat monitoring.</td></tr>`;
+            }
+        }
+
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.js-jump');
+            if (!btn) return;
+
+            const anchorId = btn.dataset.anchor;
+            const header = document.getElementById(anchorId);
+            if (!header) return;
+
+            // switch tab utama berdasarkan prefix anchor
+            const tabId =
+                anchorId.startsWith('h-led-') ? 'tab-led' :
+                anchorId.startsWith('h-suplemen-') ? 'tab-suplemen' :
+                anchorId.startsWith('h-lkps-') ? 'tab-lkps' : null;
+
+            if (tabId) {
+                const tabBtn = document.getElementById(tabId);
+                if (tabBtn) bootstrap.Tab.getOrCreateInstance(tabBtn).show();
+            }
+
+            // buka collapse terkait
+            const item = header.closest('.accordion-item');
+            const collapse = item ? item.querySelector('.accordion-collapse') : null;
+            if (collapse) bootstrap.Collapse.getOrCreateInstance(collapse, {
+                toggle: false
+            }).show();
+
+            header.scrollIntoView({
+                behavior: 'smooth'
+                , block: 'start'
+            });
+        });
+
         // =============== INIT UI STATE ===============
+        loadMonitoringTable();
         updateTabReviewedInfo();
         updateToggleAllButton();
         updateResetDropdownState();

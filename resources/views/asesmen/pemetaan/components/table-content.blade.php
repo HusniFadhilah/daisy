@@ -35,7 +35,7 @@
                                 ({{ $daysLeft }} hari lagi)
                             </small>
                         </div>
-                        <a href="{{ route('pemetaan.show', $program->id) }}" class="btn btn-sm btn-outline-primary w-100">
+                        <a href="{{ route('de.pemetaan.show', $program->id) }}" class="btn btn-sm btn-outline-primary w-100">
                             <i class="bi bi-eye"></i> Lihat Detail
                         </a>
                     </div>
@@ -123,7 +123,7 @@
                         </td>
                         <td>
                             <div class="btn-group btn-group-sm">
-                                <a href="{{ route('pemetaan.show', $program->id) }}" class="btn btn-outline-primary action-btn">
+                                <a href="{{ route('de.pemetaan.show', $program->id) }}" class="btn btn-outline-primary action-btn">
                                     <i class="bi bi-eye"></i>
                                 </a>
                                 @if($program->status_kedaluwarsa != 'Aktif' || ($daysLeft && $daysLeft <= 180)) <a href="{{ route('pengajuan.create', ['study_program_id' => $program->id]) }}" class="btn btn-outline-success action-btn">

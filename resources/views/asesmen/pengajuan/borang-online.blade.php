@@ -1152,7 +1152,7 @@ $pengajuanId = $pengajuan->id;
             }
 
             try {
-                const response = await fetch(`/pengajuan/${pengajuanId}/borang-online/save-field`, {
+                const response = await fetch(`/permohonan-akreditasi/${pengajuanId}/borang-online/save-field`, {
                     method: 'POST'
                     , headers: {
                         'Content-Type': 'application/json'
@@ -1218,7 +1218,7 @@ $pengajuanId = $pengajuan->id;
                     if (!after.has(src)) {
                         // aman: hanya delete kalau tidak dipakai di editor lain
                         if (!isSrcUsedInOtherEditors(editorInstances, src, fieldId)) {
-                            deleteImageOnServer(`/tinymce/pengajuan/${pengajuanId}/image-delete`, csrf, src);
+                            deleteImageOnServer(`/tinymce/permohonan-akreditasi/${pengajuanId}/image-delete`, csrf, src);
                         }
                     }
                 }
@@ -1542,7 +1542,7 @@ $pengajuanId = $pengajuan->id;
                 showLoading();
 
                 try {
-                    const response = await fetch(`/pengajuan/${pengajuanId}/borang/reset`, {
+                    const response = await fetch(`/permohonan-akreditasi/${pengajuanId}/borang/reset`, {
                         method: 'POST'
                         , headers: {
                             'Content-Type': 'application/json'
@@ -1611,7 +1611,7 @@ $pengajuanId = $pengajuan->id;
                 showLoading();
 
                 try {
-                    const response = await fetch(`/pengajuan/${pengajuanId}/borang-online/submit`, {
+                    const response = await fetch(`/permohonan-akreditasi/${pengajuanId}/borang-online/submit`, {
                         method: 'POST'
                         , headers: {
                             'Content-Type': 'application/json'
@@ -1787,7 +1787,7 @@ $pengajuanId = $pengajuan->id;
                 this.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Mengupload...';
 
                 try {
-                    const response = await fetch('/pengajuan/' + pengajuanId + '/borang/import-docx', {
+                    const response = await fetch('/permohonan-akreditasi/' + pengajuanId + '/borang/import-docx', {
                         method: 'POST'
                         , headers: {
                             'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -1831,7 +1831,7 @@ $pengajuanId = $pengajuan->id;
 
                 let data;
                 try {
-                    const res = await fetch(`/pengajuan/${pengajuanId}/borang/import-status/${importId}`, {
+                    const res = await fetch(`/permohonan-akreditasi/${pengajuanId}/borang/import-status/${importId}`, {
                         headers: {
                             Accept: 'application/json'
                         }

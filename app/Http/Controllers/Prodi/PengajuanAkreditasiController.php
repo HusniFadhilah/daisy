@@ -72,7 +72,7 @@ class PengajuanAkreditasiController extends Controller
     }
 
     /**
-     * Show the form for creating a new pengajuan (Langkah 2)
+     * Show the form for creating a new Permohonan akreditasi (Langkah 2)
      */
     public function create(Request $request)
     {
@@ -80,7 +80,7 @@ class PengajuanAkreditasiController extends Controller
         $prodiUser = $user->studyPrograms()->with(['degreeLevel', 'university'])->first();
         $prodis = $prodiUser ? null : StudyProgram::all();
 
-        // Check if there's existing pengajuan from DE
+        // Check if there's existing Permohonan akreditasi from DE
         $pengajuanId = $request->get('pengajuan_id');
         $pengajuan = null;
 
@@ -95,7 +95,7 @@ class PengajuanAkreditasiController extends Controller
             if ($pengajuan) {
                 $userStudyProgramIds = $user->studyPrograms()->pluck('study_programs.id')->toArray();
                 if (!in_array($pengajuan->id_program_studi, $userStudyProgramIds)) {
-                    abort(403, 'Anda tidak memiliki akses ke pengajuan ini.');
+                    abort(403, 'Anda tidak memiliki akses ke Permohonan akreditasi ini.');
                 }
             }
         }
@@ -104,7 +104,7 @@ class PengajuanAkreditasiController extends Controller
     }
 
     /**
-     * Store a newly created pengajuan (Langkah 2: Submit Surat Permohonan)
+     * Store a newly created Permohonan akreditasi (Langkah 2: Submit Surat Permohonan)
      */
     public function store(Request $request)
     {
@@ -112,7 +112,7 @@ class PengajuanAkreditasiController extends Controller
             'pengajuan_id' => 'nullable|exists:pengajuan_akreditasi,id',
             'id_program_studi' => 'required|exists:study_programs,id',
             'tahun_akreditasi' => 'required|integer|min:2024',
-            'jenis_akreditasi' => 'required|in:baru,perpanjangan,re-akreditasi',
+            'jenis_akreditasi' => 'required|in:baru,perpanjangan,menuju_unggul',
             'catatan_pengaju' => 'nullable|string',
             'surat_permohonan' => 'required|file|mimes:pdf|max:5120', // 5MB
         ]);
@@ -131,10 +131,10 @@ class PengajuanAkreditasiController extends Controller
                 $user = Auth::user();
                 $userStudyProgramIds = $user->studyPrograms()->pluck('study_programs.id')->toArray();
                 if (!in_array($pengajuan->id_program_studi, $userStudyProgramIds)) {
-                    abort(403, 'Anda tidak memiliki akses ke pengajuan ini.');
+                    abort(403, 'Anda tidak memiliki akses ke Permohonan akreditasi ini.');
                 }
 
-                // Update pengajuan
+                // Update Permohonan akreditasi
                 $pengajuan->update([
                     'id_user_pengaju' => Auth::id(),
                     'id_program_studi' => $request->id_program_studi,
@@ -142,14 +142,14 @@ class PengajuanAkreditasiController extends Controller
                     'jenis_akreditasi' => $request->jenis_akreditasi,
                     'tanggal_pengajuan' => now(),
                     'catatan_pengaju' => $request->catatan_pengaju,
-                    'status' => PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
-                    'tanggal_surat_permohonan' => now(),
+                    'status' => PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM,
+                    'tanggal_surat_permohonan_dikirim' => now(),
                 ]);
 
                 $this->logStatus(
                     $pengajuan,
                     PengajuanAkreditasi::STATUS_PENGINGAT_DIKIRIM,
-                    PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
+                    PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM,
                     'Data dilengkapi oleh prodi'
                 );
             } else {
@@ -162,8 +162,8 @@ class PengajuanAkreditasiController extends Controller
                     'jenis_akreditasi' => $request->jenis_akreditasi,
                     'tanggal_pengajuan' => now(),
                     'catatan_pengaju' => $request->catatan_pengaju,
-                    'status' => PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
-                    'tanggal_surat_permohonan' => now(),
+                    'status' => PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM,
+                    'tanggal_surat_permohonan_dikirim' => now(),
                 ]);
 
                 $this->logStatus(
@@ -178,7 +178,7 @@ class PengajuanAkreditasiController extends Controller
             if ($request->hasFile('surat_permohonan')) {
                 $file = $request->file('surat_permohonan');
                 $filename = 'surat_permohonan_' . time() . '.' . $file->getClientOriginalExtension();
-                $path = $file->storeAs('pengajuan/' . $pengajuan->id . '/surat', $filename, 'public');
+                $path = $file->storeAs('permohonan-akreditasi' . $pengajuan->id . '/surat', $filename, 'public');
 
                 PengajuanDokumen::create([
                     'id_pengajuan' => $pengajuan->id,
@@ -196,13 +196,13 @@ class PengajuanAkreditasiController extends Controller
             DB::commit();
 
             $message = $request->filled('pengajuan_id')
-                ? 'Data pengajuan berhasil dilengkapi. Nomor pengajuan: ' . $pengajuan->nomor_pengajuan
-                : 'Pengajuan akreditasi berhasil disubmit. Nomor pengajuan: ' . $pengajuan->nomor_pengajuan;
+                ? 'Data Permohonan akreditasi berhasil dilengkapi. Nomor permohonan: ' . $pengajuan->nomor_pengajuan
+                : 'Permohonan akreditasi berhasil disubmit. Nomor permohonan: ' . $pengajuan->nomor_pengajuan;
 
             return redirect()->route('pengajuan.show', $pengajuan->id)
                 ->with('success', $message);
         } catch (\Exception $e) {
-            Log::error('Store pengajuan failed', [
+            Log::error('Store Permohonan akreditasi failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -287,7 +287,7 @@ class PengajuanAkreditasiController extends Controller
             ])) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Status pengajuan tidak sesuai untuk upload draft LED.'
+                    'message' => 'Status Permohonan akreditasi tidak sesuai untuk upload draft LED.'
                 ], 422);
             }
 
@@ -308,7 +308,7 @@ class PengajuanAkreditasiController extends Controller
             // Upload file
             $file = $request->file('draft_borang');
             $filename = 'draft_borang_v' . $newVersion . '_' . time() . '.docx';
-            $path = $file->storeAs('pengajuan/' . $pengajuan->id . '/draft_borang', $filename, 'public');
+            $path = $file->storeAs('permohonan-akreditasi' . $pengajuan->id . '/draft_borang', $filename, 'public');
 
             // Create document record
             $dokumen = PengajuanDokumen::create([
@@ -325,7 +325,7 @@ class PengajuanAkreditasiController extends Controller
                 'is_latest' => true,
             ]);
 
-            // Update pengajuan status (only if not already draft_borang_diterima)
+            // Update Permohonan akreditasi status (only if not already draft_borang_diterima)
             $oldStatus = $pengajuan->status;
             if ($pengajuan->status !== PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA) {
                 $pengajuan->update([
@@ -495,7 +495,7 @@ class PengajuanAkreditasiController extends Controller
                 'imported_at' => now(),
             ]);
 
-            // Update pengajuan status
+            // Update Permohonan akreditasi status
             $oldStatus = $pengajuan->status;
             $pengajuan->update([
                 'status' => PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
@@ -1039,7 +1039,7 @@ class PengajuanAkreditasiController extends Controller
             if (!in_array($pengajuan->status, $allowedStatuses)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Status pengajuan tidak memungkinkan untuk reset borang.'
+                    'message' => 'Status Permohonan akreditasi tidak memungkinkan untuk reset borang.'
                 ], 422);
             }
 
@@ -1075,7 +1075,7 @@ class PengajuanAkreditasiController extends Controller
                 ->where('jenis_dokumen', 'draft_borang')
                 ->update(['is_latest' => false]);
 
-            // 4. Update pengajuan status
+            // 4. Update Permohonan akreditasi status
             $oldStatus = $pengajuan->status;
             $pengajuan->update([
                 'status' => PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM,
@@ -1194,7 +1194,7 @@ class PengajuanAkreditasiController extends Controller
             // Upload file
             $file = $request->file('file');
             $filename = 'borang_' . time() . '_' . $file->getClientOriginalName();
-            $path = $file->storeAs('pengajuan/' . $pengajuan->id . '/borang_data', $filename, 'public');
+            $path = $file->storeAs('permohonan-akreditasi/' . $pengajuan->id . '/borang_data', $filename, 'public');
 
             // Get or create borang import
             $import = $this->getOrCreateBorangImport($pengajuan);
@@ -1285,7 +1285,7 @@ class PengajuanAkreditasiController extends Controller
             // Simpan file
             $file = $request->file('docx_file');
             $filename = "kualitatif_v{$versi}_" . time() . ".docx";
-            $path = $file->storeAs("pengajuan/{$pengajuan->id}/kualitatif", $filename, 'public');
+            $path = $file->storeAs("permohonan-akreditasi/{$pengajuan->id}/kualitatif", $filename, 'public');
             // Simpan / update dokumen
             $dokumen = PengajuanDokumen::updateOrCreate(
                 ['id' => $dokumenId],
@@ -1523,7 +1523,7 @@ class PengajuanAkreditasiController extends Controller
 
         if ($pengajuan->pembayaran && $pengajuan->pembayaran->status == 'menunggu_pembayaran') {
             if ($pengajuan->status !== PengajuanAkreditasi::STATUS_MENUNGGU_PEMBAYARAN)
-                return back()->with('error', 'Status pengajuan tidak sesuai untuk upload bukti pembayaran.');
+                return back()->with('error', 'Status Permohonan akreditasi tidak sesuai untuk upload bukti pembayaran.');
         }
 
         DB::beginTransaction();
@@ -1531,7 +1531,7 @@ class PengajuanAkreditasiController extends Controller
             // === Upload formulir pembayaran ===
             $formulirFile = $request->file('formulir_pembayaran');
             $formulirFilename = 'formulir_bayar_' . time() . '.' . $formulirFile->getClientOriginalExtension();
-            $formulirPath = $formulirFile->storeAs("pengajuan/{$pengajuan->id}/pembayaran", $formulirFilename, 'public');
+            $formulirPath = $formulirFile->storeAs("permohonan-akreditasi/{$pengajuan->id}/pembayaran", $formulirFilename, 'public');
 
             PengajuanDokumen::create([
                 'id_pengajuan'      => $pengajuan->id,
@@ -1548,7 +1548,7 @@ class PengajuanAkreditasiController extends Controller
             // === Upload bukti pembayaran ===
             $buktiFile = $request->file('bukti_pembayaran');
             $buktiFilename = 'bukti_bayar_' . time() . '.' . $buktiFile->getClientOriginalExtension();
-            $buktiPath = $buktiFile->storeAs("pengajuan/{$pengajuan->id}/pembayaran", $buktiFilename, 'public');
+            $buktiPath = $buktiFile->storeAs("permohonan-akreditasi/{$pengajuan->id}/pembayaran", $buktiFilename, 'public');
 
             // Tandai dokumen bukti pembayaran sebelumnya tidak terbaru
             PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
@@ -1581,7 +1581,7 @@ class PengajuanAkreditasiController extends Controller
                 ]
             );
 
-            // === Update status pengajuan ===
+            // === Update status Permohonan akreditasi ===
             $oldStatus = $pengajuan->status;
             $newStatus = PengajuanAkreditasi::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN ?? $oldStatus;
 
@@ -1637,7 +1637,7 @@ class PengajuanAkreditasiController extends Controller
             // Upload file
             $file = $request->file('borang_final');
             $filename = 'borang_final_' . time() . '.docx';
-            $path = $file->storeAs('pengajuan/' . $pengajuan->id . '/final', $filename, 'public');
+            $path = $file->storeAs('permohonan-akreditasi/' . $pengajuan->id . '/final', $filename, 'public');
 
             // ✅ Create document record - FIXED
             PengajuanDokumen::create([

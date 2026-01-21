@@ -11,7 +11,7 @@
             @if(isset($pengajuan))
             <li class="breadcrumb-item">
                 <a href="{{ route('de.pengajuan.show', $pengajuan->id) }}">
-                    Pengajuan {{ $pengajuan->nomor_pengajuan }}
+                    Permohonan akreditasi {{ $pengajuan->nomor_pengajuan }}
                 </a>
             </li>
             @endif
@@ -24,7 +24,7 @@
 @if(isset($pengajuan))
 <div class="alert alert-info alert-permanent fade show">
     <i class="bi bi-info-circle"></i>
-    <strong>Info:</strong> Asesmen ini dibuat dari Pengajuan Akreditasi <strong>{{ $pengajuan->nomor_pengajuan }}</strong>.
+    <strong>Info:</strong> Asesmen ini dibuat dari Permohonan Akreditasi <strong>{{ $pengajuan->nomor_pengajuan }}</strong>.
     Data program studi dan universitas akan otomatis terisi.
     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
 </div>
@@ -103,7 +103,7 @@
                     <div class="alert alert-warning alert-permanent">
                         <i class="bi bi-exclamation-triangle"></i>
                         <strong>Perhatian:</strong> Asesmen ini tidak terhubung dengan program studi.
-                        Untuk menghubungkan dengan program studi, buat asesmen melalui pengajuan akreditasi.
+                        Untuk menghubungkan dengan program studi, buat asesmen melalui permohonan akreditasi.
                     </div>
                     @endif
 

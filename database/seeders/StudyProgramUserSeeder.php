@@ -2,12 +2,13 @@
 
 namespace Database\Seeders;
 
+use Carbon\Carbon;
 use App\Models\User;
 use App\Models\University;
+use Illuminate\Support\Str;
 use App\Models\StudyProgram;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class StudyProgramUserSeeder extends Seeder
 {
@@ -122,8 +123,12 @@ class StudyProgramUserSeeder extends Seeder
                     'id_degree_level' => $prodi['level'],
                     'id_category' => 1,
                     'bentuk_pt' => 'Universitas',
+                    'peringkat_akreditasi' => 'Unggul',
+                    // 10 Agustus 2026
+                    'tanggal_kedaluwarsa' => Carbon::create(2026, 8, 10),
+                    'status_kedaluwarsa' => 'Aktif',
                     'is_active' => true,
-                    'is_example' => true,
+                    'is_example' => false,
                 ]
             );
         }
@@ -143,6 +148,10 @@ class StudyProgramUserSeeder extends Seeder
                 'id_degree_level' => 5,
                 'id_category' => 2,
                 'bentuk_pt' => 'Universitas',
+                'peringkat_akreditasi' => 'B',
+                // 12 Agustus 2026
+                'tanggal_kedaluwarsa' => Carbon::create(2026, 8, 12),
+                'status_kedaluwarsa' => 'Aktif',
                 'is_active' => true,
                 'is_example' => true,
             ]
@@ -158,8 +167,12 @@ class StudyProgramUserSeeder extends Seeder
                 'id_degree_level' => 6,
                 'id_category' => 3,
                 'bentuk_pt' => 'Universitas',
+                'peringkat_akreditasi' => 'Unggul',
+                // 11 Agustus 2026
+                'tanggal_kedaluwarsa' => Carbon::create(2026, 8, 11),
+                'status_kedaluwarsa' => 'Aktif',
                 'is_active' => true,
-                'is_example' => true,
+                'is_example' => false,
             ]
         );
 
@@ -170,8 +183,8 @@ class StudyProgramUserSeeder extends Seeder
          */
         $mappings = [
             'upps1@daisy.lamdepilar.or.id'        => 's1@lamdepilar.ac.id',
-            'upps2@daisy.lamdepilar.or.id'        => 'manajemen@contoh.ac.id',
-            'upps3@daisy.lamdepilar.or.id'        => 'abcde@contoh.ac.id',
+            'upps2@daisy.lamdepilar.or.id'        => 'abcde@contoh.ac.id',
+            'upps3@daisy.lamdepilar.or.id'        => 'testing@abcd.ac.id',
             'uppsd3@daisy.lamdepilar.or.id'        => 'd3@lamdepilar.ac.id',
             'uppss1@daisy.lamdepilar.or.id'        => 's1@lamdepilar.ac.id',
             'uppss2@daisy.lamdepilar.or.id'        => 's2@lamdepilar.ac.id',

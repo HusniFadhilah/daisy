@@ -106,7 +106,7 @@ class PengajuanAkreditasiPolicy
      */
     public function resetBorang(User $user, PengajuanAkreditasi $pengajuan)
     {
-        // Only prodi who owns this pengajuan can reset
+        // Only prodi who owns this Permohonan akreditasican reset
         if (in_array(!$user->role_selected, ['admin_prodi', 'admin_univ'])) {
             return false;
         }

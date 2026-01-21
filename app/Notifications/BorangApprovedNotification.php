@@ -41,7 +41,7 @@ class BorangApprovedNotification extends Notification implements ShouldQueue
             ->line($this->validation->catatan_validator ?? 'Borang memenuhi standar dan siap untuk proses selanjutnya.')
             ->line('')
             ->action('Lihat Detail', route('pengajuan.show', $this->pengajuan->id))
-            ->line('Pengajuan akan dilanjutkan ke tahap berikutnya.')
+            ->line('Permohonan akreditasi akan dilanjutkan ke tahap berikutnya.')
             ->salutation('Salam, ' . config('app.name'));
     }
 

@@ -7,7 +7,7 @@
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ route('pemetaan.index') }}">Pengingat Masa Akreditasi</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('de.pemetaan.index') }}">Pengingat Masa Akreditasi</a></li>
             <li class="breadcrumb-item active">{{ $studyProgram->name }}</li>
         </ol>
     </nav>
@@ -80,7 +80,7 @@
             @if($activePengajuan)
             <div class="alert alert-info">
                 <i class="bi bi-info-circle"></i>
-                <strong>Ada pengajuan aktif:</strong> {{ $activePengajuan->nomor_pengajuan }}
+                <strong>Ada Permohonan akreditasi aktif:</strong> {{ $activePengajuan->nomor_pengajuan }}
                 (Status: {{ $activePengajuan->status_label }})
                 <a href="{{ route('pengajuan.show', $activePengajuan->id) }}" class="alert-link">Lihat Detail →</a>
             </div>

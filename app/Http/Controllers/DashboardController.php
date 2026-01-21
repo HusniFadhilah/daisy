@@ -33,7 +33,7 @@ class DashboardController extends Controller
 
     private function dashboardAsesi()
     {
-        // Data untuk DE (Asesi) - fokus pada pengajuan dan status akreditasi
+        // Data untuk DE (Asesi) - fokus pada permohonan dan status akreditasi
         $stats = [
             'penawaran' => 0,
             'penugasan_aktif' => 0,
@@ -429,7 +429,7 @@ class DashboardController extends Controller
             (object)[
                 'title' => 'Review Dokumen Banding',
                 'priority' => 'medium',
-                'description' => '1 pengajuan banding perlu ditinjau',
+                'description' => '1 permohonan banding perlu ditinjau',
                 'deadline' => '28 Januari 2026',
                 'days_left' => 13,
             ],
@@ -491,7 +491,7 @@ class DashboardController extends Controller
             (object)[
                 'type' => 'primary',
                 'icon' => '📄',
-                'title' => 'Pengajuan Baru',
+                'title' => 'Permohonan Baru',
                 'description' => 'Program Studi S1 Sistem Informasi mengajukan akreditasi',
                 'time' => '1 hari yang lalu',
             ],

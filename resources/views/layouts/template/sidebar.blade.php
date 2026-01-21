@@ -42,10 +42,12 @@ $authUser = Auth::user();
         </a>
 
         <!-- Bantuan Layanan -->
+        @if(in_array($authUser->role_selected,['super_admin','validator','asesor']))
         <a href="{{ route('bantuan') }}" class="nav-link {{ request()->routeIs('bantuan') ? 'active' : '' }}">
             <span class="menu-icon">🚨</span>
-            <span>Bantuan Layanan</span>
+            <span>Kontak Sekretariat</span>
         </a>
+        @endif
 
         <!-- Profil & Pengaturan -->
         @if(in_array($authUser->role_selected,['super_admin']))

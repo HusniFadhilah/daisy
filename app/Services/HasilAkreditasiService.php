@@ -483,7 +483,7 @@ class HasilAkreditasiService
                 'status' => 'published',
             ]);
 
-            // Update pengajuan status
+            // Update Permohonan akreditasi status
             $hasil->pengajuan->update([
                 'status' => PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM,
                 'tanggal_hasil_akreditasi' => now(),

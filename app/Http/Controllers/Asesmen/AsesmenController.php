@@ -50,18 +50,18 @@ class AsesmenController extends Controller
                 'studyProgram.university'
             ])->findOrFail($pengajuanId);
 
-            // Check if pengajuan sudah punya asesmen
+            // Check if Permohonan akreditasi sudah punya asesmen
             if ($pengajuan->asesmen) {
                 return redirect()
                     ->route('asesmen.show', $pengajuan->asesmen->id)
-                    ->with('info', 'Asesmen untuk pengajuan ini sudah dibuat.');
+                    ->with('info', 'Asesmen untuk permohonan akreditasi ini sudah dibuat.');
             }
 
             // Check status
             if ($pengajuan->status !== PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED) {
                 return redirect()
                     ->route('de.pengajuan.show', $pengajuan->id)
-                    ->with('error', 'Pengajuan belum disetujui untuk lanjut ke AK.');
+                    ->with('error', 'Permohonan akreditasi belum disetujui untuk lanjut ke AK.');
             }
 
             $studyProgram = $pengajuan->studyProgram;
@@ -1006,7 +1006,7 @@ class AsesmenController extends Controller
             if ($existingValidator) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Pengajuan sudah memiliki validator dokumen.',
+                    'message' => 'Permohonan akreditasi sudah memiliki validator dokumen.',
                 ], 422);
             }
 
@@ -1049,7 +1049,7 @@ class AsesmenController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => "Validator {$validator->name} berhasil ditugaskan untuk review/validasi LED.",
+                'message' => "Validator {$validator->name} berhasil ditugaskan untuk validasi LED.",
                 'data' => [
                     'assignment' => $assignment,
                     'validation' => $validation,

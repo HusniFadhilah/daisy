@@ -24,7 +24,7 @@ class StatusPengajuanUpdate extends Mailable
 
     public function build()
     {
-        return $this->subject('Update Status Pengajuan Akreditasi - ' . $this->pengajuan->nomor_pengajuan)
+        return $this->subject('Update Status Permohonan Akreditasi - ' . $this->pengajuan->nomor_pengajuan)
             ->view('emails.status-pengajuan-update');
     }
 }

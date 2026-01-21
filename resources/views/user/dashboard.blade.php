@@ -33,7 +33,7 @@
             <a href="{{ route('penugasan.aktif') }}" class="quick-btn">📋 Tugas Aktif</a>
             @endif
             @elseif(auth()->user()->role_selected === 'asesi' || auth()->user()->role_selected === 'admin_prodi')
-            <a href="{{ route('pemetaan.index') }}" class="quick-btn">📄 Kelola Dokumen</a>
+            <a href="{{ route('de.pemetaan.index') }}" class="quick-btn">📄 Kelola Dokumen</a>
             @endif
             @if(Route::has('laporan'))
             <a href="{{ route('laporan') }}" class="quick-btn">📊 Lihat Laporan</a>

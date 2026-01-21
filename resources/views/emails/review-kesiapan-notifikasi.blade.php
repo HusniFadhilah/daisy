@@ -118,7 +118,7 @@
             </center>
 
             <div class="info-box">
-                <p><strong>Nomor Pengajuan:</strong> {{ $pengajuan->nomor_pengajuan }}</p>
+                <p><strong>Nomor Permohonan:</strong> {{ $pengajuan->nomor_pengajuan }}</p>
                 <p><strong>Program Studi:</strong> {{ $pengajuan->studyProgram->name }}</p>
                 <p><strong>Versi Review:</strong> {{ $review->versi_review }}</p>
                 <p><strong>Tanggal Review:</strong> {{ $review->tanggal_review->format('d F Y H:i') }}</p>
@@ -148,7 +148,7 @@
                     <li>Lakukan pembayaran akreditasi sesuai invoice yang telah dikirimkan</li>
                     <li>Upload bukti pembayaran</li>
                     <li>Setelah pembayaran diverifikasi, upload borang final</li>
-                    <li>Pengajuan akan dilanjutkan ke tahap AK/Asesmen Dokumen</li>
+                    <li>Permohonan akreditasi akan dilanjutkan ke tahap AK/Asesmen Dokumen</li>
                 </ol>
             </div>
             @else
@@ -157,7 +157,7 @@
                 <ol>
                     <li>Perbaiki borang sesuai catatan review</li>
                     <li>Upload draft borang yang telah diperbaiki</li>
-                    <li>Menunggu review kembali dari DE</li>
+                    <li>Menunggu Validasi kembali dari DE</li>
                 </ol>
             </div>
             @endif

@@ -138,7 +138,7 @@
         </div>
 
         <div class="info-box">
-            <p><strong>Nomor Pengajuan:</strong> {{ $pengajuan->nomor_pengajuan }}</p>
+            <p><strong>Nomor Permohonan:</strong> {{ $pengajuan->nomor_pengajuan }}</p>
             <p><strong>Program Studi:</strong> {{ $studyProgram->name }}</p>
             <p><strong>Jenjang:</strong> {{ $studyProgram->degreeLevel->name }}</p>
             <p><strong>Tahun Akreditasi:</strong> {{ $pengajuan->tahun_akreditasi }}</p>
@@ -178,7 +178,7 @@
         </ol>
 
         <center>
-            <a href="{{ url('/pengajuan/' . $pengajuan->id . '/borang-online') }}" class="btn">
+            <a href="{{ url('/permohonan-akreditasi/' . $pengajuan->id . '/borang-online') }}" class="btn">
                 🔧 Perbaiki LED Sekarang
             </a>
         </center>

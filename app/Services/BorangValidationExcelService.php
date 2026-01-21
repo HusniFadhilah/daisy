@@ -125,7 +125,7 @@ class BorangValidationExcelService
             return [
                 'success' => true,
                 'message' => sprintf(
-                    'Review berhasil diupload. LED: %d/%d, Suplemen: %d/%d, LKPS: %d/%d',
+                    'Excel validasi berhasil diupload. LED: %d/%d, Suplemen: %d/%d, LKPS: %d/%d',
                     $reviewedLed,
                     $validation->total_elemen_led,
                     $reviewedSuplemen,
@@ -204,10 +204,10 @@ class BorangValidationExcelService
         $sheet->setCellValue('G5', 'Indikator');
 
         $sheet->mergeCells('I5:I6');
-        $sheet->setCellValue('I5', 'Kategori Review/Validasi');
+        $sheet->setCellValue('I5', 'Kategori Validasi');
 
         $sheet->mergeCells('J5:J6');
-        $sheet->setCellValue('J5', 'Catatan Review/Validasi');
+        $sheet->setCellValue('J5', 'Catatan Validasi');
 
         $sheet->setCellValue('G6', 'Kualitatif');
         $sheet->setCellValue('H6', 'Kuantitatif');
@@ -230,7 +230,7 @@ class BorangValidationExcelService
 
         // Petunjuk
         $sheet->mergeCells('D4:J4');
-        $sheet->setCellValue('D4', 'Silahkan isi Kategori Review/Validasi dan Catatan Review/Validasi untuk setiap elemen');
+        $sheet->setCellValue('D4', 'Silahkan isi Kategori Validasi dan Catatan Validasi untuk setiap elemen');
         $sheet->getStyle('D4')->applyFromArray([
             'font' => ['bold' => true, 'color' => ['argb' => 'FF1F4E79'], 'size' => 11],
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER]
@@ -339,7 +339,7 @@ class BorangValidationExcelService
 
         // Column headers
         $row = 5;
-        $headers = ['No', 'Section', 'Konten', 'Kategori Review/Validasi', 'Catatan Review/Validasi'];
+        $headers = ['No', 'Section', 'Konten', 'Kategori Validasi', 'Catatan Validasi'];
         $cols = ['B', 'C', 'D', 'E', 'F'];
 
         foreach ($headers as $i => $header) {
@@ -357,7 +357,7 @@ class BorangValidationExcelService
 
         // Petunjuk
         $sheet->mergeCells('D4:F4');
-        $sheet->setCellValue('D4', 'Silahkan isi Kategori Review dan Catatan Review/Validasi untuk setiap item suplemen');
+        $sheet->setCellValue('D4', 'Silahkan isi Kategori Review dan Catatan Validasi untuk setiap item suplemen');
         $sheet->getStyle('D4')->applyFromArray([
             'font' => ['bold' => true, 'color' => ['argb' => 'FF1F4E79'], 'size' => 11],
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER]
@@ -445,10 +445,10 @@ class BorangValidationExcelService
         $sheet->setCellValue('G5', 'Indikator Kuantitatif');
 
         $sheet->mergeCells('H5:H6');
-        $sheet->setCellValue('H5', 'Kategori Review/Validasi');
+        $sheet->setCellValue('H5', 'Kategori Validasi');
 
         $sheet->mergeCells('I5:I6');
-        $sheet->setCellValue('I5', 'Catatan Review/Validasi');
+        $sheet->setCellValue('I5', 'Catatan Validasi');
 
         // Style headers
         $this->styleHeaderBase($sheet, 'B5:I6');
@@ -586,9 +586,9 @@ class BorangValidationExcelService
             'C = Prodi perlu memperbaiki isian LKPS',
             '',
             'CARA PENGISIAN:',
-            '1. Pilih Kategori Review/Validasi pada kolom Kategori Review/Validasi menggunakan dropdown',
+            '1. Pilih Kategori Validasi pada kolom Kategori Validasi menggunakan dropdown',
             '2. Dropdown akan menampilkan deskripsi lengkap sesuai jenis dokumen',
-            '3. Isi catatan review/validasi pada kolom Catatan',
+            '3. Isi catatan validasi pada kolom Catatan',
             '4. Simpan file Excel',
             '5. Upload kembali ke sistem menggunakan tombol Upload',
             '',

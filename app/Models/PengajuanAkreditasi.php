@@ -20,7 +20,9 @@ class PengajuanAkreditasi extends Model
     public const STATUS_PENGINGAT_DIKIRIM = 'pengingat_dikirim';
 
     // Step 2
+    public const STATUS_SURAT_PERMOHONAN_DIKIRIM = 'surat_permohonan_dikirim';
     public const STATUS_SURAT_PERMOHONAN_DITERIMA = 'surat_permohonan_diterima';
+    public const STATUS_SURAT_PERMOHONAN_DITOLAK = 'surat_permohonan_ditolak';
 
     // Step 3
     public const STATUS_TEMPLATE_LED_DIKIRIM = 'template_borang_dikirim';
@@ -89,7 +91,9 @@ class PengajuanAkreditasi extends Model
 
         // Timeline fields
         'tanggal_pengingat',
-        'tanggal_surat_permohonan',
+        'tanggal_surat_permohonan_dikirim',
+        'tanggal_surat_permohonan_diterima',
+        'tanggal_surat_permohonan_ditolak',
         'tanggal_template_led_dikirim',
         'tanggal_pembayaran',
         'tanggal_draft_borang',
@@ -126,7 +130,9 @@ class PengajuanAkreditasi extends Model
     protected $casts = [
         'tanggal_pengajuan' => 'date',
         'tanggal_pengingat' => 'datetime',
-        'tanggal_surat_permohonan' => 'datetime',
+        'tanggal_surat_permohonan_dikirim' => 'datetime',
+        'tanggal_surat_permohonan_diterima' => 'datetime',
+        'tanggal_surat_permohonan_ditolak' => 'datetime',
         'tanggal_template_led_dikirim' => 'datetime',
         'tanggal_pembayaran' => 'datetime',
         'tanggal_draft_borang' => 'datetime',
@@ -249,7 +255,7 @@ class PengajuanAkreditasi extends Model
         // Kode jenis (baru = default, TANPA kode)
         $kodeJenis = match ($jenis) {
             'perpanjangan' => 'PRP',
-            're-akreditasi', 'reakreditasi', 're_akreditasi' => 'REA',
+            'menuju_unggul', 'menuju-unggul', 'unggul' => 'MENUJU-UNGGUL',
             default => null, // BARU
         };
 
@@ -451,8 +457,8 @@ class PengajuanAkreditasi extends Model
 
         $prefix = match ($jenis) {
             'perpanjangan' => 'Perpanjangan Akreditasi Prodi',
-            're-akreditasi', 'reakreditasi', 're_akreditasi' => 'Re-Akreditasi Prodi',
-            'baru' => 'Pengajuan Akreditasi Prodi',
+            'menuju_unggul', 'menuju-unggul', 'unggul' => 'Akreditasi Menuju Unggul',
+            'baru' => 'Permohonan Akreditasi Prodi',
             default => 'Akreditasi Prodi',
         };
 
@@ -476,7 +482,7 @@ class PengajuanAkreditasi extends Model
             'led' => $dokumens->whereIn('jenis_dokumen', ['data_kualitatif', 'draft_borang', 'borang_final',])->first(),
             'suplemen' => $dokumens->whereIn('jenis_dokumen', ['data_suplemen', 'suplemen', 'file_suplemen', 'dokumen_pendukung'])->first(),
             'lkps' => $dokumens->whereIn('jenis_dokumen', ['data_kuantitatif', 'kuantitatif',])->first(),
-            'pengesahan' => $dokumens->where('jenis_dokumen', 'pengesahan')->first(),
+            'pengesahan' => $dokumens->where('jenis_dokumen', 'lembar_pengesahan')->first(),
             'bukti_pembayaran' => $dokumens->where('jenis_dokumen', 'bukti_pembayaran')->first(),
             'surat_permohonan' => $dokumens->where('jenis_dokumen', 'surat_permohonan')->first(),
         ];
@@ -499,9 +505,19 @@ class PengajuanAkreditasi extends Model
                 'bg' => 'bg-info',
                 'icon' => 'bi-bell',
             ],
-            self::STATUS_SURAT_PERMOHONAN_DITERIMA => [
+            self::STATUS_SURAT_PERMOHONAN_DIKIRIM => [
                 'label' => 'Surat Permohonan dari PS',
                 'bg' => 'bg-primary',
+                'icon' => 'bi-envelope',
+            ],
+            self::STATUS_SURAT_PERMOHONAN_DITOLAK => [
+                'label' => 'Surat Permohonan dari PS (Ditolak)',
+                'bg' => 'bg-danger',
+                'icon' => 'bi-envelope',
+            ],
+            self::STATUS_SURAT_PERMOHONAN_DITERIMA => [
+                'label' => 'Surat Permohonan dari PS (Diterima)',
+                'bg' => 'bg-success',
                 'icon' => 'bi-envelope',
             ],
             self::STATUS_TEMPLATE_LED_DIKIRIM => [
@@ -681,7 +697,7 @@ class PengajuanAkreditasi extends Model
     {
         $items = [
             1 => ['date' => $this->tanggal_pengingat, 'label' => 'Pengingat Masa Akreditasi', 'icon' => 'bi-bell'],
-            2 => ['date' => $this->tanggal_surat_permohonan, 'label' => 'Surat Permohonan dari PS', 'icon' => 'bi-envelope'],
+            2 => ['date' => ($this->tanggal_surat_permohonan_dikirim ?? $this->tanggal_surat_permohonan_diterima), 'label' => 'Surat Permohonan dari PS', 'icon' => 'bi-envelope'],
             3 => ['date' => $this->tanggal_template_led_dikirim, 'label' => 'Penyampaian Template LED+Suplemen dan LKPS, formulir pembayaran', 'icon' => 'bi-file-earmark-arrow-down'],
             4 => ['date' => $this->tanggal_pembayaran, 'label' => 'Validasi pembayaran', 'icon' => 'bi-credit-card-2-front'],
             5 => ['date' => $this->tanggal_draft_borang, 'label' => 'Penerimaan draft LED+Suplemen dan LKPS dari Prodi', 'icon' => 'bi-file-earmark-check'],
@@ -753,7 +769,9 @@ class PengajuanAkreditasi extends Model
             ],
 
             2 => [
+                'warning' => [self::STATUS_SURAT_PERMOHONAN_DIKIRIM],
                 'success' => [self::STATUS_SURAT_PERMOHONAN_DITERIMA],
+                'danger' => [self::STATUS_SURAT_PERMOHONAN_DITOLAK],
             ],
 
             3 => [
@@ -877,7 +895,8 @@ class PengajuanAkreditasi extends Model
         return [
             // Steps 1-13 (existing)
             self::STATUS_DRAFT => [self::STATUS_PENGINGAT_DIKIRIM],
-            self::STATUS_PENGINGAT_DIKIRIM => [self::STATUS_SURAT_PERMOHONAN_DITERIMA],
+            self::STATUS_PENGINGAT_DIKIRIM => [self::STATUS_SURAT_PERMOHONAN_DIKIRIM],
+            self::STATUS_SURAT_PERMOHONAN_DIKIRIM => [self::STATUS_SURAT_PERMOHONAN_DITERIMA, self::STATUS_SURAT_PERMOHONAN_DITOLAK],
             self::STATUS_SURAT_PERMOHONAN_DITERIMA => [self::STATUS_TEMPLATE_LED_DIKIRIM, self::STATUS_MENUNGGU_PEMBAYARAN],
             self::STATUS_TEMPLATE_LED_DIKIRIM => [self::STATUS_MENUNGGU_PEMBAYARAN],
             self::STATUS_MENUNGGU_PEMBAYARAN => [self::STATUS_PEMBAYARAN_DITERIMA, self::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN],

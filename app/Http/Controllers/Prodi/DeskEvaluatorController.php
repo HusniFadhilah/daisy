@@ -41,7 +41,7 @@ class DeskEvaluatorController extends Controller
     {
         $user = Auth::user();
 
-        // Pengajuan yang di-assign ke DE ini
+        // Permohonan akreditasiyang di-assign ke DE ini
         $query = PengajuanAkreditasi::with([
             'studyProgram.degreeLevel', // ✅ FIX
             'studyProgram.university',
@@ -83,7 +83,7 @@ class DeskEvaluatorController extends Controller
     }
 
     /**
-     * Show pengajuan detail
+     * Show Permohonan akreditasidetail
      */
     public function show($id)
     {
@@ -131,6 +131,20 @@ class DeskEvaluatorController extends Controller
         ));
     }
 
+    public function destroy(Request $request, $id)
+    {
+        $pengajuan = PengajuanAkreditasi::findOrFail($id);
+
+        // optional: authorization tambahan
+        // $this->authorize('delete', $pengajuan);
+
+        $pengajuan->delete();
+
+        return redirect()
+            ->back()
+            ->with('success', 'Data Permohonan akreditasi berhasil dihapus.');
+    }
+
     /**
      * Kirim pengingat akreditasi (Langkah 1)
      */
@@ -147,7 +161,7 @@ class DeskEvaluatorController extends Controller
             $prodis = StudyProgram::with(['users', 'degreeLevel'])->whereIn('id', $request->id_program_studi)->get(); // ✅ FIX
 
             foreach ($prodis as $prodi) {
-                // Create pengajuan record
+                // Create Permohonan akreditasi record
                 $pengajuan = PengajuanAkreditasi::create([
                     'nomor_pengajuan' => PengajuanAkreditasi::generateNomorPengajuan(),
                     'id_program_studi' => $prodi->id,
@@ -196,7 +210,7 @@ class DeskEvaluatorController extends Controller
 
             if ($pengajuan->status !== PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA) {
                 DB::rollBack();
-                return back()->with('error', 'Status pengajuan tidak sesuai untuk kirim template.');
+                return back()->with('error', 'Status Permohonan akreditasi tidak sesuai untuk kirim template.');
             }
 
             // hindari ?. : ambil degree level dengan aman
@@ -222,7 +236,7 @@ class DeskEvaluatorController extends Controller
                 }
 
                 $filename = 'template_dokumen_akreditasi_' . time() . '.' . $file->getClientOriginalExtension();
-                $pathFile = $file->storeAs('pengajuan/' . $pengajuan->id . '/template', $filename, 'public');
+                $pathFile = $file->storeAs('permohonan-akreditasi/' . $pengajuan->id . '/template', $filename, 'public');
 
                 $originalFilename = $file->getClientOriginalName();
                 $fileSize = $file->getSize();
@@ -315,7 +329,7 @@ class DeskEvaluatorController extends Controller
 
             if ($pengajuan->status !== PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA) {
                 DB::rollBack();
-                return back()->with('error', 'Status pengajuan tidak sesuai untuk kirim formulir pembayaran.');
+                return back()->with('error', 'Status Permohonan akreditasi tidak sesuai untuk kirim formulir pembayaran.');
             }
 
             $metode = $request->input('metode_kirim_pembayaran');
@@ -348,7 +362,7 @@ class DeskEvaluatorController extends Controller
                 }
 
                 $filename = 'template_formulir_pembayaran_' . time() . '.' . $file->getClientOriginalExtension();
-                $pathFile = $file->storeAs('pengajuan/' . $pengajuan->id . '/formulir-pembayaran', $filename, 'public');
+                $pathFile = $file->storeAs('permohonan-akreditasi/' . $pengajuan->id . '/formulir-pembayaran', $filename, 'public');
 
                 $originalFilename = $file->getClientOriginalName();
                 $fileSize = $file->getSize();
@@ -475,7 +489,7 @@ class DeskEvaluatorController extends Controller
 
         // Validation checks
         if (!$pengajuan->canAssignValidator()) {
-            return back()->with('error', 'Pengajuan ini belum siap untuk assign validator.');
+            return back()->with('error', 'Permohonan akreditasi ini belum siap untuk assign validator.');
         }
 
         // Get current assignment
@@ -520,7 +534,7 @@ class DeskEvaluatorController extends Controller
         // VALIDATION CHECKS
         // ============================================
         if (!$pengajuan->canAssignValidator()) {
-            return ResponseFormatter::error(null, 'Pengajuan tidak dapat ditugaskan oleh validator.', 422);
+            return ResponseFormatter::error(null, 'Permohonan akreditasitidak dapat ditugaskan oleh validator.', 422);
         }
 
         // Check if validator user exists and has validator role
@@ -533,7 +547,7 @@ class DeskEvaluatorController extends Controller
         // PREVENT DUPLICATE ASSIGNMENT
         // ============================================
         if ($pengajuan->isUserAssignedAsValidator($validator->id)) {
-            return ResponseFormatter::error(null, 'Validator ini sudah pernah ditugaskan untuk pengajuan ini.', 422);
+            return ResponseFormatter::error(null, 'Validator ini sudah pernah ditugaskan untuk Permohonan akreditasiini.', 422);
         }
 
         try {
@@ -546,7 +560,7 @@ class DeskEvaluatorController extends Controller
                     'id_study_program' => $pengajuan->id_program_studi,
                     'code' => $pengajuan->nomor_pengajuan,
                     'name' => $pengajuan->judul,
-                    // 'description' => 'Asesmen untuk pengajuan ' . $pengajuan->nomor_pengajuan,
+                    // 'description' => 'Asesmen untuk Permohonan akreditasi' . $pengajuan->nomor_pengajuan,
                     'description' => $pengajuan->judul,
                     'status' => 'active',
                 ]);
@@ -600,7 +614,7 @@ class DeskEvaluatorController extends Controller
             ]);
 
             // ============================================
-            // UPDATE PENGAJUAN STATUS
+            // UPDATE Permohonan akreditasi STATUS
             // ============================================
             $oldStatus = $pengajuan->status;
             $pengajuan->update([
@@ -853,7 +867,7 @@ class DeskEvaluatorController extends Controller
 
             DB::commit();
 
-            return back()->with('success', 'Pengajuan disetujui untuk lanjut ke tahap AK. Silakan tugaskan asesor untuk Asesmen Kecukupan.');
+            return back()->with('success', 'Permohonan akreditasi disetujui untuk lanjut ke tahap AK. Silakan tugaskan asesor untuk Asesmen Kecukupan.');
         } catch (\Exception $e) {
             Log::error('Failed to approve lanjut AK', [
                 'pengajuan_id' => $id,
@@ -1014,7 +1028,7 @@ class DeskEvaluatorController extends Controller
                 'approved_at' => null,
             ]);
 
-            // Update pengajuan status
+            // Update Permohonan akreditasi status
             $pengajuan->update([
                 'status' => PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
             ]);

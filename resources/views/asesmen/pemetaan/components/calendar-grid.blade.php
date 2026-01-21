@@ -39,7 +39,7 @@
                                 @if($prog->peringkat_akreditasi)
                                 <span class="badge bg-primary mb-2">{{ $prog->peringkat_akreditasi }}</span><br>
                                 @endif
-                                <a href="{{ route('pemetaan.show', $prog->id) }}" class="btn btn-sm btn-primary">
+                                <a href="{{ route('de.pemetaan.show', $prog->id) }}" class="btn btn-sm btn-primary">
                                     <i class="bi bi-eye"></i> Detail
                                 </a>
                             </div>

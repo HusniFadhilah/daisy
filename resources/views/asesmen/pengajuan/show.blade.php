@@ -1,6 +1,6 @@
 @extends('layouts.template.app')
 
-@section('title', 'Detail Pengajuan - ' . $pengajuan->nomor_pengajuan)
+@section('title', 'Detail Permohonan Akreditasi - ' . $pengajuan->nomor_pengajuan)
 
 @push('styles')
 <style>
@@ -284,11 +284,18 @@
     <div class="row">
         <!-- Main Content -->
         <div class="col-lg-8">
+            @if(in_array($pengajuan->status, [\App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM]))
+            <div class="alert alert-warning alert-permanent">
+                <i class="bi bi-info-circle"></i>
+                Mohon menunggu DE LAMDEPILAR melakukan verifikasi surat permohonan akreditasi dari program studi
+            </div>
+            @endif
+
             <!-- SECTION: Proses & Preview LED -->
             @if(in_array($pengajuan->status, [\App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA, \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI]))
             <div class="alert alert-info alert-permanent">
                 <i class="bi bi-info-circle"></i>
-                Sedang menunggu Validasi LED+Suplemen dan LKPS
+                Mohon menunggu Validasi LED+Suplemen dan LKPS selesai dilakukan
             </div>
             @include('asesmen.pengajuan.components.modal-upload')
             @endif
@@ -296,14 +303,14 @@
             @if(in_array($pengajuan->status, [\App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED]))
             <div class="alert alert-warning alert-permanent">
                 <i class="bi bi-info-circle"></i>
-                Sedang menunggu pelaporan LED+Suplemen dan LKPS selesai
+                Mohon menunggu pelaporan LED+Suplemen dan LKPS selesai dilakukan
             </div>
             @endif
 
             @if(in_array($pengajuan->status, [\App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,\App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION]))
             <div class="alert alert-warning alert-permanent">
                 <i class="bi bi-info-circle"></i>
-                Sedang menunggu proses valdasi LED+Suplemen dan LKPS selesai
+                Mohon menunggu proses valdasi LED+Suplemen dan LKPS selesai dilakukan
             </div>
             @endif
 
@@ -324,7 +331,14 @@
             @if(in_array($pengajuan->status, [\App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA]))
             <div class="alert alert-info alert-permanent">
                 <i class="bi bi-info-circle"></i>
-                Mohon tunggu Dewan Eksekutif LAMDEPILAR melakukan penyampaian template LED+Suplemen dan LKPS, serta Formulir Pembayaran
+                Surat permohonan akreditasi program studi telah diterima. Mohon tunggu Dewan Eksekutif LAMDEPILAR melakukan penyampaian template LED+Suplemen dan LKPS, serta Formulir Pembayaran
+            </div>
+            @endif
+
+            @if(in_array($pengajuan->status, [\App\Models\PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM]))
+            <div class="alert alert-info alert-permanent">
+                <i class="bi bi-info-circle"></i>
+                Template LED+Suplemen dan LKPS, serta Formulir Pembayaran telah dikirim oleh Dewan Eksekutif LAMDEPILAR. Mohon tunggu Dewan Eksekutif LAMDEPILAR melakukan permintaan pembayaran.
             </div>
             @endif
 
@@ -349,7 +363,7 @@
                         </h5>
 
                         <p class="mb-2">
-                            Status pengajuan saat ini:
+                            Status Permohonan akreditasi saat ini:
                             <strong class="text-dark">{{ $pengajuan->status_label }}</strong>
                         </p>
 
@@ -359,7 +373,7 @@
                                 <strong>penilaian terhadap LED, Suplemen, dan LKPS</strong>.
                             </li>
                             <li>
-                                Selama proses asesmen berlangsung, <strong>data pengajuan bersifat terkunci</strong>
+                                Selama proses asesmen berlangsung, <strong>data Permohonan akreditasi bersifat terkunci</strong>
                                 dan tidak dapat diubah.
                             </li>
                             <li>
@@ -373,6 +387,10 @@
 
             <!-- ACTION: Upload/Isi Draft LED -->
             @if(($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI && $pengajuan->pembayaran && $pengajuan->pembayaran->status_pembayaran === 'terverifikasi')||$pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED)
+            <div class="alert alert-info alert-permanent">
+                <i class="bi bi-info-circle"></i>
+                Terima kasih telah melakukan pembayaran akreditasi. Pembayaran Anda telah berhasil diverifikasi oleh bagian keuangan LAMDEPILAR.
+            </div>
             <div class="card action-card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">
@@ -500,12 +518,12 @@
             @if($pengajuan->pembayaran->status_pembayaran == 'menunggu_pembayaran')
             <div class="alert alert-info alert-permanent">
                 <i class="bi bi-info-circle"></i>
-                Permohonan akreditasi dan Invoice pembayaran berhasil dibuat. Silahkan isi data berikut dan tunggu bagian keuangan LAMDEPILAR melakukan verifikasi
+                Permohonan akreditasi dan Invoice pembayaran berhasil dibuat. Silahkan isi data berikut dan silahkan tunggu bagian keuangan LAMDEPILAR melakukan verifikasi
             </div>
             @elseif($pengajuan->pembayaran->status_pembayaran == 'menunggu_verifikasi')
             <div class="alert alert-info alert-permanent">
                 <i class="bi bi-info-circle"></i>
-                Sedang menunggu verifikasi pembayaran oleh bagian keuangan LAMDEPILAR
+                Terima kasih telah mengirimkan bukti pembayaran dan formulir pembayaran. Mohon menunggu proses verifikasi pembayaran oleh bagian keuangan LAMDEPILAR
             </div>
             @elseif($pengajuan->pembayaran->status_pembayaran == 'upload_ulang')
             <div class="alert alert-warning alert-permanent">
@@ -709,17 +727,17 @@
     @endif
     <hr>
 
-    <!-- Informasi Pengajuan -->
+    <!-- Informasi Permohonan akreditasi -->
     <div class="card mb-4">
         <div class="card-header bg-light">
             <h5 class="mb-0">
-                <i class="bi bi-info-circle"></i> Informasi Pengajuan
+                <i class="bi bi-info-circle"></i> Informasi Permohonan Akreditasi
             </h5>
         </div>
         <div class="card-body">
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label class="text-muted small">Nomor Pengajuan</label>
+                    <label class="text-muted small">Nomor Permohonan Akreditasi</label>
                     <p class="fw-bold mb-0">{{ $pengajuan->nomor_pengajuan }}</p>
                 </div>
                 <div class="col-md-6 mb-3">
@@ -1107,7 +1125,7 @@
         }
 
         try {
-            const response = await fetch(`/pengajuan/${pengajuanId}/process-borang`, {
+            const response = await fetch(`/permohonan-akreditasi/${pengajuanId}/process-borang`, {
                 method: 'POST'
                 , headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'

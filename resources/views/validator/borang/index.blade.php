@@ -2,7 +2,7 @@
 
 @extends('layouts.template.app')
 
-@section('title', 'Review/Validasi Dokumen')
+@section('title', 'Validasi Dokumen')
 
 @section('content')
 <div class="container-fluid py-3">
@@ -11,8 +11,8 @@
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h3 class="mb-1">Review/Validasi Dokumen Akreditasi</h3>
-                    <p class="text-muted mb-0">Daftar pengajuan yang Anda review/validasi sebagai Validator Dokumen</p>
+                    <h3 class="mb-1">Validasi Dokumen Akreditasi</h3>
+                    <p class="text-muted mb-0">Daftar Permohonan akreditasi yang Anda validasi sebagai Validator Dokumen</p>
                 </div>
                 <a href="{{ route('penawaran') }}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left"></i> Kembali
@@ -28,7 +28,7 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-muted mb-1">Menunggu Review</h6>
+                            <h6 class="text-muted mb-1">Menunggu Validasi</h6>
                             <h2 class="mb-0">{{ $stats['pending'] }}</h2>
                         </div>
                         <div class="bg-warning bg-opacity-10 p-3 rounded">
@@ -161,7 +161,7 @@
                                 </a>
                                 @else
                                 <a href="{{ route('validator.borang.show', $assignment->id) }}" class="btn btn-sm btn-primary">
-                                    <i class="bi bi-eye"></i> Lihat Review/Validasi
+                                    <i class="bi bi-eye"></i> Lihat Validasi
                                 </a>
                                 @endif
 

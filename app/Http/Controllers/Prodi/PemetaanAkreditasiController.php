@@ -230,13 +230,13 @@ class PemetaanAkreditasiController extends Controller
             'degreeLevel',
         ])->findOrFail($id);
 
-        // Check if ada pengajuan yang sedang berjalan
+        // Check if ada Permohonan akreditasi yang sedang berjalan
         $activePengajuan = PengajuanAkreditasi::where('id_program_studi', $id)
             ->whereNotIn('status', ['ditolak', 'lanjut_ke_ak'])
             ->latest()
             ->first();
 
-        // Get history pengajuan
+        // Get history Permohonan akreditasi
         $historyPengajuan = PengajuanAkreditasi::where('id_program_studi', $id)
             ->with(['pengaju', 'deskEvaluator'])
             ->latest()

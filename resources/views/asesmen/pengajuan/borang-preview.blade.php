@@ -138,7 +138,7 @@
                 <div class="col-md-6">
                     <table class="table table-sm table-borderless">
                         <tr>
-                            <th width="40%">Nomor Pengajuan</th>
+                            <th width="40%">Nomor Permohonan Akreditasi</th>
                             <td>: {{ $pengajuan->nomor_pengajuan }}</td>
                         </tr>
                         <tr>
@@ -146,7 +146,7 @@
                             <td>: {{ ucfirst($pengajuan->jenis_akreditasi) }}</td>
                         </tr>
                         <tr>
-                            <th>Tanggal Pengajuan</th>
+                            <th>Tanggal Permohonan Akreditasi</th>
                             <td>: {{ \App\Libraries\Date::tglIndo($pengajuan->tanggal_pengajuan) }}</td>
                         </tr>
                     </table>

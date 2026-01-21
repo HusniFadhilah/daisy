@@ -22,7 +22,7 @@ $elemenId = $elemenId ?? null;
         </button>
     </div>
 
-    <textarea class="form-control form-control-sm catatan-input js-review-note" rows="4" placeholder="Berikan catatan review/validasi...">{{ $currentCatatan }}</textarea>
+    <textarea class="form-control form-control-sm catatan-input js-review-note" rows="4" placeholder="Berikan catatan validasi...">{{ $currentCatatan }}</textarea>
 
     <div class="mt-2">
         <small class="text-muted status-text">

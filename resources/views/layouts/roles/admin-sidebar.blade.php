@@ -1,16 +1,150 @@
+@php
+$authUser = Auth::user();
+@endphp
+
 <!-- Penawaran Asesmen -->
-<a href="{{ route('pemetaan.index') }}" class="nav-link {{ request()->routeIs('pemetaan*') ? 'active' : '' }}">
-    <span class="menu-icon">🗺️</span>
-    <span>Pengingat Masa Akreditasi</span>
-</a>
-<a href="{{ route('de.pengajuan') }}" class="nav-link {{ request()->routeIs('de*') ? 'active' : '' }}">
-    <span class="menu-icon">📋</span>
-    <span>Pengajuan Akreditasi</span>
-</a>
-<a href="{{ route('asesmen.index') }}" class="nav-link {{ request()->routeIs('asesmen*') ? 'active' : '' }}">
-    <span class="menu-icon">📨</span>
-    <span>Penawaran Asesmen</span>
-</a>
+<li class="nav-item">
+    <a href="{{ route('de.pemetaan.index') }}" class="nav-link {{ request()->routeIs('de.pemetaan*') ? 'active' : '' }}">
+        <span class="menu-icon">⏰</span>
+        <span>1. Pengingat Masa Akreditasi</span>
+    </a>
+</li>
+<li class="nav-item">
+    <a href="{{ route('de.surat-permohonan') }}" class="nav-link {{ request()->routeIs('de.surat-permohonan*') ? 'active' : '' }}">
+        <span class="menu-icon">📋</span>
+        <span>2. Surat Permohonan dari PS</span>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a href="{{ route('de.penyampaian-template') }}" class="nav-link {{ request()->routeIs('de.penyampaian-template*') ? 'active' : '' }}">
+        <span class="menu-icon">📄</span>
+        <span>3. Penyampaian Template LED+Suplemen dan LKPS</span>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a href="{{ route('de.validasi-pembayaran') }}" class="nav-link {{ request()->routeIs('de.validasi-pembayaran*') ? 'active' : '' }}">
+        <span class="menu-icon">💳</span>
+        <span>4. Validasi Pembayaran</span>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a href="{{ route('de.penerimaan-dokumen') }}" class="nav-link {{ request()->routeIs('de.penerimaan-dokumen*') ? 'active' : '' }}">
+        <span class="menu-icon">📥</span>
+        <span>5. Penerimaan Draft LED+Suplemen dan LKPS</span>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a href="{{ route('de.validasi-dokumen') }}" class="nav-link {{ request()->routeIs('de.validasi-dokumen*') ? 'active' : '' }}">
+        <span class="menu-icon">✅</span>
+        <span>6. Validasi LED+Suplemen dan LKPS</span>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a href="{{ route('de.pelaporan-dokumen') }}" class="nav-link {{ request()->routeIs('de.pelaporan-dokumen*') ? 'active' : '' }}">
+        <span class="menu-icon">📊</span>
+        <span>7. Pelaporan Validasi LED+Suplemen dan LKPS</span>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a href="{{ route('de.penugasan-ak') }}" class="nav-link {{ request()->routeIs('de.penugasan-ak*') ? 'active' : '' }}">
+        <span class="menu-icon">📝</span>
+        <span>8. Penugasan Asesor AK</span>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a href="{{ route('de.validasi-ak') }}" class="nav-link {{ request()->routeIs('de.validasi-ak*') ? 'active' : '' }}">
+        <span class="menu-icon">✔️</span>
+        <span>9. Validasi AK</span>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a href="{{ route('de.pelaporan-ak') }}" class="nav-link {{ request()->routeIs('de.pelaporan-ak*') ? 'active' : '' }}">
+        <span class="menu-icon">📑</span>
+        <span>10. Pelaporan AK</span>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a href="{{ route('de.penugasan-al') }}" class="nav-link {{ request()->routeIs('de.penugasan-al*') ? 'active' : '' }}">
+        <span class="menu-icon">🏢</span>
+        <span>11. Penugasan Asesor AL</span>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a href="{{ route('de.pelaksanaan-al') }}" class="nav-link {{ request()->routeIs('de.pelaksanaan-al*') ? 'active' : '' }}">
+        <span class="menu-icon">🏗️</span>
+        <span>12. Pelaksanaan AL & Berita Acara</span>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a href="{{ route('de.pelaporan-al') }}" class="nav-link {{ request()->routeIs('de.pelaporan-al*') ? 'active' : '' }}">
+        <span class="menu-icon">📄</span>
+        <span>13. Pelaporan AL</span>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a href="{{ route('de.penyampaian-hasil-akreditasi') }}" class="nav-link {{ request()->routeIs('de.penyampaian-hasil-akreditasi*') ? 'active' : '' }}">
+        <span class="menu-icon">📢</span>
+        <span>14. Penyampaian Hasil Akreditasi</span>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a href="{{ route('de.masa-sanggah') }}" class="nav-link {{ request()->routeIs('de.masa-sanggah*') ? 'active' : '' }}">
+        <span class="menu-icon">⏳</span>
+        <span>15. Masa Sanggah</span>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a href="{{ route('de.pelaksanaan-banding') }}" class="nav-link {{ request()->routeIs('de.pelaksanaan-banding*') ? 'active' : '' }}">
+        <span class="menu-icon">⚖️</span>
+        <span>16. Pelaksanaan Banding</span>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a href="{{ route('de.pelaporan-banding') }}" class="nav-link {{ request()->routeIs('de.pelaporan-banding*') ? 'active' : '' }}">
+        <span class="menu-icon">📋</span>
+        <span>17. Pelaporan Banding</span>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a href="{{ route('de.penetapan-hasil-akreditasi') }}" class="nav-link {{ request()->routeIs('de.penetapan-hasil-akreditasi*') ? 'active' : '' }}">
+        <span class="menu-icon">🏆</span>
+        <span>18. Penetapan Hasil Akreditasi</span>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a href="{{ route('de.pelaporan-hasil-akreditasi') }}" class="nav-link {{ request()->routeIs('de.pelaporan-hasil-akreditasi*') ? 'active' : '' }}">
+        <span class="menu-icon">📊</span>
+        <span>19. Pelaporan Hasil Akreditasi</span>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a href="{{ route('de.penyimpanan-arsip-pelaksanaan-akreditasi') }}" class="nav-link {{ request()->routeIs('de.penyimpanan-arsip-pelaksanaan-akreditasi*') ? 'active' : '' }}">
+        <span class="menu-icon">💾</span>
+        <span>20. Penyimpanan Arsip Akreditasi</span>
+    </a>
+</li>
+{{-- <a href="{{ route('asesmen.index') }}" class="nav-link {{ request()->routeIs('asesmen*') ? 'active' : '' }}">
+<span class="menu-icon">📨</span>
+<span>Asesmen</span>
+</a> --}}
 
 {{-- <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'penawaran-submenu')">
     <span class="menu-icon">📨</span>
@@ -54,11 +188,6 @@
     </li>
 </ul> --}}
 
-<!-- Proses AK -->
-<a href="{{ route('ak.berkas') }}" class="nav-link {{ request()->routeIs('ak*') ? 'active' : '' }}">
-    <span class="menu-icon">📝</span>
-    <span>Proses AK</span>
-</a>
 {{-- <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'ak-submenu')">
     <span class="menu-icon">📝</span>
     <span>Proses AK</span>
@@ -87,11 +216,6 @@
     </li>
 </ul> --}}
 
-<!-- Proses AL -->
-<a href="{{ route('al.berkas') }}" class="nav-link {{ request()->routeIs('al*') ? 'active' : '' }}">
-    <span class="menu-icon">🏢</span>
-    <span>Proses AL</span>
-</a>
 {{-- <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'al-submenu')">
     <span class="menu-icon">🏢</span>
     <span>Proses AL</span>
@@ -119,12 +243,17 @@ Jadwal Visitasi
 </li>
 </ul> --}}
 
+@if(in_array($authUser->role_selected,['super_admin']))
 <!-- Penugasan Banding -->
 <a href="{{ route('banding') }}" class="nav-link {{ request()->routeIs('banding') ? 'active' : '' }}">
     <span class="menu-icon">🤝</span>
     <span>Penugasan Banding</span>
 </a>
-
+<a href="#" class="nav-link {{ request()->routeIs('users*') ? 'active' : '' }}" onclick="toggleSubmenu(event, 'pengajuan-submenu')">
+    <span class="menu-icon">📋</span>
+    <span>Master Data</span>
+    {{-- <span class="badge bg-success menu-badge">{{ $penugasanAktif ?? 1 }}</span> --}}
+</a>
 <!-- Pedoman AK -->
 <a href="{{ route('pedoman') }}" class="nav-link {{ request()->routeIs('pedoman') ? 'active' : '' }}">
     <span class="menu-icon">❓</span>
@@ -158,49 +287,66 @@ Jadwal Visitasi
         </a>
     </li>
 </ul>
+@endif
 
-<!-- Manajemen Pengguna -->
-<a href="{{ route('users.index') }}" class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
-    <span class="menu-icon">👥</span>
-    <span>Kelola Pengguna</span>
-</a>
-
-<!-- Manajemen Indikator -->
-<a href="#" class="nav-link {{ request()->routeIs('kriteria.*') || request()->routeIs('elemen-standar.*') || request()->routeIs('indikator.*') ? 'active' : '' }}" onclick="toggleSubmenu(event, 'indikator-submenu')">
+@if(in_array($authUser->role_selected,['super_admin']))
+<a href="#" class="nav-link {{ request()->routeIs('users*') ? 'active' : '' }}" onclick="toggleSubmenu(event, 'pengajuan-submenu')">
     <span class="menu-icon">📋</span>
-    <span>Manajemen Indikator</span>
+    <span>Master Data</span>
+    {{-- <span class="badge bg-success menu-badge">{{ $penugasanAktif ?? 1 }}</span> --}}
 </a>
-<ul class="submenu nav flex-column" id="indikator-submenu">
+<ul class="submenu nav flex-column" id="pengajuan-submenu">
     <li>
-        <a href="{{ route('kriteria.index') }}" class="nav-link {{ request()->routeIs('kriteria.*') ? 'active' : '' }}">
-            Kriteria
+        <!-- Manajemen Pengguna -->
+        <a href="{{ route('users.index') }}" class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
+            <span class="menu-icon">👥</span>
+            <span>Kelola Pengguna</span>
         </a>
     </li>
     <li>
-        <a href="{{ route('elemen-standar.index') }}" class="nav-link {{ request()->routeIs('elemen-standar.*') ? 'active' : '' }}">
-            Elemen Standar
+        <!-- Manajemen Indikator -->
+        <a href="#" class="nav-link {{ request()->routeIs('kriteria.*') || request()->routeIs('elemen-standar.*') || request()->routeIs('indikator.*') ? 'active' : '' }}" onclick="toggleSubmenu(event, 'indikator-submenu')">
+            <span class="menu-icon">📋</span>
+            <span>Manajemen Indikator</span>
         </a>
     </li>
     <li>
-        <a href="{{ route('indikator.index') }}" class="nav-link {{ request()->routeIs('indikator.*') && !request()->routeIs('indikator-penilaian.*') ? 'active' : '' }}">
-            Indikator
+        <ul class="submenu nav flex-column" id="indikator-submenu">
+            <li>
+                <a href="{{ route('kriteria.index') }}" class="nav-link {{ request()->routeIs('kriteria.*') ? 'active' : '' }}">
+                    Kriteria
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('elemen-standar.index') }}" class="nav-link {{ request()->routeIs('elemen-standar.*') ? 'active' : '' }}">
+                    Elemen Standar
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('indikator.index') }}" class="nav-link {{ request()->routeIs('indikator.*') && !request()->routeIs('indikator-penilaian.*') ? 'active' : '' }}">
+                    Indikator
+                </a>
+            </li>
+        </ul>
+    </li>
+
+    <li>
+        <!-- Univ & Prodi -->
+        <a href="{{ route('master-data.index') }}" class="nav-link {{ request()->routeIs('master-data.*') || request()->routeIs('universities.*') || request()->routeIs('study-programs.*') ? 'active' : '' }}">
+            <span class="menu-icon">🏫</span>
+            <span>Univ & Prodi</span>
+        </a>
+
+        <!-- Indikator Penilaian -->
+        <a href="{{ route('indikator-penilaian.index') }}" class="nav-link {{ request()->routeIs('indikator-penilaian.*') ? 'active' : '' }}">
+            <span class="menu-icon">📊</span>
+            <span>Indikator Penilaian</span>
+        </a>
+        <!-- Bobot Penilaian -->
+        <a href="{{ route('bobot-penilaian.index') }}" class="nav-link {{ request()->routeIs('bobot-penilaian.*') ? 'active' : '' }}">
+            <span class="menu-icon">⚖️</span>
+            <span>Bobot Penilaian</span>
         </a>
     </li>
 </ul>
-
-<!-- Univ & Prodi -->
-<a href="{{ route('master-data.index') }}" class="nav-link {{ request()->routeIs('master-data.*') || request()->routeIs('universities.*') || request()->routeIs('study-programs.*') ? 'active' : '' }}">
-    <span class="menu-icon">🏫</span>
-    <span>Univ & Prodi</span>
-</a>
-
-<!-- Indikator Penilaian -->
-<a href="{{ route('indikator-penilaian.index') }}" class="nav-link {{ request()->routeIs('indikator-penilaian.*') ? 'active' : '' }}">
-    <span class="menu-icon">📊</span>
-    <span>Indikator Penilaian</span>
-</a>
-<!-- Bobot Penilaian -->
-<a href="{{ route('bobot-penilaian.index') }}" class="nav-link {{ request()->routeIs('bobot-penilaian.*') ? 'active' : '' }}">
-    <span class="menu-icon">⚖️</span>
-    <span>Bobot Penilaian</span>
-</a>
+@endif

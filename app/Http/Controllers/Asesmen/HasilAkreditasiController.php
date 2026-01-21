@@ -270,14 +270,14 @@ class HasilAkreditasiController extends Controller
 
             // Validate transition
             if (!$pengajuan->canTransitionTo(PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM)) {
-                throw new \Exception('Status pengajuan tidak valid untuk penyampaian hasil akreditasi.');
+                throw new \Exception('Status Permohonan akreditasi tidak valid untuk penyampaian hasil akreditasi.');
             }
 
             // Upload surat hasil
             $file = $request->file('surat_hasil_akreditasi');
             $filename = 'surat_hasil_akreditasi_' . time() . '.pdf';
             $path = $file->storeAs(
-                "pengajuan/{$pengajuan->id}/hasil-akreditasi",
+                "permohonan-akreditasi/{$pengajuan->id}/hasil-akreditasi",
                 $filename,
                 'public'
             );
@@ -464,7 +464,7 @@ class HasilAkreditasiController extends Controller
             $file = $request->file('dokumen_banding');
             $filename = 'dokumen_banding_' . time() . '.pdf';
             $path = $file->storeAs(
-                "pengajuan/{$pengajuan->id}/banding",
+                "permohonan-akreditasi/{$pengajuan->id}/banding",
                 $filename,
                 'public'
             );
@@ -526,7 +526,7 @@ class HasilAkreditasiController extends Controller
             $file = $request->file('laporan_banding');
             $filename = 'laporan_banding_' . time() . '.pdf';
             $path = $file->storeAs(
-                "pengajuan/{$pengajuan->id}/banding",
+                "permohonan-akreditasi/{$pengajuan->id}/banding",
                 $filename,
                 'public'
             );
@@ -665,7 +665,7 @@ class HasilAkreditasiController extends Controller
             $file = $request->file('laporan_hasil');
             $filename = 'laporan_hasil_akreditasi_' . time() . '.pdf';
             $path = $file->storeAs(
-                "pengajuan/{$pengajuan->id}/laporan-hasil",
+                "permohonan-akreditasi/{$pengajuan->id}/laporan-hasil",
                 $filename,
                 'public'
             );

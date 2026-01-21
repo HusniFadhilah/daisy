@@ -148,7 +148,7 @@ class AsesmenUserRole extends Model
         return $this->hasOne(BorangValidation::class, 'id_assignment');
     }
 
-    // ✅ ADD: Relasi ke pengajuan melalui asesmen
+    // ✅ ADD: Relasi ke Permohonan akreditasi melalui asesmen
     public function pengajuan()
     {
         return $this->hasOneThrough(
@@ -234,7 +234,7 @@ class AsesmenUserRole extends Model
     }
 
     /**
-     * Scope: Get by pengajuan (through asesmen)
+     * Scope: Get by Permohonan akreditasi (through asesmen)
      */
     public function scopeByPengajuan($query, int $pengajuanId)
     {
@@ -370,16 +370,16 @@ class AsesmenUserRole extends Model
             'not_started' => [
                 'badge_class' => 'bg-warning',
                 'badge_icon' => 'bi-clock',
-                'badge_text' => 'Menunggu Review',
+                'badge_text' => 'Menunggu Validasi',
                 'button_class' => 'btn-primary',
                 'button_text' => 'Mulai Review',
             ],
             'in_progress' => [
                 'badge_class' => 'bg-info',
                 'badge_icon' => 'bi-eye',
-                'badge_text' => 'Sedang Direview',
+                'badge_text' => 'Sedang Divalidasi',
                 'button_class' => 'btn-info',
-                'button_text' => 'Lanjutkan Review',
+                'button_text' => 'Lanjutkan Validasi',
             ],
             'revision_required' => [
                 'badge_class' => 'bg-danger',

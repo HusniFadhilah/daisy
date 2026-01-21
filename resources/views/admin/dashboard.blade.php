@@ -101,7 +101,7 @@ $authUser = auth()->user();
                     <div>
                         <div class="stat-title">Total Selesai Tahun Ini</div>
                         <div class="stat-value">{{ $stats['total_selesai'] ?? 0 }}</div>
-                        <small>Jumlah Pengajuan Akreditasi yang selesai (sampai tahap pelaporan dan penyimpanan arsip) di tahun ini</small>
+                        <small>Jumlah Permohonan Akreditasi yang selesai (sampai tahap pelaporan dan penyimpanan arsip) di tahun ini</small>
                     </div>
                     <div class="stat-icon">🎯</div>
                 </div>
@@ -157,7 +157,7 @@ $authUser = auth()->user();
             <div class="stat-card">
                 <div class="stat-header">
                     <div>
-                        <div class="stat-title">Pengajuan Akreditasi Berjalan</div>
+                        <div class="stat-title">Permohonan Akreditasi Berjalan</div>
                         <div class="stat-value">{{ $stats['penawaran'] ?? 0 }}
                         </div>
                     </div>
@@ -170,7 +170,7 @@ $authUser = auth()->user();
             <div class="stat-card success">
                 <div class="stat-header">
                     <div>
-                        <div class="stat-title">Pengajuan Akreditasi Selesai</div>
+                        <div class="stat-title">Permohonan Akreditasi Selesai</div>
                         <div class="stat-value">{{ $stats['penugasan_aktif'] ?? 0 }}</div>
                     </div>
                     <div class="stat-icon">✅</div>

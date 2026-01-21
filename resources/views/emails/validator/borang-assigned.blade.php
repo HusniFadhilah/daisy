@@ -3,7 +3,7 @@
 
 Yth. **{{ optional($assignment->user)->name ?? 'Validator' }}**,
 
-Anda telah ditunjuk untuk **memvalidasi borang** pada pengajuan berikut:
+Anda telah ditunjuk untuk **memvalidasi borang** pada Permohonan akreditasi berikut:
 
 @component('mail::panel')
 **{{ optional($pengajuan)->studyProgram->name ?? '-' }}**

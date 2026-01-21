@@ -1,0 +1,119 @@
+<div class="card">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <h6 class="mb-0">
+            <i class="bi bi-table"></i> Daftar Permohonan Akreditasi
+        </h6>
+        <span class="badge bg-primary">Total: {{ $pengajuans->total() }}</span>
+    </div>
+    <div class="card-body p-0">
+        @if($pengajuans->count() > 0)
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th width="5%">#</th>
+                        <th width="15%">Nomor Permohonan</th>
+                        <th width="20%">Program Studi</th>
+                        <th width="15%">Validator</th>
+                        <th width="12%">Status Upload</th>
+                        <th width="12%">Status Pelaporan</th>
+                        <th width="13%">Tanggal</th>
+                        <th width="8%" class="text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($pengajuans as $index => $pengajuan)
+                    @php
+                    // Get validator info
+                    $validator = $pengajuan->asesmen?->asesmenUserRoles->first();
+                    $validatorName = $validator?->user?->name ?? '-';
+
+                    // Get laporan validasi
+                    $laporan = $pengajuan->asesmen?->documents->where('type', 'laporan_validasi_borang')->where('is_active', true)->first();
+
+                    // Determine status
+                    if ($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN) {
+                    $statusUpload = ['class' => 'success', 'icon' => 'check-circle-fill', 'text' => 'Sudah Upload'];
+                    $statusPelaporan = ['class' => 'success', 'icon' => 'check-circle-fill', 'text' => 'Selesai'];
+                    $tanggal = $pengajuan->tanggal_pelaporan_validasi_borang?->format('d M Y H:i') ?? '-';
+                    } elseif ($laporan) {
+                    $statusUpload = ['class' => 'success', 'icon' => 'check-circle-fill', 'text' => 'Sudah Upload'];
+                    $statusPelaporan = ['class' => 'warning', 'icon' => 'hourglass-split', 'text' => 'Menunggu Finalisasi'];
+                    $tanggal = $laporan->uploaded_at?->format('d M Y H:i') ?? '-';
+                    } else {
+                    $statusUpload = ['class' => 'danger', 'icon' => 'x-circle-fill', 'text' => 'Belum Upload'];
+                    $statusPelaporan = ['class' => 'danger', 'icon' => 'x-circle-fill', 'text' => 'Belum Selesai'];
+                    $tanggal = '-';
+                    }
+                    @endphp
+                    <tr>
+                        <td>{{ $pengajuans->firstItem() + $index }}</td>
+                        <td>
+                            <strong>{{ $pengajuan->nomor_pengajuan }}</strong>
+                        </td>
+                        <td>
+                            <div class="mb-1">
+                                <strong>{{ $pengajuan->studyProgram->name }}</strong>
+                            </div>
+                            <small class="text-muted">
+                                <i class="bi bi-building"></i> {{ $pengajuan->studyProgram->university->name }}
+                            </small>
+                        </td>
+                        <td>
+                            @if($validator)
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-circle bg-primary text-white me-2" style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold;">
+                                    {{ strtoupper(substr($validatorName, 0, 1)) }}
+                                </div>
+                                <div>
+                                    <div class="fw-bold" style="font-size: 13px;">{{ $validatorName }}</div>
+                                    <small class="text-muted">Validator</small>
+                                </div>
+                            </div>
+                            @else
+                            <span class="text-muted">-</span>
+                            @endif
+                        </td>
+                        <td>
+                            <span class="badge bg-{{ $statusUpload['class'] }}">
+                                <i class="bi bi-{{ $statusUpload['icon'] }}"></i> {{ $statusUpload['text'] }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-{{ $statusPelaporan['class'] }}">
+                                <i class="bi bi-{{ $statusPelaporan['icon'] }}"></i> {{ $statusPelaporan['text'] }}
+                            </span>
+                        </td>
+                        <td>
+                            <small>{{ $tanggal }}</small>
+                        </td>
+                        <td class="text-center">
+                            <a href="{{ route('de.pelaporan-dokumen.show', $pengajuan->id) }}" class="btn btn-sm btn-primary action-btn" title="Lihat Detail">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        @else
+        <div class="text-center py-5">
+            <i class="bi bi-inbox" style="font-size: 3rem; color: #dee2e6;"></i>
+            <p class="text-muted mt-3">Tidak ada data permohonan akreditasi</p>
+        </div>
+        @endif
+    </div>
+    @if($pengajuans->hasPages())
+    <div class="card-footer bg-light">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                Menampilkan {{ $pengajuans->firstItem() }} - {{ $pengajuans->lastItem() }} dari {{ $pengajuans->total() }} data
+            </div>
+            <div>
+                {{ $pengajuans->links() }}
+            </div>
+        </div>
+    </div>
+    @endif
+</div>

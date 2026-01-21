@@ -118,7 +118,7 @@ class ValidasiPembayaranController extends Controller
                 // 'alasan_penolakan'    => 'required_if:status_pembayaran,ditolak|nullable|string|max:2000',
             ]);
 
-            // ✅ Ambil pengajuan + pembayaran
+            // ✅ Ambil Permohonan akreditasi + pembayaran
             $pengajuan = PengajuanAkreditasi::with('pembayaran')->findOrFail($id);
 
             if (!$pengajuan->pembayaran) {

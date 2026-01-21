@@ -60,7 +60,7 @@ class BorangUploadController extends Controller
 
             $file = $request->file($fieldName);
             $filename = "{$jenisDokumen}_v{$versi}_" . time() . "." . $file->getClientOriginalExtension();
-            $path = $file->storeAs("pengajuan/{$pengajuan->id}/{$folder}", $filename, 'public');
+            $path = $file->storeAs("permohonan-akreditasi/{$pengajuan->id}/{$folder}", $filename, 'public');
 
             $dokumen = PengajuanDokumen::updateOrCreate(
                 ['id' => $latest && !$isAddVersion ? $latest->id : null],
@@ -342,7 +342,7 @@ class BorangUploadController extends Controller
     //         // Upload file
     //         $file = $request->file('file_kuantitatif');
     //         $filename = 'kuantitatif_' . time() . '.' . $file->getClientOriginalExtension();
-    //         $path = $file->storeAs('pengajuan/' . $pengajuan->id . '/kuantitatif', $filename, 'public');
+    //         $path = $file->storeAs('permohonan-akreditasi/' . $pengajuan->id . '/kuantitatif', $filename, 'public');
 
     //         // ✅ STANDARD: Create document record
     //         $dokumen = PengajuanDokumen::create([

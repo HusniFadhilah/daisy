@@ -1,11 +1,11 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Keuangan\ValidasiPembayaranController;
+use App\Http\Controllers\DE\{ValidasiAKController, MasaSanggahController, PelaporanAKController, PelaporanALController, PenugasanAKController, PenugasanALController, PelaksanaanALController, SuratPermohonanController, ValidasiDokumenController, PelaporanBandingController, PelaporanDokumenController, PenerimaanDokumenController, PelaksanaanBandingController, ValidasiPembayaranController, PenyampaianTemplateController, PelaporanHasilAkreditasiController, PenetapanHasilAkreditasiController, PenyampaianHasilAkreditasiController, PenyimpananArsipAkreditasiController};
 use App\Http\Controllers\Profile\{PasswordResetController, ProfileController};
 use App\Http\Controllers\Prodi\{DeskEvaluatorController, PengajuanAkreditasiController, PemetaanAkreditasiController, PengajuanBorangController, BorangUploadController};
-use App\Http\Controllers\Asesmen\{AsesmenController, AKController, ALController, ALDocumentController, BorangValidatorController, HasilAkreditasiController, PenawaranController, PelaporanController, ValidasiController};
 use App\Http\Controllers\Master\{ElemenStandarController, JenisIndikatorController, IndikatorController, IndikatorPenilaianElemenController, KriteriaController, UniversityController, StudyProgramController};
+use App\Http\Controllers\Asesmen\{AsesmenController, AKController, ALController, ALDocumentController, BorangValidatorController, HasilAkreditasiController, PenawaranController, PelaporanController, ValidasiController};
 use App\Http\Controllers\{AuthController, BobotPenilaianController, DashboardController, PenugasanController, BandingController, PedomanController, DokumenController, PanduanController, BantuanController, SettingsController, ActivityController, TaskController, LaporanController, TinyMceImageController, UserController};
 
 
@@ -67,16 +67,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('/tinymce/{folder}/{id}/image-upload', [TinyMceImageController::class, 'upload'])->name('tinymce.image.upload');
     Route::delete('/tinymce/{folder}/{id}/image-delete', [TinyMceImageController::class, 'delete'])->name('tinymce.image.delete');
-
-    // PEMETAAN AKREDITASI
-    Route::prefix('pemetaan')->name('pemetaan.')->group(function () {
-        Route::get('/', [PemetaanAkreditasiController::class, 'index'])->name('index');
-        Route::get('/{id}', [PemetaanAkreditasiController::class, 'show'])->name('show');
-        Route::get('/timeline/ajax', [PemetaanAkreditasiController::class, 'getTimelineAjax'])->name('timeline.ajax');
-        Route::get('/calendar/ajax', [PemetaanAkreditasiController::class, 'getCalendarAjax'])->name('calendar.ajax');
-        Route::get('/table/ajax', [PemetaanAkreditasiController::class, 'getTableAjax'])->name('table.ajax');
-        Route::get('/export/excel', [PemetaanAkreditasiController::class, 'export'])->name('export');
-    });
 
     // PENAWARAN ASESMEN
     Route::prefix('penawaran')->name('penawaran')->group(function () {
@@ -182,8 +172,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
     });
 
-    // ========== PRODI ROUTES - Pengajuan Akreditasi ==========
-    Route::prefix('pengajuan')->name('pengajuan')->group(function () {
+    // ========== PRODI ROUTES - Permohonan Akreditasi ==========
+    Route::prefix('permohonan-akreditasi')->name('pengajuan')->group(function () {
         Route::middleware(['role:admin_prodi,admin_univ'])->group(function () {
             // List & CRUD
             Route::get('/', [PengajuanAkreditasiController::class, 'index']);
@@ -257,10 +247,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // ========== DE ROUTES - Desk Evaluator ==========
     Route::prefix('de')->name('de')->middleware(['role:asesi,super_admin'])->group(function () {
-        Route::prefix('pengajuan')->name('.pengajuan')->group(function () {
+        Route::prefix('permohonan-akreditasi')->name('.pengajuan')->group(function () {
             // List & Show
             Route::get('/', [DeskEvaluatorController::class, 'index']);
             Route::get('/{id}', [DeskEvaluatorController::class, 'show'])->name('.show');
+            Route::delete('/{id}', [DeskEvaluatorController::class, 'destroy'])->name('.destroy');
 
             // === Actions ===
             // Pengingat
@@ -289,15 +280,104 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
     });
 
+    Route::prefix('de')->name('de')->middleware(['role:asesi,super_admin'])->group(function () {
+        // PEMETAAN AKREDITASI
+        Route::prefix('pengingat-masa-akreditasi')->name('.pemetaan.')->group(function () {
+            Route::get('/', [PemetaanAkreditasiController::class, 'index'])->name('index');
+            Route::get('/{id}', [PemetaanAkreditasiController::class, 'show'])->name('show');
+            Route::get('/timeline/ajax', [PemetaanAkreditasiController::class, 'getTimelineAjax'])->name('timeline.ajax');
+            Route::get('/calendar/ajax', [PemetaanAkreditasiController::class, 'getCalendarAjax'])->name('calendar.ajax');
+            Route::get('/table/ajax', [PemetaanAkreditasiController::class, 'getTableAjax'])->name('table.ajax');
+            Route::get('/export/excel', [PemetaanAkreditasiController::class, 'export'])->name('export');
+        });
+        Route::prefix('surat-permohonan')->name('.surat-permohonan')->group(function () {
+            Route::get('/', [SuratPermohonanController::class, 'index']);
+            Route::get('/{id}', [SuratPermohonanController::class, 'show'])->name('.show');
+            Route::post('/{id}/terima', [SuratPermohonanController::class, 'terima'])->name('.terima');
+            Route::post('/{id}/tolak', [SuratPermohonanController::class, 'tolak'])->name('.tolak');
+            Route::get('/{id}/download', [SuratPermohonanController::class, 'download'])->name('.download');
+        });
+        Route::prefix('penyampaian-template')->name('.penyampaian-template')->group(function () {
+            Route::get('/', [PenyampaianTemplateController::class, 'index']);
+            Route::get('/{id}', [PenyampaianTemplateController::class, 'show'])->name('.show');
+            Route::post('/{id}/kirim-link', [PenyampaianTemplateController::class, 'kirimTemplateLink'])->name('.kirim-link');
+            Route::post('/{id}/kirim-upload', [PenyampaianTemplateController::class, 'kirimTemplateUpload'])->name('.kirim-upload');
+            Route::get('/{id}/download', [PenyampaianTemplateController::class, 'download'])->name('.download');
+        });
+        Route::prefix('validasi-pembayaran')->name('.validasi-pembayaran')->group(function () {
+            Route::get('/', [ValidasiPembayaranController::class, 'index']);
+            Route::get('/{id}', [ValidasiPembayaranController::class, 'show'])->name('.show');
+            Route::post('/kirim-invoice', [ValidasiPembayaranController::class, 'kirimInvoice'])->name('.kirim-invoice');
+            Route::put('/{id}/validasi', [ValidasiPembayaranController::class, 'validasi'])->name('.validasi');
+        });
+        Route::prefix('penerimaan-dokumen')->name('.penerimaan-dokumen')->group(function () {
+            Route::get('/', [PenerimaanDokumenController::class, 'index']);
+            Route::get('/{id}', [PenerimaanDokumenController::class, 'show'])->name('.show');
+            Route::post('/kirim-reminder', [PenerimaanDokumenController::class, 'kirimReminder'])->name('.kirim-reminder');
+            Route::get('/{id}/assign-validator', [PenerimaanDokumenController::class, 'showAssignValidatorForm'])->name('.assign-validator.form');
+            Route::post('/{id}/assign-validator', [PenerimaanDokumenController::class, 'assignValidator'])->name('.assign-validator');
+            Route::delete('/{id}/cancel-validator', [PenerimaanDokumenController::class, 'cancelValidator'])->name('.cancel-validator');
+        });
+        Route::prefix('validasi-dokumen')->name('.validasi-dokumen')->group(function () {
+            Route::get('/', [ValidasiDokumenController::class, 'index']);
+            Route::get('/{id}', [ValidasiDokumenController::class, 'show'])->name('.show');
+            Route::post('/kirim-reminder', [ValidasiDokumenController::class, 'kirimReminder'])->name('.kirim-reminder');
+        });
+        Route::prefix('pelaporan-dokumen')->name('.pelaporan-dokumen')->group(function () {
+            Route::get('/', [PelaporanDokumenController::class, 'index']);
+            Route::get('/{id}', [PelaporanDokumenController::class, 'show'])->name('.show');
+            Route::get('/table/ajax', [PelaporanDokumenController::class, 'getTableAjax'])->name('.table.ajax');
+        });
+        Route::prefix('penugasan-ak')->name('.penugasan-ak')->group(function () {
+            Route::get('/', [PenugasanAKController::class, 'index']);
+        });
+        Route::prefix('validasi-ak')->name('.validasi-ak')->group(function () {
+            Route::get('/', [ValidasiAKController::class, 'index']);
+        });
+        Route::prefix('pelaporan-ak')->name('.pelaporan-ak')->group(function () {
+            Route::get('/', [PelaporanAKController::class, 'index']);
+        });
+        Route::prefix('penugasan-al')->name('.penugasan-al')->group(function () {
+            Route::get('/', [PenugasanALController::class, 'index']);
+        });
+        Route::prefix('pelaksanaan-al')->name('.pelaksanaan-al')->group(function () {
+            Route::get('/', [PelaksanaanALController::class, 'index']);
+        });
+        Route::prefix('pelaporan-al')->name('.pelaporan-al')->group(function () {
+            Route::get('/', [PelaporanALController::class, 'index']);
+        });
+        Route::prefix('penyampaian-hasil-akreditasi')->name('.penyampaian-hasil-akreditasi')->group(function () {
+            Route::get('/', [PenyampaianHasilAkreditasiController::class, 'index']);
+        });
+        Route::prefix('masa-sanggah')->name('.masa-sanggah')->group(function () {
+            Route::get('/', [MasaSanggahController::class, 'index']);
+        });
+        Route::prefix('pelaksanaan-banding')->name('.pelaksanaan-banding')->group(function () {
+            Route::get('/', [PelaksanaanBandingController::class, 'index']);
+        });
+        Route::prefix('pelaporan-banding')->name('.pelaporan-banding')->group(function () {
+            Route::get('/', [PelaporanBandingController::class, 'index']);
+        });
+        Route::prefix('penetapan-hasil-akreditasi')->name('.penetapan-hasil-akreditasi')->group(function () {
+            Route::get('/', [PenetapanHasilAkreditasiController::class, 'index']);
+        });
+        Route::prefix('pelaporan-hasil-akreditasi')->name('.pelaporan-hasil-akreditasi')->group(function () {
+            Route::get('/', [PelaporanHasilAkreditasiController::class, 'index']);
+        });
+        Route::prefix('penyimpanan-arsip-pelaksanaan-akreditasi')->name('.penyimpanan-arsip-pelaksanaan-akreditasi')->group(function () {
+            Route::get('/', [PenyimpananArsipAkreditasiController::class, 'index']);
+        });
+    });
+
     Route::prefix('keuangan')
         ->name('keuangan.')
         ->group(function () {
 
             Route::prefix('pembayaran')->name('pembayaran.')->group(function () {
-                Route::get('/', [ValidasiPembayaranController::class, 'index'])->name('index');
-                Route::get('/{id}', [ValidasiPembayaranController::class, 'show'])->name('show');
-                Route::get('/{id}/download-bukti', [ValidasiPembayaranController::class, 'downloadBukti'])->name('download-bukti');
-                Route::post('/{id}/verify', [ValidasiPembayaranController::class, 'verify'])->name('verify');
+                Route::get('/', [\App\Http\Controllers\Keuangan\ValidasiPembayaranController::class, 'index'])->name('index');
+                Route::get('/{id}', [\App\Http\Controllers\Keuangan\ValidasiPembayaranController::class, 'show'])->name('show');
+                Route::get('/{id}/download-bukti', [\App\Http\Controllers\Keuangan\ValidasiPembayaranController::class, 'downloadBukti'])->name('download-bukti');
+                Route::post('/{id}/verify', [\App\Http\Controllers\Keuangan\ValidasiPembayaranController::class, 'verify'])->name('verify');
             });
         });
 
@@ -312,6 +392,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
             Route::post('/{assignment}/submit', [BorangValidatorController::class, 'submit'])->name('submit');
             Route::get('/{assignment}/stats', [BorangValidatorController::class, 'getValidationStats'])->name('stats');
+            Route::get('/{assignment}/summary', [BorangValidatorController::class, 'getValidationSummary'])->name('summary');
 
             // ✅ NEW: Accept/Reject offer
             Route::post('/{assignment}/respond-offer', [BorangValidatorController::class, 'respondOffer'])->name('respond-offer');
@@ -325,26 +406,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
     });
 
-    Route::prefix('/pelaporan/{assignment}')->name('pelaporan.')->group(function () {
-        Route::prefix('/borang')->name('borang.')->group(function () {
+    Route::prefix('/pelaporan')->name('pelaporan.')->group(function () {
+        Route::get('/', [PelaporanController::class, 'index'])->name('index');
+        Route::prefix('/{assignment}/borang')->name('borang.')->group(function () {
             Route::post('/upload', [PelaporanController::class, 'uploadLaporanValidasi'])->name('upload');
             Route::post('/finalize', [PelaporanController::class, 'finalizePelaporanValidasi'])->name('finalize');
             Route::get('/', [PelaporanController::class, 'getPelaporanValidasi'])->name('show');
         });
 
-        Route::prefix('/validasi-ak')->name('validasiAk.')->group(function () {
+        Route::prefix('/{assignment}/validasi-ak')->name('validasiAk.')->group(function () {
             Route::post('/upload',   [PelaporanController::class, 'uploadLaporanValidasiAK'])->name('upload');
             Route::post('/finalize', [PelaporanController::class, 'finalizeValidasiAK'])->name('finalize');
             Route::get('/',          [PelaporanController::class, 'getPelaporanValidasiAK'])->name('show');
         });
 
-        Route::prefix('/ak')->name('ak.')->group(function () {
+        Route::prefix('/{assignment}/ak')->name('ak.')->group(function () {
             Route::post('/upload',   [PelaporanController::class, 'uploadLaporanAK'])->name('upload');
             Route::post('/finalize', [PelaporanController::class, 'finalizePelaporanAK'])->name('finalize');
             Route::get('/',          [PelaporanController::class, 'getPelaporanAK'])->name('show');
         });
 
-        Route::prefix('/al')->name('al.')->group(function () {
+        Route::prefix('/{assignment}/al')->name('al.')->group(function () {
             Route::post('/upload',   [PelaporanController::class, 'uploadLaporanAL'])->name('upload');
             Route::post('/finalize', [PelaporanController::class, 'finalizePelaporanAL'])->name('finalize');
             Route::get('/',          [PelaporanController::class, 'getPelaporanAL'])->name('show');

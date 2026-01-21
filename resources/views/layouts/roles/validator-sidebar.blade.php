@@ -49,7 +49,11 @@
 <!-- Proses AK -->
 <a href="{{ route('validator.borang.index') }}" class="nav-link {{ request()->routeIs('validator.borang*') || request()->routeIs('validator.borang') ? 'active' : '' }}">
     <span class="menu-icon">📋</span>
-    <span>Review/Validasi Dokumen</span>
+    <span>Validasi Dokumen</span>
+</a>
+<a href="{{ route('pelaporan.index') }}" class="nav-link {{ request()->routeIs('pelaporan*') || request()->routeIs('pelaporan') ? 'active' : '' }}">
+    <span class="menu-icon">📋</span>
+    <span>Pelaporan Dokumen</span>
 </a>
 <!-- Validasi AK -->
 @if(Route::has('ak.validasi.index'))
@@ -61,6 +65,22 @@
     @endif
 </a>
 @endif
+<a href="" class="nav-link">
+    <span class="menu-icon">📋</span>
+    <span>Pelaporan AK</span>
+</a>
+<a href="" class="nav-link">
+    <span class="menu-icon">📋</span>
+    <span>Validasi AL</span>
+</a>
+<a href="" class="nav-link">
+    <span class="menu-icon">📋</span>
+    <span>Pelaporan AL</span>
+</a>
+{{-- <a href="" class="nav-link">
+    <span class="menu-icon">📋</span>
+    <span>Pelaporan Banding</span>
+</a> --}}
 {{-- <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'ak-submenu')">
     <span class="menu-icon">📝</span>
     <span>Proses AK</span>
@@ -122,41 +142,41 @@ Jadwal Visitasi
 </ul> --}}
 
 <!-- Penugasan Banding -->
-<a href="{{ route('banding') }}" class="nav-link {{ request()->routeIs('banding') ? 'active' : '' }}">
-    <span class="menu-icon">🤝</span>
-    <span>Penugasan Banding</span>
-</a>
+{{-- <a href="{{ route('banding') }}" class="nav-link {{ request()->routeIs('banding') ? 'active' : '' }}">
+<span class="menu-icon">🤝</span>
+<span>Penugasan Banding</span>
+</a> --}}
 
 <!-- Pedoman AK -->
-<a href="{{ route('pedoman') }}" class="nav-link {{ request()->routeIs('pedoman') ? 'active' : '' }}">
-    <span class="menu-icon">❓</span>
-    <span>Pedoman AK</span>
-</a>
+{{-- <a href="{{ route('pedoman') }}" class="nav-link {{ request()->routeIs('pedoman') ? 'active' : '' }}">
+<span class="menu-icon">❓</span>
+<span>Pedoman AK</span>
+</a> --}}
 
 <!-- Dokumen Adm. AL -->
-<a href="#" class="nav-link" onclick="toggleSubmenu(event, 'dokumen-submenu')">
+{{-- <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'dokumen-submenu')">
     <span class="menu-icon">📁</span>
     <span>Dokumen Adm. AL</span>
 </a>
 <ul class="submenu nav flex-column" id="dokumen-submenu">
     <li>
         <a href="{{ route('dokumen.panduan') }}" class="nav-link">
-            Panduan Asesmen
-        </a>
-    </li>
-    <li>
-        <a href="{{ route('dokumen.instrumen') }}" class="nav-link">
-            Instrumen Akreditasi
-        </a>
-    </li>
-    <li>
-        <a href="{{ route('dokumen.template') }}" class="nav-link">
-            Template Penilaian
-        </a>
-    </li>
-    <li>
-        <a href="{{ route('dokumen.surat') }}" class="nav-link">
-            Surat Tugas
-        </a>
-    </li>
-</ul>
+Panduan Asesmen
+</a>
+</li>
+<li>
+    <a href="{{ route('dokumen.instrumen') }}" class="nav-link">
+        Instrumen Akreditasi
+    </a>
+</li>
+<li>
+    <a href="{{ route('dokumen.template') }}" class="nav-link">
+        Template Penilaian
+    </a>
+</li>
+<li>
+    <a href="{{ route('dokumen.surat') }}" class="nav-link">
+        Surat Tugas
+    </a>
+</li>
+</ul> --}}
