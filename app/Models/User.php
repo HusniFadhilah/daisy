@@ -232,4 +232,13 @@ class User extends Authenticatable
     {
         return $this->studyPrograms();
     }
+
+    public function scopeNotAdmin($query)
+    {
+        return $query->where('role', '!=', 'admin')->whereNotIn('role_selected', [
+            'admin_univ',
+            'admin_prodi',
+            'keuangan_lamdepilar',
+        ]);
+    }
 }

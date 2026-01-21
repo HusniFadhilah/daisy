@@ -64,7 +64,7 @@
         @forelse($pengajuans as $pengajuan)
         @php
         $timeline = $pengajuan->timelineItems();
-        $currentItem = collect($timeline)->firstWhere('state', 'done');
+        $currentItem = collect($timeline)->firstWhere('state', 'current');
 
         // fallback aman
         if(!$currentItem){

@@ -62,6 +62,11 @@ class PengajuanDokumen extends Model
         return $this->belongsTo(PengajuanAkreditasi::class, 'id_pengajuan');
     }
 
+    public function uploadedBy()
+    {
+        return $this->belongsTo(User::class, 'uploaded_by');
+    }
+
     public function uploader()
     {
         return $this->belongsTo(User::class, 'uploaded_by');

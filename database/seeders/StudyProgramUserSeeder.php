@@ -105,7 +105,7 @@ class StudyProgramUserSeeder extends Seeder
          */
         $lamdepilarProdis = [
             ['email' => 'd3@lamdepilar.ac.id', 'name' => 'LAMDEPILAR D3 (Contoh)', 'level' => 3],
-            ['email' => 's1@lamdepilar.ac.id', 'name' => 'LAMDEPILAR (Contoh)', 'level' => 5],
+            ['email' => 's1@lamdepilar.ac.id', 'name' => 'LAMDEPILAR (Contoh)', 'level' => 5, 'is_example' => false],
             ['email' => 's2@lamdepilar.ac.id', 'name' => 'LAMDEPILAR S2 (Contoh)', 'level' => 6],
             ['email' => 's3@lamdepilar.ac.id', 'name' => 'LAMDEPILAR S3 (Contoh)', 'level' => 8],
             ['email' => 'profesi@lamdepilar.ac.id', 'name' => 'LAMDEPILAR Profesi (Contoh)', 'level' => 10],
@@ -128,7 +128,7 @@ class StudyProgramUserSeeder extends Seeder
                     'tanggal_kedaluwarsa' => Carbon::create(2026, 8, 10),
                     'status_kedaluwarsa' => 'Aktif',
                     'is_active' => true,
-                    'is_example' => false,
+                    'is_example' => $prodi['is_example'] ?? true,
                 ]
             );
         }

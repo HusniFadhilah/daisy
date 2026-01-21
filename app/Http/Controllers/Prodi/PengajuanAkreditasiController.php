@@ -169,7 +169,7 @@ class PengajuanAkreditasiController extends Controller
                 $this->logStatus(
                     $pengajuan,
                     null,
-                    PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
+                    PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM,
                     'Surat permohonan diajukan (tanpa pengingat)'
                 );
             }

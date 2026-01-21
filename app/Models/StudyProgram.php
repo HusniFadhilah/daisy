@@ -100,6 +100,11 @@ class StudyProgram extends Model
         return $query->where('is_example', false);
     }
 
+    public function scopeExample($query)
+    {
+        return $query->where('is_example', true);
+    }
+
     // protected static function booted()
     // {
     //     static::addGlobalScope('exclude_example', function (Builder $builder) {

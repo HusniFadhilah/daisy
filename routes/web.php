@@ -329,16 +329,36 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/table/ajax', [PelaporanDokumenController::class, 'getTableAjax'])->name('.table.ajax');
         });
         Route::prefix('penugasan-ak')->name('.penugasan-ak')->group(function () {
-            Route::get('/', [PenugasanAKController::class, 'index']);
+            Route::get('/', [\App\Http\Controllers\DE\PenugasanAKController::class, 'index']);
+            Route::get('/{id}', [\App\Http\Controllers\DE\PenugasanAKController::class, 'show'])->name('.show');
+
+            // Actions
+            Route::post('/{id}/mark-ready', [\App\Http\Controllers\DE\PenugasanAKController::class, 'markReadyForAK'])->name('.mark-ready');
+            Route::post('/{id}/assign-user', [\App\Http\Controllers\DE\PenugasanAKController::class, 'assignUser'])->name('.assign-user');
+            Route::delete('/{id}/remove-user/{userId}', [\App\Http\Controllers\DE\PenugasanAKController::class, 'removeUser'])->name('.remove-user');
+
+            // AJAX
+            Route::get('/{id}/assignments', [\App\Http\Controllers\DE\PenugasanAKController::class, 'getAssignments'])->name('.assignments');
+            Route::get('/{id}/requirements', [\App\Http\Controllers\DE\PenugasanAKController::class, 'getRequirementsStatusAjax'])->name('.requirements');
         });
         Route::prefix('validasi-ak')->name('.validasi-ak')->group(function () {
             Route::get('/', [ValidasiAKController::class, 'index']);
+            Route::get('/{id}', [ValidasiAKController::class, 'show'])->name('.show');
+            Route::get('/{id}/timeline', [ValidasiAKController::class, 'getValidationTimeline'])->name('.timeline');
         });
         Route::prefix('pelaporan-ak')->name('.pelaporan-ak')->group(function () {
             Route::get('/', [PelaporanAKController::class, 'index']);
+            Route::get('/{id}', [PelaporanAKController::class, 'show'])->name('.show');
+            Route::get('/{id}/timeline', [PelaporanAKController::class, 'getTimeline'])->name('.timeline');
+            Route::get('/{id}/document/{documentId}', [PelaporanAKController::class, 'previewDocument'])->name('.document.preview');
         });
         Route::prefix('penugasan-al')->name('.penugasan-al')->group(function () {
             Route::get('/', [PenugasanALController::class, 'index']);
+            Route::get('/{id}', [PenugasanALController::class, 'show'])->name('.show');
+            Route::post('/{id}/mark-ready', [PenugasanALController::class, 'markReadyForAL'])->name('.mark-ready');
+            Route::post('/{id}/assign-asesor', [PenugasanALController::class, 'assignAsesor'])->name('.assign-asesor');
+            Route::post('/{id}/remove-asesor', [PenugasanALController::class, 'removeAsesor'])->name('.remove-asesor');
+            Route::post('/{id}/update-schedule', [PenugasanALController::class, 'updateSchedule'])->name('.update-schedule');
         });
         Route::prefix('pelaksanaan-al')->name('.pelaksanaan-al')->group(function () {
             Route::get('/', [PelaksanaanALController::class, 'index']);

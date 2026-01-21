@@ -231,7 +231,7 @@ class PelaporanController extends Controller
             $payload = [
                 'id_asesmen'     => $assignment->id_asesmen,
                 'type'           => 'laporan_validasi_ak',
-                'title'          => $request->title ?: 'Laporan Validasi Asesmen Kecukupan (AK)',
+                'title'          => $request->title ?: 'Laporan Penilaian Kecukupan LED Program Studi (LHK)',
                 'sort_order'     => 1,
                 'path'           => $path,
                 'original_name'  => $file->getClientOriginalName(),

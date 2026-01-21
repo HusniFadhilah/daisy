@@ -127,6 +127,11 @@ class Asesmen extends Model
         return $this->hasMany(AsesmenDocument::class, 'id_asesmen');
     }
 
+    public function asesmenDocuments()
+    {
+        return $this->hasMany(AsesmenDocument::class, 'id_asesmen');
+    }
+
     public function beritaAcara()
     {
         return $this->documents()
