@@ -116,6 +116,11 @@ class PenerimaanDokumenController extends Controller
         $universities = University::nonExample()->orderBy('name')->get();
         $degreeLevels = DegreeLevel::orderBy('code')->get();
 
+        $pengajuanMenunggu = \App\Models\PengajuanAkreditasi::with('studyProgram.university', 'studyProgram.degreeLevel')
+            ->where('status', \App\Models\PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI)
+            ->get();
+        $countPengajuanMenunggu = count($pengajuanMenunggu);
+
         // AJAX request
         if ($request->ajax()) {
             $html = view('de.penerimaan-dokumen.components.table-content', compact('pengajuans'))->render();
@@ -130,7 +135,9 @@ class PenerimaanDokumenController extends Controller
             'pengajuans',
             'stats',
             'universities',
-            'degreeLevels'
+            'degreeLevels',
+            'pengajuanMenunggu',
+            'countPengajuanMenunggu'
         ));
     }
 

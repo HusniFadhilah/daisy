@@ -95,6 +95,19 @@
         line-height: 12px;
     }
 
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #932136, #870820);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 18px;
+    }
+
 </style>
 @endpush
 
@@ -168,16 +181,16 @@
                                         <i class="bi bi-{{ $detail['uploaded'] ? 'check-lg' : 'x-lg' }}"></i>
                                     </div>
 
-                                    <div class="flex-grow-1">
+                                    <div class="flex-grow-1 min-w-0">
                                         <p class="doc-title fw-semibold">{{ $detail['label'] }}</p>
 
                                         @if($dokumen)
                                         <div class="doc-meta">
-                                            <div class="text-truncate" title="{{ $dokumen->original_filename }}">
+                                            <div class="text-wrap" title="{{ $dokumen->original_filename }}">
                                                 {{ $dokumen->original_filename }}
                                             </div>
                                             <div>
-                                                {{ $dokumen->file_size_formatted }} • {{ $dokumen->created_at->format('d M Y H:i') }}
+                                                {{ $dokumen->file_size_formatted ?? '' }} • {{ $dokumen->created_at->format('d M Y H:i') }}
                                             </div>
                                         </div>
 
@@ -207,10 +220,10 @@
                                     <div class="flex-grow-1">
                                         <p class="doc-title fw-semibold mb-0">Dokumen Suplemen</p>
                                         <div class="doc-meta">
-                                            <div class="text-truncate" title="{{ $uploadedDocuments['suplemen']->original_filename }}">
+                                            <div class="text-wrap" title="{{ $uploadedDocuments['suplemen']->original_filename }}">
                                                 {{ $uploadedDocuments['suplemen']->original_filename }}
                                             </div>
-                                            <div>{{ $uploadedDocuments['suplemen']->file_size_formatted }}</div>
+                                            <div>{{ $uploadedDocuments['suplemen']->file_size_formatted ?? '' }}</div>
                                         </div>
 
                                         <div class="mt-2">
@@ -231,7 +244,7 @@
 
     {{-- ROW 2: Validator / Tugaskan Validator (FULL WIDTH DI BAWAH) --}}
     <div class="row mb-4">
-        <div class="col-12">
+        <div class="col-md-8">
             @if(in_array($pengajuan->status, [
             \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
             \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
@@ -270,7 +283,94 @@
                         </div>
 
                         <div class="col-md-9">
-                            {{-- ...lanjutan kode validator kamu 그대로... --}}
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="text-muted small">Role</label>
+                                    <p class="fw-bold mb-0">
+                                        <span class="badge bg-success">
+                                            {{ $currentValidator->role->alias }}
+                                        </span>
+                                    </p>
+                                </div>
+
+                                <div class="col-md-4 mb-3">
+                                    <label class="text-muted small">Status Penawaran</label>
+                                    <p class="mb-0">
+                                        @php
+                                        $penawaranBadge = match($currentValidator->status_penawaran) {
+                                        'accepted' => ['class' => 'success', 'icon' => 'check-circle', 'text' => 'Diterima'],
+                                        'rejected' => ['class' => 'danger', 'icon' => 'x-circle', 'text' => 'Ditolak'],
+                                        'pending' => ['class' => 'warning', 'icon' => 'clock', 'text' => 'Menunggu'],
+                                        default => ['class' => 'secondary', 'icon' => 'question-circle', 'text' => 'Unknown'],
+                                        };
+                                        @endphp
+                                        <span class="badge bg-{{ $penawaranBadge['class'] }}">
+                                            <i class="bi bi-{{ $penawaranBadge['icon'] }}"></i>
+                                            {{ $penawaranBadge['text'] }}
+                                        </span>
+                                    </p>
+                                </div>
+
+                                @if($currentValidator->status_penawaran === 'accepted')
+                                <div class="col-md-4 mb-3">
+                                    <label class="text-muted small">Status Pekerjaan</label>
+                                    <p class="mb-0">
+                                        <span class="badge bg-info">
+                                            {{ $currentValidator->status_label ?? 'Belum Mulai' }}
+                                        </span>
+                                    </p>
+                                </div>
+                                @endif
+
+                                <div class="col-md-4 mb-3">
+                                    <label class="text-muted small">Ditugaskan</label>
+                                    <p class="mb-0">{{ $currentValidator->created_at->format('d M Y H:i') }}</p>
+                                </div>
+
+                                @if($currentValidator->responded_at)
+                                <div class="col-md-4 mb-3">
+                                    <label class="text-muted small">Respon</label>
+                                    <p class="mb-0">{{ $currentValidator->responded_at->format('d M Y H:i') }}</p>
+                                </div>
+                                @endif
+
+                                @if($currentValidator->status_penawaran === 'accepted' && $currentValidator->approved_at)
+                                <div class="col-md-4 mb-3">
+                                    <label class="text-muted small">Selesai Review</label>
+                                    <p class="mb-0">{{ $currentValidator->approved_at->format('d M Y H:i') }}</p>
+                                </div>
+                                @endif
+                            </div>
+
+                            {{-- Actions --}}
+                            <div class="d-flex gap-2 mt-3">
+                                @if($currentValidator->status_penawaran === 'pending')
+                                <span class="badge bg-warning">
+                                    <i class="bi bi-hourglass-split"></i>
+                                    Menunggu validator menerima penawaran
+                                </span>
+                                @elseif($currentValidator->status_penawaran === 'rejected')
+                                <a href="{{ route('de.pengajuan.assign-validator.form', $pengajuan->id) }}" class="btn btn-warning btn-sm mt-3">
+                                    <i class="bi bi-arrow-repeat"></i>
+                                    Tugaskan Validator Baru
+                                </a>
+                                @elseif($currentValidator->status_penawaran === 'accepted')
+                                @if($currentValidator->borangValidation)
+                                <a href="{{ route('validator.borang.show', $currentValidator->id) }}" class="btn btn-primary btn-sm mt-3" target="_blank">
+                                    <i class="bi bi-eye"></i>
+                                    Lihat Progress Validasi
+                                </a>
+                                @endif
+                                @endif
+
+                                {{-- Validation Details (if available) --}}
+                                @if($currentValidator->borangValidation && $currentValidator->status_pekerjaan !== 'not_started')
+                                <button class="btn btn-outline-primary btn-sm mt-3" data-bs-toggle="modal" data-bs-target="#modalRevisi">
+                                    <i class="bi bi-clipboard-data"></i> Lihat Detail Revisi
+                                </button>
+                                {{-- @include('asesmen.de.modal-revisi') --}}
+                                @endif
+                            </div>
                         </div>
                     </div>
                     @else
@@ -342,7 +442,11 @@
                             </td>
                         </tr>
                         <tr>
-                            <th>Status</th>
+                            <th>Status Penerimaan Dokumen Terakhir</th>
+                            <td>{!! $pengajuan->getCustomBadgeLastStatus('borang_final') !!}</td>
+                        </tr>
+                        <tr>
+                            <th>Status Saat Ini</th>
                             <td>
                                 <span class="badge {{ $pengajuan->status_badge_class }}">
                                     {{ $pengajuan->status_label }}

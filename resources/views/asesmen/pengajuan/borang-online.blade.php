@@ -194,18 +194,6 @@
 </style>
 @endpush
 
-@php
-$lockBorang = in_array($pengajuan->status, [
-\App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
-\App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
-\App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
-\App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
-\App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
-\App\Models\PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
-\App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
-\App\Models\PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED,
-]);
-@endphp
 
 @section('content')
 <div class="container-fluid py-3">

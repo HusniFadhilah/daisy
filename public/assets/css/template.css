@@ -1241,6 +1241,14 @@ button[aria-expanded="true"] .chevron-icon {
     color: #6c757d !important;
 }
 
+.text-wrap {
+    white-space: normal !important;
+    word-break: break-word;
+    /* untuk memecah kata panjang */
+    overflow-wrap: break-word;
+    /* fallback */
+}
+
 .text-small {
     font-size: 13px;
 }

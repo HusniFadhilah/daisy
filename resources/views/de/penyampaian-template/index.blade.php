@@ -235,13 +235,6 @@
                             </thead>
                             <tbody>
                                 @foreach($pengajuans as $index => $pengajuan)
-                                @php
-                                // status fase terakhir (berdasarkan log)
-                                $lastStatus = optional($pengajuan->statusLog->first())->status_to;
-
-                                // fallback kalau belum ada log (harusnya jarang) -> pakai current status
-                                $lastStatus = $lastStatus ?? $pengajuan->status;
-                                @endphp
                                 <tr>
                                     <td>{{ $pengajuans->firstItem() + $index }}</td>
                                     <td>
@@ -285,11 +278,7 @@
                                         @endif
                                     </td>
                                     <td>
-                                        @if($lastStatus == \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA)
-                                        <span class="badge bg-warning">Belum Dikirim Template</span>
-                                        @elseif($lastStatus == \App\Models\PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM)
-                                        <span class="badge bg-success">Sudah Dikirim Template</span>
-                                        @endif
+                                        {!! $pengajuan->getCustomBadgeLastStatus('borang_template') !!}
                                     </td>
                                     <td class="text-center">
                                         <div class="btn-group btn-group-sm" role="group">

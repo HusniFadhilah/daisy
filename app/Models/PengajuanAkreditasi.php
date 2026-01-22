@@ -35,6 +35,7 @@ class PengajuanAkreditasi extends Model
     public const STATUS_PEMBAYARAN_DIVERIFIKASI = 'pembayaran_diverifikasi';
 
     // Step 5
+    public const STATUS_DRAFT_BORANG_DIKIRIM = 'draft_borang_dikirim';
     public const STATUS_DRAFT_BORANG_DITERIMA = 'draft_borang_diterima';
     public const STATUS_BORANG_ONLINE_SELESAI = 'borang_online_selesai';
 
@@ -286,8 +287,8 @@ class PengajuanAkreditasi extends Model
 
         // Prefix pencarian
         $prefix = $kodeJenis
-            ? "ASM/{$year}/{$kodeJenis}/"
-            : "ASM/{$year}/";
+            ? "LAMDEPILAR/{$year}/{$kodeJenis}/"
+            : "LAMDEPILAR/{$year}/";
 
         $last = self::where('nomor_pengajuan', 'like', $prefix . '%')
             ->orderBy('nomor_pengajuan', 'desc')
@@ -301,8 +302,8 @@ class PengajuanAkreditasi extends Model
 
         // Format akhir
         return $kodeJenis
-            ? sprintf('ASM/%s/%s/%03d', $year, $kodeJenis, $newNum)
-            : sprintf('ASM/%s/%03d', $year, $newNum);
+            ? sprintf('LAMDEPILAR/%s/%s/%03d', $year, $kodeJenis, $newNum)
+            : sprintf('LAMDEPILAR/%s/%03d', $year, $newNum);
     }
 
     public function canAssignValidator(): bool
@@ -486,8 +487,8 @@ class PengajuanAkreditasi extends Model
         $jenis = strtolower($pengajuan->jenis_akreditasi ?? '');
 
         $prefix = match ($jenis) {
-            'perpanjangan' => 'Perpanjangan Akreditasi Prodi',
-            'menuju_unggul', 'menuju-unggul', 'unggul' => 'Akreditasi Menuju Unggul Prodi',
+            'perpanjangan' => 'Permohonan Perpanjangan Akreditasi Prodi',
+            'menuju_unggul', 'menuju-unggul', 'unggul' => 'Permohonan Akreditasi Menuju Unggul Prodi',
             'baru' => 'Permohonan Akreditasi Prodi',
             default => 'Akreditasi Prodi',
         };
@@ -574,6 +575,11 @@ class PengajuanAkreditasi extends Model
                 'label' => 'Validasi Pembayaran Selesai',
                 'bg' => 'bg-success',
                 'icon' => 'bi-check-circle',
+            ],
+            self::STATUS_DRAFT_BORANG_DIKIRIM => [
+                'label' => 'File LED+Suplemen dan LKPS Dikirim',
+                'bg' => 'bg-info',
+                'icon' => 'bi-file-earmark-check',
             ],
             self::STATUS_DRAFT_BORANG_DITERIMA => [
                 'label' => 'File LED+Suplemen dan LKPS Diterima',
@@ -824,6 +830,7 @@ class PengajuanAkreditasi extends Model
             ],
 
             5 => [
+                'warning' => [self::STATUS_DRAFT_BORANG_DIKIRIM],
                 'success' => [self::STATUS_DRAFT_BORANG_DITERIMA, self::STATUS_BORANG_ONLINE_SELESAI],
             ],
 
@@ -1083,5 +1090,54 @@ class PengajuanAkreditasi extends Model
     public function hasBanding(): bool
     {
         return $this->tanggal_banding !== null;
+    }
+
+    public function getCustomLastStatus($attribute)
+    {
+        $statuses = [];
+        if ($attribute == 'surat_permohonan_ps')
+            $statuses = [self::STATUS_PENGINGAT_DIKIRIM, self::STATUS_SURAT_PERMOHONAN_DIKIRIM, self::STATUS_SURAT_PERMOHONAN_DITERIMA, self::STATUS_SURAT_PERMOHONAN_DITOLAK];
+        if ($attribute == 'borang_template')
+            $statuses = [self::STATUS_TEMPLATE_LED_DIKIRIM, self::STATUS_SURAT_PERMOHONAN_DITERIMA];
+        if ($attribute == 'draft_borang')
+            $statuses = [self::STATUS_DRAFT_BORANG_DIKIRIM, self::STATUS_DRAFT_BORANG_DITERIMA, self::STATUS_BORANG_ONLINE_SELESAI, self::STATUS_BORANG_VALIDATION_PENDING, self::STATUS_BORANG_IN_VALIDATION, self::STATUS_BORANG_REVISION_REQUIRED, self::STATUS_BORANG_VALIDATED, self::STATUS_BORANG_FINAL_DITERIMA];
+        if ($attribute == 'borang_final')
+            $statuses = [self::STATUS_DRAFT_BORANG_DIKIRIM, self::STATUS_DRAFT_BORANG_DITERIMA, self::STATUS_BORANG_ONLINE_SELESAI, self::STATUS_BORANG_VALIDATION_PENDING, self::STATUS_BORANG_IN_VALIDATION, self::STATUS_BORANG_REVISION_REQUIRED, self::STATUS_BORANG_VALIDATED, self::STATUS_BORANG_FINAL_DITERIMA];
+
+        // status fase terakhir (berdasarkan log)
+        $lastStatus = optional($this->statusLog()->whereIn('status_to', $statuses)->latest()->first())->status_to;
+        // fallback kalau belum ada log (harusnya jarang) -> pakai current status
+        $lastStatus = $lastStatus ?? $this->status;
+        return $lastStatus;
+    }
+
+    public function getCustomBadgeLastStatus(string $attribute): string
+    {
+        return match ($attribute) {
+            'surat_permohonan_ps' => match ($this->getCustomLastStatus($attribute)) {
+                self::STATUS_PENGINGAT_DIKIRIM => '<span class="badge bg-warning">Menunggu Surat</span>',
+                self::STATUS_SURAT_PERMOHONAN_DIKIRIM => '<span class="badge bg-info">Surat Dikirim dari PS</span>',
+                self::STATUS_SURAT_PERMOHONAN_DITERIMA => '<span class="badge bg-success">Surat Permohonan PS Diterima</span>',
+                self::STATUS_SURAT_PERMOHONAN_DITOLAK => '<span class="badge bg-danger">Surat Permohonan PS Ditolak</span>',
+                default => '<span class="badge bg-secondary">-</span>',
+            },
+            'borang_template' => match ($this->getCustomLastStatus($attribute)) {
+                self::STATUS_SURAT_PERMOHONAN_DITERIMA => '<span class="badge bg-warning">Belum Dikirim Template</span>',
+                self::STATUS_TEMPLATE_LED_DIKIRIM => '<span class="badge bg-success">Sudah Dikirim Template</span>',
+                default => '<span class="badge bg-secondary">-</span>',
+            },
+            'borang_final' => match ($this->getCustomLastStatus($attribute)) {
+                self::STATUS_DRAFT_BORANG_DIKIRIM => '<span class="badge bg-warning">Draft Dokumen Dikirim</span>',
+                self::STATUS_DRAFT_BORANG_DITERIMA => '<span class="badge bg-info">Draft Dokumen Diterima</span>',
+                self::STATUS_BORANG_ONLINE_SELESAI => '<span class="badge bg-primary">Pengisian Dokumen Selesai</span>',
+                self::STATUS_BORANG_VALIDATION_PENDING => '<span class="badge bg-warning">Menunggu Validasi Dokumen</span>',
+                self::STATUS_BORANG_IN_VALIDATION => '<span class="badge bg-info">Dalam Proses Validasi</span>',
+                self::STATUS_BORANG_REVISION_REQUIRED => '<span class="badge bg-danger">Perlu Revisi Dokumen</span>',
+                self::STATUS_BORANG_VALIDATED => '<span class="badge bg-success">Dokumen Tervalidasi</span>',
+                self::STATUS_BORANG_FINAL_DITERIMA => '<span class="badge bg-success">Dokumen Final Diterima</span>',
+                default => '<span class="badge bg-secondary">-</span>',
+            },
+            default => '<span class="badge bg-secondary">-</span>',
+        };
     }
 }

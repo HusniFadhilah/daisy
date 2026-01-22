@@ -192,7 +192,7 @@ class PenugasanALController extends Controller
             if (!$pengajuan->asesmen) {
                 $asesmen = Asesmen::create([
                     'name' => 'Asesmen - ' . $pengajuan->studyProgram->name,
-                    'code' => 'ASM-' . $pengajuan->id . '-' . now()->format('YmdHis'),
+                    'code' => 'LAMDEPILAR-' . $pengajuan->id . '-' . now()->format('YmdHis'),
                     'id_program_studi' => $pengajuan->id_program_studi,
                     'id_pengajuan' => $pengajuan->id,
                     'tanggal_mulai' => $request->tanggal_mulai,

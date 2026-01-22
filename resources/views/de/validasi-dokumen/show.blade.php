@@ -255,7 +255,7 @@
                     </div>
                 </div>
             </div>
-            <div class="card">
+            {{-- <div class="card">
                 <div class="card-header bg-warning text-dark">
                     <h5 class="mb-0">
                         <i class="bi bi-exclamation-triangle"></i> Item yang Perlu Revisi
@@ -269,113 +269,113 @@
                         <li>
                             @if(isset($item['elemen']->kode_elemen))
                             <strong>{{ $item['elemen']->kode_elemen }}</strong>: {{ $item['elemen']->pernyataan_elemen }}
-                            @endif
-                            <br>
-                            <span class="badge bg-{{ $item['grade'] === 'A' ? 'danger' : 'warning' }}">
-                                Grade {{ $item['grade'] }}
-                            </span>
-                            @if($item['catatan'])
-                            <br>
-                            <small class="text-muted">{{ $item['catatan'] }}</small>
-                            @endif
-                        </li>
-                        @endforeach
-                    </ul>
-                    @endif
+            @endif
+            <br>
+            <span class="badge bg-{{ $item['grade'] === 'A' ? 'danger' : 'warning' }}">
+                Grade {{ $item['grade'] }}
+            </span>
+            @if($item['catatan'])
+            <br>
+            <small class="text-muted">{{ $item['catatan'] }}</small>
+            @endif
+            </li>
+            @endforeach
+            </ul>
+            @endif
 
-                    @if($revisionDetails['suplemen'])
-                    <h6 class="fw-bold mt-3">Suplemen:</h6>
-                    <ul>
-                        @foreach($revisionDetails['suplemen'] as $item)
-                        <li>
-                            @if(isset($item['elemen']->kode_elemen))
-                            <strong>{{ $item['elemen']->kode_elemen }}</strong>: {{ $item['elemen']->pernyataan_elemen }}
-                            @endif
-                            <br>
-                            <span class="badge bg-{{ $item['grade'] === 'A' ? 'danger' : 'warning' }}">
-                                Grade {{ $item['grade'] }}
-                            </span>
-                            @if($item['catatan'])
-                            <br>
-                            <small class="text-muted">{{ $item['catatan'] }}</small>
-                            @endif
-                        </li>
-                        @endforeach
-                    </ul>
+            @if($revisionDetails['suplemen'])
+            <h6 class="fw-bold mt-3">Suplemen:</h6>
+            <ul>
+                @foreach($revisionDetails['suplemen'] as $item)
+                <li>
+                    @if(isset($item['elemen']->kode_elemen))
+                    <strong>{{ $item['elemen']->kode_elemen }}</strong>: {{ $item['elemen']->pernyataan_elemen }}
                     @endif
+                    <br>
+                    <span class="badge bg-{{ $item['grade'] === 'A' ? 'danger' : 'warning' }}">
+                        Grade {{ $item['grade'] }}
+                    </span>
+                    @if($item['catatan'])
+                    <br>
+                    <small class="text-muted">{{ $item['catatan'] }}</small>
+                    @endif
+                </li>
+                @endforeach
+            </ul>
+            @endif
 
-                    @if($revisionDetails['lkps'])
-                    <h6 class="fw-bold mt-3">LKPS:</h6>
-                    <ul>
-                        @foreach($revisionDetails['lkps'] as $item)
-                        <li>
-                            <strong>{{ $item['indikator']->kode_indikator }}</strong>
-                            <br>
-                            <span class="badge bg-{{ $item['grade'] === 'A' ? 'danger' : 'warning' }}">
-                                Grade {{ $item['grade'] }}
-                            </span>
-                            @if($item['catatan'])
-                            <br>
-                            <small class="text-muted">{{ $item['catatan'] }}</small>
-                            @endif
-                        </li>
-                        @endforeach
-                    </ul>
+            @if($revisionDetails['lkps'])
+            <h6 class="fw-bold mt-3">LKPS:</h6>
+            <ul>
+                @foreach($revisionDetails['lkps'] as $item)
+                <li>
+                    <strong>{{ $item['indikator']->kode_indikator }}</strong>
+                    <br>
+                    <span class="badge bg-{{ $item['grade'] === 'A' ? 'danger' : 'warning' }}">
+                        Grade {{ $item['grade'] }}
+                    </span>
+                    @if($item['catatan'])
+                    <br>
+                    <small class="text-muted">{{ $item['catatan'] }}</small>
                     @endif
-                </div>
-            </div>
+                </li>
+                @endforeach
+            </ul>
             @endif
         </div>
+    </div> --}}
+    @endif
+</div>
 
-        <!-- Right Column - Timeline -->
-        <div class="col-lg-4">
-            <div class="card">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">
-                        <i class="bi bi-clock-history"></i> Timeline
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <ul class="list-unstyled timeline">
-                        <li class="mb-3">
-                            <i class="bi bi-circle-fill text-primary"></i>
-                            <strong>Validator Ditugaskan</strong>
-                            <br>
-                            <small class="text-muted">{{ $assignment->created_at->format('d F Y H:i') }}</small>
-                        </li>
+<!-- Right Column - Timeline -->
+<div class="col-lg-4">
+    <div class="card">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                <i class="bi bi-clock-history"></i> Timeline
+            </h5>
+        </div>
+        <div class="card-body">
+            <ul class="list-unstyled timeline">
+                <li class="mb-3">
+                    <i class="bi bi-circle-fill text-primary"></i>
+                    <strong>Validator Ditugaskan</strong>
+                    <br>
+                    <small class="text-muted">{{ $assignment->created_at->format('d F Y H:i') }}</small>
+                </li>
 
-                        @if($assignment->responded_at)
-                        <li class="mb-3">
-                            <i class="bi bi-circle-fill text-{{ $assignment->status_penawaran === 'accepted' ? 'success' : 'danger' }}"></i>
-                            <strong>
-                                {{ $assignment->status_penawaran === 'accepted' ? 'Penawaran Diterima' : 'Penawaran Ditolak' }}
-                            </strong>
-                            <br>
-                            <small class="text-muted">{{ $assignment->responded_at->format('d F Y H:i') }}</small>
-                        </li>
-                        @endif
+                @if($assignment->responded_at)
+                <li class="mb-3">
+                    <i class="bi bi-circle-fill text-{{ $assignment->status_penawaran === 'accepted' ? 'success' : 'danger' }}"></i>
+                    <strong>
+                        {{ $assignment->status_penawaran === 'accepted' ? 'Penawaran Diterima' : 'Penawaran Ditolak' }}
+                    </strong>
+                    <br>
+                    <small class="text-muted">{{ $assignment->responded_at->format('d F Y H:i') }}</small>
+                </li>
+                @endif
 
-                        @if($assignment->submitted_at)
-                        <li class="mb-3">
-                            <i class="bi bi-circle-fill text-info"></i>
-                            <strong>Validasi Disubmit</strong>
-                            <br>
-                            <small class="text-muted">{{ $assignment->submitted_at->format('d F Y H:i') }}</small>
-                        </li>
-                        @endif
+                @if($assignment->submitted_at)
+                <li class="mb-3">
+                    <i class="bi bi-circle-fill text-info"></i>
+                    <strong>Validasi Disubmit</strong>
+                    <br>
+                    <small class="text-muted">{{ $assignment->submitted_at->format('d F Y H:i') }}</small>
+                </li>
+                @endif
 
-                        @if($assignment->approved_at)
-                        <li class="mb-3">
-                            <i class="bi bi-circle-fill text-success"></i>
-                            <strong>Validasi Disetujui</strong>
-                            <br>
-                            <small class="text-muted">{{ $assignment->approved_at->format('d F Y H:i') }}</small>
-                        </li>
-                        @endif
-                    </ul>
-                </div>
-            </div>
+                @if($assignment->approved_at)
+                <li class="mb-3">
+                    <i class="bi bi-circle-fill text-success"></i>
+                    <strong>Validasi Disetujui</strong>
+                    <br>
+                    <small class="text-muted">{{ $assignment->approved_at->format('d F Y H:i') }}</small>
+                </li>
+                @endif
+            </ul>
         </div>
     </div>
+</div>
+</div>
 </div>
 @endsection

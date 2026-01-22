@@ -95,7 +95,7 @@ class BorangValidatorController extends Controller
      */
     public function show($idAssignment)
     {
-        $user = Auth::user();
+        $authUser = Auth::user();
 
         $assignment = AsesmenUserRole::with([
             'asesmen.pengajuan.studyProgram.degreeLevel',
@@ -108,13 +108,13 @@ class BorangValidatorController extends Controller
             'borangValidation',
             'role_selected',
             'user',
-        ])
-            ->where('id_user', $user->id)
-            ->whereHas('role', function ($q) {
-                $q->where('name', 'validator');
-            })
-            ->where('jenis_asesmen', 'dokumen')
-            ->findOrFail($idAssignment);
+        ]);
+        if (!in_array($authUser->role_selected, ['super_admin', 'asesi'])) {
+            $assignment = $assignment->where('id_user', $authUser->id);
+        }
+        $assignment = $assignment->whereHas('role', function ($q) {
+            $q->where('name', 'validator');
+        })->where('jenis_asesmen', 'dokumen')->findOrFail($idAssignment);
 
         // Check status penawaran
         if ($assignment->status_penawaran !== 'accepted') {
@@ -247,6 +247,14 @@ class BorangValidatorController extends Controller
         // Get progress
         $progress = $validation->getProgressPercentage();
         $isEnvLocal = app()->environment() === 'local';
+
+        $lockBorang = in_array($pengajuan->status, [
+            \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
+            \App\Models\PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
+            \App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
+            \App\Models\PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED,
+        ]);
+
         return view('validator.borang.show', compact(
             'assignment',
             'pengajuan',
@@ -258,7 +266,8 @@ class BorangValidatorController extends Controller
             'suplemenGrouped',
             'degreeCode',
             'totalElemenSuplemen',
-            'isEnvLocal'
+            'isEnvLocal',
+            'lockBorang'
         ));
     }
 

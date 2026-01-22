@@ -54,9 +54,10 @@
                             </div>
                         </td>
                         <td>
-                            <span class="badge {{ $pengajuan->status_badge_class }}">
-                                {{ $pengajuan->status_label }}
-                            </span>
+                            {!! $pengajuan->getCustomBadgeLastStatus('borang_final') !!}
+                            @if(in_array($pengajuan->status,[\App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI]))
+                            <small>Perlu menugaskan validator</small>
+                            @endif
                         </td>
                         <td>
                             @if($docComplete)
@@ -89,6 +90,8 @@
                         <td>
                             @if($pengajuan->tanggal_draft_borang)
                             {{ $pengajuan->tanggal_draft_borang->format('d M Y H:i') }}
+                            @elseif(!$pengajuan->tanggal_draft_borang && in_array($pengajuan->status,[ \App\Models\PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI,\App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM]))
+                            <span class="text-muted">Belum upload secara lengkap</span>
                             @else
                             <span class="text-muted">Belum upload</span>
                             @endif

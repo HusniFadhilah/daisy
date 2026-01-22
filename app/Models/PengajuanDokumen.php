@@ -100,7 +100,7 @@ class PengajuanDokumen extends Model
     public function getFileSizeFormattedAttribute()
     {
         $bytes = $this->file_size;
-        if ($bytes === 0) return '0 Bytes';
+        if ($bytes === 0 || !isset($bytes)) return '0 Bytes';
 
         $k = 1024;
         $sizes = ['Bytes', 'KB', 'MB', 'GB'];

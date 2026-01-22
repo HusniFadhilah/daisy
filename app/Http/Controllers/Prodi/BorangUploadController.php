@@ -83,7 +83,7 @@ class BorangUploadController extends Controller
             PengajuanStatusLog::create([
                 'id_pengajuan' => $pengajuan->id,
                 'status_from' => $pengajuan->status,
-                'status_to' => $pengajuan->status,
+                'status_to' => PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
                 'changed_by' => $userId,
                 'changed_at' => now(),
                 'keterangan' => ($isAddVersion ? 'Upload versi baru' : 'Update tanpa versi') .

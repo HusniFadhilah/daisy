@@ -1,12 +1,4 @@
 {{-- resources/views/de/validasi-pembayaran/components/modal-kirim-invoice.blade.php --}}
-@php
-// Ambil pengajuan yang sudah template_led_dikirim tapi belum ada invoice
-$pengajuanList = \App\Models\PengajuanAkreditasi::with('studyProgram.degreeLevel', 'studyProgram.university')
-->where('status', \App\Models\PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM)
-->whereDoesntHave('pembayaran')
-->get();
-$countPengajuanList = count($pengajuanList);
-@endphp
 <div class="modal fade" id="modalKirimInvoice" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
@@ -20,12 +12,13 @@ $countPengajuanList = count($pengajuanList);
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Pilih Program Studi yang Akan Dikirimi Invoice</label>
+                        <label class="form-label fw-bold">Pilih Permohonan Akreditasi PS yang Akan Dikirimi Invoice</label>
                         <div style="max-height: 200px; overflow-y: auto; border: 1px solid #dee2e6; padding: 10px; border-radius: 4px;">
                             @forelse($pengajuanList as $pengajuan)
                             <div class="form-check">
                                 <input type="checkbox" class="form-check-input" name="id_pengajuan[]" value="{{ $pengajuan->id }}" id="pengajuan{{ $pengajuan->id }}">
                                 <label class="form-check-label" for="pengajuan{{ $pengajuan->id }}">
+                                    <p class="mb-1">{{ $pengajuan->judul }}</p>
                                     <strong>{{ $pengajuan->studyProgram->name }}</strong>
                                     <br>
                                     <small class="text-muted">

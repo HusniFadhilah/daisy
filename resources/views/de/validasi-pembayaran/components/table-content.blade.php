@@ -20,7 +20,7 @@
                         <th width="12%">Jumlah</th>
                         <th width="12%">Jatuh Tempo</th>
                         <th width="12%">Tanggal Bayar</th>
-                        <th width="12%">Status</th>
+                        <th width="12%">Status Pembayaran</th>
                         <th width="12%" class="text-center">Aksi</th>
                     </tr>
                 </thead>

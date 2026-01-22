@@ -47,7 +47,7 @@ class BorangValidationExcelService
             $spreadsheet->setActiveSheetIndex(0);
 
             // Generate filename
-            $type = $withData ? 'Review' : 'Template';
+            $type = $withData ? 'Validasi' : 'Template';
             $filename = $type . '_LED-Suplemen_LKPS_Lengkap_' . Str::slug($pengajuan->nomor_pengajuan) . '_' . date('Ymd') . '.xlsx';
 
             // Save to temp file
@@ -357,7 +357,7 @@ class BorangValidationExcelService
 
         // Petunjuk
         $sheet->mergeCells('D4:F4');
-        $sheet->setCellValue('D4', 'Silahkan isi Kategori Review dan Catatan Validasi untuk setiap item suplemen');
+        $sheet->setCellValue('D4', 'Silahkan isi Kategori Validasi dan Catatan Validasi untuk setiap item suplemen');
         $sheet->getStyle('D4')->applyFromArray([
             'font' => ['bold' => true, 'color' => ['argb' => 'FF1F4E79'], 'size' => 11],
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER]
@@ -568,7 +568,7 @@ class BorangValidationExcelService
 
         $row = 3;
         $instructions = [
-            'KATEGORI REVIEW:',
+            'KATEGORI VALIDASI:',
             '',
             'LED:',
             'A = Prodi telah mengisi deskripsi LED dengan tepat',
@@ -595,8 +595,8 @@ class BorangValidationExcelService
             'CATATAN PENTING:',
             '- Jangan mengubah struktur tabel atau menghapus kolom',
             '- Jangan mengubah nilai pada kolom No, Kode, dan Deskripsi',
-            '- Pastikan semua item sudah diisi kategori review-nya',
-            '- Data yang diupload akan digabungkan dengan review online yang sudah ada',
+            '- Pastikan semua item sudah diisi kategori validasi-nya',
+            '- Data yang diupload akan digabungkan dengan validasi online yang sudah ada',
         ];
 
         foreach ($instructions as $instruction) {
@@ -803,7 +803,7 @@ class BorangValidationExcelService
 
         // ✅ Deskripsi lengkap sesuai jenis dokumen
         $options = $this->getKategoriOptions($type);
-        $validation->setPromptTitle('Pilih Kategori Review');
+        $validation->setPromptTitle('Pilih Kategori Validasi');
         $validation->setPrompt($options['prompt']);
 
         // pakai range di sheet Petunjuk

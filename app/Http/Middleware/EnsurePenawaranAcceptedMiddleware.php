@@ -17,7 +17,7 @@ class EnsurePenawaranAcceptedMiddleware
      * Supports 3 types of validation:
      * - AK: /ak/berkas/{idAsesmen} → jenis_asesmen = 'ak'
      * - AL: /al/berkas/{idAsesmen} → jenis_asesmen = 'al'
-     * - Dokumen: /validator/borang/{assignment} → jenis_asesmen = 'dokumen'
+     * - Dokumen: /validator/dokumen/{assignment} → jenis_asesmen = 'dokumen'
      */
     public function handle(Request $request, Closure $next, $jenisAsesmen = 'ak')
     {

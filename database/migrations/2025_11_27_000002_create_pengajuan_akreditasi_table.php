@@ -36,6 +36,7 @@ return new class extends Migration
                 'pembayaran_diterima',
                 'menunggu_verifikasi_pembayaran',
                 'pembayaran_diverifikasi',
+                'draft_borang_dikirim',
                 'draft_borang_diterima',
                 'borang_online_selesai',
                 'borang_validation_pending',

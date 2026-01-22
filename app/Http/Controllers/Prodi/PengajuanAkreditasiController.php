@@ -721,11 +721,23 @@ class PengajuanAkreditasiController extends Controller
         // Calculate detailed progress
         $progressData = $this->calculateBorangProgress($kriterias, $existingData);
 
+        $lockBorang = in_array($pengajuan->status, [
+            \App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
+            \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
+            \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
+            \App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
+            \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
+            \App\Models\PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
+            \App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
+            \App\Models\PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED,
+        ]);
+
         return view('asesmen.pengajuan.borang-online', compact(
             'pengajuan',
             'kriterias',
             'existingData',
-            'progressData'
+            'progressData',
+            'lockBorang'
         ));
     }
     /**
@@ -1321,7 +1333,7 @@ class PengajuanAkreditasiController extends Controller
             PengajuanStatusLog::create([
                 'id_pengajuan' => $pengajuan->id,
                 'status_from'  => $pengajuan->status,
-                'status_to'    => $pengajuan->status,
+                'status_to'    => PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
                 'changed_by'   => $user->id,
                 'changed_at'   => now(),
                 'keterangan'   => ($isAddVersion ? 'Upload versi baru' : 'Re-upload') .

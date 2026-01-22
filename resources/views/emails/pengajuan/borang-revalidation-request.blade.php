@@ -123,7 +123,7 @@
         </ol>
 
         <center>
-            <a href="{{ url('/validator/borang') }}" class="btn">
+            <a href="{{ route('validator.borang.index') }}" class="btn">
                 📋 Lihat LED & Mulai Review
             </a>
         </center>

@@ -858,7 +858,7 @@
                             <td>v{{ $doc->versi }}</td>
                             <td>{{ $doc->uploader->name ?? '-' }}</td>
                             <td>{{ $doc->created_at->format('d/m/Y H:i') }}</td>
-                            <td>{{ $doc->file_size_formatted }}</td>
+                            <td>{{ $doc->file_size_formatted ?? '' }}</td>
                             <td>
                                 <a href="{{ $doc->download_url }}" class="btn btn-sm btn-primary">
                                     <i class="bi bi-download"></i>

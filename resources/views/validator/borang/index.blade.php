@@ -1,5 +1,3 @@
-{{-- resources/views/validator/borang/index.blade.php --}}
-
 @extends('layouts.template.app')
 
 @section('title', 'Validasi Dokumen')
@@ -44,7 +42,7 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="text-muted mb-1">Sedang Review</h6>
+                            <h6 class="text-muted mb-1">Sedang Divalidasi</h6>
                             <h2 class="mb-0">{{ $stats['in_review'] }}</h2>
                         </div>
                         <div class="bg-info bg-opacity-10 p-3 rounded">
@@ -114,7 +112,7 @@
                         $pengajuan = $assignment->pengajuan;
                         $statusBadge = [
                         'not_started' => '<span class="badge bg-warning text-dark"><i class="bi bi-clock"></i> Belum Dimulai</span>',
-                        'in_progress' => '<span class="badge bg-info"><i class="bi bi-eye"></i> Sedang Review</span>',
+                        'in_progress' => '<span class="badge bg-info"><i class="bi bi-eye"></i> Sedang Divalidasi</span>',
                         'revision_required' => '<span class="badge bg-danger"><i class="bi bi-exclamation-triangle"></i> Prodi Perlu Revisi</span>',
                         'approved' => '<span class="badge bg-success"><i class="bi bi-check-circle"></i> Disetujui Validator</span>',
                         ];
@@ -156,9 +154,15 @@
                             </td>
                             <td>
                                 @if(in_array($pengajuan->status,[\App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING]))
+                                @if($assignment->status_penawaran == 'pending')
                                 <a href="{{ route('penawaran.show', ['token' => $assignment->token]) }}" class="btn btn-sm btn-primary">
                                     <i class="bi bi-eye"></i> Lihat Penawaran
                                 </a>
+                                @else
+                                <a href="{{ route('validator.borang.show', $assignment->id) }}" class="btn btn-sm btn-info">
+                                    <i class="bi bi-eye"></i> Lihat Validasi
+                                </a>
+                                @endif
                                 @else
                                 <a href="{{ route('validator.borang.show', $assignment->id) }}" class="btn btn-sm btn-primary">
                                     <i class="bi bi-eye"></i> Lihat Validasi

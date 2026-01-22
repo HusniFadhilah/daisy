@@ -41,4 +41,22 @@ class PengajuanPembayaran extends Model
     {
         return $this->belongsTo(User::class, 'verified_by');
     }
+
+    public static function generateNomorInvoice()
+    {
+        $year = date('Y');
+        $month = date('m');
+
+        $last = PengajuanPembayaran::where('nomor_invoice', 'like', "INV/{$year}/{$month}/%")
+            ->orderBy('nomor_invoice', 'desc')
+            ->first();
+
+        $newNum = 1;
+        if ($last) {
+            $lastNum = (int) substr($last->nomor_invoice, -4);
+            $newNum = $lastNum + 1;
+        }
+
+        return sprintf('INV/%s/%s/%04d', $year, $month, $newNum);
+    }
 }

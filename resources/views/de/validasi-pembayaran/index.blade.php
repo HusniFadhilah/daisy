@@ -81,7 +81,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-1 fw-bold">{{ $stats['menunggu_pembayaran'] }}</h2>
-                            <small class="opacity-75">Invoice sudah dikirim, PS belum bayar</small>
+                            <small class="opacity-75">Invoice sudah dikirim, PS belum melakukan pembayaran</small>
                         </div>
 
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
@@ -100,7 +100,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-1 fw-bold">{{ $stats['menunggu_verifikasi'] }}</h2>
-                            <small class="opacity-75">Bukti bayar masuk, menunggu dicek</small>
+                            <small class="opacity-75">Bukti bayar telah diupload, menunggu verifikasi oleh bagian keuangan</small>
                         </div>
 
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
@@ -119,7 +119,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-1 fw-bold">{{ $stats['terverifikasi'] }}</h2>
-                            <small class="opacity-75">Pembayaran valid & disetujui</small>
+                            <small class="opacity-75">Pembayaran valid & disetujui oleh bagian keuangan</small>
                         </div>
 
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
@@ -167,9 +167,17 @@
             <i class="bi bi-credit-card-2-front"></i> Daftar Pembayaran
         </h4>
 
-        <button type="button" class="btn btn-primary ms-auto" data-bs-toggle="modal" data-bs-target="#modalKirimInvoice">
-            <i class="bi bi-send"></i> Kirim Invoice
-        </button>
+        <div class="ms-auto text-end">
+            <button type="button" class="btn btn-primary mb-1" data-bs-toggle="modal" data-bs-target="#modalKirimInvoice">
+                <i class="bi bi-send"></i> Kirim Invoice
+            </button>
+            <div>
+                <small>
+                    Terdapat {{ $countPengajuanList }} permohonan akreditasi PS
+                    yang perlu dikirimi invoice
+                </small>
+            </div>
+        </div>
     </div>
 
     <!-- Content -->

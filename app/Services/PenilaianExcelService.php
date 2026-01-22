@@ -460,7 +460,7 @@ class PenilaianExcelService
      */
     private function saveSpreadsheet(Spreadsheet $spreadsheet, string $prefix, $code = null): string
     {
-        // 1) sanitize code agar tidak jadi folder (ASM/2026/001 -> ASM-2026-001)
+        // 1) sanitize code agar tidak jadi folder (LAMDEPILAR/2026/001 -> LAMDEPILAR-2026-001)
         $safeCode = null;
         if (!empty($code)) {
             $safeCode = str_replace(['\\', '/', ':', '*', '?', '"', '<', '>', '|'], '-', (string) $code);

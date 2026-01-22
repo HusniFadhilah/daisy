@@ -1,10 +1,4 @@
 {{-- resources/views/de/penerimaan-dokumen/components/modal-kirim-reminder.blade.php --}}
-@php
-$pengajuanMenunggu = \App\Models\PengajuanAkreditasi::with('studyProgram.university', 'studyProgram.degreeLevel')
-->where('status', \App\Models\PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI)
-->get();
-$countPengajuanMenunggu = count($pengajuanMenunggu);
-@endphp
 <div class="modal fade" id="modalKirimReminder" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
@@ -24,6 +18,7 @@ $countPengajuanMenunggu = count($pengajuanMenunggu);
                             <div class="form-check">
                                 <input type="checkbox" class="form-check-input" name="id_pengajuan[]" value="{{ $pengajuan->id }}" id="reminder{{ $pengajuan->id }}">
                                 <label class="form-check-label" for="reminder{{ $pengajuan->id }}">
+                                    <p class="mb-1">{{ $pengajuan->judul }}</p>
                                     <strong>{{ $pengajuan->studyProgram->name }}</strong>
                                     <br>
                                     <small class="text-muted">

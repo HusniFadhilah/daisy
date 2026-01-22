@@ -66,7 +66,11 @@
                             <td>: {{ $pengajuan->jenis_akreditasi_label }}</td>
                         </tr>
                         <tr>
-                            <th>Status</th>
+                            <th>Status Penyampaian Template Terakhir</th>
+                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('borang_template') !!}</td>
+                        </tr>
+                        <tr>
+                            <th>Status Saat Ini</th>
                             <td>
                                 : <span class="badge {{ $pengajuan->status_badge_class }}">
                                     {{ $pengajuan->status_label }}
@@ -111,7 +115,7 @@
                                 <strong>{{ $template->original_filename }}</strong>
                                 <br>
                                 <small class="text-muted">
-                                    {{ $template->file_size_formatted }} •
+                                    {{ $template->file_size_formatted ?? '' }} •
                                     Dikirim: {{ $template->created_at->format('d M Y H:i') }}
                                 </small>
                                 @if($template->keterangan)
@@ -216,10 +220,10 @@
                         <i class="bi bi-clock-history"></i> Riwayat Status
                     </h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body" style="max-height: 600px; overflow-y: auto;">
                     @if($pengajuan->statusLog->count() > 0)
                     <div class="timeline">
-                        @foreach($pengajuan->statusLog->sortByDesc('changed_at') as $log)
+                        @foreach($pengajuan->statusLog->sortBy('changed_at') as $log)
                         <div class="timeline-item mb-3">
                             <div class="d-flex">
                                 <div class="flex-shrink-0">

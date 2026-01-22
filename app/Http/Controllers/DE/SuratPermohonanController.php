@@ -74,8 +74,8 @@ class SuratPermohonanController extends Controller
         }
 
         // Sort
-        $sortBy = $request->get('sort_by', 'tanggal_pengingat');
-        $sortOrder = $request->get('sort_order', 'asc');
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
         $query->orderBy($sortBy, $sortOrder);
 
         $pengajuans = $query->paginate(20);

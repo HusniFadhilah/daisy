@@ -27,7 +27,7 @@ class AsesmenUserRoleSeeder extends Seeder
         // ============================================
         $asesmenMil = Asesmen::insertGetId([
             'id_study_program' => StudyProgram::where('email', 's1@lamdepilar.ac.id')->firstOrFail()->id,
-            'code' => 'ASM-' . Fungsi::uniqueCode(5),
+            'code' => 'LAMDEPILAR-' . Fungsi::uniqueCode(5),
             'kode_panel' => 'T01-P001',
             'name' => 'Penilaian Akreditasi Prodi LAMDEPILAR (Contoh)',
             'description' => 'Penilaian akreditasi Prodi LAMDEPILAR untuk tahun 2026-2030',
@@ -119,7 +119,7 @@ class AsesmenUserRoleSeeder extends Seeder
         $asesmenTI = Asesmen::insertGetId([
             'id_study_program' => StudyProgram::where('email', 'testing@abcd.ac.id')->firstOrFail()->id,
             // 'id_study_program' => null, // Bisa null jika belum ada program studi
-            'code' => 'ASM-' . Fungsi::uniqueCode(5),
+            'code' => 'LAMDEPILAR-' . Fungsi::uniqueCode(5),
             'kode_panel' => 'T01-P002',
             'name' => 'Penilaian Akreditasi Prodi ABCD 2026',
             'description' => 'Asesmen akreditasi Prodi ABCD untuk periode 2026-2030',
@@ -211,7 +211,7 @@ class AsesmenUserRoleSeeder extends Seeder
         $asesmenMulti = Asesmen::insertGetId([
             'id_study_program' => StudyProgram::where('email', 'depilar@abcd.ac.id')->firstOrFail()->id,
             // 'id_study_program' => null,
-            'code' => 'ASM-' . Fungsi::uniqueCode(5),
+            'code' => 'LAMDEPILAR-' . Fungsi::uniqueCode(5),
             'kode_panel' => 'T01-P003',
             'name' => 'Asesmen dengan Multiple Asesor (Testing)',
             'description' => 'Contoh asesmen dengan 3 asesor untuk testing dynamic UI',

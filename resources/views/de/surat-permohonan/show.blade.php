@@ -64,6 +64,10 @@
                             <td>: {{ $pengajuan->pengaju->name ?? '-' }}</td>
                         </tr>
                         <tr>
+                            <th>Status Surat Permohonan Terakhir</th>
+                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('surat_permohonan_ps') !!}</td>
+                        </tr>
+                        <tr>
                             <th>Status Saat Ini</th>
                             <td>
                                 : <span class="badge {{ $pengajuan->status_badge_class }}">
@@ -95,7 +99,7 @@
                                 <strong>{{ $suratPermohonan->original_filename }}</strong>
                                 <br>
                                 <small class="text-muted">
-                                    {{ $suratPermohonan->file_size_formatted }} •
+                                    {{ $suratPermohonan->file_size_formatted ?? '' }} •
                                     Diupload: {{ $suratPermohonan->created_at->format('d M Y H:i') }}
                                 </small>
                             </div>

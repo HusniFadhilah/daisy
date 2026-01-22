@@ -71,6 +71,13 @@ class ValidasiPembayaranController extends Controller
         $universities = University::nonExample()->orderBy('name')->get();
         $degreeLevels = DegreeLevel::orderBy('code')->get();
 
+        // Ambil pengajuan yang sudah template_led_dikirim tapi belum ada invoice
+        $pengajuanList = \App\Models\PengajuanAkreditasi::with('studyProgram.degreeLevel', 'studyProgram.university')
+            ->where('status', \App\Models\PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM)
+            ->whereDoesntHave('pembayaran')
+            ->get();
+        $countPengajuanList = count($pengajuanList);
+
         // AJAX request
         if ($request->ajax()) {
             $html = view('de.validasi-pembayaran.components.table-content', compact('pembayarans'))->render();
@@ -85,7 +92,9 @@ class ValidasiPembayaranController extends Controller
             'pembayarans',
             'stats',
             'universities',
-            'degreeLevels'
+            'degreeLevels',
+            'pengajuanList',
+            'countPengajuanList'
         ));
     }
 
@@ -137,7 +146,7 @@ class ValidasiPembayaranController extends Controller
                 }
 
                 // Generate nomor invoice
-                $nomorInvoice = $this->generateNomorInvoice();
+                $nomorInvoice = PengajuanPembayaran::generateNomorInvoice();
 
                 // Create pembayaran record
                 $pembayaran = PengajuanPembayaran::create([
@@ -275,26 +284,5 @@ class ValidasiPembayaranController extends Controller
             'upload_ulang' => (int) $row->upload_ulang,
             'total_nominal' => (float) $row->total_nominal,
         ];
-    }
-
-    /**
-     * Generate nomor invoice
-     */
-    private function generateNomorInvoice()
-    {
-        $year = date('Y');
-        $month = date('m');
-
-        $last = PengajuanPembayaran::where('nomor_invoice', 'like', "INV/{$year}/{$month}/%")
-            ->orderBy('nomor_invoice', 'desc')
-            ->first();
-
-        $newNum = 1;
-        if ($last) {
-            $lastNum = (int) substr($last->nomor_invoice, -4);
-            $newNum = $lastNum + 1;
-        }
-
-        return sprintf('INV/%s/%s/%04d', $year, $month, $newNum);
     }
 }

@@ -1,4 +1,3 @@
-{{-- resources/views/validator/borang/show.blade.php --}}
 @extends('layouts.template.app')
 
 @section('title', 'Validasi LED+Suplemen dan LKPS - ' . $pengajuan->nomor_pengajuan)
@@ -242,7 +241,7 @@
                                     {{ $file->original_filename }}
                                 </div>
                                 <div class="text-muted small">
-                                    {{ $file->file_size_formatted }} •
+                                    {{ $file->file_size_formatted ?? '' }} •
                                     {{ $file->created_at->diffForHumans() }}
                                 </div>
                                 @else
@@ -277,7 +276,7 @@
                     <div class="fw-bold">Lembar Pengesahan</div>
                     <div class="text-muted small text-break">
                         {{ $uploadedFiles['pengesahan']->original_filename }}
-                        • {{ $uploadedFiles['pengesahan']->file_size_formatted }}
+                        • {{ $uploadedFiles['pengesahan']->file_size_formatted ?? '' }}
                         • {{ $uploadedFiles['pengesahan']->created_at->diffForHumans() }}
                     </div>
                 </div>
@@ -720,12 +719,13 @@ $assignmentId = $assignment->id;
 @endphp
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        const LOCK_BORANG = @json($lockBorang);
         const ASSIGNMENT_ID = @json($assignmentId);
 
         // =============== PICK ACTION (NO SUBMIT) ===============
         let pickedAction = null; // 'approve' | 'revision'
         const isEnvLocal = @json($isEnvLocal); // boolean
-        const izinkan = true;
+        const izinkanTestLocal = true;
 
         // =============== TAB STATE (single source of truth) ===============
         let activeTab = 'led';
@@ -1449,8 +1449,8 @@ $assignmentId = $assignment->id;
         }
 
         async function runAutoTestReview() {
-            if (isEnvLocal !== true || izinkan !== true) {
-                alert('Auto Test hanya boleh dijalankan di ENV local dan izinkan=true');
+            if (isEnvLocal !== true || izinkanTestLocal !== true) {
+                alert('Auto Test hanya boleh dijalankan di ENV local dan izinkanTestLocal=true');
                 return;
             }
 

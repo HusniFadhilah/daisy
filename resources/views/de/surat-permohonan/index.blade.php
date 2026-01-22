@@ -256,13 +256,6 @@
                             </thead>
                             <tbody>
                                 @foreach($pengajuans as $index => $pengajuan)
-                                @php
-                                // status fase surat terakhir (berdasarkan log)
-                                $suratStatus = optional($pengajuan->statusLog->first())->status_to;
-
-                                // fallback kalau belum ada log (harusnya jarang) -> pakai current status
-                                $suratStatus = $suratStatus ?? $pengajuan->status;
-                                @endphp
                                 <tr>
                                     <td>{{ $pengajuans->firstItem() + $index }}</td>
                                     <td>
@@ -296,17 +289,7 @@
                                         @endif
                                     </td>
                                     <td>
-                                        @if($suratStatus == \App\Models\PengajuanAkreditasi::STATUS_PENGINGAT_DIKIRIM)
-                                        <span class="badge bg-warning">Menunggu Surat</span>
-                                        @elseif($suratStatus == \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM)
-                                        <span class="badge bg-info">Surat Dikirim dari PS</span>
-                                        @elseif($suratStatus == \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA)
-                                        <span class="badge bg-success">Surat Permohonan PS Diterima</span>
-                                        @elseif($suratStatus == \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITOLAK)
-                                        <span class="badge bg-danger">Surat Permohonan PS Ditolak</span>
-                                        @else
-                                        <span class="badge bg-secondary">-</span>
-                                        @endif
+                                        {!! $pengajuan->getCustomBadgeLastStatus('surat_permohonan_ps') !!}
                                     </td>
                                     <td class="text-center">
                                         <div class="btn-group btn-group-sm" role="group">

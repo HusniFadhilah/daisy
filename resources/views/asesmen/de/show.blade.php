@@ -766,7 +766,7 @@
                                 <button class="btn btn-outline-primary btn-sm mt-3" data-bs-toggle="modal" data-bs-target="#modalRevisi">
                                     <i class="bi bi-clipboard-data"></i> Lihat Detail Revisi
                                 </button>
-                                @include('asesmen.de.modal-revisi')
+                                {{-- @include('asesmen.de.modal-revisi') --}}
                                 @endif
                             </div>
                         </div>
@@ -996,7 +996,7 @@
                             <td>v{{ $doc->versi }}</td>
                             <td>{{ $doc->uploader->name }}</td>
                             <td>{{ $doc->created_at->format('d/m/Y H:i') }}</td>
-                            <td>{{ $doc->file_size_formatted }}</td>
+                            <td>{{ $doc->file_size_formatted ?? '' }}</td>
                             <td>
                                 <a href="{{ $doc->download_url }}" class="btn btn-sm btn-primary">
                                     <i class="bi bi-download"></i>

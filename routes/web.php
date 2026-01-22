@@ -405,7 +405,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // routes/web.php
 
     Route::prefix('validator')->name('validator.')->group(function () {
-        Route::prefix('borang')->name('borang.')->group(function () {
+        Route::prefix('dokumen')->name('borang.')->group(function () {
             Route::get('/', [BorangValidatorController::class, 'index'])->name('index');
 
             // ✅ NEW: Auto-save review per item

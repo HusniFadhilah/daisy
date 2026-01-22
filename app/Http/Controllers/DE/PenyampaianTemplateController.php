@@ -143,6 +143,8 @@ class PenyampaianTemplateController extends Controller
         try {
             // Simpan Template LED+Suplemen dan LKPS
             $pengajuan->dokumen()->create([
+                'original_filename' => 'Link Template LED+Suplemen dan LKPS',
+                'nama_file' => 'Link Template LED+Suplemen dan LKPS',
                 'jenis_dokumen' => 'borang_template',
                 'template_link' => $request->template_led_link,
                 'keterangan' => 'Template LED+Suplemen dan LKPS via link',
@@ -152,6 +154,8 @@ class PenyampaianTemplateController extends Controller
 
             // Simpan Template Formulir Pembayaran
             $pengajuan->dokumen()->create([
+                'original_filename' => 'Link Template Formulir Pembayaran',
+                'nama_file' => 'Link Template Formulir Pembayaran',
                 'jenis_dokumen' => 'template_formulir_pembayaran',
                 'template_link' => $request->template_pembayaran_link,
                 'keterangan' => 'Template Formulir Pembayaran via link',
@@ -179,7 +183,7 @@ class PenyampaianTemplateController extends Controller
             DB::commit();
 
             return redirect()
-                ->route('de.penyampaian-template', ['status' => PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM])
+                ->route('de.penyampaian-template')
                 ->with('success', 'Template LED+Suplemen dan LKPS serta Template Formulir Pembayaran berhasil dikirim via link.');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -269,7 +273,7 @@ class PenyampaianTemplateController extends Controller
             DB::commit();
 
             return redirect()
-                ->route('de.penyampaian-template', ['status' => PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM])
+                ->route('de.penyampaian-template')
                 ->with('success', 'Template LED+Suplemen dan LKPS serta Template Formulir Pembayaran berhasil dikirim.');
         } catch (\Exception $e) {
             DB::rollBack();

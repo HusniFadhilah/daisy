@@ -122,11 +122,11 @@
                                 <i class="bi bi-eye"></i>
                             </a>
 
-                            @if($assignment->status_penawaran === 'accepted' && $validation)
+                            {{-- @if($assignment->status_penawaran === 'accepted' && $validation)
                             <a href="{{ route('validator.borang.show', $assignment->id) }}" class="btn btn-sm btn-primary" title="Lihat Validasi" target="_blank">
-                                <i class="bi bi-clipboard-check"></i>
+                            <i class="bi bi-clipboard-check"></i>
                             </a>
-                            @endif
+                            @endif --}}
                         </td>
                     </tr>
                     @empty
