@@ -127,7 +127,7 @@ class SuratPermohonanController extends Controller
 
         // Validasi status
         if ($pengajuan->status !== PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM) {
-            return back()->with('error', 'Status pengajuan tidak sesuai untuk menerima surat permohonan.');
+            return back()->with('error', 'Status permohonan saat ini tidak sesuai untuk menerima surat permohonan akreditasi PS.');
         }
 
         // Check apakah dokumen surat permohonan sudah ada

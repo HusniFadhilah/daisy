@@ -1,6 +1,6 @@
 @extends('layouts.template.app')
 
-@section('title', 'Detail Penugasan AL - ' . $pengajuan->nomor_permohonan)
+@section('title', 'Detail Penugasan AL - ' . $pengajuan->nomor_pengajuan)
 
 @section('content')
 <div class="container-fluid py-3">
@@ -22,7 +22,7 @@
             <h4 class="mb-1">
                 <i class="bi bi-geo-alt"></i> Detail Penugasan AL
             </h4>
-            <p class="text-muted mb-0">{{ $pengajuan->nomor_permohonan }}</p>
+            <p class="text-muted mb-0">{{ $pengajuan->nomor_pengajuan }}</p>
         </div>
     </div>
 
@@ -52,8 +52,8 @@
                         <tr>
                             <td class="text-muted">Status</td>
                             <td>
-                                <span class="badge bg-info">
-                                    {{ str_replace('_', ' ', strtoupper($pengajuan->status)) }}
+                                <span class="badge bg-info text-wrap">
+                                    {{ $pengajuan->status_label }}
                                 </span>
                             </td>
                         </tr>

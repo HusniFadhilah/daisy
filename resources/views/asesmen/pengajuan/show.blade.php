@@ -364,7 +364,7 @@
 
                         <p class="mb-2">
                             Status Permohonan akreditasi saat ini:
-                            <strong class="text-dark">{{ $pengajuan->status_label }}</strong>
+                            <strong class="text-dark text-wrap">{{ $pengajuan->status_label }}</strong>
                         </p>
 
                         <ul class="mb-2 ps-3 small">

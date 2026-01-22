@@ -429,28 +429,29 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::prefix('/pelaporan')->name('pelaporan.')->group(function () {
         Route::get('/', [PelaporanController::class, 'index'])->name('index');
-        Route::prefix('/{assignment}/borang')->name('borang.')->group(function () {
+        Route::get('/dokumen', [PelaporanController::class, 'indexDokumen'])->name('indexDokumen');
+        Route::get('/validasi-ak', [PelaporanController::class, 'indexValidasiAK'])->name('indexValidasiAK');
+        Route::get('/ak', [PelaporanController::class, 'indexAK'])->name('indexAK');
+        Route::get('/al', [PelaporanController::class, 'indexAL'])->name('indexAL');
+
+        Route::prefix('/{assignment}/dokumen')->name('borang.')->group(function () {
             Route::post('/upload', [PelaporanController::class, 'uploadLaporanValidasi'])->name('upload');
             Route::post('/finalize', [PelaporanController::class, 'finalizePelaporanValidasi'])->name('finalize');
-            Route::get('/', [PelaporanController::class, 'getPelaporanValidasi'])->name('show');
         });
 
         Route::prefix('/{assignment}/validasi-ak')->name('validasiAk.')->group(function () {
             Route::post('/upload',   [PelaporanController::class, 'uploadLaporanValidasiAK'])->name('upload');
             Route::post('/finalize', [PelaporanController::class, 'finalizeValidasiAK'])->name('finalize');
-            Route::get('/',          [PelaporanController::class, 'getPelaporanValidasiAK'])->name('show');
         });
 
         Route::prefix('/{assignment}/ak')->name('ak.')->group(function () {
             Route::post('/upload',   [PelaporanController::class, 'uploadLaporanAK'])->name('upload');
             Route::post('/finalize', [PelaporanController::class, 'finalizePelaporanAK'])->name('finalize');
-            Route::get('/',          [PelaporanController::class, 'getPelaporanAK'])->name('show');
         });
 
         Route::prefix('/{assignment}/al')->name('al.')->group(function () {
             Route::post('/upload',   [PelaporanController::class, 'uploadLaporanAL'])->name('upload');
             Route::post('/finalize', [PelaporanController::class, 'finalizePelaporanAL'])->name('finalize');
-            Route::get('/',          [PelaporanController::class, 'getPelaporanAL'])->name('show');
         });
     });
 

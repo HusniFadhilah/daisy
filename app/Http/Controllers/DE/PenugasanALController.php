@@ -34,7 +34,7 @@ class PenugasanALController extends Controller
             }
         ])
             ->whereIn('status', [
-                PengajuanAkreditasi::STATUS_AK_SELESAI,           // AK selesai, siap AL
+                PengajuanAkreditasi::STATUS_AK_DILAPORKAN,           // AK selesai, siap AL
                 PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,   // Asesor AL sudah ditugaskan
                 PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,       // AL sedang berlangsung
                 PengajuanAkreditasi::STATUS_AL_SELESAI,           // AL selesai
@@ -52,7 +52,7 @@ class PenugasanALController extends Controller
         if ($request->filled('status_al')) {
             switch ($request->status_al) {
                 case 'siap_al':
-                    $query->where('status', PengajuanAkreditasi::STATUS_AK_SELESAI)
+                    $query->where('status', PengajuanAkreditasi::STATUS_AK_DILAPORKAN)
                         ->whereDoesntHave('asesmen.asesmenUserRoles', function ($q) {
                             $q->where('jenis_asesmen', 'al');
                         });
@@ -427,7 +427,7 @@ class PenugasanALController extends Controller
     private function calculateStatistics()
     {
         $base = PengajuanAkreditasi::whereIn('status', [
-            PengajuanAkreditasi::STATUS_AK_SELESAI,
+            PengajuanAkreditasi::STATUS_AK_DILAPORKAN,
             PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
             PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
             PengajuanAkreditasi::STATUS_AL_SELESAI,
@@ -437,7 +437,7 @@ class PenugasanALController extends Controller
         $total = (clone $base)->count();
 
         $siapAL = (clone $base)
-            ->where('status', PengajuanAkreditasi::STATUS_AK_SELESAI)
+            ->where('status', PengajuanAkreditasi::STATUS_AK_DILAPORKAN)
             ->count();
 
         $sudahDitugaskan = (clone $base)

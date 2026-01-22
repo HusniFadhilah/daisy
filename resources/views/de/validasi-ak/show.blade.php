@@ -58,8 +58,8 @@
                         <tr>
                             <td class="text-muted">Status</td>
                             <td>
-                                <span class="badge bg-info">
-                                    {{ str_replace('_', ' ', strtoupper($pengajuan->status)) }}
+                                <span class="badge bg-info text-wrap">
+                                    {{ $pengajuan->status_label }}
                                 </span>
                             </td>
                         </tr>

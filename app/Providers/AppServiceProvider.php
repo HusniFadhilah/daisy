@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\PengajuanAkreditasi;
 use App\Policies\PengajuanAkreditasiPolicy;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -23,5 +24,6 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->registerPolicies();
+        Blade::component('asesmen.pelaporan._card', 'pelaporan-card');
     }
 }

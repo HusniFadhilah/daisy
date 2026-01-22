@@ -182,7 +182,7 @@
 
                         <!-- Status -->
                         <div class="mb-3">
-                            <label class="form-label text-white">Status Pengajuan</label>
+                            <label class="form-label text-white">Status Permohonan</label>
                             <select name="status" id="statusFilter" class="form-select">
                                 <option value="">Semua Status</option>
                                 <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI }}">

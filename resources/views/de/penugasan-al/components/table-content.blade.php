@@ -39,8 +39,8 @@
                     $statusAL = ['class' => 'info', 'icon' => 'hourglass-split', 'text' => 'Sedang Proses'];
                     } elseif ($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED) {
                     $statusAL = ['class' => 'warning', 'icon' => 'clock', 'text' => 'Ditugaskan'];
-                    } elseif ($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AK_SELESAI) {
-                    $statusAL = ['class' => 'danger', 'icon' => 'x-circle', 'text' => 'Siap AL'];
+                    } elseif ($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AK_DILAPORKAN) {
+                    $statusAL = ['class' => 'danger', 'icon' => 'check-circle', 'text' => 'Siap AL'];
                     } else {
                     $statusAL = ['class' => 'secondary', 'icon' => 'question-circle', 'text' => 'Unknown'];
                     }

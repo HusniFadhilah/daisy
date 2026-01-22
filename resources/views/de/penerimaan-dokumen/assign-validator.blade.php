@@ -47,9 +47,9 @@
                         <p class="fw-bold mb-0">{{ $pengajuan->studyProgram->university->name }}</p>
                     </div>
                     <div class="mb-3">
-                        <label class="text-muted small">Status Pengajuan</label>
+                        <label class="text-muted small">Status Permohonan</label>
                         <p>
-                            <span class="badge {{ $pengajuan->status_badge_class }}">
+                            <span class="badge {{ $pengajuan->status_badge_class }} text-wrap">
                                 {{ $pengajuan->status_label }}
                             </span>
                         </p>

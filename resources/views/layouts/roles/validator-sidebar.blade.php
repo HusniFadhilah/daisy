@@ -5,11 +5,11 @@
 </a>
 
 <!-- Proses AK -->
-<a href="{{ route('validator.borang.index') }}" class="nav-link {{ request()->routeIs('validator.borang*') || request()->routeIs('validator.borang') ? 'active' : '' }}">
+<a href="{{ route('validator.borang.index') }}" class="nav-link {{ request()->routeIs('validator.borang*') ? 'active' : '' }}">
     <span class="menu-icon">🖊️</span>
     <span>Validasi Dokumen</span>
 </a>
-<a href="{{ route('pelaporan.index') }}" class="nav-link {{ request()->routeIs('pelaporan*') || request()->routeIs('pelaporan') ? 'active' : '' }}">
+<a href="{{ route('pelaporan.indexDokumen') }}" class="nav-link {{ request()->routeIs('pelaporan.indexDokumen') ? 'active' : '' }}">
     <span class="menu-icon">📋</span>
     <span>Pelaporan Dokumen</span>
 </a>
@@ -25,118 +25,18 @@
 </a>
 @endif
 
-<a href="" class="nav-link">
+<a href="{{ route('pelaporan.indexValidasiAK') }}" class="nav-link {{ request()->routeIs('pelaporan.indexValidasiAK') ? 'active' : '' }}">
     <span class="menu-icon">📝</span>
     <span>Pelaporan AK</span>
 </a>
-<a href="" class="nav-link">
+<!-- Validasi AL (if exists) -->
+@if(Route::has('al.validasi.index'))
+<a href="{{ route('al.validasi.index') }}" class="nav-link {{ request()->routeIs('al.validasi*') ? 'active' : '' }}">
     <span class="menu-icon">✅</span>
     <span>Validasi AL</span>
 </a>
-<a href="" class="nav-link">
+@endif
+<a href="{{ route('pelaporan.indexAL') }}" class="nav-link {{ request()->routeIs('pelaporan.indexAL') ? 'active' : '' }}">
     <span class="menu-icon">📨</span>
     <span>Pelaporan AL</span>
 </a>
-{{-- <a href="" class="nav-link">
-    <span class="menu-icon">📋</span>
-    <span>Pelaporan Banding</span>
-</a> --}}
-{{-- <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'ak-submenu')">
-    <span class="menu-icon">📝</span>
-    <span>Proses AK</span>
-    <span class="badge bg-warning menu-badge">{{ $prosesAK ?? 1 }}</span>
-</a>
-<ul class="submenu nav flex-column" id="ak-submenu">
-    <li>
-        <a href="{{ route('ak.berkas') }}" class="nav-link">
-            Berkas Penilaian
-        </a>
-    </li>
-    <li>
-        <a href="{{ route('ak.split') }}" class="nav-link">
-            Cek Split Nilai
-        </a>
-    </li>
-    <li>
-        <a href="{{ route('ak.upload') }}" class="nav-link">
-            Upload Hasil Penilaian
-        </a>
-    </li>
-    <li>
-        <a href="{{ route('ak.validasi') }}" class="nav-link">
-            Status Validasi
-        </a>
-    </li>
-</ul> --}}
-
-<!-- Proses AL -->
-{{-- <a href="{{ route('al.jadwal') }}" class="nav-link {{ request()->routeIs('al.jadwal') ? 'active' : '' }}">
-<span class="menu-icon">🏢</span>
-<span>Proses AL</span>
-</a> --}}
-{{-- <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'al-submenu')">
-    <span class="menu-icon">🏢</span>
-    <span>Proses AL</span>
-</a>
-<ul class="submenu nav flex-column" id="al-submenu">
-    <li>
-        <a href="{{ route('al.jadwal') }}" class="nav-link">
-Jadwal Visitasi
-</a>
-</li>
-<li>
-    <a href="{{ route('al.dokumen') }}" class="nav-link">
-        Dokumen AL
-    </a>
-</li>
-<li>
-    <a href="{{ route('al.upload') }}" class="nav-link">
-        Upload Hasil AL
-    </a>
-</li>
-<li>
-    <a href="{{ route('al.laporan') }}" class="nav-link">
-        Laporan Asesmen
-    </a>
-</li>
-</ul> --}}
-
-<!-- Penugasan Banding -->
-{{-- <a href="{{ route('banding') }}" class="nav-link {{ request()->routeIs('banding') ? 'active' : '' }}">
-<span class="menu-icon">🤝</span>
-<span>Penugasan Banding</span>
-</a> --}}
-
-<!-- Pedoman AK -->
-{{-- <a href="{{ route('pedoman') }}" class="nav-link {{ request()->routeIs('pedoman') ? 'active' : '' }}">
-<span class="menu-icon">❓</span>
-<span>Pedoman AK</span>
-</a> --}}
-
-<!-- Dokumen Adm. AL -->
-{{-- <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'dokumen-submenu')">
-    <span class="menu-icon">📁</span>
-    <span>Dokumen Adm. AL</span>
-</a>
-<ul class="submenu nav flex-column" id="dokumen-submenu">
-    <li>
-        <a href="{{ route('dokumen.panduan') }}" class="nav-link">
-Panduan Asesmen
-</a>
-</li>
-<li>
-    <a href="{{ route('dokumen.instrumen') }}" class="nav-link">
-        Instrumen Akreditasi
-    </a>
-</li>
-<li>
-    <a href="{{ route('dokumen.template') }}" class="nav-link">
-        Template Penilaian
-    </a>
-</li>
-<li>
-    <a href="{{ route('dokumen.surat') }}" class="nav-link">
-        Surat Tugas
-    </a>
-</li>
-</ul> --}}

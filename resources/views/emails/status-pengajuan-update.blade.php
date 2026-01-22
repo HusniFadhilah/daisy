@@ -68,7 +68,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h2>📢 Update Status Pengajuan</h2>
+            <h2>📢 Update Status Permohonan</h2>
         </div>
 
         <div class="content">

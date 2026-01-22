@@ -15,6 +15,209 @@ use Illuminate\Support\Facades\Storage;
 
 class PelaporanController extends Controller
 {
+    /**
+     * ============================================
+     * MAIN INDEX - Overview All Types
+     * ============================================
+     */
+    public function index()
+    {
+        $user = Auth::user();
+
+        // Get all validator assignments
+        $assignments = AsesmenUserRole::with([
+            'asesmen.pengajuan',
+            'asesmen.studyProgram.university',
+            'role_selected',
+        ])
+            ->where('id_user', $user->id)
+            ->where('status_penawaran', 'accepted')
+            ->whereHas('role', fn($q) => $q->where('name', 'validator'))
+            ->whereIn('jenis_asesmen', ['dokumen', 'ak', 'al'])
+            ->latest('created_at')
+            ->get();
+
+        // Group by type
+        $byType = [
+            'dokumen' => $assignments->where('jenis_asesmen', 'dokumen'),
+            'ak' => $assignments->where('jenis_asesmen', 'ak'),
+            'al' => $assignments->where('jenis_asesmen', 'al'),
+        ];
+
+        // Stats per type
+        $stats = [
+            'dokumen' => [
+                'total' => $byType['dokumen']->count(),
+                'pending' => $byType['dokumen']->filter(
+                    fn($a) =>
+                    $a->asesmen->pengajuan?->canBeReported('dokumen')
+                )->count(),
+                'completed' => $byType['dokumen']->filter(
+                    fn($a) =>
+                    $a->asesmen->pengajuan?->tanggal_pelaporan_validasi_borang !== null
+                )->count(),
+            ],
+            'ak' => [
+                'total' => $byType['ak']->count(),
+                'pending' => $byType['ak']->filter(
+                    fn($a) =>
+                    $a->asesmen->pengajuan?->canBeReported('ak')
+                )->count(),
+                'completed' => $byType['ak']->filter(
+                    fn($a) =>
+                    $a->asesmen->pengajuan?->tanggal_pelaporan_ak !== null
+                )->count(),
+            ],
+            'al' => [
+                'total' => $byType['al']->count(),
+                'pending' => $byType['al']->filter(
+                    fn($a) =>
+                    $a->asesmen->pengajuan?->canBeReported('al')
+                )->count(),
+                'completed' => $byType['al']->filter(
+                    fn($a) =>
+                    $a->asesmen->pengajuan?->tanggal_pelaporan_al !== null
+                )->count(),
+            ],
+        ];
+
+        return view('asesmen.pelaporan.index', compact('stats', 'byType'));
+    }
+
+    /**
+     * ============================================
+     * INDEX PELAPORAN DOKUMEN
+     * ============================================
+     */
+    public function indexDokumen()
+    {
+        $user = Auth::user();
+
+        $assignments = AsesmenUserRole::with([
+            'asesmen.pengajuan',
+            'asesmen.studyProgram.university',
+            'role_selected',
+        ])
+            ->where('id_user', $user->id)
+            ->where('status_penawaran', 'accepted')
+            ->whereHas('role', fn($q) => $q->where('name', 'validator'))
+            ->where('jenis_asesmen', 'dokumen')
+            ->latest('created_at')
+            ->get();
+
+        $stats = [
+            'total' => $assignments->count(),
+            'pending' => $assignments->filter(
+                fn($a) =>
+                $a->asesmen->pengajuan?->canBeReported('dokumen')
+            )->count(),
+            'completed' => $assignments->filter(
+                fn($a) =>
+                $a->asesmen->pengajuan?->tanggal_pelaporan_validasi_borang !== null
+            )->count(),
+            'in_progress' => $assignments->filter(
+                fn($a) =>
+                $a->status_pekerjaan === 'in_progress'
+            )->count(),
+        ];
+
+        return view('asesmen.pelaporan.dokumen', compact('assignments', 'stats'));
+    }
+
+    /**
+     * ============================================
+     * INDEX PELAPORAN VALIDASI AK
+     * ============================================
+     */
+    public function indexValidasiAK()
+    {
+        $user = Auth::user();
+
+        $assignments = AsesmenUserRole::with([
+            'asesmen.pengajuan',
+            'asesmen.studyProgram.university',
+            'asesmen.asesmenKecukupan',
+            'role_selected',
+        ])
+            ->where('id_user', $user->id)
+            ->where('status_penawaran', 'accepted')
+            ->whereHas('role', fn($q) => $q->where('name', 'validator'))
+            ->where('jenis_asesmen', 'ak')
+            ->latest('created_at')
+            ->get();
+
+        $stats = [
+            'total' => $assignments->count(),
+            'pending' => $assignments->filter(
+                fn($a) =>
+                $a->asesmen->pengajuan?->canBeReported('ak')
+            )->count(),
+            'completed' => $assignments->filter(
+                fn($a) =>
+                $a->asesmen->pengajuan?->tanggal_pelaporan_ak !== null
+            )->count(),
+            'in_progress' => $assignments->filter(
+                fn($a) =>
+                $a->status_pekerjaan === 'in_progress'
+            )->count(),
+        ];
+
+        return view('asesmen.pelaporan.validasi-ak', compact('assignments', 'stats'));
+    }
+
+    /**
+     * ============================================
+     * INDEX PELAPORAN AK (Asesor)
+     * ============================================
+     */
+    public function indexAK()
+    {
+        // This might be for asesor's AK reporting if needed
+        // For now, redirect to validasi-ak
+        return redirect()->route('pelaporan.indexValidasiAK');
+    }
+
+    /**
+     * ============================================
+     * INDEX PELAPORAN AL
+     * ============================================
+     */
+    public function indexAL()
+    {
+        $user = Auth::user();
+
+        $assignments = AsesmenUserRole::with([
+            'asesmen.pengajuan',
+            'asesmen.studyProgram.university',
+            'asesmen.asesmenLapangan',
+            'role_selected',
+        ])
+            ->where('id_user', $user->id)
+            ->where('status_penawaran', 'accepted')
+            ->whereHas('role', fn($q) => $q->where('name', 'validator'))
+            ->where('jenis_asesmen', 'al')
+            ->latest('created_at')
+            ->get();
+
+        $stats = [
+            'total' => $assignments->count(),
+            'pending' => $assignments->filter(
+                fn($a) =>
+                $a->asesmen->pengajuan?->canBeReported('al')
+            )->count(),
+            'completed' => $assignments->filter(
+                fn($a) =>
+                $a->asesmen->pengajuan?->tanggal_pelaporan_al !== null
+            )->count(),
+            'in_progress' => $assignments->filter(
+                fn($a) =>
+                $a->status_pekerjaan === 'in_progress'
+            )->count(),
+        ];
+
+        return view('asesmen.pelaporan.al', compact('assignments', 'stats'));
+    }
+
     public function uploadLaporanValidasi(Request $request, $idAssignment)
     {
         $request->validate([

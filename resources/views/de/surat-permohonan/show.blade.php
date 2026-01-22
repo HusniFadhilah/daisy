@@ -70,7 +70,7 @@
                         <tr>
                             <th>Status Saat Ini</th>
                             <td>
-                                : <span class="badge {{ $pengajuan->status_badge_class }}">
+                                : <span class="badge {{ $pengajuan->status_badge_class }} text-wrap">
                                     {{ $pengajuan->status_label }}
                                 </span>
                             </td>

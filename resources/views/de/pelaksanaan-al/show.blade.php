@@ -52,8 +52,8 @@
                         <tr>
                             <td class="text-muted">Status</td>
                             <td>
-                                <span class="badge bg-info">
-                                    {{ str_replace('_', ' ', strtoupper($pengajuan->status)) }}
+                                <span class="badge bg-info text-wrap">
+                                    {{ $pengajuan->status_label }}
                                 </span>
                             </td>
                         </tr>
@@ -206,13 +206,13 @@
                     <h6 class="mb-0">
                         <i class="bi bi-person-check"></i> Validator untuk Rekap & Pelaporan
                     </h6>
-                    @if(in_array($pengajuan->status, [
+                    {{-- @if(in_array($pengajuan->status, [
                     \App\Models\PengajuanAkreditasi::STATUS_AL_SELESAI,
-                    ]))
+                    ])) --}}
                     <button class="btn btn-sm btn-dark" onclick="showAssignValidatorModal({{ $pengajuan->id }})">
                         <i class="bi bi-plus-circle"></i> Tugaskan Validator
                     </button>
-                    @endif
+                    {{-- @endif --}}
                 </div>
                 <div class="card-body">
                     @if(!$hasValidator)

@@ -120,7 +120,7 @@
             <h4 class="mb-1">
                 <i class="bi bi-file-earmark-text"></i> Detail Monitoring Pelaporan Dokumen
             </h4>
-            <p class="text-muted mb-0">{{ $pengajuan->nomor_permohonan }}</p>
+            <p class="text-muted mb-0">{{ $pengajuan->nomor_pengajuan }}</p>
         </div>
         <div>
             <span class="badge bg-{{ $statusPelaporan['class'] }}" style="font-size: 14px; padding: 8px 16px;">
@@ -155,13 +155,13 @@
                         </tr>
                         <tr>
                             <td class="text-muted">Nomor Permohonan</td>
-                            <td><code>{{ $pengajuan->nomor_permohonan }}</code></td>
+                            <td><code>{{ $pengajuan->nomor_pengajuan }}</code></td>
                         </tr>
                         <tr>
-                            <td class="text-muted">Status Pengajuan</td>
+                            <td class="text-muted">Status Permohonan</td>
                             <td>
-                                <span class="badge bg-info">
-                                    {{ str_replace('_', ' ', strtoupper($pengajuan->status)) }}
+                                <span class="badge bg-info text-wrap">
+                                    {{ $pengajuan->status_label }}
                                 </span>
                             </td>
                         </tr>
@@ -268,7 +268,7 @@
                         <i class="bi bi-clock-history"></i> Riwayat Status
                     </h6>
                 </div>
-                <div class="card-body">
+                <div class="card-body" style="max-height: 500px; overflow-y: auto;">
                     @if($pengajuan->statusLog && $pengajuan->statusLog->count() > 0)
                     <div class="timeline">
                         @foreach($pengajuan->statusLog->take(10) as $log)
@@ -294,7 +294,7 @@
                                     <div class="d-flex justify-content-between align-items-start mb-2">
                                         <div>
                                             <span class="badge bg-{{ $markerClass }} mb-1">
-                                                {{ str_replace('_', ' ', strtoupper($log->status_to)) }}
+                                                {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label'] ?? $log->status_to }}
                                             </span>
                                             <p class="mb-0 small text-muted">
                                                 {{ $log->keterangan }}
