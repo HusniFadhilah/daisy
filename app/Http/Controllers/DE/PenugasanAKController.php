@@ -342,7 +342,7 @@ class PenugasanAKController extends Controller
             if ($role->name === 'asesor') {
                 $existingUrutans = AsesmenUserRole::where('id_asesmen', $asesmen->id)
                     ->where('jenis_asesmen', 'ak')
-                    ->whereHas('role_selected', fn($q) => $q->where('name', 'asesor'))
+                    ->whereHas('role', fn($q) => $q->where('name', 'asesor'))
                     ->pluck('urutan_asesor')
                     ->toArray();
 
@@ -666,7 +666,7 @@ class PenugasanAKController extends Controller
     {
         $asesors = AsesmenUserRole::where('id_asesmen', $idAsesmen)
             ->where('jenis_asesmen', 'ak')
-            ->whereHas('role_selected', fn($q) => $q->where('name', 'asesor'))
+            ->whereHas('role', fn($q) => $q->where('name', 'asesor'))
             ->orderBy('urutan_asesor')
             ->get();
 

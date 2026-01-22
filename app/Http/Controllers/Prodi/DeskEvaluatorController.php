@@ -176,7 +176,7 @@ class DeskEvaluatorController extends Controller
                     Mail::to($user->email)->send(new PengingatAkreditasi($pengajuan, $request->pesan_pengingat));
                 }
 
-                $this->logStatus($pengajuan, null, PengajuanAkreditasi::STATUS_PENGINGAT_DIKIRIM, 'Pengingat dikirim ke ' . $prodi->name);
+                $this->logStatus($pengajuan, null, PengajuanAkreditasi::STATUS_PENGINGAT_DIKIRIM, 'Pengingat masa akreditasi dikirim ke prodi ' . $prodi->name);
             }
 
             DB::commit();

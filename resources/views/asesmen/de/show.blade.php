@@ -365,7 +365,7 @@
                                         <label class="form-label fw-bold">
                                             Biaya Pembayaran Akreditasi (Rp) <span class="text-danger">*</span>
                                         </label>
-                                        <input type="number" name="jumlah_pembayaran" class="form-control @error('jumlah_pembayaran') is-invalid @enderror" value="{{ old('jumlah_pembayaran', 53000000) }}" step="100000" min="0">
+                                        <input type="number" name="jumlah_pembayaran" class="form-control @error('jumlah_pembayaran') is-invalid @enderror" value="{{ old('jumlah_pembayaran', \App\Models\PengajuanPembayaran::BIAYA_AKREDITASI) }}" step="100000" min="0">
                                         @error('jumlah_pembayaran')
                                         <div class="invalid-feedback">
                                             {{ $message }}

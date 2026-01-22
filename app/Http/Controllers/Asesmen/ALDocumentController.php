@@ -23,7 +23,7 @@ class ALDocumentController extends Controller
         $asesmen = \App\Models\Asesmen::with(['studyProgram.university'])->findOrFail($idAsesmen);
 
         $docs = \App\Models\AsesmenDocument::where('id_asesmen', $idAsesmen)
-            ->where('type', 'berita_acara')
+            ->where('type', 'berita_acara_al')
             ->orderBy('sort_order')->orderBy('id')
             ->get();
 
@@ -36,7 +36,7 @@ class ALDocumentController extends Controller
         $this->assertAccessOrFail((int)$idAsesmen);
 
         $docs = AsesmenDocument::where('id_asesmen', $idAsesmen)
-            ->where('type', 'berita_acara')
+            ->where('type', 'berita_acara_al')
             ->with(['uploader'])
             ->orderBy('sort_order')
             ->orderBy('id')
@@ -77,7 +77,7 @@ class ALDocumentController extends Controller
         $this->assertAccessOrFail((int)$idAsesmen);
 
         $docs = AsesmenDocument::where('id_asesmen', $idAsesmen)
-            ->where('type', 'berita_acara')
+            ->where('type', 'berita_acara_al')
             ->orderBy('sort_order')
             ->orderBy('id')
             ->get();
@@ -99,7 +99,7 @@ class ALDocumentController extends Controller
 
             $baseDir = "asesmen/document/{$idAsesmen}";
             $maxSort = (int) AsesmenDocument::where('id_asesmen', $idAsesmen)
-                ->where('type', 'berita_acara')
+                ->where('type', 'berita_acara_al')
                 ->max('sort_order');
 
             $created = [];
@@ -121,7 +121,7 @@ class ALDocumentController extends Controller
                 $created[] = AsesmenDocument::create([
                     'id_asesmen' => $idAsesmen,
                     'title' => 'Hasil dan Berita Acara Asesmen Lapangan',
-                    'type' => 'berita_acara',
+                    'type' => 'berita_acara_al',
                     'original_name' => $file->getClientOriginalName(),
                     'path' => $storedPath,
                     'size' => $file->getSize() ?? 0,
@@ -223,7 +223,7 @@ class ALDocumentController extends Controller
 
             // 1. Cek apakah ada dokumen berita acara
             $docsCount = AsesmenDocument::where('id_asesmen', $idAsesmen)
-                ->where('type', 'berita_acara')
+                ->where('type', 'berita_acara_al')
                 ->where('is_active', true)
                 ->count();
 

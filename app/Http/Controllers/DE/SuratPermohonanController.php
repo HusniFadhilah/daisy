@@ -23,13 +23,27 @@ class SuratPermohonanController extends Controller
             'studyProgram.university',
             'studyProgram.degreeLevel',
             'pengaju',
+            'statusLog' => function ($q) {
+                $q->whereIn('status_to', [
+                    PengajuanAkreditasi::STATUS_PENGINGAT_DIKIRIM,
+                    PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM,
+                    PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
+                    PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITOLAK,
+                ])->orderBy('changed_at', 'desc');
+            },
         ])
-            ->whereIn('status', [
-                PengajuanAkreditasi::STATUS_PENGINGAT_DIKIRIM,
-                PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM,
-                PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
-                PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITOLAK,
-            ]);
+            // ✅ basis list: pernah masuk fase surat
+            ->whereExists(function ($q) {
+                $q->select(DB::raw(1))
+                    ->from('pengajuan_status_log as l')
+                    ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
+                    ->whereIn('l.status_to', [
+                        PengajuanAkreditasi::STATUS_PENGINGAT_DIKIRIM,
+                        PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM,
+                        PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
+                        PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITOLAK,
+                    ]);
+            });
 
         // Filter by status
         if ($request->filled('status')) {
@@ -61,7 +75,7 @@ class SuratPermohonanController extends Controller
 
         // Sort
         $sortBy = $request->get('sort_by', 'tanggal_pengingat');
-        $sortOrder = $request->get('sort_order', 'desc');
+        $sortOrder = $request->get('sort_order', 'asc');
         $query->orderBy($sortBy, $sortOrder);
 
         $pengajuans = $query->paginate(20);
@@ -140,7 +154,7 @@ class SuratPermohonanController extends Controller
                 'status_to' => PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
                 'changed_by' => auth()->id(),
                 'changed_at' => now(),
-                'keterangan' => $request->keterangan ?? 'Surat permohonan diterima oleh DE',
+                'keterangan' => $request->keterangan ?? 'Surat permohonan akreditasi dari PS, diterima oleh DE',
             ]);
 
             DB::commit();
@@ -196,7 +210,7 @@ class SuratPermohonanController extends Controller
                 'status_to' => PengajuanAkreditasi::STATUS_DITOLAK,
                 'changed_by' => auth()->id(),
                 'changed_at' => now(),
-                'keterangan' => 'Surat permohonan belum diterima: ' . $request->alasan_penolakan,
+                'keterangan' => 'Surat permohonan akreditasi dari PS belum diterima: ' . $request->alasan_penolakan,
             ]);
 
             DB::commit();
@@ -213,22 +227,58 @@ class SuratPermohonanController extends Controller
     /**
      * Calculate statistics
      */
-    private function calculateStatistics()
+    private function calculateStatistics(): array
     {
-        return [
-            'total' => PengajuanAkreditasi::whereIn('status', [
-                PengajuanAkreditasi::STATUS_PENGINGAT_DIKIRIM,
-                PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM,
-                PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
-            ])->count(),
-            'menunggu' => PengajuanAkreditasi::where('status', PengajuanAkreditasi::STATUS_PENGINGAT_DIKIRIM)
-                ->count(),
-            'dikirim' => PengajuanAkreditasi::where('status', PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM)
-                ->count(),
-            'diterima' => PengajuanAkreditasi::where('status', PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA)
-                ->count(),
-            'ditolak' => PengajuanAkreditasi::where('status', PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITOLAK)
-                ->count(),
-        ];
+        $base = PengajuanAkreditasi::query();
+
+        // Total: pernah ada surat permohonan
+        $total = (clone $base)
+            ->whereHas('statusLog', function ($q) {
+                $q->whereIn('status_to', [
+                    PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM,
+                    PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
+                    PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITOLAK,
+                ]);
+            })
+            ->count();
+
+        // Menunggu: sudah pengingat, belum pernah surat dikirim
+        $menunggu = (clone $base)
+            ->whereHas('statusLog', function ($q) {
+                $q->where('status_to', PengajuanAkreditasi::STATUS_PENGINGAT_DIKIRIM);
+            })
+            ->whereDoesntHave('statusLog', function ($q) {
+                $q->where('status_to', PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM);
+            })
+            ->count();
+
+        // Dikirim: sudah dikirim, belum diterima / ditolak
+        $dikirim = (clone $base)
+            ->whereHas('statusLog', function ($q) {
+                $q->where('status_to', PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM);
+            })
+            ->whereDoesntHave('statusLog', function ($q) {
+                $q->whereIn('status_to', [
+                    PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
+                    PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITOLAK,
+                ]);
+            })
+            ->count();
+
+        // Diterima
+        $diterima = (clone $base)
+            ->whereHas('statusLog', function ($q) {
+                $q->where('status_to', PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA);
+            })
+            ->count();
+
+        // Ditolak
+        $ditolak = (clone $base)
+            ->whereHas('statusLog', function ($q) {
+                $q->where('status_to', PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITOLAK);
+            })
+            ->count();
+
+        return compact('total', 'menunggu', 'dikirim', 'diterima', 'ditolak');
     }
 }

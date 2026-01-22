@@ -163,8 +163,8 @@ class PenyampaianTemplateController extends Controller
                 'status_to' => PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM,
                 'changed_by' => auth()->id(),
                 'changed_at' => now(),
-                'keterangan' => 'Template LED+Suplemen dan LKPS serta Template Formulir Pembayaran dikirim via link' .
-                    ($request->keterangan ? '. ' . $request->keterangan : ''),
+                'keterangan' => 'Template LED+Suplemen dan LKPS serta Template Formulir Pembayaran dikirim via link oleh DE'
+                // .($request->keterangan ? '. ' . $request->keterangan : ''),
             ]);
 
             DB::commit();
@@ -253,8 +253,8 @@ class PenyampaianTemplateController extends Controller
                 'changed_by' => auth()->id(),
                 'changed_at' => now(),
                 'keterangan' => 'Template LED+Suplemen dan LKPS (' . $fileLED->getClientOriginalName() . ') ' .
-                    'serta Template Formulir Pembayaran (' . $filePembayaran->getClientOriginalName() . ') dikirim via upload' .
-                    ($request->keterangan ? '. ' . $request->keterangan : ''),
+                    'serta Template Formulir Pembayaran (' . $filePembayaran->getClientOriginalName() . ') dikirim via upload oleh DE'
+                // .($request->keterangan ? '. ' . $request->keterangan : ''),
             ]);
 
             DB::commit();

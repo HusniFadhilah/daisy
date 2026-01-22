@@ -64,7 +64,7 @@
                             <td>: {{ $pengajuan->pengaju->name ?? '-' }}</td>
                         </tr>
                         <tr>
-                            <th>Status</th>
+                            <th>Status Saat Ini</th>
                             <td>
                                 : <span class="badge {{ $pengajuan->status_badge_class }}">
                                     {{ $pengajuan->status_label }}
@@ -148,10 +148,10 @@
                         <i class="bi bi-clock-history"></i> Riwayat Status
                     </h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body" style="max-height: 600px; overflow-y: auto;">
                     @if($pengajuan->statusLog->count() > 0)
                     <div class="timeline">
-                        @foreach($pengajuan->statusLog->sortByDesc('changed_at') as $log)
+                        @foreach($pengajuan->statusLog->sortBy('changed_at') as $log)
                         <div class="timeline-item mb-3">
                             <div class="d-flex">
                                 <div class="flex-shrink-0">

@@ -135,7 +135,7 @@ class Asesmen extends Model
     public function beritaAcara()
     {
         return $this->documents()
-            ->where('type', 'berita_acara')
+            ->where('type', 'berita_acara_al')
             ->where('is_active', true)
             ->orderBy('sort_order')
             ->orderBy('id');

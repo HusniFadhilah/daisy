@@ -9,6 +9,8 @@ class PengajuanPembayaran extends Model
 {
     protected $table = 'pengajuan_pembayaran';
 
+    public const BIAYA_AKREDITASI = 59500000;
+
     protected $fillable = [
         'id_pengajuan',
         'nomor_invoice',

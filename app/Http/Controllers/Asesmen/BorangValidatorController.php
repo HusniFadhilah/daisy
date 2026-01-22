@@ -42,7 +42,7 @@ class BorangValidatorController extends Controller
             'borangValidation',
         ])
             ->where('id_user', $user->id)
-            ->whereHas('role_selected', function ($q) {
+            ->whereHas('role', function ($q) {
                 $q->where('name', 'validator');
             })
             ->where('jenis_asesmen', 'dokumen')
@@ -65,23 +65,23 @@ class BorangValidatorController extends Controller
         // Calculate stats
         $stats = [
             'pending' => AsesmenUserRole::where('id_user', $user->id)
-                ->whereHas('role_selected', fn($q) => $q->where('name', 'validator'))
+                ->whereHas('role', fn($q) => $q->where('name', 'validator'))
                 ->where('jenis_asesmen', 'dokumen')
                 ->where('status_penawaran', 'pending')
                 ->count(),
             'in_review' => AsesmenUserRole::where('id_user', $user->id)
-                ->whereHas('role_selected', fn($q) => $q->where('name', 'validator'))
+                ->whereHas('role', fn($q) => $q->where('name', 'validator'))
                 ->where('jenis_asesmen', 'dokumen')
                 ->where('status_penawaran', 'accepted')
                 ->where('status_pekerjaan', 'in_progress')
                 ->count(),
             'revision' => AsesmenUserRole::where('id_user', $user->id)
-                ->whereHas('role_selected', fn($q) => $q->where('name', 'validator'))
+                ->whereHas('role', fn($q) => $q->where('name', 'validator'))
                 ->where('jenis_asesmen', 'dokumen')
                 ->where('status_pekerjaan', 'revision_required')
                 ->count(),
             'approved' => AsesmenUserRole::where('id_user', $user->id)
-                ->whereHas('role_selected', fn($q) => $q->where('name', 'validator'))
+                ->whereHas('role', fn($q) => $q->where('name', 'validator'))
                 ->where('jenis_asesmen', 'dokumen')
                 ->where('status_pekerjaan', 'approved')
                 ->count(),
@@ -110,7 +110,7 @@ class BorangValidatorController extends Controller
             'user',
         ])
             ->where('id_user', $user->id)
-            ->whereHas('role_selected', function ($q) {
+            ->whereHas('role', function ($q) {
                 $q->where('name', 'validator');
             })
             ->where('jenis_asesmen', 'dokumen')
@@ -279,7 +279,7 @@ class BorangValidatorController extends Controller
 
             $assignment = AsesmenUserRole::with('borangValidation')
                 ->where('id_user', $user->id)
-                ->whereHas('role_selected', fn($q) => $q->where('name', 'validator'))
+                ->whereHas('role', fn($q) => $q->where('name', 'validator'))
                 ->where('jenis_asesmen', 'dokumen')
                 ->findOrFail($idAssignment);
 
@@ -391,7 +391,7 @@ class BorangValidatorController extends Controller
                 'borangValidation',
             ])
                 ->where('id_user', $user->id)
-                ->whereHas('role_selected', fn($q) => $q->where('name', 'validator'))
+                ->whereHas('role', fn($q) => $q->where('name', 'validator'))
                 ->where('jenis_asesmen', 'dokumen')
                 ->findOrFail($idAssignment);
 
@@ -907,7 +907,7 @@ class BorangValidatorController extends Controller
                 'borangValidation',
             ])
                 ->where('id_user', $user->id)
-                ->whereHas('role_selected', fn($q) => $q->where('name', 'validator'))
+                ->whereHas('role', fn($q) => $q->where('name', 'validator'))
                 ->where('jenis_asesmen', 'dokumen')
                 ->findOrFail($idAssignment);
 
@@ -941,7 +941,7 @@ class BorangValidatorController extends Controller
                 'borangValidation',
             ])
                 ->where('id_user', $user->id)
-                ->whereHas('role_selected', fn($q) => $q->where('name', 'validator'))
+                ->whereHas('role', fn($q) => $q->where('name', 'validator'))
                 ->where('jenis_asesmen', 'dokumen')
                 ->findOrFail($idAssignment);
 
@@ -978,7 +978,7 @@ class BorangValidatorController extends Controller
 
             $assignment = AsesmenUserRole::with('borangValidation')
                 ->where('id_user', $user->id)
-                ->whereHas('role_selected', fn($q) => $q->where('name', 'validator'))
+                ->whereHas('role', fn($q) => $q->where('name', 'validator'))
                 ->where('jenis_asesmen', 'dokumen')
                 ->findOrFail($idAssignment);
 
@@ -1019,7 +1019,7 @@ class BorangValidatorController extends Controller
 
             $assignment = AsesmenUserRole::with('borangValidation')
                 ->where('id_user', $user->id)
-                ->whereHas('role_selected', fn($q) => $q->where('name', 'validator'))
+                ->whereHas('role', fn($q) => $q->where('name', 'validator'))
                 ->where('jenis_asesmen', 'dokumen')
                 ->where('status_penawaran', 'accepted') // ✅ biar konsisten dgn show()
                 ->findOrFail($idAssignment);

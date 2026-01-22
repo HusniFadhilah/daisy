@@ -28,10 +28,10 @@ class PelaporanController extends Controller
 
             $assignment = AsesmenUserRole::with([
                 'asesmen.pengajuan',
-                'role_selected',
+                'role',
             ])
                 ->where('id_user', $user->id)
-                ->whereHas('role_selected', fn($q) => $q->where('name', 'validator'))
+                ->whereHas('role', fn($q) => $q->where('name', 'validator'))
                 ->where('jenis_asesmen', 'dokumen')
                 ->findOrFail($idAssignment);
 
@@ -115,7 +115,7 @@ class PelaporanController extends Controller
                 'role_selected',
             ])
                 ->where('id_user', $user->id)
-                ->whereHas('role_selected', fn($q) => $q->where('name', 'validator'))
+                ->whereHas('role', fn($q) => $q->where('name', 'validator'))
                 ->where('jenis_asesmen', 'dokumen')
                 ->findOrFail($idAssignment);
 
@@ -546,7 +546,7 @@ class PelaporanController extends Controller
             } else {
                 $doc = AsesmenDocument::create($payload + ['version' => 1]);
             }
-
+            $assignment->update(['status_pekerjaan' => 'in_progress']);
             DB::commit();
             return response()->json([
                 'success' => true,
@@ -626,6 +626,7 @@ class PelaporanController extends Controller
                 ]);
             }
 
+            $assignment->update(['status_pekerjaan' => 'submitted', 'submitted_at' => now()]);
             DB::commit();
             return response()->json([
                 'success' => true,

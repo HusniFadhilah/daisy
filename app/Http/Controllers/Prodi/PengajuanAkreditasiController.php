@@ -1576,7 +1576,7 @@ class PengajuanAkreditasiController extends Controller
                     'bukti_path'         => $buktiPath,
                     'formulir_path'      => $formulirPath,
                     'nomor_invoice'      => $pengajuan->pembayaran->nomor_invoice ?? 'INV-' . Auth::id(),
-                    'jumlah_pembayaran'  => $pengajuan->pembayaran->jumlah_pembayaran ?? 53000000,
+                    'jumlah_pembayaran'  => $pengajuan->pembayaran->jumlah_pembayaran ?? PengajuanPembayaran::BIAYA_AKREDITASI,
                     'catatan_pembayaran'  => $request->catatan_pembayaran,
                 ]
             );
@@ -1593,7 +1593,7 @@ class PengajuanAkreditasiController extends Controller
                 $pengajuan,
                 $oldStatus,
                 $newStatus,
-                'Bukti pembayaran dan formulir diupload oleh prodi.'
+                'Bukti pembayaran dan formulir diupload oleh prodi. Sedang menunggu verifikasi pembayaran oleh bagian Keuangan LAMDEPILAR'
             );
 
             DB::commit();

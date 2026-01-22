@@ -22,7 +22,7 @@ class PengajuanBorangController extends Controller
         // Ambil record validasi dari assignment validator (ambil yang paling relevan / terbaru)
         $assignment = AsesmenUserRole::with(['user', 'borangValidation'])
             ->whereHas('asesmen', fn($q) => $q->where('id_pengajuan', $pengajuan->id))
-            ->whereHas('role_selected', fn($q) => $q->where('name', 'validator'))
+            ->whereHas('role', fn($q) => $q->where('name', 'validator'))
             ->where('jenis_asesmen', 'dokumen')
             ->latest('updated_at')
             ->first();
@@ -81,7 +81,7 @@ class PengajuanBorangController extends Controller
 
         $assignment = AsesmenUserRole::with(['user', 'borangValidation'])
             ->whereHas('asesmen', fn($q) => $q->where('id_pengajuan', $pengajuan->id))
-            ->whereHas('role_selected', fn($q) => $q->where('name', 'validator'))
+            ->whereHas('role', fn($q) => $q->where('name', 'validator'))
             ->where('jenis_asesmen', 'dokumen')
             ->latest('updated_at')
             ->first();

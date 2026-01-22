@@ -2,10 +2,399 @@
 
 namespace App\Http\Controllers\DE;
 
-use App\Http\Controllers\Controller;
+use App\Models\Role;
+use App\Models\User;
+use App\Models\Asesmen;
 use Illuminate\Http\Request;
+use App\Models\AsesmenUserRole;
+use App\Models\AsesmenLapangan;
+use Illuminate\Support\Facades\DB;
+use App\Models\PengajuanAkreditasi;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use App\Jobs\SendPenawaranAsesmenEmail;
 
 class PelaksanaanALController extends Controller
 {
-    //
+    /**
+     * Dashboard pelaksanaan & monitoring AL
+     */
+    public function index(Request $request)
+    {
+        // Query pengajuan yang sedang dalam proses AL
+        $query = PengajuanAkreditasi::with([
+            'studyProgram.university',
+            'studyProgram.degreeLevel',
+            'asesmen.asesmenLapangan',
+            'asesmen.asesmenUserRoles' => function ($q) {
+                $q->where('jenis_asesmen', 'al')
+                    ->with(['user', 'role_selected']);
+            }
+        ])
+            ->whereIn('status', [
+                PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,   // Asesor ditugaskan
+                PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,       // Visitasi berlangsung
+                PengajuanAkreditasi::STATUS_AL_SELESAI,           // AL selesai
+                PengajuanAkreditasi::STATUS_AL_DILAPORKAN,        // Dilaporkan
+            ]);
+
+        // Filter by university
+        if ($request->filled('university_id')) {
+            $query->whereHas('studyProgram', function ($q) use ($request) {
+                $q->where('id_univ', $request->university_id);
+            });
+        }
+
+        // Filter by status
+        if ($request->filled('status_al')) {
+            switch ($request->status_al) {
+                case 'sedang_visitasi':
+                    $query->whereIn('status', [
+                        PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
+                        PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
+                    ]);
+                    break;
+                case 'perlu_validator':
+                    // AL selesai tapi belum ada validator untuk pelaporan
+                    $query->where('status', PengajuanAkreditasi::STATUS_AL_SELESAI)
+                        ->whereDoesntHave('asesmen.asesmenUserRoles', function ($q) {
+                            $q->where('jenis_asesmen', 'al')
+                                ->whereHas('role_selected', fn($r) => $r->where('name', 'validator'));
+                        });
+                    break;
+                case 'sedang_pelaporan':
+                    // Sedang pelaporan = AL selesai + has validator assigned
+                    $query->where('status', PengajuanAkreditasi::STATUS_AL_SELESAI)
+                        ->whereHas('asesmen.asesmenUserRoles', function ($q) {
+                            $q->where('jenis_asesmen', 'al')
+                                ->whereHas('role_selected', fn($r) => $r->where('name', 'validator'));
+                        });
+                    break;
+                case 'selesai':
+                    $query->where('status', PengajuanAkreditasi::STATUS_AL_DILAPORKAN);
+                    break;
+            }
+        }
+
+        // Search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nomor_permohonan', 'like', "%{$search}%")
+                    ->orWhereHas('studyProgram', function ($sq) use ($search) {
+                        $sq->where('name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+        $query->orderBy($sortBy, $sortOrder);
+
+        $pengajuans = $query->paginate(20);
+
+        // Calculate statistics
+        $stats = $this->calculateStatistics();
+
+        // Get universities & users
+        $universities = \App\Models\University::nonExample()->orderBy('name')->get();
+        $availableValidators = User::notAdmin()->orderBy('name')->get();
+
+        // Check if AJAX
+        if ($request->ajax() || $request->wantsJson()) {
+            $html = view('de.pelaksanaan-al.components.table-content', compact('pengajuans'))->render();
+            return response()->json([
+                'success' => true,
+                'html' => $html,
+                'total' => $pengajuans->total(),
+            ]);
+        }
+
+        return view('de.pelaksanaan-al.index', compact(
+            'pengajuans',
+            'stats',
+            'universities',
+            'availableValidators'
+        ));
+    }
+
+    /**
+     * Detail pelaksanaan AL untuk satu pengajuan
+     */
+    public function show($id)
+    {
+        $pengajuan = PengajuanAkreditasi::with([
+            'studyProgram.university',
+            'studyProgram.degreeLevel',
+            'asesmen.asesmenLapangan',
+            'asesmen.asesmenUserRoles' => function ($q) {
+                $q->where('jenis_asesmen', 'al')
+                    ->with(['user', 'role_selected']);
+            },
+            'statusLog' => function ($q) {
+                $q->orderBy('changed_at', 'desc')->with('changedBy');
+            }
+        ])->findOrFail($id);
+
+        // Get progress penilaian AL dari asesor
+        $totalElemens = DB::table('elemen_standar')->count();
+
+        // Progress per asesor
+        $asesorProgress = DB::table('penilaian_elemen_al')
+            ->where('id_asesmen', $pengajuan->asesmen->id ?? 0)
+            ->whereNotNull('skor')
+            ->groupBy('id_asesor')
+            ->select('id_asesor', DB::raw('COUNT(*) as completed'))
+            ->pluck('completed', 'id_asesor');
+
+        // Berita Acara progress (check from asesmen_documents)
+        $beritaAcaraProgress = null;
+        if ($pengajuan->asesmen) {
+            $beritaAcaraProgress = $pengajuan->asesmen->documents()
+                ->where('type', 'berita_acara_al')
+                ->where('is_active', true)
+                ->first();
+        }
+
+        // Map progress
+        $userProgress = [];
+        if ($pengajuan->asesmen) {
+            foreach ($pengajuan->asesmen->asesmenUserRoles as $assignment) {
+                if ($assignment->role_selected->name === 'asesor') {
+                    $completed = $asesorProgress[$assignment->id_user] ?? 0;
+                    $userProgress[$assignment->id_user] = [
+                        'total' => $totalElemens,
+                        'completed' => $completed,
+                        'percentage' => $totalElemens ? round(($completed / $totalElemens) * 100, 1) : 0,
+                    ];
+                } elseif ($assignment->role_selected->name === 'validator') {
+                    // Validator progress based on berita acara completion
+                    $userProgress[$assignment->id_user] = [
+                        'berita_acara_completed' => $beritaAcaraProgress ? true : false,
+                        'percentage' => $beritaAcaraProgress ? 100 : 0,
+                    ];
+                }
+            }
+        }
+
+        // Validator assignment status
+        $hasValidator = $pengajuan->asesmen?->asesmenUserRoles()
+            ->where('jenis_asesmen', 'al')
+            ->whereHas('role', fn($q) => $q->where('name', 'validator'))
+            ->exists();
+
+        // Available validators
+        $availableValidators = User::notAdmin()->orderBy('name')->get();
+
+        return view('de.pelaksanaan-al.show', compact(
+            'pengajuan',
+            'userProgress',
+            'hasValidator',
+            'beritaAcaraProgress',
+            'availableValidators',
+            'totalElemens'
+        ));
+    }
+
+    /**
+     * Assign validator untuk rekap berita acara & pelaporan AL
+     */
+    public function assignValidator(Request $request, $id)
+    {
+        $request->validate([
+            'id_user' => 'required|exists:users,id',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $pengajuan = PengajuanAkreditasi::with('asesmen.asesmenLapangan')->findOrFail($id);
+
+            if (!$pengajuan->asesmen || !$pengajuan->asesmen->asesmenLapangan) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Asesmen Lapangan tidak ditemukan'
+                ], 404);
+            }
+
+            // Validasi: AL harus sudah selesai (asesor sudah submit)
+            if ($pengajuan->status !== PengajuanAkreditasi::STATUS_AL_SELESAI) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'AL harus selesai terlebih dahulu sebelum menugaskan validator untuk pelaporan'
+                ], 422);
+            }
+
+            $asesmen = $pengajuan->asesmen;
+            $asesmenLapangan = $asesmen->asesmenLapangan;
+
+            // Get validator role
+            $validatorRole = Role::where('name', 'validator')->firstOrFail();
+
+            // Check if validator already assigned
+            $exists = AsesmenUserRole::where('id_asesmen', $asesmen->id)
+                ->where('id_user', $request->id_user)
+                ->where('id_role', $validatorRole->id)
+                ->where('jenis_asesmen', 'al')
+                ->exists();
+
+            if ($exists) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validator sudah ditugaskan untuk pelaporan AL ini'
+                ], 422);
+            }
+
+            // Create assignment
+            $assignment = AsesmenUserRole::create([
+                'id_asesmen' => $asesmen->id,
+                'id_user' => $request->id_user,
+                'id_role' => $validatorRole->id,
+                'jenis_asesmen' => 'al',
+                'id_asesmen_lapangan' => $asesmenLapangan->id,
+                'urutan_asesor' => null, // NULL for validator
+                'status_penawaran' => 'pending',
+                'status_pekerjaan' => 'not_started',
+                'tanggal_penugasan' => now(),
+            ]);
+
+            $user = User::find($request->id_user);
+
+            // Status tidak berubah saat assign validator
+            // Status akan berubah ke AL_ON_PELAPORAN saat validator mulai bekerja
+
+            // Send email
+            try {
+                SendPenawaranAsesmenEmail::dispatch($assignment);
+            } catch (\Exception $e) {
+                Log::error("Gagal dispatch email job penawaran validator AL", [
+                    'assignment_id' => $assignment->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => "Validator {$user->name} berhasil ditugaskan untuk rekap berita acara & pelaporan AL. Email penawaran telah dikirim.",
+                'data' => [
+                    'assignment' => $assignment,
+                    'user' => $user,
+                ]
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('assignValidator failed', ['error' => $e]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menugaskan validator: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Remove validator assignment
+     */
+    public function removeValidator(Request $request, $id, $userId)
+    {
+        DB::beginTransaction();
+        try {
+            $pengajuan = PengajuanAkreditasi::with('asesmen')->findOrFail($id);
+
+            $assignment = AsesmenUserRole::where('id_asesmen', $pengajuan->asesmen->id)
+                ->where('id_user', $userId)
+                ->where('jenis_asesmen', 'al')
+                ->whereHas('role', fn($q) => $q->where('name', 'validator'))
+                ->first();
+
+            if (!$assignment) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Penugasan validator tidak ditemukan'
+                ], 404);
+            }
+
+            // Check if validator has started work (berita acara created in documents)
+            $hasBeritaAcara = $pengajuan->asesmen->documents()
+                ->where('type', 'berita_acara_al')
+                ->where('is_active', true)
+                ->where('uploaded_by', $userId)
+                ->exists();
+
+            if ($hasBeritaAcara) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validator tidak bisa dihapus karena sudah mulai membuat berita acara.'
+                ], 422);
+            }
+
+            $userName = $assignment->user->name;
+            $assignment->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => "{$userName} berhasil dihapus dari penugasan validator AL."
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('removeValidator failed', ['error' => $e]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus validator: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Calculate statistics
+     */
+    private function calculateStatistics()
+    {
+        $base = PengajuanAkreditasi::whereIn('status', [
+            PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
+            PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
+            PengajuanAkreditasi::STATUS_AL_SELESAI,
+            PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
+        ]);
+
+        $total = (clone $base)->count();
+
+        $sedangVisitasi = (clone $base)
+            ->whereIn('status', [
+                PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
+                PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
+            ])
+            ->count();
+
+        $perluValidator = (clone $base)
+            ->where('status', PengajuanAkreditasi::STATUS_AL_SELESAI)
+            ->whereDoesntHave('asesmen.asesmenUserRoles', function ($q) {
+                $q->where('jenis_asesmen', 'al')
+                    ->whereHas('role_selected', fn($r) => $r->where('name', 'validator'));
+            })
+            ->count();
+
+        $sedangPelaporan = (clone $base)
+            ->where('status', PengajuanAkreditasi::STATUS_AL_SELESAI)
+            ->whereHas('asesmen.asesmenUserRoles', function ($q) {
+                $q->where('jenis_asesmen', 'al')
+                    ->whereHas('role_selected', fn($r) => $r->where('name', 'validator'));
+            })
+            ->count();
+
+        $selesai = (clone $base)
+            ->where('status', PengajuanAkreditasi::STATUS_AL_DILAPORKAN)
+            ->count();
+
+        return [
+            'total' => $total,
+            'sedang_visitasi' => $sedangVisitasi,
+            'perlu_validator' => $perluValidator,
+            'sedang_pelaporan' => $sedangPelaporan,
+            'selesai' => $selesai,
+        ];
+    }
 }

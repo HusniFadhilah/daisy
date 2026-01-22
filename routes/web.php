@@ -331,13 +331,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::prefix('penugasan-ak')->name('.penugasan-ak')->group(function () {
             Route::get('/', [\App\Http\Controllers\DE\PenugasanAKController::class, 'index']);
             Route::get('/{id}', [\App\Http\Controllers\DE\PenugasanAKController::class, 'show'])->name('.show');
-
-            // Actions
             Route::post('/{id}/mark-ready', [\App\Http\Controllers\DE\PenugasanAKController::class, 'markReadyForAK'])->name('.mark-ready');
             Route::post('/{id}/assign-user', [\App\Http\Controllers\DE\PenugasanAKController::class, 'assignUser'])->name('.assign-user');
             Route::delete('/{id}/remove-user/{userId}', [\App\Http\Controllers\DE\PenugasanAKController::class, 'removeUser'])->name('.remove-user');
-
-            // AJAX
             Route::get('/{id}/assignments', [\App\Http\Controllers\DE\PenugasanAKController::class, 'getAssignments'])->name('.assignments');
             Route::get('/{id}/requirements', [\App\Http\Controllers\DE\PenugasanAKController::class, 'getRequirementsStatusAjax'])->name('.requirements');
         });
@@ -355,16 +351,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::prefix('penugasan-al')->name('.penugasan-al')->group(function () {
             Route::get('/', [PenugasanALController::class, 'index']);
             Route::get('/{id}', [PenugasanALController::class, 'show'])->name('.show');
-            Route::post('/{id}/mark-ready', [PenugasanALController::class, 'markReadyForAL'])->name('.mark-ready');
             Route::post('/{id}/assign-asesor', [PenugasanALController::class, 'assignAsesor'])->name('.assign-asesor');
-            Route::post('/{id}/remove-asesor', [PenugasanALController::class, 'removeAsesor'])->name('.remove-asesor');
+            Route::delete('/{id}/remove-asesor/{userId}', [PenugasanALController::class, 'removeAsesor'])->name('.remove-asesor');
             Route::post('/{id}/update-schedule', [PenugasanALController::class, 'updateSchedule'])->name('.update-schedule');
         });
         Route::prefix('pelaksanaan-al')->name('.pelaksanaan-al')->group(function () {
             Route::get('/', [PelaksanaanALController::class, 'index']);
+            Route::get('/{id}', [PelaksanaanALController::class, 'show'])->name('.show');
+            Route::post('/{id}/assign-validator', [PelaksanaanALController::class, 'assignValidator'])->name('.assign-validator');
+            Route::delete('/{id}/remove-validator/{userId}', [PelaksanaanALController::class, 'removeValidator'])->name('.remove-validator');
         });
         Route::prefix('pelaporan-al')->name('.pelaporan-al')->group(function () {
             Route::get('/', [PelaporanALController::class, 'index']);
+            Route::get('/{id}', [PelaporanALController::class, 'show'])->name('.show');
+            Route::get('/{id}/timeline', [PelaporanALController::class, 'getTimeline'])->name('.timeline');
+            Route::get('/{id}/document/{documentId}', [PelaporanALController::class, 'previewDocument'])->name('.document.preview');
         });
         Route::prefix('penyampaian-hasil-akreditasi')->name('.penyampaian-hasil-akreditasi')->group(function () {
             Route::get('/', [PenyampaianHasilAkreditasiController::class, 'index']);

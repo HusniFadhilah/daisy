@@ -2,13 +2,18 @@
 
 namespace App\Http\Controllers\DE;
 
-use Illuminate\Http\Request;
-use App\Models\PengajuanAkreditasi;
+use App\Models\Role;
+use App\Models\User;
 use App\Models\Asesmen;
-use App\Models\AsesmenLapangan;
+use Illuminate\Http\Request;
 use App\Models\AsesmenUserRole;
+use App\Models\AsesmenLapangan;
 use Illuminate\Support\Facades\DB;
+use App\Models\PengajuanAkreditasi;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use App\Jobs\SendPenawaranAsesmenEmail;
 
 class PenugasanALController extends Controller
 {
@@ -17,7 +22,7 @@ class PenugasanALController extends Controller
      */
     public function index(Request $request)
     {
-        // Build query - pengajuan yang siap untuk AL atau sudah dalam proses AL
+        // Build query - pengajuan yang siap untuk AL
         $query = PengajuanAkreditasi::with([
             'studyProgram.university',
             'studyProgram.degreeLevel',
@@ -29,7 +34,7 @@ class PenugasanALController extends Controller
             }
         ])
             ->whereIn('status', [
-                PengajuanAkreditasi::STATUS_AK_DILAPORKAN,           // AK selesai, siap AL
+                PengajuanAkreditasi::STATUS_AK_SELESAI,           // AK selesai, siap AL
                 PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,   // Asesor AL sudah ditugaskan
                 PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,       // AL sedang berlangsung
                 PengajuanAkreditasi::STATUS_AL_SELESAI,           // AL selesai
@@ -44,8 +49,26 @@ class PenugasanALController extends Controller
         }
 
         // Filter by status
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
+        if ($request->filled('status_al')) {
+            switch ($request->status_al) {
+                case 'siap_al':
+                    $query->where('status', PengajuanAkreditasi::STATUS_AK_SELESAI)
+                        ->whereDoesntHave('asesmen.asesmenUserRoles', function ($q) {
+                            $q->where('jenis_asesmen', 'al');
+                        });
+                    break;
+                case 'sudah_ditugaskan':
+                    $query->whereIn('status', [
+                        PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
+                        PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
+                        PengajuanAkreditasi::STATUS_AL_SELESAI,
+                    ])
+                        ->whereHas('asesmen.asesmenLapangan');
+                    break;
+                case 'selesai':
+                    $query->where('status', PengajuanAkreditasi::STATUS_AL_DILAPORKAN);
+                    break;
+            }
         }
 
         // Search
@@ -68,8 +91,9 @@ class PenugasanALController extends Controller
         // Calculate statistics
         $stats = $this->calculateStatistics();
 
-        // Get universities for filter
+        // Get universities & users for assignment
         $universities = \App\Models\University::nonExample()->orderBy('name')->get();
+        $availableUsers = User::notAdmin()->orderBy('name')->get();
 
         // Check if AJAX
         if ($request->ajax() || $request->wantsJson()) {
@@ -84,12 +108,13 @@ class PenugasanALController extends Controller
         return view('de.penugasan-al.index', compact(
             'pengajuans',
             'stats',
-            'universities'
+            'universities',
+            'availableUsers'
         ));
     }
 
     /**
-     * Detail penugasan AL
+     * Detail penugasan AL untuk satu pengajuan
      */
     public function show($id)
     {
@@ -106,140 +131,107 @@ class PenugasanALController extends Controller
             }
         ])->findOrFail($id);
 
-        // Get available asesor (yang belum assigned)
-        $assignedAsesorIds = $pengajuan->asesmen?->asesmenUserRoles
-            ->where('jenis_asesmen', 'al')
-            ->pluck('id_user')
-            ->toArray() ?? [];
+        // Get progress penilaian AL
+        $totalElemens = DB::table('elemen_standar')->count();
 
-        $availableAsesors = \App\Models\User::notAdmin()
-            ->whereNotIn('id', $assignedAsesorIds)
-            ->orderBy('name')
-            ->get();
+        // Progress asesor AL
+        $asesorProgress = DB::table('penilaian_elemen_al')
+            ->where('id_asesmen', $pengajuan->asesmen->id ?? 0)
+            ->whereNotNull('skor')
+            ->groupBy('id_asesor')
+            ->select('id_asesor', DB::raw('COUNT(*) as completed'))
+            ->pluck('completed', 'id_asesor');
+
+        // Map progress
+        $userProgress = [];
+        if ($pengajuan->asesmen) {
+            foreach ($pengajuan->asesmen->asesmenUserRoles as $assignment) {
+                $completed = $asesorProgress[$assignment->id_user] ?? 0;
+
+                $userProgress[$assignment->id_user] = [
+                    'total' => $totalElemens,
+                    'completed' => $completed,
+                    'percentage' => $totalElemens ? round(($completed / $totalElemens) * 100, 1) : 0,
+                ];
+            }
+        }
+
+        // Requirements status
+        $requirementsStatus = $this->getRequirementsStatus($pengajuan);
+
+        // Available users for assignment
+        $availableUsers = User::notAdmin()->orderBy('name')->get();
 
         return view('de.penugasan-al.show', compact(
             'pengajuan',
-            'availableAsesors'
+            'userProgress',
+            'requirementsStatus',
+            'availableUsers',
+            'totalElemens'
         ));
     }
 
     /**
-     * Mark pengajuan as ready for AL and set schedule
-     */
-    public function markReadyForAL(Request $request, $id)
-    {
-        try {
-            $request->validate([
-                'tanggal_mulai' => 'required|date',
-                'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
-                'lokasi_visitasi' => 'required|string|max:500',
-                'catatan' => 'nullable|string|max:500',
-            ], [
-                'tanggal_mulai.required' => 'Tanggal mulai harus diisi',
-                'tanggal_selesai.required' => 'Tanggal selesai harus diisi',
-                'tanggal_selesai.after_or_equal' => 'Tanggal selesai tidak boleh lebih awal dari tanggal mulai',
-                'lokasi_visitasi.required' => 'Lokasi visitasi harus diisi',
-            ]);
-
-            DB::beginTransaction();
-
-            $pengajuan = PengajuanAkreditasi::with('studyProgram')->findOrFail($id);
-
-            // Validate status
-            if ($pengajuan->status !== PengajuanAkreditasi::STATUS_AK_DILAPORKAN) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Pengajuan harus dalam status AK Selesai untuk dapat ditetapkan siap AL'
-                ], 400);
-            }
-
-            // Create or get Asesmen
-            $asesmen = $pengajuan->asesmen;
-            if (!$asesmen) {
-                $asesmen = Asesmen::create([
-                    'id_study_program' => $pengajuan->id_program_studi,
-                    'id_pengajuan' => $pengajuan->id,
-                    'description' => $request->catatan ?? 'Asesmen Lapangan untuk ' . $pengajuan->studyProgram->name,
-                    'status' => 'active',
-                ]);
-            }
-
-            // Create or update AsesmenLapangan
-            $asesmenLapangan = AsesmenLapangan::updateOrCreate(
-                ['id_asesmen' => $asesmen->id],
-                [
-                    'tanggal_mulai' => $request->tanggal_mulai,
-                    'tanggal_selesai' => $request->tanggal_selesai,
-                    'lokasi_visitasi' => $request->lokasi_visitasi,
-                    'catatan' => $request->catatan,
-                    'status' => 'scheduled',
-                ]
-            );
-
-            // Update pengajuan status to PENGAJUAN_COMPLETED (ready for AL assignment)
-            $pengajuan->update([
-                'status' => PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED,
-            ]);
-
-            // Add status log
-            $tanggalMulai = \Carbon\Carbon::parse($request->tanggal_mulai)->format('d M Y');
-            $tanggalSelesai = \Carbon\Carbon::parse($request->tanggal_selesai)->format('d M Y');
-
-            $pengajuan->statusLog()->create([
-                'previous_status' => PengajuanAkreditasi::STATUS_AK_DILAPORKAN,
-                'new_status' => PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED,
-                'changed_by' => auth()->id(),
-                'changed_at' => now(),
-                'keterangan' => "Ditetapkan siap untuk AL. Periode visitasi: {$tanggalMulai} s/d {$tanggalSelesai}. Lokasi: {$request->lokasi_visitasi}",
-            ]);
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Pengajuan berhasil ditetapkan siap untuk AL'
-            ]);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation error',
-                'errors' => $e->errors()
-            ], 422);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Assign asesor to AL
+     * Tugaskan asesor untuk AL
+     * NOTE: Tidak ada "Mark Ready" - langsung assign asesor dengan schedule + lokasi
      */
     public function assignAsesor(Request $request, $id)
     {
+        $request->validate([
+            'id_user' => 'required|exists:users,id',
+            'tanggal_mulai' => 'required|date',
+            'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
+            'lokasi_visitasi' => 'required|string|max:500',
+        ]);
+
+        DB::beginTransaction();
         try {
-            $request->validate([
-                'user_id' => 'required|exists:users,id',
-                'urutan_asesor' => 'required|integer|min:1',
-            ]);
-
-            DB::beginTransaction();
-
             $pengajuan = PengajuanAkreditasi::with('asesmen')->findOrFail($id);
 
-            // Validate pengajuan has asesmen
+            // Get or create Asesmen
             if (!$pengajuan->asesmen) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Pengajuan belum memiliki asesmen. Tetapkan siap untuk AL terlebih dahulu.'
-                ], 400);
+                $asesmen = Asesmen::create([
+                    'name' => 'Asesmen - ' . $pengajuan->studyProgram->name,
+                    'code' => 'ASM-' . $pengajuan->id . '-' . now()->format('YmdHis'),
+                    'id_program_studi' => $pengajuan->id_program_studi,
+                    'id_pengajuan' => $pengajuan->id,
+                    'tanggal_mulai' => $request->tanggal_mulai,
+                    'tanggal_selesai' => $request->tanggal_selesai,
+                    'status' => 'active',
+                ]);
+
+                $pengajuan->update(['id_asesmen' => $asesmen->id]);
+            } else {
+                $asesmen = $pengajuan->asesmen;
             }
 
+            // Get or create AsesmenLapangan
+            $asesmenLapangan = AsesmenLapangan::firstOrCreate(
+                ['id_asesmen' => $asesmen->id],
+                [
+                    'code' => 'AL-' . $asesmen->code,
+                    'tanggal_mulai' => $request->tanggal_mulai,
+                    'tanggal_selesai' => $request->tanggal_selesai,
+                    'lokasi_visitasi' => $request->lokasi_visitasi,
+                    'status' => 'active',
+                ]
+            );
+
+            // Update tanggal & lokasi jika sudah ada
+            if (!$asesmenLapangan->wasRecentlyCreated) {
+                $asesmenLapangan->update([
+                    'tanggal_mulai' => $request->tanggal_mulai,
+                    'tanggal_selesai' => $request->tanggal_selesai,
+                    'lokasi_visitasi' => $request->lokasi_visitasi,
+                ]);
+            }
+
+            // Get asesor role
+            $asesorRole = Role::where('name', 'asesor')->firstOrFail();
+
             // Check if user already assigned
-            $exists = AsesmenUserRole::where('id_asesmen', $pengajuan->asesmen->id)
-                ->where('id_user', $request->user_id)
+            $exists = AsesmenUserRole::where('id_asesmen', $asesmen->id)
+                ->where('id_user', $request->id_user)
                 ->where('jenis_asesmen', 'al')
                 ->exists();
 
@@ -247,40 +239,48 @@ class PenugasanALController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'Asesor sudah ditugaskan untuk AL ini'
-                ], 400);
+                ], 422);
             }
 
-            // Get asesor role
-            $asesorRole = \Spatie\Permission\Models\Role::where('name', 'asesor')->first();
+            // Determine urutan_asesor
+            $existingUrutans = AsesmenUserRole::where('id_asesmen', $asesmen->id)
+                ->where('jenis_asesmen', 'al')
+                ->pluck('urutan_asesor')
+                ->toArray();
+
+            sort($existingUrutans);
+
+            $urutanAsesor = 1;
+            foreach ($existingUrutans as $urutan) {
+                if ($urutan !== $urutanAsesor) {
+                    break;
+                }
+                $urutanAsesor++;
+            }
 
             // Create assignment
-            AsesmenUserRole::create([
-                'id_asesmen' => $pengajuan->asesmen->id,
-                'id_user' => $request->user_id,
+            $assignment = AsesmenUserRole::create([
+                'id_asesmen' => $asesmen->id,
+                'id_user' => $request->id_user,
                 'id_role' => $asesorRole->id,
                 'jenis_asesmen' => 'al',
-                'urutan_asesor' => $request->urutan_asesor,
+                'id_asesmen_lapangan' => $asesmenLapangan->id,
+                'urutan_asesor' => $urutanAsesor,
                 'status_penawaran' => 'pending',
-                'status_pekerjaan' => 'not_started',
-                'tanggal_penugasan' => now(),
             ]);
 
-            // Update pengajuan status to ASESOR_AL_ASSIGNED if first asesor
-            $totalAsesor = AsesmenUserRole::where('id_asesmen', $pengajuan->asesmen->id)
-                ->where('jenis_asesmen', 'al')
-                ->count();
+            $user = User::find($request->id_user);
 
-            if ($totalAsesor == 1) {
-                $pengajuan->update([
-                    'status' => PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
-                ]);
+            // Update status pengajuan (gunakan checkUpdateStatusAKAL)
+            $pengajuan->checkUpdateStatusAKAL('al', 'status_asesor_assigned');
 
-                $pengajuan->statusLog()->create([
-                    'previous_status' => $pengajuan->status,
-                    'new_status' => PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
-                    'changed_by' => auth()->id(),
-                    'changed_at' => now(),
-                    'keterangan' => 'Asesor AL pertama telah ditugaskan',
+            // Send email
+            try {
+                SendPenawaranAsesmenEmail::dispatch($assignment);
+            } catch (\Exception $e) {
+                Log::error("Gagal dispatch email job penawaran", [
+                    'assignment_id' => $assignment->id,
+                    'error' => $e->getMessage(),
                 ]);
             }
 
@@ -288,94 +288,107 @@ class PenugasanALController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Asesor berhasil ditugaskan untuk AL'
+                'message' => "Asesor {$user->name} berhasil ditugaskan untuk AL (Asesor {$urutanAsesor}). Email penawaran telah dikirim.",
+                'data' => [
+                    'assignment' => $assignment,
+                    'user' => $user,
+                    'urutan_asesor' => $urutanAsesor,
+                ]
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('assignAsesor failed', ['error' => $e]);
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Gagal menugaskan asesor: ' . $e->getMessage()
             ], 500);
         }
     }
 
     /**
-     * Remove asesor from AL
+     * Hapus assignment asesor
      */
-    public function removeAsesor(Request $request, $id)
+    public function removeAsesor(Request $request, $id, $userId)
     {
+        DB::beginTransaction();
         try {
-            $request->validate([
-                'assignment_id' => 'required|exists:asesmen_user_roles,id',
-            ]);
+            $pengajuan = PengajuanAkreditasi::with('asesmen')->findOrFail($id);
 
-            DB::beginTransaction();
+            $assignment = AsesmenUserRole::where('id_asesmen', $pengajuan->asesmen->id)
+                ->where('id_user', $userId)
+                ->where('jenis_asesmen', 'al')
+                ->first();
 
-            $assignment = AsesmenUserRole::findOrFail($request->assignment_id);
-            $pengajuan = PengajuanAkreditasi::findOrFail($id);
-
-            // Validate assignment belongs to this pengajuan's asesmen
-            if ($assignment->id_asesmen !== $pengajuan->asesmen->id) {
+            if (!$assignment) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Assignment tidak valid'
-                ], 400);
+                    'message' => 'Penugasan tidak ditemukan'
+                ], 404);
             }
 
-            // Delete assignment
+            // Check if user has penilaian
+            $hasPenilaian = DB::table('penilaian_elemen_al')
+                ->where('id_asesmen', $pengajuan->asesmen->id)
+                ->where('id_asesor', $userId)
+                ->exists();
+
+            if ($hasPenilaian) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Asesor tidak bisa dihapus karena sudah melakukan penilaian.'
+                ], 422);
+            }
+
+            // Check minimum requirements (min 2 asesor)
+            if ($assignment->status_penawaran === 'accepted') {
+                $currentCount = AsesmenUserRole::where('id_asesmen', $pengajuan->asesmen->id)
+                    ->where('jenis_asesmen', 'al')
+                    ->whereIn('status_penawaran', ['accepted', 'pending'])
+                    ->count();
+
+                if ($currentCount <= 2) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Tidak bisa menghapus asesor karena akan melanggar persyaratan minimum (2 asesor untuk AL)."
+                    ], 422);
+                }
+            }
+
             $userName = $assignment->user->name;
             $assignment->delete();
 
-            // Check if any asesor left
-            $remainingAsesor = AsesmenUserRole::where('id_asesmen', $pengajuan->asesmen->id)
-                ->where('jenis_asesmen', 'al')
-                ->count();
-
-            // If no asesor left, revert status
-            if ($remainingAsesor == 0) {
-                $pengajuan->update([
-                    'status' => PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED,
-                ]);
-
-                $pengajuan->statusLog()->create([
-                    'previous_status' => PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
-                    'new_status' => PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED,
-                    'changed_by' => auth()->id(),
-                    'changed_at' => now(),
-                    'keterangan' => "Asesor {$userName} dibatalkan. Tidak ada asesor AL tersisa.",
-                ]);
-            }
+            // Reorganize urutan
+            $this->reorganizeAsesorOrder($pengajuan->asesmen->id);
 
             DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Asesor berhasil dihapus dari penugasan AL'
+                'message' => "{$userName} berhasil dihapus dari AL. Urutan asesor telah diatur ulang."
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('removeAsesor failed', ['error' => $e]);
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Gagal menghapus asesor: ' . $e->getMessage()
             ], 500);
         }
     }
 
     /**
-     * Update AL schedule
+     * Update jadwal AL
      */
     public function updateSchedule(Request $request, $id)
     {
+        $request->validate([
+            'tanggal_mulai' => 'required|date',
+            'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
+            'lokasi_visitasi' => 'required|string|max:500',
+        ]);
+
+        DB::beginTransaction();
         try {
-            $request->validate([
-                'tanggal_mulai' => 'required|date',
-                'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
-                'lokasi_visitasi' => 'required|string|max:500',
-                'catatan' => 'nullable|string|max:500',
-            ]);
-
-            DB::beginTransaction();
-
             $pengajuan = PengajuanAkreditasi::with('asesmen.asesmenLapangan')->findOrFail($id);
 
             if (!$pengajuan->asesmen || !$pengajuan->asesmen->asesmenLapangan) {
@@ -390,17 +403,6 @@ class PenugasanALController extends Controller
                 'tanggal_mulai' => $request->tanggal_mulai,
                 'tanggal_selesai' => $request->tanggal_selesai,
                 'lokasi_visitasi' => $request->lokasi_visitasi,
-                'catatan' => $request->catatan,
-            ]);
-
-            // Add status log
-            $tanggalMulai = \Carbon\Carbon::parse($request->tanggal_mulai)->format('d M Y');
-            $tanggalSelesai = \Carbon\Carbon::parse($request->tanggal_selesai)->format('d M Y');
-
-            $pengajuan->statusLog()->create([
-                'changed_by' => auth()->id(),
-                'changed_at' => now(),
-                'keterangan' => "Jadwal AL diperbarui. Periode: {$tanggalMulai} s/d {$tanggalSelesai}. Lokasi: {$request->lokasi_visitasi}",
             ]);
 
             DB::commit();
@@ -411,20 +413,21 @@ class PenugasanALController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('updateSchedule failed', ['error' => $e]);
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Gagal memperbarui jadwal: ' . $e->getMessage()
             ], 500);
         }
     }
 
     /**
-     * Calculate statistics for dashboard
+     * Calculate statistics
      */
     private function calculateStatistics()
     {
         $base = PengajuanAkreditasi::whereIn('status', [
-            PengajuanAkreditasi::STATUS_AK_DILAPORKAN,
+            PengajuanAkreditasi::STATUS_AK_SELESAI,
             PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
             PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
             PengajuanAkreditasi::STATUS_AL_SELESAI,
@@ -434,22 +437,19 @@ class PenugasanALController extends Controller
         $total = (clone $base)->count();
 
         $siapAL = (clone $base)
-            ->where('status', PengajuanAkreditasi::STATUS_AK_DILAPORKAN)
+            ->where('status', PengajuanAkreditasi::STATUS_AK_SELESAI)
             ->count();
 
         $sudahDitugaskan = (clone $base)
-            ->where('status', PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED)
-            ->count();
-
-        $sedangBerlangsung = (clone $base)
-            ->where('status', PengajuanAkreditasi::STATUS_AL_IN_PROGRESS)
+            ->whereIn('status', [
+                PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
+                PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
+                PengajuanAkreditasi::STATUS_AL_SELESAI,
+            ])
+            ->whereHas('asesmen.asesmenLapangan')
             ->count();
 
         $selesai = (clone $base)
-            ->where('status', PengajuanAkreditasi::STATUS_AL_SELESAI)
-            ->count();
-
-        $dilaporkan = (clone $base)
             ->where('status', PengajuanAkreditasi::STATUS_AL_DILAPORKAN)
             ->count();
 
@@ -457,9 +457,53 @@ class PenugasanALController extends Controller
             'total' => $total,
             'siap_al' => $siapAL,
             'sudah_ditugaskan' => $sudahDitugaskan,
-            'sedang_berlangsung' => $sedangBerlangsung,
             'selesai' => $selesai,
-            'dilaporkan' => $dilaporkan,
         ];
+    }
+
+    /**
+     * Get requirements status helper
+     */
+    private function getRequirementsStatus($pengajuan)
+    {
+        if (!$pengajuan->asesmen) {
+            return [
+                'met' => false,
+                'asesor_count' => 0,
+                'missing' => ['2 asesor'],
+            ];
+        }
+
+        $asesorCount = AsesmenUserRole::where('id_asesmen', $pengajuan->asesmen->id)
+            ->where('jenis_asesmen', 'al')
+            ->whereIn('status_penawaran', ['pending', 'accepted'])
+            ->count();
+
+        return [
+            'met' => $asesorCount >= 2,
+            'asesor_count' => $asesorCount,
+            'missing' => $asesorCount < 2 ? ['2 asesor'] : [],
+        ];
+    }
+
+    /**
+     * Reorganize asesor order
+     */
+    private function reorganizeAsesorOrder($idAsesmen)
+    {
+        $asesors = AsesmenUserRole::where('id_asesmen', $idAsesmen)
+            ->where('jenis_asesmen', 'al')
+            ->orderBy('urutan_asesor')
+            ->get();
+
+        $newUrutan = 1;
+        foreach ($asesors as $asesor) {
+            if ($asesor->urutan_asesor !== $newUrutan) {
+                $asesor->update(['urutan_asesor' => $newUrutan]);
+            }
+            $newUrutan++;
+        }
+
+        return $asesors->count();
     }
 }

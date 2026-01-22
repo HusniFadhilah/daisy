@@ -1,6 +1,6 @@
 @extends('layouts.template.app')
 
-@section('title', 'Penugasan Asesmen Lapangan (AL)')
+@section('title', 'Pelaksanaan & Monitoring AL')
 
 @push('styles')
 <style>
@@ -49,9 +49,9 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">
-                <i class="bi bi-geo-alt"></i> Penugasan Asesmen Lapangan (AL)
+                <i class="bi bi-clipboard-data"></i> Pelaksanaan & Monitoring AL
             </h4>
-            <p class="text-muted mb-0">Tugaskan asesor untuk melakukan visitasi lapangan</p>
+            <p class="text-muted mb-0">Monitor visitasi lapangan dan tugaskan validator untuk pelaporan</p>
         </div>
     </div>
 
@@ -60,11 +60,11 @@
         <div class="col-lg-3 col-md-6 mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Total Permohonan</h6>
+                    <h6 class="mb-1 opacity-75">Total AL</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-2 fw-bold">{{ $stats['total'] }}</h2>
-                            <small class="opacity-75">Siap untuk AL</small>
+                            <small class="opacity-75">Dalam pelaksanaan</small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
                             <i class="bi bi-clipboard-check"></i>
@@ -75,16 +75,16 @@
         </div>
 
         <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);">
+            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Siap AL</h6>
+                    <h6 class="mb-1 opacity-75">Sedang Visitasi</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h2 class="mb-2 fw-bold">{{ $stats['siap_al'] }}</h2>
-                            <small class="opacity-75">AK selesai, siap visitasi</small>
+                            <h2 class="mb-2 fw-bold">{{ $stats['sedang_visitasi'] }}</h2>
+                            <small class="opacity-75">Asesor di lapangan</small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
-                            <i class="bi bi-exclamation-triangle"></i>
+                            <i class="bi bi-people"></i>
                         </div>
                     </div>
                 </div>
@@ -92,16 +92,16 @@
         </div>
 
         <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Sudah Ditugaskan</h6>
+                    <h6 class="mb-1 opacity-75">Perlu Validator</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h2 class="mb-2 fw-bold">{{ $stats['sudah_ditugaskan'] }}</h2>
-                            <small class="opacity-75">Sedang proses visitasi</small>
+                            <h2 class="mb-2 fw-bold">{{ $stats['perlu_validator'] }}</h2>
+                            <small class="opacity-75">Untuk pelaporan</small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
-                            <i class="bi bi-hourglass-split"></i>
+                            <i class="bi bi-exclamation-triangle"></i>
                         </div>
                     </div>
                 </div>
@@ -115,7 +115,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-2 fw-bold">{{ $stats['selesai'] }}</h2>
-                            <small class="opacity-75">AL telah selesai</small>
+                            <small class="opacity-75">AL dilaporkan</small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
                             <i class="bi bi-check-circle"></i>
@@ -159,11 +159,11 @@
 
                         <!-- Status AL -->
                         <div class="mb-3">
-                            <label class="form-label text-white">Status AL</label>
+                            <label class="form-label text-white">Status</label>
                             <select name="status_al" id="statusALFilter" class="form-select">
                                 <option value="">Semua Status</option>
-                                <option value="siap_al" {{ request('status_al') == 'siap_al' ? 'selected' : '' }}>Siap AL</option>
-                                <option value="sudah_ditugaskan" {{ request('status_al') == 'sudah_ditugaskan' ? 'selected' : '' }}>Sudah Ditugaskan</option>
+                                <option value="sedang_visitasi" {{ request('status_al') == 'sedang_visitasi' ? 'selected' : '' }}>Sedang Visitasi</option>
+                                <option value="perlu_validator" {{ request('status_al') == 'perlu_validator' ? 'selected' : '' }}>Perlu Validator</option>
                                 <option value="selesai" {{ request('status_al') == 'selesai' ? 'selected' : '' }}>Selesai</option>
                             </select>
                         </div>
@@ -185,17 +185,21 @@
             <div class="card mt-3">
                 <div class="card-header bg-info text-white">
                     <h6 class="mb-0">
-                        <i class="bi bi-info-circle"></i> Persyaratan AL
+                        <i class="bi bi-info-circle"></i> Tentang Pelaksanaan AL
                     </h6>
                 </div>
                 <div class="card-body">
                     <p class="mb-2 small">
-                        <i class="bi bi-person text-primary"></i>
-                        <strong>Asesor:</strong> Minimal 2 orang
+                        <i class="bi bi-1-circle text-primary"></i>
+                        <strong>Visitasi:</strong> Asesor melakukan visitasi lapangan
+                    </p>
+                    <p class="mb-2 small">
+                        <i class="bi bi-2-circle text-success"></i>
+                        <strong>Pelaporan:</strong> Validator membuat rekap berita acara
                     </p>
                     <p class="mb-0 small text-muted">
                         <i class="bi bi-info-circle"></i>
-                        AL tidak memerlukan validator
+                        Monitor progress & tugaskan validator
                     </p>
                 </div>
             </div>
@@ -218,7 +222,7 @@
 
                 <!-- Table Container -->
                 <div id="tableContainer">
-                    @include('de.penugasan-al.components.table-content', ['pengajuans' => $pengajuans])
+                    @include('de.pelaksanaan-al.components.table-content', ['pengajuans' => $pengajuans])
                 </div>
             </div>
         </div>
@@ -255,7 +259,7 @@
             loadingOverlay.classList.remove('d-none');
 
             const queryString = new URLSearchParams(params).toString();
-            const response = await fetch(`{{ route('de.penugasan-al') }}?${queryString}`, {
+            const response = await fetch(`{{ route('de.pelaksanaan-al') }}?${queryString}`, {
                 method: 'GET'
                 , headers: {
                     'X-Requested-With': 'XMLHttpRequest'

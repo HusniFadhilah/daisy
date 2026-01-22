@@ -929,7 +929,7 @@ class ALController extends Controller
         // 2) Ambil berita acara (multi-file) aktif
         // =========================
         $beritaAcaraDocs = AsesmenDocument::where('id_asesmen', $idAsesmen)
-            ->where('type', 'berita_acara')
+            ->where('type', 'berita_acara_al')
             ->where('is_active', true)
             ->orderBy('sort_order')
             ->orderBy('id')
@@ -1009,7 +1009,7 @@ class ALController extends Controller
 
     //     // 3) append semua berita acara (multi file)
     //     $baDocs = $asesmen->documents()
-    //         ->where('type', 'berita_acara')
+    //         ->where('type', 'berita_acara_al')
     //         ->where('is_active', true)
     //         ->orderBy('sort_order')
     //         ->get();
