@@ -20,22 +20,26 @@ class ValidasiDokumenController extends Controller
     public function index(Request $request)
     {
         // Build query untuk assignments yang sedang validasi
-        $query = AsesmenUserRole::with([
-            'asesmen.pengajuan.studyProgram.university',
-            'asesmen.pengajuan.studyProgram.degreeLevel',
-            'user',
-            'role',
-            'borangValidation'
-        ])
+        $statuses = [
+            PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
+            PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
+            PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,
+            PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
+            PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
+        ];
+
+        $query = AsesmenUserRole::query()
+            ->with([
+                'asesmen.pengajuan.studyProgram.university',
+                'asesmen.pengajuan.studyProgram.degreeLevel',
+                'user',
+                'role',
+                'borangValidation',
+                'asesmen.pengajuan.lastBorangValidationLog', // ✅ 1 log saja
+            ])
             ->where('jenis_asesmen', 'dokumen')
-            ->whereHas('asesmen.pengajuan', function ($q) {
-                $q->whereIn('status', [
-                    PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
-                    PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
-                    PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,
-                    PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
-                    PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
-                ]);
+            ->whereHas('asesmen.pengajuan.statusLog', function ($q) use ($statuses) {
+                $q->whereIn('status_to', $statuses);
             });
 
         // Filter by status penawaran
@@ -216,49 +220,43 @@ class ValidasiDokumenController extends Controller
     /**
      * Calculate statistics
      */
-    private function calculateStatistics()
+    private function calculateStatistics(): array
     {
-        $baseQuery = AsesmenUserRole::where('jenis_asesmen', 'dokumen')
-            ->whereHas('asesmen.pengajuan', function ($q) {
-                $q->whereIn('status', [
-                    PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
-                    PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
-                    PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,
-                    PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
-                    PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
-                ]);
-            });
+        $statuses = [
+            PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
+            PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
+            PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,
+            PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
+            PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
+        ];
+
+        $base = AsesmenUserRole::query()
+            ->where('jenis_asesmen', 'dokumen')
+            ->whereHas('asesmen.pengajuan.statusLog', fn($q) => $q->whereIn('status_to', $statuses));
+
+        $row = (clone $base)->selectRaw('
+        COUNT(*) as total,
+        SUM(CASE WHEN status_penawaran = "pending" THEN 1 ELSE 0 END) as pending,
+        SUM(CASE WHEN status_penawaran = "accepted" THEN 1 ELSE 0 END) as accepted,
+        SUM(CASE WHEN status_penawaran = "rejected" THEN 1 ELSE 0 END) as rejected,
+
+        SUM(CASE WHEN status_penawaran = "accepted" AND status_pekerjaan = "not_started" THEN 1 ELSE 0 END) as not_started,
+        SUM(CASE WHEN status_penawaran = "accepted" AND status_pekerjaan = "in_progress" THEN 1 ELSE 0 END) as in_progress,
+        SUM(CASE WHEN status_penawaran = "accepted" AND status_pekerjaan = "submitted" THEN 1 ELSE 0 END) as submitted,
+        SUM(CASE WHEN status_penawaran = "accepted" AND status_pekerjaan = "revision_required" THEN 1 ELSE 0 END) as revision_required,
+        SUM(CASE WHEN status_penawaran = "accepted" AND status_pekerjaan = "approved" THEN 1 ELSE 0 END) as approved
+    ')->first();
 
         return [
-            'total' => (clone $baseQuery)->count(),
-            'pending' => (clone $baseQuery)->where('status_penawaran', 'pending')->count(),
-            'accepted' => (clone $baseQuery)->where('status_penawaran', 'accepted')->count(),
-            'rejected' => (clone $baseQuery)->where('status_penawaran', 'rejected')->count(),
-
-            'not_started' => (clone $baseQuery)
-                ->where('status_penawaran', 'accepted')
-                ->where('status_pekerjaan', 'not_started')
-                ->count(),
-
-            'in_progress' => (clone $baseQuery)
-                ->where('status_penawaran', 'accepted')
-                ->where('status_pekerjaan', 'in_progress')
-                ->count(),
-
-            'submitted' => (clone $baseQuery)
-                ->where('status_penawaran', 'accepted')
-                ->where('status_pekerjaan', 'submitted')
-                ->count(),
-
-            'revision_required' => (clone $baseQuery)
-                ->where('status_penawaran', 'accepted')
-                ->where('status_pekerjaan', 'revision_required')
-                ->count(),
-
-            'approved' => (clone $baseQuery)
-                ->where('status_penawaran', 'accepted')
-                ->where('status_pekerjaan', 'approved')
-                ->count(),
+            'total' => (int) $row->total,
+            'pending' => (int) $row->pending,
+            'accepted' => (int) $row->accepted,
+            'rejected' => (int) $row->rejected,
+            'not_started' => (int) $row->not_started,
+            'in_progress' => (int) $row->in_progress,
+            'submitted' => (int) $row->submitted,
+            'revision_required' => (int) $row->revision_required,
+            'approved' => (int) $row->approved,
         ];
     }
 

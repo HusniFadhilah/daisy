@@ -32,7 +32,12 @@
                             <strong>{{ $pembayaran->nomor_invoice }}</strong>
                             <br>
                             <small class="text-muted">
-                                {{ $pembayaran->created_at->format('d M Y') }}
+                                Dibuat pada: {{ $pembayaran->created_at->format('d M Y') }}
+                            </small>
+                            <br class="mb-2">
+                            <small class="text-muted">
+                                <span>Jenis akreditasi:</span>
+                                <b>{{ $pembayaran->pengajuan->jenis_akreditasi_label }}</b>
                             </small>
                         </td>
                         <td>

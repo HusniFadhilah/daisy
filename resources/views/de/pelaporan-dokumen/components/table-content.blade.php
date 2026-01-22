@@ -12,7 +12,7 @@
                 <thead class="table-light">
                     <tr>
                         <th width="5%">#</th>
-                        <th width="15%">Nomor Permohonan</th>
+                        <th width="15%">Nomor Permohonan Akreditasi</th>
                         <th width="20%">Program Studi</th>
                         <th width="15%">Validator</th>
                         <th width="12%">Status Upload</th>
@@ -49,7 +49,8 @@
                     <tr>
                         <td>{{ $pengajuans->firstItem() + $index }}</td>
                         <td>
-                            <strong>{{ $pengajuan->nomor_pengajuan }}</strong>
+                            <p>{{ $pengajuan->judul }}</p>
+                            <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
                         </td>
                         <td>
                             <div class="mb-1">

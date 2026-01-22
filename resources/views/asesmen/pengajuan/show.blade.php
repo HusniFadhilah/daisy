@@ -758,7 +758,7 @@
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="text-muted small">Jenis Akreditasi</label>
-                    <p class="fw-bold mb-0">{{ ucfirst($pengajuan->jenis_akreditasi) }}</p>
+                    <p class="fw-bold mb-0">{{ $pengajuan->jenis_akreditasi_label }}</p>
                 </div>
                 @if($pengajuan->pengaju)
                 <div class="col-md-6 mb-3">

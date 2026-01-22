@@ -3,6 +3,7 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 
@@ -42,7 +43,7 @@ class PengajuanAkreditasi extends Model
     public const STATUS_BORANG_IN_VALIDATION = 'borang_in_validation';
     public const STATUS_BORANG_REVISION_REQUIRED = 'borang_revision_required';
     public const STATUS_BORANG_VALIDATED = 'borang_validated';
-    public const STATUS_DRAFT_BORANG_FINAL_DITERIMA = 'borang_final_diterima';
+    public const STATUS_BORANG_FINAL_DITERIMA = 'borang_final_diterima';
     public const STATUS_VALIDASI_BORANG_DILAPORKAN = 'validasi_borang_dilaporkan';
     public const STATUS_PENGAJUAN_COMPLETED = 'pengajuan_completed';
 
@@ -73,6 +74,9 @@ class PengajuanAkreditasi extends Model
 
     // Special
     public const STATUS_DITOLAK = 'ditolak';
+
+    // Other
+    public const STATUS_REMINDER_PENGIRIMAN_BORANG = 'reminder_pengiriman_borang';
 
     // ============================================
     // FILLABLE
@@ -209,6 +213,27 @@ class PengajuanAkreditasi extends Model
     public function statusLog()
     {
         return $this->hasMany(PengajuanStatusLog::class, 'id_pengajuan');
+    }
+
+    public function latestStatusLog()
+    {
+        return $this->hasOne(PengajuanStatusLog::class, 'id_pengajuan')
+            ->latestOfMany('created_at'); // atau 'id' kalau id selalu urut waktu
+    }
+
+    public function lastBorangValidationLog()
+    {
+        $statuses = [
+            self::STATUS_BORANG_VALIDATION_PENDING,
+            self::STATUS_BORANG_IN_VALIDATION,
+            self::STATUS_BORANG_REVISION_REQUIRED,
+            self::STATUS_BORANG_VALIDATED,
+            self::STATUS_VALIDASI_BORANG_DILAPORKAN,
+        ];
+
+        return $this->hasOne(PengajuanStatusLog::class, 'id_pengajuan')
+            ->whereIn('status_to', $statuses)
+            ->latestOfMany('changed_at'); // ambil 1 paling baru
     }
 
     public function borangValidation()
@@ -424,7 +449,7 @@ class PengajuanAkreditasi extends Model
 
             'dokumen' => in_array($this->status, [
                 self::STATUS_BORANG_VALIDATED,
-                self::STATUS_DRAFT_BORANG_FINAL_DITERIMA,
+                self::STATUS_BORANG_FINAL_DITERIMA,
             ], true)
                 && is_null($this->tanggal_pelaporan_validasi_borang),
 
@@ -448,6 +473,11 @@ class PengajuanAkreditasi extends Model
         return self::statusMap()[$this->status]['label'] ?? ucwords(str_replace('_', ' ', $this->status));
     }
 
+    public function getJenisAkreditasiLabelAttribute(): string
+    {
+        return Str::title(str_replace('_', ' ', $this->jenis_akreditasi));
+    }
+
     public function getJudulAttribute(): string
     {
         $pengajuan = $this;
@@ -457,7 +487,7 @@ class PengajuanAkreditasi extends Model
 
         $prefix = match ($jenis) {
             'perpanjangan' => 'Perpanjangan Akreditasi Prodi',
-            'menuju_unggul', 'menuju-unggul', 'unggul' => 'Akreditasi Menuju Unggul',
+            'menuju_unggul', 'menuju-unggul', 'unggul' => 'Akreditasi Menuju Unggul Prodi',
             'baru' => 'Permohonan Akreditasi Prodi',
             default => 'Akreditasi Prodi',
         };
@@ -575,7 +605,7 @@ class PengajuanAkreditasi extends Model
                 'bg' => 'bg-success',
                 'icon' => 'bi-check-circle-fill',
             ],
-            self::STATUS_DRAFT_BORANG_FINAL_DITERIMA => [
+            self::STATUS_BORANG_FINAL_DITERIMA => [
                 'label' => 'Draft Final LED+Suplemen dan LKPS Diterima',
                 'bg' => 'bg-info',
                 'icon' => 'bi-file-earmark-arrow-up',
@@ -690,6 +720,12 @@ class PengajuanAkreditasi extends Model
                 'bg' => 'bg-danger',
                 'icon' => 'bi-x-octagon',
             ],
+            // Other
+            self::STATUS_REMINDER_PENGIRIMAN_BORANG => [
+                'label' => 'Reminder Pengiriman Dokumen',
+                'bg' => 'bg-warning',
+                'icon' => 'bi-x-envelope-paper',
+            ],
         ];
     }
 
@@ -797,7 +833,7 @@ class PengajuanAkreditasi extends Model
                     self::STATUS_BORANG_IN_VALIDATION,
                     self::STATUS_BORANG_REVISION_REQUIRED,
                 ],
-                'success' => [self::STATUS_BORANG_VALIDATED, self::STATUS_DRAFT_BORANG_FINAL_DITERIMA],
+                'success' => [self::STATUS_BORANG_VALIDATED, self::STATUS_BORANG_FINAL_DITERIMA],
             ],
 
             7 => [
@@ -908,8 +944,8 @@ class PengajuanAkreditasi extends Model
             self::STATUS_BORANG_VALIDATION_PENDING => [self::STATUS_BORANG_IN_VALIDATION],
             self::STATUS_BORANG_IN_VALIDATION => [self::STATUS_BORANG_REVISION_REQUIRED, self::STATUS_BORANG_VALIDATED],
             self::STATUS_BORANG_REVISION_REQUIRED => [self::STATUS_BORANG_ONLINE_SELESAI],
-            self::STATUS_BORANG_VALIDATED => [self::STATUS_DRAFT_BORANG_FINAL_DITERIMA, self::STATUS_VALIDASI_BORANG_DILAPORKAN],
-            self::STATUS_DRAFT_BORANG_FINAL_DITERIMA => [self::STATUS_VALIDASI_BORANG_DILAPORKAN],
+            self::STATUS_BORANG_VALIDATED => [self::STATUS_BORANG_FINAL_DITERIMA, self::STATUS_VALIDASI_BORANG_DILAPORKAN],
+            self::STATUS_BORANG_FINAL_DITERIMA => [self::STATUS_VALIDASI_BORANG_DILAPORKAN],
             self::STATUS_VALIDASI_BORANG_DILAPORKAN => [self::STATUS_PENGAJUAN_COMPLETED],
             self::STATUS_PENGAJUAN_COMPLETED => [self::STATUS_ASESOR_AK_ASSIGNED],
             self::STATUS_ASESOR_AK_ASSIGNED => [self::STATUS_AK_IN_PROGRESS],

@@ -201,7 +201,7 @@ $lockBorang = in_array($pengajuan->status, [
 \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
 \App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
 \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
-\App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_FINAL_DITERIMA,
+\App\Models\PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
 \App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
 \App\Models\PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED,
 ]);
@@ -944,6 +944,8 @@ $pengajuanId = $pengajuan->id;
         const AUTOSAVE_ENABLED = false;
         const editorInstances = {};
         const csrf = getCsrf()
+        const urlValidationSummary = @json(route('pengajuan.borang.validation-summary', $pengajuanId));
+        const urlValidationDetails = @json(route('pengajuan.borang.validation-details', $pengajuanId));
 
         // Initialize
         initializeAutoSave();
@@ -955,7 +957,7 @@ $pengajuanId = $pengajuan->id;
         initializeImportExport();
         initializeManualSaveButtons();
         if (showHasilValidasiBorang) {
-            fetchValidationSummary().then(() => fetchValidationDetails()).catch(console.error);
+            fetchValidationSummary(urlValidationSummary).then(() => fetchValidationDetails(urlValidationDetails)).catch(console.error);
         }
 
         // ✅ Initial progress update
@@ -1875,9 +1877,7 @@ $pengajuanId = $pengajuan->id;
             window.location.reload();
         }
 
-        async function fetchValidationSummary() {
-            const url = @json(route('pengajuan.borang.validation-summary', $pengajuanId));
-
+        async function fetchValidationSummary(url) {
             const elLoading = document.getElementById('validationLoading');
             const elContent = document.getElementById('validationContent');
             const elEmpty = document.getElementById('validationEmpty');
@@ -2013,9 +2013,7 @@ $pengajuanId = $pengajuan->id;
             return 'bg-secondary';
         }
 
-        async function fetchValidationDetails() {
-            const url = @json(route('pengajuan.borang.validation-details', $pengajuanId));
-
+        async function fetchValidationDetails(url) {
             const listEl = document.getElementById('valRevisionList');
             const emptyEl = document.getElementById('valRevisionEmpty');
 

@@ -4,7 +4,7 @@
     <div class="card-header bg-light">
         <div class="d-flex justify-content-between align-items-center">
             <h5 class="mb-0">
-                <i class="bi bi-table"></i> Daftar Pengajuan
+                <i class="bi bi-table"></i> Daftar Permohonan
             </h5>
             <span class="badge bg-primary">Total: {{ $pengajuans->total() }}</span>
         </div>
@@ -15,9 +15,9 @@
                 <thead class="table-light">
                     <tr>
                         <th width="5%">No</th>
-                        <th width="15%">Nomor Pengajuan</th>
+                        <th width="15%">Nomor Permohonan Akreditasi</th>
                         <th width="20%">Program Studi</th>
-                        <th width="15%">Status Pengajuan</th>
+                        <th width="15%">Status Permohonan</th>
                         <th width="15%">Status Dokumen</th>
                         <th width="15%">Tanggal Upload</th>
                         <th width="15%" class="text-center">Aksi</th>
@@ -37,11 +37,8 @@
                     <tr>
                         <td>{{ $pengajuans->firstItem() + $index }}</td>
                         <td>
-                            <strong>{{ $pengajuan->nomor_pengajuan }}</strong>
-                            <br>
-                            <small class="text-muted">
-                                {{ $pengajuan->created_at->format('d M Y') }}
-                            </small>
+                            <p>{{ $pengajuan->judul }}</p>
+                            <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
                         </td>
                         <td>
                             <div>

@@ -167,7 +167,7 @@
 
                                 @if(in_array($pengajuan->status, [
                                 \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
-                                \App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_FINAL_DITERIMA,
+                                \App\Models\PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
                                 ]))
                                 @if(is_null($pengajuan->tanggal_pelaporan_validasi_borang))
                                 <button type="button" class="btn btn-sm btn-success mt-2 js-open-pelaporan" data-type="borang" data-assignment-id="{{ $assignment->id }}" data-nomor="{{ $pengajuan->nomor_pengajuan }}"> <i class="bi bi-file-earmark-text"></i> Pelaporan Validasi </button>

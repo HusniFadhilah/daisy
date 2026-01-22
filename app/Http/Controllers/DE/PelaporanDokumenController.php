@@ -17,10 +17,19 @@ class PelaporanDokumenController extends Controller
      */
     public function index(Request $request)
     {
-        // Build query - hanya pengajuan yang sudah masuk tahap validasi dokumen
+        $statusTarget = [
+            PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
+            PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
+            PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
+        ];
+
         $query = PengajuanAkreditasi::with([
             'studyProgram.university',
             'studyProgram.degreeLevel',
+
+            // kalau mau ditampilkan juga di table
+            'latestStatusLog',
+
             'asesmen.asesmenUserRoles' => function ($q) {
                 $q->where('jenis_asesmen', 'dokumen')
                     ->where('status_penawaran', 'accepted')
@@ -33,11 +42,10 @@ class PelaporanDokumenController extends Controller
                     ->latest();
             }
         ])
-            ->whereIn('status', [
-                PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
-                PengajuanAkreditasi::STATUS_DRAFT_BORANG_FINAL_DITERIMA,
-                PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
-            ]);
+            // ✅ filter pakai status TERAKHIR dari PengajuanStatusLog
+            ->whereHas('latestStatusLog', function ($q) use ($statusTarget) {
+                $q->whereIn('status', $statusTarget);
+            });
 
         // Filter by university
         if ($request->filled('university_id')) {
@@ -46,28 +54,33 @@ class PelaporanDokumenController extends Controller
             });
         }
 
-        // Filter by status pelaporan
+        // Filter by status pelaporan (juga pakai latestStatusLog)
         if ($request->filled('status_pelaporan')) {
             switch ($request->status_pelaporan) {
                 case 'belum_upload':
-                    // Belum upload laporan
-                    $query->where('status', '!=', PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN)
+                    $query->whereHas('latestStatusLog', function ($q) {
+                        $q->where('status', '!=', PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN);
+                    })
                         ->whereDoesntHave('asesmen.documents', function ($q) {
                             $q->where('type', 'laporan_validasi_borang')
                                 ->where('is_active', true);
                         });
                     break;
+
                 case 'sudah_upload':
-                    // Sudah upload tapi belum finalisasi
-                    $query->where('status', '!=', PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN)
+                    $query->whereHas('latestStatusLog', function ($q) {
+                        $q->where('status', '!=', PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN);
+                    })
                         ->whereHas('asesmen.documents', function ($q) {
                             $q->where('type', 'laporan_validasi_borang')
                                 ->where('is_active', true);
                         });
                     break;
+
                 case 'selesai':
-                    // Sudah difinalisasi
-                    $query->where('status', PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN);
+                    $query->whereHas('latestStatusLog', function ($q) {
+                        $q->where('status', PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN);
+                    });
                     break;
             }
         }
@@ -83,20 +96,16 @@ class PelaporanDokumenController extends Controller
             });
         }
 
-        // Sort
+        // Sort (kalau sort_by bisa 'created_at' dari pengajuan; kalau mau sort by status log terakhir, lihat catatan di bawah)
         $sortBy = $request->get('sort_by', 'created_at');
         $sortOrder = $request->get('sort_order', 'desc');
         $query->orderBy($sortBy, $sortOrder);
 
         $pengajuans = $query->paginate(20);
 
-        // Calculate statistics
         $stats = $this->calculateStatistics();
-
-        // Get universities for filter
         $universities = University::nonExample()->orderBy('name')->get();
 
-        // Check if AJAX request
         if ($request->ajax() || $request->wantsJson()) {
             $html = view('de.pelaporan-dokumen.components.table-content', compact('pengajuans'))->render();
             return response()->json([
@@ -106,11 +115,7 @@ class PelaporanDokumenController extends Controller
             ]);
         }
 
-        return view('de.pelaporan-dokumen.index', compact(
-            'pengajuans',
-            'stats',
-            'universities'
-        ));
+        return view('de.pelaporan-dokumen.index', compact('pengajuans', 'stats', 'universities'));
     }
 
     /**
@@ -163,36 +168,53 @@ class PelaporanDokumenController extends Controller
     /**
      * Calculate statistics for dashboard
      */
-    private function calculateStatistics()
+    private function calculateStatistics(): array
     {
-        $baseQuery = PengajuanAkreditasi::whereIn('status', [
+        $statusesScope = [
             PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
-            PengajuanAkreditasi::STATUS_DRAFT_BORANG_FINAL_DITERIMA,
+            PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
             PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
-        ]);
+        ];
 
-        $total = $baseQuery->count();
+        // Base: pernah mencapai salah satu status di atas (via riwayat)
+        $baseQuery = PengajuanAkreditasi::query()
+            ->whereHas('statusLog', function ($q) use ($statusesScope) {
+                $q->whereIn('status_to', $statusesScope);
+            });
 
-        // Sudah difinalisasi
-        $selesai = PengajuanAkreditasi::where('status', PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN)
+        $total = (clone $baseQuery)->count();
+
+        // Selesai: pernah mencapai VALIDASI_BORANG_DILAPORKAN (via riwayat)
+        $selesai = PengajuanAkreditasi::query()
+            ->whereHas('statusLog', function ($q) {
+                $q->where('status_to', PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN);
+            })
             ->count();
 
-        // Belum upload laporan (status bukan VALIDASI_BORANG_DILAPORKAN dan tidak ada dokumen)
-        $belumUpload = PengajuanAkreditasi::whereIn('status', [
-            PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
-            PengajuanAkreditasi::STATUS_DRAFT_BORANG_FINAL_DITERIMA,
-        ])
+        // Belum upload laporan:
+        // pernah mencapai VALIDATED atau FINAL_DITERIMA (via riwayat) dan tidak ada dokumen aktif
+        $belumUpload = PengajuanAkreditasi::query()
+            ->whereHas('statusLog', function ($q) {
+                $q->whereIn('status_to', [
+                    PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
+                    PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
+                ]);
+            })
             ->whereDoesntHave('asesmen.documents', function ($q) {
                 $q->where('type', 'laporan_validasi_borang')
                     ->where('is_active', true);
             })
             ->count();
 
-        // Sudah upload tapi belum finalisasi
-        $menungguFinalisasi = PengajuanAkreditasi::whereIn('status', [
-            PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
-            PengajuanAkreditasi::STATUS_DRAFT_BORANG_FINAL_DITERIMA,
-        ])
+        // Menunggu finalisasi:
+        // pernah mencapai VALIDATED atau FINAL_DITERIMA (via riwayat) dan sudah ada dokumen aktif
+        $menungguFinalisasi = PengajuanAkreditasi::query()
+            ->whereHas('statusLog', function ($q) {
+                $q->whereIn('status_to', [
+                    PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
+                    PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
+                ]);
+            })
             ->whereHas('asesmen.documents', function ($q) {
                 $q->where('type', 'laporan_validasi_borang')
                     ->where('is_active', true);

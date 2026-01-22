@@ -45,7 +45,7 @@ class PelaporanController extends Controller
             // ✅ hanya boleh upload ketika status Permohonan akreditasi VALIDATED / BORANG_FINAL_DITERIMA
             // if (!in_array($pengajuan->status, [
             //     PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
-            //     PengajuanAkreditasi::STATUS_DRAFT_BORANG_FINAL_DITERIMA,
+            //     PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
             // ], true)) {
             //     return response()->json([
             //         'success' => false,
@@ -129,7 +129,7 @@ class PelaporanController extends Controller
             // ✅ hanya boleh finalize dari 2 status ini
             // if (!in_array($pengajuan->status, [
             //     PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
-            //     PengajuanAkreditasi::STATUS_DRAFT_BORANG_FINAL_DITERIMA,
+            //     PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
             // ], true)) {
             //     return response()->json([
             //         'success' => false,

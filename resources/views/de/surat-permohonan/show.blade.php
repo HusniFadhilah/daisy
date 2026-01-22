@@ -57,7 +57,7 @@
                         </tr>
                         <tr>
                             <th>Jenis Akreditasi</th>
-                            <td>: {{ ucfirst($pengajuan->jenis_akreditasi) }}</td>
+                            <td>: {{ $pengajuan->jenis_akreditasi_label }}</td>
                         </tr>
                         <tr>
                             <th>Pengaju</th>

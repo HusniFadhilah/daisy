@@ -22,22 +22,29 @@ class PenugasanAKController extends Controller
      */
     public function index(Request $request)
     {
+        $statusList = [
+            PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
+            PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED,
+            PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
+            PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
+            PengajuanAkreditasi::STATUS_AK_ON_VALIDATION,
+            PengajuanAkreditasi::STATUS_AK_SELESAI,
+            PengajuanAkreditasi::STATUS_AK_DILAPORKAN,
+        ];
+
         // Build query - pengajuan yang sudah bisa lanjut ke AK
         $query = PengajuanAkreditasi::with([
             'studyProgram.university',
             'studyProgram.degreeLevel',
             'asesmen.asesmenKecukupan.asesors',
             'asesmen.asesmenKecukupan.validators',
+
+            // opsional: biar status terakhir bisa ditampilkan di tabel
+            'latestStatusLog',
         ])
-            ->whereIn('status', [
-                PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN, // ✅ Siap lanjut ke AK
-                PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED,         // ✅ Siap lanjut ke AK
-                PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,          // ✅ Sudah ditugaskan
-                PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,              // ✅ Sedang proses
-                PengajuanAkreditasi::STATUS_AK_ON_VALIDATION,            // ✅ Sedang validasi
-                PengajuanAkreditasi::STATUS_AK_SELESAI,                  // ✅ Selesai
-                PengajuanAkreditasi::STATUS_AK_DILAPORKAN,               // ✅ Dilaporkan
-            ]);
+            ->whereHas('latestStatusLog', function ($q) use ($statusList) {
+                $q->whereIn('status', $statusList);
+            });
 
         // Filter by university
         if ($request->filled('university_id')) {
@@ -50,23 +57,31 @@ class PenugasanAKController extends Controller
         if ($request->filled('status_ak')) {
             switch ($request->status_ak) {
                 case 'belum_ditugaskan':
-                    $query->whereIn('status', [
-                        PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
-                        PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED,
-                    ])
+                    $query->whereHas('latestStatusLog', function ($q) {
+                        $q->whereIn('status', [
+                            PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
+                            PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED,
+                        ]);
+                    })
                         ->whereDoesntHave('asesmen.asesmenKecukupan.asesors');
                     break;
+
                 case 'sudah_ditugaskan':
-                    $query->whereIn('status', [
-                        PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
-                        PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
-                        PengajuanAkreditasi::STATUS_AK_ON_VALIDATION,
-                        PengajuanAkreditasi::STATUS_AK_SELESAI,
-                    ])
+                    $query->whereHas('latestStatusLog', function ($q) {
+                        $q->whereIn('status', [
+                            PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
+                            PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
+                            PengajuanAkreditasi::STATUS_AK_ON_VALIDATION,
+                            PengajuanAkreditasi::STATUS_AK_SELESAI,
+                        ]);
+                    })
                         ->whereHas('asesmen.asesmenKecukupan');
                     break;
+
                 case 'selesai':
-                    $query->where('status', PengajuanAkreditasi::STATUS_AK_DILAPORKAN);
+                    $query->whereHas('latestStatusLog', function ($q) {
+                        $q->where('status', PengajuanAkreditasi::STATUS_AK_DILAPORKAN);
+                    });
                     break;
             }
         }
@@ -88,15 +103,12 @@ class PenugasanAKController extends Controller
 
         $pengajuans = $query->paginate(20);
 
-        // Calculate statistics
         $stats = $this->calculateStatistics();
 
-        // Get universities & users for assignment
         $universities = \App\Models\University::nonExample()->orderBy('name')->get();
         $availableUsers = User::notAdmin()->orderBy('name')->get();
         $roles = Role::whereIn('name', ['asesor', 'validator'])->get();
 
-        // Check if AJAX
         if ($request->ajax() || $request->wantsJson()) {
             $html = view('de.penugasan-ak.components.table-content', compact('pengajuans'))->render();
             return response()->json([
@@ -597,7 +609,7 @@ class PenugasanAKController extends Controller
      */
     private function calculateStatistics()
     {
-        $total = PengajuanAkreditasi::whereIn('status', [
+        $allStatuses = [
             PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
             PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED,
             PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
@@ -605,25 +617,35 @@ class PenugasanAKController extends Controller
             PengajuanAkreditasi::STATUS_AK_ON_VALIDATION,
             PengajuanAkreditasi::STATUS_AK_SELESAI,
             PengajuanAkreditasi::STATUS_AK_DILAPORKAN,
-        ])->count();
+        ];
 
-        $belumDitugaskan = PengajuanAkreditasi::whereIn('status', [
-            PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
-            PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED,
-        ])
+        $total = PengajuanAkreditasi::whereHas('latestStatusLog', function ($q) use ($allStatuses) {
+            $q->whereIn('status', $allStatuses);
+        })->count();
+
+        $belumDitugaskan = PengajuanAkreditasi::whereHas('latestStatusLog', function ($q) {
+            $q->whereIn('status', [
+                PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
+                PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED,
+            ]);
+        })
             ->whereDoesntHave('asesmen.asesmenKecukupan.asesors')
             ->count();
 
-        $sudahDitugaskan = PengajuanAkreditasi::whereIn('status', [
-            PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
-            PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
-            PengajuanAkreditasi::STATUS_AK_ON_VALIDATION,
-            PengajuanAkreditasi::STATUS_AK_SELESAI,
-        ])
+        $sudahDitugaskan = PengajuanAkreditasi::whereHas('latestStatusLog', function ($q) {
+            $q->whereIn('status', [
+                PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
+                PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
+                PengajuanAkreditasi::STATUS_AK_ON_VALIDATION,
+                PengajuanAkreditasi::STATUS_AK_SELESAI,
+            ]);
+        })
             ->whereHas('asesmen.asesmenKecukupan')
             ->count();
 
-        $selesai = PengajuanAkreditasi::where('status', PengajuanAkreditasi::STATUS_AK_DILAPORKAN)->count();
+        $selesai = PengajuanAkreditasi::whereHas('latestStatusLog', function ($q) {
+            $q->where('status', PengajuanAkreditasi::STATUS_AK_DILAPORKAN);
+        })->count();
 
         return [
             'total' => $total,

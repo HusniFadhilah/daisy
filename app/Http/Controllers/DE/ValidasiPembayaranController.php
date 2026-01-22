@@ -245,16 +245,35 @@ class ValidasiPembayaranController extends Controller
     /**
      * Calculate statistics
      */
-    private function calculateStatistics()
+    private function calculateStatistics(): array
     {
+        $row = PengajuanPembayaran::query()
+            ->selectRaw('
+            COUNT(*) as total,
+            SUM(CASE WHEN status_pembayaran = ? THEN 1 ELSE 0 END) as menunggu_pembayaran,
+            SUM(CASE WHEN status_pembayaran = ? THEN 1 ELSE 0 END) as menunggu_verifikasi,
+            SUM(CASE WHEN status_pembayaran = ? THEN 1 ELSE 0 END) as terverifikasi,
+            SUM(CASE WHEN status_pembayaran = ? THEN 1 ELSE 0 END) as ditolak,
+            SUM(CASE WHEN status_pembayaran = ? THEN 1 ELSE 0 END) as upload_ulang,
+            COALESCE(SUM(CASE WHEN status_pembayaran = ? THEN jumlah_pembayaran ELSE 0 END), 0) as total_nominal
+        ', [
+                'menunggu_pembayaran',
+                'menunggu_verifikasi',
+                'terverifikasi',
+                'ditolak',
+                'upload_ulang',
+                'terverifikasi',
+            ])
+            ->first();
+
         return [
-            'total' => PengajuanPembayaran::count(),
-            'menunggu_pembayaran' => PengajuanPembayaran::where('status_pembayaran', 'menunggu_pembayaran')->count(),
-            'menunggu_verifikasi' => PengajuanPembayaran::where('status_pembayaran', 'menunggu_verifikasi')->count(),
-            'terverifikasi' => PengajuanPembayaran::where('status_pembayaran', 'terverifikasi')->count(),
-            'ditolak' => PengajuanPembayaran::where('status_pembayaran', 'ditolak')->count(),
-            'upload_ulang' => PengajuanPembayaran::where('status_pembayaran', 'upload_ulang')->count(),
-            'total_nominal' => PengajuanPembayaran::where('status_pembayaran', 'terverifikasi')->sum('jumlah_pembayaran'),
+            'total' => (int) $row->total,
+            'menunggu_pembayaran' => (int) $row->menunggu_pembayaran,
+            'menunggu_verifikasi' => (int) $row->menunggu_verifikasi,
+            'terverifikasi' => (int) $row->terverifikasi,
+            'ditolak' => (int) $row->ditolak,
+            'upload_ulang' => (int) $row->upload_ulang,
+            'total_nominal' => (float) $row->total_nominal,
         ];
     }
 

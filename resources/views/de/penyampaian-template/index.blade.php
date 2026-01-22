@@ -85,11 +85,11 @@
         <div class="col-lg-4 col-md-6 mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Total Permohonan</h6>
+                    <h6 class="mb-2 opacity-75">Total Sampai Tahap Penyampaian Template</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-2 fw-bold">{{ $stats['total'] }}</h2>
-                            <small class="opacity-75">Total permohonan akreditasi dari PS</small>
+                            <small class="opacity-75">Total permohonan akreditasi PS yang aktif sampai tahap Penyampaian Template saat ini</small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
                             <i class="bi bi-file-earmark-text"></i>
@@ -224,7 +224,7 @@
                             <thead class="table-light">
                                 <tr>
                                     <th width="5%">#</th>
-                                    <th width="13%">Nomor Permohonan</th>
+                                    <th width="13%">Nomor Permohonan Akreditasi</th>
                                     <th width="20%">Program Studi</th>
                                     <th width="12%">Universitas</th>
                                     <th width="7%">Tahun</th>
@@ -235,10 +235,18 @@
                             </thead>
                             <tbody>
                                 @foreach($pengajuans as $index => $pengajuan)
+                                @php
+                                // status fase terakhir (berdasarkan log)
+                                $lastStatus = optional($pengajuan->statusLog->first())->status_to;
+
+                                // fallback kalau belum ada log (harusnya jarang) -> pakai current status
+                                $lastStatus = $lastStatus ?? $pengajuan->status;
+                                @endphp
                                 <tr>
                                     <td>{{ $pengajuans->firstItem() + $index }}</td>
                                     <td>
-                                        <strong>{{ $pengajuan->nomor_pengajuan }}</strong>
+                                        <p>{{ $pengajuan->judul }}</p>
+                                        <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
                                     </td>
                                     <td>
                                         <div>
@@ -277,9 +285,9 @@
                                         @endif
                                     </td>
                                     <td>
-                                        @if($pengajuan->status == \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA)
+                                        @if($lastStatus == \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA)
                                         <span class="badge bg-warning">Belum Dikirim Template</span>
-                                        @elseif($pengajuan->status == \App\Models\PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM)
+                                        @elseif($lastStatus == \App\Models\PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM)
                                         <span class="badge bg-success">Sudah Dikirim Template</span>
                                         @endif
                                     </td>

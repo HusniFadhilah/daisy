@@ -280,7 +280,7 @@ class DeskEvaluatorController extends Controller
                 ? "Template LED/LKPS dikirim via link: {$templateLink}"
                 : "Template LED/LKPS diupload: {$originalFilename}";
 
-            $this->logStatus($pengajuan, $pengajuan->status, $pengajuan->status, $keteranganLog);
+            $this->logStatus($pengajuan, $pengajuan->status, PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM, $keteranganLog);
 
             // Gate final: kalau kedua dokumen sudah ada, status jadi MENUNGGU_PEMBAYARAN
             $this->tryUpdateStatusMenungguPembayaran($pengajuan);
@@ -401,8 +401,6 @@ class DeskEvaluatorController extends Controller
                     'jumlah_pembayaran' => $request->jumlah_pembayaran,
                 ]
             );
-
-            $this->logStatus($pengajuan, $pengajuan->status, $pengajuan->status, $keteranganLog);
 
             // Gate final: kalau kedua dokumen sudah ada, status jadi MENUNGGU_PEMBAYARAN
             $this->tryUpdateStatusMenungguPembayaran($pengajuan);

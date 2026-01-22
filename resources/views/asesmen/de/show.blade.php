@@ -507,7 +507,7 @@
                                 <li><strong>Program Studi:</strong> {{ $pengajuan->studyProgram->full_name }}</li>
                                 <li><strong>Universitas:</strong> {{ $pengajuan->studyProgram->university->name }}</li>
                                 <li><strong>Tahun:</strong> {{ $pengajuan->tahun_akreditasi }}</li>
-                                <li><strong>Jenis:</strong> {{ ucfirst($pengajuan->jenis_akreditasi) }}</li>
+                                <li><strong>Jenis:</strong> {{ $pengajuan->jenis_akreditasi_label }}</li>
                             </ul>
                         </div>
                     </div>
@@ -900,7 +900,7 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="text-muted small">Jenis Akreditasi</label>
-                            <p class="fw-bold mb-0">{{ ucfirst($pengajuan->jenis_akreditasi) }}</p>
+                            <p class="fw-bold mb-0">{{ $pengajuan->jenis_akreditasi_label }}</p>
                         </div>
                         @if($pengajuan->pengaju)
                         <div class="col-md-6 mb-3">

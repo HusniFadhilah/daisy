@@ -97,7 +97,7 @@
                             <div>
                                 <h6 class="fw-bold mb-1">{{ $pengajuan->nomor_pengajuan }}</h6>
                                 <small class="text-muted">
-                                    {{ $pengajuan->jenis_akreditasi }} - Tahun {{ $pengajuan->tahun_akreditasi }}
+                                    {{ $pengajuan->jenis_akreditasi_label }} - Tahun {{ $pengajuan->tahun_akreditasi }}
                                 </small>
                             </div>
                             <span class="badge {{ $pengajuan->status_badge_class }}">

@@ -275,7 +275,7 @@
                         @php
                         $isRelevant = in_array($log->status_to, [
                         \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
-                        \App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_FINAL_DITERIMA,
+                        \App\Models\PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
                         \App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
                         ]);
 

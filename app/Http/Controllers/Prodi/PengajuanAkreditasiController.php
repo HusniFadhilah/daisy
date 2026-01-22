@@ -565,7 +565,7 @@ class PengajuanAkreditasiController extends Controller
                 PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
                 PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,
                 PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
-                PengajuanAkreditasi::STATUS_DRAFT_BORANG_FINAL_DITERIMA,
+                PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
                 PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
                 PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED,
             ];
@@ -1657,7 +1657,7 @@ class PengajuanAkreditasiController extends Controller
             // Update status
             $oldStatus = $pengajuan->status;
             $pengajuan->update([
-                'status' => 'borang_final_diterima',
+                'status' => PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
                 'tanggal_borang_final' => now(),
             ]);
 
@@ -1665,15 +1665,15 @@ class PengajuanAkreditasiController extends Controller
             PengajuanStatusLog::create([
                 'id_pengajuan' => $pengajuan->id,
                 'status_from' => $oldStatus,
-                'status_to' => 'borang_final_diterima',
+                'status_to' => PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
                 'changed_by' => $authId,
                 'changed_at' => now(),
-                'keterangan' => 'Borang final diupload',
+                'keterangan' => 'Dokumen LED+Suplemen, dan LKPS final diupload',
             ]);
 
             DB::commit();
 
-            return back()->with('success', 'Borang final berhasil diupload.');
+            return back()->with('success', 'Dokumen LED+Suplemen, dan LKPS final berhasil diupload.');
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Upload borang final failed: ' . $e->getMessage());

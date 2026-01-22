@@ -229,56 +229,62 @@ class SuratPermohonanController extends Controller
      */
     private function calculateStatistics(): array
     {
-        $base = PengajuanAkreditasi::query();
+        // Ambil semua status log untuk pengajuan yang relevan
+        $logs = \DB::table('pengajuan_status_log')
+            ->select('id_pengajuan', 'status_to')
+            ->whereIn('status_to', [
+                PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM,
+                PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
+                PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITOLAK,
+                PengajuanAkreditasi::STATUS_PENGINGAT_DIKIRIM,
+            ])
+            ->get();
 
-        // Total: pernah ada surat permohonan
-        $total = (clone $base)
-            ->whereHas('statusLog', function ($q) {
-                $q->whereIn('status_to', [
-                    PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM,
-                    PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
-                    PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITOLAK,
-                ]);
-            })
-            ->count();
+        $stats = [
+            'total' => 0,
+            'menunggu' => 0,
+            'dikirim' => 0,
+            'diterima' => 0,
+            'ditolak' => 0,
+        ];
 
-        // Menunggu: sudah pengingat, belum pernah surat dikirim
-        $menunggu = (clone $base)
-            ->whereHas('statusLog', function ($q) {
-                $q->where('status_to', PengajuanAkreditasi::STATUS_PENGINGAT_DIKIRIM);
-            })
-            ->whereDoesntHave('statusLog', function ($q) {
-                $q->where('status_to', PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM);
-            })
-            ->count();
+        // Kelompokkan log berdasarkan id_pengajuan
+        $logsByPengajuan = $logs->groupBy('id_pengajuan');
 
-        // Dikirim: sudah dikirim, belum diterima / ditolak
-        $dikirim = (clone $base)
-            ->whereHas('statusLog', function ($q) {
-                $q->where('status_to', PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM);
-            })
-            ->whereDoesntHave('statusLog', function ($q) {
-                $q->whereIn('status_to', [
-                    PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
-                    PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITOLAK,
-                ]);
-            })
-            ->count();
+        foreach ($logsByPengajuan as $pengajuanId => $pengajuanLogs) {
+            $statuses = $pengajuanLogs->pluck('status_to')->unique()->toArray();
 
-        // Diterima
-        $diterima = (clone $base)
-            ->whereHas('statusLog', function ($q) {
-                $q->where('status_to', PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA);
-            })
-            ->count();
+            // Total: pernah ada status terkait
+            $stats['total']++;
 
-        // Ditolak
-        $ditolak = (clone $base)
-            ->whereHas('statusLog', function ($q) {
-                $q->where('status_to', PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITOLAK);
-            })
-            ->count();
+            // Menunggu: ada PENGINGAT_DIKIRIM, tapi belum SURAT_PERMOHONAN_DIKIRIM
+            if (
+                in_array(PengajuanAkreditasi::STATUS_PENGINGAT_DIKIRIM, $statuses) &&
+                !in_array(PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM, $statuses)
+            ) {
+                $stats['menunggu']++;
+            }
 
-        return compact('total', 'menunggu', 'dikirim', 'diterima', 'ditolak');
+            // Dikirim: ada SURAT_PERMOHONAN_DIKIRIM, tapi belum diterima / ditolak
+            if (
+                in_array(PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM, $statuses) &&
+                !in_array(PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA, $statuses) &&
+                !in_array(PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITOLAK, $statuses)
+            ) {
+                $stats['dikirim']++;
+            }
+
+            // Diterima
+            if (in_array(PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA, $statuses)) {
+                $stats['diterima']++;
+            }
+
+            // Ditolak
+            if (in_array(PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITOLAK, $statuses)) {
+                $stats['ditolak']++;
+            }
+        }
+
+        return $stats;
     }
 }

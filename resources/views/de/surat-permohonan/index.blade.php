@@ -87,7 +87,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-2 fw-bold">{{ $stats['total'] }}</h2>
-                            <small class="opacity-75">Total permohonan akreditasi aktif saat ini</small>
+                            <small class="opacity-75">Total permohonan akreditasi PS yang aktif saat ini</small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
                             <i class="bi bi-file-earmark-text"></i>
@@ -104,7 +104,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['menunggu'] }}</h2>
-                            <small class="opacity-75">Pengingat sudah dikirim, tetapi PS belum mengajukan surat permohonan</small>
+                            <small class="opacity-75">Pengingat sudah dikirim, tetapi PS belum mengajukan surat permohonan akreditasi</small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
                             <i class="bi bi-hourglass-split"></i>
@@ -117,7 +117,7 @@
         <div class="col-lg-3 col-md-6 mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #8ebb0aff 0%, #c0c30dff 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Sudah Dikirim oleh PS</h6>
+                    <h6 class="mb-1 opacity-75">Sudah Dikirim oleh PS (Belum Ditanggapi)</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['dikirim'] }}</h2>
@@ -266,7 +266,12 @@
                                 <tr>
                                     <td>{{ $pengajuans->firstItem() + $index }}</td>
                                     <td>
-                                        <strong>{{ $pengajuan->nomor_pengajuan }}</strong>
+                                        <p>{{ $pengajuan->judul }}</p>
+                                        <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
+                                        <br>
+                                        <small class="text-muted">
+                                            Dibuat pada: {{ $pengajuan->created_at->format('d M Y') }}
+                                        </small>
                                     </td>
                                     <td>
                                         <div>

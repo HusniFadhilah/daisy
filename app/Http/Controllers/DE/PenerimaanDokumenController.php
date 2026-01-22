@@ -2,23 +2,24 @@
 
 namespace App\Http\Controllers\DE;
 
-use App\Http\Controllers\Controller;
-use App\Models\PengajuanAkreditasi;
-use App\Models\PengajuanDokumen;
+use Carbon\Carbon;
+use App\Models\Role;
+use App\Models\User;
+use App\Models\Asesmen;
 use App\Models\University;
 use App\Models\DegreeLevel;
-use App\Models\User;
-use App\Models\Role;
-use App\Models\Asesmen;
+use Illuminate\Http\Request;
 use App\Models\AsesmenUserRole;
 use App\Models\BorangValidation;
-use Illuminate\Http\Request;
+use App\Models\PengajuanDokumen;
+use App\Helpers\ResponseFormatter;
+use App\Models\PengajuanStatusLog;
 use Illuminate\Support\Facades\DB;
+use App\Models\PengajuanAkreditasi;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
-use App\Helpers\ResponseFormatter;
-use Carbon\Carbon;
 
 class PenerimaanDokumenController extends Controller
 {
@@ -38,23 +39,22 @@ class PenerimaanDokumenController extends Controller
             'studyProgram.degreeLevel',
             'pengaju',
             'dokumen' => function ($q) {
-                $q->where('is_latest', true)
-                    ->whereIn('jenis_dokumen', ['draft_borang', 'data_kualitatif', 'data_kuantitatif', 'data_suplemen']);
+                $q->where('is_latest', true);
             },
-            'asesmen.userRoles' => function ($q) {
-                $q->where('jenis_asesmen', 'dokumen')
-                    ->with(['user', 'role']);
-            },
+            'asesmen.userRoles.user',
+            'asesmen.userRoles.role',
         ])
-            ->whereIn('status', [
-                PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI,
-                PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
-                PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
-                PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
-                PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
-                PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,
-                PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
-            ]);
+            ->whereHas('statusLog', function ($q) {
+                $q->whereIn('status_to', [
+                    PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI,
+                    PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
+                    PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
+                    PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
+                    PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
+                    PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,
+                    PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
+                ]);
+            });
 
         // Filter by status
         if ($request->filled('status')) {
@@ -495,25 +495,39 @@ class PenerimaanDokumenController extends Controller
     /**
      * Calculate statistics
      */
-    private function calculateStatistics()
+    private function calculateStatistics(): array
     {
-        $totalMenungguDokumen = PengajuanAkreditasi::where('status', PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI)->count();
-        $totalDokumenMasuk = PengajuanAkreditasi::where('status', PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA)->count();
-        $totalDokumenLengkap = PengajuanAkreditasi::where('status', PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI)->count();
-        $totalDalamValidasi = PengajuanAkreditasi::whereIn('status', [
+        // Ambil semua status log relevan
+        $logs = PengajuanStatusLog::whereIn('status_to', [
+            PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI,
+            PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
+            PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
             PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
             PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
-        ])->count();
-        $totalPerluRevisi = PengajuanAkreditasi::where('status', PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED)->count();
-        $totalTervalidasi = PengajuanAkreditasi::where('status', PengajuanAkreditasi::STATUS_BORANG_VALIDATED)->count();
+            PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,
+            PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
+        ])->get();
+
+        // Group by pengajuan
+        $logsByPengajuan = $logs->groupBy('id_pengajuan');
+
+        $totalMenungguDokumen = $logsByPengajuan->filter(fn($l) => $l->pluck('status_to')->contains(PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI))->count();
+        $totalDokumenMasuk   = $logsByPengajuan->filter(fn($l) => $l->pluck('status_to')->contains(PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA))->count();
+        $totalDokumenLengkap = $logsByPengajuan->filter(fn($l) => $l->pluck('status_to')->contains(PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI))->count();
+        $totalDalamValidasi  = $logsByPengajuan->filter(fn($l) => $l->pluck('status_to')->intersect([
+            PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
+            PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
+        ])->isNotEmpty())->count();
+        $totalPerluRevisi    = $logsByPengajuan->filter(fn($l) => $l->pluck('status_to')->contains(PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED))->count();
+        $totalTervalidasi    = $logsByPengajuan->filter(fn($l) => $l->pluck('status_to')->contains(PengajuanAkreditasi::STATUS_BORANG_VALIDATED))->count();
 
         return [
             'total_menunggu_dokumen' => $totalMenungguDokumen,
-            'total_dokumen_masuk' => $totalDokumenMasuk,
-            'total_dokumen_lengkap' => $totalDokumenLengkap,
-            'total_dalam_validasi' => $totalDalamValidasi,
-            'total_perlu_revisi' => $totalPerluRevisi,
-            'total_tervalidasi' => $totalTervalidasi,
+            'total_dokumen_masuk'    => $totalDokumenMasuk,
+            'total_dokumen_lengkap'  => $totalDokumenLengkap,
+            'total_dalam_validasi'   => $totalDalamValidasi,
+            'total_perlu_revisi'     => $totalPerluRevisi,
+            'total_tervalidasi'      => $totalTervalidasi,
         ];
     }
 

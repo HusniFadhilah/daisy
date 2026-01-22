@@ -3,12 +3,13 @@
 
 namespace App\Http\Controllers\DE;
 
-use App\Http\Controllers\Controller;
-use App\Models\PengajuanAkreditasi;
-use App\Models\PengajuanDokumen;
 use App\Models\University;
 use Illuminate\Http\Request;
+use App\Models\PengajuanDokumen;
+use App\Models\PengajuanStatusLog;
 use Illuminate\Support\Facades\DB;
+use App\Models\PengajuanAkreditasi;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
 
 class PenyampaianTemplateController extends Controller
@@ -18,15 +19,23 @@ class PenyampaianTemplateController extends Controller
      */
     public function index(Request $request)
     {
+        // Ambil status terakhir setiap pengajuan
+        $latestStatus = PengajuanStatusLog::select('id_pengajuan', 'status_to')
+            ->whereIn('status_to', [
+                PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
+                PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM,
+            ])
+            ->orderByDesc('changed_at')
+            ->get()
+            ->unique('id_pengajuan');
+
+        // Query pengajuan dengan status terakhir sesuai filter
         $query = PengajuanAkreditasi::with([
             'studyProgram.university',
             'studyProgram.degreeLevel',
             'pengaju',
         ])
-            ->whereIn('status', [
-                PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
-                PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM,
-            ]);
+            ->whereIn('id', $latestStatus->pluck('id_pengajuan'));
 
         // Filter by status
         if ($request->filled('status')) {
@@ -294,19 +303,40 @@ class PenyampaianTemplateController extends Controller
     /**
      * Calculate statistics
      */
-    private function calculateStatistics()
+    private function calculateStatistics(): array
     {
+        $base = PengajuanAkreditasi::query();
+
+        // Total: pernah ada permohonan atau template LED terkait
+        $total = (clone $base)
+            ->whereHas('statusLog', function ($q) {
+                $q->whereIn('status_to', [
+                    PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
+                    PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM,
+                ]);
+            })
+            ->count();
+
+        // Belum dikirim: status terakhir SURAT_PERMOHONAN_DITERIMA, belum pernah TEMPLATE_LED_DIKIRIM
+        $belumDikirim = (clone $base)
+            ->whereHas('statusLog', function ($q) {
+                $q->where('status_to', PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA);
+            })
+            ->whereDoesntHave('statusLog', function ($q) {
+                $q->where('status_to', PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM);
+            })
+            ->count();
+
+        // Sudah dikirim: pernah TEMPLATE_LED_DIKIRIM
+        $sudahDikirim = (clone $base)
+            ->whereHas('statusLog', function ($q) {
+                $q->where('status_to', PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM);
+            })
+            ->count();
         return [
-            'total' => PengajuanAkreditasi::whereIn('status', [
-                PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
-                PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM,
-            ])->count(),
-
-            'belum_dikirim' => PengajuanAkreditasi::where('status', PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA)
-                ->count(),
-
-            'sudah_dikirim' => PengajuanAkreditasi::where('status', PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM)
-                ->count(),
+            'total' => $total,
+            'belum_dikirim' => $belumDikirim,
+            'sudah_dikirim' => $sudahDikirim,
         ];
     }
 }

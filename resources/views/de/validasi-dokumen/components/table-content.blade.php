@@ -15,7 +15,7 @@
                 <thead class="table-light">
                     <tr>
                         <th width="5%">No</th>
-                        <th width="15%">Nomor Pengajuan</th>
+                        <th width="15%">Nomor Pengajuan Akreditasi</th>
                         <th width="20%">Program Studi</th>
                         <th width="15%">Validator</th>
                         <th width="12%">Status Penawaran</th>
@@ -34,11 +34,8 @@
                     <tr>
                         <td>{{ $assignments->firstItem() + $index }}</td>
                         <td>
-                            <strong>{{ $pengajuan->nomor_pengajuan }}</strong>
-                            <br>
-                            <small class="text-muted">
-                                {{ $assignment->created_at->format('d M Y') }}
-                            </small>
+                            <p>{{ $pengajuan->judul }}</p>
+                            <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
                         </td>
                         <td>
                             <div>

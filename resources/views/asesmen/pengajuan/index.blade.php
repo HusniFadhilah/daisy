@@ -109,7 +109,7 @@
                         @if($pengajuan->jenis_akreditasi)
                         <small class="text-muted d-block">
                             <i class="bi bi-tag"></i>
-                            {{ ucfirst($pengajuan->jenis_akreditasi) }}
+                            {{ $pengajuan->jenis_akreditasi_label }}
                         </small>
                         @endif
 

@@ -127,7 +127,7 @@
                             </td>
                             <td>
                                 <span class="badge bg-secondary">
-                                    {{ ucfirst($pengajuan->jenis_akreditasi) }}
+                                    {{ $pengajuan->jenis_akreditasi_label }}
                                 </span>
                             </td>
                             <td>{{ $pengajuan->tahun_akreditasi }}</td>

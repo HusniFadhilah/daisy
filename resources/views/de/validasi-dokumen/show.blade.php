@@ -151,6 +151,110 @@
 
             <!-- Revision Details -->
             @if($revisionDetails && ($revisionDetails['led'] || $revisionDetails['suplemen'] || $revisionDetails['lkps']))
+
+            <div class="card mb-4" id="validationCard">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clipboard-check"></i> Hasil Validasi LED+Suplemen dan LKPS
+                    </h5>
+                    <span class="badge bg-secondary" id="validationBadge">Memuat...</span>
+                </div>
+                <div class="card-body">
+                    <div id="validationLoading" class="text-muted">
+                        <span class="spinner-border spinner-border-sm me-2"></span> Memuat data validasi...
+                    </div>
+
+                    <div id="validationContent" class="d-none">
+                        <div class="mb-2">
+                            <small class="text-muted">Validator</small>
+                            <div class="fw-semibold" id="validatorName">-</div>
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-4">
+                                <div class="p-2 bg-light rounded">
+                                    <div class="small text-muted">LED</div>
+                                    <div class="fw-bold" id="valLedCount">-</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-2 bg-light rounded">
+                                    <div class="small text-muted">Suplemen</div>
+                                    <div class="fw-bold" id="valSuplemenCount">-</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-2 bg-light rounded">
+                                    <div class="small text-muted">LKPS</div>
+                                    <div class="fw-bold" id="valLkpsCount">-</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-2">
+                            <small class="text-muted">Total Progress</small>
+                            <div class="progress">
+                                <div class="progress-bar" id="valTotalBar" style="width:0%"></div>
+                            </div>
+                            <div class="small text-muted mt-1">
+                                <span id="valTotalText">0%</span> • terakhir update <span id="valUpdatedAt">-</span>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="mb-2">
+                            <h6 class="mb-2"><i class="bi bi-list-check"></i> Poin Revisi</h6>
+
+                            <div id="valRevisionSkeleton" class="d-none">
+                                <div class="sk-card">
+                                    <div class="skeleton sk-line lg sk-w-40"></div>
+                                    <div class="skeleton sk-line sk-w-75"></div>
+                                    <div class="skeleton sk-line sm sk-w-60"></div>
+                                </div>
+                                <div class="sk-card">
+                                    <div class="skeleton sk-line lg sk-w-30"></div>
+                                    <div class="skeleton sk-line sk-w-90"></div>
+                                    <div class="skeleton sk-line sm sk-w-60"></div>
+                                </div>
+                                <div class="sk-card">
+                                    <div class="skeleton sk-line lg sk-w-20"></div>
+                                    <div class="skeleton sk-line sk-w-75"></div>
+                                    <div class="skeleton sk-line sm sk-w-60"></div>
+                                </div>
+                            </div>
+
+                            <div id="valRevisionList" class="d-none"></div>
+                            <div id="valRevisionEmpty" class="text-muted d-none">Tidak ada poin revisi.</div>
+                        </div>
+
+                        <div class="mb-2">
+                            <small class="text-muted">Catatan Validator (Keseluruhan)</small>
+                            <div class="border rounded p-2 bg-white" id="valNoteAll">-</div>
+                        </div>
+                        <div class="mb-2">
+                            <small class="text-muted">Catatan LED</small>
+                            <div class="border rounded p-2 bg-white" id="valNoteLed">-</div>
+                        </div>
+                        <div class="mb-2">
+                            <small class="text-muted">Catatan Suplemen</small>
+                            <div class="border rounded p-2 bg-white" id="valNoteSuplemen">-</div>
+                        </div>
+                        <div class="mb-0">
+                            <small class="text-muted">Catatan LKPS</small>
+                            <div class="border rounded p-2 bg-white" id="valNoteLkps">-</div>
+                        </div>
+                    </div>
+
+                    <div id="validationEmpty" class="d-none text-muted">
+                        Belum ada hasil validasi.
+                    </div>
+
+                    <div id="validationError" class="d-none alert alert-danger alert-permanent">
+                        Gagal memuat hasil validasi.
+                    </div>
+                </div>
+            </div>
             <div class="card">
                 <div class="card-header bg-warning text-dark">
                     <h5 class="mb-0">

@@ -337,7 +337,7 @@
                             <th>Jenis Akreditasi</th>
                             <td>
                                 <span class="badge bg-info">
-                                    {{ ucwords(str_replace('-', ' ', $pengajuan->jenis_akreditasi)) }}
+                                    {{ $pengajuan->jenis_akreditasi_label }}
                                 </span>
                             </td>
                         </tr>

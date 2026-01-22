@@ -106,7 +106,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-2 fw-bold">{{ $stats['total'] }}</h2>
-                            <small class="opacity-75">Sedang dalam tahap pelaporan</small>
+                            <small class="opacity-75">Total permohonan akreditasi PS yang aktif sampai pada tahap pelaporan</small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
                             <i class="bi bi-file-earmark-text"></i>
@@ -122,7 +122,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-2 fw-bold">{{ $stats['belum_upload'] }}</h2>
-                            <small class="opacity-75">Validator belum upload laporan</small>
+                            <small class="opacity-75">Jumlah validator belum upload Laporan Kesiapan LED Program Studi (LKLED)</small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
                             <i class="bi bi-x-circle"></i>
@@ -139,7 +139,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-2 fw-bold">{{ $stats['menunggu_finalisasi'] }}</h2>
-                            <small class="opacity-75">Sudah upload, belum finalisasi</small>
+                            <small class="opacity-75">Jumlah validator sudah upload LKLED, namun belum difinalisasi</small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
                             <i class="bi bi-hourglass-split"></i>
@@ -155,7 +155,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-2 fw-bold">{{ $stats['selesai'] }}</h2>
-                            <small class="opacity-75">Pelaporan telah difinalisasi</small>
+                            <small class="opacity-75">Jumlah Laporan Kesiapan LED Program Studi (LKLED) yang telah difinalisasi & selesai dilaporkan</small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
                             <i class="bi bi-check-circle"></i>
