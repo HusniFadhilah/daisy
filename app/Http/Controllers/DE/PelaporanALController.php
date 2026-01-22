@@ -137,7 +137,7 @@ class PelaporanALController extends Controller
             ->first();
 
         // Get laporan AL documents
-        $laporanDocuments = $pengajuan->asesmen?->asesmenDocuments()->where('type', 'laporan_validasi_al')->get() ?? collect();
+        $laporanDocuments = $pengajuan->asesmen?->asesmenDocuments()->where('type', 'laporan_al')->get() ?? collect();
         // Check pelaporan status
         $statusPelaporan = [
             'has_laporan' => $laporanDocuments->count() > 0,

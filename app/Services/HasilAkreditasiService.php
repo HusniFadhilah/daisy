@@ -27,7 +27,7 @@ class HasilAkreditasiService
 
         // Get all AK penilaian
         $penilaians = PenilaianElemenAk::where('id_asesmen', $asesmen->id)
-            ->where('status', 'approved')
+            ->whereIn('status', ['approved', 'submitted'])
             ->with(['elemenStandar.kriteria'])
             ->get();
 
@@ -141,7 +141,7 @@ class HasilAkreditasiService
 
         // Get all AL penilaian
         $penilaians = PenilaianElemenAl::where('id_asesmen', $asesmen->id)
-            ->where('status', 'approved')
+            ->whereIn('status', ['approved', 'submitted'])
             ->with(['elemenStandar.kriteria'])
             ->get();
 

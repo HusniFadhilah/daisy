@@ -317,5 +317,25 @@
         });
     });
 
+    window.PELAPORAN_CFG = {
+        al: {
+            title: 'Rekap AL dan Pelaporan AL'
+            , label: 'Laporan Hasil Asesmen Lapangan Program Studi (LHA)'
+            , upload: @json(route('pelaporan.al.upload', ['assignment' => '__ID__']))
+            , finalize: @json(route('pelaporan.al.finalize', ['assignment' => '__ID__']))
+            , fileLabel: 'Laporan Hasil Asesmen Lapangan Program Studi (LHA)'
+            , finalizeLabel: 'Pelaporan AL Telah Selesai'
+            , additionalDescription: `Dokumen yang sudah digabungkan, yang diperlukan isinya adalah:
+                •	Penunjukan tugas Asesor untuk melaksanakan Penilaian LED
+                •	Proses peneliaan LED oleh Asesor.
+                •	Validasi Penilaian Kecukupan Asesor Oleh Validator
+                •	Penyampaian Informasi Kepada DE tentang:
+                    o	Lokasi AL
+                    o	Perjalan asesor ke lokasi AL
+                    o	Berita Acara yang menyatakan AL telah dilaksanakan dan disepakati
+                •	Rekomendasi Penetapan Hasil Akreditasi`
+        }
+    };
+
 </script>
 @endpush
