@@ -28,7 +28,7 @@ class PelaporanDokumenController extends Controller
             'studyProgram.degreeLevel',
 
             // kalau mau ditampilkan juga di table
-            'latestStatusLog',
+            'statusLog',
 
             'asesmen.asesmenUserRoles' => function ($q) {
                 $q->where('jenis_asesmen', 'dokumen')
@@ -43,8 +43,8 @@ class PelaporanDokumenController extends Controller
             }
         ])
             // ✅ filter pakai status TERAKHIR dari PengajuanStatusLog
-            ->whereHas('latestStatusLog', function ($q) use ($statusTarget) {
-                $q->whereIn('status', $statusTarget);
+            ->whereHas('statusLog', function ($q) use ($statusTarget) {
+                $q->whereIn('status_to', $statusTarget);
             });
 
         // Filter by university
@@ -54,12 +54,12 @@ class PelaporanDokumenController extends Controller
             });
         }
 
-        // Filter by status pelaporan (juga pakai latestStatusLog)
+        // Filter by status pelaporan (juga pakai statusLog)
         if ($request->filled('status_pelaporan')) {
             switch ($request->status_pelaporan) {
                 case 'belum_upload':
-                    $query->whereHas('latestStatusLog', function ($q) {
-                        $q->where('status', '!=', PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN);
+                    $query->whereHas('statusLog', function ($q) {
+                        $q->where('status_to', '!=', PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN);
                     })
                         ->whereDoesntHave('asesmen.documents', function ($q) {
                             $q->where('type', 'laporan_validasi_borang')
@@ -68,8 +68,8 @@ class PelaporanDokumenController extends Controller
                     break;
 
                 case 'sudah_upload':
-                    $query->whereHas('latestStatusLog', function ($q) {
-                        $q->where('status', '!=', PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN);
+                    $query->whereHas('statusLog', function ($q) {
+                        $q->where('status_to', '!=', PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN);
                     })
                         ->whereHas('asesmen.documents', function ($q) {
                             $q->where('type', 'laporan_validasi_borang')
@@ -78,8 +78,8 @@ class PelaporanDokumenController extends Controller
                     break;
 
                 case 'selesai':
-                    $query->whereHas('latestStatusLog', function ($q) {
-                        $q->where('status', PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN);
+                    $query->whereHas('statusLog', function ($q) {
+                        $q->where('status_to', PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN);
                     });
                     break;
             }
@@ -234,7 +234,9 @@ class PelaporanDokumenController extends Controller
      */
     private function getStatusPelaporan($pengajuan, $laporanValidasi)
     {
-        if ($pengajuan->status === PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN) {
+        $last = $pengajuan->statusLog?->status_to;
+
+        if ($last === PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN) {
             return [
                 'status' => 'selesai',
                 'label' => 'Selesai Dilaporkan',

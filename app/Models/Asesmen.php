@@ -43,6 +43,11 @@ class Asesmen extends Model
         return $this->hasMany(AsesmenUserRole::class, 'id_asesmen');
     }
 
+    public function hasil()
+    {
+        return $this->hasOne(HasilAkreditasi::class, 'id_asesmen');
+    }
+
     /**
      * Relasi ke Asesmen Kecukupan (AK)
      * 1 Asesmen bisa punya 1 AK

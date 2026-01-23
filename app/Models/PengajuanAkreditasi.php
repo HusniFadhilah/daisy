@@ -437,6 +437,12 @@ class PengajuanAkreditasi extends Model
                     $this->update(['status' => PengajuanAkreditasi::STATUS_AL_DILAPORKAN, 'tanggal_pelaporan_al' => now()]);
             }
         }
+        if ($statusToUpdate == 'status_hasil_akreditasi_disampaikan') {
+            if ($jenisAsesmen == 'al') {
+                if ($this->status == PengajuanAkreditasi::STATUS_AL_DILAPORKAN)
+                    $this->update(['status' => PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM, 'tanggal_hasil_akreditasi' => now()]);
+            }
+        }
     }
 
     public function canBeReported(string $jenisAsesmen): bool

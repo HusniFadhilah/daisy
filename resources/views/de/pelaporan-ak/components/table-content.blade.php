@@ -29,28 +29,50 @@
                     return $aur->role_selected->name === 'validator';
                     }) ?? collect();
 
-                    // Get laporan documents
+                    // Get laporan documents (laporan_ak aktif sudah di-load dari controller)
                     $laporanDocs = $pengajuan->asesmen?->asesmenDocuments ?? collect();
                     $hasLaporan = $laporanDocs->count() > 0;
 
-                    // Determine status
-                    if ($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AK_DILAPORKAN) {
+                    // ===== Status Pelaporan berbasis STATUS LOG =====
+                    $pelaporanStatuses = [
+                    \App\Models\PengajuanAkreditasi::STATUS_AK_SELESAI,
+                    \App\Models\PengajuanAkreditasi::STATUS_AK_DILAPORKAN,
+                    ];
+
+                    // statusLog harus sudah urut changed_at desc dari controller
+                    $lastPelaporanLog = $pengajuan->statusLog
+                    ?->firstWhere(fn($log) => in_array($log->status_to, $pelaporanStatuses, true));
+
+                    $lastStatus = $lastPelaporanLog?->status_to;
+
+                    $isReported = $lastStatus === \App\Models\PengajuanAkreditasi::STATUS_AK_DILAPORKAN;
+
+                    // Badge Status (kolom "Status")
+                    if ($isReported) {
                     $statusConfig = [
                     'class' => 'success',
                     'icon' => 'check-circle-fill',
                     'text' => 'Sudah Dilaporkan'
                     ];
+                    } else {
+                    // kalau belum pernah masuk AK_SELESAI pun, fallback tetap "Validasi Selesai" hanya bila memang ada log AK_SELESAI
+                    $statusConfig = [
+                    'class' => 'warning',
+                    'icon' => 'clock',
+                    'text' => ($lastStatus === \App\Models\PengajuanAkreditasi::STATUS_AK_SELESAI)
+                    ? 'Validasi Selesai'
+                    : 'Unknown'
+                    ];
+                    }
+
+                    // Badge Status Pelaporan (kolom "Status Pelaporan") tetap berdasar ada/tidaknya dokumen
+                    if ($isReported) {
                     $pelaporanConfig = [
                     'class' => 'success',
                     'icon' => 'file-earmark-check-fill',
                     'text' => 'Sudah Upload'
                     ];
                     } else {
-                    $statusConfig = [
-                    'class' => 'warning',
-                    'icon' => 'clock',
-                    'text' => 'Validasi Selesai'
-                    ];
                     $pelaporanConfig = $hasLaporan ? [
                     'class' => 'info',
                     'icon' => 'file-earmark-arrow-up',
@@ -61,6 +83,17 @@
                     'text' => 'Belum Upload'
                     ];
                     }
+
+                    // ===== Tanggal tampil berbasis log =====
+                    // Prioritas:
+                    // 1) kalau reported -> tanggal dari log AK_DILAPORKAN (changed_at)
+                    // 2) kalau belum -> tanggal dari log AK_SELESAI (changed_at)
+                    // 3) fallback created_at
+                    $tanggalTampil = $lastPelaporanLog?->changed_at
+                    ? \Carbon\Carbon::parse($lastPelaporanLog->changed_at)->format('d M Y')
+                    : $pengajuan->created_at->format('d M Y');
+
+                    $labelTanggal = $isReported ? 'Dilaporkan' : (($lastStatus === \App\Models\PengajuanAkreditasi::STATUS_AK_SELESAI) ? 'Validasi Selesai' : null);
                     @endphp
                     <tr>
                         <td>{{ $pengajuans->firstItem() + $index }}</td>
@@ -107,12 +140,10 @@
                             @endif
                         </td>
                         <td>
-                            @if($pengajuan->tanggal_pelaporan_ak)
-                            <small><strong>{{ \Carbon\Carbon::parse($pengajuan->tanggal_pelaporan_ak)->format('d M Y') }}</strong></small>
+                            <small><strong>{{ $tanggalTampil }}</strong></small>
+                            @if($labelTanggal)
                             <br>
-                            <small class="text-muted">Dilaporkan</small>
-                            @else
-                            <small>{{ $pengajuan->created_at->format('d M Y') }}</small>
+                            <small class="text-muted">{{ $labelTanggal }}</small>
                             @endif
                         </td>
                         <td class="text-center">

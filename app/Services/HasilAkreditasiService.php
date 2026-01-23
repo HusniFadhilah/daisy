@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Asesmen;
 use App\Models\BobotPenilaian;
 use App\Models\HasilAkreditasi;
+use App\Models\JenjangPenilaian;
 use App\Models\PenilaianElemenAk;
 use App\Models\PenilaianElemenAl;
 use Illuminate\Support\Facades\DB;
@@ -20,34 +21,54 @@ class HasilAkreditasiService
     {
         $studyProgram = $asesmen->studyProgram;
         $categoryId = $studyProgram->id_category;
+        $degreeLevelId = $studyProgram->id_degree_level;
 
         if (!$categoryId) {
             throw new \Exception('Program studi belum memiliki kategori.');
         }
 
-        // Get all AK penilaian
+        // Get all AK penilaian (approved only)
         $penilaians = PenilaianElemenAk::where('id_asesmen', $asesmen->id)
             ->whereIn('status', ['approved', 'submitted'])
             ->with(['elemenStandar.kriteria'])
             ->get();
 
         if ($penilaians->isEmpty()) {
-            throw new \Exception('Belum ada penilaian AK yang di-submit.');
+            throw new \Exception('Belum ada penilaian AK yang di-approve.');
         }
+
+        // ✅ Group by elemen and calculate AVERAGE
+        $elemenScores = $penilaians->groupBy('id_elemen')->map(function ($group) {
+            $scores = $group->pluck('skor_final')->filter()->values();
+
+            // If no skor_final, use skor
+            if ($scores->isEmpty()) {
+                $scores = $group->pluck('skor')->filter()->values();
+            }
+
+            return [
+                'elemen' => $group->first()->elemenStandar,
+                'avg_skor' => $scores->isNotEmpty() ? round($scores->avg(), 2) : 0,
+                'count_asesor' => $scores->count(),
+                'scores_detail' => $scores->toArray(),
+            ];
+        });
 
         $totalSkor = 0;
         $totalBobot = 0;
         $detailPerKriteria = [];
         $detailPerElemen = [];
-        $pelampauanStandar = []; // ✅ NEW: Track skor 4 per kriteria
+        $pelampauanStandar = [];
 
-        foreach ($penilaians as $penilaian) {
-            $elemen = $penilaian->elemenStandar;
+        foreach ($elemenScores as $idElemen => $data) {
+            $elemen = $data['elemen'];
             $kriteria = $elemen->kriteria;
+            $avgSkor = $data['avg_skor'];
 
             // Get bobot
             $bobot = BobotPenilaian::where('id_elemen', $elemen->id)
                 ->where('id_category', $categoryId)
+                ->where('id_degree_level', $degreeLevelId)
                 ->where('is_active', true)
                 ->first();
 
@@ -56,11 +77,8 @@ class HasilAkreditasiService
                 continue;
             }
 
-            // Use skor_final if validated, otherwise use skor
-            $skor = $penilaian->skor_final ?? $penilaian->skor ?? 0;
-
-            // ✅ NEW: Track pelampauan standar (skor = 4)
-            if ($skor == 4) {
+            // ✅ Track pelampauan standar (rata-rata skor >= 4)
+            if ($avgSkor >= 4) {
                 $kriteriaCode = $kriteria->kode_kriteria;
 
                 if (!isset($pelampauanStandar[$kriteriaCode])) {
@@ -70,15 +88,14 @@ class HasilAkreditasiService
                 $pelampauanStandar[$kriteriaCode][] = [
                     'kode_elemen' => $elemen->kode_elemen,
                     'nama_elemen' => $elemen->pernyataan_elemen,
-                    'skor' => $skor,
+                    'skor_rata' => $avgSkor,
                     'bobot' => $bobot->bobot,
-                    'asesor_id' => $penilaian->id_asesor,
-                    'validator_id' => $penilaian->validated_by,
+                    'jumlah_asesor' => $data['count_asesor'],
                 ];
             }
 
             // Calculate weighted score
-            $skorTertimbang = $skor * $bobot->bobot;
+            $skorTertimbang = $avgSkor * $bobot->bobot;
 
             $totalSkor += $skorTertimbang;
             $totalBobot += $bobot->bobot;
@@ -91,7 +108,7 @@ class HasilAkreditasiService
                     'total_skor' => 0,
                     'total_bobot' => 0,
                     'elemen_count' => 0,
-                    'has_pelampauan' => false, // ✅ NEW
+                    'has_pelampauan' => false,
                 ];
             }
 
@@ -99,7 +116,7 @@ class HasilAkreditasiService
             $detailPerKriteria[$kriteriaCode]['total_bobot'] += $bobot->bobot;
             $detailPerKriteria[$kriteriaCode]['elemen_count']++;
 
-            if ($skor == 4) {
+            if ($avgSkor >= 4) {
                 $detailPerKriteria[$kriteriaCode]['has_pelampauan'] = true;
             }
 
@@ -108,21 +125,22 @@ class HasilAkreditasiService
                 'kode_elemen' => $elemen->kode_elemen,
                 'nama_elemen' => $elemen->pernyataan_elemen,
                 'kode_kriteria' => $kriteriaCode,
-                'skor' => $skor,
+                'nama_kriteria' => $kriteria->nama_kriteria,
+                'skor' => $avgSkor,
+                'skor_kategori' => JenjangPenilaian::getSkorInfo(round($avgSkor)),
                 'bobot' => $bobot->bobot,
                 'skor_tertimbang' => $skorTertimbang,
+                'jumlah_asesor' => $data['count_asesor'],
             ];
         }
 
-        $skorAkhir = $totalSkor;
-
         return [
-            'skor_total' => round($skorAkhir, 2),
+            'skor_total' => round($totalSkor, 2),
             'skor_tertimbang' => round($totalSkor, 2),
             'total_bobot' => $totalBobot,
             'detail_kriteria' => $detailPerKriteria,
             'detail_elemen' => $detailPerElemen,
-            'pelampauan_standar' => $pelampauanStandar, // ✅ NEW
+            'pelampauan_standar' => $pelampauanStandar,
             'jumlah_elemen' => count($detailPerElemen),
         ];
     }
@@ -134,34 +152,49 @@ class HasilAkreditasiService
     {
         $studyProgram = $asesmen->studyProgram;
         $categoryId = $studyProgram->id_category;
+        $degreeLevelId = $studyProgram->id_degree_level;
 
         if (!$categoryId) {
             throw new \Exception('Program studi belum memiliki kategori.');
         }
 
-        // Get all AL penilaian
+        // Get all AL penilaian (approved only)
         $penilaians = PenilaianElemenAl::where('id_asesmen', $asesmen->id)
             ->whereIn('status', ['approved', 'submitted'])
             ->with(['elemenStandar.kriteria'])
             ->get();
 
         if ($penilaians->isEmpty()) {
-            throw new \Exception('Belum ada penilaian AL yang di-submit.');
+            throw new \Exception('Belum ada penilaian AL yang di-approve.');
         }
+
+        // ✅ Group by elemen and calculate AVERAGE
+        $elemenScores = $penilaians->groupBy('id_elemen')->map(function ($group) {
+            $scores = $group->pluck('skor')->filter()->values();
+
+            return [
+                'elemen' => $group->first()->elemenStandar,
+                'avg_skor' => $scores->isNotEmpty() ? round($scores->avg(), 2) : 0,
+                'count_asesor' => $scores->count(),
+                'scores_detail' => $scores->toArray(),
+            ];
+        });
 
         $totalSkor = 0;
         $totalBobot = 0;
         $detailPerKriteria = [];
         $detailPerElemen = [];
-        $pelampauanStandar = []; // ✅ NEW
+        $pelampauanStandar = [];
 
-        foreach ($penilaians as $penilaian) {
-            $elemen = $penilaian->elemenStandar;
+        foreach ($elemenScores as $idElemen => $data) {
+            $elemen = $data['elemen'];
             $kriteria = $elemen->kriteria;
+            $avgSkor = $data['avg_skor'];
 
             // Get bobot
             $bobot = BobotPenilaian::where('id_elemen', $elemen->id)
                 ->where('id_category', $categoryId)
+                ->where('id_degree_level', $degreeLevelId)
                 ->where('is_active', true)
                 ->first();
 
@@ -170,10 +203,8 @@ class HasilAkreditasiService
                 continue;
             }
 
-            $skor = $penilaian->skor ?? 0;
-
-            // ✅ NEW: Track pelampauan standar (skor = 4)
-            if ($skor == 4) {
+            // ✅ Track pelampauan standar (rata-rata skor >= 4)
+            if ($avgSkor >= 4) {
                 $kriteriaCode = $kriteria->kode_kriteria;
 
                 if (!isset($pelampauanStandar[$kriteriaCode])) {
@@ -183,13 +214,13 @@ class HasilAkreditasiService
                 $pelampauanStandar[$kriteriaCode][] = [
                     'kode_elemen' => $elemen->kode_elemen,
                     'nama_elemen' => $elemen->pernyataan_elemen,
-                    'skor' => $skor,
+                    'skor_rata' => $avgSkor,
                     'bobot' => $bobot->bobot,
-                    'asesor_id' => $penilaian->id_asesor,
+                    'jumlah_asesor' => $data['count_asesor'],
                 ];
             }
 
-            $skorTertimbang = $skor * $bobot->bobot;
+            $skorTertimbang = $avgSkor * $bobot->bobot;
 
             $totalSkor += $skorTertimbang;
             $totalBobot += $bobot->bobot;
@@ -202,7 +233,7 @@ class HasilAkreditasiService
                     'total_skor' => 0,
                     'total_bobot' => 0,
                     'elemen_count' => 0,
-                    'has_pelampauan' => false, // ✅ NEW
+                    'has_pelampauan' => false,
                 ];
             }
 
@@ -210,7 +241,7 @@ class HasilAkreditasiService
             $detailPerKriteria[$kriteriaCode]['total_bobot'] += $bobot->bobot;
             $detailPerKriteria[$kriteriaCode]['elemen_count']++;
 
-            if ($skor == 4) {
+            if ($avgSkor >= 4) {
                 $detailPerKriteria[$kriteriaCode]['has_pelampauan'] = true;
             }
 
@@ -219,21 +250,22 @@ class HasilAkreditasiService
                 'kode_elemen' => $elemen->kode_elemen,
                 'nama_elemen' => $elemen->pernyataan_elemen,
                 'kode_kriteria' => $kriteriaCode,
-                'skor' => $skor,
+                'nama_kriteria' => $kriteria->nama_kriteria,
+                'skor' => $avgSkor,
+                'skor_kategori' => JenjangPenilaian::getSkorInfo(round($avgSkor)),
                 'bobot' => $bobot->bobot,
                 'skor_tertimbang' => $skorTertimbang,
+                'jumlah_asesor' => $data['count_asesor'],
             ];
         }
 
-        $skorAkhir = $totalSkor;
-
         return [
-            'skor_total' => round($skorAkhir, 2),
+            'skor_total' => round($totalSkor, 2),
             'skor_tertimbang' => round($totalSkor, 2),
             'total_bobot' => $totalBobot,
             'detail_kriteria' => $detailPerKriteria,
             'detail_elemen' => $detailPerElemen,
-            'pelampauan_standar' => $pelampauanStandar, // ✅ NEW
+            'pelampauan_standar' => $pelampauanStandar,
             'jumlah_elemen' => count($detailPerElemen),
         ];
     }
@@ -406,7 +438,7 @@ class HasilAkreditasiService
                 'memenuhi_syarat_unggul' => $memenuhi_syarat,
                 'catatan_validasi' => implode("\n", $catatanValidasi),
             ]);
-
+            $hasil->pengajuan->checkUpdateStatusAKAL('al', 'status_hasil_akreditasi_disampaikan');
             DB::commit();
             return $hasil;
         } catch (\Exception $e) {

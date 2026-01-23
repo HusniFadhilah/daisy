@@ -2,7 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
+use App\Models\Asesmen;
+use App\Models\StudyProgram;
 use Illuminate\Http\Request;
+use App\Models\AsesmenUserRole;
+use App\Models\AsesmenLapangan;
+use App\Models\AsesmenKecukupan;
+use App\Models\PengajuanAkreditasi;
+use App\Models\PengajuanPembayaran;
+use App\Models\PengajuanStatusLog;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
@@ -15,6 +25,7 @@ class DashboardController extends Controller
         // Tentukan data berdasarkan role
         switch ($role) {
             case 'asesi':
+            case 'super_admin':
                 return $this->dashboardAsesi();
             case 'asesor':
                 return $this->dashboardAsesor();
@@ -26,105 +37,120 @@ class DashboardController extends Controller
                 return $this->dashboardAdminUniv();
             case 'admin_prodi':
                 return $this->dashboardAdminProdi();
+            case 'keuangan_lamdepilar':
+                return $this->dashboardKeuangan();
             default:
                 return $this->dashboardDefault();
         }
     }
 
+    /**
+     * ✅ Dashboard DE (Asesi) dan Super Admin
+     */
     private function dashboardAsesi()
     {
-        // Data untuk DE (Asesi) - fokus pada permohonan dan status akreditasi
+        $now = Carbon::now();
+        $sevenMonthsFromNow = $now->copy()->addMonths(7);
+        $startOfYear = $now->copy()->startOfYear();
+
+        // 1. Pengingat Masa Akreditasi (masa berakhir dalam 7 bulan)
+        $pengingatMasaAkreditasi = StudyProgram::where('is_active', true)
+            ->whereNotNull('tanggal_kedaluwarsa')
+            ->where('tanggal_kedaluwarsa', '<=', $sevenMonthsFromNow)
+            ->where('tanggal_kedaluwarsa', '>', $now)
+            ->count();
+
+        // 2. ✅ Penerimaan Dokumen Akreditasi (dari status log - pernah di status ini)
+        $penerimaanDokumen = PengajuanStatusLog::whereIn('status_to', [
+            PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
+            PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
+        ])
+            ->distinct('id_pengajuan')
+            ->count('id_pengajuan');
+
+        // Alternative: Jika ingin lebih detail, ambil unique pengajuan
+        // $penerimaanDokumen = PengajuanStatusLog::whereIn('status_to', [
+        //     PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
+        //     PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
+        // ])->select('id_pengajuan')->distinct()->get()->count();
+
+        // 3. Penawaran Menunggu (current status = pending)
+        $penawaranMenunggu = AsesmenUserRole::where('status_penawaran', 'pending')
+            ->count();
+
+        // 4. Penugasan Aktif (current status = accepted & in progress)
+        $penugasanAktif = AsesmenUserRole::where('status_penawaran', 'accepted')
+            ->whereIn('status_pekerjaan', ['not_started', 'in_progress', 'submitted'])
+            ->count();
+
+        // 5. ✅ Proses AK Berlangsung (dari status log tahun ini - pernah/sedang di status AK)
+        $prosesAK = PengajuanStatusLog::whereIn('status_to', [
+            PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
+            PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
+            PengajuanAkreditasi::STATUS_AK_ON_VALIDATION,
+            PengajuanAkreditasi::STATUS_AK_SELESAI,
+        ])
+            ->whereYear('changed_at', $now->year)
+            ->distinct('id_pengajuan')
+            ->count('id_pengajuan');
+
+        // 6. ✅ Proses AL Berlangsung (dari status log tahun ini - pernah/sedang di status AL)
+        $prosesAL = PengajuanStatusLog::whereIn('status_to', [
+            PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
+            PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
+            PengajuanAkreditasi::STATUS_AL_SELESAI,
+        ])
+            ->whereYear('changed_at', $now->year)
+            ->distinct('id_pengajuan')
+            ->count('id_pengajuan');
+
+        // 7. ✅ Total Selesai Tahun Ini (dari status log - pernah mencapai status selesai tahun ini)
+        $totalSelesai = PengajuanStatusLog::whereIn('status_to', [
+            PengajuanAkreditasi::STATUS_SELESAI,
+            PengajuanAkreditasi::STATUS_ARSIP_DISIMPAN,
+        ])
+            ->whereYear('changed_at', $now->year)
+            ->distinct('id_pengajuan')
+            ->count('id_pengajuan');
+
+        // 8. ✅ Validasi Borang (pernah di status validasi borang)
+        $validasiBorang = PengajuanStatusLog::whereIn('status_to', [
+            PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
+            PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
+            PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
+        ])
+            ->whereYear('changed_at', $now->year)
+            ->distinct('id_pengajuan')
+            ->count('id_pengajuan');
+
         $stats = [
-            'penawaran' => 0,
-            'penugasan_aktif' => 0,
-            'progress' => 0,
-            'proses_ak' => 0,
-            'deadline_days' => 0,
-            'total_selesai' => 0,
-            'persentase_kenaikan' => 0,
+            'penawaran' => $pengingatMasaAkreditasi,
+            'penerimaan_dokumen' => $penerimaanDokumen,
+            'penawaran_menunggu' => $penawaranMenunggu,
+            'penugasan_aktif' => $penugasanAktif,
+            'proses_ak' => $prosesAK,
+            'proses_al' => $prosesAL,
+            'total_selesai' => $totalSelesai,
+            'validasi_borang' => $validasiBorang,
         ];
 
         $additionalStats = [
-            'total_prodi' => 801,
-            'akurasi' => '100',
-            'waktu_rata' => '5.2',
-            'peningkatan' => 15,
-            'unread_messages' => 5,
+            'total_prodi' => StudyProgram::where('is_active', true)->count(),
+            'total_pengajuan' => PengajuanAkreditasi::count(),
+            'pengajuan_aktif' => PengajuanAkreditasi::whereNotIn('status', [
+                PengajuanAkreditasi::STATUS_SELESAI,
+                PengajuanAkreditasi::STATUS_DITOLAK
+            ])->count(),
         ];
 
-        $recentActivities = [
-            (object)[
-                'type' => 'primary',
-                'icon' => '📝',
-                'title' => 'Hasil AK Berhasil Diunggah',
-                'description' => 'Anda telah mengunggah hasil penilaian AK untuk Program Studi S2 Ilmu Lingkungan - Universitas Diponegoro',
-                'time' => '2 jam yang lalu',
-            ],
-            (object)[
-                'type' => 'warning',
-                'icon' => '⚠️',
-                'title' => 'Terdeteksi Split Nilai',
-                'description' => 'Terdapat 3 deskriptor dengan perbedaan penilaian. Silakan lakukan rekonsiliasi dengan partner asesor.',
-                'time' => '5 jam yang lalu',
-            ],
-            (object)[
-                'type' => 'success',
-                'icon' => '✉️',
-                'title' => 'Penawaran Asesmen Diterima',
-                'description' => 'Anda telah menerima penawaran asesmen untuk S1 Teknik Informatika - Universitas Bina Nusantara',
-                'time' => '1 hari yang lalu',
-            ],
-            (object)[
-                'type' => 'primary',
-                'icon' => '💬',
-                'title' => 'Pesan Baru dari Partner',
-                'description' => 'Dr. Paulus mengirim pesan terkait rekonsiliasi nilai pada butir F1|81|8.3.1',
-                'time' => '1 hari yang lalu',
-            ],
-            (object)[
-                'type' => 'success',
-                'icon' => '📊',
-                'title' => 'Validasi AK Selesai',
-                'description' => 'Hasil AK untuk S1 Manajemen - Universitas Pelita Harapan telah divalidasi oleh Dewan Eksekutif',
-                'time' => '2 hari yang lalu',
-            ],
-        ];
+        // Recent Activities (ambil dari status log)
+        $recentActivities = $this->getRecentActivitiesDE();
 
-        $upcomingTasks = [
-            (object)[
-                'title' => 'Upload Hasil Penilaian AK',
-                'priority' => 'high',
-                'description' => 'S2 Ilmu Lingkungan - Universitas Diponegoro',
-                'deadline' => '25 Januari 2026',
-                'days_left' => 10,
-            ],
-            (object)[
-                'title' => 'Rekonsiliasi Split Nilai',
-                'priority' => 'high',
-                'description' => '3 deskriptor perlu didiskusikan dengan Dr. Paulus',
-                'deadline' => '23 Januari 2026',
-                'days_left' => 8,
-            ],
-            (object)[
-                'title' => 'Visitasi AL',
-                'priority' => 'medium',
-                'description' => 'Asesmen Lapangan - S1 Teknik Informatika Universitas Bina Nusantara',
-                'deadline' => '28-30 Januari 2026',
-                'days_left' => 13,
-            ],
-            (object)[
-                'title' => 'Tanggapi Penawaran Baru',
-                'priority' => 'low',
-                'description' => '3 penawaran asesmen menunggu respon',
-                'deadline' => '5 Februari 2026',
-                'days_left' => 21,
-            ],
-        ];
+        // Upcoming Tasks
+        $upcomingTasks = $this->getUpcomingTasksDE();
 
-        $penawaranBaru = 0;
-        $penugasanAktif = 0;
-        $prosesAK = 0;
-        $notificationCount = 0;
+        $penawaranBaru = $penawaranMenunggu;
+        $notificationCount = $penawaranMenunggu + $penugasanAktif;
 
         return view('admin.dashboard', compact(
             'stats',
@@ -133,105 +159,60 @@ class DashboardController extends Controller
             'upcomingTasks',
             'penawaranBaru',
             'penugasanAktif',
-            'prosesAK',
             'notificationCount'
         ));
     }
 
+    /**
+     * ✅ Dashboard Asesor
+     */
     private function dashboardAsesor()
     {
-        // Data untuk Asesor - fokus pada penugasan penilaian
+        $user = Auth::user();
+
+        // 1. Penawaran Menunggu untuk user ini
+        $penawaranMenunggu = AsesmenUserRole::where('id_user', $user->id)
+            ->where('status_penawaran', 'pending')
+            ->whereHas('role', function ($q) {
+                $q->where('name', 'asesor');
+            })
+            ->count();
+
+        // 2. Penugasan Aktif (accepted dan in progress)
+        $penugasanAktif = AsesmenUserRole::where('id_user', $user->id)
+            ->where('status_penawaran', 'accepted')
+            ->whereIn('status_pekerjaan', ['not_started', 'in_progress', 'submitted'])
+            ->whereHas('role', function ($q) {
+                $q->where('name', 'asesor');
+            })
+            ->count();
+
+        // 3. Penugasan Selesai (approved)
+        $penugasanSelesai = AsesmenUserRole::where('id_user', $user->id)
+            ->where('status_pekerjaan', 'approved')
+            ->whereHas('role', function ($q) {
+                $q->where('name', 'asesor');
+            })
+            ->count();
+
         $stats = [
-            'penawaran' => 3,
-            'penugasan_aktif' => 2,
-            'progress' => 70,
-            'proses_ak' => 2,
-            'deadline_days' => 8,
-            'total_selesai' => 47,
-            'persentase_kenaikan' => 18,
+            'penawaran' => $penawaranMenunggu,
+            'penugasan_aktif' => $penugasanAktif,
+            'penugasan_selesai' => $penugasanSelesai,
         ];
 
         $additionalStats = [
-            'total_prodi' => 156,
-            'akurasi' => '98.5',
-            'waktu_rata' => '5.2',
-            'peningkatan' => 15,
-            'unread_messages' => 5,
+            'total_assignment' => AsesmenUserRole::where('id_user', $user->id)
+                ->whereHas('role', fn($q) => $q->where('name', 'asesor'))
+                ->count(),
         ];
 
-        $recentActivities = [
-            (object)[
-                'type' => 'primary',
-                'icon' => '📝',
-                'title' => 'Hasil AK Berhasil Diunggah',
-                'description' => 'Anda telah mengunggah hasil penilaian AK untuk Program Studi S2 Ilmu Lingkungan - Universitas Diponegoro',
-                'time' => '2 jam yang lalu',
-            ],
-            (object)[
-                'type' => 'warning',
-                'icon' => '⚠️',
-                'title' => 'Terdeteksi Split Nilai',
-                'description' => 'Terdapat 3 deskriptor dengan perbedaan penilaian. Silakan lakukan rekonsiliasi dengan partner asesor.',
-                'time' => '5 jam yang lalu',
-            ],
-            (object)[
-                'type' => 'success',
-                'icon' => '✉️',
-                'title' => 'Penawaran Asesmen Diterima',
-                'description' => 'Anda telah menerima penawaran asesmen untuk S1 Teknik Informatika - Universitas Bina Nusantara',
-                'time' => '1 hari yang lalu',
-            ],
-            (object)[
-                'type' => 'primary',
-                'icon' => '💬',
-                'title' => 'Pesan Baru dari Partner',
-                'description' => 'Dr. Paulus mengirim pesan terkait rekonsiliasi nilai pada butir F1|81|8.3.1',
-                'time' => '1 hari yang lalu',
-            ],
-            (object)[
-                'type' => 'success',
-                'icon' => '📊',
-                'title' => 'Validasi AK Selesai',
-                'description' => 'Hasil AK untuk S1 Manajemen - Universitas Pelita Harapan telah divalidasi oleh Dewan Eksekutif',
-                'time' => '2 hari yang lalu',
-            ],
-        ];
+        $recentActivities = $this->getRecentActivitiesAsesor($user->id);
+        $upcomingTasks = $this->getUpcomingTasksAsesor($user->id);
 
-        $upcomingTasks = [
-            (object)[
-                'title' => 'Upload Hasil Penilaian AK',
-                'priority' => 'high',
-                'description' => 'S2 Ilmu Lingkungan - Universitas Diponegoro',
-                'deadline' => '25 Januari 2026',
-                'days_left' => 10,
-            ],
-            (object)[
-                'title' => 'Rekonsiliasi Split Nilai',
-                'priority' => 'high',
-                'description' => '3 deskriptor perlu didiskusikan dengan Dr. Paulus',
-                'deadline' => '23 Januari 2026',
-                'days_left' => 8,
-            ],
-            (object)[
-                'title' => 'Visitasi AL',
-                'priority' => 'medium',
-                'description' => 'Asesmen Lapangan - S1 Teknik Informatika Universitas Bina Nusantara',
-                'deadline' => '28-30 Januari 2026',
-                'days_left' => 13,
-            ],
-            (object)[
-                'title' => 'Tanggapi Penawaran Baru',
-                'priority' => 'low',
-                'description' => '3 penawaran asesmen menunggu respon',
-                'deadline' => '5 Februari 2026',
-                'days_left' => 21,
-            ],
-        ];
-
-        $penawaranBaru = 0;
-        $penugasanAktif = 0;
-        $prosesAK = 0;
-        $notificationCount = 0;
+        $penawaranBaru = $penawaranMenunggu;
+        $prosesAK = $penugasanAktif;
+        $notificationCount = $penawaranMenunggu;
 
         return view('admin.dashboard', compact(
             'stats',
@@ -245,100 +226,56 @@ class DashboardController extends Controller
         ));
     }
 
+    /**
+     * ✅ Dashboard Validator
+     */
     private function dashboardValidator()
     {
-        // Data untuk Validator - fokus pada validasi hasil asesmen
+        $user = Auth::user();
+
+        // 1. Penawaran Menunggu
+        $penawaranMenunggu = AsesmenUserRole::where('id_user', $user->id)
+            ->where('status_penawaran', 'pending')
+            ->whereHas('role', function ($q) {
+                $q->where('name', 'validator');
+            })
+            ->count();
+
+        // 2. Penugasan Aktif
+        $penugasanAktif = AsesmenUserRole::where('id_user', $user->id)
+            ->where('status_penawaran', 'accepted')
+            ->whereIn('status_pekerjaan', ['not_started', 'in_progress', 'submitted'])
+            ->whereHas('role', function ($q) {
+                $q->where('name', 'validator');
+            })
+            ->count();
+
+        // 3. Penugasan Selesai
+        $penugasanSelesai = AsesmenUserRole::where('id_user', $user->id)
+            ->where('status_pekerjaan', 'approved')
+            ->whereHas('role', function ($q) {
+                $q->where('name', 'validator');
+            })
+            ->count();
+
         $stats = [
-            'penawaran' => 0,
-            'penugasan_aktif' => 4,
-            'progress' => 85,
-            'proses_ak' => 4,
-            'deadline_days' => 5,
-            'total_selesai' => 128,
-            'persentase_kenaikan' => 22,
+            'penawaran' => $penawaranMenunggu,
+            'penugasan_aktif' => $penugasanAktif,
+            'penugasan_selesai' => $penugasanSelesai,
         ];
 
         $additionalStats = [
-            'total_prodi' => 342,
-            'akurasi' => '99.2',
-            'waktu_rata' => '2.8',
-            'peningkatan' => 20,
-            'unread_messages' => 7,
+            'total_assignment' => AsesmenUserRole::where('id_user', $user->id)
+                ->whereHas('role', fn($q) => $q->where('name', 'validator'))
+                ->count(),
         ];
 
-        $recentActivities = [
-            (object)[
-                'type' => 'success',
-                'icon' => '✅',
-                'title' => 'Validasi AK Disetujui',
-                'description' => 'Hasil validasi AK untuk S1 Manajemen - Universitas Pelita Harapan telah disetujui',
-                'time' => '1 jam yang lalu',
-            ],
-            (object)[
-                'type' => 'warning',
-                'icon' => '⚠️',
-                'title' => 'Hasil AK Perlu Revisi',
-                'description' => 'Ditemukan inkonsistensi pada kriteria 4 untuk S2 Ilmu Lingkungan - Universitas Diponegoro',
-                'time' => '4 jam yang lalu',
-            ],
-            (object)[
-                'type' => 'primary',
-                'icon' => '📋',
-                'title' => 'Dokumen Validasi Baru',
-                'description' => 'Anda menerima 2 dokumen hasil AK yang perlu divalidasi',
-                'time' => '1 hari yang lalu',
-            ],
-            (object)[
-                'type' => 'info',
-                'icon' => '💬',
-                'title' => 'Diskusi dengan Asesor',
-                'description' => 'Permintaan klarifikasi nilai dari asesor untuk butir 5.2.1',
-                'time' => '1 hari yang lalu',
-            ],
-            (object)[
-                'type' => 'success',
-                'icon' => '📊',
-                'title' => 'Laporan Validasi Dikirim',
-                'description' => 'Laporan validasi untuk 3 program studi telah dikirim ke verifikator',
-                'time' => '2 hari yang lalu',
-            ],
-        ];
+        $recentActivities = $this->getRecentActivitiesValidator($user->id);
+        $upcomingTasks = $this->getUpcomingTasksValidator($user->id);
 
-        $upcomingTasks = [
-            (object)[
-                'title' => 'Validasi Hasil AK',
-                'priority' => 'high',
-                'description' => 'S2 Ilmu Lingkungan - Universitas Diponegoro (perlu revisi)',
-                'deadline' => '20 Januari 2026',
-                'days_left' => 5,
-            ],
-            (object)[
-                'title' => 'Review Dokumen Asesmen',
-                'priority' => 'high',
-                'description' => '2 dokumen AK menunggu validasi pertama',
-                'deadline' => '22 Januari 2026',
-                'days_left' => 7,
-            ],
-            (object)[
-                'title' => 'Koordinasi dengan Asesor',
-                'priority' => 'medium',
-                'description' => 'Klarifikasi 5 butir penilaian yang memerlukan penjelasan',
-                'deadline' => '25 Januari 2026',
-                'days_left' => 10,
-            ],
-            (object)[
-                'title' => 'Finalisasi Laporan Bulanan',
-                'priority' => 'medium',
-                'description' => 'Laporan validasi bulan Januari 2026',
-                'deadline' => '31 Januari 2026',
-                'days_left' => 16,
-            ],
-        ];
-
-        $penawaranBaru = 0;
-        $penugasanAktif = 0;
-        $prosesAK = 0;
-        $notificationCount = 0;
+        $penawaranBaru = $penawaranMenunggu;
+        $prosesAK = $penugasanAktif;
+        $notificationCount = $penawaranMenunggu;
 
         return view('admin.dashboard', compact(
             'stats',
@@ -352,99 +289,62 @@ class DashboardController extends Controller
         ));
     }
 
+    /**
+     * ✅ Dashboard Verifikator
+     */
     private function dashboardVerifikator()
     {
-        // Data untuk Verifikator - fokus pada verifikasi final
+        return $this->dashboardValidator(); // Same logic as validator
+    }
+
+    /**
+     * ✅ Dashboard Admin Universitas
+     */
+    private function dashboardAdminUniv()
+    {
+        $user = Auth::user();
+        $now = Carbon::now();
+
+        // Get study programs under this university
+        $studyProgramIds = StudyProgram::where('id_university', $user->id_university)
+            ->pluck('id')
+            ->toArray();
+
+        // 1. ✅ Permohonan Berjalan (pernah diajukan tahun ini, belum selesai)
+        $permohonanBerjalan = PengajuanAkreditasi::whereIn('id_program_studi', $studyProgramIds)
+            ->whereNotIn('status', [
+                PengajuanAkreditasi::STATUS_SELESAI,
+                PengajuanAkreditasi::STATUS_DITOLAK
+            ])
+            ->whereYear('created_at', $now->year)
+            ->count();
+
+        // 2. ✅ Permohonan Selesai (dari status log - pernah mencapai status selesai)
+        $permohonanSelesai = PengajuanStatusLog::where('status_to', PengajuanAkreditasi::STATUS_SELESAI)
+            ->whereIn('id_pengajuan', function ($query) use ($studyProgramIds) {
+                $query->select('id')
+                    ->from('pengajuan_akreditasi')
+                    ->whereIn('id_program_studi', $studyProgramIds);
+            })
+            ->distinct('id_pengajuan')
+            ->count('id_pengajuan');
+
         $stats = [
-            'penawaran' => 0,
-            'penugasan_aktif' => 5,
-            'progress' => 90,
-            'proses_ak' => 5,
-            'deadline_days' => 3,
-            'total_selesai' => 215,
-            'persentase_kenaikan' => 28,
+            'permohonan_berjalan' => $permohonanBerjalan,
+            'permohonan_selesai' => $permohonanSelesai,
         ];
 
         $additionalStats = [
-            'total_prodi' => 548,
-            'akurasi' => '99.7',
-            'waktu_rata' => '1.5',
-            'peningkatan' => 25,
-            'unread_messages' => 4,
+            'total_prodi' => count($studyProgramIds),
+            'total_pengajuan' => PengajuanAkreditasi::whereIn('id_program_studi', $studyProgramIds)->count(),
         ];
 
-        $recentActivities = [
-            (object)[
-                'type' => 'success',
-                'icon' => '🎯',
-                'title' => 'Verifikasi Final Selesai',
-                'description' => 'Keputusan akreditasi S1 Manajemen - Universitas Pelita Harapan telah diverifikasi dan disetujui',
-                'time' => '2 jam yang lalu',
-            ],
-            (object)[
-                'type' => 'primary',
-                'icon' => '📑',
-                'title' => 'Dokumen Validasi Diterima',
-                'description' => 'Hasil validasi dari 3 program studi siap untuk verifikasi final',
-                'time' => '5 jam yang lalu',
-            ],
-            (object)[
-                'type' => 'warning',
-                'icon' => '⚠️',
-                'title' => 'Revisi Diperlukan',
-                'description' => 'Dokumen S2 Ilmu Lingkungan perlu perbaikan sebelum keputusan final',
-                'time' => '1 hari yang lalu',
-            ],
-            (object)[
-                'type' => 'info',
-                'icon' => '📊',
-                'title' => 'Rapat Pleno Terjadwal',
-                'description' => 'Sidang pleno untuk 8 program studi pada 25 Januari 2026',
-                'time' => '1 hari yang lalu',
-            ],
-            (object)[
-                'type' => 'success',
-                'icon' => '✅',
-                'title' => 'Sertifikat Diterbitkan',
-                'description' => '5 sertifikat akreditasi telah diterbitkan dan dikirim',
-                'time' => '2 hari yang lalu',
-            ],
-        ];
-
-        $upcomingTasks = [
-            (object)[
-                'title' => 'Verifikasi Final 3 Prodi',
-                'priority' => 'high',
-                'description' => 'Review dan approval keputusan akreditasi final',
-                'deadline' => '18 Januari 2026',
-                'days_left' => 3,
-            ],
-            (object)[
-                'title' => 'Persiapan Sidang Pleno',
-                'priority' => 'high',
-                'description' => 'Menyiapkan materi untuk 8 program studi',
-                'deadline' => '24 Januari 2026',
-                'days_left' => 9,
-            ],
-            (object)[
-                'title' => 'Review Dokumen Banding',
-                'priority' => 'medium',
-                'description' => '1 permohonan banding perlu ditinjau',
-                'deadline' => '28 Januari 2026',
-                'days_left' => 13,
-            ],
-            (object)[
-                'title' => 'Koordinasi dengan Dewan',
-                'priority' => 'medium',
-                'description' => 'Rapat koordinasi hasil verifikasi bulan Januari',
-                'deadline' => '30 Januari 2026',
-                'days_left' => 15,
-            ],
-        ];
+        $recentActivities = $this->getRecentActivitiesAdminUniv($studyProgramIds);
+        $upcomingTasks = $this->getUpcomingTasksAdminUniv($studyProgramIds);
 
         $penawaranBaru = 0;
-        $penugasanAktif = 0;
-        $prosesAK = 0;
+        $penugasanAktif = $permohonanBerjalan;
+        $prosesAK = $permohonanBerjalan;
         $notificationCount = 0;
 
         return view('admin.dashboard', compact(
@@ -459,67 +359,149 @@ class DashboardController extends Controller
         ));
     }
 
-    private function dashboardAdminUniv()
+    /**
+     * ✅ Dashboard Admin Prodi
+     */
+    private function dashboardAdminProdi()
     {
-        // Data untuk Admin Universitas
+        $user = Auth::user();
+        $now = Carbon::now();
+
+        // Get study programs for this admin
+        $studyProgramIds = $user->studyPrograms()->pluck('study_programs.id')->toArray();
+
+        if (empty($studyProgramIds)) {
+            // Fallback jika belum ada study program
+            $stats = [
+                'permohonan_berjalan' => 0,
+                'permohonan_selesai' => 0,
+            ];
+
+            $additionalStats = [
+                'total_prodi' => 0,
+                'total_pengajuan' => 0,
+            ];
+
+            $recentActivities = [];
+            $upcomingTasks = [];
+
+            return view('admin.dashboard', compact(
+                'stats',
+                'additionalStats',
+                'recentActivities',
+                'upcomingTasks'
+            ));
+        }
+
+        // 1. Permohonan Berjalan
+        $permohonanBerjalan = PengajuanAkreditasi::whereIn('id_program_studi', $studyProgramIds)
+            ->whereNotIn('status', [
+                PengajuanAkreditasi::STATUS_SELESAI,
+                PengajuanAkreditasi::STATUS_DITOLAK
+            ])
+            ->count();
+
+        // 2. ✅ Permohonan Selesai (dari status log)
+        $permohonanSelesai = PengajuanStatusLog::where('status_to', PengajuanAkreditasi::STATUS_SELESAI)
+            ->whereIn('id_pengajuan', function ($query) use ($studyProgramIds) {
+                $query->select('id')
+                    ->from('pengajuan_akreditasi')
+                    ->whereIn('id_program_studi', $studyProgramIds);
+            })
+            ->distinct('id_pengajuan')
+            ->count('id_pengajuan');
+
+        $stats = [
+            'permohonan_berjalan' => $permohonanBerjalan,
+            'permohonan_selesai' => $permohonanSelesai,
+        ];
+
+        $additionalStats = [
+            'total_prodi' => count($studyProgramIds),
+            'total_pengajuan' => PengajuanAkreditasi::whereIn('id_program_studi', $studyProgramIds)->count(),
+        ];
+
+        $recentActivities = $this->getRecentActivitiesAdminProdi($studyProgramIds);
+        $upcomingTasks = $this->getUpcomingTasksAdminProdi($studyProgramIds);
+
+        $penawaranBaru = 0;
+        $penugasanAktif = $permohonanBerjalan;
+        $prosesAK = $permohonanBerjalan;
+        $notificationCount = 0;
+
+        return view('admin.dashboard', compact(
+            'stats',
+            'additionalStats',
+            'recentActivities',
+            'upcomingTasks',
+            'penawaranBaru',
+            'penugasanAktif',
+            'prosesAK',
+            'notificationCount'
+        ));
+    }
+
+    /**
+     * ✅ Dashboard Keuangan
+     */
+    private function dashboardKeuangan()
+    {
+        // 1. Pembayaran Perlu Diverifikasi (current status)
+        $perluDiverifikasi = PengajuanPembayaran::where('status_pembayaran', 'menunggu_verifikasi')
+            ->count();
+
+        // 2. ✅ Total Selesai Diverifikasi (dari history - pernah terverifikasi)
+        $selesaiDiverifikasi = PengajuanPembayaran::where('status_pembayaran', 'terverifikasi')
+            ->count();
+
+        $stats = [
+            'perlu_diverifikasi' => $perluDiverifikasi,
+            'selesai_diverifikasi' => $selesaiDiverifikasi,
+        ];
+
+        $additionalStats = [
+            'total_pembayaran' => PengajuanPembayaran::count(),
+            'pending_upload' => PengajuanPembayaran::where('status_pembayaran', 'menunggu_pembayaran')->count(),
+            'ditolak' => PengajuanPembayaran::where('status_pembayaran', 'ditolak')->count(),
+        ];
+
+        $recentActivities = $this->getRecentActivitiesKeuangan();
+        $upcomingTasks = $this->getUpcomingTasksKeuangan();
+
+        $penawaranBaru = 0;
+        $penugasanAktif = $perluDiverifikasi;
+        $prosesAK = 0;
+        $notificationCount = $perluDiverifikasi;
+
+        return view('admin.dashboard', compact(
+            'stats',
+            'additionalStats',
+            'recentActivities',
+            'upcomingTasks',
+            'penawaranBaru',
+            'penugasanAktif',
+            'prosesAK',
+            'notificationCount'
+        ));
+    }
+
+    /**
+     * ✅ Dashboard Default
+     */
+    private function dashboardDefault()
+    {
         $stats = [
             'penawaran' => 0,
             'penugasan_aktif' => 0,
-            'progress' => 0,
-            'proses_ak' => 3,
-            'deadline_days' => 30,
-            'total_selesai' => 12,
-            'persentase_kenaikan' => 33,
+            'penugasan_selesai' => 0,
         ];
 
         $additionalStats = [
-            'total_prodi' => 45,
-            'akurasi' => '100',
-            'waktu_rata' => '25',
-            'peningkatan' => 30,
-            'unread_messages' => 3,
+            'total_prodi' => StudyProgram::count(),
         ];
 
-        $recentActivities = [
-            (object)[
-                'type' => 'success',
-                'icon' => '✅',
-                'title' => 'Dokumen Disetujui',
-                'description' => 'Dokumen akreditasi 2 program studi telah disetujui tim verifikasi',
-                'time' => '3 jam yang lalu',
-            ],
-            (object)[
-                'type' => 'primary',
-                'icon' => '📄',
-                'title' => 'Permohonan Baru',
-                'description' => 'Program Studi S1 Sistem Informasi mengajukan akreditasi',
-                'time' => '1 hari yang lalu',
-            ],
-            (object)[
-                'type' => 'info',
-                'icon' => '📊',
-                'title' => 'Jadwal Visitasi',
-                'description' => 'Visitasi untuk 3 prodi dijadwalkan bulan Februari 2026',
-                'time' => '2 hari yang lalu',
-            ],
-        ];
-
-        $upcomingTasks = [
-            (object)[
-                'title' => 'Monitoring Proses Akreditasi',
-                'priority' => 'medium',
-                'description' => '3 program studi dalam proses asesmen',
-                'deadline' => '28 Februari 2026',
-                'days_left' => 44,
-            ],
-            (object)[
-                'title' => 'Persiapan Visitasi',
-                'priority' => 'high',
-                'description' => 'Koordinasi dengan prodi untuk persiapan visitasi',
-                'deadline' => '15 Februari 2026',
-                'days_left' => 31,
-            ],
-        ];
+        $recentActivities = [];
+        $upcomingTasks = [];
 
         $penawaranBaru = 0;
         $penugasanAktif = 0;
@@ -538,88 +520,244 @@ class DashboardController extends Controller
         ));
     }
 
-    private function dashboardAdminProdi()
+    // ========================================
+    // Helper Methods - Recent Activities
+    // ========================================
+
+    private function getRecentActivitiesDE()
     {
-        // Data untuk Admin Prodi (sama dengan asesi)
-        return $this->dashboardAsesi();
+        $activities = [];
+
+        // ✅ Get from status log (latest changes)
+        $recentLogs = PengajuanStatusLog::with(['pengajuan.studyProgram', 'user'])
+            ->latest('changed_at')
+            ->take(10)
+            ->get();
+
+        foreach ($recentLogs as $log) {
+            if (!$log->pengajuan) continue;
+
+            $statusMap = PengajuanAkreditasi::statusMap();
+            $statusInfo = $statusMap[$log->status_to] ?? ['label' => $log->status_to, 'icon' => 'bi-info-circle'];
+
+            $activities[] = (object)[
+                'type' => 'primary',
+                'icon' => $statusInfo['icon'] ?? '📝',
+                'title' => $statusInfo['label'],
+                'description' => ($log->pengajuan->studyProgram->name ?? '-') .
+                    ($log->user ? ' oleh ' . $log->user->name : ''),
+                'time' => Carbon::parse($log->changed_at)->diffForHumans(),
+            ];
+        }
+
+        return $activities;
     }
 
-    private function dashboardDefault()
+    private function getRecentActivitiesAsesor($userId)
     {
-        // Data default untuk role lain
-        $stats = [
-            'penawaran' => 2,
-            'penugasan_aktif' => 1,
-            'progress' => 65,
-            'proses_ak' => 1,
-            'deadline_days' => 12,
-            'total_selesai' => 24,
-            'persentase_kenaikan' => 12,
-        ];
+        $activities = [];
 
-        $additionalStats = [
-            'total_prodi' => 156,
-            'akurasi' => '98.5',
-            'waktu_rata' => '5.2',
-            'peningkatan' => 15,
-            'unread_messages' => 3,
-        ];
+        $assignments = AsesmenUserRole::where('id_user', $userId)
+            ->whereHas('role', fn($q) => $q->where('name', 'asesor'))
+            ->with(['asesmen.studyProgram'])
+            ->latest('updated_at')
+            ->take(5)
+            ->get();
 
-        $recentActivities = [
-            (object)[
+        foreach ($assignments as $assignment) {
+            $activities[] = (object)[
                 'type' => 'primary',
                 'icon' => '📝',
-                'title' => 'Hasil AK Berhasil Diunggah',
-                'description' => 'Anda telah mengunggah hasil penilaian AK untuk Program Studi S2 Ilmu Lingkungan - Universitas Diponegoro',
-                'time' => '2 jam yang lalu',
-            ],
-            (object)[
-                'type' => 'warning',
-                'icon' => '⚠️',
-                'title' => 'Terdeteksi Split Nilai',
-                'description' => 'Terdapat 3 deskriptor dengan perbedaan penilaian. Silakan lakukan rekonsiliasi dengan partner asesor.',
-                'time' => '5 jam yang lalu',
-            ],
-            (object)[
-                'type' => 'success',
-                'icon' => '✉️',
-                'title' => 'Penawaran Asesmen Diterima',
-                'description' => 'Anda telah menerima penawaran asesmen untuk S1 Teknik Informatika - Universitas Bina Nusantara',
-                'time' => '1 hari yang lalu',
-            ],
-        ];
+                'title' => $assignment->status_label,
+                'description' => ($assignment->asesmen->studyProgram->name ?? '-') .
+                    ' - ' . strtoupper($assignment->jenis_asesmen),
+                'time' => $assignment->updated_at->diffForHumans(),
+            ];
+        }
 
-        $upcomingTasks = [
-            (object)[
-                'title' => 'Upload Hasil Penilaian AK',
+        return $activities;
+    }
+
+    private function getRecentActivitiesValidator($userId)
+    {
+        return $this->getRecentActivitiesAsesor($userId);
+    }
+
+    private function getRecentActivitiesAdminUniv($studyProgramIds)
+    {
+        $activities = [];
+
+        // ✅ Get from status log for university programs
+        $recentLogs = PengajuanStatusLog::whereIn('id_pengajuan', function ($query) use ($studyProgramIds) {
+                $query->select('id')
+                    ->from('pengajuan_akreditasi')
+                    ->whereIn('id_program_studi', $studyProgramIds);
+            })
+            ->with(['pengajuan.studyProgram'])
+            ->latest('changed_at')
+            ->take(5)
+            ->get();
+
+        foreach ($recentLogs as $log) {
+            if (!$log->pengajuan) continue;
+
+            $statusMap = PengajuanAkreditasi::statusMap();
+            $statusInfo = $statusMap[$log->status_to] ?? ['label' => $log->status_to];
+
+            $activities[] = (object)[
+                'type' => 'info',
+                'icon' => '📊',
+                'title' => $statusInfo['label'],
+                'description' => $log->pengajuan->studyProgram->name ?? '-',
+                'time' => Carbon::parse($log->changed_at)->diffForHumans(),
+            ];
+        }
+
+        return $activities;
+    }
+
+    private function getRecentActivitiesAdminProdi($studyProgramIds)
+    {
+        return $this->getRecentActivitiesAdminUniv($studyProgramIds);
+    }
+
+    private function getRecentActivitiesKeuangan()
+    {
+        $activities = [];
+
+        $recentPayments = PengajuanPembayaran::with(['pengajuan.studyProgram'])
+            ->latest('updated_at')
+            ->take(5)
+            ->get();
+
+        foreach ($recentPayments as $payment) {
+            $statusLabel = match($payment->status_pembayaran) {
+                'menunggu_pembayaran' => 'Menunggu Pembayaran',
+                'menunggu_verifikasi' => 'Menunggu Verifikasi',
+                'terverifikasi' => 'Terverifikasi',
+                'ditolak' => 'Ditolak',
+                default => ucwords(str_replace('_', ' ', $payment->status_pembayaran)),
+            };
+
+            $activities[] = (object)[
+                'type' => $payment->status_pembayaran === 'terverifikasi' ? 'success' : 'info',
+                'icon' => '💰',
+                'title' => $statusLabel,
+                'description' => $payment->pengajuan->studyProgram->name ?? '-',
+                'time' => $payment->updated_at->diffForHumans(),
+            ];
+        }
+
+        return $activities;
+    }
+
+    // ========================================
+    // Helper Methods - Upcoming Tasks
+    // ========================================
+
+    private function getUpcomingTasksDE()
+    {
+        $tasks = [];
+
+        // Pending validations
+        $pendingValidations = PengajuanAkreditasi::where('status', PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING)
+            ->with('studyProgram')
+            ->take(3)
+            ->get();
+
+        foreach ($pendingValidations as $pengajuan) {
+            $tasks[] = (object)[
+                'title' => 'Validasi Dokumen',
                 'priority' => 'high',
-                'description' => 'S2 Ilmu Lingkungan - Universitas Diponegoro',
-                'deadline' => '10 November 2025',
-                'days_left' => 12,
-            ],
-            (object)[
-                'title' => 'Rekonsiliasi Split Nilai',
+                'description' => $pengajuan->studyProgram->name ?? '-',
+                'deadline' => $pengajuan->updated_at->addDays(7)->format('d M Y'),
+                'days_left' => max(0, $pengajuan->updated_at->addDays(7)->diffInDays(now(), false)),
+            ];
+        }
+
+        return $tasks;
+    }
+
+    private function getUpcomingTasksAsesor($userId)
+    {
+        $tasks = [];
+
+        $assignments = AsesmenUserRole::where('id_user', $userId)
+            ->where('status_penawaran', 'accepted')
+            ->whereIn('status_pekerjaan', ['not_started', 'in_progress'])
+            ->with(['asesmen.studyProgram'])
+            ->take(3)
+            ->get();
+
+        foreach ($assignments as $assignment) {
+            $tasks[] = (object)[
+                'title' => 'Penilaian ' . strtoupper($assignment->jenis_asesmen),
                 'priority' => 'high',
-                'description' => '3 deskriptor perlu didiskusikan dengan Dr. Paulus',
-                'deadline' => '11 Jun 2025',
-                'days_left' => 4,
-            ],
-        ];
+                'description' => $assignment->asesmen->studyProgram->name ?? '-',
+                'deadline' => $assignment->updated_at->addDays(14)->format('d M Y'),
+                'days_left' => max(0, $assignment->updated_at->addDays(14)->diffInDays(now(), false)),
+            ];
+        }
 
-        $penawaranBaru = 0;
-        $penugasanAktif = 0;
-        $prosesAK = 0;
-        $notificationCount = 0;
+        return $tasks;
+    }
 
-        return view('admin.dashboard', compact(
-            'stats',
-            'additionalStats',
-            'recentActivities',
-            'upcomingTasks',
-            'penawaranBaru',
-            'penugasanAktif',
-            'prosesAK',
-            'notificationCount'
-        ));
+    private function getUpcomingTasksValidator($userId)
+    {
+        return $this->getUpcomingTasksAsesor($userId);
+    }
+
+    private function getUpcomingTasksAdminUniv($studyProgramIds)
+    {
+        $tasks = [];
+
+        $pengajuans = PengajuanAkreditasi::whereIn('id_program_studi', $studyProgramIds)
+            ->whereNotIn('status', [PengajuanAkreditasi::STATUS_SELESAI, PengajuanAkreditasi::STATUS_DITOLAK])
+            ->with('studyProgram')
+            ->take(3)
+            ->get();
+
+        foreach ($pengajuans as $pengajuan) {
+            $tasks[] = (object)[
+                'title' => 'Monitor Proses Akreditasi',
+                'priority' => 'medium',
+                'description' => $pengajuan->studyProgram->name ?? '-',
+                'deadline' => $pengajuan->updated_at->addMonths(2)->format('d M Y'),
+                'days_left' => max(0, $pengajuan->updated_at->addMonths(2)->diffInDays(now(), false)),
+            ];
+        }
+
+        return $tasks;
+    }
+
+    private function getUpcomingTasksAdminProdi($studyProgramIds)
+    {
+        return $this->getUpcomingTasksAdminUniv($studyProgramIds);
+    }
+
+    private function getUpcomingTasksKeuangan()
+    {
+        $tasks = [];
+
+        $pendingPayments = PengajuanPembayaran::where('status_pembayaran', 'menunggu_verifikasi')
+            ->with(['pengajuan.studyProgram'])
+            ->take(3)
+            ->get();
+
+        foreach ($pendingPayments as $payment) {
+            $deadline = $payment->tanggal_pembayaran ?
+                Carbon::parse($payment->tanggal_pembayaran)->addDays(3) :
+                now()->addDays(3);
+
+            $tasks[] = (object)[
+                'title' => 'Verifikasi Pembayaran',
+                'priority' => 'high',
+                'description' => $payment->pengajuan->studyProgram->name ?? '-',
+                'deadline' => $deadline->format('d M Y'),
+                'days_left' => max(0, $deadline->diffInDays(now(), false)),
+            ];
+        }
+
+        return $tasks;
     }
 }

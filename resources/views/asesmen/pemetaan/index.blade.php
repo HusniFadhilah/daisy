@@ -3,6 +3,10 @@
 @section('title', 'Pengingat Masa Akreditasi')
 
 @push('styles')
+<!-- Styles -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
+
 <style>
     .stat-card {
         border-radius: 12px;
@@ -312,7 +316,7 @@
                     <h6 class="mb-1 opacity-75">Pengingat Masa Akreditasi</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['segera_7_bulan'] }}</h2>
+                            <h2 class="mb-0 fw-bold">{{ $stats['pengingat_bulan_target'] }}</h2>
                             <small class="opacity-75">PS yang perlu diingatkan tentang masa akreditasi berakhir dalam 7 bulan dari sekarang</small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
@@ -359,14 +363,16 @@
     </div>
 
     <!-- Urgent Alerts -->
-    @if($stats['segera_7_bulan'] > 0)
-    <div class="row mb-4">
+    @if($stats['pengingat_bulan_target'] > 0)
+    <div class="row mb-2">
         <div class="col-12">
             <div class="alert alert-warning alert-dismissible alert-permanent fade show" style="border-left: 4px solid #ffc107;">
                 <i class="bi bi-exclamation-triangle-fill me-2"></i>
                 <strong>Perhatian!</strong>
-                Ada <strong>{{ $stats['segera_7_bulan'] }}</strong> prodi yang perlu diingatkan tentang masa akreditasi berakhir dalam 7 bulan dari sekarang.
-                <a href="#urgent-section" class="alert-link ms-2" data-bs-toggle="modal" data-bs-target="#periodModal2">Lihat Detail →</a>
+                Ada <strong>{{ $stats['pengingat_bulan_target'] }}</strong> prodi yang perlu diingatkan tentang masa akreditasi berakhir dalam 7 bulan dari sekarang ({{ $stats['pengingat']['target_month_label'] }}).
+                <a href="javascript:void(0)" class="alert-link ms-2" onclick="openReminderModal()">
+                    Lihat Detail →
+                </a>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         </div>
@@ -625,14 +631,14 @@
                     <div class="mb-3">
                         <label class="form-label fw-bold">Pilih Program Studi</label>
                         <div style="max-height: 200px; overflow-y: auto; border: 1px solid #dee2e6; padding: 10px; border-radius: 4px;">
-                            @foreach(\App\Models\StudyProgram::with('degreeLevel')->get() as $prodi)
-                            <div class="form-check">
-                                <input type="checkbox" class="form-check-input" name="id_program_studi[]" value="{{ $prodi->id }}" id="prodi{{ $prodi->id }}">
-                                <label class="form-check-label" for="prodi{{ $prodi->id }}">
-                                    {{ $prodi->full_name }}
-                                </label>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Pilih Program Studi</label>
+
+                                <select id="selectProdiPengingat" name="id_program_studi[]" class="form-select" multiple="multiple" style="width: 100%;">
+                                </select>
+
+                                <small class="text-muted">Ketik untuk mencari prodi (nama/kode), lalu pilih.</small>
                             </div>
-                            @endforeach
                         </div>
                     </div>
 
@@ -658,8 +664,147 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
     </div>
 </div>
 
+<div class="modal fade" id="reminderModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-list"></i> Detail Pengingat Masa Akreditasi
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="row g-2 mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Target (bulan dari sekarang)</label>
+                        <select class="form-select" id="reminderTargetMonths">
+                            <option value="3">3 bulan</option>
+                            <option value="6">6 bulan</option>
+                            <option value="7" selected>7 bulan</option>
+                            <option value="12">12 bulan</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Window periode (bulan)</label>
+                        <select class="form-select" id="reminderWindowMonths">
+                            <option value="1" selected>1 bulan (hanya bulan target)</option>
+                            <option value="3">3 bulan</option>
+                            <option value="6">6 bulan</option>
+                            <option value="12">12 bulan</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button class="btn btn-primary w-100" onclick="loadReminderDetail()">
+                            <i class="bi bi-search"></i> Terapkan
+                        </button>
+                    </div>
+                </div>
+
+                <div id="reminderLoading" class="d-none text-center py-4">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <div class="text-muted mt-2">Memuat data...</div>
+                </div>
+
+                <div id="reminderDetailContainer"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
+    let prodiSelect2Initialized = false;
+
+    function initSelect2Prodi() {
+        if (prodiSelect2Initialized) return;
+
+        $('#selectProdiPengingat').select2({
+            theme: 'bootstrap-5', // kalau pakai tema bootstrap5
+            dropdownParent: $('#modalKirimPengingat'), // penting: biar dropdown muncul di atas modal
+            placeholder: 'Cari & pilih Program Studi...'
+            , allowClear: true
+            , width: '100%'
+            , ajax: {
+                url: `{{ route('de.pemetaan.prodi.search.ajax') }}`
+                , dataType: 'json'
+                , delay: 250
+                , data: function(params) {
+                    return {
+                        q: params.term || ''
+                        , page: params.page || 1
+                    };
+                }
+                , processResults: function(data) {
+                    return data;
+                }
+                , cache: true
+            }
+        });
+
+        prodiSelect2Initialized = true;
+    }
+
+    // Saat modal "Kirim Pengingat" dibuka -> init select2
+    document.getElementById('modalKirimPengingat').addEventListener('shown.bs.modal', function() {
+        initSelect2Prodi();
+    });
+
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('[data-id-study-program]');
+        if (!btn) return;
+
+        const id = btn.getAttribute('data-id-study-program');
+        const text = btn.getAttribute('data-text-study-program') || `Prodi #${id}`;
+
+        // modal kirim pengingat akan kebuka oleh bootstrap,
+        // kita tunggu sampai modalnya "shown", lalu set pilihan.
+        const modalEl = document.getElementById('modalKirimPengingat');
+
+        const onShown = function() {
+            initSelect2Prodi();
+
+            // ✅ Tambahkan option jika belum ada, lalu select
+            const $select = $('#selectProdiPengingat');
+
+            // cek apakah id sudah ada di selected
+            const exists = $select.find("option[value='" + id + "']").length > 0;
+
+            if (!exists) {
+                const newOption = new Option(text, id, true, true);
+                $select.append(newOption).trigger('change');
+            } else {
+                // kalau sudah ada optionnya, tinggal set selected true
+                $select.val([...(new Set([...($select.val() || []), id]))]).trigger('change');
+            }
+
+            modalEl.removeEventListener('shown.bs.modal', onShown);
+        };
+
+        modalEl.addEventListener('shown.bs.modal', onShown);
+    });
+
+    document.querySelectorAll('[data-bs-target="#modalKirimPengingat"]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            // kalau tombol TIDAK punya data-id-study-program => reset
+            if (!this.hasAttribute('data-id-study-program')) {
+                const modalEl = document.getElementById('modalKirimPengingat');
+
+                const onShown = function() {
+                    initSelect2Prodi();
+                    $('#selectProdiPengingat').val(null).trigger('change');
+                    modalEl.removeEventListener('shown.bs.modal', onShown);
+                };
+
+                modalEl.addEventListener('shown.bs.modal', onShown);
+            }
+        });
+    });
+
     // ========================================
     // TIMELINE VIEW AJAX (Keep existing)
     // ========================================
@@ -906,6 +1051,74 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
                 view: targetId
             }, '', window.location.href);
         }
+    });
+
+    function openReminderModal() {
+        const modal = new bootstrap.Modal(document.getElementById('reminderModal'));
+        modal.show();
+
+        // load pertama kali (pakai nilai default select)
+        loadReminderDetail();
+    }
+
+    async function loadReminderDetail(pageUrl = null) {
+        const loading = document.getElementById('reminderLoading');
+        const container = document.getElementById('reminderDetailContainer');
+
+        const targetMonths = document.getElementById('reminderTargetMonths').value;
+        const windowMonths = document.getElementById('reminderWindowMonths').value;
+
+        try {
+            loading.classList.remove('d-none');
+            container.innerHTML = '';
+
+            const baseUrl = `{{ route('de.pemetaan.reminder.detail.ajax') }}`;
+            const url = new URL(baseUrl, window.location.origin);
+
+            // kalau pageUrl berasal dari pagination link, biasanya sudah punya ?page=...
+            // jadi kita set/overwrite juga param target/window
+            url.searchParams.set('target_months', targetMonths);
+            url.searchParams.set('window_months', windowMonths);
+
+            const res = await fetch(url.toString(), {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                    , 'Accept': 'application/json'
+                }
+            });
+
+            const data = await res.json();
+            if (!data.success) throw new Error('Request gagal');
+
+            container.innerHTML = data.html;
+
+            // Tangkap klik pagination agar tetap AJAX
+            container.querySelectorAll('.pagination a').forEach(a => {
+                a.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    loadReminderDetail(a.getAttribute('href'));
+                });
+            });
+
+        } catch (err) {
+            console.error(err);
+            container.innerHTML = `
+      <div class="alert alert-danger">
+        Gagal memuat detail pengingat.
+      </div>
+    `;
+        } finally {
+            loading.classList.add('d-none');
+        }
+    }
+
+    // optional: auto reload ketika dropdown berubah
+    ['reminderTargetMonths', 'reminderWindowMonths'].forEach(id => {
+        document.addEventListener('change', (e) => {
+            if (e.target && e.target.id === id) {
+                loadReminderDetail();
+            }
+        });
     });
 
 </script>

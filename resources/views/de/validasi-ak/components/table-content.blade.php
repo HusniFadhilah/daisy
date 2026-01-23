@@ -24,57 +24,82 @@
                 <tbody>
                     @foreach($pengajuans as $index => $pengajuan)
                     @php
-                    // Get validators
-                    $validators = $pengajuan->asesmen?->asesmenUserRoles->filter(function($aur) {
+                    // ===== Validator list =====
+                    $validators = $pengajuan->asesmen?->asesmenUserRoles->filter(function ($aur) {
                     return $aur->role_selected->name === 'validator';
                     }) ?? collect();
 
-                    // Calculate validation progress
-                    $totalElements = DB::table('elemen_standar')->count();
-                    $validatedCount = DB::table('penilaian_elemen_ak')
+                    // ===== STATUS AK dari STATUS LOG =====
+                    $akStatuses = [
+                    \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
+                    \App\Models\PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
+                    \App\Models\PengajuanAkreditasi::STATUS_AK_ON_VALIDATION,
+                    \App\Models\PengajuanAkreditasi::STATUS_AK_SELESAI,
+                    \App\Models\PengajuanAkreditasi::STATUS_AK_DILAPORKAN,
+                    ];
+
+                    // statusLog sudah di-order by changed_at DESC dari controller
+                    $lastAkLog = $pengajuan->statusLog
+                    ?->firstWhere(fn ($log) => in_array($log->status_to, $akStatuses, true));
+
+                    $akStatus = $lastAkLog?->status_to;
+
+                    // ===== Badge status =====
+                    $statusConfig = match ($akStatus) {
+                    \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED => [
+                    'class' => 'secondary',
+                    'icon' => 'hourglass',
+                    'text' => 'Belum Mulai',
+                    ],
+                    \App\Models\PengajuanAkreditasi::STATUS_AK_IN_PROGRESS => [
+                    'class' => 'info',
+                    'icon' => 'pencil-square',
+                    'text' => 'Sedang Penilaian',
+                    ],
+                    \App\Models\PengajuanAkreditasi::STATUS_AK_ON_VALIDATION => [
+                    'class' => 'warning',
+                    'icon' => 'shield-check',
+                    'text' => 'Sedang Validasi',
+                    ],
+                    \App\Models\PengajuanAkreditasi::STATUS_AK_SELESAI => [
+                    'class' => 'success',
+                    'icon' => 'check-circle',
+                    'text' => 'Selesai',
+                    ],
+                    \App\Models\PengajuanAkreditasi::STATUS_AK_DILAPORKAN => [
+                    'class' => 'primary',
+                    'icon' => 'file-earmark-check',
+                    'text' => 'Dilaporkan',
+                    ],
+                    default => [
+                    'class' => 'secondary',
+                    'icon' => 'question-circle',
+                    'text' => 'Unknown',
+                    ],
+                    };
+
+                    // ===== Progress validasi =====
+                    // (disarankan: $totalElements dipindah ke luar loop)
+                    $totalElements = $totalElements ?? \DB::table('elemen_standar')->count();
+
+                    $validatedCount = \DB::table('penilaian_elemen_ak')
                     ->where('id_asesmen', $pengajuan->asesmen->id ?? 0)
                     ->whereNotNull('validated_at')
                     ->distinct('id_elemen')
                     ->count('id_elemen');
 
-                    $progressPercentage = $totalElements > 0 ? round(($validatedCount / $totalElements) * 100, 1) : 0;
+                    $progressPercentage = $totalElements > 0
+                    ? round(($validatedCount / $totalElements) * 100, 1)
+                    : 0;
 
-                    // Determine status badge
-                    $statusConfig = match($pengajuan->status) {
-                    \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED => [
-                    'class' => 'secondary',
-                    'icon' => 'hourglass',
-                    'text' => 'Belum Mulai'
-                    ],
-                    \App\Models\PengajuanAkreditasi::STATUS_AK_IN_PROGRESS => [
-                    'class' => 'info',
-                    'icon' => 'pencil-square',
-                    'text' => 'Sedang Penilaian'
-                    ],
-                    \App\Models\PengajuanAkreditasi::STATUS_AK_ON_VALIDATION => [
-                    'class' => 'warning',
-                    'icon' => 'shield-check',
-                    'text' => 'Sedang Validasi'
-                    ],
-                    \App\Models\PengajuanAkreditasi::STATUS_AK_SELESAI => [
-                    'class' => 'success',
-                    'icon' => 'check-circle',
-                    'text' => 'Selesai'
-                    ],
-                    \App\Models\PengajuanAkreditasi::STATUS_AK_DILAPORKAN => [
-                    'class' => 'primary',
-                    'icon' => 'file-earmark-check',
-                    'text' => 'Dilaporkan'
-                    ],
-                    default => [
-                    'class' => 'secondary',
-                    'icon' => 'question-circle',
-                    'text' => 'Unknown'
-                    ]
-                    };
+                    $progressColor = $progressPercentage == 100
+                    ? 'success'
+                    : ($progressPercentage >= 50 ? 'info' : 'warning');
 
-                    // Progress bar color
-                    $progressColor = $progressPercentage == 100 ? 'success' : ($progressPercentage >= 50 ? 'info' : 'warning');
+                    // ===== Tanggal dari log AK =====
+                    $tanggalTampil = $lastAkLog?->changed_at
+                    ? \Carbon\Carbon::parse($lastAkLog->changed_at)->format('d M Y')
+                    : $pengajuan->created_at->format('d M Y');
                     @endphp
                     <tr>
                         <td>{{ $pengajuans->firstItem() + $index }}</td>
@@ -122,7 +147,7 @@
                             <small class="text-muted">{{ $validatedCount }}/{{ $totalElements }} elemen</small>
                         </td>
                         <td>
-                            <small>{{ $pengajuan->created_at->format('d M Y') }}</small>
+                            <small>{{ $tanggalTampil }}</small>
                         </td>
                         <td class="text-center">
                             <a href="{{ route('de.validasi-ak.show', $pengajuan->id) }}" class="btn btn-sm btn-primary" title="Lihat Detail">

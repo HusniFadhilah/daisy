@@ -60,7 +60,8 @@ class PemetaanAkreditasiController extends Controller
         $studyPrograms = $query->paginate(20);
 
         // Calculate statistics
-        $stats = $this->calculateStatistics();
+        $reminderMonths = (int) $request->get('reminder_months', 7);
+        $stats = $this->calculateStatistics($reminderMonths);
 
         // Get filter data
         $universities = University::nonExample()->orderBy('name')->get();
@@ -173,41 +174,138 @@ class PemetaanAkreditasiController extends Controller
         ]);
     }
 
+    public function getReminderDetailAjax(Request $request)
+    {
+        $targetMonths = (int) $request->get('target_months', 7); // target: now + 7 bulan
+        $windowMonths = (int) $request->get('window_months', 1); // window: berapa bulan ditampilkan
+
+        // amankan input
+        if ($targetMonths < 0) $targetMonths = 0;
+        if ($windowMonths < 1) $windowMonths = 1;
+
+        $base = now()->copy()->addMonths($targetMonths);
+
+        // contoh: target=7 (Ags), window=6 -> Ags s/d Jan (6 bulan)
+        $start = $base->copy()->startOfMonth();
+        $end   = $base->copy()->addMonths($windowMonths - 1)->endOfMonth();
+
+        $programs = StudyProgram::nonExample()
+            ->with(['university', 'degreeLevel'])
+            ->whereBetween('tanggal_kedaluwarsa', [$start, $end])
+            ->orderBy('tanggal_kedaluwarsa', 'asc')
+            ->paginate(20);
+
+        $label = $windowMonths === 1
+            ? $base->locale('id')->translatedFormat('F Y')
+            : $base->locale('id')->translatedFormat('F Y') . ' - ' . $end->locale('id')->translatedFormat('F Y');
+
+        $html = view('asesmen.pemetaan.components.reminder-detail-table', [
+            'programs'     => $programs,
+            'label'        => $label,
+            'start'        => $start,
+            'end'          => $end,
+            'targetMonths' => $targetMonths,
+            'windowMonths' => $windowMonths,
+        ])->render();
+
+        return response()->json([
+            'success' => true,
+            'html' => $html,
+            'meta' => [
+                'label' => $label,
+                'start' => $start->format('Y-m-d'),
+                'end'   => $end->format('Y-m-d'),
+                'total' => $programs->total(),
+            ],
+        ]);
+    }
+
+    public function searchProdiAjax(Request $request)
+    {
+        $q = trim($request->get('q', ''));
+        $page = (int) $request->get('page', 1);
+        $perPage = 20;
+
+        $query = StudyProgram::nonExample()->with(['degreeLevel', 'university']);
+
+        if ($q !== '') {
+            $query->where(function ($sub) use ($q) {
+                $sub->where('name', 'like', "%{$q}%")
+                    ->orWhere('code', 'like', "%{$q}%");
+            });
+        }
+
+        $paginator = $query->orderBy('name')
+            ->paginate($perPage, ['*'], 'page', $page);
+
+        $results = $paginator->getCollection()->map(function ($p) {
+            return [
+                'id' => $p->id,
+                // label yg tampil di select2
+                'text' => $p->full_name
+                    ?? ($p->name . ' (' . ($p->degreeLevel->alias ?? '-') . ') - ' . ($p->university->name ?? '-')),
+            ];
+        });
+
+        return response()->json([
+            'results' => $results,
+            'pagination' => [
+                'more' => $paginator->hasMorePages(),
+            ],
+        ]);
+    }
+
     /**
      * Calculate statistics
      */
-    private function calculateStatistics()
+    private function calculateStatistics(int $reminderMonths = 7)
     {
-        $today = Carbon::today();
-        $threeMonthsLater = now()->addMonths(3);
-        $sevenMonthsLater = now()->addMonths(7);
-        $twelveMonthsLater = now()->addMonths(12);
+        $now = now();
 
-        // 🔥 1 QUERY SAJA - Fixed SQL syntax for proper bindings
+        $threeMonthsLater  = $now->copy()->addMonths(3);
+        $sevenMonthsLater  = $now->copy()->addMonths(7);
+        $twelveMonthsLater = $now->copy()->addMonths(12);
+
+        // ✅ Baru: target bulan (now + N bulan) -> window 1 bulan penuh
+        $targetMonth   = $now->copy()->addMonths($reminderMonths);
+        $targetStart   = $targetMonth->copy()->startOfMonth();
+        $targetEnd     = $targetMonth->copy()->endOfMonth();
+
+        // 🔥 1 QUERY
         $stats = StudyProgram::nonExample()->selectRaw("
         COUNT(*) as total,
         SUM(CASE WHEN status_kedaluwarsa = 'Aktif' THEN 1 ELSE 0 END) as aktif,
         SUM(CASE WHEN status_kedaluwarsa = 'Belum Terakreditasi' THEN 1 ELSE 0 END) as belum_terakreditasi,
         SUM(CASE WHEN status_kedaluwarsa = 'Kedaluwarsa' THEN 1 ELSE 0 END) as kedaluwarsa,
+
+        -- existing (range dari sekarang)
         SUM(CASE WHEN tanggal_kedaluwarsa BETWEEN ? AND ? THEN 1 ELSE 0 END) as segera_3_bulan,
         SUM(CASE WHEN tanggal_kedaluwarsa BETWEEN ? AND ? THEN 1 ELSE 0 END) as segera_7_bulan,
-        SUM(CASE WHEN tanggal_kedaluwarsa BETWEEN ? AND ? THEN 1 ELSE 0 END) as segera_12_bulan
+        SUM(CASE WHEN tanggal_kedaluwarsa BETWEEN ? AND ? THEN 1 ELSE 0 END) as segera_12_bulan,
+
+        -- ✅ baru (khusus bulan target)
+        SUM(CASE WHEN tanggal_kedaluwarsa BETWEEN ? AND ? THEN 1 ELSE 0 END) as pengingat_bulan_target
     ", [
-            now(),
+            $now,
             $threeMonthsLater,
-            now(),
+            $now,
             $sevenMonthsLater,
-            now(),
+            $now,
             $twelveMonthsLater,
+
+            $targetStart,
+            $targetEnd,
         ])->first();
 
-        // Count by peringkat (tetap 1 query terpisah, memang perlu group by)
-        $byPeringkat = StudyProgram::nonExample()->select('peringkat_akreditasi', DB::raw('count(*) as total'))
+        // group by peringkat (tetap)
+        $byPeringkat = StudyProgram::nonExample()
+            ->select('peringkat_akreditasi', DB::raw('count(*) as total'))
             ->whereNotNull('peringkat_akreditasi')
             ->groupBy('peringkat_akreditasi')
             ->pluck('total', 'peringkat_akreditasi')
             ->toArray();
 
+        // ✅ return lama tetap ADA, tidak dihapus
         return [
             'total' => (int) $stats->total,
             'aktif' => (int) $stats->aktif,
@@ -217,6 +315,15 @@ class PemetaanAkreditasiController extends Controller
             'segera_7_bulan' => (int) $stats->segera_7_bulan,
             'segera_12_bulan' => (int) $stats->segera_12_bulan,
             'by_peringkat' => $byPeringkat,
+
+            // ✅ tambahan baru (untuk kebutuhan "bulan target")
+            'pengingat_bulan_target' => (int) $stats->pengingat_bulan_target,
+            'pengingat' => [
+                'months_ahead' => $reminderMonths,
+                'target_month_label' => $targetMonth->locale('id')->translatedFormat('F Y'),
+                'start' => $targetStart,
+                'end' => $targetEnd,
+            ],
         ];
     }
 

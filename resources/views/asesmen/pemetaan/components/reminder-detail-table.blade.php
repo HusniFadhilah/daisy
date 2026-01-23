@@ -1,0 +1,78 @@
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <div>
+        <h6 class="fw-bold mb-0">Program Studi - {{ $label }}</h6>
+        <small class="text-muted">
+            Periode: {{ \App\Libraries\Date::tglIndo($start) }} - {{ \App\Libraries\Date::tglIndo($end) }}
+            • Target: {{ $targetMonths }} bulan dari sekarang
+            • Window: {{ $windowMonths }} bulan
+        </small>
+    </div>
+    <span class="badge bg-primary">{{ $programs->total() }} PS</span>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>No</th>
+                <th>Program Studi</th>
+                <th>Universitas</th>
+                <th>Peringkat</th>
+                <th>Kedaluwarsa</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($programs as $index => $prog)
+            <tr>
+                <td>{{ $programs->firstItem() + $index }}</td>
+                <td>
+                    <div class="fw-bold">{{ $prog->name }}</div>
+                    <small class="text-muted">{{ $prog->degreeLevel->alias }}</small>
+                </td>
+                <td>{{ $prog->university->name }}</td>
+                <td>
+                    @if($prog->peringkat_akreditasi)
+                    <span class="badge bg-primary">{{ $prog->peringkat_akreditasi }}</span>
+                    @else
+                    -
+                    @endif
+                </td>
+                <td>
+                    {{ \App\Libraries\Date::tglIndo($prog->tanggal_kedaluwarsa) }}
+                    <br>
+                    <small class="{{ now()->diffInDays($prog->tanggal_kedaluwarsa, false) < 0 ? 'text-muted' : 'text-danger' }}">
+                        @php
+                        $diff = now()->diff($prog->tanggal_kedaluwarsa);
+                        @endphp
+
+                        {{ $diff->y }} tahun {{ $diff->m }} bulan {{ $diff->d }} hari
+                    </small>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalKirimPengingat" data-id-study-program="{{ $prog->id }}" data-text-study-program="{{ $prog->full_name ?? $prog->name }}">
+                        <i class="bi bi-bell"></i> Kirim Pengingat
+                    </button>
+
+                    <a href="{{ route('de.pemetaan.show', $prog->id) }}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-eye"></i> Detail
+                    </a>
+                </td>
+            </tr>
+            @empty
+            <tr>
+                <td colspan="6" class="text-center text-muted py-4">
+                    Tidak ada program studi pada periode ini.
+                </td>
+            </tr>
+            @endforelse
+        </tbody>
+    </table>
+</div>
+
+@if($programs->hasPages())
+<div class="d-flex justify-content-end">
+    {{-- penting: pagination link harus pakai ajax juga, jadi kita render link biasa lalu ditangkap JS --}}
+    {!! $programs->links() !!}
+</div>
+@endif

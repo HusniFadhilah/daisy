@@ -288,6 +288,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/timeline/ajax', [PemetaanAkreditasiController::class, 'getTimelineAjax'])->name('timeline.ajax');
             Route::get('/calendar/ajax', [PemetaanAkreditasiController::class, 'getCalendarAjax'])->name('calendar.ajax');
             Route::get('/table/ajax', [PemetaanAkreditasiController::class, 'getTableAjax'])->name('table.ajax');
+            Route::get('/reminder-detail/ajax', [PemetaanAkreditasiController::class, 'getReminderDetailAjax'])->name('reminder.detail.ajax');
+            Route::get('/prodi/search', [PemetaanAkreditasiController::class, 'searchProdiAjax'])->name('prodi.search.ajax');
             Route::get('/export/excel', [PemetaanAkreditasiController::class, 'export'])->name('export');
         });
         Route::prefix('surat-permohonan')->name('.surat-permohonan')->group(function () {
@@ -369,6 +371,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
         Route::prefix('penyampaian-hasil-akreditasi')->name('.penyampaian-hasil-akreditasi')->group(function () {
             Route::get('/', [PenyampaianHasilAkreditasiController::class, 'index']);
+            Route::get('/{id}', [PenyampaianHasilAkreditasiController::class, 'show'])->name('.show');
+            Route::post('/{id}/calculate', [PenyampaianHasilAkreditasiController::class, 'calculate'])->name('.calculate');
+            Route::post('/{id}/finalize', [PenyampaianHasilAkreditasiController::class, 'finalize'])->name('.finalize');
+            Route::get('/{id}/download-summary', [PenyampaianHasilAkreditasiController::class, 'downloadSummary'])->name('.download-summary');
         });
         Route::prefix('masa-sanggah')->name('.masa-sanggah')->group(function () {
             Route::get('/', [MasaSanggahController::class, 'index']);

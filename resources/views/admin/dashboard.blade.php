@@ -10,8 +10,7 @@ $authUser = auth()->user();
     <!-- Welcome Section -->
     <section class="welcome-section">
         <div class="welcome-content">
-            <h2>Selamat Datang Kembali, {{ $authUser->name ?? 'Dr. Eng. Maryono' }}! 👋</h2>
-            {{-- <p class="mb-0">Anda memiliki {{ $penawaranBaru ?? 2 }} penawaran baru, dan {{ $penugasanAktif ?? 1 }} tugas aktif. Mari kita selesaikan tugas ini dengan senyum 😊</p> --}}
+            <h2>Selamat Datang Kembali, {{ $authUser->name }}! 👋</h2>
             <p class="mb-0">Role Anda adalah {{ $authUser->role_alias }}</p>
         </div>
     </section>
@@ -36,7 +35,7 @@ $authUser = auth()->user();
                 <div class="stat-header">
                     <div>
                         <div class="stat-title">Penerimaan Dokumen Akreditasi Prodi</div>
-                        <div class="stat-value">{{ $stats['penawaran'] ?? 0 }}</div>
+                        <div class="stat-value">{{ $stats['penerimaan_dokumen'] ?? 0 }}</div>
                         <small>Jumlah dokumen LED+Suplemen, dan LKPS yang telah diterima dari prodi</small>
                     </div>
                     <div class="stat-icon"><i class="bi bi-file-earmark-check text-white"></i></div>
@@ -48,8 +47,8 @@ $authUser = auth()->user();
                 <div class="stat-header">
                     <div>
                         <div class="stat-title">Penawaran Menunggu</div>
-                        <div class="stat-value">{{ $stats['penawaran'] ?? 0 }}</div>
-                        <small>Validator/Asesor yang telah ditugaskan, tetapi statusnya masih menunggu diterima (Ybs belum menyetujui/menolak tawaran)</small>
+                        <div class="stat-value">{{ $stats['penawaran_menunggu'] ?? 0 }}</div>
+                        <small>Validator/Asesor yang telah ditugaskan, tetapi statusnya masih menunggu diterima</small>
                     </div>
                     <div class="stat-icon"><i class="bi bi-hourglass-split text-white"></i></div>
                 </div>
@@ -87,7 +86,7 @@ $authUser = auth()->user();
                 <div class="stat-header">
                     <div>
                         <div class="stat-title">Proses AL Berlangsung</div>
-                        <div class="stat-value">{{ $stats['proses_ak'] ?? 0 }}</div>
+                        <div class="stat-value">{{ $stats['proses_al'] ?? 0 }}</div>
                         <small>Jumlah Asesmen Lapangan yang sedang berlangsung</small>
                     </div>
                     <div class="stat-icon">⏳</div>
@@ -101,7 +100,7 @@ $authUser = auth()->user();
                     <div>
                         <div class="stat-title">Total Selesai Tahun Ini</div>
                         <div class="stat-value">{{ $stats['total_selesai'] ?? 0 }}</div>
-                        <small>Jumlah Permohonan Akreditasi yang selesai (sampai tahap pelaporan dan penyimpanan arsip) di tahun ini</small>
+                        <small>Jumlah Permohonan Akreditasi yang selesai di tahun ini</small>
                     </div>
                     <div class="stat-icon">🎯</div>
                 </div>
@@ -117,8 +116,7 @@ $authUser = auth()->user();
                 <div class="stat-header">
                     <div>
                         <div class="stat-title">Penawaran Menunggu</div>
-                        <div class="stat-value">0
-                        </div>
+                        <div class="stat-value">{{ $stats['penawaran'] ?? 0 }}</div>
                     </div>
                     <div class="stat-icon">📨</div>
                 </div>
@@ -130,7 +128,7 @@ $authUser = auth()->user();
                 <div class="stat-header">
                     <div>
                         <div class="stat-title">Penugasan Aktif</div>
-                        <div class="stat-value">0</div>
+                        <div class="stat-value">{{ $stats['penugasan_aktif'] ?? 0 }}</div>
                     </div>
                     <div class="stat-icon">⏳</div>
                 </div>
@@ -142,7 +140,7 @@ $authUser = auth()->user();
                 <div class="stat-header">
                     <div>
                         <div class="stat-title">Penugasan Selesai</div>
-                        <div class="stat-value">0</div>
+                        <div class="stat-value">{{ $stats['penugasan_selesai'] ?? 0 }}</div>
                     </div>
                     <div class="stat-icon">✅</div>
                 </div>
@@ -158,8 +156,7 @@ $authUser = auth()->user();
                 <div class="stat-header">
                     <div>
                         <div class="stat-title">Permohonan Akreditasi Berjalan</div>
-                        <div class="stat-value">{{ $stats['penawaran'] ?? 0 }}
-                        </div>
+                        <div class="stat-value">{{ $stats['permohonan_berjalan'] ?? 0 }}</div>
                     </div>
                     <div class="stat-icon">📨</div>
                 </div>
@@ -171,7 +168,7 @@ $authUser = auth()->user();
                 <div class="stat-header">
                     <div>
                         <div class="stat-title">Permohonan Akreditasi Selesai</div>
-                        <div class="stat-value">{{ $stats['penugasan_aktif'] ?? 0 }}</div>
+                        <div class="stat-value">{{ $stats['permohonan_selesai'] ?? 0 }}</div>
                     </div>
                     <div class="stat-icon">✅</div>
                 </div>
@@ -187,8 +184,7 @@ $authUser = auth()->user();
                 <div class="stat-header">
                     <div>
                         <div class="stat-title">Pembayaran Perlu Diverifikasi</div>
-                        <div class="stat-value">{{ $stats['penawaran'] ?? 0 }}
-                        </div>
+                        <div class="stat-value">{{ $stats['perlu_diverifikasi'] ?? 0 }}</div>
                     </div>
                     <div class="stat-icon">⏳</div>
                 </div>
@@ -200,7 +196,7 @@ $authUser = auth()->user();
                 <div class="stat-header">
                     <div>
                         <div class="stat-title">Total Pembayaran Selesai Diverifikasi</div>
-                        <div class="stat-value">{{ $stats['penugasan_aktif'] ?? 0 }}</div>
+                        <div class="stat-value">{{ $stats['selesai_diverifikasi'] ?? 0 }}</div>
                     </div>
                     <div class="stat-icon">✅</div>
                 </div>

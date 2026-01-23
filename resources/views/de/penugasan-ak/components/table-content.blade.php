@@ -24,33 +24,71 @@
                 <tbody>
                     @foreach($pengajuans as $index => $pengajuan)
                     @php
-                    // Determine status AK
+
+                    // Penugasan counts (tetap dari asesmen)
                     $asesmenKecukupan = $pengajuan->asesmen?->asesmenKecukupan;
                     $asesorCount = $asesmenKecukupan?->asesors->count() ?? 0;
                     $validatorCount = $asesmenKecukupan?->validators->count() ?? 0;
+                    $requirementsMet = $asesorCount >= 2 && $validatorCount >= 1;
 
-                    // ✅ Status dengan constants yang benar
-                    if ($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AK_DILAPORKAN) {
-                    $statusAK = ['class' => 'success', 'icon' => 'check-circle-fill', 'text' => 'Selesai'];
-                    } elseif ($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AK_SELESAI) {
-                    $statusAK = ['class' => 'success', 'icon' => 'check-circle', 'text' => 'AK Selesai'];
-                    } elseif ($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AK_ON_VALIDATION) {
-                    $statusAK = ['class' => 'warning', 'icon' => 'shield-check', 'text' => 'Sedang Validasi'];
-                    } elseif ($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AK_IN_PROGRESS) {
-                    $statusAK = ['class' => 'info', 'icon' => 'hourglass-split', 'text' => 'Sedang Proses'];
-                    } elseif ($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED) {
-                    $statusAK = ['class' => 'warning', 'icon' => 'clock', 'text' => 'Ditugaskan'];
-                    } elseif (in_array($pengajuan->status, [
+                    // ===== Status AK berdasarkan STATUS LOG =====
+                    $akStatuses = [
+                    \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
+                    \App\Models\PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
+                    \App\Models\PengajuanAkreditasi::STATUS_AK_ON_VALIDATION,
+                    \App\Models\PengajuanAkreditasi::STATUS_AK_SELESAI,
+                    \App\Models\PengajuanAkreditasi::STATUS_AK_DILAPORKAN,
+                    ];
+
+                    // log AK terakhir (yang paling baru di fase AK)
+                    $lastAkLog = $pengajuan->statusLog
+                    ?->firstWhere(fn($log) => in_array($log->status_to, $akStatuses, true));
+
+                    // karena statusLog di-controller sudah orderBy(changed_at desc),
+                    // firstWhere(...) akan ngambil yang paling baru.
+
+                    $akStatus = $lastAkLog?->status_to; // bisa null kalau belum pernah masuk fase AK
+
+                    // fallback "belum ditugaskan" berdasarkan riwayat (bukan status current)
+                    $preAkStatuses = [
                     \App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
-                    \App\Models\PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED
-                    ])) {
+                    \App\Models\PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED,
+                    ];
+
+                    $hasReachedPreAk = $pengajuan->statusLog
+                    ?->contains(fn($log) => in_array($log->status_to, $preAkStatuses, true)) ?? false;
+
+                    // ===== Badge Status AK =====
+                    if ($akStatus === App\Models\PengajuanAkreditasi::STATUS_AK_DILAPORKAN) {
+                    $statusAK = ['class' => 'success', 'icon' => 'check-circle-fill', 'text' => 'Selesai'];
+                    } elseif ($akStatus === App\Models\PengajuanAkreditasi::STATUS_AK_SELESAI) {
+                    $statusAK = ['class' => 'success', 'icon' => 'check-circle', 'text' => 'AK Selesai'];
+                    } elseif ($akStatus === App\Models\PengajuanAkreditasi::STATUS_AK_ON_VALIDATION) {
+                    $statusAK = ['class' => 'warning', 'icon' => 'shield-check', 'text' => 'Sedang Validasi'];
+                    } elseif ($akStatus === App\Models\PengajuanAkreditasi::STATUS_AK_IN_PROGRESS) {
+                    $statusAK = ['class' => 'info', 'icon' => 'hourglass-split', 'text' => 'Sedang Proses'];
+                    } elseif ($akStatus === App\Models\PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED) {
+                    $statusAK = ['class' => 'warning', 'icon' => 'clock', 'text' => 'Ditugaskan'];
+                    } elseif ($hasReachedPreAk) {
                     $statusAK = ['class' => 'danger', 'icon' => 'x-circle', 'text' => 'Belum Ditugaskan'];
                     } else {
                     $statusAK = ['class' => 'secondary', 'icon' => 'question-circle', 'text' => 'Unknown'];
                     }
 
-                    // Check requirements
-                    $requirementsMet = $asesorCount >= 2 && $validatorCount >= 1;
+                    // ===== Progress berdasarkan status log AK terakhir =====
+                    // (pakai angka yang sama seperti sebelumnya)
+                    $progress = null;
+                    if ($akStatus === App\Models\PengajuanAkreditasi::STATUS_AK_DILAPORKAN) {
+                    $progress = ['class' => 'success', 'width' => 100, 'text' => '100%'];
+                    } elseif ($akStatus === App\Models\PengajuanAkreditasi::STATUS_AK_SELESAI) {
+                    $progress = ['class' => 'success', 'width' => 90, 'text' => '90%'];
+                    } elseif ($akStatus === App\Models\PengajuanAkreditasi::STATUS_AK_ON_VALIDATION) {
+                    $progress = ['class' => 'warning', 'width' => 75, 'text' => '75%'];
+                    } elseif ($akStatus === App\Models\PengajuanAkreditasi::STATUS_AK_IN_PROGRESS) {
+                    $progress = ['class' => 'info', 'width' => 50, 'text' => '50%'];
+                    } elseif ($akStatus === App\Models\PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED) {
+                    $progress = ['class' => 'secondary', 'width' => 10, 'text' => '10%'];
+                    }
                     @endphp
                     <tr>
                         <td>{{ $pengajuans->firstItem() + $index }}</td>
@@ -93,25 +131,11 @@
                             @endif
                         </td>
                         <td>
-                            @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AK_DILAPORKAN)
+                            @if($progress)
                             <div class="progress" style="height: 20px;">
-                                <div class="progress-bar bg-success" style="width: 100%">100%</div>
-                            </div>
-                            @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AK_SELESAI)
-                            <div class="progress" style="height: 20px;">
-                                <div class="progress-bar bg-success" style="width: 90%">90%</div>
-                            </div>
-                            @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AK_ON_VALIDATION)
-                            <div class="progress" style="height: 20px;">
-                                <div class="progress-bar bg-warning" style="width: 75%">75%</div>
-                            </div>
-                            @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AK_IN_PROGRESS)
-                            <div class="progress" style="height: 20px;">
-                                <div class="progress-bar bg-info" style="width: 50%">50%</div>
-                            </div>
-                            @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED)
-                            <div class="progress" style="height: 20px;">
-                                <div class="progress-bar bg-secondary" style="width: 10%">10%</div>
+                                <div class="progress-bar bg-{{ $progress['class'] }}" style="width: {{ $progress['width'] }}%">
+                                    {{ $progress['text'] }}
+                                </div>
                             </div>
                             @else
                             <span class="text-muted">-</span>

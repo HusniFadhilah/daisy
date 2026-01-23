@@ -21,9 +21,19 @@ class PengajuanStatusLog extends Model
         'changed_at' => 'datetime',
     ];
 
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'changed_by');
+    }
+
     public function changedBy()
     {
         return $this->belongsTo(User::class, 'changed_by');
+    }
+
+    public function pengajuan()
+    {
+        return $this->belongsTo(PengajuanAkreditasi::class, 'id_pengajuan');
     }
 
     public function pengajuanAkreditasi()
