@@ -22,7 +22,13 @@ class PelaksanaanALController extends Controller
      */
     public function index(Request $request)
     {
-        // Query pengajuan yang sedang dalam proses AL
+        $alStatuses = [
+            PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
+            PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
+            PengajuanAkreditasi::STATUS_AL_SELESAI,
+            PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
+        ];
+
         $query = PengajuanAkreditasi::with([
             'studyProgram.university',
             'studyProgram.degreeLevel',
@@ -30,14 +36,18 @@ class PelaksanaanALController extends Controller
             'asesmen.asesmenUserRoles' => function ($q) {
                 $q->where('jenis_asesmen', 'al')
                     ->with(['user', 'role_selected']);
-            }
+            },
+            // opsional untuk tampilan status/tanggal berbasis log
+            'statusLog' => function ($q) use ($alStatuses) {
+                $q->whereIn('status_to', $alStatuses)->orderBy('changed_at', 'desc');
+            },
         ])
-            ->whereIn('status', [
-                PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,   // Asesor ditugaskan
-                PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,       // Visitasi berlangsung
-                PengajuanAkreditasi::STATUS_AL_SELESAI,           // AL selesai
-                PengajuanAkreditasi::STATUS_AL_DILAPORKAN,        // Dilaporkan
-            ]);
+            ->whereExists(function ($q) use ($alStatuses) {
+                $q->select(DB::raw(1))
+                    ->from('pengajuan_status_log as l')
+                    ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
+                    ->whereIn('l.status_to', $alStatuses);
+            });
 
         // Filter by university
         if ($request->filled('university_id')) {
@@ -50,29 +60,59 @@ class PelaksanaanALController extends Controller
         if ($request->filled('status_al')) {
             switch ($request->status_al) {
                 case 'sedang_visitasi':
-                    $query->whereIn('status', [
-                        PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
-                        PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
-                    ]);
+                    $query->whereExists(function ($q) {
+                        $q->select(DB::raw(1))
+                            ->from('pengajuan_status_log as l')
+                            ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
+                            ->whereIn('l.status_to', [
+                                PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
+                                PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
+                            ]);
+                    });
                     break;
+
                 case 'perlu_validator':
-                    // AL selesai tapi belum ada validator untuk pelaporan
-                    $query->where('status', PengajuanAkreditasi::STATUS_AL_SELESAI)
-                        ->whereDoesntHave('asesmen.asesmenUserRoles', function ($q) {
-                            $q->where('jenis_asesmen', 'al')
-                                ->whereHas('role_selected', fn($r) => $r->where('name', 'validator'));
-                        });
+                    // pernah AL_SELESAI, belum AL_DILAPORKAN + belum ada validator assignment
+                    $query->whereExists(function ($q) {
+                        $q->select(DB::raw(1))
+                            ->from('pengajuan_status_log as l')
+                            ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
+                            ->where('l.status_to', PengajuanAkreditasi::STATUS_AL_SELESAI);
+                    })->whereNotExists(function ($q) {
+                        $q->select(DB::raw(1))
+                            ->from('pengajuan_status_log as l')
+                            ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
+                            ->where('l.status_to', PengajuanAkreditasi::STATUS_AL_DILAPORKAN);
+                    })->whereDoesntHave('asesmen.asesmenUserRoles', function ($q) {
+                        $q->where('jenis_asesmen', 'al')
+                            ->whereHas('role_selected', fn($r) => $r->where('name', 'validator'));
+                    });
                     break;
+
                 case 'sedang_pelaporan':
-                    // Sedang pelaporan = AL selesai + has validator assigned
-                    $query->where('status', PengajuanAkreditasi::STATUS_AL_SELESAI)
-                        ->whereHas('asesmen.asesmenUserRoles', function ($q) {
-                            $q->where('jenis_asesmen', 'al')
-                                ->whereHas('role_selected', fn($r) => $r->where('name', 'validator'));
-                        });
+                    $query->whereExists(function ($q) {
+                        $q->select(DB::raw(1))
+                            ->from('pengajuan_status_log as l')
+                            ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
+                            ->where('l.status_to', PengajuanAkreditasi::STATUS_AL_SELESAI);
+                    })->whereNotExists(function ($q) {
+                        $q->select(DB::raw(1))
+                            ->from('pengajuan_status_log as l')
+                            ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
+                            ->where('l.status_to', PengajuanAkreditasi::STATUS_AL_DILAPORKAN);
+                    })->whereHas('asesmen.asesmenUserRoles', function ($q) {
+                        $q->where('jenis_asesmen', 'al')
+                            ->whereHas('role_selected', fn($r) => $r->where('name', 'validator'));
+                    });
                     break;
+
                 case 'selesai':
-                    $query->where('status', PengajuanAkreditasi::STATUS_AL_DILAPORKAN);
+                    $query->whereExists(function ($q) {
+                        $q->select(DB::raw(1))
+                            ->from('pengajuan_status_log as l')
+                            ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
+                            ->where('l.status_to', PengajuanAkreditasi::STATUS_AL_DILAPORKAN);
+                    });
                     break;
             }
         }
@@ -218,10 +258,18 @@ class PelaksanaanALController extends Controller
             }
 
             // Validasi: AL harus sudah selesai (asesor sudah submit)
-            if ($pengajuan->status !== PengajuanAkreditasi::STATUS_AL_SELESAI) {
+            $hasAlSelesai = $pengajuan->statusLog()
+                ->where('status_to', PengajuanAkreditasi::STATUS_AL_SELESAI)
+                ->exists();
+
+            $hasAlDilaporkan = $pengajuan->statusLog()
+                ->where('status_to', PengajuanAkreditasi::STATUS_AL_DILAPORKAN)
+                ->exists();
+
+            if (!$hasAlSelesai || $hasAlDilaporkan) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'AL harus selesai terlebih dahulu sebelum menugaskan validator untuk pelaporan'
+                    'message' => 'AL harus selesai terlebih dahulu dan belum dilaporkan sebelum menugaskan validator'
                 ], 422);
             }
 
@@ -353,24 +401,28 @@ class PelaksanaanALController extends Controller
      */
     private function calculateStatistics()
     {
-        $base = PengajuanAkreditasi::whereIn('status', [
+        $alStatuses = [
             PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
             PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
             PengajuanAkreditasi::STATUS_AL_SELESAI,
             PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
-        ]);
+        ];
+
+        $base = PengajuanAkreditasi::query()
+            ->whereHas('statusLog', fn($q) => $q->whereIn('status_to', $alStatuses));
 
         $total = (clone $base)->count();
 
         $sedangVisitasi = (clone $base)
-            ->whereIn('status', [
+            ->whereHas('statusLog', fn($q) => $q->whereIn('status_to', [
                 PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
                 PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
-            ])
+            ]))
             ->count();
 
         $perluValidator = (clone $base)
-            ->where('status', PengajuanAkreditasi::STATUS_AL_SELESAI)
+            ->whereHas('statusLog', fn($q) => $q->where('status_to', PengajuanAkreditasi::STATUS_AL_SELESAI))
+            ->whereDoesntHave('statusLog', fn($q) => $q->where('status_to', PengajuanAkreditasi::STATUS_AL_DILAPORKAN))
             ->whereDoesntHave('asesmen.asesmenUserRoles', function ($q) {
                 $q->where('jenis_asesmen', 'al')
                     ->whereHas('role_selected', fn($r) => $r->where('name', 'validator'));
@@ -378,7 +430,8 @@ class PelaksanaanALController extends Controller
             ->count();
 
         $sedangPelaporan = (clone $base)
-            ->where('status', PengajuanAkreditasi::STATUS_AL_SELESAI)
+            ->whereHas('statusLog', fn($q) => $q->where('status_to', PengajuanAkreditasi::STATUS_AL_SELESAI))
+            ->whereDoesntHave('statusLog', fn($q) => $q->where('status_to', PengajuanAkreditasi::STATUS_AL_DILAPORKAN))
             ->whereHas('asesmen.asesmenUserRoles', function ($q) {
                 $q->where('jenis_asesmen', 'al')
                     ->whereHas('role_selected', fn($r) => $r->where('name', 'validator'));
@@ -386,7 +439,7 @@ class PelaksanaanALController extends Controller
             ->count();
 
         $selesai = (clone $base)
-            ->where('status', PengajuanAkreditasi::STATUS_AL_DILAPORKAN)
+            ->whereHas('statusLog', fn($q) => $q->where('status_to', PengajuanAkreditasi::STATUS_AL_DILAPORKAN))
             ->count();
 
         return [

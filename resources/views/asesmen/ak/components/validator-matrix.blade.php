@@ -263,7 +263,7 @@ $viewMode = request('view') === 'split' ? 'split' : 'merged'; // split | merged
                     }
 
                     $hasDifference = count(array_unique($skors)) > 1;
-                    $validasi = $elemen->penilaianElemenAk->where('status_validasi', '!=', 'not_validated')->first();
+                    $validasi = $elemen->penilaianElemenAk->whereNotIn('status_validasi', ['pending','not_validated'])->first();
                     @endphp
 
                     <tr class="validator-row" data-elemen-id="{{ $elemen->id }}" @if($hasDifference) data-has-diff="true" @endif>
@@ -321,7 +321,7 @@ $viewMode = request('view') === 'split' ? 'split' : 'merged'; // split | merged
                             $p = $penilaians[$asesor->id_user] ?? null;
                             if ($p && in_array($p->status_validasi, ['validated', 'validated_diff', 'approved'])) {
                             $validatedCount++;
-                            } elseif ($p && $p->status_validasi === 'not_validated') {
+                            } elseif ($p && in_array($p->status_validasi,['pending','not_validated'])) {
                             $notValidatedCount++;
                             }
                             }
@@ -330,7 +330,9 @@ $viewMode = request('view') === 'split' ? 'split' : 'merged'; // split | merged
                             @endphp
 
                             {{-- Regular validation button/status --}}
-                            @if($validasi && !$hasInconsistentValidation)
+                            {{-- @if($validasi && !$hasInconsistentValidation) --}}
+                            @if($validasi)
+
                             @if(in_array($validasi->status_validasi,['validated','validated_diff','approved']))
                             <span class="badge bg-success">
                                 <i class="bi bi-check-circle"></i> Disetujui
@@ -346,6 +348,7 @@ $viewMode = request('view') === 'split' ? 'split' : 'merged'; // split | merged
                                 <i class="bi bi-eye"></i> Lihat
                             </button>
                             @endif
+
                             @else
                             <button class="btn btn-sm btn-primary btn-validate w-100" data-elemen-id="{{ $elemen->id }}">
                                 <i class="bi bi-check"></i> Validasi

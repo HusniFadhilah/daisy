@@ -148,10 +148,10 @@ class StudyProgramUserSeeder extends Seeder
                 'id_degree_level' => 5,
                 'id_category' => 2,
                 'bentuk_pt' => 'Universitas',
-                'peringkat_akreditasi' => 'B',
+                'peringkat_akreditasi' => null,
                 // 12 Agustus 2026
-                'tanggal_kedaluwarsa' => Carbon::create(2026, 8, 12),
-                'status_kedaluwarsa' => 'Aktif',
+                'tanggal_kedaluwarsa' => null,
+                'status_kedaluwarsa' => 'Belum Terakreditasi',
                 'is_active' => true,
                 'is_example' => true,
             ]
@@ -185,6 +185,7 @@ class StudyProgramUserSeeder extends Seeder
             'upps1@daisy.lamdepilar.or.id'        => 's1@lamdepilar.ac.id',
             'upps2@daisy.lamdepilar.or.id'        => 'abcde@contoh.ac.id',
             'upps3@daisy.lamdepilar.or.id'        => 'testing@abcd.ac.id',
+            'remahankecil@gmail.com'              => 'depilar@abcd.ac.id',
             'uppsd3@daisy.lamdepilar.or.id'        => 'd3@lamdepilar.ac.id',
             'uppss1@daisy.lamdepilar.or.id'        => 's1@lamdepilar.ac.id',
             'uppss2@daisy.lamdepilar.or.id'        => 's2@lamdepilar.ac.id',

@@ -160,7 +160,7 @@ class SuratPermohonanController extends Controller
             DB::commit();
 
             return redirect()
-                ->route('de.surat-permohonan', ['status' => PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA])
+                ->route('de.surat-permohonan')
                 ->with('success', 'Surat permohonan berhasil diterima. Status diubah menjadi "Surat Permohonan Diterima".');
         } catch (\Exception $e) {
             DB::rollBack();

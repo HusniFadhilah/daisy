@@ -58,7 +58,7 @@ class PenilaianExcelService
         // Mode full (default)
         [$spreadsheet, $sheet] = $this->createSheetBase($asesmen, false, $userId);
 
-        return $this->saveSpreadsheet($spreadsheet, 'Penilaian_' . $this->penilaianName . '_Lengkap_', $asesmen->code . '_' . Str::slug($this->asesorName));
+        return $this->saveSpreadsheet($spreadsheet, 'Penilaian_' . $this->penilaianName . '_Lengkap_', Str::slug($asesmen->code) . '_' . Str::slug($this->asesorName));
     }
 
     /**
@@ -169,7 +169,7 @@ class PenilaianExcelService
         return $this->saveSpreadsheet(
             $spreadsheet,
             'Penilaian_' . $this->penilaianName . '_',
-            $asesmen->code . '_' . Str::slug($this->asesorName)
+            Str::slug($asesmen->code) . '_' . Str::slug($this->asesorName)
         );
     }
 

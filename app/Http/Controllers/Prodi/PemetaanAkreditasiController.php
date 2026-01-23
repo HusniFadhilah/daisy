@@ -226,7 +226,7 @@ class PemetaanAkreditasiController extends Controller
         $page = (int) $request->get('page', 1);
         $perPage = 20;
 
-        $query = StudyProgram::nonExample()->with(['degreeLevel', 'university']);
+        $query = StudyProgram::withExample()->with(['degreeLevel', 'university']);
 
         if ($q !== '') {
             $query->where(function ($sub) use ($q) {

@@ -53,11 +53,19 @@ class DashboardController extends Controller
         $sevenMonthsFromNow = $now->copy()->addMonths(7);
         $startOfYear = $now->copy()->startOfYear();
 
-        // 1. Pengingat Masa Akreditasi (masa berakhir dalam 7 bulan)
-        $pengingatMasaAkreditasi = StudyProgram::where('is_active', true)
+        $now = Carbon::now();
+
+        // N bulan ke depan, default 7 (bisa nanti diambil dari config / request)
+        $reminderMonths = 7;
+
+        $targetMonth = $now->copy()->addMonths($reminderMonths);
+        $targetStart = $targetMonth->copy()->startOfMonth()->startOfDay();
+        $targetEnd   = $targetMonth->copy()->endOfMonth()->endOfDay();
+
+        // ✅ Pengingat Masa Akreditasi: KHUSUS bulan target (now + N bulan)
+        $pengingatMasaAkreditasi = StudyProgram::nonExample()->where('is_active', true)
             ->whereNotNull('tanggal_kedaluwarsa')
-            ->where('tanggal_kedaluwarsa', '<=', $sevenMonthsFromNow)
-            ->where('tanggal_kedaluwarsa', '>', $now)
+            ->whereBetween('tanggal_kedaluwarsa', [$targetStart, $targetEnd])
             ->count();
 
         // 2. ✅ Penerimaan Dokumen Akreditasi (dari status log - pernah di status ini)
@@ -589,10 +597,10 @@ class DashboardController extends Controller
 
         // ✅ Get from status log for university programs
         $recentLogs = PengajuanStatusLog::whereIn('id_pengajuan', function ($query) use ($studyProgramIds) {
-                $query->select('id')
-                    ->from('pengajuan_akreditasi')
-                    ->whereIn('id_program_studi', $studyProgramIds);
-            })
+            $query->select('id')
+                ->from('pengajuan_akreditasi')
+                ->whereIn('id_program_studi', $studyProgramIds);
+        })
             ->with(['pengajuan.studyProgram'])
             ->latest('changed_at')
             ->take(5)
@@ -631,7 +639,7 @@ class DashboardController extends Controller
             ->get();
 
         foreach ($recentPayments as $payment) {
-            $statusLabel = match($payment->status_pembayaran) {
+            $statusLabel = match ($payment->status_pembayaran) {
                 'menunggu_pembayaran' => 'Menunggu Pembayaran',
                 'menunggu_verifikasi' => 'Menunggu Verifikasi',
                 'terverifikasi' => 'Terverifikasi',

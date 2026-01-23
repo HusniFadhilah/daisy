@@ -39,7 +39,7 @@
         .button {
             display: inline-block;
             padding: 12px 30px;
-            background: #0d6efd;
+            background: #932136;
             color: white;
             text-decoration: none;
             border-radius: 5px;
@@ -58,42 +58,50 @@
 <body>
     <div class="container">
         <div class="header">
-            <h2>🔔 Pengingat Akreditasi</h2>
+            <h2>Pengingat Masa Akreditasi</h2>
+            <div style="margin-top: 15px;">
+                <img src="{{ asset('assets/images/logo.png') }}" alt="Logo" style="
+            max-width: 120px;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        ">
+            </div>
         </div>
 
         <div class="content">
             <p>Kepada Yth,</p>
             <p><strong>{{ $pengajuan->studyProgram->name }}</strong></p>
 
-            <div class="info-box">
+            {{-- <div class="info-box">
                 <p><strong>Nomor Permohonan:</strong> {{ $pengajuan->nomor_pengajuan }}</p>
-                <p><strong>Tahun Akreditasi:</strong> {{ $pengajuan->tahun_akreditasi }}</p>
-            </div>
+            <p><strong>Tahun Akreditasi:</strong> {{ $pengajuan->tahun_akreditasi }}</p>
+        </div> --}}
 
-            <p>{{ $pesanPengingat }}</p>
+        <p>{{ $pesanPengingat }}</p>
 
-            <p>Untuk melanjutkan proses akreditasi, silakan:</p>
-            <ol>
-                <li>Login ke sistem</li>
-                <li>Submit surat permohonan akreditasi</li>
-                <li>Ikuti tahapan berikutnya sesuai panduan</li>
-            </ol>
+        <p>Untuk melanjutkan proses akreditasi, silakan:</p>
+        <ol>
+            <li>Login ke sistem</li>
+            <li>Submit surat permohonan akreditasi</li>
+            <li>Ikuti tahapan berikutnya sesuai panduan</li>
+        </ol>
 
-            <center>
-                <a href="{{ route('pengajuan') }}" class="button">
-                    Lihat Pengajuan
-                </a>
-            </center>
+        <center>
+            <a href="{{ route('pengajuan') }}" class="button">
+                Lihat Pengajuan
+            </a>
+        </center>
 
-            <p style="margin-top: 30px;">Jika ada pertanyaan, hubungi Dewan Eksekutif (DE) LAMDEPILAR.</p>
+        <p style="margin-top: 30px;">Jika ada pertanyaan, hubungi Dewan Eksekutif (DE) LAMDEPILAR.</p>
 
-            <p>Hormat kami,<br><strong>Tim Akreditasi</strong></p>
-        </div>
+        <p>Hormat kami,<br><strong>Tim Akreditasi</strong></p>
+    </div>
 
-        <div class="footer">
-            <p>Email ini dikirim secara otomatis. Mohon tidak membalas email ini.</p>
-            <p>&copy; {{ date('Y') }} Sistem Akreditasi. All rights reserved.</p>
-        </div>
+    <div class="footer">
+        <p>Email ini dikirim secara otomatis. Mohon tidak membalas email ini.</p>
+        <p>&copy; {{ date('Y') }} Sistem Akreditasi. All rights reserved.</p>
+    </div>
     </div>
 </body>
 </html>

@@ -480,7 +480,7 @@
 
                     bodyHtml += `
                         <td class="comp-cell comp-score-cell" style="background: ${bgPemenuhan};" ${onclickPemenuhan}>
-                            ${(skor !== null && skor != 4) ? `<small class="text-${skor == 2 ? 'dark' : 'white'}">${komentar.substring(0, 50)}...</small>` : ''}
+                            ${(skor !== null && skor != 4) ? `<small class="text-dark">${komentar.substring(0, 50)}...</small>` : ''}
                         </td>
                     `;
 
@@ -492,7 +492,7 @@
 
                     bodyHtml += `
                         <td class="comp-cell comp-score-cell" style="background: ${bgPelampauan};" ${onclickPelampauan}>
-                            ${skor == 4 ? `<small class="text-white">${komentar.substring(0, 50)}...</small>` : ''}
+                            ${skor == 4 ? `<small class="text-dark">${komentar.substring(0, 50)}...</small>` : ''}
                         </td>
                     `;
                 });

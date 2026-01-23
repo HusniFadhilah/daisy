@@ -100,6 +100,11 @@ class StudyProgram extends Model
         return $query->where('is_example', false);
     }
 
+    public function scopeWithExample($query)
+    {
+        return $query->whereIn('is_example', [false, true]);
+    }
+
     public function scopeExample($query)
     {
         return $query->where('is_example', true);

@@ -14,6 +14,11 @@ class PelaporanALController extends Controller
      */
     public function index(Request $request)
     {
+        $alReportStatuses = [
+            PengajuanAkreditasi::STATUS_AL_SELESAI,
+            PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
+        ];
+
         // Build query - pengajuan yang sudah selesai validasi AL
         $query = PengajuanAkreditasi::with([
             'studyProgram.university',
@@ -28,12 +33,20 @@ class PelaporanALController extends Controller
                 $q->where('type', 'laporan_al')
                     ->where('is_active', true)
                     ->latest();
-            }
+            },
+            // optional: kalau mau tampilkan log di table
+            'statusLog' => function ($q) use ($alReportStatuses) {
+                $q->whereIn('status_to', $alReportStatuses)
+                    ->orderBy('changed_at', 'desc');
+            },
         ])
-            ->whereIn('status', [
-                PengajuanAkreditasi::STATUS_AL_SELESAI,
-                PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
-            ])
+            // ✅ basis list: pernah mencapai AL_SELESAI / AL_DILAPORKAN (via log)
+            ->whereExists(function ($q) use ($alReportStatuses) {
+                $q->select(DB::raw(1))
+                    ->from('pengajuan_status_log as l')
+                    ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
+                    ->whereIn('l.status_to', $alReportStatuses);
+            })
             ->whereHas('asesmen.asesmenKecukupan');
 
         // Filter by university
@@ -47,13 +60,30 @@ class PelaporanALController extends Controller
         if ($request->filled('status_pelaporan')) {
             switch ($request->status_pelaporan) {
                 case 'belum_lapor':
-                    $query->where('status', PengajuanAkreditasi::STATUS_AL_SELESAI)
+                    $query->whereExists(function ($q) {
+                        $q->select(DB::raw(1))
+                            ->from('pengajuan_status_log as l')
+                            ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
+                            ->where('l.status_to', PengajuanAkreditasi::STATUS_AL_SELESAI);
+                    })
+                        ->whereNotExists(function ($q) {
+                            $q->select(DB::raw(1))
+                                ->from('pengajuan_status_log as l')
+                                ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
+                                ->where('l.status_to', PengajuanAkreditasi::STATUS_AL_DILAPORKAN);
+                        })
                         ->whereDoesntHave('asesmen.asesmenDocuments', function ($q) {
                             $q->where('type', 'laporan_al')->where('is_active', true);
                         });
                     break;
+
                 case 'sudah_lapor':
-                    $query->where('status', PengajuanAkreditasi::STATUS_AL_DILAPORKAN)
+                    $query->whereExists(function ($q) {
+                        $q->select(DB::raw(1))
+                            ->from('pengajuan_status_log as l')
+                            ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
+                            ->where('l.status_to', PengajuanAkreditasi::STATUS_AL_DILAPORKAN);
+                    })
                         ->whereHas('asesmen.asesmenDocuments', function ($q) {
                             $q->where('type', 'laporan_al')->where('is_active', true);
                         });
@@ -136,13 +166,19 @@ class PelaporanALController extends Controller
             ')
             ->first();
 
-        // Get laporan AL documents
-        $laporanDocuments = $pengajuan->asesmen?->asesmenDocuments()->where('type', 'laporan_al')->get() ?? collect();
-        // Check pelaporan status
+        $laporanDocuments = $pengajuan->asesmen?->asesmenDocuments()
+            ->where('type', 'laporan_al')
+            ->orderBy('created_at', 'desc')
+            ->get() ?? collect();
+
+        $isReported = $pengajuan->statusLog()
+            ->where('status_to', PengajuanAkreditasi::STATUS_AL_DILAPORKAN)
+            ->exists();
+
         $statusPelaporan = [
             'has_laporan' => $laporanDocuments->count() > 0,
-            'is_reported' => $pengajuan->status === PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
-            'reported_at' => $pengajuan->tanggal_pelaporan_al,
+            'is_reported' => $isReported,
+            'reported_at' => $pengajuan->tanggal_pelaporan_al, // boleh tetap pakai field ini
         ];
 
         return view('de.pelaporan-al.show', compact(
@@ -159,24 +195,27 @@ class PelaporanALController extends Controller
      */
     private function calculateStatistics()
     {
-        $base = PengajuanAkreditasi::whereIn('status', [
+        $scope = [
             PengajuanAkreditasi::STATUS_AL_SELESAI,
             PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
-        ])->whereHas('asesmen.asesmenKecukupan');
+        ];
+
+        $base = PengajuanAkreditasi::query()
+            ->whereHas('asesmen.asesmenKecukupan')
+            ->whereHas('statusLog', fn($q) => $q->whereIn('status_to', $scope));
 
         $total = (clone $base)->count();
 
-        // Belum lapor: Status AL_SELESAI dan belum ada dokumen laporan
         $belumLapor = (clone $base)
-            ->where('status', PengajuanAkreditasi::STATUS_AL_SELESAI)
+            ->whereHas('statusLog', fn($q) => $q->where('status_to', PengajuanAkreditasi::STATUS_AL_SELESAI))
+            ->whereDoesntHave('statusLog', fn($q) => $q->where('status_to', PengajuanAkreditasi::STATUS_AL_DILAPORKAN))
             ->whereDoesntHave('asesmen.asesmenDocuments', function ($q) {
                 $q->where('type', 'laporan_al')->where('is_active', true);
             })
             ->count();
 
-        // Sudah lapor: Status AL_DILAPORKAN
         $sudahLapor = (clone $base)
-            ->where('status', PengajuanAkreditasi::STATUS_AL_DILAPORKAN)
+            ->whereHas('statusLog', fn($q) => $q->where('status_to', PengajuanAkreditasi::STATUS_AL_DILAPORKAN))
             ->count();
 
         return [

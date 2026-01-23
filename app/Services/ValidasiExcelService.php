@@ -88,10 +88,10 @@ class ValidasiExcelService
         $tempPath = $service->saveSpreadsheet(
             $spreadsheet,
             'Validasi_Penilaian_' . strtoupper($jenisAsesmen) . '_Lengkap_',
-            $asesmen->code . '_' . date('Ymd')
+            Str::slug($asesmen->code) . '_' . date('Ymd')
         );
 
-        $filename = 'Validasi_Penilaian_' . strtoupper($jenisAsesmen) . '_Lengkap_' . $asesmen->code . '_' . date('Ymd') . '.xlsx';
+        $filename = 'Validasi_Penilaian_' . strtoupper($jenisAsesmen) . '_Lengkap_' . Str::slug($asesmen->code) . '_' . date('Ymd') . '.xlsx';
 
         return [$tempPath, $filename];
     }
@@ -366,7 +366,7 @@ class ValidasiExcelService
                 // Validasi data
                 $validasi = $elemen->{$relationName}
                     ->where('id_asesmen', $asesmen->id)
-                    ->where('status_validasi', '!=', 'not_validated')
+                    ->whereNotIn('status_validasi', ['pending', 'not_validated'])
                     ->first();
 
                 // ✅ hitung status dari skor para asesor
