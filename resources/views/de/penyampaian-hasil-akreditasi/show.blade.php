@@ -35,7 +35,7 @@
                 <div class="card-body text-center">
                     <h6 class="text-muted mb-2">Skor AL</h6>
                     @if($hasil->skor_al)
-                    <h1 class="mb-0 text-info display-4">{{ number_format($hasil->skor_al, 2) }}</h1>
+                    <h1 class="mb-0 text-info display-4">{{ number_format($hasil->skor_al, 0) }}</h1>
                     <small class="text-muted">dari 400</small>
                     @else
                     <h2 class="mb-0 text-muted">-</h2>
@@ -59,9 +59,9 @@
                     default => 'secondary'
                     };
                     @endphp
-                    <h2 class="mb-0 text-{{ $badgeClass }}">{{ $hasil->peringkat_akreditasi }}</h2>
+                    <h4 class="mb-0 text-{{ $badgeClass }}">{{ $hasil->peringkat_akreditasi }}</h4>
                     @else
-                    <h2 class="mb-0 text-muted">Belum Dihitung</h2>
+                    <h3 class="mb-0 text-muted">Belum Dihitung</h3>
                     @endif
                 </div>
             </div>
@@ -196,7 +196,7 @@
                         Status Draft
                     </h5>
                     <p class="text-muted mb-0">
-                        Hasil masih dalam status <strong>DRAFT</strong>. Anda dapat menghitung ulang atau melakukan finalisasi.
+                        Hasil masih dalam status <strong>DRAFT</strong> dengan skor akhir yaitu: {{ number_format($hasil->skor_al, 0) }}, dan masuk ke kategori: <span class="badge bg-success">{{ $hasil->getPeringkatFromSkorAL($hasil->skor_al) }}</span>. Anda dapat menghitung ulang atau melakukan finalisasi.
                     </p>
                 </div>
                 <div class="col-md-4 text-end">

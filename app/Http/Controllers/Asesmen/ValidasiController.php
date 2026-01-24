@@ -9,10 +9,11 @@ use Illuminate\Http\Request;
 use App\Models\ElemenStandar;
 use App\Models\AsesmenLapangan;
 use App\Models\AsesmenUserRole;
-use App\Models\PenilaianElemenAk;
 use App\Models\AsesmenKecukupan;
 use App\Models\JenjangPenilaian;
+use App\Models\PenilaianElemenAk;
 use Illuminate\Support\Facades\DB;
+use App\Models\PengajuanAkreditasi;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -313,8 +314,22 @@ class ValidasiController extends Controller
                 'status_pekerjaan' => 'in_progress',
                 'started_at' => now(), // Opsional: track kapan mulai
             ]);
-            if ($assignment->asesmen->pengajuan) {
-                $assignment->asesmen->pengajuan->checkUpdateStatusAKAL('ak', 'status_asesor_on_validation');
+
+            $pengajuan = $assignment->asesmen->pengajuan;
+            if ($pengajuan) {
+                $statusFrom = $pengajuan->status;
+                $pengajuan->checkUpdateStatusAKAL('ak', 'status_asesor_on_validation');
+                $pengajuan->statusLog()->firstOrCreate(
+                    [
+                        'status_from' => $statusFrom,
+                        'status_to'   => PengajuanAkreditasi::STATUS_AK_ON_VALIDATION,
+                    ],
+                    [
+                        'changed_by'  => Auth::id(),
+                        'keterangan'  => 'Validator AK telah memulai proses validasi dari penilaian asesor AK',
+                        'changed_at'  => now(),
+                    ]
+                );
             }
         }
 
@@ -675,8 +690,22 @@ class ValidasiController extends Controller
                 ->update([
                     'is_locked' => true,
                 ]);
-            if ($asesmen->pengajuan) {
-                $asesmen->pengajuan->checkUpdateStatusAKAL('ak', 'status_asesor_selesai');
+
+            $pengajuan = $asesmen->pengajuan;
+            if ($pengajuan) {
+                $statusFrom = $pengajuan->status;
+                $pengajuan->checkUpdateStatusAKAL('ak', 'status_asesor_selesai');
+                $pengajuan->statusLog()->firstOrCreate(
+                    [
+                        'status_from' => $statusFrom,
+                        'status_to'   => PengajuanAkreditasi::STATUS_AK_SELESAI,
+                    ],
+                    [
+                        'changed_by'  => Auth::id(),
+                        'keterangan'  => 'Validator AK telah menyelesaikan proses validasi dari penilaian asesor AK',
+                        'changed_at'  => now(),
+                    ]
+                );
             }
             DB::commit();
 

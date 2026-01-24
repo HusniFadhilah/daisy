@@ -79,6 +79,12 @@ class PengajuanDokumen extends Model
         if ($this->template_link) {
             return $this->template_link;
         }
+        if ($this->jenis_dokumen == 'draft_borang') {
+            $uploadKualitatif = PengajuanDokumen::where('id_pengajuan', $this->id_pengajuan)->where('jenis_dokumen', 'data_kualitatif')->first();
+            if ($uploadKualitatif)
+                return route('pengajuan.dokumen.download', $uploadKualitatif->id);
+            return route('pengajuan.dokumen.download', $this->id);
+        }
 
         if ($this->path_file) {
             return route('pengajuan.dokumen.download', $this->id);

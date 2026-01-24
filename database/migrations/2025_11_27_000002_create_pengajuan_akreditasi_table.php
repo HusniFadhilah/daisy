@@ -119,8 +119,39 @@ return new class extends Migration
             $table->text('catatan_hasil')->nullable();
             $table->text('alasan_banding')->nullable();
             $table->enum('hasil_banding', ['diterima', 'ditolak'])->nullable();
+            $table->boolean('is_active')->default(true)->index();
+            $table->boolean('is_example')->default(false)->index();
 
             $table->timestamps();
+        });
+
+        Schema::create('pengingat_akreditasi', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('id_program_studi')
+                ->constrained('study_programs')
+                ->onDelete('cascade');
+            $table->foreignId('id_de_pengirim')
+                ->constrained('users')
+                ->onDelete('cascade');
+            $table->year('tahun_akreditasi');
+            $table->text('pesan_pengingat');
+            $table->datetime('tanggal_dikirim');
+            $table->enum('status', ['belum_direspon', 'direspon', 'kadaluarsa'])
+                ->default('belum_direspon');
+            $table->datetime('tanggal_direspon')->nullable();
+            $table->foreignId('id_pengajuan')
+                ->nullable()
+                ->constrained('pengajuan_akreditasi')
+                ->onDelete('set null');
+            $table->string('email_terkirim_ke')->nullable();
+            $table->text('keterangan')->nullable();
+            $table->timestamps();
+
+            // Indexes
+            $table->index('id_program_studi');
+            $table->index('tahun_akreditasi');
+            $table->index('status');
+            $table->index('tanggal_dikirim');
         });
 
         Schema::create('pengajuan_dokumen', function (Blueprint $table) {

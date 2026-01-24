@@ -179,7 +179,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/', [PengajuanAkreditasiController::class, 'index']);
             Route::get('/create', [PengajuanAkreditasiController::class, 'create'])->name('.create');
             Route::post('/', [PengajuanAkreditasiController::class, 'store'])->name('.store');
-
+            Route::post('/respond-pengingat/{pengingat}', [PengajuanAkreditasiController::class, 'respondPengingat'])->name('.respond-pengingat');
             // Template Download (must be before /{id} to avoid conflict)
             Route::get('/template/download', [PengajuanAkreditasiController::class, 'downloadTemplateBorang'])->name('.template.download');
 
@@ -378,21 +378,44 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
         Route::prefix('masa-sanggah')->name('.masa-sanggah')->group(function () {
             Route::get('/', [MasaSanggahController::class, 'index']);
+            Route::get('/{id}', [MasaSanggahController::class, 'show'])->name('.show');
+            Route::post('/{id}/start', [MasaSanggahController::class, 'startMasaSanggah'])->name('.start');
+            Route::post('/{id}/end', [MasaSanggahController::class, 'endMasaSanggah'])->name('.end');
         });
         Route::prefix('pelaksanaan-banding')->name('.pelaksanaan-banding')->group(function () {
             Route::get('/', [PelaksanaanBandingController::class, 'index']);
+            Route::get('/{id}', [PelaksanaanBandingController::class, 'show'])->name('.show');
+            Route::post('/{id}/mulai-pelaksanaan', [PelaksanaanBandingController::class, 'mulaiPelaksanaan'])->name('.mulai-pelaksanaan');
+            Route::post('/{id}/selesaikan', [PelaksanaanBandingController::class, 'selesaikanPelaksanaan'])->name('.selesaikan');
         });
         Route::prefix('pelaporan-banding')->name('.pelaporan-banding')->group(function () {
             Route::get('/', [PelaporanBandingController::class, 'index']);
+            Route::get('/{id}', [PelaporanBandingController::class, 'show'])->name('.show');
+            Route::post('/{id}/upload-laporan', [PelaporanBandingController::class, 'uploadLaporan'])->name('.upload-laporan');
+            Route::get('/{id}/download-laporan', [PelaporanBandingController::class, 'downloadLaporan'])->name('.download-laporan');
+            Route::get('/{id}/timeline', [PelaporanBandingController::class, 'getTimeline'])->name('.timeline');
         });
         Route::prefix('penetapan-hasil-akreditasi')->name('.penetapan-hasil-akreditasi')->group(function () {
             Route::get('/', [PenetapanHasilAkreditasiController::class, 'index']);
+            Route::get('/{id}', [PenetapanHasilAkreditasiController::class, 'show'])->name('.show');
+            Route::post('/{id}/tetapkan', [PenetapanHasilAkreditasiController::class, 'tetapkanHasil'])->name('.tetapkan');
+            Route::post('/{id}/batalkan', [PenetapanHasilAkreditasiController::class, 'batalkanPenetapan'])->name('.batalkan');
         });
         Route::prefix('pelaporan-hasil-akreditasi')->name('.pelaporan-hasil-akreditasi')->group(function () {
             Route::get('/', [PelaporanHasilAkreditasiController::class, 'index']);
+            Route::get('/{id}', [PelaporanHasilAkreditasiController::class, 'show'])->name('.show');
+            Route::post('/{id}/upload-laporan', [PelaporanHasilAkreditasiController::class, 'uploadLaporan'])->name('.upload-laporan');
+            Route::post('/{id}/upload-sertifikat', [PelaporanHasilAkreditasiController::class, 'uploadSertifikat'])->name('.upload-sertifikat');
+            Route::post('/{id}/selesaikan', [PelaporanHasilAkreditasiController::class, 'selesaikanPelaporan'])->name('.selesaikan');
+            Route::get('/{id}/download/{jenis}', [PelaporanHasilAkreditasiController::class, 'downloadDokumen'])->name('.download');
+            Route::get('/{id}/timeline', [PelaporanHasilAkreditasiController::class, 'getTimeline'])->name('.timeline');
         });
         Route::prefix('penyimpanan-arsip-pelaksanaan-akreditasi')->name('.penyimpanan-arsip-pelaksanaan-akreditasi')->group(function () {
             Route::get('/', [PenyimpananArsipAkreditasiController::class, 'index']);
+            Route::get('/{id}', [PenyimpananArsipAkreditasiController::class, 'show'])->name('.show');
+            Route::post('/{id}/simpan', [PenyimpananArsipAkreditasiController::class, 'simpanArsip'])->name('.simpan');
+            Route::post('/{id}/selesaikan', [PenyimpananArsipAkreditasiController::class, 'selesaikanProses'])->name('.selesaikan');
+            Route::get('/{id}/download-all', [PenyimpananArsipAkreditasiController::class, 'downloadAllDocuments'])->name('.download-all');
         });
     });
 

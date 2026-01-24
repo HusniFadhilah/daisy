@@ -13,6 +13,7 @@ use App\Models\PengajuanStatusLog;
 use Illuminate\Support\Facades\DB;
 use App\Models\PengajuanAkreditasi;
 use App\Models\PengajuanPembayaran;
+use App\Models\PengingatAkreditasi;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
 use App\Http\Controllers\Controller;
@@ -43,6 +44,18 @@ class PengajuanAkreditasiController extends Controller
         // Get study program IDs for current user
         $studyProgramIds = $user->studyPrograms()->pluck('study_programs.id');
 
+        // Get pengingat yang belum direspon
+        $pengingatBelumDirespon = PengingatAkreditasi::with([
+            'studyProgram.university',
+            'studyProgram.degreeLevel',
+            'pengirim'
+        ])
+            ->whereIn('id_program_studi', $studyProgramIds)
+            ->where('status', PengingatAkreditasi::STATUS_BELUM_DIRESPON)
+            ->orderBy('tanggal_dikirim', 'desc')
+            ->get();
+
+        // Query pengajuan
         $query = PengajuanAkreditasi::with([
             'studyProgram.degreeLevel',
             'studyProgram.university',
@@ -68,7 +81,91 @@ class PengajuanAkreditasiController extends Controller
 
         $pengajuans = $query->latest()->paginate(10);
 
-        return view('asesmen.pengajuan.index', compact('pengajuans'));
+        return view('asesmen.pengajuan.index', compact('pengajuans', 'pengingatBelumDirespon'));
+    }
+
+    /**
+     * Buat permohonan akreditasi sebagai respon pengingat
+     */
+    public function respondPengingat(Request $request, $pengingatId)
+    {
+        $request->validate([
+            'jenis_akreditasi' => 'required|in:baru,perpanjangan,menuju_unggul',
+            'file_surat_permohonan' => 'required|file|mimes:pdf|max:5120',
+        ], [
+            'jenis_akreditasi.required' => 'Jenis akreditasi wajib dipilih',
+            'file_surat_permohonan.required' => 'File surat permohonan wajib diupload',
+            'file_surat_permohonan.mimes' => 'File harus berformat PDF',
+            'file_surat_permohonan.max' => 'Ukuran file maksimal 5MB',
+        ]);
+
+        $pengingat = PengingatAkreditasi::findOrFail($pengingatId);
+
+        // Validasi user berhak akses prodi ini
+        $user = auth()->user();
+        if (!$user->studyPrograms()->where('study_programs.id', $pengingat->id_program_studi)->exists()) {
+            return back()->with('error', 'Anda tidak memiliki akses ke program studi ini.');
+        }
+
+        // Validasi pengingat belum direspon
+        if ($pengingat->status !== PengingatAkreditasi::STATUS_BELUM_DIRESPON) {
+            return back()->with('error', 'Pengingat ini sudah direspon.');
+        }
+
+        DB::beginTransaction();
+        try {
+            // Create PengajuanAkreditasi
+            $pengajuan = PengajuanAkreditasi::create([
+                'nomor_pengajuan' => PengajuanAkreditasi::generateNomorPengajuan(),
+                'id_program_studi' => $pengingat->id_program_studi,
+                'id_user_pengaju' => auth()->id(),
+                'id_de_assigned' => $pengingat->id_de_pengirim,
+                'tahun_akreditasi' => $pengingat->tahun_akreditasi,
+                'jenis_akreditasi' => $request->jenis_akreditasi,
+                'status' => PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM,
+                'catatan_pengaju' => $request->catatan_pengaju,
+                'tanggal_pengingat' => $pengingat->tanggal_dikirim,
+                'tanggal_surat_permohonan_dikirim' => now(),
+            ]);
+
+            // Upload surat permohonan
+            $file = $request->file('file_surat_permohonan');
+            $filename = time() . '_' . str_replace(' ', '_', $file->getClientOriginalName());
+            $path = $file->storeAs('dokumen/surat-permohonan', $filename, 'public');
+
+            $pengajuan->dokumen()->create([
+                'jenis_dokumen' => 'surat_permohonan',
+                'nama_file' => $filename,
+                'path_file' => $path,
+                'original_filename' => $file->getClientOriginalName(),
+                'file_size' => $file->getSize(),
+                'mime_type' => $file->getMimeType(),
+                'uploaded_by' => auth()->id(),
+                'is_latest' => true,
+            ]);
+
+            // Mark pengingat as responded
+            $pengingat->markAsResponded($pengajuan);
+
+            // Log status
+            $pengajuan->statusLog()->create([
+                'status_from' => PengajuanAkreditasi::STATUS_PENGINGAT_DIKIRIM,
+                'status_to' => PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM,
+                'changed_by' => auth()->id(),
+                'changed_at' => now(),
+                'keterangan' => 'Surat permohonan dikirim sebagai respon pengingat akreditasi',
+            ]);
+
+            DB::commit();
+
+            return redirect()
+                ->route('pengajuan')
+                ->with('success', 'Permohonan akreditasi berhasil dikirim sebagai respon pengingat.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Error in respondPengingat: " . $e->getMessage());
+            return back()->with('error', 'Gagal mengirim permohonan: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -77,30 +174,36 @@ class PengajuanAkreditasiController extends Controller
     public function create(Request $request)
     {
         $user = Auth::user();
-        $prodiUser = $user->studyPrograms()->with(['degreeLevel', 'university'])->first();
-        $prodis = $prodiUser ? null : StudyProgram::all();
 
-        // Check if there's existing Permohonan akreditasi from DE
-        $pengajuanId = $request->get('pengajuan_id');
-        $pengajuan = null;
+        // Cek apakah ada id_pengingat dari URL
+        $pengingat = null;
+        if ($request->filled('id_pengingat')) {
+            $pengingat = PengingatAkreditasi::with(['studyProgram', 'pengirim'])
+                ->findOrFail($request->id_pengingat);
 
-        if ($pengajuanId) {
-            $pengajuan = PengajuanAkreditasi::with('studyProgram')
-                ->where('id', $pengajuanId)
-                ->where('status', PengajuanAkreditasi::STATUS_PENGINGAT_DIKIRIM)
-                ->whereNull('id_user_pengaju')
-                ->first();
+            // Validasi user berhak akses prodi ini
+            if (!$user->studyPrograms()->where('study_programs.id', $pengingat->id_program_studi)->exists()) {
+                abort(403, 'Anda tidak memiliki akses ke program studi ini.');
+            }
 
-            // Check authorization
-            if ($pengajuan) {
-                $userStudyProgramIds = $user->studyPrograms()->pluck('study_programs.id')->toArray();
-                if (!in_array($pengajuan->id_program_studi, $userStudyProgramIds)) {
-                    abort(403, 'Anda tidak memiliki akses ke Permohonan akreditasi ini.');
-                }
+            // Validasi pengingat belum direspon
+            if ($pengingat->status !== PengingatAkreditasi::STATUS_BELUM_DIRESPON) {
+                return redirect()
+                    ->route('pengajuan')
+                    ->with('error', 'Pengingat ini sudah direspon.');
             }
         }
 
-        return view('asesmen.pengajuan.create', compact('prodiUser', 'prodis', 'pengajuan'));
+        // Get study programs for dropdown
+        $prodis = $user->studyPrograms()
+            ->with(['university', 'degreeLevel'])
+            ->nonExample()
+            ->get();
+
+        // Jika hanya 1 prodi, auto-select
+        $prodiUser = $prodis->count() === 1 ? $prodis->first() : null;
+
+        return view('asesmen.pengajuan.create', compact('prodis', 'prodiUser', 'pengingat'));
     }
 
     /**
@@ -108,107 +211,85 @@ class PengajuanAkreditasiController extends Controller
      */
     public function store(Request $request)
     {
+        // Check if responding to pengingat
+        $pengingat = null;
+        if ($request->filled('id_pengingat')) {
+            $pengingat = PengingatAkreditasi::findOrFail($request->id_pengingat);
+
+            // Additional validation
+            if ($pengingat->status !== PengingatAkreditasi::STATUS_BELUM_DIRESPON) {
+                return back()->with('error', 'Pengingat ini sudah direspon.');
+            }
+        }
+
+        // Validation rules
         $request->validate([
-            'pengajuan_id' => 'nullable|exists:pengajuan_akreditasi,id',
             'id_program_studi' => 'required|exists:study_programs,id',
             'tahun_akreditasi' => 'required|integer|min:2024',
             'jenis_akreditasi' => 'required|in:baru,perpanjangan,menuju_unggul',
-            'catatan_pengaju' => 'nullable|string',
-            'surat_permohonan' => 'required|file|mimes:pdf|max:5120', // 5MB
+            'file_surat_permohonan' => 'required|file|mimes:pdf|max:5120',
+            'catatan_pengaju' => 'nullable|string|max:2000',
         ]);
 
         DB::beginTransaction();
         try {
-            // UPDATE existing OR CREATE new
-            if ($request->filled('pengajuan_id')) {
-                // UPDATE EXISTING
-                $pengajuan = PengajuanAkreditasi::where('id', $request->pengajuan_id)
-                    ->where('status', PengajuanAkreditasi::STATUS_PENGINGAT_DIKIRIM)
-                    ->whereNull('id_user_pengaju')
-                    ->firstOrFail();
+            // Create pengajuan
+            $pengajuan = PengajuanAkreditasi::create([
+                'nomor_pengajuan' => PengajuanAkreditasi::generateNomorPengajuan(),
+                'id_program_studi' => $request->id_program_studi,
+                'id_user_pengaju' => auth()->id(),
+                'id_de_assigned' => $pengingat->id_de_pengirim ?? null,
+                'tahun_akreditasi' => $request->tahun_akreditasi,
+                'jenis_akreditasi' => $request->jenis_akreditasi,
+                'status' => PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM,
+                'catatan_pengaju' => $request->catatan_pengaju,
+                'tanggal_pengingat' => $pengingat->tanggal_dikirim ?? null,
+                'tanggal_surat_permohonan_dikirim' => now(),
+            ]);
 
-                // Check authorization
-                $user = Auth::user();
-                $userStudyProgramIds = $user->studyPrograms()->pluck('study_programs.id')->toArray();
-                if (!in_array($pengajuan->id_program_studi, $userStudyProgramIds)) {
-                    abort(403, 'Anda tidak memiliki akses ke Permohonan akreditasi ini.');
-                }
+            // Upload file
+            $file = $request->file('file_surat_permohonan');
+            $filename = time() . '_' . str_replace(' ', '_', $file->getClientOriginalName());
+            $path = $file->storeAs('dokumen/surat-permohonan', $filename, 'public');
 
-                // Update Permohonan akreditasi
-                $pengajuan->update([
-                    'id_user_pengaju' => Auth::id(),
-                    'id_program_studi' => $request->id_program_studi,
-                    'tahun_akreditasi' => $request->tahun_akreditasi,
-                    'jenis_akreditasi' => $request->jenis_akreditasi,
-                    'tanggal_pengajuan' => now(),
-                    'catatan_pengaju' => $request->catatan_pengaju,
-                    'status' => PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM,
-                    'tanggal_surat_permohonan_dikirim' => now(),
-                ]);
+            $pengajuan->dokumen()->create([
+                'jenis_dokumen' => 'surat_permohonan',
+                'nama_file' => $filename,
+                'path_file' => $path,
+                'original_filename' => $file->getClientOriginalName(),
+                'file_size' => $file->getSize(),
+                'mime_type' => $file->getMimeType(),
+                'uploaded_by' => auth()->id(),
+                'is_latest' => true,
+            ]);
 
-                $this->logStatus(
-                    $pengajuan,
-                    PengajuanAkreditasi::STATUS_PENGINGAT_DIKIRIM,
-                    PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM,
-                    'Data dilengkapi oleh prodi'
-                );
-            } else {
-                // CREATE NEW (if prodi submits without DE reminder)
-                $pengajuan = PengajuanAkreditasi::create([
-                    'nomor_pengajuan' => PengajuanAkreditasi::generateNomorPengajuan(),
-                    'id_program_studi' => $request->id_program_studi,
-                    'id_user_pengaju' => Auth::id(),
-                    'tahun_akreditasi' => $request->tahun_akreditasi,
-                    'jenis_akreditasi' => $request->jenis_akreditasi,
-                    'tanggal_pengajuan' => now(),
-                    'catatan_pengaju' => $request->catatan_pengaju,
-                    'status' => PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM,
-                    'tanggal_surat_permohonan_dikirim' => now(),
-                ]);
-
-                $this->logStatus(
-                    $pengajuan,
-                    null,
-                    PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM,
-                    'Surat permohonan diajukan (tanpa pengingat)'
-                );
+            // Mark pengingat as responded if exists
+            if ($pengingat) {
+                $pengingat->markAsResponded($pengajuan);
             }
 
-            // Upload surat permohonan
-            if ($request->hasFile('surat_permohonan')) {
-                $file = $request->file('surat_permohonan');
-                $filename = 'surat_permohonan_' . time() . '.' . $file->getClientOriginalExtension();
-                $path = $file->storeAs('permohonan-akreditasi' . $pengajuan->id . '/surat', $filename, 'public');
-
-                PengajuanDokumen::create([
-                    'id_pengajuan' => $pengajuan->id,
-                    'jenis_dokumen' => 'surat_permohonan',
-                    'nama_file' => $filename,
-                    'path_file' => $path,
-                    'original_filename' => $file->getClientOriginalName(),
-                    'file_size' => $file->getSize(),
-                    'mime_type' => $file->getMimeType(),
-                    'uploaded_by' => Auth::id(),
-                    'is_latest' => true,
-                ]);
-            }
+            // Log status
+            $pengajuan->statusLog()->create([
+                'status_from' => PengajuanAkreditasi::STATUS_PENGINGAT_DIKIRIM,
+                'status_to' => PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM,
+                'changed_by' => auth()->id(),
+                'changed_at' => now(),
+                'keterangan' => $pengingat
+                    ? 'Surat permohonan dikirim sebagai respon pengingat akreditasi'
+                    : 'Surat permohonan dikirim',
+            ]);
 
             DB::commit();
 
-            $message = $request->filled('pengajuan_id')
-                ? 'Data Permohonan akreditasi berhasil dilengkapi. Nomor permohonan: ' . $pengajuan->nomor_pengajuan
-                : 'Permohonan akreditasi berhasil disubmit. Nomor permohonan: ' . $pengajuan->nomor_pengajuan;
-
-            return redirect()->route('pengajuan.show', $pengajuan->id)
-                ->with('success', $message);
+            return redirect()
+                ->route('pengajuan')
+                ->with('success', 'Permohonan akreditasi berhasil dikirim.');
         } catch (\Exception $e) {
-            Log::error('Store Permohonan akreditasi failed', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
             DB::rollBack();
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage())->withInput();
+            Log::error('Error creating pengajuan: ' . $e->getMessage());
+            return back()
+                ->withInput()
+                ->with('error', 'Gagal mengirim permohonan: ' . $e->getMessage());
         }
     }
 
@@ -1264,8 +1345,11 @@ class PengajuanAkreditasiController extends Controller
             $user = auth()->user();
 
             // Authorization
-            if ($user->role !== 'admin_prodi' && $user->id !== $pengajuan->id_user_pengaju) {
-                abort(403, 'Tidak memiliki akses');
+            if ($user->role_selected !== 'admin_prodi' && $user->id !== $pengajuan->id_user_pengaju) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Mohon maaf, Anda tidak memiliki akses ke bagian ini'
+                ], 500);
             }
 
             // Ambil dokumen versi terbaru

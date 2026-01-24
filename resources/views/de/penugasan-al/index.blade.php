@@ -64,7 +64,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-2 fw-bold">{{ $stats['total'] }}</h2>
-                            <small class="opacity-75">Siap untuk AL</small>
+                            <small class="opacity-75">Permohonan akreditasi PS yang telah memasuki tahap AL</small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
                             <i class="bi bi-clipboard-check"></i>
@@ -81,7 +81,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-2 fw-bold">{{ $stats['siap_al'] }}</h2>
-                            <small class="opacity-75">AK selesai, siap visitasi</small>
+                            <small class="opacity-75">AK selesai, siap visitasi, perlu menugaskan asesor AL</small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
                             <i class="bi bi-exclamation-triangle"></i>
@@ -98,7 +98,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-2 fw-bold">{{ $stats['sudah_ditugaskan'] }}</h2>
-                            <small class="opacity-75">Sedang proses visitasi</small>
+                            <small class="opacity-75">Sudah ditugaskan dan saat ini sedang proses visitasi</small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
                             <i class="bi bi-hourglass-split"></i>

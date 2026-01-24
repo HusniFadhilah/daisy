@@ -83,11 +83,11 @@ class DashboardController extends Controller
         // ])->select('id_pengajuan')->distinct()->get()->count();
 
         // 3. Penawaran Menunggu (current status = pending)
-        $penawaranMenunggu = AsesmenUserRole::where('status_penawaran', 'pending')
+        $penawaranMenunggu = AsesmenUserRole::nonExample()->where('status_penawaran', 'pending')
             ->count();
 
         // 4. Penugasan Aktif (current status = accepted & in progress)
-        $penugasanAktif = AsesmenUserRole::where('status_penawaran', 'accepted')
+        $penugasanAktif = AsesmenUserRole::nonExample()->where('status_penawaran', 'accepted')
             ->whereIn('status_pekerjaan', ['not_started', 'in_progress', 'submitted'])
             ->count();
 
@@ -144,8 +144,8 @@ class DashboardController extends Controller
 
         $additionalStats = [
             'total_prodi' => StudyProgram::where('is_active', true)->count(),
-            'total_pengajuan' => PengajuanAkreditasi::count(),
-            'pengajuan_aktif' => PengajuanAkreditasi::whereNotIn('status', [
+            'total_pengajuan' => PengajuanAkreditasi::nonExample()->count(),
+            'pengajuan_aktif' => PengajuanAkreditasi::nonExample()->whereNotIn('status', [
                 PengajuanAkreditasi::STATUS_SELESAI,
                 PengajuanAkreditasi::STATUS_DITOLAK
             ])->count(),
@@ -179,7 +179,7 @@ class DashboardController extends Controller
         $user = Auth::user();
 
         // 1. Penawaran Menunggu untuk user ini
-        $penawaranMenunggu = AsesmenUserRole::where('id_user', $user->id)
+        $penawaranMenunggu = AsesmenUserRole::nonExample()->where('id_user', $user->id)
             ->where('status_penawaran', 'pending')
             ->whereHas('role', function ($q) {
                 $q->where('name', 'asesor');
@@ -187,7 +187,7 @@ class DashboardController extends Controller
             ->count();
 
         // 2. Penugasan Aktif (accepted dan in progress)
-        $penugasanAktif = AsesmenUserRole::where('id_user', $user->id)
+        $penugasanAktif = AsesmenUserRole::nonExample()->where('id_user', $user->id)
             ->where('status_penawaran', 'accepted')
             ->whereIn('status_pekerjaan', ['not_started', 'in_progress', 'submitted'])
             ->whereHas('role', function ($q) {
@@ -196,7 +196,7 @@ class DashboardController extends Controller
             ->count();
 
         // 3. Penugasan Selesai (approved)
-        $penugasanSelesai = AsesmenUserRole::where('id_user', $user->id)
+        $penugasanSelesai = AsesmenUserRole::nonExample()->where('id_user', $user->id)
             ->where('status_pekerjaan', 'approved')
             ->whereHas('role', function ($q) {
                 $q->where('name', 'asesor');
@@ -210,7 +210,7 @@ class DashboardController extends Controller
         ];
 
         $additionalStats = [
-            'total_assignment' => AsesmenUserRole::where('id_user', $user->id)
+            'total_assignment' => AsesmenUserRole::nonExample()->where('id_user', $user->id)
                 ->whereHas('role', fn($q) => $q->where('name', 'asesor'))
                 ->count(),
         ];
@@ -242,7 +242,7 @@ class DashboardController extends Controller
         $user = Auth::user();
 
         // 1. Penawaran Menunggu
-        $penawaranMenunggu = AsesmenUserRole::where('id_user', $user->id)
+        $penawaranMenunggu = AsesmenUserRole::nonExample()->where('id_user', $user->id)
             ->where('status_penawaran', 'pending')
             ->whereHas('role', function ($q) {
                 $q->where('name', 'validator');
@@ -250,7 +250,7 @@ class DashboardController extends Controller
             ->count();
 
         // 2. Penugasan Aktif
-        $penugasanAktif = AsesmenUserRole::where('id_user', $user->id)
+        $penugasanAktif = AsesmenUserRole::nonExample()->where('id_user', $user->id)
             ->where('status_penawaran', 'accepted')
             ->whereIn('status_pekerjaan', ['not_started', 'in_progress', 'submitted'])
             ->whereHas('role', function ($q) {
@@ -259,7 +259,7 @@ class DashboardController extends Controller
             ->count();
 
         // 3. Penugasan Selesai
-        $penugasanSelesai = AsesmenUserRole::where('id_user', $user->id)
+        $penugasanSelesai = AsesmenUserRole::nonExample()->where('id_user', $user->id)
             ->where('status_pekerjaan', 'approved')
             ->whereHas('role', function ($q) {
                 $q->where('name', 'validator');
@@ -273,7 +273,7 @@ class DashboardController extends Controller
         ];
 
         $additionalStats = [
-            'total_assignment' => AsesmenUserRole::where('id_user', $user->id)
+            'total_assignment' => AsesmenUserRole::nonExample()->where('id_user', $user->id)
                 ->whereHas('role', fn($q) => $q->where('name', 'validator'))
                 ->count(),
         ];
@@ -319,7 +319,7 @@ class DashboardController extends Controller
             ->toArray();
 
         // 1. ✅ Permohonan Berjalan (pernah diajukan tahun ini, belum selesai)
-        $permohonanBerjalan = PengajuanAkreditasi::whereIn('id_program_studi', $studyProgramIds)
+        $permohonanBerjalan = PengajuanAkreditasi::nonExample()->whereIn('id_program_studi', $studyProgramIds)
             ->whereNotIn('status', [
                 PengajuanAkreditasi::STATUS_SELESAI,
                 PengajuanAkreditasi::STATUS_DITOLAK
@@ -344,7 +344,7 @@ class DashboardController extends Controller
 
         $additionalStats = [
             'total_prodi' => count($studyProgramIds),
-            'total_pengajuan' => PengajuanAkreditasi::whereIn('id_program_studi', $studyProgramIds)->count(),
+            'total_pengajuan' => PengajuanAkreditasi::nonExample()->whereIn('id_program_studi', $studyProgramIds)->count(),
         ];
 
         $recentActivities = $this->getRecentActivitiesAdminUniv($studyProgramIds);
@@ -402,7 +402,7 @@ class DashboardController extends Controller
         }
 
         // 1. Permohonan Berjalan
-        $permohonanBerjalan = PengajuanAkreditasi::whereIn('id_program_studi', $studyProgramIds)
+        $permohonanBerjalan = PengajuanAkreditasi::nonExample()->whereIn('id_program_studi', $studyProgramIds)
             ->whereNotIn('status', [
                 PengajuanAkreditasi::STATUS_SELESAI,
                 PengajuanAkreditasi::STATUS_DITOLAK
@@ -426,7 +426,7 @@ class DashboardController extends Controller
 
         $additionalStats = [
             'total_prodi' => count($studyProgramIds),
-            'total_pengajuan' => PengajuanAkreditasi::whereIn('id_program_studi', $studyProgramIds)->count(),
+            'total_pengajuan' => PengajuanAkreditasi::nonExample()->whereIn('id_program_studi', $studyProgramIds)->count(),
         ];
 
         $recentActivities = $this->getRecentActivitiesAdminProdi($studyProgramIds);
@@ -565,7 +565,7 @@ class DashboardController extends Controller
     {
         $activities = [];
 
-        $assignments = AsesmenUserRole::where('id_user', $userId)
+        $assignments = AsesmenUserRole::nonExample()->where('id_user', $userId)
             ->whereHas('role', fn($q) => $q->where('name', 'asesor'))
             ->with(['asesmen.studyProgram'])
             ->latest('updated_at')
@@ -668,7 +668,7 @@ class DashboardController extends Controller
         $tasks = [];
 
         // Pending validations
-        $pendingValidations = PengajuanAkreditasi::where('status', PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING)
+        $pendingValidations = PengajuanAkreditasi::nonExample()->where('status', PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING)
             ->with('studyProgram')
             ->take(3)
             ->get();
@@ -690,7 +690,7 @@ class DashboardController extends Controller
     {
         $tasks = [];
 
-        $assignments = AsesmenUserRole::where('id_user', $userId)
+        $assignments = AsesmenUserRole::nonExample()->where('id_user', $userId)
             ->where('status_penawaran', 'accepted')
             ->whereIn('status_pekerjaan', ['not_started', 'in_progress'])
             ->with(['asesmen.studyProgram'])
@@ -719,7 +719,7 @@ class DashboardController extends Controller
     {
         $tasks = [];
 
-        $pengajuans = PengajuanAkreditasi::whereIn('id_program_studi', $studyProgramIds)
+        $pengajuans = PengajuanAkreditasi::nonExample()->whereIn('id_program_studi', $studyProgramIds)
             ->whereNotIn('status', [PengajuanAkreditasi::STATUS_SELESAI, PengajuanAkreditasi::STATUS_DITOLAK])
             ->with('studyProgram')
             ->take(3)

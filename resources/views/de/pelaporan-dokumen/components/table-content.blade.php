@@ -29,20 +29,61 @@
                     $validatorName = $validator?->user?->name ?? '-';
 
                     // Get laporan validasi
-                    $laporan = $pengajuan->asesmen?->documents->where('type', 'laporan_validasi_borang')->where('is_active', true)->first();
+                    $laporan = $pengajuan->asesmen?->documents
+                    ->where('type', 'laporan_validasi_borang')
+                    ->where('is_active', true)
+                    ->first();
 
-                    // Determine status
-                    if ($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN) {
-                    $statusUpload = ['class' => 'success', 'icon' => 'check-circle-fill', 'text' => 'Sudah Upload'];
+                    $hasLaporan = (bool) $laporan;
+
+                    // ===============================
+                    // STATUS berbasis STATUS LOG
+                    // ===============================
+                    $pelaporanStatuses = [
+                    \App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
+                    \App\Models\PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED,
+                    ];
+
+                    // Ambil log terakhir yg termasuk 2 status ini (asumsi statusLog sudah desc by changed_at)
+                    $lastPelaporanLog = $pengajuan->statusLog
+                    ?->firstWhere(fn($log) => in_array($log->status_to, $pelaporanStatuses, true));
+
+                    $lastStatus = $lastPelaporanLog?->status_to;
+
+                    $isReported = $lastStatus === \App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN;
+                    $isSelesai = $lastStatus === \App\Models\PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED;
+
+                    // ===============================
+                    // Badge Status Upload (berdasar dokumen)
+                    // ===============================
+                    $statusUpload = $hasLaporan
+                    ? ['class' => 'success', 'icon' => 'check-circle-fill', 'text' => 'Sudah Upload']
+                    : ['class' => 'danger', 'icon' => 'x-circle-fill', 'text' => 'Belum Upload'];
+
+                    // ===============================
+                    // Badge Status Pelaporan (berdasar log)
+                    // ===============================
+                    if ($isReported) {
                     $statusPelaporan = ['class' => 'success', 'icon' => 'check-circle-fill', 'text' => 'Selesai'];
-                    $tanggal = $pengajuan->tanggal_pelaporan_validasi_borang?->format('d M Y H:i') ?? '-';
-                    } elseif ($laporan) {
-                    $statusUpload = ['class' => 'success', 'icon' => 'check-circle-fill', 'text' => 'Sudah Upload'];
+                    } elseif ($hasLaporan || $isSelesai) {
+                    // Kalau ada file ATAU sudah validasi selesai tapi belum dilaporkan -> menunggu finalisasi
                     $statusPelaporan = ['class' => 'warning', 'icon' => 'hourglass-split', 'text' => 'Menunggu Finalisasi'];
-                    $tanggal = $laporan->uploaded_at?->format('d M Y H:i') ?? '-';
                     } else {
-                    $statusUpload = ['class' => 'danger', 'icon' => 'x-circle-fill', 'text' => 'Belum Upload'];
                     $statusPelaporan = ['class' => 'danger', 'icon' => 'x-circle-fill', 'text' => 'Belum Selesai'];
+                    }
+
+                    // ===============================
+                    // Tanggal tampil
+                    // Prioritas:
+                    // 1) kalau sudah dilaporkan -> changed_at log DILAPORKAN
+                    // 2) kalau belum -> uploaded_at (kalau ada laporan)
+                    // 3) fallback '-'
+                    // ===============================
+                    if ($isReported && $lastPelaporanLog?->changed_at) {
+                    $tanggal = \Carbon\Carbon::parse($lastPelaporanLog->changed_at)->format('d M Y H:i');
+                    } elseif ($hasLaporan && $laporan?->uploaded_at) {
+                    $tanggal = $laporan->uploaded_at->format('d M Y H:i');
+                    } else {
                     $tanggal = '-';
                     }
                     @endphp

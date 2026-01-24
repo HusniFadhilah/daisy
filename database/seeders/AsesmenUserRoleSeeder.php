@@ -33,6 +33,7 @@ class AsesmenUserRoleSeeder extends Seeder
             'description' => 'Penilaian akreditasi Prodi LAMDEPILAR untuk tahun 2026-2030',
             'tanggal_mulai'   => now(),
             'tanggal_selesai' => now()->addMonths(2),
+            'is_example' => true,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -72,6 +73,7 @@ class AsesmenUserRoleSeeder extends Seeder
                 'urutan_asesor' => $index + 1, // 1, 2
                 'status_penawaran' => 'accepted', // Set as accepted untuk testing
                 'status_pekerjaan' => 'not_started',
+                'is_example' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -90,6 +92,7 @@ class AsesmenUserRoleSeeder extends Seeder
                 'urutan_asesor' => null, // Validator tidak punya urutan
                 'status_penawaran' => 'accepted',
                 'status_pekerjaan' => 'not_started',
+                'is_example' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -108,6 +111,7 @@ class AsesmenUserRoleSeeder extends Seeder
                 'urutan_asesor' => $index + 1, // 1, 2
                 'status_penawaran' => 'pending', // Pending karena AL biasanya setelah AK
                 'status_pekerjaan' => 'not_started',
+                'is_example' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -125,6 +129,7 @@ class AsesmenUserRoleSeeder extends Seeder
             'description' => 'Asesmen akreditasi Prodi ABCD untuk periode 2026-2030',
             'tanggal_mulai'   => now(),
             'tanggal_selesai' => now()->addMonths(2),
+            'is_example' => true,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -136,6 +141,7 @@ class AsesmenUserRoleSeeder extends Seeder
             'tanggal_mulai' => now(),
             'tanggal_selesai' => now()->addMonths(1),
             'status' => 'active',
+            'is_example' => true,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -147,6 +153,7 @@ class AsesmenUserRoleSeeder extends Seeder
             'tanggal_mulai' => now()->addMonth(),
             'tanggal_selesai' => now()->addMonths(2),
             'status' => 'active',
+            'is_example' => true,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -164,6 +171,7 @@ class AsesmenUserRoleSeeder extends Seeder
                 'urutan_asesor' => $index + 1,
                 'status_penawaran' => 'accepted',
                 'status_pekerjaan' => 'not_started',
+                'is_example' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -182,6 +190,7 @@ class AsesmenUserRoleSeeder extends Seeder
                 'urutan_asesor' => null,
                 'status_penawaran' => 'accepted',
                 'status_pekerjaan' => 'not_started',
+                'is_example' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -200,6 +209,7 @@ class AsesmenUserRoleSeeder extends Seeder
                 'urutan_asesor' => $index + 1,
                 'status_penawaran' => 'pending',
                 'status_pekerjaan' => 'not_started',
+                'is_example' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -217,6 +227,7 @@ class AsesmenUserRoleSeeder extends Seeder
             'description' => 'Contoh asesmen dengan 3 asesor untuk testing dynamic UI',
             'tanggal_mulai'   => now(),
             'tanggal_selesai' => now()->addMonths(2),
+            'is_example' => true,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -244,6 +255,7 @@ class AsesmenUserRoleSeeder extends Seeder
                 'urutan_asesor' => $index + 1, // 1, 2, 3
                 'status_penawaran' => 'accepted',
                 'status_pekerjaan' => 'not_started',
+                'is_example' => true,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -260,6 +272,7 @@ class AsesmenUserRoleSeeder extends Seeder
             'urutan_asesor' => null,
             'status_penawaran' => 'accepted',
             'status_pekerjaan' => 'not_started',
+            'is_example' => true,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

@@ -112,25 +112,6 @@
         </div>
 
         <div class="col mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Terverifikasi</h6>
-
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-1 fw-bold">{{ $stats['terverifikasi'] }}</h2>
-                            <small class="opacity-75">Pembayaran valid & disetujui oleh bagian keuangan</small>
-                        </div>
-
-                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
-                            <i class="bi bi-check-circle"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #868f96 0%, #596164 100%);">
                 <div class="card-body text-white">
                     <h6 class="mb-1 opacity-75">Upload Ulang</h6>
@@ -143,6 +124,24 @@
 
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
                             <i class="bi bi-arrow-repeat"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col mb-3">
+            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                <div class="card-body text-white">
+                    <h6 class="mb-1 opacity-75">Terverifikasi</h6>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-1 fw-bold">{{ $stats['terverifikasi'] }}</h2>
+                            <small class="opacity-75">Pembayaran valid & disetujui oleh bagian keuangan</small>
+                        </div>
+
+                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
+                            <i class="bi bi-check-circle"></i>
                         </div>
                     </div>
                 </div>

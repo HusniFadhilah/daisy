@@ -41,8 +41,10 @@
                     ];
 
                     // log AK terakhir (yang paling baru di fase AK)
-                    $lastAkLog = $pengajuan->statusLog
-                    ?->firstWhere(fn($log) => in_array($log->status_to, $akStatuses, true));
+                    $lastAkLog = $pengajuan->statusLog()
+                    ->whereIn('status_to', $akStatuses)
+                    ->orderByDesc('changed_at') // atau created_at, tapi changed_at lebih “event time”
+                    ->first();
 
                     // karena statusLog di-controller sudah orderBy(changed_at desc),
                     // firstWhere(...) akan ngambil yang paling baru.

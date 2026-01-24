@@ -15,6 +15,7 @@ use App\Models\JenjangPenilaian;
 use App\Models\PenilaianElemenAl;
 use App\Models\PenilaianImportLog;
 use Illuminate\Support\Facades\DB;
+use App\Models\PengajuanAkreditasi;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -81,8 +82,22 @@ class ALController extends Controller
                 'status_pekerjaan' => 'in_progress',
                 'started_at' => now(), // Opsional: track kapan mulai
             ]);
-            if ($assignment->asesmen->pengajuan)
-                $assignment->asesmen->pengajuan->checkUpdateStatusAKAL('al', 'status_asesor_in_progress');
+            $pengajuan = $assignment->asesmen->pengajuan;
+            if ($pengajuan) {
+                $statusFrom = $pengajuan->status;
+                $pengajuan->checkUpdateStatusAKAL('al', 'status_asesor_in_progress');
+                $pengajuan->statusLog()->firstOrCreate(
+                    [
+                        'status_from' => $statusFrom,
+                        'status_to'   => PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
+                    ],
+                    [
+                        'changed_by'  => Auth::id(),
+                        'keterangan'  => 'Asesor AL telah memulai proses penilaian lapangan',
+                        'changed_at'  => now(),
+                    ]
+                );
+            }
         }
 
         $asesmen = $assignment->asesmen;
@@ -310,8 +325,30 @@ class ALController extends Controller
                 'submitted_at' => now(),
             ]);
 
-            if ($assignment->asesmen->pengajuan)
-                $assignment->asesmen->pengajuan->checkUpdateStatusAKAL('al', 'status_asesor_selesai');
+            $pengajuan = $assignment->asesmen->pengajuan;
+            if ($pengajuan) {
+                // ada assignment yang status_pekerjaan-nya BUKAN approved?
+                $hasUnapproved = $pengajuan->assignments()
+                    ->where('status_pekerjaan', '!=', 'approved')
+                    ->exists();
+
+                if ($hasUnapproved) {
+                } else {
+                    $statusFrom = $pengajuan->status;
+                    $pengajuan->checkUpdateStatusAKAL('al', 'status_asesor_selesai');
+                    $pengajuan->statusLog()->firstOrCreate(
+                        [
+                            'status_from' => $statusFrom,
+                            'status_to'   => PengajuanAkreditasi::STATUS_AL_SELESAI,
+                        ],
+                        [
+                            'changed_by'  => Auth::id(),
+                            'keterangan'  => 'Seluruh asesor AL telah menyelesaikan proses penilaian lapangan',
+                            'changed_at'  => now(),
+                        ]
+                    );
+                }
+            }
 
             DB::commit();
 

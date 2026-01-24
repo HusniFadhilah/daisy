@@ -15,27 +15,182 @@
         </a>
     </div>
 
-    <!-- Alert untuk pengingat yang belum dilengkapi -->
-    @php
-    $pengingatBelumLengkap = $pengajuans->filter(function($p) {
-    return $p->status === 'pengingat_dikirim' && is_null($p->id_user_pengaju);
-    });
-    @endphp
-
-    @if($pengingatBelumLengkap->count() > 0)
-    <div class="alert alert-warning alert-permanent fade show" role="alert">
-        <i class="bi bi-exclamation-triangle"></i>
-        <strong>Perhatian!</strong> Anda memiliki {{ $pengingatBelumLengkap->count() }} pengingat akreditasi yang belum dilengkapi.
+    {{-- ========== SECTION PENGINGAT AKREDITASI ========== --}}
+    @if($pengingatBelumDirespon->count() > 0)
+    <div class="alert alert-warning alert-dismissible alert-permanent fade show mb-4" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-bell-fill me-2" style="font-size: 1.5rem;"></i>
+            <div>
+                <strong>Perhatian!</strong>
+                Anda memiliki <strong>{{ $pengingatBelumDirespon->count() }}</strong> pengingat akreditasi yang belum direspon.
+                <br>
+                <small>Silakan ajukan permohonan akreditasi untuk program studi yang dimaksud.</small>
+            </div>
+        </div>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
+
+    <div class="card mb-4 border-warning">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0">
+                <i class="bi bi-bell"></i> Pengingat Akreditasi
+                <span class="badge bg-danger ms-2 urgent-badge">{{ $pengingatBelumDirespon->count() }}</span>
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="accordion accordion-flush" id="accordionPengingat">
+                @foreach($pengingatBelumDirespon as $index => $pengingat)
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="heading{{ $pengingat->id }}">
+                        <button class="accordion-button {{ $index > 0 ? '' : '' }}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ $pengingat->id }}" aria-expanded="{{ $index === 0 ? 'false' : 'false' }}">
+                            <div class="d-flex justify-content-between align-items-center w-100 pe-3">
+                                <div>
+                                    <strong class="text-primary">{{ $pengingat->studyProgram->full_name }}</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        <i class="bi bi-building"></i> {{ $pengingat->studyProgram->university->name }}
+                                        •
+                                        <i class="bi bi-mortarboard"></i> {{ $pengingat->studyProgram->degreeLevel->name }}
+                                    </small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-warning text-dark pengingat-badge">
+                                        <i class="bi bi-clock"></i>
+                                        {{ $pengingat->tanggal_dikirim->diffForHumans() }}
+                                    </span>
+                                </div>
+                            </div>
+                        </button>
+                    </h2>
+                    <div id="collapse{{ $pengingat->id }}" class="accordion-collapse collapse {{ $index === 0 ? '' : '' }}" data-bs-parent="#accordionPengingat">
+                        <div class="accordion-body">
+                            <div class="row">
+                                <!-- Detail Pengingat -->
+                                <div class="col-lg-8">
+                                    <h6 class="fw-bold text-primary mb-3">
+                                        <i class="bi bi-info-circle"></i> Detail Pengingat
+                                    </h6>
+
+                                    <div class="table-responsive mb-3">
+                                        <table class="table table-sm table-borderless">
+                                            <tr>
+                                                <th width="35%">Program Studi</th>
+                                                <td>: {{ $pengingat->studyProgram->full_name }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Universitas</th>
+                                                <td>: {{ $pengingat->studyProgram->university->name }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Jenjang</th>
+                                                <td>: {{ $pengingat->studyProgram->degreeLevel->name }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Tahun Akreditasi</th>
+                                                <td>: <span class="badge bg-info">{{ $pengingat->tahun_akreditasi }}</span></td>
+                                            </tr>
+                                            <tr>
+                                                <th>Tanggal Dikirim</th>
+                                                <td>: {{ $pengingat->tanggal_dikirim->format('d F Y H:i') }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Dikirim Oleh</th>
+                                                <td>: {{ $pengingat->pengirim->name }} (DE)</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+
+                                    <!-- Pesan Pengingat -->
+                                    <div class="alert alert-info alert-permanent">
+                                        <h6 class="fw-bold mb-2">
+                                            <i class="bi bi-envelope-open"></i> Pesan Pengingat:
+                                        </h6>
+                                        <p class="mb-0" style="white-space: pre-wrap;">{{ $pengingat->pesan_pengingat }}</p>
+                                    </div>
+
+                                    @if($pengingat->email_terkirim_ke)
+                                    <div class="alert alert-success alert-permanent mb-0">
+                                        <small>
+                                            <i class="bi bi-check-circle"></i>
+                                            Email terkirim ke: {{ $pengingat->email_terkirim_ke }}
+                                        </small>
+                                    </div>
+                                    @endif
+                                </div>
+
+                                <!-- Form Response -->
+                                <div class="col-lg-4">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <h6 class="fw-bold text-success mb-3">
+                                                <i class="bi bi-send-check"></i> Respon Pengingat
+                                            </h6>
+
+                                            <form action="{{ route('pengajuan.respond-pengingat', $pengingat->id) }}" method="POST" enctype="multipart/form-data">
+                                                @csrf
+
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-bold">
+                                                        Jenis Akreditasi <span class="text-danger">*</span>
+                                                    </label>
+                                                    <select name="jenis_akreditasi" class="form-select @error('jenis_akreditasi') is-invalid @enderror" required>
+                                                        <option value="">-- Pilih Jenis --</option>
+                                                        <option value="baru" {{ old('jenis_akreditasi') == 'baru' ? 'selected' : '' }}>
+                                                            Akreditasi Baru
+                                                        </option>
+                                                        <option value="perpanjangan" {{ old('jenis_akreditasi') == 'perpanjangan' ? 'selected' : '' }}>
+                                                            Perpanjangan
+                                                        </option>
+                                                        <option value="menuju_unggul" {{ old('jenis_akreditasi') == 'menuju_unggul' ? 'selected' : '' }}>
+                                                            Akreditasi Menuju Unggul
+                                                        </option>
+                                                    </select>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-bold">
+                                                        Surat Permohonan <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="file" name="file_surat_permohonan" class="form-control" accept=".pdf" required>
+                                                    <small class="text-muted">Format: PDF, Max: 5MB</small>
+                                                </div>
+
+                                                <div class="alert alert-warning alert-permanent py-2">
+                                                    <small>
+                                                        <i class="bi bi-info-circle"></i>
+                                                        Dengan mengisi form ini, permohonan akreditasi akan langsung dibuat.
+                                                    </small>
+                                                </div>
+
+                                                <div class="d-grid gap-2">
+                                                    <button type="submit" class="btn btn-success">
+                                                        <i class="bi bi-send"></i> Kirim Permohonan
+                                                    </button>
+                                                    <a href="{{ route('pengajuan.create', ['id_pengingat' => $pengingat->id]) }}" class="btn btn-outline-primary btn-sm">
+                                                        <i class="bi bi-pencil-square"></i> Isi Form Lengkap
+                                                    </a>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+    </div>
     @endif
+    {{-- ========== END SECTION PENGINGAT ========== --}}
 
     <!-- Filter -->
     <div class="card mb-4">
         <div class="card-body">
             <form method="GET" class="row g-3">
                 <div class="col-md-4">
-                    <input type="text" name="search" class="form-control" placeholder="Cari nomor pengajuan..." value="{{ request('search') }}">
+                    <input type="text" name="search" class="form-control" placeholder="Cari nomor permohonan akreditasi..." value="{{ request('search') }}">
                 </div>
                 <div class="col-md-3">
                     <select name="status" class="form-select">

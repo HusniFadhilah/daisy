@@ -361,7 +361,19 @@ class PenugasanALController extends Controller
             $user = User::find($request->id_user);
 
             // Update status pengajuan (gunakan checkUpdateStatusAKAL)
+            $statusFrom = $pengajuan->status;
             $pengajuan->checkUpdateStatusAKAL('al', 'status_asesor_assigned');
+            $pengajuan->statusLog()->firstOrCreate(
+                [
+                    'status_from' => $statusFrom,
+                    'status_to'   => PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
+                ],
+                [
+                    'changed_by'  => Auth::id(),
+                    'keterangan'  => 'Penugasan asesor untuk asesmen lapangan telah dilakukan',
+                    'changed_at'  => now(),
+                ]
+            );
 
             // Send email
             try {
@@ -526,29 +538,30 @@ class PenugasanALController extends Controller
         $base = PengajuanAkreditasi::query()
             ->whereHas('statusLog', fn($q) => $q->whereIn('status_to', $alScopeStatuses));
 
+        // ✅ historical (status log)
         $total = (clone $base)->count();
-
-        $siapAL = (clone $base)
-            ->whereHas('statusLog', fn($q) => $q->where('status_to', PengajuanAkreditasi::STATUS_AK_DILAPORKAN))
-            ->whereDoesntHave('statusLog', fn($q) => $q->whereIn('status_to', [
-                PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
-                PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
-                PengajuanAkreditasi::STATUS_AL_SELESAI,
-                PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
-            ]))
-            ->count();
-
-        $sudahDitugaskan = (clone $base)
-            ->whereHas('statusLog', fn($q) => $q->whereIn('status_to', [
-                PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
-                PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
-                PengajuanAkreditasi::STATUS_AL_SELESAI,
-            ]))
-            ->whereHas('asesmen.asesmenLapangan')
-            ->count();
 
         $selesai = (clone $base)
             ->whereHas('statusLog', fn($q) => $q->where('status_to', PengajuanAkreditasi::STATUS_AL_DILAPORKAN))
+            ->count();
+
+        // ✅ snapshot (pengajuan_akreditasi.status)
+        // "Siap AL" = status saat ini masih AK_DILAPORKAN (belum masuk fase AL)
+        $siapAL = (clone $base)
+            ->where('status', PengajuanAkreditasi::STATUS_AK_DILAPORKAN)
+            ->count();
+
+        // "Sudah Ditugaskan" = status saat ini sudah masuk fase AL (assigned / in progress / selesai),
+        // dan punya asesmen lapangan
+        $sudahDitugaskan = (clone $base)
+            ->whereIn('status', [
+                PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
+                PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
+                PengajuanAkreditasi::STATUS_AL_SELESAI,
+                // opsional kalau mau dianggap sudah ditugaskan juga:
+                // PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
+            ])
+            ->whereHas('asesmen.asesmenLapangan')
             ->count();
 
         return [

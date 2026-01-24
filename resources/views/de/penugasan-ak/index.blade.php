@@ -64,7 +64,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-2 fw-bold">{{ $stats['total'] }}</h2>
-                            <small class="opacity-75">Siap untuk AK</small>
+                            <small class="opacity-75">Permohonan akreditasi PS yang telah memasuki tahap AK</small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
                             <i class="bi bi-clipboard-check"></i>

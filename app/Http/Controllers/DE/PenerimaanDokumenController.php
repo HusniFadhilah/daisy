@@ -504,37 +504,46 @@ class PenerimaanDokumenController extends Controller
      */
     private function calculateStatistics(): array
     {
-        // Ambil semua status log relevan
-        $logs = PengajuanStatusLog::whereIn('status_to', [
-            PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI,
-            PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
-            PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
-            PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
-            PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
-            PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,
-            PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
-        ])->get();
+        // 1) Snapshot dari tabel pengajuan_akreditasi (1 query)
+        $a = PengajuanAkreditasi::query()
+            ->selectRaw("
+            SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS total_menunggu_dokumen,
+            SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS total_dokumen_lengkap,
+            SUM(CASE WHEN status IN (?, ?) THEN 1 ELSE 0 END) AS total_dalam_validasi,
+            SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS total_perlu_revisi
+        ", [
+                PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI,
+                PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
+                PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
+                PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
+                PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,
+            ])
+            ->first();
 
-        // Group by pengajuan
-        $logsByPengajuan = $logs->groupBy('id_pengajuan');
-
-        $totalMenungguDokumen = $logsByPengajuan->filter(fn($l) => $l->pluck('status_to')->contains(PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI))->count();
-        $totalDokumenMasuk   = $logsByPengajuan->filter(fn($l) => $l->pluck('status_to')->contains(PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA))->count();
-        $totalDokumenLengkap = $logsByPengajuan->filter(fn($l) => $l->pluck('status_to')->contains(PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI))->count();
-        $totalDalamValidasi  = $logsByPengajuan->filter(fn($l) => $l->pluck('status_to')->intersect([
-            PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
-            PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
-        ])->isNotEmpty())->count();
-        $totalPerluRevisi    = $logsByPengajuan->filter(fn($l) => $l->pluck('status_to')->contains(PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED))->count();
-        $totalTervalidasi    = $logsByPengajuan->filter(fn($l) => $l->pluck('status_to')->contains(PengajuanAkreditasi::STATUS_BORANG_VALIDATED))->count();
+        // 2) Histori dari tabel log (1 query) — hitung DISTINCT per id_pengajuan
+        // Join ke pengajuan_akreditasi supaya benar-benar "pengajuan akreditasi saja"
+        $l = PengajuanStatusLog::query()
+            ->join('pengajuan_akreditasi as pa', 'pa.id', '=', 'pengajuan_status_log.id_pengajuan')
+            ->whereIn('pengajuan_status_log.status_to', [
+                PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA, // dokumen masuk
+                PengajuanAkreditasi::STATUS_BORANG_VALIDATED,      // tervalidasi
+            ])
+            ->selectRaw("
+            COUNT(DISTINCT CASE WHEN pengajuan_status_log.status_to = ? THEN pengajuan_status_log.id_pengajuan END) AS total_dokumen_masuk,
+            COUNT(DISTINCT CASE WHEN pengajuan_status_log.status_to = ? THEN pengajuan_status_log.id_pengajuan END) AS total_tervalidasi
+        ", [
+                PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
+                PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
+            ])
+            ->first();
 
         return [
-            'total_menunggu_dokumen' => $totalMenungguDokumen,
-            'total_dokumen_masuk'    => $totalDokumenMasuk,
-            'total_dokumen_lengkap'  => $totalDokumenLengkap,
-            'total_dalam_validasi'   => $totalDalamValidasi,
-            'total_perlu_revisi'     => $totalPerluRevisi,
-            'total_tervalidasi'      => $totalTervalidasi,
+            'total_menunggu_dokumen' => (int) ($a->total_menunggu_dokumen ?? 0),
+            'total_dokumen_masuk'    => (int) ($l->total_dokumen_masuk ?? 0),
+            'total_dokumen_lengkap'  => (int) ($a->total_dokumen_lengkap ?? 0),
+            'total_dalam_validasi'   => (int) ($a->total_dalam_validasi ?? 0),
+            'total_perlu_revisi'     => (int) ($a->total_perlu_revisi ?? 0),
+            'total_tervalidasi'      => (int) ($l->total_tervalidasi ?? 0),
         ];
     }
 

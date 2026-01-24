@@ -2,7 +2,7 @@
 
 namespace App\Mail;
 
-use App\Models\PengajuanAkreditasi;
+use App\Models\StudyProgram;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
@@ -11,12 +11,12 @@ class PengingatAkreditasi extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $pengajuan;
+    public $studyProgram;
     public $pesanPengingat;
 
-    public function __construct(PengajuanAkreditasi $pengajuan, $pesanPengingat)
+    public function __construct(StudyProgram $studyProgram, $pesanPengingat)
     {
-        $this->pengajuan = $pengajuan;
+        $this->studyProgram = $studyProgram;
         $this->pesanPengingat = $pesanPengingat;
     }
 

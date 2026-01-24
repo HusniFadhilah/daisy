@@ -237,15 +237,15 @@
                         <div class="progress-stats">
                             <div class="stat-item">
                                 <span class="stat-number" id="progressCompletedElemen">{{ $progressData['completed_elemen'] }}</span>
-                                <span class="stat-label">Review Elemen Lengkap</span>
+                                <span class="stat-label">Elemen Lengkap</span>
                             </div>
                             <div class="stat-item">
                                 <span class="stat-number" id="progressRemainingElemen">{{ $progressData['total_elemen'] - $progressData['completed_elemen'] }}</span>
-                                <span class="stat-label">Review Elemen Tersisa</span>
+                                <span class="stat-label">Elemen Tersisa</span>
                             </div>
                             <div class="stat-item">
                                 <span class="stat-number" id="progressTotalElemen">{{ $progressData['total_elemen'] }}</span>
-                                <span class="stat-label">Total Review Elemen</span>
+                                <span class="stat-label">Total Elemen</span>
                             </div>
                         </div>
                     </div>
@@ -254,7 +254,7 @@
                         <div class="stat-circle">
                             <div class="circle-content">
                                 <h2 class="mb-0" id="progressCountElemen">{{ $progressData['completed_elemen'] }}/{{ $progressData['total_elemen'] }}</h2>
-                                <small>Review Elemen Lengkap</small>
+                                <small>Elemen Lengkap</small>
                             </div>
                         </div>
                     </div>
@@ -674,7 +674,7 @@
                     </button>
                     <div class="d-flex gap-2 align-items-center">
                         {{-- Elemen Progress --}}
-                        <span class="badge {{ $kProgress['completed_elemen'] === $kProgress['total_elemen'] ? 'bg-success' : 'bg-info' }} kriteria-progress-elemen" data-kriteria-id="{{ $kriteria->id }}" title="Review Elemen Lengkap">
+                        <span class="badge {{ $kProgress['completed_elemen'] === $kProgress['total_elemen'] ? 'bg-success' : 'bg-info' }} kriteria-progress-elemen" data-kriteria-id="{{ $kriteria->id }}" title="Elemen Lengkap">
                             <i class="bi bi-check-square"></i>
                             {{ $kProgress['completed_elemen'] }}/{{ $kProgress['total_elemen'] }}
                         </span>

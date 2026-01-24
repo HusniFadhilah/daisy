@@ -30,7 +30,7 @@ class PengajuanAkreditasi extends Model
 
     // Step 4
     public const STATUS_MENUNGGU_PEMBAYARAN = 'menunggu_pembayaran';
-    public const STATUS_PEMBAYARAN_DITERIMA = 'pembayaran_diterima';
+    public const STATUS_PEMBAYARAN_DITERIMA = 'pembayaran_diterima'; // tdk terpakai
     public const STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN = 'menunggu_verifikasi_pembayaran';
     public const STATUS_PEMBAYARAN_DIVERIFIKASI = 'pembayaran_diverifikasi';
 
@@ -127,6 +127,8 @@ class PengajuanAkreditasi extends Model
         'tanggal_pengumuman',
         'tanggal_pelaporan_hasil',
         'tanggal_penyimpanan',
+        'is_active',
+        'is_example'
     ];
 
     // ============================================
@@ -167,6 +169,21 @@ class PengajuanAkreditasi extends Model
         'tanggal_pelaporan_hasil' => 'datetime',
         'tanggal_penyimpanan' => 'datetime',
     ];
+
+    public function scopeNonExample($query)
+    {
+        return $query->where('is_example', false);
+    }
+
+    public function scopeWithExample($query)
+    {
+        return $query->whereIn('is_example', [false, true]);
+    }
+
+    public function scopeExample($query)
+    {
+        return $query->where('is_example', true);
+    }
 
     // ============================================
     // RELATIONSHIPS (unchanged)
@@ -211,6 +228,11 @@ class PengajuanAkreditasi extends Model
         return $this->hasMany(BorangData::class, 'id_pengajuan');
     }
 
+    public function pengingatAkreditasi()
+    {
+        return $this->hasOne(PengingatAkreditasi::class, 'id_pengajuan');
+    }
+
     public function statusLog()
     {
         return $this->hasMany(PengajuanStatusLog::class, 'id_pengajuan');
@@ -220,6 +242,12 @@ class PengajuanAkreditasi extends Model
     {
         return $this->hasOne(PengajuanStatusLog::class, 'id_pengajuan')
             ->latestOfMany('created_at'); // atau 'id' kalau id selalu urut waktu
+    }
+
+    public function latestChangedAtStatusLog()
+    {
+        return $this->hasOne(PengajuanStatusLog::class, 'id_pengajuan')
+            ->latestOfMany('changed_at'); // atau 'id' kalau id selalu urut waktu
     }
 
     public function lastBorangValidationLog()
@@ -267,6 +295,18 @@ class PengajuanAkreditasi extends Model
             'id',
             'id'
         )->where('jenis_asesmen', 'dokumen');
+    }
+
+    public function assignments()
+    {
+        return $this->hasManyThrough(
+            AsesmenUserRole::class,
+            Asesmen::class,
+            'id_pengajuan',
+            'id_asesmen',
+            'id',
+            'id'
+        );
     }
 
     // ============================================

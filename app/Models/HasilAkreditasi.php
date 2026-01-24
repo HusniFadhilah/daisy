@@ -56,6 +56,11 @@ class HasilAkreditasi extends Model
      * ✅ Konstanta kriteria yang harus ada pelampauan
      */
     public const KRITERIA_REQUIRED = ['D', 'E', 'P', 'I', 'L', 'A', 'R'];
+    public const TIDAK_TERAKREDITASI = 'Tidak Terakreditasi';
+    public const SEMENTARA_2 = 'Terakreditasi Sementara (2 Tahun)';
+    public const TERAKREDITASI_5 = 'Terakreditasi (5 Tahun)';
+    public const UNGGUL_2_SYARAT = 'Terakreditasi Unggul 2 Tahun (dengan Syarat)';
+    public const UNGGUL_5 = 'Terakreditasi Unggul (5 Tahun)';
 
     // Relations
     public function pengajuan()
@@ -91,11 +96,29 @@ class HasilAkreditasi extends Model
     // Helpers
     public function getPeringkatFromSkor(float $skor): string
     {
-        // Standar LAMDEPILAR (sesuaikan dengan aturan resmi)
-        if ($skor >= 361) return 'Unggul';
-        if ($skor >= 301) return 'Baik Sekali';
-        if ($skor >= 200) return 'Baik';
-        return 'Tidak Terakreditasi';
+        if ($skor <= 250) {
+            return 'Tidak Terakreditasi';
+        }
+
+        if ($skor <= 300) {
+            return 'Terakreditasi Sementara (2 Tahun)';
+        }
+
+        if ($skor <= 350) {
+            return 'Terakreditasi (5 Tahun)';
+        }
+
+        // 351–360
+        if ($skor <= 360) {
+            return $this->memenuhi_syarat_unggul
+                ? 'Terakreditasi Unggul 2 Tahun (dengan Syarat)'
+                : 'Terakreditasi (5 Tahun)';
+        }
+
+        // 361–400
+        return $this->memenuhi_syarat_unggul
+            ? 'Terakreditasi Unggul (5 Tahun)'
+            : 'Terakreditasi (5 Tahun)';
     }
 
     public static function getStatusHasilAkreditasi($asesmen): string
@@ -177,18 +200,28 @@ class HasilAkreditasi extends Model
      */
     public function getPeringkatFromSkorAL(float $skor): string
     {
-        // Jika skor >= 361, check syarat Unggul
-        if ($skor >= 361) {
-            if ($this->memenuhi_syarat_unggul) {
-                return 'Unggul';
-            } else {
-                // Tidak memenuhi syarat pelampauan, turun ke Baik Sekali
-                return 'Baik Sekali';
-            }
+        if ($skor <= 250) {
+            return 'Tidak Terakreditasi';
         }
 
-        if ($skor >= 301) return 'Baik Sekali';
-        if ($skor >= 200) return 'Baik';
-        return 'Tidak Terakreditasi';
+        if ($skor <= 300) {
+            return 'Terakreditasi Sementara (2 Tahun)';
+        }
+
+        if ($skor <= 350) {
+            return 'Terakreditasi (5 Tahun)';
+        }
+
+        // Skor 351–360
+        if ($skor <= 360) {
+            return $this->memenuhi_syarat_unggul
+                ? 'Terakreditasi Unggul 2 Tahun (dengan Syarat)'
+                : 'Terakreditasi (5 Tahun)';
+        }
+
+        // Skor 361–400
+        return $this->memenuhi_syarat_unggul
+            ? 'Terakreditasi Unggul (5 Tahun)'
+            : 'Terakreditasi (5 Tahun)';
     }
 }

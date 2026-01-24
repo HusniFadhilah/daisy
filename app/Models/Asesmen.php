@@ -16,12 +16,29 @@ class Asesmen extends Model
         'tanggal_mulai',
         'tanggal_selesai',
         'status',
+        'is_active',
+        'is_example'
     ];
 
     protected $casts = [
         'tanggal_mulai' => 'date',
         'tanggal_selesai' => 'date',
     ];
+
+    public function scopeNonExample($query)
+    {
+        return $query->where('is_example', false);
+    }
+
+    public function scopeWithExample($query)
+    {
+        return $query->whereIn('is_example', [false, true]);
+    }
+
+    public function scopeExample($query)
+    {
+        return $query->where('is_example', true);
+    }
 
     public function pengajuan()
     {

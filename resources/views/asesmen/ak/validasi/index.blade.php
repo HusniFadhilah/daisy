@@ -65,7 +65,7 @@
 <div class="container-fluid py-3">
     <!-- Header -->
     <div class="mb-4">
-        <h2><i class="bi bi-check2-square"></i> Dashboard Validasi</h2>
+        <h4><i class="bi bi-check2-square"></i> Dashboard Validasi</h4>
         <p class="text-muted mb-0">Validasi penilaian asesor untuk asesmen yang ditugaskan</p>
     </div>
 

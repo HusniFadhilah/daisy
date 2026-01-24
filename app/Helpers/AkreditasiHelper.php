@@ -10,21 +10,34 @@ class AkreditasiHelper
     public static function getPeringkatRequirements(string $peringkat): array
     {
         return match ($peringkat) {
-            'Unggul' => [
-                'Skor AL minimal 361',
+
+            'Tidak Terakreditasi' => [
+                'Skor AL 0–250',
+            ],
+
+            'Terakreditasi Sementara (2 Tahun)' => [
+                'Skor AL 251–300',
+            ],
+
+            'Terakreditasi (5 Tahun)' => [
+                'Skor AL 301–350',
+                'Atau skor AL ≥ 351 tetapi tidak memenuhi syarat unggul',
+            ],
+
+            'Terakreditasi Unggul 2 Tahun (dengan Syarat)' => [
+                'Skor AL 351–360',
+                'Memenuhi syarat unggul',
                 'Setiap kriteria (D, E, P, I, L, A, R) memiliki minimal 1 elemen dengan skor 4 (Pelampauan Standar)',
                 'Semua elemen lain minimal skor 3 (Memenuhi)',
             ],
-            'Baik Sekali' => [
-                'Skor AL antara 301-360',
-                'Atau skor >= 361 tapi tidak memenuhi syarat pelampauan standar',
+
+            'Terakreditasi Unggul (5 Tahun)' => [
+                'Skor AL 361–400',
+                'Memenuhi syarat unggul',
+                'Setiap kriteria (D, E, P, I, L, A, R) memiliki minimal 1 elemen dengan skor 4 (Pelampauan Standar)',
+                'Semua elemen lain minimal skor 3 (Memenuhi)',
             ],
-            'Baik' => [
-                'Skor AL antara 200-300',
-            ],
-            'Tidak Terakreditasi' => [
-                'Skor AL di bawah 200',
-            ],
+
             default => [],
         };
     }

@@ -46,10 +46,11 @@ return new class extends Migration
             // Hasil Final (kombinasi AK + AL atau AL saja)
             $table->decimal('skor_final', 8, 2)->nullable()->comment('Skor akhir (0-400)');
             $table->enum('peringkat_akreditasi', [
-                'Unggul',
-                'Baik Sekali',
-                'Baik',
-                'Tidak Terakreditasi'
+                'Tidak Terakreditasi',
+                'Terakreditasi Sementara (2 Tahun)',
+                'Terakreditasi (5 Tahun)',
+                'Terakreditasi Unggul 2 Tahun (dengan Syarat)',
+                'Terakreditasi Unggul (5 Tahun)'
             ])->nullable();
 
             $table->boolean('memenuhi_syarat_unggul')->default(false)->comment('Apakah memenuhi syarat pelampauan standar untuk Unggul');

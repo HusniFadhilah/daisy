@@ -676,113 +676,64 @@
             </div>
             @endif
 
-            <!-- ACTION: Upload Borang Final -->
-            @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_PEMBAYARAN_DITERIMA && $pengajuan->pembayaran && $pengajuan->pembayaran->status_pembayaran === 'terverifikasi')
-            {{-- <div class="card action-card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="bi bi-file-check text-primary"></i>
-                        Aksi Diperlukan: Upload Borang Final
+            <hr>
+
+            <!-- Informasi Permohonan akreditasi -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle"></i> Informasi Permohonan Akreditasi
                     </h5>
-                    <p class="mb-3">
-                        Pembayaran telah diverifikasi. Silakan upload borang final untuk dilanjutkan ke tahap AK.
-                    </p>
-
-                    <div class="alert alert-warning alert-permanent">
-                        <i class="bi bi-exclamation-triangle"></i>
-                        <strong>Perhatian:</strong> Pastikan borang final sudah lengkap dan tidak ada revisi.
-                    </div>
-
-                    <form action="{{ route('pengajuan.upload-final', $pengajuan->id) }}" method="POST" enctype="multipart/form-data">
-            @csrf
-            <div class="row g-3">
-                <div class="col-md-8">
-                    <label class="form-label fw-bold">Borang Final (DOCX)</label>
-                    <input type="file" name="borang_final" class="form-control @error('borang_final') is-invalid @enderror" accept=".docx" required>
-                    <small class="text-muted">Format: DOCX | Max: 10 MB</small>
-                    @error('borang_final')
-                    <span class="invalid-feedback" role="alert">
-                        {{ $message }}
-                    </span>
-                    @enderror
                 </div>
-                <div class="col-md-12">
-                    <label class="form-label fw-bold">Keterangan</label>
-                    <textarea name="keterangan" class="form-control @error('keterangan') is-invalid @enderror" rows="2"></textarea>
-                    @error('keterangan')
-                    <span class="invalid-feedback" role="alert">
-                        {{ $message }}
-                    </span>
-                    @enderror
-                </div>
-                <div class="col-md-12">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-upload"></i> Upload Borang Final
-                    </button>
-                </div>
-            </div>
-            </form>
-        </div>
-    </div> --}}
-    @endif
-    <hr>
-
-    <!-- Informasi Permohonan akreditasi -->
-    <div class="card mb-4">
-        <div class="card-header bg-light">
-            <h5 class="mb-0">
-                <i class="bi bi-info-circle"></i> Informasi Permohonan Akreditasi
-            </h5>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="text-muted small">Nomor Permohonan Akreditasi</label>
-                    <p class="fw-bold mb-0">{{ $pengajuan->nomor_pengajuan }}</p>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="text-muted small">Program Studi</label>
-                    <p class="fw-bold mb-0">{{ $pengajuan->studyProgram->name }}</p>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="text-muted small">Universitas/Institut</label>
-                    <p class="fw-bold mb-0">{{ $pengajuan->studyProgram->university->name }}</p>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="text-muted small">Jenjang</label>
-                    <p class="fw-bold mb-0">{{ $pengajuan->studyProgram->degreeLevel->name }}</p>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="text-muted small">Tahun Akreditasi</label>
-                    <p class="fw-bold mb-0">{{ $pengajuan->tahun_akreditasi }}</p>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="text-muted small">Jenis Akreditasi</label>
-                    <p class="fw-bold mb-0">{{ $pengajuan->jenis_akreditasi_label }}</p>
-                </div>
-                @if($pengajuan->pengaju)
-                <div class="col-md-6 mb-3">
-                    <label class="text-muted small">Pengaju</label>
-                    <p class="fw-bold mb-0">{{ $pengajuan->pengaju->name }}</p>
-                    <small class="text-wrap">{{ $pengajuan->pengaju->email }}</small>
-                </div>
-                @endif
-                {{-- <div class="col-md-6 mb-3">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Nomor Permohonan Akreditasi</label>
+                            <p class="fw-bold mb-0">{{ $pengajuan->nomor_pengajuan }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Program Studi</label>
+                            <p class="fw-bold mb-0">{{ $pengajuan->studyProgram->name }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Universitas/Institut</label>
+                            <p class="fw-bold mb-0">{{ $pengajuan->studyProgram->university->name }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Jenjang</label>
+                            <p class="fw-bold mb-0">{{ $pengajuan->studyProgram->degreeLevel->name }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Tahun Akreditasi</label>
+                            <p class="fw-bold mb-0">{{ $pengajuan->tahun_akreditasi }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Jenis Akreditasi</label>
+                            <p class="fw-bold mb-0">{{ $pengajuan->jenis_akreditasi_label }}</p>
+                        </div>
+                        @if($pengajuan->pengaju)
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Pengaju</label>
+                            <p class="fw-bold mb-0">{{ $pengajuan->pengaju->name }}</p>
+                            <small class="text-wrap">{{ $pengajuan->pengaju->email }}</small>
+                        </div>
+                        @endif
+                        {{-- <div class="col-md-6 mb-3">
                             <label class="text-muted small">DE</label>
                             <p class="fw-bold mb-0">{{ $pengajuan->deskEvaluator->name ?? 'Belum ditugaskan' }}</p>
-            </div> --}}
+                    </div> --}}
+                </div>
+
+                @if($pengajuan->catatan_pengaju)
+                <hr>
+                <label class="text-muted small">Catatan Pengaju</label>
+                <p class="mb-0">{{ $pengajuan->catatan_pengaju }}</p>
+                @endif
+            </div>
         </div>
 
-        @if($pengajuan->catatan_pengaju)
-        <hr>
-        <label class="text-muted small">Catatan Pengaju</label>
-        <p class="mb-0">{{ $pengajuan->catatan_pengaju }}</p>
-        @endif
-    </div>
-</div>
-
-<!-- Review Kesiapan -->
-{{-- @if($pengajuan->reviewKesiapan->count() > 0)
+        <!-- Review Kesiapan -->
+        {{-- @if($pengajuan->reviewKesiapan->count() > 0)
         <div class="card mb-4">
             <div class="card-header bg-light">
                 <h5 class="mb-0">
@@ -792,31 +743,31 @@
             <div class="card-body">
                 @foreach($pengajuan->reviewKesiapan->sortByDesc('tanggal_review') as $review)
                 <div class="mb-3 pb-3 {{ !$loop->last ? 'border-bottom' : '' }}">
-<div class="d-flex justify-content-between align-items-start mb-2">
-    <div>
-        <span class="badge {{ $review->hasil_review === 'siap' ? 'bg-success' : 'bg-danger' }}">
-            {{ $review->hasil_review === 'siap' ? 'SIAP' : 'BELUM SIAP' }}
-        </span>
-        <small class="text-muted ms-2">Versi {{ $review->versi_review }}</small>
-    </div>
-    <small class="text-muted">
-        {{ $review->tanggal_review->format('d M Y H:i') }}
-    </small>
-</div>
-<p class="mb-2"><strong>Reviewer:</strong> {{ $review->reviewer->name }}</p>
-<p class="mb-0"><strong>Catatan:</strong></p>
-<p class="text-muted">{{ $review->catatan_review }}</p>
+        <div class="d-flex justify-content-between align-items-start mb-2">
+            <div>
+                <span class="badge {{ $review->hasil_review === 'siap' ? 'bg-success' : 'bg-danger' }}">
+                    {{ $review->hasil_review === 'siap' ? 'SIAP' : 'BELUM SIAP' }}
+                </span>
+                <small class="text-muted ms-2">Versi {{ $review->versi_review }}</small>
+            </div>
+            <small class="text-muted">
+                {{ $review->tanggal_review->format('d M Y H:i') }}
+            </small>
+        </div>
+        <p class="mb-2"><strong>Reviewer:</strong> {{ $review->reviewer->name }}</p>
+        <p class="mb-0"><strong>Catatan:</strong></p>
+        <p class="text-muted">{{ $review->catatan_review }}</p>
 
-@if($review->checklist_kesiapan)
-<p class="mb-1"><strong>Checklist:</strong></p>
-<ul>
-    @foreach($review->checklist_kesiapan as $item)
-    <li>{{ $item }}</li>
+        @if($review->checklist_kesiapan)
+        <p class="mb-1"><strong>Checklist:</strong></p>
+        <ul>
+            @foreach($review->checklist_kesiapan as $item)
+            <li>{{ $item }}</li>
+            @endforeach
+        </ul>
+        @endif
+    </div>
     @endforeach
-</ul>
-@endif
-</div>
-@endforeach
 </div>
 </div>
 @endif --}}

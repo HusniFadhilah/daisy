@@ -39,6 +39,8 @@ return new class extends Migration
             // Status
             $table->enum('status', ['draft', 'active', 'completed', 'archived'])
                 ->default('draft');
+            $table->boolean('is_active')->default(true)->index();
+            $table->boolean('is_example')->default(false)->index();
 
             // Index
             $table->index('status');
@@ -79,6 +81,8 @@ return new class extends Migration
                 ->onDelete('set null')
                 ->comment('Who completed this AK');
 
+            $table->boolean('is_active')->default(true)->index();
+            $table->boolean('is_example')->default(false)->index();
             // Timestamps
             $table->timestamps();
 
@@ -136,6 +140,8 @@ return new class extends Migration
             $table->timestamp('completed_at')->nullable()->comment('When AL was completed');
             $table->foreignId('completed_by')->nullable()->constrained('users')->onDelete('set null')->comment('Who completed this AL');
 
+            $table->boolean('is_active')->default(true)->index();
+            $table->boolean('is_example')->default(false)->index();
             // Timestamps
             $table->timestamps();
 
@@ -200,6 +206,8 @@ return new class extends Migration
             $table->index(['id_asesmen_kecukupan', 'id_role']);
             $table->index(['id_asesmen_lapangan', 'id_role']);
             $table->index('urutan_asesor');
+            $table->boolean('is_active')->default(true)->index();
+            $table->boolean('is_example')->default(false)->index();
             $table->unique(
                 ['id_asesmen', 'id_user', 'jenis_asesmen'],
                 'unique_asesmen_user_borang'

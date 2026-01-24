@@ -411,35 +411,37 @@ class PelaksanaanALController extends Controller
         $base = PengajuanAkreditasi::query()
             ->whereHas('statusLog', fn($q) => $q->whereIn('status_to', $alStatuses));
 
+        // ✅ historical (status log)
         $total = (clone $base)->count();
 
-        $sedangVisitasi = (clone $base)
-            ->whereHas('statusLog', fn($q) => $q->whereIn('status_to', [
-                PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
-                PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
-            ]))
+        $selesai = (clone $base)
+            ->whereHas('statusLog', fn($q) => $q->where('status_to', PengajuanAkreditasi::STATUS_AL_DILAPORKAN))
             ->count();
 
+        // ✅ snapshot (pengajuan_akreditasi.status)
+        $sedangVisitasi = (clone $base)
+            ->whereIn('status', [
+                PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
+                PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
+            ])
+            ->count();
+
+        // Perlu validator: status saat ini AL_SELESAI dan belum ada validator
         $perluValidator = (clone $base)
-            ->whereHas('statusLog', fn($q) => $q->where('status_to', PengajuanAkreditasi::STATUS_AL_SELESAI))
-            ->whereDoesntHave('statusLog', fn($q) => $q->where('status_to', PengajuanAkreditasi::STATUS_AL_DILAPORKAN))
+            ->where('status', PengajuanAkreditasi::STATUS_AL_SELESAI)
             ->whereDoesntHave('asesmen.asesmenUserRoles', function ($q) {
                 $q->where('jenis_asesmen', 'al')
                     ->whereHas('role_selected', fn($r) => $r->where('name', 'validator'));
             })
             ->count();
 
+        // Sedang pelaporan: status saat ini AL_SELESAI dan sudah ada validator
         $sedangPelaporan = (clone $base)
-            ->whereHas('statusLog', fn($q) => $q->where('status_to', PengajuanAkreditasi::STATUS_AL_SELESAI))
-            ->whereDoesntHave('statusLog', fn($q) => $q->where('status_to', PengajuanAkreditasi::STATUS_AL_DILAPORKAN))
+            ->where('status', PengajuanAkreditasi::STATUS_AL_SELESAI)
             ->whereHas('asesmen.asesmenUserRoles', function ($q) {
                 $q->where('jenis_asesmen', 'al')
                     ->whereHas('role_selected', fn($r) => $r->where('name', 'validator'));
             })
-            ->count();
-
-        $selesai = (clone $base)
-            ->whereHas('statusLog', fn($q) => $q->where('status_to', PengajuanAkreditasi::STATUS_AL_DILAPORKAN))
             ->count();
 
         return [

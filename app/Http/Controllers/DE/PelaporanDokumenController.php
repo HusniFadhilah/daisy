@@ -28,7 +28,11 @@ class PelaporanDokumenController extends Controller
             'studyProgram.degreeLevel',
 
             // kalau mau ditampilkan juga di table
-            'latestStatusLog',
+            // kalau mau ambil log terkait pelaporan di table
+            'statusLog' => function ($q) use ($statusTarget) {
+                $q->whereIn('status_to', $statusTarget)
+                    ->orderBy('changed_at', 'desc');
+            },
 
             'asesmen.asesmenUserRoles' => function ($q) {
                 $q->where('jenis_asesmen', 'dokumen')
@@ -43,8 +47,11 @@ class PelaporanDokumenController extends Controller
             }
         ])
             // ✅ filter pakai status TERAKHIR dari PengajuanStatusLog
-            ->whereHas('latestStatusLog', function ($q) use ($statusTarget) {
-                $q->whereIn('status_to', $statusTarget);
+            ->whereExists(function ($q) use ($statusTarget) {
+                $q->select(DB::raw(1))
+                    ->from('pengajuan_status_log as l')
+                    ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
+                    ->whereIn('l.status_to', $statusTarget);
             });
 
         // Filter by university
@@ -209,7 +216,7 @@ class PelaporanDokumenController extends Controller
         // Menunggu finalisasi:
         // pernah mencapai VALIDATED atau FINAL_DITERIMA (via riwayat) dan sudah ada dokumen aktif
         $menungguFinalisasi = PengajuanAkreditasi::query()
-            ->whereHas('statusLog', function ($q) {
+            ->whereHas('latestStatusLog', function ($q) {
                 $q->whereIn('status_to', [
                     PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
                     PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,

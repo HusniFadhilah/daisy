@@ -235,7 +235,7 @@ class PenugasanAKController extends Controller
             if (!$pengajuan->asesmen) {
                 $asesmen = Asesmen::create([
                     'name' => 'Asesmen - ' . $pengajuan->studyProgram->name,
-                    'code' => 'LAMDEPILAR-' . $pengajuan->id . '-' . now()->format('YmdHis'),
+                    'code' => $pengajuan->code,
                     'id_program_studi' => $pengajuan->id_program_studi,
                     'id_pengajuan' => $pengajuan->id,
                     'tanggal_mulai' => $tanggalMulai,
@@ -387,7 +387,19 @@ class PenugasanAKController extends Controller
             $missingRequirements = $asesmenKecukupan->getMissingRequirements();
 
             // ✅ Update status pengajuan (gunakan checkUpdateStatusAKAL)
+            $statusFrom = $pengajuan->status;
             $pengajuan->checkUpdateStatusAKAL('ak', 'status_asesor_assigned');
+            $pengajuan->statusLog()->firstOrCreate(
+                [
+                    'status_from' => $statusFrom,
+                    'status_to'   => PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
+                ],
+                [
+                    'changed_by'  => Auth::id(),
+                    'keterangan'  => 'Penugasan asesor untuk asesmen kecukupan telah dilakukan',
+                    'changed_at'  => now(),
+                ]
+            );
 
             // Send email
             try {

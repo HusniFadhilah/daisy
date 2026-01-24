@@ -269,9 +269,11 @@ $authUser = Auth::user();
                             <td>
                                 @if($assignment->status_penawaran === 'accepted')
                                 @if($authUser->role_selected == 'asesor')
+                                @if (in_array($jenisAsesmen,['ak','al']))
                                 <a href="{{ route($jenisAsesmen.'.berkas.show',$assignment->id_asesmen) }}" class="btn btn-sm btn-outline-primary">
                                     <i class="bi bi-arrow-right"></i> Lihat Penilaian
                                 </a>
+                                @endif
                                 @elseif($authUser->role_selected == 'validator')
                                 @if ($jenisAsesmen == 'ak')
                                 <a href="{{ route($jenisAsesmen.'.validasi.asesor', ['idAsesmen' => $assignment['asesmen']->id, 'jenisAsesmen' => 'ak']) }}" class="btn btn-sm btn-outline-primary">

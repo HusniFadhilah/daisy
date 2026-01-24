@@ -110,6 +110,17 @@ class StudyProgram extends Model
         return $query->where('is_example', true);
     }
 
+    public function pengingatAkreditasi()
+    {
+        return $this->hasMany(PengingatAkreditasi::class, 'id_program_studi');
+    }
+
+    public function pengingatAkreditasiTerbaru()
+    {
+        return $this->hasOne(PengingatAkreditasi::class, 'id_program_studi')
+            ->latestOfMany('tanggal_dikirim');
+    }
+
     // protected static function booted()
     // {
     //     static::addGlobalScope('exclude_example', function (Builder $builder) {

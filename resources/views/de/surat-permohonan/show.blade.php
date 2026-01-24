@@ -105,7 +105,7 @@
                             </div>
                         </div>
                         <div>
-                            <a href="{{ route('de.surat-permohonan.download', $pengajuan->id) }}" class="btn btn-primary btn-sm">
+                            <a href="{{ $suratPermohonan->download_url }}" class="btn btn-primary btn-sm">
                                 <i class="bi bi-download"></i> Download
                             </a>
                         </div>

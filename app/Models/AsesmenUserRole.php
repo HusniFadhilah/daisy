@@ -21,7 +21,9 @@ class AsesmenUserRole extends Model
         'status_pekerjaan',
         'submitted_at',
         'approved_at',
-        'approved_by'
+        'approved_by',
+        'is_active',
+        'is_example'
     ];
 
     protected $casts = [
@@ -127,6 +129,21 @@ class AsesmenUserRole extends Model
             'button_disabled' => true,
         ],
     ];
+
+    public function scopeNonExample($query)
+    {
+        return $query->where('is_example', false);
+    }
+
+    public function scopeWithExample($query)
+    {
+        return $query->whereIn('is_example', [false, true]);
+    }
+
+    public function scopeExample($query)
+    {
+        return $query->where('is_example', true);
+    }
 
     public function asesmen()
     {

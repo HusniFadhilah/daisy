@@ -9,10 +9,11 @@ use App\Models\Indikator;
 use Illuminate\Http\Request;
 use App\Models\ElemenStandar;
 use App\Models\AsesmenUserRole;
-use App\Models\PenilaianElemenAk;
 use App\Models\JenjangPenilaian;
+use App\Models\PenilaianElemenAk;
 use App\Models\PenilaianImportLog;
 use Illuminate\Support\Facades\DB;
+use App\Models\PengajuanAkreditasi;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -78,8 +79,22 @@ class AKController extends Controller
                 'status_pekerjaan' => 'in_progress',
                 'started_at' => now(), // Opsional: track kapan mulai
             ]);
-            if ($assignment->asesmen->pengajuan)
-                $assignment->asesmen->pengajuan->checkUpdateStatusAKAL('ak', 'status_asesor_in_progress');
+            $pengajuan = $assignment->asesmen->pengajuan;
+            if ($pengajuan) {
+                $statusFrom = $pengajuan->status;
+                $pengajuan->checkUpdateStatusAKAL('ak', 'status_asesor_in_progress');
+                $pengajuan->statusLog()->firstOrCreate(
+                    [
+                        'status_from' => $statusFrom,
+                        'status_to'   => PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
+                    ],
+                    [
+                        'changed_by'  => Auth::id(),
+                        'keterangan'  => 'Asesor AK telah memulai proses penilaian kecukupan',
+                        'changed_at'  => now(),
+                    ]
+                );
+            }
         }
 
         $asesmen = $assignment->asesmen;

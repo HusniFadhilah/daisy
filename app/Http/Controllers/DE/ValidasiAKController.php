@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\DE;
 
 use Illuminate\Http\Request;
-use App\Models\PengajuanAkreditasi;
+use App\Models\PengajuanStatusLog;
 use Illuminate\Support\Facades\DB;
+use App\Models\PengajuanAkreditasi;
 use App\Http\Controllers\Controller;
 
 class ValidasiAKController extends Controller
@@ -230,36 +231,31 @@ class ValidasiAKController extends Controller
                 $q->whereIn('status_to', $akStatuses);
             });
 
+        // tetap seperti kamu (berdasarkan base)
         $total = (clone $base)->count();
 
-        $belumMulai = (clone $base)->whereHas(
-            'statusLog',
-            fn($q) =>
-            $q->where('status_to', PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED)
-        )->count();
+        // ✅ 3 ini pakai snapshot dari pengajuan_akreditasi.status
+        $belumMulai = (clone $base)
+            ->where('status', PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED)
+            ->count();
 
-        $sedangPenilaian = (clone $base)->whereHas(
-            'statusLog',
-            fn($q) =>
-            $q->where('status_to', PengajuanAkreditasi::STATUS_AK_IN_PROGRESS)
-        )->count();
+        $sedangPenilaian = (clone $base)
+            ->where('status', PengajuanAkreditasi::STATUS_AK_IN_PROGRESS)
+            ->count();
 
-        $sedangValidasi = (clone $base)->whereHas(
-            'statusLog',
-            fn($q) =>
-            $q->where('status_to', PengajuanAkreditasi::STATUS_AK_ON_VALIDATION)
-        )->count();
+        $sedangValidasi = (clone $base)
+            ->where('status', PengajuanAkreditasi::STATUS_AK_ON_VALIDATION)
+            ->count();
 
+        // tetap pakai status log (historical)
         $selesai = (clone $base)->whereHas(
             'statusLog',
-            fn($q) =>
-            $q->where('status_to', PengajuanAkreditasi::STATUS_AK_SELESAI)
+            fn($q) => $q->where('status_to', PengajuanAkreditasi::STATUS_AK_SELESAI)
         )->count();
 
         $dilaporkan = (clone $base)->whereHas(
             'statusLog',
-            fn($q) =>
-            $q->where('status_to', PengajuanAkreditasi::STATUS_AK_DILAPORKAN)
+            fn($q) => $q->where('status_to', PengajuanAkreditasi::STATUS_AK_DILAPORKAN)
         )->count();
 
         return [

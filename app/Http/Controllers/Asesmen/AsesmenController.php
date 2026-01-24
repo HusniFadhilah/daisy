@@ -389,8 +389,24 @@ class AsesmenController extends Controller
             $missingRequirements = $request->jenis_asesmen === 'ak'
                 ? $asesmenKecukupan->getMissingRequirements()
                 : $asesmenLapangan->getMissingRequirements();
-            if ($asesmen->pengajuan)
-                $asesmen->pengajuan->checkUpdateStatusAKAL($request->jenis_asesmen, 'status_asesor_assigned');
+
+            $pengajuan = $asesmen->pengajuan;
+            if ($pengajuan) {
+                $statusFrom = $pengajuan->status;
+                $pengajuan->checkUpdateStatusAKAL('ak', 'status_asesor_assigned');
+                $pengajuan->statusLog()->firstOrCreate(
+                    [
+                        'status_from' => $statusFrom,
+                        'status_to'   => PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
+                    ],
+                    [
+                        'changed_by'  => Auth::id(),
+                        'keterangan'  => 'Penugasan asesor untuk asesmen kecukupan telah dilakukan',
+                        'changed_at'  => now(),
+                    ]
+                );
+            }
+
             try {
                 SendPenawaranAsesmenEmail::dispatch($assignment);
             } catch (\Exception $e) {
@@ -809,6 +825,23 @@ class AsesmenController extends Controller
                 'urutan_asesor' => $urutanAsesor,
                 'status_penawaran' => 'pending',
             ]);
+
+            $pengajuan = $newAssignment->asesmen->pengajuan;
+            if ($pengajuan) {
+                $statusFrom = $pengajuan->status;
+                $pengajuan->checkUpdateStatusAKAL('ak', 'status_asesor_assigned');
+                $pengajuan->statusLog()->firstOrCreate(
+                    [
+                        'status_from' => $statusFrom,
+                        'status_to'   => PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
+                    ],
+                    [
+                        'changed_by'  => Auth::id(),
+                        'keterangan'  => 'Penugasan asesor untuk asesmen kecukupan telah dilakukan',
+                        'changed_at'  => now(),
+                    ]
+                );
+            }
 
             DB::commit();
 
