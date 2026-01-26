@@ -22,6 +22,14 @@ class PenugasanALController extends Controller
      */
     public function index(Request $request)
     {
+        $statusList = [
+            PengajuanAkreditasi::STATUS_AK_DILAPORKAN,        // AK selesai, siap AL
+            PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,   // Asesor AL sudah ditugaskan
+            PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,       // AL sedang berlangsung
+            PengajuanAkreditasi::STATUS_AL_SELESAI,           // AL selesai
+            PengajuanAkreditasi::STATUS_AL_DILAPORKAN,        // AL dilaporkan
+        ];
+
         // Build query - pengajuan yang siap untuk AL
         $query = PengajuanAkreditasi::with([
             'studyProgram.university',
@@ -31,15 +39,13 @@ class PenugasanALController extends Controller
                 $q->where('jenis_asesmen', 'al')
                     ->whereHas('role_selected', fn($r) => $r->where('name', 'asesor'))
                     ->with(['user', 'role_selected']);
-            }
+            },
+            // opsional: untuk tampilkan status terakhir
+            'statusLog',
         ])
-            ->whereIn('status', [
-                PengajuanAkreditasi::STATUS_AK_DILAPORKAN,           // AK selesai, siap AL
-                PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,   // Asesor AL sudah ditugaskan
-                PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,       // AL sedang berlangsung
-                PengajuanAkreditasi::STATUS_AL_SELESAI,           // AL selesai
-                PengajuanAkreditasi::STATUS_AL_DILAPORKAN,        // AL dilaporkan
-            ]);
+            ->whereHas('statusLog', function ($q) use ($statusList) {
+                $q->whereIn('status_to', $statusList);
+            });
 
         // Filter by university
         if ($request->filled('university_id')) {

@@ -392,7 +392,7 @@
 
 <script src="{{ asset('assets/js/pelaporan.js') }}"></script>
 <script>
-    const envIsLocal = "{{ app()->environment('local') }}"
+    const envIsLocal = true
     const idAsesmen = "{{ $asesmen->id }}";
     const jenisAsesmen = "{{ $jenisAsesmen }}";
 
@@ -816,12 +816,14 @@
                                 card.classList.remove('border-danger');
                             });
                         }
-                        if (['validated', 'revision_required'].includes(this.value)) {
-                            quickSelectKategori.style.display = 'block';
-                            preferensiKategori.style.display = 'block';
-                        } else {
-                            quickSelectKategori.style.display = 'none';
-                            preferensiKategori.style.display = 'none';
+                        if (quickSelectKategori && preferensiKategori) {
+                            if (['validated', 'revision_required'].includes(this.value)) {
+                                quickSelectKategori.style.display = 'block';
+                                preferensiKategori.style.display = 'block';
+                            } else {
+                                quickSelectKategori.style.display = 'none';
+                                preferensiKategori.style.display = 'none';
+                            }
                         }
                     });
                 });
@@ -849,7 +851,7 @@
          */
         async function submitValidasi() {
             const elemenId = document.getElementById('validasiElemenId').value;
-            const skorFinal = document.getElementById('skorFinal').value;
+            const skorFinal = document.getElementById('skorFinal') ? document.getElementById('skorFinal').value : null;
             const statusValidasi = document.getElementById('statusValidasi').value;
             const catatanValidator = document.getElementById('catatanValidator').value;
             // ✅ Build payload based on status

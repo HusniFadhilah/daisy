@@ -59,33 +59,6 @@
     @endif
 </a>
 @endif
-{{-- <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'ak-submenu')">
-    <span class="menu-icon">📝</span>
-    <span>Proses AK</span>
-    <span class="badge bg-warning menu-badge">{{ $prosesAK ?? 1 }}</span>
-</a>
-<ul class="submenu nav flex-column" id="ak-submenu">
-    <li>
-        <a href="{{ route('ak.berkas') }}" class="nav-link">
-            Berkas Penilaian
-        </a>
-    </li>
-    <li>
-        <a href="{{ route('ak.split') }}" class="nav-link">
-            Cek Split Nilai
-        </a>
-    </li>
-    <li>
-        <a href="{{ route('ak.upload') }}" class="nav-link">
-            Upload Hasil Penilaian
-        </a>
-    </li>
-    <li>
-        <a href="{{ route('ak.validasi') }}" class="nav-link">
-            Status Validasi
-        </a>
-    </li>
-</ul> --}}
 
 <!-- Proses AL -->
 @if(Route::has('al.berkas'))
@@ -94,32 +67,6 @@
     <span>Proses AL</span>
 </a>
 @endif
-{{-- <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'al-submenu')">
-    <span class="menu-icon">🏢</span>
-    <span>Proses AL</span>
-</a>
-<ul class="submenu nav flex-column" id="al-submenu">
-    <li>
-        <a href="{{ route('al.jadwal') }}" class="nav-link">
-Jadwal Visitasi
-</a>
-</li>
-<li>
-    <a href="{{ route('al.dokumen') }}" class="nav-link">
-        Dokumen AL
-    </a>
-</li>
-<li>
-    <a href="{{ route('al.upload') }}" class="nav-link">
-        Upload Hasil AL
-    </a>
-</li>
-<li>
-    <a href="{{ route('al.laporan') }}" class="nav-link">
-        Laporan Asesmen
-    </a>
-</li>
-</ul> --}}
 
 <!-- Penugasan Banding -->
 @if(Route::has('banding'))

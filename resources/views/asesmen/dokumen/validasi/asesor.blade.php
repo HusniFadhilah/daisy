@@ -761,7 +761,7 @@
          */
         async function submitValidasi(status) {
             const elemenId = document.getElementById('validasiElemenId').value;
-            const skorFinal = document.getElementById('skorFinal').value;
+            const skorFinal = document.getElementById('skorFinal') ? document.getElementById('skorFinal').value : null;
             const statusValidasi = document.getElementById('statusValidasi').value;
             const catatanValidator = document.getElementById('catatanValidator').value;
 

@@ -143,7 +143,7 @@
                             <strong class="text-dark">301 - 350</strong>
                         </div>
                         <div class="flex-grow-1">
-                            <strong class="text-dark">Terakreditasi (Baik)</strong>
+                            <strong class="text-dark">Terakreditasi</strong>
                             <div><small class="text-muted">(5 tahun)</small></div>
                         </div>
                     </div>
@@ -156,8 +156,8 @@
                             <strong class="text-dark">351 - 360</strong>
                         </div>
                         <div class="flex-grow-1">
-                            <strong class="text-dark">Terakreditasi Unggul*</strong>
-                            <div><small class="text-muted">*Dengan syarat pelampauan standar (2 tahun)</small></div>
+                            <strong class="text-dark">⁠terakreditasi Unggul with Requirement (2 Tahun)*</strong>
+                            <div><small class="text-muted">*Dengan syarat pelampauan standar</small></div>
                         </div>
                     </div>
                 </div>
@@ -169,8 +169,8 @@
                             <strong class="text-dark">361 - 400</strong>
                         </div>
                         <div class="flex-grow-1">
-                            <strong class="text-dark">Terakreditasi Unggul</strong>
-                            <div><small class="text-muted">*Dengan syarat pelampauan standar (5 tahun)</small></div>
+                            <strong class="text-dark">Terakreditasi Unggul (5 Tahun)</strong>
+                            <div><small class="text-muted">*Dengan syarat pelampauan standar</small></div>
                         </div>
                     </div>
                 </div>
@@ -179,7 +179,7 @@
             <div class="alert alert-info alert-permanent mt-3 mb-0">
                 <i class="bi bi-info-circle me-2"></i>
                 <strong>Catatan:</strong> Untuk peringkat <strong>Unggul</strong>, selain mencapai skor >= 351,
-                program studi harus memiliki <strong>minimal 1 elemen dengan kategori: 4 (pelampauan standar)</strong>
+                program studi harus memiliki <strong>minimal 1 elemen dengan kategori: Pelampauan Standar (Exceeding Standard)</strong>
                 di <strong>setiap kriteria</strong> (D, E, P, I, L, A, R).
             </div>
         </div>
@@ -307,7 +307,7 @@
             <div class="alert alert-warning alert-permanent mt-3 mb-0">
                 <strong>⚠️ Perhatian:</strong> Meskipun skor mencapai >= 361, peringkat <strong>TIDAK DAPAT</strong> ditetapkan sebagai UNGGUL
                 karena kriteria <strong>{{ implode(', ', $validationSummary['missing_kriteria']) }}</strong>
-                belum memiliki minimal 1 elemen dengan skor 4 (pelampauan standar).
+                belum memiliki minimal 1 elemen dengan kategori Pelampauan Standar (Exceeding Standard).
                 <br><br>
                 Peringkat akan diturunkan menjadi: <strong class="text-danger">BAIK SEKALI</strong>
             </div>

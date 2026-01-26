@@ -96,7 +96,7 @@ class HasilAkreditasi extends Model
     // Helpers
     public function getPeringkatFromSkor(float $skor): string
     {
-        if ($skor <= 250) {
+        if ($skor < 200) {
             return 'Tidak Terakreditasi';
         }
 

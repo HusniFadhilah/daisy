@@ -318,7 +318,7 @@ class PenerimaanDokumenController extends Controller
                 $asesmen = Asesmen::create([
                     'id_pengajuan' => $pengajuan->id,
                     'id_study_program' => $pengajuan->id_program_studi,
-                    'code' => $pengajuan->nomor_pengajuan,
+                    'code' => 'ASM-' . $pengajuan->nomor_pengajuan,
                     'name' => $pengajuan->judul,
                     'description' => $pengajuan->judul,
                     'status' => 'active',

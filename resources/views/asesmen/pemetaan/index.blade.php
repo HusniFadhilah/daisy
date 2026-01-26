@@ -3,9 +3,6 @@
 @section('title', 'Pengingat Masa Akreditasi')
 
 @push('styles')
-<!-- Styles -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
 
 <style>
     .stat-card {
@@ -454,7 +451,7 @@
             <div class="card">
                 <div class="card-header bg-success text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-calendar3"></i> Kalender Kedaluwarsa (12 Bulan Ke Depan)
+                        <i class="bi bi-calendar3"></i> Kalender Kedaluwarsa (dalam Tahun ini)
                     </h5>
                 </div>
                 <div class="card-body">
@@ -715,8 +712,6 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
 </div>
 
 @push('scripts')
-<!-- Scripts -->
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     let prodiSelect2Initialized = false;
 

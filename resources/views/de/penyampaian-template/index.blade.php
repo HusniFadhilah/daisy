@@ -123,7 +123,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['sudah_dikirim'] }}</h2>
-                            <small class="opacity-75">Template telah dikirim ke PS</small>
+                            <small class="opacity-75">Jumlah template yang telah dikirim ke PS</small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
                             <i class="bi bi-check-circle"></i>
