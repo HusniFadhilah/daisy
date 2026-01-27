@@ -11,7 +11,7 @@
             <p class="text-muted mb-0">Kelola permohonan akreditasi program studi</p>
         </div>
         <a href="{{ route('pengajuan.create') }}" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> Permohonan Akreditasi Baru
+            <i class="bi bi-plus-circle"></i> Buat Permohonan Akreditasi
         </a>
     </div>
 
@@ -133,18 +133,20 @@
                                                     <label class="form-label fw-bold">
                                                         Jenis Akreditasi <span class="text-danger">*</span>
                                                     </label>
+
                                                     <select name="jenis_akreditasi" class="form-select @error('jenis_akreditasi') is-invalid @enderror" required>
-                                                        <option value="">-- Pilih Jenis --</option>
-                                                        <option value="baru" {{ old('jenis_akreditasi') == 'baru' ? 'selected' : '' }}>
-                                                            Akreditasi Baru
+                                                        <option value="">-- Pilih Jenis Akreditasi --</option>
+
+                                                        @foreach (\App\Models\PengajuanAkreditasi::jenisAkreditasiOptions() as $value => $label)
+                                                        <option value="{{ $value }}" {{ old('jenis_akreditasi') === $value ? 'selected' : '' }}>
+                                                            {{ $label }}
                                                         </option>
-                                                        <option value="perpanjangan" {{ old('jenis_akreditasi') == 'perpanjangan' ? 'selected' : '' }}>
-                                                            Perpanjangan
-                                                        </option>
-                                                        <option value="menuju_unggul" {{ old('jenis_akreditasi') == 'menuju_unggul' ? 'selected' : '' }}>
-                                                            Akreditasi Menuju Unggul
-                                                        </option>
+                                                        @endforeach
                                                     </select>
+
+                                                    @error('jenis_akreditasi')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                    @enderror
                                                 </div>
 
                                                 <div class="mb-3">
@@ -307,10 +309,7 @@
             <div class="card">
                 <div class="card-body text-center py-5">
                     <i class="bi bi-inbox" style="font-size: 4rem; color: #ccc;"></i>
-                    <p class="text-muted mt-3">Belum ada permohonan akreditasi</p>
-                    <a href="{{ route('pengajuan.create') }}" class="btn btn-primary">
-                        <i class="bi bi-plus-circle"></i> Buat Permohonan Akreditasi
-                    </a>
+                    <p class="text-muted">Belum ada permohonan akreditasi</p>
                 </div>
             </div>
         </div>

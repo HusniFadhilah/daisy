@@ -305,3 +305,7 @@ function titleCaseWords(s) {
         .map(w => w ? (w[0].toUpperCase() + w.slice(1)) : '')
         .join(' ');
 }
+
+$(document).ready(function () {
+    $('#datatable,.datatable').DataTable({});
+});

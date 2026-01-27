@@ -145,7 +145,7 @@ class StudyProgramSeeder extends Seeder
                 // Konversi status
                 if ($statusKedaluwarsa === 'Masih Berlaku') {
                     $statusKedaluwarsa = 'Aktif';
-                } elseif (strpos($statusKedaluwarsa, 'kadaluarsa') !== false || strpos($statusKedaluwarsa, 'kedaluwarsa') !== false || strpos($statusKedaluwarsa, 'hari lagi') !== false) {
+                } elseif (strpos($statusKedaluwarsa, 'kedaluwarsa') !== false || strpos($statusKedaluwarsa, 'kedaluwarsa') !== false || strpos($statusKedaluwarsa, 'hari lagi') !== false) {
                     $statusKedaluwarsa = 'Kedaluwarsa';
                 }
 

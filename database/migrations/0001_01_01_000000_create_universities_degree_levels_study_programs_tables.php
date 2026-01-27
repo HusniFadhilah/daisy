@@ -19,6 +19,10 @@ return new class extends Migration
                 $table->string('name');
                 $table->string('logo_path')->nullable();
                 $table->string('email')->nullable();
+                $table->string('lpm_name')->nullable()->comment('Lembaga Penjaminan Mutu');
+                $table->string('lpm_phone')->nullable()->comment('Telp LPM');
+                $table->string('lpm_mobile')->nullable()->comment('Mobile/WA LPM');
+                $table->string('lpm_email')->nullable()->comment('Email LPM');
                 $table->boolean('is_active')->default(true)->index();
                 $table->boolean('is_example')->default(false)->index();
                 $table->timestamps();
@@ -63,6 +67,12 @@ return new class extends Migration
                 $table->string('peringkat_akreditasi')->nullable();
                 $table->date('tanggal_kedaluwarsa')->nullable();
                 $table->enum('status_kedaluwarsa', ['Aktif', 'Kedaluwarsa', 'Belum Terakreditasi'])->default(null)->nullable();
+                $table->string('ketua_prodi_name')->nullable()->comment('Nama Ketua Program Studi');
+                $table->string('ketua_prodi_nip')->nullable()->comment('NIP Ketua Program Studi');
+                $table->string('ketua_tim_akreditasi')->nullable()->comment('Ketua Tim Akreditasi');
+                $table->string('akreditasi_phone')->nullable()->comment('Telp Tim Akreditasi');
+                $table->string('akreditasi_mobile')->nullable()->comment('Mobile/WA Tim Akreditasi');
+                $table->string('akreditasi_email')->nullable()->comment('Email Tim Akreditasi');
                 $table->boolean('is_active')->default(true)->index();
                 $table->boolean('is_example')->default(false)->index();
                 $table->timestamps();

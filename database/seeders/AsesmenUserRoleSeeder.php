@@ -26,7 +26,7 @@ class AsesmenUserRoleSeeder extends Seeder
         // 1. ASESMEN MAGISTER ILMU LINGKUNGAN
         // ============================================
         $asesmenMil = Asesmen::insertGetId([
-            'id_study_program' => StudyProgram::where('email', 's1@lamdepilar.ac.id')->firstOrFail()->id,
+            'id_study_program' => StudyProgram::where('email', 'arsitektur-profesi@lamdepilar.ac.id')->firstOrFail()->id,
             'code' => 'LAMDEPILAR-' . Fungsi::uniqueCode(5),
             'kode_panel' => 'T01-P001',
             'name' => 'Penilaian Akreditasi Prodi LAMDEPILAR (Contoh)',

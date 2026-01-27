@@ -1,175 +1,181 @@
 @if(in_array($authUser->role_selected,['admin_prodi','admin_univ']))
-
-<!-- Informasi Detail -->
-
-
+<!-- ============================================ -->
 <!-- SECTION: AKREDITASI INDIVIDUAL -->
-<div class="row mb-4">
-    <div class="col-12">
-        <h5 class="fw-bold mb-3">
-            <i class="bi bi-person-check text-info me-2"></i>
+<!-- ============================================ -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-gradient-info text-dark py-3">
+        <h5 class="mb-0 fw-bold">
+            <i class="bi bi-person-check me-2"></i>
             Akreditasi Program Studi (Individual)
         </h5>
+        <small>Akreditasi per program studi secara individual</small>
+    </div>
+    <div class="card-body">
+        <div class="row g-4">
+            <!-- Permohonan Individual Berjalan -->
+            <div class="col-12 col-md-6 col-lg-6 col-xl-3">
+                <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #dc3545 !important;">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <p class="text-muted mb-1 small text-uppercase">Permohonan Berjalan</p>
+                                <h2 class="mb-0 fw-bold">{{ $stats['permohonan_individual_berjalan'] ?? 0 }}</h2>
+                            </div>
+                            <div class="rounded-3 p-3" style="background-color: #dc3545;">
+                                <i class="bi bi-calendar-check text-white fs-3"></i>
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-0">Akreditasi individual yang sedang berjalan</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Permohonan Individual Selesai -->
+            <div class="col-12 col-md-6 col-lg-6 col-xl-3">
+                <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #198754 !important;">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <p class="text-muted mb-1 small text-uppercase">Permohonan Selesai</p>
+                                <h2 class="mb-0 fw-bold">{{ $stats['permohonan_individual_selesai'] ?? 0 }}</h2>
+                            </div>
+                            <div class="rounded-3 p-3" style="background-color: #198754;">
+                                <i class="bi bi-check-circle text-white fs-3"></i>
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-0">Akreditasi individual yang telah selesai</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Aktif Individual -->
+            {{-- <div class="col-12 col-md-6 col-lg-6 col-xl-3">
+                <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #0dcaf0 !important;">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <p class="text-muted mb-1 small text-uppercase">Status Aktif</p>
+                                <h2 class="mb-0 fw-bold">{{ $stats['permohonan_individual_berjalan'] ?? 0 }}</h2>
+        </div>
+        <div class="rounded-3 p-3" style="background-color: #0dcaf0;">
+            <i class="bi bi-person-badge text-white fs-3"></i>
+        </div>
+    </div>
+    <p class="text-muted small mb-0">Program studi dalam proses akreditasi individual</p>
+</div>
+</div>
+</div> --}}
+
+<!-- Total Individual -->
+<div class="col-12 col-md-6 col-lg-6 col-xl-3">
+    <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #6c757d !important;">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                    <p class="text-muted mb-1 small text-uppercase">Total Akreditasi</p>
+                    <h2 class="mb-0 fw-bold">{{ $additionalStats['total_individual'] ?? 0 }}</h2>
+                </div>
+                <div class="rounded-3 p-3" style="background-color: #6c757d;">
+                    <i class="bi bi-check-all text-white fs-3"></i>
+                </div>
+            </div>
+            <p class="text-muted small mb-0">Total semua akreditasi individual</p>
+        </div>
     </div>
 </div>
-
-<div class="row g-4 mb-5">
-    <!-- Permohonan Individual Berjalan -->
-    <div class="col-12 col-md-6 col-lg-3">
-        <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #dc3545 !important;">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div>
-                        <p class="text-muted mb-1 small text-uppercase">Total Permohonan Berjalan</p>
-                        <h2 class="mb-0 fw-bold">{{ $stats['permohonan_individual_berjalan'] ?? 0 }}</h2>
-                    </div>
-                    <div class="rounded-3 p-3" style="background-color: #dc3545;">
-                        <i class="bi bi-calendar-check text-white fs-3"></i>
-                    </div>
-                </div>
-                <p class="text-muted small mb-0">Semua permohonan akreditasi yang sedang berjalan</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Permohonan Individual Selesai -->
-    <div class="col-12 col-md-6 col-lg-3">
-        <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #198754 !important;">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div>
-                        <p class="text-muted mb-1 small text-uppercase">Total Permohonan Selesai</p>
-                        <h2 class="mb-0 fw-bold">{{ $stats['permohonan_individual_selesai'] ?? 0 }}</h2>
-                    </div>
-                    <div class="rounded-3 p-3" style="background-color: #198754;">
-                        <i class="bi bi-check-circle text-white fs-3"></i>
-                    </div>
-                </div>
-                <p class="text-muted small mb-0">Semua permohonan akreditasi yang telah selesai</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Akreditasi Individual (Berjalan) -->
-    <div class="col-12 col-md-6 col-lg-3">
-        <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #0dcaf0 !important;">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div>
-                        <p class="text-muted mb-1 small text-uppercase">Akreditasi Individual</p>
-                        <h2 class="mb-0 fw-bold">{{ $stats['permohonan_individual_berjalan'] ?? 0 }}</h2>
-                    </div>
-                    <div class="rounded-3 p-3" style="background-color: #0dcaf0;">
-                        <i class="bi bi-person-badge text-white fs-3"></i>
-                    </div>
-                </div>
-                <p class="text-muted small mb-0">Permohonan akreditasi program studi (individual) yang sedang berjalan</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Individual Selesai -->
-    <div class="col-12 col-md-6 col-lg-3">
-        <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #721c24 !important;">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div>
-                        <p class="text-muted mb-1 small text-uppercase">Individual Selesai</p>
-                        <h2 class="mb-0 fw-bold">{{ $stats['permohonan_individual_selesai'] ?? 0 }}</h2>
-                    </div>
-                    <div class="rounded-3 p-3" style="background-color: #721c24;">
-                        <i class="bi bi-check-all text-white fs-3"></i>
-                    </div>
-                </div>
-                <p class="text-muted small mb-0">Permohonan akreditasi individual yang telah selesai</p>
-            </div>
-        </div>
-    </div>
+</div>
+</div>
 </div>
 
+<!-- ============================================ -->
 <!-- SECTION: AKREDITASI KELOMPOK -->
-<div class="row mb-4">
-    <div class="col-12">
-        <h5 class="fw-bold mb-3">
-            <i class="bi bi-people-fill text-warning me-2"></i>
+<!-- ============================================ -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-gradient-warning text-dark py-3">
+        <h5 class="mb-0 fw-bold">
+            <i class="bi bi-people-fill me-2"></i>
             Akreditasi Kelompok Program Studi (Cluster)
         </h5>
+        <small>Akreditasi beberapa program studi secara bersamaan dalam satu kelompok</small>
+    </div>
+    <div class="card-body">
+        <div class="row g-4">
+            <!-- Permohonan Kelompok Berjalan -->
+            <div class="col-12 col-md-6 col-lg-6 col-xl-3">
+                <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #dc3545 !important;">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <p class="text-muted mb-1 small text-uppercase">Permohonan Berjalan</p>
+                                <h2 class="mb-0 fw-bold">{{ $stats['permohonan_kelompok_berjalan'] ?? 0 }}</h2>
+                            </div>
+                            <div class="rounded-3 p-3" style="background-color: #dc3545;">
+                                <i class="bi bi-calendar-check text-white fs-3"></i>
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-0">Akreditasi kelompok yang sedang berjalan</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Permohonan Kelompok Selesai -->
+            <div class="col-12 col-md-6 col-lg-6 col-xl-3">
+                <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #198754 !important;">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <p class="text-muted mb-1 small text-uppercase">Permohonan Selesai</p>
+                                <h2 class="mb-0 fw-bold">{{ $stats['permohonan_kelompok_selesai'] ?? 0 }}</h2>
+                            </div>
+                            <div class="rounded-3 p-3" style="background-color: #198754;">
+                                <i class="bi bi-check-circle text-white fs-3"></i>
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-0">Akreditasi kelompok yang telah selesai</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Aktif Kelompok -->
+            {{-- <div class="col-12 col-md-6 col-lg-6 col-xl-3">
+                <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #ffc107 !important;">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <p class="text-muted mb-1 small text-uppercase">Status Aktif</p>
+                                <h2 class="mb-0 fw-bold">{{ $stats['permohonan_kelompok_berjalan'] ?? 0 }}</h2>
+        </div>
+        <div class="rounded-3 p-3" style="background-color: #ffc107;">
+            <i class="bi bi-people text-white fs-3"></i>
+        </div>
+    </div>
+    <p class="text-muted small mb-0">Cluster program studi dalam proses akreditasi</p>
+</div>
+</div>
+</div> --}}
+
+<!-- Total Kelompok -->
+<div class="col-12 col-md-6 col-lg-6 col-xl-3">
+    <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #6c757d !important;">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                    <p class="text-muted mb-1 small text-uppercase">Total Akreditasi</p>
+                    <h2 class="mb-0 fw-bold">{{ $additionalStats['total_kelompok'] ?? 0 }}</h2>
+                </div>
+                <div class="rounded-3 p-3" style="background-color: #6c757d;">
+                    <i class="bi bi-check-all text-white fs-3"></i>
+                </div>
+            </div>
+            <p class="text-muted small mb-0">Total semua akreditasi kelompok</p>
+        </div>
     </div>
 </div>
-
-<div class="row g-4 mb-4">
-    <!-- Permohonan Kelompok Berjalan -->
-    <div class="col-12 col-md-6 col-lg-3">
-        <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #dc3545 !important;">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div>
-                        <p class="text-muted mb-1 small text-uppercase">Total Permohonan Berjalan</p>
-                        <h2 class="mb-0 fw-bold">{{ $stats['permohonan_kelompok_berjalan'] ?? 0 }}</h2>
-                    </div>
-                    <div class="rounded-3 p-3" style="background-color: #dc3545;">
-                        <i class="bi bi-calendar-check text-white fs-3"></i>
-                    </div>
-                </div>
-                <p class="text-muted small mb-0">Semua permohonan akreditasi yang sedang berjalan</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Permohonan Kelompok Selesai -->
-    <div class="col-12 col-md-6 col-lg-3">
-        <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #198754 !important;">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div>
-                        <p class="text-muted mb-1 small text-uppercase">Total Permohonan Selesai</p>
-                        <h2 class="mb-0 fw-bold">{{ $stats['permohonan_kelompok_selesai'] ?? 0 }}</h2>
-                    </div>
-                    <div class="rounded-3 p-3" style="background-color: #198754;">
-                        <i class="bi bi-check-circle text-white fs-3"></i>
-                    </div>
-                </div>
-                <p class="text-muted small mb-0">Semua permohonan akreditasi yang telah selesai</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Akreditasi Kelompok (Berjalan) -->
-    <div class="col-12 col-md-6 col-lg-3">
-        <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #ffc107 !important;">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div>
-                        <p class="text-muted mb-1 small text-uppercase">Akreditasi Kelompok</p>
-                        <h2 class="mb-0 fw-bold">{{ $stats['permohonan_kelompok_berjalan'] ?? 0 }}</h2>
-                    </div>
-                    <div class="rounded-3 p-3" style="background-color: #ffc107;">
-                        <i class="bi bi-people text-white fs-3"></i>
-                    </div>
-                </div>
-                <p class="text-muted small mb-0">Permohonan akreditasi kelompok program studi yang sedang berjalan</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Kelompok Selesai -->
-    <div class="col-12 col-md-6 col-lg-3">
-        <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #721c24 !important;">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div>
-                        <p class="text-muted mb-1 small text-uppercase">Kelompok Selesai</p>
-                        <h2 class="mb-0 fw-bold">{{ $stats['permohonan_kelompok_selesai'] ?? 0 }}</h2>
-                    </div>
-                    <div class="rounded-3 p-3" style="background-color: #721c24;">
-                        <i class="bi bi-check-all text-white fs-3"></i>
-                    </div>
-                </div>
-                <p class="text-muted small mb-0">Permohonan akreditasi kelompok yang telah selesai</p>
-            </div>
-        </div>
-    </div>
 </div>
+</div>
+</div>
+
+<!-- Informasi Detail -->
 <div class="row g-4 mb-4">
     <div class="col-12">
         <div class="card border-0 shadow-sm">
@@ -180,25 +186,46 @@
             </div>
             <div class="card-body">
                 <div class="row text-center">
-                    <div class="col-6 col-md-3">
+                    <!-- Total Program Studi -->
+                    <div class="col-md-6 col-lg-6 col-xl-3">
                         <div class="p-3">
                             <div class="text-muted small mb-2">Total Program Studi</div>
                             <div class="h2 mb-0 fw-bold">{{ $additionalStats['total_prodi'] ?? 0 }}</div>
+
+                            @if($authUser->role_selected === 'admin_prodi' && isset($additionalStats['prodi_list']) && count($additionalStats['prodi_list']) > 0)
+                            <div class="mt-3 text-start">
+                                <small class="text-muted d-block mb-1 fw-semibold">Program Studi di dalam UPPS ini:</small>
+                                <div style="max-height: 150px; overflow-y: auto;">
+                                    @foreach($additionalStats['prodi_list'] as $prodi)
+                                    <small class="d-block text-muted" style="font-size: 0.75rem; line-height: 1.4;">
+                                        <i class="bi bi-circle-fill me-1" style="font-size: 0.4rem;"></i>
+                                        {{ $prodi->name }}
+                                    </small>
+                                    @endforeach
+                                </div>
+                            </div>
+                            @endif
                         </div>
                     </div>
-                    <div class="col-6 col-md-3">
+
+                    <!-- Total Pengajuan -->
+                    <div class="col-md-6 col-lg-6 col-xl-3">
                         <div class="p-3">
                             <div class="text-muted small mb-2">Total Pengajuan</div>
                             <div class="h2 mb-0 fw-bold">{{ $additionalStats['total_pengajuan'] ?? 0 }}</div>
                         </div>
                     </div>
-                    <div class="col-6 col-md-3">
+
+                    <!-- Total Individual -->
+                    <div class="col-md-6 col-lg-6 col-xl-3">
                         <div class="p-3">
                             <div class="text-muted small mb-2">Total Individual</div>
                             <div class="h2 mb-0 fw-bold text-info">{{ $additionalStats['total_individual'] ?? 0 }}</div>
                         </div>
                     </div>
-                    <div class="col-6 col-md-3">
+
+                    <!-- Total Kelompok -->
+                    <div class="col-md-6 col-lg-6 col-xl-3">
                         <div class="p-3">
                             <div class="text-muted small mb-2">Total Kelompok</div>
                             <div class="h2 mb-0 fw-bold text-warning">{{ $additionalStats['total_kelompok'] ?? 0 }}</div>

@@ -197,7 +197,6 @@ class PengajuanAkreditasiController extends Controller
         // Get study programs for dropdown
         $prodis = $user->studyPrograms()
             ->with(['university', 'degreeLevel'])
-            ->nonExample()
             ->get();
 
         // Jika hanya 1 prodi, auto-select

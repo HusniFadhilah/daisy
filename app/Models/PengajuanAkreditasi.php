@@ -13,6 +13,9 @@ class PengajuanAkreditasi extends Model
 
     public const KELOMPOK_INDIVIDUAL = 'individual';
     public const KELOMPOK_KELOMPOK = 'kelompok';
+    public const AKREDITASI_BARU = 'baru';
+    public const AKREDITASI_PERPANJANGAN = 'perpanjangan';
+    public const AKREDITASI_MENUJU_UNGGUL = 'menuju_unggul';
 
     public const DAFTAR_TEMPLATE = 'Template LED+Suplemen dan LKPS';
     // ============================================
@@ -200,6 +203,15 @@ class PengajuanAkreditasi extends Model
         ];
     }
 
+    public static function jenisAkreditasiOptions()
+    {
+        return [
+            self::AKREDITASI_BARU => 'Akreditasi untuk pembukaan prodi baru',
+            self::AKREDITASI_PERPANJANGAN => 'Akreditasi untuk pemenuhan status Terakreditasi',
+            self::AKREDITASI_MENUJU_UNGGUL => 'Akreditasi untuk menuju status Unggul',
+        ];
+    }
+
     /**
      * Get kelompok akreditasi label
      */
@@ -207,6 +219,12 @@ class PengajuanAkreditasi extends Model
     {
         $options = self::kelompokAkreditasiOptions();
         return $options[$this->kelompok_akreditasi] ?? 'Individual';
+    }
+
+    public function getJenisAkreditasiTitleAttribute()
+    {
+        $options = self::jenisAkreditasiOptions();
+        return $options[$this->jenis_akreditasi] ?? 'Akreditasi untuk pemenuhan status Terakreditasi';
     }
 
     // ============================================
@@ -559,7 +577,7 @@ class PengajuanAkreditasi extends Model
         $prefix = match ($jenis) {
             'perpanjangan' => 'Permohonan Perpanjangan Akreditasi Prodi',
             'menuju_unggul', 'menuju-unggul', 'unggul' => 'Permohonan Akreditasi Menuju Unggul Prodi',
-            'baru' => 'Permohonan Akreditasi Prodi',
+            'baru' => 'Permohonan Akreditasi Baru Prodi',
             default => 'Akreditasi Prodi',
         };
 

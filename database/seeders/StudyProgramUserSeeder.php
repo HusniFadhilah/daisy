@@ -120,7 +120,7 @@ class StudyProgramUserSeeder extends Seeder
                 'tanggal_kedaluwarsa' => now()->addYears(4),
                 'status_kedaluwarsa' => 'Aktif',
                 'is_active' => true,
-                'is_example' => true,
+                'is_example' => false,
             ]
         );
 
@@ -145,119 +145,171 @@ class StudyProgramUserSeeder extends Seeder
 
         /**
          * ======================================================
-         * 4. PRODI DEPILAR (9 PRODI SESUAI REQUIREMENT)
+         * 4. PRODI DEPILAR (36 PRODI = 9 JENJANG x 4 RUMPUN)
          * ======================================================
          */
-        $this->command->info('🎓 Creating 9 DEPILAR Study Programs...');
+        $this->command->info('🎓 Creating 36 DEPILAR Study Programs (9 jenjang x 4 rumpun)...');
 
-        $lamdepilarProdis = [
-            // 1. D2 (VOKASI)
-            [
-                'email' => 'd2@lamdepilar.ac.id',
-                'name' => 'DEPILAR D2',
-                'full_name' => 'Program Studi Depillar Diploma Dua (D2)',
-                'degree_code' => 'd2',
-                'category' => 1, // Vokasi
-            ],
+        $now = Carbon::now()->startOfDay();
 
-            // 2. D3 (VOKASI)
-            [
-                'email' => 'd3@lamdepilar.ac.id',
-                'name' => 'DEPILAR D3',
-                'full_name' => 'Program Studi Depillar Diploma Tiga (D3)',
-                'degree_code' => 'd3',
-                'category' => 1, // Vokasi
-            ],
-
-            // 3. Sarjana Terapan (ST.r) -> D4 (VOKASI)
-            [
-                'email' => 'str@lamdepilar.ac.id',
-                'name' => 'DEPILAR Sarjana Terapan',
-                'full_name' => 'Program Studi Depilar Sarjana Terapan (ST.r)',
-                'degree_code' => 'd4',
-                'category' => 1, // Vokasi
-            ],
-
-            // 4. Magister Terapan (MT.r) (TERAPAN TINGKAT LANJUT)
-            [
-                'email' => 'mtr@lamdepilar.ac.id',
-                'name' => 'DEPILAR Magister Terapan',
-                'full_name' => 'Program Studi Depilar Magister Terapan (MT.r)',
-                'degree_code' => 's2-terapan',
-                'category' => 1, // Vokasi tingkat lanjut
-            ],
-
-            // 5. Doktor Terapan (DT.r) (TERAPAN TINGKAT LANJUT)
-            [
-                'email' => 'dtr@lamdepilar.ac.id',
-                'name' => 'DEPILAR Doktor Terapan',
-                'full_name' => 'Program Studi Depilar Doktor Terapan (DT.r)',
-                'degree_code' => 's3-terapan',
-                'category' => 1, // Vokasi tingkat lanjut
-            ],
-
-            // 6. Sarjana (S1) (AKADEMIK)
-            [
-                'email' => 's1@lamdepilar.ac.id',
-                'name' => 'DEPILAR S1',
-                'full_name' => 'Program Studi Depilar Sarjana (S1)',
-                'degree_code' => 's1',
-                'category' => 2, // Akademik
-            ],
-
-            // 7. Profesi (AKADEMIK) ✓
-            [
-                'email' => 'profesi@lamdepilar.ac.id',
-                'name' => 'DEPILAR Profesi',
-                'full_name' => 'Program Studi Depilar Profesi (Profesi)',
-                'degree_code' => 'profesi',
-                'category' => 2, // Akademik ✓
-            ],
-
-            // 8. Magister (S2) (AKADEMIK)
-            [
-                'email' => 's2@lamdepilar.ac.id',
-                'name' => 'DEPILAR S2',
-                'full_name' => 'Program Studi Depilar Magister (S2)',
-                'degree_code' => 's2',
-                'category' => 2, // Akademik
-            ],
-
-            // 9. Doktor (S3) (AKADEMIK)
-            [
-                'email' => 's3@lamdepilar.ac.id',
-                'name' => 'DEPILAR S3',
-                'full_name' => 'Program Studi Doktor (S3)',
-                'degree_code' => 's3',
-                'category' => 2, // Akademik
-            ],
+        /**
+         * ======================================================
+         * KUOTA PERINGKAT (total harus 36)
+         * - Unggul dibuat dominan (mendekati 90% tapi 36 tidak bisa presisi)
+         * - sisanya dibagi supaya kategori lain tetap muncul
+         * ======================================================
+         */
+        $akreditasiQuota = [
+            'Unggul' => 31,                 // ~86.1%
+            'Baik' => 1,                    // ~2.8%
+            'Baik Sekali' => 1,             // ~2.8%
+            'B' => 1,                       // ~2.8%
+            'A' => 1,                       // ~2.8%
+            'Tidak Terakreditasi' => 1,     // ~2.8%
+            'Terakreditasi Pertama' => 0,   // 0-1 karena total kecil
+            'Terakreditasi Sementara' => 0, // 0-1 karena total kecil
         ];
 
-        foreach ($lamdepilarProdis as $prodi) {
-            $degreeId = $degreeLevelIds[$prodi['degree_code']] ?? null;
+        /**
+         * Buat "deck" peringkat sesuai kuota, lalu shuffle.
+         */
+        $akreditasiDeck = [];
+        foreach ($akreditasiQuota as $rank => $count) {
+            for ($i = 0; $i < $count; $i++) $akreditasiDeck[] = $rank;
+        }
+        shuffle($akreditasiDeck);
 
-            $studyProgram = StudyProgram::firstOrCreate(
-                ['email' => $prodi['email']],
-                [
-                    'name' => $prodi['name'],
-                    'full_name' => $prodi['full_name'],
-                    'code' => 'DP-' . Str::upper($prodi['degree_code']) . '-' . rand(100, 999),
-                    'id_university' => $uLamdepilar->id,
-                    'id_degree_level' => $degreeId,
-                    'id_category' => $prodi['category'],
-                    'bentuk_pt' => 'Universitas',
-                    'peringkat_akreditasi' => 'Unggul',
-                    'tanggal_kedaluwarsa' => Carbon::create(2026, 8, 10),
-                    'status_kedaluwarsa' => 'Aktif',
-                    'is_active' => true,
-                    'is_example' => true,
-                ]
-            );
+        // 4 rumpun
+        $rumpunList = [
+            ['slug' => 'desain',      'label' => 'Desain'],
+            ['slug' => 'perencanaan', 'label' => 'Perencanaan'],
+            ['slug' => 'lingkungan',  'label' => 'Lingkungan'],
+            ['slug' => 'arsitektur',  'label' => 'Arsitektur'],
+        ];
 
-            $this->command->info("✓ Created: {$studyProgram->name}");
+        // 9 jenjang (pakai degree_code yang cocok dengan $degreeLevelIds kamu)
+        $jenjangList = [
+            // VOKASI (5)
+            ['degree_code' => 'd2',         'alias' => 'D2',     'label' => 'Diploma Dua (D2)',            'type' => 'vokasi',   'category' => 1],
+            ['degree_code' => 'd3',         'alias' => 'D3',     'label' => 'Diploma Tiga (D3)',           'type' => 'vokasi',   'category' => 1],
+            ['degree_code' => 'd4',         'alias' => 'STr',    'label' => 'Sarjana Terapan (ST.r)',      'type' => 'vokasi',   'category' => 1],
+            ['degree_code' => 's2-terapan', 'alias' => 'MTr',    'label' => 'Magister Terapan (MT.r)',     'type' => 'vokasi',   'category' => 1],
+            ['degree_code' => 's3-terapan', 'alias' => 'DTr',    'label' => 'Doktor Terapan (DT.r)',       'type' => 'vokasi',   'category' => 1],
+
+            // AKADEMIK (4)
+            ['degree_code' => 's1',      'alias' => 'S1',      'label' => 'Sarjana (S1)',                 'type' => 'akademik', 'category' => 2],
+            ['degree_code' => 'profesi', 'alias' => 'Prof',    'label' => 'Profesi',                        'type' => 'akademik', 'category' => 2],
+            ['degree_code' => 's2',      'alias' => 'S2',      'label' => 'Magister (S2)',                 'type' => 'akademik', 'category' => 2],
+            ['degree_code' => 's3',      'alias' => 'S3',      'label' => 'Doktor (S3)',                   'type' => 'akademik', 'category' => 2],
+        ];
+
+        // buat penampung email prodi per rumpun+type untuk mapping UPPS
+        $depilarProdiEmailsByRumpunType = []; // [rumpunSlug][type] = [emails...]
+        $depilarPrograms = [];
+        $totalCreated = 0;
+
+        foreach ($rumpunList as $rumpun) {
+            foreach ($jenjangList as $j) {
+                $degreeId = $degreeLevelIds[$j['degree_code']] ?? null;
+                $email = "{$rumpun['slug']}-{$j['degree_code']}@lamdepilar.ac.id";
+
+                $studyProgram = StudyProgram::updateOrCreate(
+                    ['email' => $email],
+                    [
+                        'name' => "DEPILAR {$rumpun['label']} {$j['alias']}",
+                        'full_name' => "Program Studi {$rumpun['label']} - {$j['label']} (DEPILAR)",
+                        'code' => 'DP-' . Str::upper(substr($rumpun['slug'], 0, 3)) . '-' . Str::upper(Str::slug($j['degree_code'], '')) . '-' . rand(100, 999),
+                        'id_university' => $uLamdepilar->id,
+                        'id_degree_level' => $degreeId,
+                        'id_category' => $j['category'],
+                        'bentuk_pt' => 'Universitas',
+
+                        // sementara kosong dulu, diisi setelah loop
+                        'peringkat_akreditasi' => null,
+                        'tanggal_kedaluwarsa' => null,
+                        'status_kedaluwarsa' => null,
+
+                        'is_active' => true,
+                        'is_example' => true,
+                    ]
+                );
+
+                $depilarPrograms[] = [
+                    'model' => $studyProgram,
+                    'rumpun' => $rumpun['slug'],
+                    'type' => $j['type'],         // akademik / vokasi
+                    'degree_code' => $j['degree_code'],
+                ];
+
+                $depilarProdiEmailsByRumpunType[$rumpun['slug']][$j['type']][] = $email;
+                $totalCreated++;
+            }
         }
 
-        $this->command->info('✅ Total DEPILAR Prodi: 9');
+        // ====== GROUP TANGGAL KEDALUWARSA (akademik 4 prodi per rumpun)
+        $group6  = $depilarProdiEmailsByRumpunType['perencanaan']['akademik'] ?? [];
+        $group7  = $depilarProdiEmailsByRumpunType['desain']['akademik'] ?? [];
+        $group8  = $depilarProdiEmailsByRumpunType['lingkungan']['akademik'] ?? [];
+
+        // Buat lookup email -> expiry
+        $expiryByEmail = [];
+        foreach ($group6 as $email) $expiryByEmail[$email] = $now->copy()->addMonths(6);
+        foreach ($group7 as $email) $expiryByEmail[$email] = $now->copy()->addMonths(7);
+        foreach ($group8 as $email) $expiryByEmail[$email] = $now->copy()->addMonths(8);
+
+        // Kandidat untuk expired 1 bulan lalu = ambil 1 email dari yang belum punya expiry khusus
+        $specialEmails = array_merge($group6, $group7, $group8);
+
+        $remainingEmails = array_values(array_filter(
+            array_map(fn($x) => $x['model']->email, $depilarPrograms),
+            fn($email) => !in_array($email, $specialEmails, true)
+        ));
+
+        shuffle($remainingEmails);
+        $expiredEmail = $remainingEmails[0] ?? null;
+        if ($expiredEmail) {
+            $expiryByEmail[$expiredEmail] = $now->copy()->subMonths(1);
+        }
+
+        foreach ($depilarPrograms as $item) {
+            /** @var \App\Models\StudyProgram $sp */
+            $sp = $item['model'];
+            $email = $sp->email;
+
+            // === peringkat dari deck
+            $rank = array_pop($akreditasiDeck) ?? 'Unggul';
+
+            // === tanggal kedaluwarsa
+            $expiry = $expiryByEmail[$email] ?? null;
+
+            // sisanya random: +1 tahun atau +2 tahun
+            if (!$expiry) {
+                $expiry = (mt_rand(1, 100) <= 60)
+                    ? $now->copy()->addYear()
+                    : $now->copy()->addYears(2);
+            }
+
+            // === status kedaluwarsa
+            $status = $expiry->lt($now) ? 'Kedaluwarsa' : 'Aktif';
+
+            // Kalau "Tidak Terakreditasi" kamu mau benar-benar tanpa tanggal:
+            if ($rank === 'Tidak Terakreditasi') {
+                $sp->update([
+                    'peringkat_akreditasi' => null,
+                    'tanggal_kedaluwarsa' => null,
+                    'status_kedaluwarsa' => 'Belum Terakreditasi',
+                ]);
+                continue;
+            }
+
+            $sp->update([
+                'peringkat_akreditasi' => $rank,
+                'tanggal_kedaluwarsa' => $expiry,
+                'status_kedaluwarsa' => $status,
+            ]);
+        }
+
+        $this->command->info("✅ Total DEPILAR Prodi created/updated: {$totalCreated} (expected 36)");
 
         /**
          * ======================================================
@@ -304,90 +356,27 @@ class StudyProgramUserSeeder extends Seeder
          * ======================================================
          * 6. MAPPING USER UPPS ↔ PRODI DEPILAR (8 UPPS)
          * ======================================================
-         *
-         * Pembagian:
-         * - UPPS Vokasi (4 rumpun) → D2, D3, D4/ST.r, MT.r, DT.r
-         * - UPPS Akademik (4 rumpun) → S1, Profesi, S2, S3, MT.r, DT.r
          */
-        $this->command->info('🔗 Mapping UPPS to Study Programs...');
+        $this->command->info('🔗 Mapping UPPS to DEPILAR Study Programs (by rumpun & type)...');
 
-        // Mapping: UPPS Email => Array Prodi Email
         $uppsProdiMappings = [
-            // ========================================
-            // UPPS VOKASI - Mengelola D2, D3, D4, MT.r, DT.r
-            // ========================================
-            'upps.vokasi.desain@daisy.lamdepilar.or.id' => [
-                'd2@lamdepilar.ac.id',
-                'd3@lamdepilar.ac.id',
-                'str@lamdepilar.ac.id', // D4/ST.r
-                'mtr@lamdepilar.ac.id', // MT.r
-                'dtr@lamdepilar.ac.id', // DT.r
-            ],
-            'upps.vokasi.perencanaan@daisy.lamdepilar.or.id' => [
-                'd2@lamdepilar.ac.id',
-                'd3@lamdepilar.ac.id',
-                'str@lamdepilar.ac.id',
-                'mtr@lamdepilar.ac.id',
-                'dtr@lamdepilar.ac.id',
-            ],
-            'upps.vokasi.lingkungan@daisy.lamdepilar.or.id' => [
-                'd2@lamdepilar.ac.id',
-                'd3@lamdepilar.ac.id',
-                'str@lamdepilar.ac.id',
-                'mtr@lamdepilar.ac.id',
-                'dtr@lamdepilar.ac.id',
-            ],
-            'upps.vokasi.arsitektur@daisy.lamdepilar.or.id' => [
-                'd2@lamdepilar.ac.id',
-                'd3@lamdepilar.ac.id',
-                'str@lamdepilar.ac.id',
-                'mtr@lamdepilar.ac.id',
-                'dtr@lamdepilar.ac.id',
-            ],
+            // VOKASI
+            'upps.vokasi.desain@daisy.lamdepilar.or.id' => $depilarProdiEmailsByRumpunType['desain']['vokasi'] ?? [],
+            'upps.vokasi.perencanaan@daisy.lamdepilar.or.id' => $depilarProdiEmailsByRumpunType['perencanaan']['vokasi'] ?? [],
+            'upps.vokasi.lingkungan@daisy.lamdepilar.or.id' => $depilarProdiEmailsByRumpunType['lingkungan']['vokasi'] ?? [],
+            'upps.vokasi.arsitektur@daisy.lamdepilar.or.id' => $depilarProdiEmailsByRumpunType['arsitektur']['vokasi'] ?? [],
 
-            // ========================================
-            // UPPS AKADEMIK - Mengelola S1, Profesi, S2, S3, MT.r, DT.r
-            // ========================================
-            'upps.akademik.desain@daisy.lamdepilar.or.id' => [
-                's1@lamdepilar.ac.id',
-                'profesi@lamdepilar.ac.id', // ✓ Profesi masuk Akademik
-                's2@lamdepilar.ac.id',
-                's3@lamdepilar.ac.id',
-                'mtr@lamdepilar.ac.id', // MT.r
-                'dtr@lamdepilar.ac.id', // DT.r
-            ],
-            'upps.akademik.perencanaan@daisy.lamdepilar.or.id' => [
-                's1@lamdepilar.ac.id',
-                'profesi@lamdepilar.ac.id',
-                's2@lamdepilar.ac.id',
-                's3@lamdepilar.ac.id',
-                'mtr@lamdepilar.ac.id',
-                'dtr@lamdepilar.ac.id',
-            ],
-            'upps.akademik.lingkungan@daisy.lamdepilar.or.id' => [
-                's1@lamdepilar.ac.id',
-                'profesi@lamdepilar.ac.id',
-                's2@lamdepilar.ac.id',
-                's3@lamdepilar.ac.id',
-                'mtr@lamdepilar.ac.id',
-                'dtr@lamdepilar.ac.id',
-            ],
-            'upps.akademik.arsitektur@daisy.lamdepilar.or.id' => [
-                's1@lamdepilar.ac.id',
-                'profesi@lamdepilar.ac.id',
-                's2@lamdepilar.ac.id',
-                's3@lamdepilar.ac.id',
-                'mtr@lamdepilar.ac.id',
-                'dtr@lamdepilar.ac.id',
-            ],
+            // AKADEMIK
+            'upps.akademik.desain@daisy.lamdepilar.or.id' => $depilarProdiEmailsByRumpunType['desain']['akademik'] ?? [],
+            'upps.akademik.perencanaan@daisy.lamdepilar.or.id' => $depilarProdiEmailsByRumpunType['perencanaan']['akademik'] ?? [],
+            'upps.akademik.lingkungan@daisy.lamdepilar.or.id' => $depilarProdiEmailsByRumpunType['lingkungan']['akademik'] ?? [],
+            'upps.akademik.arsitektur@daisy.lamdepilar.or.id' => $depilarProdiEmailsByRumpunType['arsitektur']['akademik'] ?? [],
 
-            // ========================================
-            // USER LAMA (TETAP ADA - TIDAK BERUBAH)
-            // ========================================
+            // USER LAMA (TETAP)
             'remahankecil@gmail.com' => ['depilar@abcd.ac.id'],
         ];
 
-        // Execute mapping
+        // Execute mapping (sama seperti punyamu)
         foreach ($uppsProdiMappings as $userEmail => $prodiEmails) {
             $user = User::where('email', $userEmail)->first();
 
@@ -411,21 +400,7 @@ class StudyProgramUserSeeder extends Seeder
                         'start_date' => now(),
                     ]
                 ]);
-
-                $this->command->info("  ✓ {$user->name} → {$prodi->name}");
             }
         }
-
-        $this->command->info('');
-        $this->command->info('═════════════════════════════════════');
-        $this->command->info('✅ StudyProgramUserSeeder completed!');
-        $this->command->info('═════════════════════════════════════');
-        $this->command->info('📊 Summary:');
-        $this->command->info('   - Universities: 3');
-        $this->command->info('   - DEPILAR Prodi: 9');
-        $this->command->info('   - UPPS Users: 8');
-        $this->command->info('   - Vokasi UPPS: 4 (D2, D3, D4, MT.r, DT.r)');
-        $this->command->info('   - Akademik UPPS: 4 (S1, Profesi, S2, S3, MT.r, DT.r)');
-        $this->command->info('═════════════════════════════════════');
     }
 }

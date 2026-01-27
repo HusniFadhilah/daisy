@@ -392,6 +392,7 @@ class DashboardController extends Controller
             $additionalStats = [
                 'total_prodi' => 0,
                 'total_pengajuan' => 0,
+                'prodi_list' => [],
             ];
 
             $recentActivities = [];
@@ -429,7 +430,7 @@ class DashboardController extends Controller
             ->whereIn('id_program_studi', $studyProgramIds)
             ->where(function ($query) {
                 $query->where('kelompok_akreditasi', 'individual')
-                    ->orWhereNull('kelompok_akreditasi'); // default ke individual
+                    ->orWhereNull('kelompok_akreditasi');
             })
             ->whereNotIn('status', [
                 PengajuanAkreditasi::STATUS_SELESAI,
@@ -472,6 +473,12 @@ class DashboardController extends Controller
             ->distinct('id_pengajuan')
             ->count('id_pengajuan');
 
+        // ✅ Get list of study programs with degree level info
+        $prodiList = StudyProgram::whereIn('id', $studyProgramIds)
+            ->with('degreeLevel')
+            ->orderBy('id_degree_level')
+            ->get();
+
         $stats = [
             'permohonan_berjalan' => $permohonanBerjalan,
             'permohonan_selesai' => $permohonanSelesai,
@@ -494,6 +501,7 @@ class DashboardController extends Controller
                 ->whereIn('id_program_studi', $studyProgramIds)
                 ->where('kelompok_akreditasi', 'kelompok')
                 ->count(),
+            'prodi_list' => $prodiList, // ✅ Add prodi list
         ];
 
         $recentActivities = $this->getRecentActivitiesAdminProdi($studyProgramIds);

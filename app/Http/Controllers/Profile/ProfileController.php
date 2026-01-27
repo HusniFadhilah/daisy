@@ -11,39 +11,67 @@ class ProfileController extends Controller
 {
     public function index()
     {
-        $user = Auth::user()->load(['university', 'studyProgram.degreeLevel', 'studyProgram.category']);
-        
-        // Load list untuk dropdown
-        $universities = \App\Models\University::orderBy('name')->get();
-        $studyPrograms = \App\Models\StudyProgram::with(['university', 'degreeLevel'])->orderBy('name')->get();
-        
-        return view('profile.index', compact('user', 'universities', 'studyPrograms'));
+        $user = Auth::user()->load(['university', 'studyPrograms.degreeLevel', 'studyPrograms.category']);
+
+        // Load list untuk dropdown (hanya jika user boleh edit)
+        $canEditUniversity = in_array($user->role_selected, ['super_admin', 'admin_univ']);
+        $canEditProdi = in_array($user->role_selected, ['super_admin']);
+
+        $universities = $canEditUniversity ? \App\Models\University::where('is_active', true)->orderBy('name')->get() : collect();
+        $studyPrograms = $canEditProdi ? \App\Models\StudyProgram::with(['university', 'degreeLevel'])->where('is_active', true)->orderBy('name')->get() : collect();
+
+        // Get study programs untuk admin_prodi
+        $myStudyPrograms = collect();
+        if ($user->role_selected === 'admin_prodi') {
+            $myStudyPrograms = $user->studyPrograms()
+                ->with(['degreeLevel', 'university'])
+                ->orderBy('id_degree_level')
+                ->get();
+        }
+
+        return view('profile.index', compact('user', 'universities', 'studyPrograms', 'canEditUniversity', 'canEditProdi', 'myStudyPrograms'));
     }
 
     public function update(Request $request)
     {
         $user = Auth::user();
 
-        $request->validate([
+        $validation = [
             'name' => 'required|min:3',
             'email' => 'required|email|unique:users,email,' . $user->id,
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string',
-            'institution' => 'nullable|string|max:255',
-            'id_university' => 'nullable|exists:universities,id',
-            'id_study_program' => 'nullable|exists:study_programs,id',
             'position' => 'nullable|string|max:255',
-        ]);
+        ];
+
+        // Only allow certain roles to update university
+        if (in_array($user->role_selected, ['super_admin', 'admin_univ'])) {
+            $validation['id_university'] = 'nullable|exists:universities,id';
+        }
+
+        // Only super_admin can update study program directly
+        if ($user->role_selected === 'super_admin') {
+            $validation['id_study_program'] = 'nullable|exists:study_programs,id';
+        }
+
+        $request->validate($validation);
 
         // Update fields
         $user->name = $request->name;
         $user->email = $request->email;
         $user->phone = $request->phone;
         $user->address = $request->address;
-        $user->institution = $request->institution;
-        $user->id_university = $request->id_university;
-        $user->id_study_program = $request->id_study_program;
         $user->position = $request->position;
+
+        // Update university if allowed
+        if (in_array($user->role_selected, ['super_admin', 'admin_univ'])) {
+            $user->id_university = $request->id_university;
+        }
+
+        // Update study program if allowed (only super_admin)
+        if ($user->role_selected === 'super_admin' && $request->has('id_study_program')) {
+            $user->id_study_program = $request->id_study_program;
+        }
 
         $user->save();
 
@@ -140,7 +168,7 @@ class ProfileController extends Controller
 
             // Store new avatar
             $path = $request->file('avatar')->store('avatars', 'public');
-            
+
             $user->avatar = $path;
             $user->save();
 

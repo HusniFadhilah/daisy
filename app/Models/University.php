@@ -10,10 +10,14 @@ class University extends Model
     protected $fillable = [
         'code',
         'name',
+        'email',
         'logo_path',
+        'lpm_name',
+        'lpm_phone',
+        'lpm_mobile',
+        'lpm_email',
         'is_active',
         'is_example',
-        'email',
     ];
 
     public function studyPrograms()

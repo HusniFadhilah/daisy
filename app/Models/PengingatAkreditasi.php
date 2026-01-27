@@ -31,14 +31,14 @@ class PengingatAkreditasi extends Model
     // Status Constants
     public const STATUS_BELUM_DIRESPON = 'belum_direspon';
     public const STATUS_DIRESPON = 'direspon';
-    public const STATUS_KADALUARSA = 'kadaluarsa';
+    public const STATUS_KEDALUWARSA = 'kedaluwarsa';
 
     public static function statusOptions(): array
     {
         return [
             self::STATUS_BELUM_DIRESPON => 'Belum Direspon',
             self::STATUS_DIRESPON => 'Sudah Direspon',
-            self::STATUS_KADALUARSA => 'Kadaluarsa',
+            self::STATUS_KEDALUWARSA => 'Kedaluwarsa',
         ];
     }
 
@@ -69,9 +69,9 @@ class PengingatAkreditasi extends Model
         return $query->where('status', self::STATUS_DIRESPON);
     }
 
-    public function scopeKadaluarsa($query)
+    public function scopeKedaluwarsa($query)
     {
-        return $query->where('status', self::STATUS_KADALUARSA);
+        return $query->where('status', self::STATUS_KEDALUWARSA);
     }
 
     public function scopeByProdi($query, $prodiId)
@@ -95,7 +95,7 @@ class PengingatAkreditasi extends Model
         return match ($this->status) {
             self::STATUS_BELUM_DIRESPON => 'bg-warning',
             self::STATUS_DIRESPON => 'bg-success',
-            self::STATUS_KADALUARSA => 'bg-secondary',
+            self::STATUS_KEDALUWARSA => 'bg-secondary',
             default => 'bg-secondary',
         };
     }
@@ -122,7 +122,7 @@ class PengingatAkreditasi extends Model
     public function markAsExpired(): void
     {
         $this->update([
-            'status' => self::STATUS_KADALUARSA,
+            'status' => self::STATUS_KEDALUWARSA,
         ]);
     }
 }

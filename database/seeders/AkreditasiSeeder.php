@@ -53,7 +53,7 @@ class AkreditasiSeeder extends Seeder
                 // Konversi status dari CSV ke enum database
                 if ($status === 'Masih Berlaku') {
                     $status = 'Aktif';
-                } elseif (strpos($status, 'kadaluarsa') !== false || strpos($status, 'kedaluwarsa') !== false || strpos($status, 'hari lagi') !== false) {
+                } elseif (strpos($status, 'kedaluwarsa') !== false || strpos($status, 'kedaluwarsa') !== false || strpos($status, 'hari lagi') !== false) {
                     $status = 'Kedaluwarsa';
                 }
 

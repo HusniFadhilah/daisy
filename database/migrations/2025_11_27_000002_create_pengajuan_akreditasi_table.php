@@ -137,7 +137,7 @@ return new class extends Migration
             $table->year('tahun_akreditasi');
             $table->text('pesan_pengingat');
             $table->datetime('tanggal_dikirim');
-            $table->enum('status', ['belum_direspon', 'direspon', 'kadaluarsa'])
+            $table->enum('status', ['belum_direspon', 'direspon', 'kedaluwarsa'])
                 ->default('belum_direspon');
             $table->datetime('tanggal_direspon')->nullable();
             $table->foreignId('id_pengajuan')

@@ -88,7 +88,7 @@
 
             <div class="card">
                 <div class="card-header bg-light">
-                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Riwayat Pengajuan</h5>
+                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Riwayat Permohonan Akreditasi</h5>
                 </div>
                 <div class="card-body">
                     @forelse($historyPengajuan as $pengajuan)
@@ -117,7 +117,7 @@
                         </a>
                     </div>
                     @empty
-                    <p class="text-muted mb-0">Belum ada riwayat pengajuan</p>
+                    <p class="text-muted mb-0">Belum ada riwayat permohonan akreditasi</p>
                     @endforelse
                 </div>
             </div>

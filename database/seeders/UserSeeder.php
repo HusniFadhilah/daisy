@@ -37,6 +37,7 @@ class UserSeeder extends Seeder
                 'role' => 'user',
                 'role_selected' => 'asesi',
                 'roles' => ['asesi'],
+                'must_change_password' => true
             ],
             [
                 'name' => 'Asesor 1',
@@ -61,6 +62,7 @@ class UserSeeder extends Seeder
                 'role' => 'user',
                 'role_selected' => 'asesor',
                 'roles' => ['asesor'],
+                'must_change_password' => true
             ],
             [
                 'name' => 'Ahmad Fauzi',
@@ -69,6 +71,7 @@ class UserSeeder extends Seeder
                 'role' => 'user',
                 'role_selected' => 'asesor',
                 'roles' => ['asesor'],
+                'must_change_password' => true
             ],
             [
                 'name' => 'Dewi Lestari',
@@ -77,6 +80,7 @@ class UserSeeder extends Seeder
                 'role' => 'user',
                 'role_selected' => 'asesor',
                 'roles' => ['asesor'],
+                'must_change_password' => true
             ],
             [
                 'name' => 'Validator 1',
@@ -101,6 +105,7 @@ class UserSeeder extends Seeder
                 'role' => 'user',
                 'role_selected' => 'validator',
                 'roles' => ['validator'],
+                'must_change_password' => true
             ],
             [
                 'name' => 'Verifikator 1',
@@ -125,6 +130,7 @@ class UserSeeder extends Seeder
                 'role' => 'user',
                 'role_selected' => 'verifikator',
                 'roles' => ['verifikator'],
+                'must_change_password' => true
             ],
             [
                 'name' => 'Rina Wati',
@@ -133,6 +139,7 @@ class UserSeeder extends Seeder
                 'role' => 'user',
                 'role_selected' => 'verifikator',
                 'roles' => ['verifikator'],
+                'must_change_password' => true
             ],
             [
                 'name' => 'Perguruan Tinggi 1',
@@ -141,6 +148,7 @@ class UserSeeder extends Seeder
                 'role' => 'user',
                 'role_selected' => 'admin_univ',
                 'roles' => ['admin_univ'],
+                'must_change_password' => true
             ],
             [
                 'name' => 'Perguruan Tinggi 2',
@@ -149,6 +157,7 @@ class UserSeeder extends Seeder
                 'role' => 'user',
                 'role_selected' => 'admin_univ',
                 'roles' => ['admin_univ'],
+                'must_change_password' => true
             ],
             // ========================================
             // 8 UPPS DEPILAR (4 Rumpun × 2 Jenis)
@@ -156,70 +165,78 @@ class UserSeeder extends Seeder
 
             // UPPS VOKASI
             [
-                'name' => 'UPPS Vokasi Desain DEPILAR',
+                'name' => 'UPPS Vokasi - Desain DEPILAR',
                 'email' => 'upps.vokasi.desain@daisy.lamdepilar.or.id',
                 'password' => Hash::make('=Secret1234'),
                 'role' => 'user',
                 'role_selected' => 'admin_prodi',
                 'roles' => ['admin_prodi'],
+                'must_change_password' => true
             ],
             [
-                'name' => 'UPPS Vokasi Perencanaan DEPILAR',
+                'name' => 'UPPS Vokasi - Perencanaan DEPILAR',
                 'email' => 'upps.vokasi.perencanaan@daisy.lamdepilar.or.id',
                 'password' => Hash::make('=Secret1234'),
                 'role' => 'user',
                 'role_selected' => 'admin_prodi',
                 'roles' => ['admin_prodi'],
+                'must_change_password' => true
             ],
             [
-                'name' => 'UPPS Vokasi Lingkungan DEPILAR',
+                'name' => 'UPPS Vokasi - Lingkungan DEPILAR',
                 'email' => 'upps.vokasi.lingkungan@daisy.lamdepilar.or.id',
                 'password' => Hash::make('=Secret1234'),
                 'role' => 'user',
                 'role_selected' => 'admin_prodi',
                 'roles' => ['admin_prodi'],
+                'must_change_password' => true
             ],
             [
-                'name' => 'UPPS Vokasi Arsitektur DEPILAR',
+                'name' => 'UPPS Vokasi - Arsitektur DEPILAR',
                 'email' => 'upps.vokasi.arsitektur@daisy.lamdepilar.or.id',
                 'password' => Hash::make('=Secret1234'),
                 'role' => 'user',
                 'role_selected' => 'admin_prodi',
                 'roles' => ['admin_prodi'],
+                'must_change_password' => true
             ],
 
             // UPPS AKADEMIK
             [
-                'name' => 'UPPS Akademik Desain DEPILAR',
+                'name' => 'UPPS Akademik - Desain DEPILAR',
                 'email' => 'upps.akademik.desain@daisy.lamdepilar.or.id',
                 'password' => Hash::make('=Secret1234'),
                 'role' => 'user',
                 'role_selected' => 'admin_prodi',
                 'roles' => ['admin_prodi'],
+                'must_change_password' => true
             ],
             [
-                'name' => 'UPPS Akademik Perencanaan DEPILAR',
+                'name' => 'UPPS Akademik - Perencanaan DEPILAR',
                 'email' => 'upps.akademik.perencanaan@daisy.lamdepilar.or.id',
                 'password' => Hash::make('=Secret1234'),
                 'role' => 'user',
                 'role_selected' => 'admin_prodi',
                 'roles' => ['admin_prodi'],
+                'must_change_password' => true
             ],
             [
-                'name' => 'UPPS Akademik Lingkungan DEPILAR',
+                'name' => 'UPPS Akademik - Lingkungan DEPILAR',
                 'email' => 'upps.akademik.lingkungan@daisy.lamdepilar.or.id',
                 'password' => Hash::make('=Secret1234'),
                 'role' => 'user',
                 'role_selected' => 'admin_prodi',
                 'roles' => ['admin_prodi'],
+                'must_change_password' => true
             ],
             [
-                'name' => 'UPPS Akademik Arsitektur DEPILAR',
+                'name' => 'UPPS Akademik - Arsitektur DEPILAR',
                 'email' => 'upps.akademik.arsitektur@daisy.lamdepilar.or.id',
                 'password' => Hash::make('=Secret1234'),
                 'role' => 'user',
                 'role_selected' => 'admin_prodi',
                 'roles' => ['admin_prodi'],
+                'must_change_password' => true
             ],
             [
                 'name' => 'Keuangan LAMDEPILAR 1',
@@ -228,6 +245,7 @@ class UserSeeder extends Seeder
                 'role' => 'user',
                 'role_selected' => 'keuangan_lamdepilar',
                 'roles' => ['keuangan_lamdepilar'],
+                'must_change_password' => true
             ],
             [
                 'name' => 'Default User',

@@ -19,6 +19,12 @@ class StudyProgram extends Model
         'peringkat_akreditasi',
         'tanggal_kedaluwarsa',
         'status_kedaluwarsa',
+        'ketua_prodi_name',
+        'ketua_prodi_nip',
+        'ketua_tim_akreditasi',
+        'akreditasi_phone',
+        'akreditasi_mobile',
+        'akreditasi_email',
         'is_active',
         'is_example'
     ];

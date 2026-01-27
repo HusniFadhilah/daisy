@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DE\{ValidasiAKController, MasaSanggahController, PelaporanAKController, PelaporanALController, PenugasanAKController, PenugasanALController, PelaksanaanALController, SuratPermohonanController, ValidasiDokumenController, PelaporanBandingController, PelaporanDokumenController, PenerimaanDokumenController, PelaksanaanBandingController, ValidasiPembayaranController, PenyampaianTemplateController, PelaporanHasilAkreditasiController, PenetapanHasilAkreditasiController, PenyampaianHasilAkreditasiController, PenyimpananArsipAkreditasiController};
-use App\Http\Controllers\Profile\{PasswordResetController, ProfileController};
+use App\Http\Controllers\Profile\{PasswordResetController, ProfileController, ProdiDataController};
 use App\Http\Controllers\Prodi\{DeskEvaluatorController, PengajuanAkreditasiController, PemetaanAkreditasiController, PengajuanBorangController, BorangUploadController};
 use App\Http\Controllers\Master\{ElemenStandarController, JenisIndikatorController, IndikatorController, IndikatorPenilaianElemenController, KriteriaController, UniversityController, StudyProgramController};
 use App\Http\Controllers\Asesmen\{AsesmenController, AKController, ALController, ALDocumentController, BorangValidatorController, HasilAkreditasiController, PenawaranController, PelaporanController, ValidasiController};
@@ -641,7 +641,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // PROFIL & PENGATURAN
     Route::prefix('profile')->name('profile')->group(function () {
         Route::get('/', [ProfileController::class, 'index'])->name('.index');
-        Route::get('/', [ProfileController::class, 'index']); // alias
+        Route::get('/', [ProfileController::class, 'index']);
         Route::put('/', [ProfileController::class, 'update'])->name('.update');
         Route::post('/avatar', [ProfileController::class, 'updateAvatar'])->name('.avatar');
 
@@ -649,6 +649,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/password', [ProfileController::class, 'updatePassword'])->name('.password.update');
         Route::post('/switch-role', [ProfileController::class, 'switchRole'])->name('.switch-role');
         Route::get('/available-roles', [ProfileController::class, 'getAvailableRoles'])->name('.available-roles');
+
+        Route::get('/prodi-data', [ProdiDataController::class, 'index'])->name('.prodi-data');
+        Route::post('/prodi-data/university', [ProdiDataController::class, 'updateUniversity'])->name('.prodi-data.university'); // POST untuk AJAX
+        Route::post('/prodi-data/study-program/{id}', [ProdiDataController::class, 'updateStudyProgram'])->name('.prodi-data.study-program'); // POST untuk AJAX
+        Route::post('/prodi-data/logo', [ProdiDataController::class, 'updateLogo'])->name('.prodi-data.logo'); // Fix typo
     });
 
     // MASTER DATA (Admin Only)
@@ -694,6 +699,11 @@ Route::get('clearcache', function () {
     Illuminate\Support\Facades\Artisan::call('view:clear');
     Illuminate\Support\Facades\Artisan::call('config:clear');
     Illuminate\Support\Facades\Artisan::call('config:cache');
+});
+
+Route::get('migrateseed', function () {
+    Illuminate\Support\Facades\Artisan::call('migrate:fresh');
+    Illuminate\Support\Facades\Artisan::call('db:seed');
 });
 
 Route::get('/debug/dataset-borang', [\App\Http\Controllers\DatasetBorangController::class, 'index'])->name('debug.dataset-borang.index');

@@ -49,7 +49,7 @@
                     Periode: {{ \App\Libraries\Date::tglIndo($period['start_date']) }} - {{ \App\Libraries\Date::tglIndo($period['end_date']) }}
                 </p>
                 <div class="table-responsive">
-                    <table class="table table-hover">
+                    <table class="table table-hover datatable">
                         <thead class="table-light">
                             <tr>
                                 <th>No</th>
