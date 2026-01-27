@@ -368,14 +368,14 @@ class DashboardController extends Controller
     }
 
     /**
-     * ✅ Dashboard Admin Prodi
+     * ✅ Dashboard Admin Prodi / UPPS
      */
     private function dashboardAdminProdi()
     {
         $user = Auth::user();
         $now = Carbon::now();
 
-        // Get study programs for this admin
+        // Get study programs for this admin (UPPS)
         $studyProgramIds = $user->studyPrograms()->pluck('study_programs.id')->toArray();
 
         if (empty($studyProgramIds)) {
@@ -383,6 +383,10 @@ class DashboardController extends Controller
             $stats = [
                 'permohonan_berjalan' => 0,
                 'permohonan_selesai' => 0,
+                'permohonan_individual_berjalan' => 0,
+                'permohonan_kelompok_berjalan' => 0,
+                'permohonan_individual_selesai' => 0,
+                'permohonan_kelompok_selesai' => 0,
             ];
 
             $additionalStats = [
@@ -401,15 +405,16 @@ class DashboardController extends Controller
             ));
         }
 
-        // 1. Permohonan Berjalan
-        $permohonanBerjalan = PengajuanAkreditasi::nonExample()->whereIn('id_program_studi', $studyProgramIds)
+        // 1. Permohonan Berjalan (Total)
+        $permohonanBerjalan = PengajuanAkreditasi::nonExample()
+            ->whereIn('id_program_studi', $studyProgramIds)
             ->whereNotIn('status', [
                 PengajuanAkreditasi::STATUS_SELESAI,
                 PengajuanAkreditasi::STATUS_DITOLAK
             ])
             ->count();
 
-        // 2. ✅ Permohonan Selesai (dari status log)
+        // 2. ✅ Permohonan Selesai (Total dari status log)
         $permohonanSelesai = PengajuanStatusLog::where('status_to', PengajuanAkreditasi::STATUS_SELESAI)
             ->whereIn('id_pengajuan', function ($query) use ($studyProgramIds) {
                 $query->select('id')
@@ -419,14 +424,76 @@ class DashboardController extends Controller
             ->distinct('id_pengajuan')
             ->count('id_pengajuan');
 
+        // 3. ✅ Permohonan INDIVIDUAL Berjalan
+        $permohonanIndividualBerjalan = PengajuanAkreditasi::nonExample()
+            ->whereIn('id_program_studi', $studyProgramIds)
+            ->where(function ($query) {
+                $query->where('kelompok_akreditasi', 'individual')
+                    ->orWhereNull('kelompok_akreditasi'); // default ke individual
+            })
+            ->whereNotIn('status', [
+                PengajuanAkreditasi::STATUS_SELESAI,
+                PengajuanAkreditasi::STATUS_DITOLAK
+            ])
+            ->count();
+
+        // 4. ✅ Permohonan KELOMPOK Berjalan
+        $permohonanKelompokBerjalan = PengajuanAkreditasi::nonExample()
+            ->whereIn('id_program_studi', $studyProgramIds)
+            ->where('kelompok_akreditasi', 'kelompok')
+            ->whereNotIn('status', [
+                PengajuanAkreditasi::STATUS_SELESAI,
+                PengajuanAkreditasi::STATUS_DITOLAK
+            ])
+            ->count();
+
+        // 5. ✅ Permohonan INDIVIDUAL Selesai (dari status log)
+        $permohonanIndividualSelesai = PengajuanStatusLog::where('status_to', PengajuanAkreditasi::STATUS_SELESAI)
+            ->whereIn('id_pengajuan', function ($query) use ($studyProgramIds) {
+                $query->select('id')
+                    ->from('pengajuan_akreditasi')
+                    ->whereIn('id_program_studi', $studyProgramIds)
+                    ->where(function ($q) {
+                        $q->where('kelompok_akreditasi', 'individual')
+                            ->orWhereNull('kelompok_akreditasi');
+                    });
+            })
+            ->distinct('id_pengajuan')
+            ->count('id_pengajuan');
+
+        // 6. ✅ Permohonan KELOMPOK Selesai (dari status log)
+        $permohonanKelompokSelesai = PengajuanStatusLog::where('status_to', PengajuanAkreditasi::STATUS_SELESAI)
+            ->whereIn('id_pengajuan', function ($query) use ($studyProgramIds) {
+                $query->select('id')
+                    ->from('pengajuan_akreditasi')
+                    ->whereIn('id_program_studi', $studyProgramIds)
+                    ->where('kelompok_akreditasi', 'kelompok');
+            })
+            ->distinct('id_pengajuan')
+            ->count('id_pengajuan');
+
         $stats = [
             'permohonan_berjalan' => $permohonanBerjalan,
             'permohonan_selesai' => $permohonanSelesai,
+            'permohonan_individual_berjalan' => $permohonanIndividualBerjalan,
+            'permohonan_kelompok_berjalan' => $permohonanKelompokBerjalan,
+            'permohonan_individual_selesai' => $permohonanIndividualSelesai,
+            'permohonan_kelompok_selesai' => $permohonanKelompokSelesai,
         ];
 
         $additionalStats = [
             'total_prodi' => count($studyProgramIds),
             'total_pengajuan' => PengajuanAkreditasi::nonExample()->whereIn('id_program_studi', $studyProgramIds)->count(),
+            'total_individual' => PengajuanAkreditasi::nonExample()
+                ->whereIn('id_program_studi', $studyProgramIds)
+                ->where(function ($q) {
+                    $q->where('kelompok_akreditasi', 'individual')->orWhereNull('kelompok_akreditasi');
+                })
+                ->count(),
+            'total_kelompok' => PengajuanAkreditasi::nonExample()
+                ->whereIn('id_program_studi', $studyProgramIds)
+                ->where('kelompok_akreditasi', 'kelompok')
+                ->count(),
         ];
 
         $recentActivities = $this->getRecentActivitiesAdminProdi($studyProgramIds);

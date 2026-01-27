@@ -491,53 +491,103 @@
                                     <input type="text" name="search" id="searchInput" class="form-control" placeholder="Nama prodi..." value="{{ request('search') }}">
                                 </div>
 
-                                <!-- University -->
+                                <!-- Year Filter (Multiple) -->
+                                <div class="mb-3">
+                                    <label class="form-label text-white">Tahun Kedaluwarsa</label>
+                                    <select name="year[]" id="yearFilter" class="form-select" multiple>
+                                        @php
+                                        $currentYear = now()->year;
+                                        $selectedYears = (array)request('year', []);
+                                        @endphp
+                                        @for($year = $currentYear; $year <= $currentYear + 10; $year++) <option value="{{ $year }}" {{ in_array($year, $selectedYears) ? 'selected' : '' }}>
+                                            {{ $year }}
+                                            </option>
+                                            @endfor
+                                    </select>
+                                    <small class="text-white opacity-75 mt-1 d-block">Pilih tahun kedaluwarsa</small>
+                                </div>
+
+                                <!-- Month Filter (Multiple) -->
+                                <div class="mb-3">
+                                    <label class="form-label text-white">Bulan Kedaluwarsa</label>
+                                    <select name="month[]" id="monthFilter" class="form-select" multiple>
+                                        @php
+                                        $months = [
+                                        1 => 'Januari', 2 => 'Februari', 3 => 'Maret',
+                                        4 => 'April', 5 => 'Mei', 6 => 'Juni',
+                                        7 => 'Juli', 8 => 'Agustus', 9 => 'September',
+                                        10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                                        ];
+                                        $selectedMonths = (array)request('month', []);
+                                        @endphp
+                                        @foreach($months as $num => $name)
+                                        <option value="{{ $num }}" {{ in_array($num, $selectedMonths) ? 'selected' : '' }}>
+                                            {{ $name }}
+                                        </option>
+                                        @endforeach
+                                    </select>
+                                    <small class="text-white opacity-75 mt-1 d-block">Pilih bulan kedaluwarsa</small>
+                                </div>
+
+                                <!-- University (Multiple) -->
                                 <div class="mb-3">
                                     <label class="form-label text-white">Universitas</label>
-                                    <select name="university_id" id="universityFilter" class="form-select">
-                                        <option value="">Semua Universitas</option>
+                                    <select name="university_id[]" id="universityFilter" class="form-select" multiple>
                                         @foreach($universities as $univ)
-                                        <option value="{{ $univ->id }}" {{ request('university_id') == $univ->id ? 'selected' : '' }}>
+                                        <option value="{{ $univ->id }}" {{ in_array($univ->id, (array)request('university_id', [])) ? 'selected' : '' }}>
                                             {{ $univ->name }}
                                         </option>
                                         @endforeach
                                     </select>
+                                    <small class="text-white opacity-75 mt-1 d-block">Pilih satu atau lebih</small>
                                 </div>
 
-                                <!-- Degree Level -->
+                                <!-- Degree Level (Multiple) -->
                                 <div class="mb-3">
                                     <label class="form-label text-white">Jenjang</label>
-                                    <select name="degree_level_id" id="degreeLevelFilter" class="form-select">
-                                        <option value="">Semua Jenjang</option>
+                                    <select name="degree_level_id[]" id="degreeLevelFilter" class="form-select" multiple>
                                         @foreach($degreeLevels as $level)
-                                        <option value="{{ $level->id }}" {{ request('degree_level_id') == $level->id ? 'selected' : '' }}>
+                                        <option value="{{ $level->id }}" {{ in_array($level->id, (array)request('degree_level_id', [])) ? 'selected' : '' }}>
                                             {{ $level->name }}
                                         </option>
                                         @endforeach
                                     </select>
+                                    <small class="text-white opacity-75 mt-1 d-block">Pilih satu atau lebih</small>
                                 </div>
 
-                                <!-- Status -->
+                                <!-- Status (Multiple) -->
                                 <div class="mb-3">
                                     <label class="form-label text-white">Status Akreditasi</label>
-                                    <select name="status_kedaluwarsa" id="statusFilter" class="form-select">
-                                        <option value="">Semua Status</option>
-                                        <option value="Aktif" {{ request('status_kedaluwarsa') == 'Aktif' ? 'selected' : '' }}>Aktif</option>
-                                        <option value="Kedaluwarsa" {{ request('status_kedaluwarsa') == 'Kedaluwarsa' ? 'selected' : '' }}>Kedaluwarsa</option>
-                                        <option value="Belum Terakreditasi" {{ request('status_kedaluwarsa') == 'Belum Terakreditasi' ? 'selected' : '' }}>Belum Terakreditasi</option>
+                                    <select name="status_kedaluwarsa[]" id="statusFilter" class="form-select" multiple>
+                                        <option value="Aktif" {{ in_array('Aktif', (array)request('status_kedaluwarsa', [])) ? 'selected' : '' }}>Aktif</option>
+                                        <option value="Kedaluwarsa" {{ in_array('Kedaluwarsa', (array)request('status_kedaluwarsa', [])) ? 'selected' : '' }}>Kedaluwarsa</option>
+                                        <option value="Belum Terakreditasi" {{ in_array('Belum Terakreditasi', (array)request('status_kedaluwarsa', [])) ? 'selected' : '' }}>Belum Terakreditasi</option>
                                     </select>
+                                    <small class="text-white opacity-75 mt-1 d-block">Pilih satu atau lebih</small>
                                 </div>
 
-                                <!-- Peringkat -->
+                                <!-- Peringkat (Multiple) -->
+                                @php
+                                $selectedPeringkat = (array) request()->input('peringkat', []);
+                                @endphp
+
                                 <div class="mb-3">
                                     <label class="form-label text-white">Peringkat</label>
-                                    <select name="peringkat" id="peringkatFilter" class="form-select">
-                                        <option value="">Semua Peringkat</option>
-                                        <option value="Unggul" {{ request('peringkat') == 'Unggul' ? 'selected' : '' }}>Unggul</option>
-                                        <option value="Baik Sekali" {{ request('peringkat') == 'Baik Sekali' ? 'selected' : '' }}>Baik Sekali</option>
-                                        <option value="Baik" {{ request('peringkat') == 'Baik' ? 'selected' : '' }}>Baik</option>
-                                        <option value="C" {{ request('peringkat') == 'C' ? 'selected' : '' }}>C</option>
+                                    <select name="peringkat[]" id="peringkatFilter" class="form-select" multiple>
+                                        <option value="Unggul" {{ in_array('Unggul', $selectedPeringkat) ? 'selected' : '' }}>
+                                            Unggul
+                                        </option>
+                                        <option value="Baik Sekali" {{ in_array('Baik Sekali', $selectedPeringkat) ? 'selected' : '' }}>
+                                            Baik Sekali
+                                        </option>
+                                        <option value="Baik" {{ in_array('Baik', $selectedPeringkat) ? 'selected' : '' }}>
+                                            Baik
+                                        </option>
+                                        <option value="C" {{ in_array('C', $selectedPeringkat) ? 'selected' : '' }}>
+                                            C
+                                        </option>
                                     </select>
+                                    <small class="text-white text-block opacity-75 mt-1 d-block">Pilih satu atau lebih</small>
                                 </div>
 
                                 <!-- Buttons -->
@@ -549,11 +599,19 @@
                                         <i class="bi bi-x-circle"></i> Reset
                                     </button>
                                 </div>
+
+                                <!-- Active Filters Badge -->
+                                <div id="activeFiltersCount" class="mt-3 text-center d-none">
+                                    <span class="badge bg-light text-dark">
+                                        <i class="bi bi-funnel-fill"></i>
+                                        <span id="filterCount">0</span> Filter Aktif
+                                    </span>
+                                </div>
                             </form>
                         </div>
                     </div>
 
-                    <!-- Peringkat Distribution (keep existing) -->
+                    <!-- Peringkat Distribution -->
                     <div class="card mt-3">
                         <div class="card-header bg-light">
                             <h6 class="mb-0">
@@ -714,14 +772,173 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
 @push('scripts')
 <script>
     let prodiSelect2Initialized = false;
+    let filterSelect2Initialized = false;
 
+    function initFilterSelect2() {
+        if (filterSelect2Initialized) return;
+
+        // Year Filter
+        $('#yearFilter').select2({
+            theme: 'bootstrap-5'
+            , placeholder: 'Pilih Tahun...'
+            , allowClear: true
+            , width: '100%'
+            , closeOnSelect: false
+            , language: {
+                noResults: function() {
+                    return "Tidak ada hasil";
+                }
+                , searching: function() {
+                    return "Mencari...";
+                }
+            }
+        });
+
+        // Month Filter
+        $('#monthFilter').select2({
+            theme: 'bootstrap-5'
+            , placeholder: 'Pilih Bulan...'
+            , allowClear: true
+            , width: '100%'
+            , closeOnSelect: false
+            , language: {
+                noResults: function() {
+                    return "Tidak ada hasil";
+                }
+                , searching: function() {
+                    return "Mencari...";
+                }
+            }
+        });
+
+        // University Filter
+        $('#universityFilter').select2({
+            theme: 'bootstrap-5'
+            , placeholder: 'Pilih Universitas...'
+            , allowClear: true
+            , width: '100%'
+            , closeOnSelect: false
+            , language: {
+                noResults: function() {
+                    return "Tidak ada hasil";
+                }
+                , searching: function() {
+                    return "Mencari...";
+                }
+            }
+        });
+
+        // Degree Level Filter
+        $('#degreeLevelFilter').select2({
+            theme: 'bootstrap-5'
+            , placeholder: 'Pilih Jenjang...'
+            , allowClear: true
+            , width: '100%'
+            , closeOnSelect: false
+            , language: {
+                noResults: function() {
+                    return "Tidak ada hasil";
+                }
+                , searching: function() {
+                    return "Mencari...";
+                }
+            }
+        });
+
+        // Status Filter
+        $('#statusFilter').select2({
+            theme: 'bootstrap-5'
+            , placeholder: 'Pilih Status...'
+            , allowClear: true
+            , width: '100%'
+            , closeOnSelect: false
+            , language: {
+                noResults: function() {
+                    return "Tidak ada hasil";
+                }
+                , searching: function() {
+                    return "Mencari...";
+                }
+            }
+        });
+
+        // Peringkat Filter
+        $('#peringkatFilter').select2({
+            theme: 'bootstrap-5'
+            , placeholder: 'Pilih Peringkat...'
+            , allowClear: true
+            , width: '100%'
+            , closeOnSelect: false
+            , language: {
+                noResults: function() {
+                    return "Tidak ada hasil";
+                }
+                , searching: function() {
+                    return "Mencari...";
+                }
+            }
+        });
+
+        filterSelect2Initialized = true;
+
+        // Update filter count on change
+        updateActiveFilterCount();
+
+        $('#yearFilter, #monthFilter, #universityFilter, #degreeLevelFilter, #statusFilter, #peringkatFilter').on('change', function() {
+            updateActiveFilterCount();
+        });
+    }
+
+    // ========================================
+    // ✅ UPDATE ACTIVE FILTER COUNT
+    // ========================================
+    function updateActiveFilterCount() {
+        let count = 0;
+
+        if ($('#yearFilter').val() && $('#yearFilter').val().length > 0) count++;
+        if ($('#monthFilter').val() && $('#monthFilter').val().length > 0) count++;
+        if ($('#universityFilter').val() && $('#universityFilter').val().length > 0) count++;
+        if ($('#degreeLevelFilter').val() && $('#degreeLevelFilter').val().length > 0) count++;
+        if ($('#statusFilter').val() && $('#statusFilter').val().length > 0) count++;
+        if ($('#peringkatFilter').val() && $('#peringkatFilter').val().length > 0) count++;
+        if ($('#searchInput').val().trim() !== '') count++;
+
+        const badge = $('#activeFiltersCount');
+        const countSpan = $('#filterCount');
+
+        if (count > 0) {
+            countSpan.text(count);
+            badge.removeClass('d-none');
+        } else {
+            badge.addClass('d-none');
+        }
+    }
+
+    // ========================================
+    // ✅ GET FILTER PARAMS
+    // ========================================
+    function getFilterParams() {
+        return {
+            search: $('#searchInput').val() || ''
+            , year: $('#yearFilter').val() || []
+            , month: $('#monthFilter').val() || []
+            , university_id: $('#universityFilter').val() || []
+            , degree_level_id: $('#degreeLevelFilter').val() || []
+            , status_kedaluwarsa: $('#statusFilter').val() || []
+            , peringkat: $('#peringkatFilter').val() || []
+        };
+    }
+
+    // ========================================
+    // ✅ INITIALIZE SELECT2 FOR PRODI REMINDER
+    // ========================================
     function initSelect2Prodi() {
         if (prodiSelect2Initialized) return;
 
         $('#selectProdiPengingat').select2({
-            theme: 'bootstrap-5', // kalau pakai tema bootstrap5
-            dropdownParent: $('#modalKirimPengingat'), // penting: biar dropdown muncul di atas modal
-            placeholder: 'Cari & pilih Program Studi...'
+            theme: 'bootstrap-5'
+            , dropdownParent: $('#modalKirimPengingat')
+            , placeholder: 'Cari & pilih Program Studi...'
             , allowClear: true
             , width: '100%'
             , ajax: {
@@ -744,7 +961,7 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
         prodiSelect2Initialized = true;
     }
 
-    // Saat modal "Kirim Pengingat" dibuka -> init select2
+    // Saat modal "Kirim Pengingat" dibuka
     document.getElementById('modalKirimPengingat').addEventListener('shown.bs.modal', function() {
         initSelect2Prodi();
     });
@@ -756,24 +973,18 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
         const id = btn.getAttribute('data-id-study-program');
         const text = btn.getAttribute('data-text-study-program') || `Prodi #${id}`;
 
-        // modal kirim pengingat akan kebuka oleh bootstrap,
-        // kita tunggu sampai modalnya "shown", lalu set pilihan.
         const modalEl = document.getElementById('modalKirimPengingat');
 
         const onShown = function() {
             initSelect2Prodi();
 
-            // ✅ Tambahkan option jika belum ada, lalu select
             const $select = $('#selectProdiPengingat');
-
-            // cek apakah id sudah ada di selected
             const exists = $select.find("option[value='" + id + "']").length > 0;
 
             if (!exists) {
                 const newOption = new Option(text, id, true, true);
                 $select.append(newOption).trigger('change');
             } else {
-                // kalau sudah ada optionnya, tinggal set selected true
                 $select.val([...(new Set([...($select.val() || []), id]))]).trigger('change');
             }
 
@@ -785,7 +996,6 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
 
     document.querySelectorAll('[data-bs-target="#modalKirimPengingat"]').forEach(btn => {
         btn.addEventListener('click', function() {
-            // kalau tombol TIDAK punya data-id-study-program => reset
             if (!this.hasAttribute('data-id-study-program')) {
                 const modalEl = document.getElementById('modalKirimPengingat');
 
@@ -801,10 +1011,15 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
     });
 
     // ========================================
-    // TIMELINE VIEW AJAX (Keep existing)
+    // ✅ TIMELINE VIEW AJAX WITH FILTERS
     // ========================================
     document.getElementById('periodeSelector').addEventListener('change', async function() {
-        const periode = this.value;
+        await loadTimelineWithFilters();
+    });
+
+    async function loadTimelineWithFilters() {
+        const periode = document.getElementById('periodeSelector').value;
+        const filters = getFilterParams();
         const loadingOverlay = document.getElementById('timelineLoading');
         const timelineContainer = document.getElementById('timelineContainer');
         const periodeLabelText = document.getElementById('periodeLabelText');
@@ -812,7 +1027,22 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
         try {
             loadingOverlay.classList.remove('d-none');
 
-            const response = await fetch(`{{ route('de.pemetaan.timeline.ajax') }}?periode=${periode}`, {
+            // Build query string
+            const queryParams = new URLSearchParams();
+            queryParams.append('periode', periode);
+
+            // Add filters
+            Object.keys(filters).forEach(key => {
+                if (Array.isArray(filters[key]) && filters[key].length > 0) {
+                    filters[key].forEach(value => {
+                        queryParams.append(`${key}[]`, value);
+                    });
+                } else if (!Array.isArray(filters[key]) && filters[key]) {
+                    queryParams.append(key, filters[key]);
+                }
+            });
+
+            const response = await fetch(`{{ route('de.pemetaan.timeline.ajax') }}?${queryParams}`, {
                 method: 'GET'
                 , headers: {
                     'X-Requested-With': 'XMLHttpRequest'
@@ -826,7 +1056,6 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
                 timelineContainer.innerHTML = data.html;
                 periodeLabelText.textContent = data.periode_label;
 
-                // Update URL
                 const newUrl = new URL(window.location);
                 newUrl.searchParams.set('periode', periode);
                 window.history.pushState({
@@ -840,19 +1069,33 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
         } finally {
             loadingOverlay.classList.add('d-none');
         }
-    });
+    }
 
     // ========================================
-    // ✅ CALENDAR VIEW AJAX
+    // ✅ CALENDAR VIEW AJAX WITH FILTERS
     // ========================================
     async function refreshCalendar() {
+        const filters = getFilterParams();
         const loadingOverlay = document.getElementById('calendarLoading');
         const calendarContainer = document.getElementById('calendarContainer');
 
         try {
             loadingOverlay.classList.remove('d-none');
 
-            const response = await fetch(`{{ route('de.pemetaan.calendar.ajax') }}`, {
+            // Build query string
+            const queryParams = new URLSearchParams();
+
+            Object.keys(filters).forEach(key => {
+                if (Array.isArray(filters[key]) && filters[key].length > 0) {
+                    filters[key].forEach(value => {
+                        queryParams.append(`${key}[]`, value);
+                    });
+                } else if (!Array.isArray(filters[key]) && filters[key]) {
+                    queryParams.append(key, filters[key]);
+                }
+            });
+
+            const response = await fetch(`{{ route('de.pemetaan.calendar.ajax') }}?${queryParams}`, {
                 method: 'GET'
                 , headers: {
                     'X-Requested-With': 'XMLHttpRequest'
@@ -865,7 +1108,6 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
             if (data.success) {
                 calendarContainer.innerHTML = data.html;
 
-                // Update URL
                 const newUrl = new URL(window.location);
                 newUrl.searchParams.set('view', 'calendar');
                 window.history.pushState({
@@ -890,8 +1132,18 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
         try {
             loadingOverlay.classList.remove('d-none');
 
-            // Build query string
-            const queryString = new URLSearchParams(params).toString();
+            // Build query string with arrays properly
+            const queryString = new URLSearchParams();
+
+            Object.keys(params).forEach(key => {
+                if (Array.isArray(params[key])) {
+                    params[key].forEach(value => {
+                        queryString.append(`${key}[]`, value);
+                    });
+                } else if (params[key]) {
+                    queryString.append(key, params[key]);
+                }
+            });
 
             const response = await fetch(`{{ route('de.pemetaan.table.ajax') }}?${queryString}`, {
                 method: 'GET'
@@ -907,14 +1159,17 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
                 tableContainer.innerHTML = data.html;
 
                 // Update total count
-                document.getElementById('totalPrograms').textContent = data.total;
+                const totalElement = document.getElementById('totalPrograms');
+                if (totalElement) {
+                    totalElement.textContent = data.total;
+                }
 
                 // Update URL
                 const newUrl = new URL(window.location);
                 newUrl.searchParams.set('view', 'table');
                 Object.keys(params).forEach(key => {
-                    if (params[key]) {
-                        newUrl.searchParams.set(key, params[key]);
+                    if (params[key] && params[key].length > 0) {
+                        newUrl.searchParams.set(key, JSON.stringify(params[key]));
                     } else {
                         newUrl.searchParams.delete(key);
                     }
@@ -932,65 +1187,94 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
         }
     }
 
-    // Apply filters
+    // ========================================
+    // ✅ APPLY FILTERS
+    // ========================================
     function applyFilters() {
-        const params = {
-            search: document.getElementById('searchInput').value
-            , university_id: document.getElementById('universityFilter').value
-            , degree_level_id: document.getElementById('degreeLevelFilter').value
-            , status_kedaluwarsa: document.getElementById('statusFilter').value
-            , peringkat: document.getElementById('peringkatFilter').value
-        , };
+        const params = getFilterParams();
 
-        loadTable(params);
+        // Check which tab is active
+        const activeTab = document.querySelector('button[data-bs-toggle="tab"].active');
+        const targetId = activeTab ? activeTab.getAttribute('data-bs-target') : null;
+
+        if (targetId === '#timeline-view') {
+            loadTimelineWithFilters();
+        } else if (targetId === '#calendar-view') {
+            refreshCalendar();
+        } else {
+            loadTable(params);
+        }
     }
 
-    // Reset filters
+    // ========================================
+    // ✅ RESET FILTERS
+    // ========================================
     function resetFilters() {
         document.getElementById('searchInput').value = '';
-        document.getElementById('universityFilter').value = '';
-        document.getElementById('degreeLevelFilter').value = '';
-        document.getElementById('statusFilter').value = '';
-        document.getElementById('peringkatFilter').value = '';
+        $('#yearFilter').val(null).trigger('change');
+        $('#monthFilter').val(null).trigger('change');
+        $('#universityFilter').val(null).trigger('change');
+        $('#degreeLevelFilter').val(null).trigger('change');
+        $('#statusFilter').val(null).trigger('change');
+        $('#peringkatFilter').val(null).trigger('change');
 
-        loadTable({});
+        updateActiveFilterCount();
+
+        // Check which tab is active
+        const activeTab = document.querySelector('button[data-bs-toggle="tab"].active');
+        const targetId = activeTab ? activeTab.getAttribute('data-bs-target') : null;
+
+        if (targetId === '#timeline-view') {
+            loadTimelineWithFilters();
+        } else if (targetId === '#calendar-view') {
+            refreshCalendar();
+        } else {
+            loadTable({});
+        }
     }
 
-    // ✅ Auto-apply filters on change
-    ['searchInput', 'universityFilter', 'degreeLevelFilter', 'statusFilter', 'peringkatFilter'].forEach(id => {
-        const element = document.getElementById(id);
-        if (element) {
-            if (id === 'searchInput') {
-                // Debounce search input
-                let searchTimeout;
-                element.addEventListener('input', function() {
-                    clearTimeout(searchTimeout);
-                    searchTimeout = setTimeout(() => applyFilters(), 500);
-                });
-            } else {
-                element.addEventListener('change', applyFilters);
-            }
-        }
+    // ========================================
+    // ✅ AUTO-APPLY FILTERS ON CHANGE
+    // ========================================
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Select2
+        initFilterSelect2();
+
+        // Search input with debounce
+        let searchTimeout;
+        document.getElementById('searchInput').addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                updateActiveFilterCount();
+                applyFilters();
+            }, 500);
+        });
+
+        // Select2 filters
+        $('#yearFilter, #monthFilter, #universityFilter, #degreeLevelFilter, #statusFilter, #peringkatFilter').on('change', function() {
+            applyFilters();
+        });
     });
 
     // ========================================
-    // ✅ TAB SWITCHING WITH AJAX
+    // ✅ TAB SWITCHING WITH FILTERS
     // ========================================
     document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(tab => {
         tab.addEventListener('shown.bs.tab', function(event) {
             const targetId = event.target.getAttribute('data-bs-target');
 
-            // Update URL based on active tab
             const newUrl = new URL(window.location);
 
             if (targetId === '#timeline-view') {
                 newUrl.searchParams.set('view', 'timeline');
+                loadTimelineWithFilters();
             } else if (targetId === '#calendar-view') {
                 newUrl.searchParams.set('view', 'calendar');
-                // Optionally refresh calendar
-                // refreshCalendar();
+                refreshCalendar();
             } else if (targetId === '#table-view') {
                 newUrl.searchParams.set('view', 'table');
+                const params = getFilterParams();
+                loadTable(params);
             }
 
             window.history.pushState({
@@ -1007,7 +1291,7 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
             if (event.state.view === 'timeline' && event.state.periode) {
                 document.getElementById('timeline-tab').click();
                 document.getElementById('periodeSelector').value = event.state.periode;
-                document.getElementById('periodeSelector').dispatchEvent(new Event('change'));
+                loadTimelineWithFilters();
             } else if (event.state.view === 'calendar') {
                 document.getElementById('calendar-tab').click();
             } else if (event.state.view === 'table') {
@@ -1048,11 +1332,12 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
         }
     });
 
+    // ========================================
+    // ✅ REMINDER MODAL
+    // ========================================
     function openReminderModal() {
         const modal = new bootstrap.Modal(document.getElementById('reminderModal'));
         modal.show();
-
-        // load pertama kali (pakai nilai default select)
         loadReminderDetail();
     }
 
@@ -1070,8 +1355,6 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
             const baseUrl = `{{ route('de.pemetaan.reminder.detail.ajax') }}`;
             const url = new URL(baseUrl, window.location.origin);
 
-            // kalau pageUrl berasal dari pagination link, biasanya sudah punya ?page=...
-            // jadi kita set/overwrite juga param target/window
             url.searchParams.set('target_months', targetMonths);
             url.searchParams.set('window_months', windowMonths);
 
@@ -1087,7 +1370,7 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
 
             container.innerHTML = data.html;
 
-            // Tangkap klik pagination agar tetap AJAX
+            // Tangkap klik pagination
             container.querySelectorAll('.pagination a').forEach(a => {
                 a.addEventListener('click', (e) => {
                     e.preventDefault();
@@ -1098,16 +1381,16 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
         } catch (err) {
             console.error(err);
             container.innerHTML = `
-      <div class="alert alert-danger">
-        Gagal memuat detail pengingat.
-      </div>
-    `;
+                <div class="alert alert-danger">
+                    Gagal memuat detail pengingat.
+                </div>
+            `;
         } finally {
             loading.classList.add('d-none');
         }
     }
 
-    // optional: auto reload ketika dropdown berubah
+    // Auto reload ketika dropdown berubah
     ['reminderTargetMonths', 'reminderWindowMonths'].forEach(id => {
         document.addEventListener('change', (e) => {
             if (e.target && e.target.id === id) {
@@ -1115,6 +1398,12 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
             }
         });
     });
+
+    // Toast notification helper
+    function showToast(type, message) {
+        // Implement your toast notification here
+        console.log(`${type}: ${message}`);
+    }
 
 </script>
 @endpush

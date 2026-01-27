@@ -19,11 +19,13 @@ class DatabaseSeeder extends Seeder
         $this->clearStorageFolders();
         $this->call([
             RoleSeeder::class,
-            UserSeeder::class,
             StudyProgramCategorySeeder::class,
             DegreeLevelSeeder::class,
             UniversitySeeder::class,
             StudyProgramSeeder::class,
+            AkreditasiSeeder::class,
+            UserSeeder::class,
+            StudyProgramUserSeeder::class,
             KriteriaSeeder::class,
             ElemenStandarSeeder::class,
             PernyataanSeeder::class,
@@ -31,8 +33,6 @@ class DatabaseSeeder extends Seeder
             IndikatorSeeder::class,
             JenjangPenilaianSeeder::class,
             IndikatorPenilaianElemenSeeder::class,
-            AkreditasiSeeder::class,
-            StudyProgramUserSeeder::class,
             AsesmenUserRoleSeeder::class,
             // PengajuanAkreditasiSeeder::class,
             DatasetBorangSeeder::class,

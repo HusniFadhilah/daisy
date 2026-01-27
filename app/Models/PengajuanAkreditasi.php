@@ -11,6 +11,9 @@ class PengajuanAkreditasi extends Model
 {
     protected $table = 'pengajuan_akreditasi';
 
+    public const KELOMPOK_INDIVIDUAL = 'individual';
+    public const KELOMPOK_KELOMPOK = 'kelompok';
+
     public const DAFTAR_TEMPLATE = 'Template LED+Suplemen dan LKPS';
     // ============================================
     // STATUS CONSTANTS (20 Steps)
@@ -90,6 +93,7 @@ class PengajuanAkreditasi extends Model
         'id_validator_assigned',
         'tahun_akreditasi',
         'jenis_akreditasi',
+        'kelompok_akreditasi',
         'tanggal_pengajuan',
         'catatan_pengaju',
         'status',
@@ -183,6 +187,26 @@ class PengajuanAkreditasi extends Model
     public function scopeExample($query)
     {
         return $query->where('is_example', true);
+    }
+
+    /**
+     * Get kelompok akreditasi options
+     */
+    public static function kelompokAkreditasiOptions()
+    {
+        return [
+            self::KELOMPOK_INDIVIDUAL => 'Individual (Per Program Studi)',
+            self::KELOMPOK_KELOMPOK => 'Kelompok (Beberapa Program Studi)',
+        ];
+    }
+
+    /**
+     * Get kelompok akreditasi label
+     */
+    public function getKelompokAkreditasiLabelAttribute()
+    {
+        $options = self::kelompokAkreditasiOptions();
+        return $options[$this->kelompok_akreditasi] ?? 'Individual';
     }
 
     // ============================================

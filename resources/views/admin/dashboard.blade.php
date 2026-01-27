@@ -11,7 +11,17 @@ $authUser = auth()->user();
     <section class="welcome-section">
         <div class="welcome-content">
             <h2>Selamat Datang Kembali, {{ $authUser->name }}! 👋</h2>
-            <p class="mb-0">Role Anda adalah {{ $authUser->role_alias }}</p>
+            <div class="d-flex flex-wrap align-items-center gap-3">
+                <p class="mb-0">Role Anda adalah <span class="badge bg-primary">{{ $authUser->role_alias }}</span></p>
+
+                @if($authUser->id_university && $authUser->university)
+                <span class="text-muted">|</span>
+                <p class="mb-0">
+                    <i class="bi bi-building me-1"></i>
+                    <strong>{{ $authUser->university->name }}</strong>
+                </p>
+                @endif
+            </div>
         </div>
     </section>
 
@@ -150,31 +160,7 @@ $authUser = auth()->user();
     @endif
 
     @if(in_array($authUser->role_selected,['admin_prodi','admin_univ']))
-    <div class="row g-4 mb-4">
-        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div>
-                        <div class="stat-title">Permohonan Akreditasi Berjalan</div>
-                        <div class="stat-value">{{ $stats['permohonan_berjalan'] ?? 0 }}</div>
-                    </div>
-                    <div class="stat-icon">📨</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
-            <div class="stat-card success">
-                <div class="stat-header">
-                    <div>
-                        <div class="stat-title">Permohonan Akreditasi Selesai</div>
-                        <div class="stat-value">{{ $stats['permohonan_selesai'] ?? 0 }}</div>
-                    </div>
-                    <div class="stat-icon">✅</div>
-                </div>
-            </div>
-        </div>
-    </div>
+    @include('admin.upps-dashboard')
     @endif
 
     @if(in_array($authUser->role_selected,['keuangan_lamdepilar']))

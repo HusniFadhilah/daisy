@@ -28,7 +28,7 @@
                         @endforeach
                     </select>
                     @error('id_elemen')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                    <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
@@ -43,24 +43,22 @@
                         @endforeach
                     </select>
                     @error('id_category')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                    <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label">Bobot <span class="text-danger">*</span></label>
-                    <input type="number" name="bobot" class="form-control @error('bobot') is-invalid @enderror" 
-                           value="{{ old('bobot') }}" min="0" max="100" required placeholder="Masukkan bobot (0-100)">
+                    <input type="number" name="bobot" class="form-control @error('bobot') is-invalid @enderror" value="{{ old('bobot') }}" min="0" max="100" required placeholder="Masukkan bobot (0-100)">
                     <small class="text-muted">Bobot dalam skala 0-100</small>
                     @error('bobot')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                    <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
                 <div class="mb-3">
                     <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="is_active" id="isActive" 
-                               value="1" {{ old('is_active', true) ? 'checked' : '' }}>
+                        <input class="form-check-input" type="checkbox" name="is_active" id="isActive" value="1" {{ old('is_active', true) ? 'checked' : '' }}>
                         <label class="form-check-label" for="isActive">
                             Aktif
                         </label>
@@ -81,10 +79,6 @@
 </div>
 @endsection
 
-@push('styles')
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
-@endpush
 
 @push('scripts')
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -92,9 +86,10 @@
 <script>
     $(document).ready(function() {
         $('select[name="id_elemen"], select[name="id_category"]').select2({
-            theme: 'bootstrap-5',
-            width: '100%'
+            theme: 'bootstrap-5'
+            , width: '100%'
         });
     });
+
 </script>
 @endpush

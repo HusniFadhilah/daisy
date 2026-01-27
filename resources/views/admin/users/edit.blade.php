@@ -19,19 +19,17 @@
 
                 <div class="mb-3">
                     <label for="name" class="form-label">Nama Lengkap <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control @error('name') is-invalid @enderror"
-                           id="name" name="name" value="{{ old('name', $user->name) }}" required>
+                    <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name', $user->name) }}" required>
                     @error('name')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                    <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
                 <div class="mb-3">
                     <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
-                    <input type="email" class="form-control @error('email') is-invalid @enderror"
-                           id="email" name="email" value="{{ old('email', $user->email) }}" required>
+                    <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email" value="{{ old('email', $user->email) }}" required>
                     @error('email')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                    <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
@@ -43,7 +41,7 @@
                         <option value="user" {{ old('role', $user->role) === 'user' ? 'selected' : '' }}>User</option>
                     </select>
                     @error('role')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                    <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
@@ -58,11 +56,11 @@
                         <option value="validator" {{ old('role_selected', $user->role_selected) === 'validator' ? 'selected' : '' }}>Validator</option>
                         <option value="verifikator" {{ old('role_selected', $user->role_selected) === 'verifikator' ? 'selected' : '' }}>Verifikator</option>
                         <option value="admin_univ" {{ old('role_selected', $user->role_selected) === 'admin_univ' ? 'selected' : '' }}>PT</option>
-                        <option value="admin_prodi" {{ old('role_selected', $user->role_selected) === 'admin_prodi' ? 'selected' : '' }}>PS/UPPS/PT</option>
+                        <option value="admin_prodi" {{ old('role_selected', $user->role_selected) === 'admin_prodi' ? 'selected' : '' }}>PT/UPPS/PS</option>
                     </select>
                     <small class="text-muted">Role yang sedang aktif untuk user ini</small>
                     @error('role_selected')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                    <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
@@ -95,7 +93,7 @@
                         </div>
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" name="roles[]" value="admin_prodi" id="edit_role_admin_prodi" {{ in_array('admin_prodi', old('roles', $user->roles ?? [])) ? 'checked' : '' }}>
-                            <label class="form-check-label" for="edit_role_admin_prodi">PS/UPPS/PT</label>
+                            <label class="form-check-label" for="edit_role_admin_prodi">PT/UPPS/PS</label>
                         </div>
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" name="roles[]" value="default" id="edit_role_default" {{ in_array('default', old('roles', $user->roles ?? [])) ? 'checked' : '' }}>
@@ -104,7 +102,7 @@
                     </div>
                     <small class="text-muted">Role yang bisa di-switch oleh user ini. Kosongkan untuk auto-sync dari assignment</small>
                     @error('roles')
-                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                    <div class="invalid-feedback d-block">{{ $message }}</div>
                     @enderror
                 </div>
 
@@ -114,38 +112,34 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="phone" class="form-label">No. Telepon</label>
-                        <input type="tel" class="form-control @error('phone') is-invalid @enderror"
-                               id="phone" name="phone" value="{{ old('phone', $user->phone) }}" placeholder="08123456789" maxlength="20">
+                        <input type="tel" class="form-control @error('phone') is-invalid @enderror" id="phone" name="phone" value="{{ old('phone', $user->phone) }}" placeholder="08123456789" maxlength="20">
                         @error('phone')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
                     <div class="col-md-6 mb-3">
                         <label for="position" class="form-label">Jabatan</label>
-                        <input type="text" class="form-control @error('position') is-invalid @enderror"
-                               id="position" name="position" value="{{ old('position', $user->position) }}" placeholder="Dosen/Kaprodi/Staff">
+                        <input type="text" class="form-control @error('position') is-invalid @enderror" id="position" name="position" value="{{ old('position', $user->position) }}" placeholder="Dosen/Kaprodi/Staff">
                         @error('position')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
                 </div>
 
                 <div class="mb-3">
                     <label for="institution" class="form-label">Institusi</label>
-                    <input type="text" class="form-control @error('institution') is-invalid @enderror"
-                           id="institution" name="institution" value="{{ old('institution', $user->institution) }}" placeholder="Nama institusi">
+                    <input type="text" class="form-control @error('institution') is-invalid @enderror" id="institution" name="institution" value="{{ old('institution', $user->institution) }}" placeholder="Nama institusi">
                     @error('institution')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                    <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
                 <div class="mb-3">
                     <label for="address" class="form-label">Alamat</label>
-                    <textarea class="form-control @error('address') is-invalid @enderror"
-                              id="address" name="address" rows="3" placeholder="Alamat lengkap">{{ old('address', $user->address) }}</textarea>
+                    <textarea class="form-control @error('address') is-invalid @enderror" id="address" name="address" rows="3" placeholder="Alamat lengkap">{{ old('address', $user->address) }}</textarea>
                     @error('address')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                    <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
@@ -155,13 +149,13 @@
                         <select class="form-select @error('id_university') is-invalid @enderror" id="id_university" name="id_university">
                             <option value="">Pilih Universitas</option>
                             @foreach($universities as $univ)
-                                <option value="{{ $univ->id }}" {{ old('id_university', $user->id_university) == $univ->id ? 'selected' : '' }}>
-                                    {{ $univ->name }}
-                                </option>
+                            <option value="{{ $univ->id }}" {{ old('id_university', $user->id_university) == $univ->id ? 'selected' : '' }}>
+                                {{ $univ->name }}
+                            </option>
                             @endforeach
                         </select>
                         @error('id_university')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
 
@@ -170,18 +164,16 @@
                         <select class="form-select @error('id_study_program') is-invalid @enderror" id="id_study_program" name="id_study_program">
                             <option value="">Pilih Program Studi</option>
                             @foreach($studyPrograms as $prodi)
-                                <option value="{{ $prodi->id }}" 
-                                        data-university="{{ $prodi->id_university }}"
-                                        {{ old('id_study_program', $user->id_study_program) == $prodi->id ? 'selected' : '' }}>
-                                    {{ $prodi->name }}
-                                    @if($prodi->degreeLevel)
-                                        ({{ $prodi->degreeLevel->name }})
-                                    @endif
-                                </option>
+                            <option value="{{ $prodi->id }}" data-university="{{ $prodi->id_university }}" {{ old('id_study_program', $user->id_study_program) == $prodi->id ? 'selected' : '' }}>
+                                {{ $prodi->name }}
+                                @if($prodi->degreeLevel)
+                                ({{ $prodi->degreeLevel->name }})
+                                @endif
+                            </option>
                             @endforeach
                         </select>
                         @error('id_study_program')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
                     </div>
                 </div>
@@ -190,17 +182,15 @@
 
                 <div class="mb-3">
                     <label for="password" class="form-label">Password <small class="text-muted">(Kosongkan jika tidak ingin mengubah)</small></label>
-                    <input type="password" class="form-control @error('password') is-invalid @enderror"
-                           id="password" name="password">
+                    <input type="password" class="form-control @error('password') is-invalid @enderror" id="password" name="password">
                     @error('password')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                    <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
                 <div class="mb-3">
                     <label for="password_confirmation" class="form-label">Konfirmasi Password</label>
-                    <input type="password" class="form-control"
-                           id="password_confirmation" name="password_confirmation">
+                    <input type="password" class="form-control" id="password_confirmation" name="password_confirmation">
                 </div>
 
                 <div class="d-flex justify-content-end gap-2">
@@ -214,37 +204,38 @@
 @endsection
 @push('scripts')
 <script>
-$(document).ready(function() {
-    // Filter program studi based on selected university
-    $('#id_university').on('change', function() {
-        const selectedUnivId = $(this).val();
-        const prodiSelect = $('#id_study_program');
-        
-        if (!selectedUnivId) {
-            prodiSelect.find('option').show();
-            return;
-        }
-        
-        // Hide all prodi options except the first (empty)
-        prodiSelect.find('option:not(:first)').hide();
-        
-        // Show only prodi for selected university
-        prodiSelect.find('option[data-university="' + selectedUnivId + '"]').show();
-        
-        // Reset selection if current prodi doesn't belong to selected university
-        const currentProdi = prodiSelect.val();
-        if (currentProdi) {
-            const currentProdiUniv = prodiSelect.find('option[value="' + currentProdi + '"]').data('university');
-            if (currentProdiUniv != selectedUnivId) {
-                prodiSelect.val('');
+    $(document).ready(function() {
+        // Filter program studi based on selected university
+        $('#id_university').on('change', function() {
+            const selectedUnivId = $(this).val();
+            const prodiSelect = $('#id_study_program');
+
+            if (!selectedUnivId) {
+                prodiSelect.find('option').show();
+                return;
             }
+
+            // Hide all prodi options except the first (empty)
+            prodiSelect.find('option:not(:first)').hide();
+
+            // Show only prodi for selected university
+            prodiSelect.find('option[data-university="' + selectedUnivId + '"]').show();
+
+            // Reset selection if current prodi doesn't belong to selected university
+            const currentProdi = prodiSelect.val();
+            if (currentProdi) {
+                const currentProdiUniv = prodiSelect.find('option[value="' + currentProdi + '"]').data('university');
+                if (currentProdiUniv != selectedUnivId) {
+                    prodiSelect.val('');
+                }
+            }
+        });
+
+        // Trigger filter on page load if university is already selected
+        if ($('#id_university').val()) {
+            $('#id_university').trigger('change');
         }
     });
 
-    // Trigger filter on page load if university is already selected
-    if ($('#id_university').val()) {
-        $('#id_university').trigger('change');
-    }
-});
 </script>
 @endpush

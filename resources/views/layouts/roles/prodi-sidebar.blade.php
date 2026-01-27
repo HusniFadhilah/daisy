@@ -18,7 +18,7 @@
 <!-- Pedoman AK -->
 <a href="{{ route('pedoman') }}" class="nav-link {{ request()->routeIs('pedoman') ? 'active' : '' }} text-secondary" style="color: #ddd">
     <span class="menu-icon text-secondary">📁</span>
-    <span class="text-secondary">Template LED+Suplemen, dan LKPS</span>
+    <span class="text-secondary">Template Dokumen</span>
 </a>
 
 <!-- Penugasan Banding -->
