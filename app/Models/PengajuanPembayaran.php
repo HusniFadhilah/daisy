@@ -42,6 +42,15 @@ class PengajuanPembayaran extends Model
         return $this->belongsTo(User::class, 'verified_by');
     }
 
+    public function getStatusPembayaranLabelAttribute()
+    {
+        if (!$this->status_pembayaran) {
+            return null;
+        }
+
+        return str_replace('verifikasi', 'validasi', $this->status_pembayaran);
+    }
+
     public static function generateNomorInvoice()
     {
         $year = date('Y');

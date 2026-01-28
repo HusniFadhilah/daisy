@@ -312,6 +312,21 @@
         color: #dc3545;
     }
 
+    .btn-reminder-bg {
+        background: linear-gradient(135deg, #e35821ff 0%, #aa4d0aff 100%);
+        color: #fff !important;
+        padding: 6px 14px;
+        border-radius: 6px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-reminder-bg:hover {
+        opacity: 0.9;
+        color: #fff;
+    }
+
 </style>
 @endpush
 
@@ -412,14 +427,13 @@
     @if($stats['pengingat_bulan_target'] > 0)
     <div class="row mb-2">
         <div class="col-12">
-            <div class="alert alert-warning alert-dismissible alert-permanent fade show" style="border-left: 4px solid #ffc107;">
+            <div class="alert alert-warning alert-permanent fade show" style="border-left: 4px solid #ffc107;">
                 <i class="bi bi-exclamation-triangle-fill me-2"></i>
                 <strong>Perhatian!</strong>
                 Ada <strong>{{ $stats['pengingat_bulan_target'] }}</strong> prodi yang perlu diingatkan tentang masa akreditasi berakhir dalam 7 bulan dari sekarang ({{ $stats['pengingat']['target_month_label'] }}).
-                <a href="javascript:void(0)" class="alert-link ms-2" onclick="openReminderModal()">
-                    Lihat Detail →
+                <a href="javascript:void(0)" class="mt-2 btn-reminder-bg" onclick="openReminderModal()">
+                    Kirim Pengingat →
                 </a>
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         </div>
     </div>
@@ -448,9 +462,9 @@
         </ul>
 
         <!-- tombol kanan -->
-        <button type="button" class="btn btn-success ms-auto" data-bs-toggle="modal" data-bs-target="#modalKirimPengingat">
+        {{-- <button type="button" class="btn btn-success ms-auto" data-bs-toggle="modal" data-bs-target="#modalKirimPengingat">
             <i class="bi bi-bell"></i> Kirim Pengingat Akreditasi
-        </button>
+        </button> --}}
     </div>
 
     <!-- Tab Contents -->

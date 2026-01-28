@@ -75,7 +75,7 @@
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h4 class="mb-1"><i class="bi bi-file-earmark-arrow-down"></i> Penyampaian Template Dokumen</h4>
+            <h4 class="mb-1"><i class="bi bi-file-earmark-arrow-down"></i> Pengiriman Formulir dan Template Dokumen</h4>
             <p class="text-muted mb-0">Kirim template dokumen akreditasi kepada program studi</p>
         </div>
     </div>
@@ -85,11 +85,11 @@
         <div class="col-lg-4 col-md-6 mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Total Sampai Tahap Penyampaian Template</h6>
+                    <h6 class="mb-2 opacity-75">Total Pengiriman Formulir dan Template Dokumen</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-2 fw-bold">{{ $stats['total'] }}</h2>
-                            <small class="opacity-75">Total permohonan akreditasi PS yang aktif sampai tahap Penyampaian Template saat ini</small>
+                            <small class="opacity-75">Total Pengiriman formulir dan template dokumen saat ini</small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
                             <i class="bi bi-file-earmark-text"></i>
@@ -259,20 +259,20 @@
                                     <td>
                                         @if($pengajuan->tanggal_surat_permohonan_dikirim)
                                         <small class="text-muted">
-                                            <i class="bi bi-send"></i> Dikirim:
+                                            <i class="bi bi-send"></i> Sudah Dikirim:
                                             {{ $pengajuan->tanggal_surat_permohonan_dikirim->format('d M Y') }}
                                         </small>
                                         <br>
                                         @endif
                                         @if($pengajuan->tanggal_surat_permohonan_diterima)
                                         <small class="text-success">
-                                            <i class="bi bi-check-circle"></i> Diterima:
+                                            <i class="bi bi-check-circle"></i> Sudah Diterima:
                                             {{ $pengajuan->tanggal_surat_permohonan_diterima->format('d M Y') }}
                                         </small>
                                         @endif
                                         @if($pengajuan->tanggal_surat_permohonan_ditolak)
                                         <small class="text-danger">
-                                            <i class="bi bi-x-circle"></i> Ditolak:
+                                            <i class="bi bi-x-circle"></i> Sudah Ditolak:
                                             {{ $pengajuan->tanggal_surat_permohonan_ditolak->format('d M Y') }}
                                         </small>
                                         @endif

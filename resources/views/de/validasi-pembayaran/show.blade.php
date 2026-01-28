@@ -80,8 +80,8 @@
                                 @php
                                 $statusConfig = [
                                 'menunggu_pembayaran' => ['class' => 'warning', 'icon' => 'hourglass-split', 'text' => 'Menunggu Pembayaran'],
-                                'menunggu_verifikasi' => ['class' => 'info', 'icon' => 'clock-history', 'text' => 'Menunggu Verifikasi'],
-                                'terverifikasi' => ['class' => 'success', 'icon' => 'check-circle', 'text' => 'Terverifikasi'],
+                                'menunggu_verifikasi' => ['class' => 'info', 'icon' => 'clock-history', 'text' => 'Menunggu Validasi'],
+                                'terverifikasi' => ['class' => 'success', 'icon' => 'check-circle', 'text' => 'Tervalidasi'],
                                 'upload_ulang' => ['class' => 'secondary', 'icon' => 'arrow-repeat', 'text' => 'Upload Ulang'],
                                 'ditolak' => ['class' => 'danger', 'icon' => 'x-circle', 'text' => 'Ditolak'],
                                 ];
@@ -104,7 +104,7 @@
 
                     @if($pembayaran->catatan_verifikasi)
                     <div class="alert alert-secondary alert-permanent">
-                        <strong>Catatan Verifikasi:</strong>
+                        <strong>Catatan Validasi:</strong>
                         <p class="mb-0">{{ $pembayaran->catatan_verifikasi }}</p>
                     </div>
                     @endif
@@ -189,9 +189,9 @@
     </div> --}}
     @elseif($pembayaran->status_pembayaran == 'terverifikasi')
     <div class="alert alert-success alert-permanent">
-        <h5><i class="bi bi-check-circle"></i> Pembayaran Terverifikasi</h5>
+        <h5><i class="bi bi-check-circle"></i> Pembayaran Tervalidasi</h5>
         <p class="mb-0">
-            Pembayaran telah diverifikasi oleh <strong>{{ $pembayaran->verifier->name }}</strong>
+            Pembayaran telah divalidasi oleh <strong>{{ $pembayaran->verifier->name }}</strong>
             pada {{ $pembayaran->tanggal_verifikasi->format('d F Y H:i') }}
         </p>
     </div>
@@ -225,7 +225,7 @@
                 @if($pembayaran->tanggal_verifikasi)
                 <li class="mb-3">
                     <i class="bi bi-circle-fill text-success"></i>
-                    <strong>Pembayaran Diverifikasi</strong>
+                    <strong>Pembayaran Divalidasi</strong>
                     <br>
                     <small class="text-muted">{{ $pembayaran->tanggal_verifikasi->format('d F Y H:i') }}</small>
                     <br>

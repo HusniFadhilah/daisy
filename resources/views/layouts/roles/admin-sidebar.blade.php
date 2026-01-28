@@ -13,14 +13,14 @@ $authUser = Auth::user();
 <li class="nav-item">
     <a href="{{ route('de.surat-permohonan') }}" class="nav-link {{ request()->routeIs('de.surat-permohonan*') ? 'active' : '' }}">
         <span class="menu-icon"><i class="bi bi-envelope-paper"></i></span>
-        <span>2. Surat Permohonan dari PS</span>
+        <span>2. Surat Permohonan Akreditasi</span>
     </a>
 </li>
 
 <li class="nav-item">
     <a href="{{ route('de.penyampaian-template') }}" class="nav-link {{ request()->routeIs('de.penyampaian-template*') ? 'active' : '' }}">
         <span class="menu-icon"><i class="bi bi-file-earmark-text"></i></span>
-        <span>3. Penyampaian Template Dokumen</span>
+        <span>3. Pengiriman Formulir dan Template Dokumen</span>
     </a>
 </li>
 

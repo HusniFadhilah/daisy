@@ -82,7 +82,12 @@ class SuratPermohonanController extends Controller
 
         // Calculate statistics
         $stats = $this->calculateStatistics();
-
+        // Ambil pengajuan yang sudah template_led_dikirim tapi belum ada invoice
+        $pengajuanList = \App\Models\PengajuanAkreditasi::with('studyProgram.degreeLevel', 'studyProgram.university')
+            ->where('status', \App\Models\PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM)
+            ->whereDoesntHave('pembayaran')
+            ->get();
+        $countPengajuanList = count($pengajuanList);
         // Get filter data
         $universities = University::nonExample()->orderBy('name')->get();
         $tahunList = PengajuanAkreditasi::distinct()
@@ -95,7 +100,8 @@ class SuratPermohonanController extends Controller
             'pengajuans',
             'stats',
             'universities',
-            'tahunList'
+            'tahunList',
+            'countPengajuanList'
         ));
     }
 
@@ -217,7 +223,7 @@ class SuratPermohonanController extends Controller
 
             return redirect()
                 ->route('de.surat-permohonan')
-                ->with('success', 'Surat permohonan dari PS belum diterima.');
+                ->with('success', 'Surat permohonan akreditasi belum diterima.');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Gagal menolak surat permohonan: ' . $e->getMessage());

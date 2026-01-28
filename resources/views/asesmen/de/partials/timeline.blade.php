@@ -18,13 +18,13 @@
             ],
             [
             'date' => $pengajuan->tanggal_surat_permohonan_dikirim,
-            'label' => 'Surat Permohonan dari PS',
+            'label' => 'Surat Permohonan Akreditasi',
             'icon' => 'bi-envelope',
             'step' => 2
             ],
             [
             'date' => $pengajuan->tanggal_template_led_dikirim,
-            'label' => 'Penyampaian Template Dokumen, Formulir Pembayaran',
+            'label' => 'Pengiriman Formulir dan Template Dokumen',
             'icon' => 'bi-file-earmark-arrow-down',
             'step' => 3
             ],

@@ -12,8 +12,79 @@
                 Validasi Pembayaran
             </h2>
             <p class="text-muted mb-0">
-                Daftar pembayaran yang menunggu verifikasi oleh bagian Keuangan
+                Daftar pembayaran yang menunggu validasi
             </p>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card p-2" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-body text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1 opacity-75">Total Formulir</h6>
+                            <h2 class="mb-0 fw-bold">{{ $stats['total'] }}</h2>
+                            <small class="opacity-75">Formulir yang sudah diupload</small>
+                        </div>
+                        <div class="bg-white bg-opacity-25 rounded p-3">
+                            <i class="bi bi-file-earmark-check fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card p-2" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <div class="card-body text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1 opacity-75">Hari Ini</h6>
+                            <h2 class="mb-0 fw-bold">{{ $stats['today'] }}</h2>
+                            <small class="opacity-75">Upload hari ini</small>
+                        </div>
+                        <div class="bg-white bg-opacity-25 rounded p-3">
+                            <i class="bi bi-calendar-check fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card p-2" style="background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);">
+                <div class="card-body text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1 opacity-75">Menunggu Validasi</h6>
+                            <h2 class="mb-0 fw-bold">{{ $stats['menunggu_verifikasi'] }}</h2>
+                            <small class="opacity-75">Perlu divalidasi</small>
+                        </div>
+                        <div class="bg-white bg-opacity-25 rounded p-3">
+                            <i class="bi bi-clock-history fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card p-2" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                <div class="card-body text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1 opacity-75">Tervalidasi</h6>
+                            <h2 class="mb-0 fw-bold">{{ $stats['terverifikasi'] }}</h2>
+                            <small class="opacity-75">Sudah divalidasi</small>
+                        </div>
+                        <div class="bg-white bg-opacity-25 rounded p-3">
+                            <i class="bi bi-check-circle fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -38,9 +109,9 @@
         <div class="card-header bg-light d-flex justify-content-between align-items-center">
             <h5 class="mb-0">
                 <i class="bi bi-list-check"></i>
-                Daftar Pembayaran
+                Daftar Validasi Pembayaran (Klik Detail untuk melakukan validasi)
             </h5>
-            {{-- <span class="badge bg-warning text-dark">Menunggu Verifikasi</span> --}}
+            {{-- <span class="badge bg-warning text-dark">Menunggu Validasi</span> --}}
         </div>
 
         <div class="card-body p-0">
@@ -91,7 +162,7 @@
 
                             <td class="text-center">
                                 <span class="badge bg-warning text-dark">
-                                    {{ strtoupper(optional($pembayaran)->status_pembayaran ?? '-') }}
+                                    {{ strtoupper(optional($pembayaran)->status_pembayaran_label ?? '-') }}
                                 </span>
                             </td>
 
@@ -106,7 +177,7 @@
                             <td colspan="9" class="text-center py-4">
                                 <i class="bi bi-inbox fs-2 text-muted"></i>
                                 <p class="mb-0 text-muted mt-2">
-                                    Tidak ada pembayaran yang menunggu verifikasi.
+                                    Tidak ada pembayaran yang menunggu validasi.
                                 </p>
                             </td>
                         </tr>

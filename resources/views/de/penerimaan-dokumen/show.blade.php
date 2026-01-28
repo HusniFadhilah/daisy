@@ -405,57 +405,39 @@
         <!-- Left Column -->
         <div class="col-lg-8 mb-4">
             <!-- Informasi Pengajuan -->
-            <div class="card mb-4">
+            <div class="card">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Informasi Pengajuan</h5>
+                    <h5 class="mb-0">Informasi Surat Permohonan Akreditasi PS</h5>
                 </div>
                 <div class="card-body">
-                    <table class="table table-bordered">
+                    <table class="table table-borderless">
                         <tr>
-                            <th width="30%">Nomor Pengajuan</th>
-                            <td><strong>{{ $pengajuan->nomor_pengajuan }}</strong></td>
+                            <th width="30%">Nomor Permohonan</th>
+                            <td>: {{ $pengajuan->nomor_pengajuan }}</td>
                         </tr>
                         <tr>
                             <th>Program Studi</th>
-                            <td>
-                                <strong>{{ $pengajuan->studyProgram->name }}</strong>
-                                <br>
-                                <small class="text-muted">
-                                    {{ $pengajuan->studyProgram->university->name }}
-                                </small>
-                            </td>
+                            <td>: {{ $pengajuan->studyProgram->full_name }}</td>
                         </tr>
                         <tr>
-                            <th>Jenjang</th>
-                            <td>{{ $pengajuan->studyProgram->degreeLevel->name }}</td>
+                            <th>Universitas</th>
+                            <td>: {{ $pengajuan->studyProgram->university->name }}</td>
                         </tr>
                         <tr>
-                            <th>Tahun Akreditasi</th>
-                            <td>{{ $pengajuan->tahun_akreditasi }}</td>
+                            <th>Akreditasi Kedaluwarsa</th>
+                            <td>: {{ $pengajuan->studyProgram->days_left ? $pengajuan->studyProgram->days_left.' hari lagi': '-' }}</td>
                         </tr>
                         <tr>
-                            <th>Jenis Akreditasi</th>
-                            <td>
-                                <span class="badge bg-info">
-                                    {{ $pengajuan->jenis_akreditasi_label }}
-                                </span>
-                            </td>
+                            <th>Jenis Permohonan</th>
+                            <td>: {{ $pengajuan->jenis_akreditasi_label }}</td>
                         </tr>
                         <tr>
-                            <th>Status Penerimaan Dokumen Terakhir</th>
-                            <td>{!! $pengajuan->getCustomBadgeLastStatus('borang_final') !!}</td>
+                            <th>Pemohon</th>
+                            <td>: {{ $pengajuan->pengaju->name ?? '-' }}</td>
                         </tr>
                         <tr>
-                            <th>Status Saat Ini</th>
-                            <td>
-                                <span class="badge {{ $pengajuan->status_badge_class }} text-wrap">
-                                    {{ $pengajuan->status_label }}
-                                </span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Tanggal Upload Dokumen</th>
-                            <td>{{ $pengajuan->tanggal_draft_borang?->format('d F Y H:i') ?? '-' }}</td>
+                            <th>Status Surat Permohonan</th>
+                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('surat_permohonan_ps') !!}</td>
                         </tr>
                     </table>
                 </div>
@@ -475,7 +457,7 @@
                     <ul class="list-unstyled timeline">
                         <li class="mb-3">
                             <i class="bi bi-circle-fill text-primary"></i>
-                            <strong>Pengajuan Dibuat</strong>
+                            <strong> Dibuat</strong>
                             <br>
                             <small class="text-muted">{{ $pengajuan->created_at->format('d F Y H:i') }}</small>
                         </li>

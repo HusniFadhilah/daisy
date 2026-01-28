@@ -95,12 +95,12 @@
         <div class="col mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Menunggu Verifikasi</h6>
+                    <h6 class="mb-1 opacity-75">Menunggu Validasi</h6>
 
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-1 fw-bold">{{ $stats['menunggu_verifikasi'] }}</h2>
-                            <small class="opacity-75">Bukti bayar telah diupload, menunggu verifikasi oleh bagian keuangan</small>
+                            <small class="opacity-75">Bukti bayar telah diupload, menunggu validasi oleh bagian keuangan</small>
                         </div>
 
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
@@ -132,7 +132,7 @@
         <div class="col mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Terverifikasi</h6>
+                    <h6 class="mb-1 opacity-75">Tervalidasi</h6>
 
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
@@ -154,27 +154,8 @@
         <div class="col-12">
             <div class="alert alert-success alert-permanent" style="border-left: 4px solid #28a745;">
                 <i class="bi bi-cash-stack me-2"></i>
-                <strong>Total Pembayaran Terverifikasi:</strong>
+                <strong>Total Pembayaran Tervalidasi:</strong>
                 <span class="fs-4 ms-2">Rp {{ number_format($stats['total_nominal'], 0, ',', '.') }}</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="d-flex align-items-center mb-4">
-        <h4 class="mb-0">
-            <i class="bi bi-credit-card-2-front"></i> Daftar Pembayaran
-        </h4>
-
-        <div class="ms-auto text-end">
-            <button type="button" class="btn btn-primary mb-1" data-bs-toggle="modal" data-bs-target="#modalKirimInvoice">
-                <i class="bi bi-send"></i> Kirim Invoice
-            </button>
-            <div>
-                <small>
-                    Terdapat {{ $countPengajuanList }} permohonan akreditasi PS
-                    yang perlu dikirimi invoice
-                </small>
             </div>
         </div>
     </div>
@@ -206,10 +187,10 @@
                                     Menunggu Pembayaran
                                 </option>
                                 <option value="menunggu_verifikasi" {{ request('status_pembayaran') == 'menunggu_verifikasi' ? 'selected' : '' }}>
-                                    Menunggu Verifikasi
+                                    Menunggu Validasi
                                 </option>
                                 <option value="terverifikasi" {{ request('status_pembayaran') == 'terverifikasi' ? 'selected' : '' }}>
-                                    Terverifikasi
+                                    Tervalidasi
                                 </option>
                                 <option value="upload_ulang" {{ request('status_pembayaran') == 'upload_ulang' ? 'selected' : '' }}>
                                     Upload Ulang

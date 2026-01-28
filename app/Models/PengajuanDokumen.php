@@ -31,11 +31,11 @@ class PengajuanDokumen extends Model
     ];
 
     public const JENIS_DOKUMEN_ALIAS = [
-        'surat_permohonan'             => 'Surat Permohonan PS',
+        'surat_permohonan'             => 'Surat Permohonan Akreditasi',
         'surat_tugas'                  => 'Surat Tugas',
         'borang_template'              => 'Template Dokumen',
         'template_formulir_pembayaran' => 'Template Formulir Pembayaran',
-        'formulir_pembayaran'          => 'Formulir Pembayaran',
+        'formulir_pembayaran'          => 'Formulir Pembayaran Terisi',
         'draft_borang'                 => 'Draft Dokumen',
         'borang_final'                 => 'Dokumen Final',
         'bukti_pembayaran'             => 'Bukti Pembayaran',

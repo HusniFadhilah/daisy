@@ -277,14 +277,14 @@
                         ],
                         [
                         'date' => null,
-                        'label' => 'Surat Permohonan dari PS',
+                        'label' => 'Surat Permohonan Akreditasi',
                         'icon' => 'bi-envelope',
                         'step' => 2,
                         'current' => !isset($pengingat)
                         ],
                         [
                         'date' => null,
-                        'label' => 'Penyampaian Template Dokumen',
+                        'label' => 'Pengiriman Formulir dan Template Dokumen',
                         'icon' => 'bi-file-earmark-arrow-down',
                         'step' => 3
                         ],

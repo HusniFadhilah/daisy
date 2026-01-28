@@ -20,21 +20,32 @@ class ValidasiPembayaranController extends Controller
     public function index(Request $request)
     {
         $q = (string) $request->get('q');
+        $university_id = $request->get('university_id');
+        $degree_level_id = $request->get('degree_level_id');
+        $status = $request->get('status');
 
-        $pengajuanQuery = PengajuanAkreditasi::query()
-            ->with([
-                'studyProgram.university',
-                'pembayaran',
-                'pengaju',
-            ])
-            // ->where('status', PengajuanAkreditasi::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN)
-            ->whereHas('pembayaran', function ($p) {
-                // $p->where('status_pembayaran', 'menunggu_verifikasi');
-            });
+        // Query pengajuan yang sudah upload formulir pembayaran
+        $pengajuanQuery = PengajuanAkreditasi::with([
+            'studyProgram.university',
+            'studyProgram.degreeLevel',
+            'pembayaran',
+            'pengaju',
+            'dokumen' => function ($q) {
+                $q->where('jenis_dokumen', 'formulir_pembayaran')
+                    ->where('is_latest', true);
+            }
+        ])
+            ->whereHas('dokumen', function ($q) {
+                $q->where('jenis_dokumen', 'formulir_pembayaran')
+                    ->where('is_latest', true);
+            })
+            ->whereHas('pembayaran'); // Harus sudah ada pembayaran
 
+        // Filter by search
         if (!empty($q)) {
             $pengajuanQuery->where(function ($w) use ($q) {
                 $w->where('nomor_pengajuan', 'like', "%{$q}%")
+                    ->orWhere('judul', 'like', "%{$q}%")
                     ->orWhereHas('studyProgram', function ($sp) use ($q) {
                         $sp->where('name', 'like', "%{$q}%");
                     })
@@ -44,12 +55,62 @@ class ValidasiPembayaranController extends Controller
             });
         }
 
+        // Filter by university
+        if (!empty($university_id)) {
+            $pengajuanQuery->whereHas('studyProgram', function ($sp) use ($university_id) {
+                $sp->where('id_university', $university_id);
+            });
+        }
+
+        // Filter by degree level
+        if (!empty($degree_level_id)) {
+            $pengajuanQuery->whereHas('studyProgram', function ($sp) use ($degree_level_id) {
+                $sp->where('id_degree_level', $degree_level_id);
+            });
+        }
+
+        // Filter by status pembayaran
+        if (!empty($status)) {
+            $pengajuanQuery->whereHas('pembayaran', function ($p) use ($status) {
+                $p->where('status_pembayaran', $status);
+            });
+        }
+
         $pengajuan = $pengajuanQuery
             ->orderByDesc('updated_at')
-            ->paginate(15)
+            ->paginate(20)
             ->withQueryString();
 
-        return view('keuangan.pembayaran.index', compact('pengajuan', 'q'));
+        // Statistics
+        $stats = [
+            'total' => PengajuanAkreditasi::whereHas('dokumen', function ($q) {
+                $q->where('jenis_dokumen', 'formulir_pembayaran')
+                    ->where('is_latest', true);
+            })->count(),
+
+            'today' => PengajuanAkreditasi::whereHas('dokumen', function ($q) {
+                $q->where('jenis_dokumen', 'formulir_pembayaran')
+                    ->where('is_latest', true)
+                    ->whereDate('created_at', today());
+            })->count(),
+
+            'menunggu_verifikasi' => PengajuanAkreditasi::whereHas('pembayaran', function ($p) {
+                $p->where('status_pembayaran', 'menunggu_verifikasi');
+            })->count(),
+
+            'terverifikasi' => PengajuanAkreditasi::whereHas('pembayaran', function ($p) {
+                $p->where('status_pembayaran', 'terverifikasi');
+            })->count(),
+        ];
+
+        return view('keuangan.pembayaran.index', compact(
+            'pengajuan',
+            'q',
+            'university_id',
+            'degree_level_id',
+            'status',
+            'stats'
+        ));
     }
 
     /**

@@ -19,7 +19,7 @@
 
         <span class="badge bg-secondary align-self-md-center">
             Status Pembayaran:
-            {{ strtoupper(optional($pengajuan->pembayaran)->status_pembayaran ?? '-') }}
+            {{ strtoupper(optional($pengajuan->pembayaran)->status_pembayaran_label ?? '-') }}
         </span>
     </div>
 
@@ -58,7 +58,7 @@
 
                     @if($pembayaran->catatan_verifikasi)
                     <div class="mb-2">
-                        <label class="text-muted small">Catatan Verifikasi (Terakhir)</label>
+                        <label class="text-muted small">Catatan Validasi</label>
                         <p class="mb-0">{{ $pembayaran->catatan_verifikasi }}</p>
                     </div>
                     @endif
@@ -75,7 +75,7 @@
 
                 @if($pembayaran->verified_by)
                 <div class="mt-3 small text-muted">
-                    Diverifikasi oleh:
+                    Divalidasi oleh:
                     {{ optional($pembayaran->verifier)->name ?? '-' }}
                 </div>
                 @endif
@@ -87,7 +87,7 @@
         <div class="card mb-4">
             <div class="card-header bg-light">
                 <h5 class="mb-0">
-                    <i class="bi bi-shield-check"></i> Verifikasi dan Validasi Pembayaran
+                    <i class="bi bi-shield-check"></i> Validasi Pembayaran
                 </h5>
             </div>
 
@@ -105,7 +105,7 @@
                             <input class="form-check-input" type="radio" name="status_pembayaran" id="status_verified" value="terverifikasi" checked>
                             <label class="form-check-label" for="status_verified">
                                 <i class="bi bi-check-circle text-success"></i>
-                                Verifikasi & Setujui Pembayaran
+                                Menyetujui Pembayaran
                             </label>
                         </div>
 
@@ -113,7 +113,7 @@
                             <input class="form-check-input" type="radio" name="status_pembayaran" id="status_upload_ulang" value="upload_ulang">
                             <label class="form-check-label" for="status_upload_ulang">
                                 <i class="bi bi-arrow-repeat text-warning"></i>
-                                Meminta Upload Ulang (Bukti Pembayaran & Formulir Pembayaran)
+                                Meminta Upload Ulang (Formulir & Bukti Pembayaran)
                             </label>
                         </div>
 
@@ -136,9 +136,12 @@
                     {{-- CATATAN VERIFIKASI --}}
                     <div class="mb-3">
                         <label class="form-label fw-bold">
-                            Catatan Verifikasi <span class="text-danger">*</span>
+                            Catatan Tindak Lanjut untuk Prodi <span class="text-danger">*</span>
                         </label>
-                        <textarea name="catatan_verifikasi" class="form-control @error('catatan_verifikasi') is-invalid @enderror" rows="3" required>{{ old('catatan_verifikasi') }}</textarea>
+                        <textarea id="catatan_verifikasi" name="catatan_verifikasi" class="form-control @error('catatan_verifikasi') is-invalid @enderror" rows="5" required>{{ old('catatan_verifikasi') }}</textarea>
+                        @error('catatan_verifikasi')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                         @error('catatan_verifikasi')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -170,23 +173,23 @@
         @elseif($pembayaran && $pembayaran->status_pembayaran === 'terverifikasi')
         <div class="alert alert-success alert-permanent">
             <i class="bi bi-check-circle"></i>
-            Pembayaran ini telah <strong>Terverifikasi</strong> pada {{ \App\Libraries\Date::tglWaktu($pembayaran->tanggal_verifikasi) }}.
+            Pembayaran ini telah <strong>Tervalidasi</strong> pada {{ \App\Libraries\Date::tglWaktu($pembayaran->tanggal_verifikasi) }}.
         </div>
         @elseif($pembayaran && $pembayaran->status_pembayaran === 'upload_ulang')
         <div class="alert alert-warning alert-permanent">
             <i class="bi bi-check-circle"></i>
-            Pembayaran ini belum terverifikasi. Bagian keuangan meminta prodi untuk mengupload ulang bukti pembayaran & formulir pembayaran
+            Pembayaran ini belum tervalidasi. Bagian keuangan meminta prodi untuk mengupload ulang formulir dan bukti pembayaran
         </div>
         @elseif($pembayaran && $pembayaran->status_pembayaran === 'ditolak')
         <div class="alert alert-warning alert-permanent">
             <i class="bi bi-check-circle"></i>
-            Pembayaran ini belum terverifikasi (ditolak). Bagian keuangan meminta prodi untuk mengupload ulang bukti pembayaran & formulir pembayaran
+            Pembayaran ini belum tervalidasi (ditolak). Bagian keuangan meminta prodi untuk mengupload ulang formulir dan bukti pembayaran
         </div>
         @else
         <div class="alert alert-warning alert-permanent">
             <i class="bi bi-exclamation-triangle"></i>
             Pembayaran tidak berada pada status
-            <strong>Menunggu Verifikasi</strong>.
+            <strong>Menunggu Validasi</strong>.
         </div>
         @endif
     </div>
@@ -198,17 +201,17 @@
         <div class="card mb-4">
             <div class="card-header bg-light">
                 <h5 class="mb-0">
-                    <i class="bi bi-file-earmark-image"></i> Bukti Pembayaran
+                    <i class="bi bi-file-earmark-image"></i> Formulir & Bukti Pembayaran Akreditasi
                 </h5>
             </div>
 
             <div class="card-body">
                 @if(!$path)
-                <p class="text-muted mb-0">Bukti pembayaran belum diupload.</p>
+                <p class="text-muted mb-0">Formulir & Bukti Pembayaran Akreditasi belum diupload.</p>
                 @else
-                @if(in_array($ext, ['jpg','jpeg','png']))
+                {{-- @if(in_array($ext, ['xlsx','xls','jpg','jpeg','png']))
                 <img src="{{ $url }}" class="img-fluid rounded border mb-2" alt="Bukti Pembayaran">
-                @endif
+                @endif --}}
 
                 <a href="{{ route('keuangan.pembayaran.download-bukti', $pengajuan->id) }}" class="btn btn-primary btn-sm">
                     <i class="bi bi-download"></i> Download Bukti
@@ -250,3 +253,47 @@
 </div>
 </div>
 @endsection
+
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const noteEl = document.getElementById('catatan_verifikasi');
+
+        const messages = {
+            terverifikasi: 'LAMDEPILAR menyetujui Pembayaran akreditasi. Mohon dapat melanjutkan ke tahap selanjutnya yaitu pengisian dan/upload Dokumen akreditasi'
+            , upload_ulang: 'LAMDEPILAR meminta upload ulang formulir & bukti pembayaran'
+        };
+
+        function applyMessageFromSelectedRadio() {
+            const checked = document.querySelector('input[name="status_pembayaran"]:checked');
+            if (!checked) return;
+
+            const val = checked.value;
+            const defaultMsg = messages[val] || '';
+
+            // Jika ada old('catatan_verifikasi') dari validation error, pakai itu dulu
+            // (supaya input user tidak hilang saat reload)
+            const oldVal = @json(old('catatan_verifikasi'));
+            if (oldVal) {
+                noteEl.value = oldVal;
+                return;
+            }
+
+            noteEl.value = defaultMsg;
+        }
+
+        // Set initial value saat page load
+        applyMessageFromSelectedRadio();
+
+        // Pakai onchange untuk radio
+        document.querySelectorAll('input[name="status_pembayaran"]').forEach(function(radio) {
+            radio.addEventListener('change', function() {
+                const val = this.value;
+                noteEl.value = messages[val] || '';
+            });
+        });
+    });
+
+</script>
+@endpush

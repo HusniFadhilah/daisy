@@ -16,10 +16,10 @@
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h4 class="mb-1">
+            <h5 class="mb-1">
                 <i class="bi bi-file-earmark-text"></i> Detail Surat Permohonan
-            </h4>
-            <p class="text-muted mb-0">{{ $pengajuan->nomor_pengajuan }}</p>
+            </h5>
+            <small class="text-muted mb-0">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
         <a href="{{ route('de.surat-permohonan') }}" class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i> Kembali
@@ -27,16 +27,16 @@
     </div>
 
     <div class="row">
-        <!-- Informasi Pengajuan -->
+        <!-- Informasi Permohonan Akreditasi PS -->
         <div class="col-lg-8 mb-4">
             <div class="card">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Informasi Pengajuan</h5>
+                    <h5 class="mb-0">Informasi Surat Permohonan Akreditasi PS</h5>
                 </div>
                 <div class="card-body">
                     <table class="table table-borderless">
                         <tr>
-                            <th width="30%">Nomor Pengajuan</th>
+                            <th width="30%">Nomor Permohonan</th>
                             <td>: {{ $pengajuan->nomor_pengajuan }}</td>
                         </tr>
                         <tr>
@@ -48,32 +48,20 @@
                             <td>: {{ $pengajuan->studyProgram->university->name }}</td>
                         </tr>
                         <tr>
-                            <th>Jenjang</th>
-                            <td>: {{ $pengajuan->studyProgram->degreeLevel->name }}</td>
+                            <th>Akreditasi Kedaluwarsa</th>
+                            <td>: {{ $pengajuan->studyProgram->days_left ? $pengajuan->studyProgram->days_left.' hari lagi': '-' }}</td>
                         </tr>
                         <tr>
-                            <th>Tahun Akreditasi</th>
-                            <td>: {{ $pengajuan->tahun_akreditasi }}</td>
-                        </tr>
-                        <tr>
-                            <th>Jenis Akreditasi</th>
+                            <th>Jenis Permohonan</th>
                             <td>: {{ $pengajuan->jenis_akreditasi_label }}</td>
                         </tr>
                         <tr>
-                            <th>Pengaju</th>
+                            <th>Pemohon</th>
                             <td>: {{ $pengajuan->pengaju->name ?? '-' }}</td>
                         </tr>
                         <tr>
-                            <th>Status Surat Permohonan Terakhir</th>
+                            <th>Status Surat Permohonan</th>
                             <td>: {!! $pengajuan->getCustomBadgeLastStatus('surat_permohonan_ps') !!}</td>
-                        </tr>
-                        <tr>
-                            <th>Status Saat Ini</th>
-                            <td>
-                                : <span class="badge {{ $pengajuan->status_badge_class }} text-wrap">
-                                    {{ $pengajuan->status_label }}
-                                </span>
-                            </td>
                         </tr>
                     </table>
                 </div>
@@ -145,6 +133,18 @@
             </div>
             @endif
 
+            @php
+            $filterStatuses = [
+            \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM,
+            \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
+            \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITOLAK,
+            ];
+
+            $logs = $pengajuan->statusLog
+            ->whereIn('status_to', $filterStatuses)
+            ->sortBy('changed_at');
+            @endphp
+
             <!-- Status Log -->
             <div class="card">
                 <div class="card-header bg-secondary text-white">
@@ -153,20 +153,21 @@
                     </h5>
                 </div>
                 <div class="card-body" style="max-height: 600px; overflow-y: auto;">
-                    @if($pengajuan->statusLog->count() > 0)
+                    @if($logs->count() > 0)
                     <div class="timeline">
-                        @foreach($pengajuan->statusLog->sortBy('changed_at') as $log)
+                        @foreach($logs as $log)
                         <div class="timeline-item mb-3">
                             <div class="d-flex">
                                 <div class="flex-shrink-0">
                                     <i class="bi bi-circle-fill text-primary" style="font-size: 8px;"></i>
                                 </div>
                                 <div class="flex-grow-1 ms-3">
-                                    <strong>{{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label'] ?? $log->status_to }}</strong>
+                                    <strong>
+                                        {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label'] ?? $log->status_to }}
+                                    </strong>
                                     <br>
-                                    <small class="text-muted">
-                                        {{ $log->changed_at->format('d M Y H:i') }}
-                                    </small>
+                                    <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
+
                                     @if($log->keterangan)
                                     <br>
                                     <small class="text-muted fst-italic">{{ $log->keterangan }}</small>

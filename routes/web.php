@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\DE\{ValidasiAKController, MasaSanggahController, PelaporanAKController, PelaporanALController, PenugasanAKController, PenugasanALController, PelaksanaanALController, SuratPermohonanController, ValidasiDokumenController, PelaporanBandingController, PelaporanDokumenController, PenerimaanDokumenController, PelaksanaanBandingController, ValidasiPembayaranController, PenyampaianTemplateController, PelaporanHasilAkreditasiController, PenetapanHasilAkreditasiController, PenyampaianHasilAkreditasiController, PenyimpananArsipAkreditasiController};
+use App\Http\Controllers\DE\{ValidasiAKController, MasaSanggahController, PelaporanAKController, PelaporanALController, PenugasanAKController, PenugasanALController, PelaksanaanALController, SuratPermohonanController, ValidasiDokumenController, PelaporanBandingController, PelaporanDokumenController, PenerimaanDokumenController, PelaksanaanBandingController, ValidasiPembayaranController, FormulirPembayaranController, PenyampaianTemplateController, PelaporanHasilAkreditasiController, PenetapanHasilAkreditasiController, PenyampaianHasilAkreditasiController, PenyimpananArsipAkreditasiController};
 use App\Http\Controllers\Profile\{PasswordResetController, ProfileController, ProdiDataController};
 use App\Http\Controllers\Prodi\{DeskEvaluatorController, PengajuanAkreditasiController, PemetaanAkreditasiController, PengajuanBorangController, BorangUploadController};
 use App\Http\Controllers\Master\{ElemenStandarController, JenisIndikatorController, IndikatorController, IndikatorPenilaianElemenController, KriteriaController, UniversityController, StudyProgramController};
@@ -431,6 +431,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 Route::get('/{id}', [\App\Http\Controllers\Keuangan\ValidasiPembayaranController::class, 'show'])->name('show');
                 Route::get('/{id}/download-bukti', [\App\Http\Controllers\Keuangan\ValidasiPembayaranController::class, 'downloadBukti'])->name('download-bukti');
                 Route::post('/{id}/verify', [\App\Http\Controllers\Keuangan\ValidasiPembayaranController::class, 'verify'])->name('verify');
+            });
+            Route::prefix('formulir')->name('formulir.')->group(function () {
+                Route::get('/', [\App\Http\Controllers\Keuangan\FormulirPembayaranController::class, 'index'])->name('index');
+                Route::get('/{id}', [\App\Http\Controllers\Keuangan\FormulirPembayaranController::class, 'show'])->name('show');
+                Route::get('/{id}/download/{dokumenId}', [\App\Http\Controllers\Keuangan\FormulirPembayaranController::class, 'download'])->name('download');
             });
         });
 

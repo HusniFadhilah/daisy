@@ -1598,3 +1598,9 @@ button[aria-expanded="true"] .chevron-icon {
 .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered .select2-selection__placeholder {
     color: #6c757d;
 }
+
+.text-link {
+    text-decoration: none;
+    color: inherit;
+    /* opsional, biar warnanya ikut parent */
+}

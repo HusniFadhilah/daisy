@@ -80,8 +80,8 @@
                             @php
                             $statusConfig = [
                             'menunggu_pembayaran' => ['class' => 'warning', 'icon' => 'hourglass-split', 'text' => 'Menunggu Pembayaran'],
-                            'menunggu_verifikasi' => ['class' => 'info', 'icon' => 'clock-history', 'text' => 'Menunggu Verifikasi'],
-                            'terverifikasi' => ['class' => 'success', 'icon' => 'check-circle', 'text' => 'Terverifikasi'],
+                            'menunggu_verifikasi' => ['class' => 'info', 'icon' => 'clock-history', 'text' => 'Menunggu Validasi'],
+                            'terverifikasi' => ['class' => 'success', 'icon' => 'check-circle', 'text' => 'Tervalidasi'],
                             'upload_ulang' => ['class' => 'secondary', 'icon' => 'arrow-repeat', 'text' => 'Upload Ulang'],
                             'ditolak' => ['class' => 'danger', 'icon' => 'x-circle', 'text' => 'Ditolak'],
                             ];
@@ -97,11 +97,11 @@
                                 <i class="bi bi-eye"></i>
                             </a>
 
-                            @if($pembayaran->status_pembayaran == 'menunggu_verifikasi')
+                            {{-- @if($pembayaran->status_pembayaran == 'menunggu_verifikasi')
                             <button type="button" class="btn btn-sm btn-success" onclick="showValidasiModal({{ $pembayaran->id }})" title="Validasi">
-                                <i class="bi bi-check-circle"></i>
+                            <i class="bi bi-check-circle"></i>
                             </button>
-                            @endif
+                            @endif --}}
                         </td>
                     </tr>
                     @empty

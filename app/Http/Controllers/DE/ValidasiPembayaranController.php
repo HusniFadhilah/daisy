@@ -193,7 +193,7 @@ class ValidasiPembayaranController extends Controller
 
             // Validasi status pembayaran harus 'menunggu_verifikasi'
             if ($pembayaran->status_pembayaran !== 'menunggu_verifikasi') {
-                return redirect()->back()->with('error', 'Pembayaran tidak dalam status menunggu verifikasi.');
+                return redirect()->back()->with('error', 'Pembayaran tidak dalam status menunggu validasi.');
             }
 
             if ($validated['action'] === 'approve') {
@@ -208,10 +208,10 @@ class ValidasiPembayaranController extends Controller
                 // Update status pengajuan
                 $pembayaran->pengajuan->updateStatusSafely(
                     PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI,
-                    'Pembayaran telah diverifikasi oleh bagian keuangan'
+                    'Pembayaran telah divalidasi oleh bagian keuangan'
                 );
 
-                $message = 'Pembayaran berhasil diverifikasi.';
+                $message = 'Pembayaran berhasil divalidasi.';
             } elseif ($validated['action'] === 'upload_ulang') {
                 // Request upload ulang
                 $pembayaran->update([

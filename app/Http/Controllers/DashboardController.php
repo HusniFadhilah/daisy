@@ -716,8 +716,8 @@ class DashboardController extends Controller
         foreach ($recentPayments as $payment) {
             $statusLabel = match ($payment->status_pembayaran) {
                 'menunggu_pembayaran' => 'Menunggu Pembayaran',
-                'menunggu_verifikasi' => 'Menunggu Verifikasi',
-                'terverifikasi' => 'Terverifikasi',
+                'menunggu_verifikasi' => 'Menunggu Validasi',
+                'terverifikasi' => 'Tervalidasi',
                 'ditolak' => 'Ditolak',
                 default => ucwords(str_replace('_', ' ', $payment->status_pembayaran)),
             };
@@ -833,7 +833,7 @@ class DashboardController extends Controller
                 now()->addDays(3);
 
             $tasks[] = (object)[
-                'title' => 'Verifikasi Pembayaran',
+                'title' => 'Validasi Pembayaran',
                 'priority' => 'high',
                 'description' => $payment->pengajuan->studyProgram->name ?? '-',
                 'deadline' => $deadline->format('d M Y'),

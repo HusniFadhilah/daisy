@@ -215,9 +215,9 @@
             'empty_text' => 'Belum ada file Formulir & Bukti Pembayaran diupload.',
             ],
             'surat_permohonan' => [
-            'label' => 'Surat Permohonan PS untuk Akreditasi',
+            'label' => 'Surat Permohonan Akreditasi',
             'btn_class' => 'btn-primary',
-            'empty_text' => 'Belum ada file Surat Permohonan PS diupload.',
+            'empty_text' => 'Belum ada file Surat Permohonan Akreditasi diupload.',
             ],
             ];
             @endphp

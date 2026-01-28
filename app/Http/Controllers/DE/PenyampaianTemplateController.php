@@ -176,7 +176,7 @@ class PenyampaianTemplateController extends Controller
                 'status_to' => PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM,
                 'changed_by' => auth()->id(),
                 'changed_at' => now(),
-                'keterangan' => 'Template Dokumen serta Template Formulir Pembayaran dikirim via link oleh DE'
+                'keterangan' => 'Formulir Pembayaran dan Template Dokumen telah dikirim oleh DE'
                 // .($request->keterangan ? '. ' . $request->keterangan : ''),
             ]);
 
@@ -184,7 +184,7 @@ class PenyampaianTemplateController extends Controller
 
             return redirect()
                 ->route('de.penyampaian-template')
-                ->with('success', 'Template Dokumen serta Template Formulir Pembayaran berhasil dikirim via link.');
+                ->with('success', 'Formulir Pembayaran dan Template Dokumen berhasil dikirim via link.');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Gagal mengirim template: ' . $e->getMessage());
@@ -265,8 +265,8 @@ class PenyampaianTemplateController extends Controller
                 'status_to' => PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM,
                 'changed_by' => auth()->id(),
                 'changed_at' => now(),
-                'keterangan' => 'Template Dokumen (' . $fileLED->getClientOriginalName() . ') ' .
-                    'serta Template Formulir Pembayaran (' . $filePembayaran->getClientOriginalName() . ') dikirim via upload oleh DE'
+                'keterangan' => 'Formulir Pembayaran (' . $fileLED->getClientOriginalName() . ') ' .
+                    'dan Template Dokumen (' . $filePembayaran->getClientOriginalName() . ') dikirim oleh DE'
                 // .($request->keterangan ? '. ' . $request->keterangan : ''),
             ]);
 
@@ -274,7 +274,7 @@ class PenyampaianTemplateController extends Controller
 
             return redirect()
                 ->route('de.penyampaian-template')
-                ->with('success', 'Template Dokumen serta Template Formulir Pembayaran berhasil dikirim.');
+                ->with('success', 'Formulir Pembayaran dan Template Dokumen berhasil dikirim.');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Gagal mengirim template: ' . $e->getMessage());

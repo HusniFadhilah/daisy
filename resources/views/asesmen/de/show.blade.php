@@ -211,7 +211,7 @@
                                         <ul class="mb-0 small">
                                             <li id="infoMetode">Link template akan dikirim ke email prodi</li>
                                             <li>Prodi dapat mengakses template melalui link/download file</li>
-                                            <li>Status Permohonan akreditasi akan diupdate ke <code>Penyampaian Template Dokumen</code></li>
+                                            <li>Status Permohonan akreditasi akan diupdate ke <code>Pengiriman Formulir dan Template Dokumen</code></li>
                                             <li>Notifikasi email akan dikirim ke UPPS</li>
                                         </ul>
                                     </div>

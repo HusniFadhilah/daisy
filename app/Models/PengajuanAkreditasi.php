@@ -625,22 +625,22 @@ class PengajuanAkreditasi extends Model
                 'icon' => 'bi-bell',
             ],
             self::STATUS_SURAT_PERMOHONAN_DIKIRIM => [
-                'label' => 'Surat Permohonan dari PS',
+                'label' => 'Surat Permohonan Akreditasi',
                 'bg' => 'bg-primary',
                 'icon' => 'bi-envelope',
             ],
             self::STATUS_SURAT_PERMOHONAN_DITOLAK => [
-                'label' => 'Surat Permohonan dari PS (Ditolak)',
+                'label' => 'Surat Permohonan Akreditasi Ditolak',
                 'bg' => 'bg-danger',
                 'icon' => 'bi-envelope',
             ],
             self::STATUS_SURAT_PERMOHONAN_DITERIMA => [
-                'label' => 'Surat Permohonan dari PS (Diterima)',
+                'label' => 'Surat Permohonan Akreditasi Diterima',
                 'bg' => 'bg-success',
                 'icon' => 'bi-envelope',
             ],
             self::STATUS_TEMPLATE_LED_DIKIRIM => [
-                'label' => 'Penyampaian Template Dokumen',
+                'label' => 'Pengiriman Formulir dan Template Dokumen',
                 'bg' => 'bg-primary',
                 'icon' => 'bi-file-earmark-arrow-down',
             ],
@@ -827,8 +827,8 @@ class PengajuanAkreditasi extends Model
     {
         $items = [
             1 => ['date' => $this->tanggal_pengingat, 'label' => 'Pengingat Masa Akreditasi', 'icon' => 'bi-bell'],
-            2 => ['date' => ($this->tanggal_surat_permohonan_dikirim ?? $this->tanggal_surat_permohonan_diterima), 'label' => 'Surat Permohonan dari PS', 'icon' => 'bi-envelope'],
-            3 => ['date' => $this->tanggal_template_led_dikirim, 'label' => 'Penyampaian Template Dokumen, formulir pembayaran', 'icon' => 'bi-file-earmark-arrow-down'],
+            2 => ['date' => ($this->tanggal_surat_permohonan_dikirim ?? $this->tanggal_surat_permohonan_diterima), 'label' => 'Surat Permohonan Akreditasi', 'icon' => 'bi-envelope'],
+            3 => ['date' => $this->tanggal_template_led_dikirim, 'label' => 'Pengiriman Formulir dan Template Dokumen, formulir pembayaran', 'icon' => 'bi-file-earmark-arrow-down'],
             4 => ['date' => $this->tanggal_pembayaran, 'label' => 'Validasi pembayaran', 'icon' => 'bi-credit-card-2-front'],
             5 => ['date' => $this->tanggal_draft_borang, 'label' => 'Penerimaan Draft Dokumen dari Prodi', 'icon' => 'bi-file-earmark-check'],
             6 => ['date' => $this->tanggal_validasi_borang_assigned, 'label' => 'Validasi Dokumen', 'icon' => 'bi-clipboard-check'],
@@ -1205,13 +1205,13 @@ class PengajuanAkreditasi extends Model
             'surat_permohonan_ps' => match ($this->getCustomLastStatus($attribute)) {
                 self::STATUS_PENGINGAT_DIKIRIM => '<span class="badge bg-warning">Menunggu Surat</span>',
                 self::STATUS_SURAT_PERMOHONAN_DIKIRIM => '<span class="badge bg-info">Surat Dikirim dari PS</span>',
-                self::STATUS_SURAT_PERMOHONAN_DITERIMA => '<span class="badge bg-success">Surat Permohonan PS Diterima</span>',
-                self::STATUS_SURAT_PERMOHONAN_DITOLAK => '<span class="badge bg-danger">Surat Permohonan PS Ditolak</span>',
+                self::STATUS_SURAT_PERMOHONAN_DITERIMA => '<span class="badge bg-success">Surat Permohonan Akreditasi Diterima</span>',
+                self::STATUS_SURAT_PERMOHONAN_DITOLAK => '<span class="badge bg-danger">Surat Permohonan Akreditasi Ditolak</span>',
                 default => '<span class="badge bg-secondary">-</span>',
             },
             'borang_template' => match ($this->getCustomLastStatus($attribute)) {
-                self::STATUS_SURAT_PERMOHONAN_DITERIMA => '<span class="badge bg-warning">Belum Dikirim Template</span>',
-                self::STATUS_TEMPLATE_LED_DIKIRIM => '<span class="badge bg-success">Sudah Dikirim Template</span>',
+                self::STATUS_SURAT_PERMOHONAN_DITERIMA => '<span class="badge bg-warning">Belum Dikirim DE</span>',
+                self::STATUS_TEMPLATE_LED_DIKIRIM => '<span class="badge bg-success">Sudah Dikirim, Sudah Diterima PS</span>',
                 default => '<span class="badge bg-secondary">-</span>',
             },
             'borang_final' => match ($this->getCustomLastStatus($attribute)) {
