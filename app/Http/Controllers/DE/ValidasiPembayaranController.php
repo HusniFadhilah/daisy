@@ -112,7 +112,7 @@ class ValidasiPembayaranController extends Controller
 
         // Get dokumen pembayaran terkait
         $dokumenPembayaran = PengajuanDokumen::where('id_pengajuan', $pembayaran->id_pengajuan)
-            ->whereIn('jenis_dokumen', ['formulir_pembayaran', 'bukti_pembayaran'])
+            ->whereIn('jenis_dokumen', ['formulir_pembayaran'])
             ->where('is_latest', true)
             ->get();
 

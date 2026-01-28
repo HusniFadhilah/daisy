@@ -2,7 +2,7 @@
 
 @extends('layouts.template.app')
 
-@section('title', 'Penyampaian Template LED+Suplemen dan LKPS')
+@section('title', 'Penyampaian Template Dokumen')
 
 @push('styles')
 <style>
@@ -75,7 +75,7 @@
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h4 class="mb-1"><i class="bi bi-file-earmark-arrow-down"></i> Penyampaian Template LED+Suplemen dan LKPS</h4>
+            <h4 class="mb-1"><i class="bi bi-file-earmark-arrow-down"></i> Penyampaian Template Dokumen</h4>
             <p class="text-muted mb-0">Kirim template dokumen akreditasi kepada program studi</p>
         </div>
     </div>
@@ -333,7 +333,7 @@
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title">
-                    <i class="bi bi-send"></i> Kirim Template LED+Suplemen dan LKPS serta Formulir Pembayaran
+                    <i class="bi bi-send"></i> Kirim Template Dokumen serta Formulir Pembayaran
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
@@ -364,12 +364,12 @@
                             @csrf
                             <div class="mb-3">
                                 <label class="form-label fw-bold">
-                                    <i class="bi bi-file-earmark-text"></i> Link Template LED+Suplemen dan LKPS
+                                    <i class="bi bi-file-earmark-text"></i> Link Template Dokumen
                                     <span class="text-danger">*</span>
                                 </label>
                                 <input type="url" name="template_led_link" class="form-control" placeholder="https://drive.google.com/..." required>
                                 <small class="text-muted">
-                                    Link untuk Template LED+Suplemen dan LKPS (Google Drive, Dropbox, dll)
+                                    Link untuk Template Dokumen (Google Drive, Dropbox, dll)
                                 </small>
                             </div>
 
@@ -389,7 +389,7 @@
                                 <textarea name="keterangan" class="form-control" rows="3" placeholder="Tambahkan catatan untuk PS..."></textarea>
                             </div>
 
-                            <div class="alert alert-warning">
+                            <div class="alert alert-warning alert-permanent">
                                 <i class="bi bi-info-circle"></i>
                                 <small>Pastikan kedua link dapat diakses oleh PS</small>
                             </div>
@@ -408,7 +408,7 @@
                             @csrf
                             <div class="mb-3">
                                 <label class="form-label fw-bold">
-                                    <i class="bi bi-file-earmark-text"></i> File Template LED+Suplemen dan LKPS
+                                    <i class="bi bi-file-earmark-text"></i> File Template Dokumen
                                     <span class="text-danger">*</span>
                                 </label>
                                 <input type="file" name="file_template_led" class="form-control" accept=".pdf,.zip,.rar,.docx" required>
@@ -433,7 +433,7 @@
                                 <textarea name="keterangan" class="form-control" rows="3" placeholder="Tambahkan catatan untuk PS..."></textarea>
                             </div>
 
-                            <div class="alert alert-warning">
+                            <div class="alert alert-warning alert-permanent">
                                 <i class="bi bi-info-circle"></i>
                                 <small>Kedua file wajib diupload</small>
                             </div>

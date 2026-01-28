@@ -126,8 +126,8 @@ class PenyampaianTemplateController extends Controller
             'template_pembayaran_link' => 'required|url|max:500',
             'keterangan' => 'nullable|string|max:1000',
         ], [
-            'template_led_link.required' => 'Link Template LED+Suplemen dan LKPS wajib diisi',
-            'template_led_link.url' => 'Format link Template LED+Suplemen dan LKPS tidak valid',
+            'template_led_link.required' => 'Link Template Dokumen wajib diisi',
+            'template_led_link.url' => 'Format link Template Dokumen tidak valid',
             'template_pembayaran_link.required' => 'Link Template Formulir Pembayaran wajib diisi',
             'template_pembayaran_link.url' => 'Format link Template Formulir Pembayaran tidak valid',
         ]);
@@ -141,13 +141,13 @@ class PenyampaianTemplateController extends Controller
 
         DB::beginTransaction();
         try {
-            // Simpan Template LED+Suplemen dan LKPS
+            // Simpan Template Dokumen
             $pengajuan->dokumen()->create([
-                'original_filename' => 'Link Template LED+Suplemen dan LKPS',
-                'nama_file' => 'Link Template LED+Suplemen dan LKPS',
+                'original_filename' => 'Link Template Dokumen',
+                'nama_file' => 'Link Template Dokumen',
                 'jenis_dokumen' => 'borang_template',
                 'template_link' => $request->template_led_link,
-                'keterangan' => 'Template LED+Suplemen dan LKPS via link',
+                'keterangan' => 'Template Dokumen via link',
                 'uploaded_by' => auth()->id(),
                 'is_latest' => true,
             ]);
@@ -176,7 +176,7 @@ class PenyampaianTemplateController extends Controller
                 'status_to' => PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM,
                 'changed_by' => auth()->id(),
                 'changed_at' => now(),
-                'keterangan' => 'Template LED+Suplemen dan LKPS serta Template Formulir Pembayaran dikirim via link oleh DE'
+                'keterangan' => 'Template Dokumen serta Template Formulir Pembayaran dikirim via link oleh DE'
                 // .($request->keterangan ? '. ' . $request->keterangan : ''),
             ]);
 
@@ -184,7 +184,7 @@ class PenyampaianTemplateController extends Controller
 
             return redirect()
                 ->route('de.penyampaian-template')
-                ->with('success', 'Template LED+Suplemen dan LKPS serta Template Formulir Pembayaran berhasil dikirim via link.');
+                ->with('success', 'Template Dokumen serta Template Formulir Pembayaran berhasil dikirim via link.');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Gagal mengirim template: ' . $e->getMessage());
@@ -201,7 +201,7 @@ class PenyampaianTemplateController extends Controller
             'file_template_pembayaran' => 'required|file|mimes:pdf,docx,xlsx,xls|max:10240', // max 10MB
             'keterangan' => 'nullable|string|max:1000',
         ], [
-            'file_template_led.required' => 'File Template LED+Suplemen dan LKPS wajib diupload',
+            'file_template_led.required' => 'File Template Dokumen wajib diupload',
             'file_template_led.mimes' => 'Format file Template LED harus PDF, ZIP, RAR, atau DOCX',
             'file_template_led.max' => 'Ukuran file Template LED maksimal 50MB',
             'file_template_pembayaran.required' => 'File Template Formulir Pembayaran wajib diupload',
@@ -218,7 +218,7 @@ class PenyampaianTemplateController extends Controller
 
         DB::beginTransaction();
         try {
-            // Upload Template LED+Suplemen dan LKPS
+            // Upload Template Dokumen
             $fileLED = $request->file('file_template_led');
             $filenameLED = time() . '_LED_' . str_replace(' ', '_', $fileLED->getClientOriginalName());
             $pathLED = $fileLED->storeAs('dokumen/template-borang', $filenameLED, 'public');
@@ -230,7 +230,7 @@ class PenyampaianTemplateController extends Controller
                 'original_filename' => $fileLED->getClientOriginalName(),
                 'file_size' => $fileLED->getSize(),
                 'mime_type' => $fileLED->getMimeType(),
-                'keterangan' => 'Template LED+Suplemen dan LKPS',
+                'keterangan' => 'Template Dokumen',
                 'uploaded_by' => auth()->id(),
                 'is_latest' => true,
             ]);
@@ -265,7 +265,7 @@ class PenyampaianTemplateController extends Controller
                 'status_to' => PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM,
                 'changed_by' => auth()->id(),
                 'changed_at' => now(),
-                'keterangan' => 'Template LED+Suplemen dan LKPS (' . $fileLED->getClientOriginalName() . ') ' .
+                'keterangan' => 'Template Dokumen (' . $fileLED->getClientOriginalName() . ') ' .
                     'serta Template Formulir Pembayaran (' . $filePembayaran->getClientOriginalName() . ') dikirim via upload oleh DE'
                 // .($request->keterangan ? '. ' . $request->keterangan : ''),
             ]);
@@ -274,7 +274,7 @@ class PenyampaianTemplateController extends Controller
 
             return redirect()
                 ->route('de.penyampaian-template')
-                ->with('success', 'Template LED+Suplemen dan LKPS serta Template Formulir Pembayaran berhasil dikirim.');
+                ->with('success', 'Template Dokumen serta Template Formulir Pembayaran berhasil dikirim.');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Gagal mengirim template: ' . $e->getMessage());

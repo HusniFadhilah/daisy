@@ -135,7 +135,7 @@
                                 @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI)
                                 <span class="badge bg-success">Selesai Diisi</span>
                                 @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED)
-                                <span class="badge bg-warning text-dark text-wrap">Dokumen LED+Suplemen dan LKPS Perlu Revisi</span>
+                                <span class="badge bg-warning text-dark text-wrap">Dokumen Dokumen Perlu Revisi</span>
                                 @else
                                 <span class="badge bg-secondary">{{ ucfirst($pengajuan->status_label) }}</span>
                                 @endif
@@ -202,7 +202,7 @@
 <script>
     window.PELAPORAN_CFG = {
         borang: {
-            title: 'Pelaporan Validasi LED+Suplemen, dan LKPS'
+            title: 'Pelaporan Validasi Dokumen'
             , label: 'Laporan Kesiapan LED Program Studi (LKLED)'
             , upload: @json(route('pelaporan.borang.upload', ['assignment' => '__ID__']))
             , finalize: @json(route('pelaporan.borang.finalize', ['assignment' => '__ID__']))

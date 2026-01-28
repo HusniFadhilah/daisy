@@ -1,6 +1,6 @@
 @extends('layouts.template.app')
 
-@section('title', 'Penerimaan Dokumen LED+Suplemen dan LKPS')
+@section('title', 'Penerimaan Dokumen Dokumen')
 
 @push('styles')
 <style>
@@ -85,7 +85,7 @@
                             <i class="bi bi-hourglass-split"></i>
                         </div>
                     </div>
-                    <small class="opacity-75">Menunggu PS mengupload draft LED+Suplemen dan LKPS</small>
+                    <small class="opacity-75">Menunggu PS mengupload Draft Dokumen</small>
                 </div>
             </div>
         </div>
@@ -100,7 +100,7 @@
                             <i class="bi bi-check-circle"></i>
                         </div>
                     </div>
-                    <small class="opacity-75">LED+Suplemen dan LKPS siap divalidasi oleh validator</small>
+                    <small class="opacity-75">Dokumen siap divalidasi oleh validator</small>
                 </div>
             </div>
         </div>
@@ -115,7 +115,7 @@
                             <i class="bi bi-clipboard-check"></i>
                         </div>
                     </div>
-                    <small class="opacity-75">LED+Suplemen dan LKPS sedang divalidasi oleh validator</small>
+                    <small class="opacity-75">Dokumen sedang divalidasi oleh validator</small>
                 </div>
             </div>
         </div>
@@ -130,7 +130,7 @@
                             <i class="bi bi-exclamation-triangle"></i>
                         </div>
                     </div>
-                    <small class="opacity-75">LED+Suplemen dan LKPS diminta revisi oleh validator</small>
+                    <small class="opacity-75">Dokumen diminta revisi oleh validator</small>
                 </div>
             </div>
         </div>
@@ -145,7 +145,7 @@
                             <i class="bi bi-patch-check"></i>
                         </div>
                     </div>
-                    <small class="opacity-75">Validasi LED+Suplemen dan LKPS selesai</small>
+                    <small class="opacity-75">Validasi Dokumen selesai</small>
                 </div>
             </div>
         </div>

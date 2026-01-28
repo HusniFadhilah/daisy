@@ -57,7 +57,7 @@
             @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA)
             <div class="card mb-4">
                 <div class="card-header bg-warning text-white">
-                    <h5 class="mb-0"> <i class="bi bi-receipt"></i> Aksi Diperlukan: Kirim Template LED+Suplemen dan LKPS, Formulir Pembayaran </h5>
+                    <h5 class="mb-0"> <i class="bi bi-receipt"></i> Aksi Diperlukan: Kirim Template Dokumen, Formulir Pembayaran </h5>
                 </div>
             </div>
             <ul class="nav nav-tabs mb-3" id="aksiPengajuanTab" role="tablist">
@@ -81,12 +81,12 @@
                         <div class="card-header bg-primary text-white">
                             <h5 class="mb-0">
                                 <i class="bi bi-file-earmark-arrow-down"></i>
-                                Kirim Template LED+Suplemen dan LKPS
+                                Kirim Template Dokumen
                             </h5>
                         </div>
                         <div class="card-body">
                             <p class="mb-3">
-                                Surat permohonan telah diterima. Kirimkan form Template LED+Suplemen dan LKPS ke prodi untuk dilengkapi.
+                                Surat permohonan telah diterima. Kirimkan form Template Dokumen ke prodi untuk dilengkapi.
                             </p>
 
                             <form action="{{ route('de.pengajuan.kirim-borang', $pengajuan->id) }}" method="POST" enctype="multipart/form-data" id="formKirimBorang">
@@ -118,7 +118,7 @@
                                     <div class="card bg-light">
                                         <div class="card-body">
                                             <h6 class="fw-bold mb-3">
-                                                <i class="bi bi-link"></i> Link Template LED+Suplemen dan LKPS
+                                                <i class="bi bi-link"></i> Link Template Dokumen
                                             </h6>
 
                                             <div class="mb-3">
@@ -135,7 +135,7 @@
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                                 @enderror
                                                 <small class="text-muted">
-                                                    Link ke Template LED+Suplemen dan LKPS yang dapat diakses oleh prodi
+                                                    Link ke Template Dokumen yang dapat diakses oleh prodi
                                                 </small>
                                             </div>
 
@@ -170,7 +170,7 @@
 
                                             <div class="mb-3">
                                                 <label class="form-label fw-bold">
-                                                    File Template LED+Suplemen dan LKPS, formulir pembayaran <span class="text-danger">*</span>
+                                                    File Template Dokumen, formulir pembayaran <span class="text-danger">*</span>
                                                 </label>
                                                 <input type="file" name="borang_template" id="borang_template" class="form-control @error('borang_template') is-invalid @enderror" accept=".docx,.doc,.zip,.rar,.pdf,.xlsx">
                                                 @error('borang_template')
@@ -211,7 +211,7 @@
                                         <ul class="mb-0 small">
                                             <li id="infoMetode">Link template akan dikirim ke email prodi</li>
                                             <li>Prodi dapat mengakses template melalui link/download file</li>
-                                            <li>Status Permohonan akreditasi akan diupdate ke <code>Penyampaian Template LED+Suplemen dan LKPS</code></li>
+                                            <li>Status Permohonan akreditasi akan diupdate ke <code>Penyampaian Template Dokumen</code></li>
                                             <li>Notifikasi email akan dikirim ke UPPS</li>
                                         </ul>
                                     </div>
@@ -244,7 +244,7 @@
                         </div>
                         <div class="card-body">
                             <p class="mb-3">
-                                Kirimkan formulir pembayaran ke prodi. Formulir ini terpisah dari Template LED+Suplemen dan LKPS.
+                                Kirimkan formulir pembayaran ke prodi. Formulir ini terpisah dari Template Dokumen.
                             </p>
 
                             <form action="{{ route('de.pengajuan.kirim-formulir-pembayaran', $pengajuan->id) }}" method="POST" enctype="multipart/form-data" id="formKirimFormulirPembayaran">
@@ -423,21 +423,21 @@
             @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI && $pengajuan->pembayaran && $pengajuan->pembayaran->status_pembayaran === 'terverifikasi')
             <div class="alert alert-info alert-permanent">
                 <i class="bi bi-info-circle"></i>
-                Sedang menunggu Prodi mengupload draft LED+Suplemen, dan LKPS
+                Sedang menunggu Prodi mengupload Draft Dokumen
             </div>
             @endif
 
             @if(in_array($pengajuan->status, [\App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA, \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI]))
             <div class="alert alert-info alert-permanent">
                 <i class="bi bi-info-circle"></i>
-                Silahkan tugaskan Validator untuk melakukan validasi dokumen LED+Suplemen, dan LKPS yang telah diupload oleh prodi
+                Silahkan tugaskan Validator untuk melakukan validasi Dokumen yang telah diupload oleh prodi
             </div>
             @endif
 
             @if(in_array($pengajuan->status, [\App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED]))
             <div class="alert alert-warning alert-permanent">
                 <i class="bi bi-info-circle"></i>
-                Sedang menunggu pelaporan LED+Suplemen dan LKPS selesai
+                Sedang menunggu pelaporan Dokumen selesai
             </div>
             @endif
 
@@ -450,7 +450,7 @@
                         Aksi Diperlukan: Approve Lanjut ke Tahap AK
                     </h5>
                     <p class="mb-3">
-                        Pembayaran telah diverifikasi oleh bagian keuangan, LED+Suplemen dan LKPS final telah diterima, serta Laporan Kesiapan LED Program Studi (LKLED) telah selesai diproses. Selanjutnya, dapat dilanjutkan untuk tahap penugasan Asesor untuk Asesmen Kecukupan (AK)
+                        Pembayaran telah diverifikasi oleh bagian keuangan, Dokumen final telah diterima, serta Laporan Kesiapan LED Program Studi (LKLED) telah selesai diproses. Selanjutnya, dapat dilanjutkan untuk tahap penugasan Asesor untuk Asesmen Kecukupan (AK)
                         Silahkan setujui untuk melanjutkan ke tahap AK/Asesmen Dokumen.
                     </p>
 
@@ -904,7 +904,7 @@
                         </div>
                         @if($pengajuan->pengaju)
                         <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Pengaju</label>
+                            <label class="text-muted small">Pemohon</label>
                             <p class="fw-bold mb-0">{{ $pengajuan->pengaju->name }}</p>
                             <small class="text-wrap">{{ $pengajuan->pengaju->email }}</small>
                         </div>
@@ -913,7 +913,7 @@
 
                     @if($pengajuan->catatan_pengaju)
                     <hr>
-                    <label class="text-muted small">Catatan Pengaju</label>
+                    <label class="text-muted small">Catatan dari Prodi</label>
                     <p class="mb-0">{{ $pengajuan->catatan_pengaju }}</p>
                     @endif
                 </div>

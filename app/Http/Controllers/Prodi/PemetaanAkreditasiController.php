@@ -121,7 +121,7 @@ class PemetaanAkreditasiController extends Controller
     public function getTableAjax(Request $request)
     {
         // Build query
-        $query = StudyProgram::nonExample()->with(['university', 'degreeLevel']);
+        $query = StudyProgram::with(['university', 'degreeLevel']);
 
         // Apply filters
         $this->applyFilters($query, $request);
@@ -140,7 +140,7 @@ class PemetaanAkreditasiController extends Controller
         $studyPrograms = $query->paginate(20);
 
         // Get urgent programs
-        $urgentQuery = StudyProgram::nonExample()->with(['university', 'degreeLevel'])
+        $urgentQuery = StudyProgram::with(['university', 'degreeLevel'])
             ->where('tanggal_kedaluwarsa', '<=', now()->addMonths(6))
             ->where('tanggal_kedaluwarsa', '>=', now())
             ->orderBy('tanggal_kedaluwarsa');
@@ -236,20 +236,23 @@ class PemetaanAkreditasiController extends Controller
         }
 
         // ✅ NEW: is_example filter
-        if ($request->filled('is_example')) {
+        if ($request->filled('is_example') && $request->is_example !== 'both') {
             $isExample = $request->is_example;
             if ($isExample === 'false') {
                 $query->where('is_example', false);
             } elseif ($isExample === 'true') {
                 $query->where('is_example', true);
             }
-        } else {
-            // 'both' = tidak ada filter (default behavior)
-            $query->whereIn('is_example', [true, false]);
         }
         // Search
-        if ($request->filled('search') && isset($request->search['value'])) {
-            $query->where('name', 'like', '%' . $request->search['value'] . '%');
+        if ($request->filled('search')) {
+            if (is_array($request->search) && isset($request->search['value'])) {
+                // DataTable search
+                $searchValue = $request->search['value'];
+                if (!empty($searchValue)) {
+                    $query->where('name', 'like', '%' . $searchValue . '%');
+                }
+            }
         }
     }
 
@@ -268,8 +271,7 @@ class PemetaanAkreditasiController extends Controller
         $start = $base->copy()->startOfMonth();
         $end   = $base->copy()->addMonths($windowMonths - 1)->endOfMonth();
 
-        $programs = StudyProgram::nonExample()
-            ->with(['university', 'degreeLevel'])
+        $programs = StudyProgram::with(['university', 'degreeLevel'])
             ->whereBetween('tanggal_kedaluwarsa', [$start, $end])
             ->orderBy('tanggal_kedaluwarsa', 'asc')
             ->paginate(20);
@@ -351,7 +353,7 @@ class PemetaanAkreditasiController extends Controller
         $targetEnd     = $targetMonth->copy()->endOfMonth();
 
         // 🔥 1 QUERY
-        $stats = StudyProgram::nonExample()->selectRaw("
+        $stats = StudyProgram::selectRaw("
         COUNT(*) as total,
         SUM(CASE WHEN status_kedaluwarsa = 'Aktif' THEN 1 ELSE 0 END) as aktif,
         SUM(CASE WHEN status_kedaluwarsa = 'Belum Terakreditasi' THEN 1 ELSE 0 END) as belum_terakreditasi,
@@ -411,7 +413,7 @@ class PemetaanAkreditasiController extends Controller
      */
     public function show($id)
     {
-        $studyProgram = StudyProgram::nonExample()->with([
+        $studyProgram = StudyProgram::with([
             'university',
             'degreeLevel',
         ])->findOrFail($id);
@@ -545,7 +547,7 @@ class PemetaanAkreditasiController extends Controller
         $endRange = now()->copy()->addMonths(12)->endOfMonth();
 
         // Build query with filters
-        $query = StudyProgram::nonExample()->with(['university', 'degreeLevel'])
+        $query = StudyProgram::with(['university', 'degreeLevel'])
             ->whereBetween('tanggal_kedaluwarsa', [$startRange, $endRange]);
 
         if (!empty($filters['is_example']) && $filters['is_example'] !== 'both') {
@@ -660,14 +662,13 @@ class PemetaanAkreditasiController extends Controller
     public function getDataTableAjax(Request $request)
     {
         // Base query
-        $query = StudyProgram::nonExample()
-            ->with(['university', 'degreeLevel']);
+        $query = StudyProgram::with(['university', 'degreeLevel']);
 
         // Apply custom filters
         $this->applyFilters($query, $request);
 
         // Get total records before filtering
-        $totalRecords = StudyProgram::nonExample()->count();
+        $totalRecords = StudyProgram::count();
 
         // Get filtered records count
         $filteredRecords = $query->count();
@@ -782,7 +783,7 @@ class PemetaanAkreditasiController extends Controller
      */
     public function getUrgentProgramsAjax(Request $request)
     {
-        $query = StudyProgram::nonExample()->with(['university', 'degreeLevel'])
+        $query = StudyProgram::with(['university', 'degreeLevel'])
             ->where('tanggal_kedaluwarsa', '<=', now()->addMonths(6))
             ->where('tanggal_kedaluwarsa', '>=', now())
             ->orderBy('tanggal_kedaluwarsa');

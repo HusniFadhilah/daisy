@@ -25,6 +25,7 @@ class StudyProgram extends Model
         'akreditasi_phone',
         'akreditasi_mobile',
         'akreditasi_email',
+        'city',
         'is_active',
         'is_example'
     ];

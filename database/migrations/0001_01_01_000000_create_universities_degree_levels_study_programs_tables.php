@@ -73,6 +73,7 @@ return new class extends Migration
                 $table->string('akreditasi_phone')->nullable()->comment('Telp Tim Akreditasi');
                 $table->string('akreditasi_mobile')->nullable()->comment('Mobile/WA Tim Akreditasi');
                 $table->string('akreditasi_email')->nullable()->comment('Email Tim Akreditasi');
+                $table->string('city')->nullable()->comment('Kota Program Studi Berada');
                 $table->boolean('is_active')->default(true)->index();
                 $table->boolean('is_example')->default(false)->index();
                 $table->timestamps();

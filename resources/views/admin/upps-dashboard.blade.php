@@ -211,7 +211,7 @@
                     <!-- Total Pengajuan -->
                     <div class="col-md-6 col-lg-6 col-xl-3">
                         <div class="p-3">
-                            <div class="text-muted small mb-2">Total Pengajuan</div>
+                            <div class="text-muted small mb-2">Total Permohonan Akreditasi</div>
                             <div class="h2 mb-0 fw-bold">{{ $additionalStats['total_pengajuan'] ?? 0 }}</div>
                         </div>
                     </div>

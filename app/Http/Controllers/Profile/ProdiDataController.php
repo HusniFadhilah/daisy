@@ -174,6 +174,7 @@ class ProdiDataController extends Controller
                 'akreditasi_phone' => 'nullable|string|max:20',
                 'akreditasi_mobile' => 'nullable|string|max:20',
                 'akreditasi_email' => 'nullable|email|max:255',
+                'city' => 'nullable|string|max:255',
             ]);
 
             // Check authorization
@@ -208,6 +209,7 @@ class ProdiDataController extends Controller
                 'akreditasi_phone' => $request->akreditasi_phone,
                 'akreditasi_mobile' => $request->akreditasi_mobile,
                 'akreditasi_email' => $request->akreditasi_email,
+                'city' => $request->city,
             ]);
 
             return response()->json([

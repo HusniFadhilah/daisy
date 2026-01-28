@@ -256,7 +256,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">
                             <i class="bi bi-clipboard-check"></i>
-                            Validasi LED+Suplemen dan LKPS
+                            Validasi Dokumen
                         </h5>
 
                         @if($canAssignValidator)

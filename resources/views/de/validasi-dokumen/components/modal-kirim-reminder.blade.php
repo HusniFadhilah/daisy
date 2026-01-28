@@ -47,7 +47,7 @@ $countPendingAssignments = count($pendingAssignments);
                         <label class="form-label fw-bold">Pesan Reminder</label>
                         <textarea name="pesan_reminder" class="form-control" rows="6" required>Yth. Validator,
 
-Kami mengingatkan untuk segera menyelesaikan validasi dokumen LED+Suplemen dan LKPS yang telah ditugaskan kepada Anda.
+Kami mengingatkan untuk segera menyelesaikan validasi dokumen Dokumen yang telah ditugaskan kepada Anda.
 
 Mohon untuk segera menyelesaikan review dan memberikan feedback kepada program studi.
 

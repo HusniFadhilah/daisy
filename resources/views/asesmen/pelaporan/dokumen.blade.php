@@ -39,9 +39,9 @@
         <div class="welcome-content">
             <h2>
                 <i class="bi bi-file-earmark-check text-white"></i>
-                Pelaporan Validasi LED+Suplemen dan LKPS
+                Pelaporan Validasi Dokumen
             </h2>
-            <p class="mb-0">Kelola pelaporan hasil validasi dokumen LED+Suplemen dan LKPS Program Studi</p>
+            <p class="mb-0">Kelola pelaporan hasil validasi dokumen Dokumen Program Studi</p>
         </div>
     </div>
 

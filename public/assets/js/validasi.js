@@ -14,7 +14,7 @@ const PelaporanModule = (() => {
     // Configuration untuk setiap jenis pelaporan
     const REPORT_TYPES = {
         dokumen: {
-            title: 'Pelaporan Validasi LED+Suplemen dan LKPS',
+            title: 'Pelaporan Validasi Dokumen',
             label: 'Laporan Kesiapan LED Program Studi (LKLED)',
             description: `Dokumen yang sudah digabungkan, yang diperlukan isinya adalah:
 - Surat Permohonan PS untuk Akreditasi

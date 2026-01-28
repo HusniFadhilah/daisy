@@ -155,7 +155,7 @@
             <div class="card mb-4" id="validationCard">
                 <div class="card-header bg-light d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">
-                        <i class="bi bi-clipboard-check"></i> Hasil Validasi LED+Suplemen dan LKPS
+                        <i class="bi bi-clipboard-check"></i> Hasil Validasi Dokumen
                     </h5>
                     <span class="badge bg-secondary" id="validationBadge">Memuat...</span>
                 </div>

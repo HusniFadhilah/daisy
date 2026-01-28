@@ -185,7 +185,7 @@ class BorangValidationExcelService
         $sheet->getStyle('D2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
         $sheet->mergeCells('D3:J3');
-        $sheet->setCellValue('D3', 'Tabel Validasi LED+Suplemen dan LKPS Prodi ' . ($pengajuan->studyProgram->name ?? ''));
+        $sheet->setCellValue('D3', 'Tabel Validasi Dokumen Prodi ' . ($pengajuan->studyProgram->name ?? ''));
         $sheet->getStyle('D3')->getFont()->setBold(true)->setSize(12);
         $sheet->getStyle('D3')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 

@@ -1,6 +1,6 @@
 @extends('layouts.template.app')
 
-@section('title', 'Validasi LED+Suplemen dan LKPS - ' . $pengajuan->nomor_pengajuan)
+@section('title', 'Validasi Dokumen - ' . $pengajuan->nomor_pengajuan)
 
 @push('styles')
 <style>
@@ -63,7 +63,7 @@
         <div>
             <h3>
                 <i class="bi bi-clipboard-check"></i>
-                Validasi LED+Suplemen dan LKPS
+                Validasi Dokumen
             </h3>
             <p class="text-muted mb-0">
                 {{ $pengajuan->judul }}
@@ -209,10 +209,10 @@
             'btn_class' => 'btn-success',
             'empty_text' => 'Belum ada file LKPS diupload.',
             ],
-            'bukti_pembayaran' => [
-            'label' => 'Bukti Pembayaran Akreditasi',
+            'formulir_pembayaran' => [
+            'label' => 'Formulir & Bukti Pembayaran Akreditasi',
             'btn_class' => 'btn-info',
-            'empty_text' => 'Belum ada file Bukti Pembayaran diupload.',
+            'empty_text' => 'Belum ada file Formulir & Bukti Pembayaran diupload.',
             ],
             'surat_permohonan' => [
             'label' => 'Surat Permohonan PS untuk Akreditasi',

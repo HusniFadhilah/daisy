@@ -504,7 +504,7 @@ $authUser = Auth::user();
 
         const CONFIG = {
             dokumen: {
-                title: 'Pelaporan Validasi LED+Suplemen, dan LKPS'
+                title: 'Pelaporan Validasi Dokumen'
                 , label: 'Laporan Kesiapan LED Program Studi (LKLED)'
                 , upload: @json(route('pelaporan.borang.upload', ['assignment' => '__ID__']))
                 , finalize: @json(route('pelaporan.borang.finalize', ['assignment' => '__ID__']))

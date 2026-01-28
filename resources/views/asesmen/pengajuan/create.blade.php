@@ -284,7 +284,7 @@
                         ],
                         [
                         'date' => null,
-                        'label' => 'Penyampaian Template LED+Suplemen dan LKPS',
+                        'label' => 'Penyampaian Template Dokumen',
                         'icon' => 'bi-file-earmark-arrow-down',
                         'step' => 3
                         ],
@@ -296,7 +296,7 @@
                         ],
                         [
                         'date' => null,
-                        'label' => 'Penerimaan Draft LED+Suplemen dan LKPS',
+                        'label' => 'Penerimaan Draft Dokumen',
                         'icon' => 'bi-file-earmark-check',
                         'step' => 5
                         ],
@@ -306,14 +306,14 @@
                         // ========================================
                         [
                         'date' => null,
-                        'label' => 'Validasi LED+Suplemen dan LKPS',
+                        'label' => 'Validasi Dokumen',
                         'icon' => 'bi-clipboard-check',
                         'step' => 6,
                         'color' => 'primary'
                         ],
                         [
                         'date' => null,
-                        'label' => 'Pelaporan Validasi LED+Suplemen dan LKPS',
+                        'label' => 'Pelaporan Validasi Dokumen',
                         'icon' => 'bi-file-earmark-text',
                         'step' => 7,
                         'color' => 'primary'

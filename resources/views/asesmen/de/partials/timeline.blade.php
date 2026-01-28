@@ -24,7 +24,7 @@
             ],
             [
             'date' => $pengajuan->tanggal_template_led_dikirim,
-            'label' => 'Penyampaian Template LED+Suplemen dan LKPS, Formulir Pembayaran',
+            'label' => 'Penyampaian Template Dokumen, Formulir Pembayaran',
             'icon' => 'bi-file-earmark-arrow-down',
             'step' => 3
             ],
@@ -36,7 +36,7 @@
             ],
             [
             'date' => $pengajuan->tanggal_draft_borang,
-            'label' => 'Penerimaan draft LED+Suplemen dan LKPS dari Prodi',
+            'label' => 'Penerimaan Draft Dokumen dari Prodi',
             'icon' => 'bi-file-earmark-check',
             'step' => 5
             ],
@@ -46,14 +46,14 @@
             // ========================================
             [
             'date' => $pengajuan->tanggal_validasi_borang_assigned,
-            'label' => 'Validasi LED+Suplemen dan LKPS',
+            'label' => 'Validasi Dokumen',
             'icon' => 'bi-clipboard-check',
             'step' => 6,
             'color' => 'primary'
             ],
             [
             'date' => $pengajuan->tanggal_pelaporan_validasi_borang,
-            'label' => 'Pelaporan Validasi LED+Suplemen dan LKPS',
+            'label' => 'Pelaporan Validasi Dokumen',
             'icon' => 'bi-file-earmark-text',
             'step' => 7,
             'color' => 'primary'

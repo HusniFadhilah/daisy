@@ -151,8 +151,6 @@ class BorangExportService
         $pdfPath = $this->getPengajuanDokumenPath('lembar_pengesahan');
 
         if ($pdfPath) {
-            // ✅ tampilkan PDF dari DB sebagai halaman-halaman word
-            // lembar pengesahan termasuk front matter => roman
             $this->addPdfAsImagesToWord($pdfPath, 'roman');
             return;
         }
@@ -182,15 +180,41 @@ class BorangExportService
             'cellMarginRight' => 0,
         ]);
 
+        // ✅ AMBIL DATA DENGAN PREFILL LOGIC
+        $university = $this->pengajuan->studyProgram->university;
+        $studyProgram = $this->pengajuan->studyProgram;
+
         // ===== BLOK 1: Lembaga Penjaminan Mutu =====
         $section->addText('Lembaga Penjaminan Mutu', ['size' => 11, 'bold' => true], ['spaceAfter' => 120]);
 
         $table1 = $section->addTable('FormTable');
-        $this->addRow($table1, 'Universitas/Institut');
-        $this->addRow($table1, 'Lembaga Penjaminan Mutu');
-        $this->addRow($table1, 'Telp');
-        $this->addRow($table1, 'Mobile telp dan/atau WA');
-        $this->addRow($table1, 'Alamat Email');
+
+        // ✅ Prefill dengan fallback
+        $this->addRow(
+            $table1,
+            'Universitas/Institut',
+            $this->getFieldValue('lpm_university_name', $university->name)
+        );
+        $this->addRow(
+            $table1,
+            'Lembaga Penjaminan Mutu',
+            $this->getFieldValue('lpm_name', $university->lpm_name)
+        );
+        $this->addRow(
+            $table1,
+            'Telp',
+            $this->getFieldValue('lpm_phone', $university->lpm_phone)
+        );
+        $this->addRow(
+            $table1,
+            'Mobile telp dan/atau WA',
+            $this->getFieldValue('lpm_mobile', $university->lpm_mobile)
+        );
+        $this->addRow(
+            $table1,
+            'Alamat Email',
+            $this->getFieldValue('lpm_email', $university->lpm_email)
+        );
 
         $section->addTextBreak(1);
 
@@ -198,18 +222,43 @@ class BorangExportService
         $section->addText('Program Studi Akreditasi', ['size' => 11, 'bold' => true], ['spaceAfter' => 120]);
 
         $table2 = $section->addTable('FormTable');
-        $this->addRow($table2, 'Program Studi');
-        $this->addRow($table2, 'Akreditasi');
-        $this->addRow($table2, 'Ketua Tim Akreditasi');
-        $this->addRow($table2, 'Telp');
-        $this->addRow($table2, 'Mobile telp dan/atau WA');
-        $this->addRow($table2, 'Alamat Email');
+
+        // ✅ Prefill dengan fallback
+        $this->addRow(
+            $table2,
+            'Program Studi',
+            $this->getFieldValue('prodi_name', $studyProgram->name)
+        );
+        $this->addRow(
+            $table2,
+            'Akreditasi',
+            $this->getFieldValue('prodi_akreditasi', $studyProgram->peringkat_akreditasi)
+        );
+        $this->addRow(
+            $table2,
+            'Ketua Tim Akreditasi',
+            $this->getFieldValue('ketua_tim_akreditasi', $studyProgram->ketua_tim_akreditasi)
+        );
+        $this->addRow(
+            $table2,
+            'Telp',
+            $this->getFieldValue('ketua_tim_phone', $studyProgram->akreditasi_phone)
+        );
+        $this->addRow(
+            $table2,
+            'Mobile telp dan/atau WA',
+            $this->getFieldValue('ketua_tim_mobile', $studyProgram->akreditasi_mobile)
+        );
+        $this->addRow(
+            $table2,
+            'Alamat Email',
+            $this->getFieldValue('ketua_tim_email', $studyProgram->akreditasi_email)
+        );
 
         // Spacer besar supaya tanda tangan turun ke bawah
         $section->addTextBreak(6);
 
         // ===== BLOK TANDA TANGAN (KANAN BAWAH) =====
-        // Pakai table 1 baris 2 kolom: kiri kosong, kanan isi tanda tangan
         $this->phpWord->addTableStyle('SignTable', [
             'borderSize' => 0,
             'borderColor' => 'FFFFFF',
@@ -226,20 +275,50 @@ class BorangExportService
         // Kolom kanan (isi tanda tangan)
         $cell = $signTable->addCell(3500);
 
+        // ✅ Kota dan Tanggal dengan Prefill
+        $kota = $this->getFieldValue(
+            'pengesahan_kota',
+            $studyProgram->city ?? $university->city, // Fallback ke university jika prodi tidak ada city
+            '[Kota]'
+        );
+        $tanggalStr = $this->getFieldValue('tanggal_pengesahan', null);
+
+        if ($tanggalStr) {
+            $tanggal = $tanggalStr; // User sudah input manual
+        } else {
+            $tanggal = Date::tglIndo($this->pengajuan->created_at ?? now());
+        }
+
         $run = $cell->addTextRun(['alignment' => Jc::START, 'spaceAfter' => 120]);
-        $run->addText('Kota, tanggal, Bulan, Tahun');
+        $run->addText("{$kota}, {$tanggal}");
 
         $cell->addTextBreak(1);
 
         $run2 = $cell->addTextRun(['spaceAfter' => 120]);
-        $run2->addText('Ttd dan stemp', ['color' => 'bbbbbb', 'italic' => true]);
+        $run2->addText('Ttd dan stempel', ['color' => 'bbbbbb', 'italic' => true]);
 
         $cell->addTextBreak(1);
 
-        $cell->addText('Ketua Penjaminan Mutu Universitas/UPPS', ['size' => 11, 'color' => 'bbbbbb', 'italic' => true], ['spaceAfter' => 700]);
+        $cell->addText(
+            'Ketua Penjaminan Mutu Universitas/UPPS',
+            ['size' => 11, 'color' => 'bbbbbb', 'italic' => true],
+            ['spaceAfter' => 700]
+        );
 
-        $cell->addText('Nama :', ['size' => 11], ['spaceAfter' => 80]);
-        $cell->addText('NIP   :', ['size' => 11]);
+        // ✅ Nama dan NIP dengan Prefill
+        $kaprodiName = $this->getFieldValue(
+            'ketua_prodi_name',
+            $studyProgram->ketua_prodi_name,
+            '[Nama Ketua Program Studi]'
+        );
+        $kaprodiNIP = $this->getFieldValue(
+            'ketua_prodi_nip',
+            $studyProgram->ketua_prodi_nip,
+            '[NIP]'
+        );
+
+        $cell->addText('Nama : ' . $kaprodiName, ['size' => 11], ['spaceAfter' => 80]);
+        $cell->addText('NIP   : ' . $kaprodiNIP, ['size' => 11]);
     }
 
     private function addKataPengantarSection()
@@ -267,14 +346,52 @@ class BorangExportService
             'Akhir kata, semoga laporan ini dapat memberikan manfaat sebagai sarana transparansi, evaluasi, dan peningkatan mutu Program Studi di masa yang akan datang.',
         ];
 
-        [$prefill, $placeholder, $isPlaceholder] = $this->getFieldPrefill($this->borangDataMap, 'kata_pengantar', $defaultKataPengantar, 500);
+        [$prefill, $placeholder, $isPlaceholder] = $this->getFieldPrefill(
+            $this->borangDataMap,
+            'kata_pengantar',
+            $defaultKataPengantar,
+            500
+        );
 
         // ✅ Kotak + teks bawaan
-        $this->addFrontMatterDescBox($section, 'Kata Pengantar (Mohon jangan dihapus)', 500, $prefill, false, 1800, 10000, $placeholder, $isPlaceholder);
+        $this->addFrontMatterDescBox(
+            $section,
+            'Kata Pengantar (Mohon jangan dihapus)',
+            500,
+            $prefill,
+            false,
+            1800,
+            10000,
+            $placeholder,
+            $isPlaceholder
+        );
 
-        // Penutup (kanan bawah)
+        // ✅ Penutup (kanan bawah) - PREFILL LOGIC
+        $university = $this->pengajuan->studyProgram->university;
+        $studyProgram = $this->pengajuan->studyProgram;
+
+        $kota = $this->getFieldValue(
+            'kata_pengantar_kota',
+            $studyProgram->city,
+            '[Nama Kota]'
+        );
+
+        // Tanggal
+        $tanggalStr = $this->getFieldValue('kata_pengantar_tanggal', null);
+        if ($tanggalStr) {
+            $tanggal = $tanggalStr;
+        } else {
+            $tanggal = Date::tglIndo($this->pengajuan->created_at ?? now());
+        }
+
+        $kaprodiName = $this->getFieldValue(
+            'kata_pengantar_kaprodi_name',
+            $studyProgram->ketua_prodi_name,
+            '[Nama Ketua Program Studi]'
+        );
+
         $section->addText(
-            '[Nama Kota], [Tanggal Penyusunan]',
+            "{$kota}, {$tanggal}",
             ['size' => 11],
             ['alignment' => Jc::END, 'spaceBefore' => 400, 'spaceAfter' => 100]
         );
@@ -286,7 +403,7 @@ class BorangExportService
         );
 
         $section->addText(
-            '[Nama Ketua Program Studi]',
+            $kaprodiName,
             ['size' => 11, 'bold' => true],
             ['alignment' => Jc::END]
         );
@@ -430,6 +547,7 @@ class BorangExportService
             $this->addDeskripsiBoxFullPage($section, $kriteria, $elemen);
             return;
         }
+
         $table = $section->addTable([
             'borderSize' => 6,
             'borderColor' => '000000',
@@ -441,25 +559,26 @@ class BorangExportService
         $table->addRow();
         $cell = $table->addCell(9500);
 
-        $cell->addText(
-            'Deskripsi ' . strtolower($elemen->pernyataan_elemen),
-            ['size' => 11, 'italic' => true],
-            ['spaceAfter' => 200]
-        );
-
-        // ambil deskripsi dari map Anda
+        // ambil deskripsi dari map
         $descKey   = 'desc_' . $elemen->id;
         $rawText   = trim($this->borangDataMap[$descKey] ?? '');
         $isEmpty   = empty($rawText);
 
+        // ✅ Label "Deskripsi..." hanya muncul jika KOSONG (template)
         if ($isEmpty) {
+            $cell->addText(
+                'Deskripsi ' . strtolower($elemen->pernyataan_elemen),
+                ['size' => 11, 'italic' => true],
+                ['spaceAfter' => 200]
+            );
+
             $cell->addText(
                 '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
                 ['size' => 11, 'color' => '000000', 'italic' => true],
                 ['spaceAfter' => 300, 'alignment' => Jc::BOTH]
             );
         } else {
-            // ✅ Parse HTML
+            // ✅ Jika ada data: langsung tampilkan konten tanpa label
             try {
                 $this->htmlParser->addHtmlContent($cell, $rawText);
             } catch (\Exception $e) {
@@ -475,7 +594,7 @@ class BorangExportService
             }
         }
 
-        // render semua tabel di dalam kotak yang sama (seperti seeder addDeskripsiBoxUnified)
+        // render semua tabel di dalam kotak yang sama
         if ($elemen->datasetBorang && $elemen->datasetBorang->count() > 0) {
             foreach ($elemen->datasetBorang as $dataset) {
                 if ($dataset->tipe_field !== 'table') continue;
@@ -864,20 +983,9 @@ class BorangExportService
 
     private function addDeskripsiBoxFullPage($section, $kriteria, $elemen): void
     {
-        /**
-         * Reservasi tinggi area atas (yang sudah terpakai):
-         * - Judul kriteria + subtitle
-         * - Judul elemen (di kotak elemen Anda)
-         * - spacing/textbreak
-         *
-         * Silakan adjust angka ini sampai pas dengan template Anda.
-         */
         $reservedTopTwips = $this->isLandscape ? 2200 : 2600;
-
-        // Tinggi kotak deskripsi = sisa tinggi halaman konten
         $boxHeight = max(2200, $this->contentHeightTwips - $reservedTopTwips);
 
-        // Outer table = kotak deskripsi
         $table = $section->addTable([
             'borderSize'  => 6,
             'borderColor' => '000000',
@@ -885,22 +993,22 @@ class BorangExportService
             'width'       => 100 * 50,
             'unit'        => 'pct',
         ]);
-        // 1 baris saja, tapi tingginya dibuat "mengisi sisa halaman"
+
         $table->addRow($boxHeight, ['exactHeight' => false]);
         $cell = $table->addCell(9500, ['valign' => 'top']);
-
-        // Header kecil di dalam kotak
-        $cell->addText(
-            'Deskripsi ' . strtolower($elemen->pernyataan_elemen),
-            ['size' => 11, 'italic' => true],
-            ['spaceAfter' => 200]
-        );
 
         $descKey   = 'desc_' . $elemen->id;
         $rawText   = trim($this->borangDataMap[$descKey] ?? '');
         $filled    = !empty($rawText);
 
+        // ✅ Label hanya muncul jika KOSONG (template)
         if (!$filled) {
+            $cell->addText(
+                'Deskripsi ' . strtolower($elemen->pernyataan_elemen),
+                ['size' => 11, 'italic' => true],
+                ['spaceAfter' => 200]
+            );
+
             $cell->addText(
                 '[Mohon isi deskripsi di sini sesuai dengan kondisi program studi (maksimal 1000 kata)...]',
                 ['size' => 11, 'color' => '000000', 'italic' => true],
@@ -909,13 +1017,12 @@ class BorangExportService
             return;
         }
 
-        // ✅ FIX: Parse HTML content
+        // ✅ Jika ada data: langsung parse HTML tanpa label
         try {
             $this->htmlParser->addHtmlContent($cell, $rawText);
         } catch (\Exception $e) {
             Log::warning("HTML parsing failed for desc_{$elemen->id}: " . $e->getMessage());
 
-            // Fallback: plain text
             $plainText = strip_tags($rawText);
             $chunks = $this->chunkTextSafe($plainText, 3000);
 
@@ -1171,7 +1278,7 @@ class BorangExportService
         int $reservedTopTwips = 1800,
         int $minBoxHeightTwips = 3000,
         ?string $emptyPlaceholder = null,
-        bool $isPlaceholder = true // ✅ tambahan
+        bool $isPlaceholder = true
     ): void {
 
         if ($emptyPlaceholder === null) {
@@ -1197,15 +1304,19 @@ class BorangExportService
 
         $cell = $table->addCell(9500, ['valign' => 'top']);
 
-        $cell->addText(
-            $label,
-            ['size' => 11, 'italic' => true, 'color' => $this->templateBlue],
-            ['spaceAfter' => 200]
-        );
-
+        // ✅ Cek apakah ada data user
         $hasPrefill = !empty(array_filter($prefillParagraphs, fn($p) => trim((string)$p) !== ''));
 
-        // kalau kosong -> tampil placeholder merah
+        // ✅ Label hanya muncul jika masih template (belum ada data)
+        if (!$hasPrefill) {
+            $cell->addText(
+                $label,
+                ['size' => 11, 'italic' => true, 'color' => $this->templateBlue],
+                ['spaceAfter' => 200]
+            );
+        }
+
+        // kalau kosong -> tampil placeholder
         if (!$hasPrefill) {
             $cell->addText(
                 $emptyPlaceholder,
@@ -1215,11 +1326,7 @@ class BorangExportService
             return;
         }
 
-        // ✅ kalau ada prefill: style tergantung placeholder atau data asli
-        $textStyle = $isPlaceholder
-            ? ['size' => 11, 'color' => '000000', 'italic' => false]
-            : ['size' => 11, 'color' => '000000', 'italic' => false];
-
+        // ✅ Kalau ada data user: langsung tampilkan tanpa label
         foreach ($prefillParagraphs as $p) {
             $p = trim((string)$p);
             if ($p === '') continue;
@@ -1231,12 +1338,13 @@ class BorangExportService
                 } else {
                     // Plain text
                     $chunks = $this->chunkTextSafe($p, 3000);
-                    $textStyle = $isPlaceholder
-                        ? ['size' => 11, 'color' => '000000', 'italic' => false]
-                        : ['size' => 11, 'color' => '000000', 'italic' => false];
 
                     foreach ($chunks as $chunk) {
-                        $cell->addText($chunk, $textStyle, ['alignment' => Jc::BOTH, 'spaceAfter' => 200]);
+                        $cell->addText(
+                            $chunk,
+                            ['size' => 11, 'color' => '000000'],
+                            ['alignment' => Jc::BOTH, 'spaceAfter' => 200]
+                        );
                     }
                 }
             } catch (\Exception $e) {
@@ -1247,8 +1355,8 @@ class BorangExportService
             }
         }
 
-        // ✅ hint max kata hanya untuk placeholder/template
-        if ($isPlaceholder) {
+        // ✅ Hint max kata hanya untuk placeholder/template
+        if ($isPlaceholder && !$hasPrefill) {
             $cell->addText(
                 "(Maksimal {$maxWords} kata)",
                 ['size' => 10, 'color' => '000000'],
@@ -1623,5 +1731,26 @@ class BorangExportService
                 $tableCell->addText($cellText, $fontStyle, ['alignment' => Jc::CENTER]);
             }
         }
+    }
+
+    /**
+     * ✅ Get field value dengan fallback ke database
+     * Priority: BorangDataMap → Database → Default
+     */
+    private function getFieldValue(string $key, $dbValue = null, $default = ''): string
+    {
+        // 1. Cek di borangDataMap dulu (user input)
+        $mapValue = trim($this->borangDataMap[$key] ?? '');
+        if ($mapValue !== '') {
+            return $mapValue;
+        }
+
+        // 2. Fallback ke database
+        if ($dbValue !== null && trim((string)$dbValue) !== '') {
+            return trim((string)$dbValue);
+        }
+
+        // 3. Default placeholder
+        return $default;
     }
 }

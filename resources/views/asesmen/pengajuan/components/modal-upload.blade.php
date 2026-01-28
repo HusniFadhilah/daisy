@@ -30,7 +30,7 @@ $latestImport = $pengajuan->latestBorangImport;
 <div class="card border-success mb-4">
     <div class="card-header bg-success text-white">
         <h5 class="mb-0">
-            <i class="bi bi-file-earmark-code"></i> Preview Data LED+Suplemen, dan LKPS
+            <i class="bi bi-file-earmark-code"></i> Preview Data Dokumen
         </h5>
     </div>
     <div class="card-body">
@@ -38,7 +38,7 @@ $latestImport = $pengajuan->latestBorangImport;
         <!-- Already Processed -->
         <div class="alert alert-success alert-permanent">
             <i class="bi bi-check-circle"></i>
-            <strong>LED+Suplemen, dan LKPS Anda telah berhasil diupload!</strong>
+            <strong>Dokumen Anda telah berhasil diupload!</strong>
             <br>
             <small class="text-muted">
                 Terakhir diproses: {{ $latestImport->imported_at->diffForHumans() }}

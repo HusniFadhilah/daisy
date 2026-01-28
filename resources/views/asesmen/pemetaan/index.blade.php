@@ -905,6 +905,7 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
     let filterSelect2Initialized = false;
     let currentFilters = {};
     let dataTable = null;
+    let dataTableInitializing = false;
 
     document.addEventListener('DOMContentLoaded', function() {
 
@@ -928,21 +929,30 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
             document.getElementById('calendar-tab').click();
         } else if (view === 'table') {
             document.getElementById('table-tab').click();
+        } else {
+            // ✅ Only init DataTable if table view is the default active tab
+            setTimeout(() => {
+                const tableView = document.querySelector('#table-view');
+                if (tableView && tableView.classList.contains('show', 'active')) {
+                    initDataTable();
+                }
+            }, 200);
         }
-
-        // Initialize DataTable if table view is active
-        setTimeout(() => {
-            const tableTab = document.querySelector('#table-view');
-            if (tableTab && (tableTab.classList.contains('active') || !view || view === 'table')) {
-                initDataTable();
-            }
-        }, 100);
     });
 
     // ========================================
     // ✅ INITIALIZE DATATABLE
     // ========================================
     function initDataTable() {
+        // ✅ Prevent concurrent initialization
+        if (dataTableInitializing) {
+            console.warn('⚠️ DataTable initialization already in progress');
+            return;
+        }
+
+        dataTableInitializing = true;
+
+        // Destroy existing instance
         if (dataTable) {
             try {
                 dataTable.destroy();
@@ -952,8 +962,6 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
             }
         }
 
-        const filters = getFilterParams();
-
         try {
             dataTable = $('#programsDataTable').DataTable({
                 processing: true
@@ -962,27 +970,51 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
                     url: '{{ route("de.pemetaan.datatable.ajax") }}'
                     , type: 'GET'
                     , data: function(d) {
+                        const filters = getFilterParams();
                         // Add custom filters
                         d.is_example = filters.is_example;
 
                         // Array filters
                         if (Array.isArray(filters.year) && filters.year.length > 0) {
-                            d['year[]'] = filters.year;
+                            filters.year.forEach(year => {
+                                d['year[]'] = d['year[]'] || [];
+                                d['year[]'].push(year);
+                            });
                         }
+
                         if (Array.isArray(filters.month) && filters.month.length > 0) {
-                            d['month[]'] = filters.month;
+                            filters.month.forEach(month => {
+                                d['month[]'] = d['month[]'] || [];
+                                d['month[]'].push(month);
+                            });
                         }
+
                         if (Array.isArray(filters.university_id) && filters.university_id.length > 0) {
-                            d['university_id[]'] = filters.university_id;
+                            filters.university_id.forEach(id => {
+                                d['university_id[]'] = d['university_id[]'] || [];
+                                d['university_id[]'].push(id);
+                            });
                         }
+
                         if (Array.isArray(filters.degree_level_id) && filters.degree_level_id.length > 0) {
-                            d['degree_level_id[]'] = filters.degree_level_id;
+                            filters.degree_level_id.forEach(id => {
+                                d['degree_level_id[]'] = d['degree_level_id[]'] || [];
+                                d['degree_level_id[]'].push(id);
+                            });
                         }
+
                         if (Array.isArray(filters.status_kedaluwarsa) && filters.status_kedaluwarsa.length > 0) {
-                            d['status_kedaluwarsa[]'] = filters.status_kedaluwarsa;
+                            filters.status_kedaluwarsa.forEach(status => {
+                                d['status_kedaluwarsa[]'] = d['status_kedaluwarsa[]'] || [];
+                                d['status_kedaluwarsa[]'].push(status);
+                            });
                         }
+
                         if (Array.isArray(filters.peringkat) && filters.peringkat.length > 0) {
-                            d['peringkat[]'] = filters.peringkat;
+                            filters.peringkat.forEach(peringkat => {
+                                d['peringkat[]'] = d['peringkat[]'] || [];
+                                d['peringkat[]'].push(peringkat);
+                            });
                         }
 
                         // Search from sidebar
@@ -1131,10 +1163,14 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
                     $('#totalProgramsBadge').text(info.recordsTotal);
                     updateURLWithDataTableState();
                 }
+                , initComplete: function() {
+                    dataTableInitializing = false;
+                }
             });
         } catch (error) {
             console.error('❌ DataTable initialization error:', error);
             showToast('error', 'Gagal menginisialisasi tabel');
+            dataTableInitializing = false;
         }
     }
 
@@ -1813,9 +1849,9 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
         } else if (targetId === '#calendar-view') {
             await refreshCalendar();
         } else if (targetId === '#table-view') {
-            // ✅ Reload DataTable with new filters
+            // ✅ Just reload DataTable - filters will be fetched dynamically
             if (dataTable) {
-                dataTable.ajax.reload();
+                dataTable.ajax.reload(null, false); // false = stay on current page
             } else {
                 initDataTable();
             }
@@ -1863,10 +1899,10 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
             } else if (targetId === '#calendar-view') {
                 refreshCalendar();
             } else if (targetId === '#table-view') {
-                // ✅ Initialize or reload DataTable
-                if (!dataTable) {
+                // ✅ Only init if doesn't exist, otherwise just reload
+                if (!dataTable && !dataTableInitializing) {
                     initDataTable();
-                } else {
+                } else if (dataTable) {
                     dataTable.ajax.reload();
                 }
                 loadUrgentPrograms();

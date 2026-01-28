@@ -305,14 +305,14 @@ class PenyimpananArsipAkreditasiController extends Controller
                 'exists' => $dokumens->has('surat_permohonan'),
                 'dokumen' => $dokumens->get('surat_permohonan'),
             ],
-            'bukti_pembayaran' => [
+            'formulir_pembayaran' => [
                 'label' => 'Bukti Pembayaran',
                 'critical' => true,
-                'exists' => $dokumens->has('bukti_pembayaran'),
-                'dokumen' => $dokumens->get('bukti_pembayaran'),
+                'exists' => $dokumens->has('formulir_pembayaran'),
+                'dokumen' => $dokumens->get('formulir_pembayaran'),
             ],
             'draft_borang' => [
-                'label' => 'LED+Suplemen dan LKPS',
+                'label' => 'Dokumen',
                 'critical' => true,
                 'exists' => $dokumens->has('draft_borang') || $dokumens->has('borang_final'),
                 'dokumen' => $dokumens->get('borang_final') ?? $dokumens->get('draft_borang'),

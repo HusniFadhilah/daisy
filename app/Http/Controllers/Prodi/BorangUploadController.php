@@ -40,7 +40,7 @@ class BorangUploadController extends Controller
                 PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
                 PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
             ])) {
-                return response()->json(['success' => false, 'message' => 'Sedang menunggu validasi LED+Suplemen, dan LKPS. Perubahan dokumen tidak diizinkan untuk sementara.'], 403);
+                return response()->json(['success' => false, 'message' => 'Sedang menunggu validasi Dokumen. Perubahan dokumen tidak diizinkan untuk sementara.'], 403);
             }
             $userId = auth()->id();
 

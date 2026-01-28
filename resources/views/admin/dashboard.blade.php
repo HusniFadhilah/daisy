@@ -46,7 +46,7 @@ $authUser = auth()->user();
                     <div>
                         <div class="stat-title">Penerimaan Dokumen Akreditasi Prodi</div>
                         <div class="stat-value">{{ $stats['penerimaan_dokumen'] ?? 0 }}</div>
-                        <small>Jumlah dokumen LED+Suplemen, dan LKPS yang telah diterima dari prodi</small>
+                        <small>Jumlah Dokumen yang telah diterima dari prodi</small>
                     </div>
                     <div class="stat-icon"><i class="bi bi-file-earmark-check text-white"></i></div>
                 </div>

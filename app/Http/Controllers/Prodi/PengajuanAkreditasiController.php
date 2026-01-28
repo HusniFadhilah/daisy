@@ -675,7 +675,7 @@ class PengajuanAkreditasiController extends Controller
             ]);
 
             $ket = $request->input('keterangan');
-            $msg = 'Submit LED+Suplemen dan LKPS dibatalkan (unsubmit).'
+            $msg = 'Submit Dokumen dibatalkan (unsubmit).'
                 . ($ket ? ' Catatan: ' . $ket : '');
 
             $this->logStatus(
@@ -689,7 +689,7 @@ class PengajuanAkreditasiController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Submit LED+Suplemen dan LKPS berhasil dibatalkan.',
+                'message' => 'Submit Dokumen berhasil dibatalkan.',
                 'data' => [
                     'status' => $pengajuan->status,
                     'unsubmitted_at' => now()->format('d M Y H:i'),
@@ -1339,7 +1339,7 @@ class PengajuanAkreditasiController extends Controller
                 PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
                 PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
             ])) {
-                return response()->json(['success' => false, 'message' => 'Sedang menunggu validasi LED+Suplemen, dan LKPS. Perubahan dokumen tidak diizinkan untuk sementara.'], 403);
+                return response()->json(['success' => false, 'message' => 'Sedang menunggu validasi Dokumen. Perubahan dokumen tidak diizinkan untuk sementara.'], 403);
             }
             $user = auth()->user();
 
@@ -1609,8 +1609,8 @@ class PengajuanAkreditasiController extends Controller
     {
         $request->validate([
             'tanggal_pembayaran'    => 'required|date',
-            'formulir_pembayaran'   => 'required|file|mimes:pdf|max:5120',
-            'bukti_pembayaran'      => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'formulir_pembayaran'   => 'required|file|max:5120',
+            // 'bukti_pembayaran'      => 'required|file|mimes:xlsx,pdf,jpg,jpeg,png|max:5120',
         ]);
 
         $pengajuan = PengajuanAkreditasi::with('pembayaran')->findOrFail($id);
@@ -1640,27 +1640,27 @@ class PengajuanAkreditasiController extends Controller
                 'is_latest'         => true,
             ]);
 
-            // === Upload bukti pembayaran ===
-            $buktiFile = $request->file('bukti_pembayaran');
-            $buktiFilename = 'bukti_bayar_' . time() . '.' . $buktiFile->getClientOriginalExtension();
-            $buktiPath = $buktiFile->storeAs("permohonan-akreditasi/{$pengajuan->id}/pembayaran", $buktiFilename, 'public');
+            // // === Upload bukti pembayaran ===
+            // $buktiFile = $request->file('bukti_pembayaran');
+            // $buktiFilename = 'bukti_bayar_' . time() . '.' . $buktiFile->getClientOriginalExtension();
+            // $buktiPath = $buktiFile->storeAs("permohonan-akreditasi/{$pengajuan->id}/pembayaran", $buktiFilename, 'public');
 
-            // Tandai dokumen bukti pembayaran sebelumnya tidak terbaru
-            PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
-                ->where('jenis_dokumen', 'bukti_pembayaran')
-                ->update(['is_latest' => false]);
+            // // Tandai dokumen bukti pembayaran sebelumnya tidak terbaru
+            // PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
+            //     ->where('jenis_dokumen', 'bukti_pembayaran')
+            //     ->update(['is_latest' => false]);
 
-            PengajuanDokumen::create([
-                'id_pengajuan'      => $pengajuan->id,
-                'jenis_dokumen'     => 'bukti_pembayaran',
-                'nama_file'         => $buktiFilename,
-                'path_file'         => $buktiPath,
-                'original_filename' => $buktiFile->getClientOriginalName(),
-                'file_size'         => $buktiFile->getSize(),
-                'mime_type'         => $buktiFile->getMimeType(),
-                'uploaded_by'       => Auth::id(),
-                'is_latest'         => true,
-            ]);
+            // PengajuanDokumen::create([
+            //     'id_pengajuan'      => $pengajuan->id,
+            //     'jenis_dokumen'     => 'bukti_pembayaran',
+            //     'nama_file'         => $buktiFilename,
+            //     'path_file'         => $buktiPath,
+            //     'original_filename' => $buktiFile->getClientOriginalName(),
+            //     'file_size'         => $buktiFile->getSize(),
+            //     'mime_type'         => $buktiFile->getMimeType(),
+            //     'uploaded_by'       => Auth::id(),
+            //     'is_latest'         => true,
+            // ]);
 
             // === Update atau buat record pembayaran ===
             $pembayaran = PengajuanPembayaran::updateOrCreate(
@@ -1668,7 +1668,7 @@ class PengajuanAkreditasiController extends Controller
                 [
                     'status_pembayaran'  => 'menunggu_verifikasi',
                     'tanggal_pembayaran' => $request->tanggal_pembayaran,
-                    'bukti_path'         => $buktiPath,
+                    'bukti_path'         => $formulirPath,
                     'formulir_path'      => $formulirPath,
                     'nomor_invoice'      => $pengajuan->pembayaran->nomor_invoice ?? 'INV-' . Auth::id(),
                     'jumlah_pembayaran'  => $pengajuan->pembayaran->jumlah_pembayaran ?? PengajuanPembayaran::BIAYA_AKREDITASI,
@@ -1763,12 +1763,12 @@ class PengajuanAkreditasiController extends Controller
                 'status_to' => PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
                 'changed_by' => $authId,
                 'changed_at' => now(),
-                'keterangan' => 'Dokumen LED+Suplemen, dan LKPS final diupload',
+                'keterangan' => 'Dokumen final diupload',
             ]);
 
             DB::commit();
 
-            return back()->with('success', 'Dokumen LED+Suplemen, dan LKPS final berhasil diupload.');
+            return back()->with('success', 'Dokumen final berhasil diupload.');
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Upload borang final failed: ' . $e->getMessage());

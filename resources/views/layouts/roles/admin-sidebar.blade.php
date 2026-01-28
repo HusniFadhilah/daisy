@@ -20,7 +20,7 @@ $authUser = Auth::user();
 <li class="nav-item">
     <a href="{{ route('de.penyampaian-template') }}" class="nav-link {{ request()->routeIs('de.penyampaian-template*') ? 'active' : '' }}">
         <span class="menu-icon"><i class="bi bi-file-earmark-text"></i></span>
-        <span>3. Penyampaian Template LED+Suplemen dan LKPS</span>
+        <span>3. Penyampaian Template Dokumen</span>
     </a>
 </li>
 
@@ -34,21 +34,21 @@ $authUser = Auth::user();
 <li class="nav-item">
     <a href="{{ route('de.penerimaan-dokumen') }}" class="nav-link {{ request()->routeIs('de.penerimaan-dokumen*') ? 'active' : '' }}">
         <span class="menu-icon"><i class="bi bi-inbox"></i></span>
-        <span>5. Penerimaan Draft LED+Suplemen dan LKPS</span>
+        <span>5. Penerimaan Draft Dokumen</span>
     </a>
 </li>
 
 <li class="nav-item">
     <a href="{{ route('de.validasi-dokumen') }}" class="nav-link {{ request()->routeIs('de.validasi-dokumen*') ? 'active' : '' }}">
         <span class="menu-icon"><i class="bi bi-check-circle"></i></span>
-        <span>6. Validasi LED+Suplemen dan LKPS</span>
+        <span>6. Validasi Dokumen</span>
     </a>
 </li>
 
 <li class="nav-item">
     <a href="{{ route('de.pelaporan-dokumen') }}" class="nav-link {{ request()->routeIs('de.pelaporan-dokumen*') ? 'active' : '' }}">
         <span class="menu-icon"><i class="bi bi-bar-chart-line"></i></span>
-        <span>7. Pelaporan Validasi LED+Suplemen dan LKPS</span>
+        <span>7. Pelaporan Validasi Dokumen</span>
     </a>
 </li>
 

@@ -17,7 +17,7 @@ class PengajuanAkreditasi extends Model
     public const AKREDITASI_PERPANJANGAN = 'perpanjangan';
     public const AKREDITASI_MENUJU_UNGGUL = 'menuju_unggul';
 
-    public const DAFTAR_TEMPLATE = 'Template LED+Suplemen dan LKPS';
+    public const DAFTAR_TEMPLATE = 'Template Dokumen';
     // ============================================
     // STATUS CONSTANTS (20 Steps)
     // ============================================
@@ -564,7 +564,7 @@ class PengajuanAkreditasi extends Model
 
     public function getJenisAkreditasiLabelAttribute(): string
     {
-        return Str::title(str_replace('_', ' ', $this->jenis_akreditasi));
+        return $this->jenis_akreditasi == 'perpanjangan' ? 'Pemenuhan Status Terakreditasi' : Str::title(str_replace('_', ' ', $this->jenis_akreditasi));
     }
 
     public function getJudulAttribute(): string
@@ -575,7 +575,7 @@ class PengajuanAkreditasi extends Model
         $jenis = strtolower($pengajuan->jenis_akreditasi ?? '');
 
         $prefix = match ($jenis) {
-            'perpanjangan' => 'Permohonan Perpanjangan Akreditasi Prodi',
+            'perpanjangan' => 'Permohonan Akreditasi untuk Pemenuhan Status Terakreditasi Prodi',
             'menuju_unggul', 'menuju-unggul', 'unggul' => 'Permohonan Akreditasi Menuju Unggul Prodi',
             'baru' => 'Permohonan Akreditasi Baru Prodi',
             default => 'Akreditasi Prodi',
@@ -602,7 +602,7 @@ class PengajuanAkreditasi extends Model
             'suplemen' => $dokumens->whereIn('jenis_dokumen', ['data_suplemen', 'suplemen', 'file_suplemen', 'dokumen_pendukung'])->first(),
             'lkps' => $dokumens->whereIn('jenis_dokumen', ['data_kuantitatif', 'kuantitatif',])->first(),
             'pengesahan' => $dokumens->where('jenis_dokumen', 'lembar_pengesahan')->first(),
-            'bukti_pembayaran' => $dokumens->where('jenis_dokumen', 'bukti_pembayaran')->first(),
+            'formulir_pembayaran' => $dokumens->where('jenis_dokumen', 'formulir_pembayaran')->first(),
             'surat_permohonan' => $dokumens->where('jenis_dokumen', 'surat_permohonan')->first(),
         ];
         return $uploadedFiles;
@@ -640,7 +640,7 @@ class PengajuanAkreditasi extends Model
                 'icon' => 'bi-envelope',
             ],
             self::STATUS_TEMPLATE_LED_DIKIRIM => [
-                'label' => 'Penyampaian Template LED+Suplemen dan LKPS',
+                'label' => 'Penyampaian Template Dokumen',
                 'bg' => 'bg-primary',
                 'icon' => 'bi-file-earmark-arrow-down',
             ],
@@ -665,47 +665,47 @@ class PengajuanAkreditasi extends Model
                 'icon' => 'bi-check-circle',
             ],
             self::STATUS_DRAFT_BORANG_DIKIRIM => [
-                'label' => 'File LED+Suplemen dan LKPS Dikirim',
+                'label' => 'File Dokumen Dikirim',
                 'bg' => 'bg-info',
                 'icon' => 'bi-file-earmark-check',
             ],
             self::STATUS_DRAFT_BORANG_DITERIMA => [
-                'label' => 'File LED+Suplemen dan LKPS Diterima',
+                'label' => 'File Dokumen Diterima',
                 'bg' => 'bg-info',
                 'icon' => 'bi-file-earmark-check',
             ],
             self::STATUS_BORANG_ONLINE_SELESAI => [
-                'label' => 'LED+Suplemen dan LKPS Diterima',
+                'label' => 'Dokumen Diterima',
                 'bg' => 'bg-success',
                 'icon' => 'bi-ui-checks',
             ],
             self::STATUS_BORANG_VALIDATION_PENDING => [
-                'label' => 'Menunggu Validasi LED+Suplemen dan LKPS',
+                'label' => 'Menunggu Validasi Dokumen',
                 'bg' => 'bg-warning',
                 'icon' => 'bi-clock-history',
             ],
             self::STATUS_BORANG_IN_VALIDATION => [
-                'label' => 'Validasi LED+Suplemen dan LKPS Berlangsung',
+                'label' => 'Validasi Dokumen Berlangsung',
                 'bg' => 'bg-info',
                 'icon' => 'bi-clipboard-check',
             ],
             self::STATUS_BORANG_REVISION_REQUIRED => [
-                'label' => 'LED+Suplemen atau LKPS Perlu Revisi',
+                'label' => 'Dokumen Perlu Revisi',
                 'bg' => 'bg-danger',
                 'icon' => 'bi-exclamation-triangle',
             ],
             self::STATUS_BORANG_VALIDATED => [
-                'label' => 'LED+Suplemen dan LKPS Divalidasi',
+                'label' => 'Dokumen Divalidasi',
                 'bg' => 'bg-success',
                 'icon' => 'bi-check-circle-fill',
             ],
             self::STATUS_BORANG_FINAL_DITERIMA => [
-                'label' => 'Draft Final LED+Suplemen dan LKPS Diterima',
+                'label' => 'Draft Final Dokumen Diterima',
                 'bg' => 'bg-info',
                 'icon' => 'bi-file-earmark-arrow-up',
             ],
             self::STATUS_VALIDASI_BORANG_DILAPORKAN => [
-                'label' => 'Pelaporan Validasi LED+Suplemen dan LKPS',
+                'label' => 'Pelaporan Validasi Dokumen',
                 'bg' => 'bg-success',
                 'icon' => 'bi-file-earmark-text',
             ],
@@ -828,11 +828,11 @@ class PengajuanAkreditasi extends Model
         $items = [
             1 => ['date' => $this->tanggal_pengingat, 'label' => 'Pengingat Masa Akreditasi', 'icon' => 'bi-bell'],
             2 => ['date' => ($this->tanggal_surat_permohonan_dikirim ?? $this->tanggal_surat_permohonan_diterima), 'label' => 'Surat Permohonan dari PS', 'icon' => 'bi-envelope'],
-            3 => ['date' => $this->tanggal_template_led_dikirim, 'label' => 'Penyampaian Template LED+Suplemen dan LKPS, formulir pembayaran', 'icon' => 'bi-file-earmark-arrow-down'],
+            3 => ['date' => $this->tanggal_template_led_dikirim, 'label' => 'Penyampaian Template Dokumen, formulir pembayaran', 'icon' => 'bi-file-earmark-arrow-down'],
             4 => ['date' => $this->tanggal_pembayaran, 'label' => 'Validasi pembayaran', 'icon' => 'bi-credit-card-2-front'],
-            5 => ['date' => $this->tanggal_draft_borang, 'label' => 'Penerimaan draft LED+Suplemen dan LKPS dari Prodi', 'icon' => 'bi-file-earmark-check'],
-            6 => ['date' => $this->tanggal_validasi_borang_assigned, 'label' => 'Validasi LED+Suplemen dan LKPS', 'icon' => 'bi-clipboard-check'],
-            7 => ['date' => $this->tanggal_pelaporan_validasi_borang, 'label' => 'Pelaporan Validasi LED+Suplemen dan LKPS', 'icon' => 'bi-file-earmark-text'],
+            5 => ['date' => $this->tanggal_draft_borang, 'label' => 'Penerimaan Draft Dokumen dari Prodi', 'icon' => 'bi-file-earmark-check'],
+            6 => ['date' => $this->tanggal_validasi_borang_assigned, 'label' => 'Validasi Dokumen', 'icon' => 'bi-clipboard-check'],
+            7 => ['date' => $this->tanggal_pelaporan_validasi_borang, 'label' => 'Pelaporan Validasi Dokumen', 'icon' => 'bi-file-earmark-text'],
             8 => ['date' => $this->tanggal_penugasan_asesor_ak, 'label' => 'Penugasan asesor untuk AK', 'icon' => 'bi-person-check'],
             9 => ['date' => $this->tanggal_validasi_ak, 'label' => 'Validasi AK', 'icon' => 'bi-clipboard2-check'],
             10 => ['date' => $this->tanggal_pelaporan_ak, 'label' => 'Pelaporan AK', 'icon' => 'bi-file-earmark-medical'],

@@ -230,18 +230,23 @@
                                 <!-- Ketua Program Studi -->
                                 <div class="col-12 mb-3">
                                     <h6 class="fw-bold text-primary mb-3">
-                                        <i class="bi bi-person-badge me-2"></i>Ketua Program Studi
+                                        <i class="bi bi-person-badge me-2"></i>Program Studi
                                     </h6>
                                 </div>
 
-                                <div class="col-md-6 mb-3">
+                                <div class="col-lg-4 col-md-6 mb-3">
                                     <label class="form-label fw-semibold">Nama Ketua Program Studi</label>
                                     <input type="text" class="form-control" name="ketua_prodi_name" value="{{ $prodi->ketua_prodi_name }}" placeholder="Contoh: Dr. John Doe, S.T., M.T.">
                                 </div>
 
-                                <div class="col-md-6 mb-3">
+                                <div class="col-lg-4 col-md-6 mb-3">
                                     <label class="form-label fw-semibold">NIP Ketua Program Studi</label>
                                     <input type="text" class="form-control" name="ketua_prodi_nip" value="{{ $prodi->ketua_prodi_nip }}" placeholder="Contoh: 198012312005011001">
+                                </div>
+
+                                <div class="col-lg-4 col-md-6 mb-3">
+                                    <label class="form-label fw-semibold">Kota Lokasi Program Studi</label>
+                                    <input type="text" class="form-control" name="city" value="{{ $prodi->city }}" placeholder="Contoh: Jakarta">
                                 </div>
 
                                 <!-- Ketua Tim Akreditasi -->

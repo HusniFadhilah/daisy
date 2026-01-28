@@ -269,7 +269,7 @@
                     @if($lockBorang)
                     <div class="alert alert-warning alert-permanent mb-0 py-2">
                         <i class="bi bi-hourglass-split"></i>
-                        Sedang menunggu Validasi LED+Suplemen dan LKPS
+                        Sedang menunggu Validasi Dokumen
                         @if(app()->environment('local'))
                         <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="btnUnsubmit">
                             <i class="bi bi-arrow-counterclockwise"></i> Batalkan Submit
@@ -278,7 +278,7 @@
                     </div>
 
                     <button class="btn btn-secondary mt-2" disabled>
-                        <i class="bi bi-check-circle"></i> Finalisasi & Submit LED+Suplemen dan LKPS
+                        <i class="bi bi-check-circle"></i> Finalisasi & Submit Dokumen
                     </button>
                     @else
                     @if($pengajuan->status == \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED)
@@ -288,7 +288,7 @@
                     </div>
                     @endif
                     <button class="btn btn-success" id="btnFinalize">
-                        <i class="bi bi-check-circle"></i> Finalisasi & Submit LED+Suplemen dan LKPS
+                        <i class="bi bi-check-circle"></i> Finalisasi & Submit Dokumen
                     </button>
                     <small class="d-block text-muted mt-1">
                         <i class="bi bi-info-circle"></i> Pastikan semua elemen sudah diisi sebelum finalisasi
@@ -304,7 +304,7 @@
     <div class="card mb-4" id="validationCard">
         <div class="card-header bg-light d-flex justify-content-between align-items-center">
             <h5 class="mb-0">
-                <i class="bi bi-clipboard-check"></i> Hasil Validasi LED+Suplemen dan LKPS
+                <i class="bi bi-clipboard-check"></i> Hasil Validasi Dokumen
             </h5>
             <span class="badge bg-secondary" id="validationBadge">Memuat...</span>
         </div>
@@ -1581,7 +1581,7 @@ $pengajuanId = $pengajuan->id;
           <ul style="margin:0 0 10px 18px; padding:0">
             <li>Pastikan seluruh <strong>elemen</strong> sudah berstatus <strong>Lengkap</strong>.</li>
             <li>Pastikan file <strong>Lembar Pengesahan</strong>, <strong>Suplemen (PDF)</strong>, dan <strong>LKPS (Excel)</strong> sudah diupload.</li>
-            <li>Setelah submit, data akan dianggap <strong>final</strong> dan proses akan dilanjutkan ke tahap berikutnya (Validasi LED+Suplemen dan LKPS).</li>
+            <li>Setelah submit, data akan dianggap <strong>final</strong> dan proses akan dilanjutkan ke tahap berikutnya (Validasi Dokumen).</li>
           </ul>
 
           <p style="margin:0">

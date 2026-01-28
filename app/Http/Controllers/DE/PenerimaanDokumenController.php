@@ -571,7 +571,7 @@ class PenerimaanDokumenController extends Controller
                 'any' => true,
             ],
             'pengesahan' => [
-                'label' => 'Lembar Pengesahan LED+Suplemen dan LKPS',
+                'label' => 'Lembar Pengesahan Dokumen',
                 'aliases' => ['pengesahan', 'lembar_pengesahan'], // jaga-jaga kalau ada 2 versi
                 'any' => true,
             ],
@@ -580,8 +580,8 @@ class PenerimaanDokumenController extends Controller
                 'aliases' => ['surat_permohonan'],
                 'any' => true,
             ],
-            // kalau bukti_pembayaran memang wajib, tambahkan juga
-            // 'bukti_pembayaran' => [...]
+            // kalau formulir_pembayaran memang wajib, tambahkan juga
+            // 'formulir_pembayaran' => [...]
         ];
 
         $uploaded = $pengajuan->dokumen()

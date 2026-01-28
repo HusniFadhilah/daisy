@@ -1,6 +1,6 @@
 @extends('layouts.template.app')
 
-@section('title', 'Validasi Dokumen LED+Suplemen dan LKPS')
+@section('title', 'Validasi Dokumen Dokumen')
 
 @push('styles')
 <style>
@@ -62,7 +62,7 @@
                             <i class="bi bi-clipboard-check"></i>
                         </div>
                     </div>
-                    <small class="opacity-75">Validator telah ditugaskan oleh DE untuk memvalidasi LED+Suplemen, dan LKPS</small>
+                    <small class="opacity-75">Validator telah ditugaskan oleh DE untuk memvalidasi Dokumen</small>
                 </div>
             </div>
         </div>
@@ -122,7 +122,7 @@
                             <i class="bi bi-exclamation-triangle"></i>
                         </div>
                     </div>
-                    <small class="opacity-75">Validator sedang mengerjakan validasi dokumen, dan meminta PS untuk melakukan revisi LED+Suplemen, dan LKPS</small>
+                    <small class="opacity-75">Validator sedang mengerjakan validasi dokumen, dan meminta PS untuk melakukan revisi Dokumen</small>
                 </div>
             </div>
         </div>
@@ -137,7 +137,7 @@
                             <i class="bi bi-check-circle"></i>
                         </div>
                     </div>
-                    <small class="opacity-75">Proses validasi LED+Suplemen, dan LKPS telah selesai dilakukan</small>
+                    <small class="opacity-75">Proses validasi Dokumen telah selesai dilakukan</small>
                 </div>
             </div>
         </div>

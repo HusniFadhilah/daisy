@@ -295,7 +295,7 @@
             @if(in_array($pengajuan->status, [\App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA, \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI]))
             <div class="alert alert-info alert-permanent">
                 <i class="bi bi-info-circle"></i>
-                Mohon menunggu Validasi LED+Suplemen dan LKPS selesai dilakukan
+                Mohon menunggu Validasi Dokumen selesai dilakukan
             </div>
             @include('asesmen.pengajuan.components.modal-upload')
             @endif
@@ -303,42 +303,42 @@
             @if(in_array($pengajuan->status, [\App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED]))
             <div class="alert alert-warning alert-permanent">
                 <i class="bi bi-info-circle"></i>
-                Mohon menunggu pelaporan LED+Suplemen dan LKPS selesai dilakukan
+                Mohon menunggu pelaporan Dokumen selesai dilakukan
             </div>
             @endif
 
             @if(in_array($pengajuan->status, [\App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,\App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION]))
             <div class="alert alert-warning alert-permanent">
                 <i class="bi bi-info-circle"></i>
-                Mohon menunggu proses valdasi LED+Suplemen dan LKPS selesai dilakukan
+                Mohon menunggu proses valdasi Dokumen selesai dilakukan
             </div>
             @endif
 
             @if(in_array($pengajuan->status, [\App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED]))
             <div class="alert alert-warning alert-permanent">
                 <i class="bi bi-info-circle"></i>
-                Terdapat revisi dokumen LED+Suplemen dan LKPS. Mohon periksa kembali dan lakukan revisi dokumen berdasarkan catatan oleh reviewer
+                Terdapat revisi dokumen Dokumen. Mohon periksa kembali dan lakukan revisi dokumen berdasarkan catatan oleh reviewer
             </div>
             @endif
 
             @if(in_array($pengajuan->status, [\App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN]))
             <div class="alert alert-info alert-permanent">
                 <i class="bi bi-info-circle"></i>
-                Dokumen LED+Suplemen dan LKPS telah selesai divalidasi dan diproses. Selanjutnya akan dilakukan penugasan Asesor untuk Asesmen Kecukupan
+                Dokumen Dokumen telah selesai divalidasi dan diproses. Selanjutnya akan dilakukan penugasan Asesor untuk Asesmen Kecukupan
             </div>
             @endif
 
             @if(in_array($pengajuan->status, [\App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA]))
             <div class="alert alert-info alert-permanent">
                 <i class="bi bi-info-circle"></i>
-                Surat permohonan akreditasi program studi telah diterima. Mohon tunggu Dewan Eksekutif LAMDEPILAR melakukan penyampaian template LED+Suplemen dan LKPS, serta Formulir Pembayaran
+                Surat permohonan akreditasi program studi telah diterima. Mohon tunggu Dewan Eksekutif LAMDEPILAR melakukan penyampaian Template Dokumen, serta Formulir Pembayaran
             </div>
             @endif
 
             @if(in_array($pengajuan->status, [\App\Models\PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM]))
             <div class="alert alert-info alert-permanent">
                 <i class="bi bi-info-circle"></i>
-                Template LED+Suplemen dan LKPS, serta Formulir Pembayaran telah dikirim oleh Dewan Eksekutif LAMDEPILAR. Mohon tunggu Dewan Eksekutif LAMDEPILAR melakukan permintaan pembayaran.
+                Template Dokumen, serta Formulir Pembayaran telah dikirim oleh Dewan Eksekutif LAMDEPILAR. Mohon tunggu Dewan Eksekutif LAMDEPILAR melakukan permintaan pembayaran.
             </div>
             @endif
 
@@ -569,171 +569,171 @@
                                 @enderror
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">Formulir Pembayaran yang Telah Diisi</label>
-                                <input type="file" name="formulir_pembayaran" class="form-control @error('formulir_pembayaran') is-invalid @enderror" accept=".pdf" required>
-                                <small class="text-muted">Format: PDF | Max: 5 MB</small>
+                                <label class="form-label fw-bold">Formulir dan Bukti Pembayaran yang Telah Diisi</label>
+                                <input type="file" name="formulir_pembayaran" class="form-control @error('formulir_pembayaran') is-invalid @enderror" required>
+                                <small class="text-muted">Format: XLSX | Max: 5 MB</small>
                                 @error('formulir_pembayaran')
                                 <span class="invalid-feedback" role="alert">
                                     {{ $message }}
                                 </span>
                                 @enderror
                             </div>
-                            <div class="col-md-6">
+                            {{-- <div class="col-md-6">
                                 <label class="form-label fw-bold">Bukti Pembayaran</label>
-                                <input type="file" name="bukti_pembayaran" class="form-control @error('bukti_pembayaran') is-invalid @enderror" accept=".pdf,.jpg,.jpeg,.png" required>
-                                <small class="text-muted">Format: PDF, JPG, PNG | Max: 5 MB</small>
+                                <input type="file" name="bukti_pembayaran" class="form-control @error('bukti_pembayaran') is-invalid @enderror" accept=".xlsx,.pdf,.jpg,.jpeg,.png" required>
+                                <small class="text-muted">Format: XLSX, PDF, JPG, PNG | Max: 5 MB</small>
                                 @error('bukti_pembayaran')
                                 <span class="invalid-feedback" role="alert">
                                     {{ $message }}
-                                </span>
-                                @enderror
-                            </div>
-                            <div class="col-md-12">
-                                <label class="form-label fw-bold">Catatan Pembayaran</label>
-                                <textarea name="catatan_pembayaran" class="form-control" rows="3" placeholder="Masukkan catatan pembayaran di sini (apabila ada)"></textarea>
-                            </div>
-                            <div class="col-md-12">
-                                <button type="submit" class="btn btn-success">
-                                    <i class="bi bi-upload"></i> Upload {{ $pengajuan->pembayaran->status_pembayaran == 'upload_ulang' ? 'Ulang ' : '' }}Bukti Pembayaran
-                                </button>
-                            </div>
+                            </span>
+                            @enderror
+                        </div> --}}
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold">Catatan Pembayaran</label>
+                            <textarea name="catatan_pembayaran" class="form-control" rows="3" placeholder="Masukkan catatan pembayaran di sini (apabila ada)"></textarea>
                         </div>
-                    </form>
+                        <div class="col-md-12">
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-upload"></i> Upload {{ $pengajuan->pembayaran->status_pembayaran == 'upload_ulang' ? 'Ulang ' : '' }}Bukti Pembayaran
+                            </button>
+                        </div>
                 </div>
+                </form>
             </div>
-            @endif
-            @endif
+        </div>
+        @endif
+        @endif
 
-            @if($pengajuan->pembayaran)
-            <div class="card mb-4">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">
-                        <i class="bi bi-credit-card"></i> Informasi Pembayaran {{ $pengajuan->pembayaran->status_pembayaran == 'upload_ulang' ? '(Versi Sebelumnya)' : '' }}
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-2">
-                            <label class="text-muted small">Nomor Invoice</label>
-                            <p class="fw-bold mb-0">{{ $pengajuan->pembayaran->nomor_invoice }}</p>
-                        </div>
-                        <div class="col-md-6 mb-2">
-                            <label class="text-muted small">Jumlah</label>
-                            <p class="fw-bold mb-0">
-                                Rp {{ number_format($pengajuan->pembayaran->jumlah_pembayaran, 0, ',', '.') }}
-                            </p>
-                        </div>
-                        <div class="col-md-6 mb-2">
-                            <label class="text-muted small">Status</label>
-                            <p class="mb-0">
-                                <span class="badge bg-{{ $pengajuan->pembayaran->status_pembayaran === 'terverifikasi' ? 'success' : 'warning' }}">
-                                    {{ strtoupper($pengajuan->pembayaran->status_pembayaran) }}
-                                </span>
-                            </p>
-                        </div>
-                        <div class="col-md-6 mb-2">
-                            <label class="text-muted small">Jatuh Tempo</label>
-                            <p class="fw-bold mb-0">
-                                {{ \App\Libraries\Date::tglIndo($pengajuan->pembayaran->tanggal_jatuh_tempo) }}
-                            </p>
-                        </div>
-                        @if($pengajuan->pembayaran->tanggal_pembayaran)
-                        <div class="col-md-6 mb-2">
-                            <label class="text-muted small">Tanggal Pembayaran dari Prodi</label>
-                            <p class="fw-bold mb-0">
-                                {{ \App\Libraries\Date::tglIndo($pengajuan->pembayaran->tanggal_pembayaran) }}
-                            </p>
-                        </div>
-                        @endif
-                        @if($pengajuan->pembayaran->verified_by)
-                        <div class="col-md-6 mb-2">
-                            <label class="text-muted small">Diverifikasi Oleh</label>
-                            <p class="fw-bold mb-0">
-                                {{ $pengajuan->pembayaran->verifier->name }}
-                            </p>
-                        </div>
-                        @endif
+        @if($pengajuan->pembayaran)
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">
+                    <i class="bi bi-credit-card"></i> Informasi Pembayaran {{ $pengajuan->pembayaran->status_pembayaran == 'upload_ulang' ? '(Versi Sebelumnya)' : '' }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-2">
+                        <label class="text-muted small">Nomor Invoice</label>
+                        <p class="fw-bold mb-0">{{ $pengajuan->pembayaran->nomor_invoice }}</p>
                     </div>
-
-                    @if($pengajuan->pembayaran->catatan_pembayaran)
-                    <hr>
-                    <label class="text-muted small">Catatan Pembayaran (dari Prodi)</label>
-                    <p class="mb-0">{{ $pengajuan->pembayaran->catatan_pembayaran }}</p>
+                    <div class="col-md-6 mb-2">
+                        <label class="text-muted small">Jumlah</label>
+                        <p class="fw-bold mb-0">
+                            Rp {{ number_format($pengajuan->pembayaran->jumlah_pembayaran, 0, ',', '.') }}
+                        </p>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <label class="text-muted small">Status</label>
+                        <p class="mb-0">
+                            <span class="badge bg-{{ $pengajuan->pembayaran->status_pembayaran === 'terverifikasi' ? 'success' : 'warning' }}">
+                                {{ strtoupper($pengajuan->pembayaran->status_pembayaran) }}
+                            </span>
+                        </p>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <label class="text-muted small">Jatuh Tempo</label>
+                        <p class="fw-bold mb-0">
+                            {{ \App\Libraries\Date::tglIndo($pengajuan->pembayaran->tanggal_jatuh_tempo) }}
+                        </p>
+                    </div>
+                    @if($pengajuan->pembayaran->tanggal_pembayaran)
+                    <div class="col-md-6 mb-2">
+                        <label class="text-muted small">Tanggal Pembayaran dari Prodi</label>
+                        <p class="fw-bold mb-0">
+                            {{ \App\Libraries\Date::tglIndo($pengajuan->pembayaran->tanggal_pembayaran) }}
+                        </p>
+                    </div>
                     @endif
-
-                    @if($pengajuan->pembayaran->catatan_verifikasi)
-                    <hr>
-                    <label class="text-muted small">Catatan Verifikasi (dari Keuangan)</label>
-                    <p class="mb-0">{{ $pengajuan->pembayaran->catatan_verifikasi }}</p>
-                    @endif
-
-                    @if($pengajuan->pembayaran->alasan_penolakan)
-                    <hr>
-                    <label class="text-muted small text-danger">Alasan Penolakan (dari Keuangan)</label>
-                    <p class="mb-0 text-danger">{{ $pengajuan->pembayaran->alasan_penolakan }}</p>
+                    @if($pengajuan->pembayaran->verified_by)
+                    <div class="col-md-6 mb-2">
+                        <label class="text-muted small">Diverifikasi Oleh</label>
+                        <p class="fw-bold mb-0">
+                            {{ $pengajuan->pembayaran->verifier->name }}
+                        </p>
+                    </div>
                     @endif
                 </div>
-            </div>
-            @endif
 
-            <hr>
-
-            <!-- Informasi Permohonan akreditasi -->
-            <div class="card mb-4">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">
-                        <i class="bi bi-info-circle"></i> Informasi Permohonan Akreditasi
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Nomor Permohonan Akreditasi</label>
-                            <p class="fw-bold mb-0">{{ $pengajuan->nomor_pengajuan }}</p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Program Studi</label>
-                            <p class="fw-bold mb-0">{{ $pengajuan->studyProgram->name }}</p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Universitas/Institut</label>
-                            <p class="fw-bold mb-0">{{ $pengajuan->studyProgram->university->name }}</p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Jenjang</label>
-                            <p class="fw-bold mb-0">{{ $pengajuan->studyProgram->degreeLevel->name }}</p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Tahun Akreditasi</label>
-                            <p class="fw-bold mb-0">{{ $pengajuan->tahun_akreditasi }}</p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Jenis Akreditasi</label>
-                            <p class="fw-bold mb-0">{{ $pengajuan->jenis_akreditasi_label }}</p>
-                        </div>
-                        @if($pengajuan->pengaju)
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Pengaju</label>
-                            <p class="fw-bold mb-0">{{ $pengajuan->pengaju->name }}</p>
-                            <small class="text-wrap">{{ $pengajuan->pengaju->email }}</small>
-                        </div>
-                        @endif
-                        {{-- <div class="col-md-6 mb-3">
-                            <label class="text-muted small">DE</label>
-                            <p class="fw-bold mb-0">{{ $pengajuan->deskEvaluator->name ?? 'Belum ditugaskan' }}</p>
-                    </div> --}}
-                </div>
-
-                @if($pengajuan->catatan_pengaju)
+                @if($pengajuan->pembayaran->catatan_pembayaran)
                 <hr>
-                <label class="text-muted small">Catatan Pengaju</label>
-                <p class="mb-0">{{ $pengajuan->catatan_pengaju }}</p>
+                <label class="text-muted small">Catatan Pembayaran (dari Prodi)</label>
+                <p class="mb-0">{{ $pengajuan->pembayaran->catatan_pembayaran }}</p>
+                @endif
+
+                @if($pengajuan->pembayaran->catatan_verifikasi)
+                <hr>
+                <label class="text-muted small">Catatan Verifikasi (dari Keuangan)</label>
+                <p class="mb-0">{{ $pengajuan->pembayaran->catatan_verifikasi }}</p>
+                @endif
+
+                @if($pengajuan->pembayaran->alasan_penolakan)
+                <hr>
+                <label class="text-muted small text-danger">Alasan Penolakan (dari Keuangan)</label>
+                <p class="mb-0 text-danger">{{ $pengajuan->pembayaran->alasan_penolakan }}</p>
                 @endif
             </div>
         </div>
+        @endif
 
-        <!-- Review Kesiapan -->
-        {{-- @if($pengajuan->reviewKesiapan->count() > 0)
+        <hr>
+
+        <!-- Informasi Permohonan akreditasi -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">
+                    <i class="bi bi-info-circle"></i> Informasi Permohonan Akreditasi
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Nomor Permohonan Akreditasi</label>
+                        <p class="fw-bold mb-0">{{ $pengajuan->nomor_pengajuan }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Program Studi</label>
+                        <p class="fw-bold mb-0">{{ $pengajuan->studyProgram->name }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Universitas/Institut</label>
+                        <p class="fw-bold mb-0">{{ $pengajuan->studyProgram->university->name }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Jenjang</label>
+                        <p class="fw-bold mb-0">{{ $pengajuan->studyProgram->degreeLevel->name }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Tahun Akreditasi</label>
+                        <p class="fw-bold mb-0">{{ $pengajuan->tahun_akreditasi }}</p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Jenis Akreditasi</label>
+                        <p class="fw-bold mb-0">{{ $pengajuan->jenis_akreditasi_label }}</p>
+                    </div>
+                    @if($pengajuan->pengaju)
+                    <div class="col-md-6 mb-3">
+                        <label class="text-muted small">Pemohon</label>
+                        <p class="fw-bold mb-0">{{ $pengajuan->pengaju->name }}</p>
+                        <small class="text-wrap">{{ $pengajuan->pengaju->email }}</small>
+                    </div>
+                    @endif
+                    {{-- <div class="col-md-6 mb-3">
+                            <label class="text-muted small">DE</label>
+                            <p class="fw-bold mb-0">{{ $pengajuan->deskEvaluator->name ?? 'Belum ditugaskan' }}</p>
+                </div> --}}
+            </div>
+
+            @if($pengajuan->catatan_pengaju)
+            <hr>
+            <label class="text-muted small">Catatan Pemohon</label>
+            <p class="mb-0">{{ $pengajuan->catatan_pengaju }}</p>
+            @endif
+        </div>
+    </div>
+
+    <!-- Review Kesiapan -->
+    {{-- @if($pengajuan->reviewKesiapan->count() > 0)
         <div class="card mb-4">
             <div class="card-header bg-light">
                 <h5 class="mb-0">
@@ -743,31 +743,31 @@
             <div class="card-body">
                 @foreach($pengajuan->reviewKesiapan->sortByDesc('tanggal_review') as $review)
                 <div class="mb-3 pb-3 {{ !$loop->last ? 'border-bottom' : '' }}">
-        <div class="d-flex justify-content-between align-items-start mb-2">
-            <div>
-                <span class="badge {{ $review->hasil_review === 'siap' ? 'bg-success' : 'bg-danger' }}">
-                    {{ $review->hasil_review === 'siap' ? 'SIAP' : 'BELUM SIAP' }}
-                </span>
-                <small class="text-muted ms-2">Versi {{ $review->versi_review }}</small>
-            </div>
-            <small class="text-muted">
-                {{ $review->tanggal_review->format('d M Y H:i') }}
-            </small>
+    <div class="d-flex justify-content-between align-items-start mb-2">
+        <div>
+            <span class="badge {{ $review->hasil_review === 'siap' ? 'bg-success' : 'bg-danger' }}">
+                {{ $review->hasil_review === 'siap' ? 'SIAP' : 'BELUM SIAP' }}
+            </span>
+            <small class="text-muted ms-2">Versi {{ $review->versi_review }}</small>
         </div>
-        <p class="mb-2"><strong>Reviewer:</strong> {{ $review->reviewer->name }}</p>
-        <p class="mb-0"><strong>Catatan:</strong></p>
-        <p class="text-muted">{{ $review->catatan_review }}</p>
-
-        @if($review->checklist_kesiapan)
-        <p class="mb-1"><strong>Checklist:</strong></p>
-        <ul>
-            @foreach($review->checklist_kesiapan as $item)
-            <li>{{ $item }}</li>
-            @endforeach
-        </ul>
-        @endif
+        <small class="text-muted">
+            {{ $review->tanggal_review->format('d M Y H:i') }}
+        </small>
     </div>
-    @endforeach
+    <p class="mb-2"><strong>Reviewer:</strong> {{ $review->reviewer->name }}</p>
+    <p class="mb-0"><strong>Catatan:</strong></p>
+    <p class="text-muted">{{ $review->catatan_review }}</p>
+
+    @if($review->checklist_kesiapan)
+    <p class="mb-1"><strong>Checklist:</strong></p>
+    <ul>
+        @foreach($review->checklist_kesiapan as $item)
+        <li>{{ $item }}</li>
+        @endforeach
+    </ul>
+    @endif
+</div>
+@endforeach
 </div>
 </div>
 @endif --}}

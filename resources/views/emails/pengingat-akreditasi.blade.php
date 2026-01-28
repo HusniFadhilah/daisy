@@ -76,7 +76,7 @@
 
                             <p style="margin-top:20px;">
                                 Hormat kami,<br>
-                                <strong>Tim Akreditasi</strong>
+                                <strong>Lembaga Akreditasi Mandiri Desain Perencanaan Lingkungan Arsitektur (LAMDEPILAR)</strong>
                             </p>
                         </td>
                     </tr>

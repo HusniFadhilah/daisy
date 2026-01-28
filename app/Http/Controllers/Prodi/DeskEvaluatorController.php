@@ -183,7 +183,9 @@ class DeskEvaluatorController extends Controller
                     $emailsSent = [];
                     foreach ($prodi->users as $user) {
                         try {
-                            Mail::to($user->email)->send(new \App\Mail\PengingatAkreditasi($prodi, $request->pesan_pengingat));
+                            // Mail::to($user->email)->send(new \App\Mail\PengingatAkreditasi($prodi, $request->pesan_pengingat));
+                            // Mail::to('maryonoperpanjangan@gmail.com')->send(new \App\Mail\PengingatAkreditasi($prodi, $request->pesan_pengingat));
+                            Mail::to('remahankecil@gmail.com')->send(new \App\Mail\PengingatAkreditasi($prodi, $request->pesan_pengingat));
                             $emailsSent[] = $user->email;
                         } catch (\Exception $e) {
                             Log::error("Failed to send email to {$user->email}: " . $e->getMessage());
