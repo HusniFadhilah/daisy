@@ -127,6 +127,70 @@ class StudyProgram extends Model
             ->latestOfMany('tanggal_dikirim');
     }
 
+    public function getDaysLeftAttribute()
+    {
+        return $this->tanggal_kedaluwarsa
+            ? floor(now()->diffInDays($this->tanggal_kedaluwarsa, false))
+            : null;
+    }
+
+    /**
+     * Helper methods for formatting
+     */
+    public function getPeringkatClass()
+    {
+        $class = 'peringkat-badge ';
+
+        switch ($this->peringkat_akreditasi) {
+            case 'Unggul':
+                return $class . 'peringkat-unggul';
+            case 'Baik Sekali':
+                return $class . 'peringkat-baik-sekali';
+            case 'Baik':
+                return $class . 'peringkat-baik';
+            case 'C':
+                return $class . 'peringkat-c';
+            default:
+                return '';
+        }
+    }
+
+    public function getStatusLabel($daysLeft)
+    {
+        if (is_null($daysLeft)) {
+            return 'Belum Ditentukan';
+        } elseif ($daysLeft < 0) {
+            return 'Kedaluwarsa';
+        } else {
+            return 'Aktif';
+        }
+    }
+
+    public function getStatusClass($daysLeft)
+    {
+        $class = 'status-badge ';
+
+        if (is_null($daysLeft)) {
+            return $class . 'status-belum';
+        } elseif ($daysLeft < 0) {
+            return $class . 'status-kedaluwarsa';
+        } else {
+            $baseClass = $class . 'status-aktif';
+            return $daysLeft <= 90 && $daysLeft >= 0 ? $baseClass . ' status-urgent' : $baseClass;
+        }
+    }
+
+    public function getSisaWaktuLabel($daysLeft)
+    {
+        if ($daysLeft === null) {
+            return '-';
+        } elseif ($daysLeft < 0) {
+            return 'Expired';
+        } else {
+            return $daysLeft . ' hari';
+        }
+    }
+
     // protected static function booted()
     // {
     //     static::addGlobalScope('exclude_example', function (Builder $builder) {

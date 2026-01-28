@@ -284,13 +284,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // PEMETAAN AKREDITASI
         Route::prefix('pengingat-masa-akreditasi')->name('.pemetaan.')->group(function () {
             Route::get('/', [PemetaanAkreditasiController::class, 'index'])->name('index');
-            Route::get('/{id}', [PemetaanAkreditasiController::class, 'show'])->name('show');
+            Route::get('/datatable/ajax', [PemetaanAkreditasiController::class, 'getDataTableAjax'])->name('datatable.ajax');
+            Route::get('/urgent/ajax', [PemetaanAkreditasiController::class, 'getUrgentProgramsAjax'])->name('urgent.ajax');
             Route::get('/timeline/ajax', [PemetaanAkreditasiController::class, 'getTimelineAjax'])->name('timeline.ajax');
             Route::get('/calendar/ajax', [PemetaanAkreditasiController::class, 'getCalendarAjax'])->name('calendar.ajax');
             Route::get('/table/ajax', [PemetaanAkreditasiController::class, 'getTableAjax'])->name('table.ajax');
             Route::get('/reminder-detail/ajax', [PemetaanAkreditasiController::class, 'getReminderDetailAjax'])->name('reminder.detail.ajax');
+            Route::get('/export/excel', [PemetaanAkreditasiController::class, 'export'])->name('export');
             Route::get('/prodi/search', [PemetaanAkreditasiController::class, 'searchProdiAjax'])->name('prodi.search.ajax');
             Route::get('/export/excel', [PemetaanAkreditasiController::class, 'export'])->name('export');
+            Route::get('/{id}', [PemetaanAkreditasiController::class, 'show'])->name('show');
         });
         Route::prefix('surat-permohonan')->name('.surat-permohonan')->group(function () {
             Route::get('/', [SuratPermohonanController::class, 'index']);

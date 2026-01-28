@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers\Prodi;
 
-use App\Http\Controllers\Controller;
-use App\Models\StudyProgram;
+use Carbon\Carbon;
 use App\Models\University;
 use App\Models\DegreeLevel;
-use App\Models\PengajuanAkreditasi;
+use App\Models\StudyProgram;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
+use App\Models\PengajuanAkreditasi;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
 
 class PemetaanAkreditasiController extends Controller
 {
@@ -21,30 +22,8 @@ class PemetaanAkreditasiController extends Controller
         // Build query
         $query = StudyProgram::nonExample()->with(['university', 'degreeLevel']);
 
-        // Filter by university
-        if ($request->filled('university_id')) {
-            $query->where('id_univ', $request->university_id);
-        }
-
-        // Filter by degree level
-        if ($request->filled('degree_level_id')) {
-            $query->where('id_level', $request->degree_level_id);
-        }
-
-        // Filter by status kedaluwarsa
-        if ($request->filled('status_kedaluwarsa')) {
-            $query->where('status_kedaluwarsa', $request->status_kedaluwarsa);
-        }
-
-        // Filter by peringkat
-        if ($request->filled('peringkat')) {
-            $query->where('peringkat_akreditasi', $request->peringkat);
-        }
-
-        // Search
-        if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
-        }
+        // ✅ Apply filters dari request
+        $this->applyFilters($query, $request);
 
         // Sort
         $sortBy = $request->get('sort_by', 'tanggal_kedaluwarsa');
@@ -57,7 +36,7 @@ class PemetaanAkreditasiController extends Controller
             $query->orderBy($sortBy, $sortOrder);
         }
 
-        $studyPrograms = $query->paginate(20);
+        $studyPrograms = $query->paginate(20)->appends($request->except('page'));
 
         // Calculate statistics
         $reminderMonths = (int) $request->get('reminder_months', 7);
@@ -72,9 +51,13 @@ class PemetaanAkreditasiController extends Controller
             ->filter(fn($p) => $p->tanggal_kedaluwarsa >= now() && $p->tanggal_kedaluwarsa <= now()->addMonths(6))
             ->take(10);
 
-        $periode = $request->get('periode', '6bulan'); // default 6 bulan
-        $timelineData = $this->getTimelineData($periode);
-        $calendarData = $this->getCalendarData();
+        $periode = $request->get('periode', '6bulan');
+        $filters = $this->buildFilters($request);
+        $timelineData = $this->getTimelineData($periode, $filters);
+        $calendarData = $this->getCalendarData($filters);
+
+        // ✅ Pass active filters to view
+        $activeFilters = $this->getActiveFiltersCount($request);
 
         return view('asesmen.pemetaan.index', compact(
             'studyPrograms',
@@ -84,8 +67,25 @@ class PemetaanAkreditasiController extends Controller
             'urgentPrograms',
             'timelineData',
             'calendarData',
-            'periode'
+            'periode',
+            'activeFilters'
         ));
+    }
+
+    private function getActiveFiltersCount(Request $request)
+    {
+        $count = 0;
+
+        if ($request->filled('year') && !empty($request->year)) $count++;
+        if ($request->filled('month') && !empty($request->month)) $count++;
+        if ($request->filled('university_id') && !empty($request->university_id)) $count++;
+        if ($request->filled('degree_level_id') && !empty($request->degree_level_id)) $count++;
+        if ($request->filled('status_kedaluwarsa') && !empty($request->status_kedaluwarsa)) $count++;
+        if ($request->filled('peringkat') && !empty($request->peringkat)) $count++;
+        if ($request->filled('is_example') && $request->is_example !== 'both') $count++;
+        if ($request->filled('search') && trim($request->search) !== '') $count++;
+
+        return $count;
     }
 
     public function getTimelineAjax(Request $request)
@@ -169,6 +169,7 @@ class PemetaanAkreditasiController extends Controller
             'degree_level_id' => $request->input('degree_level_id', []),
             'status_kedaluwarsa' => $request->input('status_kedaluwarsa', []),
             'peringkat' => $request->input('peringkat', []),
+            'is_example' => $request->input('is_example', 'both'),
             'search' => $request->input('search', ''),
         ];
     }
@@ -234,9 +235,21 @@ class PemetaanAkreditasiController extends Controller
             }
         }
 
+        // ✅ NEW: is_example filter
+        if ($request->filled('is_example')) {
+            $isExample = $request->is_example;
+            if ($isExample === 'false') {
+                $query->where('is_example', false);
+            } elseif ($isExample === 'true') {
+                $query->where('is_example', true);
+            }
+        } else {
+            // 'both' = tidak ada filter (default behavior)
+            $query->whereIn('is_example', [true, false]);
+        }
         // Search
-        if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+        if ($request->filled('search') && isset($request->search['value'])) {
+            $query->where('name', 'like', '%' . $request->search['value'] . '%');
         }
     }
 
@@ -445,7 +458,15 @@ class PemetaanAkreditasiController extends Controller
         $query = StudyProgram::nonExample()->with(['university', 'degreeLevel'])
             ->whereBetween('tanggal_kedaluwarsa', [$startRange, $endRange]);
 
-        // Apply year filter
+        if (!empty($filters['is_example']) && $filters['is_example'] !== 'both') {
+            if ($filters['is_example'] === 'false') {
+                $query->where('is_example', false);
+            } elseif ($filters['is_example'] === 'true') {
+                $query->where('is_example', true);
+            }
+        }
+
+        // Apply other filters (existing code)
         if (!empty($filters['year'])) {
             $query->where(function ($q) use ($filters) {
                 foreach ($filters['year'] as $year) {
@@ -526,6 +547,14 @@ class PemetaanAkreditasiController extends Controller
         // Build query with filters
         $query = StudyProgram::nonExample()->with(['university', 'degreeLevel'])
             ->whereBetween('tanggal_kedaluwarsa', [$startRange, $endRange]);
+
+        if (!empty($filters['is_example']) && $filters['is_example'] !== 'both') {
+            if ($filters['is_example'] === 'false') {
+                $query->where('is_example', false);
+            } elseif ($filters['is_example'] === 'true') {
+                $query->where('is_example', true);
+            }
+        }
 
         // Apply year filter
         if (!empty($filters['year'])) {
@@ -623,6 +652,152 @@ class PemetaanAkreditasiController extends Controller
     {
         // TODO: Implement Excel export
         return response()->json(['message' => 'Export feature coming soon']);
+    }
+
+    /**
+     * DataTables AJAX endpoint untuk table view
+     */
+    public function getDataTableAjax(Request $request)
+    {
+        // Base query
+        $query = StudyProgram::nonExample()
+            ->with(['university', 'degreeLevel']);
+
+        // Apply custom filters
+        $this->applyFilters($query, $request);
+
+        // Get total records before filtering
+        $totalRecords = StudyProgram::nonExample()->count();
+
+        // Get filtered records count
+        $filteredRecords = $query->count();
+
+        // DataTables search
+        if ($request->filled('search.value')) {
+            $searchValue = $request->input('search.value');
+            $query->where(function ($q) use ($searchValue) {
+                $q->where('name', 'like', "%{$searchValue}%")
+                    ->orWhere('code', 'like', "%{$searchValue}%")
+                    ->orWhereHas('university', function ($subQ) use ($searchValue) {
+                        $subQ->where('name', 'like', "%{$searchValue}%");
+                    });
+            });
+
+            // Update filtered count after search
+            $filteredRecords = $query->count();
+        }
+
+        // DataTables ordering
+        if ($request->filled('order.0.column')) {
+            $columnIndex = $request->input('order.0.column');
+            $columnDir = $request->input('order.0.dir', 'asc');
+
+            // Map column index to database column
+            $columns = [
+                0 => 'id',
+                1 => 'name',
+                2 => 'id_level',
+                3 => 'peringkat_akreditasi',
+                4 => 'status_kedaluwarsa',
+                5 => 'tanggal_kedaluwarsa',
+                6 => 'tanggal_kedaluwarsa',
+            ];
+
+            if (isset($columns[$columnIndex])) {
+                $orderColumn = $columns[$columnIndex];
+
+                if ($orderColumn === 'tanggal_kedaluwarsa') {
+                    $query->orderByRaw('CASE WHEN tanggal_kedaluwarsa IS NULL THEN 1 ELSE 0 END')
+                        ->orderBy('tanggal_kedaluwarsa', $columnDir);
+                } else {
+                    $query->orderBy($orderColumn, $columnDir);
+                }
+            }
+        } else {
+            // Default ordering
+            $query->orderByRaw('CASE WHEN tanggal_kedaluwarsa IS NULL THEN 1 ELSE 0 END')
+                ->orderBy('tanggal_kedaluwarsa', 'asc');
+        }
+
+        // Pagination
+        $start = $request->input('start', 0);
+        $length = $request->input('length', 10);
+
+        $data = $query->skip($start)->take($length)->get();
+
+        // Format data for DataTables
+        $formattedData = $data->map(function ($program, $index) use ($start) {
+            $daysLeft = $program->tanggal_kedaluwarsa
+                ? floor(now()->diffInDays($program->tanggal_kedaluwarsa, false))
+                : null;
+
+            $progressPercent = $daysLeft
+                ? max(0, min(100, ($daysLeft / (5 * 365)) * 100))
+                : 0;
+
+            return [
+                'DT_RowId' => 'row_' . $program->id,
+                'DT_RowClass' => $daysLeft !== null && $daysLeft <= 90 && $daysLeft >= 0 ? 'table-warning' : '',
+                'number' => $start + $index + 1,
+                'program_studi' => [
+                    'id' => $program->id,
+                    'name' => $program->name,
+                    'university' => $program->university->name ?? '-',
+                ],
+                'jenjang' => $program->degreeLevel->alias ?? '-',
+                'peringkat' => [
+                    'value' => $program->peringkat_akreditasi ?? '-',
+                    'class' => $program->getPeringkatClass(),
+                ],
+                'status' => [
+                    'value' => $program->getStatusLabel($daysLeft),
+                    'class' => $program->getStatusClass($daysLeft),
+                    'is_urgent' => $daysLeft !== null && $daysLeft <= 90 && $daysLeft >= 0,
+                ],
+                'tanggal_kedaluwarsa' => $program->tanggal_kedaluwarsa
+                    ? \App\Libraries\Date::tglIndo($program->tanggal_kedaluwarsa)
+                    : '-',
+                'tanggal_kedaluwarsa_raw' => $program->tanggal_kedaluwarsa
+                    ? $program->tanggal_kedaluwarsa->format('Y-m-d')
+                    : null,
+                'sisa_waktu' => [
+                    'days' => $daysLeft,
+                    'progress' => $progressPercent,
+                    'label' => $program->getSisaWaktuLabel($daysLeft),
+                ],
+                'can_ajukan' => $program->status_kedaluwarsa != 'Aktif' || ($daysLeft && $daysLeft <= 180),
+            ];
+        });
+
+        return response()->json([
+            'draw' => intval($request->input('draw', 1)),
+            'recordsTotal' => $totalRecords,
+            'recordsFiltered' => $filteredRecords,
+            'data' => $formattedData,
+        ]);
+    }
+
+    /**
+     * Get urgent programs for sidebar (keep existing AJAX endpoint)
+     */
+    public function getUrgentProgramsAjax(Request $request)
+    {
+        $query = StudyProgram::nonExample()->with(['university', 'degreeLevel'])
+            ->where('tanggal_kedaluwarsa', '<=', now()->addMonths(6))
+            ->where('tanggal_kedaluwarsa', '>=', now())
+            ->orderBy('tanggal_kedaluwarsa');
+
+        $this->applyFilters($query, $request);
+
+        $urgentPrograms = $query->limit(10)->get();
+
+        $html = view('asesmen.pemetaan.components.urgent-cards', compact('urgentPrograms'))->render();
+
+        return response()->json([
+            'success' => true,
+            'html' => $html,
+            'count' => $urgentPrograms->count(),
+        ]);
     }
 
     // ========== TESTING METHODS (NO AUTH REQUIRED) ==========

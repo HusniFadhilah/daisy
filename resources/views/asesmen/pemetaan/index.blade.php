@@ -263,6 +263,55 @@
         z-index: 9999 !important;
     }
 
+    /* ✅ Active Filter Badge Animation */
+    .active-filters-badge {
+        animation: pulse-badge 2s infinite;
+        box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+    }
+
+    @keyframes pulse-badge {
+        0% {
+            box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+        }
+
+        70% {
+            box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+        }
+    }
+
+    /* ✅ Filter Applied Indicator */
+    .filter-applied-indicator {
+        position: relative;
+    }
+
+    .filter-applied-indicator::after {
+        content: '';
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        width: 10px;
+        height: 10px;
+        background: #dc3545;
+        border-radius: 50%;
+        border: 2px solid white;
+    }
+
+    /* ✅ Clear Filter Button */
+    .clear-single-filter {
+        cursor: pointer;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+    }
+
+    .clear-single-filter:hover {
+        opacity: 1;
+        color: #dc3545;
+    }
+
 </style>
 @endpush
 
@@ -479,21 +528,59 @@
                 <div class="col-lg-3 mb-4">
                     <div class="card filter-card">
                         <div class="card-header border-0">
-                            <h5 class="mb-0">
-                                <i class="bi bi-funnel"></i> Filter & Pencarian
-                            </h5>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-funnel"></i> Filter & Pencarian
+                                </h5>
+                                {{-- ✅ Active Filters Badge --}}
+                                <span id="activeFiltersBadge" class="badge bg-danger active-filters-badge d-none">
+                                    <span id="activeFiltersCount">0</span>
+                                </span>
+                            </div>
                         </div>
                         <div class="card-body">
                             <form id="filterForm" onsubmit="return false;">
-                                <!-- Search -->
+
+                                {{-- ✅ Search --}}
                                 <div class="mb-3">
-                                    <label class="form-label text-white">Cari Program Studi</label>
-                                    <input type="text" name="search" id="searchInput" class="form-control" placeholder="Nama prodi..." value="{{ request('search') }}">
+                                    <label class="form-label text-white">
+                                        <i class="bi bi-search"></i> Cari Program Studi
+                                        <span class="clear-single-filter float-end" onclick="clearSingleFilter('search')" style="display: {{ request('search') ? 'inline' : 'none' }};">
+                                            <i class="bi bi-x-circle"></i>
+                                        </span>
+                                    </label>
+                                    <input type="text" name="search" id="searchInput" class="form-control {{ request('search') ? 'filter-applied-indicator' : '' }}" placeholder="Nama prodi..." value="{{ request('search') }}">
                                 </div>
 
-                                <!-- Year Filter (Multiple) -->
+                                {{-- ✅ NEW: is_example Filter --}}
                                 <div class="mb-3">
-                                    <label class="form-label text-white">Tahun Kedaluwarsa</label>
+                                    <label class="form-label text-white">
+                                        <i class="bi bi-flag"></i> Tipe Data
+                                        <span class="clear-single-filter float-end" onclick="clearSingleFilter('is_example')" style="display: {{ request('is_example', 'both') != 'both' ? 'inline' : 'none' }};">
+                                            <i class="bi bi-x-circle"></i>
+                                        </span>
+                                    </label>
+                                    <select name="is_example" id="isExampleFilter" class="form-select {{ request('is_example', 'both') != 'both' ? 'filter-applied-indicator' : '' }}">
+                                        <option value="both" {{ request('is_example', 'both') == 'both' ? 'selected' : '' }}>
+                                            Semua Data
+                                        </option>
+                                        <option value="false" {{ request('is_example') == 'false' ? 'selected' : '' }}>
+                                            Hanya Data Real
+                                        </option>
+                                        <option value="true" {{ request('is_example') == 'true' ? 'selected' : '' }}>
+                                            Hanya Data Contoh
+                                        </option>
+                                    </select>
+                                </div>
+
+                                {{-- Year Filter --}}
+                                <div class="mb-3">
+                                    <label class="form-label text-white">
+                                        <i class="bi bi-calendar-range"></i> Tahun Kedaluwarsa
+                                        <span class="clear-single-filter float-end" onclick="clearSingleFilter('year')" style="display: {{ request('year') ? 'inline' : 'none' }};">
+                                            <i class="bi bi-x-circle"></i>
+                                        </span>
+                                    </label>
                                     <select name="year[]" id="yearFilter" class="form-select" multiple>
                                         @php
                                         $currentYear = now()->year;
@@ -507,9 +594,14 @@
                                     <small class="text-white opacity-75 mt-1 d-block">Pilih tahun kedaluwarsa</small>
                                 </div>
 
-                                <!-- Month Filter (Multiple) -->
+                                {{-- Month Filter --}}
                                 <div class="mb-3">
-                                    <label class="form-label text-white">Bulan Kedaluwarsa</label>
+                                    <label class="form-label text-white">
+                                        <i class="bi bi-calendar-month"></i> Bulan Kedaluwarsa
+                                        <span class="clear-single-filter float-end" onclick="clearSingleFilter('month')" style="display: {{ request('month') ? 'inline' : 'none' }};">
+                                            <i class="bi bi-x-circle"></i>
+                                        </span>
+                                    </label>
                                     <select name="month[]" id="monthFilter" class="form-select" multiple>
                                         @php
                                         $months = [
@@ -526,12 +618,16 @@
                                         </option>
                                         @endforeach
                                     </select>
-                                    <small class="text-white opacity-75 mt-1 d-block">Pilih bulan kedaluwarsa</small>
                                 </div>
 
-                                <!-- University (Multiple) -->
+                                {{-- University Filter --}}
                                 <div class="mb-3">
-                                    <label class="form-label text-white">Universitas</label>
+                                    <label class="form-label text-white">
+                                        <i class="bi bi-building"></i> Universitas
+                                        <span class="clear-single-filter float-end" onclick="clearSingleFilter('university_id')" style="display: {{ request('university_id') ? 'inline' : 'none' }};">
+                                            <i class="bi bi-x-circle"></i>
+                                        </span>
+                                    </label>
                                     <select name="university_id[]" id="universityFilter" class="form-select" multiple>
                                         @foreach($universities as $univ)
                                         <option value="{{ $univ->id }}" {{ in_array($univ->id, (array)request('university_id', [])) ? 'selected' : '' }}>
@@ -539,12 +635,16 @@
                                         </option>
                                         @endforeach
                                     </select>
-                                    <small class="text-white opacity-75 mt-1 d-block">Pilih satu atau lebih</small>
                                 </div>
 
-                                <!-- Degree Level (Multiple) -->
+                                {{-- Degree Level Filter --}}
                                 <div class="mb-3">
-                                    <label class="form-label text-white">Jenjang</label>
+                                    <label class="form-label text-white">
+                                        <i class="bi bi-mortarboard"></i> Jenjang
+                                        <span class="clear-single-filter float-end" onclick="clearSingleFilter('degree_level_id')" style="display: {{ request('degree_level_id') ? 'inline' : 'none' }};">
+                                            <i class="bi bi-x-circle"></i>
+                                        </span>
+                                    </label>
                                     <select name="degree_level_id[]" id="degreeLevelFilter" class="form-select" multiple>
                                         @foreach($degreeLevels as $level)
                                         <option value="{{ $level->id }}" {{ in_array($level->id, (array)request('degree_level_id', [])) ? 'selected' : '' }}>
@@ -552,60 +652,64 @@
                                         </option>
                                         @endforeach
                                     </select>
-                                    <small class="text-white opacity-75 mt-1 d-block">Pilih satu atau lebih</small>
                                 </div>
 
-                                <!-- Status (Multiple) -->
+                                {{-- Status Filter --}}
                                 <div class="mb-3">
-                                    <label class="form-label text-white">Status Akreditasi</label>
+                                    <label class="form-label text-white">
+                                        <i class="bi bi-check-circle"></i> Status Akreditasi
+                                        <span class="clear-single-filter float-end" onclick="clearSingleFilter('status_kedaluwarsa')" style="display: {{ request('status_kedaluwarsa') ? 'inline' : 'none' }};">
+                                            <i class="bi bi-x-circle"></i>
+                                        </span>
+                                    </label>
                                     <select name="status_kedaluwarsa[]" id="statusFilter" class="form-select" multiple>
-                                        <option value="Aktif" {{ in_array('Aktif', (array)request('status_kedaluwarsa', [])) ? 'selected' : '' }}>Aktif</option>
-                                        <option value="Kedaluwarsa" {{ in_array('Kedaluwarsa', (array)request('status_kedaluwarsa', [])) ? 'selected' : '' }}>Kedaluwarsa</option>
-                                        <option value="Belum Terakreditasi" {{ in_array('Belum Terakreditasi', (array)request('status_kedaluwarsa', [])) ? 'selected' : '' }}>Belum Terakreditasi</option>
+                                        <option value="Aktif" {{ in_array('Aktif', (array)request('status_kedaluwarsa', [])) ? 'selected' : '' }}>
+                                            Aktif
+                                        </option>
+                                        <option value="Kedaluwarsa" {{ in_array('Kedaluwarsa', (array)request('status_kedaluwarsa', [])) ? 'selected' : '' }}>
+                                            Kedaluwarsa
+                                        </option>
+                                        <option value="Belum Terakreditasi" {{ in_array('Belum Terakreditasi', (array)request('status_kedaluwarsa', [])) ? 'selected' : '' }}>
+                                            Belum Terakreditasi
+                                        </option>
                                     </select>
-                                    <small class="text-white opacity-75 mt-1 d-block">Pilih satu atau lebih</small>
                                 </div>
 
-                                <!-- Peringkat (Multiple) -->
-                                @php
-                                $selectedPeringkat = (array) request()->input('peringkat', []);
-                                @endphp
-
+                                {{-- Peringkat Filter --}}
                                 <div class="mb-3">
-                                    <label class="form-label text-white">Peringkat</label>
+                                    <label class="form-label text-white">
+                                        <i class="bi bi-star"></i> Peringkat
+                                        <span class="clear-single-filter float-end" onclick="clearSingleFilter('peringkat')" style="display: {{ request('peringkat') ? 'inline' : 'none' }};">
+                                            <i class="bi bi-x-circle"></i>
+                                        </span>
+                                    </label>
                                     <select name="peringkat[]" id="peringkatFilter" class="form-select" multiple>
-                                        <option value="Unggul" {{ in_array('Unggul', $selectedPeringkat) ? 'selected' : '' }}>
-                                            Unggul
-                                        </option>
-                                        <option value="Baik Sekali" {{ in_array('Baik Sekali', $selectedPeringkat) ? 'selected' : '' }}>
-                                            Baik Sekali
-                                        </option>
-                                        <option value="Baik" {{ in_array('Baik', $selectedPeringkat) ? 'selected' : '' }}>
-                                            Baik
-                                        </option>
-                                        <option value="C" {{ in_array('C', $selectedPeringkat) ? 'selected' : '' }}>
-                                            C
-                                        </option>
+                                        @php $selectedPeringkat = (array)request('peringkat', []); @endphp
+                                        <option value="Unggul" {{ in_array('Unggul', $selectedPeringkat) ? 'selected' : '' }}>Unggul</option>
+                                        <option value="Baik Sekali" {{ in_array('Baik Sekali', $selectedPeringkat) ? 'selected' : '' }}>Baik Sekali</option>
+                                        <option value="Baik" {{ in_array('Baik', $selectedPeringkat) ? 'selected' : '' }}>Baik</option>
+                                        <option value="C" {{ in_array('C', $selectedPeringkat) ? 'selected' : '' }}>C</option>
                                     </select>
-                                    <small class="text-white text-block opacity-75 mt-1 d-block">Pilih satu atau lebih</small>
                                 </div>
 
-                                <!-- Buttons -->
+                                {{-- Buttons --}}
                                 <div class="d-grid gap-2">
                                     <button type="button" class="btn btn-light" onclick="applyFilters()">
                                         <i class="bi bi-search"></i> Terapkan Filter
                                     </button>
                                     <button type="button" class="btn btn-outline-light" onclick="resetFilters()">
-                                        <i class="bi bi-x-circle"></i> Reset
+                                        <i class="bi bi-x-circle"></i> Reset Semua Filter
                                     </button>
                                 </div>
 
-                                <!-- Active Filters Badge -->
-                                <div id="activeFiltersCount" class="mt-3 text-center d-none">
-                                    <span class="badge bg-light text-dark">
-                                        <i class="bi bi-funnel-fill"></i>
-                                        <span id="filterCount">0</span> Filter Aktif
-                                    </span>
+                                {{-- ✅ Active Filters Summary --}}
+                                <div id="activeFiltersSummary" class="mt-3 d-none">
+                                    <div class="alert alert-light p-2">
+                                        <small class="fw-bold">
+                                            <i class="bi bi-funnel-fill"></i> Filter Aktif:
+                                        </small>
+                                        <div id="filtersList" class="mt-2"></div>
+                                    </div>
                                 </div>
                             </form>
                         </div>
@@ -644,24 +748,50 @@
                     </div>
                 </div>
 
-                <!-- Main Content -->
-                <div class="col-lg-9">
-                    <div class="position-relative">
-                        <!-- ✅ Loading Overlay -->
-                        <div id="tableLoading" class="position-absolute top-0 start-0 w-100 h-100 d-none" style="background: rgba(255,255,255,0.9); z-index: 1000;">
-                            <div class="d-flex justify-content-center align-items-center h-100" style="min-height: 400px;">
-                                <div class="text-center">
-                                    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
-                                        <span class="visually-hidden">Loading...</span>
-                                    </div>
-                                    <p class="mt-3 text-muted">Memuat data...</p>
-                                </div>
+                <div class="col-lg-9 mb-4">
+
+                    <!-- Main Content -->
+                    {{-- ✅ Urgent Programs Section --}}
+                    <div id="urgentSection">
+                        @include('asesmen.pemetaan.components.urgent-cards', ['urgentPrograms' => $urgentPrograms])
+                    </div>
+
+                    {{-- ✅ Programs DataTable --}}
+                    <div class="card">
+                        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="bi bi-table"></i> Daftar Program Studi
+                                <span id="totalProgramsBadge" class="badge bg-primary ms-2">{{ $studyPrograms->total() }}</span>
+                            </h5>
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-outline-success" onclick="exportExcel()">
+                                    <i class="bi bi-file-excel"></i> Export Excel
+                                </button>
+                                <button type="button" class="btn btn-outline-primary" onclick="refreshDataTable()">
+                                    <i class="bi bi-arrow-clockwise"></i> Refresh
+                                </button>
                             </div>
                         </div>
-
-                        <!-- ✅ Table Content -->
-                        <div id="tableContainer">
-                            @include('asesmen.pemetaan.components.table-content', ['studyPrograms' => $studyPrograms, 'urgentPrograms' => $urgentPrograms])
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table id="programsDataTable" class="table table-hover align-middle mb-0" style="width:100%">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width: 50px;">#</th>
+                                            <th>Program Studi</th>
+                                            <th style="width: 80px;">Jenjang</th>
+                                            <th style="width: 120px;">Peringkat</th>
+                                            <th style="width: 150px;">Status</th>
+                                            <th style="width: 150px;">Kedaluwarsa</th>
+                                            <th style="width: 100px;">Sisa Waktu</th>
+                                            <th style="width: 150px;">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {{-- DataTables will populate this --}}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -773,120 +903,595 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
 <script>
     let prodiSelect2Initialized = false;
     let filterSelect2Initialized = false;
+    let currentFilters = {};
+    let dataTable = null;
+
+    document.addEventListener('DOMContentLoaded', function() {
+
+        // Initialize from URL params
+        initializeFiltersFromURL();
+
+        // Initialize Select2
+        initFilterSelect2();
+
+        // Setup event listeners
+        setupFilterListeners();
+
+        // Initial filter count update
+        updateActiveFilterDisplay();
+
+        // Check URL and activate correct tab
+        const urlParams = new URLSearchParams(window.location.search);
+        const view = urlParams.get('view');
+
+        if (view === 'calendar') {
+            document.getElementById('calendar-tab').click();
+        } else if (view === 'table') {
+            document.getElementById('table-tab').click();
+        }
+
+        // Initialize DataTable if table view is active
+        setTimeout(() => {
+            const tableTab = document.querySelector('#table-view');
+            if (tableTab && (tableTab.classList.contains('active') || !view || view === 'table')) {
+                initDataTable();
+            }
+        }, 100);
+    });
+
+    // ========================================
+    // ✅ INITIALIZE DATATABLE
+    // ========================================
+    function initDataTable() {
+        if (dataTable) {
+            try {
+                dataTable.destroy();
+                dataTable = null;
+            } catch (e) {
+                console.warn('DataTable destroy error:', e);
+            }
+        }
+
+        const filters = getFilterParams();
+
+        try {
+            dataTable = $('#programsDataTable').DataTable({
+                processing: true
+                , serverSide: true
+                , ajax: {
+                    url: '{{ route("de.pemetaan.datatable.ajax") }}'
+                    , type: 'GET'
+                    , data: function(d) {
+                        // Add custom filters
+                        d.is_example = filters.is_example;
+
+                        // Array filters
+                        if (Array.isArray(filters.year) && filters.year.length > 0) {
+                            d['year[]'] = filters.year;
+                        }
+                        if (Array.isArray(filters.month) && filters.month.length > 0) {
+                            d['month[]'] = filters.month;
+                        }
+                        if (Array.isArray(filters.university_id) && filters.university_id.length > 0) {
+                            d['university_id[]'] = filters.university_id;
+                        }
+                        if (Array.isArray(filters.degree_level_id) && filters.degree_level_id.length > 0) {
+                            d['degree_level_id[]'] = filters.degree_level_id;
+                        }
+                        if (Array.isArray(filters.status_kedaluwarsa) && filters.status_kedaluwarsa.length > 0) {
+                            d['status_kedaluwarsa[]'] = filters.status_kedaluwarsa;
+                        }
+                        if (Array.isArray(filters.peringkat) && filters.peringkat.length > 0) {
+                            d['peringkat[]'] = filters.peringkat;
+                        }
+
+                        // Search from sidebar
+                        if (filters.search && filters.search.trim() !== '') {
+                            d.search = d.search || {};
+                            d.search.value = filters.search;
+                        }
+
+                        return d;
+                    }
+                    , error: function(xhr, error, code) {
+                        console.error('DataTables AJAX Error:', {
+                            xhr
+                            , error
+                            , code
+                        });
+                        showToast('error', 'Gagal memuat data tabel');
+                    }
+                }
+                , columns: [{
+                        data: 'number'
+                        , orderable: false
+                        , searchable: false
+                        , className: 'text-center'
+                    }
+                    , {
+                        data: 'program_studi'
+                        , render: function(data, type, row) {
+                            return `
+                        <div class="fw-bold">${data.name}</div>
+                        <small class="text-muted">${data.university}</small>
+                    `;
+                        }
+                    }
+                    , {
+                        data: 'jenjang'
+                        , render: function(data) {
+                            return `<span class="badge bg-secondary">${data}</span>`;
+                        }
+                    }
+                    , {
+                        data: 'peringkat'
+                        , render: function(data) {
+                            if (data.value === '-') {
+                                return '<span class="text-muted">-</span>';
+                            }
+                            return `<span class="${data.class}">${data.value}</span>`;
+                        }
+                    }
+                    , {
+                        data: 'status'
+                        , render: function(data) {
+                            return `<span class="${data.class}">${data.value}</span>`;
+                        }
+                    }
+                    , {
+                        data: 'tanggal_kedaluwarsa'
+                        , render: function(data, type, row) {
+                            if (data === '-') {
+                                return '<small class="text-muted">-</small>';
+                            }
+                            return `<small>${data}</small>`;
+                        }
+                    }
+                    , {
+                        data: 'sisa_waktu'
+                        , orderable: false
+                        , render: function(data) {
+                            if (data.days === null) {
+                                return '<small class="text-muted">-</small>';
+                            } else if (data.days < 0) {
+                                return '<small class="text-danger fw-bold">Expired</small>';
+                            }
+
+                            let progressColor = 'success';
+                            if (data.progress <= 20) progressColor = 'danger';
+                            else if (data.progress <= 50) progressColor = 'warning';
+
+                            return `
+                        <div class="progress progress-custom">
+                            <div class="progress-bar progress-bar-custom bg-${progressColor}"
+                                 style="width: ${data.progress}%"></div>
+                        </div>
+                        <small class="text-muted">${data.label}</small>
+                    `;
+                        }
+                    }
+                    , {
+                        data: null
+                        , orderable: false
+                        , searchable: false
+                        , render: function(data, type, row) {
+                            let buttons = `
+                        <div class="btn-group btn-group-sm">
+                            <a href="/de/pengingat-masa-akredi/${row.program_studi.id}/show"
+                               class="btn btn-outline-primary action-btn">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                    `;
+
+                            if (row.can_ajukan) {
+                                buttons += `
+                            <a href="{{ route('pengajuan.create') }}?study_program_id=${row.program_studi.id}"
+                               class="btn btn-outline-success action-btn">
+                                <i class="bi bi-plus-circle"></i>
+                            </a>
+                        `;
+                            }
+
+                            buttons += '</div>';
+                            return buttons;
+                        }
+                    }
+                ]
+                , order: [
+                    [5, 'asc']
+                ]
+                , pageLength: 20
+                , lengthMenu: [
+                    [10, 20, 50, 100, -1]
+                    , [10, 20, 50, 100, "Semua"]
+                ]
+                , language: {
+                    processing: `
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <div class="mt-2">Memuat data...</div>
+                `
+                    , search: "Cari:"
+                    , lengthMenu: "Tampilkan _MENU_ data per halaman"
+                    , info: "Menampilkan _START_ - _END_ dari _TOTAL_ data"
+                    , infoEmpty: "Tidak ada data"
+                    , infoFiltered: "(difilter dari _MAX_ total data)"
+                    , paginate: {
+                        first: "Pertama"
+                        , last: "Terakhir"
+                        , next: "Selanjutnya"
+                        , previous: "Sebelumnya"
+                    }
+                    , zeroRecords: "Tidak ada data ditemukan"
+                    , emptyTable: "Tidak ada data tersedia"
+                }
+                , drawCallback: function(settings) {
+                    const info = this.api().page.info();
+                    $('#totalProgramsBadge').text(info.recordsTotal);
+                    updateURLWithDataTableState();
+                }
+            });
+        } catch (error) {
+            console.error('❌ DataTable initialization error:', error);
+            showToast('error', 'Gagal menginisialisasi tabel');
+        }
+    }
+
+    // ========================================
+    // ✅ UPDATE URL WITH DATATABLE STATE
+    // ========================================
+    function updateURLWithDataTableState() {
+        if (!dataTable) return;
+
+        const filters = getFilterParams();
+        const info = dataTable.page.info();
+
+        const url = buildURLWithParams(filters, {
+            view: 'table'
+            , page: info.page + 1
+            , length: info.length
+        });
+
+        window.history.replaceState({
+            view: 'table'
+        }, '', url);
+    }
+
+    // ========================================
+    // ✅ REFRESH DATATABLE
+    // ========================================
+    function refreshDataTable() {
+        if (dataTable) {
+            dataTable.ajax.reload(null, false); // false = stay on current page
+            showToast('success', 'Data berhasil direfresh');
+        }
+    }
+
+    // ========================================
+    // ✅ LOAD URGENT PROGRAMS
+    // ========================================
+    async function loadUrgentPrograms() {
+        const filters = getFilterParams();
+
+        try {
+            const queryParams = new URLSearchParams();
+
+            Object.keys(filters).forEach(key => {
+                if (Array.isArray(filters[key]) && filters[key].length > 0) {
+                    filters[key].forEach(value => {
+                        queryParams.append(`${key}[]`, value);
+                    });
+                } else if (!Array.isArray(filters[key]) && filters[key] && filters[key] !== 'both') {
+                    queryParams.append(key, filters[key]);
+                }
+            });
+
+            const response = await fetch(`{{ route('de.pemetaan.urgent.ajax') }}?${queryParams}`, {
+                method: 'GET'
+                , headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                    , 'Accept': 'application/json'
+                , }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                const urgentSection = document.getElementById('urgentSection');
+                const urgentContainer = document.getElementById('urgentCardsContainer');
+
+                if (data.count > 0) {
+                    if (urgentContainer) {
+                        urgentContainer.innerHTML = data.html;
+                    }
+                    if (urgentSection) {
+                        urgentSection.classList.remove('d-none');
+                    }
+                } else {
+                    if (urgentSection) {
+                        urgentSection.classList.add('d-none');
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error loading urgent programs:', error);
+        }
+    }
+
+    // ========================================
+    // ✅ INITIALIZE FILTERS FROM URL
+    // ========================================
+    function initializeFiltersFromURL() {
+        const urlParams = new URLSearchParams(window.location.search);
+
+        // Set search input
+        const search = urlParams.get('search');
+        if (search) {
+            document.getElementById('searchInput').value = search;
+        }
+
+        // Set is_example filter
+        const isExample = urlParams.get('is_example');
+        if (isExample) {
+            document.getElementById('isExampleFilter').value = isExample;
+        }
+
+        // Set multiselect values (will be applied after Select2 initialization)
+        currentFilters = {
+            year: urlParams.getAll('year[]')
+            , month: urlParams.getAll('month[]')
+            , university_id: urlParams.getAll('university_id[]')
+            , degree_level_id: urlParams.getAll('degree_level_id[]')
+            , status_kedaluwarsa: urlParams.getAll('status_kedaluwarsa[]')
+            , peringkat: urlParams.getAll('peringkat[]')
+        , };
+    }
 
     function initFilterSelect2() {
         if (filterSelect2Initialized) return;
 
-        // Year Filter
-        $('#yearFilter').select2({
+        const select2Config = {
             theme: 'bootstrap-5'
-            , placeholder: 'Pilih Tahun...'
             , allowClear: true
             , width: '100%'
             , closeOnSelect: false
             , language: {
-                noResults: function() {
-                    return "Tidak ada hasil";
-                }
-                , searching: function() {
-                    return "Mencari...";
-                }
+                noResults: () => "Tidak ada hasil"
+                , searching: () => "Mencari..."
             }
+        };
+
+        // Initialize all filters
+        const filters = [
+            'yearFilter'
+            , 'monthFilter'
+            , 'universityFilter'
+            , 'degreeLevelFilter'
+            , 'statusFilter'
+            , 'peringkatFilter'
+        ];
+
+        filters.forEach(filterId => {
+            $(`#${filterId}`).select2(select2Config);
         });
 
-        // Month Filter
-        $('#monthFilter').select2({
-            theme: 'bootstrap-5'
-            , placeholder: 'Pilih Bulan...'
-            , allowClear: true
-            , width: '100%'
-            , closeOnSelect: false
-            , language: {
-                noResults: function() {
-                    return "Tidak ada hasil";
-                }
-                , searching: function() {
-                    return "Mencari...";
-                }
-            }
-        });
-
-        // University Filter
-        $('#universityFilter').select2({
-            theme: 'bootstrap-5'
-            , placeholder: 'Pilih Universitas...'
-            , allowClear: true
-            , width: '100%'
-            , closeOnSelect: false
-            , language: {
-                noResults: function() {
-                    return "Tidak ada hasil";
-                }
-                , searching: function() {
-                    return "Mencari...";
-                }
-            }
-        });
-
-        // Degree Level Filter
-        $('#degreeLevelFilter').select2({
-            theme: 'bootstrap-5'
-            , placeholder: 'Pilih Jenjang...'
-            , allowClear: true
-            , width: '100%'
-            , closeOnSelect: false
-            , language: {
-                noResults: function() {
-                    return "Tidak ada hasil";
-                }
-                , searching: function() {
-                    return "Mencari...";
-                }
-            }
-        });
-
-        // Status Filter
-        $('#statusFilter').select2({
-            theme: 'bootstrap-5'
-            , placeholder: 'Pilih Status...'
-            , allowClear: true
-            , width: '100%'
-            , closeOnSelect: false
-            , language: {
-                noResults: function() {
-                    return "Tidak ada hasil";
-                }
-                , searching: function() {
-                    return "Mencari...";
-                }
-            }
-        });
-
-        // Peringkat Filter
-        $('#peringkatFilter').select2({
-            theme: 'bootstrap-5'
-            , placeholder: 'Pilih Peringkat...'
-            , allowClear: true
-            , width: '100%'
-            , closeOnSelect: false
-            , language: {
-                noResults: function() {
-                    return "Tidak ada hasil";
-                }
-                , searching: function() {
-                    return "Mencari...";
-                }
-            }
-        });
+        // Set values from URL
+        if (currentFilters.year.length) $('#yearFilter').val(currentFilters.year).trigger('change');
+        if (currentFilters.month.length) $('#monthFilter').val(currentFilters.month).trigger('change');
+        if (currentFilters.university_id.length) $('#universityFilter').val(currentFilters.university_id).trigger('change');
+        if (currentFilters.degree_level_id.length) $('#degreeLevelFilter').val(currentFilters.degree_level_id).trigger('change');
+        if (currentFilters.status_kedaluwarsa.length) $('#statusFilter').val(currentFilters.status_kedaluwarsa).trigger('change');
+        if (currentFilters.peringkat.length) $('#peringkatFilter').val(currentFilters.peringkat).trigger('change');
 
         filterSelect2Initialized = true;
+    }
 
-        // Update filter count on change
-        updateActiveFilterCount();
+    // ========================================
+    // ✅ SETUP EVENT LISTENERS
+    // ========================================
+    function setupFilterListeners() {
+        // Search with debounce
+        let searchTimeout;
+        const searchInput = document.getElementById('searchInput');
 
-        $('#yearFilter, #monthFilter, #universityFilter, #degreeLevelFilter, #statusFilter, #peringkatFilter').on('change', function() {
-            updateActiveFilterCount();
+        // Remove existing listener if any
+        searchInput.removeEventListener('input', handleSearchInput);
+        searchInput.addEventListener('input', handleSearchInput);
+
+        function handleSearchInput() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                updateActiveFilterDisplay();
+                applyFilters(); // Auto-apply on search
+            }, 500);
+        }
+
+        // is_example filter
+        document.getElementById('isExampleFilter').addEventListener('change', function() {
+            updateActiveFilterDisplay();
+            applyFilters();
         });
+
+        // Select2 filters - auto-apply
+        $('#yearFilter, #monthFilter, #universityFilter, #degreeLevelFilter, #statusFilter, #peringkatFilter')
+            .off('change') // Remove existing handlers
+            .on('change', function() {
+                updateActiveFilterDisplay();
+                applyFilters(); // Auto-apply
+            });
+    }
+
+    // ========================================
+    // ✅ UPDATE ACTIVE FILTER DISPLAY
+    // ========================================
+    function updateActiveFilterDisplay() {
+        const params = getFilterParams();
+        let count = 0;
+        let filtersList = [];
+
+        // Count active filters
+        if (params.search.trim() !== '') {
+            count++;
+            filtersList.push(`<span class="badge bg-info me-1 mb-1">
+            <i class="bi bi-search"></i> "${params.search}"
+            <i class="bi bi-x-circle ms-1 cursor-pointer" onclick="clearSingleFilter('search')"></i>
+        </span>`);
+        }
+
+        if (params.is_example !== 'both') {
+            count++;
+            const label = params.is_example === 'false' ? 'Data Real' : 'Data Contoh';
+            filtersList.push(`<span class="badge bg-warning text-dark me-1 mb-1">
+            <i class="bi bi-flag"></i> ${label}
+            <i class="bi bi-x-circle ms-1 cursor-pointer" onclick="clearSingleFilter('is_example')"></i>
+        </span>`);
+        }
+
+        if (params.year.length > 0) {
+            count++;
+            filtersList.push(`<span class="badge bg-primary me-1 mb-1">
+            <i class="bi bi-calendar"></i> ${params.year.length} Tahun
+            <i class="bi bi-x-circle ms-1 cursor-pointer" onclick="clearSingleFilter('year')"></i>
+        </span>`);
+        }
+
+        if (params.month.length > 0) {
+            count++;
+            filtersList.push(`<span class="badge bg-primary me-1 mb-1">
+            <i class="bi bi-calendar-month"></i> ${params.month.length} Bulan
+            <i class="bi bi-x-circle ms-1 cursor-pointer" onclick="clearSingleFilter('month')"></i>
+        </span>`);
+        }
+
+        if (params.university_id.length > 0) {
+            count++;
+            filtersList.push(`<span class="badge bg-success me-1 mb-1">
+            <i class="bi bi-building"></i> ${params.university_id.length} Universitas
+            <i class="bi bi-x-circle ms-1 cursor-pointer" onclick="clearSingleFilter('university_id')"></i>
+        </span>`);
+        }
+
+        if (params.degree_level_id.length > 0) {
+            count++;
+            filtersList.push(`<span class="badge bg-info me-1 mb-1">
+            <i class="bi bi-mortarboard"></i> ${params.degree_level_id.length} Jenjang
+            <i class="bi bi-x-circle ms-1 cursor-pointer" onclick="clearSingleFilter('degree_level_id')"></i>
+        </span>`);
+        }
+
+        if (params.status_kedaluwarsa.length > 0) {
+            count++;
+            filtersList.push(`<span class="badge bg-secondary me-1 mb-1">
+            <i class="bi bi-check-circle"></i> ${params.status_kedaluwarsa.length} Status
+            <i class="bi bi-x-circle ms-1 cursor-pointer" onclick="clearSingleFilter('status_kedaluwarsa')"></i>
+        </span>`);
+        }
+
+        if (params.peringkat.length > 0) {
+            count++;
+            filtersList.push(`<span class="badge bg-danger me-1 mb-1">
+            <i class="bi bi-star"></i> ${params.peringkat.length} Peringkat
+            <i class="bi bi-x-circle ms-1 cursor-pointer" onclick="clearSingleFilter('peringkat')"></i>
+        </span>`);
+        }
+
+        // Update badge
+        const badge = $('#activeFiltersBadge');
+        const countSpan = $('#activeFiltersCount');
+
+        if (count > 0) {
+            countSpan.text(count);
+            badge.removeClass('d-none');
+        } else {
+            badge.addClass('d-none');
+        }
+
+        // Update summary
+        const summary = $('#activeFiltersSummary');
+        const list = $('#filtersList');
+
+        if (count > 0) {
+            list.html(filtersList.join(''));
+            summary.removeClass('d-none');
+        } else {
+            summary.addClass('d-none');
+        }
+
+        // Update clear button visibility
+        updateClearButtonVisibility();
+    }
+
+    // ========================================
+    // ✅ UPDATE CLEAR BUTTON VISIBILITY
+    // ========================================
+    function updateClearButtonVisibility() {
+        const params = getFilterParams();
+
+        // Toggle clear buttons
+        $('[onclick*="clearSingleFilter(\'search\')"]').toggle(params.search.trim() !== '');
+        $('[onclick*="clearSingleFilter(\'is_example\')"]').toggle(params.is_example !== 'both');
+        $('[onclick*="clearSingleFilter(\'year\')"]').toggle(params.year.length > 0);
+        $('[onclick*="clearSingleFilter(\'month\')"]').toggle(params.month.length > 0);
+        $('[onclick*="clearSingleFilter(\'university_id\')"]').toggle(params.university_id.length > 0);
+        $('[onclick*="clearSingleFilter(\'degree_level_id\')"]').toggle(params.degree_level_id.length > 0);
+        $('[onclick*="clearSingleFilter(\'status_kedaluwarsa\')"]').toggle(params.status_kedaluwarsa.length > 0);
+        $('[onclick*="clearSingleFilter(\'peringkat\')"]').toggle(params.peringkat.length > 0);
+    }
+
+    // ========================================
+    // ✅ CLEAR SINGLE FILTER
+    // ========================================
+    function clearSingleFilter(filterName) {
+        if (filterName === 'search') {
+            document.getElementById('searchInput').value = '';
+        } else if (filterName === 'is_example') {
+            document.getElementById('isExampleFilter').value = 'both';
+        } else {
+            const filterMap = {
+                'year': 'yearFilter'
+                , 'month': 'monthFilter'
+                , 'university_id': 'universityFilter'
+                , 'degree_level_id': 'degreeLevelFilter'
+                , 'status_kedaluwarsa': 'statusFilter'
+                , 'peringkat': 'peringkatFilter'
+            };
+
+            if (filterMap[filterName]) {
+                $(`#${filterMap[filterName]}`).val(null).trigger('change');
+            }
+        }
+
+        updateActiveFilterDisplay();
+        applyFilters();
+    }
+
+    // ========================================
+    // ✅ BUILD URL WITH PARAMS
+    // ========================================
+    function buildURLWithParams(params, additionalParams = {}) {
+        const url = new URL(window.location.href);
+
+        // Clear existing params
+        url.search = '';
+
+        // Add all params
+        const allParams = {
+            ...params
+            , ...additionalParams
+        };
+
+        Object.keys(allParams).forEach(key => {
+            const value = allParams[key];
+
+            if (Array.isArray(value) && value.length > 0) {
+                value.forEach(v => url.searchParams.append(`${key}[]`, v));
+            } else if (value && value !== 'both' && (!Array.isArray(value) || value.length > 0)) {
+                url.searchParams.set(key, value);
+            }
+        });
+
+        return url;
     }
 
     // ========================================
@@ -920,6 +1525,7 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
     function getFilterParams() {
         return {
             search: $('#searchInput').val() || ''
+            , is_example: $('#isExampleFilter').val() || 'both'
             , year: $('#yearFilter').val() || []
             , month: $('#monthFilter').val() || []
             , university_id: $('#universityFilter').val() || []
@@ -1037,7 +1643,7 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
                     filters[key].forEach(value => {
                         queryParams.append(`${key}[]`, value);
                     });
-                } else if (!Array.isArray(filters[key]) && filters[key]) {
+                } else if (!Array.isArray(filters[key]) && filters[key] && filters[key] !== 'both') {
                     queryParams.append(key, filters[key]);
                 }
             });
@@ -1056,16 +1662,21 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
                 timelineContainer.innerHTML = data.html;
                 periodeLabelText.textContent = data.periode_label;
 
-                const newUrl = new URL(window.location);
-                newUrl.searchParams.set('periode', periode);
+                // Update URL
+                const url = buildURLWithParams(filters, {
+                    periode: periode
+                    , view: 'timeline'
+                });
                 window.history.pushState({
                     view: 'timeline'
                     , periode: periode
-                }, '', newUrl);
+                }, '', url);
+
+                showToast('success', 'Timeline berhasil dimuat');
             }
         } catch (error) {
             console.error('Error:', error);
-            showToast('error', 'Gagal memuat timeline.');
+            showToast('error', 'Gagal memuat timeline');
         } finally {
             loadingOverlay.classList.add('d-none');
         }
@@ -1090,7 +1701,7 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
                     filters[key].forEach(value => {
                         queryParams.append(`${key}[]`, value);
                     });
-                } else if (!Array.isArray(filters[key]) && filters[key]) {
+                } else if (!Array.isArray(filters[key]) && filters[key] && filters[key] !== 'both') {
                     queryParams.append(key, filters[key]);
                 }
             });
@@ -1108,15 +1719,19 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
             if (data.success) {
                 calendarContainer.innerHTML = data.html;
 
-                const newUrl = new URL(window.location);
-                newUrl.searchParams.set('view', 'calendar');
+                // Update URL
+                const url = buildURLWithParams(filters, {
+                    view: 'calendar'
+                });
                 window.history.pushState({
                     view: 'calendar'
-                }, '', newUrl);
+                }, '', url);
+
+                showToast('success', 'Kalender berhasil dimuat');
             }
         } catch (error) {
             console.error('Error:', error);
-            showToast('error', 'Gagal memuat kalender.');
+            showToast('error', 'Gagal memuat kalender');
         } finally {
             loadingOverlay.classList.add('d-none');
         }
@@ -1132,15 +1747,15 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
         try {
             loadingOverlay.classList.remove('d-none');
 
-            // Build query string with arrays properly
+            // Build query string
             const queryString = new URLSearchParams();
 
             Object.keys(params).forEach(key => {
-                if (Array.isArray(params[key])) {
+                if (Array.isArray(params[key]) && params[key].length > 0) {
                     params[key].forEach(value => {
                         queryString.append(`${key}[]`, value);
                     });
-                } else if (params[key]) {
+                } else if (params[key] && params[key] !== 'both') {
                     queryString.append(key, params[key]);
                 }
             });
@@ -1165,23 +1780,19 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
                 }
 
                 // Update URL
-                const newUrl = new URL(window.location);
-                newUrl.searchParams.set('view', 'table');
-                Object.keys(params).forEach(key => {
-                    if (params[key] && params[key].length > 0) {
-                        newUrl.searchParams.set(key, JSON.stringify(params[key]));
-                    } else {
-                        newUrl.searchParams.delete(key);
-                    }
+                const url = buildURLWithParams(params, {
+                    view: 'table'
                 });
                 window.history.pushState({
                     view: 'table'
                     , params: params
-                }, '', newUrl);
+                }, '', url);
+
+                showToast('success', `Data berhasil dimuat (${data.total} prodi)`);
             }
         } catch (error) {
             console.error('Error:', error);
-            showToast('error', 'Gagal memuat tabel.');
+            showToast('error', 'Gagal memuat tabel');
         } finally {
             loadingOverlay.classList.add('d-none');
         }
@@ -1190,19 +1801,35 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
     // ========================================
     // ✅ APPLY FILTERS
     // ========================================
-    function applyFilters() {
+    async function applyFilters() {
         const params = getFilterParams();
 
-        // Check which tab is active
+        // Determine active view
         const activeTab = document.querySelector('button[data-bs-toggle="tab"].active');
         const targetId = activeTab ? activeTab.getAttribute('data-bs-target') : null;
 
         if (targetId === '#timeline-view') {
-            loadTimelineWithFilters();
+            await loadTimelineWithFilters();
         } else if (targetId === '#calendar-view') {
-            refreshCalendar();
-        } else {
-            loadTable(params);
+            await refreshCalendar();
+        } else if (targetId === '#table-view') {
+            // ✅ Reload DataTable with new filters
+            if (dataTable) {
+                dataTable.ajax.reload();
+            } else {
+                initDataTable();
+            }
+
+            // Also reload urgent programs
+            await loadUrgentPrograms();
+
+            // Update URL
+            const url = buildURLWithParams(params, {
+                view: 'table'
+            });
+            window.history.pushState({
+                view: 'table'
+            }, '', url);
         }
     }
 
@@ -1210,51 +1837,19 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
     // ✅ RESET FILTERS
     // ========================================
     function resetFilters() {
+        // Clear all inputs
         document.getElementById('searchInput').value = '';
-        $('#yearFilter').val(null).trigger('change');
-        $('#monthFilter').val(null).trigger('change');
-        $('#universityFilter').val(null).trigger('change');
-        $('#degreeLevelFilter').val(null).trigger('change');
-        $('#statusFilter').val(null).trigger('change');
-        $('#peringkatFilter').val(null).trigger('change');
+        document.getElementById('isExampleFilter').value = 'both';
 
-        updateActiveFilterCount();
+        // Clear Select2
+        $('#yearFilter, #monthFilter, #universityFilter, #degreeLevelFilter, #statusFilter, #peringkatFilter')
+            .val(null).trigger('change');
 
-        // Check which tab is active
-        const activeTab = document.querySelector('button[data-bs-toggle="tab"].active');
-        const targetId = activeTab ? activeTab.getAttribute('data-bs-target') : null;
+        updateActiveFilterDisplay();
 
-        if (targetId === '#timeline-view') {
-            loadTimelineWithFilters();
-        } else if (targetId === '#calendar-view') {
-            refreshCalendar();
-        } else {
-            loadTable({});
-        }
+        // Apply reset
+        applyFilters();
     }
-
-    // ========================================
-    // ✅ AUTO-APPLY FILTERS ON CHANGE
-    // ========================================
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize Select2
-        initFilterSelect2();
-
-        // Search input with debounce
-        let searchTimeout;
-        document.getElementById('searchInput').addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                updateActiveFilterCount();
-                applyFilters();
-            }, 500);
-        });
-
-        // Select2 filters
-        $('#yearFilter, #monthFilter, #universityFilter, #degreeLevelFilter, #statusFilter, #peringkatFilter').on('change', function() {
-            applyFilters();
-        });
-    });
 
     // ========================================
     // ✅ TAB SWITCHING WITH FILTERS
@@ -1263,23 +1858,19 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
         tab.addEventListener('shown.bs.tab', function(event) {
             const targetId = event.target.getAttribute('data-bs-target');
 
-            const newUrl = new URL(window.location);
-
             if (targetId === '#timeline-view') {
-                newUrl.searchParams.set('view', 'timeline');
                 loadTimelineWithFilters();
             } else if (targetId === '#calendar-view') {
-                newUrl.searchParams.set('view', 'calendar');
                 refreshCalendar();
             } else if (targetId === '#table-view') {
-                newUrl.searchParams.set('view', 'table');
-                const params = getFilterParams();
-                loadTable(params);
+                // ✅ Initialize or reload DataTable
+                if (!dataTable) {
+                    initDataTable();
+                } else {
+                    dataTable.ajax.reload();
+                }
+                loadUrgentPrograms();
             }
-
-            window.history.pushState({
-                view: targetId
-            }, '', newUrl);
         });
     });
 
@@ -1288,16 +1879,24 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
     // ========================================
     window.addEventListener('popstate', function(event) {
         if (event.state) {
-            if (event.state.view === 'timeline' && event.state.periode) {
+            // Reinitialize filters from URL
+            initializeFiltersFromURL();
+            initFilterSelect2();
+            updateActiveFilterDisplay();
+
+            // Activate correct tab
+            if (event.state.view === 'timeline') {
                 document.getElementById('timeline-tab').click();
-                document.getElementById('periodeSelector').value = event.state.periode;
-                loadTimelineWithFilters();
             } else if (event.state.view === 'calendar') {
                 document.getElementById('calendar-tab').click();
             } else if (event.state.view === 'table') {
                 document.getElementById('table-tab').click();
-                if (event.state.params) {
-                    loadTable(event.state.params);
+
+                // Reload DataTable
+                if (dataTable) {
+                    dataTable.ajax.reload();
+                } else {
+                    initDataTable();
                 }
             }
         }
@@ -1305,32 +1904,21 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
 
     // Export Excel
     function exportExcel() {
-        alert('Export feature coming soon!');
+        const filters = getFilterParams();
+        const queryParams = new URLSearchParams();
+
+        Object.keys(filters).forEach(key => {
+            if (Array.isArray(filters[key]) && filters[key].length > 0) {
+                filters[key].forEach(value => {
+                    queryParams.append(`${key}[]`, value);
+                });
+            } else if (!Array.isArray(filters[key]) && filters[key] && filters[key] !== 'both') {
+                queryParams.append(key, filters[key]);
+            }
+        });
+
+        window.location.href = `{{ route('de.pemetaan.export') }}?${queryParams}`;
     }
-
-    // ========================================
-    // ✅ INITIALIZE ON PAGE LOAD
-    // ========================================
-    document.addEventListener('DOMContentLoaded', function() {
-        // Check URL params and activate correct tab
-        const urlParams = new URLSearchParams(window.location.search);
-        const view = urlParams.get('view');
-
-        if (view === 'calendar') {
-            document.getElementById('calendar-tab').click();
-        } else if (view === 'table') {
-            document.getElementById('table-tab').click();
-        }
-
-        // Set initial history state
-        const currentTab = document.querySelector('button[data-bs-toggle="tab"].active');
-        if (currentTab) {
-            const targetId = currentTab.getAttribute('data-bs-target');
-            window.history.replaceState({
-                view: targetId
-            }, '', window.location.href);
-        }
-    });
 
     // ========================================
     // ✅ REMINDER MODAL
@@ -1398,12 +1986,6 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
             }
         });
     });
-
-    // Toast notification helper
-    function showToast(type, message) {
-        // Implement your toast notification here
-        console.log(`${type}: ${message}`);
-    }
 
 </script>
 @endpush
