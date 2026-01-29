@@ -149,14 +149,10 @@
         </div>
     </div>
 
-    <!-- Total Nominal -->
+    <!-- Payment Summary Card with Password Protection - BARU -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="alert alert-success alert-permanent" style="border-left: 4px solid #28a745;">
-                <i class="bi bi-cash-stack me-2"></i>
-                <strong>Total Pembayaran Tervalidasi:</strong>
-                <span class="fs-4 ms-2">Rp {{ number_format($stats['total_nominal'], 0, ',', '.') }}</span>
-            </div>
+            @include('de.validasi-pembayaran.components.payment-summary-card')
         </div>
     </div>
 

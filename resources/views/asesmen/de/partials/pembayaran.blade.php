@@ -4,7 +4,7 @@
     <div class="card-header bg-success text-white">
         <h5 class="mb-0">
             <i class="bi bi-credit-card"></i>
-            Aksi Diperlukan: Verifikasi Pembayaran
+            Aksi Diperlukan: Validasi Pembayaran
         </h5>
     </div>
     <div class="card-body">
@@ -17,13 +17,13 @@
         <form action="{{ route('de.pengajuan.verifikasi-pembayaran', $pengajuan->id) }}" method="POST">
             @csrf
             <div class="mb-3">
-                <label class="form-label fw-bold">Catatan Verifikasi</label>
+                <label class="form-label fw-bold">Catatan Validasi</label>
                 <textarea name="catatan_verifikasi" class="form-control" rows="3" required></textarea>
             </div>
 
             <div class="d-flex gap-2">
                 <button type="submit" name="status" value="verified" class="btn btn-success">
-                    <i class="bi bi-check-circle"></i> Verifikasi & Setujui
+                    <i class="bi bi-check-circle"></i> Setujui
                 </button>
                 <button type="submit" name="status" value="ditolak" class="btn btn-danger">
                     <i class="bi bi-x-circle"></i> Tolak Pembayaran

@@ -40,7 +40,7 @@
                         <label class="form-label fw-bold">Pesan Reminder</label>
                         <textarea name="pesan_reminder" class="form-control" rows="6" required>Yth. Unit Pengelola Program Studi,
 
-Pembayaran Anda telah terverifikasi. Kami mengingatkan untuk segera mengunggah dokumen Dokumen melalui sistem DAISY.
+Pembayaran Anda telah tervalidasi. Kami mengingatkan untuk segera mengunggah dokumen Dokumen melalui sistem DAISY.
 
 Dokumen yang perlu diunggah:
 1. Laporan Evaluasi Diri (LED) + Suplemen

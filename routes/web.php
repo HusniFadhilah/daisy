@@ -1,12 +1,13 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\DE\{ValidasiAKController, MasaSanggahController, PelaporanAKController, PelaporanALController, PenugasanAKController, PenugasanALController, PelaksanaanALController, SuratPermohonanController, ValidasiDokumenController, PelaporanBandingController, PelaporanDokumenController, PenerimaanDokumenController, PelaksanaanBandingController, ValidasiPembayaranController, FormulirPembayaranController, PenyampaianTemplateController, PelaporanHasilAkreditasiController, PenetapanHasilAkreditasiController, PenyampaianHasilAkreditasiController, PenyimpananArsipAkreditasiController};
+use App\Http\Controllers\DE\PaymentSummaryController;
 use App\Http\Controllers\Profile\{PasswordResetController, ProfileController, ProdiDataController};
 use App\Http\Controllers\Prodi\{DeskEvaluatorController, PengajuanAkreditasiController, PemetaanAkreditasiController, PengajuanBorangController, BorangUploadController};
 use App\Http\Controllers\Master\{ElemenStandarController, JenisIndikatorController, IndikatorController, IndikatorPenilaianElemenController, KriteriaController, UniversityController, StudyProgramController};
 use App\Http\Controllers\Asesmen\{AsesmenController, AKController, ALController, ALDocumentController, BorangValidatorController, HasilAkreditasiController, PenawaranController, PelaporanController, ValidasiController};
 use App\Http\Controllers\{AuthController, BobotPenilaianController, DashboardController, PenugasanController, BandingController, PedomanController, DokumenController, PanduanController, BantuanController, SettingsController, ActivityController, TaskController, LaporanController, TinyMceImageController, UserController};
+use App\Http\Controllers\DE\{ValidasiAKController, MasaSanggahController, PelaporanAKController, PelaporanALController, PenugasanAKController, PenugasanALController, PelaksanaanALController, SuratPermohonanController, ValidasiDokumenController, PelaporanBandingController, PelaporanDokumenController, PenerimaanDokumenController, PelaksanaanBandingController, ValidasiPembayaranController, FormulirPembayaranController, PenyampaianTemplateController, PelaporanHasilAkreditasiController, PenetapanHasilAkreditasiController, PenyampaianHasilAkreditasiController, PenyimpananArsipAkreditasiController};
 
 
 // Dashboard (awal)
@@ -419,6 +420,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/{id}/simpan', [PenyimpananArsipAkreditasiController::class, 'simpanArsip'])->name('.simpan');
             Route::post('/{id}/selesaikan', [PenyimpananArsipAkreditasiController::class, 'selesaikanProses'])->name('.selesaikan');
             Route::get('/{id}/download-all', [PenyimpananArsipAkreditasiController::class, 'downloadAllDocuments'])->name('.download-all');
+        });
+        Route::prefix('payment-summary')->name('.payment-summary')->group(function () {
+            Route::post('/verify', [PaymentSummaryController::class, 'verifyPassword'])->name('.verify');
+            Route::get('/data', [PaymentSummaryController::class, 'getSummary'])->name('.data');
+            Route::post('/logout', [PaymentSummaryController::class, 'logout'])->name('.logout');
         });
     });
 

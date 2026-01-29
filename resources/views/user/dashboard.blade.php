@@ -15,7 +15,7 @@
             @elseif(auth()->user()->role_selected === 'validator')
             Anda memiliki {{ $penugasanAktif ?? 0 }} dokumen untuk divalidasi. Mari pastikan kualitas hasil asesmen 😊
             @elseif(auth()->user()->role_selected === 'verifikator')
-            Anda memiliki {{ $penugasanAktif ?? 0 }} dokumen untuk verifikasi final. Mari pastikan keputusan yang tepat 😊
+            Anda memiliki {{ $penugasanAktif ?? 0 }} dokumen untuk validasi final. Mari pastikan keputusan yang tepat 😊
             @else
             Selamat bekerja dan semoga hari Anda menyenangkan 😊
             @endif

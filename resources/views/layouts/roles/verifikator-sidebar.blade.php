@@ -4,7 +4,7 @@
     <span class="menu-icon">✅</span>
     <span>Verifikasi AK</span>
     @if(isset($penugasanAktif) && $penugasanAktif > 0)
-        <span class="badge bg-danger menu-badge">{{ $penugasanAktif }}</span>
+    <span class="badge bg-danger menu-badge">{{ $penugasanAktif }}</span>
     @endif
 </a>
 @endif
@@ -29,7 +29,7 @@
 @if(Route::has('histori.verifikasi'))
 <a href="{{ route('histori.verifikasi') }}" class="nav-link {{ request()->routeIs('histori*') ? 'active' : '' }}">
     <span class="menu-icon">📜</span>
-    <span>Histori Verifikasi</span>
+    <span>Histori Validasi</span>
 </a>
 @endif
 

@@ -1400,7 +1400,7 @@ $assignmentId = $assignment->id;
         function randomNoteByGrade(grade) {
             const notesA = [
                 "Sudah tepat. Narasi jelas dan eviden mendukung."
-                , "Sudah sesuai. Data konsisten dan dapat diverifikasi."
+                , "Sudah sesuai. Data konsisten dan dapat divalidasi."
                 , "Sudah baik. Struktur rapi dan informasi memadai."
                 , "Tepat. Kesesuaian indikator dan bukti pendukung sudah ok."
                 , "Baik. Tidak ada catatan signifikan."
