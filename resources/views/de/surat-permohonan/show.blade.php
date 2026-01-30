@@ -1,6 +1,6 @@
 @extends('layouts.template.app')
 
-@section('title', 'Detail Surat Permohonan')
+@section('title', 'Detail Surat Permohonan Akreditasi')
 
 @section('content')
 <div class="container-fluid py-3">
@@ -17,7 +17,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h5 class="mb-1">
-                <i class="bi bi-file-earmark-text"></i> Detail Surat Permohonan
+                <i class="bi bi-envelope-paper"></i> Detail Surat Permohonan Akreditasi
             </h5>
             <small class="text-muted mb-0">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
@@ -71,7 +71,7 @@
             <div class="card mt-4">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-file-pdf"></i> Dokumen Surat Permohonan
+                        <i class="bi bi-file-pdf"></i> Dokumen Surat Permohonan Akreditasi PS
                     </h5>
                 </div>
                 <div class="card-body">

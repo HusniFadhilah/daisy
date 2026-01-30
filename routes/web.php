@@ -7,7 +7,7 @@ use App\Http\Controllers\Prodi\{DeskEvaluatorController, PengajuanAkreditasiCont
 use App\Http\Controllers\Master\{ElemenStandarController, JenisIndikatorController, IndikatorController, IndikatorPenilaianElemenController, KriteriaController, UniversityController, StudyProgramController};
 use App\Http\Controllers\Asesmen\{AsesmenController, AKController, ALController, ALDocumentController, BorangValidatorController, HasilAkreditasiController, PenawaranController, PelaporanController, ValidasiController};
 use App\Http\Controllers\{AuthController, BobotPenilaianController, DashboardController, PenugasanController, BandingController, PedomanController, DokumenController, PanduanController, BantuanController, SettingsController, ActivityController, TaskController, LaporanController, TinyMceImageController, UserController};
-use App\Http\Controllers\DE\{ValidasiAKController, MasaSanggahController, PelaporanAKController, PelaporanALController, PenugasanAKController, PenugasanALController, PelaksanaanALController, SuratPermohonanController, ValidasiDokumenController, PelaporanBandingController, PelaporanDokumenController, PenerimaanDokumenController, PelaksanaanBandingController, ValidasiPembayaranController, FormulirPembayaranController, PenyampaianTemplateController, PelaporanHasilAkreditasiController, PenetapanHasilAkreditasiController, PenyampaianHasilAkreditasiController, PenyimpananArsipAkreditasiController};
+use App\Http\Controllers\DE\{ValidasiAKController, MasaSanggahController, PelaporanAKController, PelaporanALController, PenugasanAKController, PenugasanALController, PelaksanaanALController, SuratPermohonanController, ValidasiDokumenController, PelaporanBandingController, PelaporanDokumenController, PenerimaanDokumenController, PelaksanaanBandingController, ValidasiPembayaranController, FormulirPembayaranController, PenyampaianTemplateController, PelaporanHasilAkreditasiController, PenerimaanPermohonanController, PenetapanHasilAkreditasiController, PenyampaianHasilAkreditasiController, PenyimpananArsipAkreditasiController};
 
 
 // Dashboard (awal)
@@ -302,6 +302,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/{id}/terima', [SuratPermohonanController::class, 'terima'])->name('.terima');
             Route::post('/{id}/tolak', [SuratPermohonanController::class, 'tolak'])->name('.tolak');
             Route::get('/{id}/download', [SuratPermohonanController::class, 'download'])->name('.download');
+        });
+        Route::prefix('penerimaan-permohonan')->name('.penerimaan-permohonan')->group(function () {
+            Route::get('/', [PenerimaanPermohonanController::class, 'index']);
+            Route::get('/{id}', [PenerimaanPermohonanController::class, 'show'])->name('.show');
+            Route::post('/{id}/kirim', [PenerimaanPermohonanController::class, 'kirimSuratPenerimaan'])->name('.kirim');
+            Route::get('/{id}/download', [PenerimaanPermohonanController::class, 'download'])->name('.download');
+            Route::delete('/{id}', [PenerimaanPermohonanController::class, 'destroy'])->name('.destroy');
         });
         Route::prefix('penyampaian-template')->name('.penyampaian-template')->group(function () {
             Route::get('/', [PenyampaianTemplateController::class, 'index']);

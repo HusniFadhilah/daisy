@@ -6,7 +6,7 @@
                 @csrf
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title">
-                        <i class="bi bi-bell"></i> Kirim Reminder Upload Dokumen
+                        <i class="bi bi-bell"></i> Kirim Pengingat Upload Dokumen
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
@@ -57,7 +57,7 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
                     <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-send"></i> Kirim Reminder
+                        <i class="bi bi-send"></i> Kirim Pengingat
                     </button>
                 </div>
                 @endif

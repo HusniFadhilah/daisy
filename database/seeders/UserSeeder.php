@@ -239,7 +239,7 @@ class UserSeeder extends Seeder
                 'must_change_password' => true
             ],
             [
-                'name' => 'Keuangan LAMDEPILAR 1',
+                'name' => 'Keuangan LAMDEPILAR',
                 'email' => 'keuangan@daisy.lamdepilar.or.id',
                 'password' => Hash::make('=Secret1234'),
                 'role' => 'user',

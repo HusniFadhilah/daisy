@@ -4,7 +4,7 @@
     <div class="card-header bg-light">
         <div class="d-flex justify-content-between align-items-center">
             <h5 class="mb-0">
-                <i class="bi bi-table"></i> Daftar Pembayaran
+                <i class="bi bi-table"></i> Daftar Validasi Pembayaran
             </h5>
             <span class="badge bg-primary">Total: {{ $pembayarans->total() }}</span>
         </div>
@@ -19,7 +19,7 @@
                         <th width="20%">Program Studi</th>
                         <th width="12%">Jumlah</th>
                         <th width="12%">Jatuh Tempo</th>
-                        <th width="12%">Tanggal Bayar</th>
+                        <th width="12%">Tanggal Pembayaran</th>
                         <th width="12%">Status Pembayaran</th>
                         <th width="12%" class="text-center">Aksi</th>
                     </tr>
@@ -51,6 +51,7 @@
                                 <span class="badge bg-info">
                                     {{ $pembayaran->pengajuan->studyProgram->degreeLevel->name }}
                                 </span>
+                                <small>Jumlah PS: {{ $pembayaran->pengajuan->studyProgram ? 1 : 0 }}</small>
                             </div>
                         </td>
                         <td>

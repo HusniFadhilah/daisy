@@ -1,4 +1,5 @@
 <?php
+// app/Http/Controllers/DE/PenerimaanDokumenController.php
 
 namespace App\Http\Controllers\DE;
 
@@ -33,17 +34,28 @@ class PenerimaanDokumenController extends Controller
      */
     public function index(Request $request)
     {
-        // Build query untuk pengajuan yang sudah bayar dan menunggu upload dokumen
-        $query = PengajuanAkreditasi::with([
-            'studyProgram.university',
-            'studyProgram.degreeLevel',
-            'pengaju',
-            'dokumen' => function ($q) {
-                $q->where('is_latest', true);
-            },
-            'asesmen.userRoles.user',
-            'asesmen.userRoles.role',
-        ])
+        // Subquery untuk mendapatkan status terakhir dari log
+        $latestStatusSubquery = PengajuanStatusLog::select('status_to')
+            ->whereColumn('id_pengajuan', 'pengajuan_akreditasi.id')
+            ->orderByDesc('changed_at')
+            ->limit(1);
+
+        // Build query dengan join ke status log
+        $query = PengajuanAkreditasi::select('pengajuan_akreditasi.*')
+            ->selectSub($latestStatusSubquery, 'latest_status_from_log')
+            ->with([
+                'studyProgram.university',
+                'studyProgram.degreeLevel',
+                'pengaju',
+                'dokumen' => function ($q) {
+                    $q->where('is_latest', true);
+                },
+                'asesmen.userRoles.user',
+                'asesmen.userRoles.role',
+                'latestStatusLog' => function ($q) {
+                    $q->orderByDesc('changed_at')->limit(1);
+                }
+            ])
             ->whereHas('statusLog', function ($q) {
                 $q->whereIn('status_to', [
                     PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI,
@@ -56,9 +68,16 @@ class PenerimaanDokumenController extends Controller
                 ]);
             });
 
-        // Filter by status
+        // Filter by status - gunakan status dari log
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $query->whereHas('statusLog', function ($q) use ($request) {
+                $q->where('status_to', $request->status)
+                    ->whereRaw('changed_at = (
+                        SELECT MAX(changed_at)
+                        FROM pengajuan_status_log psl2
+                        WHERE psl2.id_pengajuan = pengajuan_status_log.id_pengajuan
+                    )');
+            });
         }
 
         // Filter by university
@@ -75,17 +94,34 @@ class PenerimaanDokumenController extends Controller
             });
         }
 
-        // Filter by document status
+        // Filter by document status - gunakan pengecekan dokumen aktual
         if ($request->filled('doc_status')) {
             if ($request->doc_status === 'complete') {
+                // Dokumen lengkap: minimal LED + LKPS
                 $query->whereHas('dokumen', function ($q) {
                     $q->where('is_latest', true)
                         ->whereIn('jenis_dokumen', ['draft_borang', 'data_kualitatif']);
-                }, '>=', 2);
+                })
+                    ->whereHas('dokumen', function ($q) {
+                        $q->where('is_latest', true)
+                            ->where('jenis_dokumen', 'data_kuantitatif');
+                    });
             } elseif ($request->doc_status === 'incomplete') {
+                // Dokumen belum lengkap
+                $query->where(function ($q) {
+                    $q->whereDoesntHave('dokumen', function ($sq) {
+                        $sq->where('is_latest', true)
+                            ->whereIn('jenis_dokumen', ['draft_borang', 'data_kualitatif']);
+                    })
+                        ->orWhereDoesntHave('dokumen', function ($sq) {
+                            $sq->where('is_latest', true)
+                                ->where('jenis_dokumen', 'data_kuantitatif');
+                        });
+                });
+            } elseif ($request->doc_status === 'none') {
+                // Belum ada dokumen sama sekali
                 $query->whereDoesntHave('dokumen', function ($q) {
-                    $q->where('is_latest', true)
-                        ->whereIn('jenis_dokumen', ['draft_borang', 'data_kualitatif']);
+                    $q->where('is_latest', true);
                 });
             }
         }
@@ -95,19 +131,31 @@ class PenerimaanDokumenController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('nomor_pengajuan', 'like', "%{$search}%")
+                    ->orWhere('judul', 'like', "%{$search}%")
                     ->orWhereHas('studyProgram', function ($sq) use ($search) {
-                        $sq->where('name', 'like', "%{$search}%");
+                        $sq->where('name', 'like', "%{$search}%")
+                            ->orWhere('full_name', 'like', "%{$search}%");
                     });
             });
         }
 
-        // Sort
+        // Sort - prioritas ke tanggal terbaru dari log
         $sortBy = $request->get('sort_by', 'created_at');
         $sortOrder = $request->get('sort_order', 'desc');
         $query->orderBy($sortBy, $sortOrder);
 
         // Paginate
-        $pengajuans = $query->paginate(20);
+        $pengajuans = $query->paginate(20)->through(function ($pengajuan) {
+            // Set status aktual dari log untuk konsistensi
+            if ($pengajuan->latestStatusLog) {
+                $pengajuan->actual_status = $pengajuan->latestStatusLog->status_to;
+                $pengajuan->status_changed_at = $pengajuan->latestStatusLog->changed_at;
+            } else {
+                $pengajuan->actual_status = $pengajuan->status;
+                $pengajuan->status_changed_at = null;
+            }
+            return $pengajuan;
+        });
 
         // Calculate statistics
         $stats = $this->calculateStatistics();
@@ -116,10 +164,18 @@ class PenerimaanDokumenController extends Controller
         $universities = University::nonExample()->orderBy('name')->get();
         $degreeLevels = DegreeLevel::orderBy('code')->get();
 
-        $pengajuanMenunggu = \App\Models\PengajuanAkreditasi::with('studyProgram.university', 'studyProgram.degreeLevel')
-            ->where('status', \App\Models\PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI)
+        // Pengajuan menunggu upload
+        $pengajuanMenunggu = PengajuanAkreditasi::with('studyProgram.university', 'studyProgram.degreeLevel')
+            ->whereHas('statusLog', function ($q) {
+                $q->where('status_to', PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI)
+                    ->whereRaw('changed_at = (
+                        SELECT MAX(changed_at)
+                        FROM pengajuan_status_log psl2
+                        WHERE psl2.id_pengajuan = pengajuan_status_log.id_pengajuan
+                    )');
+            })
             ->get();
-        $countPengajuanMenunggu = count($pengajuanMenunggu);
+        $countPengajuanMenunggu = $pengajuanMenunggu->count();
 
         // AJAX request
         if ($request->ajax()) {
@@ -156,14 +212,26 @@ class PenerimaanDokumenController extends Controller
             },
             'borangImports',
             'latestBorangImport',
+            'statusLog' => function ($q) {
+                $q->orderByDesc('changed_at');
+            },
+            'latestStatusLog',
             'asesmen.userRoles' => function ($q) {
                 $q->where('jenis_asesmen', 'dokumen')
                     ->with(['user', 'role', 'borangValidation']);
             },
         ])->findOrFail($id);
 
+        // Set actual status from log
+        if ($pengajuan->latestStatusLog) {
+            $pengajuan->actual_status = $pengajuan->latestStatusLog->status_to;
+        } else {
+            $pengajuan->actual_status = $pengajuan->status;
+        }
+
         // Get uploaded documents grouped
         $uploadedDocuments = $pengajuan->getUploadedDocuments();
+
         // Check document completeness
         $docCompleteness = $this->checkDocumentCompleteness($pengajuan);
 
@@ -193,10 +261,15 @@ class PenerimaanDokumenController extends Controller
 
         DB::beginTransaction();
         try {
-            $pengajuan = PengajuanAkreditasi::findOrFail($id);
+            $pengajuan = PengajuanAkreditasi::with('latestStatusLog')->findOrFail($id);
 
-            // Validasi status pengajuan
-            if (!in_array($pengajuan->status, [
+            // Get actual status from log
+            $actualStatus = $pengajuan->latestStatusLog
+                ? $pengajuan->latestStatusLog->status_to
+                : $pengajuan->status;
+
+            // Validasi status pengajuan dari log
+            if (!in_array($actualStatus, [
                 PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI,
                 PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
             ])) {
@@ -218,14 +291,14 @@ class PenerimaanDokumenController extends Controller
                 return redirect()->back()->with('error', 'Dokumen LED dan LKPS belum lengkap.');
             }
 
-            // Update status pengajuan
-            if ($pengajuan->status === PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI) {
+            // Update status pengajuan berdasarkan status aktual dari log
+            if ($actualStatus === PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI) {
                 $pengajuan->updateStatusSafely(
                     PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
                     $validated['catatan'] ?? 'Dokumen draft borang telah diterima'
                 );
                 $pengajuan->update(['tanggal_draft_borang' => now()]);
-            } elseif ($pengajuan->status === PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA) {
+            } elseif ($actualStatus === PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA) {
                 $pengajuan->updateStatusSafely(
                     PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
                     $validated['catatan'] ?? 'Borang online telah lengkap dan diterima'
@@ -236,6 +309,10 @@ class PenerimaanDokumenController extends Controller
             return redirect()->back()->with('success', 'Penerimaan dokumen berhasil dikonfirmasi. Silakan tugaskan validator untuk validasi dokumen.');
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Konfirmasi penerimaan dokumen gagal', [
+                'pengajuan_id' => $id,
+                'error' => $e->getMessage()
+            ]);
             return redirect()->back()->with('error', 'Gagal konfirmasi penerimaan: ' . $e->getMessage());
         }
     }
@@ -249,6 +326,7 @@ class PenerimaanDokumenController extends Controller
             'studyProgram.degreeLevel',
             'studyProgram.university',
             'latestBorangImport',
+            'latestStatusLog',
             'borangValidators.user',
             'borangValidators.role'
         ])->findOrFail($id);
@@ -294,7 +372,9 @@ class PenerimaanDokumenController extends Controller
         ]);
 
         DB::beginTransaction();
-        $pengajuan = PengajuanAkreditasi::with('latestBorangImport')->lockForUpdate()->findOrFail($id);
+        $pengajuan = PengajuanAkreditasi::with('latestBorangImport', 'latestStatusLog')
+            ->lockForUpdate()
+            ->findOrFail($id);
 
         // Validation checks
         if (!$pengajuan->canAssignValidator()) {
@@ -363,8 +443,12 @@ class PenerimaanDokumenController extends Controller
                 'validated_sections' => 0,
             ]);
 
-            // Update pengajuan status
-            $oldStatus = $pengajuan->status;
+            // Get current status from log
+            $oldStatus = $pengajuan->latestStatusLog
+                ? $pengajuan->latestStatusLog->status_to
+                : $pengajuan->status;
+
+            // Update status pengajuan
             $pengajuan->update([
                 'status' => PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
                 'tanggal_validasi_borang_assigned' => now(),
@@ -416,7 +500,7 @@ class PenerimaanDokumenController extends Controller
      */
     public function cancelValidator($assignmentId)
     {
-        $assignment = AsesmenUserRole::with(['asesmen.pengajuan'])->findOrFail($assignmentId);
+        $assignment = AsesmenUserRole::with(['asesmen.pengajuan.latestStatusLog'])->findOrFail($assignmentId);
         $pengajuan = $assignment->asesmen->pengajuan;
 
         if ($assignment->status_penawaran !== 'pending') {
@@ -437,9 +521,20 @@ class PenerimaanDokumenController extends Controller
                 ->exists();
 
             if (!$hasOtherValidators) {
+                $oldStatus = $pengajuan->latestStatusLog
+                    ? $pengajuan->latestStatusLog->status_to
+                    : $pengajuan->status;
+
                 $pengajuan->update([
                     'status' => PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
                 ]);
+
+                $this->logStatus(
+                    $pengajuan,
+                    $oldStatus,
+                    PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
+                    'Penugasan validator dibatalkan, status dikembalikan ke Borang Online Selesai'
+                );
             }
 
             DB::commit();
@@ -472,14 +567,19 @@ class PenerimaanDokumenController extends Controller
             $sent = 0;
 
             foreach ($validated['id_pengajuan'] as $pengajuanId) {
-                $pengajuan = PengajuanAkreditasi::with('studyProgram')->find($pengajuanId);
+                $pengajuan = PengajuanAkreditasi::with('studyProgram', 'latestStatusLog')->find($pengajuanId);
 
                 if (!$pengajuan) continue;
 
+                // Get actual status
+                $actualStatus = $pengajuan->latestStatusLog
+                    ? $pengajuan->latestStatusLog->status_to
+                    : $pengajuan->status;
+
                 // Log reminder
                 $pengajuan->statusLog()->create([
-                    'status_from' => $pengajuan->status,
-                    'status_to' => $pengajuan->status,
+                    'status_from' => $actualStatus,
+                    'status_to' => $actualStatus,
                     'changed_by' => auth()->id(),
                     'changed_at' => now(),
                     'keterangan' => "Reminder dikirim: {$validated['pesan_reminder']}",
@@ -495,23 +595,39 @@ class PenerimaanDokumenController extends Controller
             return redirect()->back()->with('success', "Reminder berhasil dikirim ke {$sent} program studi.");
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Kirim reminder gagal', [
+                'error' => $e->getMessage()
+            ]);
             return redirect()->back()->with('error', 'Gagal mengirim reminder: ' . $e->getMessage());
         }
     }
 
     /**
-     * Calculate statistics
+     * Calculate statistics - IMPROVED VERSION
      */
     private function calculateStatistics(): array
     {
-        // 1) Snapshot dari tabel pengajuan_akreditasi (1 query)
-        $a = PengajuanAkreditasi::query()
+        // Gunakan subquery untuk mendapatkan status terakhir dari setiap pengajuan
+        $latestStatusSubquery = DB::table('pengajuan_status_log as psl')
+            ->select('psl.id_pengajuan', 'psl.status_to')
+            ->whereRaw('psl.changed_at = (
+                SELECT MAX(psl2.changed_at)
+                FROM pengajuan_status_log psl2
+                WHERE psl2.id_pengajuan = psl.id_pengajuan
+            )')
+            ->groupBy('psl.id_pengajuan', 'psl.status_to');
+
+        // Query dengan join ke latest status
+        $stats = DB::table('pengajuan_akreditasi as pa')
+            ->joinSub($latestStatusSubquery, 'latest', function ($join) {
+                $join->on('pa.id', '=', 'latest.id_pengajuan');
+            })
             ->selectRaw("
-            SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS total_menunggu_dokumen,
-            SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS total_dokumen_lengkap,
-            SUM(CASE WHEN status IN (?, ?) THEN 1 ELSE 0 END) AS total_dalam_validasi,
-            SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS total_perlu_revisi
-        ", [
+                COUNT(DISTINCT CASE WHEN latest.status_to = ? THEN pa.id END) AS total_menunggu_dokumen,
+                COUNT(DISTINCT CASE WHEN latest.status_to = ? THEN pa.id END) AS total_dokumen_lengkap,
+                COUNT(DISTINCT CASE WHEN latest.status_to IN (?, ?) THEN pa.id END) AS total_dalam_validasi,
+                COUNT(DISTINCT CASE WHEN latest.status_to = ? THEN pa.id END) AS total_perlu_revisi
+            ", [
                 PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI,
                 PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
                 PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
@@ -520,30 +636,24 @@ class PenerimaanDokumenController extends Controller
             ])
             ->first();
 
-        // 2) Histori dari tabel log (1 query) — hitung DISTINCT per id_pengajuan
-        // Join ke pengajuan_akreditasi supaya benar-benar "pengajuan akreditasi saja"
-        $l = PengajuanStatusLog::query()
-            ->join('pengajuan_akreditasi as pa', 'pa.id', '=', 'pengajuan_status_log.id_pengajuan')
-            ->whereIn('pengajuan_status_log.status_to', [
-                PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA, // dokumen masuk
-                PengajuanAkreditasi::STATUS_BORANG_VALIDATED,      // tervalidasi
-            ])
+        // Hitung dokumen masuk dan tervalidasi dari log
+        $historyStats = DB::table('pengajuan_status_log')
             ->selectRaw("
-            COUNT(DISTINCT CASE WHEN pengajuan_status_log.status_to = ? THEN pengajuan_status_log.id_pengajuan END) AS total_dokumen_masuk,
-            COUNT(DISTINCT CASE WHEN pengajuan_status_log.status_to = ? THEN pengajuan_status_log.id_pengajuan END) AS total_tervalidasi
-        ", [
+                COUNT(DISTINCT CASE WHEN status_to = ? THEN id_pengajuan END) AS total_dokumen_masuk,
+                COUNT(DISTINCT CASE WHEN status_to = ? THEN id_pengajuan END) AS total_tervalidasi
+            ", [
                 PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
                 PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
             ])
             ->first();
 
         return [
-            'total_menunggu_dokumen' => (int) ($a->total_menunggu_dokumen ?? 0),
-            'total_dokumen_masuk'    => (int) ($l->total_dokumen_masuk ?? 0),
-            'total_dokumen_lengkap'  => (int) ($a->total_dokumen_lengkap ?? 0),
-            'total_dalam_validasi'   => (int) ($a->total_dalam_validasi ?? 0),
-            'total_perlu_revisi'     => (int) ($a->total_perlu_revisi ?? 0),
-            'total_tervalidasi'      => (int) ($l->total_tervalidasi ?? 0),
+            'total_menunggu_dokumen' => (int) ($stats->total_menunggu_dokumen ?? 0),
+            'total_dokumen_masuk'    => (int) ($historyStats->total_dokumen_masuk ?? 0),
+            'total_dokumen_lengkap'  => (int) ($stats->total_dokumen_lengkap ?? 0),
+            'total_dalam_validasi'   => (int) ($stats->total_dalam_validasi ?? 0),
+            'total_perlu_revisi'     => (int) ($stats->total_perlu_revisi ?? 0),
+            'total_tervalidasi'      => (int) ($historyStats->total_tervalidasi ?? 0),
         ];
     }
 
@@ -557,7 +667,6 @@ class PenerimaanDokumenController extends Controller
             'led' => [
                 'label' => 'Laporan Evaluasi Diri (LED)',
                 'aliases' => ['data_kualitatif', 'draft_borang', 'borang_final'],
-                // kalau LED boleh salah satu file, set true
                 'any' => true,
             ],
             'suplemen' => [
@@ -572,16 +681,9 @@ class PenerimaanDokumenController extends Controller
             ],
             'pengesahan' => [
                 'label' => 'Lembar Pengesahan Dokumen',
-                'aliases' => ['pengesahan', 'lembar_pengesahan'], // jaga-jaga kalau ada 2 versi
+                'aliases' => ['pengesahan', 'lembar_pengesahan'],
                 'any' => true,
             ],
-            'surat_permohonan' => [
-                'label' => 'Surat Permohonan',
-                'aliases' => ['surat_permohonan'],
-                'any' => true,
-            ],
-            // kalau formulir_pembayaran memang wajib, tambahkan juga
-            // 'formulir_pembayaran' => [...]
         ];
 
         $uploaded = $pengajuan->dokumen()

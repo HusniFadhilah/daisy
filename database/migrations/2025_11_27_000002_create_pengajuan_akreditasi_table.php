@@ -32,6 +32,7 @@ return new class extends Migration
                 'surat_permohonan_dikirim',
                 'surat_permohonan_diterima',
                 'surat_permohonan_ditolak',
+                'surat_penerimaan_dikirim',
                 'template_borang_dikirim',
                 'menunggu_pembayaran',
                 'pembayaran_diterima',
@@ -75,6 +76,7 @@ return new class extends Migration
             $table->timestamp('tanggal_surat_permohonan_dikirim')->nullable();
             $table->timestamp('tanggal_surat_permohonan_diterima')->nullable();
             $table->timestamp('tanggal_surat_permohonan_ditolak')->nullable();
+            $table->timestamp('tanggal_surat_penerimaan_dikirim')->nullable();
             $table->timestamp('tanggal_template_led_dikirim')->nullable();
             $table->timestamp('tanggal_pembayaran')->nullable();
             $table->timestamp('tanggal_draft_borang')->nullable();
@@ -161,6 +163,7 @@ return new class extends Migration
 
             $table->enum('jenis_dokumen', [
                 'surat_permohonan',
+                'surat_penerimaan_de',
                 'surat_tugas',
                 'borang_template',
                 'template_formulir_pembayaran',
@@ -196,21 +199,6 @@ return new class extends Migration
 
             $table->index(['id_pengajuan', 'jenis_dokumen', 'is_latest'], 'idx_pengajuan_jenis_latest');
             $table->index('created_at', 'idx_created_at');
-        });
-
-        Schema::create('review_kesiapan', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('id_pengajuan')->constrained('pengajuan_akreditasi')->onDelete('cascade');
-            $table->foreignId('id_reviewer')->constrained('users')->comment('DE yang review');
-
-            $table->enum('hasil_review', ['siap', 'belum_siap']);
-            $table->text('catatan_review');
-            $table->json('checklist_kesiapan')->nullable()->comment('JSON array checklist items');
-
-            $table->integer('versi_review')->default(1);
-            $table->timestamp('tanggal_review');
-
-            $table->timestamps();
         });
 
         Schema::create('pengajuan_pembayaran', function (Blueprint $table) {

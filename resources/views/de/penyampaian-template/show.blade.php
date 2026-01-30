@@ -2,7 +2,7 @@
 
 @extends('layouts.template.app')
 
-@section('title', 'Detail Penyampaian Template')
+@section('title', 'Detail Pengiriman Formulir dan Template Dokumen')
 
 @section('content')
 <div class="container-fluid py-3">
@@ -10,7 +10,7 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('de.penyampaian-template') }}">Penyampaian Template</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('de.penyampaian-template') }}">Pengiriman Formulir dan Template Dokumen</a></li>
             <li class="breadcrumb-item active">Detail</li>
         </ol>
     </nav>
@@ -19,7 +19,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h5 class="mb-1">
-                <i class="bi bi-file-earmark-arrow-down"></i> Detail Pengiriman Formulir dan Template Dokumen
+                <i class="bi bi-file-earmark-text"></i> Detail Pengiriman Formulir dan Template Dokumen
             </h5>
             <small class="text-muted mb-0">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
@@ -180,8 +180,8 @@
                                 <i class="bi bi-box-arrow-up-right"></i> Buka Link
                             </a>
                             @else
-                            <a href="{{ route('de.penyampaian-template.download', $pengajuan->id) }}" class="btn btn-primary btn-sm">
-                                <i class="bi bi-download"></i> Download
+                            <a href="{{ route('de.penyampaian-template.download', $pengajuan->id) }}" class="btn btn-info btn-sm">
+                                <i class="bi bi-eye"></i> Lihat File
                             </a>
                             @endif
                         </div>
@@ -243,8 +243,8 @@
                                 <i class="bi bi-box-arrow-up-right"></i> Buka Link
                             </a>
                             @else
-                            <a href="{{ route('de.penyampaian-template.download', $pengajuan->id) }}" class="btn btn-primary btn-sm">
-                                <i class="bi bi-download"></i> Download
+                            <a href="{{ route('de.penyampaian-template.download', $pengajuan->id) }}" class="btn btn-info btn-sm">
+                                <i class="bi bi-eye"></i> Lihat File
                             </a>
                             @endif
                         </div>

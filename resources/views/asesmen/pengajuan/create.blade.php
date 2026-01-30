@@ -150,7 +150,7 @@
                         <!-- Surat Permohonan -->
                         <div class="mb-4">
                             <label class="form-label fw-bold">
-                                Surat Permohonan (PDF) <span class="text-danger">*</span>
+                                Surat Permohonan Akreditasi (PDF) <span class="text-danger">*</span>
                             </label>
                             <input type="file" name="file_surat_permohonan" class="form-control @error('file_surat_permohonan') is-invalid @enderror" accept=".pdf" required id="fileSuratPermohonan">
                             <small class="text-muted">
@@ -168,7 +168,7 @@
                                 <i class="bi bi-clipboard-check"></i> Persyaratan Dokumen
                             </h6>
                             <ul class="mb-0 ps-3">
-                                <li>Surat permohonan resmi dalam format PDF</li>
+                                <li>Surat Permohonan Akreditasi resmi dalam format PDF</li>
                                 <li>Menggunakan kop surat program studi/universitas</li>
                                 <li>Ditandatangani oleh pejabat berwenang (Ketua Program Studi/Dekan)</li>
                                 <li>Mencantumkan tujuan akreditasi yang jelas</li>
@@ -264,174 +264,27 @@
                     <h6 class="fw-bold">Timeline Proses (20 Tahap)</h6>
                     <div class="timeline">
                         @php
-                        $timelineItems = [
-                        // ========================================
-                        // FASE 1: PERSIAPAN
-                        // ========================================
-                        [
-                        'date' => null,
-                        'label' => 'Pengingat Masa Akreditasi',
-                        'icon' => 'bi-bell',
-                        'step' => 1,
-                        'current' => isset($pengingat)
-                        ],
-                        [
-                        'date' => null,
-                        'label' => 'Surat Permohonan Akreditasi',
-                        'icon' => 'bi-envelope',
-                        'step' => 2,
-                        'current' => !isset($pengingat)
-                        ],
-                        [
-                        'date' => null,
-                        'label' => 'Pengiriman Formulir dan Template Dokumen',
-                        'icon' => 'bi-file-earmark-arrow-down',
-                        'step' => 3
-                        ],
-                        [
-                        'date' => null,
-                        'label' => 'Validasi Pembayaran',
-                        'icon' => 'bi-credit-card-2-front',
-                        'step' => 4
-                        ],
-                        [
-                        'date' => null,
-                        'label' => 'Penerimaan Draft Dokumen',
-                        'icon' => 'bi-file-earmark-check',
-                        'step' => 5
-                        ],
 
-                        // ========================================
-                        // FASE 2: VALIDASI LED
-                        // ========================================
-                        [
-                        'date' => null,
-                        'label' => 'Validasi Dokumen',
-                        'icon' => 'bi-clipboard-check',
-                        'step' => 6,
-                        'color' => 'primary'
-                        ],
-                        [
-                        'date' => null,
-                        'label' => 'Pelaporan Validasi Dokumen',
-                        'icon' => 'bi-file-earmark-text',
-                        'step' => 7,
-                        'color' => 'primary'
-                        ],
+                        // bikin instance kosong (tidak dari DB)
+                        $pengajuan = new \App\Models\PengajuanAkreditasi();
 
-                        // ========================================
-                        // FASE 3: ASESMEN KECUKUPAN (AK)
-                        // ========================================
-                        [
-                        'date' => null,
-                        'label' => 'Penugasan Asesor untuk AK',
-                        'icon' => 'bi-person-check',
-                        'step' => 8,
-                        'color' => 'success'
-                        ],
-                        [
-                        'date' => null,
-                        'label' => 'Validasi AK',
-                        'icon' => 'bi-clipboard2-check',
-                        'step' => 9,
-                        'color' => 'success'
-                        ],
-                        [
-                        'date' => null,
-                        'label' => 'Pelaporan AK',
-                        'icon' => 'bi-file-earmark-medical',
-                        'step' => 10,
-                        'color' => 'success'
-                        ],
+                        // isi data yang kamu punya (optional)
+                        if (isset($pengingat)) {
+                        $pengajuan->tanggal_pengingat = $pengingat->created_at;
+                        $pengajuan->status = \App\Models\PengajuanAkreditasi::STATUS_PENGINGAT_DIKIRIM;
+                        } else {
+                        $pengajuan->status = \App\Models\PengajuanAkreditasi::STATUS_DRAFT;
+                        }
 
-                        // ========================================
-                        // FASE 4: ASESMEN LAPANGAN (AL)
-                        // ========================================
-                        [
-                        'date' => null,
-                        'label' => 'Penugasan Asesor untuk AL',
-                        'icon' => 'bi-person-badge',
-                        'step' => 11,
-                        'color' => 'info'
-                        ],
-                        [
-                        'date' => null,
-                        'label' => 'Pelaksanaan AL & Berita Acara',
-                        'icon' => 'bi-building',
-                        'step' => 12,
-                        'color' => 'info'
-                        ],
-                        [
-                        'date' => null,
-                        'label' => 'Pelaporan AL',
-                        'icon' => 'bi-clipboard-data',
-                        'step' => 13,
-                        'color' => 'info'
-                        ],
-
-                        // ========================================
-                        // FASE 5: PENYELESAIAN
-                        // ========================================
-                        [
-                        'date' => null,
-                        'label' => 'Penyampaian Hasil Akreditasi',
-                        'icon' => 'bi-envelope-paper',
-                        'step' => 14,
-                        'color' => 'warning'
-                        ],
-                        [
-                        'date' => null,
-                        'label' => 'Masa Sanggah',
-                        'icon' => 'bi-clock-history',
-                        'step' => 15,
-                        'color' => 'warning'
-                        ],
-                        [
-                        'date' => null,
-                        'label' => 'Pelaksanaan Banding',
-                        'icon' => 'bi-arrow-repeat',
-                        'step' => 16,
-                        'color' => 'danger',
-                        'optional' => true
-                        ],
-                        [
-                        'date' => null,
-                        'label' => 'Pelaporan Banding',
-                        'icon' => 'bi-file-earmark-ruled',
-                        'step' => 17,
-                        'color' => 'danger',
-                        'optional' => true
-                        ],
-                        [
-                        'date' => null,
-                        'label' => 'Penetapan Hasil Akreditasi',
-                        'icon' => 'bi-award',
-                        'step' => 18,
-                        'color' => 'success'
-                        ],
-                        [
-                        'date' => null,
-                        'label' => 'Pelaporan Hasil Akreditasi',
-                        'icon' => 'bi-megaphone',
-                        'step' => 19,
-                        'color' => 'success'
-                        ],
-                        [
-                        'date' => null,
-                        'label' => 'Penyimpanan Arsip Pelaksanaan Akreditasi',
-                        'icon' => 'bi-archive',
-                        'step' => 20,
-                        'color' => 'secondary'
-                        ],
-                        ];
+                        // ambil timeline dari method model yang sudah kamu buat
+                        $timelineItems = $pengajuan->timelineItems();
                         @endphp
-
-                        @foreach($timelineItems as $item)
+                        @foreach($timelineItems as $step => $item)
                         @php
                         $isCompleted = !is_null($item['date']);
                         $isCurrent = $item['current'] ?? false;
                         $iconColor = $isCompleted ? 'text-success' : ($isCurrent ? 'text-primary' : 'text-muted');
-                        $itemColor = $item['color'] ?? ($isCompleted ? 'success' : 'muted');
+                        $itemColor = $item['color'] ?? 'secondary';
                         $isOptional = $item['optional'] ?? false;
                         @endphp
 
@@ -451,7 +304,7 @@
                                     <div>
                                         <strong class="{{ $isCompleted ? 'text-' . $itemColor : ($isCurrent ? 'text-primary fw-bold' : 'text-muted') }}">
                                             <i class="{{ $item['icon'] }} me-1"></i>
-                                            {{ $item['step'] }}. {{ $item['label'] }}
+                                            {{ $step }}. {{ $item['label'] }}
                                             @if($isOptional)
                                             <span class="badge bg-secondary ms-1" style="font-size: 0.65rem;">Opsional</span>
                                             @endif

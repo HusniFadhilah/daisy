@@ -14,7 +14,7 @@ $countPendingAssignments = count($pendingAssignments);
                 @csrf
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title">
-                        <i class="bi bi-bell"></i> Kirim Reminder ke Validator
+                        <i class="bi bi-bell"></i> Kirim Pengingat ke Validator
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
@@ -62,7 +62,7 @@ Dewan Eksekutif (DE) LAMDEPILAR</textarea>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
                     <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-send"></i> Kirim Reminder
+                        <i class="bi bi-send"></i> Kirim Pengingat
                     </button>
                 </div>
                 @endif

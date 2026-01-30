@@ -32,6 +32,7 @@ class PengajuanDokumen extends Model
 
     public const JENIS_DOKUMEN_ALIAS = [
         'surat_permohonan'             => 'Surat Permohonan Akreditasi',
+        'surat_penerimaan_de'          => 'Surat Penerimaan Permohonan (dari LAMDEPILAR)',
         'surat_tugas'                  => 'Surat Tugas',
         'borang_template'              => 'Template Dokumen',
         'template_formulir_pembayaran' => 'Template Formulir Pembayaran',
@@ -157,5 +158,11 @@ class PengajuanDokumen extends Model
     public function scopeByPengajuan($query, $pengajuanId)
     {
         return $query->where('id_pengajuan', $pengajuanId);
+    }
+
+    public function scopeJenisSuratPenerimaan($query)
+    {
+        return $query->where('jenis_dokumen', 'surat_penerimaan_de')
+            ->where('is_latest', true);
     }
 }

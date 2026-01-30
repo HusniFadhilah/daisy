@@ -1,110 +1,117 @@
-<!-- Payment Summary Card with Password Protection -->
-<div class="card border-success shadow-sm">
-    <div class="card-header bg-success text-white">
-        <div class="d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">
-                <i class="bi bi-shield-lock-fill"></i> Ringkasan Pembayaran Tervalidasi
-            </h5>
-            <span class="badge bg-light text-dark">
-                <i class="bi bi-lock-fill"></i> Protected
-            </span>
-        </div>
-    </div>
+<!-- Payment Summary Accordion with Password Protection -->
+<div class="accordion" id="paymentSummaryAccordion">
+    <div class="accordion-item border-success shadow-sm">
+        <h2 class="accordion-header" id="headingPaymentSummary">
+            <button class="accordion-button collapsed bg-success text-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePaymentSummary" aria-expanded="false" aria-controls="collapsePaymentSummary">
+                <div class="d-flex justify-content-between align-items-center w-100 me-3">
+                    <div>
+                        <i class="bi bi-shield-lock-fill me-2"></i>
+                        <strong>Ringkasan Pembayaran Tervalidasi</strong>
+                    </div>
+                    <span class="badge bg-light text-dark ms-auto">
+                        <i class="bi bi-lock-fill"></i> Protected
+                    </span>
+                </div>
+            </button>
+        </h2>
 
-    <div class="card-body" id="paymentSummaryContent">
-        <!-- Default: Blurred Preview -->
-        <div id="summaryBlurred">
-            <div class="row text-center mb-4" style="filter: blur(8px); user-select: none;">
-                <div class="col-md-4">
-                    <div class="p-3 border rounded bg-light">
-                        <h6 class="text-muted mb-2">Total Program Studi</h6>
-                        <h2 class="mb-0 fw-bold text-primary">***</h2>
-                        <small class="text-muted">Prodi yang sudah membayar</small>
+        <div id="collapsePaymentSummary" class="accordion-collapse collapse" aria-labelledby="headingPaymentSummary" data-bs-parent="#paymentSummaryAccordion">
+            <div class="accordion-body" id="paymentSummaryContent">
+                <!-- Default: Blurred Preview -->
+                <div id="summaryBlurred">
+                    <div class="row text-center mb-4" style="filter: blur(8px); user-select: none;">
+                        <div class="col-md-4">
+                            <div class="p-3 border rounded bg-light">
+                                <h6 class="text-muted mb-2">Total Program Studi</h6>
+                                <h2 class="mb-0 fw-bold text-primary">***</h2>
+                                <small class="text-muted">Prodi yang sudah membayar</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 border rounded bg-light">
+                                <h6 class="text-muted mb-2">Total Nominal</h6>
+                                <h2 class="mb-0 fw-bold text-success">Rp ***,***,***</h2>
+                                <small class="text-muted">Total pembayaran tervalidasi</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 border rounded bg-light">
+                                <h6 class="text-muted mb-2">Total Transaksi</h6>
+                                <h2 class="mb-0 fw-bold text-info">***</h2>
+                                <small class="text-muted">Jumlah invoice tervalidasi</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-warning alert-permanent text-center mb-0">
+                        <i class="bi bi-lock-fill fs-1 mb-3 d-block"></i>
+                        <h5 class="mb-3">Data ini Dilindungi Password</h5>
+                        <p class="mb-3">Untuk melihat detail ringkasan pembayaran, Anda harus memasukkan password khusus.</p>
+                        <button type="button" class="btn btn-primary" onclick="showPasswordModal()">
+                            <i class="bi bi-key-fill"></i> Masukkan Password
+                        </button>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="p-3 border rounded bg-light">
-                        <h6 class="text-muted mb-2">Total Nominal</h6>
-                        <h2 class="mb-0 fw-bold text-success">Rp ***,***,***</h2>
-                        <small class="text-muted">Total pembayaran tervalidasi</small>
+
+                <!-- After Password Verified -->
+                <div id="summaryUnlocked" class="d-none">
+                    <!-- Summary Stats -->
+                    <div class="row text-center mb-4" id="summaryStats">
+                        <!-- Will be populated by JS -->
+                    </div>
+
+                    <!-- Tabs for Detailed Breakdown -->
+                    <ul class="nav nav-tabs mb-3" id="summaryTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="university-tab" data-bs-toggle="tab" data-bs-target="#universityTab" type="button">
+                                <i class="bi bi-building"></i> Per Universitas
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="degree-tab" data-bs-toggle="tab" data-bs-target="#degreeTab" type="button">
+                                <i class="bi bi-mortarboard"></i> Per Jenjang
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="monthly-tab" data-bs-toggle="tab" data-bs-target="#monthlyTab" type="button">
+                                <i class="bi bi-calendar-month"></i> Bulanan
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="recent-tab" data-bs-toggle="tab" data-bs-target="#recentTab" type="button">
+                                <i class="bi bi-clock-history"></i> Terbaru
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="summaryTabsContent">
+                        <!-- Per University -->
+                        <div class="tab-pane fade show active" id="universityTab" role="tabpanel">
+                            <div id="universityContent"></div>
+                        </div>
+
+                        <!-- Per Degree Level -->
+                        <div class="tab-pane fade" id="degreeTab" role="tabpanel">
+                            <div id="degreeContent"></div>
+                        </div>
+
+                        <!-- Monthly -->
+                        <div class="tab-pane fade" id="monthlyTab" role="tabpanel">
+                            <div id="monthlyContent"></div>
+                        </div>
+
+                        <!-- Recent Payments -->
+                        <div class="tab-pane fade" id="recentTab" role="tabpanel">
+                            <div id="recentContent"></div>
+                        </div>
+                    </div>
+
+                    <div class="text-end mt-3">
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="lockSummary()">
+                            <i class="bi bi-lock-fill"></i> Kunci Kembali
+                        </button>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="p-3 border rounded bg-light">
-                        <h6 class="text-muted mb-2">Total Transaksi</h6>
-                        <h2 class="mb-0 fw-bold text-info">***</h2>
-                        <small class="text-muted">Jumlah invoice tervalidasi</small>
-                    </div>
-                </div>
-            </div>
-
-            <div class="alert alert-warning alert-permanent text-center mb-0">
-                <i class="bi bi-lock-fill fs-1 mb-3 d-block"></i>
-                <h5 class="mb-3">Data ini Dilindungi Password</h5>
-                <p class="mb-3">Untuk melihat detail ringkasan pembayaran, Anda harus memasukkan password khusus.</p>
-                <button type="button" class="btn btn-primary" onclick="showPasswordModal()">
-                    <i class="bi bi-key-fill"></i> Masukkan Password
-                </button>
-            </div>
-        </div>
-
-        <!-- After Password Verified -->
-        <div id="summaryUnlocked" class="d-none">
-            <!-- Summary Stats -->
-            <div class="row text-center mb-4" id="summaryStats">
-                <!-- Will be populated by JS -->
-            </div>
-
-            <!-- Tabs for Detailed Breakdown -->
-            <ul class="nav nav-tabs mb-3" id="summaryTabs" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="university-tab" data-bs-toggle="tab" data-bs-target="#universityTab" type="button">
-                        <i class="bi bi-building"></i> Per Universitas
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="degree-tab" data-bs-toggle="tab" data-bs-target="#degreeTab" type="button">
-                        <i class="bi bi-mortarboard"></i> Per Jenjang
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="monthly-tab" data-bs-toggle="tab" data-bs-target="#monthlyTab" type="button">
-                        <i class="bi bi-calendar-month"></i> Bulanan
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="recent-tab" data-bs-toggle="tab" data-bs-target="#recentTab" type="button">
-                        <i class="bi bi-clock-history"></i> Terbaru
-                    </button>
-                </li>
-            </ul>
-
-            <div class="tab-content" id="summaryTabsContent">
-                <!-- Per University -->
-                <div class="tab-pane fade show active" id="universityTab" role="tabpanel">
-                    <div id="universityContent"></div>
-                </div>
-
-                <!-- Per Degree Level -->
-                <div class="tab-pane fade" id="degreeTab" role="tabpanel">
-                    <div id="degreeContent"></div>
-                </div>
-
-                <!-- Monthly -->
-                <div class="tab-pane fade" id="monthlyTab" role="tabpanel">
-                    <div id="monthlyContent"></div>
-                </div>
-
-                <!-- Recent Payments -->
-                <div class="tab-pane fade" id="recentTab" role="tabpanel">
-                    <div id="recentContent"></div>
-                </div>
-            </div>
-
-            <div class="text-end mt-3">
-                <button type="button" class="btn btn-sm btn-outline-danger" onclick="lockSummary()">
-                    <i class="bi bi-lock-fill"></i> Kunci Kembali
-                </button>
             </div>
         </div>
     </div>
@@ -153,6 +160,31 @@
         </div>
     </div>
 </div>
+
+@push('styles')
+<style>
+    /* Custom accordion styles */
+    #paymentSummaryAccordion .accordion-button.collapsed {
+        background: linear-gradient(135deg, #11998e 0%, #12a149ff 100%);
+    }
+
+    #paymentSummaryAccordion .accordion-button:not(.collapsed) {
+        background: linear-gradient(135deg, #11998e 0%, #12a149ff 100%);
+        color: white;
+        box-shadow: none;
+    }
+
+    #paymentSummaryAccordion .accordion-button:focus {
+        box-shadow: none;
+        border-color: rgba(17, 153, 142, 0.5);
+    }
+
+    #paymentSummaryAccordion .accordion-button::after {
+        filter: brightness(0) invert(1);
+    }
+
+</style>
+@endpush
 
 @push('scripts')
 <script>
@@ -270,28 +302,28 @@
 
         // Summary Stats
         document.getElementById('summaryStats').innerHTML = `
-        <div class="col-md-4">
-            <div class="p-3 border rounded bg-light">
-                <h6 class="text-muted mb-2">Total Program Studi</h6>
-                <h2 class="mb-0 fw-bold text-primary">${summary.total_prodi}</h2>
-                <small class="text-muted">Prodi yang sudah membayar</small>
+            <div class="col-md-4">
+                <div class="p-3 border rounded bg-light">
+                    <h6 class="text-muted mb-2">Total Program Studi</h6>
+                    <h2 class="mb-0 fw-bold text-primary">${summary.total_prodi}</h2>
+                    <small class="text-muted">Prodi yang sudah membayar</small>
+                </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="p-3 border rounded bg-light">
-                <h6 class="text-muted mb-2">Total Nominal</h6>
-                <h2 class="mb-0 fw-bold text-success">Rp ${formatNumber(summary.total_nominal)}</h2>
-                <small class="text-muted">Total pembayaran tervalidasi</small>
+            <div class="col-md-4">
+                <div class="p-3 border rounded bg-light">
+                    <h6 class="text-muted mb-2">Total Nominal</h6>
+                    <h2 class="mb-0 fw-bold text-success">Rp ${formatNumber(summary.total_nominal)}</h2>
+                    <small class="text-muted">Total pembayaran tervalidasi</small>
+                </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="p-3 border rounded bg-light">
-                <h6 class="text-muted mb-2">Total Transaksi</h6>
-                <h2 class="mb-0 fw-bold text-info">${summary.total_transaksi}</h2>
-                <small class="text-muted">Jumlah invoice tervalidasi</small>
+            <div class="col-md-4">
+                <div class="p-3 border rounded bg-light">
+                    <h6 class="text-muted mb-2">Total Transaksi</h6>
+                    <h2 class="mb-0 fw-bold text-info">${summary.total_transaksi}</h2>
+                    <small class="text-muted">Jumlah invoice tervalidasi</small>
+                </div>
             </div>
-        </div>
-    `;
+        `;
 
         // By University
         let universityHtml = '<div class="table-responsive"><table class="table table-sm table-hover">';
@@ -301,13 +333,13 @@
             const univ = entry[0];
             const stats = entry[1];
             universityHtml += `
-            <tr>
-                <td>${univ}</td>
-                <td><span class="badge bg-info">${stats.prodi_count}</span></td>
-                <td><span class="badge bg-primary">${stats.count}</span></td>
-                <td class="text-end"><strong class="text-success">Rp ${formatNumber(stats.total)}</strong></td>
-            </tr>
-        `;
+                <tr>
+                    <td>${univ}</td>
+                    <td><span class="badge bg-info">${stats.prodi_count}</span></td>
+                    <td><span class="badge bg-primary">${stats.count}</span></td>
+                    <td class="text-end"><strong class="text-success">Rp ${formatNumber(stats.total)}</strong></td>
+                </tr>
+            `;
         });
         universityHtml += '</tbody></table></div>';
         document.getElementById('universityContent').innerHTML = universityHtml;
@@ -320,12 +352,12 @@
             const degree = entry[0];
             const stats = entry[1];
             degreeHtml += `
-            <tr>
-                <td>${degree}</td>
-                <td><span class="badge bg-primary">${stats.count}</span></td>
-                <td class="text-end"><strong class="text-success">Rp ${formatNumber(stats.total)}</strong></td>
-            </tr>
-        `;
+                <tr>
+                    <td>${degree}</td>
+                    <td><span class="badge bg-primary">${stats.count}</span></td>
+                    <td class="text-end"><strong class="text-success">Rp ${formatNumber(stats.total)}</strong></td>
+                </tr>
+            `;
         });
         degreeHtml += '</tbody></table></div>';
         document.getElementById('degreeContent').innerHTML = degreeHtml;
@@ -336,12 +368,12 @@
 
         data.monthly.forEach(function(month) {
             monthlyHtml += `
-            <tr>
-                <td>${month.month}</td>
-                <td><span class="badge bg-primary">${month.count}</span></td>
-                <td class="text-end"><strong class="text-success">Rp ${formatNumber(month.total)}</strong></td>
-            </tr>
-        `;
+                <tr>
+                    <td>${month.month}</td>
+                    <td><span class="badge bg-primary">${month.count}</span></td>
+                    <td class="text-end"><strong class="text-success">Rp ${formatNumber(month.total)}</strong></td>
+                </tr>
+            `;
         });
         monthlyHtml += '</tbody></table></div>';
         document.getElementById('monthlyContent').innerHTML = monthlyHtml;
@@ -352,13 +384,13 @@
 
         data.recent_payments.forEach(function(payment) {
             recentHtml += `
-            <tr>
-                <td><code>${payment.nomor_invoice}</code></td>
-                <td>${payment.prodi}</td>
-                <td><small class="text-muted">${payment.tanggal}</small></td>
-                <td class="text-end"><strong class="text-success">Rp ${formatNumber(payment.jumlah)}</strong></td>
-            </tr>
-        `;
+                <tr>
+                    <td><code>${payment.nomor_invoice}</code></td>
+                    <td>${payment.prodi}</td>
+                    <td><small class="text-muted">${payment.tanggal}</small></td>
+                    <td class="text-end"><strong class="text-success">Rp ${formatNumber(payment.jumlah)}</strong></td>
+                </tr>
+            `;
         });
         recentHtml += '</tbody></table></div>';
         document.getElementById('recentContent').innerHTML = recentHtml;

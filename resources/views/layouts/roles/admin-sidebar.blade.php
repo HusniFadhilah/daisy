@@ -1,147 +1,166 @@
 @php
 $authUser = Auth::user();
+$menus = [
+[
+'no' => 1,
+'route' => 'de.pemetaan.index',
+'match' => 'de.pemetaan*',
+'icon' => 'bi-clock-history',
+'label' => 'Pengingat Masa Akreditasi',
+],
+[
+'no' => 2,
+'route' => 'de.surat-permohonan',
+'match' => 'de.surat-permohonan*',
+'icon' => 'bi-envelope-paper',
+'label' => 'Surat Permohonan Akreditasi',
+],
+[
+'no' => 3,
+'route' => 'de.penerimaan-permohonan',
+'match' => 'de.penerimaan-permohonan*',
+'icon' => 'bi-send-check',
+'label' => 'Penerimaan Permohonan Akreditasi',
+],
+[
+'no' => 4,
+'route' => 'de.penyampaian-template',
+'match' => 'de.penyampaian-template*',
+'icon' => 'bi-file-earmark-text',
+'label' => 'Pengiriman Formulir dan Template Dokumen',
+],
+[
+'no' => 5,
+'route' => 'de.validasi-pembayaran',
+'match' => 'de.validasi-pembayaran*',
+'icon' => 'bi-credit-card',
+'label' => 'Validasi Pembayaran',
+],
+[
+'no' => 6,
+'route' => 'de.penerimaan-dokumen',
+'match' => 'de.penerimaan-dokumen*',
+'icon' => 'bi-inbox',
+'label' => 'Penerimaan Draft Dokumen',
+],
+[
+'no' => 7,
+'route' => 'de.validasi-dokumen',
+'match' => 'de.validasi-dokumen*',
+'icon' => 'bi-check-circle',
+'label' => 'Validasi Dokumen',
+],
+[
+'no' => 8,
+'route' => 'de.pelaporan-dokumen',
+'match' => 'de.pelaporan-dokumen*',
+'icon' => 'bi-bar-chart-line',
+'label' => 'Pelaporan Validasi Dokumen',
+],
+[
+'no' => 9,
+'route' => 'de.penugasan-ak',
+'match' => 'de.penugasan-ak*',
+'icon' => 'bi-person-check',
+'label' => 'Penugasan Asesor AK',
+],
+[
+'no' => 10,
+'route' => 'de.validasi-ak',
+'match' => 'de.validasi-ak*',
+'icon' => 'bi-patch-check',
+'label' => 'Validasi AK',
+],
+[
+'no' => 11,
+'route' => 'de.pelaporan-ak',
+'match' => 'de.pelaporan-ak*',
+'icon' => 'bi-file-earmark-bar-graph',
+'label' => 'Pelaporan AK',
+],
+[
+'no' => 12,
+'route' => 'de.penugasan-al',
+'match' => 'de.penugasan-al*',
+'icon' => 'bi-building',
+'label' => 'Penugasan Asesor AL',
+],
+[
+'no' => 13,
+'route' => 'de.pelaksanaan-al',
+'match' => 'de.pelaksanaan-al*',
+'icon' => 'bi-geo-alt',
+'label' => 'Pelaksanaan AL & Berita Acara',
+],
+[
+'no' => 14,
+'route' => 'de.pelaporan-al',
+'match' => 'de.pelaporan-al*',
+'icon' => 'bi-journal-text',
+'label' => 'Pelaporan AL',
+],
+[
+'no' => 15,
+'route' => 'de.penyampaian-hasil-akreditasi',
+'match' => 'de.penyampaian-hasil-akreditasi*',
+'icon' => 'bi-megaphone',
+'label' => 'Penyampaian Hasil Akreditasi',
+],
+[
+'no' => 16,
+'route' => 'de.masa-sanggah',
+'match' => 'de.masa-sanggah*',
+'icon' => 'bi-hourglass-split',
+'label' => 'Masa Sanggah',
+],
+[
+'no' => 17,
+'route' => 'de.pelaksanaan-banding',
+'match' => 'de.pelaksanaan-banding*',
+'icon' => 'bi-arrow-repeat',
+'label' => 'Pelaksanaan Banding',
+],
+[
+'no' => 18,
+'route' => 'de.pelaporan-banding',
+'match' => 'de.pelaporan-banding*',
+'icon' => 'bi-clipboard-data',
+'label' => 'Pelaporan Banding',
+],
+[
+'no' => 19,
+'route' => 'de.penetapan-hasil-akreditasi',
+'match' => 'de.penetapan-hasil-akreditasi*',
+'icon' => 'bi-award',
+'label' => 'Penetapan Hasil Akreditasi',
+],
+[
+'no' => 20,
+'route' => 'de.pelaporan-hasil-akreditasi',
+'match' => 'de.pelaporan-hasil-akreditasi*',
+'icon' => 'bi-graph-up',
+'label' => 'Pelaporan Hasil Akreditasi',
+],
+[
+'no' => 21,
+'route' => 'de.penyimpanan-arsip-pelaksanaan-akreditasi',
+'match' => 'de.penyimpanan-arsip-pelaksanaan-akreditasi*',
+'icon' => 'bi-archive',
+'label' => 'Penyimpanan Arsip Akreditasi',
+],
+];
 @endphp
 
-<!-- Penawaran Asesmen -->
+@foreach ($menus as $menu)
 <li class="nav-item">
-    <a href="{{ route('de.pemetaan.index') }}" class="nav-link {{ request()->routeIs('de.pemetaan*') ? 'active' : '' }}">
-        <span class="menu-icon"><i class="bi bi-clock-history"></i></span>
-        <span>1. Pengingat Masa Akreditasi</span>
+    <a href="{{ route($menu['route']) }}" class="nav-link {{ request()->routeIs($menu['match']) ? 'active' : '' }}">
+        <span class="menu-icon">
+            <i class="bi {{ $menu['icon'] }}"></i>
+        </span>
+        <span>{{ $menu['no'] }}. {{ $menu['label'] }}</span>
     </a>
 </li>
-
-<li class="nav-item">
-    <a href="{{ route('de.surat-permohonan') }}" class="nav-link {{ request()->routeIs('de.surat-permohonan*') ? 'active' : '' }}">
-        <span class="menu-icon"><i class="bi bi-envelope-paper"></i></span>
-        <span>2. Surat Permohonan Akreditasi</span>
-    </a>
-</li>
-
-<li class="nav-item">
-    <a href="{{ route('de.penyampaian-template') }}" class="nav-link {{ request()->routeIs('de.penyampaian-template*') ? 'active' : '' }}">
-        <span class="menu-icon"><i class="bi bi-file-earmark-text"></i></span>
-        <span>3. Pengiriman Formulir dan Template Dokumen</span>
-    </a>
-</li>
-
-<li class="nav-item">
-    <a href="{{ route('de.validasi-pembayaran') }}" class="nav-link {{ request()->routeIs('de.validasi-pembayaran*') ? 'active' : '' }}">
-        <span class="menu-icon"><i class="bi bi-credit-card"></i></span>
-        <span>4. Validasi Pembayaran</span>
-    </a>
-</li>
-
-<li class="nav-item">
-    <a href="{{ route('de.penerimaan-dokumen') }}" class="nav-link {{ request()->routeIs('de.penerimaan-dokumen*') ? 'active' : '' }}">
-        <span class="menu-icon"><i class="bi bi-inbox"></i></span>
-        <span>5. Penerimaan Draft Dokumen</span>
-    </a>
-</li>
-
-<li class="nav-item">
-    <a href="{{ route('de.validasi-dokumen') }}" class="nav-link {{ request()->routeIs('de.validasi-dokumen*') ? 'active' : '' }}">
-        <span class="menu-icon"><i class="bi bi-check-circle"></i></span>
-        <span>6. Validasi Dokumen</span>
-    </a>
-</li>
-
-<li class="nav-item">
-    <a href="{{ route('de.pelaporan-dokumen') }}" class="nav-link {{ request()->routeIs('de.pelaporan-dokumen*') ? 'active' : '' }}">
-        <span class="menu-icon"><i class="bi bi-bar-chart-line"></i></span>
-        <span>7. Pelaporan Validasi Dokumen</span>
-    </a>
-</li>
-
-<li class="nav-item">
-    <a href="{{ route('de.penugasan-ak') }}" class="nav-link {{ request()->routeIs('de.penugasan-ak*') ? 'active' : '' }}">
-        <span class="menu-icon"><i class="bi bi-person-check"></i></span>
-        <span>8. Penugasan Asesor AK</span>
-    </a>
-</li>
-
-<li class="nav-item">
-    <a href="{{ route('de.validasi-ak') }}" class="nav-link {{ request()->routeIs('de.validasi-ak*') ? 'active' : '' }}">
-        <span class="menu-icon"><i class="bi bi-patch-check"></i></span>
-        <span>9. Validasi AK</span>
-    </a>
-</li>
-
-<li class="nav-item">
-    <a href="{{ route('de.pelaporan-ak') }}" class="nav-link {{ request()->routeIs('de.pelaporan-ak*') ? 'active' : '' }}">
-        <span class="menu-icon"><i class="bi bi-file-earmark-bar-graph"></i></span>
-        <span>10. Pelaporan AK</span>
-    </a>
-</li>
-
-<li class="nav-item">
-    <a href="{{ route('de.penugasan-al') }}" class="nav-link {{ request()->routeIs('de.penugasan-al*') ? 'active' : '' }}">
-        <span class="menu-icon"><i class="bi bi-building"></i></span>
-        <span>11. Penugasan Asesor AL</span>
-    </a>
-</li>
-
-<li class="nav-item">
-    <a href="{{ route('de.pelaksanaan-al') }}" class="nav-link {{ request()->routeIs('de.pelaksanaan-al*') ? 'active' : '' }}">
-        <span class="menu-icon"><i class="bi bi-geo-alt"></i></span>
-        <span>12. Pelaksanaan AL & Berita Acara</span>
-    </a>
-</li>
-
-<li class="nav-item">
-    <a href="{{ route('de.pelaporan-al') }}" class="nav-link {{ request()->routeIs('de.pelaporan-al*') ? 'active' : '' }}">
-        <span class="menu-icon"><i class="bi bi-journal-text"></i></span>
-        <span>13. Pelaporan AL</span>
-    </a>
-</li>
-
-<li class="nav-item">
-    <a href="{{ route('de.penyampaian-hasil-akreditasi') }}" class="nav-link {{ request()->routeIs('de.penyampaian-hasil-akreditasi*') ? 'active' : '' }}">
-        <span class="menu-icon"><i class="bi bi-megaphone"></i></span>
-        <span>14. Penyampaian Hasil Akreditasi</span>
-    </a>
-</li>
-
-<li class="nav-item">
-    <a href="{{ route('de.masa-sanggah') }}" class="nav-link {{ request()->routeIs('de.masa-sanggah*') ? 'active' : '' }}">
-        <span class="menu-icon"><i class="bi bi-hourglass-split"></i></span>
-        <span>15. Masa Sanggah</span>
-    </a>
-</li>
-
-<li class="nav-item">
-    <a href="{{ route('de.pelaksanaan-banding') }}" class="nav-link {{ request()->routeIs('de.pelaksanaan-banding*') ? 'active' : '' }}">
-        <span class="menu-icon"><i class="bi bi-arrow-repeat"></i></span>
-        <span>16. Pelaksanaan Banding</span>
-    </a>
-</li>
-
-<li class="nav-item">
-    <a href="{{ route('de.pelaporan-banding') }}" class="nav-link {{ request()->routeIs('de.pelaporan-banding*') ? 'active' : '' }}">
-        <span class="menu-icon"><i class="bi bi-clipboard-data"></i></span>
-        <span>17. Pelaporan Banding</span>
-    </a>
-</li>
-
-<li class="nav-item">
-    <a href="{{ route('de.penetapan-hasil-akreditasi') }}" class="nav-link {{ request()->routeIs('de.penetapan-hasil-akreditasi*') ? 'active' : '' }}">
-        <span class="menu-icon"><i class="bi bi-award"></i></span>
-        <span>18. Penetapan Hasil Akreditasi</span>
-    </a>
-</li>
-
-<li class="nav-item">
-    <a href="{{ route('de.pelaporan-hasil-akreditasi') }}" class="nav-link {{ request()->routeIs('de.pelaporan-hasil-akreditasi*') ? 'active' : '' }}">
-        <span class="menu-icon"><i class="bi bi-graph-up"></i></span>
-        <span>19. Pelaporan Hasil Akreditasi</span>
-    </a>
-</li>
-
-<li class="nav-item">
-    <a href="{{ route('de.penyimpanan-arsip-pelaksanaan-akreditasi') }}" class="nav-link {{ request()->routeIs('de.penyimpanan-arsip-pelaksanaan-akreditasi*') ? 'active' : '' }}">
-        <span class="menu-icon"><i class="bi bi-archive"></i></span>
-        <span>20. Penyimpanan Arsip Akreditasi</span>
-    </a>
-</li>
+@endforeach
 {{-- <a href="{{ route('asesmen.index') }}" class="nav-link {{ request()->routeIs('asesmen*') ? 'active' : '' }}">
 <span class="menu-icon">📨</span>
 <span>Asesmen</span>

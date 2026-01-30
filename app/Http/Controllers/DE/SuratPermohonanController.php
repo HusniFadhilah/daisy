@@ -236,7 +236,7 @@ class SuratPermohonanController extends Controller
     private function calculateStatistics(): array
     {
         // Ambil semua status log untuk pengajuan yang relevan
-        $logs = \DB::table('pengajuan_status_log')
+        $logs = DB::table('pengajuan_status_log')
             ->select('id_pengajuan', 'status_to')
             ->whereIn('status_to', [
                 PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM,

@@ -22,7 +22,7 @@ class PenyampaianTemplateController extends Controller
         // Ambil status terakhir setiap pengajuan
         $latestStatus = PengajuanStatusLog::select('id_pengajuan', 'status_to')
             ->whereIn('status_to', [
-                PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
+                PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM,
                 PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM,
             ])
             ->orderByDesc('changed_at')
@@ -79,7 +79,7 @@ class PenyampaianTemplateController extends Controller
         // Get filter data
         $universities = University::nonExample()->orderBy('name')->get();
         $tahunList = PengajuanAkreditasi::whereIn('status', [
-            PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
+            PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM,
             PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM,
         ])
             ->distinct()
@@ -135,7 +135,7 @@ class PenyampaianTemplateController extends Controller
         $pengajuan = PengajuanAkreditasi::findOrFail($id);
 
         // Validasi status
-        if ($pengajuan->status !== PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA) {
+        if (!in_array($pengajuan->status, [PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA, PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM])) {
             return back()->with('error', 'Status permohonan tidak sesuai. Surat permohonan harus sudah diterima terlebih dahulu.');
         }
 
@@ -212,7 +212,7 @@ class PenyampaianTemplateController extends Controller
         $pengajuan = PengajuanAkreditasi::findOrFail($id);
 
         // Validasi status
-        if ($pengajuan->status !== PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA) {
+        if (!in_array($pengajuan->status, [PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA, PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM])) {
             return back()->with('error', 'Status permohonan tidak sesuai. Surat permohonan harus sudah diterima terlebih dahulu.');
         }
 
@@ -315,7 +315,7 @@ class PenyampaianTemplateController extends Controller
         $total = (clone $base)
             ->whereHas('statusLog', function ($q) {
                 $q->whereIn('status_to', [
-                    PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
+                    PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM,
                     PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM,
                 ]);
             })
@@ -324,7 +324,10 @@ class PenyampaianTemplateController extends Controller
         // Belum dikirim: status terakhir SURAT_PERMOHONAN_DITERIMA, belum pernah TEMPLATE_LED_DIKIRIM
         $belumDikirim = (clone $base)
             ->whereHas('statusLog', function ($q) {
-                $q->where('status_to', PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA);
+                $q->whereIn('status_to', [
+                    PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
+                    PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM,
+                ]);
             })
             ->whereDoesntHave('statusLog', function ($q) {
                 $q->where('status_to', PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM);

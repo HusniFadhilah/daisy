@@ -30,6 +30,7 @@ class PengajuanAkreditasi extends Model
     public const STATUS_SURAT_PERMOHONAN_DIKIRIM = 'surat_permohonan_dikirim';
     public const STATUS_SURAT_PERMOHONAN_DITERIMA = 'surat_permohonan_diterima';
     public const STATUS_SURAT_PERMOHONAN_DITOLAK = 'surat_permohonan_ditolak';
+    public const STATUS_SURAT_PENERIMAAN_DIKIRIM = 'surat_penerimaan_dikirim';
 
     // Step 3
     public const STATUS_TEMPLATE_LED_DIKIRIM = 'template_borang_dikirim';
@@ -106,6 +107,7 @@ class PengajuanAkreditasi extends Model
         'tanggal_surat_permohonan_dikirim',
         'tanggal_surat_permohonan_diterima',
         'tanggal_surat_permohonan_ditolak',
+        'tanggal_surat_penerimaan_dikirim',
         'tanggal_template_led_dikirim',
         'tanggal_pembayaran',
         'tanggal_draft_borang',
@@ -147,6 +149,7 @@ class PengajuanAkreditasi extends Model
         'tanggal_surat_permohonan_dikirim' => 'datetime',
         'tanggal_surat_permohonan_diterima' => 'datetime',
         'tanggal_surat_permohonan_ditolak' => 'datetime',
+        'tanggal_surat_penerimaan_dikirim' => 'datetime',
         'tanggal_template_led_dikirim' => 'datetime',
         'tanggal_pembayaran' => 'datetime',
         'tanggal_draft_borang' => 'datetime',
@@ -292,6 +295,34 @@ class PengajuanAkreditasi extends Model
             ->latestOfMany('changed_at'); // atau 'id' kalau id selalu urut waktu
     }
 
+    public function scopeWhereHasStatusLog($query, array $statuses)
+    {
+        return $query->whereExists(function ($q) use ($statuses) {
+            $q->select(DB::raw(1))
+                ->from('pengajuan_status_log')
+                ->whereColumn('pengajuan_status_log.id_pengajuan', 'pengajuan_akreditasi.id')
+                ->whereIn('status_to', $statuses);
+        });
+    }
+
+    public function hasSuratPermohonanDocument(): bool
+    {
+        return $this->dokumen()
+            ->where('jenis_dokumen', 'surat_permohonan')
+            ->where('is_latest', true)
+            ->exists();
+    }
+
+    public static function getTahunAkreditasiList(): array
+    {
+        return self::distinct()
+            ->pluck('tahun_akreditasi')
+            ->filter()
+            ->sort()
+            ->values()
+            ->toArray();
+    }
+
     public function lastBorangValidationLog()
     {
         $statuses = [
@@ -306,6 +337,7 @@ class PengajuanAkreditasi extends Model
             ->whereIn('status_to', $statuses)
             ->latestOfMany('changed_at'); // ambil 1 paling baru
     }
+
 
     public function borangValidation()
     {
@@ -591,21 +623,24 @@ class PengajuanAkreditasi extends Model
         return self::statusMap()[$this->status]['bg'] ?? 'bg-secondary';
     }
 
-    public function getUploadedDocuments()
+    public function getUploadedDocuments($listDocuments = ['led', 'suplemen', 'lkps', 'pengesahan'])
     {
         $dokumens = $this->dokumen()
             ->where('is_latest', true)
             ->latest()
             ->get();
-        $uploadedFiles = [
-            'led' => $dokumens->whereIn('jenis_dokumen', ['data_kualitatif', 'draft_borang', 'borang_final',])->first(),
+
+        $map = [
+            'led' => $dokumens->whereIn('jenis_dokumen', ['data_kualitatif', 'draft_borang', 'borang_final'])->first(),
             'suplemen' => $dokumens->whereIn('jenis_dokumen', ['data_suplemen', 'suplemen', 'file_suplemen', 'dokumen_pendukung'])->first(),
-            'lkps' => $dokumens->whereIn('jenis_dokumen', ['data_kuantitatif', 'kuantitatif',])->first(),
+            'lkps' => $dokumens->whereIn('jenis_dokumen', ['data_kuantitatif', 'kuantitatif'])->first(),
             'pengesahan' => $dokumens->where('jenis_dokumen', 'lembar_pengesahan')->first(),
             'formulir_pembayaran' => $dokumens->where('jenis_dokumen', 'formulir_pembayaran')->first(),
             'surat_permohonan' => $dokumens->where('jenis_dokumen', 'surat_permohonan')->first(),
+            'surat_penerimaan_de' => $dokumens->where('jenis_dokumen', 'surat_penerimaan_de')->first(),
         ];
-        return $uploadedFiles;
+
+        return collect($map)->only($listDocuments)->all();
     }
 
     // ============================================
@@ -636,6 +671,11 @@ class PengajuanAkreditasi extends Model
             ],
             self::STATUS_SURAT_PERMOHONAN_DITERIMA => [
                 'label' => 'Surat Permohonan Akreditasi Diterima',
+                'bg' => 'bg-success',
+                'icon' => 'bi-envelope',
+            ],
+            self::STATUS_SURAT_PENERIMAAN_DIKIRIM => [
+                'label' => 'Surat Penerimaan Permohonan Akreditasi Dikirim',
                 'bg' => 'bg-success',
                 'icon' => 'bi-envelope',
             ],
@@ -828,24 +868,25 @@ class PengajuanAkreditasi extends Model
         $items = [
             1 => ['date' => $this->tanggal_pengingat, 'label' => 'Pengingat Masa Akreditasi', 'icon' => 'bi-bell'],
             2 => ['date' => ($this->tanggal_surat_permohonan_dikirim ?? $this->tanggal_surat_permohonan_diterima), 'label' => 'Surat Permohonan Akreditasi', 'icon' => 'bi-envelope'],
-            3 => ['date' => $this->tanggal_template_led_dikirim, 'label' => 'Pengiriman Formulir dan Template Dokumen, formulir pembayaran', 'icon' => 'bi-file-earmark-arrow-down'],
-            4 => ['date' => $this->tanggal_pembayaran, 'label' => 'Validasi pembayaran', 'icon' => 'bi-credit-card-2-front'],
-            5 => ['date' => $this->tanggal_draft_borang, 'label' => 'Penerimaan Draft Dokumen dari Prodi', 'icon' => 'bi-file-earmark-check'],
-            6 => ['date' => $this->tanggal_validasi_borang_assigned, 'label' => 'Validasi Dokumen', 'icon' => 'bi-clipboard-check'],
-            7 => ['date' => $this->tanggal_pelaporan_validasi_borang, 'label' => 'Pelaporan Validasi Dokumen', 'icon' => 'bi-file-earmark-text'],
-            8 => ['date' => $this->tanggal_penugasan_asesor_ak, 'label' => 'Penugasan asesor untuk AK', 'icon' => 'bi-person-check'],
-            9 => ['date' => $this->tanggal_validasi_ak, 'label' => 'Validasi AK', 'icon' => 'bi-clipboard2-check'],
-            10 => ['date' => $this->tanggal_pelaporan_ak, 'label' => 'Pelaporan AK', 'icon' => 'bi-file-earmark-medical'],
-            11 => ['date' => $this->tanggal_penugasan_asesor_al, 'label' => 'Penugasan asesor untuk AL', 'icon' => 'bi-person-badge'],
-            12 => ['date' => ($this->tanggal_pelaksanaan_al ?? $this->tanggal_al_selesai), 'label' => 'Pelaksanaan AL dan penyampaian berita acara AL', 'icon' => 'bi-building'],
-            13 => ['date' => $this->tanggal_pelaporan_al, 'label' => 'Pelaporan AL', 'icon' => 'bi-clipboard-data'],
-            14 => ['date' => $this->tanggal_hasil_akreditasi, 'label' => 'Penyampaian hasil akreditasi', 'icon' => 'bi-envelope-paper'],
-            15 => ['date' => $this->tanggal_masa_sanggah_mulai, 'label' => 'Masa sanggah', 'icon' => 'bi-clock-history'],
-            16 => ['date' => $this->tanggal_pelaksanaan_banding, 'label' => 'Pelaksanaan banding', 'icon' => 'bi-arrow-repeat'],
-            17 => ['date' => $this->tanggal_pelaporan_banding, 'label' => 'Pelaporan banding', 'icon' => 'bi-file-earmark-ruled'],
-            18 => ['date' => $this->tanggal_penetapan, 'label' => 'Penetapan hasil akreditasi', 'icon' => 'bi-award'],
-            19 => ['date' => $this->tanggal_pelaporan_hasil, 'label' => 'Pelaporan hasil akreditasi', 'icon' => 'bi-megaphone'],
-            20 => ['date' => $this->tanggal_penyimpanan, 'label' => 'Penyimpanan arsip pelaksanaan akreditasi', 'icon' => 'bi-archive'],
+            3 => ['date' => $this->tanggal_surat_penerimaan_dikirim, 'label' => 'Surat Penerimaan Permohonan Akreditasi', 'icon' => 'bi-envelope'],
+            4 => ['date' => $this->tanggal_template_led_dikirim, 'label' => 'Pengiriman Formulir dan Template Dokumen, formulir pembayaran', 'icon' => 'bi-file-earmark-arrow-down'],
+            5 => ['date' => $this->tanggal_pembayaran, 'label' => 'Validasi pembayaran', 'icon' => 'bi-credit-card-2-front'],
+            6 => ['date' => $this->tanggal_draft_borang, 'label' => 'Penerimaan Draft Dokumen dari Prodi', 'icon' => 'bi-file-earmark-check'],
+            7 => ['date' => $this->tanggal_validasi_borang_assigned, 'label' => 'Validasi Dokumen', 'icon' => 'bi-clipboard-check'],
+            8 => ['date' => $this->tanggal_pelaporan_validasi_borang, 'label' => 'Pelaporan Validasi Dokumen', 'icon' => 'bi-file-earmark-text'],
+            9 => ['date' => $this->tanggal_penugasan_asesor_ak, 'label' => 'Penugasan asesor untuk AK', 'icon' => 'bi-person-check'],
+            10 => ['date' => $this->tanggal_validasi_ak, 'label' => 'Validasi AK', 'icon' => 'bi-clipboard2-check'],
+            11 => ['date' => $this->tanggal_pelaporan_ak, 'label' => 'Pelaporan AK', 'icon' => 'bi-file-earmark-medical'],
+            12 => ['date' => $this->tanggal_penugasan_asesor_al, 'label' => 'Penugasan asesor untuk AL', 'icon' => 'bi-person-badge'],
+            13 => ['date' => ($this->tanggal_pelaksanaan_al ?? $this->tanggal_al_selesai), 'label' => 'Pelaksanaan AL dan penyampaian berita acara AL', 'icon' => 'bi-building'],
+            14 => ['date' => $this->tanggal_pelaporan_al, 'label' => 'Pelaporan AL', 'icon' => 'bi-clipboard-data'],
+            15 => ['date' => $this->tanggal_hasil_akreditasi, 'label' => 'Penyampaian hasil akreditasi', 'icon' => 'bi-envelope-paper'],
+            16 => ['date' => $this->tanggal_masa_sanggah_mulai, 'label' => 'Masa sanggah', 'icon' => 'bi-clock-history'],
+            17 => ['date' => $this->tanggal_pelaksanaan_banding, 'label' => 'Pelaksanaan banding', 'icon' => 'bi-arrow-repeat'],
+            18 => ['date' => $this->tanggal_pelaporan_banding, 'label' => 'Pelaporan banding', 'icon' => 'bi-file-earmark-ruled'],
+            19 => ['date' => $this->tanggal_penetapan, 'label' => 'Penetapan hasil akreditasi', 'icon' => 'bi-award'],
+            20 => ['date' => $this->tanggal_pelaporan_hasil, 'label' => 'Pelaporan hasil akreditasi', 'icon' => 'bi-megaphone'],
+            21 => ['date' => $this->tanggal_penyimpanan, 'label' => 'Penyimpanan arsip pelaksanaan akreditasi', 'icon' => 'bi-archive'],
         ];
 
         $meta = $this->currentTimelineMeta();
@@ -866,7 +907,7 @@ class PengajuanAkreditasi extends Model
 
         // Jika status di step ini "success", artinya step tsb sudah tuntas,
         // maka "current" pindah ke step berikutnya (kecuali sudah step 20)
-        if ($currentColor === 'success' && $currentStep < 20 && $this->status !== self::STATUS_SELESAI) {
+        if ($currentColor === 'success' && $currentStep < count($items) && $this->status !== self::STATUS_SELESAI) {
             $currentStep++;
             $currentColor = 'warning'; // step berikutnya dianggap progress (kuning)
         }
@@ -903,12 +944,14 @@ class PengajuanAkreditasi extends Model
                 'success' => [self::STATUS_SURAT_PERMOHONAN_DITERIMA],
                 'danger' => [self::STATUS_SURAT_PERMOHONAN_DITOLAK],
             ],
-
             3 => [
+                'success' => [self::STATUS_SURAT_PENERIMAAN_DIKIRIM]
+            ],
+            4 => [
                 'success' => [self::STATUS_TEMPLATE_LED_DIKIRIM],
             ],
 
-            4 => [
+            5 => [
                 'warning' => [
                     self::STATUS_MENUNGGU_PEMBAYARAN,
                     self::STATUS_PEMBAYARAN_DITERIMA,
@@ -917,12 +960,12 @@ class PengajuanAkreditasi extends Model
                 'success' => [self::STATUS_PEMBAYARAN_DIVERIFIKASI],
             ],
 
-            5 => [
+            6 => [
                 'warning' => [self::STATUS_DRAFT_BORANG_DIKIRIM],
                 'success' => [self::STATUS_DRAFT_BORANG_DITERIMA, self::STATUS_BORANG_ONLINE_SELESAI],
             ],
 
-            6 => [
+            7 => [
                 'warning' => [
                     self::STATUS_BORANG_VALIDATION_PENDING,
                     self::STATUS_BORANG_IN_VALIDATION,
@@ -931,65 +974,65 @@ class PengajuanAkreditasi extends Model
                 'success' => [self::STATUS_BORANG_VALIDATED, self::STATUS_BORANG_FINAL_DITERIMA],
             ],
 
-            7 => [
+            8 => [
                 'success' => [self::STATUS_VALIDASI_BORANG_DILAPORKAN, self::STATUS_PENGAJUAN_COMPLETED],
             ],
 
-            8 => [
+            9 => [
                 'warning' => [self::STATUS_ASESOR_AK_ASSIGNED, self::STATUS_AK_IN_PROGRESS],
                 'success' => [self::STATUS_AK_ON_VALIDATION],
             ],
 
-            9 => [
+            10 => [
                 'warning' => [self::STATUS_AK_ON_VALIDATION],
                 'success' => [self::STATUS_AK_SELESAI],
             ],
 
-            10 => [
+            11 => [
                 'success' => [self::STATUS_AK_DILAPORKAN],
             ],
 
-            11 => [
+            12 => [
                 'warning' => [self::STATUS_ASESOR_AL_ASSIGNED],
                 'success' => [self::STATUS_AL_IN_PROGRESS],
             ],
 
-            12 => [
+            13 => [
                 'warning' => [self::STATUS_AL_IN_PROGRESS],
                 'success' => [self::STATUS_AL_SELESAI],
             ],
 
-            13 => [
+            14 => [
                 'success' => [self::STATUS_AL_DILAPORKAN],
             ],
 
-            14 => [
+            15 => [
                 'success' => [self::STATUS_HASIL_AKREDITASI_DIKIRIM],
             ],
 
-            15 => [
+            16 => [
                 'success' => [self::STATUS_MASA_SANGGAH],
             ],
 
-            16 => [
+            17 => [
                 'warning' => [self::STATUS_BANDING_DIAJUKAN],
                 'success' => [self::STATUS_BANDING_DILAKSANAKAN],
             ],
 
-            17 => [
+            18 => [
                 'success' => [self::STATUS_BANDING_DILAPORKAN],
             ],
 
-            18 => [
+            19 => [
                 'warning' => [self::STATUS_HASIL_DITETAPKAN],
                 'success' => [self::STATUS_HASIL_DIUMUMKAN],
             ],
 
-            19 => [
+            20 => [
                 'success' => [self::STATUS_HASIL_DILAPORKAN],
             ],
 
-            20 => [
+            21 => [
                 'success' => [self::STATUS_ARSIP_DISIMPAN, self::STATUS_SELESAI],
             ],
         ];
@@ -1005,7 +1048,7 @@ class PengajuanAkreditasi extends Model
         $rules = self::statusTimelineRuleMap();
 
         foreach ($rules as $step => $cfg) {
-            foreach (['warning', 'success'] as $color) {
+            foreach (['warning', 'success', 'danger'] as $color) {
                 $list = $cfg[$color] ?? [];
                 if (in_array($status, $list, true)) {
                     return ['step' => $step, 'color' => $color];
@@ -1028,7 +1071,8 @@ class PengajuanAkreditasi extends Model
             self::STATUS_DRAFT => [self::STATUS_PENGINGAT_DIKIRIM],
             self::STATUS_PENGINGAT_DIKIRIM => [self::STATUS_SURAT_PERMOHONAN_DIKIRIM],
             self::STATUS_SURAT_PERMOHONAN_DIKIRIM => [self::STATUS_SURAT_PERMOHONAN_DITERIMA, self::STATUS_SURAT_PERMOHONAN_DITOLAK],
-            self::STATUS_SURAT_PERMOHONAN_DITERIMA => [self::STATUS_TEMPLATE_LED_DIKIRIM, self::STATUS_MENUNGGU_PEMBAYARAN],
+            self::STATUS_SURAT_PERMOHONAN_DITERIMA => [self::STATUS_SURAT_PENERIMAAN_DIKIRIM],
+            self::STATUS_SURAT_PENERIMAAN_DIKIRIM => [self::STATUS_TEMPLATE_LED_DIKIRIM, self::STATUS_MENUNGGU_PEMBAYARAN],
             self::STATUS_TEMPLATE_LED_DIKIRIM => [self::STATUS_MENUNGGU_PEMBAYARAN],
             self::STATUS_MENUNGGU_PEMBAYARAN => [self::STATUS_PEMBAYARAN_DITERIMA, self::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN],
             self::STATUS_PEMBAYARAN_DITERIMA => [self::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN],
@@ -1185,8 +1229,10 @@ class PengajuanAkreditasi extends Model
         $statuses = [];
         if ($attribute == 'surat_permohonan_ps')
             $statuses = [self::STATUS_PENGINGAT_DIKIRIM, self::STATUS_SURAT_PERMOHONAN_DIKIRIM, self::STATUS_SURAT_PERMOHONAN_DITERIMA, self::STATUS_SURAT_PERMOHONAN_DITOLAK];
+        if ($attribute == 'surat_penerimaan_de')
+            $statuses = [self::STATUS_SURAT_PERMOHONAN_DITERIMA, self::STATUS_SURAT_PENERIMAAN_DIKIRIM];
         if ($attribute == 'borang_template')
-            $statuses = [self::STATUS_TEMPLATE_LED_DIKIRIM, self::STATUS_SURAT_PERMOHONAN_DITERIMA];
+            $statuses = [self::STATUS_TEMPLATE_LED_DIKIRIM, self::STATUS_SURAT_PENERIMAAN_DIKIRIM];
         if ($attribute == 'draft_borang')
             $statuses = [self::STATUS_DRAFT_BORANG_DIKIRIM, self::STATUS_DRAFT_BORANG_DITERIMA, self::STATUS_BORANG_ONLINE_SELESAI, self::STATUS_BORANG_VALIDATION_PENDING, self::STATUS_BORANG_IN_VALIDATION, self::STATUS_BORANG_REVISION_REQUIRED, self::STATUS_BORANG_VALIDATED, self::STATUS_BORANG_FINAL_DITERIMA];
         if ($attribute == 'borang_final')
@@ -1209,8 +1255,13 @@ class PengajuanAkreditasi extends Model
                 self::STATUS_SURAT_PERMOHONAN_DITOLAK => '<span class="badge bg-danger">Surat Permohonan Akreditasi Ditolak</span>',
                 default => '<span class="badge bg-secondary">-</span>',
             },
+            'surat_penerimaan_de' => match ($this->getCustomLastStatus($attribute)) {
+                self::STATUS_SURAT_PERMOHONAN_DITERIMA => '<span class="badge bg-warning">Surat Permohonan Akreditasi Diterima</span>',
+                self::STATUS_SURAT_PENERIMAAN_DIKIRIM => '<span class="badge bg-success">Surat Penerimaan Akreditasi Dikirim DE</span>',
+                default => '<span class="badge bg-secondary">-</span>',
+            },
             'borang_template' => match ($this->getCustomLastStatus($attribute)) {
-                self::STATUS_SURAT_PERMOHONAN_DITERIMA => '<span class="badge bg-warning">Belum Dikirim DE</span>',
+                self::STATUS_SURAT_PENERIMAAN_DIKIRIM => '<span class="badge bg-warning">Belum Dikirim DE</span>',
                 self::STATUS_TEMPLATE_LED_DIKIRIM => '<span class="badge bg-success">Sudah Dikirim, Sudah Diterima PS</span>',
                 default => '<span class="badge bg-secondary">-</span>',
             },

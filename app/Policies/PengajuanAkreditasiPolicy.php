@@ -115,4 +115,10 @@ class PengajuanAkreditasiPolicy
 
         return in_array($pengajuan->id_program_studi, $userStudyProgramIds);
     }
+
+    public function kirimSuratPenerimaan(User $user, PengajuanAkreditasi $pengajuan): bool
+    {
+        // Only assigned DE can send surat penerimaan
+        return $user->id === $pengajuan->id_de_assigned;
+    }
 }

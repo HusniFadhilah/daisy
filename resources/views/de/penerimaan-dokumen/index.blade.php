@@ -73,6 +73,22 @@
 
 @section('content')
 <div class="container-fluid py-3">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item active">Penerimaan Draft Dokumen</li>
+        </ol>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="mb-1"><i class="bi bi-file-earmark-text"></i> Penerimaan Draft Dokumen</h4>
+            <p class="text-muted mb-0">Monitoring penerimaan draft dokumen dari PS</p>
+        </div>
+    </div>
+
     <!-- Statistics Cards -->
     <div class="row row-cols-1 row-cols-md-4 row-cols-lg-5 mb-4">
         <div class="col mb-3">
@@ -158,7 +174,7 @@
         </h4>
 
         <button type="button" class="btn btn-primary ms-auto" data-bs-toggle="modal" data-bs-target="#modalKirimReminder">
-            <i class="bi bi-bell"></i> Kirim Reminder Upload
+            <i class="bi bi-bell"></i> Kirim Pengingat Upload
         </button>
     </div>
 
@@ -214,8 +230,9 @@
                             <label class="form-label text-white">Status Dokumen</label>
                             <select name="doc_status" id="docStatusFilter" class="form-select">
                                 <option value="">Semua</option>
-                                <option value="complete">Lengkap</option>
+                                <option value="complete">Lengkap (LED + LKPS)</option>
                                 <option value="incomplete">Belum Lengkap</option>
+                                <option value="none">Belum Upload</option>
                             </select>
                         </div>
 

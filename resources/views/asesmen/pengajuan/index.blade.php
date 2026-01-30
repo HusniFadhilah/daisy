@@ -151,7 +151,7 @@
 
                                                 <div class="mb-3">
                                                     <label class="form-label fw-bold">
-                                                        Surat Permohonan <span class="text-danger">*</span>
+                                                        Surat Permohonan Akreditasi <span class="text-danger">*</span>
                                                     </label>
                                                     <input type="file" name="file_surat_permohonan" class="form-control" accept=".pdf" required>
                                                     <small class="text-muted">Format: PDF, Max: 5MB</small>

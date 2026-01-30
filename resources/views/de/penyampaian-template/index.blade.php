@@ -2,7 +2,7 @@
 
 @extends('layouts.template.app')
 
-@section('title', 'Penyampaian Template Dokumen')
+@section('title', 'Pengiriman Formulir dan Template Dokumen')
 
 @push('styles')
 <style>
@@ -68,15 +68,15 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item active">Penyampaian Template</li>
+            <li class="breadcrumb-item active">Pengiriman Formulir dan Template Dokumen</li>
         </ol>
     </nav>
 
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h4 class="mb-1"><i class="bi bi-file-earmark-arrow-down"></i> Pengiriman Formulir dan Template Dokumen</h4>
-            <p class="text-muted mb-0">Kirim template dokumen akreditasi kepada program studi</p>
+            <h4 class="mb-1"><i class="bi bi-file-earmark-text"></i> Pengiriman Formulir dan Template Dokumen</h4>
+            <p class="text-muted mb-0">Kirim template dokumen akreditasi kepada PS</p>
         </div>
     </div>
 
@@ -211,7 +211,7 @@
             <div class="card">
                 <div class="card-header bg-white">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Daftar Permohonan Akreditasi</h5>
+                        <h5 class="mb-0">Daftar Pengiriman Formulir dan Template Dokumen</h5>
                         <div>
                             <span class="text-muted">Total: <strong>{{ $pengajuans->total() }}</strong></span>
                         </div>
@@ -226,10 +226,8 @@
                                     <th width="5%">#</th>
                                     <th width="13%">Nomor Permohonan Akreditasi</th>
                                     <th width="20%">Program Studi</th>
-                                    <th width="12%">Universitas</th>
-                                    <th width="7%">Tahun</th>
-                                    <th width="16%">Tanggal Surat</th>
-                                    <th width="14%">Status</th>
+                                    <th width="16%">Tanggal Pengiriman Template Dokumen</th>
+                                    <th width="14%">Status Pengiriman Formulir dan Template Dokumen</th>
                                     <th width="13%" class="text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -248,32 +246,23 @@
                                             <small class="text-muted">
                                                 {{ $pengajuan->studyProgram->degreeLevel->name ?? '-' }}
                                             </small>
+                                            <small>{{ $pengajuan->studyProgram->university->name ?? '-' }}</small>
                                         </div>
                                     </td>
                                     <td>
-                                        <small>{{ $pengajuan->studyProgram->university->name ?? '-' }}</small>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-info">{{ $pengajuan->tahun_akreditasi }}</span>
-                                    </td>
-                                    <td>
-                                        @if($pengajuan->tanggal_surat_permohonan_dikirim)
+                                        @if($pengajuan->tanggal_template_led_dikirim)
                                         <small class="text-muted">
                                             <i class="bi bi-send"></i> Sudah Dikirim:
-                                            {{ $pengajuan->tanggal_surat_permohonan_dikirim->format('d M Y') }}
+                                            {{ $pengajuan->tanggal_template_led_dikirim->format('d M Y') }}
                                         </small>
                                         <br>
+                                        @else
+                                        <small>-</small>
                                         @endif
-                                        @if($pengajuan->tanggal_surat_permohonan_diterima)
+                                        @if($pengajuan->tanggal_template_led_dikirim)
                                         <small class="text-success">
                                             <i class="bi bi-check-circle"></i> Sudah Diterima:
-                                            {{ $pengajuan->tanggal_surat_permohonan_diterima->format('d M Y') }}
-                                        </small>
-                                        @endif
-                                        @if($pengajuan->tanggal_surat_permohonan_ditolak)
-                                        <small class="text-danger">
-                                            <i class="bi bi-x-circle"></i> Sudah Ditolak:
-                                            {{ $pengajuan->tanggal_surat_permohonan_ditolak->format('d M Y') }}
+                                            {{ $pengajuan->tanggal_template_led_dikirim->format('d M Y') }}
                                         </small>
                                         @endif
                                     </td>
@@ -286,7 +275,7 @@
                                                 <i class="bi bi-eye"></i>
                                             </a>
 
-                                            @if($pengajuan->status == \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA)
+                                            @if($pengajuan->status == \App\Models\PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM)
                                             <button type="button" class="btn btn-primary action-btn" title="Kirim Template" onclick="kirimTemplate({{ $pengajuan->id }}, '{{ $pengajuan->judul }}')">
                                                 <i class="bi bi-send"></i>
                                             </button>

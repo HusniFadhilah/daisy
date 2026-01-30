@@ -4,7 +4,7 @@
     <div class="card-header bg-light">
         <div class="d-flex justify-content-between align-items-center">
             <h5 class="mb-0">
-                <i class="bi bi-table"></i> Daftar Permohonan
+                <i class="bi bi-table"></i> Daftar Penerimaan Draft Dokumen
             </h5>
             <span class="badge bg-primary">Total: {{ $pengajuans->total() }}</span>
         </div>
@@ -17,9 +17,9 @@
                         <th width="5%">No</th>
                         <th width="15%">Nomor Permohonan Akreditasi</th>
                         <th width="20%">Program Studi</th>
-                        <th width="15%">Status Permohonan</th>
+                        <th width="15%">Status Penerimaan Dokumen</th>
                         <th width="15%">Status Dokumen</th>
-                        <th width="15%">Tanggal Upload</th>
+                        <th width="15%">Tanggal Update Status</th>
                         <th width="15%" class="text-center">Aksi</th>
                     </tr>
                 </thead>
@@ -33,11 +33,14 @@
 
                     $docComplete = $hasLED && $hasLKPS;
                     $docCount = ($hasLED ? 1 : 0) + ($hasLKPS ? 1 : 0) + ($hasSuplemen ? 1 : 0);
+
+                    // Gunakan actual_status dari controller (sudah diset dari latestStatusLog)
+                    $currentStatus = $pengajuan->actual_status ?? $pengajuan->status;
                     @endphp
                     <tr>
                         <td>{{ $pengajuans->firstItem() + $index }}</td>
                         <td>
-                            <p>{{ $pengajuan->judul }}</p>
+                            <strong>{{ $pengajuan->judul }}</strong><br>
                             <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
                         </td>
                         <td>
@@ -54,9 +57,30 @@
                             </div>
                         </td>
                         <td>
-                            {!! $pengajuan->getCustomBadgeLastStatus('borang_final') !!}
-                            @if(in_array($pengajuan->status,[\App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI]))
-                            <small>Perlu menugaskan validator</small>
+                            {{-- Gunakan status dari log --}}
+                            @php
+                            $statusBadge = match($currentStatus) {
+                            \App\Models\PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI =>
+                            '<span class="badge bg-warning">Menunggu PS Mengupload</span>',
+                            \App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA =>
+                            '<span class="badge bg-info">Dokumen Masuk</span>',
+                            \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI =>
+                            '<span class="badge bg-success">Dokumen Lengkap</span>',
+                            \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING =>
+                            '<span class="badge bg-primary">Menunggu Validasi oleh Validator</span>',
+                            \App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION =>
+                            '<span class="badge bg-primary">Dalam Validasi oleh Validator</span>',
+                            \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED =>
+                            '<span class="badge bg-danger">Perlu Revisi oleh Validator</span>',
+                            \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED =>
+                            '<span class="badge bg-success">Tervalidasi oleh Validator</span>',
+                            default => '<span class="badge bg-secondary">Unknown</span>'
+                            };
+                            @endphp
+                            {!! $statusBadge !!}
+
+                            @if($currentStatus == \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI)
+                            <br><small class="text-muted">Perlu menugaskan validator</small>
                             @endif
                         </td>
                         <td>
@@ -88,12 +112,15 @@
                             @endif
                         </td>
                         <td>
-                            @if($pengajuan->tanggal_draft_borang)
+                            @if($pengajuan->status_changed_at)
+                            <small class="text-muted">
+                                <i class="bi bi-clock"></i>
+                                {{ \Carbon\Carbon::parse($pengajuan->status_changed_at)->format('d M Y H:i') }}
+                            </small>
+                            @elseif($pengajuan->tanggal_draft_borang)
                             {{ $pengajuan->tanggal_draft_borang->format('d M Y H:i') }}
-                            @elseif(!$pengajuan->tanggal_draft_borang && in_array($pengajuan->status,[ \App\Models\PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI,\App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM]))
-                            <span class="text-muted">Belum upload secara lengkap</span>
                             @else
-                            <span class="text-muted">Belum upload</span>
+                            <span class="text-muted">-</span>
                             @endif
                         </td>
                         <td class="text-center">
@@ -101,9 +128,7 @@
                                 <i class="bi bi-eye"></i>
                             </a>
 
-                            @if($docComplete && in_array($pengajuan->status, [
-                            \App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA
-                            ]))
+                            @if($docComplete && $currentStatus == \App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA)
                             <button type="button" class="btn btn-sm btn-success" onclick="konfirmasiPenerimaan({{ $pengajuan->id }})" title="Konfirmasi Penerimaan">
                                 <i class="bi bi-check-circle"></i>
                             </button>

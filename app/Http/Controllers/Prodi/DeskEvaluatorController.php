@@ -242,7 +242,7 @@ class DeskEvaluatorController extends Controller
                 ->lockForUpdate()
                 ->findOrFail($id);
 
-            if ($pengajuan->status !== PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA) {
+            if (!in_array($pengajuan->status, [PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA, PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM])) {
                 DB::rollBack();
                 return back()->with('error', 'Status Permohonan akreditasi tidak sesuai untuk kirim template.');
             }
@@ -361,7 +361,7 @@ class DeskEvaluatorController extends Controller
                 ->lockForUpdate()
                 ->findOrFail($id);
 
-            if ($pengajuan->status !== PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA) {
+            if (!in_array($pengajuan->status, [PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA, PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM])) {
                 DB::rollBack();
                 return back()->with('error', 'Status Permohonan akreditasi tidak sesuai untuk kirim formulir pembayaran.');
             }
@@ -470,7 +470,7 @@ class DeskEvaluatorController extends Controller
         }
 
         // hanya naikkan jika masih di tahap surat permohonan diterima
-        if ($pengajuan->status !== PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA) {
+        if (!in_array($pengajuan->status, [PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA, PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM])) {
             return;
         }
 

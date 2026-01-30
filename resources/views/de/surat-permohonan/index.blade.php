@@ -194,10 +194,10 @@
                                 Surat Dikirim PS
                             </option>
                             <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA ? 'selected' : '' }}>
-                                Surat Diterima
+                                Surat Diterima DE
                             </option>
                             <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITOLAK }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITOLAK ? 'selected' : '' }}>
-                                Surat Belum Diterima
+                                Surat Belum Diterima DE
                             </option>
                         </select>
                     </div>

@@ -331,14 +331,14 @@
             @if(in_array($pengajuan->status, [\App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA]))
             <div class="alert alert-info alert-permanent">
                 <i class="bi bi-info-circle"></i>
-                Surat permohonan akreditasi program studi telah diterima. Mohon tunggu Dewan Eksekutif LAMDEPILAR melakukan penyampaian Template Dokumen, serta Formulir Pembayaran
+                Surat permohonan akreditasi program studi telah diterima. Mohon tunggu Dewan Eksekutif LAMDEPILAR melakukan pengiriman Formulir Pembayaran dan Template Dokumen
             </div>
             @endif
 
             @if(in_array($pengajuan->status, [\App\Models\PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM]))
             <div class="alert alert-info alert-permanent">
                 <i class="bi bi-info-circle"></i>
-                Template Dokumen, serta Formulir Pembayaran telah dikirim oleh Dewan Eksekutif LAMDEPILAR. Mohon tunggu Dewan Eksekutif LAMDEPILAR melakukan permintaan pembayaran.
+                Formulir Pembayaran serta Template Dokumen telah dikirim oleh Dewan Eksekutif LAMDEPILAR. Mohon tunggu Dewan Eksekutif LAMDEPILAR melakukan permintaan pembayaran.
             </div>
             @endif
 

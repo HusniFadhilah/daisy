@@ -1,3 +1,5 @@
+{{-- resources/views/de/penerimaan-dokumen/show.blade.php --}}
+
 @extends('layouts.template.app')
 
 @section('title', 'Detail Penerimaan Dokumen - ' . $pengajuan->nomor_pengajuan)
@@ -35,7 +37,6 @@
         font-size: 28px;
     }
 
-    /* Compact list item */
     .doc-item {
         border: 1px solid #e9ecef;
         border-radius: 10px;
@@ -60,7 +61,6 @@
         background: #fff8f8;
     }
 
-    /* Smaller icon */
     .doc-ico {
         width: 34px;
         height: 34px;
@@ -72,7 +72,6 @@
         flex: 0 0 34px;
     }
 
-    /* Tight text */
     .doc-title {
         font-size: .92rem;
         margin: 0;
@@ -84,7 +83,6 @@
         color: #6c757d;
     }
 
-    /* Compact progress */
     .doc-progress .progress {
         height: 12px;
         border-radius: 999px;
@@ -143,7 +141,7 @@
             <div class="card">
                 <div class="card-header bg-secondary text-white">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Daftar Dokumen</h5>
+                        <h5 class="mb-0">Daftar Dokumen yang Diupload PS</h5>
 
                         @if($docCompleteness['is_complete'])
                         <span class="badge bg-success">
@@ -159,20 +157,22 @@
                     {{-- Progress menyatu di header --}}
                     <div class="doc-progress mt-2">
                         <div class="d-flex justify-content-between small">
-                            <span>Kelengkapan</span>
+                            <span>Kelengkapan Dokumen</span>
                             <span class="fw-semibold">{{ $docCompleteness['percentage'] }}%</span>
                         </div>
                         <div class="progress mt-1">
-                            <div class="progress-bar {{ $docCompleteness['is_complete'] ? 'bg-success' : 'bg-warning' }}" style="width: {{ $docCompleteness['percentage'] }}%" role="progressbar" aria-valuenow="{{ $docCompleteness['percentage'] }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            <div class="progress-bar {{ $docCompleteness['is_complete'] ? 'bg-success' : 'bg-warning' }}" style="width: {{ $docCompleteness['percentage'] }}%" role="progressbar" aria-valuenow="{{ $docCompleteness['percentage'] }}" aria-valuemin="0" aria-valuemax="100">
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="card-body">
-                    {{-- Biar rapi di layar besar: 2 kolom --}}
                     <div class="row">
                         @foreach($docCompleteness['details'] as $jenis => $detail)
-                        @php $dokumen = $uploadedDocuments[$jenis] ?? null; @endphp
+                        @php
+                        $dokumen = $uploadedDocuments[$jenis] ?? null;
+                        @endphp
 
                         <div class="col-12 col-md-6 col-lg-4">
                             <div class="doc-item {{ $detail['uploaded'] ? 'uploaded' : 'missing' }}">
@@ -186,21 +186,26 @@
 
                                         @if($dokumen)
                                         <div class="doc-meta">
-                                            <div class="text-wrap" title="{{ $dokumen->original_filename }}">
-                                                {{ $dokumen->original_filename }}
+                                            <div class="text-wrap text-truncate" title="{{ $dokumen->original_filename ?? '-' }}">
+                                                {{ Str::limit($dokumen->original_filename ?? '-', 40) }}
                                             </div>
                                             <div>
-                                                {{ $dokumen->file_size_formatted ?? '' }} • {{ $dokumen->created_at->format('d M Y H:i') }}
+                                                {{ $dokumen->file_size_formatted ?? '-' }}
+                                                @if($dokumen->created_at)
+                                                • {{ $dokumen->created_at->format('d M Y H:i') }}
+                                                @endif
                                             </div>
                                         </div>
 
                                         <div class="mt-2">
-                                            <a href="{{ $dokumen->download_url }}" class="btn btn-xs btn-success" target="_blank">
+                                            @if($dokumen->path_file || $dokumen->template_link)
+                                            <a href="{{ $dokumen->download_url }}" class="btn btn-sm btn-success" target="_blank">
                                                 <i class="bi bi-download"></i> Download
                                             </a>
+                                            @endif
                                         </div>
                                         @else
-                                        <span class="badge bg-danger mt-1">Belum Diunggah</span>
+                                        <span class="badge bg-danger mt-1">Belum Diupload oleh PS</span>
                                         @endif
                                     </div>
                                 </div>
@@ -208,7 +213,7 @@
                         </div>
                         @endforeach
 
-                        {{-- Kalau kamu TETAP mau render suplemen terpisah, jangan double kalau sudah masuk details --}}
+                        {{-- Dokumen Suplemen (jika ada tapi tidak masuk di details) --}}
                         @if(!empty($uploadedDocuments['suplemen']) && empty($docCompleteness['details']['suplemen']))
                         <div class="col-12 col-md-6 col-lg-4">
                             <div class="doc-item uploaded">
@@ -220,14 +225,19 @@
                                     <div class="flex-grow-1">
                                         <p class="doc-title fw-semibold mb-0">Dokumen Suplemen</p>
                                         <div class="doc-meta">
-                                            <div class="text-wrap" title="{{ $uploadedDocuments['suplemen']->original_filename }}">
-                                                {{ $uploadedDocuments['suplemen']->original_filename }}
+                                            <div class="text-wrap text-truncate" title="{{ $uploadedDocuments['suplemen']->original_filename }}">
+                                                {{ Str::limit($uploadedDocuments['suplemen']->original_filename, 40) }}
                                             </div>
-                                            <div>{{ $uploadedDocuments['suplemen']->file_size_formatted ?? '' }}</div>
+                                            <div>
+                                                {{ $uploadedDocuments['suplemen']->file_size_formatted ?? '-' }}
+                                                @if($uploadedDocuments['suplemen']->created_at)
+                                                • {{ $uploadedDocuments['suplemen']->created_at->format('d M Y') }}
+                                                @endif
+                                            </div>
                                         </div>
 
                                         <div class="mt-2">
-                                            <a href="{{ $uploadedDocuments['suplemen']->download_url }}" class="btn btn-xs btn-info" target="_blank">
+                                            <a href="{{ $uploadedDocuments['suplemen']->download_url }}" class="btn btn-sm btn-info" target="_blank">
                                                 <i class="bi bi-download"></i> Download
                                             </a>
                                         </div>
@@ -242,16 +252,16 @@
         </div>
     </div>
 
-    {{-- ROW 2: Validator / Tugaskan Validator (FULL WIDTH DI BAWAH) --}}
+    {{-- ROW 2: Validator / Tugaskan Validator --}}
     <div class="row mb-4">
-        <div class="col-md-8">
+        <div class="col-md-12">
             @if(in_array($pengajuan->status, [
             \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
             \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
             \App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
             ]) && $pengajuan->latestBorangImport)
 
-            <div class="card mb-4 border-primary">
+            <div class="card border-primary">
                 <div class="card-header bg-primary text-white">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">
@@ -270,7 +280,6 @@
 
                 <div class="card-body">
                     @if($currentValidator)
-                    {{-- Validator Info (biarkan persis milikmu) --}}
                     <div class="row align-items-center">
                         <div class="col-md-3">
                             <div class="text-center">
@@ -288,7 +297,7 @@
                                     <label class="text-muted small">Role</label>
                                     <p class="fw-bold mb-0">
                                         <span class="badge bg-success">
-                                            {{ $currentValidator->role->alias }}
+                                            {{ $currentValidator->role->alias ?? 'Validator' }}
                                         </span>
                                     </p>
                                 </div>
@@ -324,7 +333,13 @@
 
                                 <div class="col-md-4 mb-3">
                                     <label class="text-muted small">Ditugaskan</label>
-                                    <p class="mb-0">{{ $currentValidator->created_at->format('d M Y H:i') }}</p>
+                                    <p class="mb-0">
+                                        @if($currentValidator->created_at)
+                                        {{ $currentValidator->created_at->format('d M Y H:i') }}
+                                        @else
+                                        -
+                                        @endif
+                                    </p>
                                 </div>
 
                                 @if($currentValidator->responded_at)
@@ -342,7 +357,6 @@
                                 @endif
                             </div>
 
-                            {{-- Actions --}}
                             <div class="d-flex gap-2 mt-3">
                                 @if($currentValidator->status_penawaran === 'pending')
                                 <span class="badge bg-warning">
@@ -350,31 +364,22 @@
                                     Menunggu validator menerima penawaran
                                 </span>
                                 @elseif($currentValidator->status_penawaran === 'rejected')
-                                <a href="{{ route('de.pengajuan.assign-validator.form', $pengajuan->id) }}" class="btn btn-warning btn-sm mt-3">
+                                <a href="{{ route('de.penerimaan-dokumen.assign-validator.form', $pengajuan->id) }}" class="btn btn-warning btn-sm">
                                     <i class="bi bi-arrow-repeat"></i>
                                     Tugaskan Validator Baru
                                 </a>
                                 @elseif($currentValidator->status_penawaran === 'accepted')
                                 @if($currentValidator->borangValidation)
-                                <a href="{{ route('validator.borang.show', $currentValidator->id) }}" class="btn btn-primary btn-sm mt-3" target="_blank">
+                                <a href="{{ route('validator.borang.show', $currentValidator->id) }}" class="btn btn-primary btn-sm" target="_blank">
                                     <i class="bi bi-eye"></i>
                                     Lihat Progress Validasi
                                 </a>
                                 @endif
                                 @endif
-
-                                {{-- Validation Details (if available) --}}
-                                @if($currentValidator->borangValidation && $currentValidator->status_pekerjaan !== 'not_started')
-                                <button class="btn btn-outline-primary btn-sm mt-3" data-bs-toggle="modal" data-bs-target="#modalRevisi">
-                                    <i class="bi bi-clipboard-data"></i> Lihat Detail Revisi
-                                </button>
-                                {{-- @include('asesmen.de.modal-revisi') --}}
-                                @endif
                             </div>
                         </div>
                     </div>
                     @else
-                    {{-- No validator assigned --}}
                     <div class="text-center py-4">
                         <i class="bi bi-person-x" style="font-size: 3rem; color: #ccc;"></i>
                         <p class="text-muted mt-3 mb-3">
@@ -396,7 +401,6 @@
                     @endif
                 </div>
             </div>
-
             @endif
         </div>
     </div>
@@ -429,7 +433,7 @@
                         </tr>
                         <tr>
                             <th>Jenis Permohonan</th>
-                            <td>: {{ $pengajuan->jenis_akreditasi_label }}</td>
+                            <td>: {{ $pengajuan->jenis_akreditasi_label ?? '-' }}</td>
                         </tr>
                         <tr>
                             <th>Pemohon</th>
@@ -444,44 +448,55 @@
             </div>
         </div>
 
-        <!-- Right Column - Actions -->
+        <!-- Right Column -->
         <div class="col-lg-4">
-            <!-- Timeline -->
+            @php
+            $filterStatuses = [
+            \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
+            \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
+            \App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
+            ];
+
+            $logs = $pengajuan->statusLog
+            ->whereIn('status_to', $filterStatuses)
+            ->sortBy('changed_at');
+            @endphp
+
+            <!-- Status Log -->
             <div class="card">
-                <div class="card-header bg-light">
+                <div class="card-header bg-secondary text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-clock-history"></i> Timeline
+                        <i class="bi bi-clock-history"></i> Riwayat Status
                     </h5>
                 </div>
-                <div class="card-body">
-                    <ul class="list-unstyled timeline">
-                        <li class="mb-3">
-                            <i class="bi bi-circle-fill text-primary"></i>
-                            <strong> Dibuat</strong>
-                            <br>
-                            <small class="text-muted">{{ $pengajuan->created_at->format('d F Y H:i') }}</small>
-                        </li>
+                <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                    @if($logs->count() > 0)
+                    <div class="timeline">
+                        @foreach($logs as $log)
+                        <div class="timeline-item mb-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-circle-fill text-primary" style="font-size: 8px;"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <strong>
+                                        {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label'] ?? $log->status_to }}
+                                    </strong>
+                                    <br>
+                                    <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
 
-                        @if($pengajuan->tanggal_pembayaran)
-                        <li class="mb-3">
-                            <i class="bi bi-circle-fill text-success"></i>
-                            <strong>Pembayaran Terverifikasi</strong>
-                            <br>
-                            <small class="text-muted">
-                                {{ $pengajuan->pembayaran->tanggal_verifikasi?->format('d F Y H:i') }}
-                            </small>
-                        </li>
-                        @endif
-
-                        @if($pengajuan->tanggal_draft_borang)
-                        <li class="mb-3">
-                            <i class="bi bi-circle-fill text-info"></i>
-                            <strong>Dokumen Diunggah</strong>
-                            <br>
-                            <small class="text-muted">{{ $pengajuan->tanggal_draft_borang->format('d F Y H:i') }}</small>
-                        </li>
-                        @endif
-                    </ul>
+                                    @if($log->keterangan)
+                                    <br>
+                                    <small class="text-muted fst-italic">{{ $log->keterangan }}</small>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                    @else
+                    <p class="text-muted text-center mb-0">Belum ada riwayat</p>
+                    @endif
                 </div>
             </div>
         </div>

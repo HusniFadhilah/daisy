@@ -150,7 +150,7 @@
         </h4>
 
         <button type="button" class="btn btn-primary ms-auto" data-bs-toggle="modal" data-bs-target="#modalKirimReminder">
-            <i class="bi bi-bell"></i> Kirim Reminder ke Validator
+            <i class="bi bi-bell"></i> Kirim Pengingat ke Validator
         </button>
     </div>
 

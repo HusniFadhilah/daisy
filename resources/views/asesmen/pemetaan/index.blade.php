@@ -332,9 +332,25 @@
 
 @section('content')
 <div class="container-fluid py-3">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item active">Pengingat Masa Akreditasi</li>
+        </ol>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="mb-1"><i class="bi bi-clock-history"></i> Pengingat Masa Akreditasi</h4>
+            <p class="text-muted mb-0">Kirim pengingat masa akreditasi kepada PS</p>
+        </div>
+    </div>
+
     <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-lg-3 col-md-6 mb-3">
+    <div class="row row-cols-1 row-cols-md-3 row-cols-lg-5 mb-4">
+        <div class="col mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                 <div class="card-body text-white">
                     <h6 class="mb-1 opacity-75">Total Program Studi</h6>
@@ -351,7 +367,7 @@
             </div>
         </div>
 
-        <div class="col-lg-3 col-md-6 mb-3">
+        <div class="col mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
                 <div class="card-body text-white">
                     <h6 class="mb-1 opacity-75">Akreditasi Aktif</h6>
@@ -371,7 +387,7 @@
             </div>
         </div>
 
-        <div class="col-lg-3 col-md-6 mb-3">
+        <div class="col mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #e35821ff 0%, #aa4d0aff 100%);">
                 <div class="card-body text-white">
                     <h6 class="mb-1 opacity-75">Pengingat Masa Akreditasi</h6>
@@ -388,7 +404,7 @@
             </div>
         </div>
 
-        <div class="col-lg-3 col-md-6 mb-3">
+        <div class="col mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);">
                 <div class="card-body text-white">
                     <h6 class="mb-1 opacity-75">Kedaluwarsa</h6>
@@ -405,7 +421,7 @@
             </div>
         </div>
 
-        <div class="col-lg-3 col-md-6 mb-3">
+        <div class="col mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #868f96 0%, #596164 100%);">
                 <div class="card-body text-white">
                     <h6 class="mb-1 opacity-75">Belum Terakreditasi</h6>
