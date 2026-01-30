@@ -35,7 +35,7 @@
             @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA)
             <div class="alert alert-warning alert-permanent">
                 <i class="bi bi-hourglass-split"></i>
-                <strong>Permohonan Akreditasi telah diterima, menunggu surat penerimaan akreditasi dari LAMDEPILAR</strong>
+                <strong>Permohonan Akreditasi telah diterima, menunggu penerimaan permohonan akreditasi dari LAMDEPILAR</strong>
                 <br>
                 Permohonan diterima pada {{ $pengajuan->tanggal_surat_permohonan_diterima->format('d M Y H:i') }}
             </div>
@@ -94,7 +94,7 @@
             <!-- Informasi Permohonan Akreditasi -->
             <div class="card my-4">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Informasi Permohonan Akreditasi PS</h5>
+                    <h5 class="mb-0">Informasi Penerimaan Permohonan Akreditasi PS</h5>
                 </div>
                 <div class="card-body">
                     <table class="table table-borderless">
@@ -123,8 +123,8 @@
                             <td>: {{ $pengajuan->pengaju->name ?? '-' }}</td>
                         </tr>
                         <tr>
-                            <th>Status Permohonan Akreditasi</th>
-                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('surat_permohonan_ps') !!}</td>
+                            <th>Status</th>
+                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('surat_penerimaan_de','upps') !!}</td>
                         </tr>
                     </table>
                 </div>
@@ -142,7 +142,7 @@
 
             $logs = $pengajuan->statusLog
             ->whereIn('status_to', $filterStatuses)
-            ->sortByDesc('changed_at');
+            ->sortBy('changed_at');
             @endphp
 
             <div class="card">
@@ -162,7 +162,7 @@
                                 </div>
                                 <div class="flex-grow-1 ms-3">
                                     <strong>
-                                        {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label'] ?? $log->status_to }}
+                                        {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['upps'] ?? $log->status_to }}
                                     </strong>
                                     <br>
                                     <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>

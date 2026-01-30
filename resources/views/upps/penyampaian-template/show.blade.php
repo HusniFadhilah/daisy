@@ -2,7 +2,7 @@
 
 @extends('layouts.template.app')
 
-@section('title', 'Detail Penyampaian Formulir dan Template Dokumen')
+@section('title', 'Detail Pengiriman Formulir dan Template Dokumen')
 
 @section('content')
 <div class="container-fluid py-3">
@@ -10,7 +10,7 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('upps.penyampaian-template') }}">Penyampaian Formulir dan Template Dokumen</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('upps.penyampaian-template') }}">Pengiriman Formulir dan Template Dokumen</a></li>
             <li class="breadcrumb-item active">Detail</li>
         </ol>
     </nav>
@@ -19,7 +19,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h5 class="mb-1">
-                <i class="bi bi-file-earmark-arrow-down"></i> Detail Penyampaian Formulir dan Template Dokumen
+                <i class="bi bi-file-earmark-arrow-down"></i> Detail Pengiriman Formulir dan Template Dokumen
             </h5>
             <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
@@ -33,14 +33,14 @@
         <div class="col-lg-8 mb-4">
             <!-- Status Alert -->
             @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM)
-            <div class="alert alert-warning alert-permanent">
+            <div class="alert alert-warning alert-permanent mb-4">
                 <i class="bi bi-hourglass-split"></i>
-                <strong>Menunggu penyampaian formulir dan template dokumen dari LAMDEPILAR</strong>
+                <strong>Menunggu pengiriman formulir dan template dokumen dari LAMDEPILAR</strong>
                 <br>
                 Template belum dikirim oleh LAMDEPILAR
             </div>
             @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM)
-            <div class="alert alert-success alert-permanent">
+            <div class="alert alert-success alert-permanent mb-4">
                 <i class="bi bi-check-circle"></i>
                 <strong>Formulir dan template dokumen telah diterima dari LAMDEPILAR</strong>
                 <br>
@@ -50,7 +50,7 @@
 
             <!-- Pending Requests Alert -->
             @if($pendingRequests->count() > 0)
-            <div class="alert alert-info alert-permanent">
+            <div class="alert alert-info alert-permanent mb-4">
                 <h6><i class="bi bi-info-circle"></i> Permintaan Upload Ulang Pending</h6>
                 <p class="mb-2">Anda memiliki {{ $pendingRequests->count() }} permintaan upload ulang yang sedang diproses:</p>
                 <ul class="mb-0">
@@ -72,126 +72,15 @@
             </div>
             @endif
 
-            <!-- Informasi Penyampaian -->
-            <div class="card mb-4">
-                <div class="card-header bg-secondary text-white">
-                    <h5 class="mb-0">
-                        <i class="bi bi-info-circle"></i> Informasi Penyampaian Formulir dan Template Dokumen
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <table class="table table-borderless">
-                        <tr>
-                            <th width="30%">Nomor Permohonan</th>
-                            <td>: {{ $pengajuan->nomor_pengajuan }}</td>
-                        </tr>
-                        <tr>
-                            <th>Program Studi</th>
-                            <td>: {{ $pengajuan->studyProgram->full_name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Universitas</th>
-                            <td>: {{ $pengajuan->studyProgram->university->name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Jenjang</th>
-                            <td>: {{ $pengajuan->studyProgram->degreeLevel->name ?? '-' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Jenis Permohonan</th>
-                            <td>: {{ $pengajuan->jenis_akreditasi_label }}</td>
-                        </tr>
-                        <tr>
-                            <th>Tahun Akreditasi</th>
-                            <td>: {{ $pengajuan->tahun_akreditasi }}</td>
-                        </tr>
-                        <tr>
-                            <th>DE Assigned</th>
-                            <td>
-                                : {{ $pengajuan->deAssigned->name ?? '-' }}
-                                @if($pengajuan->deAssigned)
-                                <br>
-                                <small class="text-muted">{{ $pengajuan->deAssigned->email }}</small>
-                                @endif
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Tanggal Template Dikirim</th>
-                            <td>
-                                : {{ $pengajuan->tanggal_template_led_dikirim
-                                    ? $pengajuan->tanggal_template_led_dikirim->format('d M Y H:i')
-                                    : '-' }}
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Status</th>
-                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('borang_template') !!}</td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Template Dokumen -->
-            @php
-            $templateLed = $pengajuan->dokumen
-            ->where('jenis_dokumen', 'template_led')
-            ->where('is_latest', true)
-            ->first();
-            @endphp
-
-            <div class="card mb-4">
-                <div class="card-header bg-info text-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">
-                            <i class="bi bi-file-earmark-text"></i> Template Dokumen Akreditasi
-                        </h5>
-                        @if($templateLed)
-                        <button type="button" class="btn btn-warning btn-sm" onclick="window.location.href='{{ route('upps.penyampaian-template.request.form', [$pengajuan->id, 'template_led']) }}'">
-                            <i class="bi bi-arrow-repeat"></i> Minta Upload Ulang
-                        </button>
-                        @endif
-                    </div>
-                </div>
-                <div class="card-body">
-                    @if($templateLed)
-                    <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-file-earmark-pdf text-danger me-3" style="font-size: 48px;"></i>
-                            <div>
-                                <strong>{{ $templateLed->original_filename }}</strong>
-                                <br>
-                                <small class="text-muted">
-                                    {{ number_format($templateLed->file_size / 1024, 2) }} KB •
-                                    Diupload: {{ $templateLed->created_at->format('d M Y H:i') }}
-                                </small>
-                                <br>
-                                <span class="badge bg-info">Versi {{ $templateLed->versi }}</span>
-                            </div>
-                        </div>
-                        <div>
-                            <a href="{{ route('upps.penyampaian-template.download', [$pengajuan->id, 'template_led']) }}" class="btn btn-success btn-md">
-                                <i class="bi bi-file-earmark-pdf"></i> Lihat File
-                            </a>
-                        </div>
-                    </div>
-                    @else
-                    <div class="text-center py-4">
-                        <i class="bi bi-file-earmark-x" style="font-size: 48px; color: #ddd;"></i>
-                        <p class="text-muted mt-2 mb-0">Template dokumen belum dikirim oleh LAMDEPILAR</p>
-                    </div>
-                    @endif
-                </div>
-            </div>
-
             <!-- Formulir Pembayaran -->
             @php
             $formulirPembayaran = $pengajuan->dokumen
-            ->where('jenis_dokumen', 'formulir_pembayaran')
+            ->where('jenis_dokumen', 'template_formulir_pembayaran')
             ->where('is_latest', true)
             ->first();
             @endphp
 
-            <div class="card">
+            <div class="card mb-4">
                 <div class="card-header bg-info text-white">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">
@@ -208,7 +97,7 @@
                     @if($formulirPembayaran)
                     <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded">
                         <div class="d-flex align-items-center">
-                            <i class="bi bi-file-earmark-pdf text-danger me-3" style="font-size: 48px;"></i>
+                            <i class="bi bi-file-earmark text-danger me-3" style="font-size: 48px;"></i>
                             <div>
                                 <strong>{{ $formulirPembayaran->original_filename }}</strong>
                                 <br>
@@ -232,6 +121,99 @@
                         <p class="text-muted mt-2 mb-0">Formulir pembayaran belum dikirim oleh LAMDEPILAR</p>
                     </div>
                     @endif
+                </div>
+            </div>
+
+            <!-- Template Dokumen -->
+            @php
+            $templateLed = $pengajuan->dokumen
+            ->where('jenis_dokumen', 'borang_template')
+            ->where('is_latest', true)
+            ->first();
+            @endphp
+
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-file-earmark-text"></i> Template Dokumen Akreditasi
+                        </h5>
+                        @if($templateLed)
+                        <button type="button" class="btn btn-warning btn-sm" onclick="window.location.href='{{ route('upps.penyampaian-template.request.form', [$pengajuan->id, 'borang_template']) }}'">
+                            <i class="bi bi-arrow-repeat"></i> Minta Upload Ulang
+                        </button>
+                        @endif
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if($templateLed)
+                    <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-file-earmark-pdf text-danger me-3" style="font-size: 48px;"></i>
+                            <div>
+                                <strong>{{ $templateLed->original_filename }}</strong>
+                                <br>
+                                <small class="text-muted">
+                                    {{ number_format($templateLed->file_size / 1024, 2) }} KB •
+                                    Diupload: {{ $templateLed->created_at->format('d M Y H:i') }}
+                                </small>
+                                <br>
+                                <span class="badge bg-info">Versi {{ $templateLed->versi }}</span>
+                            </div>
+                        </div>
+                        <div>
+                            <a href="{{ route('upps.penyampaian-template.download', [$pengajuan->id, 'borang_template']) }}" class="btn btn-success btn-md">
+                                <i class="bi bi-file-earmark-pdf"></i> Lihat File
+                            </a>
+                        </div>
+                    </div>
+                    @else
+                    <div class="text-center py-4">
+                        <i class="bi bi-file-earmark-x" style="font-size: 48px; color: #ddd;"></i>
+                        <p class="text-muted mt-2 mb-0">Template dokumen belum dikirim oleh LAMDEPILAR</p>
+                    </div>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Informasi Penyampaian -->
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle"></i> Informasi Pengiriman Formulir dan Template Dokumen
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th width="30%">Nomor Permohonan</th>
+                            <td>: {{ $pengajuan->nomor_pengajuan }}</td>
+                        </tr>
+                        <tr>
+                            <th>Program Studi</th>
+                            <td>: {{ $pengajuan->studyProgram->full_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Universitas</th>
+                            <td>: {{ $pengajuan->studyProgram->university->name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Jenis Permohonan</th>
+                            <td>: {{ $pengajuan->jenis_akreditasi_label }}</td>
+                        </tr>
+                        <tr>
+                            <th>Tanggal Template Dikirim</th>
+                            <td>
+                                : {{ $pengajuan->tanggal_template_led_dikirim
+                                    ? $pengajuan->tanggal_template_led_dikirim->format('d M Y H:i')
+                                    : '-' }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Status Pengiriman Formulir dan Template Dokumen</th>
+                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('borang_template','upps') !!}</td>
+                        </tr>
+                    </table>
                 </div>
             </div>
         </div>

@@ -8,7 +8,7 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <h2 class="mb-2 fw-bold">{{ $stats['total'] }}</h2>
-                        <small class="opacity-75">Permohonan Akreditasi yang telah diterima LAMDEPILAR</small>
+                        <small class="opacity-75">Permohonan Akreditasi yang telah diterima</small>
                     </div>
                     <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
                         <i class="bi bi-file-earmark-check"></i>
@@ -21,7 +21,7 @@
     <div class="col-lg-4 col-md-6 mb-3">
         <div class="card stat-card p-0" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
             <div class="card-body text-white">
-                <h6 class="mb-1 opacity-75">Penerimaan Permohonan Akreditasi Belum Dikirim oleh DE</h6>
+                <h6 class="mb-1 opacity-75">Penerimaan Permohonan Akreditasi Belum Dikirim</h6>
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <h2 class="mb-0 fw-bold">{{ $stats['belum_terkirim'] }}</h2>
@@ -38,7 +38,7 @@
     <div class="col-lg-4 col-md-6 mb-3">
         <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
             <div class="card-body text-white">
-                <h6 class="mb-1 opacity-75">Penerimaan Permohonan Akreditasi Sudah Dikirim oleh DE</h6>
+                <h6 class="mb-1 opacity-75">Penerimaan Permohonan Akreditasi Telah Dikirim</h6>
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <h2 class="mb-0 fw-bold">{{ $stats['terkirim'] }}</h2>

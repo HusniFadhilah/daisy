@@ -2,7 +2,7 @@
 
 @extends('layouts.template.app')
 
-@section('title', 'Upload Bukti Pembayaran')
+@section('title', 'Upload Formulir & Bukti Pembayaran')
 
 @section('content')
 <div class="container-fluid py-3">
@@ -12,7 +12,7 @@
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
             <li class="breadcrumb-item"><a href="{{ route('upps.validasi-pembayaran') }}">Validasi Pembayaran</a></li>
             <li class="breadcrumb-item"><a href="{{ route('upps.validasi-pembayaran.show', $pembayaran->id) }}">Detail</a></li>
-            <li class="breadcrumb-item active">Upload Bukti Pembayaran</li>
+            <li class="breadcrumb-item active">Upload Formulir & Bukti Pembayaran</li>
         </ol>
     </nav>
 
@@ -20,7 +20,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h5 class="mb-1">
-                <i class="bi bi-upload"></i> Upload Bukti Pembayaran
+                <i class="bi bi-upload"></i> Upload Formulir & Bukti Pembayaran
             </h5>
             <small class="text-muted">{{ $pembayaran->nomor_invoice }}</small>
         </div>
@@ -86,7 +86,7 @@
             <div class="alert alert-warning alert-permanent">
                 <h5><i class="bi bi-arrow-repeat"></i> Permintaan Upload Ulang</h5>
                 <p class="mb-0">
-                    Bagian keuangan LAMDEPILAR meminta Anda untuk upload ulang bukti pembayaran yang lebih jelas.
+                    Bagian keuangan LAMDEPILAR meminta Anda untuk upload ulang formulir & bukti pembayaran yang lebih jelas.
                 </p>
                 @if($pembayaran->catatan_verifikasi)
                 <hr>
@@ -100,7 +100,7 @@
             <div class="card">
                 <div class="card-header bg-secondary text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-cloud-upload"></i> Form Upload Bukti Pembayaran
+                        <i class="bi bi-cloud-upload"></i> Form Upload Formulir & Bukti Pembayaran
                     </h5>
                 </div>
                 <div class="card-body">
@@ -124,14 +124,14 @@
                         <!-- File Bukti Pembayaran -->
                         <div class="mb-3">
                             <label for="file_bukti_pembayaran" class="form-label">
-                                File Bukti Pembayaran <span class="text-danger">*</span>
+                                File Formulir & Bukti Pembayaran <span class="text-danger">*</span>
                             </label>
-                            <input type="file" class="form-control @error('file_bukti_pembayaran') is-invalid @enderror" id="file_bukti_pembayaran" name="file_bukti_pembayaran" accept=".pdf,.jpg,.jpeg,.png" required>
+                            <input type="file" class="form-control @error('file_bukti_pembayaran') is-invalid @enderror" id="file_bukti_pembayaran" name="file_bukti_pembayaran" accept=".pdf,.jpg,.jpeg,.png,.xlsx" required>
                             @error('file_bukti_pembayaran')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                             <small class="form-text text-muted">
-                                Format: PDF, JPG, JPEG, PNG (Maksimal 5MB)
+                                Format: XLSX (Maksimal 5MB)
                             </small>
                         </div>
 
@@ -140,7 +140,7 @@
                             <label class="form-label">Preview File</label>
                             <div class="border rounded p-3 bg-light">
                                 <div class="d-flex align-items-center">
-                                    <i class="bi bi-file-earmark-pdf text-danger me-3" style="font-size: 48px;"></i>
+                                    <i class="bi bi-file-earmark text-danger me-3" style="font-size: 48px;"></i>
                                     <div>
                                         <strong id="fileName"></strong>
                                         <br>
@@ -165,9 +165,9 @@
                         <div class="alert alert-info alert-permanent">
                             <h6><i class="bi bi-info-circle"></i> Informasi Penting</h6>
                             <ul class="mb-0">
-                                <li>Pastikan bukti pembayaran yang diupload jelas dan dapat dibaca</li>
-                                <li>Bukti pembayaran harus menunjukkan nominal yang sesuai dengan invoice</li>
-                                <li>Setelah upload, bukti pembayaran akan divalidasi oleh bagian keuangan LAMDEPILAR</li>
+                                <li>Pastikan formulir & bukti pembayaran yang diupload jelas dan dapat dibaca</li>
+                                <li>Formulir & bukti pembayaran harus menunjukkan nominal yang sesuai dengan invoice</li>
+                                <li>Setelah upload, formulir bukti pembayaran akan divalidasi oleh bagian keuangan LAMDEPILAR</li>
                                 <li>Anda akan mendapat notifikasi hasil validasi melalui email</li>
                             </ul>
                         </div>
@@ -175,7 +175,7 @@
                         <!-- Buttons -->
                         <div class="d-flex gap-2">
                             <button type="submit" class="btn btn-success btn-md">
-                                <i class="bi bi-upload"></i> Upload Bukti Pembayaran
+                                <i class="bi bi-upload"></i> Upload Formulir & Bukti Pembayaran
                             </button>
                             <a href="{{ route('upps.validasi-pembayaran.show', $pembayaran->id) }}" class="btn btn-secondary btn-md">
                                 <i class="bi bi-x-circle"></i> Batal

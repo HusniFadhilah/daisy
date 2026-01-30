@@ -83,7 +83,7 @@
         <div class="col-lg-4 col-md-6 mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Menunggu Surat Penerimaan</h6>
+                    <h6 class="mb-2 opacity-75">Menunggu Penerimaan Permohonan Akreditasi</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['diterima'] }}</h2>
@@ -104,7 +104,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['surat_dikirim'] }}</h2>
-                            <small class="opacity-75">Surat penerimaan sudah dikirim</small>
+                            <small class="opacity-75">Surat penerimaan telah dikirim</small>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
                             <i class="bi bi-check-circle"></i>
@@ -139,10 +139,10 @@
                             <select name="status" class="form-select">
                                 <option value="">Semua Status</option>
                                 <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA ? 'selected' : '' }}>
-                                    Menunggu Surat Penerimaan
+                                    Menunggu Penerimaan Permohonan Akreditasi
                                 </option>
                                 <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM ? 'selected' : '' }}>
-                                    Surat Penerimaan Diterima
+                                    Penerimaan Permohonan Akreditasi Diterima
                                 </option>
                             </select>
                         </div>
@@ -192,23 +192,29 @@
                             <thead class="table-light">
                                 <tr>
                                     <th width="5%">#</th>
-                                    <th width="20%">Nomor Permohonan</th>
+                                    <th width="20%">Permohonan Akreditasi</th>
                                     <th width="20%">Program Studi</th>
-                                    <th width="10%">Tahun</th>
-                                    <th width="15%">Tanggal Diterima</th>
-                                    <th width="20%">Status</th>
+                                    <th width="25%">Tanggal Permohonan Akreditasi Diterima</th>
+                                    <th width="25%">Status Penerimaan Permohonan Akreditasi</th>
                                     <th width="10%" class="text-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($pengajuans as $index => $pengajuan)
+                                @php
+                                $suratPenerimaan = $pengajuan->dokumen->first();
+                                $daysSinceTerima = $pengajuan->tanggal_surat_permohonan_diterima
+                                ? floor(\Carbon\Carbon::parse($pengajuan->tanggal_surat_permohonan_diterima)->diffInDays(now()))
+                                : 0;
+                                @endphp
                                 <tr>
                                     <td>{{ $pengajuans->firstItem() + $index }}</td>
                                     <td>
-                                        <strong>{{ $pengajuan->nomor_pengajuan }}</strong>
+                                        <p>{{ $pengajuan->judul }}</p>
+                                        <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
                                         <br>
                                         <small class="text-muted">
-                                            {{ $pengajuan->jenis_akreditasi_label }}
+                                            Dibuat pada: {{ $pengajuan->created_at->format('d M Y') }}
                                         </small>
                                     </td>
                                     <td>
@@ -217,23 +223,29 @@
                                         <small class="text-muted">
                                             {{ $pengajuan->studyProgram->degreeLevel->name ?? '-' }}
                                         </small>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-info">{{ $pengajuan->tahun_akreditasi }}</span>
+                                        <br><small>{{ $pengajuan->studyProgram->university->name ?? '-' }}</small>
                                     </td>
                                     <td>
                                         @if($pengajuan->tanggal_surat_permohonan_diterima)
-                                        <small>{{ $pengajuan->tanggal_surat_permohonan_diterima->format('d M Y') }}</small>
+                                        <small>
+                                            {{ $pengajuan->tanggal_surat_permohonan_diterima->format('d M Y') }}
+                                        </small>
                                         <br>
                                         <small class="text-muted">
-                                            {{ $pengajuan->tanggal_surat_permohonan_diterima->diffForHumans() }}
+                                            ({{ $daysSinceTerima }} hari lalu)
                                         </small>
                                         @else
                                         <span class="text-muted">-</span>
                                         @endif
                                     </td>
                                     <td>
-                                        {!! $pengajuan->getCustomBadgeLastStatus('surat_penerimaan_de') !!}
+                                        {!! $pengajuan->getCustomBadgeLastStatus('surat_penerimaan_de','upps','label_short_for') !!}
+                                        <br>
+                                        @if($suratPenerimaan)
+                                        <small class="text-muted">
+                                            {{ $suratPenerimaan->created_at->format('d M Y') }}
+                                        </small>
+                                        @endif
                                     </td>
                                     <td class="text-center">
                                         <div class="btn-group btn-group-sm" role="group">

@@ -89,7 +89,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-2 fw-bold">{{ $stats['total'] }}</h2>
-                            <small class="opacity-75">Total Pengiriman formulir dan template dokumen saat ini</small>
+                            <small class="opacity-75">Total pengiriman formulir dan template dokumen saat ini</small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
                             <i class="bi bi-file-earmark-text"></i>
@@ -106,7 +106,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['belum_dikirim'] }}</h2>
-                            <small class="opacity-75">Permohonan akreditasi dari PS yang menunggu pengiriman template</small>
+                            <small class="opacity-75">Permohonan akreditasi dari PS yang menunggu pengiriman formulir dan template dokumen</small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
                             <i class="bi bi-hourglass-split"></i>
@@ -119,17 +119,32 @@
         <div class="col-lg-4 col-md-6 mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Sudah Dikirim Template</h6>
+                    <h6 class="mb-1 opacity-75">Telah Dikirim Template</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['sudah_dikirim'] }}</h2>
-                            <small class="opacity-75">Jumlah template yang telah dikirim ke PS</small>
+                            <small class="opacity-75">Jumlah formulir dan template dokumen yang telah dikirim ke PS</small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
                             <i class="bi bi-check-circle"></i>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="d-flex align-items-center mb-4">
+        <div class="ms-auto text-end">
+            <button type="button" class="btn btn-primary mb-1" data-bs-toggle="modal" data-bs-target="#modalKirimInvoice">
+                <i class="bi bi-send"></i> Kirim Invoice
+            </button>
+            <div>
+                <small>
+                    Terdapat {{ $countPengajuanList }} permohonan akreditasi
+                    yang perlu dikirimi invoice
+                </small>
             </div>
         </div>
     </div>
@@ -161,7 +176,7 @@
                                     Belum Dikirim Template
                                 </option>
                                 <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM ? 'selected' : '' }}>
-                                    Sudah Dikirim Template
+                                    Telah Dikirim Template
                                 </option>
                             </select>
                         </div>
@@ -224,11 +239,11 @@
                             <thead class="table-light">
                                 <tr>
                                     <th width="5%">#</th>
-                                    <th width="13%">Nomor Permohonan Akreditasi</th>
+                                    <th width="15%">Permohonan Akreditasi</th>
                                     <th width="20%">Program Studi</th>
-                                    <th width="16%">Tanggal Pengiriman Template Dokumen</th>
-                                    <th width="14%">Status Pengiriman Formulir dan Template Dokumen</th>
-                                    <th width="13%" class="text-center">Aksi</th>
+                                    <th width="25%">Tanggal Pengiriman Template Dokumen</th>
+                                    <th width="25%">Status Pengiriman Formulir dan Template Dokumen</th>
+                                    <th width="10%" class="text-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -256,7 +271,7 @@
                                     <td>
                                         @if($pengajuan->tanggal_template_led_dikirim)
                                         <small class="text-muted">
-                                            <i class="bi bi-send"></i> Sudah Dikirim:
+                                            <i class="bi bi-send"></i> Telah Dikirim:
                                             {{ $pengajuan->tanggal_template_led_dikirim->format('d M Y') }}
                                         </small>
                                         <br>
@@ -265,13 +280,13 @@
                                         @endif
                                         @if($pengajuan->tanggal_template_led_dikirim)
                                         <small class="text-success">
-                                            <i class="bi bi-check-circle"></i> Sudah Diterima:
+                                            <i class="bi bi-check-circle"></i> Telah Diterima:
                                             {{ $pengajuan->tanggal_template_led_dikirim->format('d M Y') }}
                                         </small>
                                         @endif
                                     </td>
                                     <td>
-                                        {!! $pengajuan->getCustomBadgeLastStatus('borang_template') !!}
+                                        {!! $pengajuan->getCustomBadgeLastStatus('borang_template','de','label_short_for') !!}
                                     </td>
                                     <td class="text-center">
                                         <div class="btn-group btn-group-sm" role="group">
@@ -307,6 +322,9 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Kirim Invoice -->
+@include('de.penyampaian-template.components.modal-kirim-invoice')
 
 <!-- Modal Kirim Template -->
 <div class="modal fade" id="modalKirimTemplate" tabindex="-1">

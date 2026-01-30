@@ -71,13 +71,6 @@ class ValidasiPembayaranController extends Controller
         $universities = University::nonExample()->orderBy('name')->get();
         $degreeLevels = DegreeLevel::orderBy('code')->get();
 
-        // Ambil pengajuan yang sudah template_led_dikirim tapi belum ada invoice
-        $pengajuanList = \App\Models\PengajuanAkreditasi::with('studyProgram.degreeLevel', 'studyProgram.university')
-            ->where('status', \App\Models\PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM)
-            ->whereDoesntHave('pembayaran')
-            ->get();
-        $countPengajuanList = count($pengajuanList);
-
         // AJAX request
         if ($request->ajax()) {
             $html = view('de.validasi-pembayaran.components.table-content', compact('pembayarans'))->render();
@@ -93,8 +86,6 @@ class ValidasiPembayaranController extends Controller
             'stats',
             'universities',
             'degreeLevels',
-            'pengajuanList',
-            'countPengajuanList'
         ));
     }
 

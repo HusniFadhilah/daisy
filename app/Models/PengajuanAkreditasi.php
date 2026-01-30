@@ -599,19 +599,19 @@ class PengajuanAkreditasi extends Model
         return self::statusMap()[$this->status]['label'] ?? ucwords(str_replace('_', ' ', $this->status));
     }
 
-    public function getStatusLabelDeAttribute(): string
+    public function getStatusLabelDe($keyLongShort = 'label_long_for'): string
     {
-        return self::statusMap()[$this->status]['label_for']['de'] ?? ucwords(str_replace('_', ' ', $this->status));
+        return self::statusMap()[$this->status][$keyLongShort]['de'] ?? ucwords(str_replace('_', ' ', $this->status));
     }
 
-    public function getStatusLabelUppsAttribute(): string
+    public function getStatusLabelUpps($keyLongShort = 'label_long_for'): string
     {
-        return self::statusMap()[$this->status]['label_for']['upps'] ?? ucwords(str_replace('_', ' ', $this->status));
+        return self::statusMap()[$this->status][$keyLongShort]['upps'] ?? ucwords(str_replace('_', ' ', $this->status));
     }
 
-    public function getStatusLabelProdiAttribute(): string
+    public function getStatusLabelProdi($keyLongShort = 'label_long_for'): string
     {
-        return self::statusMap()[$this->status]['label_for']['prodi'] ?? ucwords(str_replace('_', ' ', $this->status));
+        return self::statusMap()[$this->status][$keyLongShort]['prodi'] ?? ucwords(str_replace('_', ' ', $this->status));
     }
 
     public function getJenisAkreditasiLabelAttribute(): string
@@ -671,7 +671,12 @@ class PengajuanAkreditasi extends Model
         return [
             self::STATUS_DRAFT => [
                 'label' => 'Draft',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'Draft',
+                    'upps' => 'Draft',
+                    'prodi' => 'Draft',
+                ],
+                'label_long_for' => [
                     'de'   => 'Draft (Belum diproses DE)',
                     'upps' => 'Draft (Belum diajukan UPPS)',
                     'prodi' => 'Draft (Belum diajukan Prodi)',
@@ -682,8 +687,13 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_PENGINGAT_DIKIRIM => [
                 'label' => 'Pengingat Masa Akreditasi',
-                'label_for' => [
-                    'de'   => 'Pengingat Masa Akreditasi Telah Dikirim oleh DE',
+                'label_short_for' => [
+                    'de'   => 'Pengingat Terkirim',
+                    'upps' => 'Pengingat Diterima',
+                    'prodi' => 'Pengingat Diterima',
+                ],
+                'label_long_for' => [
+                    'de'   => 'Pengingat Masa Akreditasi Telah Dikirim',
                     'upps' => 'Pengingat Masa Akreditasi Telah Diterima dari LAMDEPILAR',
                     'prodi' => 'Pengingat Masa Akreditasi Telah Diterima dari LAMDEPILAR',
                 ],
@@ -693,7 +703,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_SURAT_PERMOHONAN_DIKIRIM => [
                 'label' => 'Permohonan Akreditasi',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'Permohonan Masuk',
+                    'upps' => 'Permohonan Terkirim',
+                    'prodi' => 'Permohonan Terkirim',
+                ],
+                'label_long_for' => [
                     'de'   => 'Permohonan Akreditasi Dikirim oleh PS',
                     'upps' => 'Permohonan Akreditasi Telah Dikirim',
                     'prodi' => 'Permohonan Akreditasi Telah Dikirim',
@@ -704,7 +719,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_SURAT_PERMOHONAN_DITOLAK => [
                 'label' => 'Permohonan Akreditasi Ditolak',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'Permohonan Ditolak',
+                    'upps' => 'Permohonan Ditolak',
+                    'prodi' => 'Permohonan Ditolak',
+                ],
+                'label_long_for' => [
                     'de'   => 'Permohonan Akreditasi Ditolak oleh DE',
                     'upps' => 'Permohonan Akreditasi Ditolak oleh LAMDEPILAR',
                     'prodi' => 'Permohonan Akreditasi Ditolak oleh LAMDEPILAR',
@@ -715,8 +735,13 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_SURAT_PERMOHONAN_DITERIMA => [
                 'label' => 'Permohonan Akreditasi Diterima',
-                'label_for' => [
-                    'de'   => 'Permohonan Akreditasi Diterima oleh DE',
+                'label_short_for' => [
+                    'de'   => 'Permohonan Diterima',
+                    'upps' => 'Permohonan Diterima',
+                    'prodi' => 'Permohonan Diterima',
+                ],
+                'label_long_for' => [
+                    'de'   => 'Permohonan Akreditasi Diterima',
                     'upps' => 'Permohonan Akreditasi Diterima',
                     'prodi' => 'Permohonan Akreditasi Diterima',
                 ],
@@ -726,7 +751,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_SURAT_PENERIMAAN_DIKIRIM => [
                 'label' => 'Penerimaan Permohonan Akreditasi Dikirim',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'Dokumen Penerimaan Terkirim',
+                    'upps' => 'Dokumen Penerimaan Diterima',
+                    'prodi' => 'Dokumen Penerimaan Diterima',
+                ],
+                'label_long_for' => [
                     'de'   => 'Penerimaan Permohonan Akreditasi Dikirim ke PS',
                     'upps' => 'Dokumen Penerimaan Permohonan Akreditasi Diterima dari LAMDEPILAR',
                     'prodi' => 'Dokumen Penerimaan Permohonan Akreditasi Diterima dari LAMDEPILAR',
@@ -737,8 +767,13 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_TEMPLATE_LED_DIKIRIM => [
                 'label' => 'Pengiriman Formulir dan Template Dokumen',
-                'label_for' => [
-                    'de'   => 'Formulir & Template Dokumen Dikirim oleh DE',
+                'label_short_for' => [
+                    'de'   => 'Template Terkirim',
+                    'upps' => 'Template Diterima',
+                    'prodi' => 'Template Diterima',
+                ],
+                'label_long_for' => [
+                    'de'   => 'Formulir & Template Dokumen Dikirim',
                     'upps' => 'Formulir & Template Dokumen Diterima dari LAMDEPILAR',
                     'prodi' => 'Formulir & Template Dokumen Diterima dari LAMDEPILAR',
                 ],
@@ -748,7 +783,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_MENUNGGU_PEMBAYARAN => [
                 'label' => 'Menunggu Pembayaran',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'Menunggu Pembayaran',
+                    'upps' => 'Menunggu Pembayaran',
+                    'prodi' => 'Menunggu Pembayaran',
+                ],
+                'label_long_for' => [
                     'de'   => 'Menunggu Pembayaran dari PS',
                     'upps' => 'Menunggu Pembayaran (silakan lakukan pembayaran)',
                     'prodi' => 'Menunggu Pembayaran (silakan lakukan pembayaran)',
@@ -759,7 +799,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_PEMBAYARAN_DITERIMA => [
                 'label' => 'Pembayaran Diterima',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'Bukti Pembayaran Masuk',
+                    'upps' => 'Bukti Pembayaran Terkirim',
+                    'prodi' => 'Bukti Pembayaran Terkirim',
+                ],
+                'label_long_for' => [
                     'de'   => 'Bukti Pembayaran Diterima (menunggu verifikasi)',
                     'upps' => 'Bukti Pembayaran Terkirim (menunggu verifikasi)',
                     'prodi' => 'Bukti Pembayaran Terkirim (menunggu verifikasi)',
@@ -770,7 +815,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN => [
                 'label' => 'Menunggu Verifikasi Pembayaran',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'Menunggu Verifikasi',
+                    'upps' => 'Menunggu Verifikasi',
+                    'prodi' => 'Menunggu Verifikasi',
+                ],
+                'label_long_for' => [
                     'de'   => 'Menunggu Verifikasi Pembayaran (oleh Keuangan/DE)',
                     'upps' => 'Menunggu Verifikasi Pembayaran (oleh Keuangan/DE)',
                     'prodi' => 'Menunggu Verifikasi Pembayaran (oleh Keuangan/DE)',
@@ -781,7 +831,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_PEMBAYARAN_DIVERIFIKASI => [
                 'label' => 'Validasi Pembayaran Selesai',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'Pembayaran Terverifikasi',
+                    'upps' => 'Pembayaran Terverifikasi',
+                    'prodi' => 'Pembayaran Terverifikasi',
+                ],
+                'label_long_for' => [
                     'de'   => 'Pembayaran Terverifikasi',
                     'upps' => 'Pembayaran Terverifikasi',
                     'prodi' => 'Pembayaran Terverifikasi',
@@ -792,7 +847,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_DRAFT_BORANG_DIKIRIM => [
                 'label' => 'File Dokumen Dikirim',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'Draft Masuk',
+                    'upps' => 'Draft Terkirim',
+                    'prodi' => 'Draft Terkirim',
+                ],
+                'label_long_for' => [
                     'de'   => 'Draft Dokumen Diterima DE (menunggu penerimaan)',
                     'upps' => 'Draft Dokumen Telah Dikirim ke DE',
                     'prodi' => 'Draft Dokumen Telah Dikirim ke DE',
@@ -803,7 +863,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_DRAFT_BORANG_DITERIMA => [
                 'label' => 'File Dokumen Diterima',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'Draft Diterima',
+                    'upps' => 'Draft Diterima DE',
+                    'prodi' => 'Draft Diterima DE',
+                ],
+                'label_long_for' => [
                     'de'   => 'Draft Dokumen Diterima DE',
                     'upps' => 'Draft Dokumen Diterima oleh DE',
                     'prodi' => 'Draft Dokumen Diterima oleh DE',
@@ -814,7 +879,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_BORANG_ONLINE_SELESAI => [
                 'label' => 'Dokumen Diterima',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'Dokumen Masuk',
+                    'upps' => 'Dokumen Diterima',
+                    'prodi' => 'Dokumen Diterima',
+                ],
+                'label_long_for' => [
                     'de'   => 'Dokumen Final/Online Diterima (siap divalidasi)',
                     'upps' => 'Dokumen Diterima Sistem (menunggu validasi)',
                     'prodi' => 'Dokumen Diterima Sistem (menunggu validasi)',
@@ -825,7 +895,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_BORANG_VALIDATION_PENDING => [
                 'label' => 'Menunggu Validasi Dokumen',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'Menunggu Validasi',
+                    'upps' => 'Menunggu Validasi',
+                    'prodi' => 'Menunggu Validasi',
+                ],
+                'label_long_for' => [
                     'de'   => 'Menunggu Validasi Dokumen oleh Validator',
                     'upps' => 'Menunggu Validasi Dokumen oleh Validator',
                     'prodi' => 'Menunggu Validasi Dokumen oleh Validator',
@@ -836,7 +911,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_BORANG_IN_VALIDATION => [
                 'label' => 'Validasi Dokumen Berlangsung',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'Validasi Berlangsung',
+                    'upps' => 'Validasi Berlangsung',
+                    'prodi' => 'Validasi Berlangsung',
+                ],
+                'label_long_for' => [
                     'de'   => 'Validasi Dokumen Sedang Berlangsung',
                     'upps' => 'Validasi Dokumen Sedang Berlangsung',
                     'prodi' => 'Validasi Dokumen Sedang Berlangsung',
@@ -847,7 +927,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_BORANG_REVISION_REQUIRED => [
                 'label' => 'Dokumen Perlu Revisi',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'Perlu Revisi',
+                    'upps' => 'Perlu Revisi',
+                    'prodi' => 'Perlu Revisi',
+                ],
+                'label_long_for' => [
                     'de'   => 'Revisi Dokumen Diperlukan (minta perbaikan ke PS)',
                     'upps' => 'Dokumen Perlu Revisi (silakan perbaiki)',
                     'prodi' => 'Dokumen Perlu Revisi (silakan perbaiki)',
@@ -858,7 +943,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_BORANG_VALIDATED => [
                 'label' => 'Dokumen Divalidasi',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'Tervalidasi',
+                    'upps' => 'Tervalidasi',
+                    'prodi' => 'Tervalidasi',
+                ],
+                'label_long_for' => [
                     'de'   => 'Dokumen Tervalidasi',
                     'upps' => 'Dokumen Tervalidasi',
                     'prodi' => 'Dokumen Tervalidasi',
@@ -869,7 +959,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_BORANG_FINAL_DITERIMA => [
                 'label' => 'Draft Final Dokumen Diterima',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'Final Diterima',
+                    'upps' => 'Final Diterima DE',
+                    'prodi' => 'Final Diterima DE',
+                ],
+                'label_long_for' => [
                     'de'   => 'Draft Final Dokumen Diterima DE',
                     'upps' => 'Draft Final Dokumen Diterima oleh DE',
                     'prodi' => 'Draft Final Dokumen Diterima oleh DE',
@@ -880,7 +975,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_VALIDASI_BORANG_DILAPORKAN => [
                 'label' => 'Pelaporan Validasi Dokumen',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'Laporan Validasi',
+                    'upps' => 'Laporan Validasi',
+                    'prodi' => 'Laporan Validasi',
+                ],
+                'label_long_for' => [
                     'de'   => 'Pelaporan Validasi Dokumen Selesai',
                     'upps' => 'Pelaporan Validasi Dokumen Selesai',
                     'prodi' => 'Pelaporan Validasi Dokumen Selesai',
@@ -891,7 +991,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_PENGAJUAN_COMPLETED => [
                 'label' => 'Proses Penugasan Asesor AK',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'Siap Penugasan AK',
+                    'upps' => 'Penugasan AK',
+                    'prodi' => 'Penugasan AK',
+                ],
+                'label_long_for' => [
                     'de'   => 'Siap Masuk Proses Penugasan Asesor AK',
                     'upps' => 'Dalam Proses Penugasan Asesor AK',
                     'prodi' => 'Dalam Proses Penugasan Asesor AK',
@@ -902,7 +1007,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_ASESOR_AK_ASSIGNED => [
                 'label' => 'Penugasan Asesor AK',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'Asesor AK Ditugaskan',
+                    'upps' => 'Asesor AK Ditugaskan',
+                    'prodi' => 'Asesor AK Ditugaskan',
+                ],
+                'label_long_for' => [
                     'de'   => 'Asesor AK Telah Ditugaskan',
                     'upps' => 'Asesor AK Telah Ditugaskan',
                     'prodi' => 'Asesor AK Telah Ditugaskan',
@@ -913,7 +1023,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_AK_IN_PROGRESS => [
                 'label' => 'Penugasan Asesor AK Berlangsung',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'AK Berlangsung',
+                    'upps' => 'AK Berlangsung',
+                    'prodi' => 'AK Berlangsung',
+                ],
+                'label_long_for' => [
                     'de'   => 'Proses AK Berlangsung (oleh Asesor AK)',
                     'upps' => 'Proses AK Berlangsung (oleh Asesor AK)',
                     'prodi' => 'Proses AK Berlangsung (oleh Asesor AK)',
@@ -924,7 +1039,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_AK_ON_VALIDATION => [
                 'label' => 'Validasi AK Berlangsung',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'Validasi AK',
+                    'upps' => 'Validasi AK',
+                    'prodi' => 'Validasi AK',
+                ],
+                'label_long_for' => [
                     'de'   => 'Validasi AK Sedang Berlangsung',
                     'upps' => 'Validasi AK Sedang Berlangsung',
                     'prodi' => 'Validasi AK Sedang Berlangsung',
@@ -935,7 +1055,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_AK_SELESAI => [
                 'label' => 'Validasi AK Selesai',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'Validasi AK Selesai',
+                    'upps' => 'Validasi AK Selesai',
+                    'prodi' => 'Validasi AK Selesai',
+                ],
+                'label_long_for' => [
                     'de'   => 'Validasi AK Selesai',
                     'upps' => 'Validasi AK Selesai',
                     'prodi' => 'Validasi AK Selesai',
@@ -946,7 +1071,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_AK_DILAPORKAN => [
                 'label' => 'Pelaporan AK Selesai',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'Laporan AK',
+                    'upps' => 'Laporan AK',
+                    'prodi' => 'Laporan AK',
+                ],
+                'label_long_for' => [
                     'de'   => 'Pelaporan AK Selesai',
                     'upps' => 'Pelaporan AK Selesai',
                     'prodi' => 'Pelaporan AK Selesai',
@@ -957,7 +1087,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_ASESOR_AL_ASSIGNED => [
                 'label' => 'Penugasan Asesor AL',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'Asesor AL Ditugaskan',
+                    'upps' => 'Asesor AL Ditugaskan',
+                    'prodi' => 'Asesor AL Ditugaskan',
+                ],
+                'label_long_for' => [
                     'de'   => 'Asesor AL Telah Ditugaskan',
                     'upps' => 'Asesor AL Telah Ditugaskan',
                     'prodi' => 'Asesor AL Telah Ditugaskan',
@@ -968,7 +1103,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_AL_IN_PROGRESS => [
                 'label' => 'Pelaksanaan AL Berlangsung',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'AL Berlangsung',
+                    'upps' => 'AL Berlangsung',
+                    'prodi' => 'AL Berlangsung',
+                ],
+                'label_long_for' => [
                     'de'   => 'Pelaksanaan AL Sedang Berlangsung',
                     'upps' => 'Pelaksanaan AL Sedang Berlangsung',
                     'prodi' => 'Pelaksanaan AL Sedang Berlangsung',
@@ -979,7 +1119,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_AL_SELESAI => [
                 'label' => 'Pelaksanaan AL dan Penyampaian Berita Acara AL Selesai',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'AL Selesai',
+                    'upps' => 'AL Selesai',
+                    'prodi' => 'AL Selesai',
+                ],
+                'label_long_for' => [
                     'de'   => 'Pelaksanaan AL & Berita Acara Selesai',
                     'upps' => 'Pelaksanaan AL & Berita Acara Selesai',
                     'prodi' => 'Pelaksanaan AL & Berita Acara Selesai',
@@ -990,7 +1135,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_AL_DILAPORKAN => [
                 'label' => 'Pelaporan AL Selesai',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'Laporan AL',
+                    'upps' => 'Laporan AL',
+                    'prodi' => 'Laporan AL',
+                ],
+                'label_long_for' => [
                     'de'   => 'Pelaporan AL Selesai',
                     'upps' => 'Pelaporan AL Selesai',
                     'prodi' => 'Pelaporan AL Selesai',
@@ -1001,7 +1151,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_HASIL_AKREDITASI_DIKIRIM => [
                 'label' => 'Penyampaian Hasil Akreditasi',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'Hasil Dikirim',
+                    'upps' => 'Hasil Diterima',
+                    'prodi' => 'Hasil Diterima',
+                ],
+                'label_long_for' => [
                     'de'   => 'Hasil Akreditasi Disampaikan ke PS',
                     'upps' => 'Hasil Akreditasi Diterima dari LAMDEPILAR',
                     'prodi' => 'Hasil Akreditasi Diterima dari LAMDEPILAR',
@@ -1012,7 +1167,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_MASA_SANGGAH => [
                 'label' => 'Masa Sanggah',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'Masa Sanggah',
+                    'upps' => 'Masa Sanggah',
+                    'prodi' => 'Masa Sanggah',
+                ],
+                'label_long_for' => [
                     'de'   => 'Masa Sanggah Berlangsung',
                     'upps' => 'Masa Sanggah Berlangsung',
                     'prodi' => 'Masa Sanggah Berlangsung',
@@ -1023,7 +1183,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_BANDING_DIAJUKAN => [
                 'label' => 'Banding Diajukan',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'Banding Masuk',
+                    'upps' => 'Banding Diajukan',
+                    'prodi' => 'Banding Diajukan',
+                ],
+                'label_long_for' => [
                     'de'   => 'Banding Diajukan (menunggu diproses)',
                     'upps' => 'Banding Telah Diajukan',
                     'prodi' => 'Banding Telah Diajukan',
@@ -1034,7 +1199,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_BANDING_DILAKSANAKAN => [
                 'label' => 'Pelaksanaan Banding',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'Banding Berlangsung',
+                    'upps' => 'Banding Berlangsung',
+                    'prodi' => 'Banding Berlangsung',
+                ],
+                'label_long_for' => [
                     'de'   => 'Pelaksanaan Banding Sedang Berlangsung',
                     'upps' => 'Pelaksanaan Banding Sedang Berlangsung',
                     'prodi' => 'Pelaksanaan Banding Sedang Berlangsung',
@@ -1045,7 +1215,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_BANDING_DILAPORKAN => [
                 'label' => 'Pelaporan Banding',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'Laporan Banding',
+                    'upps' => 'Laporan Banding',
+                    'prodi' => 'Laporan Banding',
+                ],
+                'label_long_for' => [
                     'de'   => 'Pelaporan Banding Selesai',
                     'upps' => 'Pelaporan Banding Selesai',
                     'prodi' => 'Pelaporan Banding Selesai',
@@ -1056,7 +1231,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_HASIL_DITETAPKAN => [
                 'label' => 'Penetapan Hasil Akreditasi',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'Hasil Ditetapkan',
+                    'upps' => 'Hasil Ditetapkan',
+                    'prodi' => 'Hasil Ditetapkan',
+                ],
+                'label_long_for' => [
                     'de'   => 'Hasil Akreditasi Ditetapkan',
                     'upps' => 'Hasil Akreditasi Ditetapkan',
                     'prodi' => 'Hasil Akreditasi Ditetapkan',
@@ -1067,7 +1247,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_HASIL_DIUMUMKAN => [
                 'label' => 'Hasil Akreditasi Diumumkan',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'Hasil Diumumkan',
+                    'upps' => 'Hasil Diumumkan',
+                    'prodi' => 'Hasil Diumumkan',
+                ],
+                'label_long_for' => [
                     'de'   => 'Hasil Akreditasi Diumumkan',
                     'upps' => 'Hasil Akreditasi Diumumkan',
                     'prodi' => 'Hasil Akreditasi Diumumkan',
@@ -1078,7 +1263,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_HASIL_DILAPORKAN => [
                 'label' => 'Pelaporan Hasil Akreditasi',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'Laporan Hasil',
+                    'upps' => 'Laporan Hasil',
+                    'prodi' => 'Laporan Hasil',
+                ],
+                'label_long_for' => [
                     'de'   => 'Pelaporan Hasil Akreditasi Selesai',
                     'upps' => 'Pelaporan Hasil Akreditasi Selesai',
                     'prodi' => 'Pelaporan Hasil Akreditasi Selesai',
@@ -1089,7 +1279,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_ARSIP_DISIMPAN => [
                 'label' => 'Penyimpanan Arsip',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'Arsip Disimpan',
+                    'upps' => 'Arsip Tersedia',
+                    'prodi' => 'Arsip Tersedia',
+                ],
+                'label_long_for' => [
                     'de'   => 'Arsip Disimpan oleh DE',
                     'upps' => 'Arsip Tersedia',
                     'prodi' => 'Arsip Tersedia',
@@ -1100,7 +1295,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_SELESAI => [
                 'label' => 'Proses Akreditasi Selesai',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'Selesai',
+                    'upps' => 'Selesai',
+                    'prodi' => 'Selesai',
+                ],
+                'label_long_for' => [
                     'de'   => 'Proses Akreditasi Selesai',
                     'upps' => 'Proses Akreditasi Selesai',
                     'prodi' => 'Proses Akreditasi Selesai',
@@ -1111,7 +1311,12 @@ class PengajuanAkreditasi extends Model
 
             self::STATUS_DITOLAK => [
                 'label' => 'Ditolak',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'Ditolak',
+                    'upps' => 'Ditolak',
+                    'prodi' => 'Ditolak',
+                ],
+                'label_long_for' => [
                     'de'   => 'Ditolak oleh DE',
                     'upps' => 'Ditolak oleh DE',
                     'prodi' => 'Ditolak oleh DE',
@@ -1120,10 +1325,14 @@ class PengajuanAkreditasi extends Model
                 'icon' => 'bi-x-octagon',
             ],
 
-            // Other
             self::STATUS_REMINDER_PENGIRIMAN_BORANG => [
                 'label' => 'Reminder Pengiriman Dokumen',
-                'label_for' => [
+                'label_short_for' => [
+                    'de'   => 'Reminder Terkirim',
+                    'upps' => 'Reminder Diterima',
+                    'prodi' => 'Reminder Diterima',
+                ],
+                'label_long_for' => [
                     'de'   => 'Reminder Pengiriman Dokumen Terkirim (oleh DE)',
                     'upps' => 'Reminder Pengiriman Dokumen Diterima dari LAMDEPILAR',
                     'prodi' => 'Reminder Pengiriman Dokumen Diterima dari LAMDEPILAR',
@@ -1516,38 +1725,168 @@ class PengajuanAkreditasi extends Model
         return $lastStatus;
     }
 
-    public function getCustomBadgeLastStatus(string $attribute): string
+    public function getCustomBadgeLastStatusDE(string $attribute): string
     {
+        return $this->getCustomBadgeLastStatusFor($attribute, 'de');
+    }
+
+    public function getCustomBadgeLastStatusUPPS(string $attribute): string
+    {
+        return $this->getCustomBadgeLastStatusFor($attribute, 'upps');
+    }
+
+    /**
+     * Badge status berdasarkan last status per-attribute + sudut pandang.
+     * $audience: 'de' | 'upps' | 'prodi' | dst.
+     */
+    public function getCustomBadgeLastStatus(string $attribute, string $audience = 'de', string $keyLongShort = 'label_long_for'): string
+    {
+        $status = $this->getCustomLastStatus($attribute);
+
+        $badge = fn(string $bg, string $text) => sprintf(
+            '<span class="badge %s text-wrap">%s</span>',
+            e($bg),
+            e($text)
+        );
+
+        $labelFor = function (?string $statusKey) use ($audience, $keyLongShort): ?string {
+            if (!$statusKey) return null;
+
+            $map = self::statusMap();
+            return $map[$statusKey][$keyLongShort][$audience]
+                ?? $map[$statusKey]['label']
+                ?? null;
+        };
+
+        // Fallback BG dari statusMap (kalau butuh)
+        $bgFromMap = function (?string $statusKey, string $fallback = 'bg-secondary') {
+            if (!$statusKey) return $fallback;
+
+            $map = self::statusMap();
+            return $map[$statusKey]['bg'] ?? $fallback;
+        };
+
         return match ($attribute) {
-            'surat_permohonan_ps' => match ($this->getCustomLastStatus($attribute)) {
-                self::STATUS_PENGINGAT_DIKIRIM => '<span class="badge bg-warning text-wrap">Menunggu Permohonan Akreditasi Dikirim dari PS</span>',
-                self::STATUS_SURAT_PERMOHONAN_DIKIRIM => '<span class="badge bg-info text-wrap">Permohonan Akreditasi telah Dikirim oleh PS</span>',
-                self::STATUS_SURAT_PERMOHONAN_DITERIMA => '<span class="badge bg-success text-wrap">Permohonan Akreditasi Diterima oleh DE</span>',
-                self::STATUS_SURAT_PERMOHONAN_DITOLAK => '<span class="badge bg-danger text-wrap">Permohonan Akreditasi Ditolak oleh DE</span>',
-                default => '<span class="badge bg-secondary">-</span>',
+
+            /**
+             * ===========================================
+             * 1) Surat Permohonan (PS -> DE)
+             * ===========================================
+             */
+            'surat_permohonan_ps' => match ($status) {
+                self::STATUS_PENGINGAT_DIKIRIM =>
+                $audience === 'de'
+                    ? $badge('bg-warning', 'Menunggu Permohonan Akreditasi Dikirim dari PS')
+                    : $badge('bg-warning', 'Pengingat diterima. Silakan kirim Permohonan Akreditasi'),
+
+                self::STATUS_SURAT_PERMOHONAN_DIKIRIM =>
+                $badge('bg-info', $labelFor(self::STATUS_SURAT_PERMOHONAN_DIKIRIM) ?? 'Permohonan Akreditasi'),
+
+                self::STATUS_SURAT_PERMOHONAN_DITERIMA =>
+                $badge('bg-success', $labelFor(self::STATUS_SURAT_PERMOHONAN_DITERIMA) ?? 'Permohonan Akreditasi Diterima'),
+
+                self::STATUS_SURAT_PERMOHONAN_DITOLAK =>
+                $badge('bg-danger', $labelFor(self::STATUS_SURAT_PERMOHONAN_DITOLAK) ?? 'Permohonan Akreditasi Ditolak'),
+
+                default => $badge('bg-secondary', '-'),
             },
-            'surat_penerimaan_de' => match ($this->getCustomLastStatus($attribute)) {
-                self::STATUS_SURAT_PERMOHONAN_DITERIMA => '<span class="badge bg-warning text-wrap">Permohonan Akreditasi Diterima oleh DE</span>',
-                self::STATUS_SURAT_PENERIMAAN_DIKIRIM => '<span class="badge bg-success text-wrap">Permohonan Akreditasi Dikirim oleh DE</span>',
-                default => '<span class="badge bg-secondary">-</span>',
+
+            /**
+             * ===========================================
+             * 2) Dokumen Penerimaan (DE -> UPPS/PS)
+             * ===========================================
+             */
+            'surat_penerimaan_de' => match ($status) {
+                self::STATUS_SURAT_PERMOHONAN_DITERIMA =>
+                $audience === 'de'
+                    ? $badge('bg-warning', 'Permohonan Akreditasi sudah diterima. Menunggu pengiriman dokumen penerimaan')
+                    : $badge('bg-warning', 'Menunggu Dokumen Penerimaan Permohonan Akreditasi dari LAMDEPILAR'),
+
+                self::STATUS_SURAT_PENERIMAAN_DIKIRIM =>
+                $badge('bg-success', $labelFor(self::STATUS_SURAT_PENERIMAAN_DIKIRIM) ?? 'Penerimaan Permohonan Akreditasi'),
+
+                default => $badge('bg-secondary', '-'),
             },
-            'borang_template' => match ($this->getCustomLastStatus($attribute)) {
-                self::STATUS_SURAT_PENERIMAAN_DIKIRIM => '<span class="badge bg-warning text-wrap">Belum Dikirim DE</span>',
-                self::STATUS_TEMPLATE_LED_DIKIRIM => '<span class="badge bg-success text-wrap">Sudah Dikirim, Sudah Diterima PS</span>',
-                default => '<span class="badge bg-secondary">-</span>',
+
+            /**
+             * ===========================================
+             * 3) Borang Template (DE -> UPPS/PS)
+             * ===========================================
+             */
+            'borang_template' => match ($status) {
+                self::STATUS_SURAT_PENERIMAAN_DIKIRIM =>
+                $audience === 'de'
+                    ? $badge('bg-warning', 'Belum mengirim Formulir & Template Dokumen')
+                    : $badge('bg-warning', 'Menunggu Formulir & Template Dokumen dari LAMDEPILAR'),
+
+                self::STATUS_TEMPLATE_LED_DIKIRIM =>
+                $badge('bg-success', $labelFor(self::STATUS_TEMPLATE_LED_DIKIRIM) ?? 'Pengiriman Formulir & Template Dokumen'),
+
+                default => $badge('bg-secondary', '-'),
             },
-            'borang_final' => match ($this->getCustomLastStatus($attribute)) {
-                self::STATUS_DRAFT_BORANG_DIKIRIM => '<span class="badge bg-warning text-wrap">Draft Dokumen Telah Dikirim oleh PS</span>',
-                self::STATUS_DRAFT_BORANG_DITERIMA => '<span class="badge bg-info text-wrap">Draft Dokumen Telah Diterima oleh DE</span>',
-                self::STATUS_BORANG_ONLINE_SELESAI => '<span class="badge bg-primary text-wrap">Pengisian Dokumen Secara Online Selesai</span>',
-                self::STATUS_BORANG_VALIDATION_PENDING => '<span class="badge bg-warning text-wrap">Menunggu Validasi Dokumen oleh Validator</span>',
-                self::STATUS_BORANG_IN_VALIDATION => '<span class="badge bg-info text-wrap">Dalam Proses Validasi oleh Validator</span>',
-                self::STATUS_BORANG_REVISION_REQUIRED => '<span class="badge bg-danger text-wrap">PS Perlu Merevisi Dokumen</span>',
-                self::STATUS_BORANG_VALIDATED => '<span class="badge bg-success text-wrap">Dokumen Telah Divalidasi oleh Validator</span>',
-                self::STATUS_BORANG_FINAL_DITERIMA => '<span class="badge bg-success text-wrap">Dokumen Final Diterima</span>',
-                default => '<span class="badge bg-secondary text-wrap">Draft Dokumen Belum Dikirim oleh PS</span>',
+
+            /**
+             * ===========================================
+             * 4) Borang Final (Draft -> Validasi -> Final)
+             * ===========================================
+             */
+            'borang_final' => match ($status) {
+
+                self::STATUS_DRAFT_BORANG_DIKIRIM =>
+                $badge(
+                    $bgFromMap(self::STATUS_DRAFT_BORANG_DIKIRIM, 'bg-warning'),
+                    $labelFor(self::STATUS_DRAFT_BORANG_DIKIRIM) ?? 'File Dokumen Dikirim'
+                ),
+
+                self::STATUS_DRAFT_BORANG_DITERIMA =>
+                $badge(
+                    $bgFromMap(self::STATUS_DRAFT_BORANG_DITERIMA, 'bg-info'),
+                    $labelFor(self::STATUS_DRAFT_BORANG_DITERIMA) ?? 'File Dokumen Diterima'
+                ),
+
+                self::STATUS_BORANG_ONLINE_SELESAI =>
+                $badge(
+                    $bgFromMap(self::STATUS_BORANG_ONLINE_SELESAI, 'bg-primary'),
+                    $labelFor(self::STATUS_BORANG_ONLINE_SELESAI) ?? 'Dokumen Diterima'
+                ),
+
+                self::STATUS_BORANG_VALIDATION_PENDING =>
+                $badge(
+                    $bgFromMap(self::STATUS_BORANG_VALIDATION_PENDING, 'bg-warning'),
+                    $labelFor(self::STATUS_BORANG_VALIDATION_PENDING) ?? 'Menunggu Validasi Dokumen'
+                ),
+
+                self::STATUS_BORANG_IN_VALIDATION =>
+                $badge(
+                    $bgFromMap(self::STATUS_BORANG_IN_VALIDATION, 'bg-info'),
+                    $labelFor(self::STATUS_BORANG_IN_VALIDATION) ?? 'Validasi Dokumen Berlangsung'
+                ),
+
+                self::STATUS_BORANG_REVISION_REQUIRED =>
+                $badge(
+                    $bgFromMap(self::STATUS_BORANG_REVISION_REQUIRED, 'bg-danger'),
+                    $labelFor(self::STATUS_BORANG_REVISION_REQUIRED) ?? 'Dokumen Perlu Revisi'
+                ),
+
+                self::STATUS_BORANG_VALIDATED =>
+                $badge(
+                    $bgFromMap(self::STATUS_BORANG_VALIDATED, 'bg-success'),
+                    $labelFor(self::STATUS_BORANG_VALIDATED) ?? 'Dokumen Divalidasi'
+                ),
+
+                self::STATUS_BORANG_FINAL_DITERIMA =>
+                $badge(
+                    $bgFromMap(self::STATUS_BORANG_FINAL_DITERIMA, 'bg-success'),
+                    $labelFor(self::STATUS_BORANG_FINAL_DITERIMA) ?? 'Draft Final Dokumen Diterima'
+                ),
+
+                default =>
+                $audience === 'de'
+                    ? $badge('bg-secondary', 'Draft Dokumen belum dikirim oleh PS')
+                    : $badge('bg-secondary', 'Draft Dokumen belum dikirim'),
             },
-            default => '<span class="badge bg-secondary">-</span>',
+
+            default => $badge('bg-secondary', '-'),
         };
     }
 }

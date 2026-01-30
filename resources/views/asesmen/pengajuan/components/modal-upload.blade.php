@@ -266,7 +266,7 @@ $latestImport = $pengajuan->latestBorangImport;
                         </h6>
                         <ol class="mb-0 small">
                             <li>File harus berformat <strong>Microsoft Word (.docx)</strong></li>
-                            <li>Gunakan template yang sudah dikirim oleh Desk Evaluator</li>
+                            <li>Gunakan template yang telah dikirim oleh Sekretariat LAMDEPILAR</li>
                             <li><strong>Jangan ubah</strong> struktur dokumen, kode elemen, atau format tabel</li>
                             <li>Isi bagian yang bertanda <strong>"Mohon isi di sini"</strong></li>
                             <li>Maksimal ukuran file: <strong>10MB</strong></li>

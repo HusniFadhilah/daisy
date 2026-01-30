@@ -183,7 +183,7 @@ $authUser = Auth::user();
     @else
     <div class="alert alert-info alert-permanent alert-dismissible">
         <i class="bi bi-info-circle me-2"></i>
-        Tidak ada penawaran baru saat ini. Silakan tunggu penawaran dari DE LAMDEPILAR.
+        Tidak ada penawaran baru saat ini. Silakan tunggu penawaran dari LAMDEPILAR.
     </div>
     @endif
 

@@ -33,21 +33,21 @@
         <div class="col-lg-8 mb-4">
             <!-- Status Alert -->
             @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM)
-            <div class="alert alert-warning alert-permanent">
+            <div class="alert alert-warning alert-permanent mb-4">
                 <i class="bi bi-hourglass-split"></i>
                 <strong>Menunggu tanggapan dari LAMDEPILAR</strong>
                 <br>
                 Permohonan akreditasi telah dikirim pada {{ $pengajuan->tanggal_surat_permohonan_dikirim->format('d M Y H:i') }}
             </div>
             @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA)
-            <div class="alert alert-success alert-permanent">
+            <div class="alert alert-success alert-permanent mb-4">
                 <i class="bi bi-check-circle"></i>
                 <strong>Permohonan akreditasi telah diterima oleh LAMDEPILAR</strong>
                 <br>
                 Diterima pada {{ $pengajuan->tanggal_surat_permohonan_diterima->format('d M Y H:i') }}
             </div>
             @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITOLAK)
-            <div class="alert alert-danger alert-permanent">
+            <div class="alert alert-danger alert-permanent mb-4">
                 <i class="bi bi-x-circle"></i>
                 <strong>Permohonan akreditasi ditolak oleh LAMDEPILAR</strong>
                 <br>
@@ -56,7 +56,7 @@
             @endif
 
             <!-- Informasi Permohonan Akreditasi -->
-            <div class="card my-4">
+            <div class="card mb-4">
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">Informasi Permohonan Akreditasi PS</h5>
                 </div>
@@ -88,7 +88,7 @@
                         </tr>
                         <tr>
                             <th>Status Permohonan Akreditasi</th>
-                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('surat_permohonan_ps') !!}</td>
+                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('surat_permohonan_ps','upps') !!}</td>
                         </tr>
                     </table>
                 </div>
@@ -170,7 +170,7 @@
                                 </div>
                                 <div class="flex-grow-1 ms-3">
                                     <strong>
-                                        {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_for']['upps'] ?? $log->status_to }}
+                                        {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['upps'] ?? $log->status_to }}
                                     </strong>
                                     <br>
                                     <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>

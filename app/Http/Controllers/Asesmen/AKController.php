@@ -166,7 +166,7 @@ class AKController extends Controller
                 if (in_array($existingPenilaian->status_validasi, $validatedStatuses)) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'Penilaian sudah divalidasi dan disetujui oleh validator. Tidak dapat diubah lagi.',
+                        'message' => 'Penilaian telah divalidasi dan disetujui oleh validator. Tidak dapat diubah lagi.',
                         'error_type' => 'already_validated',
                         'validated_at' => $existingPenilaian->validated_at,
                         'validator_name' => $existingPenilaian->validator->name ?? 'Validator',
@@ -438,7 +438,7 @@ class AKController extends Controller
             if ($hasValidated) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Penilaian sudah divalidasi dan disetujui, tidak bisa dibatalkan.',
+                    'message' => 'Penilaian telah divalidasi dan disetujui, tidak bisa dibatalkan.',
                 ], 422);
             }
 
@@ -446,7 +446,7 @@ class AKController extends Controller
             if ($assignment->status_pekerjaan === 'approved') {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Penilaian sudah disetujui, tidak bisa dibatalkan.',
+                    'message' => 'Penilaian telah disetujui, tidak bisa dibatalkan.',
                 ], 422);
             }
 
@@ -518,7 +518,7 @@ class AKController extends Controller
             if (in_array($assignment->status_pekerjaan, ['submitted', 'approved'])) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Tidak dapat mereset penilaian yang sudah di-submit atau disetujui. Silakan batalkan submit terlebih dahulu.',
+                    'message' => 'Tidak dapat mereset penilaian yang telah di-submit atau disetujui. Silakan batalkan submit terlebih dahulu.',
                 ], 422);
             }
 

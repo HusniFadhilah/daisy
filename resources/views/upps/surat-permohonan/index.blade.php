@@ -83,11 +83,11 @@
         <div class="col-lg-3 col-md-6 mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">PS Belum Mengajukan Permohonan Akreditasi</h6>
+                    <h6 class="mb-1 opacity-75">Permohonan Akreditasi Belum Diajukan</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['menunggu'] }}</h2>
-                            <small class="opacity-75">Pengingat masa akreditasi sudah dikirim, tetapi PS belum mengajukan Permohonan Akreditasi</small>
+                            <small class="opacity-75">Pengingat masa akreditasi telah dikirim, tetapi Permohonan Akreditasi belum mengajukan </small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
                             <i class="bi bi-hourglass-split"></i>
@@ -100,11 +100,11 @@
         <div class="col-lg-3 col-md-6 mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #8ebb0aff 0%, #c0c30dff 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Permohonan Akreditasi Sudah Dikirim, tetapi Belum Ditanggapi DE</h6>
+                    <h6 class="mb-1 opacity-75">Permohonan Akreditasi Telah Dikirim, tetapi Belum Ditanggapi</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['dikirim'] }}</h2>
-                            <small class="opacity-75">Permohonan Akreditasi telah dikirim oleh PS, tetapi belum ditanggapi oleh DE</small>
+                            <small class="opacity-75">Permohonan Akreditasi telah dikirim, tetapi belum ditanggapi oleh LAMDEPILAR</small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
                             <i class="bi bi-clock"></i>
@@ -117,11 +117,11 @@
         <div class="col-lg-3 col-md-6 mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Permohonan Akreditasi Sudah Ditanggapi DE</h6>
+                    <h6 class="mb-1 opacity-75">Permohonan Akreditasi Sudah Ditanggapi</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['diterima'] }}</h2>
-                            <small class="opacity-75">Permohonan Akreditasi telah dikirim oleh PS, dan telah ditanggapi oleh DE</small>
+                            <small class="opacity-75">Permohonan Akreditasi telah dikirim dan telah ditanggapi oleh LAMDEPILAR</small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
                             <i class="bi bi-check-circle"></i>
@@ -214,7 +214,6 @@
                                     <th width="5%">#</th>
                                     <th width="20%">Permohonan Akreditasi</th>
                                     <th width="20%">Program Studi</th>
-                                    <th width="10%">Tahun</th>
                                     <th width="15%">Tanggal Permohonan Dikirim</th>
                                     <th width="20%">Status Permohonan Akreditasi</th>
                                     <th width="10%" class="text-center">Aksi</th>
@@ -241,9 +240,6 @@
                                         <br><small>{{ $pengajuan->studyProgram->university->name ?? '-' }}</small>
                                     </td>
                                     <td>
-                                        <span class="badge bg-info">{{ $pengajuan->tahun_akreditasi }}</span>
-                                    </td>
-                                    <td>
                                         @if($pengajuan->tanggal_surat_permohonan_dikirim)
                                         <small>{{ $pengajuan->tanggal_surat_permohonan_dikirim->format('d M Y') }}</small>
                                         <br>
@@ -255,7 +251,7 @@
                                         @endif
                                     </td>
                                     <td>
-                                        {!! $pengajuan->getCustomBadgeLastStatus('surat_permohonan_ps') !!}
+                                        {!! $pengajuan->getCustomBadgeLastStatus('surat_permohonan_ps','upps','label_short_for') !!}
                                     </td>
                                     <td class="text-center">
                                         <div class="btn-group btn-group-sm" role="group">

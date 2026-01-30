@@ -137,14 +137,12 @@
                         <table class="table table-hover align-middle mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th width="5%">#</th>
-                                    <th width="15%">Nomor Permohonan</th>
-                                    <th width="25%">Program Studi</th>
-                                    <th width="12%">Universitas</th>
-                                    <th width="10%">Tahun</th>
-                                    <th width="13%">Tanggal Permohonan Akreditasi Diterima</th>
-                                    <th width="10%">Status Penerimaan Permohonan Akreditasi</th>
-                                    <th width="10%" class="text-center">Aksi</th>
+                                    <th width="3%">#</th>
+                                    <th width="15%">Permohonan Akreditasi</th>
+                                    <th width="20%">Program Studi</th>
+                                    <th width="25%">Tanggal Permohonan Akreditasi Diterima</th>
+                                    <th width="20%">Status Penerimaan Permohonan</th>
+                                    <th width="8%" class="text-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -178,13 +176,9 @@
                                             <small class="text-muted">
                                                 {{ $pengajuan->studyProgram->degreeLevel->name ?? '-' }}
                                             </small>
+                                            <br>
+                                            <small>{{ $pengajuan->studyProgram->university->name ?? '-' }}</small>
                                         </div>
-                                    </td>
-                                    <td>
-                                        <small>{{ $pengajuan->studyProgram->university->name ?? '-' }}</small>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-info">{{ $pengajuan->tahun_akreditasi }}</span>
                                     </td>
                                     <td>
                                         @if($pengajuan->tanggal_surat_permohonan_diterima)
@@ -202,7 +196,7 @@
                                     <td>
                                         @if($suratPenerimaan)
                                         <span class="badge bg-success">
-                                            <i class="bi bi-check-circle"></i> Telah Dikirim oleh DE
+                                            <i class="bi bi-check-circle"></i> Telah Dikirim
                                         </span>
                                         <br>
                                         <small class="text-muted">
@@ -210,7 +204,7 @@
                                         </small>
                                         @else
                                         <span class="badge bg-warning">
-                                            <i class="bi bi-hourglass-split"></i> Belum Dikirim oleh DE
+                                            <i class="bi bi-hourglass-split"></i> Belum Dikirim
                                         </span>
                                         @endif
                                     </td>

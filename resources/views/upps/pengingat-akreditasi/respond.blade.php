@@ -53,7 +53,7 @@
                             <td>: {{ $pengingat->tahun_akreditasi }}</td>
                         </tr>
                         <tr>
-                            <th>Pengirim (DE)</th>
+                            <th>Pengirim</th>
                             <td>: {{ $pengingat->pengirim->name ?? '-' }}</td>
                         </tr>
                     </table>
@@ -117,7 +117,7 @@
                             <ul class="mb-0 mt-2">
                                 <li>Pastikan surat permohonan sudah ditandatangani</li>
                                 <li>File harus dalam format PDF</li>
-                                <li>Setelah submit, permohonan akan langsung dikirim ke LAM-DEPILaR</li>
+                                <li>Setelah submit, permohonan akan langsung dikirim ke LAMDEPILAR</li>
                             </ul>
                         </div>
 

@@ -847,7 +847,7 @@
                         <label class="form-label fw-bold">Pilih Program Studi</label>
                         <div style="max-height: 200px; overflow-y: auto; border: 1px solid #dee2e6; padding: 10px; border-radius: 4px;">
                             <div class="mb-3">
-                                <label class="form-label fw-bold">Pilih Program Studi</label>
+                                <label class="form-label fw-bold">Cari Nama Program Studi</label>
 
                                 <select id="selectProdiPengingat" name="id_program_studi[]" class="form-select" multiple="multiple" style="width: 100%;">
                                 </select>

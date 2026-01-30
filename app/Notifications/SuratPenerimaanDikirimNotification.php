@@ -32,7 +32,7 @@ class SuratPenerimaanDikirimNotification extends Notification
         return (new MailMessage)
             ->subject('Penerimaan Permohonan Akreditasi - ' . $this->pengajuan->studyProgram->name)
             ->greeting('Kepada Yth. ' . $notifiable->name)
-            ->line('Penerimaan permohonan akreditasi telah dikirimkan oleh LAM-DEPILaR.')
+            ->line('Penerimaan permohonan akreditasi telah dikirimkan oleh LAMDEPILAR.')
             ->line('**Detail Permohonan:**')
             ->line('- Program Studi: ' . $this->pengajuan->studyProgram->full_name)
             ->line('- Nomor Permohonan: ' . $this->pengajuan->nomor_pengajuan)
@@ -40,7 +40,7 @@ class SuratPenerimaanDikirimNotification extends Notification
             ->action('Lihat & Download File Penerimaan Permohonan Akreditasi', route('pengajuan.show', $this->pengajuan->id))
             ->line('Silakan login ke sistem untuk mengunduh file penerimaan permohonan akreditasi.')
             ->line('Terima kasih atas perhatian Anda.')
-            ->salutation('Hormat kami, LAM-DEPILaR');
+            ->salutation('Hormat kami, LAMDEPILAR');
     }
 
     public function toArray($notifiable)

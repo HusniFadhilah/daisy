@@ -56,7 +56,7 @@ class PasswordResetController extends Controller
             $m->to($request->email)->subject('Reset Password Akun Daisy');
         });
 
-        return back()->with('success', 'Link reset password sudah dikirim ke email.');
+        return back()->with('success', 'Link reset password telah dikirim ke email.');
     }
 
     // FORM RESET PASSWORD

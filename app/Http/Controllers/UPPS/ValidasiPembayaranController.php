@@ -119,7 +119,7 @@ class ValidasiPembayaranController extends Controller
     public function uploadBukti(Request $request, $id)
     {
         $validated = $request->validate([
-            'file_bukti_pembayaran' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'file_bukti_pembayaran' => 'required|file|mimes:xlsx,pdf,jpg,jpeg,png|max:5120',
             'tanggal_pembayaran' => 'required|date|before_or_equal:today',
             'catatan_pembayaran' => 'nullable|string|max:500',
         ], [

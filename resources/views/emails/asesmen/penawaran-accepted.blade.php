@@ -40,5 +40,5 @@ Mulai Penilaian
 Jika ada pertanyaan, hubungi admin di {{ $adminEmail }}.
 
 Hormat Kami<br>
-DE LAMDEPILAR
+Sekretariat LAMDEPILAR
 @endcomponent

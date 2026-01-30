@@ -293,7 +293,7 @@
                         <thead class="table-light">
                             <tr>
                                 <th width="5%">#</th>
-                                <th width="15%">Nomor Pengajuan</th>
+                                <th width="15%">Permohonan Akreditasi</th>
                                 <th width="20%">Program Studi</th>
                                 <th width="10%">Hasil Banding</th>
                                 <th width="13%">Tgl Pelaksanaan</th>
@@ -307,9 +307,12 @@
                             <tr>
                                 <td>{{ $pengajuans->firstItem() + $index }}</td>
                                 <td>
-                                    <strong>{{ $pengajuan->nomor_pengajuan }}</strong>
+                                    <p>{{ $pengajuan->judul }}</p>
+                                    <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
                                     <br>
-                                    <small class="text-muted">{{ $pengajuan->tahun_akreditasi }}</small>
+                                    <small class="text-muted">
+                                        Dibuat pada: {{ $pengajuan->created_at->format('d M Y') }}
+                                    </small>
                                 </td>
                                 <td>
                                     <div>

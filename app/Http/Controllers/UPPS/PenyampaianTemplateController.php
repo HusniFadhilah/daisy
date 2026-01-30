@@ -27,8 +27,8 @@ class PenyampaianTemplateController extends Controller
             'studyProgram.degreeLevel',
             'deAssigned',
             'dokumen' => fn($q) => $q->whereIn('jenis_dokumen', [
-                'template_led',
-                'formulir_pembayaran'
+                'borang_template',
+                'template_formulir_pembayaran'
             ])->where('is_latest', true),
             'statusLog' => fn($q) => $q->whereIn('status_to', [
                 PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM,
@@ -80,8 +80,8 @@ class PenyampaianTemplateController extends Controller
             'pengaju',
             'deAssigned',
             'dokumen' => fn($q) => $q->whereIn('jenis_dokumen', [
-                'template_led',
-                'formulir_pembayaran'
+                'borang_template',
+                'template_formulir_pembayaran'
             ]),
             'statusLog' => fn($q) => $q->orderBy('changed_at', 'desc'),
         ])->findOrFail($id);
@@ -125,7 +125,7 @@ class PenyampaianTemplateController extends Controller
         }
 
         // Validate jenis dokumen
-        $allowedJenis = ['template_led', 'formulir_pembayaran'];
+        $allowedJenis = ['borang_template', 'template_formulir_pembayaran'];
         if (!in_array($jenisDokumen, $allowedJenis)) {
             abort(404, 'Jenis dokumen tidak valid.');
         }
@@ -175,12 +175,12 @@ class PenyampaianTemplateController extends Controller
             }
 
             // Validate jenis dokumen
-            $allowedJenis = ['template_led', 'formulir_pembayaran'];
+            $allowedJenis = ['borang_template', 'template_formulir_pembayaran'];
             if (!in_array($jenisDokumen, $allowedJenis)) {
                 abort(404, 'Jenis dokumen tidak valid.');
             }
 
-            $jenisDokumenLabel = $jenisDokumen === 'template_led'
+            $jenisDokumenLabel = $jenisDokumen === 'borang_template'
                 ? 'Template Dokumen Akreditasi'
                 : 'Formulir Pembayaran';
 
@@ -248,7 +248,7 @@ class PenyampaianTemplateController extends Controller
         }
 
         // Validate jenis dokumen
-        $allowedJenis = ['template_led', 'formulir_pembayaran'];
+        $allowedJenis = ['borang_template', 'template_formulir_pembayaran'];
         if (!in_array($jenisDokumen, $allowedJenis)) {
             abort(404, 'Jenis dokumen tidak valid.');
         }

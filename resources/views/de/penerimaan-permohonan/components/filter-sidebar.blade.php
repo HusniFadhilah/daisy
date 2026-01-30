@@ -20,10 +20,10 @@
                 <select name="status_penerimaan" class="form-select">
                     <option value="">Semua Status</option>
                     <option value="belum_terkirim" {{ request('status_penerimaan') == 'belum_terkirim' ? 'selected' : '' }}>
-                        Belum Dikirim oleh DE
+                        Belum Dikirim
                     </option>
                     <option value="terkirim" {{ request('status_penerimaan') == 'terkirim' ? 'selected' : '' }}>
-                        Sudah Dikirim oleh DE
+                        Telah Dikirim
                     </option>
                 </select>
             </div>

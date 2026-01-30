@@ -312,7 +312,7 @@
                             }}"></div>
                         <div class="mb-2">
                             <strong class="d-block">
-                                {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_for']['de'] ?? $log->status_to }}
+                                {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['de'] ?? $log->status_to }}
                             </strong>
                             <small class="text-muted">
                                 {{ $log->changed_at->format('d M Y H:i') }}

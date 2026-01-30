@@ -40,5 +40,5 @@ Assign Pengganti
 Terima kasih.
 
 Hormat Kami<br>
-DE LAMDEPILAR
+Sekretariat LAMDEPILAR
 @endcomponent

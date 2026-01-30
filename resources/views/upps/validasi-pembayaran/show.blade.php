@@ -39,7 +39,7 @@
                 <br>
                 Segera lakukan pembayaran sebelum jatuh tempo:
                 <strong>{{ $pembayaran->tanggal_jatuh_tempo?->format('d M Y') ?? '-' }}</strong>
-                @if($pembayaran->tanggal_jatuh_tempo && $pembayaran->tanggal_jatuh_tempo <span now()) <br>
+                @if($pembayaran->tanggal_jatuh_tempo && $pembayaran->tanggal_jatuh_tempo < now()) <br>
                     <span class="badge bg-danger mt-2">Pembayaran telah melewati jatuh tempo!</span>
                     @endif
             </div>
@@ -48,7 +48,7 @@
                 <i class="bi bi-clock-history"></i>
                 <strong>Menunggu validasi dari bagian keuangan LAMDEPILAR</strong>
                 <br>
-                Bukti pembayaran telah diupload pada {{ $pembayaran->tanggal_pembayaran?->format('d M Y H:i') ?? '-' }}
+                Formulir & Bukti pembayaran telah diupload pada {{ $pembayaran->tanggal_pembayaran?->format('d M Y H:i') ?? '-' }}
             </div>
             @elseif($pembayaran->status_pembayaran === 'terverifikasi')
             <div class="alert alert-success alert-permanent">
@@ -60,9 +60,9 @@
             @elseif($pembayaran->status_pembayaran === 'upload_ulang')
             <div class="alert alert-secondary alert-permanent">
                 <i class="bi bi-arrow-repeat"></i>
-                <strong>Diminta untuk upload ulang bukti pembayaran</strong>
+                <strong>Diminta untuk upload ulang formulir & bukti pembayaran</strong>
                 <br>
-                Silakan upload ulang bukti pembayaran yang lebih jelas.
+                Silakan upload ulang formulir & bukti pembayaran yang lebih jelas.
                 @if($pembayaran->catatan_verifikasi)
                 <br><br>
                 <strong>Catatan:</strong> {{ $pembayaran->catatan_verifikasi }}
@@ -178,7 +178,7 @@
             <div class="card">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-file-earmark-pdf"></i> Bukti Pembayaran
+                        <i class="bi bi-file-earmark-pdf"></i> Formulir & Bukti Pembayaran
                     </h5>
                 </div>
                 <div class="card-body">
@@ -213,11 +213,11 @@
                     @else
                     <div class="text-center py-4">
                         <i class="bi bi-file-earmark-x" style="font-size: 48px; color: #ddd;"></i>
-                        <p class="text-muted mt-2 mb-0">Belum ada bukti pembayaran yang diupload</p>
+                        <p class="text-muted mt-2 mb-0">Belum ada formulir & bukti pembayaran yang diupload</p>
 
                         @if(in_array($pembayaran->status_pembayaran, ['menunggu_pembayaran', 'upload_ulang']))
                         <a href="{{ route('upps.validasi-pembayaran.upload.form', $pembayaran->id) }}" class="btn btn-success btn-md mt-3">
-                            <i class="bi bi-upload"></i> Upload Bukti Pembayaran
+                            <i class="bi bi-upload"></i> Upload Formulir & Bukti Pembayaran
                         </a>
                         @endif
                     </div>
@@ -231,20 +231,20 @@
                 <div class="card-body text-center">
                     <h5 class="mb-3">
                         @if($pembayaran->status_pembayaran === 'upload_ulang')
-                        <i class="bi bi-arrow-repeat"></i> Perlu Upload Ulang Bukti Pembayaran
+                        <i class="bi bi-arrow-repeat"></i> Perlu Upload Ulang Formulir & Bukti Pembayaran
                         @else
-                        <i class="bi bi-info-circle"></i> Ingin Mengubah Bukti Pembayaran?
+                        <i class="bi bi-info-circle"></i> Ingin Mengubah Formulir & Bukti Pembayaran?
                         @endif
                     </h5>
                     <p class="text-muted">
                         @if($pembayaran->status_pembayaran === 'upload_ulang')
-                        Bagian keuangan meminta Anda untuk upload ulang bukti pembayaran yang lebih jelas.
+                        Bagian keuangan meminta Anda untuk upload ulang formulir & bukti pembayaran yang lebih jelas.
                         @else
-                        Anda dapat mengganti bukti pembayaran yang telah diupload sebelumnya.
+                        Anda dapat mengganti formulir & bukti pembayaran yang telah diupload sebelumnya.
                         @endif
                     </p>
                     <a href="{{ route('upps.validasi-pembayaran.upload.form', $pembayaran->id) }}" class="btn btn-warning btn-md">
-                        <i class="bi bi-upload"></i> Upload Ulang Bukti Pembayaran
+                        <i class="bi bi-upload"></i> Upload Ulang Formulir & Bukti Pembayaran
                     </a>
                 </div>
             </div>
@@ -286,7 +286,7 @@
                                     <i class="bi bi-circle-fill text-info" style="font-size: 8px;"></i>
                                 </div>
                                 <div class="flex-grow-1 ms-3">
-                                    <strong>Bukti Pembayaran Diupload</strong>
+                                    <strong>Formulir & Bukti Pembayaran Diupload</strong>
                                     <br>
                                     <small class="text-muted">
                                         {{ $pembayaran->tanggal_pembayaran->format('d M Y H:i') }}

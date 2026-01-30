@@ -57,7 +57,7 @@
             <h4 class="mb-1">
                 <i class="bi bi-bell"></i> Pengingat Masa Akreditasi
             </h4>
-            <p class="text-muted mb-0">Daftar pengingat masa akreditasi dari LAM-DEPILaR</p>
+            <p class="text-muted mb-0">Daftar pengingat masa akreditasi dari LAMDEPILAR</p>
         </div>
     </div>
 
@@ -192,9 +192,8 @@
                                 <tr>
                                     <th width="5%">#</th>
                                     <th width="25%">Program Studi</th>
-                                    <th width="10%">Tahun</th>
                                     <th width="15%">Tanggal Dikirim</th>
-                                    <th width="15%">Pengirim (DE)</th>
+                                    <th width="15%">Pengirim</th>
                                     <th width="15%">Status</th>
                                     <th width="15%" class="text-center">Aksi</th>
                                 </tr>
@@ -209,9 +208,6 @@
                                         <small class="text-muted">
                                             {{ $pengingat->studyProgram->university->name }}
                                         </small>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-info">{{ $pengingat->tahun_akreditasi }}</span>
                                     </td>
                                     <td>
                                         <small>

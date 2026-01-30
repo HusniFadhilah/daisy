@@ -72,7 +72,7 @@
 
                     <table class="table table-borderless mb-3">
                         <tr>
-                            <th width="30%">Pengirim (DE)</th>
+                            <th width="30%">Pengirim</th>
                             <td>
                                 : {{ $pengingat->pengirim->name ?? '-' }}
                                 @if($pengingat->pengirim)
@@ -175,7 +175,7 @@
             </tr>
             <tr>
                 <th>Status</th>
-                <td>: {!! $pengingat->pengajuan->getCustomBadgeLastStatus('surat_permohonan_ps') !!}</td>
+                <td>: {!! $pengingat->pengajuan->getCustomBadgeLastStatus('surat_permohonan_ps','upps') !!}</td>
             </tr>
             <tr>
                 <th>Tanggal Permohonan</th>
@@ -231,7 +231,7 @@
                             </small>
                             <br>
                             <small class="text-muted">
-                                oleh {{ $pengingat->pengirim->name ?? 'LAM-DEPILaR' }}
+                                oleh {{ $pengingat->pengirim->name ?? 'LAMDEPILAR' }}
                             </small>
                         </div>
                     </div>

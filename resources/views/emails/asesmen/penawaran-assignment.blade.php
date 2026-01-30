@@ -47,5 +47,5 @@ Lihat Detail & Respond
 Terima kasih atas perhatian dan kerjasamanya.
 
 Hormat Kami<br>
-DE LAMDEPILAR
+Sekretariat LAMDEPILAR
 @endcomponent

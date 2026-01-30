@@ -354,7 +354,7 @@ class ALController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => $assignment->status_pekerjaan == 'submitted' ? 'Penilaian berhasil di-submit! Menunggu validasi oleh DE LAMDEPILAR.' : 'Penilaian berhasil di-submit dan difinalisasi!',
+                'message' => $assignment->status_pekerjaan == 'submitted' ? 'Penilaian berhasil di-submit! Menunggu validasi oleh LAMDEPILAR.' : 'Penilaian berhasil di-submit dan difinalisasi!',
                 'submitted_at' => now()->format('d M Y H:i'),
             ]);
         } catch (\Exception $e) {

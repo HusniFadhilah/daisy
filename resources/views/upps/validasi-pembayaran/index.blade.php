@@ -97,7 +97,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['menunggu_verifikasi'] }}</h2>
-                            <small class="opacity-75">Sudah upload bukti</small>
+                            <small class="opacity-75">Sudah upload formulir & bukti pembayaran</small>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
                             <i class="bi bi-clock-history"></i>
@@ -293,7 +293,7 @@
                                             </a>
 
                                             @if(in_array($pembayaran->status_pembayaran, ['menunggu_pembayaran', 'upload_ulang']))
-                                            <a href="{{ route('upps.validasi-pembayaran.upload.form', $pembayaran->id) }}" class="btn btn-success" title="Upload Bukti">
+                                            <a href="{{ route('upps.validasi-pembayaran.upload.form', $pembayaran->id) }}" class="btn btn-success" title="Upload Formulir & Bukti Pembayaran">
                                                 <i class="bi bi-upload"></i>
                                             </a>
                                             @endif

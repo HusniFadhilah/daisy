@@ -294,7 +294,7 @@
                                     <div class="d-flex justify-content-between align-items-start mb-2">
                                         <div>
                                             <span class="badge bg-{{ $markerClass }} mb-1">
-                                                {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_for']['de'] ?? $log->status_to }}
+                                                {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['de'] ?? $log->status_to }}
                                             </span>
                                             <p class="mb-0 small text-muted">
                                                 {{ $log->keterangan }}

@@ -201,7 +201,7 @@ $isComplete = $progress['percentage'] == 100;
                                 </h5>
                                 <p class="mb-2">
                                     Anda telah menyelesaikan <strong>semua {{ $progress['total'] }} elemen penilaian</strong>.
-                                    Segera lakukan <strong>Finalisasi dan Kirim</strong> agar penilaian Anda dapat divalidasi oleh DE LAMDEPILAR.
+                                    Segera lakukan <strong>Finalisasi dan Kirim</strong> agar penilaian Anda dapat divalidasi oleh LAMDEPILAR.
                                 </p>
                                 <hr>
                                 <div class="mb-0">
@@ -229,7 +229,7 @@ $isComplete = $progress['percentage'] == 100;
                     @if($isSubmittedOnly && !$isApproved)
                     <div class="alert alert-info alert-permanent alert-dismissible mb-3">
                         <i class="bi bi-info-circle me-2"></i>
-                        <strong>Sudah Di-Submit!</strong> Penilaian Anda sedang menunggu validasi dari DE LAMDEPILAR.
+                        <strong>Sudah Di-Submit!</strong> Penilaian Anda sedang menunggu validasi dari LAMDEPILAR.
                         @if(app()->environment('local'))
                         <button type="button" class="btn btn-sm btn-outline-secondary ms-2 mt-2" id="btnUnsubmit">
                             <i class="bi bi-arrow-counterclockwise"></i> Batalkan Submit
@@ -241,7 +241,7 @@ $isComplete = $progress['percentage'] == 100;
                     @if($isApproved)
                     <div class="alert alert-success alert-permanent alert-dismissible mb-3">
                         <i class="bi bi-check-circle me-2"></i>
-                        <strong>Penilaian Disetujui!</strong> Penilaian Anda pada tahap Asesmen Lapangan (AL) telah divalidasi dan disetujui oleh DE LAMDEPILAR. Silahkan unduh file Hasil penilaian lengkap di <a href="{{ route('al.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'personal']) }}" class="alert-link">link ini</a>. Tanda tangani, lalu upload ulang di step ke-2 (Hasil dan berita acara Asesmen Lapangan) di halaman <a href="{{ route('al.berkas.show', ['idAsesmen' => $asesmen->id, 'step' => '2']) }}" class="alert-link">berikut ini</a>.
+                        <strong>Penilaian Disetujui!</strong> Penilaian Anda pada tahap Asesmen Lapangan (AL) telah divalidasi dan disetujui oleh LAMDEPILAR. Silahkan unduh file Hasil penilaian lengkap di <a href="{{ route('al.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'personal']) }}" class="alert-link">link ini</a>. Tanda tangani, lalu upload ulang di step ke-2 (Hasil dan berita acara Asesmen Lapangan) di halaman <a href="{{ route('al.berkas.show', ['idAsesmen' => $asesmen->id, 'step' => '2']) }}" class="alert-link">berikut ini</a>.
                     </div>
                     @endif
 

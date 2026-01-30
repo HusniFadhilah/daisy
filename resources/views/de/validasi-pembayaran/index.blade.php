@@ -97,7 +97,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-1 fw-bold">{{ $stats['menunggu_pembayaran'] }}</h2>
-                            <small class="opacity-75">Invoice sudah dikirim, PS belum melakukan pembayaran</small>
+                            <small class="opacity-75">Invoice telah dikirim, PS belum melakukan pembayaran</small>
                         </div>
 
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
@@ -172,128 +172,110 @@
         </div>
     </div>
 
-    <!-- Quick Actions -->
-    {{-- <div class="d-flex align-items-center mb-4">
-        <div class="ms-auto text-end">
-            <button type="button" class="btn btn-primary mb-1" data-bs-toggle="modal" data-bs-target="#modalKirimInvoice">
-                <i class="bi bi-send"></i> Kirim Invoice
-            </button>
-            <div>
-                <small>
-                    Terdapat {{ $countPengajuanList }} permohonan akreditasi
-    yang perlu dikirimi invoice
-    </small>
-</div>
-</div>
-</div> --}}
-
-<!-- Content -->
-<div class="row">
-    <!-- Filters -->
-    <div class="col-lg-3 mb-4">
-        <div class="card filter-card">
-            <div class="card-header border-0">
-                <h5 class="mb-0">
-                    <i class="bi bi-funnel"></i> Filter & Pencarian
-                </h5>
-            </div>
-            <div class="card-body">
-                <form id="filterForm">
-                    <!-- Search -->
-                    <div class="mb-3">
-                        <label class="form-label text-white">Cari Invoice/Prodi</label>
-                        <input type="text" name="search" id="searchInput" class="form-control" placeholder="Nomor invoice atau nama prodi..." value="{{ request('search') }}">
-                    </div>
-
-                    <!-- Status -->
-                    <div class="mb-3">
-                        <label class="form-label text-white">Status Pembayaran</label>
-                        <select name="status_pembayaran" id="statusFilter" class="form-select">
-                            <option value="">Semua Status</option>
-                            <option value="menunggu_pembayaran" {{ request('status_pembayaran') == 'menunggu_pembayaran' ? 'selected' : '' }}>
-                                Menunggu Pembayaran
-                            </option>
-                            <option value="menunggu_verifikasi" {{ request('status_pembayaran') == 'menunggu_verifikasi' ? 'selected' : '' }}>
-                                Menunggu Validasi
-                            </option>
-                            <option value="terverifikasi" {{ request('status_pembayaran') == 'terverifikasi' ? 'selected' : '' }}>
-                                Tervalidasi
-                            </option>
-                            <option value="upload_ulang" {{ request('status_pembayaran') == 'upload_ulang' ? 'selected' : '' }}>
-                                Upload Ulang
-                            </option>
-                            <option value="ditolak" {{ request('status_pembayaran') == 'ditolak' ? 'selected' : '' }}>
-                                Ditolak
-                            </option>
-                        </select>
-                    </div>
-
-                    <!-- University -->
-                    <div class="mb-3">
-                        <label class="form-label text-white">Universitas</label>
-                        <select name="university_id" id="universityFilter" class="form-select">
-                            <option value="">Semua Universitas</option>
-                            @foreach($universities as $univ)
-                            <option value="{{ $univ->id }}" {{ request('university_id') == $univ->id ? 'selected' : '' }}>
-                                {{ $univ->name }}
-                            </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <!-- Degree Level -->
-                    <div class="mb-3">
-                        <label class="form-label text-white">Jenjang</label>
-                        <select name="degree_level_id" id="degreeLevelFilter" class="form-select">
-                            <option value="">Semua Jenjang</option>
-                            @foreach($degreeLevels as $level)
-                            <option value="{{ $level->id }}" {{ request('degree_level_id') == $level->id ? 'selected' : '' }}>
-                                {{ $level->name }}
-                            </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <!-- Buttons -->
-                    <div class="d-grid gap-2">
-                        <button type="button" class="btn btn-light" onclick="applyFilters()">
-                            <i class="bi bi-search"></i> Terapkan Filter
-                        </button>
-                        <button type="button" class="btn btn-outline-light" onclick="resetFilters()">
-                            <i class="bi bi-x-circle"></i> Reset
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main Content -->
-    <div class="col-lg-9">
-        <div class="position-relative">
-            <!-- Loading Overlay -->
-            <div id="tableLoading" class="position-absolute top-0 start-0 w-100 h-100 d-none" style="background: rgba(255,255,255,0.9); z-index: 1000;">
-                <div class="d-flex justify-content-center align-items-center h-100" style="min-height: 400px;">
-                    <div class="text-center">
-                        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
-                            <span class="visually-hidden">Loading...</span>
+    <!-- Content -->
+    <div class="row">
+        <!-- Filters -->
+        <div class="col-lg-3 mb-4">
+            <div class="card filter-card">
+                <div class="card-header border-0">
+                    <h5 class="mb-0">
+                        <i class="bi bi-funnel"></i> Filter & Pencarian
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="filterForm">
+                        <!-- Search -->
+                        <div class="mb-3">
+                            <label class="form-label text-white">Cari Invoice/Prodi</label>
+                            <input type="text" name="search" id="searchInput" class="form-control" placeholder="Nomor invoice atau nama prodi..." value="{{ request('search') }}">
                         </div>
-                        <p class="mt-3 text-muted">Memuat data...</p>
-                    </div>
+
+                        <!-- Status -->
+                        <div class="mb-3">
+                            <label class="form-label text-white">Status Pembayaran</label>
+                            <select name="status_pembayaran" id="statusFilter" class="form-select">
+                                <option value="">Semua Status</option>
+                                <option value="menunggu_pembayaran" {{ request('status_pembayaran') == 'menunggu_pembayaran' ? 'selected' : '' }}>
+                                    Menunggu Pembayaran
+                                </option>
+                                <option value="menunggu_verifikasi" {{ request('status_pembayaran') == 'menunggu_verifikasi' ? 'selected' : '' }}>
+                                    Menunggu Validasi
+                                </option>
+                                <option value="terverifikasi" {{ request('status_pembayaran') == 'terverifikasi' ? 'selected' : '' }}>
+                                    Tervalidasi
+                                </option>
+                                <option value="upload_ulang" {{ request('status_pembayaran') == 'upload_ulang' ? 'selected' : '' }}>
+                                    Upload Ulang
+                                </option>
+                                <option value="ditolak" {{ request('status_pembayaran') == 'ditolak' ? 'selected' : '' }}>
+                                    Ditolak
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- University -->
+                        <div class="mb-3">
+                            <label class="form-label text-white">Universitas</label>
+                            <select name="university_id" id="universityFilter" class="form-select">
+                                <option value="">Semua Universitas</option>
+                                @foreach($universities as $univ)
+                                <option value="{{ $univ->id }}" {{ request('university_id') == $univ->id ? 'selected' : '' }}>
+                                    {{ $univ->name }}
+                                </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Degree Level -->
+                        <div class="mb-3">
+                            <label class="form-label text-white">Jenjang</label>
+                            <select name="degree_level_id" id="degreeLevelFilter" class="form-select">
+                                <option value="">Semua Jenjang</option>
+                                @foreach($degreeLevels as $level)
+                                <option value="{{ $level->id }}" {{ request('degree_level_id') == $level->id ? 'selected' : '' }}>
+                                    {{ $level->name }}
+                                </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-light" onclick="applyFilters()">
+                                <i class="bi bi-search"></i> Terapkan Filter
+                            </button>
+                            <button type="button" class="btn btn-outline-light" onclick="resetFilters()">
+                                <i class="bi bi-x-circle"></i> Reset
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
+        </div>
 
-            <!-- Table Content -->
-            <div id="tableContainer">
-                @include('de.validasi-pembayaran.components.table-content', ['pembayarans' => $pembayarans])
+        <!-- Main Content -->
+        <div class="col-lg-9">
+            <div class="position-relative">
+                <!-- Loading Overlay -->
+                <div id="tableLoading" class="position-absolute top-0 start-0 w-100 h-100 d-none" style="background: rgba(255,255,255,0.9); z-index: 1000;">
+                    <div class="d-flex justify-content-center align-items-center h-100" style="min-height: 400px;">
+                        <div class="text-center">
+                            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-3 text-muted">Memuat data...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table Content -->
+                <div id="tableContainer">
+                    @include('de.validasi-pembayaran.components.table-content', ['pembayarans' => $pembayarans])
+                </div>
             </div>
         </div>
     </div>
 </div>
-</div>
-
-<!-- Modal Kirim Invoice -->
-@include('de.validasi-pembayaran.components.modal-kirim-invoice')
 
 @endsection
 

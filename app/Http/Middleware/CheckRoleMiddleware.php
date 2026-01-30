@@ -28,7 +28,7 @@ class CheckRoleMiddleware
         }
 
         if ($request->isMethod('get')) {
-            abort(403, 'Maaf, role Anda yaitu <strong>' . e($user->role_alias) . '</strong> tidak memiliki izin untuk mengakses halaman ini. Silakan hubungi DE LAMDEPILAR jika Anda merasa ini adalah kesalahan.');
+            abort(403, 'Maaf, role Anda yaitu <strong>' . e($user->role_alias) . '</strong> tidak memiliki izin untuk mengakses halaman ini. Silakan hubungi Sekretariat LAMDEPILAR jika Anda merasa ini adalah kesalahan.');
         } else if ($request->isMethod('post')) {
             return redirect('/');
         } else {

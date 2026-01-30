@@ -12,7 +12,7 @@
                 <thead class="table-light">
                     <tr>
                         <th width="5%">#</th>
-                        <th width="15%">Nomor Permohonan Akreditasi</th>
+                        <th width="15%">Permohonan Akreditasi</th>
                         <th width="20%">Program Studi</th>
                         <th width="15%">Validator</th>
                         <th width="12%">Status Upload</th>
@@ -92,6 +92,10 @@
                         <td>
                             <p>{{ $pengajuan->judul }}</p>
                             <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
+                            <br>
+                            <small class="text-muted">
+                                Dibuat pada: {{ $pengajuan->created_at->format('d M Y') }}
+                            </small>
                         </td>
                         <td>
                             <div class="mb-1">

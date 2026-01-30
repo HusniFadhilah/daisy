@@ -115,7 +115,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['diterima'] }}</h2>
-                            <small class="opacity-75">Template sudah dikirim</small>
+                            <small class="opacity-75">Template telah dikirim</small>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
                             <i class="bi bi-check-circle"></i>
@@ -203,12 +203,11 @@
                             <thead class="table-light">
                                 <tr>
                                     <th width="5%">#</th>
-                                    <th width="18%">Nomor Permohonan</th>
+                                    <th width="18%">Permohonan Akreditasi</th>
                                     <th width="20%">Program Studi</th>
-                                    <th width="10%">Tahun</th>
-                                    <th width="12%">Tanggal Template</th>
-                                    <th width="15%">Dokumen</th>
-                                    <th width="15%">Status</th>
+                                    <th width="12%">Tanggal Pengiriman Template</th>
+                                    <th width="15%">Formulir dan Template Dokumen</th>
+                                    <th width="15%">Status Pengiriman Formulir dan Template</th>
                                     <th width="5%" class="text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -216,22 +215,23 @@
                                 @foreach($pengajuans as $index => $pengajuan)
                                 @php
                                 $hasTemplateLed = $pengajuan->dokumen
-                                ->where('jenis_dokumen', 'template_led')
+                                ->where('jenis_dokumen', 'borang_template')
                                 ->where('is_latest', true)
                                 ->isNotEmpty();
 
                                 $hasFormulirPembayaran = $pengajuan->dokumen
-                                ->where('jenis_dokumen', 'formulir_pembayaran')
+                                ->where('jenis_dokumen', 'template_formulir_pembayaran')
                                 ->where('is_latest', true)
                                 ->isNotEmpty();
                                 @endphp
                                 <tr>
                                     <td>{{ $pengajuans->firstItem() + $index }}</td>
                                     <td>
-                                        <strong>{{ $pengajuan->nomor_pengajuan }}</strong>
+                                        <p>{{ $pengajuan->judul }}</p>
+                                        <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
                                         <br>
                                         <small class="text-muted">
-                                            {{ $pengajuan->jenis_akreditasi_label }}
+                                            Dibuat pada: {{ $pengajuan->created_at->format('d M Y') }}
                                         </small>
                                     </td>
                                     <td>
@@ -240,9 +240,7 @@
                                         <small class="text-muted">
                                             {{ $pengajuan->studyProgram->degreeLevel->name ?? '-' }}
                                         </small>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-info">{{ $pengajuan->tahun_akreditasi }}</span>
+                                        <br><small>{{ $pengajuan->studyProgram->university->name ?? '-' }}</small>
                                     </td>
                                     <td>
                                         @if($pengajuan->tanggal_template_led_dikirim)
@@ -278,7 +276,7 @@
                                         </div>
                                     </td>
                                     <td>
-                                        {!! $pengajuan->getCustomBadgeLastStatus('borang_template') !!}
+                                        {!! $pengajuan->getCustomBadgeLastStatus('borang_template','upps','label_short_for') !!}
                                     </td>
                                     <td class="text-center">
                                         <a href="{{ route('upps.penyampaian-template.show', $pengajuan->id) }}" class="btn btn-info btn-sm" title="Lihat Detail">

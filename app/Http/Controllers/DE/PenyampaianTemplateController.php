@@ -88,11 +88,20 @@ class PenyampaianTemplateController extends Controller
             ->sort()
             ->values();
 
+        // Ambil pengajuan yang sudah template_led_dikirim tapi belum ada invoice
+        $pengajuanList = \App\Models\PengajuanAkreditasi::with('studyProgram.degreeLevel', 'studyProgram.university')
+            ->where('status', \App\Models\PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM)
+            ->whereDoesntHave('pembayaran')
+            ->get();
+        $countPengajuanList = count($pengajuanList);
+
         return view('de.penyampaian-template.index', compact(
             'pengajuans',
             'stats',
             'universities',
-            'tahunList'
+            'tahunList',
+            'pengajuanList',
+            'countPengajuanList'
         ));
     }
 
