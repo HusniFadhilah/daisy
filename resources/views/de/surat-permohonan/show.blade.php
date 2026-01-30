@@ -1,6 +1,6 @@
 @extends('layouts.template.app')
 
-@section('title', 'Detail Surat Permohonan Akreditasi')
+@section('title', 'Detail Permohonan Akreditasi')
 
 @section('content')
 <div class="container-fluid py-3">
@@ -8,7 +8,7 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('de.surat-permohonan') }}">Surat Permohonan</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('de.surat-permohonan') }}">Permohonan</a></li>
             <li class="breadcrumb-item active">Detail</li>
         </ol>
     </nav>
@@ -17,7 +17,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h5 class="mb-1">
-                <i class="bi bi-envelope-paper"></i> Detail Surat Permohonan Akreditasi
+                <i class="bi bi-envelope-paper"></i> Detail Permohonan Akreditasi
             </h5>
             <small class="text-muted mb-0">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
@@ -31,7 +31,7 @@
         <div class="col-lg-8 mb-4">
             <div class="card">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Informasi Surat Permohonan Akreditasi PS</h5>
+                    <h5 class="mb-0">Informasi Permohonan Akreditasi PS</h5>
                 </div>
                 <div class="card-body">
                     <table class="table table-borderless">
@@ -60,18 +60,18 @@
                             <td>: {{ $pengajuan->pengaju->name ?? '-' }}</td>
                         </tr>
                         <tr>
-                            <th>Status Surat Permohonan</th>
+                            <th>Status Permohonan</th>
                             <td>: {!! $pengajuan->getCustomBadgeLastStatus('surat_permohonan_ps') !!}</td>
                         </tr>
                     </table>
                 </div>
             </div>
 
-            <!-- Dokumen Surat Permohonan -->
+            <!-- Dokumen Permohonan -->
             <div class="card mt-4">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-file-pdf"></i> Dokumen Surat Permohonan Akreditasi PS
+                        <i class="bi bi-file-pdf"></i> Dokumen Permohonan Akreditasi PS
                     </h5>
                 </div>
                 <div class="card-body">
@@ -101,7 +101,7 @@
                     @else
                     <div class="text-center py-4">
                         <i class="bi bi-file-earmark-x" style="font-size: 48px; color: #ddd;"></i>
-                        <p class="text-muted mt-2">Belum ada dokumen surat permohonan</p>
+                        <p class="text-muted mt-2">Belum ada dokumen permohonan</p>
                     </div>
                     @endif
                 </div>
@@ -125,7 +125,7 @@
                         </div>
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-success">
-                                <i class="bi bi-check-circle"></i> Terima Surat Permohonan
+                                <i class="bi bi-check-circle"></i> Terima Permohonan
                             </button>
                         </div>
                     </form>

@@ -1,4 +1,4 @@
-{{-- resources/views/de/penerimaan-permohonan/_components/stats-cards.blade.php --}}
+{{-- resources/views/prodi/penerimaan-permohonan/_components/stats-cards.blade.php --}}
 
 <div class="row mb-4">
     <div class="col-lg-4 col-md-6 mb-3">
@@ -7,11 +7,11 @@
                 <h6 class="mb-2 opacity-75">Total Permohonan Akreditasi</h6>
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h2 class="mb-2 fw-bold">{{ $stats['total'] }}</h2>
-                        <small class="opacity-75">Permohonan Akreditasi yang telah diterima LAMDEPILAR</small>
+                        <h2 class="mb-0 fw-bold">{{ $stats['total'] }}</h2>
+                        <small class="opacity-75">Permohonan akreditasi yang telah diajukan</small>
                     </div>
-                    <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
-                        <i class="bi bi-file-earmark-check"></i>
+                    <div class="stat-icon" style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
+                        <i class="bi bi-file-earmark-text"></i>
                     </div>
                 </div>
             </div>
@@ -21,13 +21,13 @@
     <div class="col-lg-4 col-md-6 mb-3">
         <div class="card stat-card p-0" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
             <div class="card-body text-white">
-                <h6 class="mb-1 opacity-75">Penerimaan Permohonan Akreditasi Belum Dikirim oleh DE</h6>
+                <h6 class="mb-2 opacity-75">Menunggu Penerimaan Permohonan Akreditasi</h6>
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h2 class="mb-0 fw-bold">{{ $stats['belum_terkirim'] }}</h2>
-                        <small class="opacity-75">Perlu segera mengirim penerimaan permohonan akreditasi</small>
+                        <h2 class="mb-0 fw-bold">{{ $stats['menunggu'] }}</h2>
+                        <small class="opacity-75">Belum mendapat penerimaan permohonan akreditasi</small>
                     </div>
-                    <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
+                    <div class="stat-icon" style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
                         <i class="bi bi-hourglass-split"></i>
                     </div>
                 </div>
@@ -38,13 +38,13 @@
     <div class="col-lg-4 col-md-6 mb-3">
         <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
             <div class="card-body text-white">
-                <h6 class="mb-1 opacity-75">Penerimaan Permohonan Akreditasi Sudah Dikirim oleh DE</h6>
+                <h6 class="mb-2 opacity-75">Penerimaan Akreditasi Telah Diperoleh</h6>
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h2 class="mb-0 fw-bold">{{ $stats['terkirim'] }}</h2>
-                        <small class="opacity-75">Penerimaan permohonan akreditasi telah dikirim ke PS</small>
+                        <h2 class="mb-0 fw-bold">{{ $stats['diterima'] }}</h2>
+                        <small class="opacity-75">Telah mendapatkan penerimaan akreditasi</small>
                     </div>
-                    <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
+                    <div class="stat-icon" style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
                         <i class="bi bi-check-circle"></i>
                     </div>
                 </div>

@@ -136,7 +136,7 @@ class PenyampaianTemplateController extends Controller
 
         // Validasi status
         if (!in_array($pengajuan->status, [PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA, PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM])) {
-            return back()->with('error', 'Status permohonan tidak sesuai. Surat permohonan harus sudah diterima terlebih dahulu.');
+            return back()->with('error', 'Status permohonan tidak sesuai. Permohonan akreditasi harus sudah diterima terlebih dahulu.');
         }
 
         DB::beginTransaction();
@@ -213,7 +213,7 @@ class PenyampaianTemplateController extends Controller
 
         // Validasi status
         if (!in_array($pengajuan->status, [PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA, PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM])) {
-            return back()->with('error', 'Status permohonan tidak sesuai. Surat permohonan harus sudah diterima terlebih dahulu.');
+            return back()->with('error', 'Status permohonan tidak sesuai. Permohonan Akreditasi harus sudah diterima terlebih dahulu.');
         }
 
         DB::beginTransaction();

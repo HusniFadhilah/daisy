@@ -1,4 +1,4 @@
-{{-- resources/views/de/penerimaan-permohonan/index.blade.php --}}
+{{-- resources/views/prodi/penerimaan-permohonan/index.blade.php --}}
 
 @extends('layouts.template.app')
 
@@ -18,36 +18,12 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
 
-    .stat-icon {
-        width: 60px;
-        height: 60px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 28px;
-    }
-
     .table-hover tbody tr {
         transition: all 0.2s ease;
     }
 
     .table-hover tbody tr:hover {
         background-color: #f8f9fa;
-        transform: scale(1.01);
-    }
-
-    .action-btn {
-        transition: all 0.3s ease;
-    }
-
-    .action-btn:hover {
-        transform: scale(1.05);
-    }
-
-    .filter-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
     }
 
     .badge-status {
@@ -55,33 +31,6 @@
         border-radius: 20px;
         font-size: 12px;
         font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .priority-indicator {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        display: inline-block;
-        margin-right: 8px;
-    }
-
-    .priority-high {
-        background-color: #dc3545;
-        animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-
-        0%,
-        100% {
-            opacity: 1;
-        }
-
-        50% {
-            opacity: 0.5;
-        }
     }
 
 </style>
@@ -93,7 +42,7 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item active">Penerimaan Permohonan Akreditasi</li>
+            <li class="breadcrumb-item active">Penerimaan Permohonan</li>
         </ol>
     </nav>
 
@@ -101,21 +50,20 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">
-                <i class="bi bi-send-check"></i> Penerimaan Permohonan Akreditasi
+                <i class="bi bi-envelope-check"></i> Penerimaan Permohonan Akreditasi
             </h4>
-            <p class="text-muted mb-0">Kirim penerimaan permohonan akreditasi ke PS yang telah mengajukan permohonan akreditasi</p>
+            <p class="text-muted mb-0">Daftar penerimaan permohonan akreditasi dari LAMDEPILAR</p>
         </div>
     </div>
 
     <!-- Statistics Cards -->
-    @include('de.penerimaan-permohonan.components.stats-cards', ['stats' => $stats])
+    @include('prodi.penerimaan-permohonan.components.stats-cards', ['stats' => $stats])
 
     <!-- Filters & Content -->
     <div class="row">
         <!-- Filters Sidebar -->
         <div class="col-lg-3 mb-4">
-            @include('de.penerimaan-permohonan.components.filter-sidebar', [
-            'universities' => $universities,
+            @include('prodi.penerimaan-permohonan.components.filter-sidebar', [
             'tahunList' => $tahunList
             ])
         </div>
@@ -125,7 +73,7 @@
             <div class="card">
                 <div class="card-header bg-white">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Daftar Penerimaan Permohonan Akreditasi</h5>
+                        <h5 class="mb-0">Daftar Permohonan Akreditasi</h5>
                         <div>
                             <span class="text-muted">Total: <strong>{{ $pengajuans->total() }}</strong></span>
                         </div>
@@ -138,12 +86,11 @@
                             <thead class="table-light">
                                 <tr>
                                     <th width="5%">#</th>
-                                    <th width="15%">Nomor Permohonan</th>
+                                    <th width="20%">Nomor Permohonan</th>
                                     <th width="25%">Program Studi</th>
-                                    <th width="12%">Universitas</th>
-                                    <th width="10%">Tahun</th>
-                                    <th width="13%">Tanggal Permohonan Akreditasi Diterima</th>
-                                    <th width="10%">Status Penerimaan Permohonan Akreditasi</th>
+                                    <th width="12%">Tahun</th>
+                                    <th width="15%">Tanggal Diterima DE</th>
+                                    <th width="13%">Status Penerimaan</th>
                                     <th width="10%" class="text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -151,24 +98,14 @@
                                 @foreach($pengajuans as $index => $pengajuan)
                                 @php
                                 $suratPenerimaan = $pengajuan->dokumen->first();
-                                $daysSinceTerima = $pengajuan->tanggal_surat_permohonan_diterima
-                                ? floor(\Carbon\Carbon::parse($pengajuan->tanggal_surat_permohonan_diterima)->diffInDays(now()))
-                                : 0;
-                                $isUrgent = !$suratPenerimaan && $daysSinceTerima > 3;
                                 @endphp
-                                <tr class="{{ $isUrgent ? 'table-warning' : '' }}">
+                                <tr>
+                                    <td>{{ $pengajuans->firstItem() + $index }}</td>
                                     <td>
-                                        @if($isUrgent)
-                                        <span class="priority-indicator priority-high" title="Sudah {{ $daysSinceTerima }} hari belum terkirim"></span>
-                                        @endif
-                                        {{ $pengajuans->firstItem() + $index }}
-                                    </td>
-                                    <td>
-                                        <p class="mb-1">{{ $pengajuan->judul }}</p>
-                                        <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
+                                        <strong>{{ $pengajuan->nomor_pengajuan }}</strong>
                                         <br>
                                         <small class="text-muted">
-                                            Dibuat pada: {{ $pengajuan->created_at->format('d M Y') }}
+                                            Dibuat: {{ $pengajuan->created_at->format('d M Y') }}
                                         </small>
                                     </td>
                                     <td>
@@ -181,9 +118,6 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <small>{{ $pengajuan->studyProgram->university->name ?? '-' }}</small>
-                                    </td>
-                                    <td>
                                         <span class="badge bg-info">{{ $pengajuan->tahun_akreditasi }}</span>
                                     </td>
                                     <td>
@@ -193,7 +127,7 @@
                                         </small>
                                         <br>
                                         <small class="text-muted">
-                                            ({{ $daysSinceTerima }} hari lalu)
+                                            ({{ $pengajuan->tanggal_surat_permohonan_diterima->diffForHumans() }})
                                         </small>
                                         @else
                                         <span class="text-muted">-</span>
@@ -201,30 +135,30 @@
                                     </td>
                                     <td>
                                         @if($suratPenerimaan)
-                                        <span class="badge bg-success">
-                                            <i class="bi bi-check-circle"></i> Telah Dikirim oleh DE
+                                        <span class="badge bg-success badge-status">
+                                            <i class="bi bi-check-circle"></i> Diterima
                                         </span>
                                         <br>
                                         <small class="text-muted">
                                             {{ $suratPenerimaan->created_at->format('d M Y') }}
                                         </small>
                                         @else
-                                        <span class="badge bg-warning">
-                                            <i class="bi bi-hourglass-split"></i> Belum Dikirim oleh De
+                                        <span class="badge bg-warning badge-status">
+                                            <i class="bi bi-hourglass-split"></i> Menunggu
                                         </span>
                                         @endif
                                     </td>
                                     <td class="text-center">
                                         <div class="btn-group btn-group-sm" role="group">
-                                            <a href="{{ route('de.penerimaan-permohonan.show', $pengajuan->id) }}" class="btn btn-info action-btn" title="{{ $suratPenerimaan ? 'Lihat Detail' : 'Kirim Penerimaan Permohonan Akreditasi' }}">
-                                                <i class="bi bi-{{ $suratPenerimaan ? 'eye' : 'send' }}"></i>
+                                            <a href="{{ route('prodi.penerimaan-permohonan.show', $pengajuan->id) }}" class="btn btn-primary" title="Lihat Detail">
+                                                <i class="bi bi-eye"></i>
                                             </a>
 
-                                            {{-- @if($suratPenerimaan)
-                                            <a href="{{ route('de.penerimaan-permohonan.download', $pengajuan->id) }}" class="btn btn-success action-btn" title="Download Surat">
-                                            <i class="bi bi-download"></i>
+                                            @if($suratPenerimaan)
+                                            <a href="{{ route('prodi.penerimaan-permohonan.download', $pengajuan->id) }}" class="btn btn-success" title="Download File">
+                                                <i class="bi bi-download"></i>
                                             </a>
-                                            @endif --}}
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>
@@ -244,11 +178,11 @@
                             @if(request()->filled('search') || request()->filled('status_penerimaan'))
                             Tidak ada data yang sesuai dengan filter
                             @else
-                            Tidak ada permohonan yang perlu penerimaan akreditasi
+                            Belum ada permohonan akreditasi
                             @endif
                         </p>
                         @if(request()->filled('search') || request()->filled('status_penerimaan'))
-                        <a href="{{ route('de.penerimaan-permohonan') }}" class="btn btn-sm btn-primary">
+                        <a href="{{ route('prodi.penerimaan-permohonan') }}" class="btn btn-sm btn-primary">
                             <i class="bi bi-arrow-clockwise"></i> Reset Filter
                         </a>
                         @endif
@@ -259,15 +193,4 @@
         </div>
     </div>
 </div>
-
 @endsection
-
-@push('scripts')
-<script>
-    // Auto-refresh badge counts jika ada
-    setInterval(() => {
-        // Could implement real-time updates here
-    }, 60000); // Every minute
-
-</script>
-@endpush

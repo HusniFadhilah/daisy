@@ -46,7 +46,7 @@
                             <p>Untuk melanjutkan proses akreditasi, silakan:</p>
                             <ol style="padding-left:18px;">
                                 <li>Login ke sistem</li>
-                                <li>Submit surat permohonan akreditasi</li>
+                                <li>Submit permohonan akreditasi</li>
                                 <li>Ikuti tahapan selanjutnya sesuai panduan</li>
                             </ol>
 

@@ -202,22 +202,22 @@
             'suplemen' => [
             'label' => 'Suplemen',
             'btn_class' => 'btn-info text-white',
-            'empty_text' => 'Belum ada file suplemen diupload.',
+            'empty_text' => 'Belum ada file suplemen yang diupload.',
             ],
             'lkps' => [
             'label' => 'Laporan Kinerja Program Studi (LKPS)',
             'btn_class' => 'btn-success',
-            'empty_text' => 'Belum ada file LKPS diupload.',
+            'empty_text' => 'Belum ada file LKPS yang diupload.',
             ],
             'formulir_pembayaran' => [
             'label' => 'Formulir & Bukti Pembayaran Akreditasi',
             'btn_class' => 'btn-info',
-            'empty_text' => 'Belum ada file Formulir & Bukti Pembayaran diupload.',
+            'empty_text' => 'Belum ada file Formulir & Bukti Pembayaran yang diupload.',
             ],
             'surat_permohonan' => [
-            'label' => 'Surat Permohonan Akreditasi',
+            'label' => 'Permohonan Akreditasi',
             'btn_class' => 'btn-primary',
-            'empty_text' => 'Belum ada file Surat Permohonan Akreditasi diupload.',
+            'empty_text' => 'Belum ada file Permohonan Akreditasi yang diupload.',
             ],
             ];
             @endphp

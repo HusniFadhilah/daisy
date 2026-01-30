@@ -13,7 +13,7 @@ $menus = [
 'route' => 'de.surat-permohonan',
 'match' => 'de.surat-permohonan*',
 'icon' => 'bi-envelope-paper',
-'label' => 'Surat Permohonan Akreditasi',
+'label' => 'Permohonan Akreditasi',
 ],
 [
 'no' => 3,

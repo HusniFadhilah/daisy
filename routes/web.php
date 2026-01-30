@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DE\PaymentSummaryController;
+use App\Http\Controllers\Prodi\PenerimaanProdiController;
 use App\Http\Controllers\Profile\{PasswordResetController, ProfileController, ProdiDataController};
 use App\Http\Controllers\Prodi\{DeskEvaluatorController, PengajuanAkreditasiController, PemetaanAkreditasiController, PengajuanBorangController, BorangUploadController};
 use App\Http\Controllers\Master\{ElemenStandarController, JenisIndikatorController, IndikatorController, IndikatorPenilaianElemenController, KriteriaController, UniversityController, StudyProgramController};
@@ -244,6 +245,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
         // === Dokumen Download ===
         Route::get('/dokumen/{id}/download', [PengajuanAkreditasiController::class, 'downloadDokumen'])->name('.dokumen.download');
+    });
+
+    Route::prefix('prodi')->name('prodi')->middleware(['role:admin_prodi'])->group(function () {
+        // ✅ NEW: Penerimaan Permohonan (Surat Penerimaan dari DE)
+        Route::prefix('penerimaan-permohonan')->name('.penerimaan-permohonan')->group(function () {
+            Route::get('/', [PenerimaanProdiController::class, 'index']);
+            Route::get('/{id}', [PenerimaanProdiController::class, 'show'])->name('.show');
+            Route::get('/{id}/download', [PenerimaanProdiController::class, 'download'])->name('.download');
+            Route::get('/{id}/preview', [PenerimaanProdiController::class, 'preview'])->name('.preview');
+        });
     });
 
     // ========== DE ROUTES - Desk Evaluator ==========

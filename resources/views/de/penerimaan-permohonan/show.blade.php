@@ -2,7 +2,7 @@
 
 @extends('layouts.template.app')
 
-@section('title', 'Kirim Surat Penerimaan - ' . $pengajuan->nomor_pengajuan)
+@section('title', 'Kirim Penerimaan - ' . $pengajuan->nomor_pengajuan)
 
 @push('styles')
 <style>
@@ -89,7 +89,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h5 class="mb-1">
-                <i class="bi bi-send-check"></i> Kirim Surat Penerimaan Permohonan Akreditasi
+                <i class="bi bi-send-check"></i> Kirim Penerimaan Permohonan Akreditasi
             </h5>
             <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
@@ -111,13 +111,13 @@
             <div class="card border-success">
                 <div class="card-header bg-success text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-check-circle"></i> Surat Penerimaan Permohonan Akreditasi Sudah Terkirim
+                        <i class="bi bi-check-circle"></i> Penerimaan Permohonan Akreditasi Sudah Terkirim
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="alert alert-success alert-permanent">
                         <i class="bi bi-info-circle"></i>
-                        Surat penerimaan telah dikirim pada <strong>{{ $suratPenerimaan->created_at->format('d M Y H:i') }}</strong>
+                        Penerimaan akreditasi telah dikirim pada <strong>{{ $suratPenerimaan->created_at->format('d M Y H:i') }}</strong>
                     </div>
 
                     <div class="file-preview">
@@ -153,7 +153,7 @@
 
                     <div class="alert alert-warning alert-permanent mt-3">
                         <i class="bi bi-exclamation-triangle"></i>
-                        <strong>Catatan:</strong> Jika ingin mengirim ulang, mohon menghapus surat yang ada terlebih dahulu.
+                        <strong>Catatan:</strong> Jika ingin mengirim ulang, mohon menghapus file yang ada terlebih dahulu.
                     </div>
                 </div>
             </div>
@@ -162,7 +162,7 @@
             <div class="card">
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-upload"></i> Upload Surat Penerimaan Permohonan Akreditasi
+                        <i class="bi bi-upload"></i> Upload File Penerimaan Permohonan Akreditasi
                     </h5>
                 </div>
                 <div class="card-body">
@@ -172,7 +172,7 @@
                         <!-- File Upload -->
                         <div class="mb-4">
                             <label for="file_surat_penerimaan" class="form-label required">
-                                <i class="bi bi-file-pdf"></i> File Surat Penerimaan (PDF)
+                                <i class="bi bi-file-pdf"></i> File Penerimaan Permohonan Akreditasi (PDF)
                             </label>
 
                             <div class="upload-zone" id="uploadZone">
@@ -217,7 +217,7 @@
                                 <i class="bi bi-x-circle"></i> Batal
                             </a>
                             <button type="submit" class="btn btn-primary" id="btnSubmit">
-                                <i class="bi bi-send"></i> Kirim Surat Penerimaan
+                                <i class="bi bi-send"></i> Kirim Penerimaan Akreditasi
                             </button>
                         </div>
                     </form>
@@ -227,7 +227,7 @@
 
             <div class="card mt-4">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Informasi Surat Permohonan Akreditasi PS</h5>
+                    <h5 class="mb-0">Informasi Permohonan Akreditasi PS</h5>
                 </div>
                 <div class="card-body">
                     <table class="table table-borderless">
@@ -256,7 +256,7 @@
                             <td>: {{ $pengajuan->pengaju->name ?? '-' }}</td>
                         </tr>
                         <tr>
-                            <th>Status Surat Permohonan</th>
+                            <th>Status Permohonan Akreditasi</th>
                             <td>: {!! $pengajuan->getCustomBadgeLastStatus('surat_permohonan_ps') !!}</td>
                         </tr>
                     </table>
@@ -314,14 +314,14 @@
                                 </div>
                                 <div class="flex-grow-1 ms-3">
                                     <strong>
-                                        Penerimaan Formulir dan Template Dokumen
+                                        Penerimaan Permohonan Akreditasi Diterima
                                     </strong>
                                     <br>
                                     <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
 
                                     @if($log->keterangan)
                                     <br>
-                                    <small class="text-muted fst-italic">Formulir Pembayaran (Formulir Pembayaran Akreditasi LAMDEPILAR.xlsx) dan Template Dokumen (Template Dokumen.rar) telah diterima oleh PS</small>
+                                    <small class="text-muted fst-italic">Penerimaan Permohonan Akreditasi telah diterima oleh PS</small>
                                     @endif
                                 </div>
                             </div>
@@ -347,7 +347,7 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p>Apakah Anda yakin ingin menghapus surat penerimaan ini?</p>
+                <p>Apakah Anda yakin ingin menghapus file penerimaan permohonan akreditasi ini?</p>
                 <div class="alert alert-warning">
                     <i class="bi bi-info-circle"></i>
                     File akan dihapus dan Anda perlu mengupload ulang jika diperlukan.

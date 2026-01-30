@@ -54,7 +54,7 @@
         <!-- Main Content -->
         <div class="col-md-12 col-lg-8">
             <!-- ACTION: Kirim Form LED (Langkah 3) -->
-            @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA)
+            @if(in_array($pengajuan->status,[\App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,\App\Models\PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM]))
             <div class="card mb-4">
                 <div class="card-header bg-warning text-white">
                     <h5 class="mb-0"> <i class="bi bi-receipt"></i> Aksi Diperlukan: Kirim Template Dokumen, Formulir Pembayaran </h5>
@@ -86,7 +86,7 @@
                         </div>
                         <div class="card-body">
                             <p class="mb-3">
-                                Surat permohonan telah diterima. Kirimkan form Template Dokumen ke prodi untuk dilengkapi.
+                                Permohonan Akreditasi telah diterima. Kirimkan form Template Dokumen ke prodi untuk dilengkapi.
                             </p>
 
                             <form action="{{ route('de.pengajuan.kirim-borang', $pengajuan->id) }}" method="POST" enctype="multipart/form-data" id="formKirimBorang">

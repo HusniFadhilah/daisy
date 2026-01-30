@@ -18,7 +18,7 @@
             ],
             [
             'date' => $pengajuan->tanggal_surat_permohonan_dikirim,
-            'label' => 'Surat Permohonan Akreditasi',
+            'label' => 'Permohonan Akreditasi',
             'icon' => 'bi-envelope',
             'step' => 2
             ],

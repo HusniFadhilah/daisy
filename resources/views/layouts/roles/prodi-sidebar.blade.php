@@ -1,28 +1,31 @@
-<!-- Penawaran Asesmen -->
+<!-- Permohonan Akreditasi -->
 <a href="{{ route('pengajuan') }}" class="nav-link {{ request()->routeIs('pengajuan*') ? 'active' : '' }}">
-    <span class="menu-icon">📋</span>
+    <span class="menu-icon">
+        <i class="bi bi-file-earmark-text"></i>
+    </span>
     <span>Permohonan Akreditasi</span>
 </a>
 
-<!-- Proses AK -->
-{{-- <a href="" class="nav-link">
-    <span class="menu-icon">📝</span>
-    <span>Proses AK</span>
+<!-- Penerimaan Permohonan Akreditasi -->
+<a href="{{ route('prodi.penerimaan-permohonan') }}" class="nav-link {{ request()->routeIs('prodi.penerimaan-permohonan*') ? 'active' : '' }}">
+    <span class="menu-icon">
+        <i class="bi bi-envelope-check"></i>
+    </span>
+    <span>Penerimaan Permohonan Akreditasi</span>
 </a>
 
-<!-- Proses AL -->
-<a href="{{ route('al.jadwal') }}" class="nav-link {{ request()->routeIs('al.jadwal') ? 'active' : '' }}">
-<span class="menu-icon">🏢</span>
-<span>Proses AL</span>
-</a> --}}
-<!-- Pedoman AK -->
+<!-- Template Dokumen -->
 <a href="{{ route('pedoman') }}" class="nav-link {{ request()->routeIs('pedoman') ? 'active' : '' }} text-secondary" style="color: #ddd">
-    <span class="menu-icon text-secondary">📁</span>
+    <span class="menu-icon text-secondary">
+        <i class="bi bi-folder2-open"></i>
+    </span>
     <span class="text-secondary">Template Dokumen</span>
 </a>
 
-<!-- Penugasan Banding -->
+<!-- Permohonan Banding -->
 <a href="{{ route('banding') }}" class="nav-link {{ request()->routeIs('banding') ? 'active' : '' }}">
-    <span class="menu-icon">🤝</span>
+    <span class="menu-icon">
+        <i class="bi bi-arrow-left-right"></i>
+    </span>
     <span>Permohonan Banding</span>
 </a>

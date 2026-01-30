@@ -159,6 +159,7 @@
                             <th>Jumlah</th>
                             <th>Dokumen</th>
                             <th>Tanggal Upload</th>
+                            <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -215,6 +216,11 @@
                                 @else
                                 -
                                 @endif
+                            </td>
+                            <td>
+                                <a href="{{ route('keuangan.pembayaran.download-bukti', $item->id) }}" target="_blank" class="btn btn-info btn-sm">
+                                    <i class="bi bi-download"></i> Download File
+                                </a>
                             </td>
                         </tr>
                         @empty

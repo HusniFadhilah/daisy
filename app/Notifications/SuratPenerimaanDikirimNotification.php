@@ -30,15 +30,15 @@ class SuratPenerimaanDikirimNotification extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-            ->subject('Surat Penerimaan Permohonan Akreditasi - ' . $this->pengajuan->studyProgram->name)
+            ->subject('Penerimaan Permohonan Akreditasi - ' . $this->pengajuan->studyProgram->name)
             ->greeting('Kepada Yth. ' . $notifiable->name)
-            ->line('Surat penerimaan permohonan akreditasi telah dikirimkan oleh LAM-DEPILaR.')
+            ->line('Penerimaan permohonan akreditasi telah dikirimkan oleh LAM-DEPILaR.')
             ->line('**Detail Permohonan:**')
             ->line('- Program Studi: ' . $this->pengajuan->studyProgram->full_name)
             ->line('- Nomor Permohonan: ' . $this->pengajuan->nomor_pengajuan)
             ->line('- Tanggal Dikirim: ' . $this->dokumen->created_at->format('d M Y H:i'))
-            ->action('Lihat & Download Surat Penerimaan', route('pengajuan.show', $this->pengajuan->id))
-            ->line('Silakan login ke sistem untuk mengunduh surat penerimaan.')
+            ->action('Lihat & Download File Penerimaan Permohonan Akreditasi', route('pengajuan.show', $this->pengajuan->id))
+            ->line('Silakan login ke sistem untuk mengunduh file penerimaan permohonan akreditasi.')
             ->line('Terima kasih atas perhatian Anda.')
             ->salutation('Hormat kami, LAM-DEPILaR');
     }
@@ -50,7 +50,7 @@ class SuratPenerimaanDikirimNotification extends Notification
             'pengajuan_id' => $this->pengajuan->id,
             'nomor_pengajuan' => $this->pengajuan->nomor_pengajuan,
             'dokumen_id' => $this->dokumen->id,
-            'message' => 'Surat penerimaan permohonan akreditasi telah dikirim',
+            'message' => 'Penerimaan permohonan akreditasi telah dikirim',
         ];
     }
 }

@@ -236,8 +236,12 @@
                                 <tr>
                                     <td>{{ $pengajuans->firstItem() + $index }}</td>
                                     <td>
-                                        <p>{{ $pengajuan->judul }}</p>
+                                        <p class="mb-1">{{ $pengajuan->judul }}</p>
                                         <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
+                                        <br>
+                                        <small class="text-muted">
+                                            Dibuat pada: {{ $pengajuan->created_at->format('d M Y') }}
+                                        </small>
                                     </td>
                                     <td>
                                         <div>
@@ -333,11 +337,11 @@
 
                 <!-- Tab Navigation -->
                 <ul class="nav nav-tabs mb-3" role="tablist">
-                    <li class="nav-item" role="presentation">
+                    {{-- <li class="nav-item" role="presentation">
                         <button class="nav-link active" id="link-tab" data-bs-toggle="tab" data-bs-target="#link-content" type="button">
                             <i class="bi bi-link-45deg"></i> Via Link
                         </button>
-                    </li>
+                    </li> --}}
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="upload-tab" data-bs-toggle="tab" data-bs-target="#upload-content" type="button">
                             <i class="bi bi-upload"></i> Upload File
@@ -348,7 +352,7 @@
                 <!-- Tab Content -->
                 <div class="tab-content">
                     <!-- Tab Link -->
-                    <div class="tab-pane fade show active" id="link-content">
+                    {{-- <div class="tab-pane fade show active" id="link-content">
                         <form id="formKirimLink" method="POST">
                             @csrf
                             <div class="mb-3">
@@ -364,12 +368,12 @@
 
                             <div class="mb-3">
                                 <label class="form-label fw-bold">
-                                    <i class="bi bi-file-earmark-spreadsheet"></i> Link Template Formulir Pembayaran
+                                    <i class="bi bi-file-earmark-spreadsheet"></i> Link Formulir Pembayaran
                                     <span class="text-danger">*</span>
                                 </label>
                                 <input type="url" name="template_pembayaran_link" class="form-control" placeholder="https://drive.google.com/..." required>
                                 <small class="text-muted">
-                                    Link untuk Template Formulir Pembayaran
+                                    Link untuk Formulir Pembayaran
                                 </small>
                             </div>
 
@@ -389,12 +393,23 @@
                                 </button>
                             </div>
                         </form>
-                    </div>
+                    </div> --}}
 
                     <!-- Tab Upload -->
-                    <div class="tab-pane fade" id="upload-content">
+                    <div class="tab-pane fade show active" id="upload-content">
                         <form id="formKirimUpload" method="POST" enctype="multipart/form-data">
                             @csrf
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="bi bi-file-earmark-spreadsheet"></i> File Formulir Pembayaran
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <input type="file" name="file_template_pembayaran" class="form-control" accept=".pdf,.docx,.xlsx,.xls" required>
+                                <small class="text-muted">
+                                    {{-- Format: PDF, DOCX, XLSX, XLS. Maksimal 10MB --}}
+                                    Format: XLSX/XLS. Maksimal 5MB
+                                </small>
+                            </div>
                             <div class="mb-3">
                                 <label class="form-label fw-bold">
                                     <i class="bi bi-file-earmark-text"></i> File Template Dokumen
@@ -402,18 +417,8 @@
                                 </label>
                                 <input type="file" name="file_template_led" class="form-control" accept=".pdf,.zip,.rar,.docx" required>
                                 <small class="text-muted">
-                                    Format: PDF, ZIP, RAR, DOCX. Maksimal 50MB
-                                </small>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">
-                                    <i class="bi bi-file-earmark-spreadsheet"></i> File Template Formulir Pembayaran
-                                    <span class="text-danger">*</span>
-                                </label>
-                                <input type="file" name="file_template_pembayaran" class="form-control" accept=".pdf,.docx,.xlsx,.xls" required>
-                                <small class="text-muted">
-                                    Format: PDF, DOCX, XLSX, XLS. Maksimal 10MB
+                                    {{-- Format: PDF, ZIP, RAR, DOCX. Maksimal 50MB --}}
+                                    Format: ZIP/RAR. Maksimal 5MB
                                 </small>
                             </div>
 
@@ -448,7 +453,6 @@
         const formLink = document.getElementById('formKirimLink');
         const formUpload = document.getElementById('formKirimUpload');
 
-        formLink.action = `{{ route('de.penyampaian-template') }}/${id}/kirim-link`;
         formUpload.action = `{{ route('de.penyampaian-template') }}/${id}/kirim-upload`;
         document.getElementById('judulPermohonan').textContent = judul;
 

@@ -153,7 +153,7 @@ class PengajuanAkreditasiController extends Controller
                 'status_to' => PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM,
                 'changed_by' => auth()->id(),
                 'changed_at' => now(),
-                'keterangan' => 'Surat permohonan dikirim sebagai respon pengingat akreditasi',
+                'keterangan' => 'Permohonan dikirim sebagai respon pengingat akreditasi',
             ]);
 
             DB::commit();
@@ -274,8 +274,8 @@ class PengajuanAkreditasiController extends Controller
                 'changed_by' => auth()->id(),
                 'changed_at' => now(),
                 'keterangan' => $pengingat
-                    ? 'Surat permohonan dikirim sebagai respon pengingat akreditasi'
-                    : 'Surat permohonan dikirim',
+                    ? 'Permohonan dikirim sebagai respon pengingat akreditasi'
+                    : 'Permohonan dikirim',
             ]);
 
             DB::commit();

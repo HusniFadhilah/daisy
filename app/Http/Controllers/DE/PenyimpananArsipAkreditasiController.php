@@ -300,7 +300,7 @@ class PenyimpananArsipAkreditasiController extends Controller
 
         return [
             'surat_permohonan' => [
-                'label' => 'Surat Permohonan Akreditasi',
+                'label' => 'Dokumen Permohonan Akreditasi',
                 'critical' => true,
                 'exists' => $dokumens->has('surat_permohonan'),
                 'dokumen' => $dokumens->get('surat_permohonan'),

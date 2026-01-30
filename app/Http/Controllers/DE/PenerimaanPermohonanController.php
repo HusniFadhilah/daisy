@@ -20,7 +20,7 @@ class PenerimaanPermohonanController extends Controller
     use AuthorizesRequests;
 
     /**
-     * Display list of pengajuan yang perlu surat penerimaan
+     * Display list of pengajuan yang perlu penerimaan
      */
     public function index(Request $request)
     {
@@ -70,7 +70,7 @@ class PenerimaanPermohonanController extends Controller
     }
 
     /**
-     * Show form untuk upload surat penerimaan
+     * Show form untuk upload penerimaan
      */
     public function show($id)
     {
@@ -89,7 +89,7 @@ class PenerimaanPermohonanController extends Controller
     }
 
     /**
-     * Upload surat penerimaan (simplified - no nomor/tanggal input)
+     * Upload penerimaan (simplified - no nomor/tanggal input)
      */
     public function kirimSuratPenerimaan(KirimSuratPenerimaanRequest $request, $id)
     {
@@ -126,7 +126,7 @@ class PenerimaanPermohonanController extends Controller
 
             return redirect()
                 ->route('de.penerimaan-permohonan.show', $pengajuan->id)
-                ->with('success', 'Surat Penerimaan Permohonan Akreditasi berhasil dikirim ke program studi.');
+                ->with('success', 'Penerimaan Permohonan Akreditasi berhasil dikirim ke program studi.');
         } catch (\Exception $e) {
             Log::error($e);
             DB::rollBack();
@@ -134,7 +134,7 @@ class PenerimaanPermohonanController extends Controller
 
             return back()
                 ->withInput()
-                ->with('error', 'Gagal mengirim Surat Penerimaan Permohonan Akreditasi: ' . $e->getMessage());
+                ->with('error', 'Gagal mengirim Penerimaan Permohonan Akreditasi: ' . $e->getMessage());
         }
     }
 
@@ -153,7 +153,7 @@ class PenerimaanPermohonanController extends Controller
             'file_size' => $file->getSize(),
             'mime_type' => $file->getMimeType(),
             'uploaded_by' => auth()->id(),
-            'keterangan' => $request->keterangan ?? 'Surat Penerimaan Permohonan Akreditasi dari LAMDEPILAR',
+            'keterangan' => $request->keterangan ?? 'Penerimaan Permohonan Akreditasi dari LAMDEPILAR',
             'is_latest' => true,
             'versi' => PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
                 ->where('jenis_dokumen', 'surat_penerimaan_de')
@@ -162,7 +162,7 @@ class PenerimaanPermohonanController extends Controller
     }
 
     /**
-     * Download surat penerimaan
+     * Download File Penerimaan Permohonan Akreditasi
      */
     public function download($id)
     {
@@ -182,7 +182,7 @@ class PenerimaanPermohonanController extends Controller
     }
 
     /**
-     * Delete surat penerimaan (for revision)
+     * Delete penerimaan (for revision)
      */
     public function destroy($id)
     {
@@ -210,11 +210,11 @@ class PenerimaanPermohonanController extends Controller
                 'status_to' => $pengajuan->status,
                 'changed_by' => auth()->id(),
                 'changed_at' => now(),
-                'keterangan' => 'Surat Penerimaan Permohonan Akreditasi dihapus untuk revisi',
+                'keterangan' => 'Penerimaan Permohonan Akreditasi dihapus untuk revisi',
             ]);
         });
 
-        return back()->with('success', 'Surat Penerimaan Permohonan Akreditasi berhasil dihapus.');
+        return back()->with('success', 'Penerimaan Permohonan Akreditasi berhasil dihapus.');
     }
 
     // ========================================
@@ -296,7 +296,7 @@ class PenerimaanPermohonanController extends Controller
                 $stats['terkirim']++;
             }
 
-            // belum_terkirim: sudah diterima surat permohonan, tapi belum terkirim surat penerimaan
+            // belum_terkirim: sudah diterima permohonan, tapi belum dikirimi penerimaan akreditasi
             if (
                 in_array(PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA, $statuses) &&
                 !in_array(PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM, $statuses)
@@ -333,7 +333,7 @@ class PenerimaanPermohonanController extends Controller
                 'status_to'   => PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM,
                 'changed_by'  => auth()->id(),
                 'changed_at'  => now(),
-                'keterangan'  => 'Surat Penerimaan Permohonan Akreditasi dikirim ke PS' .
+                'keterangan'  => 'Penerimaan Permohonan Akreditasi dikirim ke PS' .
                     ($request->keterangan ? ' - ' . $request->keterangan : ''),
             ]
         );

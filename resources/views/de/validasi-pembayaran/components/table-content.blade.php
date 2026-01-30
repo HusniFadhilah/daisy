@@ -34,11 +34,14 @@
                             <small class="text-muted">
                                 Dibuat pada: {{ $pembayaran->created_at->format('d M Y') }}
                             </small>
-                            <br class="mb-2">
-                            <small class="text-muted">
-                                <span>Jenis akreditasi:</span>
-                                <b>{{ $pembayaran->pengajuan->jenis_akreditasi_label }}</b>
-                            </small>
+                            <div class="text-muted mt-3">
+                                <small>Permohonan akreditasi:</small>
+                                <small class="text-muted">{{ $pembayaran->pengajuan->nomor_pengajuan }}</small>
+                                <br>
+                                <small class="text-muted">
+                                    Dibuat pada: {{ $pembayaran->created_at->format('d M Y') }}
+                                </small>
+                            </div>
                         </td>
                         <td>
                             <div>

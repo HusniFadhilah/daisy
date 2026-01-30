@@ -133,7 +133,7 @@ class SuratPermohonanController extends Controller
 
         // Validasi status
         if ($pengajuan->status !== PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM) {
-            return back()->with('error', 'Status permohonan saat ini tidak sesuai untuk menerima surat permohonan akreditasi PS.');
+            return back()->with('error', 'Status permohonan saat ini tidak sesuai untuk menerima permohonan akreditasi PS.');
         }
 
         // Check apakah dokumen surat permohonan sudah ada
@@ -143,7 +143,7 @@ class SuratPermohonanController extends Controller
             ->exists();
 
         if (!$hasSuratPermohonan) {
-            return back()->with('error', 'Dokumen surat permohonan belum diupload oleh prodi.');
+            return back()->with('error', 'Dokumen permohonan akreditasi belum diupload oleh PS.');
         }
 
         DB::beginTransaction();
@@ -156,21 +156,21 @@ class SuratPermohonanController extends Controller
 
             // Log status change
             $pengajuan->statusLog()->create([
-                'status_from' => PengajuanAkreditasi::STATUS_PENGINGAT_DIKIRIM,
+                'status_from' => PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM,
                 'status_to' => PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
                 'changed_by' => auth()->id(),
                 'changed_at' => now(),
-                'keterangan' => $request->keterangan ?? 'Surat permohonan akreditasi dari PS, diterima oleh DE',
+                'keterangan' => $request->keterangan ?? 'Permohonan akreditasi dari PS, diterima oleh DE',
             ]);
 
             DB::commit();
 
             return redirect()
                 ->route('de.surat-permohonan')
-                ->with('success', 'Surat permohonan berhasil diterima. Status diubah menjadi "Surat Permohonan Diterima".');
+                ->with('success', 'Permohonan berhasil diterima. Status diubah menjadi "Permohonan Akreditasi Diterima".');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal menerima surat permohonan: ' . $e->getMessage());
+            return back()->with('error', 'Gagal menerima permohonan akreditasi: ' . $e->getMessage());
         }
     }
 
@@ -216,17 +216,17 @@ class SuratPermohonanController extends Controller
                 'status_to' => PengajuanAkreditasi::STATUS_DITOLAK,
                 'changed_by' => auth()->id(),
                 'changed_at' => now(),
-                'keterangan' => 'Surat permohonan akreditasi dari PS belum diterima: ' . $request->alasan_penolakan,
+                'keterangan' => 'Permohonan akreditasi dari PS belum diterima: ' . $request->alasan_penolakan,
             ]);
 
             DB::commit();
 
             return redirect()
                 ->route('de.surat-permohonan')
-                ->with('success', 'Surat permohonan akreditasi belum diterima.');
+                ->with('success', 'Permohonan akreditasi belum diterima.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal menolak surat permohonan: ' . $e->getMessage());
+            return back()->with('error', 'Gagal menolak permohonan akreditasi: ' . $e->getMessage());
         }
     }
 
