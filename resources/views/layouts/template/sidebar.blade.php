@@ -27,7 +27,7 @@ $authUser = Auth::user();
         @elseif(in_array($authUser->role_selected,['validator']))
         @include('layouts.roles.validator-sidebar')
         @elseif(in_array($authUser->role_selected,['admin_prodi']))
-        @include('layouts.roles.prodi-sidebar')
+        @include('layouts.roles.upps-sidebar')
         @elseif(in_array($authUser->role_selected,['keuangan_lamdepilar']))
         @include('layouts.roles.keuangan-sidebar')
         @else

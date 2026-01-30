@@ -283,18 +283,6 @@
                                             <button type="button" class="btn btn-primary action-btn" title="Kirim Template" onclick="kirimTemplate({{ $pengajuan->id }}, '{{ $pengajuan->judul }}')">
                                                 <i class="bi bi-send"></i>
                                             </button>
-                                            @elseif($pengajuan->status == \App\Models\PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM)
-                                            @php
-                                            $template = $pengajuan->dokumen()
-                                            ->where('jenis_dokumen', 'borang_template')
-                                            ->where('is_latest', true)
-                                            ->first();
-                                            @endphp
-                                            @if($template)
-                                            <a href="{{ route('de.penyampaian-template.download', ['id' => $pengajuan->id, 'jenis' => 'borang_template']) }}" class="btn btn-success action-btn" title="Download Template LED">
-                                                <i class="bi bi-download"></i>
-                                            </a>
-                                            @endif
                                             @endif
                                         </div>
                                     </td>

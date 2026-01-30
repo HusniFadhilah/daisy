@@ -81,7 +81,7 @@
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
             <li class="breadcrumb-item"><a href="{{ route('de.penerimaan-permohonan') }}">Penerimaan Permohonan</a></li>
-            <li class="breadcrumb-item active">{{ $pengajuan->nomor_pengajuan }}</li>
+            <li class="breadcrumb-item active">Detail</li>
         </ol>
     </nav>
 
@@ -294,7 +294,7 @@
                                 </div>
                                 <div class="flex-grow-1 ms-3">
                                     <strong>
-                                        {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label'] ?? $log->status_to }}
+                                        {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_for']['de'] ?? $log->status_to }}
                                     </strong>
                                     <br>
                                     <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
@@ -314,7 +314,7 @@
                                 </div>
                                 <div class="flex-grow-1 ms-3">
                                     <strong>
-                                        Penerimaan Permohonan Akreditasi Diterima
+                                        Penerimaan Permohonan Akreditasi Diterima PS
                                     </strong>
                                     <br>
                                     <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>

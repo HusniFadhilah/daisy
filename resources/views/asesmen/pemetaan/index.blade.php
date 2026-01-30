@@ -357,7 +357,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="">
                             <h2 class="mb-2 fw-bold">{{ $stats['total'] }}</h2>
-                            <small class="opacity-75">Total prodi yang terdata pada Daisy</small>
+                            <small class="opacity-75">Total PS yang terdata pada Daisy</small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
                             <i class="bi bi-book"></i>
@@ -374,7 +374,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="">
                             <h2 class="mb-2 fw-bold">{{ $stats['aktif'] }}</h2>
-                            <small class="opacity-75">Prodi yang akreditasinya masih aktif</small>
+                            <small class="opacity-75">Jumlah PS yang akreditasinya masih aktif</small>
                             {{-- <small class="opacity-75">
                                 {{ $stats['total'] > 0 ? round(($stats['aktif'] / $stats['total']) * 100, 1) : 0 }}%
                             </small> --}}
@@ -394,7 +394,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['pengingat_bulan_target'] }}</h2>
-                            <small class="opacity-75">PS yang perlu diingatkan tentang masa akreditasi berakhir dalam 7 bulan dari sekarang</small>
+                            <small class="opacity-75">Jumlah PS yang perlu diingatkan tentang masa akreditasi berakhir dalam 7 bulan dari sekarang</small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
                             <i class="bi bi-exclamation-triangle"></i>
@@ -411,7 +411,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['kedaluwarsa'] }}</h2>
-                            <small class="opacity-75">PS yang masa akreditasinya telah kedaluwarsa dari sekarang</small>
+                            <small class="opacity-75">Jumlah PS yang masa akreditasinya telah kedaluwarsa dari sekarang</small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
                             <i class="bi bi-exclamation-triangle"></i>
@@ -428,7 +428,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['belum_terakreditasi'] }}</h2>
-                            <small class="opacity-75">PS yang perlu diajukan akreditasi</small>
+                            <small class="opacity-75">Jumlah PS yang status akreditasinya adalah "Belum Terakreditasi"</small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
                             <i class="bi bi-hourglass-split"></i>

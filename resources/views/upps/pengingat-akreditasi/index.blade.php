@@ -1,0 +1,278 @@
+{{-- resources/views/upps/pengingat-akreditasi/index.blade.php --}}
+
+@extends('layouts.template.app')
+
+@section('title', 'Pengingat Masa Akreditasi')
+
+@push('styles')
+<style>
+    .stat-card {
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .table-hover tbody tr {
+        transition: all 0.2s ease;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    .badge-status {
+        padding: 8px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .filter-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+</style>
+@endpush
+
+@section('content')
+<div class="container-fluid py-3">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item active">Pengingat Masa Akreditasi</li>
+        </ol>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="mb-1">
+                <i class="bi bi-bell"></i> Pengingat Masa Akreditasi
+            </h4>
+            <p class="text-muted mb-0">Daftar pengingat masa akreditasi dari LAM-DEPILaR</p>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-body text-white">
+                    <h6 class="mb-2 opacity-75">Total Pengingat Masa Akreditasi</h6>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-0 fw-bold">{{ $stats['total'] }}</h2>
+                            <small class="opacity-75">Jumlah keseluruhan pengingat masa akreditasi</small>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;" class="px-2">
+                            <i class="bi bi-bell"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <div class="card-body text-white">
+                    <h6 class="mb-2 opacity-75">Pengingat Masa Akreditasi Belum Direspon</h6>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-0 fw-bold">{{ $stats['belum_direspon'] }}</h2>
+                            <small class="opacity-75">Jumlah pengungat masa akreditasi yang perlu ditindaklanjuti</small>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;" class="px-2">
+                            <i class="bi bi-exclamation-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                <div class="card-body text-white">
+                    <h6 class="mb-2 opacity-75">Pengingat Masa Akreditasi Sudah Direspon</h6>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-0 fw-bold">{{ $stats['direspon'] }}</h2>
+                            <small class="opacity-75">Jumlah pengungat masa akreditasi yang selesai ditindaklanjuti</small>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;" class="px-2">
+                            <i class="bi bi-check-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters & Content -->
+    <div class="row">
+        <!-- Filters Sidebar -->
+        <div class="col-lg-3 mb-4">
+            <div class="card filter-card">
+                <div class="card-header border-0">
+                    <h5 class="mb-0">
+                        <i class="bi bi-funnel"></i> Filter & Pencarian
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="GET" action="{{ route('upps.pengingat-akreditasi') }}">
+                        <!-- Search -->
+                        <div class="mb-3">
+                            <label class="form-label text-white">Cari Program Studi</label>
+                            <input type="text" name="search" class="form-control" placeholder="Nama prodi..." value="{{ request('search') }}">
+                        </div>
+
+                        <!-- Status -->
+                        <div class="mb-3">
+                            <label class="form-label text-white">Status Pengingat</label>
+                            <select name="status" class="form-select">
+                                <option value="">Semua Status</option>
+                                @foreach(\App\Models\PengingatAkreditasi::statusOptions() as $value => $label)
+                                <option value="{{ $value }}" {{ request('status') == $value ? 'selected' : '' }}>
+                                    {{ $label }}
+                                </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Tahun -->
+                        <div class="mb-3">
+                            <label class="form-label text-white">Tahun Akreditasi</label>
+                            <select name="tahun" class="form-select">
+                                <option value="">Semua Tahun</option>
+                                @foreach($tahunList as $tahun)
+                                <option value="{{ $tahun }}" {{ request('tahun') == $tahun ? 'selected' : '' }}>
+                                    {{ $tahun }}
+                                </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-light">
+                                <i class="bi bi-search"></i> Terapkan Filter
+                            </button>
+                            <a href="{{ route('upps.pengingat-akreditasi') }}" class="btn btn-outline-light">
+                                <i class="bi bi-x-circle"></i> Reset
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-lg-9">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Daftar Pengingat</h5>
+                        <div>
+                            <span class="text-muted">Total: <strong>{{ $pengingatList->total() }}</strong></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    @if($pengingatList->count() > 0)
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="5%">#</th>
+                                    <th width="25%">Program Studi</th>
+                                    <th width="10%">Tahun</th>
+                                    <th width="15%">Tanggal Dikirim</th>
+                                    <th width="15%">Pengirim (DE)</th>
+                                    <th width="15%">Status</th>
+                                    <th width="15%" class="text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($pengingatList as $index => $pengingat)
+                                <tr>
+                                    <td>{{ $pengingatList->firstItem() + $index }}</td>
+                                    <td>
+                                        <strong>{{ $pengingat->studyProgram->name }}</strong>
+                                        <br>
+                                        <small class="text-muted">
+                                            {{ $pengingat->studyProgram->university->name }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ $pengingat->tahun_akreditasi }}</span>
+                                    </td>
+                                    <td>
+                                        <small>
+                                            {{ $pengingat->tanggal_dikirim->format('d M Y') }}
+                                        </small>
+                                        <br>
+                                        <small class="text-muted">
+                                            {{ $pengingat->tanggal_dikirim->diffForHumans() }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <small>{{ $pengingat->pengirim->name ?? '-' }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge {{ $pengingat->status_badge_class }} badge-status">
+                                            {{ $pengingat->status_label }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{{ route('upps.pengingat-akreditasi.show', $pengingat->id) }}" class="btn btn-primary" title="Lihat Detail">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+
+                                            @if($pengingat->status === \App\Models\PengingatAkreditasi::STATUS_BELUM_DIRESPON)
+                                            <a href="{{ route('upps.pengingat-akreditasi.respond.form', $pengingat->id) }}" class="btn btn-success" title="Respon Pengingat">
+                                                <i class="bi bi-reply-fill"></i>
+                                            </a>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="card-footer bg-white">
+                        {{ $pengingatList->links() }}
+                    </div>
+                    @else
+                    <div class="text-center py-5">
+                        <i class="bi bi-inbox" style="font-size: 64px; color: #ddd;"></i>
+                        <p class="text-muted mt-3">
+                            @if(request()->filled('search') || request()->filled('status'))
+                            Tidak ada data yang sesuai dengan filter
+                            @else
+                            Belum ada pengingat akreditasi
+                            @endif
+                        </p>
+                        @if(request()->filled('search') || request()->filled('status'))
+                        <a href="{{ route('upps.pengingat-akreditasi') }}" class="btn btn-sm btn-primary">
+                            <i class="bi bi-arrow-clockwise"></i> Reset Filter
+                        </a>
+                        @endif
+                    </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection

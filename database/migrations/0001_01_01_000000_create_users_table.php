@@ -43,6 +43,8 @@ return new class extends Migration
 
         Schema::create('notifications', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->foreignId('notifiable_id')->nullable()->constrained('users')->onDelete('set null');
+            $table->string('notifiable_type');
             $table->string('type');
             $table->morphs('notifiable');
             $table->text('data');

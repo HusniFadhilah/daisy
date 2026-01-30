@@ -253,6 +253,11 @@ class PengajuanAkreditasi extends Model
         return $this->belongsTo(User::class, 'id_de_assigned');
     }
 
+    public function deAssigned()
+    {
+        return $this->belongsTo(User::class, 'id_de_assigned');
+    }
+
     public function validator()
     {
         return $this->belongsTo(User::class, 'id_validator_assigned');
@@ -594,6 +599,21 @@ class PengajuanAkreditasi extends Model
         return self::statusMap()[$this->status]['label'] ?? ucwords(str_replace('_', ' ', $this->status));
     }
 
+    public function getStatusLabelDeAttribute(): string
+    {
+        return self::statusMap()[$this->status]['label_for']['de'] ?? ucwords(str_replace('_', ' ', $this->status));
+    }
+
+    public function getStatusLabelUppsAttribute(): string
+    {
+        return self::statusMap()[$this->status]['label_for']['upps'] ?? ucwords(str_replace('_', ' ', $this->status));
+    }
+
+    public function getStatusLabelProdiAttribute(): string
+    {
+        return self::statusMap()[$this->status]['label_for']['prodi'] ?? ucwords(str_replace('_', ' ', $this->status));
+    }
+
     public function getJenisAkreditasiLabelAttribute(): string
     {
         return $this->jenis_akreditasi == 'perpanjangan' ? 'Pemenuhan Status Terakreditasi' : Str::title(str_replace('_', ' ', $this->jenis_akreditasi));
@@ -651,212 +671,463 @@ class PengajuanAkreditasi extends Model
         return [
             self::STATUS_DRAFT => [
                 'label' => 'Draft',
+                'label_for' => [
+                    'de'   => 'Draft (Belum diproses DE)',
+                    'upps' => 'Draft (Belum diajukan UPPS)',
+                    'prodi' => 'Draft (Belum diajukan Prodi)',
+                ],
                 'bg' => 'bg-secondary',
                 'icon' => 'bi-pencil',
             ],
+
             self::STATUS_PENGINGAT_DIKIRIM => [
                 'label' => 'Pengingat Masa Akreditasi',
+                'label_for' => [
+                    'de'   => 'Pengingat Masa Akreditasi Telah Dikirim oleh DE',
+                    'upps' => 'Pengingat Masa Akreditasi Telah Diterima dari LAMDEPILAR',
+                    'prodi' => 'Pengingat Masa Akreditasi Telah Diterima dari LAMDEPILAR',
+                ],
                 'bg' => 'bg-info',
                 'icon' => 'bi-bell',
             ],
+
             self::STATUS_SURAT_PERMOHONAN_DIKIRIM => [
                 'label' => 'Permohonan Akreditasi',
+                'label_for' => [
+                    'de'   => 'Permohonan Akreditasi Dikirim oleh PS',
+                    'upps' => 'Permohonan Akreditasi Telah Dikirim',
+                    'prodi' => 'Permohonan Akreditasi Telah Dikirim',
+                ],
                 'bg' => 'bg-primary',
                 'icon' => 'bi-envelope',
             ],
+
             self::STATUS_SURAT_PERMOHONAN_DITOLAK => [
                 'label' => 'Permohonan Akreditasi Ditolak',
+                'label_for' => [
+                    'de'   => 'Permohonan Akreditasi Ditolak oleh DE',
+                    'upps' => 'Permohonan Akreditasi Ditolak oleh LAMDEPILAR',
+                    'prodi' => 'Permohonan Akreditasi Ditolak oleh LAMDEPILAR',
+                ],
                 'bg' => 'bg-danger',
                 'icon' => 'bi-envelope',
             ],
+
             self::STATUS_SURAT_PERMOHONAN_DITERIMA => [
                 'label' => 'Permohonan Akreditasi Diterima',
+                'label_for' => [
+                    'de'   => 'Permohonan Akreditasi Diterima oleh DE',
+                    'upps' => 'Permohonan Akreditasi Diterima',
+                    'prodi' => 'Permohonan Akreditasi Diterima',
+                ],
                 'bg' => 'bg-success',
                 'icon' => 'bi-envelope',
             ],
+
             self::STATUS_SURAT_PENERIMAAN_DIKIRIM => [
                 'label' => 'Penerimaan Permohonan Akreditasi Dikirim',
+                'label_for' => [
+                    'de'   => 'Penerimaan Permohonan Akreditasi Dikirim ke PS',
+                    'upps' => 'Dokumen Penerimaan Permohonan Akreditasi Diterima dari LAMDEPILAR',
+                    'prodi' => 'Dokumen Penerimaan Permohonan Akreditasi Diterima dari LAMDEPILAR',
+                ],
                 'bg' => 'bg-success',
                 'icon' => 'bi-envelope',
             ],
+
             self::STATUS_TEMPLATE_LED_DIKIRIM => [
                 'label' => 'Pengiriman Formulir dan Template Dokumen',
+                'label_for' => [
+                    'de'   => 'Formulir & Template Dokumen Dikirim oleh DE',
+                    'upps' => 'Formulir & Template Dokumen Diterima dari LAMDEPILAR',
+                    'prodi' => 'Formulir & Template Dokumen Diterima dari LAMDEPILAR',
+                ],
                 'bg' => 'bg-primary',
                 'icon' => 'bi-file-earmark-arrow-down',
             ],
+
             self::STATUS_MENUNGGU_PEMBAYARAN => [
                 'label' => 'Menunggu Pembayaran',
+                'label_for' => [
+                    'de'   => 'Menunggu Pembayaran dari PS',
+                    'upps' => 'Menunggu Pembayaran (silakan lakukan pembayaran)',
+                    'prodi' => 'Menunggu Pembayaran (silakan lakukan pembayaran)',
+                ],
                 'bg' => 'bg-warning',
                 'icon' => 'bi-hourglass-split',
             ],
+
             self::STATUS_PEMBAYARAN_DITERIMA => [
                 'label' => 'Pembayaran Diterima',
+                'label_for' => [
+                    'de'   => 'Bukti Pembayaran Diterima (menunggu verifikasi)',
+                    'upps' => 'Bukti Pembayaran Terkirim (menunggu verifikasi)',
+                    'prodi' => 'Bukti Pembayaran Terkirim (menunggu verifikasi)',
+                ],
                 'bg' => 'bg-info',
                 'icon' => 'bi-credit-card',
             ],
+
             self::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN => [
                 'label' => 'Menunggu Verifikasi Pembayaran',
+                'label_for' => [
+                    'de'   => 'Menunggu Verifikasi Pembayaran (oleh Keuangan/DE)',
+                    'upps' => 'Menunggu Verifikasi Pembayaran (oleh Keuangan/DE)',
+                    'prodi' => 'Menunggu Verifikasi Pembayaran (oleh Keuangan/DE)',
+                ],
                 'bg' => 'bg-warning',
                 'icon' => 'bi-shield-exclamation',
             ],
+
             self::STATUS_PEMBAYARAN_DIVERIFIKASI => [
                 'label' => 'Validasi Pembayaran Selesai',
+                'label_for' => [
+                    'de'   => 'Pembayaran Terverifikasi',
+                    'upps' => 'Pembayaran Terverifikasi',
+                    'prodi' => 'Pembayaran Terverifikasi',
+                ],
                 'bg' => 'bg-success',
                 'icon' => 'bi-check-circle',
             ],
+
             self::STATUS_DRAFT_BORANG_DIKIRIM => [
                 'label' => 'File Dokumen Dikirim',
+                'label_for' => [
+                    'de'   => 'Draft Dokumen Diterima DE (menunggu penerimaan)',
+                    'upps' => 'Draft Dokumen Telah Dikirim ke DE',
+                    'prodi' => 'Draft Dokumen Telah Dikirim ke DE',
+                ],
                 'bg' => 'bg-info',
                 'icon' => 'bi-file-earmark-check',
             ],
+
             self::STATUS_DRAFT_BORANG_DITERIMA => [
                 'label' => 'File Dokumen Diterima',
+                'label_for' => [
+                    'de'   => 'Draft Dokumen Diterima DE',
+                    'upps' => 'Draft Dokumen Diterima oleh DE',
+                    'prodi' => 'Draft Dokumen Diterima oleh DE',
+                ],
                 'bg' => 'bg-info',
                 'icon' => 'bi-file-earmark-check',
             ],
+
             self::STATUS_BORANG_ONLINE_SELESAI => [
                 'label' => 'Dokumen Diterima',
+                'label_for' => [
+                    'de'   => 'Dokumen Final/Online Diterima (siap divalidasi)',
+                    'upps' => 'Dokumen Diterima Sistem (menunggu validasi)',
+                    'prodi' => 'Dokumen Diterima Sistem (menunggu validasi)',
+                ],
                 'bg' => 'bg-success',
                 'icon' => 'bi-ui-checks',
             ],
+
             self::STATUS_BORANG_VALIDATION_PENDING => [
                 'label' => 'Menunggu Validasi Dokumen',
+                'label_for' => [
+                    'de'   => 'Menunggu Validasi Dokumen oleh Validator',
+                    'upps' => 'Menunggu Validasi Dokumen oleh Validator',
+                    'prodi' => 'Menunggu Validasi Dokumen oleh Validator',
+                ],
                 'bg' => 'bg-warning',
                 'icon' => 'bi-clock-history',
             ],
+
             self::STATUS_BORANG_IN_VALIDATION => [
                 'label' => 'Validasi Dokumen Berlangsung',
+                'label_for' => [
+                    'de'   => 'Validasi Dokumen Sedang Berlangsung',
+                    'upps' => 'Validasi Dokumen Sedang Berlangsung',
+                    'prodi' => 'Validasi Dokumen Sedang Berlangsung',
+                ],
                 'bg' => 'bg-info',
                 'icon' => 'bi-clipboard-check',
             ],
+
             self::STATUS_BORANG_REVISION_REQUIRED => [
                 'label' => 'Dokumen Perlu Revisi',
+                'label_for' => [
+                    'de'   => 'Revisi Dokumen Diperlukan (minta perbaikan ke PS)',
+                    'upps' => 'Dokumen Perlu Revisi (silakan perbaiki)',
+                    'prodi' => 'Dokumen Perlu Revisi (silakan perbaiki)',
+                ],
                 'bg' => 'bg-danger',
                 'icon' => 'bi-exclamation-triangle',
             ],
+
             self::STATUS_BORANG_VALIDATED => [
                 'label' => 'Dokumen Divalidasi',
+                'label_for' => [
+                    'de'   => 'Dokumen Tervalidasi',
+                    'upps' => 'Dokumen Tervalidasi',
+                    'prodi' => 'Dokumen Tervalidasi',
+                ],
                 'bg' => 'bg-success',
                 'icon' => 'bi-check-circle-fill',
             ],
+
             self::STATUS_BORANG_FINAL_DITERIMA => [
                 'label' => 'Draft Final Dokumen Diterima',
+                'label_for' => [
+                    'de'   => 'Draft Final Dokumen Diterima DE',
+                    'upps' => 'Draft Final Dokumen Diterima oleh DE',
+                    'prodi' => 'Draft Final Dokumen Diterima oleh DE',
+                ],
                 'bg' => 'bg-info',
                 'icon' => 'bi-file-earmark-arrow-up',
             ],
+
             self::STATUS_VALIDASI_BORANG_DILAPORKAN => [
                 'label' => 'Pelaporan Validasi Dokumen',
+                'label_for' => [
+                    'de'   => 'Pelaporan Validasi Dokumen Selesai',
+                    'upps' => 'Pelaporan Validasi Dokumen Selesai',
+                    'prodi' => 'Pelaporan Validasi Dokumen Selesai',
+                ],
                 'bg' => 'bg-success',
                 'icon' => 'bi-file-earmark-text',
             ],
+
             self::STATUS_PENGAJUAN_COMPLETED => [
                 'label' => 'Proses Penugasan Asesor AK',
+                'label_for' => [
+                    'de'   => 'Siap Masuk Proses Penugasan Asesor AK',
+                    'upps' => 'Dalam Proses Penugasan Asesor AK',
+                    'prodi' => 'Dalam Proses Penugasan Asesor AK',
+                ],
                 'bg' => 'bg-success',
                 'icon' => 'bi-file-earmark-text',
             ],
+
             self::STATUS_ASESOR_AK_ASSIGNED => [
                 'label' => 'Penugasan Asesor AK',
+                'label_for' => [
+                    'de'   => 'Asesor AK Telah Ditugaskan',
+                    'upps' => 'Asesor AK Telah Ditugaskan',
+                    'prodi' => 'Asesor AK Telah Ditugaskan',
+                ],
                 'bg' => 'bg-primary',
                 'icon' => 'bi-person-check',
             ],
+
             self::STATUS_AK_IN_PROGRESS => [
                 'label' => 'Penugasan Asesor AK Berlangsung',
+                'label_for' => [
+                    'de'   => 'Proses AK Berlangsung (oleh Asesor AK)',
+                    'upps' => 'Proses AK Berlangsung (oleh Asesor AK)',
+                    'prodi' => 'Proses AK Berlangsung (oleh Asesor AK)',
+                ],
                 'bg' => 'bg-info',
                 'icon' => 'bi-clipboard-data',
             ],
+
             self::STATUS_AK_ON_VALIDATION => [
                 'label' => 'Validasi AK Berlangsung',
+                'label_for' => [
+                    'de'   => 'Validasi AK Sedang Berlangsung',
+                    'upps' => 'Validasi AK Sedang Berlangsung',
+                    'prodi' => 'Validasi AK Sedang Berlangsung',
+                ],
                 'bg' => 'bg-warning',
                 'icon' => 'bi-clipboard2-check',
             ],
+
             self::STATUS_AK_SELESAI => [
                 'label' => 'Validasi AK Selesai',
+                'label_for' => [
+                    'de'   => 'Validasi AK Selesai',
+                    'upps' => 'Validasi AK Selesai',
+                    'prodi' => 'Validasi AK Selesai',
+                ],
                 'bg' => 'bg-success',
                 'icon' => 'bi-clipboard-check',
             ],
+
             self::STATUS_AK_DILAPORKAN => [
                 'label' => 'Pelaporan AK Selesai',
+                'label_for' => [
+                    'de'   => 'Pelaporan AK Selesai',
+                    'upps' => 'Pelaporan AK Selesai',
+                    'prodi' => 'Pelaporan AK Selesai',
+                ],
                 'bg' => 'bg-success',
                 'icon' => 'bi-file-earmark-medical',
             ],
+
             self::STATUS_ASESOR_AL_ASSIGNED => [
                 'label' => 'Penugasan Asesor AL',
+                'label_for' => [
+                    'de'   => 'Asesor AL Telah Ditugaskan',
+                    'upps' => 'Asesor AL Telah Ditugaskan',
+                    'prodi' => 'Asesor AL Telah Ditugaskan',
+                ],
                 'bg' => 'bg-primary',
                 'icon' => 'bi-person-badge',
             ],
+
             self::STATUS_AL_IN_PROGRESS => [
                 'label' => 'Pelaksanaan AL Berlangsung',
+                'label_for' => [
+                    'de'   => 'Pelaksanaan AL Sedang Berlangsung',
+                    'upps' => 'Pelaksanaan AL Sedang Berlangsung',
+                    'prodi' => 'Pelaksanaan AL Sedang Berlangsung',
+                ],
                 'bg' => 'bg-info',
                 'icon' => 'bi-building',
             ],
+
             self::STATUS_AL_SELESAI => [
                 'label' => 'Pelaksanaan AL dan Penyampaian Berita Acara AL Selesai',
+                'label_for' => [
+                    'de'   => 'Pelaksanaan AL & Berita Acara Selesai',
+                    'upps' => 'Pelaksanaan AL & Berita Acara Selesai',
+                    'prodi' => 'Pelaksanaan AL & Berita Acara Selesai',
+                ],
                 'bg' => 'bg-success',
                 'icon' => 'bi-building-check',
             ],
+
             self::STATUS_AL_DILAPORKAN => [
                 'label' => 'Pelaporan AL Selesai',
+                'label_for' => [
+                    'de'   => 'Pelaporan AL Selesai',
+                    'upps' => 'Pelaporan AL Selesai',
+                    'prodi' => 'Pelaporan AL Selesai',
+                ],
                 'bg' => 'bg-success',
                 'icon' => 'bi-clipboard-data',
             ],
+
             self::STATUS_HASIL_AKREDITASI_DIKIRIM => [
                 'label' => 'Penyampaian Hasil Akreditasi',
+                'label_for' => [
+                    'de'   => 'Hasil Akreditasi Disampaikan ke PS',
+                    'upps' => 'Hasil Akreditasi Diterima dari LAMDEPILAR',
+                    'prodi' => 'Hasil Akreditasi Diterima dari LAMDEPILAR',
+                ],
                 'bg' => 'bg-warning',
                 'icon' => 'bi-envelope-paper',
             ],
+
             self::STATUS_MASA_SANGGAH => [
                 'label' => 'Masa Sanggah',
+                'label_for' => [
+                    'de'   => 'Masa Sanggah Berlangsung',
+                    'upps' => 'Masa Sanggah Berlangsung',
+                    'prodi' => 'Masa Sanggah Berlangsung',
+                ],
                 'bg' => 'bg-warning',
                 'icon' => 'bi-clock-history',
             ],
+
             self::STATUS_BANDING_DIAJUKAN => [
                 'label' => 'Banding Diajukan',
+                'label_for' => [
+                    'de'   => 'Banding Diajukan (menunggu diproses)',
+                    'upps' => 'Banding Telah Diajukan',
+                    'prodi' => 'Banding Telah Diajukan',
+                ],
                 'bg' => 'bg-danger',
                 'icon' => 'bi-file-earmark-break',
             ],
+
             self::STATUS_BANDING_DILAKSANAKAN => [
                 'label' => 'Pelaksanaan Banding',
+                'label_for' => [
+                    'de'   => 'Pelaksanaan Banding Sedang Berlangsung',
+                    'upps' => 'Pelaksanaan Banding Sedang Berlangsung',
+                    'prodi' => 'Pelaksanaan Banding Sedang Berlangsung',
+                ],
                 'bg' => 'bg-danger',
                 'icon' => 'bi-arrow-repeat',
             ],
+
             self::STATUS_BANDING_DILAPORKAN => [
                 'label' => 'Pelaporan Banding',
+                'label_for' => [
+                    'de'   => 'Pelaporan Banding Selesai',
+                    'upps' => 'Pelaporan Banding Selesai',
+                    'prodi' => 'Pelaporan Banding Selesai',
+                ],
                 'bg' => 'bg-danger',
                 'icon' => 'bi-file-earmark-ruled',
             ],
+
             self::STATUS_HASIL_DITETAPKAN => [
                 'label' => 'Penetapan Hasil Akreditasi',
+                'label_for' => [
+                    'de'   => 'Hasil Akreditasi Ditetapkan',
+                    'upps' => 'Hasil Akreditasi Ditetapkan',
+                    'prodi' => 'Hasil Akreditasi Ditetapkan',
+                ],
                 'bg' => 'bg-success',
                 'icon' => 'bi-award',
             ],
+
             self::STATUS_HASIL_DIUMUMKAN => [
                 'label' => 'Hasil Akreditasi Diumumkan',
+                'label_for' => [
+                    'de'   => 'Hasil Akreditasi Diumumkan',
+                    'upps' => 'Hasil Akreditasi Diumumkan',
+                    'prodi' => 'Hasil Akreditasi Diumumkan',
+                ],
                 'bg' => 'bg-primary',
                 'icon' => 'bi-megaphone-fill',
             ],
+
             self::STATUS_HASIL_DILAPORKAN => [
                 'label' => 'Pelaporan Hasil Akreditasi',
+                'label_for' => [
+                    'de'   => 'Pelaporan Hasil Akreditasi Selesai',
+                    'upps' => 'Pelaporan Hasil Akreditasi Selesai',
+                    'prodi' => 'Pelaporan Hasil Akreditasi Selesai',
+                ],
                 'bg' => 'bg-success',
                 'icon' => 'bi-megaphone',
             ],
+
             self::STATUS_ARSIP_DISIMPAN => [
                 'label' => 'Penyimpanan Arsip',
+                'label_for' => [
+                    'de'   => 'Arsip Disimpan oleh DE',
+                    'upps' => 'Arsip Tersedia',
+                    'prodi' => 'Arsip Tersedia',
+                ],
                 'bg' => 'bg-dark',
                 'icon' => 'bi-archive',
             ],
+
             self::STATUS_SELESAI => [
                 'label' => 'Proses Akreditasi Selesai',
+                'label_for' => [
+                    'de'   => 'Proses Akreditasi Selesai',
+                    'upps' => 'Proses Akreditasi Selesai',
+                    'prodi' => 'Proses Akreditasi Selesai',
+                ],
                 'bg' => 'bg-success',
                 'icon' => 'bi-check-circle-fill',
             ],
+
             self::STATUS_DITOLAK => [
                 'label' => 'Ditolak',
+                'label_for' => [
+                    'de'   => 'Ditolak oleh DE',
+                    'upps' => 'Ditolak oleh DE',
+                    'prodi' => 'Ditolak oleh DE',
+                ],
                 'bg' => 'bg-danger',
                 'icon' => 'bi-x-octagon',
             ],
+
             // Other
             self::STATUS_REMINDER_PENGIRIMAN_BORANG => [
                 'label' => 'Reminder Pengiriman Dokumen',
+                'label_for' => [
+                    'de'   => 'Reminder Pengiriman Dokumen Terkirim (oleh DE)',
+                    'upps' => 'Reminder Pengiriman Dokumen Diterima dari LAMDEPILAR',
+                    'prodi' => 'Reminder Pengiriman Dokumen Diterima dari LAMDEPILAR',
+                ],
                 'bg' => 'bg-warning',
                 'icon' => 'bi-x-envelope-paper',
             ],
@@ -1250,7 +1521,7 @@ class PengajuanAkreditasi extends Model
         return match ($attribute) {
             'surat_permohonan_ps' => match ($this->getCustomLastStatus($attribute)) {
                 self::STATUS_PENGINGAT_DIKIRIM => '<span class="badge bg-warning text-wrap">Menunggu Permohonan Akreditasi Dikirim dari PS</span>',
-                self::STATUS_SURAT_PERMOHONAN_DIKIRIM => '<span class="badge bg-info text-wrap">Permohonan Akreditasi telah Dikirim dari PS</span>',
+                self::STATUS_SURAT_PERMOHONAN_DIKIRIM => '<span class="badge bg-info text-wrap">Permohonan Akreditasi telah Dikirim oleh PS</span>',
                 self::STATUS_SURAT_PERMOHONAN_DITERIMA => '<span class="badge bg-success text-wrap">Permohonan Akreditasi Diterima oleh DE</span>',
                 self::STATUS_SURAT_PERMOHONAN_DITOLAK => '<span class="badge bg-danger text-wrap">Permohonan Akreditasi Ditolak oleh DE</span>',
                 default => '<span class="badge bg-secondary">-</span>',
@@ -1266,15 +1537,15 @@ class PengajuanAkreditasi extends Model
                 default => '<span class="badge bg-secondary">-</span>',
             },
             'borang_final' => match ($this->getCustomLastStatus($attribute)) {
-                self::STATUS_DRAFT_BORANG_DIKIRIM => '<span class="badge bg-warning text-wrap">Draft Dokumen Dikirim</span>',
-                self::STATUS_DRAFT_BORANG_DITERIMA => '<span class="badge bg-info text-wrap">Draft Dokumen Diterima</span>',
-                self::STATUS_BORANG_ONLINE_SELESAI => '<span class="badge bg-primary text-wrap">Pengisian Dokumen Selesai</span>',
-                self::STATUS_BORANG_VALIDATION_PENDING => '<span class="badge bg-warning text-wrap">Menunggu Validasi Dokumen</span>',
-                self::STATUS_BORANG_IN_VALIDATION => '<span class="badge bg-info text-wrap">Dalam Proses Validasi</span>',
-                self::STATUS_BORANG_REVISION_REQUIRED => '<span class="badge bg-danger text-wrap">Perlu Revisi Dokumen</span>',
-                self::STATUS_BORANG_VALIDATED => '<span class="badge bg-success text-wrap">Dokumen Tervalidasi</span>',
+                self::STATUS_DRAFT_BORANG_DIKIRIM => '<span class="badge bg-warning text-wrap">Draft Dokumen Telah Dikirim oleh PS</span>',
+                self::STATUS_DRAFT_BORANG_DITERIMA => '<span class="badge bg-info text-wrap">Draft Dokumen Telah Diterima oleh DE</span>',
+                self::STATUS_BORANG_ONLINE_SELESAI => '<span class="badge bg-primary text-wrap">Pengisian Dokumen Secara Online Selesai</span>',
+                self::STATUS_BORANG_VALIDATION_PENDING => '<span class="badge bg-warning text-wrap">Menunggu Validasi Dokumen oleh Validator</span>',
+                self::STATUS_BORANG_IN_VALIDATION => '<span class="badge bg-info text-wrap">Dalam Proses Validasi oleh Validator</span>',
+                self::STATUS_BORANG_REVISION_REQUIRED => '<span class="badge bg-danger text-wrap">PS Perlu Merevisi Dokumen</span>',
+                self::STATUS_BORANG_VALIDATED => '<span class="badge bg-success text-wrap">Dokumen Telah Divalidasi oleh Validator</span>',
                 self::STATUS_BORANG_FINAL_DITERIMA => '<span class="badge bg-success text-wrap">Dokumen Final Diterima</span>',
-                default => '<span class="badge bg-secondary">-</span>',
+                default => '<span class="badge bg-secondary text-wrap">Draft Dokumen Belum Dikirim oleh PS</span>',
             },
             default => '<span class="badge bg-secondary">-</span>',
         };

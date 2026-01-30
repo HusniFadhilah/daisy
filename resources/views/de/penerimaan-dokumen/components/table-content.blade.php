@@ -57,27 +57,7 @@
                             </div>
                         </td>
                         <td>
-                            {{-- Gunakan status dari log --}}
-                            @php
-                            $statusBadge = match($currentStatus) {
-                            \App\Models\PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI =>
-                            '<span class="badge bg-warning">Menunggu PS Mengupload</span>',
-                            \App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA =>
-                            '<span class="badge bg-info">Dokumen Masuk</span>',
-                            \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI =>
-                            '<span class="badge bg-success">Dokumen Lengkap</span>',
-                            \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING =>
-                            '<span class="badge bg-primary">Menunggu Validasi oleh Validator</span>',
-                            \App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION =>
-                            '<span class="badge bg-primary">Dalam Validasi oleh Validator</span>',
-                            \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED =>
-                            '<span class="badge bg-danger">Perlu Revisi oleh Validator</span>',
-                            \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED =>
-                            '<span class="badge bg-success">Tervalidasi oleh Validator</span>',
-                            default => '<span class="badge bg-secondary">Unknown</span>'
-                            };
-                            @endphp
-                            {!! $statusBadge !!}
+                            {!! $pengajuan->getCustomBadgeLastStatus('borang_final') !!}
 
                             @if($currentStatus == \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI)
                             <br><small class="text-muted">Perlu menugaskan validator</small>
@@ -104,7 +84,7 @@
                             </small>
                             @else
                             <div class="doc-status-badge doc-none">
-                                <i class="bi bi-x-circle-fill"></i> Belum Upload
+                                <i class="bi bi-x-circle-fill"></i> Belum Diupload oleh PS
                             </div>
                             <div class="progress progress-custom mt-2">
                                 <div class="progress-bar bg-danger" style="width: 0%"></div>

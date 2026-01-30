@@ -1,4 +1,3 @@
-@if(in_array($authUser->role_selected,['admin_prodi','admin_univ']))
 <!-- ============================================ -->
 <!-- SECTION: AKREDITASI INDIVIDUAL -->
 <!-- ============================================ -->
@@ -219,7 +218,7 @@
                     <!-- Total Individual -->
                     <div class="col-md-6 col-lg-6 col-xl-3">
                         <div class="p-3">
-                            <div class="text-muted small mb-2">Total Individual</div>
+                            <div class="text-muted small mb-2">Total Permohonan Akreditasi Individual</div>
                             <div class="h2 mb-0 fw-bold text-info">{{ $additionalStats['total_individual'] ?? 0 }}</div>
                         </div>
                     </div>
@@ -227,7 +226,7 @@
                     <!-- Total Kelompok -->
                     <div class="col-md-6 col-lg-6 col-xl-3">
                         <div class="p-3">
-                            <div class="text-muted small mb-2">Total Kelompok</div>
+                            <div class="text-muted small mb-2">Total Permohonan Akreditasi Kelompok</div>
                             <div class="h2 mb-0 fw-bold text-warning">{{ $additionalStats['total_kelompok'] ?? 0 }}</div>
                         </div>
                     </div>
@@ -236,4 +235,3 @@
         </div>
     </div>
 </div>
-@endif

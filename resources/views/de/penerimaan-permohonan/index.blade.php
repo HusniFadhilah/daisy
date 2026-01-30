@@ -210,7 +210,7 @@
                                         </small>
                                         @else
                                         <span class="badge bg-warning">
-                                            <i class="bi bi-hourglass-split"></i> Belum Dikirim oleh De
+                                            <i class="bi bi-hourglass-split"></i> Belum Dikirim oleh DE
                                         </span>
                                         @endif
                                     </td>

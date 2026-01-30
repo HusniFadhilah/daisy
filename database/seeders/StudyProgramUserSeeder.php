@@ -198,7 +198,7 @@ class StudyProgramUserSeeder extends Seeder
 
             // AKADEMIK (4)
             ['degree_code' => 's1',      'alias' => 'S1',      'label' => 'Sarjana (S1)',                 'type' => 'akademik', 'category' => 2],
-            ['degree_code' => 'profesi', 'alias' => 'Prof',    'label' => 'Profesi',                        'type' => 'akademik', 'category' => 2],
+            ['degree_code' => 'profesi', 'alias' => 'Profesi',    'label' => 'Profesi',                        'type' => 'akademik', 'category' => 2],
             ['degree_code' => 's2',      'alias' => 'S2',      'label' => 'Magister (S2)',                 'type' => 'akademik', 'category' => 2],
             ['degree_code' => 's3',      'alias' => 'S3',      'label' => 'Doktor (S3)',                   'type' => 'akademik', 'category' => 2],
         ];

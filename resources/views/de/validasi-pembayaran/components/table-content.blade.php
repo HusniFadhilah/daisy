@@ -83,15 +83,15 @@
                         <td>
                             @php
                             $statusConfig = [
-                            'menunggu_pembayaran' => ['class' => 'warning', 'icon' => 'hourglass-split', 'text' => 'Menunggu Pembayaran'],
-                            'menunggu_verifikasi' => ['class' => 'info', 'icon' => 'clock-history', 'text' => 'Menunggu Validasi'],
-                            'terverifikasi' => ['class' => 'success', 'icon' => 'check-circle', 'text' => 'Tervalidasi'],
-                            'upload_ulang' => ['class' => 'secondary', 'icon' => 'arrow-repeat', 'text' => 'Upload Ulang'],
-                            'ditolak' => ['class' => 'danger', 'icon' => 'x-circle', 'text' => 'Ditolak'],
+                            'menunggu_pembayaran' => ['class' => 'warning', 'icon' => 'hourglass-split', 'text' => 'Menunggu Pembayaran dari PS'],
+                            'menunggu_verifikasi' => ['class' => 'info', 'icon' => 'clock-history', 'text' => 'Menunggu Validasi Bagian Keuangan'],
+                            'terverifikasi' => ['class' => 'success', 'icon' => 'check-circle', 'text' => 'Telah Divalidasi oleh Bagian Keuangan'],
+                            'upload_ulang' => ['class' => 'secondary', 'icon' => 'arrow-repeat', 'text' => 'Bagian Keuangan Meminta PS Mengupload Ulang'],
+                            'ditolak' => ['class' => 'danger', 'icon' => 'x-circle', 'text' => 'Ditolak oleh Bagian Keuangan'],
                             ];
                             $status = $statusConfig[$pembayaran->status_pembayaran] ?? ['class' => 'secondary', 'icon' => 'question-circle', 'text' => 'Unknown'];
                             @endphp
-                            <span class="badge bg-{{ $status['class'] }}">
+                            <span class="badge bg-{{ $status['class'] }} text-wrap">
                                 <i class="bi bi-{{ $status['icon'] }}"></i>
                                 {{ $status['text'] }}
                             </span>
