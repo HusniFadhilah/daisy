@@ -87,7 +87,7 @@
                             <i class="bi bi-file-earmark-text"></i> Formulir Pembayaran
                         </h5>
                         @if($formulirPembayaran)
-                        <button type="button" class="btn btn-warning btn-sm" onclick="window.location.href='{{ route('upps.penyampaian-template.request.form', [$pengajuan->id, 'formulir_pembayaran']) }}'">
+                        <button type="button" class="btn btn-warning btn-sm" onclick="window.location.href='{{ route('upps.penyampaian-template.request.form', [$pengajuan->id, 'template_formulir_pembayaran']) }}'">
                             <i class="bi bi-arrow-repeat"></i> Minta Upload Ulang
                         </button>
                         @endif
@@ -110,7 +110,7 @@
                             </div>
                         </div>
                         <div>
-                            <a href="{{ route('upps.penyampaian-template.download', [$pengajuan->id, 'formulir_pembayaran']) }}" class="btn btn-success btn-md">
+                            <a href="{{ route('upps.penyampaian-template.download', [$pengajuan->id, 'template_formulir_pembayaran']) }}" class="btn btn-success btn-md">
                                 <i class="bi bi-file-earmark-pdf"></i> Lihat File
                             </a>
                         </div>

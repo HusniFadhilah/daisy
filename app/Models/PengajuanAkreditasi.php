@@ -359,6 +359,13 @@ class PengajuanAkreditasi extends Model
         return $this->hasOne(PengajuanPembayaran::class, 'id_pengajuan', 'id');
     }
 
+    public function formulirPembayaran()
+    {
+        return $this->hasOne(PengajuanDokumen::class, 'id_pengajuan')
+            ->where('jenis_dokumen', 'formulir_pembayaran')
+            ->where('is_latest', true);
+    }
+
     public function latestBorangImport()
     {
         return $this->hasOne(BorangImport::class, 'id_pengajuan')->latest();
@@ -725,7 +732,7 @@ class PengajuanAkreditasi extends Model
                     'prodi' => 'Permohonan Ditolak',
                 ],
                 'label_long_for' => [
-                    'de'   => 'Permohonan Akreditasi Ditolak oleh DE',
+                    'de'   => 'Permohonan Akreditasi Ditolak',
                     'upps' => 'Permohonan Akreditasi Ditolak oleh LAMDEPILAR',
                     'prodi' => 'Permohonan Akreditasi Ditolak oleh LAMDEPILAR',
                 ],
@@ -736,14 +743,14 @@ class PengajuanAkreditasi extends Model
             self::STATUS_SURAT_PERMOHONAN_DITERIMA => [
                 'label' => 'Permohonan Akreditasi Diterima',
                 'label_short_for' => [
-                    'de'   => 'Permohonan Diterima',
-                    'upps' => 'Permohonan Diterima',
-                    'prodi' => 'Permohonan Diterima',
+                    'de'   => 'Permohonan Telah Ditanggapi',
+                    'upps' => 'Permohonan Ditanggapi oleh LAMDEPILAR',
+                    'prodi' => 'Permohonan Ditanggapi oleh LAMDEPILAR',
                 ],
                 'label_long_for' => [
-                    'de'   => 'Permohonan Akreditasi Diterima',
-                    'upps' => 'Permohonan Akreditasi Diterima',
-                    'prodi' => 'Permohonan Akreditasi Diterima',
+                    'de'   => 'Telah Ditanggapi',
+                    'upps' => 'Permohonan Akreditasi Ditanggapi oleh LAMDEPILAR',
+                    'prodi' => 'Permohonan Akreditasi Ditanggapi oleh LAMDEPILAR',
                 ],
                 'bg' => 'bg-success',
                 'icon' => 'bi-envelope',
@@ -752,14 +759,14 @@ class PengajuanAkreditasi extends Model
             self::STATUS_SURAT_PENERIMAAN_DIKIRIM => [
                 'label' => 'Penerimaan Permohonan Akreditasi Dikirim',
                 'label_short_for' => [
-                    'de'   => 'Dokumen Penerimaan Terkirim',
-                    'upps' => 'Dokumen Penerimaan Diterima',
-                    'prodi' => 'Dokumen Penerimaan Diterima',
+                    'de'   => 'Penerimaan Terkirim',
+                    'upps' => 'Permohonan Akreditasi Diterima oleh LAMDEPILAR',
+                    'prodi' => 'Permohonan Akreditasi Diterima oleh LAMDEPILAR',
                 ],
                 'label_long_for' => [
                     'de'   => 'Penerimaan Permohonan Akreditasi Dikirim ke PS',
-                    'upps' => 'Dokumen Penerimaan Permohonan Akreditasi Diterima dari LAMDEPILAR',
-                    'prodi' => 'Dokumen Penerimaan Permohonan Akreditasi Diterima dari LAMDEPILAR',
+                    'upps' => 'Permohonan Akreditasi Diterima oleh LAMDEPILAR',
+                    'prodi' => 'Permohonan Akreditasi Diterima oleh LAMDEPILAR',
                 ],
                 'bg' => 'bg-success',
                 'icon' => 'bi-envelope',
@@ -773,7 +780,7 @@ class PengajuanAkreditasi extends Model
                     'prodi' => 'Template Diterima',
                 ],
                 'label_long_for' => [
-                    'de'   => 'Formulir & Template Dokumen Dikirim',
+                    'de'   => 'Telah Dikirim',
                     'upps' => 'Formulir & Template Dokumen Diterima dari LAMDEPILAR',
                     'prodi' => 'Formulir & Template Dokumen Diterima dari LAMDEPILAR',
                 ],
@@ -865,13 +872,13 @@ class PengajuanAkreditasi extends Model
                 'label' => 'File Dokumen Diterima',
                 'label_short_for' => [
                     'de'   => 'Draft Diterima',
-                    'upps' => 'Draft Diterima DE',
-                    'prodi' => 'Draft Diterima DE',
+                    'upps' => 'Draft Diterima LAMDEPILAR',
+                    'prodi' => 'Draft Diterima LAMDEPILAR',
                 ],
                 'label_long_for' => [
-                    'de'   => 'Draft Dokumen Diterima DE',
-                    'upps' => 'Draft Dokumen Diterima oleh DE',
-                    'prodi' => 'Draft Dokumen Diterima oleh DE',
+                    'de'   => 'Draft Dokumen Diterima',
+                    'upps' => 'Draft Dokumen Diterima oleh LAMDEPILAR',
+                    'prodi' => 'Draft Dokumen Diterima oleh LAMDEPILAR',
                 ],
                 'bg' => 'bg-info',
                 'icon' => 'bi-file-earmark-check',
@@ -961,13 +968,13 @@ class PengajuanAkreditasi extends Model
                 'label' => 'Draft Final Dokumen Diterima',
                 'label_short_for' => [
                     'de'   => 'Final Diterima',
-                    'upps' => 'Final Diterima DE',
-                    'prodi' => 'Final Diterima DE',
+                    'upps' => 'Final Diterima LAMDEPILAR',
+                    'prodi' => 'Final Diterima LAMDEPILAR',
                 ],
                 'label_long_for' => [
-                    'de'   => 'Draft Final Dokumen Diterima DE',
-                    'upps' => 'Draft Final Dokumen Diterima oleh DE',
-                    'prodi' => 'Draft Final Dokumen Diterima oleh DE',
+                    'de'   => 'Draft Final Dokumen Diterima',
+                    'upps' => 'Draft Final Dokumen Diterima oleh LAMDEPILAR',
+                    'prodi' => 'Draft Final Dokumen Diterima oleh LAMDEPILAR',
                 ],
                 'bg' => 'bg-info',
                 'icon' => 'bi-file-earmark-arrow-up',
@@ -1285,7 +1292,7 @@ class PengajuanAkreditasi extends Model
                     'prodi' => 'Arsip Tersedia',
                 ],
                 'label_long_for' => [
-                    'de'   => 'Arsip Disimpan oleh DE',
+                    'de'   => 'Arsip Disimpan',
                     'upps' => 'Arsip Tersedia',
                     'prodi' => 'Arsip Tersedia',
                 ],
@@ -1317,9 +1324,9 @@ class PengajuanAkreditasi extends Model
                     'prodi' => 'Ditolak',
                 ],
                 'label_long_for' => [
-                    'de'   => 'Ditolak oleh DE',
-                    'upps' => 'Ditolak oleh DE',
-                    'prodi' => 'Ditolak oleh DE',
+                    'de'   => 'Telah Ditolak',
+                    'upps' => 'Telah Ditolak oleh LAMDEPILAR',
+                    'prodi' => 'Telah Ditolak oleh LAMDEPILAR',
                 ],
                 'bg' => 'bg-danger',
                 'icon' => 'bi-x-octagon',
@@ -1333,7 +1340,7 @@ class PengajuanAkreditasi extends Model
                     'prodi' => 'Reminder Diterima',
                 ],
                 'label_long_for' => [
-                    'de'   => 'Reminder Pengiriman Dokumen Terkirim (oleh DE)',
+                    'de'   => 'Reminder Pengiriman Dokumen Terkirim',
                     'upps' => 'Reminder Pengiriman Dokumen Diterima dari LAMDEPILAR',
                     'prodi' => 'Reminder Pengiriman Dokumen Diterima dari LAMDEPILAR',
                 ],
@@ -1799,7 +1806,7 @@ class PengajuanAkreditasi extends Model
             'surat_penerimaan_de' => match ($status) {
                 self::STATUS_SURAT_PERMOHONAN_DITERIMA =>
                 $audience === 'de'
-                    ? $badge('bg-warning', 'Permohonan Akreditasi sudah diterima. Menunggu pengiriman dokumen penerimaan')
+                    ? $badge('bg-warning', 'Permohonan Akreditasi telah diterima. Menunggu pengiriman dokumen penerimaan')
                     : $badge('bg-warning', 'Menunggu Dokumen Penerimaan Permohonan Akreditasi dari LAMDEPILAR'),
 
                 self::STATUS_SURAT_PENERIMAAN_DIKIRIM =>

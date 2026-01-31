@@ -345,7 +345,7 @@ class PenugasanAKController extends Controller
             if ($exists) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'User sudah ditugaskan dengan role ini untuk AK'
+                    'message' => 'User telah ditugaskan dengan role ini untuk AK'
                 ], 422);
             }
 
@@ -469,7 +469,7 @@ class PenugasanAKController extends Controller
             if ($hasPenilaian) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'User tidak bisa dihapus karena sudah melakukan penilaian.'
+                    'message' => 'User tidak bisa dihapus karena telah melakukan penilaian.'
                 ], 422);
             }
 

@@ -485,7 +485,7 @@ class DeskEvaluatorController extends Controller
             $pengajuan,
             $oldStatus,
             PengajuanAkreditasi::STATUS_MENUNGGU_PEMBAYARAN,
-            'Template LED/LKPS dan formulir pembayaran sudah lengkap. Menunggu pembayaran dari prodi.'
+            'Formulir pembayaran dan template dokumen sudah lengkap. Menunggu pembayaran dari PS.'
         );
     }
 

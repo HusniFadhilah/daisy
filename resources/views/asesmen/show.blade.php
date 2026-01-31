@@ -99,7 +99,7 @@
 
                         <div class="col-md-6 my-2">
                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h6 class="fw-bold mb-3">Yang Sudah Ditugaskan (AK):</h6>
+                                <h6 class="fw-bold mb-3">Yang Telah Ditugaskan (AK):</h6>
                                 <div class="btn-group btn-group-sm">
                                     <button type="button" class="btn btn-outline-secondary" id="btnReorderAK" title="Reorder Asesor" onclick="reorderAsesor({ asesmenId: {{ $asesmen->id }}, jenisAsesmen: 'ak' })">
                                         <i class="bi bi-arrow-down-up"></i> Urutkan Ulang Asesor
@@ -147,7 +147,7 @@
 
                         <div class="col-md-6 my-2">
                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h6 class="fw-bold mb-3">Yang Sudah Ditugaskan (AL):</h6>
+                                <h6 class="fw-bold mb-3">Yang Telah Ditugaskan (AL):</h6>
                                 <div class="btn-group btn-group-sm">
                                     <button type="button" class="btn btn-outline-secondary" id="btnReorderAL" title="Reorder Asesor" onclick="reorderAsesor({ asesmenId: {{ $asesmen->id }}, jenisAsesmen: 'al' })">
                                         <i class="bi bi-arrow-down-up"></i> Reorder Asesor
@@ -1012,7 +1012,7 @@
                 if (!data.data.requirements_met) {
                     message += '\n\n⚠️ ' + data.data.missing_requirements.join(', ');
                 } else {
-                    message += '\n\n✅ Persyaratan sudah terpenuhi!';
+                    message += '\n\n✅ Persyaratan telah terpenuhi!';
                 }
 
                 await Swal.fire({

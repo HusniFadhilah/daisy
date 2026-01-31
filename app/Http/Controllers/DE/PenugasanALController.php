@@ -333,7 +333,7 @@ class PenugasanALController extends Controller
             if ($exists) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Asesor sudah ditugaskan untuk AL ini'
+                    'message' => 'Asesor telah ditugaskan untuk AL ini'
                 ], 422);
             }
 
@@ -442,7 +442,7 @@ class PenugasanALController extends Controller
             if ($hasPenilaian) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Asesor tidak bisa dihapus karena sudah melakukan penilaian.'
+                    'message' => 'Asesor tidak bisa dihapus karena telah melakukan penilaian.'
                 ], 422);
             }
 

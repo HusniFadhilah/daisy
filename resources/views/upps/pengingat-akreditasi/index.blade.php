@@ -61,6 +61,22 @@
         </div>
     </div>
 
+    <!-- Expiring Accreditation Alert (seperti Pemetaan) -->
+    <!-- Expiring Accreditation Alert -->
+    @if($expiringStats['has_expiring'])
+    <div class="alert alert-warning alert-permanent fade show" style="border-left: 4px solid #ffc107;">
+        <div class="d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-exclamation-triangle-fill" style="font-size: 2rem; margin-right: 1rem;"></i>
+                <div>
+                    <strong style="font-size: 1rem;">Perhatian!</strong>
+                    Jumlah program studi yang habis masa akreditasinya adalah sebanyak <strong>{{ $expiringStats['count'] }}</strong>. Mohon segera mengajukan permohonan akreditasi minimal 6 bulan sebelum masa akreditasi habis.
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <!-- Statistics Cards -->
     <div class="row mb-4">
         <div class="col-lg-3 col-md-6 mb-3">
@@ -100,7 +116,7 @@
         <div class="col-lg-3 col-md-6 mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Pengingat Masa Akreditasi Sudah Direspon</h6>
+                    <h6 class="mb-2 opacity-75">Pengingat Masa Akreditasi Telah Direspon</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['direspon'] }}</h2>
@@ -178,7 +194,7 @@
             <div class="card">
                 <div class="card-header bg-white">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Daftar Pengingat</h5>
+                        <h5 class="mb-0">Daftar Pengingat Masa Akreditasi</h5>
                         <div>
                             <span class="text-muted">Total: <strong>{{ $pengingatList->total() }}</strong></span>
                         </div>
@@ -192,7 +208,8 @@
                                 <tr>
                                     <th width="5%">#</th>
                                     <th width="25%">Program Studi</th>
-                                    <th width="15%">Tanggal Dikirim</th>
+                                    <th width="15%">Tanggal Akreditasi Kedaluwarsa</th>
+                                    <th width="15%">Tanggal Pengingat Dikirim</th>
                                     <th width="15%">Pengirim</th>
                                     <th width="15%">Status</th>
                                     <th width="15%" class="text-center">Aksi</th>
@@ -208,6 +225,9 @@
                                         <small class="text-muted">
                                             {{ $pengingat->studyProgram->university->name }}
                                         </small>
+                                    </td>
+                                    <td>
+                                        {!! $pengingat->studyProgram->status_badge_kedaluwarsa !!}
                                     </td>
                                     <td>
                                         <small>

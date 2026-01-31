@@ -236,7 +236,7 @@ class PenetapanHasilAkreditasiController extends Controller
 
         // Validasi status
         if ($pengajuan->status !== PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN) {
-            return back()->with('error', 'Hanya hasil yang sudah ditetapkan yang dapat dibatalkan.');
+            return back()->with('error', 'Hanya hasil yang telah ditetapkan yang dapat dibatalkan.');
         }
 
         DB::beginTransaction();

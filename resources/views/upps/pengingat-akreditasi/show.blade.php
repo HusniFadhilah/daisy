@@ -41,7 +41,7 @@
             @elseif($pengingat->status === \App\Models\PengingatAkreditasi::STATUS_DIRESPON)
             <div class="alert alert-success alert-permanent">
                 <i class="bi bi-check-circle"></i>
-                <strong>Pengingat sudah direspon!</strong>
+                <strong>Pengingat telah direspon!</strong>
                 Respon dikirim pada {{ $pengingat->tanggal_direspon->format('d M Y H:i') }}
                 ({{ $pengingat->durasi_respon }} hari setelah pengingat dikirim)
             </div>
@@ -129,8 +129,9 @@
                             <td>: {{ $pengingat->studyProgram->degreeLevel->name ?? '-' }}</td>
                         </tr>
                         <tr>
-                            <th>Tahun Akreditasi</th>
-                            <td>: {{ $pengingat->tahun_akreditasi }}</td>
+                            <th>Tanggal Kedaluwarsa</th>
+                            <td>: <span>{!! $pengingat->studyProgram->status_badge_kedaluwarsa !!}</span>
+                            </td>
                         </tr>
                     </table>
 

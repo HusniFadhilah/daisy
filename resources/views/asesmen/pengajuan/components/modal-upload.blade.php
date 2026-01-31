@@ -99,7 +99,7 @@ $latestImport = $pengajuan->latestBorangImport;
 <!-- Not Processed Yet -->
 <div class="alert alert-info alert-permanent">
     <i class="bi bi-info-circle"></i>
-    <strong>Draft LED Anda sudah diupload!</strong><br>
+    <strong>Draft LED Anda telah diupload!</strong><br>
     File: <strong>{{ $draftBorang->original_filename }}</strong> ({{ $draftBorang->file_size_formatted ?? '' }})
 </div>
 

@@ -213,7 +213,7 @@ class PenyampaianHasilAkreditasiController extends Controller
 
             // Check if already finalized
             if ($hasil->isAlFinalized()) {
-                throw new \Exception('Hasil AL sudah difinalisasi sebelumnya.');
+                throw new \Exception('Hasil AL telah difinalisasi sebelumnya.');
             }
 
             // Recalculate before finalize (ensure latest data)

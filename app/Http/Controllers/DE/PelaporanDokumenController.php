@@ -257,7 +257,7 @@ class PelaporanDokumenController extends Controller
                 'label' => 'Menunggu Finalisasi',
                 'class' => 'warning',
                 'icon' => 'hourglass-split',
-                'description' => 'Laporan validasi sudah diupload, menunggu finalisasi dari validator'
+                'description' => 'Laporan validasi telah diupload, menunggu finalisasi dari validator'
             ];
         }
 

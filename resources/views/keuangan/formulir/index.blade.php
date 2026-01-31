@@ -57,7 +57,7 @@
                         <div>
                             <h6 class="mb-1 opacity-75">Total Formulir</h6>
                             <h2 class="mb-0 fw-bold">{{ $stats['total'] }}</h2>
-                            <small class="opacity-75">Formulir yang sudah diupload</small>
+                            <small class="opacity-75">Formulir yang telah diupload</small>
                         </div>
                         <div class="bg-white bg-opacity-25 rounded p-3">
                             <i class="bi bi-file-earmark-check fs-1"></i>

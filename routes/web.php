@@ -463,6 +463,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/', [\App\Http\Controllers\UPPS\SuratPermohonanController::class, 'index']);
             Route::get('/{id}', [\App\Http\Controllers\UPPS\SuratPermohonanController::class, 'show'])->name('.show');
             Route::get('/{id}/download', [\App\Http\Controllers\UPPS\SuratPermohonanController::class, 'download'])->name('.download');
+            Route::get('/download-template-surat/{degree_level}', [\App\Http\Controllers\UPPS\SuratPermohonanController::class, 'downloadTemplateSurat'])->name('.download-template-surat');
         });
 
         Route::prefix('penerimaan-permohonan')->name('.penerimaan-permohonan')->group(function () {
@@ -490,14 +491,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
 
         Route::prefix('penerimaan-dokumen')->name('.penerimaan-dokumen')->group(function () {
-            Route::get('/', [App\Http\Controllers\UPPS\PenerimaanDokumenController::class, 'index']);
+            Route::get('/', [\App\Http\Controllers\UPPS\PenerimaanDokumenController::class, 'index']);
+            Route::get('/{id}', [\App\Http\Controllers\UPPS\PenerimaanDokumenController::class, 'show'])->name('.show');
+            Route::get('/{id}/upload', [\App\Http\Controllers\UPPS\PenerimaanDokumenController::class, 'showUploadForm'])->name('.upload.form');
+            Route::post('/{id}/upload', [\App\Http\Controllers\UPPS\PenerimaanDokumenController::class, 'uploadDokumen'])->name('.upload');
+            Route::get('/dokumen/{id}/download', [\App\Http\Controllers\UPPS\PenerimaanDokumenController::class, 'download'])->name('.dokumen.download');
+        });
+
+        Route::prefix('validasi-dokumen')->name('.validasi-dokumen')->group(function () {
+            Route::get('/', [\App\Http\Controllers\UPPS\ValidasiDokumenController::class, 'index']);
+            Route::get('/{id}', [\App\Http\Controllers\UPPS\ValidasiDokumenController::class, 'show'])->name('.show');
         });
 
         Route::middleware('under.dev')->group(function () {
-            Route::prefix('validasi-dokumen')->name('.validasi-dokumen')->group(function () {
-                Route::get('/', [App\Http\Controllers\UPPS\ValidasiDokumenController::class, 'index']);
-            });
-
             Route::prefix('pelaporan-dokumen')->name('.pelaporan-dokumen')->group(function () {
                 Route::get('/', [App\Http\Controllers\UPPS\PelaporanDokumenController::class, 'index']);
             });
@@ -532,6 +538,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
             Route::prefix('masa-sanggah')->name('.masa-sanggah')->group(function () {
                 Route::get('/', [App\Http\Controllers\UPPS\MasaSanggahController::class, 'index']);
+            });
+
+            Route::prefix('permohonan-banding')->name('.permohonan-banding')->group(function () {
+                Route::get('/', [App\Http\Controllers\UPPS\PermohonanBandingController::class, 'index']);
             });
 
             Route::prefix('pelaksanaan-banding')->name('.pelaksanaan-banding')->group(function () {

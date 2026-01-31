@@ -6,11 +6,13 @@ namespace App\Http\Controllers\UPPS;
 use App\Http\Controllers\Controller;
 use App\Models\PengingatAkreditasi;
 use App\Models\PengajuanAkreditasi;
+use App\Models\StudyProgram;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Carbon\Carbon;
 
 class PengingatAkreditasiController extends Controller
 {
@@ -55,8 +57,11 @@ class PengingatAkreditasiController extends Controller
             ->paginate(20)
             ->appends($request->query());
 
-        // Statistics
+        // Statistics (pengingat yang sudah dikirim)
         $stats = $this->calculateStatistics($studyProgramIds);
+
+        // Calculate expiring accreditations (seperti di Pemetaan)
+        $expiringStats = $this->calculateExpiringAccreditations($studyProgramIds);
 
         // Get tahun list for filter
         $tahunList = PengingatAkreditasi::whereIn('id_program_studi', $studyProgramIds)
@@ -68,7 +73,8 @@ class PengingatAkreditasiController extends Controller
         return view('upps.pengingat-akreditasi.index', compact(
             'pengingatList',
             'stats',
-            'tahunList'
+            'tahunList',
+            'expiringStats'
         ));
     }
 
@@ -118,7 +124,7 @@ class PengingatAkreditasiController extends Controller
         if ($pengingat->status !== PengingatAkreditasi::STATUS_BELUM_DIRESPON) {
             return redirect()
                 ->route('upps.pengingat-akreditasi.show', $pengingat->id)
-                ->with('error', 'Pengingat ini sudah direspon.');
+                ->with('error', 'Pengingat ini telah direspon.');
         }
 
         return view('upps.pengingat-akreditasi.respond', compact('pengingat'));
@@ -152,7 +158,7 @@ class PengingatAkreditasiController extends Controller
 
         // Validate not yet responded
         if ($pengingat->status !== PengingatAkreditasi::STATUS_BELUM_DIRESPON) {
-            return back()->with('error', 'Pengingat ini sudah direspon.');
+            return back()->with('error', 'Pengingat ini telah direspon.');
         }
 
         DB::beginTransaction();
@@ -224,7 +230,7 @@ class PengingatAkreditasiController extends Controller
     }
 
     /**
-     * Calculate statistics
+     * Calculate statistics (pengingat yang sudah dikirim)
      */
     private function calculateStatistics($studyProgramIds): array
     {
@@ -244,6 +250,35 @@ class PengingatAkreditasiController extends Controller
             'kedaluwarsa' => (clone $baseQuery)
                 ->where('status', PengingatAkreditasi::STATUS_KEDALUWARSA)
                 ->count(),
+        ];
+    }
+
+    /**
+     * Calculate expiring accreditations (seperti logic di Pemetaan)
+     * Menghitung prodi yang masa akreditasinya akan berakhir di bulan target
+     */
+    private function calculateExpiringAccreditations($studyProgramIds, int $reminderMonths = 7): array
+    {
+        $now = now();
+
+        // Target bulan (now + N bulan) -> window 1 bulan penuh
+        $targetMonth = $now->copy()->addMonths($reminderMonths);
+        $targetStart = $targetMonth->copy()->startOfMonth();
+        $targetEnd   = $targetMonth->copy()->endOfMonth();
+
+        // Hitung jumlah prodi yang masa akreditasinya berakhir di bulan target
+        $expiringCount = StudyProgram::whereIn('id', $studyProgramIds)
+            ->whereBetween('tanggal_kedaluwarsa', [$targetStart, $targetEnd])
+            ->whereNotNull('tanggal_kedaluwarsa')
+            ->count();
+
+        return [
+            'count' => $expiringCount,
+            'has_expiring' => $expiringCount > 0,
+            'months_ahead' => $reminderMonths,
+            'target_month_label' => $targetMonth->locale('id')->translatedFormat('F Y'),
+            'target_start' => $targetStart,
+            'target_end' => $targetEnd,
         ];
     }
 }

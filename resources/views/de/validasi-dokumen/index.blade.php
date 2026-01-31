@@ -62,7 +62,7 @@
                             <i class="bi bi-clipboard-check"></i>
                         </div>
                     </div>
-                    <small class="opacity-75">Validator telah ditugaskan oleh DE untuk memvalidasi Dokumen</small>
+                    <small class="opacity-75">Validator telah ditugaskan oleh LAMDEPILAR untuk memvalidasi Dokumen</small>
                 </div>
             </div>
         </div>
@@ -77,7 +77,7 @@
                             <i class="bi bi-hourglass-split"></i>
                         </div>
                     </div>
-                    <small class="opacity-75">Validator telah ditugaskan oleh DE untuk memvalidasi dokumen, tetapi belum ada status menerima/menolak tawaran</small>
+                    <small class="opacity-75">Validator telah ditugaskan oleh LAMDEPILAR untuk memvalidasi dokumen, tetapi belum ada status menerima/menolak tawaran</small>
                 </div>
             </div>
         </div>
@@ -92,7 +92,7 @@
                             <i class="bi bi-clock"></i>
                         </div>
                     </div>
-                    <small class="opacity-75">Validator telah menerima tugas validasi dokumen dari DE, tetapi belum dikerjakan</small>
+                    <small class="opacity-75">Validator telah menerima tugas validasi dokumen dari LAMDEPILAR, tetapi belum dikerjakan</small>
                 </div>
             </div>
         </div>
@@ -107,7 +107,7 @@
                             <i class="bi bi-arrow-repeat"></i>
                         </div>
                     </div>
-                    <small class="opacity-75">Validator telah menerima tugas validasi dokumen dari DE, dan sedang mengerjakan validasi dokumen</small>
+                    <small class="opacity-75">Validator telah menerima tugas validasi dokumen dari LAMDEPILAR, dan sedang mengerjakan validasi dokumen</small>
                 </div>
             </div>
         </div>

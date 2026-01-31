@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use App\Libraries\Date;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -190,6 +192,24 @@ class StudyProgram extends Model
         } else {
             return $daysLeft . ' hari';
         }
+    }
+
+    public function getStatusBadgeKedaluwarsaAttribute()
+    {
+        $tanggal = Carbon::parse($this->tanggal_kedaluwarsa);
+        $now = now();
+
+        $diff = $now->diff($tanggal);
+        $isExpired = $now->diffInDays($tanggal, false) < 0;
+
+        $class = $isExpired ? 'text-muted' : 'text-danger';
+
+        return '
+        ' . Date::tglIndo($tanggal) . '<br>
+        <small class="' . $class . '">
+            ' . $diff->y . ' tahun ' . $diff->m . ' bulan ' . $diff->d . ' hari
+        </small>
+    ';
     }
 
     // protected static function booted()

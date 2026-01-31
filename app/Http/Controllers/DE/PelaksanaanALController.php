@@ -257,7 +257,7 @@ class PelaksanaanALController extends Controller
                 ], 404);
             }
 
-            // Validasi: AL harus sudah selesai (asesor sudah submit)
+            // Validasi: AL harus telah selesai (asesor telah submit)
             $hasAlSelesai = $pengajuan->statusLog()
                 ->where('status_to', PengajuanAkreditasi::STATUS_AL_SELESAI)
                 ->exists();
@@ -289,7 +289,7 @@ class PelaksanaanALController extends Controller
             if ($exists) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Validator sudah ditugaskan untuk pelaporan AL ini'
+                    'message' => 'Validator telah ditugaskan untuk pelaporan AL ini'
                 ], 422);
             }
 
@@ -373,7 +373,7 @@ class PelaksanaanALController extends Controller
             if ($hasBeritaAcara) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Validator tidak bisa dihapus karena sudah mulai membuat berita acara.'
+                    'message' => 'Validator tidak bisa dihapus karena telah mulai membuat berita acara.'
                 ], 422);
             }
 
@@ -435,7 +435,7 @@ class PelaksanaanALController extends Controller
             })
             ->count();
 
-        // Sedang pelaporan: status saat ini AL_SELESAI dan sudah ada validator
+        // Sedang pelaporan: status saat ini AL_SELESAI dan telah ada validator
         $sedangPelaporan = (clone $base)
             ->where('status', PengajuanAkreditasi::STATUS_AL_SELESAI)
             ->whereHas('asesmen.asesmenUserRoles', function ($q) {

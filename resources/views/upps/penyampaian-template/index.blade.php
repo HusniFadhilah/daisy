@@ -2,7 +2,7 @@
 
 @extends('layouts.template.app')
 
-@section('title', 'Pengiriman Formulir dan Template Dokumen')
+@section('title', 'Formulir Pembayaran dan Template Dokumen')
 
 @push('styles')
 <style>
@@ -58,7 +58,7 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item active">Pengiriman Formulir dan Template Dokumen</li>
+            <li class="breadcrumb-item active">Formulir Pembayaran dan Template Dokumen</li>
         </ol>
     </nav>
 
@@ -66,7 +66,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">
-                <i class="bi bi-file-earmark-arrow-down"></i> Pengiriman Formulir dan Template Dokumen
+                <i class="bi bi-file-earmark-arrow-down"></i> Formulir Pembayaran dan Template Dokumen
             </h4>
             <p class="text-muted mb-0">Formulir dan template dokumen akreditasi dari LAMDEPILAR</p>
         </div>
@@ -77,11 +77,11 @@
         <div class="col-lg-4 col-md-6 mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Total Pengiriman</h6>
+                    <h6 class="mb-2 opacity-75">Total Formulir Pembayaran dan Template Dokumen</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['total'] }}</h2>
-                            <small class="opacity-75">Semua pengiriman</small>
+                            <small class="opacity-75">Jumlah formulir dan template dokumen yang telah diterima</small>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
                             <i class="bi bi-file-earmark-arrow-down"></i>
@@ -98,7 +98,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['menunggu'] }}</h2>
-                            <small class="opacity-75">Template belum dikirim</small>
+                            <small class="opacity-75">Formulir pembayaran dan template dokumen belum dikirim oleh LAMDEPILAR</small>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
                             <i class="bi bi-hourglass-split"></i>
@@ -115,7 +115,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['diterima'] }}</h2>
-                            <small class="opacity-75">Template telah dikirim</small>
+                            <small class="opacity-75">Formulir pembayaran dan template dokumen telah dikirim oleh LAMDEPILAR</small>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
                             <i class="bi bi-check-circle"></i>
@@ -190,7 +190,7 @@
             <div class="card">
                 <div class="card-header bg-white">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Daftar Pengiriman Formulir dan Template Dokumen</h5>
+                        <h5 class="mb-0">Daftar Formulir Pembayaran dan Template Dokumen</h5>
                         <div>
                             <span class="text-muted">Total: <strong>{{ $pengajuans->total() }}</strong></span>
                         </div>
@@ -205,9 +205,9 @@
                                     <th width="5%">#</th>
                                     <th width="18%">Permohonan Akreditasi</th>
                                     <th width="20%">Program Studi</th>
-                                    <th width="12%">Tanggal Pengiriman Template</th>
+                                    <th width="12%">Tanggal Template Dikirim</th>
                                     <th width="15%">Formulir dan Template Dokumen</th>
-                                    <th width="15%">Status Pengiriman Formulir dan Template</th>
+                                    <th width="15%">Status Formulir dan Template</th>
                                     <th width="5%" class="text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -256,21 +256,21 @@
                                     <td>
                                         <div class="d-flex flex-column gap-1">
                                             <div class="dokumen-indicator">
-                                                @if($hasTemplateLed)
-                                                <i class="bi bi-check-circle-fill text-success"></i>
-                                                <span class="text-success">Template Dokumen</span>
-                                                @else
-                                                <i class="bi bi-x-circle-fill text-muted"></i>
-                                                <span class="text-muted">Template Dokumen</span>
-                                                @endif
-                                            </div>
-                                            <div class="dokumen-indicator">
                                                 @if($hasFormulirPembayaran)
                                                 <i class="bi bi-check-circle-fill text-success"></i>
                                                 <span class="text-success">Formulir Pembayaran</span>
                                                 @else
                                                 <i class="bi bi-x-circle-fill text-muted"></i>
                                                 <span class="text-muted">Formulir Pembayaran</span>
+                                                @endif
+                                            </div>
+                                            <div class="dokumen-indicator">
+                                                @if($hasTemplateLed)
+                                                <i class="bi bi-check-circle-fill text-success"></i>
+                                                <span class="text-success">Template Dokumen</span>
+                                                @else
+                                                <i class="bi bi-x-circle-fill text-muted"></i>
+                                                <span class="text-muted">Template Dokumen</span>
                                                 @endif
                                             </div>
                                         </div>

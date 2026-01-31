@@ -197,7 +197,7 @@
         <h3>🎯 Langkah Selanjutnya:</h3>
         <ol>
             <li>Validator akan melapor hasil validasi ke Dewan Eksekutif (DE)</li>
-            <li>Pastikan pembayaran sudah dilakukan</li>
+            <li>Pastikan pembayaran telah dilakukan</li>
             <li>Tunggu approval untuk lanjut ke tahap Asesmen Kecukupan (AK)</li>
         </ol>
 
@@ -210,7 +210,7 @@
         <div style="margin-top: 20px; padding: 15px; background: #d1ecf1; border-left: 4px solid #0dcaf0; border-radius: 4px;">
             <p style="margin: 0; font-size: 13px; color: #055160;">
                 <strong>ℹ️ Informasi:</strong> LED Anda telah memenuhi standar validasi.
-                Proses akreditasi akan dilanjutkan setelah pembayaran divalidasi dan approval dari Desk Evaluator.
+                Proses akreditasi akan dilanjutkan setelah pembayaran divalidasi dan persetujuan dari LAMDEPILAR.
             </p>
         </div>
     </div>

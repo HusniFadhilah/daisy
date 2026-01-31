@@ -197,7 +197,7 @@ $isComplete = $progress['percentage'] == 100;
                             </div>
                             <div class="flex-grow-1">
                                 <h5 class="alert-heading mb-2">
-                                    <i class="bi bi-check-circle"></i> Penilaian Sudah Lengkap!
+                                    <i class="bi bi-check-circle"></i> Penilaian Telah Lengkap!
                                 </h5>
                                 <p class="mb-2">
                                     Anda telah menyelesaikan <strong>semua {{ $progress['total'] }} elemen penilaian</strong>.
@@ -219,7 +219,7 @@ $isComplete = $progress['percentage'] == 100;
                     <div class="alert alert-info alert-dismissible alert-permanent mb-3">
                         <i class="bi bi-info-circle me-2"></i>
                         <strong>Progress Penilaian:</strong>
-                        Anda sudah menilai {{ $progress['completed'] }} dari {{ $progress['total'] }} elemen
+                        Anda telah menilai {{ $progress['completed'] }} dari {{ $progress['total'] }} elemen
                         (<strong>{{ $progress['percentage'] }}%</strong>).
                         Selesaikan <strong>{{ $progress['remaining'] }} elemen</strong> lagi untuk dapat melakukan finalisasi.
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -229,7 +229,7 @@ $isComplete = $progress['percentage'] == 100;
                     @if($isSubmittedOnly && !$isApproved)
                     <div class="alert alert-info alert-permanent alert-dismissible mb-3">
                         <i class="bi bi-info-circle me-2"></i>
-                        <strong>Sudah Di-Submit!</strong> Penilaian Anda sedang menunggu validasi dari LAMDEPILAR.
+                        <strong>Telah Di-Submit!</strong> Penilaian Anda sedang menunggu validasi dari LAMDEPILAR.
                         @if(app()->environment('local'))
                         <button type="button" class="btn btn-sm btn-outline-secondary ms-2 mt-2" id="btnUnsubmit">
                             <i class="bi bi-arrow-counterclockwise"></i> Batalkan Submit
@@ -256,7 +256,7 @@ $isComplete = $progress['percentage'] == 100;
 
                             <small class="d-block text-muted mt-1">
                                 <i class="bi bi-info-circle"></i>
-                                Pastikan semua elemen sudah dinilai sebelum mengirim
+                                Pastikan semua elemen telah dinilai sebelum mengirim
                             </small>
 
                             @elseif($isSubmittedOnly)
@@ -340,7 +340,7 @@ $isComplete = $progress['percentage'] == 100;
                             </div>
                             <div class="col-md-3">
                                 <h3 class="mb-0 text-success" id="summaryCompleted"><b>{{ $progress['completed'] }}</b></h3>
-                                <small class="text-muted">Sudah Dinilai</small>
+                                <small class="text-muted">Telah Dinilai</small>
                             </div>
                             <div class="col-md-3">
                                 <h3 class="mb-0 text-warning" id="summaryRemaining"><b>{{ $progress['remaining'] }}</b></h3>
@@ -476,7 +476,7 @@ $isComplete = $progress['percentage'] == 100;
 
                                             @if($hasPenilaian)
                                             <span class="badge bg-success status-badge">
-                                                <i class="bi bi-check-circle"></i> Sudah Dinilai
+                                                <i class="bi bi-check-circle"></i> Telah Dinilai
                                             </span>
                                             @else
                                             <span class="badge bg-warning text-dark status-badge">
@@ -836,7 +836,7 @@ $isComplete = $progress['percentage'] == 100;
                         </h6>
                         <ul class="mb-0 small">
                             <li>File harus berformat Excel (.xlsx atau .xls)</li>
-                            <li>Gunakan template yang sudah disediakan</li>
+                            <li>Gunakan template yang telah disediakan</li>
                             <li>Jangan ubah struktur atau nama sheet</li>
                             <li>Kolom <strong>Kode Elemen (E)</strong> tidak boleh diubah</li>
                             <li>Isi penilaian pada kolom I-M (pilih salah satu kategori, dan berikan justifikasi), pada cell warna kuning</li>
@@ -1122,7 +1122,7 @@ $isComplete = $progress['percentage'] == 100;
                         <li>Validator akan memvalidasi penilaian Anda</li>
                         <li>Jika perlu revisi, Anda akan diminta memperbaiki</li>
                     </ul>
-                    <p class="text-primary"><i class="bi bi-info-circle"></i> Total: <strong>${total} elemen</strong> sudah dinilai</p>
+                    <p class="text-primary"><i class="bi bi-info-circle"></i> Total: <strong>${total} elemen</strong> telah dinilai</p>
                 </div>
             `
                 , showCancelButton: true
@@ -1276,7 +1276,7 @@ $isComplete = $progress['percentage'] == 100;
             if (hasPenilaian) {
                 badge.classList.remove('bg-warning', 'text-dark');
                 badge.classList.add('bg-success');
-                badge.innerHTML = '<i class="bi bi-check-circle"></i> Sudah Dinilai';
+                badge.innerHTML = '<i class="bi bi-check-circle"></i> Telah Dinilai';
             } else {
                 badge.classList.remove('bg-success');
                 badge.classList.add('bg-warning', 'text-dark');
@@ -1587,7 +1587,7 @@ $isComplete = $progress['percentage'] == 100;
                 btnReset.addEventListener('click', function() {
                     Swal.fire({
                         title: 'Yakin ingin mereset?'
-                        , text: 'Semua penilaian yang sudah diisi akan dihapus.'
+                        , text: 'Semua penilaian yang telah diisi akan dihapus.'
                         , icon: 'warning'
                         , showCancelButton: true
                         , confirmButtonText: 'Ya, Reset'
@@ -1743,7 +1743,7 @@ $isComplete = $progress['percentage'] == 100;
                         const badge = card.querySelector('.badge.bg-warning');
                         if (badge) {
                             badge.className = 'badge bg-success';
-                            badge.innerHTML = '<i class="bi bi-check-circle"></i> Sudah Dinilai';
+                            badge.innerHTML = '<i class="bi bi-check-circle"></i> Telah Dinilai';
                         }
                     }
                     if (data.progress) {
@@ -2246,7 +2246,7 @@ $isComplete = $progress['percentage'] == 100;
                 // Add info message
                 const infoDiv = document.createElement('div');
                 infoDiv.className = 'alert alert-info alert-permanent mt-2';
-                infoDiv.innerHTML = '<i class="bi bi-info-circle"></i> Penilaian sudah di-submit, tidak bisa diedit.';
+                infoDiv.innerHTML = '<i class="bi bi-info-circle"></i> Penilaian telah di-submit, tidak bisa diedit.';
                 form.appendChild(infoDiv);
             });
 
@@ -2386,7 +2386,7 @@ $isComplete = $progress['percentage'] == 100;
                 , title: '⚠️ Reset Semua Penilaian?'
                 , html: `
             <div class="text-start">
-                <p><strong>PERHATIAN:</strong> Anda akan menghapus <strong class="text-danger">${completed} penilaian</strong> yang sudah dibuat!</p>
+                <p><strong>PERHATIAN:</strong> Anda akan menghapus <strong class="text-danger">${completed} penilaian</strong> yang telah dibuat!</p>
 
                 <div class="alert alert-danger alert-permanent mt-3">
                     <i class="bi bi-exclamation-triangle me-2"></i>

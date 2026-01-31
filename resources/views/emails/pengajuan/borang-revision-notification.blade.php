@@ -185,7 +185,7 @@
 
         <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 4px;">
             <p style="margin: 0; font-size: 13px; color: #6c757d;">
-                <strong>💡 Tips:</strong> Pastikan semua poin revisi sudah diperbaiki sebelum submit kembali.
+                <strong>💡 Tips:</strong> Pastikan semua poin revisi telah diperbaiki sebelum submit kembali.
                 Jika ada yang kurang jelas, Anda dapat menghubungi validator atau Desk Evaluator.
             </p>
         </div>

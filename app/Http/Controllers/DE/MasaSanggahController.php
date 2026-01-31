@@ -303,7 +303,7 @@ class MasaSanggahController extends Controller
             $info['badge_class'] = 'danger';
 
             $daysPassed = $now->diffInDays($selesai);
-            $info['countdown_text'] = "Sudah lewat {$daysPassed} hari";
+            $info['countdown_text'] = "Telah terlewat {$daysPassed} hari";
         }
 
         return $info;

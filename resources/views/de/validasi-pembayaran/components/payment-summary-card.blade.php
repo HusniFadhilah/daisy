@@ -24,7 +24,7 @@
                             <div class="p-3 border rounded bg-light">
                                 <h6 class="text-muted mb-2">Total Program Studi</h6>
                                 <h2 class="mb-0 fw-bold text-primary">***</h2>
-                                <small class="text-muted">Prodi yang sudah membayar</small>
+                                <small class="text-muted">Prodi yang telah membayar</small>
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -306,7 +306,7 @@
                 <div class="p-3 border rounded bg-light">
                     <h6 class="text-muted mb-2">Total Program Studi</h6>
                     <h2 class="mb-0 fw-bold text-primary">${summary.total_prodi}</h2>
-                    <small class="text-muted">Prodi yang sudah membayar</small>
+                    <small class="text-muted">Prodi yang telah membayar</small>
                 </div>
             </div>
             <div class="col-md-4">

@@ -1,8 +1,8 @@
-{{-- resources/views/upps/validasi-pembayaran/index.blade.php --}}
+{{-- resources/views/upps/validasi-dokumen/index.blade.php --}}
 
 @extends('layouts.template.app')
 
-@section('title', 'Validasi Pembayaran')
+@section('title', 'Validasi Dokumen')
 
 @push('styles')
 <style>
@@ -40,7 +40,7 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item active">Validasi Pembayaran</li>
+            <li class="breadcrumb-item active">Validasi Dokumen</li>
         </ol>
     </nav>
 
@@ -48,39 +48,39 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">
-                <i class="bi bi-credit-card"></i> Validasi Pembayaran
+                <i class="bi bi-clipboard-check"></i> Validasi Dokumen
             </h4>
-            <p class="text-muted mb-0">Invoice dan status pembayaran akreditasi</p>
+            <p class="text-muted mb-0">Tracking proses validasi dokumen akreditasi</p>
         </div>
     </div>
 
     <!-- Statistics Cards -->
-    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 mb-4">
-        <div class="col mb-3">
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Total Invoice</h6>
+                    <h6 class="mb-2 opacity-75">Total Validasi</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['total'] }}</h2>
-                            <small class="opacity-75">Semua invoice</small>
+                            <small class="opacity-75">Semua validasi</small>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
-                            <i class="bi bi-receipt"></i>
+                            <i class="bi bi-clipboard-check"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Menunggu Pembayaran</h6>
+                    <h6 class="mb-2 opacity-75">Menunggu Validasi</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['menunggu_pembayaran'] }}</h2>
-                            <small class="opacity-75">Invoice belum dibayar</small>
+                            <h2 class="mb-0 fw-bold">{{ $stats['menunggu_validasi'] }}</h2>
+                            <small class="opacity-75">Belum dimulai</small>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
                             <i class="bi bi-hourglass-split"></i>
@@ -90,16 +90,16 @@
             </div>
         </div>
 
-        <div class="col mb-3">
+        <div class="col-lg-3 col-md-6 mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Menunggu Validasi</h6>
+                    <h6 class="mb-2 opacity-75">Sedang Divalidasi</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['menunggu_verifikasi'] }}</h2>
-                            <small class="opacity-75">Telah upload formulir & bukti pembayaran, menunggu validasi bagian keuangan</small>
+                            <h2 class="mb-0 fw-bold">{{ $stats['sedang_validasi'] }}</h2>
+                            <small class="opacity-75">Dalam proses</small>
                         </div>
-                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;" class="px-2">
+                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
                             <i class="bi bi-clock-history"></i>
                         </div>
                     </div>
@@ -107,34 +107,34 @@
             </div>
         </div>
 
-        <div class="col mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #868f96 0%, #596164 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Tervalidasi</h6>
+                    <h6 class="mb-2 opacity-75">Perlu Revisi</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['terverifikasi'] }}</h2>
-                            <small class="opacity-75">Pembayaran telah divalidasi bagian keuangan</small>
+                            <h2 class="mb-0 fw-bold">{{ $stats['perlu_revisi'] }}</h2>
+                            <small class="opacity-75">Perlu perbaikan</small>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
-                            <i class="bi bi-check-circle"></i>
+                            <i class="bi bi-arrow-repeat"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #868f96 0%, #596164 100%);">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Upload Ulang</h6>
+                    <h6 class="mb-2 opacity-75">Tervalidasi</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['upload_ulang'] }}</h2>
-                            <small class="opacity-75">Upload formulir & bukti pembayaran perlu diperbaiki</small>
+                            <h2 class="mb-0 fw-bold">{{ $stats['tervalidasi'] }}</h2>
+                            <small class="opacity-75">Selesai valid</small>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
-                            <i class="bi bi-arrow-repeat"></i>
+                            <i class="bi bi-patch-check"></i>
                         </div>
                     </div>
                 </div>
@@ -153,32 +153,35 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form method="GET" action="{{ route('upps.validasi-pembayaran') }}">
+                    <form method="GET" action="{{ route('upps.validasi-dokumen') }}">
                         <!-- Search -->
                         <div class="mb-3">
-                            <label class="form-label text-white">Cari</label>
-                            <input type="text" name="search" class="form-control" placeholder="Invoice/Nomor permohonan..." value="{{ request('search') }}">
+                            <label class="form-label text-white">Cari Permohonan</label>
+                            <input type="text" name="search" class="form-control" placeholder="Nomor/Nama prodi..." value="{{ request('search') }}">
                         </div>
 
                         <!-- Status -->
                         <div class="mb-3">
-                            <label class="form-label text-white">Status Pembayaran</label>
+                            <label class="form-label text-white">Status Validasi</label>
                             <select name="status" class="form-select">
                                 <option value="">Semua Status</option>
-                                <option value="menunggu_pembayaran" {{ request('status') == 'menunggu_pembayaran' ? 'selected' : '' }}>
-                                    Menunggu Pembayaran
+                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI ? 'selected' : '' }}>
+                                    Dokumen Diterima Sistem
                                 </option>
-                                <option value="menunggu_verifikasi" {{ request('status') == 'menunggu_verifikasi' ? 'selected' : '' }}>
+                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING ? 'selected' : '' }}>
                                     Menunggu Validasi
                                 </option>
-                                <option value="terverifikasi" {{ request('status') == 'terverifikasi' ? 'selected' : '' }}>
+                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION ? 'selected' : '' }}>
+                                    Sedang Divalidasi
+                                </option>
+                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED ? 'selected' : '' }}>
+                                    Perlu Revisi
+                                </option>
+                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED ? 'selected' : '' }}>
                                     Tervalidasi
                                 </option>
-                                <option value="upload_ulang" {{ request('status') == 'upload_ulang' ? 'selected' : '' }}>
-                                    Upload Ulang
-                                </option>
-                                <option value="ditolak" {{ request('status') == 'ditolak' ? 'selected' : '' }}>
-                                    Ditolak
+                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA ? 'selected' : '' }}>
+                                    Final Diterima
                                 </option>
                             </select>
                         </div>
@@ -201,7 +204,7 @@
                             <button type="submit" class="btn btn-light">
                                 <i class="bi bi-search"></i> Terapkan Filter
                             </button>
-                            <a href="{{ route('upps.validasi-pembayaran') }}" class="btn btn-outline-light">
+                            <a href="{{ route('upps.validasi-dokumen') }}" class="btn btn-outline-light">
                                 <i class="bi bi-x-circle"></i> Reset
                             </a>
                         </div>
@@ -215,89 +218,64 @@
             <div class="card">
                 <div class="card-header bg-white">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Daftar Invoice Pembayaran</h5>
+                        <h5 class="mb-0">Daftar Validasi Dokumen</h5>
                         <div>
-                            <span class="text-muted">Total: <strong>{{ $pembayarans->total() }}</strong></span>
+                            <span class="text-muted">Total: <strong>{{ $pengajuans->total() }}</strong></span>
                         </div>
                     </div>
                 </div>
                 <div class="card-body p-0">
-                    @if($pembayarans->count() > 0)
+                    @if($pengajuans->count() > 0)
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
                             <thead class="table-light">
                                 <tr>
                                     <th width="5%">#</th>
-                                    <th width="15%">Nomor Invoice</th>
+                                    <th width="18%">Nomor Permohonan</th>
                                     <th width="20%">Program Studi</th>
-                                    <th width="12%">Jumlah</th>
-                                    <th width="12%">Jatuh Tempo</th>
-                                    <th width="15%">Status</th>
-                                    <th width="11%" class="text-center">Aksi</th>
+                                    <th width="10%">Tahun</th>
+                                    <th width="15%">Validator</th>
+                                    <th width="17%">Status</th>
+                                    <th width="15%" class="text-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($pembayarans as $index => $pembayaran)
+                                @foreach($pengajuans as $index => $pengajuan)
                                 <tr>
-                                    <td>{{ $pembayarans->firstItem() + $index }}</td>
+                                    <td>{{ $pengajuans->firstItem() + $index }}</td>
                                     <td>
-                                        <strong>{{ $pembayaran->nomor_invoice }}</strong>
+                                        <strong>{{ $pengajuan->nomor_pengajuan }}</strong>
                                         <br>
                                         <small class="text-muted">
-                                            {{ $pembayaran->created_at->format('d M Y') }}
+                                            {{ $pengajuan->jenis_akreditasi_label }}
                                         </small>
                                     </td>
                                     <td>
-                                        <strong>{{ $pembayaran->pengajuan->studyProgram->name }}</strong>
+                                        <strong>{{ $pengajuan->studyProgram->name }}</strong>
                                         <br>
                                         <small class="text-muted">
-                                            {{ $pembayaran->pengajuan->studyProgram->degreeLevel->name ?? '-' }}
+                                            {{ $pengajuan->studyProgram->degreeLevel->name ?? '-' }}
                                         </small>
                                     </td>
                                     <td>
-                                        <strong class="text-success">
-                                            Rp {{ number_format($pembayaran->jumlah_pembayaran, 0, ',', '.') }}
-                                        </strong>
+                                        <span class="badge bg-info">{{ $pengajuan->tahun_akreditasi }}</span>
                                     </td>
                                     <td>
-                                        @if($pembayaran->tanggal_jatuh_tempo)
-                                        {{ $pembayaran->tanggal_jatuh_tempo->format('d M Y') }}
-                                        <br>
-                                        @if($pembayaran->tanggal_jatuh_tempo < now() && in_array($pembayaran->status_pembayaran, ['menunggu_pembayaran', 'upload_ulang']))
-                                            <span class="badge bg-danger">Terlambat</span>
-                                            @endif
-                                            @else
-                                            <span class="text-muted">-</span>
-                                            @endif
+                                        @if($pengajuan->validator)
+                                        <small>
+                                            {{ $pengajuan->validator->name }}
+                                        </small>
+                                        @else
+                                        <span class="text-muted">Belum ditugaskan</span>
+                                        @endif
                                     </td>
                                     <td>
-                                        @php
-                                        $statusConfig = [
-                                        'menunggu_pembayaran' => ['class' => 'warning', 'icon' => 'hourglass-split', 'text' => 'Menunggu Pembayaran'],
-                                        'menunggu_verifikasi' => ['class' => 'info', 'icon' => 'clock-history', 'text' => 'Menunggu Validasi'],
-                                        'terverifikasi' => ['class' => 'success', 'icon' => 'check-circle', 'text' => 'Tervalidasi'],
-                                        'upload_ulang' => ['class' => 'secondary', 'icon' => 'arrow-repeat', 'text' => 'Upload Ulang'],
-                                        'ditolak' => ['class' => 'danger', 'icon' => 'x-circle', 'text' => 'Ditolak'],
-                                        ];
-                                        $status = $statusConfig[$pembayaran->status_pembayaran] ?? ['class' => 'secondary', 'icon' => 'question-circle', 'text' => 'Unknown'];
-                                        @endphp
-                                        <span class="badge bg-{{ $status['class'] }}">
-                                            <i class="bi bi-{{ $status['icon'] }}"></i>
-                                            {{ $status['text'] }}
-                                        </span>
+                                        {!! $pengajuan->getCustomBadgeLastStatus('borang_final', 'upps') !!}
                                     </td>
                                     <td class="text-center">
-                                        <div class="btn-group btn-group-sm" role="group">
-                                            <a href="{{ route('upps.validasi-pembayaran.show', $pembayaran->id) }}" class="btn btn-info" title="Lihat Detail">
-                                                <i class="bi bi-eye"></i>
-                                            </a>
-
-                                            @if(in_array($pembayaran->status_pembayaran, ['menunggu_pembayaran', 'upload_ulang']))
-                                            <a href="{{ route('upps.validasi-pembayaran.upload.form', $pembayaran->id) }}" class="btn btn-success" title="Upload Formulir & Bukti Pembayaran">
-                                                <i class="bi bi-upload"></i>
-                                            </a>
-                                            @endif
-                                        </div>
+                                        <a href="{{ route('upps.validasi-dokumen.show', $pengajuan->id) }}" class="btn btn-info btn-sm" title="Lihat Detail">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
                                     </td>
                                 </tr>
                                 @endforeach
@@ -307,7 +285,7 @@
 
                     <!-- Pagination -->
                     <div class="card-footer bg-white">
-                        {{ $pembayarans->links() }}
+                        {{ $pengajuans->links() }}
                     </div>
                     @else
                     <div class="text-center py-5">
@@ -316,11 +294,11 @@
                             @if(request()->filled('search') || request()->filled('status'))
                             Tidak ada data yang sesuai dengan filter
                             @else
-                            Belum ada invoice pembayaran
+                            Belum ada dokumen yang masuk proses validasi
                             @endif
                         </p>
                         @if(request()->filled('search') || request()->filled('status'))
-                        <a href="{{ route('upps.validasi-pembayaran') }}" class="btn btn-sm btn-info">
+                        <a href="{{ route('upps.validasi-dokumen') }}" class="btn btn-sm btn-info">
                             <i class="bi bi-arrow-clockwise"></i> Reset Filter
                         </a>
                         @endif

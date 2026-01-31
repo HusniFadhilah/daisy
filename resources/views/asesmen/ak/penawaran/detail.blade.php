@@ -127,7 +127,7 @@
                             @elseif($penawaran->status_penawaran === 'accepted')
                             <div class="alert alert-success alert-permanent mb-0">
                                 <i class="bi bi-check-circle me-1"></i>
-                                Anda sudah menerima penawaran ini.
+                                Anda telah menerima penawaran ini.
                                 <a href="{{ route('ak.berkas.show', $asesmen->id) }}" class="alert-link">
                                     Buka Penilaian
                                 </a>

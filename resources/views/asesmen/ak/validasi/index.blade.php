@@ -314,7 +314,7 @@
     <hr class="my-5">
 
     <h4 class="mb-3 text-success">
-        <i class="bi bi-check-circle-fill"></i> Asesmen yang Sudah Divalidasi
+        <i class="bi bi-check-circle-fill"></i> Asesmen yang Telah Divalidasi
     </h4>
 
     @foreach($validated as $item)
@@ -330,7 +330,7 @@
                     </small>
                 </div>
                 <span class="badge bg-light text-success ms-md-auto">
-                    <i class="bi bi-check-circle"></i> Sudah Divalidasi
+                    <i class="bi bi-check-circle"></i> Telah Divalidasi
                 </span>
             </div>
         </div>

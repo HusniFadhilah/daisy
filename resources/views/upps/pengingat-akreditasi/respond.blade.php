@@ -115,7 +115,7 @@
                             <i class="bi bi-exclamation-triangle"></i>
                             <strong>Perhatian:</strong>
                             <ul class="mb-0 mt-2">
-                                <li>Pastikan surat permohonan sudah ditandatangani</li>
+                                <li>Pastikan surat permohonan telah ditandatangani</li>
                                 <li>File harus dalam format PDF</li>
                                 <li>Setelah submit, permohonan akan langsung dikirim ke LAMDEPILAR</li>
                             </ul>

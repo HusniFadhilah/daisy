@@ -27,7 +27,7 @@ $menus = [
 'route' => 'upps.penyampaian-template',
 'match' => 'upps.penyampaian-template*',
 'icon' => 'bi-file-earmark-text',
-'label' => 'Pengiriman Formulir dan Template Dokumen',
+'label' => 'Formulir Pembayaran dan Template Dokumen',
 ],
 [
 'no' => 5,
@@ -41,7 +41,7 @@ $menus = [
 'route' => 'upps.penerimaan-dokumen',
 'match' => 'upps.penerimaan-dokumen*',
 'icon' => 'bi-inbox',
-'label' => 'Penerimaan Draft Dokumen',
+'label' => 'Pengiriman Dokumen',
 ],
 [
 'no' => 7,
@@ -114,58 +114,92 @@ $menus = [
 'label' => 'Masa Sanggah',
 ],
 [
-'no' => 17,
-'route' => 'upps.pelaksanaan-banding',
-'match' => 'upps.pelaksanaan-banding*',
-'icon' => 'bi-arrow-repeat',
-'label' => 'Pelaksanaan Banding',
-],
-[
 'no' => 18,
-'route' => 'upps.pelaporan-banding',
-'match' => 'upps.pelaporan-banding*',
-'icon' => 'bi-clipboard-data',
-'label' => 'Pelaporan Banding',
-],
-[
-'no' => 19,
 'route' => 'upps.penetapan-hasil-akreditasi',
 'match' => 'upps.penetapan-hasil-akreditasi*',
 'icon' => 'bi-award',
 'label' => 'Penetapan Hasil Akreditasi',
 ],
 [
-'no' => 20,
+'no' => 19,
 'route' => 'upps.pelaporan-hasil-akreditasi',
 'match' => 'upps.pelaporan-hasil-akreditasi*',
 'icon' => 'bi-graph-up',
 'label' => 'Pelaporan Hasil Akreditasi',
 ],
 [
-'no' => 21,
+'no' => 20,
 'route' => 'upps.penyimpanan-arsip-pelaksanaan-akreditasi',
 'match' => 'upps.penyimpanan-arsip-pelaksanaan-akreditasi*',
 'icon' => 'bi-archive',
 'label' => 'Penyimpanan Arsip Akreditasi',
 ],
 ];
+// biar submenu "Banding" otomatis terbuka kalau salah satu route-nya aktif
+$isBandingActive =
+request()->routeIs('upps.permohonan-banding*')
+|| request()->routeIs('upps.pelaksanaan-banding*')
+|| request()->routeIs('upps.pelaporan-banding*');
 @endphp
-
 <!-- Permohonan Akreditasi -->
 <a href="{{ route('pengajuan') }}" class="nav-link {{ request()->routeIs('pengajuan*') ? 'active' : '' }}">
     <span class="menu-icon">
         <i class="bi bi-file-earmark-text"></i>
     </span>
-    <span>Progress Permohonan Akreditasi</span>
+    <span>Permohonan Akreditasi</span>
 </a>
 
-@foreach ($menus as $menu)
-<li class="nav-item">
-    <a href="{{ route($menu['route']) }}" class="nav-link {{ request()->routeIs($menu['match']) ? 'active' : '' }}">
-        <span class="menu-icon">
-            <i class="bi {{ $menu['icon'] }}"></i>
-        </span>
-        <span>{{ $menu['no'] }}. {{ $menu['label'] }}</span>
-    </a>
-</li>
-@endforeach
+<ul class="nav flex-column">
+    {{-- render menu 1-16 --}}
+    @foreach ($menus as $menu)
+    @if ($menu['no'] <= 16) <li class="nav-item">
+        <a href="{{ route($menu['route']) }}" class="nav-link {{ request()->routeIs($menu['match']) ? 'active' : '' }}">
+            <span class="menu-icon">
+                <i class="bi {{ $menu['icon'] }}"></i>
+            </span>
+            <span>{{ $menu['no'] }}. {{ $menu['label'] }}</span>
+        </a>
+        </li>
+        @endif
+        @endforeach
+
+        <!-- Banding -->
+        <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'banding-submenu')">
+            <span class="menu-icon">
+                <i class="bi bi-arrow-repeat"></i>
+            </span>
+            <span>17. Banding</span>
+        </a>
+
+        <ul class="submenu nav flex-column" id="banding-submenu">
+            <li>
+                <a href="{{ route('upps.permohonan-banding') }}" class="nav-link">
+                    17.a Permohonan Banding
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('upps.pelaksanaan-banding') }}" class="nav-link">
+                    17.b Pelaksanaan Banding
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('upps.pelaporan-banding') }}" class="nav-link">
+                    17.c Pelaporan Banding
+                </a>
+            </li>
+        </ul>
+
+        {{-- render menu 20-22 --}}
+        @foreach ($menus as $menu)
+        @if ($menu['no'] >= 18)
+        <li class="nav-item">
+            <a href="{{ route($menu['route']) }}" class="nav-link {{ request()->routeIs($menu['match']) ? 'active' : '' }}">
+                <span class="menu-icon">
+                    <i class="bi {{ $menu['icon'] }}"></i>
+                </span>
+                <span>{{ $menu['no'] }}. {{ $menu['label'] }}</span>
+            </a>
+        </li>
+        @endif
+        @endforeach
+</ul>

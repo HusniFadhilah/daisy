@@ -389,13 +389,13 @@ $viewMode = request('view') === 'split' ? 'split' : 'merged'; // split | merged
                 <div class="col-md-4 col-lg-3 my-2">
                     <div class="stat-box">
                         <h4 class="mb-0 text-warning" id="statPending">0</h4>
-                        <small class="text-muted">Belum Validasi</small>
+                        <small class="text-muted">Belum Divalidasi</small>
                     </div>
                 </div>
                 <div class="col-md-4 col-lg-3 my-2">
                     <div class="stat-box">
                         <h4 class="mb-0 text-success" id="statValidated">0</h4>
-                        <small class="text-muted">Sudah Validasi</small>
+                        <small class="text-muted">Telah Divalidasi</small>
                     </div>
                 </div>
             </div>

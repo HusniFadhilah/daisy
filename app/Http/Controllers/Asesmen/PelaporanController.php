@@ -259,7 +259,7 @@ class PelaporanController extends Controller
             $file = $request->file('file');
             $path = $file->store("permohonan-akreditasi/{$pengajuan->id}/laporan-validasi", 'public');
 
-            // ✅ satu file saja: update kalau sudah ada, create kalau belum
+            // ✅ satu file saja: update kalau telah ada, create kalau belum
             $doc = AsesmenDocument::query()
                 ->where('id_asesmen', $assignment->id_asesmen)
                 ->where('type', 'laporan_validasi_borang')
@@ -340,7 +340,7 @@ class PelaporanController extends Controller
             //     ], 422);
             // }
 
-            // ✅ wajib sudah upload file
+            // ✅ wajib telah upload file
             $docExists = AsesmenDocument::query()
                 ->where('id_asesmen', $assignment->id_asesmen)
                 ->where('type', 'laporan_validasi_borang')
@@ -357,7 +357,7 @@ class PelaporanController extends Controller
             // idempotent
             if ($pengajuan->status === PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN) {
                 DB::commit();
-                return response()->json(['success' => true, 'message' => 'Pelaporan sudah difinalisasi sebelumnya.']);
+                return response()->json(['success' => true, 'message' => 'Pelaporan telah difinalisasi sebelumnya.']);
             }
 
             $statusFrom = $pengajuan->status;
@@ -504,7 +504,7 @@ class PelaporanController extends Controller
                 // idempotent
                 if ($pengajuan->status === PengajuanAkreditasi::STATUS_AK_DILAPORKAN) {
                     DB::commit();
-                    return response()->json(['success' => true, 'message' => 'Laporan validasi AK sudah difinalisasi sebelumnya.']);
+                    return response()->json(['success' => true, 'message' => 'Laporan validasi AK telah difinalisasi sebelumnya.']);
                 }
                 $statusFrom = $pengajuan->status;
                 $pengajuan->checkUpdateStatusAKAL('ak', 'status_asesor_dilaporkan');
@@ -656,7 +656,7 @@ class PelaporanController extends Controller
 
     //         if ($pengajuan->status === PengajuanAkreditasi::STATUS_AK_SELESAI) {
     //             DB::commit();
-    //             return response()->json(['success' => true, 'message' => 'Pelaporan AK sudah difinalisasi sebelumnya.']);
+    //             return response()->json(['success' => true, 'message' => 'Pelaporan AK telah difinalisasi sebelumnya.']);
     //         }
 
     //         $statusFrom = $pengajuan->status;
@@ -800,7 +800,7 @@ class PelaporanController extends Controller
             if ($pengajuan) {
                 if ($pengajuan->status === PengajuanAkreditasi::STATUS_AL_DILAPORKAN) {
                     DB::commit();
-                    return response()->json(['success' => true, 'message' => 'Pelaporan AL sudah difinalisasi sebelumnya.']);
+                    return response()->json(['success' => true, 'message' => 'Pelaporan AL telah difinalisasi sebelumnya.']);
                 }
 
                 $statusFrom = $pengajuan->status;

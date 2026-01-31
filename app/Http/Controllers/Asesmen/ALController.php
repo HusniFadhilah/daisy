@@ -382,7 +382,7 @@ class ALController extends Controller
                 ->where('status_pekerjaan', 'submitted')
                 ->firstOrFail();
 
-            // ✅ PERBAIKAN: Hanya cek yang benar-benar sudah VALIDATED (final)
+            // ✅ PERBAIKAN: Hanya cek yang benar-benar telah VALIDATED (final)
             $hasValidated = PenilaianElemenAl::where('id_asesmen', $idAsesmen)
                 ->where('id_asesor', $user->id)->whereIn('status', ['approved'])
                 ->exists();
@@ -390,15 +390,15 @@ class ALController extends Controller
             if ($hasValidated) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Penilaian sudah divalidasi dan disetujui, tidak bisa dibatalkan.',
+                    'message' => 'Penilaian telah divalidasi dan disetujui, tidak bisa dibatalkan.',
                 ], 422);
             }
 
-            // ✅ TAMBAHAN: Cek jika sudah approved
+            // ✅ TAMBAHAN: Cek jika telah approved
             if ($assignment->status_pekerjaan === 'approved') {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Penilaian sudah disetujui, tidak bisa dibatalkan.',
+                    'message' => 'Penilaian telah disetujui, tidak bisa dibatalkan.',
                 ], 422);
             }
 
@@ -470,7 +470,7 @@ class ALController extends Controller
             if (in_array($assignment->status_pekerjaan, ['submitted', 'approved'])) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Tidak dapat mereset penilaian yang sudah di-submit atau disetujui. Silakan batalkan submit terlebih dahulu.',
+                    'message' => 'Tidak dapat mereset penilaian yang telah di-submit atau disetujui. Silakan batalkan submit terlebih dahulu.',
                 ], 422);
             }
 

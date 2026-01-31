@@ -208,7 +208,7 @@
             , finalize: @json(route('pelaporan.borang.finalize', ['assignment' => '__ID__']))
             , fileLabel: 'Laporan Kesiapan LED Program Studi (LKLED)'
             , finalizeLabel: 'Laporan Kesiapan LED Program Studi (LKLED)'
-            , additionalDescription: `Dokumen yang sudah digabungkan, yang diperlukan isinya adalah:
+            , additionalDescription: `Dokumen yang telah digabungkan, yang diperlukan isinya adalah:
             • Surat Permohonan PS untuk Akreditasi
             • Surat Balasan DE untuk menyusun LED
             • Bukti Pembayaran Akreditasi

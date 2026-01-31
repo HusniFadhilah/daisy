@@ -157,7 +157,7 @@
                 <ol>
                     <li>Perbaiki borang sesuai catatan validasi</li>
                     <li>Upload draft LED yang telah diperbaiki</li>
-                    <li>Menunggu Validasi kembali dari DE</li>
+                    <li>Menunggu Validasi kembali dari LAMDEPILAR</li>
                 </ol>
             </div>
             @endif

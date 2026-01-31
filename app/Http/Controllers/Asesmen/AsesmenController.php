@@ -50,11 +50,11 @@ class AsesmenController extends Controller
                 'studyProgram.university'
             ])->findOrFail($pengajuanId);
 
-            // Check if Permohonan akreditasi sudah punya asesmen
+            // Check if Permohonan akreditasi telah punya asesmen
             if ($pengajuan->asesmen) {
                 return redirect()
                     ->route('asesmen.show', $pengajuan->asesmen->id)
-                    ->with('info', 'Asesmen untuk permohonan akreditasi ini sudah dibuat.');
+                    ->with('info', 'Asesmen untuk permohonan akreditasi ini telah dibuat.');
             }
 
             // Check status
@@ -314,7 +314,7 @@ class AsesmenController extends Controller
             if ($exists) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'User sudah ditugaskan dengan role ini untuk ' . strtoupper($request->jenis_asesmen)
+                    'message' => 'User telah ditugaskan dengan role ini untuk ' . strtoupper($request->jenis_asesmen)
                 ], 422);
             }
 
@@ -711,7 +711,7 @@ class AsesmenController extends Controller
             if ($hasPenilaianElemenAk || $hasPenilaianElemenAl) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'User tidak bisa dihapus karena sudah melakukan penilaian. Hapus penilaian terlebih dahulu.'
+                    'message' => 'User tidak bisa dihapus karena telah melakukan penilaian. Hapus penilaian terlebih dahulu.'
                 ], 422);
             }
 
@@ -802,7 +802,7 @@ class AsesmenController extends Controller
             if ($exists) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'User sudah ditugaskan dengan role ini'
+                    'message' => 'User telah ditugaskan dengan role ini'
                 ], 422);
             }
 
@@ -936,7 +936,7 @@ class AsesmenController extends Controller
             if ($hasPenilaian) {
                 return redirect()
                     ->back()
-                    ->with('error', 'Asesmen tidak bisa dihapus karena sudah ada penilaian.');
+                    ->with('error', 'Asesmen tidak bisa dihapus karena telah ada penilaian.');
             }
 
             $asesmen->delete();
@@ -993,7 +993,7 @@ class AsesmenController extends Controller
 
             $message = "Berhasil menugaskan {$assignedCount} user.";
             if ($skippedCount > 0) {
-                $message .= " {$skippedCount} user di-skip (sudah ditugaskan).";
+                $message .= " {$skippedCount} user di-skip (telah ditugaskan).";
             }
 
             return response()->json([
@@ -1039,7 +1039,7 @@ class AsesmenController extends Controller
             if ($existingValidator) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Permohonan akreditasi sudah memiliki validator dokumen.',
+                    'message' => 'Permohonan akreditasi telah memiliki validator dokumen.',
                 ], 422);
             }
 

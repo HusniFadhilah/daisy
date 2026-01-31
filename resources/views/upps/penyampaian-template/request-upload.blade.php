@@ -35,44 +35,34 @@
             <div class="card mb-4 border-info">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-info-circle"></i> Informasi Permohonan
+                        <i class="bi bi-info-circle"></i> Informasi Permohonan Upload Ulang Template
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <table class="table table-borderless table-sm">
-                                <tr>
-                                    <th width="40%">Nomor Permohonan</th>
-                                    <td>: <strong>{{ $pengajuan->nomor_pengajuan }}</strong></td>
-                                </tr>
-                                <tr>
-                                    <th>Program Studi</th>
-                                    <td>: {{ $pengajuan->studyProgram->name }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Universitas</th>
-                                    <td>: {{ $pengajuan->studyProgram->university->name }}</td>
-                                </tr>
-                            </table>
-                        </div>
-                        <div class="col-md-6">
-                            <table class="table table-borderless table-sm">
-                                <tr>
-                                    <th width="40%">Jenis Dokumen</th>
-                                    <td>
-                                        : <strong>
-                                            {{ $jenisDokumen === 'template_led' ? 'Template Dokumen Akreditasi' : 'Formulir Pembayaran' }}
-                                        </strong>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>Tahun Akreditasi</th>
-                                    <td>: {{ $pengajuan->tahun_akreditasi }}</td>
-                                </tr>
-                            </table>
-                        </div>
-                    </div>
+                    <table class="table table-borderless table-sm align-middle">
+                        <tr>
+                            <th width="30%" rowspan="2">Nomor Permohonan Akreditasi</th>
+                            <td width="5%" rowspan="2">:</td>
+                            <td width="65%" rowspan="2">
+                                <strong>{{ $pengajuan->nomor_pengajuan }}</strong>
+                            </td>
+                        </tr>
+                        <tr></tr>
+
+                        <tr>
+                            <th>Jenis Dokumen</th>
+                            <td>:</td>
+                            <td>
+                                <strong>Template Dokumen Akreditasi</strong>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>Tahun Akreditasi</th>
+                            <td>:</td>
+                            <td>{{ $pengajuan->tahun_akreditasi }}</td>
+                        </tr>
+                    </table>
                 </div>
             </div>
 
@@ -155,7 +145,7 @@
                         <div class="card bg-light mb-3">
                             <div class="card-body">
                                 <h6 class="fw-bold mb-2">
-                                    <i class="bi bi-lightbulb"></i> Contoh Alasan yang Baik:
+                                    <i class="bi bi-lightbulb"></i> Contoh Alasan:
                                 </h6>
                                 <ul class="mb-0 small">
                                     <li>File dokumen tidak dapat dibuka atau corrupt</li>

@@ -330,7 +330,7 @@
                             <div class="mt-2">
                                 <small class="text-muted">
                                     <strong>Template Kosong:</strong> File Excel baru tanpa isian<br>
-                                    <strong>Hasil Validasi:</strong> File Excel berisi validasi yang sudah Anda isi
+                                    <strong>Hasil Validasi:</strong> File Excel berisi validasi yang telah Anda isi
                                 </small>
                             </div>
                         </div>
@@ -345,7 +345,7 @@
                                 <i class="bi bi-upload"></i> Upload Excel
                             </h6>
                             <p class="card-text text-muted small">
-                                Upload file Excel yang sudah diisi untuk diproses
+                                Upload file Excel yang telah diisi untuk diproses
                             </p>
 
                             <form action="{{ route('validator.borang.upload-review', $assignment->id) }}" method="POST" enctype="multipart/form-data" id="formUploadReview">
@@ -366,7 +366,7 @@
                             <div class="mt-2">
                                 <small class="text-muted">
                                     <i class="bi bi-info-circle"></i>
-                                    Data yang diupload akan digabungkan dengan validasi online yang sudah ada
+                                    Data yang diupload akan digabungkan dengan validasi online yang telah ada
                                 </small>
                             </div>
                         </div>
@@ -1704,7 +1704,7 @@ $assignmentId = $assignment->id;
                 // optional: kalau masih ada table lama
                 if (legacyBody) {
                     legacyBody.innerHTML = rows.length ?
-                        `<tr><td colspan="8" class="text-muted">Monitoring sudah dipisah per tab.</td></tr>` :
+                        `<tr><td colspan="8" class="text-muted">Monitoring telah dipisah per tab.</td></tr>` :
                         `<tr><td colspan="8" class="text-muted">Tidak ada data.</td></tr>`;
                 }
 

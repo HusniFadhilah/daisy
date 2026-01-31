@@ -86,7 +86,7 @@
 
             @if($pesan)
             <div style="background: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin: 20px 0;">
-                <p><strong>Pesan dari Dewan Eksekutif (DE) LAMDEPILAR:</strong></p>
+                <p><strong>Pesan dari LAMDEPILAR:</strong></p>
                 <p>{{ $pesan }}</p>
             </div>
             @endif

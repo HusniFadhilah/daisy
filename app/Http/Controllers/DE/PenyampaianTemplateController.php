@@ -185,7 +185,7 @@ class PenyampaianTemplateController extends Controller
                 'status_to' => PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM,
                 'changed_by' => auth()->id(),
                 'changed_at' => now(),
-                'keterangan' => 'Formulir Pembayaran dan Template Dokumen telah dikirim oleh DE'
+                'keterangan' => 'Formulir Pembayaran dan Template Dokumen telah dikirim oleh LAMDEPILAR'
                 // .($request->keterangan ? '. ' . $request->keterangan : ''),
             ]);
 
@@ -275,7 +275,7 @@ class PenyampaianTemplateController extends Controller
                 'changed_by' => auth()->id(),
                 'changed_at' => now(),
                 'keterangan' => 'Formulir Pembayaran (' . $fileLED->getClientOriginalName() . ') ' .
-                    'dan Template Dokumen (' . $filePembayaran->getClientOriginalName() . ') dikirim oleh DE'
+                    'dan Template Dokumen (' . $filePembayaran->getClientOriginalName() . ') dikirim oleh LAMDEPILAR'
                 // .($request->keterangan ? '. ' . $request->keterangan : ''),
             ]);
 

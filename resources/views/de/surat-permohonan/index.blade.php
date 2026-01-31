@@ -134,7 +134,7 @@
         <div class="col-lg-3 col-md-6 mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Permohonan Akreditasi Sudah Ditanggapi</h6>
+                    <h6 class="mb-1 opacity-75">Permohonan Akreditasi Telah Ditanggapi</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['diterima'] }}</h2>

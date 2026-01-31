@@ -159,7 +159,7 @@
                     </button>
                     @elseif($isApproved)
                     <button type="button" class="btn btn-success btn-md" disabled>
-                        <i class="bi bi-check-circle"></i> Sudah Disetujui
+                        <i class="bi bi-check-circle"></i> Telah Disetujui
                     </button>
                     @else
                     <button type="button" class="btn btn-secondary btn-md" disabled>
@@ -363,7 +363,7 @@
         , finalize: @json(route('pelaporan.validasiAk.finalize', ['assignment' => '__ID__']))
         , fileLabel: 'Laporan Penilaian Kecukupan LED Program Studi (LHK) telah selesai'
         , finalizeLabel: 'Asesmen Kecukupan telah Dilaporkan'
-        , additionalDescription: `Dokumen yang sudah digabungkan, yang diperlukan isinya adalah:
+        , additionalDescription: `Dokumen yang telah digabungkan, yang diperlukan isinya adalah:
         •	Penunjukan tugas Asesor untuk melaksanakan Penilaian LED
         •	Proses penilaian LED oleh Asesor.
         •	Validasi Penilaian Kecukupan Asesor oleh Validator
@@ -377,7 +377,7 @@
         , finalize: @json(route('pelaporan.al.finalize', ['assignment' => '__ID__']))
         , fileLabel: 'Laporan Hasil Asesmen Lapangan Program Studi (LHA)'
         , finalizeLabel: 'Pelaporan AL Telah Selesai'
-        , additionalDescription: `Dokumen yang sudah digabungkan, yang diperlukan isinya adalah:
+        , additionalDescription: `Dokumen yang telah digabungkan, yang diperlukan isinya adalah:
         •	Penunjukan tugas Asesor untuk melaksanakan Penilaian LED
         •	Proses peneliaan LED oleh Asesor.
         •	Validasi Penilaian Kecukupan Asesor Oleh Validator

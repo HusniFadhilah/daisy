@@ -182,7 +182,7 @@ class AKController extends Controller
                 if (!$needsRevision) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'Penilaian sudah di-submit dan tidak bisa diubah'
+                        'message' => 'Penilaian telah di-submit dan tidak dapat diubah'
                     ], 403);
                 }
             }

@@ -109,7 +109,7 @@ class PengajuanAkreditasiController extends Controller
 
         // Validasi pengingat belum direspon
         if ($pengingat->status !== PengingatAkreditasi::STATUS_BELUM_DIRESPON) {
-            return back()->with('error', 'Pengingat ini sudah direspon.');
+            return back()->with('error', 'Pengingat ini telah direspon.');
         }
 
         DB::beginTransaction();
@@ -190,7 +190,7 @@ class PengajuanAkreditasiController extends Controller
             if ($pengingat->status !== PengingatAkreditasi::STATUS_BELUM_DIRESPON) {
                 return redirect()
                     ->route('pengajuan')
-                    ->with('error', 'Pengingat ini sudah direspon.');
+                    ->with('error', 'Pengingat ini telah direspon.');
             }
         }
 
@@ -217,7 +217,7 @@ class PengajuanAkreditasiController extends Controller
 
             // Additional validation
             if ($pengingat->status !== PengingatAkreditasi::STATUS_BELUM_DIRESPON) {
-                return back()->with('error', 'Pengingat ini sudah direspon.');
+                return back()->with('error', 'Pengingat ini telah direspon.');
             }
         }
 
@@ -653,7 +653,7 @@ class PengajuanAkreditasiController extends Controller
             if (in_array($pengajuan->status, $blocked, true)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Tidak bisa unsubmit karena sudah masuk tahap validasi/lanjutan.'
+                    'message' => 'Tidak bisa unsubmit karena telah masuk tahap validasi/lanjutan.'
                 ], 422);
             }
 

@@ -105,10 +105,6 @@
                             <td>: {{ $pembayaran->pengajuan->studyProgram->university->name }}</td>
                         </tr>
                         <tr>
-                            <th>Jenjang</th>
-                            <td>: {{ $pembayaran->pengajuan->studyProgram->degreeLevel->name ?? '-' }}</td>
-                        </tr>
-                        <tr>
                             <th>Jumlah Pembayaran</th>
                             <td>
                                 : <strong class="text-success fs-5">
@@ -257,7 +253,7 @@
             <div class="card">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-clock-history"></i> Timeline Pembayaran
+                        <i class="bi bi-clock-history"></i> Riwayat Status Pembayaran
                     </h5>
                 </div>
                 <div class="card-body" style="max-height: 600px; overflow-y: auto;">
@@ -289,7 +285,7 @@
                                     <strong>Formulir & Bukti Pembayaran Diupload</strong>
                                     <br>
                                     <small class="text-muted">
-                                        {{ $pembayaran->tanggal_pembayaran->format('d M Y H:i') }}
+                                        {{ $pembayaran->pengajuan->formulirPembayaran?->created_at->format('d M Y H:i') }}
                                     </small>
                                 </div>
                             </div>

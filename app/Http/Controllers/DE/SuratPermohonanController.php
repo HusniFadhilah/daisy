@@ -160,7 +160,7 @@ class SuratPermohonanController extends Controller
                 'status_to' => PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
                 'changed_by' => auth()->id(),
                 'changed_at' => now(),
-                'keterangan' => $request->keterangan ?? 'Permohonan akreditasi dari PS, diterima oleh DE',
+                'keterangan' => $request->keterangan ?? 'Permohonan akreditasi dari PS, diterima oleh LAMDEPILAR',
             ]);
 
             DB::commit();

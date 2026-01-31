@@ -57,20 +57,68 @@
             <h4 class="mb-1">
                 <i class="bi bi-envelope"></i> Permohonan Akreditasi
             </h4>
-            <p class="text-muted mb-0">Daftar permohonan akreditasi yang telah dikirim</p>
+            <p class="text-muted mb-0">Kelola permohonan akreditasi program studi</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-primary shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-gear"></i> Menu Permohonan Akreditasi
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <!-- Buat Permohonan -->
+                        <div class="col-md-4">
+                            <div class="d-grid">
+                                <a href="{{ route('pengajuan.create') }}" class="btn btn-md btn-primary">
+                                    <i class="bi bi-file-earmark-plus"></i>
+                                    <br>
+                                    <span class="small">Buat Permohonan Akreditasi</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Download Template -->
+                        <div class="col-md-4">
+                            <div class="d-grid">
+                                <button type="button" class="btn btn-md btn-info" data-bs-toggle="modal" data-bs-target="#modalDownloadTemplate">
+                                    <i class="bi bi-download"></i>
+                                    <br>
+                                    <span class="small">Download Template Permohonan Akreditasi</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Simpan sebagai Draft (Optional - if needed) -->
+                        <div class="col-md-4">
+                            <div class="d-grid">
+                                <a href="{{ route('pengajuan.create') }}?draft=true" class="btn btn-md btn-secondary">
+                                    <i class="bi bi-save"></i>
+                                    <br>
+                                    <span class="small">Simpan Permohonan Akreditasi sebagai Draft</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-lg-3 col-md-6 mb-3">
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 mb-4">
+        <div class="col mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                 <div class="card-body text-white">
                     <h6 class="mb-2 opacity-75">Total Permohonan Akreditasi</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-2 fw-bold">{{ $stats['total'] }}</h2>
-                            <small class="opacity-75">Total Permohonan Akreditasi saat ini</small>
+                            <small class="opacity-75">Total Permohonan Akreditasi keseluruhan</small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
                             <i class="bi bi-file-earmark-text"></i>
@@ -80,14 +128,14 @@
             </div>
         </div>
 
-        <div class="col-lg-3 col-md-6 mb-3">
+        <div class="col mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
                 <div class="card-body text-white">
                     <h6 class="mb-1 opacity-75">Permohonan Akreditasi Belum Diajukan</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['menunggu'] }}</h2>
-                            <small class="opacity-75">Pengingat masa akreditasi telah dikirim, tetapi Permohonan Akreditasi belum mengajukan </small>
+                            <small class="opacity-75">Pengingat masa akreditasi telah diterima, tetapi Permohonan Akreditasi belum diajukan </small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
                             <i class="bi bi-hourglass-split"></i>
@@ -97,7 +145,7 @@
             </div>
         </div>
 
-        <div class="col-lg-3 col-md-6 mb-3">
+        <div class="col mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #8ebb0aff 0%, #c0c30dff 100%);">
                 <div class="card-body text-white">
                     <h6 class="mb-1 opacity-75">Permohonan Akreditasi Telah Dikirim, tetapi Belum Ditanggapi</h6>
@@ -114,14 +162,14 @@
             </div>
         </div>
 
-        <div class="col-lg-3 col-md-6 mb-3">
+        <div class="col mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Permohonan Akreditasi Sudah Ditanggapi</h6>
+                    <h6 class="mb-1 opacity-75">Permohonan Akreditasi Telah Ditanggapi</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['diterima'] }}</h2>
-                            <small class="opacity-75">Permohonan Akreditasi telah dikirim dan telah ditanggapi oleh LAMDEPILAR</small>
+                            <small class="opacity-75">Permohonan Akreditasi telah dikirim, dan telah ditanggapi oleh LAMDEPILAR</small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
                             <i class="bi bi-check-circle"></i>
@@ -302,4 +350,6 @@
         </div>
     </div>
 </div>
+
+@include('upps.surat-permohonan.components.modal-download-template')
 @endsection

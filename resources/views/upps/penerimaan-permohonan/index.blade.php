@@ -66,11 +66,11 @@
         <div class="col-lg-4 col-md-6 mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Total Penerimaan</h6>
+                    <h6 class="mb-2 opacity-75">Total Penerimaan Permohonan Akreditasi</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['total'] }}</h2>
-                            <small class="opacity-75">Semua penerimaan</small>
+                            <small class="opacity-75">Jumlah total penerimaan permohonan akreditasi di UPPS Anda</small>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
                             <i class="bi bi-envelope-check"></i>
@@ -87,9 +87,9 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['diterima'] }}</h2>
-                            <small class="opacity-75">Permohonan diterima, surat belum dikirim</small>
+                            <small class="opacity-75">Jumlah permohonan akreditasi telah sampai ke LAMDEPILAR, tetapi surat penerimaan belum dikirim</small>
                         </div>
-                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
+                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;" class="px-2">
                             <i class="bi bi-hourglass-split"></i>
                         </div>
                     </div>
@@ -100,11 +100,11 @@
         <div class="col-lg-4 col-md-6 mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Surat Penerimaan Diterima</h6>
+                    <h6 class="mb-2 opacity-75">Permohonan Akreditasi Diterima</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['surat_dikirim'] }}</h2>
-                            <small class="opacity-75">Surat penerimaan telah dikirim</small>
+                            <small class="opacity-75">Penerimaan permohonan akreditasi telah dikirim oleh LAMDEPILAR</small>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
                             <i class="bi bi-check-circle"></i>
@@ -142,7 +142,7 @@
                                     Menunggu Penerimaan Permohonan Akreditasi
                                 </option>
                                 <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM ? 'selected' : '' }}>
-                                    Penerimaan Permohonan Akreditasi Diterima
+                                    Permohonan Akreditasi Diterima oleh LAMDEPILAR
                                 </option>
                             </select>
                         </div>

@@ -10,8 +10,8 @@ return [
     | kata sandi, misalnya token tidak valid atau kata sandi baru tidak valid.
     |
     */
-    'reset' => 'Kata sandi Anda sudah direset!',
-    'sent' => 'Kami sudah mengirim surel yang berisi tautan untuk mereset kata sandi Anda!',
+    'reset' => 'Kata sandi Anda telah direset!',
+    'sent' => 'Kami telah mengirim surel yang berisi tautan untuk mereset kata sandi Anda!',
     'throttled' => 'Silahkan Tunggu sebentar sebelum mencoba kembali',
     'token' => 'Token pengaturan ulang kata sandi tidak sah.',
     'user' => 'Kami tidak dapat menemukan pengguna dengan alamat surel tersebut.',

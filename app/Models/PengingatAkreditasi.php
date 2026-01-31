@@ -37,7 +37,7 @@ class PengingatAkreditasi extends Model
     {
         return [
             self::STATUS_BELUM_DIRESPON => 'Belum Direspon',
-            self::STATUS_DIRESPON => 'Sudah Direspon',
+            self::STATUS_DIRESPON => 'Telah Direspon',
             self::STATUS_KEDALUWARSA => 'Kedaluwarsa',
         ];
     }

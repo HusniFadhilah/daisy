@@ -157,7 +157,7 @@
                 <ol>
                     <li>Perbaiki borang sesuai catatan review</li>
                     <li>Upload draft borang yang telah diperbaiki</li>
-                    <li>Menunggu Validasi kembali dari DE</li>
+                    <li>Menunggu Validasi kembali dari LAMDEPILAR</li>
                 </ol>
             </div>
             @endif

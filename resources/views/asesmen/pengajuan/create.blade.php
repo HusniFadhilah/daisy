@@ -8,12 +8,12 @@
 <div class="container-fluid py-3">
     <!-- Header -->
     <div class="mb-4">
-        <h2>
+        <h4>
             <i class="bi bi-file-earmark-plus"></i>
             {{ isset($pengingat) ? 'Respon Pengingat Akreditasi' : 'Permohonan Akreditasi Baru' }}
-        </h2>
+        </h4>
         <p class="text-muted">
-            {{ isset($pengingat) ? 'Lengkapi formulir untuk merespon pengingat akreditasi dari DE' : 'Lengkapi formulir di bawah untuk mengajukan permohonan akreditasi' }}
+            {{ isset($pengingat) ? 'Lengkapi formulir untuk merespon pengingat akreditasi dari LAMDEPILAR' : 'Lengkapi formulir di bawah untuk mengajukan permohonan akreditasi' }}
         </p>
     </div>
 
@@ -191,7 +191,7 @@
                             <i class="bi bi-exclamation-triangle"></i>
                             <strong>Perhatian:</strong> Pastikan semua data yang diisi sudah benar.
                             @if(isset($pengingat))
-                            Setelah submit, pengingat akan ditandai sebagai sudah direspon.
+                            Setelah submit, pengingat akan ditandai sebagai "Telah direspon".
                             @else
                             Data yang sudah disubmit tidak dapat diubah kecuali dengan persetujuan DE.
                             @endif

@@ -389,7 +389,7 @@ class PenerimaanDokumenController extends Controller
 
         // Prevent duplicate
         if ($pengajuan->isUserAssignedAsValidator($validator->id)) {
-            return ResponseFormatter::error(null, 'Validator ini sudah pernah ditugaskan.', 422);
+            return ResponseFormatter::error(null, 'Validator ini sudah pernah ditugaskan sebelumnya.', 422);
         }
 
         try {

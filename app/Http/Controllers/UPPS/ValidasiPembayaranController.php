@@ -78,7 +78,7 @@ class ValidasiPembayaranController extends Controller
 
         // Get dokumen pembayaran
         $dokumenPembayaran = PengajuanDokumen::where('id_pengajuan', $pembayaran->id_pengajuan)
-            ->where('jenis_dokumen', 'bukti_pembayaran')
+            ->where('jenis_dokumen', 'formulir_pembayaran')
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -119,13 +119,13 @@ class ValidasiPembayaranController extends Controller
     public function uploadBukti(Request $request, $id)
     {
         $validated = $request->validate([
-            'file_bukti_pembayaran' => 'required|file|mimes:xlsx,pdf,jpg,jpeg,png|max:5120',
+            'file_formulir_pembayaran' => 'required|file|mimes:xlsx,pdf,jpg,jpeg,png|max:5120',
             'tanggal_pembayaran' => 'required|date|before_or_equal:today',
             'catatan_pembayaran' => 'nullable|string|max:500',
         ], [
-            'file_bukti_pembayaran.required' => 'File bukti pembayaran harus diupload.',
-            'file_bukti_pembayaran.mimes' => 'File harus berformat PDF, JPG, JPEG, atau PNG.',
-            'file_bukti_pembayaran.max' => 'Ukuran file maksimal 5MB.',
+            'file_formulir_pembayaran.required' => 'File formulir & bukti pembayaran harus diupload.',
+            'file_formulir_pembayaran.mimes' => 'File harus berformat PDF, JPG, JPEG, atau PNG.',
+            'file_formulir_pembayaran.max' => 'Ukuran file maksimal 5MB.',
             'tanggal_pembayaran.required' => 'Tanggal pembayaran harus diisi.',
             'tanggal_pembayaran.before_or_equal' => 'Tanggal pembayaran tidak boleh lebih dari hari ini.',
         ]);
@@ -148,29 +148,29 @@ class ValidasiPembayaranController extends Controller
             }
 
             // Upload file
-            $file = $request->file('file_bukti_pembayaran');
-            $fileName = 'bukti_pembayaran_' . time() . '.' . $file->getClientOriginalExtension();
+            $file = $request->file('file_formulir_pembayaran');
+            $fileName = 'formulir_pembayaran_' . time() . '.' . $file->getClientOriginalExtension();
             $filePath = $file->storeAs(
-                'pengajuan/' . $pembayaran->id_pengajuan . '/bukti-pembayaran',
+                'pengajuan/' . $pembayaran->id_pengajuan . '/formulir-pembayaran',
                 $fileName,
                 'public'
             );
 
             // Mark previous dokumen as not latest
             PengajuanDokumen::where('id_pengajuan', $pembayaran->id_pengajuan)
-                ->where('jenis_dokumen', 'bukti_pembayaran')
+                ->where('jenis_dokumen', 'formulir_pembayaran')
                 ->update(['is_latest' => false]);
 
             // Create new dokumen record
             $dokumen = PengajuanDokumen::create([
                 'id_pengajuan' => $pembayaran->id_pengajuan,
-                'jenis_dokumen' => 'bukti_pembayaran',
+                'jenis_dokumen' => 'formulir_pembayaran',
                 'path_file' => $filePath,
                 'original_filename' => $file->getClientOriginalName(),
                 'file_size' => $file->getSize(),
                 'uploaded_by' => Auth::id(),
                 'versi' => PengajuanDokumen::where('id_pengajuan', $pembayaran->id_pengajuan)
-                    ->where('jenis_dokumen', 'bukti_pembayaran')
+                    ->where('jenis_dokumen', 'formulir_pembayaran')
                     ->max('versi') + 1,
                 'is_latest' => true,
             ]);
@@ -185,17 +185,17 @@ class ValidasiPembayaranController extends Controller
             // Update status pengajuan
             $pembayaran->pengajuan->updateStatusSafely(
                 PengajuanAkreditasi::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN,
-                'Bukti pembayaran telah diupload, menunggu validasi bagian keuangan'
+                'Formulir & bukti pembayaran telah diupload, menunggu validasi bagian keuangan'
             );
 
             DB::commit();
 
             return redirect()
                 ->route('upps.validasi-pembayaran.show', $id)
-                ->with('success', 'Bukti pembayaran berhasil diupload. Menunggu validasi dari bagian keuangan.');
+                ->with('success', 'Formulir & Bukti pembayaran berhasil diupload. Menunggu validasi dari bagian keuangan.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Gagal mengupload bukti pembayaran: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal mengupload formulir & bukti pembayaran: ' . $e->getMessage());
         }
     }
 

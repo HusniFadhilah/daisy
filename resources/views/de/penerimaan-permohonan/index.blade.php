@@ -140,7 +140,7 @@
                                     <th width="3%">#</th>
                                     <th width="15%">Permohonan Akreditasi</th>
                                     <th width="20%">Program Studi</th>
-                                    <th width="25%">Tanggal Permohonan Akreditasi Diterima</th>
+                                    <th width="25%">Tanggal Permohonan Akreditasi Ditanggapi</th>
                                     <th width="20%">Status Penerimaan Permohonan</th>
                                     <th width="8%" class="text-center">Aksi</th>
                                 </tr>

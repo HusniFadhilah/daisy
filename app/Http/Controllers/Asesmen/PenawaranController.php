@@ -34,7 +34,7 @@ class PenawaranController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Get penawaran yang sudah direspon
+        // Get penawaran yang telah direspon
         $assignments = AsesmenUserRole::where('id_user', $user->id)
             ->whereIn('status_penawaran', ['accepted', 'rejected'])
             ->with(['asesmen', 'role'])
@@ -75,13 +75,13 @@ class PenawaranController extends Controller
             }
 
             return redirect()->route($route, $param)
-                ->with('info', 'Penawaran sudah diterima. Silakan lanjutkan penilaian.');
+                ->with('info', 'Penawaran telah diterima. Silakan lanjutkan penilaian.');
         }
 
         // ✅ If rejected, show with info
         if ($assignment->status_penawaran === 'rejected') {
             return view('asesmen.penawaran.detail', compact('asesmen', 'assignment'))
-                ->with('info', 'Penawaran ini sudah ditolak sebelumnya.');
+                ->with('info', 'Penawaran ini telah ditolak sebelumnya.');
         }
 
         // ✅ Pending: show detail for response
@@ -100,7 +100,7 @@ class PenawaranController extends Controller
             ->with('role', 'asesmen')
             ->firstOrFail();
 
-        // Kalau sudah accepted, langsung redirect ke berkas (biar tidak bolak-balik ke sini)
+        // Kalau telah accepted, langsung redirect ke berkas (biar tidak bolak-balik ke sini)
         if ($penawaran->status_penawaran === 'accepted') {
             return redirect()->route($jenisAsesmen . '.berkas.show', $idAsesmen);
         }
