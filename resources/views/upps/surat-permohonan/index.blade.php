@@ -71,17 +71,6 @@
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
-                        <!-- Buat Permohonan -->
-                        <div class="col-md-4">
-                            <div class="d-grid">
-                                <a href="{{ route('pengajuan.create') }}" class="btn btn-md btn-primary">
-                                    <i class="bi bi-file-earmark-plus"></i>
-                                    <br>
-                                    <span class="small">Buat Permohonan Akreditasi</span>
-                                </a>
-                            </div>
-                        </div>
-
                         <!-- Download Template -->
                         <div class="col-md-4">
                             <div class="d-grid">
@@ -90,6 +79,17 @@
                                     <br>
                                     <span class="small">Download Template Permohonan Akreditasi</span>
                                 </button>
+                            </div>
+                        </div>
+
+                        <!-- Buat Permohonan -->
+                        <div class="col-md-4">
+                            <div class="d-grid">
+                                <a href="{{ route('pengajuan.create') }}" class="btn btn-md btn-primary">
+                                    <i class="bi bi-file-earmark-plus"></i>
+                                    <br>
+                                    <span class="small">Buat Permohonan Akreditasi</span>
+                                </a>
                             </div>
                         </div>
 
@@ -148,11 +148,11 @@
         <div class="col mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #8ebb0aff 0%, #c0c30dff 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Permohonan Akreditasi Telah Dikirim, tetapi Belum Ditanggapi</h6>
+                    <h6 class="mb-1 opacity-75">Permohonan Akreditasi Telah Dikirim, tetapi Sedang Proses Ditanggapi</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['dikirim'] }}</h2>
-                            <small class="opacity-75">Permohonan Akreditasi telah dikirim, tetapi belum ditanggapi oleh LAMDEPILAR</small>
+                            <small class="opacity-75">Permohonan Akreditasi telah dikirim, tetapi sedang proses ditanggapi oleh LAMDEPILAR</small>
                         </div>
                         <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
                             <i class="bi bi-clock"></i>

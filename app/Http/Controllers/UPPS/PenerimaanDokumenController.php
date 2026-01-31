@@ -283,94 +283,75 @@ class PenerimaanDokumenController extends Controller
      */
     private function calculateStatistics($studyProgramIds): array
     {
-        // Ambil semua status log untuk pengajuan milik prodi ini
-        $logs = DB::table('pengajuan_status_log as psl')
-            ->join('pengajuan_akreditasi as pa', 'psl.id_pengajuan', '=', 'pa.id')
+        // Subquery: last status_to per pengajuan (berdasarkan changed_at, fallback created_at kalau perlu)
+        $lastLogSub = DB::table('pengajuan_status_log as psl')
+            ->select('psl.id_pengajuan', 'psl.status_to')
+            ->whereRaw('psl.id = (
+            SELECT psl2.id
+            FROM pengajuan_status_log psl2
+            WHERE psl2.id_pengajuan = psl.id_pengajuan
+            ORDER BY psl2.changed_at DESC, psl2.id DESC
+            LIMIT 1
+        )');
+
+        // Main query: agregasi 1x hit
+        $row = DB::table('pengajuan_akreditasi as pa')
+            ->leftJoinSub($lastLogSub, 'last_log', function ($join) {
+                $join->on('last_log.id_pengajuan', '=', 'pa.id');
+            })
             ->whereIn('pa.id_program_studi', $studyProgramIds)
-            ->whereIn('psl.status_to', [
+            ->selectRaw('
+            COUNT(*) as total_pengajuan,
+
+            SUM(
+                CASE
+                    WHEN EXISTS (
+                        SELECT 1 FROM pengajuan_status_log x
+                        WHERE x.id_pengajuan = pa.id
+                          AND x.status_to = ?
+                    )
+                    AND NOT EXISTS (
+                        SELECT 1 FROM pengajuan_status_log y
+                        WHERE y.id_pengajuan = pa.id
+                          AND y.status_to = ?
+                    )
+                THEN 1 ELSE 0 END
+            ) as dokumen_harus_dikirim,
+
+            SUM(
+                CASE
+                    WHEN EXISTS (
+                        SELECT 1 FROM pengajuan_status_log z
+                        WHERE z.id_pengajuan = pa.id
+                          AND z.status_to = ?
+                    )
+                THEN 1 ELSE 0 END
+            ) as draft_dokumen,
+
+            SUM(
+                CASE
+                    WHEN EXISTS (
+                        SELECT 1 FROM pengajuan_status_log w
+                        WHERE w.id_pengajuan = pa.id
+                          AND w.status_to = ?
+                    )
+                THEN 1 ELSE 0 END
+            ) as dokumen_dikirim
+        ', [
                 PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI,
                 PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM,
-                PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
+                PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM,
                 PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
-                PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
-                PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
-                PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,
-                PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
-                PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
             ])
-            ->select('psl.id_pengajuan', 'psl.status_to')
-            ->get();
+            ->first();
 
-        $stats = [
-            'total' => 0,
-            'belum_upload' => 0,
-            'draft_dikirim' => 0,
-            'draft_diterima' => 0,
-            'dalam_validasi' => 0,
-            'perlu_revisi' => 0,
-            'tervalidasi' => 0,
+        return [
+            'dokumen_harus_dikirim' => (int) ($row->dokumen_harus_dikirim ?? 0),
+            'draft_dokumen' => (int) ($row->draft_dokumen ?? 0),
+            'dokumen_dikirim' => (int) ($row->dokumen_dikirim ?? 0),
+
+            // opsional: kalau masih mau dipakai di tempat lain
+            'total_pengajuan' => (int) ($row->total_pengajuan ?? 0),
         ];
-
-        // Kelompokkan log berdasarkan id_pengajuan
-        $logsByPengajuan = $logs->groupBy('id_pengajuan');
-
-        foreach ($logsByPengajuan as $pengajuanId => $pengajuanLogs) {
-            $statuses = $pengajuanLogs->pluck('status_to')->unique()->toArray();
-
-            // Total: pernah ada status terkait
-            $stats['total']++;
-
-            // Belum Upload: pembayaran diverifikasi tapi belum upload draft
-            if (
-                in_array(PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI, $statuses) &&
-                !in_array(PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM, $statuses)
-            ) {
-                $stats['belum_upload']++;
-            }
-
-            // Draft Dikirim: sudah upload tapi belum diterima DE
-            if (
-                in_array(PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM, $statuses) &&
-                !in_array(PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA, $statuses) &&
-                !in_array(PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI, $statuses)
-            ) {
-                $stats['draft_dikirim']++;
-            }
-
-            // Draft Diterima: DE sudah terima
-            if (
-                (in_array(PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA, $statuses) ||
-                    in_array(PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI, $statuses)) &&
-                !in_array(PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING, $statuses) &&
-                !in_array(PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION, $statuses)
-            ) {
-                $stats['draft_diterima']++;
-            }
-
-            // Dalam Validasi
-            if (
-                (in_array(PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING, $statuses) ||
-                    in_array(PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION, $statuses)) &&
-                !in_array(PengajuanAkreditasi::STATUS_BORANG_VALIDATED, $statuses) &&
-                !in_array(PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED, $statuses)
-            ) {
-                $stats['dalam_validasi']++;
-            }
-
-            // Perlu Revisi (status terakhir)
-            if (in_array(PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED, $statuses)) {
-                $stats['perlu_revisi']++;
-            }
-
-            // Tervalidasi
-            if (
-                in_array(PengajuanAkreditasi::STATUS_BORANG_VALIDATED, $statuses) ||
-                in_array(PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA, $statuses)
-            ) {
-                $stats['tervalidasi']++;
-            }
-        }
-
-        return $stats;
     }
 }

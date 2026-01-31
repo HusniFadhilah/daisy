@@ -175,10 +175,10 @@
                                     <br>
                                     <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
 
-                                    @if($log->keterangan)
+                                    {{-- @if($log->keterangan)
                                     <br>
                                     <small class="text-muted fst-italic">{{ $log->keterangan }}</small>
-                                    @endif
+                                    @endif --}}
                                 </div>
                             </div>
                         </div>

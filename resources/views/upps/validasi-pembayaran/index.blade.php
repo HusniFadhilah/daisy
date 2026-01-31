@@ -55,15 +55,15 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 mb-4">
+    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 mb-4">
         <div class="col mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
                 <div class="card-body text-white">
                     <h6 class="mb-2 opacity-75">Total Invoice</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['total'] }}</h2>
-                            <small class="opacity-75">Semua invoice</small>
+                            <h2 class="mb-0 fw-bold">{{ $stats['menunggu_pembayaran'] }}</h2>
+                            <small class="opacity-75">Total invoice yang perlu dibayar</small>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
                             <i class="bi bi-receipt"></i>
@@ -74,13 +74,13 @@
         </div>
 
         <div class="col mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Menunggu Pembayaran</h6>
+                    <h6 class="mb-2 opacity-75">Total Invoice Dibayar</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['menunggu_pembayaran'] }}</h2>
-                            <small class="opacity-75">Invoice belum dibayar</small>
+                            <h2 class="mb-0 fw-bold">{{ $stats['total_invoice_dibayar'] }}</h2>
+                            <small class="opacity-75">Total invoice yang telah dibayar</small>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
                             <i class="bi bi-hourglass-split"></i>
@@ -93,13 +93,13 @@
         <div class="col mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Menunggu Validasi</h6>
+                    <h6 class="mb-2 opacity-75">Total Invoice Belum Tervalidasi</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['menunggu_verifikasi'] }}</h2>
-                            <small class="opacity-75">Telah upload formulir & bukti pembayaran, menunggu validasi bagian keuangan</small>
+                            <h2 class="mb-0 fw-bold">{{ $stats['total_invoice_belum_tervalidasi'] }}</h2>
+                            <small class="opacity-75">Telah upload formulir & bukti pembayaran, menunggu validasi</small>
                         </div>
-                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;" class="px-2">
+                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
                             <i class="bi bi-clock-history"></i>
                         </div>
                     </div>
@@ -110,31 +110,14 @@
         <div class="col mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Tervalidasi</h6>
+                    <h6 class="mb-2 opacity-75">Total Invoice Telah Tervalidasi</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['terverifikasi'] }}</h2>
-                            <small class="opacity-75">Pembayaran telah divalidasi bagian keuangan</small>
+                            <small class="opacity-75">Pembayaran telah divalidasi</small>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
                             <i class="bi bi-check-circle"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #868f96 0%, #596164 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Upload Ulang</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['upload_ulang'] }}</h2>
-                            <small class="opacity-75">Upload formulir & bukti pembayaran perlu diperbaiki</small>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
-                            <i class="bi bi-arrow-repeat"></i>
                         </div>
                     </div>
                 </div>

@@ -268,27 +268,46 @@ class ValidasiPembayaranController extends Controller
      */
     private function calculateStatistics($studyProgramIds): array
     {
-        $baseQuery = PengajuanPembayaran::whereHas('pengajuan', function ($q) use ($studyProgramIds) {
+        $row = PengajuanPembayaran::whereHas('pengajuan', function ($q) use ($studyProgramIds) {
             $q->whereIn('id_program_studi', $studyProgramIds);
-        });
+        })
+            ->selectRaw('
+            COUNT(*) AS total,
+
+            SUM(CASE WHEN status_pembayaran = "menunggu_pembayaran" THEN 1 ELSE 0 END) AS menunggu_pembayaran,
+            SUM(CASE WHEN status_pembayaran = "menunggu_verifikasi" THEN 1 ELSE 0 END) AS menunggu_verifikasi,
+            SUM(CASE WHEN status_pembayaran = "terverifikasi" THEN 1 ELSE 0 END) AS terverifikasi,
+            SUM(CASE WHEN status_pembayaran = "upload_ulang" THEN 1 ELSE 0 END) AS upload_ulang,
+            SUM(CASE WHEN status_pembayaran = "ditolak" THEN 1 ELSE 0 END) AS ditolak
+        ')
+            ->first();
+
+        $totalInvoice = (int) $row->total;
+
+        // ✅ sudah dibayar = pernah submit bukti bayar
+        $totalInvoiceDibayar =
+            $row->menunggu_verifikasi +
+            $row->terverifikasi +
+            $row->upload_ulang +
+            $row->ditolak; // hapus ini kalau ditolak TIDAK dihitung dibayar
+
+        // ✅ belum tervalidasi
+        $totalInvoiceBelumTervalidasi =
+            $row->menunggu_verifikasi +
+            $row->upload_ulang;
 
         return [
-            'total' => (clone $baseQuery)->count(),
-            'menunggu_pembayaran' => (clone $baseQuery)
-                ->where('status_pembayaran', 'menunggu_pembayaran')
-                ->count(),
-            'menunggu_verifikasi' => (clone $baseQuery)
-                ->where('status_pembayaran', 'menunggu_verifikasi')
-                ->count(),
-            'terverifikasi' => (clone $baseQuery)
-                ->where('status_pembayaran', 'terverifikasi')
-                ->count(),
-            'upload_ulang' => (clone $baseQuery)
-                ->where('status_pembayaran', 'upload_ulang')
-                ->count(),
-            'ditolak' => (clone $baseQuery)
-                ->where('status_pembayaran', 'ditolak')
-                ->count(),
+            'total_invoice' => $totalInvoice,
+            'total_invoice_dibayar' => (int) $totalInvoiceDibayar,
+            'total_invoice_belum_tervalidasi' => (int) $totalInvoiceBelumTervalidasi,
+            'total_invoice_tervalidasi' => (int) $row->terverifikasi,
+
+            // optional: kalau masih dipakai di tempat lain
+            'menunggu_pembayaran' => (int) $row->menunggu_pembayaran,
+            'menunggu_verifikasi' => (int) $row->menunggu_verifikasi,
+            'terverifikasi' => (int) $row->terverifikasi,
+            'upload_ulang' => (int) $row->upload_ulang,
+            'ditolak' => (int) $row->ditolak,
         ];
     }
 }

@@ -478,8 +478,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{id}/download/{jenisDokumen}', [\App\Http\Controllers\UPPS\PenyampaianTemplateController::class, 'download'])->name('.download');
 
             // Request Upload Ulang
-            Route::get('/{id}/request-upload/{jenisDokumen}', [\App\Http\Controllers\UPPS\PenyampaianTemplateController::class, 'showRequestForm'])->name('.request.form');
-            Route::post('/{id}/request-upload/{jenisDokumen}', [\App\Http\Controllers\UPPS\PenyampaianTemplateController::class, 'requestUploadUlang'])->name('.request.submit');
+            Route::get('/{id}/request-upload', [\App\Http\Controllers\UPPS\PenyampaianTemplateController::class, 'showRequestForm'])->name('.request.form');
+            Route::post('/{id}/request-upload', [\App\Http\Controllers\UPPS\PenyampaianTemplateController::class, 'requestUploadUlang'])->name('.request.submit');
         });
 
         Route::prefix('validasi-pembayaran')->name('.validasi-pembayaran')->group(function () {
@@ -490,7 +490,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/dokumen/{id}/download', [\App\Http\Controllers\UPPS\ValidasiPembayaranController::class, 'download'])->name('.dokumen.download');
         });
 
-        Route::prefix('penerimaan-dokumen')->name('.penerimaan-dokumen')->group(function () {
+        Route::prefix('pengiriman-dokumen')->name('.penerimaan-dokumen')->group(function () {
             Route::get('/', [\App\Http\Controllers\UPPS\PenerimaanDokumenController::class, 'index']);
             Route::get('/{id}', [\App\Http\Controllers\UPPS\PenerimaanDokumenController::class, 'show'])->name('.show');
             Route::get('/{id}/upload', [\App\Http\Controllers\UPPS\PenerimaanDokumenController::class, 'showUploadForm'])->name('.upload.form');
@@ -503,27 +503,30 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{id}', [\App\Http\Controllers\UPPS\ValidasiDokumenController::class, 'show'])->name('.show');
         });
 
+        Route::prefix('pelaporan-dokumen')->name('.pelaporan-dokumen')->group(function () {
+            Route::get('/', [\App\Http\Controllers\UPPS\PelaporanDokumenController::class, 'index']);
+            Route::get('/{id}', [\App\Http\Controllers\UPPS\PelaporanDokumenController::class, 'show'])->name('.show');
+        });
+        Route::prefix('penugasan-ak')->name('.penugasan-ak')->group(function () {
+            Route::get('/', [\App\Http\Controllers\UPPS\PenugasanAKController::class, 'index']);
+            Route::get('/{id}', [\App\Http\Controllers\UPPS\PenugasanAKController::class, 'show'])->name('.show');
+        });
+        Route::prefix('validasi-ak')->name('.validasi-ak')->group(function () {
+            Route::get('/', [\App\Http\Controllers\UPPS\ValidasiAKController::class, 'index']);
+            Route::get('/{id}', [\App\Http\Controllers\UPPS\ValidasiAKController::class, 'show'])->name('.show');
+        });
+
+        Route::prefix('pelaporan-ak')->name('.pelaporan-ak')->group(function () {
+            Route::get('/', [\App\Http\Controllers\UPPS\PelaporanAKController::class, 'index']);
+            Route::get('/{id}', [\App\Http\Controllers\UPPS\PelaporanAKController::class, 'show'])->name('.show');
+        });
+
+        Route::prefix('penugasan-al')->name('.penugasan-al')->group(function () {
+            Route::get('/', [\App\Http\Controllers\UPPS\PenugasanALController::class, 'index']);
+            Route::get('/{id}', [\App\Http\Controllers\UPPS\PenugasanALController::class, 'show'])->name('.show');
+        });
+
         Route::middleware('under.dev')->group(function () {
-            Route::prefix('pelaporan-dokumen')->name('.pelaporan-dokumen')->group(function () {
-                Route::get('/', [App\Http\Controllers\UPPS\PelaporanDokumenController::class, 'index']);
-            });
-
-            Route::prefix('penugasan-ak')->name('.penugasan-ak')->group(function () {
-                Route::get('/', [App\Http\Controllers\UPPS\PenugasanAKController::class, 'index']);
-            });
-
-            Route::prefix('validasi-ak')->name('.validasi-ak')->group(function () {
-                Route::get('/', [App\Http\Controllers\UPPS\ValidasiAKController::class, 'index']);
-            });
-
-            Route::prefix('pelaporan-ak')->name('.pelaporan-ak')->group(function () {
-                Route::get('/', [App\Http\Controllers\UPPS\PelaporanAKController::class, 'index']);
-            });
-
-            Route::prefix('penugasan-al')->name('.penugasan-al')->group(function () {
-                Route::get('/', [App\Http\Controllers\UPPS\PenugasanALController::class, 'index']);
-            });
-
             Route::prefix('pelaksanaan-al')->name('.pelaksanaan-al')->group(function () {
                 Route::get('/', [App\Http\Controllers\UPPS\PelaksanaanALController::class, 'index']);
             });

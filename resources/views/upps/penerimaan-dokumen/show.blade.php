@@ -38,7 +38,7 @@
                 <strong>Pembayaran telah diverifikasi. Silakan upload dokumen akreditasi</strong>
                 <br>
                 Segera upload dokumen agar proses akreditasi dapat dilanjutkan.
-                <a href="{{ route('pengajuan.borang-online', $pengajuan->id) }}" class="btn btn-primary mt-3">
+                <a href="{{ route('pengajuan.borang-online', $pengajuan->id) }}" class="btn btn-success mt-3">
                     <i class="bi bi-pencil-square"></i> Buka Halaman Pengisian LED & LKPS
                 </a>
             </div>

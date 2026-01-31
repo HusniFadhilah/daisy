@@ -2,7 +2,7 @@
 
 @extends('layouts.template.app')
 
-@section('title', 'Detail Pengiriman Formulir dan Template Dokumen')
+@section('title', 'Detail Formulir dan Template Dokumen')
 
 @section('content')
 <div class="container-fluid py-3">
@@ -10,7 +10,7 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('upps.penyampaian-template') }}">Pengiriman Formulir dan Template Dokumen</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('upps.penyampaian-template') }}">Formulir dan Template Dokumen</a></li>
             <li class="breadcrumb-item active">Detail</li>
         </ol>
     </nav>
@@ -19,7 +19,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h5 class="mb-1">
-                <i class="bi bi-file-earmark-arrow-down"></i> Detail Pengiriman Formulir dan Template Dokumen
+                <i class="bi bi-file-earmark-arrow-down"></i> Detail Formulir dan Template Dokumen
             </h5>
             <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
@@ -35,7 +35,7 @@
             @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM)
             <div class="alert alert-warning alert-permanent mb-4">
                 <i class="bi bi-hourglass-split"></i>
-                <strong>Menunggu pengiriman formulir dan template dokumen dari LAMDEPILAR</strong>
+                <strong>Menunggu formulir dan template dokumen dari LAMDEPILAR</strong>
                 <br>
                 Template belum dikirim oleh LAMDEPILAR
             </div>
@@ -86,11 +86,6 @@
                         <h5 class="mb-0">
                             <i class="bi bi-file-earmark-text"></i> Formulir Pembayaran
                         </h5>
-                        @if($formulirPembayaran)
-                        <button type="button" class="btn btn-warning btn-sm" onclick="window.location.href='{{ route('upps.penyampaian-template.request.form', [$pengajuan->id, 'template_formulir_pembayaran']) }}'">
-                            <i class="bi bi-arrow-repeat"></i> Minta Upload Ulang
-                        </button>
-                        @endif
                     </div>
                 </div>
                 <div class="card-body">
@@ -138,11 +133,6 @@
                         <h5 class="mb-0">
                             <i class="bi bi-file-earmark-text"></i> Template Dokumen Akreditasi
                         </h5>
-                        @if($templateLed)
-                        <button type="button" class="btn btn-warning btn-sm" onclick="window.location.href='{{ route('upps.penyampaian-template.request.form', [$pengajuan->id, 'borang_template']) }}'">
-                            <i class="bi bi-arrow-repeat"></i> Minta Upload Ulang
-                        </button>
-                        @endif
                     </div>
                 </div>
                 <div class="card-body">
@@ -176,11 +166,34 @@
                 </div>
             </div>
 
+            @php
+            $hasAnyTemplate = ($formulirPembayaran || $templateLed);
+            @endphp
+
+            @if($hasAnyTemplate)
+            <div class="alert alert-info alert-permanent d-flex justify-content-between align-items-start gap-3">
+                <div>
+                    <h6 class="mb-1">
+                        <i class="bi bi-info-circle"></i> Informasi Pengiriman Ulang Dokumen
+                    </h6>
+                    <div class="small">
+                        Apabila Program Studi Anda membutuhkan <strong>pengiriman ulang</strong> formulir pembayaran atau template dokumen, silakan klik tombol <strong>Pengiriman Ulang</strong> untuk mengajukan permintaan pengiriman ulang formulir dan template dokumen ke LAMDEPILAR.
+                    </div>
+                </div>
+
+                <div class="text-nowrap">
+                    <a href="{{ route('upps.penyampaian-template.request.form', [$pengajuan->id]) }}" class="btn btn-warning btn-sm">
+                        <i class="bi bi-arrow-repeat"></i> Pengiriman Ulang
+                    </a>
+                </div>
+            </div>
+            @endif
+
             <!-- Informasi Penyampaian -->
             <div class="card mb-4">
                 <div class="card-header bg-secondary text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-info-circle"></i> Informasi Pengiriman Formulir dan Template Dokumen
+                        <i class="bi bi-info-circle"></i> Informasi Formulir dan Template Dokumen
                     </h5>
                 </div>
                 <div class="card-body">
@@ -210,7 +223,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <th>Status Pengiriman Formulir dan Template Dokumen</th>
+                            <th>Status Formulir dan Template Dokumen</th>
                             <td>: {!! $pengajuan->getCustomBadgeLastStatus('borang_template','upps') !!}</td>
                         </tr>
                     </table>
@@ -223,13 +236,12 @@
             <!-- Riwayat Status -->
             @php
             $filterStatuses = [
-            \App\Models\PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM,
             \App\Models\PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM,
             ];
 
             $logs = $pengajuan->statusLog
             ->whereIn('status_to', $filterStatuses)
-            ->sortByDesc('changed_at');
+            ->sortBy('changed_at');
             @endphp
 
             <div class="card">
@@ -249,15 +261,15 @@
                                 </div>
                                 <div class="flex-grow-1 ms-3">
                                     <strong>
-                                        {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label'] ?? $log->status_to }}
+                                        {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['upps'] ?? $log->status_to }}
                                     </strong>
                                     <br>
                                     <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
 
-                                    @if($log->keterangan)
+                                    {{-- @if($log->keterangan)
                                     <br>
                                     <small class="text-muted fst-italic">{{ $log->keterangan }}</small>
-                                    @endif
+                                    @endif --}}
                                 </div>
                             </div>
                         </div>

@@ -2,7 +2,7 @@
 
 @extends('layouts.template.app')
 
-@section('title', 'Permintaan Upload Ulang Dokumen')
+@section('title', 'Permintaan Pengiriman Ulang Dokumen')
 
 @section('content')
 <div class="container-fluid py-3">
@@ -10,9 +10,9 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('upps.penyampaian-template') }}">Penyampaian Formulir dan Template Dokumen</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('upps.penyampaian-template') }}">Formulir dan Template Dokumen</a></li>
             <li class="breadcrumb-item"><a href="{{ route('upps.penyampaian-template.show', $pengajuan->id) }}">Detail</a></li>
-            <li class="breadcrumb-item active">Permintaan Upload Ulang</li>
+            <li class="breadcrumb-item active">Permintaan Pengiriman Ulang</li>
         </ol>
     </nav>
 
@@ -20,7 +20,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h5 class="mb-1">
-                <i class="bi bi-arrow-repeat"></i> Permintaan Upload Ulang Dokumen
+                <i class="bi bi-arrow-repeat"></i> Permintaan Pengiriman Ulang Dokumen
             </h5>
             <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
@@ -35,7 +35,7 @@
             <div class="card mb-4 border-info">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-info-circle"></i> Informasi Permohonan Upload Ulang Template
+                        <i class="bi bi-info-circle"></i> Informasi Permohonan Pengiriman Ulang Template
                     </h5>
                 </div>
                 <div class="card-body">
@@ -53,7 +53,7 @@
                             <th>Jenis Dokumen</th>
                             <td>:</td>
                             <td>
-                                <strong>Template Dokumen Akreditasi</strong>
+                                <strong>Formulir Pembayaran & Template Dokumen Akreditasi</strong>
                             </td>
                         </tr>
 
@@ -74,26 +74,60 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded">
+                    @if(!$templateLed && !$formulirPembayaran)
+                    <div class="text-center py-4">
+                        <i class="bi bi-file-earmark-x" style="font-size: 48px; color: #ddd;"></i>
+                        <p class="text-muted mt-2 mb-0">Dokumen belum tersedia.</p>
+                    </div>
+                    @else
+                    @if($formulirPembayaran)
+                    <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded mb-3">
                         <div class="d-flex align-items-center">
-                            <i class="bi bi-file-earmark-pdf text-danger me-3" style="font-size: 48px;"></i>
+                            <i class="bi bi-file-earmark text-danger me-3" style="font-size: 48px;"></i>
                             <div>
-                                <strong>{{ $dokumen->original_filename }}</strong>
+                                <strong>{{ $formulirPembayaran->original_filename }}</strong>
                                 <br>
                                 <small class="text-muted">
-                                    {{ number_format($dokumen->file_size / 1024, 2) }} KB •
-                                    Diupload: {{ $dokumen->created_at->format('d M Y H:i') }}
+                                    {{ number_format($formulirPembayaran->file_size / 1024, 2) }} KB •
+                                    Diupload: {{ $formulirPembayaran->created_at->format('d M Y H:i') }}
                                 </small>
                                 <br>
-                                <span class="badge bg-info">Versi {{ $dokumen->versi }}</span>
+                                <span class="badge bg-info">Versi {{ $formulirPembayaran->versi }}</span>
+                                <span class="badge bg-secondary">Formulir Pembayaran</span>
                             </div>
                         </div>
                         <div>
-                            <a href="{{ route('upps.penyampaian-template.download', [$pengajuan->id, $jenisDokumen]) }}" class="btn btn-success btn-md" target="_blank">
+                            <a href="{{ route('upps.penyampaian-template.download', [$pengajuan->id, 'template_formulir_pembayaran']) }}" class="btn btn-success btn-md" target="_blank">
                                 <i class="bi bi-file-earmark-pdf"></i> Lihat File
                             </a>
                         </div>
                     </div>
+                    @endif
+
+                    @if($templateLed)
+                    <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-file-earmark-pdf text-danger me-3" style="font-size: 48px;"></i>
+                            <div>
+                                <strong>{{ $templateLed->original_filename }}</strong>
+                                <br>
+                                <small class="text-muted">
+                                    {{ number_format($templateLed->file_size / 1024, 2) }} KB •
+                                    Diupload: {{ $templateLed->created_at->format('d M Y H:i') }}
+                                </small>
+                                <br>
+                                <span class="badge bg-info">Versi {{ $templateLed->versi }}</span>
+                                <span class="badge bg-secondary">Template Dokumen Akreditasi</span>
+                            </div>
+                        </div>
+                        <div>
+                            <a href="{{ route('upps.penyampaian-template.download', [$pengajuan->id, 'borang_template']) }}" class="btn btn-success btn-md" target="_blank">
+                                <i class="bi bi-file-earmark-pdf"></i> Lihat File
+                            </a>
+                        </div>
+                    </div>
+                    @endif
+                    @endif
                 </div>
             </div>
 
@@ -101,9 +135,9 @@
             <div class="alert alert-warning alert-permanent">
                 <h6><i class="bi bi-exclamation-triangle"></i> Informasi Penting</h6>
                 <ul class="mb-0">
-                    <li>Permintaan upload ulang akan dikirim ke LAMDEPILAR</li>
+                    <li>Permintaan <strong>pengiriman ulang</strong> akan dikirim ke LAMDEPILAR</li>
                     <li>Status permohonan akreditasi <strong>tidak akan berubah</strong></li>
-                    <li>Dokumen yang ada saat ini akan tetap tersimpan sampai LAMDEPILAR mengirim dokumen baru</li>
+                    <li>Dokumen saat ini tetap tersimpan sampai LAMDEPILAR mengirim dokumen terbaru</li>
                     <li>Anda akan mendapat notifikasi setelah LAMDEPILAR merespon permintaan ini</li>
                     <li>Pastikan alasan yang Anda berikan jelas dan spesifik</li>
                 </ul>
@@ -113,56 +147,53 @@
             <div class="card">
                 <div class="card-header bg-secondary text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-pencil-square"></i> Form Permintaan Upload Ulang
+                        <i class="bi bi-pencil-square"></i> Form Permintaan Pengiriman Ulang
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('upps.penyampaian-template.request.submit', [$pengajuan->id, $jenisDokumen]) }}" method="POST">
+                    <form action="{{ route('upps.penyampaian-template.request.submit', [$pengajuan->id]) }}" method="POST">
                         @csrf
+
+                        {{-- Pilih dokumen yang diminta --}}
+                        <div class="mb-3">
+                            <label class="form-label">
+                                Pilih Dokumen yang Diminta Pengiriman Ulang <span class="text-danger">*</span>
+                            </label>
+
+                            <select name="jenis_dokumen[]" class="form-select @error('jenis_dokumen') is-invalid @enderror" multiple required>
+                                @if($templateLed)
+                                <option value="borang_template" {{ in_array('borang_template', old('jenis_dokumen', [])) ? 'selected' : '' }}>
+                                    Template Dokumen Akreditasi
+                                </option>
+                                @endif
+                                @if($formulirPembayaran)
+                                <option value="template_formulir_pembayaran" {{ in_array('template_formulir_pembayaran', old('jenis_dokumen', [])) ? 'selected' : '' }}>
+                                    Formulir Pembayaran
+                                </option>
+                                @endif
+                            </select>
+
+                            @error('jenis_dokumen')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+
+                            <small class="form-text text-muted">
+                                Anda dapat memilih satu dokumen atau keduanya sekaligus.
+                            </small>
+                        </div>
 
                         <!-- Alasan Request -->
                         <div class="mb-3">
                             <label for="alasan_request" class="form-label">
-                                Alasan Permintaan Upload Ulang <span class="text-danger">*</span>
+                                Alasan Permintaan Pengiriman Ulang <span class="text-danger">*</span>
                             </label>
-                            <textarea class="form-control @error('alasan_request') is-invalid @enderror" id="alasan_request" name="alasan_request" rows="6" placeholder="Jelaskan alasan permintaan upload ulang dengan detail..." required>{{ old('alasan_request') }}</textarea>
+                            <textarea class="form-control @error('alasan_request') is-invalid @enderror" id="alasan_request" name="alasan_request" rows="6" placeholder="Mohon jelaskan alasan permintaan pengiriman ulang dokumen..." required>{{ old('alasan_request') }}</textarea>
                             @error('alasan_request')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                             <small class="form-text text-muted">
-                                Minimal 10 karakter, maksimal 1000 karakter. Contoh: "Dokumen template tidak dapat dibuka dengan baik" atau "Formulir pembayaran terlihat buram dan tidak terbaca"
+                                Contoh: "Dokumen tidak dapat dibuka" atau "Kualitas scan formulir pembayaran buram dan tidak terbaca"
                             </small>
-                        </div>
-
-                        <!-- Character Counter -->
-                        <div class="mb-3">
-                            <small class="text-muted">
-                                <span id="charCount">0</span> / 1000 karakter
-                            </small>
-                        </div>
-
-                        <!-- Example -->
-                        <div class="card bg-light mb-3">
-                            <div class="card-body">
-                                <h6 class="fw-bold mb-2">
-                                    <i class="bi bi-lightbulb"></i> Contoh Alasan:
-                                </h6>
-                                <ul class="mb-0 small">
-                                    <li>File dokumen tidak dapat dibuka atau corrupt</li>
-                                    <li>Kualitas scan/foto terlalu rendah atau buram sehingga tidak terbaca</li>
-                                    <li>Terdapat informasi yang salah atau tidak sesuai dengan program studi kami</li>
-                                    <li>Format file tidak sesuai dengan kebutuhan (misal: butuh format Word tapi terkirim PDF)</li>
-                                    <li>Terdapat halaman yang hilang atau tidak lengkap</li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <!-- Confirmation -->
-                        <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input" id="confirmation" required>
-                            <label class="form-check-label" for="confirmation">
-                                Saya memahami bahwa permintaan ini akan dikirim ke LAMDEPILAR dan memerlukan persetujuan dari mereka
-                            </label>
                         </div>
 
                         <!-- Buttons -->
@@ -181,28 +212,4 @@
     </div>
 </div>
 
-@push('scripts')
-<script>
-    // Character counter
-    const textarea = document.getElementById('alasan_request');
-    const charCount = document.getElementById('charCount');
-
-    textarea.addEventListener('input', function() {
-        const length = this.value.length;
-        charCount.textContent = length;
-
-        if (length > 1000) {
-            charCount.classList.add('text-danger');
-            charCount.classList.remove('text-muted');
-        } else {
-            charCount.classList.remove('text-danger');
-            charCount.classList.add('text-muted');
-        }
-    });
-
-    // Initial count
-    charCount.textContent = textarea.value.length;
-
-</script>
-@endpush
 @endsection

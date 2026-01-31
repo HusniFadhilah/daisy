@@ -142,7 +142,7 @@
 
             $logs = $pengajuan->statusLog
             ->whereIn('status_to', $filterStatuses)
-            ->sortBy('changed_at');
+            ->sortBy('created_at');
             @endphp
 
             <div class="card">
@@ -167,10 +167,10 @@
                                     <br>
                                     <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
 
-                                    @if($log->keterangan)
+                                    {{-- @if($log->keterangan)
                                     <br>
                                     <small class="text-muted fst-italic">{{ $log->keterangan }}</small>
-                                    @endif
+                                    @endif --}}
                                 </div>
                             </div>
                         </div>

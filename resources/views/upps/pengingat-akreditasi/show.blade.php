@@ -225,14 +225,14 @@
                             <i class="bi bi-circle-fill text-success" style="font-size: 10px;"></i>
                         </div>
                         <div class="flex-grow-1 ms-3">
-                            <strong>Pengingat Masa Akreditasi Dikirim oleh LAMDEPILAR</strong>
+                            <strong>Pengingat Masa Akreditasi Telah Dikirim</strong>
                             <br>
                             <small class="text-muted">
                                 {{ $pengingat->tanggal_dikirim->format('d M Y H:i') }}
                             </small>
                             <br>
                             <small class="text-muted">
-                                oleh {{ $pengingat->pengirim->name ?? 'LAMDEPILAR' }}
+                                oleh Sekretariat LAMDEPILAR
                             </small>
                         </div>
                     </div>
@@ -246,7 +246,7 @@
                             <i class="bi bi-circle-fill text-success" style="font-size: 10px;"></i>
                         </div>
                         <div class="flex-grow-1 ms-3">
-                            <strong>Pengingat Masa Akreditasi Telah Direspon oleh PS</strong>
+                            <strong>Pengingat Masa Akreditasi Telah Direspon</strong>
                             <br>
                             <small class="text-muted">
                                 {{ $pengingat->tanggal_direspon->format('d M Y H:i') }}

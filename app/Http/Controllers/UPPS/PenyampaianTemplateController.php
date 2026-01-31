@@ -108,35 +108,29 @@ class PenyampaianTemplateController extends Controller
     /**
      * Show request upload ulang form
      */
-    public function showRequestForm($id, $jenisDokumen)
+    public function showRequestForm($id)
     {
         $pengajuan = PengajuanAkreditasi::with([
             'studyProgram.university',
             'studyProgram.degreeLevel',
             'deAssigned',
+            'dokumen' => fn($q) => $q->whereIn('jenis_dokumen', [
+                'borang_template',
+                'template_formulir_pembayaran'
+            ])->where('is_latest', true),
         ])->findOrFail($id);
 
         // Check access
         $user = Auth::user();
         $studyProgramIds = $user->studyPrograms()->pluck('study_programs.id');
-
         if (!$studyProgramIds->contains($pengajuan->id_program_studi)) {
             abort(403, 'Anda tidak memiliki akses ke permohonan ini.');
         }
 
-        // Validate jenis dokumen
-        $allowedJenis = ['borang_template', 'template_formulir_pembayaran'];
-        if (!in_array($jenisDokumen, $allowedJenis)) {
-            abort(404, 'Jenis dokumen tidak valid.');
-        }
+        $templateLed = $pengajuan->dokumen->firstWhere('jenis_dokumen', 'borang_template');
+        $formulirPembayaran = $pengajuan->dokumen->firstWhere('jenis_dokumen', 'template_formulir_pembayaran');
 
-        // Check if dokumen exists
-        $dokumen = PengajuanDokumen::where('id_pengajuan', $id)
-            ->where('jenis_dokumen', $jenisDokumen)
-            ->where('is_latest', true)
-            ->first();
-
-        if (!$dokumen) {
+        if (!$templateLed && !$formulirPembayaran) {
             return redirect()
                 ->route('upps.penyampaian-template.show', $id)
                 ->with('error', 'Dokumen belum tersedia.');
@@ -144,48 +138,63 @@ class PenyampaianTemplateController extends Controller
 
         return view('upps.penyampaian-template.request-upload', compact(
             'pengajuan',
-            'jenisDokumen',
-            'dokumen'
+            'templateLed',
+            'formulirPembayaran'
         ));
     }
-
     /**
      * Submit request upload ulang
      */
-    public function requestUploadUlang(Request $request, $id, $jenisDokumen)
+    public function requestUploadUlang(Request $request, $id)
     {
         $validated = $request->validate([
-            'alasan_request' => 'required|string|min:10|max:1000',
+            'jenis_dokumen'   => 'required|array|min:1',
+            'jenis_dokumen.*' => 'in:borang_template,template_formulir_pembayaran',
+            'alasan_request'  => 'required|string|min:10|max:1000',
         ], [
-            'alasan_request.required' => 'Alasan permintaan upload ulang harus diisi.',
+            'jenis_dokumen.required' => 'Pilih minimal 1 dokumen.',
+            'jenis_dokumen.array' => 'Format pilihan dokumen tidak valid.',
+            'jenis_dokumen.*.in' => 'Jenis dokumen tidak valid.',
+            'alasan_request.required' => 'Alasan permintaan pengiriman ulang harus diisi.',
             'alasan_request.min' => 'Alasan minimal 10 karakter.',
             'alasan_request.max' => 'Alasan maksimal 1000 karakter.',
         ]);
 
         DB::beginTransaction();
         try {
-            $pengajuan = PengajuanAkreditasi::with('studyProgram', 'deAssigned')->findOrFail($id);
+            $pengajuan = PengajuanAkreditasi::with('studyProgram', 'deAssigned', 'dokumen')->findOrFail($id);
 
             // Check access
             $user = Auth::user();
             $studyProgramIds = $user->studyPrograms()->pluck('study_programs.id');
-
             if (!$studyProgramIds->contains($pengajuan->id_program_studi)) {
                 abort(403, 'Anda tidak memiliki akses ke permohonan ini.');
             }
 
-            // Validate jenis dokumen
-            $allowedJenis = ['borang_template', 'template_formulir_pembayaran'];
-            if (!in_array($jenisDokumen, $allowedJenis)) {
-                abort(404, 'Jenis dokumen tidak valid.');
+            // Ambil dokumen yang memang tersedia (is_latest)
+            $available = $pengajuan->dokumen()
+                ->where('is_latest', true)
+                ->whereIn('jenis_dokumen', ['borang_template', 'template_formulir_pembayaran'])
+                ->pluck('jenis_dokumen')
+                ->toArray();
+
+            // Filter request hanya yang tersedia
+            $requested = array_values(array_intersect($validated['jenis_dokumen'], $available));
+
+            if (count($requested) === 0) {
+                return redirect()->back()->with('error', 'Dokumen yang dipilih belum tersedia.');
             }
 
-            $jenisDokumenLabel = $jenisDokumen === 'borang_template'
-                ? 'Template Dokumen Akreditasi'
-                : 'Formulir Pembayaran';
+            $labelMap = [
+                'borang_template' => 'Template Dokumen Akreditasi',
+                'template_formulir_pembayaran' => 'Formulir Pembayaran',
+            ];
 
-            // Create notification for DE
-            $deUsers = \App\Models\User::role('asesi')->get(); // All DE users
+            $requestedLabels = array_map(fn($k) => $labelMap[$k] ?? $k, $requested);
+            $requestedLabelText = implode(', ', $requestedLabels);
+
+            // Create notification for DE (LAMDEPILAR)
+            $deUsers = \App\Models\User::role('asesi')->get();
 
             foreach ($deUsers as $deUser) {
                 Notification::create([
@@ -195,8 +204,8 @@ class PenyampaianTemplateController extends Controller
                     'data' => json_encode([
                         'id_pengajuan' => $pengajuan->id,
                         'nomor_pengajuan' => $pengajuan->nomor_pengajuan,
-                        'jenis_dokumen' => $jenisDokumen,
-                        'jenis_dokumen_label' => $jenisDokumenLabel,
+                        'jenis_dokumen' => $requested,                 // array
+                        'jenis_dokumen_label' => $requestedLabels,     // array label
                         'alasan_request' => $validated['alasan_request'],
                         'program_studi' => $pengajuan->studyProgram->name,
                         'requested_by' => Auth::user()->name,
@@ -206,7 +215,7 @@ class PenyampaianTemplateController extends Controller
                 ]);
             }
 
-            // Create notification for requester (confirmation)
+            // Confirmation to requester
             Notification::create([
                 'notifiable_type' => 'App\Models\User',
                 'notifiable_id' => Auth::id(),
@@ -214,9 +223,9 @@ class PenyampaianTemplateController extends Controller
                 'data' => json_encode([
                     'id_pengajuan' => $pengajuan->id,
                     'nomor_pengajuan' => $pengajuan->nomor_pengajuan,
-                    'jenis_dokumen' => $jenisDokumen,
-                    'jenis_dokumen_label' => $jenisDokumenLabel,
-                    'message' => "Permintaan upload ulang {$jenisDokumenLabel} telah dikirim ke LAMDEPILAR.",
+                    'jenis_dokumen' => $requested,
+                    'jenis_dokumen_label' => $requestedLabels,
+                    'message' => "Permintaan pengiriman ulang untuk {$requestedLabelText} telah dikirim ke LAMDEPILAR.",
                 ]),
                 'read_at' => null,
             ]);
@@ -225,7 +234,7 @@ class PenyampaianTemplateController extends Controller
 
             return redirect()
                 ->route('upps.penyampaian-template.show', $id)
-                ->with('success', "Permintaan upload ulang {$jenisDokumenLabel} berhasil dikirim ke LAMDEPILAR.");
+                ->with('success', "Permintaan pengiriman ulang untuk {$requestedLabelText} berhasil dikirim ke LAMDEPILAR.");
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', 'Gagal mengirim permintaan: ' . $e->getMessage());
