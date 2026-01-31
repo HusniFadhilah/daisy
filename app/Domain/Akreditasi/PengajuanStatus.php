@@ -93,8 +93,8 @@ final class PengajuanStatus
                 'label' => 'Penerimaan Permohonan Akreditasi Dikirim',
                 'label_short_for' => [
                     'de'   => 'Penerimaan Terkirim',
-                    'upps' => 'Permohonan Akreditasi Diterima',
-                    'prodi' => 'Permohonan Akreditasi Diterima',
+                    'upps' => 'Permohonan Diterima',
+                    'prodi' => 'Permohonan Diterima',
                 ],
                 'label_long_for' => [
                     'de'   => 'Penerimaan Permohonan Akreditasi Dikirim ke PS',
@@ -108,9 +108,9 @@ final class PengajuanStatus
             PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM => [
                 'label' => 'Pengiriman Formulir dan Template Dokumen',
                 'label_short_for' => [
-                    'de'   => 'Template Terkirim',
-                    'upps' => 'Template Diterima',
-                    'prodi' => 'Template Diterima',
+                    'de'   => 'Formulir & Template Terkirim',
+                    'upps' => 'Formulir & Template Diterima',
+                    'prodi' => 'Formulir & Template Diterima',
                 ],
                 'label_long_for' => [
                     'de'   => 'Formulir & Template Dokumen Telah Dikirim',

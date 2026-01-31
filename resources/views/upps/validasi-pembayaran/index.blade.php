@@ -11,11 +11,17 @@
         transition: all 0.3s ease;
         border: none;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        text-decoration: none;
     }
 
     .stat-card:hover {
         transform: translateY(-5px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .stat-card-link {
+        text-decoration: none;
     }
 
     .table-hover tbody tr {
@@ -57,71 +63,79 @@
     <!-- Statistics Cards -->
     <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 mb-4">
         <div class="col mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Total Invoice</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['menunggu_pembayaran'] }}</h2>
-                            <small class="opacity-75">Total invoice yang perlu dibayar</small>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
-                            <i class="bi bi-receipt"></i>
+            <a class="stat-card-link" href="{{ route('upps.validasi-pembayaran', array_merge($baseQuery, ['quick' => 'menunggu_pembayaran'])) }}">
+                <div class="card stat-card p-0" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <div class="card-body text-white">
+                        <h6 class="mb-2 opacity-75">Total Invoice</h6>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h2 class="mb-0 fw-bold">{{ $stats['menunggu_pembayaran'] }}</h2>
+                                <small class="opacity-75">Total invoice yang perlu dibayar</small>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
+                                <i class="bi bi-receipt"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <div class="col mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Total Invoice Dibayar</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['total_invoice_dibayar'] }}</h2>
-                            <small class="opacity-75">Total invoice yang telah dibayar</small>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
-                            <i class="bi bi-hourglass-split"></i>
+            <a class="stat-card-link" href="{{ route('upps.validasi-pembayaran', array_merge($baseQuery, ['quick' => 'total_invoice_dibayar'])) }}">
+                <div class="card stat-card p-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <div class="card-body text-white">
+                        <h6 class="mb-2 opacity-75">Total Invoice Dibayar</h6>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h2 class="mb-0 fw-bold">{{ $stats['total_invoice_dibayar'] }}</h2>
+                                <small class="opacity-75">Total invoice yang telah dibayar</small>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
+                                <i class="bi bi-hourglass-split"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <div class="col mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Total Invoice Belum Tervalidasi</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['total_invoice_belum_tervalidasi'] }}</h2>
-                            <small class="opacity-75">Telah upload formulir & bukti pembayaran, menunggu validasi</small>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
-                            <i class="bi bi-clock-history"></i>
+            <a class="stat-card-link" href="{{ route('upps.validasi-pembayaran', array_merge($baseQuery, ['quick' => 'total_invoice_belum_tervalidasi'])) }}">
+                <div class="card stat-card p-0" style="background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);">
+                    <div class="card-body text-white">
+                        <h6 class="mb-2 opacity-75">Total Invoice Belum Tervalidasi</h6>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h2 class="mb-0 fw-bold">{{ $stats['total_invoice_belum_tervalidasi'] }}</h2>
+                                <small class="opacity-75">Telah upload formulir & bukti pembayaran, menunggu validasi</small>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
+                                <i class="bi bi-clock-history"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <div class="col mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Total Invoice Telah Tervalidasi</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['terverifikasi'] }}</h2>
-                            <small class="opacity-75">Pembayaran telah divalidasi</small>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
-                            <i class="bi bi-check-circle"></i>
+            <a class="stat-card-link" href="{{ route('upps.validasi-pembayaran', array_merge($baseQuery, ['quick' => 'terverifikasi'])) }}">
+                <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                    <div class="card-body text-white">
+                        <h6 class="mb-2 opacity-75">Total Invoice Telah Tervalidasi</h6>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h2 class="mb-0 fw-bold">{{ $stats['terverifikasi'] }}</h2>
+                                <small class="opacity-75">Pembayaran telah divalidasi</small>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
+                                <i class="bi bi-check-circle"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
 
@@ -137,6 +151,7 @@
                 </div>
                 <div class="card-body">
                     <form method="GET" action="{{ route('upps.validasi-pembayaran') }}">
+                        <input type="hidden" name="quick" value="{{ request('quick') }}">
                         <!-- Search -->
                         <div class="mb-3">
                             <label class="form-label text-white">Cari</label>
@@ -148,6 +163,15 @@
                             <label class="form-label text-white">Status Pembayaran</label>
                             <select name="status" class="form-select">
                                 <option value="">Semua Status</option>
+
+                                {{-- Opsi ringkasan (gabungan status) --}}
+                                <option value="__dibayar__" {{ request('status') == '__dibayar__' ? 'selected' : '' }}>
+                                    (Ringkasan) Sudah Dibayar
+                                </option>
+                                <option value="__belum_tervalidasi__" {{ request('status') == '__belum_tervalidasi__' ? 'selected' : '' }}>
+                                    (Ringkasan) Belum Tervalidasi
+                                </option>
+
                                 <option value="menunggu_pembayaran" {{ request('status') == 'menunggu_pembayaran' ? 'selected' : '' }}>
                                     Menunggu Pembayaran
                                 </option>
@@ -195,6 +219,17 @@
 
         <!-- Main Content -->
         <div class="col-lg-9">
+            @if(request('quick'))
+            <div class="alert alert-info alert-permanent mb-3 rounded-0 d-flex align-items-center">
+                <span>
+                    Filter aktif: <strong>{{ request('quick') }}</strong>
+                </span>
+
+                <a class="ms-auto text-decoration-none" href="{{ route('upps.validasi-pembayaran', request()->except(['quick','page'])) }}">
+                    Hapus filter
+                </a>
+            </div>
+            @endif
             <div class="card">
                 <div class="card-header bg-white">
                     <div class="d-flex justify-content-between align-items-center">

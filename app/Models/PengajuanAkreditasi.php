@@ -646,6 +646,25 @@ class PengajuanAkreditasi extends Model
         return $judul;
     }
 
+    public function getJudulShortAttribute(): string
+    {
+        $pengajuan = $this;
+        $prodi = $pengajuan->studyProgram->name ?? '-';
+
+        $jenis = strtolower($pengajuan->jenis_akreditasi ?? '');
+
+        $prefix = match ($jenis) {
+            'perpanjangan' => 'Pemenuhan Status Terakreditasi',
+            'menuju_unggul', 'menuju-unggul', 'unggul' => 'Menuju Unggul',
+            'baru' => 'Akreditasi Prodi Baru',
+            default => 'Akreditasi Prodi',
+        };
+
+        $tahun = $pengajuan->tahun_akreditasi ? ' ' . $pengajuan->tahun_akreditasi : '';
+        $judul = "{$prefix} {$prodi}{$tahun}";
+        return $judul;
+    }
+
     public function getStatusBadgeClassAttribute(): string
     {
         return self::statusMap()[$this->status]['bg'] ?? 'bg-secondary';

@@ -246,7 +246,7 @@
                             @if(request()->filled('search') || request()->filled('status'))
                             Tidak ada data yang sesuai dengan filter
                             @else
-                            Belum ada dokumen yang masuk tahap pelaporan hasil AK
+                            Belum ada permohonan akreditasi yang masuk tahap pelaporan hasil AK
                             @endif
                         </p>
                         @if(request()->filled('search') || request()->filled('status'))

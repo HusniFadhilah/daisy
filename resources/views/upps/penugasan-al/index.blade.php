@@ -56,27 +56,10 @@
 
     <!-- Statistics Cards -->
     <div class="row mb-4">
-        <div class="col-lg-4 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Total Dokumen</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['total'] }}</h2>
-                            <small class="opacity-75">Semua dokumen</small>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
-                            <i class="bi bi-file-earmark-text"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-4 col-md-6 mb-3">
+        <div class="col-lg-6 col-md-6 mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Pelaporan Penilaian AK</h6>
+                    <h6 class="mb-2 opacity-75">Total Dokumen Pelaporan Penilaian AK</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['ak_dilaporkan'] }}</h2>
@@ -90,7 +73,7 @@
             </div>
         </div>
 
-        <div class="col-lg-4 col-md-6 mb-3">
+        <div class="col-lg-6 col-md-6 mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
                 <div class="card-body text-white">
                     <h6 class="mb-2 opacity-75">Penugasan Asesor AL</h6>
@@ -139,9 +122,6 @@
                                 </option>
                                 <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_AL_IN_PROGRESS }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_AL_IN_PROGRESS ? 'selected' : '' }}>
                                     Asesmen Berlangsung
-                                </option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_AL_ON_VALIDATION }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_AL_ON_VALIDATION ? 'selected' : '' }}>
-                                    Dalam Validasi
                                 </option>
                                 <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_AL_SELESAI }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_AL_SELESAI ? 'selected' : '' }}>
                                     Asesmen Selesai
@@ -261,7 +241,7 @@
                             @if(request()->filled('search') || request()->filled('status'))
                             Tidak ada data yang sesuai dengan filter
                             @else
-                            Belum ada dokumen yang masuk tahap penugasan asesor AL
+                            Belum ada permohonan akreditasi yang masuk tahap penugasan asesor AL
                             @endif
                         </p>
                         @if(request()->filled('search') || request()->filled('status'))

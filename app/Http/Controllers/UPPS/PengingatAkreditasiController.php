@@ -255,7 +255,8 @@ class PengingatAkreditasiController extends Controller
 
     /**
      * Calculate expiring accreditations (seperti logic di Pemetaan)
-     * Menghitung prodi yang masa akreditasinya akan berakhir di bulan target
+     * Menghitung prodi yang masa akreditasinya akan berakhir di bulan target,
+     * sekaligus mengambil daftar prodinya (untuk ditampilkan di alert UPPS).
      */
     private function calculateExpiringAccreditations($studyProgramIds, int $reminderMonths = 7): array
     {
@@ -266,11 +267,19 @@ class PengingatAkreditasiController extends Controller
         $targetStart = $targetMonth->copy()->startOfMonth();
         $targetEnd   = $targetMonth->copy()->endOfMonth();
 
-        // Hitung jumlah prodi yang masa akreditasinya berakhir di bulan target
-        $expiringCount = StudyProgram::whereIn('id', $studyProgramIds)
-            ->whereBetween('tanggal_kedaluwarsa', [$targetStart, $targetEnd])
+        // Query daftar prodi yang expire pada bulan target (dalam lingkup UPPS user)
+        $expiringProgramsQuery = StudyProgram::with(['university', 'degreeLevel'])
+            ->whereIn('id', $studyProgramIds)
             ->whereNotNull('tanggal_kedaluwarsa')
-            ->count();
+            ->whereBetween('tanggal_kedaluwarsa', [$targetStart, $targetEnd])
+            ->orderBy('tanggal_kedaluwarsa', 'asc');
+
+        $expiringCount = (clone $expiringProgramsQuery)->count();
+
+        // Batasi list agar alert tidak terlalu panjang (mis. max 10)
+        $expiringPrograms = (clone $expiringProgramsQuery)
+            ->limit(10)
+            ->get();
 
         return [
             'count' => $expiringCount,
@@ -279,6 +288,8 @@ class PengingatAkreditasiController extends Controller
             'target_month_label' => $targetMonth->locale('id')->translatedFormat('F Y'),
             'target_start' => $targetStart,
             'target_end' => $targetEnd,
+            'programs' => $expiringPrograms,
+            'programs_limit' => 10,
         ];
     }
 }

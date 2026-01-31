@@ -55,13 +55,6 @@
                 <br>
                 Asesor sedang melakukan asesmen lapangan ke program studi
             </div>
-            @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AL_ON_VALIDATION)
-            <div class="alert alert-warning alert-permanent">
-                <i class="bi bi-hourglass-split"></i>
-                <strong>Hasil Asesmen Lapangan dalam validasi</strong>
-                <br>
-                Hasil penilaian asesor sedang divalidasi oleh tim LAMDEPILAR
-            </div>
             @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AL_SELESAI)
             <div class="alert alert-success alert-permanent">
                 <i class="bi bi-check-circle"></i>
@@ -335,7 +328,6 @@
                     \App\Models\PengajuanAkreditasi::STATUS_AK_DILAPORKAN,
                     \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
                     \App\Models\PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
-                    \App\Models\PengajuanAkreditasi::STATUS_AL_ON_VALIDATION,
                     \App\Models\PengajuanAkreditasi::STATUS_AL_SELESAI,
                     \App\Models\PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
                     ];
@@ -357,8 +349,7 @@
                                     \App\Models\PengajuanAkreditasi::STATUS_AL_SELESAI,
                                     \App\Models\PengajuanAkreditasi::STATUS_AL_DILAPORKAN
                                     => 'text-success',
-                                    \App\Models\PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
-                                    \App\Models\PengajuanAkreditasi::STATUS_AL_ON_VALIDATION
+                                    \App\Models\PengajuanAkreditasi::STATUS_AL_IN_PROGRESS
                                     => 'text-warning',
                                     default => 'text-info',
                                     };

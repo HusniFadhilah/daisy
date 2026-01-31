@@ -526,11 +526,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{id}', [\App\Http\Controllers\UPPS\PenugasanALController::class, 'show'])->name('.show');
         });
 
-        Route::middleware('under.dev')->group(function () {
-            Route::prefix('pelaksanaan-al')->name('.pelaksanaan-al')->group(function () {
-                Route::get('/', [App\Http\Controllers\UPPS\PelaksanaanALController::class, 'index']);
-            });
+        Route::prefix('pelaksanaan-al')->name('.pelaksanaan-al')->group(function () {
+            Route::get('/', [App\Http\Controllers\UPPS\PelaksanaanALController::class, 'index']);
+        });
 
+        Route::middleware('under.dev')->group(function () {
             Route::prefix('pelaporan-al')->name('.pelaporan-al')->group(function () {
                 Route::get('/', [App\Http\Controllers\UPPS\PelaporanALController::class, 'index']);
             });

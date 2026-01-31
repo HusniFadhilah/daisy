@@ -99,7 +99,7 @@
                                 <a href="{{ route('pengajuan.create') }}?draft=true" class="btn btn-md btn-secondary">
                                     <i class="bi bi-save"></i>
                                     <br>
-                                    <span class="small">Simpan Permohonan Akreditasi sebagai Draft</span>
+                                    <span class="small">Simpan Draft Permohonan/Kirim</span>
                                 </a>
                             </div>
                         </div>

@@ -61,17 +61,63 @@
         </div>
     </div>
 
-    <!-- Expiring Accreditation Alert (seperti Pemetaan) -->
     <!-- Expiring Accreditation Alert -->
     @if($expiringStats['has_expiring'])
     <div class="alert alert-warning alert-permanent fade show" style="border-left: 4px solid #ffc107;">
-        <div class="d-flex align-items-center justify-content-between">
-            <div class="d-flex align-items-center">
-                <i class="bi bi-exclamation-triangle-fill" style="font-size: 2rem; margin-right: 1rem;"></i>
-                <div>
+        <div class="d-flex align-items-start">
+            <i class="bi bi-exclamation-triangle-fill" style="font-size: 2rem; margin-right: 1rem;"></i>
+
+            <div class="w-100">
+                <div class="mb-2">
                     <strong style="font-size: 1rem;">Perhatian!</strong>
-                    Jumlah program studi yang habis masa akreditasinya adalah sebanyak <strong>{{ $expiringStats['count'] }}</strong>. Mohon segera mengajukan permohonan akreditasi minimal 6 bulan sebelum masa akreditasi habis.
+                    Terdapat <strong>{{ $expiringStats['count'] }}</strong> program studi di UPPS Anda
+                    yang masa akreditasinya akan berakhir pada <strong>{{ $expiringStats['target_month_label'] }}</strong>.
+                    Mohon menyiapkan permohonan akreditasi minimal <strong>6 bulan</strong> sebelum masa akreditasi habis.
                 </div>
+
+                {{-- ✅ Daftar prodi (maks 10) --}}
+                @if(!empty($expiringStats['programs']) && $expiringStats['programs']->count() > 0)
+                <div class="bg-white p-3 rounded" style="border: 1px solid rgba(0,0,0,.1);">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <strong>Daftar Prodi yang Akan Kedaluwarsa</strong>
+                        <small class="text-muted">
+                            ditampilkan {{ $expiringStats['programs']->count() }}
+                            dari {{ $expiringStats['count'] }}
+                        </small>
+                    </div>
+
+                    <ul class="mb-0 ps-3">
+                        @foreach($expiringStats['programs'] as $prodi)
+                        <li class="mb-1">
+                            <div class="fw-semibold">
+                                {{ $prodi->name }}
+                                <small class="text-muted">
+                                    ({{ $prodi->degreeLevel->alias ?? '-' }})
+                                </small>
+                            </div>
+
+                            <div class="text-muted" style="font-size: 0.875rem;">
+                                {{ $prodi->university->name ?? '-' }}
+                                • Kedaluwarsa:
+                                <strong>{!! $prodi->status_badge_kedaluwarsa !!}</strong>
+                            </div>
+
+                            {{-- Opsional: link ke detail pengingat (kalau Anda punya halaman show by pengingat id, bukan prodi id) --}}
+                            {{-- Kalau Anda punya route detail prodi lain, bisa arahkan ke sana --}}
+                        </li>
+                        @endforeach
+                    </ul>
+
+                    @if($expiringStats['count'] > ($expiringStats['programs_limit'] ?? 10))
+                    <div class="mt-2">
+                        <small class="text-muted">
+                            Masih ada {{ $expiringStats['count'] - ($expiringStats['programs_limit'] ?? 10) }} prodi lainnya.
+                            Gunakan fitur pencarian/filter untuk melihat detail.
+                        </small>
+                    </div>
+                    @endif
+                </div>
+                @endif
             </div>
         </div>
     </div>

@@ -203,11 +203,10 @@
                         <thead class="table-light">
                             <tr>
                                 <th width="5%">#</th>
-                                <th width="18%">Permohonan Akreditasi</th>
-                                <th width="20%">Program Studi</th>
-                                <th width="12%">Tanggal Template Dikirim</th>
-                                <th width="15%">Formulir dan Template Dokumen</th>
-                                <th width="15%">Status Formulir dan Template</th>
+                                <th width="15%">Permohonan</th>
+                                <th width="17%">Tanggal Dikirim</th>
+                                <th width="20%">Formulir dan Template Dokumen</th>
+                                <th width="25%">Status Formulir dan Template</th>
                                 <th width="5%" class="text-center">Aksi</th>
                             </tr>
                         </thead>
@@ -227,20 +226,12 @@
                             <tr>
                                 <td>{{ $pengajuans->firstItem() + $index }}</td>
                                 <td>
-                                    <p>{{ $pengajuan->judul }}</p>
+                                    <p>{{ $pengajuan->judul_short }}</p>
                                     <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
                                     <br>
                                     <small class="text-muted">
                                         Dibuat pada: {{ $pengajuan->created_at->format('d M Y') }}
                                     </small>
-                                </td>
-                                <td>
-                                    <strong>{{ $pengajuan->studyProgram->name }}</strong>
-                                    <br>
-                                    <small class="text-muted">
-                                        {{ $pengajuan->studyProgram->degreeLevel->name ?? '-' }}
-                                    </small>
-                                    <br><small>{{ $pengajuan->studyProgram->university->name ?? '-' }}</small>
                                 </td>
                                 <td>
                                     @if($pengajuan->tanggal_template_led_dikirim)

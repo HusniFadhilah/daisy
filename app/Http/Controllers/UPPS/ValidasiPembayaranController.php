@@ -49,10 +49,13 @@ class ValidasiPembayaranController extends Controller
             ->sort()
             ->values();
 
+        $baseQuery = request()->except('page');
+
         return view('upps.validasi-pembayaran.index', compact(
             'pembayarans',
             'stats',
-            'tahunList'
+            'tahunList',
+            'baseQuery'
         ));
     }
 
@@ -257,9 +260,66 @@ class ValidasiPembayaranController extends Controller
             });
         });
 
-        // Filter by status pembayaran
+        // Filter cepat dari card (gabungan status)
+        $query->when($request->filled('quick'), function ($q) use ($request) {
+            switch ($request->quick) {
+                case 'menunggu_pembayaran':
+                    $q->where('status_pembayaran', 'menunggu_pembayaran');
+                    break;
+
+                case 'dibayar': // pernah submit bukti bayar
+                    $q->whereIn('status_pembayaran', [
+                        'menunggu_verifikasi',
+                        'terverifikasi',
+                        'upload_ulang',
+                        'ditolak',
+                    ]);
+                    break;
+
+                case 'belum_tervalidasi':
+                    $q->whereIn('status_pembayaran', [
+                        'menunggu_verifikasi',
+                        'upload_ulang',
+                    ]);
+                    break;
+
+                case 'tervalidasi':
+                    $q->where('status_pembayaran', 'terverifikasi');
+                    break;
+
+                case 'all':
+                default:
+                    // tidak memfilter apa-apa
+                    break;
+            }
+        });
+
+        // Filter by status pembayaran (termasuk ringkasan)
         $query->when($request->filled('status'), function ($q) use ($request) {
-            $q->where('status_pembayaran', $request->status);
+            $status = $request->status;
+
+            if ($status === '__dibayar__') {
+                // pernah submit bukti bayar
+                $q->whereIn('status_pembayaran', [
+                    'menunggu_verifikasi',
+                    'terverifikasi',
+                    'upload_ulang',
+                    'ditolak',
+                ]);
+                return;
+            }
+
+            if ($status === '__belum_tervalidasi__') {
+                // menunggu validasi atau diminta upload ulang
+                $q->whereIn('status_pembayaran', [
+                    'menunggu_verifikasi',
+                    'upload_ulang',
+                ]);
+                return;
+            }
+
+            // status normal (1 status)
+            $q->where('status_pembayaran', $status);
         });
     }
 

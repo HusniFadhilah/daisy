@@ -164,9 +164,6 @@
                                 <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_AL_IN_PROGRESS }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_AL_IN_PROGRESS ? 'selected' : '' }}>
                                     Sedang Berlangsung
                                 </option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_AL_ON_VALIDATION }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_AL_ON_VALIDATION ? 'selected' : '' }}>
-                                    Dalam Validasi
-                                </option>
                                 <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_AL_SELESAI }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_AL_SELESAI ? 'selected' : '' }}>
                                     Selesai
                                 </option>

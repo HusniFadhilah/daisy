@@ -25,15 +25,14 @@ class PelaksanaanALController extends Controller
             'studyProgram.university',
             'studyProgram.degreeLevel',
             'asesorAL',
-            'asesmen.beritaAcaraAL' => function($q) {
+            'asesmen.beritaAcaraAL' => function ($q) {
                 $q->where('type', 'berita_acara_al')
-                  ->where('is_active', true)
-                  ->latest();
+                    ->where('is_active', true)
+                    ->latest();
             },
             'statusLog' => fn($q) => $q->whereIn('status_to', [
                 PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
                 PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
-                PengajuanAkreditasi::STATUS_AL_ON_VALIDATION,
                 PengajuanAkreditasi::STATUS_AL_SELESAI,
                 PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
             ])->orderBy('changed_at', 'desc'),
@@ -42,7 +41,6 @@ class PelaksanaanALController extends Controller
             ->whereIn('status', [
                 PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
                 PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
-                PengajuanAkreditasi::STATUS_AL_ON_VALIDATION,
                 PengajuanAkreditasi::STATUS_AL_SELESAI,
                 PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
             ]);
@@ -82,11 +80,11 @@ class PelaksanaanALController extends Controller
             'studyProgram.degreeLevel',
             'pengaju',
             'asesorAL',
-            'asesmen.beritaAcaraAL' => function($q) {
+            'asesmen.beritaAcaraAL' => function ($q) {
                 $q->where('type', 'berita_acara_al')
-                  ->where('is_active', true)
-                  ->with('uploader')
-                  ->latest();
+                    ->where('is_active', true)
+                    ->with('uploader')
+                    ->latest();
             },
             'dokumen' => fn($q) => $q->whereIn('jenis_dokumen', [
                 'draft_borang',
@@ -222,7 +220,6 @@ class PelaksanaanALController extends Controller
             return redirect()
                 ->route('upps.pelaksanaan-al.show', $pengajuan->id)
                 ->with('success', $messages[$newStatus]);
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error("Error approving berita acara: " . $e->getMessage(), [
@@ -250,14 +247,16 @@ class PelaksanaanALController extends Controller
             $search = $request->search;
             $q->where(function ($sq) use ($search) {
                 $sq->where('nomor_pengajuan', 'like', "%{$search}%")
-                    ->orWhereHas('studyProgram', fn($ssq) =>
+                    ->orWhereHas(
+                        'studyProgram',
+                        fn($ssq) =>
                         $ssq->where('name', 'like', "%{$search}%")
                     );
             });
         });
 
         // Filter by status
-        $query->when($request->filled('status'), function($q) use ($request) {
+        $query->when($request->filled('status'), function ($q) use ($request) {
             $q->where('status', $request->status);
         });
     }
@@ -269,11 +268,10 @@ class PelaksanaanALController extends Controller
     {
         // Total penugasan asesor AL
         $totalPenugasan = PengajuanAkreditasi::whereIn('id_program_studi', $studyProgramIds)
-            ->whereNotNull('id_asesor_al')
+            ->whereNotNull('id_asesor')
             ->whereIn('status', [
                 PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
                 PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
-                PengajuanAkreditasi::STATUS_AL_ON_VALIDATION,
                 PengajuanAkreditasi::STATUS_AL_SELESAI,
                 PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
             ])
@@ -281,20 +279,20 @@ class PelaksanaanALController extends Controller
 
         // Berita acara AL (yang sudah diupload)
         $beritaAcaraCount = PengajuanAkreditasi::whereIn('id_program_studi', $studyProgramIds)
-            ->whereHas('asesmen.beritaAcaraAL', function($q) {
+            ->whereHas('asesmen.beritaAcaraAL', function ($q) {
                 $q->where('type', 'berita_acara_al')
-                  ->where('is_active', true);
+                    ->where('is_active', true);
             })
             ->count();
 
         // Pending approval (termasuk revision_required)
-        $pendingApproval = AsesmenDocument::whereHas('asesmen.pengajuan', function($q) use ($studyProgramIds) {
+        $pendingApproval = AsesmenDocument::whereHas('asesmen.pengajuan', function ($q) use ($studyProgramIds) {
             $q->whereIn('id_program_studi', $studyProgramIds);
         })
-        ->where('type', 'berita_acara_al')
-        ->where('is_active', true)
-        ->whereIn('status_persetujuan_prodi', ['pending', 'revision_required'])
-        ->count();
+            ->where('type', 'berita_acara_al')
+            ->where('is_active', true)
+            ->whereIn('status_persetujuan_prodi', ['pending', 'revision_required'])
+            ->count();
 
         return [
             'total' => $totalPenugasan,
