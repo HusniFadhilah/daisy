@@ -49,7 +49,7 @@ Dokumen yang perlu diunggah:
 Terima kasih atas perhatiannya.
 
 Hormat kami,
-Dewan Eksekutif (DE) LAMDEPILAR</textarea>
+Sekretariat LAMDEPILAR</textarea>
                     </div>
                     @endif
                 </div>

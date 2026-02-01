@@ -258,7 +258,7 @@ class PengingatAkreditasiController extends Controller
      * Menghitung prodi yang masa akreditasinya akan berakhir di bulan target,
      * sekaligus mengambil daftar prodinya (untuk ditampilkan di alert UPPS).
      */
-    private function calculateExpiringAccreditations($studyProgramIds, int $reminderMonths = 7): array
+    private function calculateExpiringAccreditations($studyProgramIds, int $reminderMonths = 6): array
     {
         $now = now();
 

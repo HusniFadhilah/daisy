@@ -192,8 +192,8 @@
                     <form id="filterForm">
                         <!-- Search -->
                         <div class="mb-3">
-                            <label class="form-label text-white">Cari Pengajuan</label>
-                            <input type="text" name="search" id="searchInput" class="form-control" placeholder="Nomor pengajuan atau prodi..." value="{{ request('search') }}">
+                            <label class="form-label text-white">Cari Permohonan Akreditasi</label>
+                            <input type="text" name="search" id="searchInput" class="form-control" placeholder="Nomor permohonan atau prodi..." value="{{ request('search') }}">
                         </div>
 
                         <!-- Status -->

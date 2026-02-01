@@ -19,7 +19,7 @@
             <form method="GET" action="{{ route('de.penyampaian-hasil-akreditasi') }}" class="row g-3">
                 <div class="col-md-4">
                     <label class="form-label">Cari</label>
-                    <input type="text" name="search" class="form-control" placeholder="Nomor pengajuan atau nama prodi" value="{{ request('search') }}">
+                    <input type="text" name="search" class="form-control" placeholder="Nomor permohonan atau nama prodi" value="{{ request('search') }}">
                 </div>
 
                 <div class="col-md-3">

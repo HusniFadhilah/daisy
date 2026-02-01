@@ -97,7 +97,7 @@
                 </a>
             </center>
 
-            <p style="margin-top: 30px;">Hormat kami,<br><strong>Dewan Eksekutif (DE) LAMDEPILAR</strong></p>
+            <p style="margin-top: 30px;">Hormat kami,<br><strong>Sekretariat LAMDEPILAR</strong></p>
         </div>
 
         <div class="footer">

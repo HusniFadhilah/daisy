@@ -83,7 +83,7 @@
                 <div class="card-body">
                     <table class="table table-sm table-borderless mb-0">
                         <tr>
-                            <td width="40%"><strong>Nomor Pengajuan</strong></td>
+                            <td width="40%"><strong>Nomor Permohonan Akreditasi</strong></td>
                             <td>{{ $pengajuan->nomor_pengajuan }}</td>
                         </tr>
                         <tr>

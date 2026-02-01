@@ -32,7 +32,7 @@ class PengajuanDokumen extends Model
 
     public const JENIS_DOKUMEN_ALIAS = [
         'surat_permohonan'             => 'File Permohonan Akreditasi',
-        'surat_penerimaan_de'          => 'File Penerimaan Permohonan Akreditasi (dari LAMDEPILAR)',
+        'surat_penerimaan_de'          => 'File Penerimaan Permohonan Akreditasi',
         'surat_tugas'                  => 'Surat Tugas',
         'borang_template'              => 'Template Dokumen',
         'template_formulir_pembayaran' => 'Template Formulir Pembayaran',

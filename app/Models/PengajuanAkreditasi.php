@@ -911,7 +911,7 @@ class PengajuanAkreditasi extends Model
             self::STATUS_TEMPLATE_LED_DIKIRIM => [self::STATUS_MENUNGGU_PEMBAYARAN],
             self::STATUS_MENUNGGU_PEMBAYARAN => [self::STATUS_PEMBAYARAN_DITERIMA, self::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN],
             self::STATUS_PEMBAYARAN_DITERIMA => [self::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN],
-            self::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN => [self::STATUS_PEMBAYARAN_DIVERIFIKASI, self::STATUS_MENUNGGU_PEMBAYARAN],
+            self::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN => [self::STATUS_PEMBAYARAN_DIVERIFIKASI, self::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN, self::STATUS_MENUNGGU_PEMBAYARAN],
             self::STATUS_PEMBAYARAN_DIVERIFIKASI => [self::STATUS_DRAFT_BORANG_DITERIMA],
             self::STATUS_DRAFT_BORANG_DITERIMA => [self::STATUS_BORANG_ONLINE_SELESAI],
             self::STATUS_BORANG_ONLINE_SELESAI => [self::STATUS_BORANG_VALIDATION_PENDING],
@@ -1172,7 +1172,7 @@ class PengajuanAkreditasi extends Model
                 self::STATUS_SURAT_PENERIMAAN_DIKIRIM =>
                 $audience === 'de'
                     ? $badge('bg-warning', 'Belum mengirim Formulir & Template Dokumen')
-                    : $badge('bg-warning', 'Menunggu Formulir & Template Dokumen dari LAMDEPILAR'),
+                    : $badge('bg-warning', 'Menunggu Formulir & Template'),
 
                 self::STATUS_TEMPLATE_LED_DIKIRIM =>
                 $badge('bg-success', $labelFor(self::STATUS_TEMPLATE_LED_DIKIRIM) ?? 'Pengiriman Formulir & Template Dokumen'),

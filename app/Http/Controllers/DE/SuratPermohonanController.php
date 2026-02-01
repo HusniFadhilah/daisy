@@ -160,14 +160,14 @@ class SuratPermohonanController extends Controller
                 'status_to' => PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
                 'changed_by' => auth()->id(),
                 'changed_at' => now(),
-                'keterangan' => $request->keterangan ?? 'Permohonan akreditasi dari PS, diterima oleh LAMDEPILAR',
+                'keterangan' => $request->keterangan ?? 'Permohonan akreditasi dari PS, ditanggapi oleh LAMDEPILAR',
             ]);
 
             DB::commit();
 
             return redirect()
                 ->route('de.surat-permohonan')
-                ->with('success', 'Permohonan berhasil diterima. Status diubah menjadi "Permohonan Akreditasi Diterima".');
+                ->with('success', 'Permohonan berhasil ditanggapi. Status diubah menjadi "Permohonan Akreditasi Ditanggapi".');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Gagal menerima permohonan akreditasi: ' . $e->getMessage());

@@ -97,7 +97,7 @@
                 <table class="table table-hover align-middle">
                     <thead class="table-light">
                         <tr>
-                            <th>Nomor Pengajuan</th>
+                            <th>Nomor Permohonan Akreditasi</th>
                             <th>Program Studi</th>
                             <th>Jenjang</th>
                             <th>Status Dokumen</th>

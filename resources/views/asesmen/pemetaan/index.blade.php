@@ -865,7 +865,7 @@ Masa akreditasi program studi Anda akan segera berakhir. Kami mengingatkan untuk
 Terima kasih atas perhatiannya.
 
 Hormat kami,
-Dewan Eksekutif (DE) LAMDEPILAR</textarea>
+Sekretariat LAMDEPILAR</textarea>
                     </div>
                 </div>
                 <div class="modal-footer">

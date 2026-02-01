@@ -1,8 +1,8 @@
-{{-- resources/views/upps/validasi-dokumen/index.blade.php --}}
+{{-- resources/views/upps/pelaporan-al/index.blade.php --}}
 
 @extends('layouts.template.app')
 
-@section('title', 'Validasi Dokumen')
+@section('title', 'Pelaporan Hasil Asesmen Lapangan')
 
 @push('styles')
 <style>
@@ -40,7 +40,7 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item active">Validasi Dokumen</li>
+            <li class="breadcrumb-item active">Pelaporan Hasil Asesmen Lapangan</li>
         </ol>
     </nav>
 
@@ -48,76 +48,42 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">
-                <i class="bi bi-clipboard-check"></i> Validasi Dokumen
+                <i class="bi bi-file-earmark-check"></i> Pelaporan Hasil Asesmen Lapangan
             </h4>
-            <p class="text-muted mb-0">Tracking proses validasi dokumen akreditasi</p>
+            <p class="text-muted mb-0">Tracking pelaporan hasil Asesmen Lapangan</p>
         </div>
     </div>
 
     <!-- Statistics Cards -->
     <div class="row mb-4">
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Menunggu Validasi</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['menunggu_validasi'] }}</h2>
-                            <small class="opacity-75">Belum dimulai</small>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
-                            <i class="bi bi-hourglass-split"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Sedang Divalidasi</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['sedang_validasi'] }}</h2>
-                            <small class="opacity-75">Dalam proses</small>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
-                            <i class="bi bi-clock-history"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #868f96 0%, #596164 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Perlu Revisi</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['perlu_revisi'] }}</h2>
-                            <small class="opacity-75">Perlu perbaikan</small>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
-                            <i class="bi bi-arrow-repeat"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-3 col-md-6 mb-3">
+        <div class="col-lg-6 col-md-6 mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Tervalidasi</h6>
+                    <h6 class="mb-2 opacity-75">Total Berita Acara AL</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['tervalidasi'] }}</h2>
-                            <small class="opacity-75">Selesai valid</small>
+                            <h2 class="mb-0 fw-bold">{{ $stats['total'] }}</h2>
+                            <small class="opacity-75">Disetujui program studi</small>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
-                            <i class="bi bi-patch-check"></i>
+                            <i class="bi bi-file-earmark-check"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 col-md-6 mb-3">
+            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <div class="card-body text-white">
+                    <h6 class="mb-2 opacity-75">Pelaporan AL</h6>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-0 fw-bold">{{ $stats['pelaporan_al'] }}</h2>
+                            <small class="opacity-75">Hasil telah dilaporkan</small>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
+                            <i class="bi bi-send-check"></i>
                         </div>
                     </div>
                 </div>
@@ -136,7 +102,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form method="GET" action="{{ route('upps.validasi-dokumen') }}">
+                    <form method="GET" action="{{ route('upps.pelaporan-al') }}">
                         <!-- Search -->
                         <div class="mb-3">
                             <label class="form-label text-white">Cari Permohonan</label>
@@ -145,26 +111,14 @@
 
                         <!-- Status -->
                         <div class="mb-3">
-                            <label class="form-label text-white">Status Validasi</label>
+                            <label class="form-label text-white">Status Pelaporan</label>
                             <select name="status" class="form-select">
                                 <option value="">Semua Status</option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI ? 'selected' : '' }}>
-                                    Dokumen Diterima LAMDEPILAR
+                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_AL_SELESAI }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_AL_SELESAI ? 'selected' : '' }}>
+                                    Asesmen Selesai
                                 </option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING ? 'selected' : '' }}>
-                                    Menunggu Validasi
-                                </option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION ? 'selected' : '' }}>
-                                    Sedang Divalidasi
-                                </option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED ? 'selected' : '' }}>
-                                    Perlu Revisi
-                                </option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED ? 'selected' : '' }}>
-                                    Tervalidasi
-                                </option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA ? 'selected' : '' }}>
-                                    Final Diterima
+                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_AL_DILAPORKAN }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_AL_DILAPORKAN ? 'selected' : '' }}>
+                                    Hasil Dilaporkan
                                 </option>
                             </select>
                         </div>
@@ -187,7 +141,7 @@
                             <button type="submit" class="btn btn-light">
                                 <i class="bi bi-search"></i> Terapkan Filter
                             </button>
-                            <a href="{{ route('upps.validasi-dokumen') }}" class="btn btn-outline-light">
+                            <a href="{{ route('upps.pelaporan-al') }}" class="btn btn-outline-light">
                                 <i class="bi bi-x-circle"></i> Reset
                             </a>
                         </div>
@@ -201,7 +155,7 @@
             <div class="card">
                 <div class="card-header bg-white">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Daftar Validasi Dokumen</h5>
+                        <h5 class="mb-0">Daftar Pelaporan Hasil AL</h5>
                         <div>
                             <span class="text-muted">Total: <strong>{{ $pengajuans->total() }}</strong></span>
                         </div>
@@ -214,10 +168,10 @@
                             <thead class="table-light">
                                 <tr>
                                     <th width="5%">#</th>
-                                    <th width="18%">Permohonan Akreditasi</th>
-                                    <th width="20%">Program Studi</th>
-                                    <th width="15%">Validator</th>
-                                    <th width="17%">Status</th>
+                                    <th width="25%">Permohonan Akreditasi</th>
+                                    <th width="25%">Program Studi</th>
+                                    <th width="15%">Asesor AL</th>
+                                    <th width="15%">Status</th>
                                     <th width="15%" class="text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -226,7 +180,7 @@
                                 <tr>
                                     <td>{{ $pengajuans->firstItem() + $index }}</td>
                                     <td>
-                                        <p>{{ $pengajuan->judul }}</p>
+                                        <p class="mb-1"><strong>{{ $pengajuan->judul }}</strong></p>
                                         <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
                                         <br>
                                         <small class="text-muted">
@@ -239,22 +193,23 @@
                                         <small class="text-muted">
                                             {{ $pengajuan->studyProgram->degreeLevel->name ?? '-' }}
                                         </small>
-                                        <br><small>{{ $pengajuan->studyProgram->university->name ?? '-' }}</small>
+                                        <br>
+                                        <small>{{ $pengajuan->studyProgram->university->name ?? '-' }}</small>
                                     </td>
                                     <td>
-                                        @if($pengajuan->validator)
+                                        @if($pengajuan->asesorAL)
                                         <small>
-                                            {{ $pengajuan->validator->name }}
+                                            {{ $pengajuan->asesorAL->name }}
                                         </small>
                                         @else
-                                        <span class="text-muted">Belum ditugaskan</span>
+                                        <span class="text-muted">-</span>
                                         @endif
                                     </td>
                                     <td>
-                                        {!! $pengajuan->getCustomBadgeLastStatus('borang_final', 'upps') !!}
+                                        {!! $pengajuan->getCustomBadgeLastStatus('asesmen_lapangan', 'upps') !!}
                                     </td>
                                     <td class="text-center">
-                                        <a href="{{ route('upps.validasi-dokumen.show', $pengajuan->id) }}" class="btn btn-info btn-sm" title="Lihat Detail">
+                                        <a href="{{ route('upps.pelaporan-al.show', $pengajuan->id) }}" class="btn btn-info btn-sm" title="Lihat Detail">
                                             <i class="bi bi-eye"></i>
                                         </a>
                                     </td>
@@ -275,11 +230,11 @@
                             @if(request()->filled('search') || request()->filled('status'))
                             Tidak ada data yang sesuai dengan filter
                             @else
-                            Belum ada dokumen yang masuk proses validasi
+                            Belum ada hasil asesmen lapangan yang dilaporkan
                             @endif
                         </p>
                         @if(request()->filled('search') || request()->filled('status'))
-                        <a href="{{ route('upps.validasi-dokumen') }}" class="btn btn-sm btn-info">
+                        <a href="{{ route('upps.pelaporan-al') }}" class="btn btn-sm btn-info">
                             <i class="bi bi-arrow-clockwise"></i> Reset Filter
                         </a>
                         @endif

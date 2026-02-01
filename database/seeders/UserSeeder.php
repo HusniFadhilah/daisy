@@ -261,7 +261,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('=Secret1234'),
                 'role' => 'admin',
                 'role_selected' => 'super_admin',
-                'roles' => ['super_admin', 'asesi', 'asesor', 'validator', 'verifikator', 'admin_univ', 'admin_prodi', 'default'],
+                'roles' => ['super_admin', 'asesi', 'asesor', 'validator', 'verifikator', 'admin_univ', 'admin_prodi', 'keuangan_lamdepilar', 'default'],
             ],
         ];
 

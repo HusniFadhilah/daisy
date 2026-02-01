@@ -87,7 +87,7 @@
             <p>Pembayaran akreditasi Anda telah <strong>DIVERIFIKASI</strong> oleh LAMDEPILAR.</p>
 
             <div class="info-box">
-                <p><strong>Nomor Pengajuan:</strong> {{ $pengajuan->nomor_pengajuan }}</p>
+                <p><strong>Nomor Permohonan Akreditasi:</strong> {{ $pengajuan->nomor_pengajuan }}</p>
                 <p><strong>Invoice:</strong> {{ $pengajuan->pembayaran->nomor_invoice }}</p>
                 <p><strong>Jumlah Pembayaran:</strong> Rp {{ number_format($pengajuan->pembayaran->jumlah_pembayaran, 0, ',', '.') }}</p>
                 <p><strong>Status:</strong> <span style="color: #28a745;">VERIFIED</span></p>

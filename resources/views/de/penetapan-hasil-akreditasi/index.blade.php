@@ -332,7 +332,7 @@
                         <thead class="table-light">
                             <tr>
                                 <th width="5%">#</th>
-                                <th width="15%">Nomor Pengajuan</th>
+                                <th width="15%">Nomor Permohonan Akreditasi</th>
                                 <th width="20%">Program Studi</th>
                                 <th width="12%">Peringkat</th>
                                 <th width="10%">Skor</th>

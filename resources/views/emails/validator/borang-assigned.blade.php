@@ -7,7 +7,7 @@ Anda telah ditunjuk untuk **memvalidasi borang** pada Permohonan akreditasi beri
 
 @component('mail::panel')
 **{{ optional($pengajuan)->studyProgram->name ?? '-' }}**
-Nomor Pengajuan: **{{ $pengajuan->nomor_pengajuan ?? '-' }}**
+Nomor Permohonan Akreditasi: **{{ $pengajuan->nomor_pengajuan ?? '-' }}**
 
 @if($assignment->urutan_asesor)
 Urutan: **Asesor {{ $assignment->urutan_asesor }}**

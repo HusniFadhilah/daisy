@@ -93,7 +93,7 @@
             <form method="GET" action="{{ route('keuangan.pembayaran.index') }}">
                 <div class="row g-2 align-items-center">
                     <div class="col-md-10">
-                        <input type="text" name="q" value="{{ $q ?? '' }}" class="form-control" placeholder="Cari nomor pengajuan, program studi, atau nomor invoice…">
+                        <input type="text" name="q" value="{{ $q ?? '' }}" class="form-control" placeholder="Cari Nomor permohonan, program studi, atau nomor invoice…">
                     </div>
                     <div class="col-md-2 d-grid">
                         <button class="btn btn-primary">

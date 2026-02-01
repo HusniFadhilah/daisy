@@ -169,7 +169,7 @@
                         <!-- Search -->
                         <div class="mb-3">
                             <label class="form-label text-white">Cari</label>
-                            <input type="text" name="search" id="searchInput" class="form-control" placeholder="Nomor pengajuan, prodi, atau validator..." value="{{ request('search') }}">
+                            <input type="text" name="search" id="searchInput" class="form-control" placeholder="Nomor permohonan, prodi, atau validator..." value="{{ request('search') }}">
                         </div>
 
                         <!-- Status Penawaran -->

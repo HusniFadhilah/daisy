@@ -168,7 +168,7 @@
                 </a>
             </center>
 
-            <p style="margin-top: 30px;">Hormat kami,<br><strong>{{ $review->reviewer->name }}</strong><br>Dewan Eksekutif (DE) LAMDEPILAR</p>
+            <p style="margin-top: 30px;">Hormat kami,<br><strong>{{ $review->reviewer->name }}</strong><br>Sekretariat LAMDEPILAR</p>
         </div>
 
         <div class="footer">

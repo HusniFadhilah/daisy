@@ -86,7 +86,7 @@
             <form method="GET" action="{{ route('de.masa-sanggah') }}" class="row g-3">
                 <div class="col-md-3">
                     <label class="form-label">Cari</label>
-                    <input type="text" name="search" class="form-control" placeholder="Nomor pengajuan atau nama prodi" value="{{ request('search') }}">
+                    <input type="text" name="search" class="form-control" placeholder="Nomor permohonan atau nama prodi" value="{{ request('search') }}">
                 </div>
 
                 <div class="col-md-3">

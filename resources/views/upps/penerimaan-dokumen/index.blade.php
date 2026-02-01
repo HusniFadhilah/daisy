@@ -145,7 +145,7 @@
                                     Draft Diterima
                                 </option>
                                 <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI ? 'selected' : '' }}>
-                                    Dokumen Diterima Sistem
+                                    Dokumen Diterima LAMDEPILAR
                                 </option>
                                 <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING ? 'selected' : '' }}>
                                     Menunggu Validasi

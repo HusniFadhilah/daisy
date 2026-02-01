@@ -54,7 +54,7 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Nomor Pengajuan</label>
+                            <label class="text-muted small">Nomor Permohonan Akreditasi</label>
                             <p class="fw-bold">{{ $pengajuan->nomor_pengajuan }}</p>
                         </div>
                         <div class="col-md-6 mb-3">

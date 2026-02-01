@@ -246,15 +246,15 @@ return new class extends Migration
             $table->foreignId('uploaded_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('uploaded_at')->nullable();
 
-            $table->enum('status_persetujuan_prodi', ['pending', 'approved', 'revision_required', 'rejected'])->default('pending')->after('uploaded_at');
-            $table->foreignId('approved_by_prodi')->nullable()->constrained('users')->nullOnDelete()->after('status_persetujuan_prodi');
-            $table->timestamp('approved_at_prodi')->nullable()->after('approved_by_prodi');
-            $table->text('catatan_prodi')->nullable()->after('approved_at_prodi');
+            $table->enum('status_persetujuan_prodi', ['pending', 'approved', 'revision_required', 'rejected'])->default('pending');
+            $table->foreignId('approved_by_prodi')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamp('approved_at_prodi')->nullable();
+            $table->text('catatan_prodi')->nullable();
 
-            $table->enum('status_persetujuan_de', ['pending', 'approved',  'revision_required', 'rejected'])->default('pending')->after('uploaded_at');
-            $table->foreignId('approved_by_de')->nullable()->constrained('users')->nullOnDelete()->after('status_persetujuan_de');
-            $table->timestamp('approved_at_de')->nullable()->after('approved_by_de');
-            $table->text('catatan_de')->nullable()->after('approved_at_de');
+            $table->enum('status_persetujuan_de', ['pending', 'approved',  'revision_required', 'rejected'])->default('pending');
+            $table->foreignId('approved_by_de')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamp('approved_at_de')->nullable();
+            $table->text('catatan_de')->nullable();
 
             $table->timestamps();
 

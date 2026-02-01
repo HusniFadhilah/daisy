@@ -54,7 +54,7 @@ Mohon untuk segera menyelesaikan review dan memberikan feedback kepada program s
 Terima kasih atas kerjasamanya.
 
 Hormat kami,
-Dewan Eksekutif (DE) LAMDEPILAR</textarea>
+Sekretariat LAMDEPILAR</textarea>
                     </div>
                     @endif
                 </div>

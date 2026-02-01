@@ -71,7 +71,7 @@
 
                             <p style="margin-bottom:0;">
                                 Jika ada pertanyaan, silakan menghubungi<br>
-                                <strong>Dewan Eksekutif (DE) LAMDEPILAR</strong>
+                                <strong>Sekretariat LAMDEPILAR</strong>
                             </p>
 
                             <p style="margin-top:20px;">

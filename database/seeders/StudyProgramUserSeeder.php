@@ -76,7 +76,6 @@ class StudyProgramUserSeeder extends Seeder
             $user = User::where('email', $email)->first();
             if ($user) {
                 $user->update(['id_university' => $uLamdepilar->id]);
-                $this->command->info("✓ Updated: {$user->name} -> Universitas DEPILAR");
             } else {
                 $this->command->warn("⚠️ User tidak ditemukan: {$email}");
             }
@@ -148,8 +147,6 @@ class StudyProgramUserSeeder extends Seeder
          * 4. PRODI DEPILAR (36 PRODI = 9 JENJANG x 4 RUMPUN)
          * ======================================================
          */
-        $this->command->info('🎓 Creating 36 DEPILAR Study Programs (9 jenjang x 4 rumpun)...');
-
         $now = Carbon::now()->startOfDay();
 
         /**
@@ -309,8 +306,6 @@ class StudyProgramUserSeeder extends Seeder
             ]);
         }
 
-        $this->command->info("✅ Total DEPILAR Prodi created/updated: {$totalCreated} (expected 36)");
-
         /**
          * ======================================================
          * 5. PRODI UNIVERSITAS CONTOH ABCD (TETAP ADA)
@@ -357,7 +352,6 @@ class StudyProgramUserSeeder extends Seeder
          * 6. MAPPING USER UPPS ↔ PRODI DEPILAR (8 UPPS)
          * ======================================================
          */
-        $this->command->info('🔗 Mapping UPPS to DEPILAR Study Programs (by rumpun & type)...');
 
         $uppsProdiMappings = [
             // VOKASI

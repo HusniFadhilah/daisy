@@ -217,6 +217,8 @@ return new class extends Migration
             $table->date('tanggal_jatuh_tempo')->nullable();
             $table->dateTime('tanggal_pembayaran')->nullable();
             $table->dateTime('tanggal_verifikasi')->nullable();
+            $table->dateTime('tanggal_upload_ulang')->nullable();
+            $table->dateTime('tanggal_ditolak')->nullable();
 
             // Status pembayaran
             $table->enum('status_pembayaran', [

@@ -411,12 +411,12 @@
             <!-- Informasi Pengajuan -->
             <div class="card">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Informasi Permohonan Akreditasi PS</h5>
+                    <h5 class="mb-0">Informasi Penerimaan Dokumen</h5>
                 </div>
                 <div class="card-body">
                     <table class="table table-borderless">
                         <tr>
-                            <th width="30%">Nomor Permohonan</th>
+                            <th width="30%">Nomor Permohonan Akreditasi</th>
                             <td>: {{ $pengajuan->nomor_pengajuan }}</td>
                         </tr>
                         <tr>
@@ -440,8 +440,8 @@
                             <td>: {{ $pengajuan->pengaju->name ?? '-' }}</td>
                         </tr>
                         <tr>
-                            <th>Status Permohonan</th>
-                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('surat_permohonan_ps') !!}</td>
+                            <th>Status Penerimaan Dokumen</th>
+                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('borang_final','de','label_long_for') !!}</td>
                         </tr>
                     </table>
                 </div>

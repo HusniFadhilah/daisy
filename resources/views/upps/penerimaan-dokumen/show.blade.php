@@ -59,7 +59,7 @@
             @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI)
             <div class="alert alert-success alert-permanent">
                 <i class="bi bi-ui-checks"></i>
-                <strong>Dokumen telah diterima sistem</strong>
+                <strong>Dokumen telah diupload</strong>
                 <br>
                 Menunggu proses validasi
             </div>
@@ -178,7 +178,7 @@
 
             $logs = $pengajuan->statusLog
             ->whereIn('status_to', $filterStatuses)
-            ->sortByDesc('changed_at');
+            ->sortBy('changed_at');
             @endphp
 
             <div class="card">

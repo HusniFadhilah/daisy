@@ -18,6 +18,8 @@ class PengajuanPembayaran extends Model
         'tanggal_jatuh_tempo',
         'tanggal_pembayaran',
         'tanggal_verifikasi',
+        'tanggal_upload_ulang',
+        'tanggal_ditolak',
         'status_pembayaran',
         'bukti_path',
         'catatan_pembayaran',
@@ -30,6 +32,8 @@ class PengajuanPembayaran extends Model
         'tanggal_jatuh_tempo' => 'date',
         'tanggal_pembayaran' => 'datetime',
         'tanggal_verifikasi' => 'datetime',
+        'tanggal_upload_ulang' => 'datetime',
+        'tanggal_ditolak' => 'datetime',
     ];
 
     public function pengajuan()

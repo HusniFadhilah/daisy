@@ -53,7 +53,7 @@ class PenerimaanPermohonanController extends Controller
         $pengajuans = $query
             ->orderBy(
                 $request->get('sort_by', 'tanggal_surat_permohonan_diterima'),
-                $request->get('sort_order', 'asc')
+                $request->get('sort_order', 'desc')
             )
             ->paginate(20)
             ->appends($request->query());

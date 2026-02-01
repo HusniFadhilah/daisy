@@ -35,7 +35,7 @@
             @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI)
             <div class="alert alert-info alert-permanent">
                 <i class="bi bi-info-circle"></i>
-                <strong>Dokumen telah diterima sistem</strong>
+                <strong>Dokumen telah diupload</strong>
                 <br>
                 Menunggu penugasan validator dari LAMDEPILAR
             </div>
@@ -103,10 +103,6 @@
                             <td>: {{ $pengajuan->studyProgram->university->name }}</td>
                         </tr>
                         <tr>
-                            <th>Jenjang</th>
-                            <td>: {{ $pengajuan->studyProgram->degreeLevel->name ?? '-' }}</td>
-                        </tr>
-                        <tr>
                             <th>Jenis Permohonan</th>
                             <td>: {{ $pengajuan->jenis_akreditasi_label }}</td>
                         </tr>
@@ -115,7 +111,7 @@
                             <td>: {{ $pengajuan->tahun_akreditasi }}</td>
                         </tr>
                         <tr>
-                            <th>Validator Assigned</th>
+                            <th>Validator yang Ditugaskan</th>
                             <td>
                                 @if($pengajuan->validator)
                                 : {{ $pengajuan->validator->name }}
@@ -339,7 +335,7 @@
                         <strong>Proses Validasi Dokumen:</strong>
                     </p>
                     <ol class="small mb-0 ps-3">
-                        <li>Dokumen diterima sistem</li>
+                        <li>Dokumen diterima LAMDEPILAR</li>
                         <li>LAMDEPILAR menugaskan validator</li>
                         <li>Validator memeriksa kelengkapan dokumen</li>
                         <li>Jika perlu revisi, validator memberikan catatan</li>

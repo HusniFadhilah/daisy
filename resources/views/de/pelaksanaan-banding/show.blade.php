@@ -70,12 +70,12 @@
             <!-- Basic Info -->
             <div class="card info-card mb-4">
                 <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Informasi Pengajuan</h5>
+                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Informasi Permohonan Akreditasi</h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Nomor Pengajuan</label>
+                            <label class="text-muted small">Nomor Permohonan Akreditasi</label>
                             <p class="fw-bold">{{ $pengajuan->nomor_pengajuan }}</p>
                         </div>
                         <div class="col-md-6 mb-3">

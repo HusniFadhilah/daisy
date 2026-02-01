@@ -15,7 +15,7 @@
                 <thead class="table-light">
                     <tr>
                         <th width="5%">No</th>
-                        <th width="15%">Nomor Pengajuan Akreditasi</th>
+                        <th width="15%">Nomor Permohonan Akreditasi Akreditasi</th>
                         <th width="20%">Program Studi</th>
                         <th width="15%">Validator</th>
                         <th width="12%">Status Penawaran</th>

@@ -303,12 +303,14 @@
                                 </div>
                                 <div class="flex-grow-1 ms-3">
                                     <strong>
-                                        @if($pembayaran->status_pembayaran === 'terverifikasi')
+                                        @if($pembayaran->tanggal_ditolak)
+                                        Ditolak
+                                        @elseif($pembayaran->tanggal_verifikasi && $pembayaran->status_pembayaran == 'terverifikasi')
                                         Pembayaran Divalidasi
-                                        @elseif($pembayaran->status_pembayaran === 'upload_ulang')
+                                        @elseif($pembayaran->tanggal_upload_ulang)
                                         Diminta Upload Ulang
                                         @else
-                                        Pembayaran Ditolak
+                                        -
                                         @endif
                                     </strong>
                                     <br>
