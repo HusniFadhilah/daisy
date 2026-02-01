@@ -29,17 +29,20 @@ class PelaporanDokumenController extends Controller
                 PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
                 PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
             ])->orderBy('changed_at', 'desc'),
-        ])
-            ->whereIn('id_program_studi', $studyProgramIds)
-            ->whereIn('status', [
-                PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
-                PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
-                PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
-                PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
-                PengajuanAkreditasi::STATUS_AK_ON_VALIDATION,
-                PengajuanAkreditasi::STATUS_AK_SELESAI,
-                PengajuanAkreditasi::STATUS_AK_DILAPORKAN,
-            ]);
+        ])->whereIn('id_program_studi', $studyProgramIds)->whereExists(function ($q) {
+            $q->select(DB::raw(1))
+                ->from('pengajuan_status_log as l')
+                ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
+                ->whereIn('l.status_to', [
+                    PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
+                    PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
+                    PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
+                    PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
+                    PengajuanAkreditasi::STATUS_AK_ON_VALIDATION,
+                    PengajuanAkreditasi::STATUS_AK_SELESAI,
+                    PengajuanAkreditasi::STATUS_AK_DILAPORKAN,
+                ]);
+        });
 
         // Apply filters
         $this->applyFilters($query, $request);
@@ -107,14 +110,16 @@ class PelaporanDokumenController extends Controller
             $search = $request->search;
             $q->where(function ($sq) use ($search) {
                 $sq->where('nomor_pengajuan', 'like', "%{$search}%")
-                    ->orWhereHas('studyProgram', fn($ssq) =>
+                    ->orWhereHas(
+                        'studyProgram',
+                        fn($ssq) =>
                         $ssq->where('name', 'like', "%{$search}%")
                     );
             });
         });
 
         // Filter by status
-        $query->when($request->filled('status'), function($q) use ($request) {
+        $query->when($request->filled('status'), function ($q) use ($request) {
             $q->where('status', $request->status);
         });
     }

@@ -10,16 +10,16 @@ final class PengajuanStatus
     {
         return [
             PengajuanAkreditasi::STATUS_DRAFT => [
-                'label' => 'Draft',
+                'label' => 'Draft Permohonan Akreditasi',
                 'label_short_for' => [
-                    'de'   => 'Draft',
-                    'upps' => 'Draft',
-                    'prodi' => 'Draft',
+                    'de'   => 'Draft Belum Terkirim',
+                    'upps' => 'Draft Siap Dikirim',
+                    'prodi' => 'Draft Siap Dikirim',
                 ],
                 'label_long_for' => [
-                    'de'   => 'Draft (Belum diproses DE)',
-                    'upps' => 'Draft (Belum diajukan UPPS)',
-                    'prodi' => 'Draft (Belum diajukan Prodi)',
+                    'de'   => 'Draft Permohonan Akreditasi Belum Terkirim',
+                    'upps' => 'Draft Permohonan Akreditasi Siap Dikirim',
+                    'prodi' => 'Draft Permohonan Akreditasi Siap Dikirim',
                 ],
                 'bg' => 'bg-secondary',
                 'icon' => 'bi-pencil',
@@ -76,9 +76,9 @@ final class PengajuanStatus
             PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA => [
                 'label' => 'Permohonan Akreditasi Diterima',
                 'label_short_for' => [
-                    'de'   => 'Permohonan Telah Ditanggapi',
-                    'upps' => 'Permohonan Telah Ditanggapi',
-                    'prodi' => 'Permohonan Telah Ditanggapi',
+                    'de'   => 'Telah Ditanggapi',
+                    'upps' => 'Telah Ditanggapi',
+                    'prodi' => 'Telah Ditanggapi',
                 ],
                 'label_long_for' => [
                     'de'   => 'Permohonan Akreditasi Telah Ditanggapi',

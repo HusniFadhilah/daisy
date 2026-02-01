@@ -28,14 +28,17 @@ class PermohonanBandingController extends Controller
                 PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
                 PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
             ])->orderBy('changed_at', 'desc'),
-        ])
-            ->whereIn('id_program_studi', $studyProgramIds)
-            ->whereNotNull('tanggal_banding')
-            ->whereIn('status', [
-                PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
-                PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
-                PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
-            ]);
+        ])->whereIn('id_program_studi', $studyProgramIds)
+            ->whereNotNull('tanggal_banding')->whereExists(function ($q) {
+                $q->select(DB::raw(1))
+                    ->from('pengajuan_status_log as l')
+                    ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
+                    ->whereIn('l.status_to', [
+                        PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
+                        PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
+                        PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
+                    ]);
+            });
 
         // Apply filters
         $this->applyFilters($query, $request);
@@ -104,14 +107,16 @@ class PermohonanBandingController extends Controller
             $search = $request->search;
             $q->where(function ($sq) use ($search) {
                 $sq->where('nomor_pengajuan', 'like', "%{$search}%")
-                    ->orWhereHas('studyProgram', fn($ssq) =>
+                    ->orWhereHas(
+                        'studyProgram',
+                        fn($ssq) =>
                         $ssq->where('name', 'like', "%{$search}%")
                     );
             });
         });
 
         // Filter by status
-        $query->when($request->filled('status'), function($q) use ($request) {
+        $query->when($request->filled('status'), function ($q) use ($request) {
             $q->where('status', $request->status);
         });
     }

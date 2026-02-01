@@ -834,7 +834,7 @@
 <div class="modal fade" id="modalKirimPengingat" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
-            <form action="{{ route('de.pengajuan.kirim-pengingat') }}" method="POST">
+            <form action="{{ route('de.pemetaan.kirim-pengingat') }}" method="POST">
                 @csrf
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title">

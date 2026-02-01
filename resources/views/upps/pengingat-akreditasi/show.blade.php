@@ -125,7 +125,7 @@
                             <td>: {{ $pengingat->studyProgram->university->name }}</td>
                         </tr>
                         <tr>
-                            <th>Jenjang</th>
+                            <th>Jenjang Akademik</th>
                             <td>: {{ $pengingat->studyProgram->degreeLevel->name ?? '-' }}</td>
                         </tr>
                         <tr>

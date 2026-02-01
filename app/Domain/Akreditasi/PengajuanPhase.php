@@ -13,6 +13,7 @@ final class PengajuanPhase
     {
         return match ($attribute) {
             'surat_permohonan_ps' => [
+                PengajuanAkreditasi::STATUS_DRAFT,
                 PengajuanAkreditasi::STATUS_PENGINGAT_DIKIRIM,
                 PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM,
                 PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,

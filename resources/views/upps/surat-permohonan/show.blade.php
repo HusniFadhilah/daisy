@@ -143,6 +143,7 @@
             <!-- Riwayat Status -->
             @php
             $filterStatuses = [
+            \App\Models\PengajuanAkreditasi::STATUS_DRAFT,
             \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM,
             \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
             \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITOLAK,

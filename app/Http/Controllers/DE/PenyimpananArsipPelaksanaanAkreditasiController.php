@@ -1,5 +1,5 @@
 <?php
-// app/Http/Controllers/DE/PenyimpananArsipAkreditasiController.php
+// app/Http/Controllers/DE/PenyimpananArsipPelaksanaanAkreditasiController.php
 
 namespace App\Http\Controllers\DE;
 
@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use ZipArchive;
 
-class PenyimpananArsipAkreditasiController extends Controller
+class PenyimpananArsipPelaksanaanAkreditasiController extends Controller
 {
     /**
      * Display list of pengajuan yang perlu/sudah diarsipkan
@@ -104,7 +104,7 @@ class PenyimpananArsipAkreditasiController extends Controller
             ->sort()
             ->values();
 
-        return view('de.penyimpanan-arsip-akreditasi.index', compact(
+        return view('de.penyimpanan-arsip-pelaksanaan-akreditasi.index', compact(
             'pengajuans',
             'stats',
             'universities',
@@ -147,7 +147,7 @@ class PenyimpananArsipAkreditasiController extends Controller
         // Get document checklist
         $documentChecklist = $this->getDocumentChecklist($pengajuan);
 
-        return view('de.penyimpanan-arsip-akreditasi.show', compact('pengajuan', 'documentChecklist'));
+        return view('de.penyimpanan-arsip-pelaksanaan-akreditasi.show', compact('pengajuan', 'documentChecklist'));
     }
 
     /**

@@ -523,6 +523,50 @@
         </form>
     </div>
 </div>
+
+<div class="card my-3" id="emailNotifyCard">
+    <div class="card-header d-flex align-items-center justify-content-between">
+        <h6 class="mb-0">
+            <i class="bi bi-envelope-plus me-2"></i>Email Notifikasi Tambahan
+        </h6>
+        <button type="button" class="btn btn-sm btn-outline-light" id="btnRefreshEmails" style="display:none;">
+            <i class="bi bi-arrow-clockwise"></i>
+        </button>
+    </div>
+
+    <div class="card-body">
+        <div class="mb-2">
+            <div class="text-muted small">Email Utama</div>
+            <div class="fw-semibold" id="primaryEmailText">-</div>
+        </div>
+
+        <hr>
+
+        <div class="mb-2">
+            <div class="text-muted small">Daftar Email Tambahan</div>
+        </div>
+
+        <div id="emailList">
+            <div class="text-muted">Memuat...</div>
+        </div>
+
+        <hr>
+
+        <div class="mt-2">
+            <label class="form-label fw-semibold">Tambah Email</label>
+            <div class="input-group">
+                <input type="email" class="form-control" id="newEmailInput" placeholder="email-notifikasi@example.com">
+                <button class="btn btn-primary" type="button" id="btnAddEmail">
+                    <i class="bi bi-plus-circle"></i> Tambah
+                </button>
+            </div>
+            <div class="small text-danger mt-1" id="emailErrorText" style="display:none;"></div>
+            <div class="small text-muted mt-1">
+                Email tambahan akan menerima notifikasi sistem (selama statusnya aktif).
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -631,6 +675,241 @@
             return false;
         }
     });
+
+    (function() {
+        const csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        const endpoints = {
+            index: @json(route('profile.emails.index'))
+            , store: @json(route('profile.emails.store'))
+            , toggle: (id) => @json(route('profile.emails.toggle', ['id' => '__ID__'])).replace('__ID__', id)
+            , destroy: (id) => @json(route('profile.emails.destroy', ['id' => '__ID__'])).replace('__ID__', id)
+        , };
+
+        const elPrimary = document.getElementById('primaryEmailText');
+        const elList = document.getElementById('emailList');
+        const elInput = document.getElementById('newEmailInput');
+        const elErr = document.getElementById('emailErrorText');
+        const btnAdd = document.getElementById('btnAddEmail');
+
+        function showFieldError(msg) {
+            elErr.textContent = msg || '';
+            elErr.style.display = msg ? 'block' : 'none';
+        }
+
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>"']/g, s => ({
+                '&': '&amp;'
+                , '<': '&lt;'
+                , '>': '&gt;'
+                , '"': '&quot;'
+                , "'": '&#039;'
+            } [s]));
+        }
+
+        async function api(url, options) {
+            options = options || {};
+
+            var opts = {
+                method: options.method || 'GET'
+                , headers: {
+                    'X-CSRF-TOKEN': csrf
+                    , 'Accept': 'application/json'
+                }
+            };
+
+            if (options.body) {
+                opts.headers['Content-Type'] = 'application/json';
+                opts.body = JSON.stringify(options.body);
+            }
+
+            var res = await fetch(url, opts);
+
+            var data = {};
+            try {
+                data = await res.json();
+            } catch (e) {
+                data = {};
+            }
+
+            if (!res.ok) {
+                var msg = data.message ? data.message : 'Terjadi kesalahan.';
+                var err = new Error(msg);
+                err.errors = data.errors ? data.errors : null;
+                throw err;
+            }
+
+            return data;
+        }
+
+        function renderList(emails) {
+            if (!emails || emails.length === 0) {
+                elList.innerHTML =
+                    '<div class="text-muted">Belum ada email tambahan.</div>';
+                return;
+            }
+
+            var html = '';
+
+            for (var i = 0; i < emails.length; i++) {
+                var e = emails[i];
+
+                var badge = e.is_active ?
+                    '<span class="badge bg-success ms-2">Aktif</span>' :
+                    '<span class="badge bg-warning text-dark ms-2">Nonaktif</span>';
+
+                var toggleText = e.is_active ? 'Nonaktifkan' : 'Aktifkan';
+
+                html +=
+                    '<div class="d-flex align-items-center justify-content-between border rounded p-2 mb-2">' +
+                    '<div class="me-2 text-wrap">' +
+                    '<i class="bi bi-envelope me-1"></i>' +
+                    escapeHtml(e.email) +
+                    badge +
+                    '</div>' +
+                    '<div class="btn-group btn-group-sm flex-shrink-0">' +
+                    '<button class="btn btn-outline-primary" data-action="toggle" data-id="' + e.id + '">' +
+                    toggleText +
+                    '</button>' +
+                    '<button class="btn btn-outline-danger" data-action="delete" data-id="' + e.id + '">' +
+                    '<i class="bi bi-trash"></i>' +
+                    '</button>' +
+                    '</div>' +
+                    '</div>';
+            }
+
+            elList.innerHTML = html;
+        }
+
+        async function loadEmails() {
+            try {
+                var res = await api(endpoints.index);
+
+                if (res && res.data) {
+                    elPrimary.textContent = res.data.primary_email ?
+                        res.data.primary_email :
+                        '-';
+
+                    renderList(res.data.emails ? res.data.emails : []);
+                } else {
+                    renderList([]);
+                }
+            } catch (e) {
+                elList.innerHTML =
+                    '<div class="text-danger">Gagal memuat email: ' +
+                    escapeHtml(e.message) +
+                    '</div>';
+            }
+        }
+
+        btnAdd.addEventListener('click', async function() {
+            showFieldError(null);
+
+            var email = elInput.value ? elInput.value.trim() : '';
+            if (!email) {
+                showFieldError('Email wajib diisi.');
+                return;
+            }
+
+            setButtonLoading(btnAdd, true, 'Menambah');
+
+            try {
+                await api(endpoints.store, {
+                    method: 'POST'
+                    , body: {
+                        email: email
+                    }
+                });
+
+                elInput.value = '';
+                await loadEmails();
+
+                if (typeof showAlert === 'function') {
+                    showAlert('success', 'Email tambahan berhasil ditambahkan.');
+                }
+            } catch (e) {
+                var msg = 'Gagal menambahkan email.';
+                if (e.errors && e.errors.email && e.errors.email.length > 0) {
+                    msg = e.errors.email[0];
+                } else if (e.message) {
+                    msg = e.message;
+                }
+                showFieldError(msg);
+            } finally {
+                setButtonLoading(btnAdd, false);
+            }
+        });
+
+        elList.addEventListener('click', async function(ev) {
+            var btn = ev.target.closest('button[data-action]');
+            if (!btn) return;
+
+            var action = btn.getAttribute('data-action');
+            var id = btn.getAttribute('data-id');
+
+            if (!id) return;
+
+            try {
+                if (action === 'toggle') {
+                    setButtonLoading(btn, true, 'Memproses');
+
+                    await api(endpoints.toggle(id), {
+                        method: 'PATCH'
+                    });
+                    await loadEmails();
+
+                    if (typeof showAlert === 'function') {
+                        showAlert('success', 'Status email berhasil diperbarui.');
+                    }
+                }
+
+                if (action === 'delete') {
+                    if (!confirm('Hapus email ini?')) return;
+
+                    setButtonLoading(btn, true, 'Menghapus');
+
+                    await api(endpoints.destroy(id), {
+                        method: 'DELETE'
+                    });
+                    await loadEmails();
+
+                    if (typeof showAlert === 'function') {
+                        showAlert('success', 'Email berhasil dihapus.');
+                    }
+                }
+            } catch (e) {
+                if (typeof showAlert === 'function') {
+                    showAlert('danger', e.message || 'Terjadi kesalahan.');
+                }
+            } finally {
+                setButtonLoading(btn, false);
+            }
+        });
+
+        // load pertama kali
+        loadEmails();
+    })();
+
+    function setButtonLoading(btn, isLoading, loadingText) {
+        if (!btn) return;
+
+        if (isLoading) {
+            // simpan state awal
+            btn.dataset.originalHtml = btn.innerHTML;
+            btn.dataset.originalDisabled = btn.disabled ? '1' : '0';
+
+            btn.disabled = true;
+            btn.innerHTML =
+                '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>' +
+                (loadingText ? loadingText : 'Loading...');
+        } else {
+            // restore state
+            if (btn.dataset.originalHtml) {
+                btn.innerHTML = btn.dataset.originalHtml;
+            }
+            btn.disabled = btn.dataset.originalDisabled === '1';
+        }
+    }
 
 </script>
 @endpush

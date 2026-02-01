@@ -20,7 +20,7 @@ return new class extends Migration
 
             // Data Pengajuan
             $table->year('tahun_akreditasi');
-            $table->enum('jenis_akreditasi', ['baru', 'perpanjangan', 'menuju_unggul']);
+            $table->enum('jenis_akreditasi', ['baru', 'terakreditasi', 'perpanjangan', 'menuju_unggul']);
             $table->enum('kelompok_akreditasi', ['individual', 'kelompok'])->default('individual')->comment('Kelompok akreditasi: individual (per prodi) atau kelompok (beberapa prodi)');
             $table->date('tanggal_pengajuan')->nullable();
             $table->text('catatan_pengaju')->nullable();

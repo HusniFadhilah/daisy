@@ -58,12 +58,6 @@ function toggleSubmenu(event, submenuId) {
     submenu.classList.toggle('show');
 }
 
-// Show Notifications
-function showNotifications() {
-    // Implementasi notifikasi dapat disesuaikan
-    alert('Notifikasi:\n\n1. Penawaran asesmen baru (2)\n2. Split nilai terdeteksi (1)\n3. Pesan baru dari partner (3)\n4. Validasi selesai (1)\n5. Deadline mendekati (2)');
-}
-
 // Add active class to menu items on click
 document.addEventListener('DOMContentLoaded', function () {
     // Restore sidebar collapse state from localStorage (desktop only)

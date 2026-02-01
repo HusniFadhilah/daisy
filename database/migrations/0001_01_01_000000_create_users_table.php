@@ -41,6 +41,18 @@ return new class extends Migration
             $table->timestamps();
         });
 
+        Schema::create('user_emails', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->string('email');
+            $table->boolean('is_primary')->default(false);
+            $table->boolean('is_active')->default(true);
+            $table->timestamp('verified_at')->nullable();
+            $table->timestamps();
+
+            $table->unique(['user_id', 'email']);
+        });
+
         Schema::create('notifications', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('type');

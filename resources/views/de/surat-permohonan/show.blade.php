@@ -31,7 +31,7 @@
         <div class="col-lg-8 mb-4">
             <div class="card">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Informasi Permohonan Akreditasi PS</h5>
+                    <h5 class="mb-0">Informasi Permohonan Akreditasi</h5>
                 </div>
                 <div class="card-body">
                     <table class="table table-borderless">
@@ -60,7 +60,7 @@
                             <td>: {{ $pengajuan->pengaju->name ?? '-' }}</td>
                         </tr>
                         <tr>
-                            <th>Status Permohonan</th>
+                            <th>Status Permohonan Akreditasi</th>
                             <td>: {!! $pengajuan->getCustomBadgeLastStatus('surat_permohonan_ps') !!}</td>
                         </tr>
                     </table>

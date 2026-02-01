@@ -7,7 +7,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class PengingatAkreditasi extends Mailable
+class PengingatAkreditasiMail extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -22,7 +22,7 @@ class PengingatAkreditasi extends Mailable
 
     public function build()
     {
-        return $this->subject('Pengingat: Masa Akreditasi Program Studi')
+        return $this->subject('Pengingat Masa Akreditasi Program Studi')
             ->view('emails.pengingat-akreditasi');
     }
 }

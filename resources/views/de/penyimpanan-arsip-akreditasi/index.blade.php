@@ -1,4 +1,4 @@
-{{-- resources/views/de/penyimpanan-arsip-akreditasi/index.blade.php --}}
+{{-- resources/views/de/penyimpanan-arsip-pelaksanaan-akreditasi/index.blade.php --}}
 @extends('layouts.template.app')
 
 @section('title', 'Penyimpanan Arsip Pelaksanaan Akreditasi')

@@ -126,8 +126,12 @@
                                                 <i class="bi bi-send-check"></i> Respon Pengingat
                                             </h6>
 
-                                            <form action="{{ route('pengajuan.respond-pengingat', $pengingat->id) }}" method="POST" enctype="multipart/form-data">
+                                            {{-- ✅ UPDATE: Pakai route store dengan hidden input id_pengingat --}}
+                                            <form action="{{ route('pengajuan.store') }}" method="POST" enctype="multipart/form-data">
                                                 @csrf
+                                                <input type="hidden" name="id_pengingat" value="{{ $pengingat->id }}">
+                                                <input type="hidden" name="id_program_studi" value="{{ $pengingat->id_program_studi }}">
+                                                <input type="hidden" name="tahun_akreditasi" value="{{ $pengingat->tahun_akreditasi }}">
 
                                                 <div class="mb-3">
                                                     <label class="form-label fw-bold">
@@ -153,8 +157,11 @@
                                                     <label class="form-label fw-bold">
                                                         Surat Permohonan Akreditasi <span class="text-danger">*</span>
                                                     </label>
-                                                    <input type="file" name="file_surat_permohonan" class="form-control" accept=".pdf" required>
+                                                    <input type="file" name="file_surat_permohonan" class="form-control @error('file_surat_permohonan') is-invalid @enderror" accept=".pdf" required>
                                                     <small class="text-muted">Format: PDF, Max: 5MB</small>
+                                                    @error('file_surat_permohonan')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                    @enderror
                                                 </div>
 
                                                 <div class="alert alert-warning alert-permanent py-2">

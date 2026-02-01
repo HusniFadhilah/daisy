@@ -15,6 +15,7 @@ class PengajuanAkreditasi extends Model
     public const KELOMPOK_INDIVIDUAL = 'individual';
     public const KELOMPOK_KELOMPOK = 'kelompok';
     public const AKREDITASI_BARU = 'baru';
+    public const AKREDITASI_TERAKREDITASI = 'terakreditasi';
     public const AKREDITASI_PERPANJANGAN = 'perpanjangan';
     public const AKREDITASI_MENUJU_UNGGUL = 'menuju_unggul';
 
@@ -211,7 +212,8 @@ class PengajuanAkreditasi extends Model
     {
         return [
             self::AKREDITASI_BARU => 'Akreditasi untuk pembukaan prodi baru',
-            self::AKREDITASI_PERPANJANGAN => 'Akreditasi untuk pemenuhan status Terakreditasi',
+            self::AKREDITASI_PERPANJANGAN => 'Akreditasi untuk perpanjangan status yang ada saat ini',
+            self::AKREDITASI_TERAKREDITASI => 'Akreditasi untuk pemenuhan status Terakreditasi',
             self::AKREDITASI_MENUJU_UNGGUL => 'Akreditasi untuk menuju status Unggul',
         ];
     }
@@ -407,7 +409,9 @@ class PengajuanAkreditasi extends Model
 
         // Kode jenis (baru = default, TANPA kode)
         $kodeJenis = match ($jenis) {
-            'perpanjangan' => 'PRP',
+            'baru', 'prodi-baru', 'prodi_baru' => 'PRODI-BARU',
+            'terakreditasi' => 'TERAKREDITASI',
+            'perpanjangan' => 'PERPANJANGAN',
             'menuju_unggul', 'menuju-unggul', 'unggul' => 'MENUJU-UNGGUL',
             default => null, // BARU
         };
@@ -624,45 +628,51 @@ class PengajuanAkreditasi extends Model
 
     public function getJenisAkreditasiLabelAttribute(): string
     {
-        return $this->jenis_akreditasi == 'perpanjangan' ? 'Pemenuhan Status Terakreditasi' : Str::title(str_replace('_', ' ', $this->jenis_akreditasi));
+        return $this->judulPrefix('short');
+    }
+
+    private function judulPrefix(string $mode = 'long'): string
+    {
+        $jenis = strtolower($this->jenis_akreditasi ?? '');
+
+        $map = [
+            'baru' => [
+                'long'  => 'Permohonan Akreditasi Baru',
+                'short' => 'Akreditasi Baru',
+            ],
+            'terakreditasi' => [
+                'long'  => 'Permohonan Akreditasi untuk Pemenuhan Status Terakreditasi',
+                'short' => 'Pemenuhan Status Terakreditasi',
+            ],
+            'perpanjangan' => [
+                'long'  => 'Permohonan Akreditasi untuk Perpanjangan Status Akreditasi',
+                'short' => 'Perpanjangan Status Akreditasi',
+            ],
+            'menuju_unggul' => [
+                'long'  => 'Permohonan Akreditasi Menuju Unggul',
+                'short' => 'Menuju Unggul',
+            ],
+        ];
+
+        return $map[$jenis][$mode] ?? 'Akreditasi Baru';
+    }
+
+    private function buildJudul(string $mode): string
+    {
+        $prodi = $this->studyProgram->name ?? '-';
+        $tahun = $this->tahun_akreditasi ? ' ' . $this->tahun_akreditasi : '';
+
+        return $this->judulPrefix($mode) . " Prodi {$prodi}{$tahun}";
     }
 
     public function getJudulAttribute(): string
     {
-        $pengajuan = $this;
-        $prodi = $pengajuan->studyProgram->name ?? '-';
-
-        $jenis = strtolower($pengajuan->jenis_akreditasi ?? '');
-
-        $prefix = match ($jenis) {
-            'perpanjangan' => 'Permohonan Akreditasi untuk Pemenuhan Status Terakreditasi Prodi',
-            'menuju_unggul', 'menuju-unggul', 'unggul' => 'Permohonan Akreditasi Menuju Unggul Prodi',
-            'baru' => 'Permohonan Akreditasi Baru Prodi',
-            default => 'Akreditasi Prodi',
-        };
-
-        $tahun = $pengajuan->tahun_akreditasi ? ' ' . $pengajuan->tahun_akreditasi : '';
-        $judul = "{$prefix} {$prodi}{$tahun}";
-        return $judul;
+        return $this->buildJudul('long');
     }
 
     public function getJudulShortAttribute(): string
     {
-        $pengajuan = $this;
-        $prodi = $pengajuan->studyProgram->name ?? '-';
-
-        $jenis = strtolower($pengajuan->jenis_akreditasi ?? '');
-
-        $prefix = match ($jenis) {
-            'perpanjangan' => 'Pemenuhan Status Terakreditasi',
-            'menuju_unggul', 'menuju-unggul', 'unggul' => 'Menuju Unggul',
-            'baru' => 'Akreditasi Prodi Baru',
-            default => 'Akreditasi Prodi',
-        };
-
-        $tahun = $pengajuan->tahun_akreditasi ? ' ' . $pengajuan->tahun_akreditasi : '';
-        $judul = "{$prefix} {$prodi}{$tahun}";
-        return $judul;
+        return $this->buildJudul('short');
     }
 
     public function getStatusBadgeClassAttribute(): string
@@ -704,9 +714,9 @@ class PengajuanAkreditasi extends Model
             1 => ['date' => $this->tanggal_pengingat, 'label' => 'Pengingat Masa Akreditasi', 'icon' => 'bi-bell'],
             2 => ['date' => ($this->tanggal_surat_permohonan_dikirim ?? $this->tanggal_surat_permohonan_diterima), 'label' => 'Permohonan Akreditasi', 'icon' => 'bi-envelope'],
             3 => ['date' => $this->tanggal_surat_penerimaan_dikirim, 'label' => 'Penerimaan Permohonan Akreditasi', 'icon' => 'bi-envelope'],
-            4 => ['date' => $this->tanggal_template_led_dikirim, 'label' => 'Pengiriman Formulir dan Template Dokumen, formulir pembayaran', 'icon' => 'bi-file-earmark-arrow-down'],
+            4 => ['date' => $this->tanggal_template_led_dikirim, 'label' => 'Formulir Pembayaran dan Template Dokumen', 'icon' => 'bi-file-earmark-arrow-down'],
             5 => ['date' => $this->tanggal_pembayaran, 'label' => 'Validasi pembayaran', 'icon' => 'bi-credit-card-2-front'],
-            6 => ['date' => $this->tanggal_draft_borang, 'label' => 'Penerimaan Draft Dokumen dari Prodi', 'icon' => 'bi-file-earmark-check'],
+            6 => ['date' => $this->tanggal_draft_borang, 'label' => 'Penerimaan Dokumen dari Prodi', 'icon' => 'bi-file-earmark-check'],
             7 => ['date' => $this->tanggal_validasi_borang_assigned, 'label' => 'Validasi Dokumen', 'icon' => 'bi-clipboard-check'],
             8 => ['date' => $this->tanggal_pelaporan_validasi_borang, 'label' => 'Pelaporan Validasi Dokumen', 'icon' => 'bi-file-earmark-text'],
             9 => ['date' => $this->tanggal_penugasan_asesor_ak, 'label' => 'Penugasan asesor untuk AK', 'icon' => 'bi-person-check'],
@@ -1063,7 +1073,7 @@ class PengajuanAkreditasi extends Model
     {
         $statuses = [];
         if ($attribute == 'surat_permohonan_ps')
-            $statuses = [self::STATUS_PENGINGAT_DIKIRIM, self::STATUS_SURAT_PERMOHONAN_DIKIRIM, self::STATUS_SURAT_PERMOHONAN_DITERIMA, self::STATUS_SURAT_PERMOHONAN_DITOLAK];
+            $statuses = [self::STATUS_DRAFT, self::STATUS_PENGINGAT_DIKIRIM, self::STATUS_SURAT_PERMOHONAN_DIKIRIM, self::STATUS_SURAT_PERMOHONAN_DITERIMA, self::STATUS_SURAT_PERMOHONAN_DITOLAK];
         if ($attribute == 'surat_penerimaan_de')
             $statuses = [self::STATUS_SURAT_PERMOHONAN_DITERIMA, self::STATUS_SURAT_PENERIMAAN_DIKIRIM];
         if ($attribute == 'borang_template')
@@ -1129,10 +1139,11 @@ class PengajuanAkreditasi extends Model
              * ===========================================
              */
             'surat_permohonan_ps' => match ($status) {
+                self::STATUS_DRAFT =>
+                $badge('bg-secondary', $labelFor(self::STATUS_DRAFT) ?? 'Menunggu Draft Dikirim'),
+
                 self::STATUS_PENGINGAT_DIKIRIM =>
-                $audience === 'de'
-                    ? $badge('bg-warning', 'Menunggu Permohonan Akreditasi Dikirim dari PS')
-                    : $badge('bg-warning', 'Pengingat diterima. Silakan kirim Permohonan Akreditasi'),
+                $badge('bg-warning', $labelFor(self::STATUS_PENGINGAT_DIKIRIM) ?? 'Menunggu Permohonan Dikirim'),
 
                 self::STATUS_SURAT_PERMOHONAN_DIKIRIM =>
                 $badge('bg-info', $labelFor(self::STATUS_SURAT_PERMOHONAN_DIKIRIM) ?? 'Permohonan Akreditasi'),

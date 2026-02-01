@@ -88,7 +88,7 @@
                                 Email ini dikirim secara otomatis. Mohon tidak membalas email ini.
                             </p>
                             <p style="margin:5px 0 0 0;">
-                                &copy; {{ date('Y') }} Sistem Akreditasi. All rights reserved.
+                                &copy; {{ date('Y') }} Daisy - DEPILAR Accreditation Information System
                             </p>
                         </td>
                     </tr>

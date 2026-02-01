@@ -9,11 +9,27 @@ use App\Models\StudyProgram;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\PengajuanAkreditasi;
+use App\Models\PengingatAkreditasi;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use App\Mail\PengingatAkreditasiMail;
+use App\Services\MailDeliveryService;
+use App\Services\RecipientResolverService;
+use App\Services\PengingatAkreditasiService;
 
 class PemetaanAkreditasiController extends Controller
 {
+    private RecipientResolverService $recipientResolver;
+    private MailDeliveryService $mailDelivery;
+
+    public function __construct(
+        RecipientResolverService $recipientResolver,
+        MailDeliveryService $mailDelivery
+    ) {
+        $this->recipientResolver = $recipientResolver;
+        $this->mailDelivery = $mailDelivery;
+    }
+
     /**
      * Dashboard pemetaan akreditasi
      */
@@ -802,5 +818,86 @@ class PemetaanAkreditasiController extends Controller
             'html' => $html,
             'count' => $urgentPrograms->count(),
         ]);
+    }
+
+    /**
+     * Kirim pengingat akreditasi (Langkah 1)
+     */
+    public function kirimPengingat(Request $request)
+    {
+        $request->validate([
+            'id_program_studi' => 'required|array',
+            'id_program_studi.*' => 'exists:study_programs,id',
+            'pesan_pengingat' => 'required|string|max:2000',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $prodis = StudyProgram::with(['users.activeEmails', 'degreeLevel', 'university'])
+                ->whereIn('id', $request->id_program_studi)
+                ->get();
+
+            $jumlahBerhasil = 0;
+            $jumlahGagal = 0;
+            $emailGlobal = [];
+
+            foreach ($prodis as $prodi) {
+                try {
+                    $pengingat = PengingatAkreditasi::create([
+                        'id_program_studi' => $prodi->id,
+                        'id_de_pengirim' => auth()->id(),
+                        'tahun_akreditasi' => date('Y'),
+                        'pesan_pengingat' => $request->pesan_pengingat,
+                        'tanggal_dikirim' => now(),
+                        'status' => 'belum_direspon',
+                    ]);
+
+                    // 1) resolve semua email penerima (unik) untuk prodi ini
+                    $recipientEmails = $this->recipientResolver->emailsForUsers($prodi->users);
+
+                    // 2) kirim email (sekali per prodi, bukan per user)
+                    $result = $this->mailDelivery->sendToEmails(
+                        $recipientEmails,
+                        new PengingatAkreditasiMail($prodi, $request->pesan_pengingat),
+                        [],    // cc
+                        [],    // bcc
+                        false  // useQueue (true jika ingin queue)
+                    );
+
+                    // 3) simpan daftar email yang benar-benar dituju
+                    if (!empty($result['sent_to'])) {
+                        $pengingat->update([
+                            'email_terkirim_ke' => implode(', ', $result['sent_to']),
+                        ]);
+
+                        $emailGlobal = array_merge($emailGlobal, $result['sent_to']);
+                    }
+
+                    $jumlahBerhasil++;
+                } catch (\Exception $e) {
+                    Log::error("Failed to create/send pengingat for prodi {$prodi->id}: " . $e->getMessage());
+                    $jumlahGagal++;
+                }
+            }
+
+            DB::commit();
+
+            // unikkan total email untuk summary
+            $emailGlobal = array_values(array_unique(array_filter($emailGlobal)));
+
+            $message = "Pengingat berhasil dikirim ke {$jumlahBerhasil} program studi";
+            if ($jumlahGagal > 0) {
+                $message .= " ({$jumlahGagal} gagal)";
+            }
+            $message .= ". Total " . count($emailGlobal) . " email terkirim.";
+
+            return back()->with('success', $message);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Error in kirimPengingat: " . $e->getMessage());
+
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
 }

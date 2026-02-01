@@ -33,12 +33,15 @@ class PelaporanALController extends Controller
                 PengajuanAkreditasi::STATUS_AL_SELESAI,
                 PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
             ])->orderBy('changed_at', 'desc'),
-        ])
-            ->whereIn('id_program_studi', $studyProgramIds)
-            ->whereIn('status', [
-                PengajuanAkreditasi::STATUS_AL_SELESAI,
-                PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
-            ]);
+        ])->whereIn('id_program_studi', $studyProgramIds)->whereExists(function ($q) {
+            $q->select(DB::raw(1))
+                ->from('pengajuan_status_log as l')
+                ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
+                ->whereIn('l.status_to', [
+                    PengajuanAkreditasi::STATUS_AL_SELESAI,
+                    PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
+                ]);
+        });
 
         // Apply filters
         $this->applyFilters($query, $request);

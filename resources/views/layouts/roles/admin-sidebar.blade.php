@@ -146,7 +146,7 @@ $menus = [
 'route' => 'de.penyimpanan-arsip-pelaksanaan-akreditasi',
 'match' => 'de.penyimpanan-arsip-pelaksanaan-akreditasi*',
 'icon' => 'bi-archive',
-'label' => 'Penyimpanan Arsip Akreditasi',
+'label' => 'Penyimpanan Arsip Pelaksanaan Akreditasi',
 ],
 ];
 @endphp

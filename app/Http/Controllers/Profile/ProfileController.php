@@ -11,7 +11,7 @@ class ProfileController extends Controller
 {
     public function index()
     {
-        $user = Auth::user()->load(['university', 'studyPrograms.degreeLevel', 'studyPrograms.category']);
+        $user = Auth::user()->load(['university', 'studyPrograms.degreeLevel', 'studyPrograms.category', 'emails']);
 
         // Load list untuk dropdown (hanya jika user boleh edit)
         $canEditUniversity = in_array($user->role_selected, ['super_admin', 'admin_univ']);

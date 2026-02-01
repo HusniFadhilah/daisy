@@ -245,10 +245,9 @@
                             <thead class="table-light">
                                 <tr>
                                     <th width="5%">#</th>
-                                    <th width="15%">Permohonan Akreditasi</th>
-                                    <th width="20%">Program Studi</th>
+                                    <th width="30%">Permohonan Akreditasi</th>
                                     <th width="20%">Tanggal Pengingat Masa Akreditasi</th>
-                                    <th width="20%">Status Permohonan Akreditasi</th>
+                                    <th width="25%">Status Permohonan Akreditasi</th>
                                     <th width="10%" class="text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -257,23 +256,12 @@
                                 <tr>
                                     <td>{{ $pengajuans->firstItem() + $index }}</td>
                                     <td>
-                                        <p>{{ $pengajuan->judul }}</p>
+                                        <p>{{ $pengajuan->judul_short }}</p>
+                                        <small>{{ $pengajuan->studyProgram->university->name ?? '-' }}</small>
+                                        <br>
                                         <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
                                         <br>
-                                        <small class="text-muted">
-                                            Dibuat pada: {{ $pengajuan->created_at->format('d M Y') }}
-                                        </small>
-                                    </td>
-                                    <td>
-                                        <div>
-                                            <strong>{{ $pengajuan->studyProgram->name }}</strong>
-                                            <br>
-                                            <small class="text-muted">
-                                                {{ $pengajuan->studyProgram->degreeLevel->name ?? '-' }}
-                                            </small>
-                                            <br>
-                                            <small>{{ $pengajuan->studyProgram->university->name ?? '-' }}</small>
-                                        </div>
+                                        <small class="text-muted">Dibuat pada: {{ \App\Libraries\Date::tglIndo($pengajuan->created_at) }}</small>
                                     </td>
                                     <td>
                                         @if($pengajuan->tanggal_pengingat)
@@ -341,12 +329,12 @@
                 @csrf
                 <div class="modal-header bg-success text-white">
                     <h5 class="modal-title">
-                        <i class="bi bi-check-circle"></i> Terima Permohonan Akreditasi
+                        <i class="bi bi-check-circle"></i> Tanggapi Permohonan Akreditasi
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Anda akan menerima permohonan untuk:</p>
+                    <p>Anda akan menanggapi permohonan akreditasi:</p>
                     <div class="alert alert-info alert-permanent">
                         <strong id="nomorPengajuan"></strong>
                     </div>
@@ -356,13 +344,13 @@
                     </div>
                     <p class="text-muted small mb-0">
                         <i class="bi bi-info-circle"></i>
-                        Status akan berubah menjadi "Permohonan Akreditasi Diterima" dan dapat dilanjutkan ke tahap berikutnya.
+                        Status akan berubah menjadi "Permohonan Akreditasi Ditanggapi" dan dapat dilanjutkan ke tahap berikutnya.
                     </p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
                     <button type="submit" class="btn btn-success">
-                        <i class="bi bi-check-circle"></i> Terima Surat
+                        <i class="bi bi-check-circle"></i> Tanggapi Surat
                     </button>
                 </div>
             </form>

@@ -34,16 +34,19 @@ class ValidasiDokumenController extends Controller
                 PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
                 PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
             ])->orderBy('changed_at', 'desc'),
-        ])
-            ->whereIn('id_program_studi', $studyProgramIds)
-            ->whereIn('status', [
-                PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
-                PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
-                PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
-                PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,
-                PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
-                PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
-            ]);
+        ])->whereIn('id_program_studi', $studyProgramIds)->whereExists(function ($q) {
+            $q->select(DB::raw(1))
+                ->from('pengajuan_status_log as l')
+                ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
+                ->whereIn('l.status_to', [
+                    PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
+                    PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
+                    PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
+                    PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,
+                    PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
+                    PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
+                ]);
+        });
 
         // Apply filters
         $this->applyFilters($query, $request);

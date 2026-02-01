@@ -145,7 +145,7 @@
 
         <div class="footer">
             <p>Email ini dikirim secara otomatis. Mohon tidak membalas email ini.</p>
-            <p>&copy; {{ date('Y') }} Sistem Akreditasi. All rights reserved.</p>
+            <p>&copy; {{ date('Y') }} Daisy - DEPILAR Accreditation Information System</p>
         </div>
     </div>
 </body>

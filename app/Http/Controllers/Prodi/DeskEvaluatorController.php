@@ -28,7 +28,6 @@ use Illuminate\Support\Facades\Mail;
 
 class DeskEvaluatorController extends Controller
 {
-
     /**
      * CONFIG: Set validation mode
      * 'strict' = Only 1 validator allowed
@@ -144,83 +143,6 @@ class DeskEvaluatorController extends Controller
         return redirect()
             ->back()
             ->with('success', 'Data Permohonan akreditasi berhasil dihapus.');
-    }
-
-    /**
-     * Kirim pengingat akreditasi (Langkah 1)
-     */
-    public function kirimPengingat(Request $request)
-    {
-        $request->validate([
-            'id_program_studi' => 'required|array',
-            'id_program_studi.*' => 'exists:study_programs,id',
-            'pesan_pengingat' => 'required|string|max:2000',
-        ]);
-
-        DB::beginTransaction();
-        try {
-            $prodis = StudyProgram::with(['users', 'degreeLevel', 'university'])
-                ->whereIn('id', $request->id_program_studi)
-                ->get();
-
-            $jumlahBerhasil = 0;
-            $jumlahGagal = 0;
-            $emailList = [];
-
-            foreach ($prodis as $prodi) {
-                try {
-                    // Create Pengingat Akreditasi record (bukan PengajuanAkreditasi)
-                    $pengingat = PengingatAkreditasi::create([
-                        'id_program_studi' => $prodi->id,
-                        'id_de_pengirim' => auth()->id(),
-                        'tahun_akreditasi' => date('Y'),
-                        'pesan_pengingat' => $request->pesan_pengingat,
-                        'tanggal_dikirim' => now(),
-                        'status' => 'belum_direspon',
-                    ]);
-
-                    // Send email to prodi users
-                    $emailsSent = [];
-                    foreach ($prodi->users as $user) {
-                        try {
-                            // Mail::to($user->email)->send(new \App\Mail\PengingatAkreditasi($prodi, $request->pesan_pengingat));
-                            // Mail::to('maryonoperpanjangan@gmail.com')->send(new \App\Mail\PengingatAkreditasi($prodi, $request->pesan_pengingat));
-                            Mail::to('remahankecil@gmail.com')->send(new \App\Mail\PengingatAkreditasi($prodi, $request->pesan_pengingat));
-                            $emailsSent[] = $user->email;
-                        } catch (\Exception $e) {
-                            Log::error("Failed to send email to {$user->email}: " . $e->getMessage());
-                        }
-                    }
-
-                    // Update email list
-                    if (!empty($emailsSent)) {
-                        $pengingat->update([
-                            'email_terkirim_ke' => implode(', ', $emailsSent),
-                        ]);
-                    }
-
-                    $emailList = array_merge($emailList, $emailsSent);
-                    $jumlahBerhasil++;
-                } catch (Exception $e) {
-                    Log::error("Failed to create pengingat for prodi {$prodi->id}: " . $e->getMessage());
-                    $jumlahGagal++;
-                }
-            }
-
-            DB::commit();
-
-            $message = "Pengingat berhasil dikirim ke {$jumlahBerhasil} program studi";
-            if ($jumlahGagal > 0) {
-                $message .= " ({$jumlahGagal} gagal)";
-            }
-            $message .= ". Total " . count($emailList) . " email terkirim.";
-
-            return back()->with('success', $message);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error("Error in kirimPengingat: " . $e->getMessage());
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
-        }
     }
 
     /**

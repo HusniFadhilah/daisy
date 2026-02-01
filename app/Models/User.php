@@ -241,4 +241,37 @@ class User extends Authenticatable
             'keuangan_lamdepilar',
         ]);
     }
+
+    public function emails()
+    {
+        return $this->hasMany(UserEmail::class);
+    }
+
+    public function activeEmails()
+    {
+        return $this->hasMany(UserEmail::class)->where('is_active', true);
+    }
+
+    public function primaryEmail()
+    {
+        return $this->hasOne(UserEmail::class)->where('is_primary', true);
+    }
+
+    /**
+     * Ini dipakai Laravel Notification untuk menentukan "alamat email tujuan".
+     * Return bisa string atau array of strings.
+     */
+    public function routeNotificationForMail($notification = null)
+    {
+        // ambil semua email aktif
+        $emails = $this->activeEmails()->pluck('email')->values()->all();
+
+        // fallback ke kolom users.email bila tabel user_emails kosong
+        if (empty($emails) && !empty($this->email)) {
+            $emails = [$this->email];
+        }
+
+        // pastikan unik
+        return array_values(array_unique($emails));
+    }
 }

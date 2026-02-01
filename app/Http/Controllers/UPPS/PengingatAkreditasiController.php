@@ -213,7 +213,7 @@ class PengingatAkreditasiController extends Controller
             DB::commit();
 
             return redirect()
-                ->route('pengajuan.show', $pengajuan->id)
+                ->route('upps.pengingat-akreditasi')
                 ->with('success', 'Permohonan akreditasi berhasil dikirim sebagai respon pengingat.');
         } catch (\Exception $e) {
             DB::rollBack();
