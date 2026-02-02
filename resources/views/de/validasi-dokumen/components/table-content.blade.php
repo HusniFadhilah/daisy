@@ -4,7 +4,7 @@
     <div class="card-header bg-light">
         <div class="d-flex justify-content-between align-items-center">
             <h5 class="mb-0">
-                <i class="bi bi-table"></i> Daftar Validasi
+                <i class="bi bi-table"></i> Daftar Validasi Dokumen
             </h5>
             <span class="badge bg-primary">Total: {{ $assignments->total() }}</span>
         </div>
@@ -33,7 +33,8 @@
                     <tr>
                         <td>{{ $assignments->firstItem() + $index }}</td>
                         <td>
-                            <p>{{ $pengajuan->judul }}</p>
+                            <p>{{ $pengajuan->judul_short }}</p>
+                            {{-- <small>{{ $pengajuan->studyProgram->university->name ?? '-' }}</small> --}}
                             <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
                         </td>
                         <td>

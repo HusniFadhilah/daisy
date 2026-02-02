@@ -50,6 +50,21 @@
 
 @section('content')
 <div class="container-fluid py-3">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item active">Validasi Dokumen</li>
+        </ol>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="mb-1"><i class="bi bi-envelope"></i> Validasi Dokumen</h4>
+            <p class="text-muted mb-0">Kelola validasi dokumen</p>
+        </div>
+    </div>
     <!-- Statistics Cards -->
     <div class="row mb-4">
         <div class="col-lg-2 col-md-4 mb-3">
@@ -145,10 +160,6 @@
 
     <!-- Quick Actions -->
     <div class="d-flex align-items-center mb-4">
-        <h4 class="mb-0">
-            <i class="bi bi-clipboard-check"></i> Monitoring Validasi Dokumen
-        </h4>
-
         <button type="button" class="btn btn-primary ms-auto" data-bs-toggle="modal" data-bs-target="#modalKirimReminder">
             <i class="bi bi-bell"></i> Kirim Pengingat ke Validator
         </button>

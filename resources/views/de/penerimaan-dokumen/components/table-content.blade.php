@@ -40,10 +40,9 @@
                         <td>{{ $pengajuans->firstItem() + $index }}</td>
                         <td>
                             <p>{{ $pengajuan->judul_short }}</p>
-                            <small>{{ $pengajuan->studyProgram->university->name ?? '-' }}</small>
-                            {{-- <br>
+                            {{-- <small>{{ $pengajuan->studyProgram->university->name ?? '-' }}</small> --}}
                             <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
-                            <br>
+                            {{-- <br>
                             <small class="text-muted">Dibuat pada: {{ \App\Libraries\Date::tglIndo($pengajuan->created_at) }}</small> --}}
                         </td>
                         <td>
