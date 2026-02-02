@@ -7,13 +7,9 @@ use App\Http\Controllers\Controller;
 use App\Models\PengajuanAkreditasi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class PenyampaianHasilAkreditasiController extends Controller
 {
-    /**
-     * Display list of penyampaian hasil akreditasi
-     */
     public function index(Request $request)
     {
         $user = Auth::user();
@@ -48,7 +44,6 @@ class PenyampaianHasilAkreditasiController extends Controller
                 PengajuanAkreditasi::STATUS_SELESAI,
             ]);
 
-        // Apply filters
         $this->applyFilters($query, $request);
 
         $pengajuans = $query
@@ -56,10 +51,8 @@ class PenyampaianHasilAkreditasiController extends Controller
             ->paginate(20)
             ->appends($request->query());
 
-        // Statistics
         $stats = $this->calculateStatistics($studyProgramIds);
 
-        // Get tahun list
         $tahunList = PengajuanAkreditasi::whereIn('id_program_studi', $studyProgramIds)
             ->distinct()
             ->pluck('tahun_akreditasi')
@@ -73,9 +66,6 @@ class PenyampaianHasilAkreditasiController extends Controller
         ));
     }
 
-    /**
-     * Show detail penyampaian hasil akreditasi
-     */
     public function show($id)
     {
         $pengajuan = PengajuanAkreditasi::with([
@@ -83,13 +73,13 @@ class PenyampaianHasilAkreditasiController extends Controller
             'studyProgram.degreeLevel',
             'pengaju',
             'dokumen' => fn($q) => $q->whereIn('jenis_dokumen', [
+                'sertifikat',
                 'sertifikat_akreditasi',
                 'sk_akreditasi',
             ])->orderBy('created_at', 'desc'),
             'statusLog' => fn($q) => $q->orderBy('changed_at', 'desc'),
         ])->findOrFail($id);
 
-        // Check access
         $user = Auth::user();
         $studyProgramIds = $user->studyPrograms()->pluck('study_programs.id');
 
@@ -100,9 +90,6 @@ class PenyampaianHasilAkreditasiController extends Controller
         return view('upps.penyampaian-hasil-akreditasi.show', compact('pengajuan'));
     }
 
-    /**
-     * Apply filters to query
-     */
     private function applyFilters($query, Request $request)
     {
         $query->when(
@@ -116,29 +103,33 @@ class PenyampaianHasilAkreditasiController extends Controller
                 $sq->where('nomor_pengajuan', 'like', "%{$search}%")
                     ->orWhereHas(
                         'studyProgram',
-                        fn($ssq) =>
-                        $ssq->where('name', 'like', "%{$search}%")
+                        fn($ssq) => $ssq->where('name', 'like', "%{$search}%")
                     );
             });
         });
 
-        // Filter by status
         $query->when($request->filled('status'), function ($q) use ($request) {
             $q->where('status', $request->status);
         });
 
-        // Filter by peringkat
+        // ✅ FIX: Filter by peringkat (smart: prioritas banding)
         $query->when($request->filled('peringkat'), function ($q) use ($request) {
-            $q->where('peringkat_hasil', $request->peringkat);
+            $peringkat = $request->peringkat;
+            $q->where(function ($sq) use ($peringkat) {
+                $sq->where('peringkat_hasil_banding', $peringkat)
+                    ->orWhere(function ($ssq) use ($peringkat) {
+                        $ssq->whereNull('peringkat_hasil_banding')
+                            ->where('peringkat_hasil', $peringkat);
+                    });
+            });
         });
     }
 
     /**
-     * Calculate statistics
+     * ✅ Calculate statistics dengan smart grouping
      */
     private function calculateStatistics($studyProgramIds): array
     {
-        // Total hasil akreditasi yang sudah disampaikan
         $totalHasilAkreditasi = PengajuanAkreditasi::whereIn('id_program_studi', $studyProgramIds)
             ->whereNotNull('tanggal_hasil_akreditasi')
             ->whereIn('status', [
@@ -154,20 +145,18 @@ class PenyampaianHasilAkreditasiController extends Controller
             ])
             ->count();
 
-        // Proses selesai
         $prosesSelesai = PengajuanAkreditasi::whereIn('id_program_studi', $studyProgramIds)
             ->where('status', PengajuanAkreditasi::STATUS_SELESAI)
             ->count();
 
-        // Group by peringkat (hanya yang sudah ada peringkat)
-        $byPeringkat = PengajuanAkreditasi::whereIn('id_program_studi', $studyProgramIds)
-            ->whereNotNull('peringkat_hasil')
+        // ✅ Smart grouping: prioritas hasil banding
+        $pengajuans = PengajuanAkreditasi::whereIn('id_program_studi', $studyProgramIds)
             ->whereNotNull('tanggal_hasil_akreditasi')
-            ->select('peringkat_hasil', DB::raw('count(*) as total'))
-            ->groupBy('peringkat_hasil')
-            ->get()
-            ->pluck('total', 'peringkat_hasil')
-            ->toArray();
+            ->get();
+
+        $byPeringkat = $pengajuans->groupBy(function ($item) {
+            return $item->peringkat_hasil_banding ?? $item->peringkat_hasil ?? 'Tidak Ada';
+        })->map(fn($group) => $group->count())->toArray();
 
         return [
             'total' => $totalHasilAkreditasi,

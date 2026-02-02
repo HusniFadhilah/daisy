@@ -42,7 +42,7 @@
             ],
 
             // ========================================
-            // FASE 2: VALIDASI LED
+            // FASE 2: VALIDASI DOKUMEN
             // ========================================
             [
             'date' => $pengajuan->tanggal_validasi_borang_assigned,

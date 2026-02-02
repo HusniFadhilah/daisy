@@ -54,7 +54,7 @@ class EnsurePenawaranAcceptedMiddleware
                 ->first();
 
             if (!$assignment) {
-                abort(403, 'Anda tidak memiliki akses ke validasi LED ini.');
+                abort(403, 'Anda tidak memiliki akses ke validasi Dokumen ini.');
             }
         } else {
             // Case 2: AK/AL Validation (uses asesmen ID)
@@ -94,7 +94,7 @@ class EnsurePenawaranAcceptedMiddleware
                 // For borang, use token-based penawaran route
                 return redirect()
                     ->route('penawaran.show', ['token' => $assignment->token])
-                    ->with('warning', 'Silakan terima penawaran validasi LED terlebih dahulu.');
+                    ->with('warning', 'Silakan terima penawaran validasi Dokumen terlebih dahulu.');
             } else {
                 // For AK/AL, use existing cek penawaran route
                 return redirect()

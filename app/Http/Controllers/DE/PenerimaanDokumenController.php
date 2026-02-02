@@ -97,7 +97,7 @@ class PenerimaanDokumenController extends Controller
         // Filter by document status - gunakan pengecekan dokumen aktual
         if ($request->filled('doc_status')) {
             if ($request->doc_status === 'complete') {
-                // Dokumen lengkap: minimal LED + LKPS
+
                 $query->whereHas('dokumen', function ($q) {
                     $q->where('is_latest', true)
                         ->whereIn('jenis_dokumen', ['draft_borang', 'data_kualitatif']);
@@ -105,21 +105,48 @@ class PenerimaanDokumenController extends Controller
                     ->whereHas('dokumen', function ($q) {
                         $q->where('is_latest', true)
                             ->where('jenis_dokumen', 'data_kuantitatif');
+                    })
+                    ->whereHas('dokumen', function ($q) {
+                        $q->where('is_latest', true)
+                            ->where('jenis_dokumen', 'lembar_pengesahan');
+                    })
+                    // Suplemen hanya wajib untuk menuju_unggul
+                    ->where(function ($q) {
+                        $q->where('jenis_akreditasi', '!=', 'menuju_unggul')
+                            ->orWhereHas('dokumen', function ($sq) {
+                                $sq->where('is_latest', true)
+                                    ->where('jenis_dokumen', 'data_suplemen');
+                            });
                     });
             } elseif ($request->doc_status === 'incomplete') {
-                // Dokumen belum lengkap
+
                 $query->where(function ($q) {
+                    // LED missing
                     $q->whereDoesntHave('dokumen', function ($sq) {
                         $sq->where('is_latest', true)
                             ->whereIn('jenis_dokumen', ['draft_borang', 'data_kualitatif']);
                     })
+                        // OR LKPS missing
                         ->orWhereDoesntHave('dokumen', function ($sq) {
                             $sq->where('is_latest', true)
                                 ->where('jenis_dokumen', 'data_kuantitatif');
+                        })
+                        // OR pengesahan missing
+                        ->orWhereDoesntHave('dokumen', function ($sq) {
+                            $sq->where('is_latest', true)
+                                ->where('jenis_dokumen', 'lembar_pengesahan');
+                        })
+                        // OR (menuju_unggul but suplemen missing)
+                        ->orWhere(function ($qq) {
+                            $qq->where('jenis_akreditasi', 'menuju_unggul')
+                                ->whereDoesntHave('dokumen', function ($sq2) {
+                                    $sq2->where('is_latest', true)
+                                        ->where('jenis_dokumen', 'data_suplemen');
+                                });
                         });
                 });
             } elseif ($request->doc_status === 'none') {
-                // Belum ada dokumen sama sekali
+
                 $query->whereDoesntHave('dokumen', function ($q) {
                     $q->where('is_latest', true);
                 });
@@ -293,8 +320,29 @@ class PenerimaanDokumenController extends Controller
                 ->where('jenis_dokumen', 'data_kuantitatif')
                 ->exists();
 
-            if (!$hasLED || !$hasLKPS) {
-                return redirect()->back()->with('error', 'Dokumen LED dan LKPS belum lengkap.');
+            $hasPengesahan = $pengajuan->dokumen()
+                ->where('is_latest', true)
+                ->where('jenis_dokumen', 'lembar_pengesahan')
+                ->exists();
+
+            $needSuplemen = ($pengajuan->jenis_akreditasi === 'menuju_unggul');
+
+            $hasSuplemen = true;
+            if ($needSuplemen) {
+                $hasSuplemen = $pengajuan->dokumen()
+                    ->where('is_latest', true)
+                    ->where('jenis_dokumen', 'data_suplemen')
+                    ->exists();
+            }
+
+            if (!$hasLED || !$hasLKPS || !$hasPengesahan || !$hasSuplemen) {
+                $missing = [];
+                if (!$hasLED) $missing[] = 'LED';
+                if (!$hasLKPS) $missing[] = 'LKPS';
+                if (!$hasPengesahan) $missing[] = 'Lembar Pengesahan';
+                if ($needSuplemen && !$hasSuplemen) $missing[] = 'Suplemen';
+
+                return redirect()->back()->with('error', 'Dokumen belum lengkap: ' . implode(', ', $missing) . '.');
             }
 
             // Update status pengajuan berdasarkan status aktual dari log
@@ -668,46 +716,25 @@ class PenerimaanDokumenController extends Controller
      */
     private function checkDocumentCompleteness(PengajuanAkreditasi $pengajuan)
     {
-        if (in_array($pengajuan->status, [
-            PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM,
-            PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA
-        ])) {
-            // Hanya LED & LKPS yang required
-            $required = [
-                'led' => [
-                    'label' => 'Laporan Evaluasi Diri (LED)',
-                    'aliases' => ['data_kualitatif', 'draft_borang', 'borang_final'],
-                    'any' => true,
-                ],
-                'lkps' => [
-                    'label' => 'Laporan Kinerja Program Studi (LKPS)',
-                    'aliases' => ['data_kuantitatif', 'kuantitatif'],
-                    'any' => true,
-                ],
-            ];
-        } else {
-            // Status lain → semua dokumen required
-            $required = [
-                'led' => [
-                    'label' => 'Laporan Evaluasi Diri (LED)',
-                    'aliases' => ['data_kualitatif', 'draft_borang', 'borang_final'],
-                    'any' => true,
-                ],
-                'suplemen' => [
-                    'label' => 'Suplemen LED',
-                    'aliases' => ['data_suplemen', 'suplemen', 'file_suplemen', 'dokumen_pendukung'],
-                    'any' => true,
-                ],
-                'lkps' => [
-                    'label' => 'Laporan Kinerja Program Studi (LKPS)',
-                    'aliases' => ['data_kuantitatif', 'kuantitatif'],
-                    'any' => true,
-                ],
-                'pengesahan' => [
-                    'label' => 'Lembar Pengesahan Dokumen',
-                    'aliases' => ['pengesahan', 'lembar_pengesahan'],
-                    'any' => true,
-                ],
+        $required = [
+            'led' => [
+                'label' => 'Laporan Evaluasi Diri (LED)',
+                'aliases' => ['data_kualitatif', 'draft_borang', 'borang_final'],
+            ],
+            'lkps' => [
+                'label' => 'Laporan Kinerja Program Studi (LKPS)',
+                'aliases' => ['data_kuantitatif'],
+            ],
+            'pengesahan' => [
+                'label' => 'Lembar Pengesahan Dokumen',
+                'aliases' => ['lembar_pengesahan'],
+            ],
+        ];
+        $needSuplemen = $pengajuan->need_suplemen;
+        if ($needSuplemen) {
+            $required['suplemen'] = [
+                'label' => 'Suplemen LED',
+                'aliases' => ['data_suplemen'],
             ];
         }
 
@@ -745,6 +772,7 @@ class PenerimaanDokumenController extends Controller
             'details' => $details,
             'is_complete' => ($uploadedCount === $totalRequired),
             'percentage' => $percentage,
+            'need_suplemen' => $needSuplemen,
         ];
     }
 

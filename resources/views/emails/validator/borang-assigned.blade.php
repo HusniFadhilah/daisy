@@ -1,5 +1,5 @@
 @component('mail::message')
-# Penawaran Validasi LED - {{ $pengajuan->nomor_pengajuan ?? '-' }}
+# Penawaran Validasi Dokumen - {{ $pengajuan->nomor_pengajuan ?? '-' }}
 
 Yth. **{{ optional($assignment->user)->name ?? 'Validator' }}**,
 

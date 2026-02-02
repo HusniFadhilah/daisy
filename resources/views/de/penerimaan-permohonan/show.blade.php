@@ -111,7 +111,7 @@
             <div class="card border-success">
                 <div class="card-header bg-success text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-check-circle"></i> Penerimaan Permohonan Akreditasi Sudah Terkirim
+                        <i class="bi bi-check-circle"></i> Penerimaan Permohonan Akreditasi Telah Terkirim
                     </h5>
                 </div>
                 <div class="card-body">
@@ -180,7 +180,7 @@
 
                                 <div id="uploadPlaceholder">
                                     <i class="bi bi-cloud-upload" style="font-size: 48px; color: #6c757d;"></i>
-                                    <p class="mt-3 mb-1 fw-bold">Klik atau drag & drop file PDF di sini</p>
+                                    <p class="mt-3 mb-1 fw-bold">Silahkan upload file PDF di sini</p>
                                     <p class="text-muted small mb-0">Maksimal 5MB</p>
                                 </div>
 
@@ -299,10 +299,10 @@
                                     <br>
                                     <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
 
-                                    @if($log->keterangan)
+                                    {{-- @if($log->keterangan)
                                     <br>
                                     <small class="text-muted fst-italic">{{ $log->keterangan }}</small>
-                                    @endif
+                                    @endif --}}
                                 </div>
                             </div>
                         </div>
@@ -314,15 +314,15 @@
                                 </div>
                                 <div class="flex-grow-1 ms-3">
                                     <strong>
-                                        Penerimaan Permohonan Akreditasi Diterima PS
+                                        Penerimaan Permohonan Akreditasi Diterima
                                     </strong>
                                     <br>
                                     <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
 
-                                    @if($log->keterangan)
+                                    {{-- @if($log->keterangan)
                                     <br>
                                     <small class="text-muted fst-italic">Penerimaan Permohonan Akreditasi telah diterima oleh PS</small>
-                                    @endif
+                                    @endif --}}
                                 </div>
                             </div>
                         </div>

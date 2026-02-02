@@ -265,7 +265,7 @@
                                     <i class="bi bi-circle-fill text-info" style="font-size: 8px;"></i>
                                 </div>
                                 <div class="flex-grow-1 ms-3">
-                                    <strong>Invoice Dibuat</strong>
+                                    <strong>Invoice Diterima</strong>
                                     <br>
                                     <small class="text-muted">
                                         {{ $pembayaran->created_at->format('d M Y H:i') }}

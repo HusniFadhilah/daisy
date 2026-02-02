@@ -13,7 +13,7 @@
 
                 <div class="list-group">
                     @php
-                    $degreeLevels = \App\Models\DegreeLevel::orderBy('name')->get();
+                    $degreeLevels = \App\Models\DegreeLevel::whereNotIn('code',['d1','spesialis_1','spesialis_2'])->get();
                     @endphp
 
                     @foreach($degreeLevels as $level)
@@ -21,7 +21,7 @@
                         <div class="d-flex align-items-center">
                             <i class="bi bi-file-earmark-word text-primary me-3" style="font-size: 1.5rem;"></i>
                             <div>
-                                <h6 class="mb-0">Template {{ $level->name }}</h6>
+                                <h6 class="mb-0">Template Permohonan Akreditasi {{ $level->name }}</h6>
                                 <small class="text-muted">Format: DOCX</small>
                             </div>
                             <i class="bi bi-download ms-auto"></i>

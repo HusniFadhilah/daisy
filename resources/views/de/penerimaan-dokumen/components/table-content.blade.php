@@ -47,7 +47,7 @@
                             <small class="text-muted">Dibuat pada: {{ \App\Libraries\Date::tglIndo($pengajuan->created_at) }}</small> --}}
                         </td>
                         <td>
-                            {!! $pengajuan->getCustomBadgeLastStatus('borang_final') !!}
+                            {!! $pengajuan->getCustomBadgeLastStatus('borang_final','de','label_short_for') !!}
 
                             @if($currentStatus == \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI)
                             <br><small class="text-muted">Perlu menugaskan validator</small>
@@ -74,7 +74,7 @@
                             </small>
                             @else
                             <div class="doc-status-badge doc-none">
-                                <i class="bi bi-x-circle-fill"></i> Belum Diupload oleh PS
+                                <i class="bi bi-x-circle-fill"></i> Belum Diupload
                             </div>
                             <div class="progress progress-custom mt-2">
                                 <div class="progress-bar bg-danger" style="width: 0%"></div>
@@ -98,11 +98,11 @@
                                 <i class="bi bi-eye"></i>
                             </a>
 
-                            @if($docComplete && $currentStatus == \App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA)
+                            {{-- @if($docComplete && $currentStatus == \App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA)
                             <button type="button" class="btn btn-sm btn-success" onclick="konfirmasiPenerimaan({{ $pengajuan->id }})" title="Konfirmasi Penerimaan">
-                                <i class="bi bi-check-circle"></i>
+                            <i class="bi bi-check-circle"></i>
                             </button>
-                            @endif
+                            @endif --}}
                         </td>
                     </tr>
                     @empty

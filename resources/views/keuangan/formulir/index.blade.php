@@ -93,7 +93,7 @@
                     <!-- Search -->
                     <div class="col-md-3">
                         <label class="form-label">Cari</label>
-                        <input type="text" name="q" value="{{ $q }}" class="form-control" placeholder="Nomor invoice, pengajuan, atau prodi...">
+                        <input type="text" name="q" value="{{ $q }}" class="form-control" placeholder="Nomor invoice, permohonan, atau prodi...">
                     </div>
 
                     <!-- University -->

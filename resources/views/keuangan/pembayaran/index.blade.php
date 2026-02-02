@@ -120,13 +120,11 @@
                     <thead class="table-light">
                         <tr>
                             <th width="40">#</th>
-                            <th>Pengajuan</th>
-                            <th>Program Studi</th>
-                            <th>Universitas</th>
+                            <th>Permohonan Akreditasi</th>
                             <th>Invoice</th>
                             <th>Jumlah</th>
-                            <th>Tanggal Bayar</th>
-                            <th>Status</th>
+                            <th>Tanggal Pembayaran</th>
+                            <th>Status Pembayaran</th>
                             <th width="120">Aksi</th>
                         </tr>
                     </thead>
@@ -141,10 +139,8 @@
                             <td>
                                 <p>{{ $item->judul }}</p>
                                 <small class="text-muted">{{ $item->nomor_pengajuan }}</small>
+                                <small class="text-muted">{{ optional(optional($item->studyProgram)->university)->name ?? '-' }}</small>
                             </td>
-
-                            <td>{{ optional($item->studyProgram)->name ?? '-' }}</td>
-                            <td>{{ optional(optional($item->studyProgram)->university)->name ?? '-' }}</td>
 
                             <td><strong>{{ optional($pembayaran)->nomor_invoice ?? '-' }}</strong></td>
 
@@ -161,8 +157,8 @@
                             </td>
 
                             <td class="text-center">
-                                <span class="badge bg-warning text-dark">
-                                    {{ strtoupper(optional($pembayaran)->status_pembayaran_label ?? '-') }}
+                                <span class="badge bg-{{ $pembayaran->status_pembayaran_badge }}">
+                                    {{ $pembayaran->status_pembayaran_label }}
                                 </span>
                             </td>
 

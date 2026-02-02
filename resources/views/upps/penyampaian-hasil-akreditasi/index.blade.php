@@ -259,56 +259,39 @@
                             <thead class="table-light">
                                 <tr>
                                     <th width="5%">#</th>
-                                    <th width="25%">Permohonan Akreditasi</th>
-                                    <th width="20%">Program Studi</th>
-                                    <th width="15%">Peringkat</th>
-                                    <th width="10%">Nilai</th>
-                                    <th width="15%">Status</th>
+                                    <th width="30%">Permohonan Akreditasi</th>
+                                    <th width="20%">Peringkat</th>
+                                    <th width="15%">Nilai</th>
+                                    <th width="20%">Status</th>
                                     <th width="10%" class="text-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($pengajuans as $index => $pengajuan)
+                                @php
+                                $peringkatSaatIni = $pengajuan->peringkat_saat_ini;
+                                $nilaiSaatIni = $pengajuan->nilai_saat_ini;
+                                $badgeClass = $pengajuan->getPeringkatBadgeClass();
+                                $icon = $pengajuan->getPeringkatIcon();
+                                @endphp
                                 <tr>
                                     <td>{{ $pengajuans->firstItem() + $index }}</td>
                                     <td>
-                                        <p class="mb-1"><strong>{{ $pengajuan->judul }}</strong></p>
+                                        <p>{{ $pengajuan->judul_short }}</p>
                                         <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
                                         <br>
-                                        <small class="text-muted">
-                                            Dibuat: {{ $pengajuan->created_at->format('d M Y') }}
-                                        </small>
+                                        <small class="text-muted">Dibuat pada: {{ \App\Libraries\Date::tglIndo($pengajuan->created_at) }}</small>
                                     </td>
                                     <td>
-                                        <strong>{{ $pengajuan->studyProgram->name }}</strong>
-                                        <br>
-                                        <small class="text-muted">
-                                            {{ $pengajuan->studyProgram->degreeLevel->name ?? '-' }}
-                                        </small>
-                                        <br>
-                                        <small>{{ $pengajuan->studyProgram->university->name ?? '-' }}</small>
-                                    </td>
-                                    <td>
-                                        @if($pengajuan->peringkat_hasil)
-                                        @php
-                                        $badgeClass = match($pengajuan->peringkat_hasil) {
-                                        'Unggul' => 'bg-warning text-dark',
-                                        'Baik Sekali' => 'bg-success',
-                                        'Baik' => 'bg-info',
-                                        'Tidak Terakreditasi' => 'bg-danger',
-                                        default => 'bg-secondary',
-                                        };
-                                        @endphp
+                                        @if($peringkatSaatIni)
                                         <span class="badge {{ $badgeClass }} peringkat-badge">
-                                            @if($pengajuan->peringkat_hasil === 'Unggul')
-                                            <i class="bi bi-star-fill"></i>
-                                            @elseif($pengajuan->peringkat_hasil === 'Baik Sekali')
-                                            <i class="bi bi-award-fill"></i>
-                                            @elseif($pengajuan->peringkat_hasil === 'Baik')
-                                            <i class="bi bi-check-circle-fill"></i>
-                                            @endif
-                                            {{ $pengajuan->peringkat_hasil }}
+                                            <i class="{{ $icon }}"></i>
+                                            {{ $peringkatSaatIni }}
                                         </span>
+                                        @if($nilaiSaatIni)
+                                        <br>
+                                        <small class="text-muted">Nilai: <strong>{{ $nilaiSaatIni }}</strong></small>
+                                        @endif
                                         @else
                                         <span class="text-muted">-</span>
                                         @endif

@@ -656,7 +656,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">
                             <i class="bi bi-clipboard-check"></i>
-                            Validasi LED
+                            Validasi Dokumen
                         </h5>
                         @if($canAssignValidator)
                         <a href="{{ route('de.pengajuan.assign-validator.form', $pengajuan->id) }}" class="btn btn-light btn-sm">

@@ -36,7 +36,7 @@ class ValidatorBorangAssignedMail extends Mailable implements ShouldQueue
 
     public function build()
     {
-        $subject = "Penawaran Validasi LED - {$this->pengajuan->nomor_pengajuan}";
+        $subject = "Penawaran Validasi Dokumen - {$this->pengajuan->nomor_pengajuan}";
 
         return $this->subject($subject)
             ->markdown('emails.validator.borang-assigned', [

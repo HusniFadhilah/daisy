@@ -1,16 +1,16 @@
 @extends('layouts.template.app')
 
-@section('title', 'Tugaskan Validator LED - ' . $pengajuan->nomor_pengajuan)
+@section('title', 'Tugaskan Validator Dokumen - ' . $pengajuan->nomor_pengajuan)
 
 @section('content')
 <div class="container-fluid py-3">
     {{-- Header --}}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2>
+            <h4>
                 <i class="bi bi-person-check"></i>
-                Tugaskan Validator LED
-            </h2>
+                Tugaskan Validator Dokumen
+            </h4>
             <p class="text-muted mb-0">
                 {{ $pengajuan->nomor_pengajuan }} - {{ $pengajuan->studyProgram->name }}
             </p>
@@ -247,7 +247,7 @@
                                 <li>Sistem akan membuat asesmen (jika belum ada)</li>
                                 <li>Penugasan dengan <code>jenis_asesmen = 'dokumen'</code> akan dibuat</li>
                                 <li>Email penawaran akan dikirim ke validator</li>
-                                <li>Status Permohonan akreditasi akan diupdate ke <code>Validator LED Ditugaskan</code></li>
+                                <li>Status Permohonan akreditasi akan diupdate ke <code>Validator Dokumen Ditugaskan</code></li>
                                 @if($currentAssignment && $currentAssignment->status_penawaran === 'pending')
                                 <li class="text-warning"><strong>Penugasan lama yang pending akan dihapus</strong></li>
                                 @endif
@@ -272,7 +272,7 @@
             <div class="card mt-4">
                 <div class="card-header bg-light">
                     <h6 class="mb-0">
-                        <i class="bi bi-question-circle"></i> Persyaratan Validator LED
+                        <i class="bi bi-question-circle"></i> Persyaratan Validator Dokumen
                     </h6>
                 </div>
                 <div class="card-body">
@@ -280,7 +280,7 @@
                         <li>Minimal <strong>1 validator</strong> untuk review LED</li>
                         <li>Validator harus memiliki role <code>validator</code> di sistem</li>
                         <li>Validator harus menerima penawaran sebelum bisa mulai review</li>
-                        <li>LED harus sudah di-submit dan status <code>Diterima</code></li>
+                        <li>Seluruh Dokumen harus sudah di-submit oleh PS dan status <code>Diterima</code></li>
                     </ul>
                 </div>
             </div>

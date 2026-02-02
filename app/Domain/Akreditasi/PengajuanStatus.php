@@ -202,9 +202,9 @@ final class PengajuanStatus
             ],
 
             PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM => [
-                'label' => 'File Dokumen Dikirim',
+                'label' => 'Draft Dokumen Dikirim',
                 'label_short_for' => [
-                    'de'   => 'Draft Masuk',
+                    'de'   => 'Draft Dikirim',
                     'upps' => 'Draft Terkirim',
                     'prodi' => 'Draft Terkirim',
                 ],
@@ -218,16 +218,16 @@ final class PengajuanStatus
             ],
 
             PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA => [
-                'label' => 'File Dokumen Diterima',
+                'label' => 'Draft Dokumen Diterima',
                 'label_short_for' => [
                     'de'   => 'Draft Diterima',
                     'upps' => 'Draft Diterima LAMDEPILAR',
                     'prodi' => 'Draft Diterima LAMDEPILAR',
                 ],
                 'label_long_for' => [
-                    'de'   => 'Draft Dokumen Diterima',
-                    'upps' => 'Draft Dokumen Diterima',
-                    'prodi' => 'Draft Dokumen Diterima',
+                    'de'   => 'Draft Dokumen Telah Diterima',
+                    'upps' => 'Draft Dokumen Telah Diterima',
+                    'prodi' => 'Draft Dokumen Telah Diterima',
                 ],
                 'bg' => 'bg-info',
                 'icon' => 'bi-file-earmark-check',
@@ -257,9 +257,9 @@ final class PengajuanStatus
                     'prodi' => 'Menunggu Validasi',
                 ],
                 'label_long_for' => [
-                    'de'   => 'Menunggu Validasi Dokumen oleh Validator',
-                    'upps' => 'Menunggu Validasi Dokumen oleh Validator',
-                    'prodi' => 'Menunggu Validasi Dokumen oleh Validator',
+                    'de'   => 'Menunggu Validasi Dokumen',
+                    'upps' => 'Menunggu Validasi Dokumen',
+                    'prodi' => 'Menunggu Validasi Dokumen',
                 ],
                 'bg' => 'bg-warning',
                 'icon' => 'bi-clock-history',

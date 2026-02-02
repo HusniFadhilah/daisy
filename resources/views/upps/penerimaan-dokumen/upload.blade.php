@@ -72,9 +72,9 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h5 class="mb-1">
-                <i class="bi bi-upload"></i> Kirim Dokumen Akreditasi
+                <i class="bi bi-upload"></i> Pengiriman Dokumen Akreditasi
             </h5>
-            <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
+            <small class="text-muted">Silahkan lakukan pengiriman dokumen akreditasi</small>
         </div>
         <a href="{{ route('upps.penerimaan-dokumen.show', $pengajuan->id) }}" class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i> Kembali
@@ -98,9 +98,10 @@
                     <div class="mb-3">
                         <div class="fw-bold">Jenis Dokumen Diperlukan</div>
                         <ul class="mb-0 ps-3">
-                            <li>LED — DOCX/DOC</li>
-                            <li>Suplemen — PDF</li>
-                            <li>LKPS — XLSX/XLS</li>
+                            <li>Laporan Evaluasi Diri (LED)</li>
+                            <li>Suplemen LED</li>
+                            <li>Laporan Kinerja Program Studi (LKPS)</li>
+                            <li>Lembar Pengesahan Dokumen</li>
                         </ul>
                     </div>
                 </div>
@@ -137,12 +138,12 @@
                             </label>
 
                             <div class="upload-area" id="uploadAreaLed">
-                                <i class="bi bi-file-word text-primary" style="font-size: 44px;"></i>
-                                <p class="mb-1"><strong>Klik atau drag & drop file LED di sini</strong></p>
+                                <i class="bi bi-file-word text-info" style="font-size: 44px;"></i>
+                                <p class="mb-1"><strong>Silahkan upload file LED di sini</strong></p>
                                 <p class="text-muted small mb-2">Format: DOCX/DOC • Maksimal 10MB</p>
 
                                 <input type="file" id="file_led" name="file_led" class="d-none" accept=".docx,.doc" required>
-                                <button type="button" class="btn btn-primary btn-sm" id="btnPickLed">
+                                <button type="button" class="btn btn-outline-info btn-sm" id="btnPickLed">
                                     <i class="bi bi-folder2-open"></i> Pilih File LED
                                 </button>
                             </div>
@@ -150,7 +151,7 @@
                             <div id="previewLed" class="file-preview-card d-none mt-2">
                                 <div class="file-meta">
                                     <div class="left">
-                                        <i class="bi bi-file-word text-primary" style="font-size: 26px;"></i>
+                                        <i class="bi bi-file-word text-info" style="font-size: 26px;"></i>
                                         <div>
                                             <div class="fw-bold" id="ledName">-</div>
                                             <div class="text-muted small" id="ledSize">-</div>
@@ -158,9 +159,9 @@
                                     </div>
                                     <div class="right d-flex gap-2">
                                         <button type="button" class="btn btn-sm btn-outline-danger" id="btnRemoveLed">
-                                            <i class="bi bi-trash"></i> Hapus
+                                            <i class="bi bi-trash"></i> Batalkan
                                         </button>
-                                        <button type="button" class="btn btn-sm btn-outline-primary" id="btnChangeLed">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" id="btnChangeLed">
                                             <i class="bi bi-arrow-repeat"></i> Ganti
                                         </button>
                                     </div>
@@ -181,11 +182,11 @@
 
                             <div class="upload-area" id="uploadAreaSuplemen">
                                 <i class="bi bi-file-earmark-pdf text-danger" style="font-size: 44px;"></i>
-                                <p class="mb-1"><strong>Klik atau drag & drop file Suplemen di sini</strong></p>
+                                <p class="mb-1"><strong>Silahkan upload file Suplemen di sini</strong></p>
                                 <p class="text-muted small mb-2">Format: PDF • Maksimal 10MB</p>
 
                                 <input type="file" id="file_suplemen" name="file_suplemen" class="d-none" accept=".pdf" required>
-                                <button type="button" class="btn btn-outline-danger btn-sm" id="btnPickSuplemen">
+                                <button type="button" class="btn btn-outline-success btn-sm" id="btnPickSuplemen">
                                     <i class="bi bi-folder2-open"></i> Pilih File Suplemen
                                 </button>
                             </div>
@@ -193,7 +194,7 @@
                             <div id="previewSuplemen" class="file-preview-card d-none mt-2">
                                 <div class="file-meta">
                                     <div class="left">
-                                        <i class="bi bi-file-earmark-pdf text-danger" style="font-size: 26px;"></i>
+                                        <i class="bi bi-file-earmark-pdf text-success" style="font-size: 26px;"></i>
                                         <div>
                                             <div class="fw-bold" id="suplemenName">-</div>
                                             <div class="text-muted small" id="suplemenSize">-</div>
@@ -201,9 +202,9 @@
                                     </div>
                                     <div class="right d-flex gap-2">
                                         <button type="button" class="btn btn-sm btn-outline-danger" id="btnRemoveSuplemen">
-                                            <i class="bi bi-trash"></i> Hapus
+                                            <i class="bi bi-trash"></i> Batalkan
                                         </button>
-                                        <button type="button" class="btn btn-sm btn-outline-danger" id="btnChangeSuplemen">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" id="btnChangeSuplemen">
                                             <i class="bi bi-arrow-repeat"></i> Ganti
                                         </button>
                                     </div>
@@ -224,11 +225,11 @@
 
                             <div class="upload-area" id="uploadAreaLkps">
                                 <i class="bi bi-file-excel text-success" style="font-size: 44px;"></i>
-                                <p class="mb-1"><strong>Klik atau drag & drop file LKPS di sini</strong></p>
+                                <p class="mb-1"><strong>Silahkan upload file LKPS di sini</strong></p>
                                 <p class="text-muted small mb-2">Format: XLSX/XLS • Maksimal 10MB</p>
 
                                 <input type="file" id="file_lkps" name="file_lkps" class="d-none" accept=".xlsx,.xls" required>
-                                <button type="button" class="btn btn-success btn-sm" id="btnPickLkps">
+                                <button type="button" class="btn btn-outline-success btn-sm" id="btnPickLkps">
                                     <i class="bi bi-folder2-open"></i> Pilih File LKPS
                                 </button>
                             </div>
@@ -246,7 +247,7 @@
                                         <button type="button" class="btn btn-sm btn-outline-danger" id="btnRemoveLkps">
                                             <i class="bi bi-trash"></i> Hapus
                                         </button>
-                                        <button type="button" class="btn btn-sm btn-outline-success" id="btnChangeLkps">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" id="btnChangeLkps">
                                             <i class="bi bi-arrow-repeat"></i> Ganti
                                         </button>
                                     </div>
@@ -254,6 +255,48 @@
                             </div>
 
                             @error('file_lkps')
+                            <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        {{-- ===================== LEMBAR PENGESAHAN ===================== --}}
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">
+                                Lembar Pengesahan Dokumen <span class="text-danger">*</span>
+                            </label>
+
+                            <div class="upload-area" id="uploadAreaPengesahan">
+                                <i class="bi bi-file-earmark-pdf text-danger" style="font-size: 44px;"></i>
+                                <p class="mb-1"><strong>Silahkan upload file Lembar Pengesahan di sini</strong></p>
+                                <p class="text-muted small mb-2">Format: PDF • Maksimal 10MB</p>
+
+                                <input type="file" id="file_pengesahan" name="file_pengesahan" class="d-none" accept=".pdf" required>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" id="btnPickPengesahan">
+                                    <i class="bi bi-folder2-open"></i> Pilih File Pengesahan
+                                </button>
+                            </div>
+
+                            <div id="previewPengesahan" class="file-preview-card d-none mt-2">
+                                <div class="file-meta">
+                                    <div class="left">
+                                        <i class="bi bi-file-earmark-pdf text-danger" style="font-size: 26px;"></i>
+                                        <div>
+                                            <div class="fw-bold" id="pengesahanName">-</div>
+                                            <div class="text-muted small" id="pengesahanSize">-</div>
+                                        </div>
+                                    </div>
+                                    <div class="right d-flex gap-2">
+                                        <button type="button" class="btn btn-sm btn-outline-danger" id="btnRemovePengesahan">
+                                            <i class="bi bi-trash"></i> Batalkan
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" id="btnChangePengesahan">
+                                            <i class="bi bi-arrow-repeat"></i> Ganti
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @error('file_pengesahan')
                             <div class="text-danger small mt-1">{{ $message }}</div>
                             @enderror
                         </div>
@@ -271,13 +314,14 @@
                         <div class="alert alert-info alert-permanent">
                             <h6><i class="bi bi-info-circle"></i> Informasi Penting</h6>
                             <ul class="mb-0">
-                                <li>Pastikan dokumen sudah sesuai template yang diberikan.</li>
-                                <li><strong>LED</strong>: DOCX/DOC, <strong>LKPS</strong>: XLSX/XLS (maks 10MB per file).</li>
+                                <li>Mohon memastikan dokumen yang diupload, sudah sesuai template yang diberikan.</li>
+                                <li><strong>LED</strong>: format file DOCX/DOC, <strong>LKPS</strong>: format file XLSX/XLS (maks 10MB per file).</li>
                                 @if($needSuplemen)
                                 <li><strong>Suplemen</strong>: PDF (wajib untuk jenis akreditasi <strong>menuju unggul</strong>).</li>
                                 @else
                                 <li><strong>Suplemen</strong>: tidak wajib untuk jenis akreditasi ini.</li>
                                 @endif
+                                <li><strong>Lembar Pengesahan Dokumen</strong>: format file PDF.</li>
                             </ul>
                         </div>
 
@@ -302,41 +346,9 @@
 <script>
     (function() {
         const NEED_SUPLEMEN = @json($needSuplemen);
+
         const btnSubmit = document.getElementById('btnSubmit');
         const form = document.getElementById('formUploadDokumen');
-
-        // ===================== LED =====================
-        const uploadAreaLed = document.getElementById('uploadAreaLed');
-        const fileLed = document.getElementById('file_led');
-        const previewLed = document.getElementById('previewLed');
-        const ledName = document.getElementById('ledName');
-        const ledSize = document.getElementById('ledSize');
-
-        const btnPickLed = document.getElementById('btnPickLed');
-        const btnChangeLed = document.getElementById('btnChangeLed');
-        const btnRemoveLed = document.getElementById('btnRemoveLed');
-
-        // ===================== SUPLEMEN (optional render) =====================
-        const uploadAreaSuplemen = document.getElementById('uploadAreaSuplemen'); // bisa null
-        const fileSuplemen = document.getElementById('file_suplemen'); // bisa null
-        const previewSuplemen = document.getElementById('previewSuplemen'); // bisa null
-        const suplemenName = document.getElementById('suplemenName'); // bisa null
-        const suplemenSize = document.getElementById('suplemenSize'); // bisa null
-
-        const btnPickSuplemen = document.getElementById('btnPickSuplemen'); // bisa null
-        const btnChangeSuplemen = document.getElementById('btnChangeSuplemen'); // bisa null
-        const btnRemoveSuplemen = document.getElementById('btnRemoveSuplemen'); // bisa null
-
-        // ===================== LKPS =====================
-        const uploadAreaLkps = document.getElementById('uploadAreaLkps');
-        const fileLkps = document.getElementById('file_lkps');
-        const previewLkps = document.getElementById('previewLkps');
-        const lkpsName = document.getElementById('lkpsName');
-        const lkpsSize = document.getElementById('lkpsSize');
-
-        const btnPickLkps = document.getElementById('btnPickLkps');
-        const btnChangeLkps = document.getElementById('btnChangeLkps');
-        const btnRemoveLkps = document.getElementById('btnRemoveLkps');
 
         // ===================== helper safe addEventListener =====================
         function on(el, event, handler) {
@@ -344,61 +356,19 @@
             el.addEventListener(event, handler);
         }
 
-        // ===================== bind buttons pick/change/remove =====================
-        on(btnPickLed, 'click', () => fileLed.click());
-        on(btnChangeLed, 'click', () => fileLed.click());
-        on(btnRemoveLed, 'click', removeLed);
+        // ===================== utils =====================
+        function formatFileSize(bytes) {
+            if (!bytes) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return (bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i];
+        }
 
-        on(btnPickLkps, 'click', () => fileLkps.click());
-        on(btnChangeLkps, 'click', () => fileLkps.click());
-        on(btnRemoveLkps, 'click', removeLkps);
-
-        // Suplemen hanya jika elemennya ada
-        on(btnPickSuplemen, 'click', () => fileSuplemen && fileSuplemen.click());
-        on(btnChangeSuplemen, 'click', () => fileSuplemen && fileSuplemen.click());
-        on(btnRemoveSuplemen, 'click', removeSuplemen);
-
-        // ===================== click area (ignore button clicks) =====================
-        on(uploadAreaLed, 'click', (e) => {
-            if (e.target.closest('button')) return;
-            fileLed.click();
-        });
-
-        on(uploadAreaLkps, 'click', (e) => {
-            if (e.target.closest('button')) return;
-            fileLkps.click();
-        });
-
-        on(uploadAreaSuplemen, 'click', (e) => {
-            if (e.target.closest('button')) return;
-            if (fileSuplemen) fileSuplemen.click();
-        });
-
-        // ===================== input change =====================
-        on(fileLed, 'change', () => handleLed(fileLed.files[0]));
-        on(fileLkps, 'change', () => handleLkps(fileLkps.files[0]));
-        on(fileSuplemen, 'change', () => handleSuplemen(fileSuplemen.files[0]));
-
-        // ===================== drag & drop binding =====================
-        bindDragDrop(uploadAreaLed, (file) => {
-            if (!file) return;
-            fileLed.files = makeFileList(file);
-            handleLed(file);
-        });
-
-        bindDragDrop(uploadAreaLkps, (file) => {
-            if (!file) return;
-            fileLkps.files = makeFileList(file);
-            handleLkps(file);
-        });
-
-        // Suplemen hanya jika area ada
-        if (uploadAreaSuplemen && fileSuplemen) {
-            bindDragDrop(uploadAreaSuplemen, (file) => {
-                if (!file) return;
-                fileSuplemen.files = makeFileList(file);
-                handleSuplemen(file);
-            });
+        function makeFileList(file) {
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            return dt.files;
         }
 
         function bindDragDrop(areaEl, onFile) {
@@ -416,7 +386,36 @@
             });
         }
 
-        // ===================== handlers =====================
+        // ============================================================
+        // LED
+        // ============================================================
+        const uploadAreaLed = document.getElementById('uploadAreaLed');
+        const fileLed = document.getElementById('file_led');
+        const previewLed = document.getElementById('previewLed');
+        const ledName = document.getElementById('ledName');
+        const ledSize = document.getElementById('ledSize');
+
+        const btnPickLed = document.getElementById('btnPickLed');
+        const btnChangeLed = document.getElementById('btnChangeLed');
+        const btnRemoveLed = document.getElementById('btnRemoveLed');
+
+        on(btnPickLed, 'click', () => fileLed.click());
+        on(btnChangeLed, 'click', () => fileLed.click());
+        on(btnRemoveLed, 'click', removeLed);
+
+        on(uploadAreaLed, 'click', (e) => {
+            if (e.target.closest('button')) return;
+            fileLed.click();
+        });
+
+        on(fileLed, 'change', () => handleLed(fileLed.files[0]));
+
+        bindDragDrop(uploadAreaLed, (file) => {
+            if (!file) return;
+            fileLed.files = makeFileList(file);
+            handleLed(file);
+        });
+
         function handleLed(file) {
             if (!file) return;
 
@@ -440,8 +439,48 @@
             checkReady();
         }
 
+        function removeLed() {
+            fileLed.value = '';
+            previewLed.classList.add('d-none');
+            previewLed.classList.remove('has-file');
+            ledName.textContent = '-';
+            ledSize.textContent = '-';
+            checkReady();
+        }
+
+        // ============================================================
+        // SUPLEMEN (optional render)
+        // ============================================================
+        const uploadAreaSuplemen = document.getElementById('uploadAreaSuplemen'); // bisa null
+        const fileSuplemen = document.getElementById('file_suplemen'); // bisa null
+        const previewSuplemen = document.getElementById('previewSuplemen'); // bisa null
+        const suplemenName = document.getElementById('suplemenName'); // bisa null
+        const suplemenSize = document.getElementById('suplemenSize'); // bisa null
+
+        const btnPickSuplemen = document.getElementById('btnPickSuplemen'); // bisa null
+        const btnChangeSuplemen = document.getElementById('btnChangeSuplemen'); // bisa null
+        const btnRemoveSuplemen = document.getElementById('btnRemoveSuplemen'); // bisa null
+
+        on(btnPickSuplemen, 'click', () => fileSuplemen && fileSuplemen.click());
+        on(btnChangeSuplemen, 'click', () => fileSuplemen && fileSuplemen.click());
+        on(btnRemoveSuplemen, 'click', removeSuplemen);
+
+        on(uploadAreaSuplemen, 'click', (e) => {
+            if (e.target.closest('button')) return;
+            if (fileSuplemen) fileSuplemen.click();
+        });
+
+        on(fileSuplemen, 'change', () => handleSuplemen(fileSuplemen.files[0]));
+
+        if (uploadAreaSuplemen && fileSuplemen) {
+            bindDragDrop(uploadAreaSuplemen, (file) => {
+                if (!file) return;
+                fileSuplemen.files = makeFileList(file);
+                handleSuplemen(file);
+            });
+        }
+
         function handleSuplemen(file) {
-            // kalau memang tidak ada field suplemen di halaman, abaikan
             if (!fileSuplemen || !previewSuplemen) return;
 
             if (!file) {
@@ -469,6 +508,49 @@
             checkReady();
         }
 
+        function removeSuplemen() {
+            if (!fileSuplemen || !previewSuplemen) {
+                checkReady();
+                return;
+            }
+            fileSuplemen.value = '';
+            previewSuplemen.classList.add('d-none');
+            previewSuplemen.classList.remove('has-file');
+            if (suplemenName) suplemenName.textContent = '-';
+            if (suplemenSize) suplemenSize.textContent = '-';
+            checkReady();
+        }
+
+        // ============================================================
+        // LKPS
+        // ============================================================
+        const uploadAreaLkps = document.getElementById('uploadAreaLkps');
+        const fileLkps = document.getElementById('file_lkps');
+        const previewLkps = document.getElementById('previewLkps');
+        const lkpsName = document.getElementById('lkpsName');
+        const lkpsSize = document.getElementById('lkpsSize');
+
+        const btnPickLkps = document.getElementById('btnPickLkps');
+        const btnChangeLkps = document.getElementById('btnChangeLkps');
+        const btnRemoveLkps = document.getElementById('btnRemoveLkps');
+
+        on(btnPickLkps, 'click', () => fileLkps.click());
+        on(btnChangeLkps, 'click', () => fileLkps.click());
+        on(btnRemoveLkps, 'click', removeLkps);
+
+        on(uploadAreaLkps, 'click', (e) => {
+            if (e.target.closest('button')) return;
+            fileLkps.click();
+        });
+
+        on(fileLkps, 'change', () => handleLkps(fileLkps.files[0]));
+
+        bindDragDrop(uploadAreaLkps, (file) => {
+            if (!file) return;
+            fileLkps.files = makeFileList(file);
+            handleLkps(file);
+        });
+
         function handleLkps(file) {
             if (!file) return;
 
@@ -492,29 +574,6 @@
             checkReady();
         }
 
-        // ===================== remove =====================
-        function removeLed() {
-            fileLed.value = '';
-            previewLed.classList.add('d-none');
-            previewLed.classList.remove('has-file');
-            ledName.textContent = '-';
-            ledSize.textContent = '-';
-            checkReady();
-        }
-
-        function removeSuplemen() {
-            if (!fileSuplemen || !previewSuplemen) {
-                checkReady();
-                return;
-            }
-            fileSuplemen.value = '';
-            previewSuplemen.classList.add('d-none');
-            previewSuplemen.classList.remove('has-file');
-            if (suplemenName) suplemenName.textContent = '-';
-            if (suplemenSize) suplemenSize.textContent = '-';
-            checkReady();
-        }
-
         function removeLkps() {
             fileLkps.value = '';
             previewLkps.classList.add('d-none');
@@ -524,41 +583,88 @@
             checkReady();
         }
 
-        // ===================== readiness =====================
+        // ============================================================
+        // PENGESAHAN (PDF) - WAJIB
+        // ============================================================
+        const uploadAreaPengesahan = document.getElementById('uploadAreaPengesahan');
+        const filePengesahan = document.getElementById('file_pengesahan');
+        const previewPengesahan = document.getElementById('previewPengesahan');
+        const pengesahanName = document.getElementById('pengesahanName');
+        const pengesahanSize = document.getElementById('pengesahanSize');
+
+        const btnPickPengesahan = document.getElementById('btnPickPengesahan');
+        const btnChangePengesahan = document.getElementById('btnChangePengesahan');
+        const btnRemovePengesahan = document.getElementById('btnRemovePengesahan');
+
+        on(btnPickPengesahan, 'click', () => filePengesahan.click());
+        on(btnChangePengesahan, 'click', () => filePengesahan.click());
+        on(btnRemovePengesahan, 'click', removePengesahan);
+
+        on(uploadAreaPengesahan, 'click', (e) => {
+            if (e.target.closest('button')) return;
+            filePengesahan.click();
+        });
+
+        on(filePengesahan, 'change', () => handlePengesahan(filePengesahan.files[0]));
+
+        bindDragDrop(uploadAreaPengesahan, (file) => {
+            if (!file) return;
+            filePengesahan.files = makeFileList(file);
+            handlePengesahan(file);
+        });
+
+        function handlePengesahan(file) {
+            if (!file) return;
+
+            const name = file.name.toLowerCase();
+            if (!name.endsWith('.pdf')) {
+                alert('Lembar Pengesahan harus berformat PDF!');
+                removePengesahan();
+                return;
+            }
+            if (file.size > 10 * 1024 * 1024) {
+                alert('Ukuran file Lembar Pengesahan maksimal 10MB!');
+                removePengesahan();
+                return;
+            }
+
+            pengesahanName.textContent = file.name;
+            pengesahanSize.textContent = formatFileSize(file.size);
+
+            previewPengesahan.classList.remove('d-none');
+            previewPengesahan.classList.add('has-file');
+            checkReady();
+        }
+
+        function removePengesahan() {
+            filePengesahan.value = '';
+            previewPengesahan.classList.add('d-none');
+            previewPengesahan.classList.remove('has-file');
+            pengesahanName.textContent = '-';
+            pengesahanSize.textContent = '-';
+            checkReady();
+        }
+
+        // ============================================================
+        // readiness: LED + LKPS + Pengesahan + (Suplemen jika wajib)
+        // ============================================================
         function checkReady() {
             const okLed = fileLed.files && fileLed.files.length > 0;
             const okLkps = fileLkps.files && fileLkps.files.length > 0;
+            const okPengesahan = filePengesahan.files && filePengesahan.files.length > 0;
 
-            // default true jika suplemen tidak wajib
             let okSuplemen = true;
-
             if (NEED_SUPLEMEN) {
-                // jika wajib, pastikan input suplemen ada dan ada file
                 okSuplemen = !!(fileSuplemen && fileSuplemen.files && fileSuplemen.files.length > 0);
             }
 
-            btnSubmit.disabled = !(okLed && okLkps && okSuplemen);
+            btnSubmit.disabled = !(okLed && okLkps && okPengesahan && okSuplemen);
         }
 
-        // ===================== utils =====================
-        function formatFileSize(bytes) {
-            if (!bytes) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return (bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i];
-        }
-
-        function makeFileList(file) {
-            const dt = new DataTransfer();
-            dt.items.add(file);
-            return dt.files;
-        }
-
-        // ✅ initial check (kalau halaman reload tapi file sudah keisi dari browser cache — jarang tapi aman)
+        // initial check
         checkReady();
 
-        // Form submit loading state
+        // submit loading state
         on(form, 'submit', function() {
             btnSubmit.disabled = true;
             btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mengupload...';

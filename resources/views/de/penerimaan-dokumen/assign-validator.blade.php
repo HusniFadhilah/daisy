@@ -1,18 +1,18 @@
 @extends('layouts.template.app')
 
-@section('title', 'Tugaskan Validator LED - ' . $pengajuan->nomor_pengajuan)
+@section('title', 'Tugaskan Validator Dokumen - ' . $pengajuan->nomor_pengajuan)
 
 @section('content')
 <div class="container-fluid py-3">
     {{-- Header --}}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2>
+            <h4>
                 <i class="bi bi-person-check"></i>
-                Tugaskan Validator LED
-            </h2>
+                Tugaskan Validator Dokumen
+            </h4>
             <p class="text-muted mb-0">
-                {{ $pengajuan->nomor_pengajuan }} - {{ $pengajuan->studyProgram->name }}
+                Silahkan menugaskan validator untuk memvalidasi dokumen
             </p>
         </div>
         <a href="{{ route('de.penerimaan-dokumen.show', $pengajuan->id) }}" class="btn btn-secondary">
@@ -195,7 +195,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form id="assignValidatorForm">
+                    <form id="assignValidatorForm" enctype="multipart/form-data">
                         @csrf
 
                         {{-- Pilih Validator --}}
@@ -215,7 +215,7 @@
                                 @endforelse
                             </select>
                             <small class="text-muted">
-                                Pilih validator yang akan mereview LED
+                                Pilih validator yang akan melakukan validasi dokumen
                             </small>
                         </div>
 
@@ -227,6 +227,18 @@
                                     <i class="bi bi-envelope"></i> <span id="previewEmail">-</span>
                                 </p>
                             </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                Upload Surat Tugas Validator
+                                <span class="badge bg-secondary">Opsional</span>
+                            </label>
+                            <input type="file" name="file_surat_tugas" id="file_surat_tugas" class="form-control" accept=".pdf">
+                            <small class="text-muted">
+                                Format: PDF | Maksimal: 5MB |
+                            </small>
+                            <div id="suratTugasPreview" class="mt-2"></div>
                         </div>
 
                         {{-- Catatan DE --}}
@@ -247,7 +259,7 @@
                                 <li>Sistem akan membuat asesmen (jika belum ada)</li>
                                 <li>Penugasan dengan <code>jenis_asesmen = 'dokumen'</code> akan dibuat</li>
                                 <li>Email penawaran akan dikirim ke validator</li>
-                                <li>Status Permohonan akreditasi akan diupdate ke <code>Validator LED Ditugaskan</code></li>
+                                <li>Status Permohonan akreditasi akan diupdate ke <code>Validator Dokumen Ditugaskan</code></li>
                                 @if($currentAssignment && $currentAssignment->status_penawaran === 'pending')
                                 <li class="text-warning"><strong>Penugasan lama yang pending akan dihapus</strong></li>
                                 @endif
@@ -272,15 +284,15 @@
             <div class="card mt-4">
                 <div class="card-header bg-light">
                     <h6 class="mb-0">
-                        <i class="bi bi-question-circle"></i> Persyaratan Validator LED
+                        <i class="bi bi-question-circle"></i> Persyaratan Validator Dokumen
                     </h6>
                 </div>
                 <div class="card-body">
                     <ul class="mb-0">
-                        <li>Minimal <strong>1 validator</strong> untuk review LED</li>
+                        <li><strong>1 orang validator</strong> untuk melakukan validasi Dokumen</li>
                         <li>Validator harus memiliki role <code>validator</code> di sistem</li>
-                        <li>Validator harus menerima penawaran sebelum bisa mulai review</li>
-                        <li>LED harus sudah di-submit dan status <code>Diterima</code></li>
+                        <li>Validator harus menerima penawaran sebelum bisa mulai validasi</li>
+                        <li>Seluruh Dokumen harus sudah di-submit oleh PS dan status <code>Diterima</code></li>
                     </ul>
                 </div>
             </div>
@@ -290,15 +302,55 @@
 
 @push('scripts')
 <script>
+    let fileSuratTugas = document.getElementById('file_surat_tugas')
+    if (fileSuratTugas) fileSuratTugas.addEventListener('change', function(e) {
+        const preview = document.getElementById('suratTugasPreview');
+
+        if (!e.target.files || !e.target.files.length) {
+            preview.innerHTML = '';
+            return;
+        }
+
+        const file = e.target.files[0];
+        const fileSize = file.size / 1024 / 1024;
+
+        if (file.type !== 'application/pdf') {
+            preview.innerHTML =
+                '<div class="alert alert-danger alert-dismissible fade show">' +
+                '<i class="bi bi-x-circle"></i> File harus berformat PDF' +
+                '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                '</div>';
+            e.target.value = '';
+            return;
+        }
+
+        if (fileSize > 5) {
+            preview.innerHTML =
+                '<div class="alert alert-danger alert-dismissible fade show">' +
+                '<i class="bi bi-x-circle"></i> Ukuran file terlalu besar (' + fileSize.toFixed(2) + ' MB). Maksimal 5 MB' +
+                '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                '</div>';
+            e.target.value = '';
+            return;
+        }
+
+        preview.innerHTML =
+            '<div class="alert alert-success alert-dismissible fade show">' +
+            '<i class="bi bi-check-circle"></i> ' +
+            '<strong>' + file.name + '</strong> (' + fileSize.toFixed(2) + ' MB)' +
+            '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+            '</div>';
+    });
+
     // Submit form
     document.getElementById('assignValidatorForm').addEventListener('submit', async function(e) {
         e.preventDefault();
 
+        // Use FormData to handle file upload
         const formData = new FormData(this);
-        const data = Object.fromEntries(formData);
 
         // Validation
-        if (!data.id_validator) {
+        if (!formData.get('id_validator')) {
             Swal.fire({
                 icon: 'error'
                 , title: 'Error'
@@ -314,7 +366,7 @@
         const result = await Swal.fire({
             icon: 'question'
             , title: 'Konfirmasi Penugasan'
-            , html: `Tugaskan validator <strong>${validatorName}</strong> untuk review LED?`
+            , html: `Tugaskan validator <strong>${validatorName}</strong> untuk validasi Dokumen?`
             , showCancelButton: true
             , confirmButtonText: 'Ya, Tugaskan!'
             , cancelButtonText: 'Batal'
@@ -330,11 +382,10 @@
             const response = await fetch('{{ route("de.penerimaan-dokumen.assign-validator", $pengajuan->id) }}', {
                 method: 'POST'
                 , headers: {
-                    'Content-Type': 'application/json'
-                    , 'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     , 'Accept': 'application/json'
                 }
-                , body: JSON.stringify(data)
+                , body: formData // ✅ Send FormData with file
             });
 
             const responseData = await response.json();

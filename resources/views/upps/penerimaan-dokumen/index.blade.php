@@ -58,14 +58,14 @@
     <div class="row mb-4">
 
         {{-- Total dokumen yang harus dikirim --}}
-        <div class="col-lg-3 col-md-6 mb-3">
+        <div class="col-lg-4 col-md-6 mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Total dokumen yang harus dikirim</h6>
+                    <h6 class="mb-2 opacity-75">Total Dokumen Harus Dikirim</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['dokumen_harus_dikirim'] }}</h2>
-                            <small class="opacity-75">Belum ada draft dokumen terkirim</small>
+                            <small class="opacity-75">Total dokumen yang harus dikirim</small>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
                             <i class="bi bi-upload"></i>
@@ -76,14 +76,14 @@
         </div>
 
         {{-- Total draft dokumen --}}
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+        <div class="col-lg-4 col-md-6 mb-3">
+            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Total draft dokumen</h6>
+                    <h6 class="mb-2 opacity-75">Total Draft Dokumen</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['draft_dokumen'] }}</h2>
-                            <small class="opacity-75">Draft sudah dikirim (menunggu / diproses)</small>
+                            <small class="opacity-75">Jumlah Draft dokumen yang sudah dikirim (menunggu validasi atau sedang diproses)</small>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
                             <i class="bi bi-file-earmark-text"></i>
@@ -94,14 +94,14 @@
         </div>
 
         {{-- Total dokumen dikirim --}}
-        <div class="col-lg-3 col-md-6 mb-3">
+        <div class="col-lg-4 col-md-6 mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Total dokumen dikirim</h6>
+                    <h6 class="mb-2 opacity-75">Total Dokumen Dikirim</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['dokumen_dikirim'] }}</h2>
-                            <small class="opacity-75">Dokumen sudah masuk sistem</small>
+                            <small class="opacity-75">Jumlah Dokumen yang telah diproses</small>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
                             <i class="bi bi-send"></i>

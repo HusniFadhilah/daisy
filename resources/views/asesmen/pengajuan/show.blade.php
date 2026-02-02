@@ -467,7 +467,7 @@
                                 <!-- Upload Area -->
                                 <div class="upload-area-modal mb-3" id="uploadAreaModal">
                                     <i class="bi bi-cloud-upload fs-1 text-muted"></i>
-                                    <p class="mb-2"><strong>Klik atau drag & drop file baru di sini</strong></p>
+                                    <p class="mb-2"><strong>Silahkan upload file di sini</strong></p>
                                     <p class="text-muted small mb-2">Format: DOCX | Max: 10 MB</p>
                                     <input type="file" id="inputDraftBorangUlang" name="draft_borang" class="d-none" accept=".docx">
                                     <button type="button" class="btn btn-primary btn-sm" onclick="document.getElementById('inputDraftBorangUlang').click()">

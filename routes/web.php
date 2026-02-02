@@ -284,6 +284,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{id}/assign-validator', [DeskEvaluatorController::class, 'showAssignValidatorForm'])->name('.assign-validator.form');
             Route::post('/{id}/assign-validator', [DeskEvaluatorController::class, 'assignValidatorBorang'])->name('.assign-validator');
             Route::post('/validation/{validationId}/reassign', [DeskEvaluatorController::class, 'reassignValidator'])->name('.reassign-validator');
+            Route::get('/{id}/download-surat-tugas-validator', [PenerimaanDokumenController::class, 'downloadSuratTugasValidator'])->name('.download-surat-tugas-validator');
+            Route::post('/{id}/upload-surat-tugas-validator', [PenerimaanDokumenController::class, 'uploadSuratTugasValidatorForm'])->name('.upload-surat-tugas-validator');
         });
     });
 

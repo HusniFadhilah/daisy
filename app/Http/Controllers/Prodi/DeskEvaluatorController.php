@@ -835,7 +835,7 @@ class DeskEvaluatorController extends Controller
 
 
     /**
-     * Lapor hasil validasi LED (Step 7)
+     * Lapor hasil validasi Dokumen (Step 7)
      * Setelah validator approve, DE melaporkan hasil validasi
      */
     public function laporHasilValidasi($id)
@@ -861,7 +861,7 @@ class DeskEvaluatorController extends Controller
         try {
             $oldStatus = $pengajuan->status;
 
-            // Update to Step 7: Pelaporan Validasi LED
+            // Update to Step 7: Pelaporan Validasi Dokumen
             $pengajuan->update([
                 'status' => PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
                 'tanggal_pelaporan_validasi_borang' => now(),

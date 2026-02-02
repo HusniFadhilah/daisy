@@ -240,7 +240,7 @@
                                     <i class="bi bi-file-check text-warning" style="font-size: 48px;"></i>
                                     <h3 class="fw-bold text-warning mt-2">{{ $statistics['durasi_validasi_dokumen'] }}</h3>
                                     <p class="text-muted mb-0">Hari Validasi Dokumen</p>
-                                    <small class="text-muted">Validasi LED</small>
+                                    <small class="text-muted">Validasi Dokumen</small>
                                 </div>
                             </div>
                         </div>

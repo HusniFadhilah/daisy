@@ -140,8 +140,20 @@ class PengajuanAkreditasi extends Model
         'tanggal_pengumuman',
         'tanggal_pelaporan_hasil',
         'tanggal_penyimpanan',
+
+        'peringkat_hasil',
+        'nilai_akhir',
+        'peringkat_hasil_banding',
+        'nilai_akhir_banding',
+        'peringkat_final',
+        'skor_final',
+        'masa_berlaku_tahun',
+        'catatan_hasil',
+        'alasan_banding',
+        'hasil_banding',
+
         'is_active',
-        'is_example'
+        'is_example',
     ];
 
     // ============================================
@@ -1263,11 +1275,79 @@ class PengajuanAkreditasi extends Model
 
                 default =>
                 $audience === 'de'
-                    ? $badge('bg-secondary', 'Draft Dokumen belum dikirim oleh PS')
+                    ? $badge('bg-secondary', 'Draft Dokumen belum dikirim')
                     : $badge('bg-secondary', 'Draft Dokumen belum dikirim'),
             },
 
             default => $badge('bg-secondary', '-'),
+        };
+    }
+
+    /**
+     * ✅ Get peringkat untuk ditampilkan saat ini
+     * Prioritas: hasil banding > hasil awal
+     */
+    public function getPeringkatSaatIniAttribute(): ?string
+    {
+        return $this->peringkat_hasil_banding ?? $this->peringkat_hasil;
+    }
+
+    /**
+     * ✅ Get nilai untuk ditampilkan saat ini
+     * Prioritas: hasil banding > hasil awal
+     */
+    public function getNilaiSaatIniAttribute(): ?float
+    {
+        return $this->nilai_akhir_banding ?? $this->nilai_akhir;
+    }
+
+    /**
+     * ✅ Check apakah hasil berubah setelah banding
+     */
+    public function hasResultChangedAfterBanding(): bool
+    {
+        if (!$this->peringkat_hasil_banding) {
+            return false;
+        }
+
+        return $this->peringkat_hasil !== $this->peringkat_hasil_banding;
+    }
+
+    /**
+     * ✅ Get badge class untuk peringkat
+     */
+    public function getPeringkatBadgeClass(?string $peringkat = null): string
+    {
+        $peringkat = $peringkat ?? $this->peringkat_saat_ini;
+
+        return match ($peringkat) {
+            'Unggul', 'Terakreditasi Unggul (5 Tahun)', 'Terakreditasi Unggul 2 Tahun (dengan Syarat)'
+            => 'bg-warning text-dark',
+            'Baik Sekali', 'Terakreditasi (5 Tahun)'
+            => 'bg-success',
+            'Baik', 'Terakreditasi Sementara (2 Tahun)'
+            => 'bg-info',
+            'Tidak Terakreditasi'
+            => 'bg-danger',
+            default => 'bg-secondary',
+        };
+    }
+
+    /**
+     * ✅ Get icon untuk peringkat
+     */
+    public function getPeringkatIcon(?string $peringkat = null): string
+    {
+        $peringkat = $peringkat ?? $this->peringkat_saat_ini;
+
+        return match ($peringkat) {
+            'Unggul', 'Terakreditasi Unggul (5 Tahun)', 'Terakreditasi Unggul 2 Tahun (dengan Syarat)'
+            => 'bi-star-fill',
+            'Baik Sekali', 'Terakreditasi (5 Tahun)'
+            => 'bi-award-fill',
+            'Baik', 'Terakreditasi Sementara (2 Tahun)'
+            => 'bi-check-circle-fill',
+            default => 'bi-question-circle',
         };
     }
 }

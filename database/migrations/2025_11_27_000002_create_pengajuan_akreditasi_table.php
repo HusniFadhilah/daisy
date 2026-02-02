@@ -46,8 +46,6 @@ return new class extends Migration
                 'borang_in_validation',
                 'borang_revision_required',
                 'borang_validated',
-                // 'review_kesiapan_belum_siap',
-                // 'review_kesiapan_siap',
                 'borang_final_diterima',
                 'validasi_borang_dilaporkan',
                 'pengajuan_completed',
@@ -87,7 +85,6 @@ return new class extends Migration
             // Borang validation
             $table->timestamp('tanggal_validasi_borang_assigned')->nullable()->comment('Tanggal validator di-assign untuk review LED');
             $table->timestamp('tanggal_borang_final')->nullable();
-            // $table->timestamp('tanggal_review_kesiapan')->nullable();
             $table->timestamp('tanggal_validasi_borang_selesai')->nullable()->comment('Tanggal validator approve/request revision LED');
             $table->timestamp('tanggal_pelaporan_validasi_borang')->nullable();
             $table->timestamp('tanggal_lanjut_ak')->nullable();
@@ -118,6 +115,10 @@ return new class extends Migration
             $table->timestamp('tanggal_pelaporan_hasil')->nullable();
             $table->timestamp('tanggal_penyimpanan')->nullable()->comment('Tanggal penyimpanan berkas akreditasi');
 
+            $table->string('peringkat_hasil')->nullable()->comment('Peringkat hasil akreditasi awal yang disampaikan ke prodi');
+            $table->decimal('nilai_akhir', 6, 2)->nullable()->comment('Nilai hasil akreditasi awal (0-400)');
+            $table->string('peringkat_hasil_banding')->nullable()->comment('Peringkat hasil setelah proses banding (jika ada)');
+            $table->decimal('nilai_akhir_banding', 6, 2)->nullable()->comment('Nilai hasil setelah proses banding (jika ada)');
             $table->string('peringkat_final')->nullable();
             $table->decimal('skor_final', 6, 2)->nullable();
             $table->integer('masa_berlaku_tahun')->default(null)->nullable();
@@ -167,6 +168,12 @@ return new class extends Migration
                 'surat_permohonan',
                 'surat_penerimaan_de',
                 'surat_tugas',
+                'surat_tugas_validator',
+                'surat_tugas_validator_dokumen',
+                'surat_tugas_asesor_ak',
+                'surat_tugas_asesor_al',
+                'surat_tugas_validator_al',
+                'surat_tugas_validator_rekap',
                 'borang_template',
                 'template_formulir_pembayaran',
                 'formulir_pembayaran',

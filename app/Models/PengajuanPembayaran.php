@@ -52,7 +52,26 @@ class PengajuanPembayaran extends Model
             return null;
         }
 
-        return str_replace('verifikasi', 'validasi', $this->status_pembayaran);
+        $label = str_replace('_', ' ', $this->status_pembayaran);
+        $label = str_replace(
+            ['verifikasi', 'terverifikasi'],
+            ['validasi', 'tervalidasi'],
+            $label
+        );
+
+        return ucwords($label);
+    }
+
+    public function getStatusPembayaranBadgeAttribute()
+    {
+        return match ($this->status_pembayaran) {
+            'menunggu_pembayaran' => 'secondary',
+            'menunggu_verifikasi' => 'warning',
+            'upload_ulang'        => 'info',
+            'ditolak'             => 'danger',
+            'terverifikasi'       => 'success',
+            default               => 'secondary',
+        };
     }
 
     public static function generateNomorInvoice()

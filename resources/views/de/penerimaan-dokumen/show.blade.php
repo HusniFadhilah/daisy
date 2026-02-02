@@ -266,7 +266,7 @@
                         </h5>
 
                         @if($canAssignValidator)
-                        <a href="{{ route('de.penerimaan-dokumen.assign-validator.form', $pengajuan->id) }}" class="btn btn-light btn-sm">
+                        <a href="{{ route('de.penerimaan-dokumen.assign-validator', $pengajuan->id) }}" class="btn btn-light btn-sm">
                             <i class="bi bi-person-plus"></i>
                             {{ $currentValidator ? 'Tugaskan Ulang Validator' : 'Tugaskan Validator' }}
                         </a>
@@ -276,7 +276,8 @@
 
                 <div class="card-body">
                     @if($currentValidator)
-                    <div class="row align-items-center">
+                    <div class="row align-items-start">
+                        {{-- Validator Info --}}
                         <div class="col-md-3">
                             <div class="text-center">
                                 <div class="avatar-circle mx-auto mb-2" style="width: 80px; height: 80px; font-size: 2rem;">
@@ -287,9 +288,10 @@
                             </div>
                         </div>
 
-                        <div class="col-md-9">
+                        {{-- Validator Status --}}
+                        <div class="col-md-5">
                             <div class="row">
-                                <div class="col-md-4 mb-3">
+                                <div class="col-md-6 mb-3">
                                     <label class="text-muted small">Role</label>
                                     <p class="fw-bold mb-0">
                                         <span class="badge bg-success">
@@ -298,7 +300,7 @@
                                     </p>
                                 </div>
 
-                                <div class="col-md-4 mb-3">
+                                <div class="col-md-6 mb-3">
                                     <label class="text-muted small">Status Penawaran</label>
                                     <p class="mb-0">
                                         @php
@@ -317,7 +319,7 @@
                                 </div>
 
                                 @if($currentValidator->status_penawaran === 'accepted')
-                                <div class="col-md-4 mb-3">
+                                <div class="col-md-6 mb-3">
                                     <label class="text-muted small">Status Pekerjaan</label>
                                     <p class="mb-0">
                                         <span class="badge bg-info">
@@ -327,7 +329,7 @@
                                 </div>
                                 @endif
 
-                                <div class="col-md-4 mb-3">
+                                <div class="col-md-6 mb-3">
                                     <label class="text-muted small">Ditugaskan</label>
                                     <p class="mb-0">
                                         @if($currentValidator->created_at)
@@ -339,28 +341,28 @@
                                 </div>
 
                                 @if($currentValidator->responded_at)
-                                <div class="col-md-4 mb-3">
+                                <div class="col-md-6 mb-3">
                                     <label class="text-muted small">Respon</label>
                                     <p class="mb-0">{{ $currentValidator->responded_at->format('d M Y H:i') }}</p>
                                 </div>
                                 @endif
 
                                 @if($currentValidator->status_penawaran === 'accepted' && $currentValidator->approved_at)
-                                <div class="col-md-4 mb-3">
+                                <div class="col-md-6 mb-3">
                                     <label class="text-muted small">Selesai Review</label>
                                     <p class="mb-0">{{ $currentValidator->approved_at->format('d M Y H:i') }}</p>
                                 </div>
                                 @endif
                             </div>
 
-                            <div class="d-flex gap-2 mt-3">
+                            <div class="d-flex gap-2 mt-2">
                                 @if($currentValidator->status_penawaran === 'pending')
                                 <span class="badge bg-warning">
                                     <i class="bi bi-hourglass-split"></i>
                                     Menunggu validator menerima penawaran
                                 </span>
                                 @elseif($currentValidator->status_penawaran === 'rejected')
-                                <a href="{{ route('de.penerimaan-dokumen.assign-validator.form', $pengajuan->id) }}" class="btn btn-warning btn-sm">
+                                <a href="{{ route('de.penerimaan-dokumen.assign-validator', $pengajuan->id) }}" class="btn btn-warning btn-sm">
                                     <i class="bi bi-arrow-repeat"></i>
                                     Tugaskan Validator Baru
                                 </a>
@@ -374,8 +376,80 @@
                                 @endif
                             </div>
                         </div>
+
+                        {{-- ✅ NEW: Surat Tugas Validator --}}
+                        <div class="col-md-4">
+                            @php
+                            $suratTugas = $pengajuan->dokumen
+                            ->where('jenis_dokumen', 'surat_tugas_validator_dokumen')
+                            ->where('is_latest', true)
+                            ->first();
+                            @endphp
+
+                            <div class="card border-secondary h-100">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0 fw-bold">
+                                        <i class="bi bi-file-earmark-text"></i> Surat Tugas
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    @if($suratTugas)
+                                    <div class="d-flex align-items-start gap-2 mb-3">
+                                        <div class="doc-ico bg-success bg-opacity-10 text-success">
+                                            <i class="bi bi-file-earmark-pdf"></i>
+                                        </div>
+                                        <div class="flex-grow-1 min-w-0">
+                                            <p class="doc-title fw-semibold mb-0">
+                                                {{ Str::limit($suratTugas->original_filename, 30) }}
+                                            </p>
+                                            <div class="doc-meta">
+                                                @if($suratTugas->file_size)
+                                                <div>{{ number_format($suratTugas->file_size / 1024, 2) }} KB</div>
+                                                @endif
+                                                <div>
+                                                    <span class="badge bg-info">Versi {{ $suratTugas->versi }}</span>
+                                                </div>
+                                                <div>
+                                                    <small>Dibuat: {{ $suratTugas->created_at->format('d M Y H:i') }}</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex flex-column gap-2">
+                                        <a href="{{ route('de.penerimaan-dokumen.download-surat-tugas-validator', $pengajuan->id) }}" class="btn btn-success btn-sm w-100" target="_blank">
+                                            <i class="bi bi-download"></i> Download Surat Tugas
+                                        </a>
+                                        <button type="button" class="btn btn-outline-primary btn-sm w-100" data-bs-toggle="modal" data-bs-target="#modalUploadSuratTugas">
+                                            <i class="bi bi-upload"></i> Upload Ulang
+                                        </button>
+                                    </div>
+
+                                    @if($suratTugas->keterangan)
+                                    <div class="mt-3 pt-3 border-top">
+                                        <small class="text-muted fst-italic">
+                                            <i class="bi bi-info-circle"></i>
+                                            {{ $suratTugas->keterangan }}
+                                        </small>
+                                    </div>
+                                    @endif
+                                    @else
+                                    <div class="text-center py-3">
+                                        <i class="bi bi-file-earmark-x" style="font-size: 2rem; color: #ddd;"></i>
+                                        <p class="text-muted mt-2 mb-3 small">
+                                            Surat tugas belum tersedia
+                                        </p>
+                                        <button type="button" class="btn btn-primary btn-sm w-100" data-bs-toggle="modal" data-bs-target="#modalUploadSuratTugas">
+                                            <i class="bi bi-upload"></i> Upload Surat Tugas
+                                        </button>
+                                    </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     @else
+                    {{-- No Validator Assigned --}}
                     <div class="text-center py-4">
                         <i class="bi bi-person-x" style="font-size: 3rem; color: #ccc;"></i>
                         <p class="text-muted mt-3 mb-3">
@@ -383,7 +457,7 @@
                         </p>
 
                         @if($canAssignValidator)
-                        <a href="{{ route('de.penerimaan-dokumen.assign-validator.form', $pengajuan->id) }}" class="btn btn-primary">
+                        <a href="{{ route('de.penerimaan-dokumen.assign-validator', $pengajuan->id) }}" class="btn btn-primary">
                             <i class="bi bi-person-plus"></i>
                             Tugaskan Validator Sekarang
                         </a>
@@ -481,10 +555,10 @@
                                     <br>
                                     <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
 
-                                    @if($log->keterangan)
+                                    {{-- @if($log->keterangan)
                                     <br>
                                     <small class="text-muted fst-italic">{{ $log->keterangan }}</small>
-                                    @endif
+                                    @endif --}}
                                 </div>
                             </div>
                         </div>

@@ -1082,7 +1082,7 @@ class AsesmenController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => "Validator {$validator->name} berhasil ditugaskan untuk validasi LED.",
+                'message' => "Validator {$validator->name} berhasil ditugaskan untuk validasi Dokumen.",
                 'data' => [
                     'assignment' => $assignment,
                     'validation' => $validation,

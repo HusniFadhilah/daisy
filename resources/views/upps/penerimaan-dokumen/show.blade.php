@@ -35,9 +35,9 @@
             @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI)
             <div class="alert alert-warning alert-permanent">
                 <i class="bi bi-upload"></i>
-                <strong>Pembayaran telah diverifikasi. Silakan kirim dokumen akreditasi</strong>
+                <strong>Pembayaran telah diverifikasi, silakan kirim dokumen akreditasi</strong>
                 <br>
-                Segera kirim dokumen agar proses akreditasi dapat dilanjutkan.
+                Mohon segera lakukan pengiriman dokumen agar proses akreditasi dapat dilanjutkan.
 
                 <!-- Flex container responsive -->
                 <div class="d-flex flex-column flex-md-row align-items-center justify-content-between mt-3 gap-2">
