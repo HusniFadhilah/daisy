@@ -255,11 +255,7 @@
     {{-- ROW 2: Validator / Tugaskan Validator --}}
     <div class="row mb-4">
         <div class="col-md-12">
-            @if(in_array($pengajuan->status, [
-            \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
-            \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
-            \App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
-            ]) && $pengajuan->latestBorangImport)
+            @if($canAssignValidator)
 
             <div class="card border-primary">
                 <div class="card-header bg-primary text-white">

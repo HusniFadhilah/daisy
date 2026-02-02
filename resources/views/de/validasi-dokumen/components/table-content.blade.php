@@ -15,13 +15,12 @@
                 <thead class="table-light">
                     <tr>
                         <th width="5%">No</th>
-                        <th width="15%">Nomor Permohonan Akreditasi Akreditasi</th>
-                        <th width="20%">Program Studi</th>
-                        <th width="15%">Validator</th>
-                        <th width="12%">Status Penawaran</th>
-                        <th width="12%">Status Pekerjaan</th>
-                        <th width="10%">Progress</th>
-                        <th width="11%" class="text-center">Aksi</th>
+                        <th width="20%">Permohonan Akreditasi</th>
+                        <th width="20%">Validator</th>
+                        <th width="15%">Status Penawaran</th>
+                        <th width="15%">Status Pekerjaan</th>
+                        <th width="15%">Progress</th>
+                        <th width="10%" class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -36,19 +35,6 @@
                         <td>
                             <p>{{ $pengajuan->judul }}</p>
                             <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
-                        </td>
-                        <td>
-                            <div>
-                                <strong>{{ $pengajuan->studyProgram->name }}</strong>
-                                <br>
-                                <small class="text-muted">
-                                    {{ $pengajuan->studyProgram->university->name }}
-                                </small>
-                                <br>
-                                <span class="badge bg-info">
-                                    {{ $pengajuan->studyProgram->degreeLevel->name }}
-                                </span>
-                            </div>
                         </td>
                         <td>
                             <strong>{{ $assignment->user->name }}</strong>

@@ -25,7 +25,8 @@ class PenerimaanDokumenController extends Controller
             'studyProgram.university',
             'studyProgram.degreeLevel',
             'deAssigned',
-            'dokumen' => fn($q) => $q->whereIn('jenis_dokumen', ['draft_borang', 'borang_final'])
+            'dokumen' => fn($q) => $q->whereIn('jenis_dokumen', ['draft_borang', 'data_kualitatif', 'data_kuantitatif', 'borang_final'])
+
                 ->where('is_latest', true),
             'statusLog' => fn($q) => $q->whereIn('status_to', [
                 PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI,
@@ -136,21 +137,28 @@ class PenerimaanDokumenController extends Controller
                 ->with('error', 'Dokumen tidak dapat diupload pada status saat ini.');
         }
 
-        return view('upps.penerimaan-dokumen.upload', compact('pengajuan'));
+        $needSuplemen = $pengajuan->need_suplemen;
+
+        return view('upps.penerimaan-dokumen.upload', compact('pengajuan', 'needSuplemen'));
     }
 
     /**
-     * Upload dokumen LED (draft_borang)
+     * Upload dokumen LED (DOCX) + LKPS (XLSX) oleh UPPS
      */
     public function uploadDokumen(Request $request, $id)
     {
         $validated = $request->validate([
-            'file_dokumen' => 'required|file|mimes:pdf|max:10240', // 10MB
+            'file_led'  => 'required|file|mimes:docx,doc|max:10240',     // 10MB
+            'file_lkps' => 'required|file|mimes:xlsx,xls|max:10240',     // 10MB
             'catatan_upload' => 'nullable|string|max:500',
         ], [
-            'file_dokumen.required' => 'File dokumen harus diupload.',
-            'file_dokumen.mimes' => 'File harus berformat PDF.',
-            'file_dokumen.max' => 'Ukuran file maksimal 10MB.',
+            'file_led.required' => 'File LED (DOCX) harus diupload.',
+            'file_led.mimes'    => 'LED harus berformat DOCX/DOC.',
+            'file_led.max'      => 'Ukuran file LED maksimal 10MB.',
+
+            'file_lkps.required' => 'File LKPS (Excel) harus diupload.',
+            'file_lkps.mimes'    => 'LKPS harus berformat XLSX/XLS.',
+            'file_lkps.max'      => 'Ukuran file LKPS maksimal 10MB.',
         ]);
 
         DB::beginTransaction();
@@ -171,46 +179,89 @@ class PenerimaanDokumenController extends Controller
                 PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,
             ];
 
-            if (!in_array($pengajuan->status, $allowedStatuses)) {
-                return redirect()->back()->with('error', 'Dokumen tidak dapat diupload pada status saat ini.');
+            if (!in_array($pengajuan->status, $allowedStatuses, true)) {
+                return back()->with('error', 'Dokumen tidak dapat diupload pada status saat ini.');
             }
 
-            // Upload file
-            $file = $request->file('file_dokumen');
-            $fileName = 'Dokumen_' . $pengajuan->studyProgram->code . '_' . time() . '.pdf';
-            $filePath = $file->storeAs(
-                'pengajuan/' . $pengajuan->id . '/draft-borang',
-                $fileName,
+            // =========================
+            // Upload LED (data_kualitatif)
+            // =========================
+            $ledFile = $request->file('file_led');
+            $ledExt  = $ledFile->getClientOriginalExtension(); // docx/doc
+            $ledName = 'LED_' . $pengajuan->studyProgram->code . '_' . time() . '.' . $ledExt;
+
+            $ledPath = $ledFile->storeAs(
+                "pengajuan/{$pengajuan->id}/data-kualitatif",
+                $ledName,
                 'public'
             );
 
-            // Mark previous dokumen as not latest
+            // Mark previous LED as not latest
             PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
-                ->where('jenis_dokumen', 'draft_borang')
+                ->where('jenis_dokumen', 'data_kualitatif')
                 ->update(['is_latest' => false]);
 
-            // Create new dokumen record
-            $dokumen = PengajuanDokumen::create([
-                'id_pengajuan' => $pengajuan->id,
-                'jenis_dokumen' => 'draft_borang',
-                'path_file' => $filePath,
-                'original_filename' => $file->getClientOriginalName(),
-                'file_size' => $file->getSize(),
-                'uploaded_by' => Auth::id(),
-                'keterangan' => $validated['catatan_upload'],
-                'versi' => PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
-                    ->where('jenis_dokumen', 'draft_borang')
-                    ->max('versi') + 1,
-                'is_latest' => true,
+            $nextLedVersion = (PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
+                ->where('jenis_dokumen', 'data_kualitatif')
+                ->max('versi') ?? 0) + 1;
+
+            PengajuanDokumen::create([
+                'id_pengajuan'      => $pengajuan->id,
+                'jenis_dokumen'     => 'data_kualitatif',
+                'nama_file'         => $ledName,
+                'path_file'         => $ledPath,
+                'original_filename' => $ledFile->getClientOriginalName(),
+                'file_size'         => $ledFile->getSize(),
+                'mime_type'         => $ledFile->getMimeType(),
+                'uploaded_by'       => Auth::id(),
+                'keterangan'        => $validated['catatan_upload'],
+                'versi'             => $nextLedVersion,
+                'is_latest'         => true,
+            ]);
+
+            // =========================
+            // Upload LKPS (data_kuantitatif)
+            // =========================
+            $lkpsFile = $request->file('file_lkps');
+            $lkpsExt  = $lkpsFile->getClientOriginalExtension(); // xlsx/xls
+            $lkpsName = 'LKPS_' . $pengajuan->studyProgram->code . '_' . time() . '.' . $lkpsExt;
+
+            $lkpsPath = $lkpsFile->storeAs(
+                "pengajuan/{$pengajuan->id}/data-kuantitatif",
+                $lkpsName,
+                'public'
+            );
+
+            // Mark previous LKPS as not latest
+            PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
+                ->where('jenis_dokumen', 'data_kuantitatif')
+                ->update(['is_latest' => false]);
+
+            $nextLkpsVersion = (PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
+                ->where('jenis_dokumen', 'data_kuantitatif')
+                ->max('versi') ?? 0) + 1;
+
+            PengajuanDokumen::create([
+                'id_pengajuan'      => $pengajuan->id,
+                'jenis_dokumen'     => 'data_kuantitatif',
+                'nama_file'         => $lkpsName,
+                'path_file'         => $lkpsPath,
+                'original_filename' => $lkpsFile->getClientOriginalName(),
+                'file_size'         => $lkpsFile->getSize(),
+                'mime_type'         => $lkpsFile->getMimeType(),
+                'uploaded_by'       => Auth::id(),
+                'keterangan'        => $validated['catatan_upload'],
+                'versi'             => $nextLkpsVersion,
+                'is_latest'         => true,
             ]);
 
             // Update status pengajuan
             $newStatus = PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM;
-            $keterangan = 'Draft dokumen telah diupload oleh program studi, menunggu diterima oleh LAMDEPILAR';
+            $keterangan = 'Dokumen LED (DOCX) dan LKPS (Excel) telah diupload oleh program studi, menunggu diterima oleh LAMDEPILAR';
 
             $pengajuan->updateStatusSafely($newStatus, $keterangan);
 
-            // Update tanggal draft borang
+            // tanggal draft borang tetap dipakai sebagai penanda dokumen dikirim
             $pengajuan->update([
                 'tanggal_draft_borang' => now(),
             ]);
@@ -219,10 +270,10 @@ class PenerimaanDokumenController extends Controller
 
             return redirect()
                 ->route('upps.penerimaan-dokumen.show', $id)
-                ->with('success', 'Dokumen berhasil diupload. Menunggu diterima oleh LAMDEPILAR.');
+                ->with('success', 'Dokumen LED (DOCX) dan LKPS (Excel) berhasil diupload. Menunggu diterima oleh LAMDEPILAR.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Gagal mengupload dokumen: ' . $e->getMessage());
+            return back()->with('error', 'Gagal mengupload dokumen: ' . $e->getMessage());
         }
     }
 

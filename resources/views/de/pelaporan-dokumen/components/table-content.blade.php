@@ -12,13 +12,12 @@
                 <thead class="table-light">
                     <tr>
                         <th width="5%">#</th>
-                        <th width="15%">Permohonan Akreditasi</th>
-                        <th width="20%">Program Studi</th>
-                        <th width="15%">Validator</th>
-                        <th width="12%">Status Upload</th>
-                        <th width="12%">Status Pelaporan</th>
-                        <th width="13%">Tanggal</th>
-                        <th width="8%" class="text-center">Aksi</th>
+                        <th width="20%">Permohonan Akreditasi</th>
+                        <th width="20%">Validator</th>
+                        <th width="15%">Status Upload</th>
+                        <th width="15%">Status Pelaporan</th>
+                        <th width="15%">Tanggal</th>
+                        <th width="10%" class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -95,14 +94,6 @@
                             <br>
                             <small class="text-muted">
                                 Dibuat pada: {{ $pengajuan->created_at->format('d M Y') }}
-                            </small>
-                        </td>
-                        <td>
-                            <div class="mb-1">
-                                <strong>{{ $pengajuan->studyProgram->name }}</strong>
-                            </div>
-                            <small class="text-muted">
-                                <i class="bi bi-building"></i> {{ $pengajuan->studyProgram->university->name }}
                             </small>
                         </td>
                         <td>

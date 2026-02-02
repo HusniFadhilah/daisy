@@ -197,11 +197,10 @@
                             <thead class="table-light">
                                 <tr>
                                     <th width="5%">#</th>
-                                    <th width="18%">Permohonan Akreditasi</th>
-                                    <th width="20%">Program Studi</th>
-                                    <th width="15%">Asesor AK</th>
-                                    <th width="17%">Status</th>
-                                    <th width="15%" class="text-center">Aksi</th>
+                                    <th width="30%">Permohonan Akreditasi</th>
+                                    <th width="25%">Asesor AK</th>
+                                    <th width="25%">Status</th>
+                                    <th width="5%" class="text-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -209,20 +208,10 @@
                                 <tr>
                                     <td>{{ $pengajuans->firstItem() + $index }}</td>
                                     <td>
-                                        <p>{{ $pengajuan->judul }}</p>
+                                        <p>{{ $pengajuan->judul_short }}</p>
                                         <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
                                         <br>
-                                        <small class="text-muted">
-                                            Dibuat pada: {{ $pengajuan->created_at->format('d M Y') }}
-                                        </small>
-                                    </td>
-                                    <td>
-                                        <strong>{{ $pengajuan->studyProgram->name }}</strong>
-                                        <br>
-                                        <small class="text-muted">
-                                            {{ $pengajuan->studyProgram->degreeLevel->name ?? '-' }}
-                                        </small>
-                                        <br><small>{{ $pengajuan->studyProgram->university->name ?? '-' }}</small>
+                                        <small class="text-muted">Dibuat pada: {{ \App\Libraries\Date::tglIndo($pengajuan->created_at) }}</small>
                                     </td>
                                     <td>
                                         @if($pengajuan->asesorAK)

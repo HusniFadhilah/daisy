@@ -2,108 +2,133 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .header {
-            background: #28a745;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            border-radius: 5px 5px 0 0;
-        }
-
-        .content {
-            background: #f8f9fa;
-            padding: 30px;
-            border: 1px solid #dee2e6;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 8px 15px;
-            background: #0d6efd;
-            color: white;
-            border-radius: 20px;
-            font-weight: bold;
-            margin: 10px 0;
-        }
-
-        .info-box {
-            background: white;
-            padding: 15px;
-            margin: 20px 0;
-            border-left: 4px solid #28a745;
-        }
-
-        .button {
-            display: inline-block;
-            padding: 12px 30px;
-            background: #0d6efd;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-top: 20px;
-        }
-
-        .footer {
-            text-align: center;
-            padding: 20px;
-            color: #6c757d;
-            font-size: 12px;
-        }
-
-    </style>
+    <title>Update Status Permohonan Akreditasi</title>
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h2>📢 Update Status Permohonan</h2>
-        </div>
+<body style="margin:0;padding:0;background:#f1f3f5;font-family:Arial,Helvetica,sans-serif;color:#333;">
 
-        <div class="content">
-            <p>Yth. Tim {{ $pengajuan->studyProgram->name }},</p>
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f3f5;padding:30px 0;">
+        <tr>
+            <td align="center">
 
-            <p>Status permohonan akreditasi Anda telah diupdate:</p>
+                <!-- CONTAINER -->
+                <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.08);">
 
-            <div class="info-box">
-                <p><strong>Nomor Permohonan:</strong> {{ $pengajuan->nomor_pengajuan }}</p>
-                <p><strong>Program Studi:</strong> {{ $pengajuan->studyProgram->name }}</p>
-                <p><strong>Status Baru:</strong>
-                    <span class="status-badge">{{ str_replace('_', ' ', strtoupper($statusBaru)) }}</span>
-                </p>
-            </div>
+                    <!-- HEADER (SAMA PERSIS) -->
+                    <tr>
+                        <td align="center" style="background:#932136;padding:25px;">
+                            <img src="https://daisy.sp3stab.id/assets/images/logo.png" alt="Logo" style="max-width:90px;height:auto;display:block;margin:0 auto 10px auto;background:#fff;padding:8px;border-radius:6px;">
+                            <h2 style="margin:0;color:#ffffff;font-size:20px;">
+                                Update Status Permohonan Akreditasi
+                            </h2>
+                        </td>
+                    </tr>
 
-            @if($pesan)
-            <div style="background: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin: 20px 0;">
-                <p><strong>Pesan dari LAMDEPILAR:</strong></p>
-                <p>{{ $pesan }}</p>
-            </div>
-            @endif
+                    <!-- CONTENT (BEDA HANYA DI ISI) -->
+                    <tr>
+                        <td style="padding:30px;">
+                            <p style="margin-top:0;">Kepada Yth,</p>
 
-            <center>
-                <a href="{{ route('pengajuan.show', $pengajuan->id) }}" class="button">
-                    Lihat Detail Pengajuan
-                </a>
-            </center>
+                            <p style="font-size:16px;">
+                                <strong>{{ $pengajuan->studyProgram->name }}</strong>
+                            </p>
 
-            <p style="margin-top: 30px;">Hormat kami,<br><strong>Sekretariat LAMDEPILAR</strong></p>
-        </div>
+                            <!-- INFO BOX (SAMA PERSIS GAYA BOX-NYA) -->
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f9fa;border-left:4px solid #0d6efd;margin:20px 0;">
+                                <tr>
+                                    <td style="padding:15px;">
+                                        <p style="margin:0;font-size:14px;">
+                                            Status permohonan akreditasi Anda telah diperbarui.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
 
-        <div class="footer">
-            <p>Email ini dikirim secara otomatis. Mohon tidak membalas email ini.</p>
-            <p>&copy; {{ date('Y') }} Daisy - DEPILAR Accreditation Information System</p>
-        </div>
-    </div>
+                            <!-- INFORMASI PERMOHONAN (DISESUAIKAN, TETAP DALAM INFO BOX STYLE YANG SAMA) -->
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f9fa;border-left:4px solid #0d6efd;margin:20px 0;">
+                                <tr>
+                                    <td style="padding:15px;">
+                                        <p style="margin:0 0 10px 0;font-size:14px;">
+                                            <strong>Nomor Permohonan:</strong> {{ $pengajuan->nomor_pengajuan }}
+                                        </p>
+                                        <p style="margin:0 0 10px 0;font-size:14px;">
+                                            <strong>Program Studi:</strong> {{ $pengajuan->studyProgram->name }}
+                                        </p>
+                                        <p style="margin:0;font-size:14px;">
+                                            <strong>Status Baru:</strong> {{ str_replace('_', ' ', strtoupper($statusBaru)) }}
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- PESAN (TETAP DI POSISINYA) -->
+                            @if($pesan)
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f9fa;border-left:4px solid #0d6efd;margin:20px 0;">
+                                <tr>
+                                    <td style="padding:15px;">
+                                        <p style="margin:0;font-size:14px;">
+                                            {{ $pesan }}
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                            @endif
+
+                            <p>Untuk melihat detail pengajuan, silakan:</p>
+                            <ol style="padding-left:18px;">
+                                <li>Login ke sistem</li>
+                                <li>Buka menu pengajuan akreditasi</li>
+                                <li>Periksa detail status dan instruksi lanjutan</li>
+                            </ol>
+
+                            <!-- BUTTON (SAMA PERSIS) -->
+                            <table width="100%" cellpadding="0" cellspacing="0" style="margin:30px 0;">
+                                <tr>
+                                    <td align="center">
+                                        <a href="{{ route('pengajuan.show', $pengajuan->id) }}" style="
+                                               background:#932136;
+                                               color:#ffffff;
+                                               text-decoration:none;
+                                               padding:12px 32px;
+                                               border-radius:6px;
+                                               font-size:14px;
+                                               display:inline-block;
+                                           ">
+                                            Lihat Detail
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <p style="margin-bottom:0;">
+                                Jika ada pertanyaan, silakan menghubungi<br>
+                                <strong>Sekretariat LAMDEPILAR</strong>
+                            </p>
+
+                            <p style="margin-top:20px;">
+                                Hormat kami,<br>
+                                <strong>Lembaga Akreditasi Mandiri Desain Perencanaan Lingkungan Arsitektur (LAMDEPILAR)</strong>
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- FOOTER (SAMA PERSIS TANPA PERBEDAAN) -->
+                    <tr>
+                        <td align="center" style="background:#f8f9fa;padding:20px;font-size:12px;color:#6c757d;">
+                            <p style="margin:0;">
+                                Email ini dikirim secara otomatis. Mohon tidak membalas email ini.
+                            </p>
+                            <p style="margin:5px 0 0 0;">
+                                &copy; {{ date('Y') }} Daisy - DEPILAR Accreditation Information System
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+                <!-- END CONTAINER -->
+
+            </td>
+        </tr>
+    </table>
+
 </body>
 </html>

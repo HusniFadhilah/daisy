@@ -142,12 +142,12 @@ request()->routeIs('upps.permohonan-banding*')
 || request()->routeIs('upps.pelaporan-banding*');
 @endphp
 <!-- Permohonan Akreditasi -->
-<a href="{{ route('pengajuan') }}" class="nav-link {{ request()->routeIs('pengajuan*') ? 'active' : '' }}">
-    <span class="menu-icon">
-        <i class="bi bi-file-earmark-text"></i>
-    </span>
-    <span>Permohonan Akreditasi</span>
-</a>
+{{-- <a href="{{ route('pengajuan') }}" class="nav-link {{ request()->routeIs('pengajuan*') ? 'active' : '' }}">
+<span class="menu-icon">
+    <i class="bi bi-file-earmark-text"></i>
+</span>
+<span>Permohonan Akreditasi</span>
+</a> --}}
 
 <ul class="nav flex-column">
     {{-- render menu 1-16 --}}

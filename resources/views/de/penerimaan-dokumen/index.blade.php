@@ -169,10 +169,6 @@
 
     <!-- Quick Actions -->
     <div class="d-flex align-items-center mb-4">
-        <h4 class="mb-0">
-            <i class="bi bi-file-earmark-text"></i> Daftar Penerimaan Dokumen
-        </h4>
-
         <button type="button" class="btn btn-primary ms-auto" data-bs-toggle="modal" data-bs-target="#modalKirimReminder">
             <i class="bi bi-bell"></i> Kirim Pengingat Upload
         </button>

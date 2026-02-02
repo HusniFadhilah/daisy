@@ -35,12 +35,25 @@
             @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI)
             <div class="alert alert-warning alert-permanent">
                 <i class="bi bi-upload"></i>
-                <strong>Pembayaran telah diverifikasi. Silakan upload dokumen akreditasi</strong>
+                <strong>Pembayaran telah diverifikasi. Silakan kirim dokumen akreditasi</strong>
                 <br>
-                Segera upload dokumen agar proses akreditasi dapat dilanjutkan.
-                <a href="{{ route('pengajuan.borang-online', $pengajuan->id) }}" class="btn btn-success mt-3">
-                    <i class="bi bi-pencil-square"></i> Buka Halaman Pengisian LED & LKPS
-                </a>
+                Segera kirim dokumen agar proses akreditasi dapat dilanjutkan.
+
+                <!-- Flex container responsive -->
+                <div class="d-flex flex-column flex-md-row align-items-center justify-content-between mt-3 gap-2">
+                    <!-- Kiri: Upload -->
+                    <a href="{{ route('upps.penerimaan-dokumen.upload.form', $pengajuan->id) }}" class="btn btn-info w-sm-100 w-md-auto">
+                        <i class="bi bi-upload"></i> Upload File Dokumen
+                    </a>
+
+                    <!-- Tengah: ATAU -->
+                    <span class="fw-bold text-center my-2 my-md-0">ATAU</span>
+
+                    <!-- Kanan: Buka Halaman -->
+                    <a href="{{ route('pengajuan.borang-online', $pengajuan->id) }}" class="btn btn-success w-sm-100 w-md-auto">
+                        <i class="bi bi-pencil-square"></i> Buka Halaman Pengisian LED & LKPS
+                    </a>
+                </div>
             </div>
             @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM)
             <div class="alert alert-info alert-permanent">
@@ -50,11 +63,12 @@
                 Menunggu penerimaan dari LAMDEPILAR
             </div>
             @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA)
-            <div class="alert alert-success alert-permanent">
+            <div class="alert alert-info alert-permanent">
                 <i class="bi bi-check-circle"></i>
                 <strong>Dokumen telah diterima oleh LAMDEPILAR</strong>
                 <br>
-                Diterima pada {{ $pengajuan->tanggal_draft_borang?->format('d M Y H:i') ?? '-' }}
+                Mohon menunggu proses validasi dokumen selesai dilakukan.
+                {{-- Diterima pada {{ $pengajuan->tanggal_draft_borang?->format('d M Y H:i') ?? '-' }} --}}
             </div>
             @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI)
             <div class="alert alert-success alert-permanent">
@@ -119,26 +133,8 @@
                             <td>: {{ $pengajuan->studyProgram->university->name }}</td>
                         </tr>
                         <tr>
-                            <th>Jenjang</th>
-                            <td>: {{ $pengajuan->studyProgram->degreeLevel->name ?? '-' }}</td>
-                        </tr>
-                        <tr>
                             <th>Jenis Permohonan</th>
                             <td>: {{ $pengajuan->jenis_akreditasi_label }}</td>
-                        </tr>
-                        <tr>
-                            <th>Tahun Akreditasi</th>
-                            <td>: {{ $pengajuan->tahun_akreditasi }}</td>
-                        </tr>
-                        <tr>
-                            <th>DE Assigned</th>
-                            <td>
-                                : {{ $pengajuan->deAssigned->name ?? '-' }}
-                                @if($pengajuan->deAssigned)
-                                <br>
-                                <small class="text-muted">{{ $pengajuan->deAssigned->email }}</small>
-                                @endif
-                            </td>
                         </tr>
                         <tr>
                             <th>Tanggal Dokumen Diupload</th>
@@ -149,7 +145,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <th>Status</th>
+                            <th>Status Pengiriman Dokumen</th>
                             <td>: {!! $pengajuan->getCustomBadgeLastStatus('borang_final', 'upps') !!}</td>
                         </tr>
                     </table>
@@ -165,7 +161,6 @@
             <!-- Riwayat Status -->
             @php
             $filterStatuses = [
-            \App\Models\PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI,
             \App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM,
             \App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
             \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
@@ -203,10 +198,10 @@
                                     <br>
                                     <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
 
-                                    @if($log->keterangan)
+                                    {{-- @if($log->keterangan)
                                     <br>
                                     <small class="text-muted fst-italic">{{ $log->keterangan }}</small>
-                                    @endif
+                                    @endif --}}
                                 </div>
                             </div>
                         </div>

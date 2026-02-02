@@ -30,7 +30,7 @@
     </div>
 
     <div class="row justify-content-center">
-        <div class="col-lg-8">
+        <div class="col-lg-4">
             <!-- Info Permohonan -->
             <div class="card mb-4 border-info">
                 <div class="card-header bg-info text-white">
@@ -39,33 +39,18 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <table class="table table-borderless table-sm align-middle">
-                        <tr>
-                            <th width="30%" rowspan="2">Nomor Permohonan Akreditasi</th>
-                            <td width="5%" rowspan="2">:</td>
-                            <td width="65%" rowspan="2">
-                                <strong>{{ $pengajuan->nomor_pengajuan }}</strong>
-                            </td>
-                        </tr>
-                        <tr></tr>
-
-                        <tr>
-                            <th>Jenis Dokumen</th>
-                            <td>:</td>
-                            <td>
-                                <strong>Formulir Pembayaran & Template Dokumen Akreditasi</strong>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <th>Tahun Akreditasi</th>
-                            <td>:</td>
-                            <td>{{ $pengajuan->tahun_akreditasi }}</td>
-                        </tr>
-                    </table>
+                    <div class="mb-3">
+                        <div class="fw-bold">Nomor Permohonan Akreditasi</div>
+                        <div>{{ $pengajuan->nomor_pengajuan }}</div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="fw-bold">Jenis Dokumen</div>
+                        <div>Formulir Pembayaran & Template Dokumen Akreditasi</div>
+                    </div>
                 </div>
             </div>
-
+        </div>
+        <div class="col-lg-8">
             <!-- Dokumen Saat Ini -->
             <div class="card mb-4">
                 <div class="card-header bg-secondary text-white">

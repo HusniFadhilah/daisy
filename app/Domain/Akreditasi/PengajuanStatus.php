@@ -209,9 +209,9 @@ final class PengajuanStatus
                     'prodi' => 'Draft Terkirim',
                 ],
                 'label_long_for' => [
-                    'de'   => 'Draft Dokumen Diterima DE (menunggu penerimaan)',
-                    'upps' => 'Draft Dokumen Telah Dikirim ke DE',
-                    'prodi' => 'Draft Dokumen Telah Dikirim ke DE',
+                    'de'   => 'Dokumen Telah Diterima',
+                    'upps' => 'Dokumen Telah Dikirim',
+                    'prodi' => 'Dokumen Telah Dikirim',
                 ],
                 'bg' => 'bg-info',
                 'icon' => 'bi-file-earmark-check',
@@ -226,8 +226,8 @@ final class PengajuanStatus
                 ],
                 'label_long_for' => [
                     'de'   => 'Draft Dokumen Diterima',
-                    'upps' => 'Draft Dokumen Diterima oleh LAMDEPILAR',
-                    'prodi' => 'Draft Dokumen Diterima oleh LAMDEPILAR',
+                    'upps' => 'Draft Dokumen Diterima',
+                    'prodi' => 'Draft Dokumen Diterima',
                 ],
                 'bg' => 'bg-info',
                 'icon' => 'bi-file-earmark-check',

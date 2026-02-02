@@ -2,17 +2,18 @@
 
 @extends('layouts.template.app')
 
-@section('title', 'Upload Dokumen')
+@section('title', 'Kirim Dokumen')
 
 @push('styles')
 <style>
     .upload-area {
         border: 2px dashed #ced4da;
         border-radius: 8px;
-        padding: 30px;
+        padding: 22px;
         text-align: center;
         cursor: pointer;
         transition: all 0.3s;
+        background: #fff;
     }
 
     .upload-area:hover {
@@ -29,13 +30,27 @@
         background: #f8f9fa;
         border: 2px dashed #dee2e6;
         border-radius: 8px;
-        padding: 20px;
-        text-align: center;
+        padding: 14px;
     }
 
     .file-preview-card.has-file {
         border-color: #28a745;
         background: #d4edda;
+    }
+
+    .file-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .file-meta .left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 200px;
     }
 
 </style>
@@ -47,9 +62,9 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('upps.penerimaan-dokumen') }}">Penerimaan Dokumen</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('upps.penerimaan-dokumen') }}">Pengiriman Dokumen</a></li>
             <li class="breadcrumb-item"><a href="{{ route('upps.penerimaan-dokumen.show', $pengajuan->id) }}">Detail</a></li>
-            <li class="breadcrumb-item active">Upload Dokumen</li>
+            <li class="breadcrumb-item active">Kirim Dokumen</li>
         </ol>
     </nav>
 
@@ -57,7 +72,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h5 class="mb-1">
-                <i class="bi bi-upload"></i> Upload Dokumen Akreditasi
+                <i class="bi bi-upload"></i> Kirim Dokumen Akreditasi
             </h5>
             <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
@@ -67,48 +82,32 @@
     </div>
 
     <div class="row justify-content-center">
-        <div class="col-lg-8">
+        <div class="col-lg-4">
             <!-- Info Permohonan -->
             <div class="card mb-4 border-info">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-info-circle"></i> Informasi Permohonan
+                        <i class="bi bi-info-circle"></i> Informasi Permohonan Akreditasi
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <table class="table table-borderless table-sm">
-                                <tr>
-                                    <th width="45%">Nomor Permohonan</th>
-                                    <td>: <strong>{{ $pengajuan->nomor_pengajuan }}</strong></td>
-                                </tr>
-                                <tr>
-                                    <th>Program Studi</th>
-                                    <td>: {{ $pengajuan->studyProgram->name }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Universitas</th>
-                                    <td>: {{ $pengajuan->studyProgram->university->name }}</td>
-                                </tr>
-                            </table>
-                        </div>
-                        <div class="col-md-6">
-                            <table class="table table-borderless table-sm">
-                                <tr>
-                                    <th width="45%">Jenis Permohonan</th>
-                                    <td>: {{ $pengajuan->jenis_akreditasi_label }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Tahun Akreditasi</th>
-                                    <td>: {{ $pengajuan->tahun_akreditasi }}</td>
-                                </tr>
-                            </table>
-                        </div>
+                    <div class="mb-3">
+                        <div class="fw-bold">Nomor Permohonan Akreditasi</div>
+                        <div>{{ $pengajuan->nomor_pengajuan }}</div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="fw-bold">Jenis Dokumen Diperlukan</div>
+                        <ul class="mb-0 ps-3">
+                            <li>LED — DOCX/DOC</li>
+                            <li>Suplemen — PDF</li>
+                            <li>LKPS — XLSX/XLS</li>
+                        </ul>
                     </div>
                 </div>
             </div>
+        </div>
 
+        <div class="col-lg-8">
             <!-- Upload Form Alert -->
             @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED)
             <div class="alert alert-warning alert-permanent">
@@ -126,52 +125,142 @@
                         <i class="bi bi-cloud-upload"></i> Form Upload Dokumen
                     </h5>
                 </div>
+
                 <div class="card-body">
                     <form action="{{ route('upps.penerimaan-dokumen.upload', $pengajuan->id) }}" method="POST" enctype="multipart/form-data" id="formUploadDokumen">
                         @csrf
 
-                        <!-- File Dokumen with Drag & Drop -->
-                        <div class="mb-3">
-                            <label class="form-label">
-                                File Dokumen Akreditasi <span class="text-danger">*</span>
+                        {{-- ===================== LED ===================== --}}
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">
+                                Laporan Evaluasi Diri (LED) <span class="text-danger">*</span>
                             </label>
 
-                            <!-- Upload Area -->
-                            <div class="upload-area" id="uploadArea">
-                                <i class="bi bi-cloud-upload" style="font-size: 48px; color: #6c757d;"></i>
-                                <p class="mb-2"><strong>Klik atau drag & drop file di sini</strong></p>
-                                <p class="text-muted small mb-2">Format: PDF (Maksimal 10MB)</p>
-                                <input type="file" id="file_dokumen" name="file_dokumen" class="d-none" accept=".pdf" required>
-                                <button type="button" class="btn btn-primary btn-sm" onclick="document.getElementById('file_dokumen').click()">
-                                    <i class="bi bi-folder2-open"></i> Pilih File
+                            <div class="upload-area" id="uploadAreaLed">
+                                <i class="bi bi-file-word text-primary" style="font-size: 44px;"></i>
+                                <p class="mb-1"><strong>Klik atau drag & drop file LED di sini</strong></p>
+                                <p class="text-muted small mb-2">Format: DOCX/DOC • Maksimal 10MB</p>
+
+                                <input type="file" id="file_led" name="file_led" class="d-none" accept=".docx,.doc" required>
+                                <button type="button" class="btn btn-primary btn-sm" id="btnPickLed">
+                                    <i class="bi bi-folder2-open"></i> Pilih File LED
                                 </button>
                             </div>
 
-                            <!-- File Preview -->
-                            <div id="filePreview" class="file-preview-card d-none mt-3">
-                                <i class="bi bi-file-earmark-pdf text-danger" style="font-size: 48px;"></i>
-                                <p class="mb-1 mt-2"><strong id="fileName"></strong></p>
-                                <p class="text-muted small mb-2" id="fileSize"></p>
-                                <div class="d-flex gap-2 justify-content-center">
-                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeFile()">
-                                        <i class="bi bi-trash"></i> Hapus
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="document.getElementById('file_dokumen').click()">
-                                        <i class="bi bi-arrow-repeat"></i> Ganti File
-                                    </button>
+                            <div id="previewLed" class="file-preview-card d-none mt-2">
+                                <div class="file-meta">
+                                    <div class="left">
+                                        <i class="bi bi-file-word text-primary" style="font-size: 26px;"></i>
+                                        <div>
+                                            <div class="fw-bold" id="ledName">-</div>
+                                            <div class="text-muted small" id="ledSize">-</div>
+                                        </div>
+                                    </div>
+                                    <div class="right d-flex gap-2">
+                                        <button type="button" class="btn btn-sm btn-outline-danger" id="btnRemoveLed">
+                                            <i class="bi bi-trash"></i> Hapus
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-primary" id="btnChangeLed">
+                                            <i class="bi bi-arrow-repeat"></i> Ganti
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
-                            @error('file_dokumen')
+                            @error('file_led')
                             <div class="text-danger small mt-1">{{ $message }}</div>
                             @enderror
                         </div>
 
-                        <!-- Catatan Upload -->
-                        <div class="mb-3">
-                            <label for="catatan_upload" class="form-label">
-                                Catatan Upload (Opsional)
+                        {{-- ===================== SUPLEMEN ===================== --}}
+                        @if($needSuplemen)
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">
+                                Suplemen LED <span class="text-danger">*</span>
                             </label>
+
+                            <div class="upload-area" id="uploadAreaSuplemen">
+                                <i class="bi bi-file-earmark-pdf text-danger" style="font-size: 44px;"></i>
+                                <p class="mb-1"><strong>Klik atau drag & drop file Suplemen di sini</strong></p>
+                                <p class="text-muted small mb-2">Format: PDF • Maksimal 10MB</p>
+
+                                <input type="file" id="file_suplemen" name="file_suplemen" class="d-none" accept=".pdf" required>
+                                <button type="button" class="btn btn-outline-danger btn-sm" id="btnPickSuplemen">
+                                    <i class="bi bi-folder2-open"></i> Pilih File Suplemen
+                                </button>
+                            </div>
+
+                            <div id="previewSuplemen" class="file-preview-card d-none mt-2">
+                                <div class="file-meta">
+                                    <div class="left">
+                                        <i class="bi bi-file-earmark-pdf text-danger" style="font-size: 26px;"></i>
+                                        <div>
+                                            <div class="fw-bold" id="suplemenName">-</div>
+                                            <div class="text-muted small" id="suplemenSize">-</div>
+                                        </div>
+                                    </div>
+                                    <div class="right d-flex gap-2">
+                                        <button type="button" class="btn btn-sm btn-outline-danger" id="btnRemoveSuplemen">
+                                            <i class="bi bi-trash"></i> Hapus
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" id="btnChangeSuplemen">
+                                            <i class="bi bi-arrow-repeat"></i> Ganti
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @error('file_suplemen')
+                            <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        @endif
+
+                        {{-- ===================== LKPS ===================== --}}
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">
+                                Laporan Kinerja Program Studi (LKPS) <span class="text-danger">*</span>
+                            </label>
+
+                            <div class="upload-area" id="uploadAreaLkps">
+                                <i class="bi bi-file-excel text-success" style="font-size: 44px;"></i>
+                                <p class="mb-1"><strong>Klik atau drag & drop file LKPS di sini</strong></p>
+                                <p class="text-muted small mb-2">Format: XLSX/XLS • Maksimal 10MB</p>
+
+                                <input type="file" id="file_lkps" name="file_lkps" class="d-none" accept=".xlsx,.xls" required>
+                                <button type="button" class="btn btn-success btn-sm" id="btnPickLkps">
+                                    <i class="bi bi-folder2-open"></i> Pilih File LKPS
+                                </button>
+                            </div>
+
+                            <div id="previewLkps" class="file-preview-card d-none mt-2">
+                                <div class="file-meta">
+                                    <div class="left">
+                                        <i class="bi bi-file-excel text-success" style="font-size: 26px;"></i>
+                                        <div>
+                                            <div class="fw-bold" id="lkpsName">-</div>
+                                            <div class="text-muted small" id="lkpsSize">-</div>
+                                        </div>
+                                    </div>
+                                    <div class="right d-flex gap-2">
+                                        <button type="button" class="btn btn-sm btn-outline-danger" id="btnRemoveLkps">
+                                            <i class="bi bi-trash"></i> Hapus
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-success" id="btnChangeLkps">
+                                            <i class="bi bi-arrow-repeat"></i> Ganti
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @error('file_lkps')
+                            <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        {{-- Catatan --}}
+                        <div class="mb-3">
+                            <label for="catatan_upload" class="form-label">Catatan Upload (Opsional)</label>
                             <textarea class="form-control @error('catatan_upload') is-invalid @enderror" id="catatan_upload" name="catatan_upload" rows="3" placeholder="Tambahkan catatan jika diperlukan...">{{ old('catatan_upload') }}</textarea>
                             @error('catatan_upload')
                             <div class="invalid-feedback">{{ $message }}</div>
@@ -182,11 +271,13 @@
                         <div class="alert alert-info alert-permanent">
                             <h6><i class="bi bi-info-circle"></i> Informasi Penting</h6>
                             <ul class="mb-0">
-                                <li>Pastikan dokumen yang diupload telah sesuai dengan template yang diberikan</li>
-                                <li>Dokumen harus dalam format PDF dengan ukuran maksimal 10MB</li>
-                                <li>Periksa kelengkapan data sebelum mengupload</li>
-                                <li>Setelah upload, dokumen akan diperiksa oleh tim LAMDEPILAR</li>
-                                <li>Anda akan mendapat notifikasi hasil pemeriksaan melalui email</li>
+                                <li>Pastikan dokumen sudah sesuai template yang diberikan.</li>
+                                <li><strong>LED</strong>: DOCX/DOC, <strong>LKPS</strong>: XLSX/XLS (maks 10MB per file).</li>
+                                @if($needSuplemen)
+                                <li><strong>Suplemen</strong>: PDF (wajib untuk jenis akreditasi <strong>menuju unggul</strong>).</li>
+                                @else
+                                <li><strong>Suplemen</strong>: tidak wajib untuk jenis akreditasi ini.</li>
+                                @endif
                             </ul>
                         </div>
 
@@ -202,98 +293,278 @@
                     </form>
                 </div>
             </div>
+
         </div>
     </div>
 </div>
 
 @push('scripts')
 <script>
-    // File Upload Handling
-    const uploadArea = document.getElementById('uploadArea');
-    const fileInput = document.getElementById('file_dokumen');
-    const filePreview = document.getElementById('filePreview');
-    const btnSubmit = document.getElementById('btnSubmit');
+    (function() {
+        const NEED_SUPLEMEN = @json($needSuplemen);
+        const btnSubmit = document.getElementById('btnSubmit');
+        const form = document.getElementById('formUploadDokumen');
 
-    // Click to upload
-    uploadArea.addEventListener('click', (e) => {
-        if (e.target !== uploadArea && e.target.closest('.btn')) return;
-        fileInput.click();
-    });
+        // ===================== LED =====================
+        const uploadAreaLed = document.getElementById('uploadAreaLed');
+        const fileLed = document.getElementById('file_led');
+        const previewLed = document.getElementById('previewLed');
+        const ledName = document.getElementById('ledName');
+        const ledSize = document.getElementById('ledSize');
 
-    // File selected
-    fileInput.addEventListener('change', (e) => {
-        handleFileSelect(e.target.files[0]);
-    });
+        const btnPickLed = document.getElementById('btnPickLed');
+        const btnChangeLed = document.getElementById('btnChangeLed');
+        const btnRemoveLed = document.getElementById('btnRemoveLed');
 
-    // Drag & Drop
-    uploadArea.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        uploadArea.classList.add('dragover');
-    });
+        // ===================== SUPLEMEN (optional render) =====================
+        const uploadAreaSuplemen = document.getElementById('uploadAreaSuplemen'); // bisa null
+        const fileSuplemen = document.getElementById('file_suplemen'); // bisa null
+        const previewSuplemen = document.getElementById('previewSuplemen'); // bisa null
+        const suplemenName = document.getElementById('suplemenName'); // bisa null
+        const suplemenSize = document.getElementById('suplemenSize'); // bisa null
 
-    uploadArea.addEventListener('dragleave', () => {
-        uploadArea.classList.remove('dragover');
-    });
+        const btnPickSuplemen = document.getElementById('btnPickSuplemen'); // bisa null
+        const btnChangeSuplemen = document.getElementById('btnChangeSuplemen'); // bisa null
+        const btnRemoveSuplemen = document.getElementById('btnRemoveSuplemen'); // bisa null
 
-    uploadArea.addEventListener('drop', (e) => {
-        e.preventDefault();
-        uploadArea.classList.remove('dragover');
+        // ===================== LKPS =====================
+        const uploadAreaLkps = document.getElementById('uploadAreaLkps');
+        const fileLkps = document.getElementById('file_lkps');
+        const previewLkps = document.getElementById('previewLkps');
+        const lkpsName = document.getElementById('lkpsName');
+        const lkpsSize = document.getElementById('lkpsSize');
 
-        const file = e.dataTransfer.files[0];
-        if (file && file.name.toLowerCase().endsWith('.pdf')) {
-            fileInput.files = e.dataTransfer.files;
-            handleFileSelect(file);
-        } else {
-            alert('File harus berformat PDF!');
-        }
-    });
+        const btnPickLkps = document.getElementById('btnPickLkps');
+        const btnChangeLkps = document.getElementById('btnChangeLkps');
+        const btnRemoveLkps = document.getElementById('btnRemoveLkps');
 
-    function handleFileSelect(file) {
-        if (!file) return;
-
-        // Validate file type
-        if (!file.name.toLowerCase().endsWith('.pdf')) {
-            alert('File harus berformat PDF!');
-            return;
+        // ===================== helper safe addEventListener =====================
+        function on(el, event, handler) {
+            if (!el) return;
+            el.addEventListener(event, handler);
         }
 
-        // Validate file size (10MB)
-        if (file.size > 10 * 1024 * 1024) {
-            alert('Ukuran file maksimal 10MB!');
-            return;
+        // ===================== bind buttons pick/change/remove =====================
+        on(btnPickLed, 'click', () => fileLed.click());
+        on(btnChangeLed, 'click', () => fileLed.click());
+        on(btnRemoveLed, 'click', removeLed);
+
+        on(btnPickLkps, 'click', () => fileLkps.click());
+        on(btnChangeLkps, 'click', () => fileLkps.click());
+        on(btnRemoveLkps, 'click', removeLkps);
+
+        // Suplemen hanya jika elemennya ada
+        on(btnPickSuplemen, 'click', () => fileSuplemen && fileSuplemen.click());
+        on(btnChangeSuplemen, 'click', () => fileSuplemen && fileSuplemen.click());
+        on(btnRemoveSuplemen, 'click', removeSuplemen);
+
+        // ===================== click area (ignore button clicks) =====================
+        on(uploadAreaLed, 'click', (e) => {
+            if (e.target.closest('button')) return;
+            fileLed.click();
+        });
+
+        on(uploadAreaLkps, 'click', (e) => {
+            if (e.target.closest('button')) return;
+            fileLkps.click();
+        });
+
+        on(uploadAreaSuplemen, 'click', (e) => {
+            if (e.target.closest('button')) return;
+            if (fileSuplemen) fileSuplemen.click();
+        });
+
+        // ===================== input change =====================
+        on(fileLed, 'change', () => handleLed(fileLed.files[0]));
+        on(fileLkps, 'change', () => handleLkps(fileLkps.files[0]));
+        on(fileSuplemen, 'change', () => handleSuplemen(fileSuplemen.files[0]));
+
+        // ===================== drag & drop binding =====================
+        bindDragDrop(uploadAreaLed, (file) => {
+            if (!file) return;
+            fileLed.files = makeFileList(file);
+            handleLed(file);
+        });
+
+        bindDragDrop(uploadAreaLkps, (file) => {
+            if (!file) return;
+            fileLkps.files = makeFileList(file);
+            handleLkps(file);
+        });
+
+        // Suplemen hanya jika area ada
+        if (uploadAreaSuplemen && fileSuplemen) {
+            bindDragDrop(uploadAreaSuplemen, (file) => {
+                if (!file) return;
+                fileSuplemen.files = makeFileList(file);
+                handleSuplemen(file);
+            });
         }
 
-        // Show preview
-        document.getElementById('fileName').textContent = file.name;
-        document.getElementById('fileSize').textContent = formatFileSize(file.size);
+        function bindDragDrop(areaEl, onFile) {
+            if (!areaEl) return;
+            areaEl.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                areaEl.classList.add('dragover');
+            });
+            areaEl.addEventListener('dragleave', () => areaEl.classList.remove('dragover'));
+            areaEl.addEventListener('drop', (e) => {
+                e.preventDefault();
+                areaEl.classList.remove('dragover');
+                const file = e.dataTransfer.files && e.dataTransfer.files[0] ? e.dataTransfer.files[0] : null;
+                onFile(file);
+            });
+        }
 
-        uploadArea.classList.add('d-none');
-        filePreview.classList.remove('d-none');
-        filePreview.classList.add('has-file');
-        btnSubmit.disabled = false;
-    }
+        // ===================== handlers =====================
+        function handleLed(file) {
+            if (!file) return;
 
-    function removeFile() {
-        fileInput.value = '';
-        uploadArea.classList.remove('d-none');
-        filePreview.classList.add('d-none');
-        filePreview.classList.remove('has-file');
-        btnSubmit.disabled = true;
-    }
+            const name = file.name.toLowerCase();
+            if (!(name.endsWith('.docx') || name.endsWith('.doc'))) {
+                alert('LED harus berformat DOCX/DOC!');
+                removeLed();
+                return;
+            }
+            if (file.size > 10 * 1024 * 1024) {
+                alert('Ukuran file LED maksimal 10MB!');
+                removeLed();
+                return;
+            }
 
-    function formatFileSize(bytes) {
-        if (bytes === 0) return '0 Bytes';
-        const k = 1024;
-        const sizes = ['Bytes', 'KB', 'MB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-    }
+            ledName.textContent = file.name;
+            ledSize.textContent = formatFileSize(file.size);
 
-    // Form submit with loading state
-    document.getElementById('formUploadDokumen').addEventListener('submit', function() {
-        btnSubmit.disabled = true;
-        btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mengupload...';
-    });
+            previewLed.classList.remove('d-none');
+            previewLed.classList.add('has-file');
+            checkReady();
+        }
+
+        function handleSuplemen(file) {
+            // kalau memang tidak ada field suplemen di halaman, abaikan
+            if (!fileSuplemen || !previewSuplemen) return;
+
+            if (!file) {
+                checkReady();
+                return;
+            }
+
+            const name = file.name.toLowerCase();
+            if (!name.endsWith('.pdf')) {
+                alert('Suplemen harus berformat PDF!');
+                removeSuplemen();
+                return;
+            }
+            if (file.size > 10 * 1024 * 1024) {
+                alert('Ukuran file Suplemen maksimal 10MB!');
+                removeSuplemen();
+                return;
+            }
+
+            suplemenName.textContent = file.name;
+            suplemenSize.textContent = formatFileSize(file.size);
+
+            previewSuplemen.classList.remove('d-none');
+            previewSuplemen.classList.add('has-file');
+            checkReady();
+        }
+
+        function handleLkps(file) {
+            if (!file) return;
+
+            const name = file.name.toLowerCase();
+            if (!(name.endsWith('.xlsx') || name.endsWith('.xls'))) {
+                alert('LKPS harus berformat XLSX/XLS!');
+                removeLkps();
+                return;
+            }
+            if (file.size > 10 * 1024 * 1024) {
+                alert('Ukuran file LKPS maksimal 10MB!');
+                removeLkps();
+                return;
+            }
+
+            lkpsName.textContent = file.name;
+            lkpsSize.textContent = formatFileSize(file.size);
+
+            previewLkps.classList.remove('d-none');
+            previewLkps.classList.add('has-file');
+            checkReady();
+        }
+
+        // ===================== remove =====================
+        function removeLed() {
+            fileLed.value = '';
+            previewLed.classList.add('d-none');
+            previewLed.classList.remove('has-file');
+            ledName.textContent = '-';
+            ledSize.textContent = '-';
+            checkReady();
+        }
+
+        function removeSuplemen() {
+            if (!fileSuplemen || !previewSuplemen) {
+                checkReady();
+                return;
+            }
+            fileSuplemen.value = '';
+            previewSuplemen.classList.add('d-none');
+            previewSuplemen.classList.remove('has-file');
+            if (suplemenName) suplemenName.textContent = '-';
+            if (suplemenSize) suplemenSize.textContent = '-';
+            checkReady();
+        }
+
+        function removeLkps() {
+            fileLkps.value = '';
+            previewLkps.classList.add('d-none');
+            previewLkps.classList.remove('has-file');
+            lkpsName.textContent = '-';
+            lkpsSize.textContent = '-';
+            checkReady();
+        }
+
+        // ===================== readiness =====================
+        function checkReady() {
+            const okLed = fileLed.files && fileLed.files.length > 0;
+            const okLkps = fileLkps.files && fileLkps.files.length > 0;
+
+            // default true jika suplemen tidak wajib
+            let okSuplemen = true;
+
+            if (NEED_SUPLEMEN) {
+                // jika wajib, pastikan input suplemen ada dan ada file
+                okSuplemen = !!(fileSuplemen && fileSuplemen.files && fileSuplemen.files.length > 0);
+            }
+
+            btnSubmit.disabled = !(okLed && okLkps && okSuplemen);
+        }
+
+        // ===================== utils =====================
+        function formatFileSize(bytes) {
+            if (!bytes) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return (bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i];
+        }
+
+        function makeFileList(file) {
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            return dt.files;
+        }
+
+        // ✅ initial check (kalau halaman reload tapi file sudah keisi dari browser cache — jarang tapi aman)
+        checkReady();
+
+        // Form submit loading state
+        on(form, 'submit', function() {
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mengupload...';
+        });
+
+    })();
 
 </script>
 @endpush

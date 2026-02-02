@@ -15,12 +15,11 @@
                 <thead class="table-light">
                     <tr>
                         <th width="5%">No</th>
-                        <th width="15%">Nomor Permohonan Akreditasi</th>
-                        <th width="20%">Program Studi</th>
-                        <th width="15%">Status Penerimaan Dokumen</th>
-                        <th width="15%">Status Dokumen</th>
-                        <th width="15%">Tanggal Update Status</th>
-                        <th width="15%" class="text-center">Aksi</th>
+                        <th width="25%">Permohonan Akreditasi</th>
+                        <th width="25%">Status Penerimaan Dokumen</th>
+                        <th width="20%">Status Dokumen</th>
+                        <th width="20%">Tanggal Update Status</th>
+                        <th width="5%" class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -40,21 +39,12 @@
                     <tr>
                         <td>{{ $pengajuans->firstItem() + $index }}</td>
                         <td>
-                            <strong>{{ $pengajuan->judul }}</strong><br>
+                            <p>{{ $pengajuan->judul_short }}</p>
+                            <small>{{ $pengajuan->studyProgram->university->name ?? '-' }}</small>
+                            {{-- <br>
                             <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
-                        </td>
-                        <td>
-                            <div>
-                                <strong>{{ $pengajuan->studyProgram->name }}</strong>
-                                <br>
-                                <small class="text-muted">
-                                    {{ $pengajuan->studyProgram->university->name }}
-                                </small>
-                                <br>
-                                <span class="badge bg-info">
-                                    {{ $pengajuan->studyProgram->degreeLevel->name }}
-                                </span>
-                            </div>
+                            <br>
+                            <small class="text-muted">Dibuat pada: {{ \App\Libraries\Date::tglIndo($pengajuan->created_at) }}</small> --}}
                         </td>
                         <td>
                             {!! $pengajuan->getCustomBadgeLastStatus('borang_final') !!}

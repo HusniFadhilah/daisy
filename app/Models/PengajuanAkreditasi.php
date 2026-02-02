@@ -443,6 +443,7 @@ class PengajuanAkreditasi extends Model
     public function canAssignValidator(): bool
     {
         if (!in_array($this->status, [
+            self::STATUS_DRAFT_BORANG_DITERIMA,
             self::STATUS_BORANG_ONLINE_SELESAI,
             self::STATUS_BORANG_VALIDATION_PENDING,
             self::STATUS_BORANG_REVISION_REQUIRED
@@ -450,7 +451,10 @@ class PengajuanAkreditasi extends Model
             return false;
         }
 
-        if (!$this->latestBorangImport) {
+        if (!in_array($this->status, [
+            self::STATUS_DRAFT_BORANG_DITERIMA,
+            self::STATUS_BORANG_ONLINE_SELESAI
+        ]) && !$this->latestBorangImport) {
             return false;
         }
 
@@ -632,6 +636,11 @@ class PengajuanAkreditasi extends Model
     public function getJenisAkreditasiLabelAttribute(): string
     {
         return $this->judulPrefix('short');
+    }
+
+    public function getNeedSuplemenAttribute(): string
+    {
+        return $this->jenis_akreditasi === 'menuju_unggul';
     }
 
     private function judulPrefix(string $mode = 'long'): string
@@ -925,7 +934,8 @@ class PengajuanAkreditasi extends Model
             self::STATUS_MENUNGGU_PEMBAYARAN => [self::STATUS_PEMBAYARAN_DITERIMA, self::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN],
             self::STATUS_PEMBAYARAN_DITERIMA => [self::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN],
             self::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN => [self::STATUS_PEMBAYARAN_DIVERIFIKASI, self::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN, self::STATUS_MENUNGGU_PEMBAYARAN],
-            self::STATUS_PEMBAYARAN_DIVERIFIKASI => [self::STATUS_DRAFT_BORANG_DITERIMA],
+            self::STATUS_PEMBAYARAN_DIVERIFIKASI => [self::STATUS_DRAFT_BORANG_DIKIRIM, self::STATUS_DRAFT_BORANG_DITERIMA],
+            self::STATUS_DRAFT_BORANG_DIKIRIM => [self::STATUS_DRAFT_BORANG_DITERIMA],
             self::STATUS_DRAFT_BORANG_DITERIMA => [self::STATUS_BORANG_ONLINE_SELESAI],
             self::STATUS_BORANG_ONLINE_SELESAI => [self::STATUS_BORANG_VALIDATION_PENDING],
             self::STATUS_BORANG_VALIDATION_PENDING => [self::STATUS_BORANG_IN_VALIDATION],

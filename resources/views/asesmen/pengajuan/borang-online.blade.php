@@ -919,13 +919,14 @@
 <script src="{{ asset('assets/js/tinymce.js') }}"></script>
 @php
 $pengajuanId = $pengajuan->id;
+$isShowHasilValidasiBorang = in_array($pengajuan->status, [\App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED, \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED]);
 @endphp
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const LOCK_BORANG = @json($lockBorang);
         const pengajuanId = "{{ $pengajuan->id }}";
         const initialProgress = @json($progressData);
-        const showHasilValidasiBorang = "{{ in_array($pengajuan->status,['borang_revision_required']) }}"
+        const showHasilValidasiBorang = @json(isShowHasilValidasiBorang);
 
         let saveTimeout, progressTimeout;
         const AUTO_SAVE_DELAY = 2000;

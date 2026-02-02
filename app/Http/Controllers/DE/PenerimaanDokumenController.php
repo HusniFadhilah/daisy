@@ -221,6 +221,12 @@ class PenerimaanDokumenController extends Controller
                     ->with(['user', 'role', 'borangValidation']);
             },
         ])->findOrFail($id);
+        if ($pengajuan->status == PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM) {
+            $newStatus = PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA;
+            $keterangan = 'Dokumen LED (DOCX) dan LKPS (Excel) telah diterima oleh LAMDEPILAR';
+
+            $pengajuan->updateStatusSafely($newStatus, $keterangan);
+        }
 
         // Set actual status from log
         if ($pengajuan->latestStatusLog) {
@@ -662,29 +668,48 @@ class PenerimaanDokumenController extends Controller
      */
     private function checkDocumentCompleteness(PengajuanAkreditasi $pengajuan)
     {
-        // definisi kebutuhan + alias jenis_dokumen di DB
-        $required = [
-            'led' => [
-                'label' => 'Laporan Evaluasi Diri (LED)',
-                'aliases' => ['data_kualitatif', 'draft_borang', 'borang_final'],
-                'any' => true,
-            ],
-            'suplemen' => [
-                'label' => 'Suplemen LED',
-                'aliases' => ['data_suplemen', 'suplemen', 'file_suplemen', 'dokumen_pendukung'],
-                'any' => true,
-            ],
-            'lkps' => [
-                'label' => 'Laporan Kinerja Program Studi (LKPS)',
-                'aliases' => ['data_kuantitatif', 'kuantitatif'],
-                'any' => true,
-            ],
-            'pengesahan' => [
-                'label' => 'Lembar Pengesahan Dokumen',
-                'aliases' => ['pengesahan', 'lembar_pengesahan'],
-                'any' => true,
-            ],
-        ];
+        if (in_array($pengajuan->status, [
+            PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM,
+            PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA
+        ])) {
+            // Hanya LED & LKPS yang required
+            $required = [
+                'led' => [
+                    'label' => 'Laporan Evaluasi Diri (LED)',
+                    'aliases' => ['data_kualitatif', 'draft_borang', 'borang_final'],
+                    'any' => true,
+                ],
+                'lkps' => [
+                    'label' => 'Laporan Kinerja Program Studi (LKPS)',
+                    'aliases' => ['data_kuantitatif', 'kuantitatif'],
+                    'any' => true,
+                ],
+            ];
+        } else {
+            // Status lain → semua dokumen required
+            $required = [
+                'led' => [
+                    'label' => 'Laporan Evaluasi Diri (LED)',
+                    'aliases' => ['data_kualitatif', 'draft_borang', 'borang_final'],
+                    'any' => true,
+                ],
+                'suplemen' => [
+                    'label' => 'Suplemen LED',
+                    'aliases' => ['data_suplemen', 'suplemen', 'file_suplemen', 'dokumen_pendukung'],
+                    'any' => true,
+                ],
+                'lkps' => [
+                    'label' => 'Laporan Kinerja Program Studi (LKPS)',
+                    'aliases' => ['data_kuantitatif', 'kuantitatif'],
+                    'any' => true,
+                ],
+                'pengesahan' => [
+                    'label' => 'Lembar Pengesahan Dokumen',
+                    'aliases' => ['pengesahan', 'lembar_pengesahan'],
+                    'any' => true,
+                ],
+            ];
+        }
 
         $uploaded = $pengajuan->dokumen()
             ->where('is_latest', true)

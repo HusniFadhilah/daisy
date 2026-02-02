@@ -411,66 +411,6 @@ class PengajuanAkreditasiController extends Controller
     }
 
     /**
-     * Process borang DOCX - extract data
-     */
-    // public function processBorangDOCX(Request $request, $id)
-    // {
-    //     try {
-    //         $pengajuan = PengajuanAkreditasi::findOrFail($id);
-    //         $this->authorize('update', $pengajuan);
-
-    //         // Get latest draft LED
-    //         $draftBorang = PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
-    //             ->where('jenis_dokumen', 'draft_borang')
-    //             ->where('is_latest', true)
-    //             ->firstOrFail();
-
-    //         // Check cooldown (prevent re-processing within 10 minutes)
-    //         $latestImport = $pengajuan->latestBorangImport;
-    //         if ($latestImport && $latestImport->imported_at->diffInMinutes(now()) < 10) {
-    //             return response()->json([
-    //                 'success' => false,
-    //                 'message' => 'Mohon tunggu minimal 10 menit sebelum memproses ulang. Terakhir diproses: ' . $latestImport->imported_at->diffForHumans()
-    //             ], 429);
-    //         }
-
-    //         // Process using parser service
-    //         $parserService = new BorangParserService();
-    //         $import = $parserService->parseBorangDOCX($draftBorang);
-
-    //         return response()->json([
-    //             'success' => true,
-    //             'message' => 'Pembacaan data borang berhasil!',
-    //             'data' => [
-    //                 'id' => $import->id,
-    //                 'total_sections' => $import->total_sections,
-    //                 'total_tables' => $import->total_tables,
-    //                 'parsed_sections' => $import->parsed_sections,
-    //                 'parsed_tables' => $import->parsed_tables,
-    //                 'completion' => $import->completion_percentage,
-    //                 'status' => $import->status,
-    //             ]
-    //         ]);
-    //     } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Draft LED tidak ditemukan. Silakan upload terlebih dahulu.'
-    //         ], 404);
-    //     } catch (\Exception $e) {
-    //         Log::error('Process borang DOCX failed', [
-    //             'pengajuan_id' => $id,
-    //             'error' => $e->getMessage(),
-    //             'trace' => $e->getTraceAsString()
-    //         ]);
-
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Gagal memproses borang: ' . $e->getMessage()
-    //         ], 500);
-    //     }
-    // }
-
-    /**
      * Show borang HTML preview
      */
     public function showBorangHTML($id)

@@ -33,23 +33,20 @@ class PenyampaianHasilAkreditasiController extends Controller
                 PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN,
                 PengajuanAkreditasi::STATUS_SELESAI,
             ])->orderBy('changed_at', 'desc'),
-        ])->whereIn('id_program_studi', $studyProgramIds)
-            ->whereNotNull('tanggal_hasil_akreditasi')->whereExists(function ($q) {
-                $q->select(DB::raw(1))
-                    ->from('pengajuan_status_log as l')
-                    ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
-                    ->whereIn('l.status_to', [
-                        PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM,
-                        PengajuanAkreditasi::STATUS_MASA_SANGGAH,
-                        PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
-                        PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
-                        PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
-                        PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
-                        PengajuanAkreditasi::STATUS_HASIL_DIUMUMKAN,
-                        PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN,
-                        PengajuanAkreditasi::STATUS_SELESAI,
-                    ]);
-            });
+        ])
+            ->whereIn('id_program_studi', $studyProgramIds)
+            ->whereNotNull('tanggal_hasil_akreditasi')
+            ->whereIn('status', [
+                PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM,
+                PengajuanAkreditasi::STATUS_MASA_SANGGAH,
+                PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
+                PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
+                PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
+                PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
+                PengajuanAkreditasi::STATUS_HASIL_DIUMUMKAN,
+                PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN,
+                PengajuanAkreditasi::STATUS_SELESAI,
+            ]);
 
         // Apply filters
         $this->applyFilters($query, $request);
