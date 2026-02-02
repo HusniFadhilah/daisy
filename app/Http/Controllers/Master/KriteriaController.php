@@ -30,7 +30,8 @@ class KriteriaController extends Controller
                 ->make(true);
         }
         
-        return view('indikator.kriteria.index');
+        $kriteria = Kriteria::orderBy('kode_kriteria')->paginate(10);
+        return view('indikator.kriteria.index', compact('kriteria'));
     }
 
     /**
