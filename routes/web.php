@@ -326,6 +326,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/{id}/kirim-upload', [PenyampaianTemplateController::class, 'kirimTemplateUpload'])->name('.kirim-upload');
             Route::get('/{id}/download', [PenyampaianTemplateController::class, 'download'])->name('.download');
         });
+        Route::post('/notifications/{id}/mark-as-read', function ($id) {
+            $notification = \App\Models\Notification::findOrFail($id);
+
+            if ($notification->notifiable_id !== auth()->id()) {
+                abort(403);
+            }
+
+            $notification->update(['read_at' => now()]);
+
+            return response()->json(['success' => true]);
+        })->name('.notifications.mark-as-read');
         Route::prefix('validasi-pembayaran')->name('.validasi-pembayaran')->group(function () {
             Route::get('/', [ValidasiPembayaranController::class, 'index']);
             Route::get('/{id}', [ValidasiPembayaranController::class, 'show'])->name('.show');

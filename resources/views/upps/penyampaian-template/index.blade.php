@@ -203,9 +203,9 @@
                         <thead class="table-light">
                             <tr>
                                 <th width="5%">#</th>
-                                <th width="15%">Permohonan</th>
-                                <th width="17%">Tanggal Dikirim</th>
-                                <th width="20%">Formulir dan Template Dokumen</th>
+                                <th width="20%">Permohonan</th>
+                                <th width="20%">Tanggal Dikirim</th>
+                                <th width="25%">Formulir dan Template Dokumen</th>
                                 <th width="25%">Status Formulir dan Template</th>
                                 <th width="5%" class="text-center">Aksi</th>
                             </tr>

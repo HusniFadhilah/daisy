@@ -3,13 +3,15 @@
 
 namespace App\Http\Controllers\UPPS;
 
-use App\Http\Controllers\Controller;
-use App\Models\PengajuanAkreditasi;
-use App\Models\PengajuanDokumen;
+use App\Models\User;
 use App\Models\Notification;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Models\PengajuanDokumen;
 use Illuminate\Support\Facades\DB;
+use App\Models\PengajuanAkreditasi;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class PenyampaianTemplateController extends Controller
@@ -194,41 +196,26 @@ class PenyampaianTemplateController extends Controller
             $requestedLabelText = implode(', ', $requestedLabels);
 
             // Create notification for DE (LAMDEPILAR)
-            $deUsers = \App\Models\User::role('asesi')->get();
+            $deUsers = User::where('role_selected', 'asesi')->get();
 
             foreach ($deUsers as $deUser) {
                 Notification::create([
                     'notifiable_type' => 'App\Models\User',
                     'notifiable_id' => $deUser->id,
                     'type' => 'template_upload_request',
-                    'data' => json_encode([
+                    'data' => [
                         'id_pengajuan' => $pengajuan->id,
                         'nomor_pengajuan' => $pengajuan->nomor_pengajuan,
                         'jenis_dokumen' => $requested,                 // array
                         'jenis_dokumen_label' => $requestedLabels,     // array label
                         'alasan_request' => $validated['alasan_request'],
                         'program_studi' => $pengajuan->studyProgram->name,
-                        'requested_by' => Auth::user()->name,
+                        'requested_by' => Auth::id(),
                         'requested_at' => now()->toISOString(),
-                    ]),
+                    ],
                     'read_at' => null,
                 ]);
             }
-
-            // Confirmation to requester
-            Notification::create([
-                'notifiable_type' => 'App\Models\User',
-                'notifiable_id' => Auth::id(),
-                'type' => 'template_upload_request_sent',
-                'data' => json_encode([
-                    'id_pengajuan' => $pengajuan->id,
-                    'nomor_pengajuan' => $pengajuan->nomor_pengajuan,
-                    'jenis_dokumen' => $requested,
-                    'jenis_dokumen_label' => $requestedLabels,
-                    'message' => "Permintaan pengiriman ulang untuk {$requestedLabelText} telah dikirim ke LAMDEPILAR.",
-                ]),
-                'read_at' => null,
-            ]);
 
             DB::commit();
 
@@ -237,6 +224,7 @@ class PenyampaianTemplateController extends Controller
                 ->with('success', "Permintaan pengiriman ulang untuk {$requestedLabelText} berhasil dikirim ke LAMDEPILAR.");
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error($e);
             return redirect()->back()->with('error', 'Gagal mengirim permintaan: ' . $e->getMessage());
         }
     }

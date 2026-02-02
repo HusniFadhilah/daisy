@@ -214,7 +214,7 @@
                 @endif --}}
 
                 <a href="{{ route('keuangan.pembayaran.download-bukti', $pengajuan->id) }}" class="btn btn-primary btn-sm">
-                    <i class="bi bi-download"></i> Download Bukti
+                    <i class="bi bi-download"></i> Download File
                 </a>
                 @endif
             </div>

@@ -31,6 +31,7 @@ return new class extends Migration
                 'pengingat_dikirim',
                 'surat_permohonan_dikirim',
                 'surat_permohonan_diterima',
+                'surat_permohonan_upload_ulang',
                 'surat_permohonan_ditolak',
                 'surat_penerimaan_dikirim',
                 'template_borang_dikirim',
@@ -75,6 +76,7 @@ return new class extends Migration
             $table->timestamp('tanggal_pengingat')->nullable();
             $table->timestamp('tanggal_surat_permohonan_dikirim')->nullable();
             $table->timestamp('tanggal_surat_permohonan_diterima')->nullable();
+            $table->timestamp('tanggal_surat_permohonan_upload_ulang')->nullable();
             $table->timestamp('tanggal_surat_permohonan_ditolak')->nullable();
             $table->timestamp('tanggal_surat_penerimaan_dikirim')->nullable();
             $table->timestamp('tanggal_template_led_dikirim')->nullable();

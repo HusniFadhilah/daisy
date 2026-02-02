@@ -167,7 +167,7 @@
                             <ul class="mb-0">
                                 <li>Pastikan formulir & bukti pembayaran yang diupload jelas dan dapat dibaca</li>
                                 <li>Formulir & bukti pembayaran harus menunjukkan nominal yang sesuai dengan invoice</li>
-                                <li>Setelah upload, formulir bukti pembayaran akan divalidasi oleh bagian keuangan LAMDEPILAR</li>
+                                <li>Setelah upload, formulir bukti pembayaran akan divalidasi oleh LAMDEPILAR</li>
                                 <li>Anda akan mendapat notifikasi hasil validasi melalui email</li>
                             </ul>
                         </div>

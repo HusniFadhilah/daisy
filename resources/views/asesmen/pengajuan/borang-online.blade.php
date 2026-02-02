@@ -207,7 +207,7 @@
                         Prodi {{ $pengajuan->studyProgram->name }} - Nomor: {{ $pengajuan->nomor_pengajuan }}
                     </p>
                 </div>
-                <a href="{{ route('pengajuan.show', $pengajuan->id) }}" class="btn btn-outline-secondary">
+                <a href="{{ route('upps.penerimaan-dokumen') }}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left"></i> Kembali
                 </a>
             </div>
@@ -1620,7 +1620,7 @@ $pengajuanId = $pengajuan->id;
                             , text: data.message
                             , confirmButtonColor: '#28a745'
                         });
-                        window.location.href = '{{ route("pengajuan.show", $pengajuan->id) }}';
+                        window.location.href = '{{ route("upps.penerimaan-dokumen.show", $pengajuan->id) }}';
                     } else {
                         throw new Error(data.message || 'Finalisasi gagal');
                     }

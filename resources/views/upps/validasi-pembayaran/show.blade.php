@@ -46,14 +46,14 @@
             @elseif($pembayaran->status_pembayaran === 'menunggu_verifikasi')
             <div class="alert alert-info alert-permanent">
                 <i class="bi bi-clock-history"></i>
-                <strong>Menunggu validasi dari bagian keuangan LAMDEPILAR</strong>
+                <strong>Menunggu validasi dari LAMDEPILAR</strong>
                 <br>
                 Formulir & Bukti pembayaran telah diupload pada {{ $pembayaran->tanggal_pembayaran?->format('d M Y H:i') ?? '-' }}
             </div>
             @elseif($pembayaran->status_pembayaran === 'terverifikasi')
             <div class="alert alert-success alert-permanent">
                 <i class="bi bi-check-circle"></i>
-                <strong>Pembayaran telah divalidasi oleh bagian keuangan LAMDEPILAR</strong>
+                <strong>Pembayaran telah divalidasi oleh LAMDEPILAR</strong>
                 <br>
                 Divalidasi pada {{ $pembayaran->tanggal_verifikasi?->format('d M Y H:i') ?? '-' }}
             </div>
@@ -71,7 +71,7 @@
             @elseif($pembayaran->status_pembayaran === 'ditolak')
             <div class="alert alert-danger alert-permanent">
                 <i class="bi bi-x-circle"></i>
-                <strong>Pembayaran ditolak oleh bagian keuangan LAMDEPILAR</strong>
+                <strong>Pembayaran ditolak oleh LAMDEPILAR</strong>
                 <br>
                 @if($pembayaran->alasan_penolakan)
                 <strong>Alasan:</strong> {{ $pembayaran->alasan_penolakan }}
@@ -234,7 +234,7 @@
                     </h5>
                     <p class="text-muted">
                         @if($pembayaran->status_pembayaran === 'upload_ulang')
-                        Bagian keuangan meminta Anda untuk upload ulang formulir & bukti pembayaran yang lebih jelas.
+                        LAMDEPILAR meminta Anda untuk upload ulang formulir & bukti pembayaran yang lebih jelas.
                         @else
                         Anda dapat mengganti formulir & bukti pembayaran yang telah diupload sebelumnya.
                         @endif

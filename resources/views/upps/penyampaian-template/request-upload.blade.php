@@ -133,11 +133,11 @@
 
             <!-- Info Alert -->
             <div class="alert alert-warning alert-permanent">
-                <h6><i class="bi bi-exclamation-triangle"></i> Informasi Penting</h6>
+                <h6><i class="bi bi-exclamation-triangle"></i> Informasi</h6>
                 <ul class="mb-0">
                     <li>Permintaan <strong>pengiriman ulang</strong> akan dikirim ke LAMDEPILAR</li>
                     <li>Status permohonan akreditasi <strong>tidak akan berubah</strong></li>
-                    <li>Dokumen saat ini tetap tersimpan sampai LAMDEPILAR mengirim dokumen terbaru</li>
+                    <li>Dokumen saat ini tetap tersimpan sampai LAMDEPILAR mengirim template dokumen terbaru</li>
                     <li>Anda akan mendapat notifikasi setelah LAMDEPILAR merespon permintaan ini</li>
                     <li>Pastikan alasan yang Anda berikan jelas dan spesifik</li>
                 </ul>
@@ -160,21 +160,25 @@
                                 Pilih Dokumen yang Diminta Pengiriman Ulang <span class="text-danger">*</span>
                             </label>
 
-                            <select name="jenis_dokumen[]" class="form-select @error('jenis_dokumen') is-invalid @enderror" multiple required>
-                                @if($templateLed)
-                                <option value="borang_template" {{ in_array('borang_template', old('jenis_dokumen', [])) ? 'selected' : '' }}>
-                                    Template Dokumen Akreditasi
-                                </option>
-                                @endif
+                            <div class="form-check">
                                 @if($formulirPembayaran)
-                                <option value="template_formulir_pembayaran" {{ in_array('template_formulir_pembayaran', old('jenis_dokumen', [])) ? 'selected' : '' }}>
+                                <input class="form-check-input @error('jenis_dokumen') is-invalid @enderror" type="checkbox" name="jenis_dokumen[]" value="template_formulir_pembayaran" id="dok_pembayaran" {{ in_array('template_formulir_pembayaran', old('jenis_dokumen', [])) ? 'checked' : '' }}>
+                                <label class="form-check-label" for="dok_pembayaran">
                                     Formulir Pembayaran
-                                </option>
+                                </label>
                                 @endif
-                            </select>
+                            </div>
+                            <div class="form-check">
+                                @if($templateLed)
+                                <input class="form-check-input @error('jenis_dokumen') is-invalid @enderror" type="checkbox" name="jenis_dokumen[]" value="borang_template" id="dok_borang" {{ in_array('borang_template', old('jenis_dokumen', [])) ? 'checked' : '' }}>
+                                <label class="form-check-label" for="dok_borang">
+                                    Template Dokumen Akreditasi
+                                </label>
+                                @endif
+                            </div>
 
                             @error('jenis_dokumen')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
 
                             <small class="form-text text-muted">
@@ -192,7 +196,7 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                             <small class="form-text text-muted">
-                                Contoh: "Dokumen tidak dapat dibuka" atau "Kualitas scan formulir pembayaran buram dan tidak terbaca"
+                                Contoh: "Formulir pembayaran tidak terbaca" atau "Template dokumen tidak dapat dibuka"
                             </small>
                         </div>
 

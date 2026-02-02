@@ -44,7 +44,7 @@ final class PengajuanStatus
             PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM => [
                 'label' => 'Permohonan Akreditasi',
                 'label_short_for' => [
-                    'de'   => 'Permohonan Masuk',
+                    'de'   => 'Permohonan Dikirim',
                     'upps' => 'Permohonan Terkirim',
                     'prodi' => 'Permohonan Terkirim',
                 ],
@@ -73,6 +73,22 @@ final class PengajuanStatus
                 'icon' => 'bi-envelope',
             ],
 
+            PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_UPLOAD_ULANG => [
+                'label' => 'Pengiriman Ulang Permohonan Akreditasi',
+                'label_short_for' => [
+                    'de'   => 'Proses Pengiriman Ulang',
+                    'upps' => 'Proses Pengiriman Ulang',
+                    'prodi' => 'Proses Pengiriman Ulang',
+                ],
+                'label_long_for' => [
+                    'de'   => 'Permohonan Akreditasi Dikirim Ulang',
+                    'upps' => 'Pengiriman Ulang Permohonan Akreditasi',
+                    'prodi' => 'Pengiriman Ulang Permohonan Akreditasi',
+                ],
+                'bg' => 'bg-info',
+                'icon' => 'bi-envelope',
+            ],
+
             PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA => [
                 'label' => 'Permohonan Akreditasi Diterima',
                 'label_short_for' => [
@@ -97,7 +113,7 @@ final class PengajuanStatus
                     'prodi' => 'Permohonan Diterima',
                 ],
                 'label_long_for' => [
-                    'de'   => 'Penerimaan Permohonan Akreditasi Dikirim ke PS',
+                    'de'   => 'Penerimaan Permohonan Akreditasi Dikirim',
                     'upps' => 'Permohonan Akreditasi Diterima',
                     'prodi' => 'Permohonan Akreditasi Diterima',
                 ],

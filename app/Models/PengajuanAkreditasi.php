@@ -31,6 +31,7 @@ class PengajuanAkreditasi extends Model
     // Step 2
     public const STATUS_SURAT_PERMOHONAN_DIKIRIM = 'surat_permohonan_dikirim';
     public const STATUS_SURAT_PERMOHONAN_DITERIMA = 'surat_permohonan_diterima';
+    public const STATUS_SURAT_PERMOHONAN_UPLOAD_ULANG = 'surat_permohonan_upload_ulang';
     public const STATUS_SURAT_PERMOHONAN_DITOLAK = 'surat_permohonan_ditolak';
     public const STATUS_SURAT_PENERIMAAN_DIKIRIM = 'surat_penerimaan_dikirim';
 
@@ -108,6 +109,7 @@ class PengajuanAkreditasi extends Model
         'tanggal_pengingat',
         'tanggal_surat_permohonan_dikirim',
         'tanggal_surat_permohonan_diterima',
+        'tanggal_surat_permohonan_upload_ulang',
         'tanggal_surat_permohonan_ditolak',
         'tanggal_surat_penerimaan_dikirim',
         'tanggal_template_led_dikirim',
@@ -150,6 +152,7 @@ class PengajuanAkreditasi extends Model
         'tanggal_pengingat' => 'datetime',
         'tanggal_surat_permohonan_dikirim' => 'datetime',
         'tanggal_surat_permohonan_diterima' => 'datetime',
+        'tanggal_surat_permohonan_upload_ulang' => 'datetime',
         'tanggal_surat_permohonan_ditolak' => 'datetime',
         'tanggal_surat_penerimaan_dikirim' => 'datetime',
         'tanggal_template_led_dikirim' => 'datetime',
@@ -1143,7 +1146,9 @@ class PengajuanAkreditasi extends Model
                 $badge('bg-secondary', $labelFor(self::STATUS_DRAFT) ?? 'Menunggu Draft Dikirim'),
 
                 self::STATUS_PENGINGAT_DIKIRIM =>
-                $badge('bg-warning', $labelFor(self::STATUS_PENGINGAT_DIKIRIM) ?? 'Menunggu Permohonan Dikirim'),
+                $audience === 'de'
+                    ? $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Permohonan Akreditasi Dikirim' : 'Menunggu Permohonan Dikirim')
+                    : $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Proses Pengiriman Permohonan Akreditasi' : 'Proses Mengirim Permohonan'),
 
                 self::STATUS_SURAT_PERMOHONAN_DIKIRIM =>
                 $badge('bg-info', $labelFor(self::STATUS_SURAT_PERMOHONAN_DIKIRIM) ?? 'Permohonan Akreditasi'),
@@ -1165,8 +1170,8 @@ class PengajuanAkreditasi extends Model
             'surat_penerimaan_de' => match ($status) {
                 self::STATUS_SURAT_PERMOHONAN_DITERIMA =>
                 $audience === 'de'
-                    ? $badge('bg-warning', 'Permohonan Akreditasi telah diterima. Menunggu pengiriman dokumen penerimaan')
-                    : $badge('bg-warning', 'Menunggu Dokumen Penerimaan Permohonan Akreditasi dari LAMDEPILAR'),
+                    ? $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Proses Pengiriman Penerimaan Akreditasi' : 'Proses Pengiriman Penerimaan')
+                    : $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Penerimaan Permohonan Akreditasi' : 'Menunggu Penerimaan'),
 
                 self::STATUS_SURAT_PENERIMAAN_DIKIRIM =>
                 $badge('bg-success', $labelFor(self::STATUS_SURAT_PENERIMAAN_DIKIRIM) ?? 'Penerimaan Permohonan Akreditasi'),
@@ -1182,8 +1187,8 @@ class PengajuanAkreditasi extends Model
             'borang_template' => match ($status) {
                 self::STATUS_SURAT_PENERIMAAN_DIKIRIM =>
                 $audience === 'de'
-                    ? $badge('bg-warning', 'Belum mengirim Formulir & Template Dokumen')
-                    : $badge('bg-warning', 'Menunggu Formulir & Template'),
+                    ? $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Formulir & Template Dokumen Belum Dikirim' : 'Belum Dikirim')
+                    : $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Formulir & Template Dokumen Belum Dikirim' : 'Belum Dikirim'),
 
                 self::STATUS_TEMPLATE_LED_DIKIRIM =>
                 $badge('bg-success', $labelFor(self::STATUS_TEMPLATE_LED_DIKIRIM) ?? 'Pengiriman Formulir & Template Dokumen'),
