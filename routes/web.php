@@ -711,11 +711,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('indikator', IndikatorController::class);
 
         // USER MANAGEMENT (Admin Only)
+        Route::resource('users', UserController::class);
         Route::prefix('users')->name('users.')->group(function () {
             Route::get('export', [UserController::class, 'export'])->name('export');
             Route::get('template', [UserController::class, 'downloadTemplate'])->name('template');
             Route::post('import', [UserController::class, 'import'])->name('import');
-            Route::resource('/', UserController::class)->parameters(['' => 'user']);
         });
 
         // Dashboard Overview

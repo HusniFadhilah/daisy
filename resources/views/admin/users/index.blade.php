@@ -105,8 +105,7 @@
             processing: true
             , serverSide: true
             , ajax: {
-                url: '{{ route('
-                users.index ') }}'
+                url: '{{ route('users.index') }}'
                 , error: function(xhr, error, thrown) {
                     console.error('DataTables Error:', error, thrown);
                     console.error('Response:', xhr.responseText);
