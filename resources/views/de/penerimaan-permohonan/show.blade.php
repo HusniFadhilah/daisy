@@ -189,7 +189,7 @@
                                     <p class="mt-3 mb-1 fw-bold" id="fileName"></p>
                                     <p class="text-muted small mb-2" id="fileSize"></p>
                                     <button type="button" class="btn btn-sm btn-danger" onclick="removeFile()">
-                                        <i class="bi bi-x-circle"></i> Hapus File
+                                        <i class="bi bi-x-circle"></i> Batalkan Upload File
                                     </button>
                                 </div>
                             </div>

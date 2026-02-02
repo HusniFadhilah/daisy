@@ -50,7 +50,7 @@
             <h4 class="mb-1">
                 <i class="bi bi-person-check"></i> Penugasan Asesor Asesmen Kecukupan
             </h4>
-            <p class="text-muted mb-0">Tracking penugasan asesor untuk Asesmen Kecukupan</p>
+            <p class="text-muted mb-0">Monitor penugasan asesor untuk Asesmen Kecukupan</p>
         </div>
     </div>
 

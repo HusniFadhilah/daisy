@@ -2,7 +2,7 @@
 
 @extends('layouts.template.app')
 
-@section('title', 'Pelaporan Dokumen')
+@section('title', 'Pelaporan Validasi Dokumen')
 
 @push('styles')
 <style>
@@ -40,7 +40,7 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item active">Pelaporan Dokumen</li>
+            <li class="breadcrumb-item active">Pelaporan Validasi Dokumen</li>
         </ol>
     </nav>
 
@@ -48,9 +48,9 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">
-                <i class="bi bi-file-earmark-check"></i> Pelaporan Dokumen
+                <i class="bi bi-file-earmark-check"></i> Pelaporan Validasi Dokumen
             </h4>
-            <p class="text-muted mb-0">Tracking pelaporan hasil validasi dokumen</p>
+            <p class="text-muted mb-0">Monitor pelaporan validasi dokumen</p>
         </div>
     </div>
 
@@ -175,7 +175,7 @@
             <div class="card">
                 <div class="card-header bg-white">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Daftar Pelaporan Dokumen</h5>
+                        <h5 class="mb-0">Daftar Pelaporan Validasi Dokumen</h5>
                         <div>
                             <span class="text-muted">Total: <strong>{{ $pengajuans->total() }}</strong></span>
                         </div>

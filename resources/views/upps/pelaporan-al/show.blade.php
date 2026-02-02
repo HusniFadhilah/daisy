@@ -84,10 +84,10 @@
                         <tr>
                             <th>Asesor AL</th>
                             <td>
-                                @if($pengajuan->asesorAL)
-                                : {{ $pengajuan->asesorAL->name }}
+                                @if($pengajuan->asesmen->asesorAL)
+                                : {{ $pengajuan->asesmen->asesorAL()->name }}
                                 <br>
-                                <small class="text-muted">{{ $pengajuan->asesorAL->email }}</small>
+                                <small class="text-muted">{{ $pengajuan->asesmen->asesorAL()->email }}</small>
                                 @else
                                 : <span class="text-muted">-</span>
                                 @endif
@@ -275,7 +275,7 @@
             <div class="card">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-clock-history"></i> Timeline Pelaporan
+                        <i class="bi bi-clock-history"></i> Riwayat Status
                     </h5>
                 </div>
                 <div class="card-body" style="max-height: 600px; overflow-y: auto;">
@@ -318,10 +318,10 @@
                                     <br>
                                     <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
 
-                                    @if($log->keterangan)
+                                    {{-- @if($log->keterangan)
                                     <br>
                                     <small class="text-muted fst-italic">{{ $log->keterangan }}</small>
-                                    @endif
+                                    @endif --}}
                                 </div>
                             </div>
                         </div>
@@ -334,7 +334,7 @@
             </div>
 
             <!-- Ringkasan Asesmen -->
-            @if($pengajuan->asesorAL)
+            @if($pengajuan->asesmen->asesorAL)
             <div class="card mt-4">
                 <div class="card-header bg-primary text-white">
                     <h6 class="mb-0">
@@ -344,8 +344,8 @@
                 <div class="card-body">
                     <div class="mb-3">
                         <label class="text-muted small">Asesor</label>
-                        <p class="fw-bold mb-0">{{ $pengajuan->asesorAL->name }}</p>
-                        <small class="text-muted">{{ $pengajuan->asesorAL->email }}</small>
+                        <p class="fw-bold mb-0">{{ $pengajuan->asesmen->asesorAL()->name }}</p>
+                        <small class="text-muted">{{ $pengajuan->asesmen->asesorAL()->email }}</small>
                     </div>
 
                     <hr>

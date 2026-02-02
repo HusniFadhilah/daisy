@@ -50,7 +50,7 @@
             <h4 class="mb-1">
                 <i class="bi bi-arrow-repeat"></i> Permohonan Banding Hasil Akreditasi
             </h4>
-            <p class="text-muted mb-0">Tracking permohonan banding terhadap hasil akreditasi</p>
+            <p class="text-muted mb-0">Monitor permohonan banding terhadap hasil akreditasi</p>
         </div>
     </div>
 

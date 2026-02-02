@@ -50,7 +50,7 @@
             <h4 class="mb-1">
                 <i class="bi bi-play-circle"></i> Pelaksanaan Banding
             </h4>
-            <p class="text-muted mb-0">Tracking proses pelaksanaan banding hasil akreditasi</p>
+            <p class="text-muted mb-0">Monitor proses pelaksanaan banding hasil akreditasi</p>
         </div>
     </div>
 

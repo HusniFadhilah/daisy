@@ -371,6 +371,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::delete('/{id}/remove-user/{userId}', [\App\Http\Controllers\DE\PenugasanAKController::class, 'removeUser'])->name('.remove-user');
             Route::get('/{id}/assignments', [\App\Http\Controllers\DE\PenugasanAKController::class, 'getAssignments'])->name('.assignments');
             Route::get('/{id}/requirements', [\App\Http\Controllers\DE\PenugasanAKController::class, 'getRequirementsStatusAjax'])->name('.requirements');
+            Route::get('/{id}/download-surat-tugas/{jenis}', [PenugasanAKController::class, 'downloadSuratTugas'])->name('.download-surat-tugas');
+            Route::post('/{id}/upload-surat-tugas/{jenis}', [PenugasanAKController::class, 'uploadSuratTugas'])->name('.upload-surat-tugas');
         });
         Route::prefix('validasi-ak')->name('.validasi-ak')->group(function () {
             Route::get('/', [ValidasiAKController::class, 'index']);

@@ -22,7 +22,7 @@ class PenugasanALController extends Controller
         $query = PengajuanAkreditasi::with([
             'studyProgram.university',
             'studyProgram.degreeLevel',
-            'asesorAL',
+            'asesmen.asesorAL',
             'statusLog' => fn($q) => $q->whereIn('status_to', [
                 PengajuanAkreditasi::STATUS_AK_DILAPORKAN,
                 PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
@@ -77,7 +77,7 @@ class PenugasanALController extends Controller
             'studyProgram.university',
             'studyProgram.degreeLevel',
             'pengaju',
-            'asesorAL',
+            'asesmen.asesorAL',
             'dokumen' => fn($q) => $q->whereIn('jenis_dokumen', [
                 'draft_borang',
                 'borang_final',

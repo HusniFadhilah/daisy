@@ -42,7 +42,7 @@
             <div class="card mb-3">
                 <div class="card-header bg-primary text-white">
                     <h6 class="mb-0">
-                        <i class="bi bi-info-circle"></i> Informasi Program Studi
+                        <i class="bi bi-info-circle"></i> Informasi Penugasan AK
                     </h6>
                 </div>
                 <div class="card-body">
@@ -161,6 +161,35 @@
         <!-- Right: Assignment -->
         <div class="col-lg-8">
             @if($pengajuan->asesmen?->asesmenKecukupan)
+
+            {{-- ✅ Get Validator Dokumen --}}
+            @php
+            $validatorDokumen = $pengajuan->borangValidators()
+            ->where('jenis_asesmen', 'dokumen')
+            ->whereIn('status_penawaran', ['accepted', 'pending'])
+            ->with('user')
+            ->first();
+            @endphp
+
+            {{-- Alert Info Validator Dokumen --}}
+            @if($validatorDokumen)
+            <div class="alert alert-info alert-permanent mb-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Validator Dokumen:</strong> {{ $validatorDokumen->user->name }}
+                        <br>
+                        <small class="text-muted">
+                            Gunakan validator yang sama atau pilih validator lain untuk AK
+                        </small>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="showValidatorInfo()">
+                        <i class="bi bi-person-check"></i> Lihat Detail
+                    </button>
+                </div>
+            </div>
+            @endif
+
             <!-- Assign Form -->
             <div class="card mb-3">
                 <div class="card-header bg-success text-white">
@@ -171,36 +200,72 @@
                 <div class="card-body">
                     <form id="assignForm" onsubmit="assignUser(event, {{ $pengajuan->id }})">
                         <div class="row g-3">
-                            <div class="col-md-5">
-                                <label class="form-label">Pilih User:</label>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Role: <span class="text-danger">*</span></label>
+                                <select id="roleId" class="form-select" required onchange="handleRoleChange()">
+                                    <option value="">-- Pilih Role --</option>
+                                    @foreach($roles as $role)
+                                    <option value="{{ $role->id }}" data-name="{{ $role->name }}">{{ $role->alias }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            {{-- Show validator dokumen option if role = validator --}}
+                            <div class="col-md-8" id="validatorOptionsContainer" style="display: none;">
+                                @if($validatorDokumen)
+                                <label class="form-label fw-bold">Pilih Validator:</label>
+                                <div class="btn-group w-100" role="group">
+                                    <input type="radio" class="btn-check" name="validator_option" id="useValidatorDokumen" value="use_existing" checked autocomplete="off">
+                                    <label class="btn btn-outline-primary" for="useValidatorDokumen">
+                                        <i class="bi bi-person-check"></i>
+                                        Gunakan Validator Dokumen
+                                        <br>
+                                        <small>{{ $validatorDokumen->user->name }}</small>
+                                    </label>
+
+                                    <input type="radio" class="btn-check" name="validator_option" id="useNewValidator" value="new" autocomplete="off">
+                                    <label class="btn btn-outline-success" for="useNewValidator">
+                                        <i class="bi bi-person-plus"></i>
+                                        Pilih Validator Lain
+                                    </label>
+                                </div>
+                                @else
+                                <div class="alert alert-warning alert-permanent mb-0">
+                                    <small><i class="bi bi-exclamation-triangle"></i> Belum ada validator dokumen. Silakan pilih validator baru.</small>
+                                </div>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mt-2" id="userSelectionContainer">
+                            <div class="col-md-8">
+                                <label class="form-label fw-bold">Pilih User: <span class="text-danger">*</span></label>
                                 <select id="userId" class="form-select" required>
                                     <option value="">-- Pilih User --</option>
                                     @foreach($availableUsers as $user)
-                                    <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                    <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
                                     @endforeach
                                 </select>
                             </div>
+
+                            {{-- Upload surat tugas (optional) --}}
                             <div class="col-md-4">
-                                <label class="form-label">Role:</label>
-                                <select id="roleId" class="form-select" required>
-                                    <option value="">-- Pilih Role --</option>
-                                    @foreach($roles as $role)
-                                    <option value="{{ $role->id }}">{{ $role->alias }}</option>
-                                    @endforeach
-                                </select>
+                                <label class="form-label fw-bold">Surat Tugas <small class="text-muted">(Opsional)</small></label>
+                                <input type="file" id="fileSuratTugas" name="file_surat_tugas" class="form-control" accept=".pdf">
+                                <small class="text-muted">PDF, max 5MB</small>
                             </div>
-                            <div class="col-md-3">
-                                <label class="form-label">&nbsp;</label>
-                                <button type="submit" class="btn btn-success w-100">
-                                    <i class="bi bi-plus-circle"></i> Tugaskan
-                                </button>
-                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-plus-circle"></i> Tugaskan
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
 
-            <!-- Assigned List -->
+            {{-- ✅ SINGLE TABLE: Combine Surat Tugas + Progress --}}
             <div class="card">
                 <div class="card-header bg-light d-flex justify-content-between align-items-center">
                     <h6 class="mb-0">Daftar Penugasan AK</h6>
@@ -216,13 +281,37 @@
                                 <th>Role</th>
                                 <th>Status</th>
                                 <th>Progress</th>
+                                <th>Surat Tugas</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
+                            @php
+                            // ✅ Get surat tugas ONCE (tidak per assignment)
+                            $suratTugasAsesor = $pengajuan->dokumen
+                            ->where('jenis_dokumen', 'surat_tugas_asesor_ak')
+                            ->where('is_latest', true)
+                            ->first();
+
+                            $suratTugasValidator = $pengajuan->dokumen
+                            ->where('jenis_dokumen', 'surat_tugas_validator_ak')
+                            ->where('is_latest', true)
+                            ->first();
+                            @endphp
+
                             @forelse($pengajuan->asesmen->asesmenUserRoles as $assignment)
                             @php
+                            // Get progress
                             $progress = $userProgress[$assignment->id_user] ?? ['percentage' => 0, 'completed' => 0, 'total' => 0];
+
+                            // ✅ Determine surat tugas based on role (NOT per asesor)
+                            $suratTugas = $assignment->role_selected->name === 'asesor'
+                            ? $suratTugasAsesor
+                            : $suratTugasValidator;
+
+                            $jenisDokumen = $assignment->role_selected->name === 'asesor'
+                            ? 'surat_tugas_asesor_ak'
+                            : 'surat_tugas_validator_ak';
                             @endphp
                             <tr>
                                 <td>
@@ -246,6 +335,62 @@
                                     <small class="text-muted">{{ $progress['completed'] }}/{{ $progress['total'] }}</small>
                                 </td>
                                 <td>
+                                    @if($suratTugas)
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="bi bi-file-earmark-pdf text-danger"></i>
+                                        <div class="flex-grow-1">
+                                            <small class="d-block">{{ Str::limit($suratTugas->original_filename, 20) }}</small>
+                                            <small class="text-muted">Versi {{ $suratTugas->versi }}</small>
+                                        </div>
+
+                                        {{-- ✅ Show download/upload ONLY for first asesor or validator --}}
+                                        @php
+                                        $showActions = false;
+                                        if ($assignment->role_selected->name === 'asesor') {
+                                        // Show only for asesor #1
+                                        $showActions = $assignment->urutan_asesor === 1;
+                                        } else {
+                                        // Show for validator
+                                        $showActions = true;
+                                        }
+                                        @endphp
+
+                                        @if($showActions)
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ route('de.penugasan-ak.download-surat-tugas', [$pengajuan->id, $jenisDokumen]) }}" class="btn btn-sm btn-success" target="_blank" title="Download">
+                                                <i class="bi bi-download"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="showUploadSuratTugasModal('{{ $jenisDokumen }}')" title="Upload Ulang">
+                                                <i class="bi bi-upload"></i>
+                                            </button>
+                                        </div>
+                                        @else
+                                        <a href="{{ route('de.penugasan-ak.download-surat-tugas', [$pengajuan->id, $jenisDokumen]) }}" class="btn btn-sm btn-success" target="_blank" title="Download">
+                                            <i class="bi bi-download"></i>
+                                        </a>
+                                        @endif
+                                    </div>
+                                    @else
+                                    {{-- ✅ Show upload button ONLY for first asesor or validator --}}
+                                    @php
+                                    $showUpload = false;
+                                    if ($assignment->role_selected->name === 'asesor') {
+                                    $showUpload = $assignment->urutan_asesor === 1;
+                                    } else {
+                                    $showUpload = true;
+                                    }
+                                    @endphp
+
+                                    @if($showUpload)
+                                    <button type="button" class="btn btn-sm btn-warning" onclick="showUploadSuratTugasModal('{{ $jenisDokumen }}')">
+                                        <i class="bi bi-upload"></i> Upload
+                                    </button>
+                                    @else
+                                    <small class="text-muted">-</small>
+                                    @endif
+                                    @endif
+                                </td>
+                                <td>
                                     <button class="btn btn-sm btn-danger" onclick="removeUser({{ $pengajuan->id }}, {{ $assignment->id_user }}, '{{ $assignment->user->name }}')">
                                         <i class="bi bi-trash"></i>
                                     </button>
@@ -253,7 +398,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="5" class="text-center py-4 text-muted">
+                                <td colspan="6" class="text-center py-4 text-muted">
                                     Belum ada yang ditugaskan
                                 </td>
                             </tr>
@@ -262,6 +407,7 @@
                     </table>
                 </div>
             </div>
+
             @else
             <!-- Not Ready Yet -->
             <div class="alert alert-warning alert-permanent">
@@ -334,10 +480,122 @@
     </div>
 </div>
 
+<div class="modal fade" id="modalUploadSuratTugas" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-upload"></i> Upload Surat Tugas
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="formUploadSuratTugas" method="POST" enctype="multipart/form-data">
+                @csrf
+                {{-- ✅ REMOVE urutan_asesor field --}}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">
+                            File Surat Tugas (PDF) <span class="text-danger">*</span>
+                        </label>
+                        <input type="file" name="file_surat_tugas" id="modalFileSuratTugas" class="form-control" accept=".pdf" required>
+                        <small class="text-muted">Format: PDF | Maksimal: 5MB</small>
+                        <div id="modalSuratTugasPreview" class="mt-2"></div>
+                    </div>
+
+                    <div class="alert alert-info alert-permanent">
+                        <i class="bi bi-info-circle"></i>
+                        File yang diupload akan menggantikan surat tugas sebelumnya (jika ada).
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-upload"></i> Upload
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- ✅ NEW: Modal Validator Dokumen Info --}}
+@if($validatorDokumen)
+<div class="modal fade" id="modalValidatorInfo" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-person-check"></i> Info Validator Dokumen
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <th width="40%">Nama</th>
+                        <td>: {{ $validatorDokumen->user->name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Email</th>
+                        <td>: {{ $validatorDokumen->user->email }}</td>
+                    </tr>
+                    <tr>
+                        <th>Status</th>
+                        <td>:
+                            <span class="badge bg-{{ $validatorDokumen->status_penawaran === 'accepted' ? 'success' : 'warning' }}">
+                                {{ ucfirst($validatorDokumen->status_penawaran) }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Ditugaskan</th>
+                        <td>: {{ $validatorDokumen->created_at->format('d M Y H:i') }}</td>
+                    </tr>
+                </table>
+
+                @php
+                $suratTugasValDok = $pengajuan->dokumen
+                ->where('jenis_dokumen', 'surat_tugas_validator_dokumen')
+                ->where('is_latest', true)
+                ->first();
+                @endphp
+
+                @if($suratTugasValDok)
+                <div class="alert alert-success alert-permanent">
+                    <i class="bi bi-file-earmark-pdf"></i>
+                    <strong>Surat Tugas Validator Dokumen:</strong><br>
+                    {{ $suratTugasValDok->original_filename }}
+                    <br>
+                    <a href="{{ route('de.penerimaan-dokumen.download-surat-tugas-validator', $pengajuan->id) }}" class="btn btn-sm btn-success mt-2" target="_blank">
+                        <i class="bi bi-download"></i> Download
+                    </a>
+                </div>
+                @endif
+
+                <div class="alert alert-info alert-permanent mb-0">
+                    <i class="bi bi-info-circle"></i>
+                    Jika Anda menggunakan validator yang sama, surat tugas akan otomatis di-copy dari surat tugas validator dokumen.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
 @push('scripts')
 <script>
     const csrfToken = '{{ csrf_token() }}';
-    let currentPengajuanId = null;
+    const pengajuanId = "{{ $pengajuan->id }}";
+    let currentPengajuanId = pengajuanId;
+    let issetValidatorDokumen = "{{ isset($validatorDokumen) && $validatorDokumen }}"
+
+    if (issetValidatorDokumen) {
+        const validatorDokumenId = "{{ $validatorDokumen->id_user }}";
+        const validatorDokumenName = '{{ $validatorDokumen->user->name }}';
+    } else {
+        const validatorDokumenId = null;
+        const validatorDokumenName = null;
+    }
 
     // Show Modal for Mark Ready for AK
     function showMarkReadyModal(pengajuanId) {
@@ -536,6 +794,173 @@
         const date = new Date(dateStr);
         return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
     }
+
+    // ✅ NEW: Handle role change
+    function handleRoleChange() {
+        const roleSelect = document.getElementById('roleId');
+        const selectedOption = roleSelect.options[roleSelect.selectedIndex];
+        const roleName = selectedOption.dataset.name;
+        const validatorOptions = document.getElementById('validatorOptionsContainer');
+        const userSelection = document.getElementById('userSelectionContainer');
+
+        if (roleName === 'validator' && validatorDokumenId) {
+            validatorOptions.style.display = 'block';
+            handleValidatorOptionChange();
+        } else {
+            validatorOptions.style.display = 'none';
+            userSelection.style.display = 'flex';
+        }
+    }
+
+    // ✅ NEW: Handle validator option change
+    function handleValidatorOptionChange() {
+        const useValidatorDokumen = document.getElementById('useValidatorDokumen');
+        const useExisting = useValidatorDokumen ? useValidatorDokumen.checked : false;
+        const userSelection = document.getElementById('userSelectionContainer');
+        const userIdSelect = document.getElementById('userId');
+
+        if (useExisting && validatorDokumenId) {
+            // ✅ AUTO-FILL: Hide user selection, set value
+            userSelection.style.display = 'none';
+            userIdSelect.value = validatorDokumenId;
+            userIdSelect.required = false;
+        } else {
+            // Show user selection
+            userSelection.style.display = 'flex';
+            userIdSelect.value = '';
+            userIdSelect.required = true;
+        }
+    }
+
+    // ✅ Show validator info
+    function showValidatorInfo() {
+        const modal = new bootstrap.Modal(document.getElementById('modalValidatorInfo'));
+        modal.show();
+    }
+
+    // ✅ NEW: Show validator info
+    function showValidatorInfo() {
+        const modal = new bootstrap.Modal(document.getElementById('modalValidatorInfo'));
+        modal.show();
+    }
+
+    // ✅ Assign User
+    async function assignUser(event, pengajuanId) {
+        event.preventDefault();
+
+        const roleId = document.getElementById('roleId').value;
+        const userId = document.getElementById('userId').value;
+        const fileSuratTugas = document.getElementById('fileSuratTugas').files[0];
+        const validatorDokumen = document.getElementById('useValidatorDokumen');
+        const useValidatorDokumen = validatorDokumen ? validatorDokumen.checked : false;
+
+        if (!roleId || !userId) {
+            Swal.fire({
+                icon: 'error'
+                , title: 'Error'
+                , text: 'Mohon lengkapi semua field!'
+            });
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('id_user', userId);
+        formData.append('id_role', roleId);
+        formData.append('use_validator_dokumen', useValidatorDokumen ? '1' : '0');
+
+        if (fileSuratTugas) {
+            formData.append('file_surat_tugas', fileSuratTugas);
+        }
+
+        try {
+            const response = await fetch(`/de/penugasan-ak/${pengajuanId}/assign-user`, {
+                method: 'POST'
+                , headers: {
+                    'X-CSRF-TOKEN': csrfToken
+                    , 'Accept': 'application/json'
+                }
+                , body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                await Swal.fire({
+                    icon: 'success'
+                    , title: 'Berhasil!'
+                    , text: data.message
+                });
+                location.reload();
+            } else {
+                throw new Error(data.message);
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: 'error'
+                , title: 'Error'
+                , text: error.message
+            });
+        }
+    }
+
+    // ✅ NEW: Show upload surat tugas modal
+    function showUploadSuratTugasModal(jenisDokumen) {
+        const form = document.getElementById('formUploadSuratTugas');
+        form.action = `/de/penugasan-ak/${pengajuanId}/upload-surat-tugas/${jenisDokumen}`;
+
+        document.getElementById('modalFileSuratTugas').value = '';
+        document.getElementById('modalSuratTugasPreview').innerHTML = '';
+
+        const modal = new bootstrap.Modal(document.getElementById('modalUploadSuratTugas'));
+        modal.show();
+    }
+
+    // ✅ NEW: File preview
+    const modalFileSuratTugas = document.getElementById('modalFileSuratTugas')
+    if (modalFileSuratTugas) modalFileSuratTugas.addEventListener('change', function(e) {
+        const preview = document.getElementById('modalSuratTugasPreview');
+        const file = e.target.files[0];
+
+        if (!file) {
+            preview.innerHTML = '';
+            return;
+        }
+
+        const fileSize = file.size / 1024 / 1024;
+
+        if (file.type !== 'application/pdf') {
+            preview.innerHTML =
+                '<div class="alert alert-danger alert-dismissible fade show">' +
+                '<i class="bi bi-x-circle"></i> File harus berformat PDF' +
+                '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                '</div>';
+            e.target.value = '';
+            return;
+        }
+
+        if (fileSize > 5) {
+            preview.innerHTML =
+                '<div class="alert alert-danger alert-dismissible fade show">' +
+                '<i class="bi bi-x-circle"></i> Ukuran file terlalu besar. Maksimal 5 MB' +
+                '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                '</div>';
+            e.target.value = '';
+            return;
+        }
+
+        preview.innerHTML =
+            '<div class="alert alert-success alert-dismissible fade show">' +
+            '<i class="bi bi-check-circle"></i> ' +
+            '<strong>' + file.name + '</strong> (' + fileSize.toFixed(2) + ' MB)' +
+            '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+            '</div>';
+    });
+
+    // ✅ NEW: Add event listeners for validator option
+    const useValidatorDokumen = document.getElementById('useValidatorDokumen')
+    const useNewValidator = document.getElementById('useNewValidator')
+    if (useValidatorDokumen) useValidatorDokumen.addEventListener('change', handleValidatorOptionChange);
+    if (useNewValidator) useNewValidator.addEventListener('change', handleValidatorOptionChange);
 
 </script>
 @endpush

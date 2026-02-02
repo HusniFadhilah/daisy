@@ -50,7 +50,7 @@
             <h4 class="mb-1">
                 <i class="bi bi-file-earmark-check"></i> Pelaporan Hasil Asesmen Kecukupan
             </h4>
-            <p class="text-muted mb-0">Tracking pelaporan hasil penilaian Asesmen Kecukupan</p>
+            <p class="text-muted mb-0">Monitor pelaporan hasil penilaian Asesmen Kecukupan</p>
         </div>
     </div>
 
@@ -202,9 +202,9 @@
                                         <small class="text-muted">Dibuat pada: {{ \App\Libraries\Date::tglIndo($pengajuan->created_at) }}</small>
                                     </td>
                                     <td>
-                                        @if($pengajuan->asesorAK)
+                                        @if($pengajuan->asesmen->asesorAK)
                                         <small>
-                                            {{ $pengajuan->asesorAK->name }}
+                                            {{ $pengajuan->asesmen->asesorAK()->name }}
                                         </small>
                                         @else
                                         <span class="text-muted">-</span>

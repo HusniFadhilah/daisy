@@ -98,10 +98,10 @@
                         <tr>
                             <th>Asesor AK</th>
                             <td>
-                                @if($pengajuan->asesorAK)
-                                : {{ $pengajuan->asesorAK->name }}
+                                @if($pengajuan->asesmen->asesorAK)
+                                : {{ $pengajuan->asesmen->asesorAK()->name }}
                                 <br>
-                                <small class="text-muted">{{ $pengajuan->asesorAK->email }}</small>
+                                <small class="text-muted">{{ $pengajuan->asesmen->asesorAK()->email }}</small>
                                 @else
                                 : <span class="text-muted">-</span>
                                 @endif
@@ -188,7 +188,7 @@
             @endif
 
             <!-- Informasi Asesor -->
-            @if($pengajuan->asesorAK)
+            @if($pengajuan->asesmen->asesorAK)
             <div class="card mb-4">
                 <div class="card-header bg-success text-white">
                     <h5 class="mb-0">
@@ -199,11 +199,11 @@
                     <div class="row">
                         <div class="col-md-6">
                             <label class="text-muted small">Nama Asesor</label>
-                            <p class="fw-bold mb-3">{{ $pengajuan->asesorAK->name }}</p>
+                            <p class="fw-bold mb-3">{{ $pengajuan->asesmen->asesorAK()->name }}</p>
                         </div>
                         <div class="col-md-6">
                             <label class="text-muted small">Email</label>
-                            <p class="fw-bold mb-3">{{ $pengajuan->asesorAK->email }}</p>
+                            <p class="fw-bold mb-3">{{ $pengajuan->asesmen->asesorAK()->email }}</p>
                         </div>
                         <div class="col-md-6">
                             <label class="text-muted small">Tanggal Mulai Penilaian</label>

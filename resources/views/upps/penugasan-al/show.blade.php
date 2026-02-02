@@ -44,7 +44,7 @@
                 <i class="bi bi-person-check"></i>
                 <strong>Asesor Asesmen Lapangan telah ditugaskan</strong>
                 <br>
-                Asesor: <strong>{{ $pengajuan->asesorAL->name ?? '-' }}</strong>
+                Asesor: <strong>{{ $pengajuan->asesmen->asesorAL()->name ?? '-' }}</strong>
                 <br>
                 Menunggu asesor memulai proses asesmen lapangan
             </div>
@@ -107,10 +107,10 @@
                         <tr>
                             <th>Asesor AL Assigned</th>
                             <td>
-                                @if($pengajuan->asesorAL)
-                                : {{ $pengajuan->asesorAL->name }}
+                                @if($pengajuan->asesmen->asesorAL)
+                                : {{ $pengajuan->asesmen->asesorAL()->name }}
                                 <br>
-                                <small class="text-muted">{{ $pengajuan->asesorAL->email }}</small>
+                                <small class="text-muted">{{ $pengajuan->asesmen->asesorAL()->email }}</small>
                                 @else
                                 : <span class="text-muted">Belum ditugaskan</span>
                                 @endif
@@ -205,7 +205,7 @@
             @endif
 
             <!-- Informasi Asesor -->
-            @if($pengajuan->asesorAL)
+            @if($pengajuan->asesmen->asesorAL)
             <div class="card mb-4">
                 <div class="card-header bg-success text-white">
                     <h5 class="mb-0">
@@ -216,11 +216,11 @@
                     <div class="row">
                         <div class="col-md-6">
                             <label class="text-muted small">Nama Asesor</label>
-                            <p class="fw-bold mb-3">{{ $pengajuan->asesorAL->name }}</p>
+                            <p class="fw-bold mb-3">{{ $pengajuan->asesmen->asesorAL()->name }}</p>
                         </div>
                         <div class="col-md-6">
                             <label class="text-muted small">Email</label>
-                            <p class="fw-bold mb-3">{{ $pengajuan->asesorAL->email }}</p>
+                            <p class="fw-bold mb-3">{{ $pengajuan->asesmen->asesorAL()->email }}</p>
                         </div>
                         <div class="col-md-6">
                             <label class="text-muted small">Tanggal Penugasan</label>
@@ -319,7 +319,7 @@
             <div class="card">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-clock-history"></i> Timeline Penugasan
+                        <i class="bi bi-clock-history"></i> Riwayat Status
                     </h5>
                 </div>
                 <div class="card-body" style="max-height: 600px; overflow-y: auto;">
@@ -363,10 +363,10 @@
                                     <br>
                                     <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
 
-                                    @if($log->keterangan)
+                                    {{-- @if($log->keterangan)
                                     <br>
                                     <small class="text-muted fst-italic">{{ $log->keterangan }}</small>
-                                    @endif
+                                    @endif --}}
                                 </div>
                             </div>
                         </div>

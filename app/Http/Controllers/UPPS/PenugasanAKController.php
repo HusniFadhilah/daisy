@@ -22,7 +22,7 @@ class PenugasanAKController extends Controller
         $query = PengajuanAkreditasi::with([
             'studyProgram.university',
             'studyProgram.degreeLevel',
-            'asesorAK',
+            'asesmen.asesorAK',
             'statusLog' => fn($q) => $q->whereIn('status_to', [
                 PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
                 PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
@@ -79,9 +79,14 @@ class PenugasanAKController extends Controller
             'studyProgram.university',
             'studyProgram.degreeLevel',
             'pengaju',
-            'asesorAK',
-            'dokumen' => fn($q) => $q->whereIn('jenis_dokumen', ['draft_borang', 'borang_final'])
-                ->orderBy('created_at', 'desc'),
+            'asesmen.asesorAK',
+            'asesmen.validatorAK', // ✅ Load validator AK
+            'dokumen' => fn($q) => $q->whereIn('jenis_dokumen', [
+                'draft_borang',
+                'borang_final',
+                'surat_tugas_asesor_ak',      // ✅ Load surat tugas asesor
+                'surat_tugas_validator_ak'    // ✅ Load surat tugas validator
+            ])->orderBy('created_at', 'desc'),
             'statusLog' => fn($q) => $q->orderBy('changed_at', 'desc'),
         ])->findOrFail($id);
 

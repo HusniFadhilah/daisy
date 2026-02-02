@@ -50,7 +50,7 @@
             <h4 class="mb-1">
                 <i class="bi bi-person-check"></i> Penugasan Asesor Asesmen Lapangan
             </h4>
-            <p class="text-muted mb-0">Tracking penugasan asesor untuk Asesmen Lapangan</p>
+            <p class="text-muted mb-0">Monitor penugasan asesor untuk Asesmen Lapangan</p>
         </div>
     </div>
 
@@ -194,9 +194,9 @@
                                         <small class="text-muted">Dibuat pada: {{ \App\Libraries\Date::tglIndo($pengajuan->created_at) }}</small>
                                     </td>
                                     <td>
-                                        @if($pengajuan->asesorAL)
+                                        @if($pengajuan->asesmen->asesorAL)
                                         <small>
-                                            {{ $pengajuan->asesorAL->name }}
+                                            {{ $pengajuan->asesmen->asesorAL()->name }}
                                         </small>
                                         @else
                                         <span class="text-muted">Belum ditugaskan</span>

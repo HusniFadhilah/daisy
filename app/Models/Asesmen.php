@@ -99,7 +99,9 @@ class Asesmen extends Model
     public function asesorAK()
     {
         return $this->hasMany(AsesmenUserRole::class, 'id_asesmen')
-            ->where('jenis_asesmen', 'ak');
+            ->whereHas('role', function ($query) {
+                $query->where('name', 'asesor');
+            })->where('jenis_asesmen', 'ak');
     }
 
     /**
@@ -108,7 +110,9 @@ class Asesmen extends Model
     public function asesorAL()
     {
         return $this->hasMany(AsesmenUserRole::class, 'id_asesmen')
-            ->where('jenis_asesmen', 'al');
+            ->whereHas('role', function ($query) {
+                $query->where('name', 'asesor');
+            })->where('jenis_asesmen', 'al');
     }
 
     /**

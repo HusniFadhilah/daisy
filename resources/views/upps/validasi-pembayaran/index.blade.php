@@ -250,7 +250,7 @@
                                     <th width="20%">Program Studi</th>
                                     <th width="12%">Jumlah</th>
                                     <th width="12%">Jatuh Tempo</th>
-                                    <th width="15%">Status</th>
+                                    <th width="15%">Status Pembayaran</th>
                                     <th width="11%" class="text-center">Aksi</th>
                                 </tr>
                             </thead>

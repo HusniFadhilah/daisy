@@ -8,12 +8,14 @@ use App\Models\Asesmen;
 use Illuminate\Http\Request;
 use App\Models\AsesmenUserRole;
 use App\Models\AsesmenKecukupan;
+use App\Models\PengajuanDokumen;
 use Illuminate\Support\Facades\DB;
 use App\Models\PengajuanAkreditasi;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Jobs\SendPenawaranAsesmenEmail;
+use Illuminate\Support\Facades\Storage;
 
 class PenugasanAKController extends Controller
 {
@@ -311,18 +313,24 @@ class PenugasanAKController extends Controller
     }
 
     /**
-     * Tugaskan asesor/validator untuk AK
+     * ✅ UPDATE: Tugaskan asesor/validator untuk AK (dengan surat tugas)
      */
     public function assignUser(Request $request, $id)
     {
         $request->validate([
             'id_user' => 'required|exists:users,id',
             'id_role' => 'required|exists:roles,id',
+            'use_validator_dokumen' => 'nullable|boolean',
+            'file_surat_tugas' => 'nullable|file|mimes:pdf|max:5120',
         ]);
 
         DB::beginTransaction();
         try {
-            $pengajuan = PengajuanAkreditasi::with('asesmen.asesmenKecukupan')->findOrFail($id);
+            $pengajuan = PengajuanAkreditasi::with([
+                'asesmen.asesmenKecukupan',
+                'dokumen',
+                'borangValidators'
+            ])->findOrFail($id);
 
             if (!$pengajuan->asesmen || !$pengajuan->asesmen->asesmenKecukupan) {
                 return response()->json([
@@ -334,6 +342,7 @@ class PenugasanAKController extends Controller
             $asesmen = $pengajuan->asesmen;
             $asesmenKecukupan = $asesmen->asesmenKecukupan;
             $role = Role::findOrFail($request->id_role);
+            $user = User::findOrFail($request->id_user);
 
             // Check if user already assigned
             $exists = AsesmenUserRole::where('id_asesmen', $asesmen->id)
@@ -347,6 +356,29 @@ class PenugasanAKController extends Controller
                     'success' => false,
                     'message' => 'User telah ditugaskan dengan role ini untuk AK'
                 ], 422);
+            }
+
+            // ✅ Handle Validator Dokumen Logic
+            $useValidatorDokumen = $request->boolean('use_validator_dokumen', false);
+            $validatorDokumen = null;
+
+            if ($role->name === 'validator' && $useValidatorDokumen) {
+                // Get validator dokumen
+                $validatorDokumen = $pengajuan->borangValidators()
+                    ->where('jenis_asesmen', 'dokumen')
+                    ->whereIn('status_penawaran', ['accepted', 'pending'])
+                    ->first();
+
+                if (!$validatorDokumen) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Validator dokumen tidak ditemukan. Silakan pilih validator lain.'
+                    ], 422);
+                }
+
+                // Override user dengan validator dokumen
+                $user = $validatorDokumen->user;
+                $request->merge(['id_user' => $user->id]);
             }
 
             // Determine urutan_asesor if asesor
@@ -372,7 +404,7 @@ class PenugasanAKController extends Controller
             // Create assignment
             $assignment = AsesmenUserRole::create([
                 'id_asesmen' => $asesmen->id,
-                'id_user' => $request->id_user,
+                'id_user' => $user->id,
                 'id_role' => $request->id_role,
                 'jenis_asesmen' => 'ak',
                 'id_asesmen_kecukupan' => $asesmenKecukupan->id,
@@ -380,13 +412,45 @@ class PenugasanAKController extends Controller
                 'status_penawaran' => 'pending',
             ]);
 
-            $user = User::find($request->id_user);
+            // ✅ Handle Surat Tugas
+            $suratTugasCreated = false;
 
-            // Check requirements
-            $requirementsMet = $asesmenKecukupan->hasMinimumRequirements();
-            $missingRequirements = $asesmenKecukupan->getMissingRequirements();
+            if ($role->name === 'asesor') {
+                // ✅ ASESOR: 1 surat tugas untuk SEMUA asesor
+                // Cek apakah sudah ada surat tugas asesor AK
+                $existingSuratTugas = $pengajuan->dokumen()
+                    ->where('jenis_dokumen', 'surat_tugas_asesor_ak')
+                    ->where('is_latest', true)
+                    ->first();
 
-            // ✅ Update status pengajuan (gunakan checkUpdateStatusAKAL)
+                if (!$existingSuratTugas) {
+                    // Buat surat tugas baru (hanya 1x untuk asesor pertama)
+                    if ($request->hasFile('file_surat_tugas')) {
+                        $this->uploadSuratTugasAsesorAK($pengajuan, $assignment, $request->file('file_surat_tugas'));
+                    } else {
+                        $this->generateSuratTugasAsesorAK($pengajuan, $assignment);
+                    }
+                    $suratTugasCreated = true;
+                }
+            } elseif ($role->name === 'validator') {
+                // ✅ VALIDATOR: Copy dari dokumen atau buat baru
+                if ($useValidatorDokumen && $validatorDokumen) {
+                    // Copy dari validator dokumen
+                    $copied = $this->copySuratTugasFromValidatorDokumen($pengajuan, $assignment);
+                    $suratTugasCreated = $copied;
+                } else {
+                    // Generate/upload baru
+                    if ($request->hasFile('file_surat_tugas')) {
+                        $this->uploadSuratTugasValidatorAK($pengajuan, $assignment, $request->file('file_surat_tugas'));
+                        $suratTugasCreated = true;
+                    } else {
+                        $this->generateSuratTugasValidatorAK($pengajuan, $assignment);
+                        $suratTugasCreated = true;
+                    }
+                }
+            }
+
+            // Update status pengajuan
             $statusFrom = $pengajuan->status;
             $pengajuan->checkUpdateStatusAKAL('ak', 'status_asesor_assigned');
             $pengajuan->statusLog()->firstOrCreate(
@@ -396,7 +460,7 @@ class PenugasanAKController extends Controller
                 ],
                 [
                     'changed_by'  => Auth::id(),
-                    'keterangan'  => 'Penugasan asesor untuk asesmen kecukupan telah dilakukan',
+                    'keterangan'  => "Penugasan {$role->alias} untuk asesmen kecukupan telah dilakukan",
                     'changed_at'  => now(),
                 ]
             );
@@ -417,19 +481,20 @@ class PenugasanAKController extends Controller
                 'success' => true,
                 'message' => "User {$user->name} berhasil ditugaskan sebagai {$role->alias} untuk AK" .
                     ($urutanAsesor ? " (Asesor {$urutanAsesor})" : "") .
-                    ". Email penawaran telah dikirim.",
+                    ". Email penawaran telah dikirim." .
+                    ($suratTugasCreated ? " Surat tugas telah dibuat." : ""),
                 'data' => [
                     'assignment' => $assignment,
                     'user' => $user,
                     'role' => $role,
                     'urutan_asesor' => $urutanAsesor,
-                    'requirements_met' => $requirementsMet,
-                    'missing_requirements' => $missingRequirements,
+                    'surat_tugas_created' => $suratTugasCreated,
+                    'used_validator_dokumen' => $useValidatorDokumen && $validatorDokumen !== null,
                 ]
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('assignUser failed', ['error' => $e]);
+            Log::error('assignUser failed', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menugaskan user: ' . $e->getMessage()
@@ -713,5 +778,321 @@ class PenugasanAKController extends Controller
         }
 
         return $asesors->count();
+    }
+
+    /**
+     * ✅ UPDATE: Upload surat tugas asesor AK (1 untuk semua asesor)
+     */
+    private function uploadSuratTugasAsesorAK(PengajuanAkreditasi $pengajuan, AsesmenUserRole $assignment, $file)
+    {
+        // Mark old surat tugas as not latest
+        $pengajuan->dokumen()
+            ->where('jenis_dokumen', 'surat_tugas_asesor_ak')
+            ->update(['is_latest' => false]);
+
+        $versi = $pengajuan->dokumen()
+            ->where('jenis_dokumen', 'surat_tugas_asesor_ak')
+            ->max('versi') ?? 0;
+
+        $originalName = $file->getClientOriginalName();
+        $sanitizedName = preg_replace('/[^a-zA-Z0-9._-]/', '_', $originalName);
+        $filename = time() . '_SURAT_TUGAS_ASESOR_AK_' . $sanitizedName;
+
+        $path = $file->storeAs('dokumen/surat-tugas-asesor-ak', $filename, 'public');
+
+        return $pengajuan->dokumen()->create([
+            'jenis_dokumen' => 'surat_tugas_asesor_ak',
+            'nama_file' => $filename,
+            'path_file' => $path,
+            'original_filename' => $originalName,
+            'file_size' => $file->getSize(),
+            'mime_type' => $file->getMimeType(),
+            'uploaded_by' => auth()->id(),
+            'keterangan' => "Surat Tugas Asesor AK untuk Pengajuan {$pengajuan->nomor_pengajuan}",
+            'is_latest' => true,
+            'versi' => $versi + 1,
+        ]);
+    }
+
+    /**
+     * ✅ UPDATE: Generate surat tugas asesor AK (1 untuk semua asesor)
+     */
+    private function generateSuratTugasAsesorAK(PengajuanAkreditasi $pengajuan, AsesmenUserRole $assignment)
+    {
+        // Mark old surat tugas as not latest
+        $pengajuan->dokumen()
+            ->where('jenis_dokumen', 'surat_tugas_asesor_ak')
+            ->update(['is_latest' => false]);
+
+        $versi = $pengajuan->dokumen()
+            ->where('jenis_dokumen', 'surat_tugas_asesor_ak')
+            ->max('versi') ?? 0;
+
+        $nomorSurat = 'ST-ASESOR-AK/' . date('Y') . '/' . str_pad($pengajuan->id, 4, '0', STR_PAD_LEFT);
+
+        return $pengajuan->dokumen()->create([
+            'jenis_dokumen' => 'surat_tugas_asesor_ak',
+            'nama_file' => "Surat_Tugas_Asesor_AK_{$pengajuan->nomor_pengajuan}.pdf",
+            'path_file' => null,
+            'original_filename' => "Surat Tugas Asesor AK - {$pengajuan->nomor_pengajuan}.pdf",
+            'file_size' => null,
+            'mime_type' => 'application/pdf',
+            'uploaded_by' => auth()->id(),
+            'keterangan' => "Surat Tugas Nomor: {$nomorSurat} untuk Asesor AK Pengajuan {$pengajuan->nomor_pengajuan}",
+            'template_link' => null,
+            'is_latest' => true,
+            'versi' => $versi + 1,
+        ]);
+    }
+
+    /**
+     * ✅ NEW: Upload surat tugas validator AK
+     */
+    private function uploadSuratTugasValidatorAK(PengajuanAkreditasi $pengajuan, AsesmenUserRole $assignment, $file)
+    {
+        $versi = $pengajuan->dokumen()
+            ->where('jenis_dokumen', 'surat_tugas_validator_ak')
+            ->max('versi') ?? 0;
+
+        $originalName = $file->getClientOriginalName();
+        $sanitizedName = preg_replace('/[^a-zA-Z0-9._-]/', '_', $originalName);
+        $filename = time() . '_SURAT_TUGAS_VALIDATOR_AK_' . $sanitizedName;
+
+        $path = $file->storeAs('dokumen/surat-tugas-validator-ak', $filename, 'public');
+
+        return $pengajuan->dokumen()->create([
+            'jenis_dokumen' => 'surat_tugas_validator_ak',
+            'nama_file' => $filename,
+            'path_file' => $path,
+            'original_filename' => $originalName,
+            'file_size' => $file->getSize(),
+            'mime_type' => $file->getMimeType(),
+            'uploaded_by' => auth()->id(),
+            'keterangan' => "Surat Tugas Validator AK: {$assignment->user->name}",
+            'is_latest' => true,
+            'versi' => $versi + 1,
+        ]);
+    }
+
+    /**
+     * ✅ NEW: Generate surat tugas validator AK
+     */
+    private function generateSuratTugasValidatorAK(PengajuanAkreditasi $pengajuan, AsesmenUserRole $assignment)
+    {
+        $versi = $pengajuan->dokumen()
+            ->where('jenis_dokumen', 'surat_tugas_validator_ak')
+            ->max('versi') ?? 0;
+
+        $nomorSurat = 'ST-VALIDATOR-AK/' . date('Y') . '/' . str_pad($pengajuan->id, 4, '0', STR_PAD_LEFT);
+
+        return $pengajuan->dokumen()->create([
+            'jenis_dokumen' => 'surat_tugas_validator_ak',
+            'nama_file' => "Surat_Tugas_Validator_AK_{$pengajuan->nomor_pengajuan}.pdf",
+            'path_file' => null,
+            'original_filename' => "Surat Tugas Validator AK - {$assignment->user->name}.pdf",
+            'file_size' => null,
+            'mime_type' => 'application/pdf',
+            'uploaded_by' => auth()->id(),
+            'keterangan' => "Surat Tugas Nomor: {$nomorSurat} untuk Validator AK: {$assignment->user->name}",
+            'template_link' => null,
+            'is_latest' => true,
+            'versi' => $versi + 1,
+        ]);
+    }
+
+    /**
+     * ✅ NEW: Copy surat tugas dari validator dokumen
+     */
+    private function copySuratTugasFromValidatorDokumen(PengajuanAkreditasi $pengajuan, AsesmenUserRole $assignment)
+    {
+        // Get surat tugas validator dokumen
+        $suratTugasValidatorDokumen = $pengajuan->dokumen()
+            ->where('jenis_dokumen', 'surat_tugas_validator_dokumen')
+            ->where('is_latest', true)
+            ->first();
+
+        if (!$suratTugasValidatorDokumen) {
+            Log::warning('Surat tugas validator dokumen tidak ditemukan untuk copy', [
+                'pengajuan_id' => $pengajuan->id,
+                'assignment_id' => $assignment->id,
+            ]);
+            return false;
+        }
+
+        // Create duplicate with new jenis_dokumen
+        $newVersi = $pengajuan->dokumen()
+            ->where('jenis_dokumen', 'surat_tugas_validator_ak')
+            ->max('versi') ?? 0;
+
+        $newDokumen = $pengajuan->dokumen()->create([
+            'jenis_dokumen' => 'surat_tugas_validator_ak',
+            'nama_file' => $suratTugasValidatorDokumen->nama_file,
+            'path_file' => $suratTugasValidatorDokumen->path_file, // Same file path
+            'original_filename' => str_replace('Validator Dokumen', 'Validator AK', $suratTugasValidatorDokumen->original_filename),
+            'file_size' => $suratTugasValidatorDokumen->file_size,
+            'mime_type' => $suratTugasValidatorDokumen->mime_type,
+            'uploaded_by' => auth()->id(),
+            'keterangan' => "Surat Tugas Validator AK (Copy dari Validator Dokumen): {$assignment->user->name}",
+            'template_link' => $suratTugasValidatorDokumen->template_link,
+            'is_latest' => true,
+            'versi' => $newVersi + 1,
+        ]);
+
+        Log::info('Surat tugas validator dokumen berhasil dicopy ke validator AK', [
+            'pengajuan_id' => $pengajuan->id,
+            'source_dokumen_id' => $suratTugasValidatorDokumen->id,
+            'new_dokumen_id' => $newDokumen->id,
+        ]);
+
+        return true;
+    }
+
+    /**
+     * ✅ NEW: Download surat tugas (asesor/validator)
+     */
+    public function downloadSuratTugas($pengajuanId, $jenisDokumen)
+    {
+        $validJenis = ['surat_tugas_asesor_ak', 'surat_tugas_validator_ak'];
+
+        if (!in_array($jenisDokumen, $validJenis)) {
+            abort(400, 'Jenis dokumen tidak valid');
+        }
+
+        $pengajuan = PengajuanAkreditasi::findOrFail($pengajuanId);
+
+        $dokumen = $pengajuan->dokumen()
+            ->where('jenis_dokumen', $jenisDokumen)
+            ->where('is_latest', true)
+            ->firstOrFail();
+
+        // Jika link
+        if ($dokumen->template_link) {
+            return redirect($dokumen->template_link);
+        }
+
+        // Jika file upload
+        if ($dokumen->path_file && Storage::disk('public')->exists($dokumen->path_file)) {
+            return Storage::disk('public')->download($dokumen->path_file, $dokumen->original_filename);
+        }
+
+        // Generate on-the-fly jika belum ada file
+        if (!$dokumen->path_file) {
+            return $this->generateAndDownloadSuratTugasAK($pengajuan, $dokumen, $jenisDokumen);
+        }
+
+        abort(404, 'File tidak ditemukan.');
+    }
+
+    /**
+     * ✅ NEW: Generate and download surat tugas on-the-fly
+     */
+    private function generateAndDownloadSuratTugasAK(PengajuanAkreditasi $pengajuan, PengajuanDokumen $dokumen, $jenisDokumen)
+    {
+        // Get assignment info
+        $assignment = null;
+        if ($jenisDokumen === 'surat_tugas_asesor_ak') {
+            // Extract urutan from keterangan
+            preg_match('/#(\d+)/', $dokumen->keterangan, $matches);
+            $urutan = $matches[1] ?? 1;
+
+            $assignment = $pengajuan->asesmen->asesmenUserRoles()
+                ->where('jenis_asesmen', 'ak')
+                ->where('urutan_asesor', $urutan)
+                ->whereHas('role', fn($q) => $q->where('name', 'asesor'))
+                ->with('user')
+                ->first();
+        } else {
+            $assignment = $pengajuan->asesmen->asesmenUserRoles()
+                ->where('jenis_asesmen', 'ak')
+                ->whereHas('role', fn($q) => $q->where('name', 'validator'))
+                ->with('user')
+                ->first();
+        }
+
+        if (!$assignment) {
+            abort(404, 'Data penugasan tidak ditemukan.');
+        }
+
+        // TODO: Implement actual PDF generation using DomPDF or TCPDF
+        $nomorSurat = $jenisDokumen === 'surat_tugas_asesor_ak'
+            ? 'ST-ASESOR-AK/' . date('Y') . '/' . str_pad($pengajuan->id, 4, '0', STR_PAD_LEFT) . '/' . $assignment->urutan_asesor
+            : 'ST-VALIDATOR-AK/' . date('Y') . '/' . str_pad($pengajuan->id, 4, '0', STR_PAD_LEFT);
+
+        $tanggal = now()->format('d M Y');
+        $roleLabel = $jenisDokumen === 'surat_tugas_asesor_ak' ? "Asesor AK #{$assignment->urutan_asesor}" : 'Validator AK';
+
+        $html = view('de.penugasan-ak.templates.surat-tugas', compact(
+            'pengajuan',
+            'assignment',
+            'nomorSurat',
+            'tanggal',
+            'roleLabel'
+        ))->render();
+
+        // Generate PDF
+        $pdf = \PDF::loadHTML($html);
+
+        return $pdf->download("{$dokumen->original_filename}");
+    }
+
+    /**
+     * ✅ NEW: Upload surat tugas (manual upload)
+     */
+    public function uploadSuratTugas(Request $request, $pengajuanId, $jenisDokumen)
+    {
+        $validJenis = ['surat_tugas_asesor_ak', 'surat_tugas_validator_ak'];
+
+        if (!in_array($jenisDokumen, $validJenis)) {
+            return redirect()->back()->with('error', 'Jenis dokumen tidak valid');
+        }
+
+        $request->validate([
+            'file_surat_tugas' => 'required|file|mimes:pdf|max:5120',
+        ], [
+            'file_surat_tugas.required' => 'File surat tugas wajib diupload',
+            'file_surat_tugas.mimes' => 'Format file harus PDF',
+            'file_surat_tugas.max' => 'Ukuran file maksimal 5MB',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $pengajuan = PengajuanAkreditasi::with('asesmen.asesmenUserRoles')->findOrFail($pengajuanId);
+
+            // Get first assignment for this role
+            $assignment = null;
+            if ($jenisDokumen === 'surat_tugas_asesor_ak') {
+                $assignment = $pengajuan->asesmen->asesmenUserRoles()
+                    ->where('jenis_asesmen', 'ak')
+                    ->whereHas('role', fn($q) => $q->where('name', 'asesor'))
+                    ->orderBy('urutan_asesor')
+                    ->firstOrFail();
+
+                $this->uploadSuratTugasAsesorAK($pengajuan, $assignment, $request->file('file_surat_tugas'));
+            } else {
+                $assignment = $pengajuan->asesmen->asesmenUserRoles()
+                    ->where('jenis_asesmen', 'ak')
+                    ->whereHas('role', fn($q) => $q->where('name', 'validator'))
+                    ->firstOrFail();
+
+                $this->uploadSuratTugasValidatorAK($pengajuan, $assignment, $request->file('file_surat_tugas'));
+            }
+
+            DB::commit();
+
+            return redirect()
+                ->back()
+                ->with('success', 'Surat tugas berhasil diupload.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to upload surat tugas AK', [
+                'pengajuan_id' => $pengajuanId,
+                'jenis' => $jenisDokumen,
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()
+                ->back()
+                ->with('error', 'Gagal upload surat tugas: ' . $e->getMessage());
+        }
     }
 }

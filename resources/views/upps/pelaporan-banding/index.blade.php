@@ -50,7 +50,7 @@
             <h4 class="mb-1">
                 <i class="bi bi-file-earmark-ruled"></i> Pelaporan Hasil Banding
             </h4>
-            <p class="text-muted mb-0">Tracking pelaporan hasil pelaksanaan banding</p>
+            <p class="text-muted mb-0">Monitor pelaporan hasil pelaksanaan banding</p>
         </div>
     </div>
 

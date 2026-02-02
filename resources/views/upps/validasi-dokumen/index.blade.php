@@ -50,7 +50,7 @@
             <h4 class="mb-1">
                 <i class="bi bi-clipboard-check"></i> Validasi Dokumen
             </h4>
-            <p class="text-muted mb-0">Tracking proses validasi dokumen akreditasi</p>
+            <p class="text-muted mb-0">Monitor proses validasi dokumen akreditasi</p>
         </div>
     </div>
 

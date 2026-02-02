@@ -43,10 +43,17 @@
             <div class="alert alert-success alert-permanent">
                 <i class="bi bi-person-check"></i>
                 <strong>Asesor Asesmen Kecukupan telah ditugaskan</strong>
-                <br>
-                Asesor: <strong>{{ $pengajuan->asesorAK->name ?? '-' }}</strong>
-                <br>
-                Menunggu asesor memulai proses asesmen kecukupan
+
+                <div class="mt-2">Asesor:</div>
+                <ul class="mb-1">
+                    @forelse($pengajuan->asesmen->asesorAK as $asesor)
+                    <li><strong>{{ $asesor->user->name }}</strong></li>
+                    @empty
+                    <li>-</li>
+                    @endforelse
+                </ul>
+
+                <small>Mohon menunggu asesor memulai proses asesmen kecukupan</small>
             </div>
             @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AK_IN_PROGRESS)
             <div class="alert alert-warning alert-permanent">
@@ -96,30 +103,50 @@
                             <td>: {{ $pengajuan->studyProgram->full_name }}</td>
                         </tr>
                         <tr>
-                            <th>Universitas</th>
-                            <td>: {{ $pengajuan->studyProgram->university->name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Jenjang</th>
-                            <td>: {{ $pengajuan->studyProgram->degreeLevel->name ?? '-' }}</td>
-                        </tr>
-                        <tr>
                             <th>Jenis Permohonan</th>
                             <td>: {{ $pengajuan->jenis_akreditasi_label }}</td>
                         </tr>
                         <tr>
-                            <th>Tahun Akreditasi</th>
-                            <td>: {{ $pengajuan->tahun_akreditasi }}</td>
-                        </tr>
-                        <tr>
-                            <th>Asesor AK Assigned</th>
+                            <th>Asesor AK yang Ditugaskan</th>
                             <td>
-                                @if($pengajuan->asesorAK)
-                                : {{ $pengajuan->asesorAK->name }}
-                                <br>
-                                <small class="text-muted">{{ $pengajuan->asesorAK->email }}</small>
+                                @if($pengajuan->asesmen && $pengajuan->asesmen->asesorAK->count() > 0)
+                                <ul class="mb-0 ps-3">
+                                    @foreach($pengajuan->asesmen->asesorAK as $asesor)
+                                    <li>
+                                        <strong>{{ $asesor->user->name }}</strong>
+                                        @if($asesor->urutan_asesor)
+                                        <span class="badge bg-secondary">#{{ $asesor->urutan_asesor }}</span>
+                                        @endif
+                                        @if($asesor->user->email)
+                                        <br>
+                                        <small class="text-muted">{{ $asesor->user->email }}</small>
+                                        @endif
+                                    </li>
+                                    @endforeach
+                                </ul>
                                 @else
-                                : <span class="text-muted">Belum ditugaskan</span>
+                                <span class="text-muted">Belum ditugaskan</span>
+                                @endif
+                            </td>
+                        </tr>
+                        {{-- ✅ NEW: Validator AK --}}
+                        <tr>
+                            <th>Validator AK yang Ditugaskan</th>
+                            <td>
+                                @if($pengajuan->asesmen && $pengajuan->asesmen->validatorAK->count() > 0)
+                                <ul class="mb-0 ps-3">
+                                    @foreach($pengajuan->asesmen->validatorAK as $validator)
+                                    <li>
+                                        <strong>{{ $validator->user->name }}</strong>
+                                        @if($validator->user->email)
+                                        <br>
+                                        <small class="text-muted">{{ $validator->user->email }}</small>
+                                        @endif
+                                    </li>
+                                    @endforeach
+                                </ul>
+                                @else
+                                <span class="text-muted">Belum ditugaskan</span>
                                 @endif
                             </td>
                         </tr>
@@ -134,38 +161,44 @@
                         <tr>
                             <th>Tanggal Mulai Asesmen</th>
                             <td>
-                                : {{ $pengajuan->tanggal_ak_mulai
-                                    ? $pengajuan->tanggal_ak_mulai->format('d M Y H:i')
+                                : {{ $pengajuan->asesmen?->asesmenKecukupan?->tanggal_mulai
+                                    ? \Carbon\Carbon::parse($pengajuan->asesmen->asesmenKecukupan->tanggal_mulai)->format('d M Y')
                                     : '-' }}
                             </td>
                         </tr>
                         <tr>
                             <th>Tanggal Asesmen Selesai</th>
                             <td>
-                                : {{ $pengajuan->tanggal_ak_selesai
-                                    ? $pengajuan->tanggal_ak_selesai->format('d M Y H:i')
+                                : {{ $pengajuan->asesmen?->asesmenKecukupan?->tanggal_selesai
+                                    ? \Carbon\Carbon::parse($pengajuan->asesmen->asesmenKecukupan->tanggal_selesai)->format('d M Y')
                                     : '-' }}
                             </td>
                         </tr>
                         <tr>
                             <th>Status Penugasan</th>
-                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('asesmen_kecukupan', 'upps') !!}</td>
+                            <td>: <span class="badge bg-info">{{ $pengajuan->status_label }}</span></td>
                         </tr>
                     </table>
                 </div>
             </div>
 
-            <!-- Surat Tugas Asesor AK -->
+            {{-- ✅ Surat Tugas Section --}}
             @php
-            $suratTugas = $pengajuan->dokumen
+            $suratTugasAsesor = $pengajuan->dokumen
             ->where('jenis_dokumen', 'surat_tugas_asesor_ak')
+            ->where('is_latest', true)
+            ->first();
+
+            $suratTugasValidator = $pengajuan->dokumen
+            ->where('jenis_dokumen', 'surat_tugas_validator_ak')
             ->where('is_latest', true)
             ->first();
             @endphp
 
-            @if($suratTugas)
-            <div class="card mb-4 border-warning">
-                <div class="card-header bg-warning text-dark">
+            {{-- Surat Tugas Asesor AK --}}
+            @if($suratTugasAsesor)
+            <div class="card mb-4 border-success">
+                <div class="card-header bg-success text-white">
                     <h5 class="mb-0">
                         <i class="bi bi-file-earmark-text"></i> Surat Tugas Asesor AK
                     </h5>
@@ -180,30 +213,40 @@
                         <div class="d-flex align-items-center">
                             <i class="bi bi-file-earmark-pdf text-danger me-3" style="font-size: 48px;"></i>
                             <div>
-                                <strong>{{ $suratTugas->original_filename }}</strong>
+                                <strong>{{ $suratTugasAsesor->original_filename }}</strong>
                                 <br>
                                 <small class="text-muted">
-                                    {{ number_format($suratTugas->file_size / 1024, 2) }} KB
+                                    @if($suratTugasAsesor->file_size)
+                                    {{ number_format($suratTugasAsesor->file_size / 1024, 2) }} KB
+                                    @endif
                                 </small>
                                 <br>
                                 <small class="text-muted">
-                                    <i class="bi bi-clock"></i> Diupload: {{ $suratTugas->created_at->format('d M Y H:i') }}
+                                    <i class="bi bi-calendar"></i> Dibuat: {{ $suratTugasAsesor->created_at->format('d M Y H:i') }}
                                 </small>
                                 <br>
-                                <span class="badge bg-warning text-dark">Surat Tugas Resmi</span>
+                                <span class="badge bg-success">Surat Tugas Asesor</span>
+                                <span class="badge bg-secondary">Versi {{ $suratTugasAsesor->versi }}</span>
                             </div>
                         </div>
                         <div>
-                            <a href="{{ route('upps.penerimaan-dokumen.dokumen.download', $suratTugas->id) }}" class="btn btn-warning btn-md">
-                                <i class="bi bi-file-earmark-pdf"></i> Lihat File
+                            @if($suratTugasAsesor->path_file)
+                            <a href="{{ route('upps.penerimaan-dokumen.dokumen.download', $suratTugasAsesor->id) }}" class="btn btn-success btn-md" target="_blank">
+                                <i class="bi bi-download"></i> Download
                             </a>
+                            @elseif($suratTugasAsesor->template_link)
+                            <a href="{{ $suratTugasAsesor->template_link }}" class="btn btn-success btn-md" target="_blank">
+                                <i class="bi bi-box-arrow-up-right"></i> Buka Link
+                            </a>
+                            @endif
                         </div>
                     </div>
 
-                    @if($suratTugas->keterangan)
+                    @if($suratTugasAsesor->keterangan)
                     <div class="alert alert-secondary mt-3 mb-0">
                         <small>
-                            <strong>Catatan:</strong> {{ $suratTugas->keterangan }}
+                            <i class="bi bi-info-circle"></i>
+                            <strong>Catatan:</strong> {{ $suratTugasAsesor->keterangan }}
                         </small>
                     </div>
                     @endif
@@ -211,8 +254,77 @@
             </div>
             @endif
 
+            {{-- ✅ NEW: Surat Tugas Validator AK --}}
+            @if($suratTugasValidator)
+            <div class="card mb-4 border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-file-earmark-check"></i> Surat Tugas Validator AK
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-light border mb-3">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Informasi:</strong> Surat tugas resmi penugasan validator untuk Asesmen Kecukupan dari LAMDEPILAR.
+                    </div>
+
+                    <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-file-earmark-pdf text-danger me-3" style="font-size: 48px;"></i>
+                            <div>
+                                <strong>{{ $suratTugasValidator->original_filename }}</strong>
+                                <br>
+                                <small class="text-muted">
+                                    @if($suratTugasValidator->file_size)
+                                    {{ number_format($suratTugasValidator->file_size / 1024, 2) }} KB
+                                    @endif
+                                </small>
+                                <br>
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar"></i> Dibuat: {{ $suratTugasValidator->created_at->format('d M Y H:i') }}
+                                </small>
+                                <br>
+                                <span class="badge bg-primary">Surat Tugas Validator</span>
+                                <span class="badge bg-secondary">Versi {{ $suratTugasValidator->versi }}</span>
+                            </div>
+                        </div>
+                        <div>
+                            @if($suratTugasValidator->path_file)
+                            <a href="{{ route('upps.penerimaan-dokumen.dokumen.download', $suratTugasValidator->id) }}" class="btn btn-primary btn-md" target="_blank">
+                                <i class="bi bi-download"></i> Download
+                            </a>
+                            @elseif($suratTugasValidator->template_link)
+                            <a href="{{ $suratTugasValidator->template_link }}" class="btn btn-primary btn-md" target="_blank">
+                                <i class="bi bi-box-arrow-up-right"></i> Buka Link
+                            </a>
+                            @endif
+                        </div>
+                    </div>
+
+                    @if($suratTugasValidator->keterangan)
+                    <div class="alert alert-secondary mt-3 mb-0">
+                        <small>
+                            <i class="bi bi-info-circle"></i>
+                            <strong>Catatan:</strong> {{ $suratTugasValidator->keterangan }}
+                        </small>
+                    </div>
+                    @endif
+                </div>
+            </div>
+            @endif
+
+            {{-- ✅ Info jika belum ada surat tugas --}}
+            @if(!$suratTugasAsesor && !$suratTugasValidator && $pengajuan->asesmen && ($pengajuan->asesmen->asesorAK->count() > 0 || $pengajuan->asesmen->validatorAK->count() > 0))
+            <div class="alert alert-warning alert-permanent mb-4">
+                <i class="bi bi-exclamation-triangle"></i>
+                <strong>Surat Tugas Belum Tersedia</strong>
+                <br>
+                <small>Surat tugas penugasan asesor/validator sedang dalam proses pembuatan oleh LAMDEPILAR.</small>
+            </div>
+            @endif
+
             <!-- Informasi Asesor -->
-            @if($pengajuan->asesorAK)
+            @if($pengajuan->asesmen && $pengajuan->asesmen->asesorAK->count() > 0)
             <div class="card mb-4">
                 <div class="card-header bg-success text-white">
                     <h5 class="mb-0">
@@ -220,26 +332,28 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label class="text-muted small">Nama Asesor</label>
-                            <p class="fw-bold mb-3">{{ $pengajuan->asesorAK->name }}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="text-muted small">Email</label>
-                            <p class="fw-bold mb-3">{{ $pengajuan->asesorAK->email }}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="text-muted small">Tanggal Penugasan</label>
-                            <p class="fw-bold mb-3">
-                                {{ $pengajuan->tanggal_penugasan_asesor_ak
-                                        ? $pengajuan->tanggal_penugasan_asesor_ak->format('d M Y H:i')
-                                        : '-' }}
-                            </p>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="text-muted small">Status Asesmen</label>
-                            <p class="mb-3">
+                    <ul class="mb-0 ps-3">
+                        @foreach($pengajuan->asesmen->asesorAK as $asesor)
+                        <li class="mb-3">
+                            <strong>{{ $asesor->user->name }}</strong>
+                            @if($asesor->urutan_asesor)
+                            <span class="badge bg-secondary">#{{ $asesor->urutan_asesor }}</span>
+                            @endif
+                            <br>
+
+                            @if($asesor->user->email)
+                            <small class="text-muted">{{ $asesor->user->email }}</small><br>
+                            @endif
+
+                            <small class="text-muted">
+                                Status Penawaran:
+                                <span class="badge bg-{{ $asesor->status_penawaran === 'accepted' ? 'success' : ($asesor->status_penawaran === 'pending' ? 'warning' : 'danger') }}">
+                                    {{ ucfirst($asesor->status_penawaran) }}
+                                </span>
+                            </small>
+                            <br>
+                            <small class="text-muted">
+                                Status Asesmen:
                                 @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED)
                                 <span class="badge bg-info">Menunggu Dimulai</span>
                                 @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AK_IN_PROGRESS)
@@ -252,18 +366,66 @@
                                 @else
                                 <span class="badge bg-secondary">-</span>
                                 @endif
-                            </p>
-                        </div>
-                    </div>
+                            </small>
+                        </li>
+                        @endforeach
+                    </ul>
 
-                    @if($suratTugas)
+                    @if($pengajuan->tanggal_penugasan_asesor_ak)
                     <hr>
-                    <div class="text-center">
-                        <p class="text-muted small mb-2">
-                            <i class="bi bi-shield-check"></i> Asesor telah ditugaskan secara resmi melalui surat tugas
-                        </p>
-                    </div>
+                    <small class="text-muted">
+                        <i class="bi bi-clock"></i>
+                        Ditugaskan: {{ $pengajuan->tanggal_penugasan_asesor_ak->format('d M Y H:i') }}
+                    </small>
                     @endif
+                </div>
+            </div>
+            @endif
+
+            {{-- ✅ NEW: Informasi Validator --}}
+            @if($pengajuan->asesmen && $pengajuan->asesmen->validatorAK->count() > 0)
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person-check"></i> Informasi Validator
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="mb-0 ps-3">
+                        @foreach($pengajuan->asesmen->validatorAK as $validator)
+                        <li class="mb-3">
+                            <strong>{{ $validator->user->name }}</strong>
+                            <br>
+
+                            @if($validator->user->email)
+                            <small class="text-muted">{{ $validator->user->email }}</small><br>
+                            @endif
+
+                            <small class="text-muted">
+                                Status Penawaran:
+                                <span class="badge bg-{{ $validator->status_penawaran === 'accepted' ? 'success' : ($validator->status_penawaran === 'pending' ? 'warning' : 'danger') }}">
+                                    {{ ucfirst($validator->status_penawaran) }}
+                                </span>
+                            </small>
+                            <br>
+                            <small class="text-muted">
+                                Status Validasi:
+                                @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AK_IN_PROGRESS)
+                                <span class="badge bg-warning">Menunggu</span>
+                                @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AK_ON_VALIDATION)
+                                <span class="badge bg-info">Sedang Validasi</span>
+                                @elseif(in_array($pengajuan->status, [
+                                \App\Models\PengajuanAkreditasi::STATUS_AK_SELESAI,
+                                \App\Models\PengajuanAkreditasi::STATUS_AK_DILAPORKAN
+                                ]))
+                                <span class="badge bg-success">Selesai</span>
+                                @else
+                                <span class="badge bg-secondary">-</span>
+                                @endif
+                            </small>
+                        </li>
+                        @endforeach
+                    </ul>
                 </div>
             </div>
             @endif
@@ -326,7 +488,7 @@
             <div class="card">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-clock-history"></i> Timeline Penugasan
+                        <i class="bi bi-clock-history"></i> Riwayat Status
                     </h5>
                 </div>
                 <div class="card-body" style="max-height: 600px; overflow-y: auto;">
@@ -342,7 +504,7 @@
 
                     $logs = $pengajuan->statusLog
                     ->whereIn('status_to', $filterStatuses)
-                    ->sortByDesc('changed_at');
+                    ->sortBy('changed_at');
                     @endphp
 
                     @if($logs->count() > 0)
@@ -372,10 +534,10 @@
                                     <br>
                                     <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
 
-                                    @if($log->keterangan)
+                                    {{-- @if($log->keterangan)
                                     <br>
                                     <small class="text-muted fst-italic">{{ $log->keterangan }}</small>
-                                    @endif
+                                    @endif --}}
                                 </div>
                             </div>
                         </div>

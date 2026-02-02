@@ -37,6 +37,7 @@ class PengajuanDokumen extends Model
         'surat_tugas_validator'        => 'Surat Tugas Validator',
         'surat_tugas_validator_dokumen' => 'Surat Tugas Validator Dokumen',
         'surat_tugas_asesor_ak'        => 'Surat Tugas Asesor AK',
+        'surat_tugas_validator_ak'     => 'Surat Tugas Validator AK',
         'surat_tugas_asesor_al'        => 'Surat Tugas Asesor AL',
         'surat_tugas_validator_al'     => 'Surat Tugas Validator AL',
         'surat_tugas_validator_rekap'  => 'Surat Tugas Validator Rekap',

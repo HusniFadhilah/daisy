@@ -84,10 +84,10 @@
                         <tr>
                             <th>Asesor AK</th>
                             <td>
-                                @if($pengajuan->asesorAK)
-                                : {{ $pengajuan->asesorAK->name }}
+                                @if($pengajuan->asesmen->asesorAK)
+                                : {{ $pengajuan->asesmen->asesorAK()->name }}
                                 <br>
-                                <small class="text-muted">{{ $pengajuan->asesorAK->email }}</small>
+                                <small class="text-muted">{{ $pengajuan->asesmen->asesorAK()->email }}</small>
                                 @else
                                 : <span class="text-muted">-</span>
                                 @endif
@@ -166,7 +166,7 @@
             @endif
 
             <!-- Informasi Hasil Penilaian -->
-            @if($pengajuan->asesorAK)
+            @if($pengajuan->asesmen->asesorAK)
             <div class="card mb-4">
                 <div class="card-header bg-success text-white">
                     <h5 class="mb-0">
@@ -177,7 +177,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <label class="text-muted small">Asesor Penilai</label>
-                            <p class="fw-bold mb-3">{{ $pengajuan->asesorAK->name }}</p>
+                            <p class="fw-bold mb-3">{{ $pengajuan->asesmen->asesorAK()->name }}</p>
                         </div>
                         <div class="col-md-6">
                             <label class="text-muted small">Tanggal Penilaian Selesai</label>
@@ -284,7 +284,7 @@
             <div class="card">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-clock-history"></i> Timeline Pelaporan
+                        <i class="bi bi-clock-history"></i> Riwayat Status
                     </h5>
                 </div>
                 <div class="card-body" style="max-height: 600px; overflow-y: auto;">
@@ -329,10 +329,10 @@
                                     <br>
                                     <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
 
-                                    @if($log->keterangan)
+                                    {{-- @if($log->keterangan)
                                     <br>
                                     <small class="text-muted fst-italic">{{ $log->keterangan }}</small>
-                                    @endif
+                                    @endif --}}
                                 </div>
                             </div>
                         </div>

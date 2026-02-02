@@ -50,7 +50,7 @@
             <h4 class="mb-1">
                 <i class="bi bi-clipboard-check"></i> Validasi Hasil Asesmen Kecukupan
             </h4>
-            <p class="text-muted mb-0">Tracking validasi hasil penilaian Asesmen Kecukupan</p>
+            <p class="text-muted mb-0">Monitor validasi hasil penilaian Asesmen Kecukupan</p>
         </div>
     </div>
 
@@ -211,9 +211,9 @@
                                         <span class="badge bg-info">{{ $pengajuan->tahun_akreditasi }}</span>
                                     </td>
                                     <td>
-                                        @if($pengajuan->asesorAK)
+                                        @if($pengajuan->asesmen->asesorAK)
                                         <small>
-                                            {{ $pengajuan->asesorAK->name }}
+                                            {{ $pengajuan->asesmen->asesorAK()->name }}
                                         </small>
                                         @else
                                         <span class="text-muted">-</span>

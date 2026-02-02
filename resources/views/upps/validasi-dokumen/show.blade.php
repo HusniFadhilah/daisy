@@ -51,7 +51,7 @@
                 <i class="bi bi-clock-history"></i>
                 <strong>Validasi dokumen sedang berlangsung</strong>
                 <br>
-                Validator sedang memeriksa kelengkapan dan kesesuaian dokumen akreditasi
+                Validator sedang memeriksa kelengkapan dan kesesuaian dokumen akreditasi. Mohon menunggu proses validasi dokumen selesai dilakukan
             </div>
             @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED)
             <div class="alert alert-danger alert-permanent">
@@ -337,9 +337,9 @@
                     <ol class="small mb-0 ps-3">
                         <li>Dokumen diterima LAMDEPILAR</li>
                         <li>LAMDEPILAR menugaskan validator</li>
-                        <li>Validator memeriksa kelengkapan dokumen</li>
-                        <li>Jika perlu revisi, validator memberikan catatan</li>
-                        <li>Jika telah sesuai, dokumen divalidasi</li>
+                        <li>Selanjutnya, Validator memeriksa kelengkapan dokumen</li>
+                        <li>Jika perlu revisi, validator akan memberikan catatan revisi tersebut</li>
+                        <li>Jika telah sesuai (tidak ada permintaan revisi), dokumen akan selesai divalidasi</li>
                         <li>Proses dilanjutkan ke tahap berikutnya</li>
                     </ol>
                 </div>

@@ -243,7 +243,7 @@
             <div class="card">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-clock-history"></i> Timeline Pelaporan
+                        <i class="bi bi-clock-history"></i> Riwayat Status
                     </h5>
                 </div>
                 <div class="card-body" style="max-height: 600px; overflow-y: auto;">
@@ -251,16 +251,11 @@
                     $filterStatuses = [
                     \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
                     \App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
-                    \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
-                    \App\Models\PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
-                    \App\Models\PengajuanAkreditasi::STATUS_AK_ON_VALIDATION,
-                    \App\Models\PengajuanAkreditasi::STATUS_AK_SELESAI,
-                    \App\Models\PengajuanAkreditasi::STATUS_AK_DILAPORKAN,
                     ];
 
                     $logs = $pengajuan->statusLog
                     ->whereIn('status_to', $filterStatuses)
-                    ->sortByDesc('changed_at');
+                    ->sortBy('changed_at');
                     @endphp
 
                     @if($logs->count() > 0)
@@ -291,10 +286,10 @@
                                     <br>
                                     <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
 
-                                    @if($log->keterangan)
+                                    {{-- @if($log->keterangan)
                                     <br>
                                     <small class="text-muted fst-italic">{{ $log->keterangan }}</small>
-                                    @endif
+                                    @endif --}}
                                 </div>
                             </div>
                         </div>

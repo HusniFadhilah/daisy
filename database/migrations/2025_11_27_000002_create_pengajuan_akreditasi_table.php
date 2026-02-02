@@ -171,6 +171,7 @@ return new class extends Migration
                 'surat_tugas_validator',
                 'surat_tugas_validator_dokumen',
                 'surat_tugas_asesor_ak',
+                'surat_tugas_validator_ak',
                 'surat_tugas_asesor_al',
                 'surat_tugas_validator_al',
                 'surat_tugas_validator_rekap',

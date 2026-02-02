@@ -97,9 +97,8 @@
                 <table class="table table-hover align-middle">
                     <thead class="table-light">
                         <tr>
-                            <th>Nomor Permohonan Akreditasi</th>
+                            <th>Permohonan Akreditasi</th>
                             <th>Program Studi</th>
-                            <th>Jenjang</th>
                             <th>Status Dokumen</th>
                             <th>Status Validasi Dokumen</th>
                             <th>Tanggal Ditugaskan</th>
@@ -120,16 +119,13 @@
                         @endphp
                         <tr>
                             <td>
-                                {{ $pengajuan->judul }}
-                                <small>No: {{ $pengajuan->nomor_pengajuan }}</small>
+                                <p>{{ $pengajuan->judul_short }}</p>
+                                <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
                             </td>
                             <td>
                                 {{ $pengajuan->studyProgram->name }}
                                 <br>
                                 <small class="text-muted">{{ $pengajuan->studyProgram->university->name }}</small>
-                            </td>
-                            <td>
-                                <span class="badge bg-primary">{{ $pengajuan->studyProgram->degreeLevel->name }}</span>
                             </td>
                             <td>
                                 @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI)
