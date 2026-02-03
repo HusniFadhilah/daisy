@@ -45,7 +45,7 @@ class IndikatorController extends Controller
 
         $elemenStandar = \App\Models\ElemenStandar::with('kriteria')->get();
         $jenisIndikator = \App\Models\JenisIndikator::all();
-        return view('indikator.indikator.index', compact('elemenStandar', 'jenisIndikator'));
+        return view('master-data.indikator.indikator.index', compact('elemenStandar', 'jenisIndikator'));
     }
 
     /**
@@ -55,7 +55,7 @@ class IndikatorController extends Controller
     {
         $elemenStandar = \App\Models\ElemenStandar::with('kriteria')->get();
         $jenisIndikator = \App\Models\JenisIndikator::all();
-        return view('indikator.indikator.create', compact('elemenStandar', 'jenisIndikator'));
+        return view('master-data.indikator.indikator.create', compact('elemenStandar', 'jenisIndikator'));
     }
 
     /**
@@ -86,7 +86,7 @@ class IndikatorController extends Controller
             return redirect()->route('indikator.index')->with('error', 'Indikator tidak ditemukan');
         }
 
-        return view('indikator.indikator.show', compact('indikator'));
+        return view('master-data.indikator.indikator.show', compact('indikator'));
     }
 
     /**
@@ -102,7 +102,7 @@ class IndikatorController extends Controller
 
         $elemenStandar = \App\Models\ElemenStandar::with('kriteria')->get();
         $jenisIndikator = \App\Models\JenisIndikator::all();
-        return view('indikator.indikator.edit', compact('indikator', 'elemenStandar', 'jenisIndikator'));
+        return view('master-data.indikator.indikator.edit', compact('indikator', 'elemenStandar', 'jenisIndikator'));
     }
 
     /**

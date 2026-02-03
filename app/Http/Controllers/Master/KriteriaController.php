@@ -31,7 +31,7 @@ class KriteriaController extends Controller
         }
         
         $kriteria = Kriteria::orderBy('kode_kriteria')->paginate(10);
-        return view('indikator.kriteria.index', compact('kriteria'));
+        return view('master-data.indikator.kriteria.index', compact('kriteria'));
     }
 
     /**
@@ -39,7 +39,7 @@ class KriteriaController extends Controller
      */
     public function create()
     {
-        return view('indikator.kriteria.create');
+        return view('master-data.indikator.kriteria.create');
     }
 
     /**
@@ -69,7 +69,7 @@ class KriteriaController extends Controller
             return redirect()->route('kriteria.index')->with('error', 'Kriteria tidak ditemukan');
         }
 
-        return view('indikator.kriteria.show', compact('kriteria'));
+        return view('master-data.indikator.kriteria.show', compact('kriteria'));
     }
 
     /**
@@ -83,7 +83,7 @@ class KriteriaController extends Controller
             return redirect()->route('kriteria.index')->with('error', 'Kriteria tidak ditemukan');
         }
 
-        return view('indikator.kriteria.edit', compact('kriteria'));
+        return view('master-data.indikator.kriteria.edit', compact('kriteria'));
     }
 
     /**

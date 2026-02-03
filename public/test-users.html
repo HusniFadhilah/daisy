@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Users API</title>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+</head>
+<body>
+    <h1>Test Users DataTables API</h1>
+    <button onclick="testAPI()">Test API</button>
+    <pre id="result"></pre>
+
+    <script>
+        function testAPI() {
+            $.ajax({
+                url: '/users',
+                type: 'GET',
+                dataType: 'json',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    $('#result').text(JSON.stringify(response, null, 2));
+                    console.log('Success:', response);
+                },
+                error: function(xhr, status, error) {
+                    $('#result').text('Error: ' + xhr.status + '\n' + xhr.responseText);
+                    console.error('Error:', xhr.responseText);
+                }
+            });
+        }
+    </script>
+</body>
+</html>

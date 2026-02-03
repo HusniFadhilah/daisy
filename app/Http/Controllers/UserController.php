@@ -29,7 +29,13 @@ class UserController extends Controller
                     return '<span class="badge bg-'.$class.'">'.ucfirst($row->role).'</span>';
                 })
                 ->addColumn('role_alias', function($row){
-                    return $row->role_alias;
+                    return $row->role_alias ?? '-';
+                })
+                ->addColumn('role_selected', function($row){
+                    return $row->role_selected ?? '-';
+                })
+                ->addColumn('is_multiple_role', function($row){
+                    return $row->is_multiple_role ?? false;
                 })
                 ->addColumn('created_at', function($row){
                     return $row->created_at ? $row->created_at->format('d M Y') : '-';
