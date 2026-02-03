@@ -11,7 +11,7 @@
 </a>
 <a href="{{ route('pelaporan.indexDokumen') }}" class="nav-link {{ request()->routeIs('pelaporan.indexDokumen') ? 'active' : '' }}">
     <span class="menu-icon">📋</span>
-    <span>Pelaporan Dokumen</span>
+    <span>Pelaporan Validasi Dokumen</span>
 </a>
 
 <!-- Validasi AK -->

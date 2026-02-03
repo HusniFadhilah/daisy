@@ -48,22 +48,39 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">
-                <i class="bi bi-person-check"></i> Penugasan Asesor Asesmen Lapangan
+                <i class="bi bi-person-check"></i> Penugasan Asesor AL
             </h4>
-            <p class="text-muted mb-0">Monitor penugasan asesor untuk Asesmen Lapangan</p>
+            <p class="text-muted mb-0">Monitor penugasan asesor untuk AL (Asesmen Lapangan)</p>
         </div>
     </div>
 
     <!-- Statistics Cards -->
     <div class="row mb-4">
-        <div class="col-lg-6 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+        <div class="col-lg-4 col-md-6 mb-3">
+            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Total Dokumen Pelaporan Penilaian AK</h6>
+                    <h6 class="mb-2 opacity-75">Total Dokumen</h6>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-0 fw-bold">{{ $stats['total'] }}</h2>
+                            <small class="opacity-75">Total permohonan akreditasi yang telah sampai pada tahap Penugasan Asesor AL</small>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
+                            <i class="bi bi-file-earmark-text"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 mb-3">
+            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #b36730ff 0%, #fe5900ff 100%);">
+                <div class="card-body text-white">
+                    <h6 class="mb-2 opacity-75">Dokumen Pelaporan AK & Menunggu Penugasan Asesor AL</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['ak_dilaporkan'] }}</h2>
-                            <small class="opacity-75">Hasil AK dilaporkan</small>
+                            <small class="opacity-75">Dokumen penilaian AK telah terlaporkan dan sedang menunggu penugasan asesor AL</small>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
                             <i class="bi bi-send-check"></i>
@@ -73,14 +90,14 @@
             </div>
         </div>
 
-        <div class="col-lg-6 col-md-6 mb-3">
+        <div class="col-lg-4 col-md-6 mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
                 <div class="card-body text-white">
                     <h6 class="mb-2 opacity-75">Penugasan Asesor AL</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['asesor_ditugaskan'] }}</h2>
-                            <small class="opacity-75">Asesor sudah ditugaskan</small>
+                            <small class="opacity-75">Asesor AL telah ditugaskan</small>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
                             <i class="bi bi-person-check"></i>
@@ -195,15 +212,13 @@
                                     </td>
                                     <td>
                                         @if($pengajuan->asesmen->asesorAL)
-                                        <small>
-                                            {{ $pengajuan->asesmen->asesorAL()->name }}
-                                        </small>
+                                        <span class="text-muted">Asesor AL telah ditugaskan</span>
                                         @else
-                                        <span class="text-muted">Belum ditugaskan</span>
+                                        <span class="text-muted">Asesor AL sedang dalam proses penugasan</span>
                                         @endif
                                     </td>
                                     <td>
-                                        {!! $pengajuan->getCustomBadgeLastStatus('asesmen_lapangan', 'upps') !!}
+                                        {!! $pengajuan->getCustomBadgeLastStatus('penugasan_asesor_al', 'upps', 'label_short_for') !!}
                                     </td>
                                     <td class="text-center">
                                         <a href="{{ route('upps.penugasan-al.show', $pengajuan->id) }}" class="btn btn-info btn-sm" title="Lihat Detail">

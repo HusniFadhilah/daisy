@@ -87,15 +87,15 @@ class StudyProgramUserSeeder extends Seeder
          * ======================================================
          */
         $degreeLevelIds = [
-            'd2' => 2,           // D2
-            'd3' => 3,           // D3
-            'd4' => 4,           // D4 / Sarjana Terapan
-            's1' => 5,           // S1
-            's2' => 6,           // S2
-            's3' => 8,           // S3
-            'profesi' => 7,      // Profesi
-            's2-terapan' => 9,   // Magister Terapan (MT.r)
-            's3-terapan' => 10,  // Doktor Terapan (DT.r)
+            'd2' => 2,
+            'd3' => 3,
+            'd4' => 4,
+            's1' => 5,
+            's2' => 6,
+            's3' => 7,          // FIX
+            's2-terapan' => 8,  // FIX
+            's3-terapan' => 9,  // FIX
+            'profesi' => 10,    // FIX
         ];
 
         /**
@@ -112,7 +112,7 @@ class StudyProgramUserSeeder extends Seeder
                 'full_name' => 'Program Studi S3 ABCDE (Contoh)',
                 'code' => 'SI-EX-001',
                 'id_university' => $uLamdepilar->id,
-                'id_degree_level' => 8, // S3
+                'id_degree_level' => 7, // S3
                 'id_category' => 1,
                 'bentuk_pt' => 'Universitas',
                 'peringkat_akreditasi' => 'B',

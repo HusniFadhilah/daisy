@@ -244,7 +244,7 @@
                                         @endif
                                     </td>
                                     <td>
-                                        {!! $pengajuan->getCustomBadgeLastStatus('asesmen_lapangan', 'upps') !!}
+                                        {!! $pengajuan->getCustomBadgeLastStatus('pelaksanaan_al', 'upps', 'label_short_for') !!}
 
                                         @php
                                         $pendingBA = $pengajuan->asesmen->beritaAcaraAL

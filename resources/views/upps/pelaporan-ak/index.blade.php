@@ -2,7 +2,7 @@
 
 @extends('layouts.template.app')
 
-@section('title', 'Pelaporan Hasil Asesmen Kecukupan')
+@section('title', 'Pelaporan AK')
 
 @push('styles')
 <style>
@@ -40,7 +40,7 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item active">Pelaporan Hasil Asesmen Kecukupan</li>
+            <li class="breadcrumb-item active">Pelaporan AK</li>
         </ol>
     </nav>
 
@@ -48,9 +48,9 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">
-                <i class="bi bi-file-earmark-check"></i> Pelaporan Hasil Asesmen Kecukupan
+                <i class="bi bi-file-earmark-check"></i> Pelaporan AK
             </h4>
-            <p class="text-muted mb-0">Monitor pelaporan hasil penilaian Asesmen Kecukupan</p>
+            <p class="text-muted mb-0">Monitor pelaporan AK</p>
         </div>
     </div>
 
@@ -63,7 +63,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['total'] }}</h2>
-                            <small class="opacity-75">Semua dokumen</small>
+                            <small class="opacity-75">Total dokumen yang telah sampai pada tahap Pelaporan AK</small>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
                             <i class="bi bi-file-earmark-text"></i>
@@ -80,7 +80,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['tervalidasi'] }}</h2>
-                            <small class="opacity-75">Oleh validator</small>
+                            <small class="opacity-75">Penilaian AK yang telah divalidasi</small>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
                             <i class="bi bi-patch-check"></i>
@@ -93,11 +93,11 @@
         <div class="col-lg-4 col-md-6 mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Pelaporan Penilaian AK</h6>
+                    <h6 class="mb-2 opacity-75">Pelaporan AK</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['dilaporkan'] }}</h2>
-                            <small class="opacity-75">Telah dilaporkan</small>
+                            <small class="opacity-75">Dapat dilanjutkan ke tahap berikutnya (Asesmen Lapangan)</small>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
                             <i class="bi bi-send-check"></i>
@@ -186,8 +186,8 @@
                                 <tr>
                                     <th width="5%">#</th>
                                     <th width="30%">Permohonan Akreditasi</th>
-                                    <th width="25%">Asesor AK</th>
-                                    <th width="25%">Status</th>
+                                    <th width="25%">Tanggal Pelaporan AK</th>
+                                    <th width="25%">Status Pelaporan AK</th>
                                     <th width="5%" class="text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -202,16 +202,18 @@
                                         <small class="text-muted">Dibuat pada: {{ \App\Libraries\Date::tglIndo($pengajuan->created_at) }}</small>
                                     </td>
                                     <td>
-                                        @if($pengajuan->asesmen->asesorAK)
-                                        <small>
-                                            {{ $pengajuan->asesmen->asesorAK()->name }}
+                                        @if($pengajuan->tanggal_pelaporan_ak)
+                                        <small>{{ $pengajuan->tanggal_pelaporan_ak->format('d M Y') }}</small>
+                                        <br>
+                                        <small class="text-muted">
+                                            {{ $pengajuan->tanggal_pelaporan_ak->diffForHumans() }}
                                         </small>
                                         @else
                                         <span class="text-muted">-</span>
                                         @endif
                                     </td>
                                     <td>
-                                        {!! $pengajuan->getCustomBadgeLastStatus('asesmen_kecukupan', 'upps') !!}
+                                        {!! $pengajuan->getCustomBadgeLastStatus('pelaporan_ak', 'upps', 'label_short_for') !!}
                                     </td>
                                     <td class="text-center">
                                         <a href="{{ route('upps.pelaporan-ak.show', $pengajuan->id) }}" class="btn btn-info btn-sm" title="Lihat Detail">

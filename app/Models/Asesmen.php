@@ -126,6 +126,22 @@ class Asesmen extends Model
             });
     }
 
+    public function validatorAK()
+    {
+        return $this->hasMany(AsesmenUserRole::class, 'id_asesmen')
+            ->whereHas('role', function ($query) {
+                $query->where('name', 'validator');
+            })->where('jenis_asesmen', 'ak');
+    }
+
+    public function validatorAL()
+    {
+        return $this->hasMany(AsesmenUserRole::class, 'id_asesmen')
+            ->whereHas('role', function ($query) {
+                $query->where('name', 'validator');
+            })->where('jenis_asesmen', 'al');
+    }
+
     public function users()
     {
         return $this->belongsToMany(

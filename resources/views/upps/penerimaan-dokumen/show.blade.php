@@ -146,7 +146,7 @@
                         </tr>
                         <tr>
                             <th>Status Pengiriman Dokumen</th>
-                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('borang_final', 'upps') !!}</td>
+                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('draft_borang', 'upps') !!}</td>
                         </tr>
                     </table>
                 </div>
@@ -164,11 +164,6 @@
             \App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM,
             \App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
             \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
-            \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
-            \App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
-            \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,
-            \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
-            \App\Models\PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
             ];
 
             $logs = $pengajuan->statusLog

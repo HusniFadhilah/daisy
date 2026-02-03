@@ -194,7 +194,7 @@
                                         @endif
                                     </td>
                                     <td>
-                                        {!! $pengajuan->getCustomBadgeLastStatus('asesmen_lapangan', 'upps') !!}
+                                        {!! $pengajuan->getCustomBadgeLastStatus('pelaporan_al', 'upps', 'label_short_for') !!}
                                     </td>
                                     <td class="text-center">
                                         <a href="{{ route('upps.pelaporan-al.show', $pengajuan->id) }}" class="btn btn-info btn-sm" title="Lihat Detail">

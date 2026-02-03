@@ -49,7 +49,7 @@
 
     <!-- Type Cards -->
     <div class="row">
-        <!-- Pelaporan Dokumen -->
+        <!-- Pelaporan Validasi Dokumen -->
         <div class="col-md-4 mb-4">
             <a href="{{ route('pelaporan.indexDokumen') }}" class="text-decoration-none">
                 <div class="card type-card dokumen h-100">
@@ -57,7 +57,7 @@
                         <div class="type-icon text-primary">
                             <i class="bi bi-file-earmark-check"></i>
                         </div>
-                        <h4 class="mb-3">Pelaporan Dokumen</h4>
+                        <h4 class="mb-3">Pelaporan Validasi Dokumen</h4>
                         <p class="text-muted mb-4">
                             Laporan Kesiapan LED Program Studi (LKLED)
                         </p>

@@ -128,8 +128,8 @@
                             </td>
                         </tr>
                         <tr>
-                            <th>Status Pelaporan</th>
-                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('asesmen_lapangan', 'upps') !!}</td>
+                            <th>Status Pelaporan AL</th>
+                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('pelaporan_al', 'upps', 'label_long_for') !!}</td>
                         </tr>
                     </table>
                 </div>
@@ -373,9 +373,9 @@
                     <hr>
 
                     <div>
-                        <label class="text-muted small">Status</label>
+                        <label class="text-muted small">Status Pelaporan AL</label>
                         <p class="mb-0">
-                            {!! $pengajuan->getCustomBadgeLastStatus('asesmen_lapangan', 'upps') !!}
+                            {!! $pengajuan->getCustomBadgeLastStatus('pelaporan_al', 'upps', 'label_long_for') !!}
                         </p>
                     </div>
                 </div>

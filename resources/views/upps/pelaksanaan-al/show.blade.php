@@ -124,8 +124,8 @@
                             </td>
                         </tr>
                         <tr>
-                            <th>Status Pelaksanaan</th>
-                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('asesmen_lapangan', 'upps') !!}</td>
+                            <th>Status Pelaksanaan AL & Berita Acara</th>
+                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('pelaksanaan_al', 'upps', 'label_long_for') !!}</td>
                         </tr>
                     </table>
                 </div>

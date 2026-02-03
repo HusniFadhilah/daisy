@@ -926,7 +926,7 @@ $isShowHasilValidasiBorang = in_array($pengajuan->status, [\App\Models\Pengajuan
         const LOCK_BORANG = @json($lockBorang);
         const pengajuanId = "{{ $pengajuan->id }}";
         const initialProgress = @json($progressData);
-        const showHasilValidasiBorang = @json(isShowHasilValidasiBorang);
+        const showHasilValidasiBorang = @json($isShowHasilValidasiBorang);
 
         let saveTimeout, progressTimeout;
         const AUTO_SAVE_DELAY = 2000;

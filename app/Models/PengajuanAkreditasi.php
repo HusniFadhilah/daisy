@@ -318,6 +318,27 @@ class PengajuanAkreditasi extends Model
             ->latestOfMany('changed_at'); // atau 'id' kalau id selalu urut waktu
     }
 
+    public function getCurrentStatusAttribute(): ?string
+    {
+        return $this->latestStatusLog?->status_to ?? $this->status ?? null;
+    }
+
+    /**
+     * Ambil log terbaru yang status_to termasuk daftar dinamis.
+     */
+    public function latestRelevantStatusLog(array $statusesTo)
+    {
+        // kalau array kosong, jangan jalankan whereIn (akan error / hasil aneh)
+        if (empty($statusesTo)) {
+            return null;
+        }
+
+        return $this->statusLog()
+            ->whereIn('status_to', $statusesTo)
+            ->orderByDesc('changed_at')   // atau created_at
+            ->first();
+    }
+
     public function scopeWhereHasStatusLog($query, array $statuses)
     {
         return $query->whereExists(function ($q) use ($statuses) {
@@ -616,7 +637,7 @@ class PengajuanAkreditasi extends Model
 
     public function getPelaporanBadge(string $jenis): ?string
     {
-        if ($jenis === 'dokumen' && $this->tanggal_pelaporan_validasi_borang) return 'Pelaporan Dokumen telah Dibuat';
+        if ($jenis === 'dokumen' && $this->tanggal_pelaporan_validasi_borang) return 'Pelaporan Validasi Dokumen telah Dibuat';
         if ($jenis === 'ak' && $this->tanggal_pelaporan_ak) return 'Pelaporan AK telah Dibuat';
         if ($jenis === 'al' && $this->tanggal_pelaporan_al) return 'Pelaporan AL telah Dibuat';
         return null;
@@ -1104,11 +1125,21 @@ class PengajuanAkreditasi extends Model
         if ($attribute == 'borang_template')
             $statuses = [self::STATUS_TEMPLATE_LED_DIKIRIM, self::STATUS_SURAT_PENERIMAAN_DIKIRIM];
         if ($attribute == 'draft_borang')
-            $statuses = [self::STATUS_DRAFT_BORANG_DIKIRIM, self::STATUS_DRAFT_BORANG_DITERIMA, self::STATUS_BORANG_ONLINE_SELESAI, self::STATUS_BORANG_VALIDATION_PENDING, self::STATUS_BORANG_IN_VALIDATION, self::STATUS_BORANG_REVISION_REQUIRED, self::STATUS_BORANG_VALIDATED, self::STATUS_BORANG_FINAL_DITERIMA];
+            $statuses = [self::STATUS_DRAFT_BORANG_DIKIRIM, self::STATUS_DRAFT_BORANG_DITERIMA, self::STATUS_BORANG_ONLINE_SELESAI];
         if ($attribute == 'borang_final')
-            $statuses = [self::STATUS_DRAFT_BORANG_DIKIRIM, self::STATUS_DRAFT_BORANG_DITERIMA, self::STATUS_BORANG_ONLINE_SELESAI, self::STATUS_BORANG_VALIDATION_PENDING, self::STATUS_BORANG_IN_VALIDATION, self::STATUS_BORANG_REVISION_REQUIRED, self::STATUS_BORANG_VALIDATED, self::STATUS_BORANG_FINAL_DITERIMA];
-        if ($attribute == 'validasi_dokumen')
-            $statuses = [self::STATUS_BORANG_ONLINE_SELESAI, self::STATUS_BORANG_VALIDATION_PENDING, self::STATUS_BORANG_IN_VALIDATION, self::STATUS_BORANG_REVISION_REQUIRED, self::STATUS_BORANG_VALIDATED, self::STATUS_BORANG_FINAL_DITERIMA];
+            $statuses = [self::STATUS_DRAFT_BORANG_DITERIMA, self::STATUS_BORANG_ONLINE_SELESAI, self::STATUS_BORANG_VALIDATION_PENDING, self::STATUS_BORANG_IN_VALIDATION, self::STATUS_BORANG_REVISION_REQUIRED, self::STATUS_BORANG_VALIDATED, self::STATUS_BORANG_FINAL_DITERIMA, self::STATUS_VALIDASI_BORANG_DILAPORKAN];
+        if ($attribute == 'penugasan_asesor_ak')
+            $statuses = [self::STATUS_PENGAJUAN_COMPLETED, self::STATUS_ASESOR_AK_ASSIGNED];
+        if ($attribute == 'validasi_ak')
+            $statuses = [self::STATUS_AK_IN_PROGRESS, self::STATUS_AK_ON_VALIDATION, self::STATUS_AK_SELESAI];
+        if ($attribute == 'pelaporan_ak')
+            $statuses = [self::STATUS_AK_SELESAI, self::STATUS_AK_DILAPORKAN];
+        if ($attribute == 'penugasan_asesor_al')
+            $statuses = [self::STATUS_AK_DILAPORKAN, self::STATUS_ASESOR_AL_ASSIGNED];
+        if ($attribute == 'pelaksanaan_al')
+            $statuses = [self::STATUS_AL_IN_PROGRESS, self::STATUS_AL_SELESAI];
+        if ($attribute == 'pelaporan_al')
+            $statuses = [self::STATUS_AL_SELESAI, self::STATUS_AL_DILAPORKAN];
 
         // status fase terakhir (berdasarkan log)
         $lastStatus = optional($this->statusLog()->whereIn('status_to', $statuses)->latest()->first())->status_to;
@@ -1225,6 +1256,37 @@ class PengajuanAkreditasi extends Model
              * 4) Borang Final (Draft -> Validasi -> Final)
              * ===========================================
              */
+            'draft_borang' => match ($status) {
+
+                self::STATUS_DRAFT_BORANG_DIKIRIM =>
+                $badge(
+                    $bgFromMap(self::STATUS_DRAFT_BORANG_DIKIRIM, 'bg-warning'),
+                    $labelFor(self::STATUS_DRAFT_BORANG_DIKIRIM) ?? 'File Dokumen Dikirim'
+                ),
+
+                self::STATUS_DRAFT_BORANG_DITERIMA =>
+                $badge(
+                    $bgFromMap(self::STATUS_DRAFT_BORANG_DITERIMA, 'bg-info'),
+                    $labelFor(self::STATUS_DRAFT_BORANG_DITERIMA) ?? 'File Dokumen Diterima'
+                ),
+
+                self::STATUS_BORANG_ONLINE_SELESAI =>
+                $badge(
+                    $bgFromMap(self::STATUS_BORANG_ONLINE_SELESAI, 'bg-primary'),
+                    $labelFor(self::STATUS_BORANG_ONLINE_SELESAI) ?? 'Dokumen Diterima'
+                ),
+
+                default =>
+                $audience === 'de'
+                    ? $badge('bg-secondary', 'Draft Dokumen belum dikirim')
+                    : $badge('bg-secondary', 'Draft Dokumen belum dikirim'),
+            },
+
+            /**
+             * ===========================================
+             * 4) Borang Final (Draft -> Validasi -> Final)
+             * ===========================================
+             */
             'borang_final' => match ($status) {
 
                 self::STATUS_DRAFT_BORANG_DIKIRIM =>
@@ -1275,10 +1337,66 @@ class PengajuanAkreditasi extends Model
                     $labelFor(self::STATUS_BORANG_FINAL_DITERIMA) ?? 'Draft Final Dokumen Diterima'
                 ),
 
+                self::STATUS_VALIDASI_BORANG_DILAPORKAN =>
+                $badge(
+                    $bgFromMap(self::STATUS_VALIDASI_BORANG_DILAPORKAN, 'bg-success'),
+                    $labelFor(self::STATUS_VALIDASI_BORANG_DILAPORKAN) ?? 'Pelaporan Validasi Dokumen Telah Dikirimkan'
+                ),
+
                 default =>
                 $audience === 'de'
                     ? $badge('bg-secondary', 'Draft Dokumen belum dikirim')
                     : $badge('bg-secondary', 'Draft Dokumen belum dikirim'),
+            },
+            'penugasan_asesor_ak' => match ($status) {
+                self::STATUS_PENGAJUAN_COMPLETED =>
+                $badge('bg-info', $labelFor(self::STATUS_PENGAJUAN_COMPLETED) ?? '-'),
+                self::STATUS_ASESOR_AK_ASSIGNED =>
+                $badge('bg-success', $labelFor(self::STATUS_ASESOR_AK_ASSIGNED) ?? '-'),
+
+                default => $badge('bg-secondary', '-'),
+            },
+            'validasi_ak' => match ($status) {
+                self::STATUS_AK_IN_PROGRESS =>
+                $badge('bg-warning', $labelFor(self::STATUS_AK_IN_PROGRESS) ?? '-'),
+                self::STATUS_AK_ON_VALIDATION =>
+                $badge('bg-info', $labelFor(self::STATUS_AK_ON_VALIDATION) ?? '-'),
+                self::STATUS_AK_SELESAI =>
+                $badge('bg-success', $labelFor(self::STATUS_AK_SELESAI) ?? '-'),
+
+                default => $badge('bg-secondary', '-'),
+            },
+            'pelaporan_ak' => match ($status) {
+                self::STATUS_AK_SELESAI =>
+                $badge('bg-info', $labelFor(self::STATUS_AK_SELESAI) ?? '-'),
+                self::STATUS_AK_DILAPORKAN =>
+                $badge('bg-success', $labelFor(self::STATUS_AK_DILAPORKAN) ?? '-'),
+
+                default => $badge('bg-secondary', '-'),
+            },
+            'penugasan_asesor_al' => match ($status) {
+                self::STATUS_AK_DILAPORKAN =>
+                $badge('bg-warning', $labelFor(self::STATUS_AK_DILAPORKAN) ?? '-'),
+                self::STATUS_ASESOR_AL_ASSIGNED =>
+                $badge('bg-success', $labelFor(self::STATUS_ASESOR_AL_ASSIGNED) ?? '-'),
+
+                default => $badge('bg-secondary', '-'),
+            },
+            'pelaksanaan_al' => match ($status) {
+                self::STATUS_AL_IN_PROGRESS =>
+                $badge('bg-success', $labelFor(self::STATUS_AL_IN_PROGRESS) ?? '-'),
+                self::STATUS_AL_SELESAI =>
+                $badge('bg-success', $labelFor(self::STATUS_AL_SELESAI) ?? '-'),
+
+                default => $badge('bg-secondary', '-'),
+            },
+            'pelaporan_al' => match ($status) {
+                self::STATUS_AL_SELESAI =>
+                $badge('bg-info', $labelFor(self::STATUS_AL_SELESAI) ?? '-'),
+                self::STATUS_AL_DILAPORKAN =>
+                $badge('bg-success', $labelFor(self::STATUS_AL_DILAPORKAN) ?? '-'),
+
+                default => $badge('bg-secondary', '-'),
             },
 
             default => $badge('bg-secondary', '-'),

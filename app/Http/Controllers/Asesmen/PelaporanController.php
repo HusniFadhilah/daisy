@@ -86,7 +86,7 @@ class PelaporanController extends Controller
 
     /**
      * ============================================
-     * INDEX PELAPORAN DOKUMEN
+     * INDEX Pelaporan Validasi Dokumen
      * ============================================
      */
     public function indexDokumen()

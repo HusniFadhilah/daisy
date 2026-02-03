@@ -141,8 +141,8 @@
                             </td>
                         </tr>
                         <tr>
-                            <th>Status Penugasan</th>
-                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('asesmen_lapangan', 'upps') !!}</td>
+                            <th>Status Penugasan Asesor AL</th>
+                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('penugasan_asesor_al', 'upps', 'label_long_for') !!}</td>
                         </tr>
                     </table>
                 </div>

@@ -59,28 +59,11 @@
         <div class="col-lg-4 col-md-6 mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Total Dokumen</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['total'] }}</h2>
-                            <small class="opacity-75">Semua dokumen</small>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
-                            <i class="bi bi-file-earmark-check"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-4 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
-                <div class="card-body text-white">
                     <h6 class="mb-2 opacity-75">Dokumen Tervalidasi</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['tervalidasi'] }}</h2>
-                            <small class="opacity-75">Lolos validasi</small>
+                            <small class="opacity-75">Total Dokumen Lolos validasi</small>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
                             <i class="bi bi-patch-check"></i>
@@ -91,13 +74,13 @@
         </div>
 
         <div class="col-lg-4 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
                 <div class="card-body text-white">
                     <h6 class="mb-2 opacity-75">Dokumen Terlaporkan</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['terlaporkan'] }}</h2>
-                            <small class="opacity-75">Ke tahap berikutnya</small>
+                            <small class="opacity-75">Dapat dilanjutkan ke tahap berikutnya (Asesmen Kecukupan)</small>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
                             <i class="bi bi-send-check"></i>
@@ -189,8 +172,8 @@
                                 <tr>
                                     <th width="5%">#</th>
                                     <th width="30%">Permohonan Akreditasi</th>
-                                    <th width="25%">Validator</th>
-                                    <th width="25%">Status</th>
+                                    <th width="25%">Tanggal Pelaporan Dokumen</th>
+                                    <th width="25%">Status Pelaporan Dokumen</th>
                                     <th width="5%" class="text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -205,16 +188,18 @@
                                         <small class="text-muted">Dibuat pada: {{ \App\Libraries\Date::tglIndo($pengajuan->created_at) }}</small>
                                     </td>
                                     <td>
-                                        @if($pengajuan->validator)
-                                        <small>
-                                            {{ $pengajuan->validator->name }}
+                                        @if($pengajuan->tanggal_pelaporan_validasi_borang)
+                                        <small>{{ $pengajuan->tanggal_pelaporan_validasi_borang->format('d M Y') }}</small>
+                                        <br>
+                                        <small class="text-muted">
+                                            {{ $pengajuan->tanggal_pelaporan_validasi_borang->diffForHumans() }}
                                         </small>
                                         @else
                                         <span class="text-muted">-</span>
                                         @endif
                                     </td>
                                     <td>
-                                        {!! $pengajuan->getCustomBadgeLastStatus('borang_final', 'upps') !!}
+                                        {!! $pengajuan->getCustomBadgeLastStatus('borang_final','upps','label_short_for') !!}
                                     </td>
                                     <td class="text-center">
                                         <a href="{{ route('upps.pelaporan-dokumen.show', $pengajuan->id) }}" class="btn btn-info btn-sm" title="Lihat Detail">

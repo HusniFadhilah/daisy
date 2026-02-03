@@ -8,9 +8,9 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">
-                <i class="bi bi-file-earmark-text"></i> Monitoring Pelaporan Hasil Asesmen Kecukupan (AK)
+                <i class="bi bi-file-earmark-text"></i> Pelaporan AK
             </h4>
-            <p class="text-muted mb-0">Monitoring pelaporan hasil AK setelah validasi selesai</p>
+            <p class="text-muted mb-0">Monitoring pelaporan AK</p>
         </div>
         <div>
             <button class="btn btn-outline-primary" onclick="location.reload()">

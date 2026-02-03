@@ -303,7 +303,7 @@
             @if(in_array($pengajuan->status, [\App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED]))
             <div class="alert alert-warning alert-permanent">
                 <i class="bi bi-info-circle"></i>
-                Mohon menunggu pelaporan Dokumen selesai dilakukan
+                Mohon menunggu Pelaporan Validasi Dokumen selesai dilakukan
             </div>
             @endif
 

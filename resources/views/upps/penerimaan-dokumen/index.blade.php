@@ -83,7 +83,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['draft_dokumen'] }}</h2>
-                            <small class="opacity-75">Jumlah Draft dokumen yang sudah dikirim (menunggu validasi atau sedang diproses)</small>
+                            <small class="opacity-75">Jumlah Draft dokumen yang telah dikirim (menunggu validasi atau sedang diproses)</small>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
                             <i class="bi bi-file-earmark-text"></i>
@@ -97,11 +97,11 @@
         <div class="col-lg-4 col-md-6 mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Total Dokumen Dikirim</h6>
+                    <h6 class="mb-2 opacity-75">Total Dokumen Diproses</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['dokumen_dikirim'] }}</h2>
-                            <small class="opacity-75">Jumlah Dokumen yang telah diproses</small>
+                            <small class="opacity-75">Jumlah Dokumen yang telah selesai diproses</small>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
                             <i class="bi bi-send"></i>
@@ -211,7 +211,7 @@
                                 <tr>
                                     <th width="5%">#</th>
                                     <th width="30%">Permohonan Akreditasi</th>
-                                    <th width="25%">Tanggal Upload</th>
+                                    <th width="25%">Tanggal Pengiriman Dokumen</th>
                                     <th width="25%">Status Pengiriman Dokumen</th>
                                     <th width="5%" class="text-center">Aksi</th>
                                 </tr>
@@ -241,7 +241,7 @@
                                         @endif
                                     </td>
                                     <td>
-                                        {!! $pengajuan->getCustomBadgeLastStatus('borang_final', 'upps') !!}
+                                        {!! $pengajuan->getCustomBadgeLastStatus('draft_borang', 'upps','label_short_for') !!}
                                     </td>
                                     <td class="text-center">
                                         <div class="btn-group btn-group-sm" role="group">

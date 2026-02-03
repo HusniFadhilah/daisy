@@ -2,7 +2,7 @@
 
 @extends('layouts.template.app')
 
-@section('title', 'Validasi Hasil Asesmen Kecukupan')
+@section('title', 'Validasi AK')
 
 @push('styles')
 <style>
@@ -40,7 +40,7 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item active">Validasi Hasil Asesmen Kecukupan</li>
+            <li class="breadcrumb-item active">Validasi AK</li>
         </ol>
     </nav>
 
@@ -48,9 +48,9 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">
-                <i class="bi bi-clipboard-check"></i> Validasi Hasil Asesmen Kecukupan
+                <i class="bi bi-clipboard-check"></i> Validasi AK
             </h4>
-            <p class="text-muted mb-0">Monitor validasi hasil penilaian Asesmen Kecukupan</p>
+            <p class="text-muted mb-0">Monitor validasi AK</p>
         </div>
     </div>
 
@@ -63,7 +63,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['total'] }}</h2>
-                            <small class="opacity-75">Semua dokumen</small>
+                            <small class="opacity-75">Total dokumen yang telah sampai pada tahap Validasi AK</small>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
                             <i class="bi bi-file-earmark-text"></i>
@@ -80,7 +80,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['penilaian_ak'] }}</h2>
-                            <small class="opacity-75">Sedang/sudah dinilai</small>
+                            <small class="opacity-75">Penilaian AK sedang atau sudah dilakukan</small>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
                             <i class="bi bi-pencil-square"></i>
@@ -97,7 +97,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['tervalidasi'] }}</h2>
-                            <small class="opacity-75">Oleh validator</small>
+                            <small class="opacity-75">Penilaian AK yang telah divalidasi</small>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
                             <i class="bi bi-patch-check"></i>
@@ -178,7 +178,7 @@
             <div class="card">
                 <div class="card-header bg-white">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Daftar Validasi Hasil AK</h5>
+                        <h5 class="mb-0">Daftar Validasi AK</h5>
                         <div>
                             <span class="text-muted">Total: <strong>{{ $pengajuans->total() }}</strong></span>
                         </div>
@@ -192,8 +192,8 @@
                                 <tr>
                                     <th width="5%">#</th>
                                     <th width="30%">Permohonan Akreditasi</th>
-                                    <th width="25%">Asesor AK</th>
-                                    <th width="25%">Status</th>
+                                    <th width="25%">Tanggal Validasi AK</th>
+                                    <th width="25%">Status Validasi AK</th>
                                     <th width="5%" class="text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -208,19 +208,18 @@
                                         <small class="text-muted">Dibuat pada: {{ \App\Libraries\Date::tglIndo($pengajuan->created_at) }}</small>
                                     </td>
                                     <td>
-                                        <span class="badge bg-info">{{ $pengajuan->tahun_akreditasi }}</span>
-                                    </td>
-                                    <td>
-                                        @if($pengajuan->asesmen->asesorAK)
-                                        <small>
-                                            {{ $pengajuan->asesmen->asesorAK()->name }}
+                                        @if($pengajuan->tanggal_validasi_ak)
+                                        <small>{{ $pengajuan->tanggal_validasi_ak->format('d M Y') }}</small>
+                                        <br>
+                                        <small class="text-muted">
+                                            {{ $pengajuan->tanggal_validasi_ak->diffForHumans() }}
                                         </small>
                                         @else
                                         <span class="text-muted">-</span>
                                         @endif
                                     </td>
                                     <td>
-                                        {!! $pengajuan->getCustomBadgeLastStatus('asesmen_kecukupan', 'upps') !!}
+                                        {!! $pengajuan->getCustomBadgeLastStatus('validasi_ak', 'upps', 'label_short_for') !!}
                                     </td>
                                     <td class="text-center">
                                         <a href="{{ route('upps.validasi-ak.show', $pengajuan->id) }}" class="btn btn-info btn-sm" title="Lihat Detail">

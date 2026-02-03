@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 class PelaporanDokumenController extends Controller
 {
     /**
-     * Display list of pelaporan dokumen
+     * Display list of Pelaporan Validasi Dokumen
      */
     public function index(Request $request)
     {
@@ -70,7 +70,7 @@ class PelaporanDokumenController extends Controller
     }
 
     /**
-     * Show detail pelaporan dokumen
+     * Show detail Pelaporan Validasi Dokumen
      */
     public function show($id)
     {

@@ -7,7 +7,7 @@ $typeConfig = [
 'dokumen' => [
 'color' => 'primary',
 'icon' => 'file-earmark-check',
-'label' => 'Pelaporan Dokumen',
+'label' => 'Pelaporan Validasi Dokumen',
 ],
 'ak' => [
 'color' => 'info',

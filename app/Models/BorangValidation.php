@@ -71,12 +71,12 @@ class BorangValidation extends Model
         $total = $ledTotal + $supTotal + $lkpsTotal;
         $reviewed = $ledReviewed + $supReviewed + $lkpsReviewed;
 
-        $pct = fn(int $rev, int $tot) => $tot > 0 ? (int) round(($rev / $tot) * 100) : 100;
+        $pct = fn(int $rev, int $tot) => $tot > 0 ? (int) round(($rev / $tot) * 100) : 0;
 
         return [
             'total' => $total,
             'reviewed' => $reviewed,
-            'percentage' => $total > 0 ? (int) round(($reviewed / $total) * 100) : 100,
+            'percentage' => $total > 0 ? (int) round(($reviewed / $total) * 100) : 0,
 
             'led_percentage' => $pct($ledReviewed, $ledTotal),
             'suplemen_percentage' => $pct($supReviewed, $supTotal),

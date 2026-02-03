@@ -89,7 +89,7 @@
                     <tr>
                         <td>{{ $pengajuans->firstItem() + $index }}</td>
                         <td>
-                            <p>{{ $pengajuan->judul }}</p>
+                            <p>{{ $pengajuan->judul_short }}</p>
                             <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
                             <br>
                             <small class="text-muted">

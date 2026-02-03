@@ -332,14 +332,14 @@ final class PengajuanStatus
             PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN => [
                 'label' => 'Pelaporan Validasi Dokumen',
                 'label_short_for' => [
-                    'de'   => 'Laporan Validasi',
-                    'upps' => 'Laporan Validasi',
-                    'prodi' => 'Laporan Validasi',
+                    'de'   => 'Pelaporan Telah Dikirimkan',
+                    'upps' => 'Pelaporan Telah Dikirimkan',
+                    'prodi' => 'Pelaporan Telah Dikirimkan',
                 ],
                 'label_long_for' => [
-                    'de'   => 'Pelaporan Validasi Dokumen Selesai',
-                    'upps' => 'Pelaporan Validasi Dokumen Selesai',
-                    'prodi' => 'Pelaporan Validasi Dokumen Selesai',
+                    'de'   => 'Pelaporan Validasi Dokumen Telah Dikirimkan',
+                    'upps' => 'Pelaporan Validasi Dokumen Telah Dikirimkan',
+                    'prodi' => 'Pelaporan Validasi Dokumen Telah Dikirimkan',
                 ],
                 'bg' => 'bg-success',
                 'icon' => 'bi-file-earmark-text',
@@ -385,9 +385,9 @@ final class PengajuanStatus
                     'prodi' => 'AK Berlangsung',
                 ],
                 'label_long_for' => [
-                    'de'   => 'Proses AK Berlangsung (oleh Asesor AK)',
-                    'upps' => 'Proses AK Berlangsung (oleh Asesor AK)',
-                    'prodi' => 'Proses AK Berlangsung (oleh Asesor AK)',
+                    'de'   => 'Proses AK Berlangsung',
+                    'upps' => 'Proses AK Berlangsung',
+                    'prodi' => 'Proses AK Berlangsung',
                 ],
                 'bg' => 'bg-info',
                 'icon' => 'bi-clipboard-data',
@@ -428,9 +428,9 @@ final class PengajuanStatus
             PengajuanAkreditasi::STATUS_AK_DILAPORKAN => [
                 'label' => 'Pelaporan AK Selesai',
                 'label_short_for' => [
-                    'de'   => 'Laporan AK',
-                    'upps' => 'Laporan AK',
-                    'prodi' => 'Laporan AK',
+                    'de'   => 'Pelaporan AK Selesai',
+                    'upps' => 'Pelaporan AK Selesai',
+                    'prodi' => 'Pelaporan AK Selesai',
                 ],
                 'label_long_for' => [
                     'de'   => 'Pelaporan AK Selesai',

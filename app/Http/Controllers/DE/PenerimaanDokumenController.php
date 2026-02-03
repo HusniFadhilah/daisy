@@ -61,10 +61,10 @@ class PenerimaanDokumenController extends Controller
                     PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI,
                     PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
                     PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
-                    PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
-                    PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
-                    PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,
-                    PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
+                    // PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
+                    // PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
+                    // PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,
+                    // PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
                 ]);
             });
 

@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 class PelaporanDokumenController extends Controller
 {
     /**
-     * Dashboard monitoring pelaporan dokumen validasi
+     * Dashboard monitoring Pelaporan Validasi Dokumen validasi
      */
     public function index(Request $request)
     {
@@ -126,7 +126,7 @@ class PelaporanDokumenController extends Controller
     }
 
     /**
-     * Detail pelaporan dokumen untuk satu pengajuan
+     * Detail Pelaporan Validasi Dokumen untuk satu pengajuan
      */
     public function show($id)
     {

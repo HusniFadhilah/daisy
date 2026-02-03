@@ -23,7 +23,7 @@ class PelaporanALController extends Controller
         $query = PengajuanAkreditasi::with([
             'studyProgram.university',
             'studyProgram.degreeLevel',
-            'asesorAL',
+            'asesmen.asesorAL',
             'asesmen.beritaAcaraAL' => function ($q) {
                 $q->where('type', 'berita_acara_al')
                     ->where('is_active', true)
@@ -77,7 +77,7 @@ class PelaporanALController extends Controller
             'studyProgram.university',
             'studyProgram.degreeLevel',
             'pengaju',
-            'asesorAL',
+            'asesmen.asesorAL',
             'asesmen.beritaAcaraAL' => function ($q) {
                 $q->where('type', 'berita_acara_al')
                     ->where('is_active', true)

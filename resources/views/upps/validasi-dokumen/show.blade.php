@@ -44,14 +44,14 @@
                 <i class="bi bi-hourglass-split"></i>
                 <strong>Menunggu validasi dokumen dimulai</strong>
                 <br>
-                Validator telah ditugaskan, menunggu proses validasi dimulai
+                Validator telah ditugaskan, mohon menunggu proses validasi dimulai
             </div>
             @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION)
             <div class="alert alert-warning alert-permanent">
                 <i class="bi bi-clock-history"></i>
                 <strong>Validasi dokumen sedang berlangsung</strong>
                 <br>
-                Validator sedang memeriksa kelengkapan dan kesesuaian dokumen akreditasi. Mohon menunggu proses validasi dokumen selesai dilakukan
+                Validator sedang memeriksa kelengkapan dan kesesuaian dokumen akreditasi. Mohon menunggu proses validasi dokumen selesai dilaksanakan
             </div>
             @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED)
             <div class="alert alert-danger alert-permanent">
@@ -102,26 +102,18 @@
                             <th>Universitas</th>
                             <td>: {{ $pengajuan->studyProgram->university->name }}</td>
                         </tr>
-                        <tr>
-                            <th>Jenis Permohonan</th>
-                            <td>: {{ $pengajuan->jenis_akreditasi_label }}</td>
-                        </tr>
-                        <tr>
-                            <th>Tahun Akreditasi</th>
-                            <td>: {{ $pengajuan->tahun_akreditasi }}</td>
-                        </tr>
-                        <tr>
+                        {{-- <tr>
                             <th>Validator yang Ditugaskan</th>
                             <td>
                                 @if($pengajuan->validator)
                                 : {{ $pengajuan->validator->name }}
-                                <br>
-                                <small class="text-muted">{{ $pengajuan->validator->email }}</small>
-                                @else
-                                : <span class="text-muted">Belum ditugaskan</span>
-                                @endif
-                            </td>
-                        </tr>
+                        <br>
+                        <small class="text-muted">{{ $pengajuan->validator->email }}</small>
+                        @else
+                        : <span class="text-muted">Belum ditugaskan</span>
+                        @endif
+                        </td>
+                        </tr> --}}
                         <tr>
                             <th>Tanggal Penugasan Validator</th>
                             <td>
@@ -239,7 +231,7 @@
             <div class="card">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-clock-history"></i> Timeline Validasi
+                        <i class="bi bi-clock-history"></i> Riwayat Status
                     </h5>
                 </div>
                 <div class="card-body" style="max-height: 600px; overflow-y: auto;">
@@ -285,10 +277,10 @@
                                     <br>
                                     <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
 
-                                    @if($log->keterangan)
+                                    {{-- @if($log->keterangan)
                                     <br>
                                     <small class="text-muted fst-italic">{{ $log->keterangan }}</small>
-                                    @endif
+                                    @endif --}}
                                 </div>
                             </div>
                         </div>
@@ -338,7 +330,7 @@
                         <li>Dokumen diterima LAMDEPILAR</li>
                         <li>LAMDEPILAR menugaskan validator</li>
                         <li>Selanjutnya, Validator memeriksa kelengkapan dokumen</li>
-                        <li>Jika perlu revisi, validator akan memberikan catatan revisi tersebut</li>
+                        <li>Jika terdapat hal di dokumen yang perlu diperbaiki, validator akan memberikan catatan revisi tersebut</li>
                         <li>Jika telah sesuai (tidak ada permintaan revisi), dokumen akan selesai divalidasi</li>
                         <li>Proses dilanjutkan ke tahap berikutnya</li>
                     </ol>

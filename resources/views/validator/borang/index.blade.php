@@ -119,21 +119,21 @@
                         @endphp
                         <tr>
                             <td>
-                                <p>{{ $pengajuan->judul_short }}</p>
-                                <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
+                                <p>{{ $pengajuan?->judul_short }}</p>
+                                <small class="text-muted">{{ $pengajuan?->nomor_pengajuan }}</small>
                             </td>
                             <td>
-                                {{ $pengajuan->studyProgram->name }}
+                                {{ $pengajuan?->studyProgram->name }}
                                 <br>
-                                <small class="text-muted">{{ $pengajuan->studyProgram->university->name }}</small>
+                                <small class="text-muted">{{ $pengajuan?->studyProgram->university->name }}</small>
                             </td>
                             <td>
-                                @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI)
+                                @if($pengajuan?->status === \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI)
                                 <span class="badge bg-success">Selesai Diisi</span>
-                                @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED)
+                                @elseif($pengajuan?->status === \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED)
                                 <span class="badge bg-warning text-dark text-wrap">Dokumen Dokumen Perlu Revisi</span>
                                 @else
-                                <span class="badge bg-secondary">{{ ucfirst($pengajuan->status_label) }}</span>
+                                <span class="badge bg-secondary">{{ ucfirst($pengajuan?->status_label) }}</span>
                                 @endif
                             </td>
                             <td>
@@ -149,7 +149,7 @@
                                 {{ $assignment->created_at ? $assignment->created_at->format('d M Y H:i') : '-' }}
                             </td>
                             <td>
-                                @if(in_array($pengajuan->status,[\App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING]))
+                                @if(in_array($pengajuan?->status,[\App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING]))
                                 @if($assignment->status_penawaran == 'pending')
                                 <a href="{{ route('penawaran.show', ['token' => $assignment->token]) }}" class="btn btn-sm btn-primary">
                                     <i class="bi bi-eye"></i> Lihat Penawaran
@@ -165,12 +165,12 @@
                                 </a>
                                 @endif
 
-                                @if(in_array($pengajuan->status, [
+                                @if(in_array($pengajuan?->status, [
                                 \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
                                 \App\Models\PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
                                 ]))
-                                @if(is_null($pengajuan->tanggal_pelaporan_validasi_borang))
-                                <button type="button" class="btn btn-sm btn-success mt-2 js-open-pelaporan" data-type="borang" data-assignment-id="{{ $assignment->id }}" data-nomor="{{ $pengajuan->nomor_pengajuan }}"> <i class="bi bi-file-earmark-text"></i> Pelaporan Validasi </button>
+                                @if(is_null($pengajuan?->tanggal_pelaporan_validasi_borang))
+                                <button type="button" class="btn btn-sm btn-success mt-2 js-open-pelaporan" data-type="borang" data-assignment-id="{{ $assignment->id }}" data-nomor="{{ $pengajuan?->nomor_pengajuan }}"> <i class="bi bi-file-earmark-text"></i> Pelaporan Validasi </button>
                                 @endif
                                 @endif
                             </td>

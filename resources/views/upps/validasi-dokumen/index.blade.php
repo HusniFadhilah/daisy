@@ -59,11 +59,11 @@
         <div class="col-lg-3 col-md-6 mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Menunggu Validasi</h6>
+                    <h6 class="mb-2 opacity-75">Menunggu Validasi Dokumen</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['menunggu_validasi'] }}</h2>
-                            <small class="opacity-75">Belum dimulai</small>
+                            <small class="opacity-75">Validasi dokumen belum dimulai</small>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
                             <i class="bi bi-hourglass-split"></i>
@@ -76,11 +76,11 @@
         <div class="col-lg-3 col-md-6 mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Sedang Divalidasi</h6>
+                    <h6 class="mb-2 opacity-75">Dokumen Sedang Divalidasi</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['sedang_validasi'] }}</h2>
-                            <small class="opacity-75">Dalam proses</small>
+                            <small class="opacity-75">Dokumen dalam proses validasi</small>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
                             <i class="bi bi-clock-history"></i>
@@ -93,11 +93,11 @@
         <div class="col-lg-3 col-md-6 mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #868f96 0%, #596164 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Perlu Revisi</h6>
+                    <h6 class="mb-2 opacity-75">Dokumen Perlu Revisi</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['perlu_revisi'] }}</h2>
-                            <small class="opacity-75">Perlu perbaikan</small>
+                            <small class="opacity-75">Dokumen perlu perbaikan</small>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
                             <i class="bi bi-arrow-repeat"></i>
@@ -110,11 +110,11 @@
         <div class="col-lg-3 col-md-6 mb-3">
             <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
                 <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Tervalidasi</h6>
+                    <h6 class="mb-2 opacity-75">Dokumen Tervalidasi</h6>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h2 class="mb-0 fw-bold">{{ $stats['tervalidasi'] }}</h2>
-                            <small class="opacity-75">Selesai valid</small>
+                            <small class="opacity-75">Dokumen selesai divalidasi, dan dapat dilanjutkan ke tahap berikutnya</small>
                         </div>
                         <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
                             <i class="bi bi-patch-check"></i>
@@ -215,8 +215,8 @@
                                 <tr>
                                     <th width="5%">#</th>
                                     <th width="30%">Permohonan Akreditasi</th>
-                                    <th width="25%">Validator</th>
-                                    <th width="25%">Status</th>
+                                    <th width="25%">Status Validator</th>
+                                    <th width="25%">Status Validasi Dokumen</th>
                                     <th width="5%" class="text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -232,11 +232,9 @@
                                     </td>
                                     <td>
                                         @if($pengajuan->validator)
-                                        <small>
-                                            {{ $pengajuan->validator->name }}
-                                        </small>
+                                        <span class="badge bg-success">Telah ditugaskan</span>
                                         @else
-                                        <span class="text-muted">Belum ditugaskan</span>
+                                        <span class="badge bg-secondary">Belum ditugaskan</span>
                                         @endif
                                     </td>
                                     <td>

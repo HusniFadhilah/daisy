@@ -2,7 +2,7 @@
 
 @extends('layouts.template.app')
 
-@section('title', 'Pelaporan Dokumen')
+@section('title', 'Pelaporan Validasi Dokumen')
 
 @push('styles')
 <style>
@@ -53,7 +53,7 @@
                     <i class="bi bi-house-door"></i> Dashboard Pelaporan
                 </a>
             </li>
-            <li class="breadcrumb-item active">Pelaporan Dokumen</li>
+            <li class="breadcrumb-item active">Pelaporan Validasi Dokumen</li>
         </ol>
     </nav>
 
@@ -167,9 +167,9 @@
     <div class="card">
         <div class="card-body text-center py-5">
             <i class="bi bi-inbox" style="font-size: 64px; opacity: 0.3; color: #6c757d;"></i>
-            <h5 class="mt-3 mb-2">Tidak Ada Pelaporan Dokumen</h5>
+            <h5 class="mt-3 mb-2">Tidak Ada Pelaporan Validasi Dokumen</h5>
             <p class="text-muted mb-4">
-                Anda belum memiliki penugasan pelaporan dokumen saat ini.<br>
+                Anda belum memiliki penugasan Pelaporan Validasi Dokumen saat ini.<br>
                 Pelaporan akan muncul setelah Anda menyelesaikan validasi dokumen.
             </p>
             <div class="d-flex gap-2 justify-content-center">

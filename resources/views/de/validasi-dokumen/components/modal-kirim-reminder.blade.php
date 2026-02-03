@@ -2,7 +2,7 @@
 @php
 $pendingAssignments = \App\Models\AsesmenUserRole::with(['user', 'asesmen.pengajuan.studyProgram'])
 ->where('jenis_asesmen', 'dokumen')
-->where('status_penawaran', 'accepted')
+->whereIn('status_penawaran', ['accepted','pending'])
 ->whereIn('status_pekerjaan', ['not_started', 'in_progress'])
 ->get();
 $countPendingAssignments = count($pendingAssignments);
@@ -27,7 +27,7 @@ $countPendingAssignments = count($pendingAssignments);
                                 <input type="checkbox" class="form-check-input" name="id_assignment[]" value="{{ $assignment->id }}" id="reminder{{ $assignment->id }}">
                                 <label class="form-check-label" for="reminder{{ $assignment->id }}">
                                     <strong>{{ $assignment->user->name }}</strong> -
-                                    {{ $assignment->asesmen->pengajuan->studyProgram->name }}
+                                    {{ $assignment->asesmen->pengajuan->studyProgram->name??'' }}
                                     <br>
                                     <small class="text-muted">
                                         Status: {{ ucwords(str_replace('_', ' ', $assignment->status_pekerjaan)) }}
