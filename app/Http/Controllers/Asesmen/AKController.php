@@ -22,9 +22,6 @@ use App\Services\PenilaianExcelService;
 
 class AKController extends Controller
 {
-    /**
-     * Display a listing of asesmens (berkas) for current user
-     */
     public function berkas()
     {
         $user = Auth::user();
@@ -32,11 +29,34 @@ class AKController extends Controller
         // Get asesmens where user is assigned
         $asesmens = Asesmen::whereHas('userRoles', function ($query) use ($user) {
             $query->where('id_user', $user->id)->where('jenis_asesmen', 'ak')->where('id_role', 3);
-        })->with(['userRoles' => function ($query) use ($user) {
-            $query->where('id_user', $user->id)->where('jenis_asesmen', 'ak')->where('id_role', 3)->with('role');
-        }])->latest()->paginate(10);
+        })
+            ->with([
+                'userRoles' => function ($query) use ($user) {
+                    $query->where('id_user', $user->id)
+                        ->where('jenis_asesmen', 'ak')
+                        ->where('id_role', 3)
+                        ->with('role');
+                },
+                'studyProgram.university',
+                'studyProgram.degreeLevel',
+                'pengajuan.dokumen' => function ($q) {
+                    // ✅ Load dokumen akreditasi
+                    $q->whereIn('jenis_dokumen', [
+                        'data_kualitatif',
+                        'draft_borang',
+                        'borang_final',  // LED
+                        'data_suplemen',                                      // ✅ Suplemen (fixed)
+                        'data_kuantitatif',
+                        'kuantitatif'                    // LKPS
+                    ])
+                        ->where('is_latest', true)
+                        ->orderBy('created_at', 'desc');
+                }
+            ])
+            ->latest()
+            ->paginate(10);
 
-        // Ambil semua progress sekaligus
+        // Calculate progress
         $progressAll = $this->calculateProgressBulk(
             $asesmens->pluck('id')->toArray(),
             $user->id
@@ -54,6 +74,7 @@ class AKController extends Controller
             $assignment = $asesmen->userRoles->first();
             $asesmen->statusInfo = AsesmenUserRole::getStatusInfo($assignment);
         }
+
         $statusPekerjaan = AsesmenUserRole::STATUS_PEKERJAAN;
 
         return view('asesmen.ak.berkas.index', compact('asesmens', 'statusPekerjaan'));

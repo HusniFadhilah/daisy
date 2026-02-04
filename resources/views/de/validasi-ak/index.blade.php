@@ -20,101 +20,25 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="row g-3 mb-4">
-        <div class="col-md-2">
-            <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);">
-                <div class="card-body text-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="mb-1 opacity-75">Total AK</h6>
-                            <h2 class="mb-0 fw-bold">{{ $stats['total'] }}</h2>
-                        </div>
-                        <div>
-                            <i class="bi bi-stack" style="font-size: 2.5rem; opacity: 0.3;"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div class="row row-cols-1 row-cols-md-3 row-cols-lg-5 mb-4">
+        <div class="col mb-3">
+            <x-stat-card title="Total AK" :value="$stats['total']" description="" icon="stack" gradient="linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)" />
         </div>
 
-        <div class="col-md-2">
-            <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #64748b 0%, #475569 100%);">
-                <div class="card-body text-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="mb-1 opacity-75">Belum Mulai</h6>
-                            <h2 class="mb-0 fw-bold">{{ $stats['belum_mulai'] }}</h2>
-                        </div>
-                        <div>
-                            <i class="bi bi-hourglass" style="font-size: 2.5rem; opacity: 0.3;"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="col mb-3">
+            <x-stat-card title="Belum Mulai" :value="$stats['belum_mulai']" description="" icon="hourglass" gradient="linear-gradient(135deg, #64748b 0%, #475569 100%)" />
         </div>
 
-        <div class="col-md-2">
-            <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);">
-                <div class="card-body text-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="mb-1 opacity-75">Sedang Penilaian</h6>
-                            <h2 class="mb-0 fw-bold">{{ $stats['sedang_penilaian'] }}</h2>
-                        </div>
-                        <div>
-                            <i class="bi bi-pencil-square" style="font-size: 2.5rem; opacity: 0.3;"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="col mb-3">
+            <x-stat-card title="Sedang Penilaian" :value="$stats['sedang_penilaian']" description="" icon="pencil-square" gradient="linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)" />
         </div>
 
-        <div class="col-md-2">
-            <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
-                <div class="card-body text-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="mb-1 opacity-75">Sedang Validasi</h6>
-                            <h2 class="mb-0 fw-bold">{{ $stats['sedang_validasi'] }}</h2>
-                        </div>
-                        <div>
-                            <i class="bi bi-shield-check" style="font-size: 2.5rem; opacity: 0.3;"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="col mb-3">
+            <x-stat-card title="Sedang Validasi" :value="$stats['sedang_validasi']" description="" icon="shield-check" gradient="linear-gradient(135deg, #f59e0b 0%, #d97706 100%)" />
         </div>
 
-        <div class="col-md-2">
-            <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);">
-                <div class="card-body text-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="mb-1 opacity-75">Selesai</h6>
-                            <h2 class="mb-0 fw-bold">{{ $stats['selesai'] }}</h2>
-                        </div>
-                        <div>
-                            <i class="bi bi-check-circle" style="font-size: 2.5rem; opacity: 0.3;"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-2">
-            <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #14b8a6 0%, #0f766e 100%);">
-                <div class="card-body text-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="mb-1 opacity-75">Dilaporkan</h6>
-                            <h2 class="mb-0 fw-bold">{{ $stats['dilaporkan'] }}</h2>
-                        </div>
-                        <div>
-                            <i class="bi bi-file-earmark-check" style="font-size: 2.5rem; opacity: 0.3;"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="col mb-3">
+            <x-stat-card title="Selesai" :value="$stats['selesai']" description="" icon="check-circle" gradient="linear-gradient(135deg, #22c55e 0%, #16a34a 100%)" />
         </div>
     </div>
 

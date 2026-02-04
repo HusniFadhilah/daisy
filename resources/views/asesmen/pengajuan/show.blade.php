@@ -732,100 +732,60 @@
         </div>
     </div>
 
-    <!-- Review Kesiapan -->
-    {{-- @if($pengajuan->reviewKesiapan->count() > 0)
-        <div class="card mb-4">
-            <div class="card-header bg-light">
-                <h5 class="mb-0">
-                    <i class="bi bi-clipboard-check"></i> Hasil Review Kesiapan
-                </h5>
-            </div>
-            <div class="card-body">
-                @foreach($pengajuan->reviewKesiapan->sortByDesc('tanggal_review') as $review)
-                <div class="mb-3 pb-3 {{ !$loop->last ? 'border-bottom' : '' }}">
-    <div class="d-flex justify-content-between align-items-start mb-2">
-        <div>
-            <span class="badge {{ $review->hasil_review === 'siap' ? 'bg-success' : 'bg-danger' }}">
-                {{ $review->hasil_review === 'siap' ? 'SIAP' : 'BELUM SIAP' }}
-            </span>
-            <small class="text-muted ms-2">Versi {{ $review->versi_review }}</small>
+    <!-- Dokumen -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                <i class="bi bi-folder"></i> Dokumen
+            </h5>
         </div>
-        <small class="text-muted">
-            {{ $review->tanggal_review->format('d M Y H:i') }}
-        </small>
-    </div>
-    <p class="mb-2"><strong>Reviewer:</strong> {{ $review->reviewer->name }}</p>
-    <p class="mb-0"><strong>Catatan:</strong></p>
-    <p class="text-muted">{{ $review->catatan_review }}</p>
-
-    @if($review->checklist_kesiapan)
-    <p class="mb-1"><strong>Checklist:</strong></p>
-    <ul>
-        @foreach($review->checklist_kesiapan as $item)
-        <li>{{ $item }}</li>
-        @endforeach
-    </ul>
-    @endif
-</div>
-@endforeach
-</div>
-</div>
-@endif --}}
-
-<!-- Dokumen -->
-<div class="card mb-4">
-    <div class="card-header bg-light">
-        <h5 class="mb-0">
-            <i class="bi bi-folder"></i> Dokumen
-        </h5>
-    </div>
-    <div class="card-body">
-        @forelse($pengajuan->dokumen->groupBy('jenis_dokumen_alias') as $jenis => $docs)
-        <div class="mb-3">
-            <h6 class="fw-bold text-primary">
-                {{ str_replace('_', ' ', ucwords($jenis)) }}
-            </h6>
-            <div class="table-responsive">
-                <table class="table table-sm table-hover">
-                    <thead>
-                        <tr>
-                            <th>Nama File</th>
-                            <th>Versi</th>
-                            <th>Upload Oleh</th>
-                            <th>Tanggal</th>
-                            <th>Ukuran</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($docs as $doc)
-                        <tr>
-                            <td>
-                                {{ $doc->original_filename }}
-                                @if($doc->is_latest)
-                                <span class="badge bg-success">Latest</span>
-                                @endif
-                            </td>
-                            <td>v{{ $doc->versi }}</td>
-                            <td>{{ $doc->uploader->name ?? '-' }}</td>
-                            <td>{{ $doc->created_at->format('d/m/Y H:i') }}</td>
-                            <td>{{ $doc->file_size_formatted ?? '' }}</td>
-                            <td>
-                                <a href="{{ $doc->download_url }}" class="btn btn-sm btn-primary">
-                                    <i class="bi bi-download"></i>
-                                </a>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+        <div class="card-body">
+            @forelse($pengajuan->dokumen->groupBy('jenis_dokumen_alias') as $jenis => $docs)
+            <div class="mb-3">
+                <h6 class="fw-bold text-primary">
+                    {{ str_replace('_', ' ', ucwords($jenis)) }}
+                </h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>Nama File</th>
+                                <th>Versi</th>
+                                <th>Upload Oleh</th>
+                                <th>Tanggal</th>
+                                <th>Ukuran</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($docs as $doc)
+                            <tr>
+                                <td>
+                                    {{ $doc->original_filename }}
+                                    @if($doc->is_latest)
+                                    <span class="badge bg-success">Latest</span>
+                                    @endif
+                                </td>
+                                <td>v{{ $doc->versi }}</td>
+                                <td>{{ $doc->uploader->name ?? '-' }}</td>
+                                <td>{{ $doc->created_at->format('d/m/Y H:i') }}</td>
+                                <td>{{ $doc->file_size_formatted ?? '' }}</td>
+                                <td>
+                                    <a href="{{ $doc->download_url }}" class="btn btn-sm btn-primary">
+                                        <i class="bi bi-download"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
+            @empty
+            <p class="text-muted mb-0">Belum ada dokumen yang diupload.</p>
+            @endforelse
         </div>
-        @empty
-        <p class="text-muted mb-0">Belum ada dokumen yang diupload.</p>
-        @endforelse
     </div>
-</div>
 </div>
 
 <!-- Sidebar -->
@@ -893,7 +853,7 @@
             </h5>
         </div>
         <div class="card-body" style="max-height: 400px; overflow-y: auto;">
-            @forelse($pengajuan->statusLog->sortByDesc('changed_at') as $log)
+            @forelse($pengajuan->statusLog->sortBy('changed_at') as $log)
             <div class="mb-3 pb-3 {{ !$loop->last ? 'border-bottom' : '' }}">
                 <div class="d-flex justify-content-between">
                     <small class="text-muted">

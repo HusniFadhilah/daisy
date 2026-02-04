@@ -6,18 +6,6 @@
 
 @push('styles')
 <style>
-    .stat-card {
-        border-radius: 12px;
-        transition: all 0.3s ease;
-        border: none;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
     .table-hover tbody tr {
         transition: all 0.2s ease;
     }
@@ -55,73 +43,21 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Menunggu Validasi Dokumen</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['menunggu_validasi'] }}</h2>
-                            <small class="opacity-75">Validasi dokumen belum dimulai</small>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
-                            <i class="bi bi-hourglass-split"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 mb-4">
+        <div class="col mb-3">
+            <x-stat-card title="Menunggu Validasi Dokumen" :value="$stats['menunggu_validasi']" description="Validasi dokumen belum dimulai" icon="hourglass-split" iconBg="info-subtle" />
         </div>
 
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Dokumen Sedang Divalidasi</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['sedang_validasi'] }}</h2>
-                            <small class="opacity-75">Dokumen dalam proses validasi</small>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
-                            <i class="bi bi-clock-history"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="col mb-3">
+            <x-stat-card title="Dokumen Sedang Divalidasi" :value="$stats['sedang_validasi']" description="Dokumen dalam proses validasi" icon="clock-history" iconBg="warning-subtle" />
         </div>
 
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #868f96 0%, #596164 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Dokumen Perlu Revisi</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['perlu_revisi'] }}</h2>
-                            <small class="opacity-75">Dokumen perlu perbaikan</small>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
-                            <i class="bi bi-arrow-repeat"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="col mb-3">
+            <x-stat-card title="Dokumen Perlu Revisi" :value="$stats['perlu_revisi']" description="Dokumen perlu perbaikan" icon="arrow-repeat" iconBg="danger-subtle" />
         </div>
 
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Dokumen Tervalidasi</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['tervalidasi'] }}</h2>
-                            <small class="opacity-75">Dokumen selesai divalidasi, dan dapat dilanjutkan ke tahap berikutnya</small>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
-                            <i class="bi bi-patch-check"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="col mb-3">
+            <x-stat-card title="Dokumen Tervalidasi" :value="$stats['tervalidasi']" description="Dokumen selesai divalidasi, dan dapat dilanjutkan ke tahap berikutnya" icon="patch-check" iconBg="success-subtle" />
         </div>
     </div>
 
@@ -238,7 +174,7 @@
                                         @endif
                                     </td>
                                     <td>
-                                        {!! $pengajuan->getCustomBadgeLastStatus('borang_final', 'upps') !!}
+                                        {!! $pengajuan->getCustomBadgeLastStatus('validasi_dokumen', 'upps','label_short_for') !!}
                                     </td>
                                     <td class="text-center">
                                         <a href="{{ route('upps.validasi-dokumen.show', $pengajuan->id) }}" class="btn btn-info btn-sm" title="Lihat Detail">

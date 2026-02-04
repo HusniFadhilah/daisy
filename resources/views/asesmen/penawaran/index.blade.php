@@ -72,14 +72,6 @@ $authUser = Auth::user();
                 </div>
             </div>
         </div>
-        <div class="col-md-4 col-lg-3 mb-2">
-            <div class="card text-center border-primary">
-                <div class="card-body">
-                    <h3 class="text-primary mb-0">{{ $assignments->where('status_pekerjaan', 'submitted')->count() }}</h3>
-                    <small class="text-muted">Sudah Submit</small>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- Pending Penawaran -->
@@ -191,7 +183,7 @@ $authUser = Auth::user();
     @if($assignments->count() > 0)
     <div class="card">
         <div class="card-header bg-white">
-            <h5 class="mb-0"><i class="bi bi-clock-history"></i> Riwayat Penawaran</h5>
+            <h5 class="mb-0"><i class="bi bi-clock-history"></i> Riwayat Penawaran Asesmen</h5>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
@@ -202,7 +194,7 @@ $authUser = Auth::user();
                             <th>Asesmen</th>
                             <th>Role</th>
                             <th>Status Penawaran</th>
-                            <th>Status Pekerjaan</th>
+                            {{-- <th>Status Pekerjaan</th> --}}
                             <th>Catatan</th>
                             <th>Tanggal Respon</th>
                             <th>Aksi</th>
@@ -223,7 +215,7 @@ $authUser = Auth::user();
                                 <div class="fw-semibold">{{ $pengajuan ? $pengajuan->judul : $asesmen->name }}</div>
                                 <small class="text-muted text-block">
                                     <i class="bi bi-building"></i>
-                                    {{ $asesmen->studyProgram->full_name ?? 'N/A' }}
+                                    {{ $asesmen->studyProgram->university->name ?? '-' }}
                                 </small>
                             </td>
                             <td>
@@ -240,22 +232,22 @@ $authUser = Auth::user();
                                 </span>
                                 @endif
                             </td>
-                            <td>
+                            {{-- <td>
                                 @if($assignment->status_pekerjaan && $assignment->status_penawaran === 'accepted')
                                 <span class="badge bg-{{ $assignment->status_badge }}">
-                                    {{ $assignment->status_label }}
-                                </span>
-                                @else
-                                <span class="text-muted">-</span>
-                                @endif
+                            {{ $assignment->status_label }}
+                            </span>
+                            @else
+                            <span class="text-muted">-</span>
+                            @endif
 
-                                @if($badgePelaporan)
-                                <span class="badge bg-success text-wrap mt-2">
-                                    <i class="bi bi-check-circle"></i>
-                                    {{ $badgePelaporan }}
-                                </span>
-                                @endif
-                            </td>
+                            @if($badgePelaporan)
+                            <span class="badge bg-success text-wrap mt-2">
+                                <i class="bi bi-check-circle"></i>
+                                {{ $badgePelaporan }}
+                            </span>
+                            @endif
+                            </td> --}}
                             <td>
                                 @if($assignment->response_note)
                                 <small>{{ Str::limit($assignment->response_note, 50) }}</small>
@@ -271,17 +263,17 @@ $authUser = Auth::user();
                                 @if($authUser->role_selected == 'asesor')
                                 @if (in_array($jenisAsesmen,['ak','al']))
                                 <a href="{{ route($jenisAsesmen.'.berkas.show',$assignment->id_asesmen) }}" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-arrow-right"></i> Lihat Penilaian
+                                    <i class="bi bi-arrow-right"></i> Penilaian
                                 </a>
                                 @endif
                                 @elseif($authUser->role_selected == 'validator')
                                 @if ($jenisAsesmen == 'ak')
                                 <a href="{{ route($jenisAsesmen.'.validasi.asesor', ['idAsesmen' => $assignment['asesmen']->id, 'jenisAsesmen' => 'ak']) }}" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-arrow-right"></i> Lihat Penilaian
+                                    <i class="bi bi-arrow-right"></i> Penilaian
                                 </a>
                                 @elseif ($jenisAsesmen == 'dokumen')
                                 <a href="{{ route('validator.borang.show',$assignment->id) }}" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-arrow-right"></i> Lihat Penilaian
+                                    <i class="bi bi-arrow-right"></i> Penilaian
                                 </a>
                                 @endif
 

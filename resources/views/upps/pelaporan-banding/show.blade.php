@@ -377,17 +377,13 @@
                 <div class="card-body" style="max-height: 600px; overflow-y: auto;">
                     @php
                     $filterStatuses = [
-                    \App\Models\PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
                     \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
                     \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
-                    \App\Models\PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
-                    \App\Models\PengajuanAkreditasi::STATUS_HASIL_DIUMUMKAN,
-                    \App\Models\PengajuanAkreditasi::STATUS_SELESAI,
                     ];
 
                     $logs = $pengajuan->statusLog
                     ->whereIn('status_to', $filterStatuses)
-                    ->sortByDesc('changed_at');
+                    ->sortBy('changed_at');
                     @endphp
 
                     @if($logs->count() > 0)
@@ -399,11 +395,7 @@
                                     @php
                                     $iconColor = match($log->status_to) {
                                     \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
-                                    \App\Models\PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
-                                    \App\Models\PengajuanAkreditasi::STATUS_HASIL_DIUMUMKAN,
-                                    \App\Models\PengajuanAkreditasi::STATUS_SELESAI
                                     => 'text-success',
-                                    \App\Models\PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
                                     \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN
                                     => 'text-warning',
                                     default => 'text-info',
@@ -418,10 +410,10 @@
                                     <br>
                                     <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
 
-                                    @if($log->keterangan)
+                                    {{-- @if($log->keterangan)
                                     <br>
                                     <small class="text-muted fst-italic">{{ $log->keterangan }}</small>
-                                    @endif
+                                    @endif --}}
                                 </div>
                             </div>
                         </div>

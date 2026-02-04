@@ -1128,6 +1128,8 @@ class PengajuanAkreditasi extends Model
             $statuses = [self::STATUS_DRAFT_BORANG_DIKIRIM, self::STATUS_DRAFT_BORANG_DITERIMA, self::STATUS_BORANG_ONLINE_SELESAI];
         if ($attribute == 'borang_final')
             $statuses = [self::STATUS_DRAFT_BORANG_DITERIMA, self::STATUS_BORANG_ONLINE_SELESAI, self::STATUS_BORANG_VALIDATION_PENDING, self::STATUS_BORANG_IN_VALIDATION, self::STATUS_BORANG_REVISION_REQUIRED, self::STATUS_BORANG_VALIDATED, self::STATUS_BORANG_FINAL_DITERIMA, self::STATUS_VALIDASI_BORANG_DILAPORKAN];
+        if ($attribute == 'validasi_dokumen')
+            $statuses = [self::STATUS_BORANG_VALIDATION_PENDING, self::STATUS_BORANG_IN_VALIDATION, self::STATUS_BORANG_REVISION_REQUIRED, self::STATUS_BORANG_VALIDATED];
         if ($attribute == 'penugasan_asesor_ak')
             $statuses = [self::STATUS_PENGAJUAN_COMPLETED, self::STATUS_ASESOR_AK_ASSIGNED];
         if ($attribute == 'validasi_ak')
@@ -1348,6 +1350,32 @@ class PengajuanAkreditasi extends Model
                     ? $badge('bg-secondary', 'Draft Dokumen belum dikirim')
                     : $badge('bg-secondary', 'Draft Dokumen belum dikirim'),
             },
+            'validasi_dokumen' => match ($status) {
+                self::STATUS_BORANG_VALIDATION_PENDING =>
+                $badge(
+                    $bgFromMap(self::STATUS_BORANG_VALIDATION_PENDING, 'bg-warning'),
+                    $labelFor(self::STATUS_BORANG_VALIDATION_PENDING) ?? 'Menunggu Validasi Dokumen'
+                ),
+                self::STATUS_BORANG_IN_VALIDATION =>
+                $badge(
+                    $bgFromMap(self::STATUS_BORANG_IN_VALIDATION, 'bg-info'),
+                    $labelFor(self::STATUS_BORANG_IN_VALIDATION) ?? 'Validasi Dokumen Berlangsung'
+                ),
+                self::STATUS_BORANG_REVISION_REQUIRED =>
+                $badge(
+                    $bgFromMap(self::STATUS_BORANG_REVISION_REQUIRED, 'bg-danger'),
+                    $labelFor(self::STATUS_BORANG_REVISION_REQUIRED) ?? 'Dokumen Perlu Revisi'
+                ),
+                self::STATUS_BORANG_VALIDATED =>
+                $badge(
+                    $bgFromMap(self::STATUS_BORANG_VALIDATED, 'bg-success'),
+                    $labelFor(self::STATUS_BORANG_VALIDATED) ?? 'Dokumen Divalidasi'
+                ),
+                default =>
+                $audience === 'de'
+                    ? $badge('bg-secondary', 'Draft Dokumen belum dikirim')
+                    : $badge('bg-secondary', 'Draft Dokumen belum dikirim'),
+            },
             'penugasan_asesor_ak' => match ($status) {
                 self::STATUS_PENGAJUAN_COMPLETED =>
                 $badge('bg-info', $labelFor(self::STATUS_PENGAJUAN_COMPLETED) ?? '-'),
@@ -1383,6 +1411,11 @@ class PengajuanAkreditasi extends Model
                 default => $badge('bg-secondary', '-'),
             },
             'pelaksanaan_al' => match ($status) {
+                self::STATUS_ASESOR_AL_ASSIGNED =>
+                $audience === 'de'
+                    ? $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Proses Pelaksanaan AL Berlangsung' : 'Proses Pelaksanaan AL')
+                    : $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Proses Pelaksanaan AL Berlangsung' : 'Proses Pelaksanaan AL'),
+
                 self::STATUS_AL_IN_PROGRESS =>
                 $badge('bg-success', $labelFor(self::STATUS_AL_IN_PROGRESS) ?? '-'),
                 self::STATUS_AL_SELESAI =>

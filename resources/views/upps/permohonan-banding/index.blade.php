@@ -6,18 +6,6 @@
 
 @push('styles')
 <style>
-    .stat-card {
-        border-radius: 12px;
-        transition: all 0.3s ease;
-        border: none;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
     .table-hover tbody tr {
         transition: all 0.2s ease;
     }
@@ -73,56 +61,17 @@
     @endif
 
     <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-lg-4 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Total Permohonan Banding</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['total'] }}</h2>
-                            <small class="opacity-75">Banding diajukan</small>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
-                            <i class="bi bi-arrow-repeat"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 mb-4">
+        <div class="col mb-3">
+            <x-stat-card title="Total Permohonan Banding" :value="$stats['total']" description="Banding diajukan" icon="arrow-repeat" iconBg="primary-subtle" />
         </div>
 
-        <div class="col-lg-4 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Dalam Proses</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['dalam_proses'] }}</h2>
-                            <small class="opacity-75">Sedang diproses</small>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
-                            <i class="bi bi-hourglass-split"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="col mb-3">
+            <x-stat-card title="Dalam Proses" :value="$stats['dalam_proses']" description="Sedang diproses" icon="hourglass-split" iconBg="warning-subtle" />
         </div>
 
-        <div class="col-lg-4 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Selesai</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['selesai'] }}</h2>
-                            <small class="opacity-75">Banding dilaporkan</small>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
-                            <i class="bi bi-check-circle"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="col mb-3">
+            <x-stat-card title="Selesai" :value="$stats['selesai']" description="Banding dilaporkan" icon="check-circle" iconBg="success-subtle" />
         </div>
     </div>
 

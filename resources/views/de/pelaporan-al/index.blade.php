@@ -20,56 +20,17 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="row g-3 mb-4">
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                <div class="card-body text-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="mb-1 opacity-75">Total AL Selesai</h6>
-                            <h2 class="mb-0 fw-bold">{{ $stats['total'] }}</h2>
-                            <small class="opacity-75">Validasi selesai</small>
-                        </div>
-                        <div>
-                            <i class="bi bi-clipboard-check" style="font-size: 3rem; opacity: 0.3;"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 mb-4">
+        <div class="col mb-3">
+            <x-stat-card title="Total AL Selesai" :value="$stats['total']" description="Validasi selesai" icon="clipboard-check" gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)" />
         </div>
 
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                <div class="card-body text-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="mb-1 opacity-75">Belum Dilaporkan</h6>
-                            <h2 class="mb-0 fw-bold">{{ $stats['belum_lapor'] }}</h2>
-                            <small class="opacity-75">Menunggu pelaporan</small>
-                        </div>
-                        <div>
-                            <i class="bi bi-exclamation-triangle" style="font-size: 3rem; opacity: 0.3;"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="col mb-3">
+            <x-stat-card title="Belum Dilaporkan" :value="$stats['belum_lapor']" description="Menunggu pelaporan" icon="exclamation-triangle" gradient="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" />
         </div>
 
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                <div class="card-body text-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="mb-1 opacity-75">Sudah Dilaporkan</h6>
-                            <h2 class="mb-0 fw-bold">{{ $stats['sudah_lapor'] }}</h2>
-                            <small class="opacity-75">Pelaporan lengkap</small>
-                        </div>
-                        <div>
-                            <i class="bi bi-check-circle" style="font-size: 3rem; opacity: 0.3;"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="col mb-3">
+            <x-stat-card title="Sudah Dilaporkan" :value="$stats['sudah_lapor']" description="Pelaporan lengkap" icon="check-circle" gradient="linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" />
         </div>
     </div>
 

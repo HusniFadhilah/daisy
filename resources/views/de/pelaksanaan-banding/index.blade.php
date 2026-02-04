@@ -5,28 +5,6 @@
 
 @push('styles')
 <style>
-    .stat-card {
-        border-radius: 12px;
-        transition: all 0.3s ease;
-        border: none;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    .stat-icon {
-        width: 60px;
-        height: 60px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 28px;
-    }
-
     .table-hover tbody tr {
         transition: all 0.2s ease;
     }
@@ -78,110 +56,21 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Total Banding</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-2 fw-bold">{{ $stats['total'] }}</h2>
-                            <small class="opacity-75">Total pengajuan banding yang masuk</small>
-                        </div>
-                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
-                            <i class="bi bi-file-earmark-break"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 mb-4">
+        <div class="col mb-3">
+            <x-stat-card title="Total Banding" :value="$stats['total']" description="Total pengajuan banding yang masuk" icon="file-earmark-break" gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)" />
         </div>
 
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Banding Diajukan</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['diajukan'] }}</h2>
-                            <small class="opacity-75">Menunggu untuk dilaksanakan</small>
-                        </div>
-                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
-                            <i class="bi bi-hourglass-split"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="col mb-3">
+            <x-stat-card title="Banding Diajukan" :value="$stats['diajukan']" description="Menunggu untuk dilaksanakan" icon="hourglass-split" gradient="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" />
         </div>
 
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Sedang Dilaksanakan</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['sedang_dilaksanakan'] }}</h2>
-                            <small class="opacity-75">Proses banding sedang berlangsung</small>
-                        </div>
-                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
-                            <i class="bi bi-arrow-repeat"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="col mb-3">
+            <x-stat-card title="Sedang Dilaksanakan" :value="$stats['sedang_dilaksanakan']" description="Proses banding sedang berlangsung" icon="arrow-repeat" gradient="linear-gradient(135deg, #fa709a 0%, #fee140 100%)" />
         </div>
 
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Banding Selesai</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['selesai'] }}</h2>
-                            <small class="opacity-75">Banding telah selesai dan dilaporkan</small>
-                        </div>
-                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
-                            <i class="bi bi-check-circle"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Hasil Banding Statistics -->
-    <div class="row mb-4">
-        <div class="col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                <div class="card-body text-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="mb-1 opacity-75">Banding Diterima</h6>
-                            <h2 class="mb-0 fw-bold">{{ $stats['diterima'] }}</h2>
-                            <small class="opacity-75">Hasil akreditasi direvisi sesuai banding</small>
-                        </div>
-                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
-                            <i class="bi bi-check2-circle"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);">
-                <div class="card-body text-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="mb-1 opacity-75">Banding Ditolak</h6>
-                            <h2 class="mb-0 fw-bold">{{ $stats['ditolak'] }}</h2>
-                            <small class="opacity-75">Hasil akreditasi tetap sesuai awal</small>
-                        </div>
-                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
-                            <i class="bi bi-x-circle"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="col mb-3">
+            <x-stat-card title="Banding Selesai" :value="$stats['selesai']" description="Banding telah selesai dan dilaporkan" icon="check-circle" gradient="linear-gradient(135deg, #11998e 0%, #38ef7d 100%)" />
         </div>
     </div>
 

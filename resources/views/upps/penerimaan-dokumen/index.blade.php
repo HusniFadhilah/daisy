@@ -6,18 +6,6 @@
 
 @push('styles')
 <style>
-    .stat-card {
-        border-radius: 12px;
-        transition: all 0.3s ease;
-        border: none;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
     .table-hover tbody tr {
         transition: all 0.2s ease;
     }
@@ -55,60 +43,17 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="row mb-4">
-
-        {{-- Total dokumen yang harus dikirim --}}
-        <div class="col-lg-4 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Total Dokumen Harus Dikirim</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['dokumen_harus_dikirim'] }}</h2>
-                            <small class="opacity-75">Total dokumen yang harus dikirim</small>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
-                            <i class="bi bi-upload"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 mb-4">
+        <div class="col mb-3">
+            <x-stat-card title="Total Dokumen Harus Dikirim" :value="$stats['dokumen_harus_dikirim']" description="Total dokumen yang harus dikirim" icon="upload" iconBg="warning-subtle" />
         </div>
 
-        {{-- Total draft dokumen --}}
-        <div class="col-lg-4 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Total Draft Dokumen</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['draft_dokumen'] }}</h2>
-                            <small class="opacity-75">Jumlah Draft dokumen yang telah dikirim (menunggu validasi atau sedang diproses)</small>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
-                            <i class="bi bi-file-earmark-text"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="col mb-3">
+            <x-stat-card title="Total Draft Dokumen" :value="$stats['draft_dokumen']" description="Jumlah draft dokumen yang telah dikirim (menunggu validasi atau sedang diproses)" icon="file-earmark-text" iconBg="primary-subtle" />
         </div>
 
-        {{-- Total dokumen dikirim --}}
-        <div class="col-lg-4 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Total Dokumen Diproses</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['dokumen_dikirim'] }}</h2>
-                            <small class="opacity-75">Jumlah Dokumen yang telah selesai diproses</small>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
-                            <i class="bi bi-send"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="col mb-3">
+            <x-stat-card title="Total Dokumen Diproses" :value="$stats['dokumen_dikirim']" description="Jumlah dokumen yang telah selesai diproses" icon="send" iconBg="success-subtle" />
         </div>
     </div>
 

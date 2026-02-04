@@ -446,7 +446,7 @@
             <div class="alert alert-warning alert-permanent fade show" style="border-left: 4px solid #ffc107;">
                 <i class="bi bi-exclamation-triangle-fill me-2"></i>
                 <strong>Perhatian!</strong>
-                Ada <strong>{{ $stats['pengingat_bulan_target'] }}</strong> prodi yang perlu diingatkan tentang masa akreditasi berakhir dalam 7 bulan dari sekarang ({{ $stats['pengingat']['target_month_label'] }}).
+                Ada <strong>{{ $stats['pengingat_bulan_target'] }}</strong> PS yang perlu diingatkan tentang masa akreditasi berakhir dalam 7 bulan dari sekarang ({{ $stats['pengingat']['target_month_label'] }}).
                 <a href="javascript:void(0)" class="mt-2 btn-reminder-bg" onclick="openReminderModal()">
                     Kirim Pengingat →
                 </a>

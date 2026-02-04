@@ -32,19 +32,26 @@
         <!-- Main Content -->
         <div class="col-lg-8 mb-4">
             <!-- Status Alert -->
-            @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AL_SELESAI)
+            @php
+            $allowed = [
+            \App\Models\PengajuanAkreditasi::STATUS_AL_SELESAI,
+            \App\Models\PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
+            ]; // ini contoh, bisa dinamis dari config/db/request
+
+            $log = $pengajuan->latestRelevantStatusLog($allowed);
+            @endphp
+            <!-- Status Alert -->
+            @if($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_AL_SELESAI)
             <div class="alert alert-success alert-permanent">
-                <i class="bi bi-check-circle"></i>
-                <strong>Asesmen Lapangan telah selesai</strong>
-                <br>
-                Proses asesmen lapangan telah selesai dilakukan dan menunggu pelaporan
+                <i class="bi bi-person-check"></i>
+                <strong>Proses Pelaporan AL</strong><br>
+                Permohonan akreditasi program studi memasuki tahap pelaporan AL
             </div>
-            @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AL_DILAPORKAN)
+            @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_AK_DILAPORKAN)
             <div class="alert alert-success alert-permanent">
-                <i class="bi bi-patch-check"></i>
-                <strong>Hasil Asesmen Lapangan telah dilaporkan</strong>
-                <br>
-                Hasil asesmen telah dilaporkan dan proses dilanjutkan ke tahap berikutnya
+                <i class="bi bi-person-check"></i>
+                <strong>Proses Pelaporan AL</strong><br>
+                Permohonan akreditasi program studi memasuki tahap pelaporan AL
             </div>
             @endif
 
@@ -70,10 +77,6 @@
                             <td>: {{ $pengajuan->studyProgram->university->name }}</td>
                         </tr>
                         <tr>
-                            <th>Jenjang</th>
-                            <td>: {{ $pengajuan->studyProgram->degreeLevel->name ?? '-' }}</td>
-                        </tr>
-                        <tr>
                             <th>Jenis Permohonan</th>
                             <td>: {{ $pengajuan->jenis_akreditasi_label }}</td>
                         </tr>
@@ -82,19 +85,7 @@
                             <td>: {{ $pengajuan->tahun_akreditasi }}</td>
                         </tr>
                         <tr>
-                            <th>Asesor AL</th>
-                            <td>
-                                @if($pengajuan->asesmen->asesorAL)
-                                : {{ $pengajuan->asesmen->asesorAL()->name }}
-                                <br>
-                                <small class="text-muted">{{ $pengajuan->asesmen->asesorAL()->email }}</small>
-                                @else
-                                : <span class="text-muted">-</span>
-                                @endif
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Tanggal Mulai Asesmen</th>
+                            <th>Tanggal Mulai AL</th>
                             <td>
                                 : {{ $pengajuan->tanggal_al_mulai
                                     ? $pengajuan->tanggal_al_mulai->format('d M Y H:i')
@@ -102,7 +93,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <th>Tanggal Asesmen Selesai</th>
+                            <th>Tanggal AL Selesai</th>
                             <td>
                                 : {{ $pengajuan->tanggal_al_selesai
                                     ? $pengajuan->tanggal_al_selesai->format('d M Y H:i')
@@ -110,7 +101,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <th>Tanggal Hasil Dilaporkan</th>
+                            <th>Tanggal Pelaporan AL</th>
                             <td>
                                 : {{ $pengajuan->tanggal_al_dilaporkan
                                     ? $pengajuan->tanggal_al_dilaporkan->format('d M Y H:i')
@@ -282,14 +273,13 @@
                     @php
                     $filterStatuses = [
                     \App\Models\PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
-                    \App\Models\PengajuanAkreditasi::STATUS_AL_ON_VALIDATION,
                     \App\Models\PengajuanAkreditasi::STATUS_AL_SELESAI,
                     \App\Models\PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
                     ];
 
                     $logs = $pengajuan->statusLog
                     ->whereIn('status_to', $filterStatuses)
-                    ->sortByDesc('changed_at');
+                    ->sortBy('changed_at');
                     @endphp
 
                     @if($logs->count() > 0)
@@ -304,7 +294,6 @@
                                     \App\Models\PengajuanAkreditasi::STATUS_AL_DILAPORKAN
                                     => 'text-success',
                                     \App\Models\PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
-                                    \App\Models\PengajuanAkreditasi::STATUS_AL_ON_VALIDATION
                                     => 'text-warning',
                                     default => 'text-info',
                                     };

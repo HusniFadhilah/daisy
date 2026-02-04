@@ -46,7 +46,7 @@
                             <small class="text-muted">Dibuat pada: {{ \App\Libraries\Date::tglIndo($pengajuan->created_at) }}</small> --}}
                         </td>
                         <td>
-                            {!! $pengajuan->getCustomBadgeLastStatus('borang_final','de','label_short_for') !!}
+                            {!! $pengajuan->getCustomBadgeLastStatus('draft_borang','de','label_short_for') !!}
 
                             @if($currentStatus == \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI)
                             <br><small class="text-muted">Perlu menugaskan validator</small>

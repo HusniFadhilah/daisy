@@ -224,7 +224,7 @@
                     <h5 class="mb-0"><i class="bi bi-clock-history"></i> Timeline Lengkap</h5>
                 </div>
                 <div class="card-body" style="max-height: 600px; overflow-y: auto;">
-                    @forelse($pengajuan->statusLog->sortByDesc('changed_at') as $log)
+                    @forelse($pengajuan->statusLog->sortBy('changed_at') as $log)
                     <div class="mb-3 pb-3 border-bottom">
                         <strong class="d-block">
                             {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['de'] ?? $log->status_to }}

@@ -6,28 +6,6 @@
 
 @push('styles')
 <style>
-    .stat-card {
-        border-radius: 12px;
-        transition: all 0.3s ease;
-        border: none;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    .stat-icon {
-        width: 60px;
-        height: 60px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 28px;
-    }
-
     .table-hover tbody tr {
         transition: all 0.2s ease;
     }
@@ -81,56 +59,17 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-lg-4 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Total Pengiriman Formulir dan Template Dokumen</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-2 fw-bold">{{ $stats['total'] }}</h2>
-                            <small class="opacity-75">Total pengiriman formulir dan template dokumen saat ini</small>
-                        </div>
-                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
-                            <i class="bi bi-file-earmark-text"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 mb-4">
+        <div class="col mb-3">
+            <x-stat-card title="Total Pengiriman Formulir dan Template Dokumen" :value="$stats['total']" description="Total pengiriman formulir dan template dokumen saat ini" icon="file-earmark-text" gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)" />
         </div>
 
-        <div class="col-lg-4 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Belum Dikirim Template</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['belum_dikirim'] }}</h2>
-                            <small class="opacity-75">Permohonan akreditasi dari PS yang menunggu pengiriman formulir dan template dokumen</small>
-                        </div>
-                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
-                            <i class="bi bi-hourglass-split"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="col mb-3">
+            <x-stat-card title="Belum Dikirim Template" :value="$stats['belum_dikirim']" description="Permohonan akreditasi dari PS yang menunggu pengiriman formulir dan template dokumen" icon="hourglass-split" gradient="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" />
         </div>
 
-        <div class="col-lg-4 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Telah Dikirim Template</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['sudah_dikirim'] }}</h2>
-                            <small class="opacity-75">Jumlah formulir dan template dokumen yang telah dikirim ke PS</small>
-                        </div>
-                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
-                            <i class="bi bi-check-circle"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="col mb-3">
+            <x-stat-card title="Telah Dikirim Template" :value="$stats['sudah_dikirim']" description="Jumlah formulir dan template dokumen yang telah dikirim ke PS" icon="check-circle" gradient="linear-gradient(135deg, #11998e 0%, #38ef7d 100%)" />
         </div>
     </div>
 

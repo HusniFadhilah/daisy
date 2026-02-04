@@ -146,6 +146,66 @@
 
         <!-- Right: Assignment -->
         <div class="col-lg-8">
+            @php
+            $suratTugasAsesor = $pengajuan->dokumen
+            ->where('jenis_dokumen', 'surat_tugas_asesor_al')
+            ->where('is_latest', true)
+            ->first();
+            @endphp
+
+            @if($suratTugasAsesor)
+            <div class="card mb-3 border-success">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0">
+                        <i class="bi bi-file-earmark-text"></i> Surat Tugas Asesor AL
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-file-earmark-pdf text-danger me-3" style="font-size: 48px;"></i>
+                            <div>
+                                <strong>{{ $suratTugasAsesor->original_filename }}</strong>
+                                <br>
+                                <small class="text-muted">
+                                    @if($suratTugasAsesor->file_size)
+                                    {{ number_format($suratTugasAsesor->file_size / 1024, 2) }} KB
+                                    @endif
+                                </small>
+                                <br>
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar"></i> Dibuat: {{ $suratTugasAsesor->created_at->format('d M Y H:i') }}
+                                </small>
+                                <br>
+                                <span class="badge bg-success">Surat Tugas Asesor AL</span>
+                                <span class="badge bg-secondary">Versi {{ $suratTugasAsesor->versi }}</span>
+                            </div>
+                        </div>
+                        <div class="btn-group btn-group-sm">
+                            @if($suratTugasAsesor->path_file || $suratTugasAsesor->template_link)
+                            <a href="{{ route('de.penugasan-al.download-surat-tugas', [$pengajuan->id, 'surat_tugas_asesor_al']) }}" class="btn btn-success" target="_blank">
+                                <i class="bi bi-download"></i> Lihat File
+                            </a>
+                            @endif
+                            <button type="button" class="btn btn-outline-primary" onclick="showUploadSuratTugasModal()">
+                                <i class="bi bi-upload"></i> Upload Ulang
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @elseif($pengajuan->asesmen && $pengajuan->asesmen->asesmenUserRoles->where('jenis_asesmen', 'al')->count() > 0)
+            <div class="alert alert-warning alert-permanent mb-3">
+                <i class="bi bi-exclamation-triangle"></i>
+                <strong>Surat Tugas Belum Tersedia</strong>
+                <br>
+                <small>Surat tugas akan dibuat otomatis saat menugaskan asesor pertama, atau klik tombol upload untuk upload manual.</small>
+                <button type="button" class="btn btn-sm btn-warning mt-2" onclick="showUploadSuratTugasModal()">
+                    <i class="bi bi-upload"></i> Upload Surat Tugas
+                </button>
+            </div>
+            @endif
+
             <!-- Assign Form -->
             <div class="card mb-3">
                 <div class="card-header bg-success text-white">
@@ -176,6 +236,12 @@
                             <div class="col-md-6">
                                 <label class="form-label">Estimasi Tanggal Selesai: <span class="text-danger">*</span></label>
                                 <input type="date" id="tanggalSelesai" class="form-control" required>
+                            </div>
+                            {{-- ✅ NEW: Upload surat tugas (optional) --}}
+                            <div class="col-md-6">
+                                <label class="form-label">Surat Tugas <span class="text-danger">*</span></label>
+                                <input type="file" id="fileSuratTugas" class="form-control" accept=".pdf">
+                                <small class="text-muted">PDF, max 5MB</small>
                             </div>
                             <div class="col-12">
                                 <button type="submit" class="btn btn-success">
@@ -223,7 +289,7 @@
                                 </td>
                                 <td>
                                     <span class="badge bg-{{ $assignment->status_pekerjaan === 'submitted' ? 'success' : ($assignment->status_pekerjaan === 'in_progress' ? 'info' : 'secondary') }}">
-                                        {{ ucfirst(str_replace('_', ' ', $assignment->status_pekerjaan)) }}
+                                        {{ ucfirst(str_replace('_', ' ', $assignment->status_pekerjaan ?? 'not_started')) }}
                                     </span>
                                 </td>
                                 <td>
@@ -235,7 +301,7 @@
                                     <small class="text-muted">{{ $progress['completed'] }}/{{ $progress['total'] }}</small>
                                 </td>
                                 <td>
-                                    <button class="btn btn-sm btn-danger" onclick="removeAsesor({{ $pengajuan->id }}, {{ $assignment->id_user }}, '{{ $assignment->user->name }}')" {{ $assignment->status_pekerjaan !== 'not_started' ? 'disabled' : '' }}>
+                                    <button class="btn btn-sm btn-danger" onclick="removeAsesor({{ $pengajuan->id }}, {{ $assignment->id_user }}, '{{ $assignment->user->name }}')" {{ ($assignment->status_pekerjaan ?? 'not_started') !== 'not_started' ? 'disabled' : '' }}>
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </td>
@@ -293,6 +359,43 @@
     </div>
 </div>
 
+<div class="modal fade" id="modalUploadSuratTugas" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-upload"></i> Upload Surat Tugas Asesor AL
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="formUploadSuratTugas" method="POST" action="{{ route('de.penugasan-al.upload-surat-tugas', [$pengajuan->id, 'surat_tugas_asesor_al']) }}" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">
+                            File Surat Tugas (PDF) <span class="text-danger">*</span>
+                        </label>
+                        <input type="file" name="file_surat_tugas" id="modalFileSuratTugas" class="form-control" accept=".pdf" required>
+                        <small class="text-muted">Format: PDF | Maksimal: 5MB</small>
+                        <div id="modalSuratTugasPreview" class="mt-2"></div>
+                    </div>
+
+                    <div class="alert alert-info alert-permanent">
+                        <i class="bi bi-info-circle"></i>
+                        File yang diupload akan menggantikan surat tugas sebelumnya (jika ada).
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-upload"></i> Upload
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @php
 $hasAsesmenLapangan = $pengajuan->asesmen?->asesmenLapangan;
 @endphp
@@ -310,6 +413,7 @@ $hasAsesmenLapangan = $pengajuan->asesmen?->asesmenLapangan;
         const tanggalMulai = document.getElementById('tanggalMulai').value;
         const tanggalSelesai = document.getElementById('tanggalSelesai').value;
         const lokasiVisitasi = document.getElementById('lokasiVisitasi').value;
+        const fileSuratTugas = document.getElementById('fileSuratTugas').files[0];
 
         // Validate dates
         if (new Date(tanggalSelesai) < new Date(tanggalMulai)) {
@@ -321,20 +425,24 @@ $hasAsesmenLapangan = $pengajuan->asesmen?->asesmenLapangan;
             return;
         }
 
+        const formData = new FormData();
+        formData.append('id_user', userId);
+        formData.append('tanggal_mulai', tanggalMulai);
+        formData.append('tanggal_selesai', tanggalSelesai);
+        formData.append('lokasi_visitasi', lokasiVisitasi);
+
+        if (fileSuratTugas) {
+            formData.append('file_surat_tugas', fileSuratTugas);
+        }
+
         try {
             const response = await fetch(`/de/penugasan-al/${pengajuanId}/assign-asesor`, {
                 method: 'POST'
                 , headers: {
-                    'Content-Type': 'application/json'
-                    , 'X-CSRF-TOKEN': csrfToken
+                    'X-CSRF-TOKEN': csrfToken
                     , 'Accept': 'application/json'
-                , }
-                , body: JSON.stringify({
-                    id_user: userId
-                    , tanggal_mulai: tanggalMulai
-                    , tanggal_selesai: tanggalSelesai
-                    , lokasi_visitasi: lokasiVisitasi
-                })
+                }
+                , body: formData
             });
 
             const data = await response.json();
@@ -356,6 +464,14 @@ $hasAsesmenLapangan = $pengajuan->asesmen?->asesmenLapangan;
                 , text: error.message
             });
         }
+    }
+
+    function showUploadSuratTugasModal() {
+        document.getElementById('modalFileSuratTugas').value = '';
+        document.getElementById('modalSuratTugasPreview').innerHTML = '';
+
+        const modal = new bootstrap.Modal(document.getElementById('modalUploadSuratTugas'));
+        modal.show();
     }
 
     // Remove Asesor
@@ -467,6 +583,48 @@ $hasAsesmenLapangan = $pengajuan->asesmen?->asesmenLapangan;
                 , text: 'Terjadi kesalahan: ' + error.message
             });
         }
+    }
+
+    const modalFileSuratTugas = document.getElementById('modalFileSuratTugas');
+    if (modalFileSuratTugas) {
+        modalFileSuratTugas.addEventListener('change', function(e) {
+            const preview = document.getElementById('modalSuratTugasPreview');
+            const file = e.target.files[0];
+
+            if (!file) {
+                preview.innerHTML = '';
+                return;
+            }
+
+            const fileSize = file.size / 1024 / 1024;
+
+            if (file.type !== 'application/pdf') {
+                preview.innerHTML =
+                    '<div class="alert alert-danger alert-dismissible fade show">' +
+                    '<i class="bi bi-x-circle"></i> File harus berformat PDF' +
+                    '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                    '</div>';
+                e.target.value = '';
+                return;
+            }
+
+            if (fileSize > 5) {
+                preview.innerHTML =
+                    '<div class="alert alert-danger alert-dismissible fade show">' +
+                    '<i class="bi bi-x-circle"></i> Ukuran file terlalu besar. Maksimal 5 MB' +
+                    '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                    '</div>';
+                e.target.value = '';
+                return;
+            }
+
+            preview.innerHTML =
+                '<div class="alert alert-success alert-dismissible fade show">' +
+                '<i class="bi bi-check-circle"></i> ' +
+                '<strong>' + file.name + '</strong> (' + fileSize.toFixed(2) + ' MB)' +
+                '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                '</div>';
+        });
     }
 
 </script>

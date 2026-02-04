@@ -346,7 +346,7 @@
                 </div>
                 <div class="card-body" style="max-height: 600px; overflow-y: auto;">
                     @php
-                    $logs = $pengajuan->statusLog->sortByDesc('changed_at');
+                    $logs = $pengajuan->statusLog->sortBy('changed_at');
                     @endphp
 
                     @if($logs->count() > 0)

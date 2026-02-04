@@ -14,69 +14,21 @@
     </div>
 
     {{-- Statistics Cards --}}
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-1">Total Pengajuan</h6>
-                            <h2 class="mb-0">{{ $stats['total'] }}</h2>
-                        </div>
-                        <div class="text-primary">
-                            <i class="bi bi-file-text display-4"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 mb-4">
+        <div class="col mb-3">
+            <x-stat-card title="Total Pengajuan" :value="$stats['total']" description="" icon="file-text" iconBg="primary-subtle" />
         </div>
 
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-1">Masa Sanggah Aktif</h6>
-                            <h2 class="mb-0 text-success">{{ $stats['aktif'] }}</h2>
-                        </div>
-                        <div class="text-success">
-                            <i class="bi bi-hourglass-split display-4"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="col mb-3">
+            <x-stat-card title="Masa Sanggah Aktif" :value="$stats['aktif']" description="" icon="hourglass-split" iconBg="success-subtle" />
         </div>
 
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-1">Hampir Habis</h6>
-                            <h2 class="mb-0 text-warning">{{ $stats['hampir_habis'] }}</h2>
-                        </div>
-                        <div class="text-warning">
-                            <i class="bi bi-exclamation-triangle display-4"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="col mb-3">
+            <x-stat-card title="Hampir Habis" :value="$stats['hampir_habis']" description="" icon="exclamation-triangle" iconBg="warning-subtle" />
         </div>
 
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-1">Ada Banding</h6>
-                            <h2 class="mb-0 text-danger">{{ $stats['ada_banding'] }}</h2>
-                        </div>
-                        <div class="text-danger">
-                            <i class="bi bi-file-earmark-break display-4"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="col mb-3">
+            <x-stat-card title="Ada Banding" :value="$stats['ada_banding']" description="" icon="file-earmark-break" iconBg="danger-subtle" />
         </div>
     </div>
 

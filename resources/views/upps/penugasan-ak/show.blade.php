@@ -116,77 +116,12 @@
                 </div>
             </div>
 
-            {{-- ✅ Surat Tugas Section --}}
-            @php
-            $suratTugasAsesor = $pengajuan->dokumen
-            ->where('jenis_dokumen', 'surat_tugas_asesor_ak')
-            ->where('is_latest', true)
-            ->first();
-
-            $suratTugasValidator = $pengajuan->dokumen
-            ->where('jenis_dokumen', 'surat_tugas_validator_ak')
-            ->where('is_latest', true)
-            ->first();
-            @endphp
-
-            {{-- Surat Tugas Asesor AK --}}
-            @if($suratTugasAsesor)
-            <div class="card mb-4 border-success">
-                <div class="card-header bg-success text-white">
-                    <h5 class="mb-0">
-                        <i class="bi bi-file-earmark-text"></i> Surat Tugas Asesor AK
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-file-earmark-pdf text-danger me-3" style="font-size: 48px;"></i>
-                            <div>
-                                <strong>{{ $suratTugasAsesor->original_filename }}</strong>
-                                <br>
-                                <small class="text-muted">
-                                    @if($suratTugasAsesor->file_size)
-                                    {{ number_format($suratTugasAsesor->file_size / 1024, 2) }} KB
-                                    @endif
-                                </small>
-                                <br>
-                                <small class="text-muted">
-                                    <i class="bi bi-calendar"></i> Dibuat: {{ $suratTugasAsesor->created_at->format('d M Y H:i') }}
-                                </small>
-                            </div>
-                        </div>
-                        <div>
-                            @if($suratTugasAsesor->path_file)
-                            <a href="{{ route('upps.penerimaan-dokumen.dokumen.download', $suratTugasAsesor->id) }}" class="btn btn-success btn-md" target="_blank">
-                                <i class="bi bi-download"></i> Download
-                            </a>
-                            @elseif($suratTugasAsesor->template_link)
-                            <a href="{{ $suratTugasAsesor->template_link }}" class="btn btn-success btn-md" target="_blank">
-                                <i class="bi bi-box-arrow-up-right"></i> Buka Link
-                            </a>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-            </div>
-            @endif
-
-            {{-- ✅ Info jika belum ada surat tugas --}}
-            @if(!$suratTugasAsesor && !$suratTugasValidator && $pengajuan->asesmen && ($pengajuan->asesmen->asesorAK->count() > 0 || $pengajuan->asesmen->validatorAK->count() > 0))
-            <div class="alert alert-warning alert-permanent mb-4">
-                <i class="bi bi-exclamation-triangle"></i>
-                <strong>Surat Tugas Belum Tersedia</strong>
-                <br>
-                <small>Surat tugas penugasan asesor/validator sedang dalam proses pembuatan oleh LAMDEPILAR.</small>
-            </div>
-            @endif
-
             <!-- Informasi Asesor -->
             @if($pengajuan->asesmen && $pengajuan->asesmen->asesorAK->count() > 0)
             <div class="card mb-4">
                 <div class="card-header bg-success text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-person-badge"></i> Informasi Asesor
+                        <i class="bi bi-person-badge"></i> Informasi Asesor AK
                     </h5>
                 </div>
                 <div class="card-body">

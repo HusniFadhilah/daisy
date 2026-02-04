@@ -4,28 +4,6 @@
 
 @push('styles')
 <style>
-    .stat-card {
-        border-radius: 12px;
-        transition: all 0.3s ease;
-        border: none;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    .stat-icon {
-        width: 60px;
-        height: 60px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 28px;
-    }
-
     .filter-card {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
@@ -66,95 +44,29 @@
         </div>
     </div>
     <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-lg-2 col-md-4 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Total Penugasan</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h2 class="mb-0 fw-bold">{{ $stats['total'] }}</h2>
-                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
-                            <i class="bi bi-clipboard-check"></i>
-                        </div>
-                    </div>
-                    <small class="opacity-75">Validator telah ditugaskan oleh LAMDEPILAR untuk memvalidasi Dokumen</small>
-                </div>
-            </div>
+    <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 mb-4">
+        <div class="col mb-3">
+            <x-stat-card title="Total Penugasan" :value="$stats['total']" description="Validator telah ditugaskan oleh LAMDEPILAR untuk memvalidasi Dokumen" icon="clipboard-check" gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)" />
         </div>
 
-        <div class="col-lg-2 col-md-4 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Menunggu Konfirmasi</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h2 class="mb-0 fw-bold">{{ $stats['pending'] }}</h2>
-                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
-                            <i class="bi bi-hourglass-split"></i>
-                        </div>
-                    </div>
-                    <small class="opacity-75">Validator telah ditugaskan oleh LAMDEPILAR untuk memvalidasi dokumen, tetapi belum ada status menerima/menolak tawaran</small>
-                </div>
-            </div>
+        <div class="col mb-3">
+            <x-stat-card title="Menunggu Konfirmasi" :value="$stats['pending']" description="Validator telah ditugaskan oleh LAMDEPILAR untuk memvalidasi dokumen, tetapi belum ada status menerima/menolak tawaran" icon="hourglass-split" gradient="linear-gradient(135deg, #ffc107 0%, #ff8c00 100%)" />
         </div>
 
-        <div class="col-lg-2 col-md-4 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #868f96 0%, #596164 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Belum Mulai</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h2 class="mb-0 fw-bold">{{ $stats['not_started'] }}</h2>
-                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
-                            <i class="bi bi-clock"></i>
-                        </div>
-                    </div>
-                    <small class="opacity-75">Validator telah menerima tugas validasi dokumen dari LAMDEPILAR, tetapi belum dikerjakan</small>
-                </div>
-            </div>
+        {{-- <div class="col mb-3">
+            <x-stat-card title="Belum Mulai" :value="$stats['not_started']" description="Validator telah menerima tugas validasi dokumen dari LAMDEPILAR, tetapi belum dikerjakan" icon="clock" gradient="linear-gradient(135deg, #868f96 0%, #596164 100%)" />
+        </div> --}}
+
+        <div class="col mb-3">
+            <x-stat-card title="Sedang Validasi" :value="$stats['in_progress']" description="Validator telah menerima tugas validasi dokumen dari LAMDEPILAR, dan sedang mengerjakan validasi dokumen" icon="arrow-repeat" gradient="linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" />
         </div>
 
-        <div class="col-lg-2 col-md-4 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Sedang Validasi</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h2 class="mb-0 fw-bold">{{ $stats['in_progress'] }}</h2>
-                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
-                            <i class="bi bi-arrow-repeat"></i>
-                        </div>
-                    </div>
-                    <small class="opacity-75">Validator telah menerima tugas validasi dokumen dari LAMDEPILAR, dan sedang mengerjakan validasi dokumen</small>
-                </div>
-            </div>
-        </div>
+        {{-- <div class="col mb-3">
+            <x-stat-card title="Perlu Revisi" :value="$stats['revision_required']" description="Validator sedang mengerjakan validasi dokumen, dan meminta PS untuk melakukan revisi Dokumen" icon="exclamation-triangle" gradient="linear-gradient(135deg, #ee0979 0%, #ff6a00 100%)" />
+        </div> --}}
 
-        <div class="col-lg-2 col-md-4 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Perlu Revisi</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h2 class="mb-0 fw-bold">{{ $stats['revision_required'] }}</h2>
-                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
-                            <i class="bi bi-exclamation-triangle"></i>
-                        </div>
-                    </div>
-                    <small class="opacity-75">Validator sedang mengerjakan validasi dokumen, dan meminta PS untuk melakukan revisi Dokumen</small>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-2 col-md-4 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Disetujui</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h2 class="mb-0 fw-bold">{{ $stats['approved'] }}</h2>
-                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
-                            <i class="bi bi-check-circle"></i>
-                        </div>
-                    </div>
-                    <small class="opacity-75">Proses validasi Dokumen telah selesai dilakukan</small>
-                </div>
-            </div>
+        <div class="col mb-3">
+            <x-stat-card title="Disetujui" :value="$stats['approved']" description="Proses validasi Dokumen telah selesai dilakukan" icon="check-circle" gradient="linear-gradient(135deg, #11998e 0%, #38ef7d 100%)" />
         </div>
     </div>
 

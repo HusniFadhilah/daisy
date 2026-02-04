@@ -6,18 +6,6 @@
 
 @push('styles')
 <style>
-    .stat-card {
-        border-radius: 12px;
-        transition: all 0.3s ease;
-        border: none;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
     .table-hover tbody tr {
         transition: all 0.2s ease;
     }
@@ -78,61 +66,17 @@
     @endif
 
     <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-lg-4 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Total Masa Sanggah</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['total'] }}</h2>
-                            <small class="opacity-75">Semua masa sanggah</small>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
-                            <i class="bi bi-calendar-range"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 mb-4">
+        <div class="col mb-3">
+            <x-stat-card title="Total Masa Sanggah" :value="$stats['total']" description="Semua masa sanggah" icon="calendar-range" iconBg="primary-subtle" />
         </div>
 
-        <div class="col-lg-4 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);">
-                <div class="card-body text-white position-relative">
-                    <h6 class="mb-2 opacity-75">Masa Sanggah Aktif</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['aktif'] }}</h2>
-                            <small class="opacity-75">Sedang berlangsung</small>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
-                            <i class="bi bi-clock-history"></i>
-                        </div>
-                    </div>
-                    @if($stats['aktif'] > 0)
-                    <span class="position-absolute top-0 end-0 m-2 badge bg-danger rounded-pill">
-                        {{ $stats['aktif'] }}
-                    </span>
-                    @endif
-                </div>
-            </div>
+        <div class="col mb-3">
+            <x-stat-card title="Masa Sanggah Aktif" :value="$stats['aktif']" description="Sedang berlangsung" icon="clock-history" iconBg="warning-subtle" />
         </div>
 
-        <div class="col-lg-4 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Masa Sanggah Selesai</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['selesai'] }}</h2>
-                            <small class="opacity-75">Telah berakhir</small>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
-                            <i class="bi bi-check-circle"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="col mb-3">
+            <x-stat-card title="Masa Sanggah Selesai" :value="$stats['selesai']" description="Telah berakhir" icon="check-circle" iconBg="success-subtle" />
         </div>
     </div>
 

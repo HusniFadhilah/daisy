@@ -6,18 +6,6 @@
 
 @push('styles')
 <style>
-    .stat-card {
-        border-radius: 12px;
-        transition: all 0.3s ease;
-        border: none;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
     .table-hover tbody tr {
         transition: all 0.2s ease;
     }
@@ -55,56 +43,17 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-lg-4 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Total Dokumen</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['total'] }}</h2>
-                            <small class="opacity-75">Total dokumen yang telah sampai pada tahap Penugasan Asesor AK</small>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
-                            <i class="bi bi-file-earmark-text"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 mb-4">
+        <div class="col mb-3">
+            <x-stat-card title="Total Dokumen" :value="$stats['total']" description="Total dokumen yang telah sampai pada tahap Penugasan Asesor AK" icon="file-earmark-text" iconBg="primary-subtle" />
         </div>
 
-        <div class="col-lg-4 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #b36730ff 0%, #fe5900ff 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Dokumen Terlaporkan & Menunggu Penugasan Asesor AK</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['terlaporkan'] }}</h2>
-                            <small class="opacity-75">Dokumen telah terlaporkan dan sedang menunggu penugasan asesor AK</small>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
-                            <i class="bi bi-send-check"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="col mb-3">
+            <x-stat-card title="Dokumen Terlaporkan & Menunggu Penugasan Asesor AK" :value="$stats['terlaporkan']" description="Dokumen telah terlaporkan dan sedang menunggu penugasan asesor AK" icon="send-check" iconBg="warning-subtle" />
         </div>
 
-        <div class="col-lg-4 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Penugasan Asesor AK</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['asesor_ditugaskan'] }}</h2>
-                            <small class="opacity-75">Asesor AK telah ditugaskan</small>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
-                            <i class="bi bi-person-check"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="col mb-3">
+            <x-stat-card title="Penugasan Asesor AK" :value="$stats['asesor_ditugaskan']" description="Asesor AK telah ditugaskan" icon="person-check" iconBg="success-subtle" />
         </div>
     </div>
 
@@ -198,8 +147,8 @@
                                 <tr>
                                     <th width="5%">#</th>
                                     <th width="30%">Permohonan Akreditasi</th>
-                                    <th width="25%">Asesor AK</th>
-                                    <th width="25%">Status</th>
+                                    <th width="25%">Tanggal Penugasan Asesor AK</th>
+                                    <th width="25%">Status Penugasan Asesor AK</th>
                                     <th width="5%" class="text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -214,8 +163,12 @@
                                         <small class="text-muted">Dibuat pada: {{ \App\Libraries\Date::tglIndo($pengajuan->created_at) }}</small>
                                     </td>
                                     <td>
-                                        @if($pengajuan->asesmen->asesorAK)
-                                        <span class="text-muted">Asesor AK telah ditugaskan</span>
+                                        @if($pengajuan->tanggal_penugasan_asesor_ak)
+                                        <small>{{ $pengajuan->tanggal_penugasan_asesor_ak->format('d M Y') }}</small>
+                                        <br>
+                                        <small class="text-muted">
+                                            {{ $pengajuan->tanggal_penugasan_asesor_ak->diffForHumans() }}
+                                        </small>
                                         @else
                                         <span class="text-muted">Asesor AK sedang dalam proses penugasan</span>
                                         @endif

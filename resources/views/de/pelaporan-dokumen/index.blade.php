@@ -1,31 +1,9 @@
 @extends('layouts.template.app')
 
-@section('title', 'Monitoring Pelaporan Validasi Dokumen')
+@section('title', 'Pelaporan Validasi Dokumen')
 
 @push('styles')
 <style>
-    .stat-card {
-        border-radius: 12px;
-        transition: all 0.3s ease;
-        border: none;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    .stat-icon {
-        width: 60px;
-        height: 60px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 28px;
-    }
-
     .status-badge {
         padding: 6px 12px;
         border-radius: 20px;
@@ -91,78 +69,28 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">
-                <i class="bi bi-file-earmark-text"></i> Monitoring Pelaporan Validasi Dokumen
+                <i class="bi bi-file-earmark-text"></i> Pelaporan Validasi Dokumen
             </h4>
-            <p class="text-muted mb-0">Pantau proses pelaporan validasi dokumen oleh validator</p>
+            <p class="text-muted mb-0">Kelola proses pelaporan validasi dokumen oleh validator</p>
         </div>
     </div>
 
     <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Total Permohonan</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-2 fw-bold">{{ $stats['total'] }}</h2>
-                            <small class="opacity-75">Total permohonan akreditasi PS yang aktif sampai pada tahap pelaporan</small>
-                        </div>
-                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
-                            <i class="bi bi-file-earmark-text"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Belum Upload</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-2 fw-bold">{{ $stats['belum_upload'] }}</h2>
-                            <small class="opacity-75">Jumlah validator belum upload Laporan Kesiapan LED Program Studi (LKLED)</small>
-                        </div>
-                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
-                            <i class="bi bi-x-circle"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 mb-4">
+        <div class="col mb-3">
+            <x-stat-card title="Total Permohonan" :value="$stats['total']" description="Total permohonan akreditasi PS yang aktif sampai pada tahap pelaporan" icon="file-earmark-text" gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)" />
         </div>
 
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Menunggu Finalisasi</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-2 fw-bold">{{ $stats['menunggu_finalisasi'] }}</h2>
-                            <small class="opacity-75">Jumlah validator sudah upload LKLED, namun belum difinalisasi</small>
-                        </div>
-                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
-                            <i class="bi bi-hourglass-split"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="col mb-3">
+            <x-stat-card title="Belum Upload" :value="$stats['belum_upload']" description="Jumlah validator belum upload Laporan Kesiapan LED Program Studi (LKLED)" icon="x-circle" gradient="linear-gradient(135deg, #ee0979 0%, #ff6a00 100%)" />
         </div>
-        <div class="col-lg-3 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Selesai Dilaporkan</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-2 fw-bold">{{ $stats['selesai'] }}</h2>
-                            <small class="opacity-75">Jumlah Laporan Kesiapan LED Program Studi (LKLED) yang telah difinalisasi & selesai dilaporkan</small>
-                        </div>
-                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
-                            <i class="bi bi-check-circle"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+
+        <div class="col mb-3">
+            <x-stat-card title="Menunggu Finalisasi" :value="$stats['menunggu_finalisasi']" description="Jumlah validator sudah upload LKLED, namun belum difinalisasi" icon="hourglass-split" gradient="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" />
+        </div>
+
+        <div class="col mb-3">
+            <x-stat-card title="Selesai Dilaporkan" :value="$stats['selesai']" description="Jumlah Laporan Kesiapan LED Program Studi (LKLED) yang telah difinalisasi & selesai dilaporkan" icon="check-circle" gradient="linear-gradient(135deg, #11998e 0%, #38ef7d 100%)" />
         </div>
     </div>
 

@@ -1,13 +1,12 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\DE\PaymentSummaryController;
 use App\Http\Controllers\Profile\{PasswordResetController, ProfileController, ProdiDataController, UserEmailController};
 use App\Http\Controllers\Prodi\{DeskEvaluatorController, PengajuanAkreditasiController, PemetaanAkreditasiController, PengajuanBorangController, BorangUploadController, PenerimaanProdiController};
 use App\Http\Controllers\Master\{ElemenStandarController, JenisIndikatorController, IndikatorController, IndikatorPenilaianElemenController, KriteriaController, UniversityController, StudyProgramController};
 use App\Http\Controllers\Asesmen\{AsesmenController, AKController, ALController, ALDocumentController, BorangValidatorController, HasilAkreditasiController, PenawaranController, PelaporanController, ValidasiController};
 use App\Http\Controllers\{AuthController, BobotPenilaianController, DashboardController, PenugasanController, BandingController, PedomanController, DokumenController, PanduanController, BantuanController, SettingsController, ActivityController, TaskController, LaporanController, TinyMceImageController, UserController};
-use App\Http\Controllers\DE\{ValidasiAKController, MasaSanggahController, PelaporanAKController, PelaporanALController, PenugasanAKController, PenugasanALController, PelaksanaanALController, SuratPermohonanController, ValidasiDokumenController, PelaporanBandingController, PelaporanDokumenController, PenerimaanDokumenController, PelaksanaanBandingController, ValidasiPembayaranController, FormulirPembayaranController, PenyampaianTemplateController, PelaporanHasilAkreditasiController, PenerimaanPermohonanController, PenetapanHasilAkreditasiController, PenyampaianHasilAkreditasiController, PenyimpananArsipPelaksanaanAkreditasiController};
+use App\Http\Controllers\DE\{ValidasiAKController, MasaSanggahController, PelaporanAKController, PelaporanALController, PenugasanAKController, PenugasanALController, PelaksanaanALController, SuratPermohonanController, ValidasiDokumenController, PelaporanBandingController, PelaporanDokumenController, PenerimaanDokumenController, PelaksanaanBandingController, ValidasiPembayaranController, FormulirPembayaranController, PenyampaianTemplateController, PelaporanHasilAkreditasiController, PenerimaanPermohonanController, PenetapanHasilAkreditasiController, PenyampaianHasilAkreditasiController, PenyimpananArsipPelaksanaanAkreditasiController, PermohonanBandingController, PaymentSummaryController};
 
 
 // Dashboard (awal)
@@ -391,6 +390,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/{id}/assign-asesor', [PenugasanALController::class, 'assignAsesor'])->name('.assign-asesor');
             Route::delete('/{id}/remove-asesor/{userId}', [PenugasanALController::class, 'removeAsesor'])->name('.remove-asesor');
             Route::post('/{id}/update-schedule', [PenugasanALController::class, 'updateSchedule'])->name('.update-schedule');
+            Route::get('/{id}/download-surat-tugas/{jenis}', [PenugasanALController::class, 'downloadSuratTugas'])->name('.download-surat-tugas');
+            Route::post('/{id}/upload-surat-tugas/{jenis}', [PenugasanALController::class, 'uploadSuratTugas'])->name('.upload-surat-tugas');
         });
         Route::prefix('pelaksanaan-al')->name('.pelaksanaan-al')->group(function () {
             Route::get('/', [PelaksanaanALController::class, 'index']);
@@ -416,6 +417,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{id}', [MasaSanggahController::class, 'show'])->name('.show');
             Route::post('/{id}/start', [MasaSanggahController::class, 'startMasaSanggah'])->name('.start');
             Route::post('/{id}/end', [MasaSanggahController::class, 'endMasaSanggah'])->name('.end');
+        });
+        Route::prefix('permohonan-banding')->name('.permohonan-banding')->group(function () {
+            Route::get('/', [PermohonanBandingController::class, 'index']);
+            Route::get('/{id}', [PermohonanBandingController::class, 'show'])->name('.show');
         });
         Route::prefix('pelaksanaan-banding')->name('.pelaksanaan-banding')->group(function () {
             Route::get('/', [PelaksanaanBandingController::class, 'index']);
@@ -545,6 +550,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::prefix('pelaksanaan-al')->name('.pelaksanaan-al')->group(function () {
             Route::get('/', [App\Http\Controllers\UPPS\PelaksanaanALController::class, 'index']);
+            Route::get('/{id}', [\App\Http\Controllers\UPPS\PelaksanaanALController::class, 'show'])->name('.show');
         });
 
         Route::prefix('pelaporan-al')->name('.pelaporan-al')->group(function () {

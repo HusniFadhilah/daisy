@@ -209,9 +209,9 @@ final class PengajuanStatus
                     'prodi' => 'Draft Terkirim',
                 ],
                 'label_long_for' => [
-                    'de'   => 'Dokumen Telah Diterima',
-                    'upps' => 'Dokumen Telah Dikirim',
-                    'prodi' => 'Dokumen Telah Dikirim',
+                    'de'   => 'Draft Dokumen Telah Dikirim',
+                    'upps' => 'Draft Dokumen Telah Dikirim',
+                    'prodi' => 'Draft Dokumen Telah Dikirim',
                 ],
                 'bg' => 'bg-info',
                 'icon' => 'bi-file-earmark-check',

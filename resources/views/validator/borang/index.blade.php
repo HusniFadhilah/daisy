@@ -89,7 +89,7 @@
     {{-- Assignment List --}}
     <div class="card">
         <div class="card-header bg-light">
-            <h5 class="mb-0"><i class="bi bi-file-earmark-text"></i> Daftar Dokumen</h5>
+            <h5 class="mb-0"><i class="bi bi-file-earmark-text"></i> Daftar Validasi Dokumen</h5>
         </div>
         <div class="card-body">
             @if($assignments->count() > 0)
@@ -99,9 +99,9 @@
                         <tr>
                             <th>Permohonan Akreditasi</th>
                             <th>Program Studi</th>
-                            <th>Status Dokumen</th>
+                            {{-- <th>Status Dokumen</th> --}}
                             <th>Status Validasi Dokumen</th>
-                            <th>Tanggal Ditugaskan</th>
+                            <th>Tanggal Validasi Dokumen</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -127,52 +127,19 @@
                                 <br>
                                 <small class="text-muted">{{ $pengajuan?->studyProgram->university->name }}</small>
                             </td>
-                            <td>
-                                @if($pengajuan?->status === \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI)
-                                <span class="badge bg-success">Selesai Diisi</span>
-                                @elseif($pengajuan?->status === \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED)
-                                <span class="badge bg-warning text-dark text-wrap">Dokumen Dokumen Perlu Revisi</span>
-                                @else
-                                <span class="badge bg-secondary">{{ ucfirst($pengajuan?->status_label) }}</span>
-                                @endif
-                            </td>
-                            <td>
+                            {{-- <td>
                                 {!! $statusBadge[$assignment->status_pekerjaan] !!}
-                                @if($badgePelaporan)
-                                <span class="badge bg-success text-wrap mt-2">
-                                    <i class="bi bi-check-circle"></i>
-                                    {{ $badgePelaporan }}
-                                </span>
-                                @endif
+                            </td> --}}
+                            <td>
+                                {!! $pengajuan->getCustomBadgeLastStatus('validasi_dokumen', 'upps','label_short_for') !!}
                             </td>
                             <td>
-                                {{ $assignment->created_at ? $assignment->created_at->format('d M Y H:i') : '-' }}
+                                {{ $pengajuan?->tanggal_validasi_borang_selesai ? $pengajuan?->tanggal_validasi_borang_selesai->format('d M Y H:i') : '-' }}
                             </td>
                             <td>
-                                @if(in_array($pengajuan?->status,[\App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING]))
-                                @if($assignment->status_penawaran == 'pending')
-                                <a href="{{ route('penawaran.show', ['token' => $assignment->token]) }}" class="btn btn-sm btn-primary">
-                                    <i class="bi bi-eye"></i> Lihat Penawaran
-                                </a>
-                                @else
-                                <a href="{{ route('validator.borang.show', $assignment->id) }}" class="btn btn-sm btn-info">
-                                    <i class="bi bi-eye"></i> Lihat Validasi
-                                </a>
-                                @endif
-                                @else
                                 <a href="{{ route('validator.borang.show', $assignment->id) }}" class="btn btn-sm btn-primary">
                                     <i class="bi bi-eye"></i> Lihat Validasi
                                 </a>
-                                @endif
-
-                                @if(in_array($pengajuan?->status, [
-                                \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
-                                \App\Models\PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
-                                ]))
-                                @if(is_null($pengajuan?->tanggal_pelaporan_validasi_borang))
-                                <button type="button" class="btn btn-sm btn-success mt-2 js-open-pelaporan" data-type="borang" data-assignment-id="{{ $assignment->id }}" data-nomor="{{ $pengajuan?->nomor_pengajuan }}"> <i class="bi bi-file-earmark-text"></i> Pelaporan Validasi </button>
-                                @endif
-                                @endif
                             </td>
                         </tr>
                         @endforeach

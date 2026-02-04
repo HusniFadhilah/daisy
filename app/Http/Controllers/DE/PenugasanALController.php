@@ -139,78 +139,6 @@ class PenugasanALController extends Controller
     /**
      * Detail penugasan AL untuk satu pengajuan
      */
-    // public function show($id)
-    // {
-    //     $alScopeStatuses = [
-    //         PengajuanAkreditasi::STATUS_AK_DILAPORKAN,
-    //         PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
-    //         PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
-    //         PengajuanAkreditasi::STATUS_AL_SELESAI,
-    //         PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
-    //     ];
-
-    //     $pengajuan = PengajuanAkreditasi::with([
-    //         'studyProgram.university',
-    //         'studyProgram.degreeLevel',
-    //         'asesmen.asesmenLapangan',
-    //         'asesmen.asesmenUserRoles' => function ($q) {
-    //             $q->where('jenis_asesmen', 'al')
-    //                 ->whereHas('role_selected', fn($r) => $r->where('name', 'asesor'))
-    //                 ->with(['user', 'role_selected']);
-    //         },
-    //         // optional: buat tampilan status log di table
-    //         'statusLog' => function ($q) use ($alScopeStatuses) {
-    //             $q->whereIn('status_to', $alScopeStatuses)
-    //                 ->orderBy('changed_at', 'desc');
-    //         },
-    //     ])
-    //         ->whereExists(function ($q) use ($alScopeStatuses) {
-    //             $q->select(DB::raw(1))
-    //                 ->from('pengajuan_status_log as l')
-    //                 ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
-    //                 ->whereIn('l.status_to', $alScopeStatuses);
-    //         });
-
-    //     // Get progress penilaian AL
-    //     $totalElemens = DB::table('elemen_standar')->count();
-
-    //     // Progress asesor AL
-    //     $asesorProgress = DB::table('penilaian_elemen_al')
-    //         ->where('id_asesmen', $pengajuan->asesmen->id ?? 0)
-    //         ->whereNotNull('skor')
-    //         ->groupBy('id_asesor')
-    //         ->select('id_asesor', DB::raw('COUNT(*) as completed'))
-    //         ->pluck('completed', 'id_asesor');
-
-    //     // Map progress
-    //     $userProgress = [];
-    //     if ($pengajuan->asesmen) {
-    //         foreach ($pengajuan->asesmen->asesmenUserRoles as $assignment) {
-    //             $completed = $asesorProgress[$assignment->id_user] ?? 0;
-
-    //             $userProgress[$assignment->id_user] = [
-    //                 'total' => $totalElemens,
-    //                 'completed' => $completed,
-    //                 'percentage' => $totalElemens ? round(($completed / $totalElemens) * 100, 1) : 0,
-    //             ];
-    //         }
-    //     }
-
-    //     // Requirements status
-    //     $requirementsStatus = $this->getRequirementsStatus($pengajuan);
-
-    //     // Available users for assignment
-    //     $availableUsers = User::notAdmin()->orderBy('name')->get();
-
-    //     return view('de.penugasan-al.show', compact(
-    //         'pengajuan',
-    //         'userProgress',
-    //         'requirementsStatus',
-    //         'availableUsers',
-    //         'totalElemens'
-    //     ));
-    // }
-
     public function show($id)
     {
         $pengajuan = PengajuanAkreditasi::with([
@@ -221,6 +149,9 @@ class PenugasanALController extends Controller
                 $q->where('jenis_asesmen', 'al')
                     ->with(['user', 'role_selected']);
             },
+            'dokumen' => fn($q) => $q->whereIn('jenis_dokumen', [
+                'surat_tugas_asesor_al' // ✅ Load surat tugas
+            ])->orderBy('created_at', 'desc'),
             'statusLog' => function ($q) {
                 $q->orderBy('changed_at', 'desc')->with('changedBy');
             }
@@ -270,6 +201,9 @@ class PenugasanALController extends Controller
      * Tugaskan asesor untuk AL
      * NOTE: Tidak ada "Mark Ready" - langsung assign asesor dengan schedule + lokasi
      */
+    /**
+     * ✅ Tugaskan asesor untuk AL dengan surat tugas
+     */
     public function assignAsesor(Request $request, $id)
     {
         $request->validate([
@@ -277,6 +211,7 @@ class PenugasanALController extends Controller
             'tanggal_mulai' => 'required|date',
             'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
             'lokasi_visitasi' => 'required|string|max:500',
+            'file_surat_tugas' => 'nullable|file|mimes:pdf|max:5120', // ✅ Optional surat tugas
         ]);
 
         DB::beginTransaction();
@@ -366,7 +301,26 @@ class PenugasanALController extends Controller
 
             $user = User::find($request->id_user);
 
-            // Update status pengajuan (gunakan checkUpdateStatusAKAL)
+            // ✅ Handle Surat Tugas AL (1 untuk semua asesor)
+            $suratTugasCreated = false;
+
+            // Cek apakah sudah ada surat tugas asesor AL
+            $existingSuratTugas = $pengajuan->dokumen()
+                ->where('jenis_dokumen', 'surat_tugas_asesor_al')
+                ->where('is_latest', true)
+                ->first();
+
+            if (!$existingSuratTugas) {
+                // Buat surat tugas baru (hanya 1x untuk asesor pertama)
+                if ($request->hasFile('file_surat_tugas')) {
+                    $this->uploadSuratTugasAsesorAL($pengajuan, $assignment, $request->file('file_surat_tugas'));
+                } else {
+                    $this->generateSuratTugasAsesorAL($pengajuan, $assignment);
+                }
+                $suratTugasCreated = true;
+            }
+
+            // Update status pengajuan
             $statusFrom = $pengajuan->status;
             $pengajuan->checkUpdateStatusAKAL('al', 'status_asesor_assigned');
             $pengajuan->statusLog()->firstOrCreate(
@@ -395,11 +349,13 @@ class PenugasanALController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => "Asesor {$user->name} berhasil ditugaskan untuk AL (Asesor {$urutanAsesor}). Email penawaran telah dikirim.",
+                'message' => "Asesor {$user->name} berhasil ditugaskan untuk AL (Asesor {$urutanAsesor}). Email penawaran telah dikirim." .
+                    ($suratTugasCreated ? " Surat tugas telah dibuat." : ""),
                 'data' => [
                     'assignment' => $assignment,
                     'user' => $user,
                     'urutan_asesor' => $urutanAsesor,
+                    'surat_tugas_created' => $suratTugasCreated,
                 ]
             ]);
         } catch (\Exception $e) {
@@ -622,5 +578,172 @@ class PenugasanALController extends Controller
         }
 
         return $asesors->count();
+    }
+
+    /**
+     * ✅ Upload surat tugas asesor AL (1 untuk semua asesor)
+     */
+    private function uploadSuratTugasAsesorAL(PengajuanAkreditasi $pengajuan, AsesmenUserRole $assignment, $file)
+    {
+        // Mark old surat tugas as not latest
+        $pengajuan->dokumen()
+            ->where('jenis_dokumen', 'surat_tugas_asesor_al')
+            ->update(['is_latest' => false]);
+
+        $versi = $pengajuan->dokumen()
+            ->where('jenis_dokumen', 'surat_tugas_asesor_al')
+            ->max('versi') ?? 0;
+
+        $originalName = $file->getClientOriginalName();
+        $sanitizedName = preg_replace('/[^a-zA-Z0-9._-]/', '_', $originalName);
+        $filename = time() . '_SURAT_TUGAS_ASESOR_AL_' . $sanitizedName;
+
+        $path = $file->storeAs('dokumen/surat-tugas-asesor-al', $filename, 'public');
+
+        return $pengajuan->dokumen()->create([
+            'jenis_dokumen' => 'surat_tugas_asesor_al',
+            'nama_file' => $filename,
+            'path_file' => $path,
+            'original_filename' => $originalName,
+            'file_size' => $file->getSize(),
+            'mime_type' => $file->getMimeType(),
+            'uploaded_by' => auth()->id(),
+            'keterangan' => "Surat Tugas Asesor AL untuk Pengajuan {$pengajuan->nomor_pengajuan}",
+            'is_latest' => true,
+            'versi' => $versi + 1,
+        ]);
+    }
+
+    /**
+     * ✅ Generate surat tugas asesor AL (placeholder)
+     */
+    private function generateSuratTugasAsesorAL(PengajuanAkreditasi $pengajuan, AsesmenUserRole $assignment)
+    {
+        // Mark old surat tugas as not latest
+        $pengajuan->dokumen()
+            ->where('jenis_dokumen', 'surat_tugas_asesor_al')
+            ->update(['is_latest' => false]);
+
+        $versi = $pengajuan->dokumen()
+            ->where('jenis_dokumen', 'surat_tugas_asesor_al')
+            ->max('versi') ?? 0;
+
+        $nomorSurat = 'ST-ASESOR-AL/' . date('Y') . '/' . str_pad($pengajuan->id, 4, '0', STR_PAD_LEFT);
+
+        return $pengajuan->dokumen()->create([
+            'jenis_dokumen' => 'surat_tugas_asesor_al',
+            'nama_file' => "Surat_Tugas_Asesor_AL_{$pengajuan->nomor_pengajuan}.pdf",
+            'path_file' => null,
+            'original_filename' => "Surat Tugas Asesor AL - {$pengajuan->nomor_pengajuan}.pdf",
+            'file_size' => null,
+            'mime_type' => 'application/pdf',
+            'uploaded_by' => auth()->id(),
+            'keterangan' => "Surat Tugas Nomor: {$nomorSurat} untuk Asesor AL Pengajuan {$pengajuan->nomor_pengajuan}",
+            'template_link' => null,
+            'is_latest' => true,
+            'versi' => $versi + 1,
+        ]);
+    }
+
+    /**
+     * ✅ Download surat tugas AL
+     */
+    public function downloadSuratTugas($pengajuanId, $jenisDokumen)
+    {
+        try {
+            $pengajuan = PengajuanAkreditasi::findOrFail($pengajuanId);
+
+            $suratTugas = $pengajuan->dokumen()
+                ->where('jenis_dokumen', $jenisDokumen)
+                ->where('is_latest', true)
+                ->firstOrFail();
+
+            // If has path_file, download it
+            if ($suratTugas->path_file && Storage::disk('public')->exists($suratTugas->path_file)) {
+                return Storage::disk('public')->download(
+                    $suratTugas->path_file,
+                    $suratTugas->original_filename
+                );
+            }
+
+            // If has template_link, redirect
+            if ($suratTugas->template_link) {
+                return redirect($suratTugas->template_link);
+            }
+
+            // Otherwise generate on-the-fly (TODO: implement PDF generation)
+            return $this->generateAndDownloadSuratTugasAL($pengajuan, $jenisDokumen);
+        } catch (\Exception $e) {
+            Log::error('Download surat tugas AL failed', [
+                'pengajuan_id' => $pengajuanId,
+                'jenis' => $jenisDokumen,
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()
+                ->back()
+                ->with('error', 'Gagal mengunduh surat tugas: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * ✅ Upload surat tugas manual (via modal)
+     */
+    public function uploadSuratTugas(Request $request, $pengajuanId, $jenisDokumen)
+    {
+        $validJenis = ['surat_tugas_asesor_al'];
+
+        if (!in_array($jenisDokumen, $validJenis)) {
+            return redirect()->back()->with('error', 'Jenis dokumen tidak valid');
+        }
+
+        $request->validate([
+            'file_surat_tugas' => 'required|file|mimes:pdf|max:5120',
+        ], [
+            'file_surat_tugas.required' => 'File surat tugas wajib diupload',
+            'file_surat_tugas.mimes' => 'Format file harus PDF',
+            'file_surat_tugas.max' => 'Ukuran file maksimal 5MB',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $pengajuan = PengajuanAkreditasi::with('asesmen.asesmenUserRoles')->findOrFail($pengajuanId);
+
+            // Get first assignment for asesor AL
+            $assignment = $pengajuan->asesmen->asesmenUserRoles()
+                ->where('jenis_asesmen', 'al')
+                ->whereHas('role_selected', fn($q) => $q->where('name', 'asesor'))
+                ->orderBy('urutan_asesor')
+                ->firstOrFail();
+
+            $this->uploadSuratTugasAsesorAL($pengajuan, $assignment, $request->file('file_surat_tugas'));
+
+            DB::commit();
+
+            return redirect()
+                ->back()
+                ->with('success', 'Surat tugas berhasil diupload.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to upload surat tugas AL', [
+                'pengajuan_id' => $pengajuanId,
+                'jenis' => $jenisDokumen,
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()
+                ->back()
+                ->with('error', 'Gagal upload surat tugas: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * ✅ Generate and download surat tugas on-the-fly (TODO)
+     */
+    private function generateAndDownloadSuratTugasAL($pengajuan, $jenisDokumen)
+    {
+        // TODO: Implement PDF generation using DomPDF/TCPDF
+        // For now, return error
+        abort(404, 'File surat tugas tidak tersedia. Silakan upload manual.');
     }
 }

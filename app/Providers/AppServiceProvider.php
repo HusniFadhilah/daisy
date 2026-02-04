@@ -3,8 +3,9 @@
 namespace App\Providers;
 
 use App\Models\PengajuanAkreditasi;
-use App\Policies\PengajuanAkreditasiPolicy;
 use Illuminate\Support\Facades\Blade;
+use App\Policies\PengajuanAkreditasiPolicy;
+use App\View\Components\Akreditasi\StatCard;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -25,5 +26,6 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
         Blade::component('asesmen.pelaporan._card', 'pelaporan-card');
+        Blade::component('stat-card', StatCard::class);
     }
 }

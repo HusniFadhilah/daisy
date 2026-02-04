@@ -4,28 +4,6 @@
 
 @push('styles')
 <style>
-    .stat-card {
-        border-radius: 12px;
-        transition: all 0.3s ease;
-        border: none;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    .stat-icon {
-        width: 60px;
-        height: 60px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 28px;
-    }
-
     .filter-card {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
@@ -90,80 +68,25 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="row row-cols-1 row-cols-md-4 row-cols-lg-5 mb-4">
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-5 mb-4">
         <div class="col mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Menunggu Dokumen</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h2 class="mb-0 fw-bold">{{ $stats['total_menunggu_dokumen'] }}</h2>
-                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
-                            <i class="bi bi-hourglass-split"></i>
-                        </div>
-                    </div>
-                    <small class="opacity-75">Menunggu PS mengupload Draft Dokumen</small>
-                </div>
-            </div>
+            <x-stat-card title="Menunggu Dokumen" :value="$stats['total_menunggu_dokumen']" description="Menunggu PS mengupload Draft Dokumen" icon="hourglass-split" gradient="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" />
         </div>
 
         <div class="col mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Dokumen Lengkap</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h2 class="mb-0 fw-bold">{{ $stats['total_dokumen_lengkap'] }}</h2>
-                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
-                            <i class="bi bi-check-circle"></i>
-                        </div>
-                    </div>
-                    <small class="opacity-75">Dokumen siap divalidasi oleh validator</small>
-                </div>
-            </div>
+            <x-stat-card title="Dokumen Lengkap" :value="$stats['total_dokumen_lengkap']" description="Dokumen siap divalidasi oleh validator" icon="check-circle" gradient="linear-gradient(135deg, #11998e 0%, #38ef7d 100%)" />
         </div>
 
         <div class="col mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Dalam Validasi</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h2 class="mb-0 fw-bold">{{ $stats['total_dalam_validasi'] }}</h2>
-                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
-                            <i class="bi bi-clipboard-check"></i>
-                        </div>
-                    </div>
-                    <small class="opacity-75">Dokumen sedang divalidasi oleh validator</small>
-                </div>
-            </div>
+            <x-stat-card title="Dalam Validasi" :value="$stats['total_dalam_validasi']" description="Dokumen sedang divalidasi oleh validator" icon="clipboard-check" gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)" />
         </div>
 
         <div class="col mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Perlu Revisi</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h2 class="mb-0 fw-bold">{{ $stats['total_perlu_revisi'] }}</h2>
-                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
-                            <i class="bi bi-exclamation-triangle"></i>
-                        </div>
-                    </div>
-                    <small class="opacity-75">Dokumen diminta revisi oleh validator</small>
-                </div>
-            </div>
+            <x-stat-card title="Perlu Revisi" :value="$stats['total_perlu_revisi']" description="Dokumen diminta revisi oleh validator" icon="exclamation-triangle" gradient="linear-gradient(135deg, #ffc107 0%, #ff8c00 100%)" />
         </div>
 
         <div class="col mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #06beb6 0%, #48b1bf 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Tervalidasi</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h2 class="mb-0 fw-bold">{{ $stats['total_tervalidasi'] }}</h2>
-                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
-                            <i class="bi bi-patch-check"></i>
-                        </div>
-                    </div>
-                    <small class="opacity-75">Validasi Dokumen selesai</small>
-                </div>
-            </div>
+            <x-stat-card title="Tervalidasi" :value="$stats['total_tervalidasi']" description="Validasi Dokumen selesai" icon="patch-check" gradient="linear-gradient(135deg, #06beb6 0%, #48b1bf 100%)" />
         </div>
     </div>
 

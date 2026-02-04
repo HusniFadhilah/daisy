@@ -19,7 +19,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h5 class="mb-1">
-                <i class="bi bi-clipboard-check"></i> Detail Pelaksanaan Asesmen Lapangan
+                <i class="bi bi-clipboard-check"></i> Detail Pelaksanaan AL & Berita Acara
             </h5>
             <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
@@ -32,33 +32,34 @@
         <!-- Main Content -->
         <div class="col-lg-8 mb-4">
             <!-- Status Alert -->
-            @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AL_IN_PROGRESS)
-            <div class="alert alert-warning alert-permanent">
-                <i class="bi bi-clock-history"></i>
-                <strong>Asesmen Lapangan sedang berlangsung</strong>
-                <br>
-                Asesor sedang melakukan asesmen lapangan ke program studi
-            </div>
-            @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AL_ON_VALIDATION)
-            <div class="alert alert-info alert-permanent">
-                <i class="bi bi-hourglass-split"></i>
-                <strong>Hasil Asesmen Lapangan dalam validasi</strong>
-                <br>
-                Hasil penilaian asesor sedang divalidasi oleh tim LAMDEPILAR
-            </div>
-            @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AL_SELESAI)
+            @php
+            $allowed = [
+            \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
+            \App\Models\PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
+            \App\Models\PengajuanAkreditasi::STATUS_AK_SELESAI,
+            ]; // ini contoh, bisa dinamis dari config/db/request
+
+            $log = $pengajuan->latestRelevantStatusLog($allowed);
+            @endphp
+            <!-- Status Alert -->
+            @if($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED)
             <div class="alert alert-success alert-permanent">
-                <i class="bi bi-check-circle"></i>
-                <strong>Asesmen Lapangan telah selesai</strong>
-                <br>
-                Proses asesmen lapangan telah selesai dilakukan
+                <i class="bi bi-person-check"></i>
+                <strong>Proses Pelaksanaan AL</strong><br>
+                Permohonan akreditasi program studi memasuki tahap pelaksanaan AL
             </div>
-            @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AL_DILAPORKAN)
+            @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_AL_IN_PROGRESS)
             <div class="alert alert-success alert-permanent">
-                <i class="bi bi-patch-check"></i>
-                <strong>Hasil Asesmen Lapangan telah dilaporkan</strong>
-                <br>
-                Hasil asesmen telah dilaporkan dan proses dilanjutkan ke tahap berikutnya
+                <i class="bi bi-person-check"></i>
+                <strong>Proses Pelaksanaan AL</strong><br>
+                Permohonan akreditasi program studi memasuki tahap pelaksanaan AL
+            </div>
+            @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_AK_SELESAI)
+            <div class="alert alert-success alert-permanent">
+                <i class="bi bi-person-check"></i>
+                <strong>Proses Pelaksanaan AL</strong><br>
+                Berita acara pelaksanaan AL program studi dapat diunduh pada link berikut
+                Mohon program studi dapat melakukan tanggapan laporan hasil AL dengan melakukan persetujuan atau memberikan tambahan substansi yang diperlukan
             </div>
             @endif
 
@@ -84,31 +85,11 @@
                             <td>: {{ $pengajuan->studyProgram->university->name }}</td>
                         </tr>
                         <tr>
-                            <th>Jenjang</th>
-                            <td>: {{ $pengajuan->studyProgram->degreeLevel->name ?? '-' }}</td>
-                        </tr>
-                        <tr>
                             <th>Jenis Permohonan</th>
                             <td>: {{ $pengajuan->jenis_akreditasi_label }}</td>
                         </tr>
                         <tr>
-                            <th>Tahun Akreditasi</th>
-                            <td>: {{ $pengajuan->tahun_akreditasi }}</td>
-                        </tr>
-                        <tr>
-                            <th>Asesor AL</th>
-                            <td>
-                                @if($pengajuan->asesmen->asesorAL)
-                                : {{ $pengajuan->asesmen->asesorAL()->name }}
-                                <br>
-                                <small class="text-muted">{{ $pengajuan->asesmen->asesorAL()->email }}</small>
-                                @else
-                                : <span class="text-muted">-</span>
-                                @endif
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Tanggal Mulai Asesmen</th>
+                            <th>Tanggal Mulai AL</th>
                             <td>
                                 : {{ $pengajuan->tanggal_al_mulai
                                     ? $pengajuan->tanggal_al_mulai->format('d M Y H:i')
@@ -116,7 +97,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <th>Tanggal Asesmen Selesai</th>
+                            <th>Tanggal AL Selesai</th>
                             <td>
                                 : {{ $pengajuan->tanggal_al_selesai
                                     ? $pengajuan->tanggal_al_selesai->format('d M Y H:i')
@@ -130,54 +111,6 @@
                     </table>
                 </div>
             </div>
-
-            <!-- Surat Tugas Asesor AL -->
-            @php
-            $suratTugasAL = $pengajuan->dokumen
-            ->where('jenis_dokumen', 'surat_tugas_asesor_al')
-            ->where('is_latest', true)
-            ->first();
-            @endphp
-
-            @if($suratTugasAL)
-            <div class="card mb-4 border-warning">
-                <div class="card-header bg-warning text-dark">
-                    <h5 class="mb-0">
-                        <i class="bi bi-file-earmark-text"></i> Surat Tugas Asesor AL
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="alert alert-light border mb-3">
-                        <i class="bi bi-info-circle"></i>
-                        <strong>Informasi:</strong> Surat tugas resmi penugasan asesor untuk Asesmen Lapangan dari LAMDEPILAR.
-                    </div>
-
-                    <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-file-earmark-pdf text-danger me-3" style="font-size: 48px;"></i>
-                            <div>
-                                <strong>{{ $suratTugasAL->original_filename }}</strong>
-                                <br>
-                                <small class="text-muted">
-                                    {{ number_format($suratTugasAL->file_size / 1024, 2) }} KB
-                                </small>
-                                <br>
-                                <small class="text-muted">
-                                    <i class="bi bi-clock"></i> Diupload: {{ $suratTugasAL->created_at->format('d M Y H:i') }}
-                                </small>
-                                <br>
-                                <span class="badge bg-warning text-dark">Surat Tugas Resmi</span>
-                            </div>
-                        </div>
-                        <div>
-                            <a href="{{ route('upps.penerimaan-dokumen.dokumen.download', $suratTugasAL->id) }}" class="btn btn-warning btn-md">
-                                <i class="bi bi-file-earmark-pdf"></i> Lihat File
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            @endif
 
             <!-- Berita Acara Asesmen Lapangan -->
             <div class="card">
@@ -284,7 +217,7 @@
             <div class="card">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-clock-history"></i> Timeline Pelaksanaan
+                        <i class="bi bi-clock-history"></i> Riwayat Status
                     </h5>
                 </div>
                 <div class="card-body" style="max-height: 600px; overflow-y: auto;">
@@ -292,14 +225,12 @@
                     $filterStatuses = [
                     \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
                     \App\Models\PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
-                    \App\Models\PengajuanAkreditasi::STATUS_AL_ON_VALIDATION,
                     \App\Models\PengajuanAkreditasi::STATUS_AL_SELESAI,
-                    \App\Models\PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
                     ];
 
                     $logs = $pengajuan->statusLog
                     ->whereIn('status_to', $filterStatuses)
-                    ->sortByDesc('changed_at');
+                    ->sortBy('changed_at');
                     @endphp
 
                     @if($logs->count() > 0)
@@ -315,7 +246,6 @@
                                     \App\Models\PengajuanAkreditasi::STATUS_AL_DILAPORKAN
                                     => 'text-success',
                                     \App\Models\PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
-                                    \App\Models\PengajuanAkreditasi::STATUS_AL_ON_VALIDATION
                                     => 'text-warning',
                                     default => 'text-info',
                                     };
@@ -329,10 +259,10 @@
                                     <br>
                                     <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
 
-                                    @if($log->keterangan)
+                                    {{-- @if($log->keterangan)
                                     <br>
                                     <small class="text-muted fst-italic">{{ $log->keterangan }}</small>
-                                    @endif
+                                    @endif --}}
                                 </div>
                             </div>
                         </div>
@@ -359,7 +289,6 @@
                         <li><span class="badge bg-warning">Menunggu Persetujuan</span> - Berita acara menunggu peninjauan</li>
                         <li><span class="badge bg-success">Disetujui</span> - Berita acara telah disetujui</li>
                         <li><span class="badge bg-info">Perlu Revisi</span> - Berita acara perlu diperbaiki</li>
-                        <li><span class="badge bg-danger">Ditolak</span> - Berita acara ditolak</li>
                     </ul>
 
                     <hr>

@@ -299,7 +299,7 @@
                     <h5 class="mb-0"><i class="bi bi-clock-history"></i> Timeline Status</h5>
                 </div>
                 <div class="card-body">
-                    @forelse($pengajuan->statusLog->sortByDesc('changed_at')->take(10) as $log)
+                    @forelse($pengajuan->statusLog->sortBy('changed_at')->take(10) as $log)
                     <div class="timeline-item">
                         <div class="timeline-dot bg-{{
                                 in_array($log->status_to, [

@@ -511,7 +511,7 @@
                         </tr>
                         <tr>
                             <th>Status Penerimaan Dokumen</th>
-                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('borang_final','de','label_long_for') !!}</td>
+                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('draft_borang','de','label_long_for') !!}</td>
                         </tr>
                     </table>
                 </div>
@@ -522,9 +522,9 @@
         <div class="col-lg-4">
             @php
             $filterStatuses = [
+            \App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM,
+            \App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
             \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
-            \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
-            \App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
             ];
 
             $logs = $pengajuan->statusLog

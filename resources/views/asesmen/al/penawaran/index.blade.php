@@ -72,14 +72,6 @@ $authUser = Auth::user();
                 </div>
             </div>
         </div>
-        <div class="col-md-4 col-lg-3 mb-2">
-            <div class="card text-center border-primary">
-                <div class="card-body">
-                    <h3 class="text-primary mb-0">{{ $riwayat->where('status_pekerjaan', 'submitted')->count() }}</h3>
-                    <small class="text-muted">Sudah Submit</small>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- Pending Penawaran -->

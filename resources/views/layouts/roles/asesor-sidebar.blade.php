@@ -82,6 +82,10 @@
     <span class="menu-icon">❓</span>
     <span>Pedoman AK</span>
 </a>
+<a href="{{ route('pedoman') }}" class="nav-link {{ request()->routeIs('pedoman') ? 'active' : '' }}">
+    <span class="menu-icon">❓</span>
+    <span>Pedoman AL</span>
+</a>
 @endif
 
 <!-- Dokumen Adm. AL -->

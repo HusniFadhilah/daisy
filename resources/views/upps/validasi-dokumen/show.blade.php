@@ -131,8 +131,8 @@
                             </td>
                         </tr>
                         <tr>
-                            <th>Status Validasi</th>
-                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('borang_final', 'upps') !!}</td>
+                            <th>Status Validasi Dokumen</th>
+                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('validasi_dokumen', 'upps') !!}</td>
                         </tr>
                     </table>
                 </div>
@@ -247,7 +247,7 @@
 
                     $logs = $pengajuan->statusLog
                     ->whereIn('status_to', $filterStatuses)
-                    ->sortByDesc('changed_at');
+                    ->sortBy('changed_at');
                     @endphp
 
                     @if($logs->count() > 0)

@@ -32,43 +32,26 @@
         <!-- Main Content -->
         <div class="col-lg-8 mb-4">
             <!-- Status Alert -->
-            @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN)
-            <div class="alert alert-warning alert-permanent border-start border-4 border-warning">
-                <div class="d-flex align-items-start">
-                    <i class="bi bi-hourglass-split fs-1 me-3 text-warning"></i>
-                    <div class="flex-grow-1">
-                        <h5 class="mb-2 fw-bold">
-                            <i class="bi bi-hourglass-split"></i> Menunggu Pelaksanaan Banding
-                        </h5>
-                        <p class="mb-2">
-                            Permohonan banding telah diajukan pada
-                            <strong>{{ $pengajuan->tanggal_banding->format('d M Y H:i') }}</strong>.
-                        </p>
-                        <div class="alert alert-light border border-warning mb-0">
-                            <i class="bi bi-info-circle-fill text-warning"></i>
-                            <strong>Status:</strong> Menunggu proses pelaksanaan banding dari LAMDEPILAR.
-                        </div>
-                    </div>
-                </div>
+            @php
+            $allowed = [
+            \App\Models\PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
+            \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
+            ]; // ini contoh, bisa dinamis dari config/db/request
+
+            $log = $pengajuan->latestRelevantStatusLog($allowed);
+            @endphp
+            <!-- Status Alert -->
+            @if($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN)
+            <div class="alert alert-success alert-permanent">
+                <i class="bi bi-person-check"></i>
+                <strong>Proses Pelaksanaan Banding</strong><br>
+                Program Studi yang akan melakukan banding dapat mengajukan permohonan. Klik tombol berikut untuk mengajukan permohonan
             </div>
-            @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN)
-            <div class="alert alert-info alert-permanent border-start border-4 border-info">
-                <div class="d-flex align-items-start">
-                    <i class="bi bi-play-circle-fill fs-1 me-3 text-info"></i>
-                    <div class="flex-grow-1">
-                        <h5 class="mb-2 fw-bold">
-                            <i class="bi bi-play-circle"></i> Pelaksanaan Banding Sedang Berlangsung
-                        </h5>
-                        <p class="mb-2">
-                            Pelaksanaan banding dimulai pada
-                            <strong>{{ $pengajuan->tanggal_pelaksanaan_banding ? $pengajuan->tanggal_pelaksanaan_banding->format('d M Y H:i') : '-' }}</strong>.
-                        </p>
-                        <div class="alert alert-light border border-info mb-0">
-                            <i class="bi bi-info-circle-fill text-info"></i>
-                            <strong>Status:</strong> LAMDEPILAR sedang melaksanakan proses banding.
-                        </div>
-                    </div>
-                </div>
+            @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN)
+            <div class="alert alert-success alert-permanent">
+                <i class="bi bi-person-check"></i>
+                <strong>Proses Pelaksanaan Banding</strong><br>
+                Permohonan akreditasi program studi memasuki pelaksanaan banding
             </div>
             @endif
 
@@ -94,16 +77,8 @@
                             <td>: {{ $pengajuan->studyProgram->university->name }}</td>
                         </tr>
                         <tr>
-                            <th>Jenjang</th>
-                            <td>: {{ $pengajuan->studyProgram->degreeLevel->name ?? '-' }}</td>
-                        </tr>
-                        <tr>
                             <th>Jenis Permohonan</th>
                             <td>: {{ $pengajuan->jenis_akreditasi_label }}</td>
-                        </tr>
-                        <tr>
-                            <th>Tahun Akreditasi</th>
-                            <td>: {{ $pengajuan->tahun_akreditasi }}</td>
                         </tr>
                     </table>
                 </div>
@@ -370,7 +345,7 @@
 
                 $logs = $pengajuan->statusLog
                 ->whereIn('status_to', $filterStatuses)
-                ->sortByDesc('changed_at');
+                ->sortBy('changed_at');
                 @endphp
 
                 @if($logs->count() > 0)

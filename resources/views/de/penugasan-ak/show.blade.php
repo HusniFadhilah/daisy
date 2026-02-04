@@ -357,7 +357,7 @@
 
                                         @if($showActions)
                                         <div class="btn-group btn-group-sm">
-                                            <a href="{{ route('de.penugasan-ak.download-surat-tugas', [$pengajuan->id, $jenisDokumen]) }}" class="btn btn-sm btn-success" target="_blank" title="Download">
+                                            <a href="{{ route('de.penugasan-ak.download-surat-tugas', [$pengajuan->id, $jenisDokumen]) }}" class="btn btn-sm btn-success" target="_blank" title="Lihat File">
                                                 <i class="bi bi-download"></i>
                                             </a>
                                             <button type="button" class="btn btn-sm btn-outline-primary" onclick="showUploadSuratTugasModal('{{ $jenisDokumen }}')" title="Upload Ulang">
@@ -365,7 +365,7 @@
                                             </button>
                                         </div>
                                         @else
-                                        <a href="{{ route('de.penugasan-ak.download-surat-tugas', [$pengajuan->id, $jenisDokumen]) }}" class="btn btn-sm btn-success" target="_blank" title="Download">
+                                        <a href="{{ route('de.penugasan-ak.download-surat-tugas', [$pengajuan->id, $jenisDokumen]) }}" class="btn btn-sm btn-success" target="_blank" title="Lihat File">
                                             <i class="bi bi-download"></i>
                                         </a>
                                         @endif
@@ -567,7 +567,7 @@
                     {{ $suratTugasValDok->original_filename }}
                     <br>
                     <a href="{{ route('de.penerimaan-dokumen.download-surat-tugas-validator', $pengajuan->id) }}" class="btn btn-sm btn-success mt-2" target="_blank">
-                        <i class="bi bi-download"></i> Download
+                        <i class="bi bi-download"></i> Lihat File
                     </a>
                 </div>
                 @endif

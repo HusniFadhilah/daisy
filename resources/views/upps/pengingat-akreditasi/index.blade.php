@@ -6,18 +6,6 @@
 
 @push('styles')
 <style>
-    .stat-card {
-        border-radius: 12px;
-        transition: all 0.3s ease;
-        border: none;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
     .table-hover tbody tr {
         transition: all 0.2s ease;
     }
@@ -144,54 +132,15 @@
     <!-- Statistics Cards -->
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 mb-4">
         <div class="col mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Total Pengingat Masa Akreditasi</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['total'] }}</h2>
-                            <small class="opacity-75">Jumlah keseluruhan pengingat masa akreditasi</small>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;" class="px-2">
-                            <i class="bi bi-bell"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <x-stat-card title="Total Pengingat Masa Akreditasi" :value="$stats['total']" description="Jumlah keseluruhan pengingat masa akreditasi" icon="bell" iconBg="primary-subtle" />
         </div>
 
         <div class="col mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Pengingat Masa Akreditasi Belum Direspon</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['belum_direspon'] }}</h2>
-                            <small class="opacity-75">Jumlah pengingat masa akreditasi yang perlu ditindaklanjuti</small>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;" class="px-2">
-                            <i class="bi bi-exclamation-circle"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <x-stat-card title="Pengingat Masa Akreditasi Belum Direspon" :value="$stats['belum_direspon']" description="Jumlah pengingat masa akreditasi yang perlu ditindaklanjuti" icon="exclamation-circle" iconBg="warning-subtle" />
         </div>
 
         <div class="col mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Pengingat Masa Akreditasi Telah Direspon</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['direspon'] }}</h2>
-                            <small class="opacity-75">Jumlah pengingat masa akreditasi yang selesai ditindaklanjuti</small>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;" class="px-2">
-                            <i class="bi bi-check-circle"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <x-stat-card title="Pengingat Masa Akreditasi Telah Direspon" :value="$stats['direspon']" description="Jumlah pengingat masa akreditasi yang selesai ditindaklanjuti" icon="check-circle" iconBg="success-subtle" />
         </div>
     </div>
 

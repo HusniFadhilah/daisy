@@ -2,22 +2,10 @@
 
 @extends('layouts.template.app')
 
-@section('title', 'Pelaksanaan Asesmen Lapangan')
+@section('title', 'Pelaksanaan AL & Berita Acara')
 
 @push('styles')
 <style>
-    .stat-card {
-        border-radius: 12px;
-        transition: all 0.3s ease;
-        border: none;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
     .table-hover tbody tr {
         transition: all 0.2s ease;
     }
@@ -40,7 +28,7 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item active">Pelaksanaan Asesmen Lapangan</li>
+            <li class="breadcrumb-item active">Pelaksanaan AL & Berita Acara</li>
         </ol>
     </nav>
 
@@ -48,9 +36,9 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">
-                <i class="bi bi-clipboard-check"></i> Pelaksanaan Asesmen Lapangan
+                <i class="bi bi-clipboard-check"></i> Pelaksanaan AL & Berita Acara
             </h4>
-            <p class="text-muted mb-0">Monitor pelaksanaan dan persetujuan berita acara Asesmen Lapangan</p>
+            <p class="text-muted mb-0">Monitor pelaksanaan AL dan persetujuan berita acara AL</p>
         </div>
     </div>
 
@@ -77,61 +65,17 @@
     @endif
 
     <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-lg-4 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Total Penugasan Asesor AL</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['total'] }}</h2>
-                            <small class="opacity-75">Asesor ditugaskan</small>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
-                            <i class="bi bi-person-check"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 mb-4">
+        <div class="col mb-3">
+            <x-stat-card title="Total Dokumen" :value="$stats['total']" description="Total permohonan akreditasi yang telah sampai pada tahap Pelaksanaan AL & Berita Acara" icon="person-check" iconBg="primary-subtle" />
         </div>
 
-        <div class="col-lg-4 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-2 opacity-75">Berita Acara AL</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['berita_acara'] }}</h2>
-                            <small class="opacity-75">Sudah diupload</small>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
-                            <i class="bi bi-file-earmark-text"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="col mb-3">
+            <x-stat-card title="Berita Acara AL Menunggu Persetujuan" :value="$stats['pending_approval']" description="Total berita acara AL yang membutuhkan persetujuan" icon="hourglass-split" iconBg="warning-subtle" />
         </div>
 
-        <div class="col-lg-4 col-md-6 mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);">
-                <div class="card-body text-white position-relative">
-                    <h6 class="mb-2 opacity-75">Menunggu Persetujuan</h6>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-0 fw-bold">{{ $stats['pending_approval'] }}</h2>
-                            <small class="opacity-75">Perlu ditinjau</small>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.2); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px;">
-                            <i class="bi bi-hourglass-split"></i>
-                        </div>
-                    </div>
-                    @if($stats['pending_approval'] > 0)
-                    <span class="position-absolute top-0 end-0 m-2 badge bg-danger rounded-pill">
-                        {{ $stats['pending_approval'] }}
-                    </span>
-                    @endif
-                </div>
-            </div>
+        <div class="col mb-3">
+            <x-stat-card title="Berita Acara AL Disetujui" :value="$stats['berita_acara']" description="Total berita acara AL yang telah disetujui" icon="file-earmark-text" iconBg="success-subtle" />
         </div>
     </div>
 
@@ -205,7 +149,7 @@
             <div class="card">
                 <div class="card-header bg-white">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Daftar Pelaksanaan Asesmen Lapangan</h5>
+                        <h5 class="mb-0">Daftar Pelaksanaan AL & Berita Acara</h5>
                         <div>
                             <span class="text-muted">Total: <strong>{{ $pengajuans->total() }}</strong></span>
                         </div>
@@ -219,8 +163,8 @@
                                 <tr>
                                     <th width="5%">#</th>
                                     <th width="30%">Permohonan Akreditasi</th>
-                                    <th width="25%">Asesor AL</th>
-                                    <th width="25%">Status</th>
+                                    <th width="25%">Tanggal Pelaksanaan AL</th>
+                                    <th width="25%">Status Pelaksanaan AL & Berita Acara</th>
                                     <th width="5%" class="text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -235,9 +179,11 @@
                                         <small class="text-muted">Dibuat pada: {{ \App\Libraries\Date::tglIndo($pengajuan->created_at) }}</small>
                                     </td>
                                     <td>
-                                        @if($pengajuan->asesmen->asesorAL)
-                                        <small>
-                                            {{ $pengajuan->asesmen->asesorAL()->name }}
+                                        @if($pengajuan->tanggal_pelaksanaan_al)
+                                        <small>{{ $pengajuan->tanggal_pelaksanaan_al->format('d M Y') }}</small>
+                                        <br>
+                                        <small class="text-muted">
+                                            {{ $pengajuan->tanggal_pelaksanaan_al->diffForHumans() }}
                                         </small>
                                         @else
                                         <span class="text-muted">-</span>
@@ -281,7 +227,7 @@
                             @if(request()->filled('search') || request()->filled('status'))
                             Tidak ada data yang sesuai dengan filter
                             @else
-                            Belum ada pelaksanaan asesmen lapangan
+                            Belum ada data pelaksanaan AL
                             @endif
                         </p>
                         @if(request()->filled('search') || request()->filled('status'))

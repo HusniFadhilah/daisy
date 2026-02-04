@@ -114,53 +114,88 @@ $menus = [
 'label' => 'Masa Sanggah',
 ],
 [
-'no' => 17,
-'route' => 'de.pelaksanaan-banding',
-'match' => 'de.pelaksanaan-banding*',
-'icon' => 'bi-arrow-repeat',
-'label' => 'Pelaksanaan Banding',
-],
-[
 'no' => 18,
-'route' => 'de.pelaporan-banding',
-'match' => 'de.pelaporan-banding*',
-'icon' => 'bi-clipboard-data',
-'label' => 'Pelaporan Banding',
-],
-[
-'no' => 19,
 'route' => 'de.penetapan-hasil-akreditasi',
 'match' => 'de.penetapan-hasil-akreditasi*',
 'icon' => 'bi-award',
 'label' => 'Penetapan Hasil Akreditasi',
 ],
 [
-'no' => 20,
+'no' => 19,
 'route' => 'de.pelaporan-hasil-akreditasi',
 'match' => 'de.pelaporan-hasil-akreditasi*',
 'icon' => 'bi-graph-up',
 'label' => 'Pelaporan Hasil Akreditasi',
 ],
 [
-'no' => 21,
+'no' => 20,
 'route' => 'de.penyimpanan-arsip-pelaksanaan-akreditasi',
 'match' => 'de.penyimpanan-arsip-pelaksanaan-akreditasi*',
 'icon' => 'bi-archive',
 'label' => 'Penyimpanan Arsip Pelaksanaan Akreditasi',
 ],
 ];
+
+$isBandingActive =
+request()->routeIs('de.permohonan-banding*')
+|| request()->routeIs('de.pelaksanaan-banding*')
+|| request()->routeIs('de.pelaporan-banding*');
 @endphp
 
-@foreach ($menus as $menu)
-<li class="nav-item">
-    <a href="{{ route($menu['route']) }}" class="nav-link {{ request()->routeIs($menu['match']) ? 'active' : '' }}">
-        <span class="menu-icon">
-            <i class="bi {{ $menu['icon'] }}"></i>
-        </span>
-        <span>{{ $menu['no'] }}. {{ $menu['label'] }}</span>
-    </a>
-</li>
-@endforeach
+<ul class="nav flex-column">
+    {{-- render menu 1-16 --}}
+    @foreach ($menus as $menu)
+    @if ($menu['no'] <= 16) <li class="nav-item">
+        <a href="{{ route($menu['route']) }}" class="nav-link {{ request()->routeIs($menu['match']) ? 'active' : '' }}">
+            <span class="menu-icon">
+                <i class="bi {{ $menu['icon'] }}"></i>
+            </span>
+            <span>{{ $menu['no'] }}. {{ $menu['label'] }}</span>
+        </a>
+        </li>
+        @endif
+        @endforeach
+
+        <!-- Banding -->
+        <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'banding-submenu')">
+            <span class="menu-icon">
+                <i class="bi bi-arrow-repeat"></i>
+            </span>
+            <span>17. Banding</span>
+        </a>
+
+        <ul class="submenu nav flex-column" id="banding-submenu">
+            <li>
+                <a href="{{ route('de.permohonan-banding') }}" class="nav-link">
+                    17.a Permohonan Banding
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('de.pelaksanaan-banding') }}" class="nav-link">
+                    17.b Pelaksanaan Banding
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('de.pelaporan-banding') }}" class="nav-link">
+                    17.c Pelaporan Banding
+                </a>
+            </li>
+        </ul>
+
+        {{-- render menu 20-22 --}}
+        @foreach ($menus as $menu)
+        @if ($menu['no'] >= 18)
+        <li class="nav-item">
+            <a href="{{ route($menu['route']) }}" class="nav-link {{ request()->routeIs($menu['match']) ? 'active' : '' }}">
+                <span class="menu-icon">
+                    <i class="bi {{ $menu['icon'] }}"></i>
+                </span>
+                <span>{{ $menu['no'] }}. {{ $menu['label'] }}</span>
+            </a>
+        </li>
+        @endif
+        @endforeach
+</ul>
 
 @if(in_array($authUser->role_selected,['super_admin']))
 <!-- Penugasan Banding -->

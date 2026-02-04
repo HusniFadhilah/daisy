@@ -34,7 +34,6 @@ class PelaksanaanALController extends Controller
                 PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
                 PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
                 PengajuanAkreditasi::STATUS_AL_SELESAI,
-                PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
             ])->orderBy('changed_at', 'desc'),
         ])->whereIn('id_program_studi', $studyProgramIds)->whereExists(function ($q) {
             $q->select(DB::raw(1))
@@ -44,7 +43,6 @@ class PelaksanaanALController extends Controller
                     PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
                     PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
                     PengajuanAkreditasi::STATUS_AL_SELESAI,
-                    PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
                 ]);
         });
 
@@ -271,12 +269,10 @@ class PelaksanaanALController extends Controller
     {
         // Total penugasan asesor AL
         $totalPenugasan = PengajuanAkreditasi::whereIn('id_program_studi', $studyProgramIds)
-            ->whereNotNull('id_asesor')
             ->whereIn('status', [
                 PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
                 PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
                 PengajuanAkreditasi::STATUS_AL_SELESAI,
-                PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
             ])
             ->count();
 

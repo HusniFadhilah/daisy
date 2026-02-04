@@ -4,28 +4,6 @@
 
 @push('styles')
 <style>
-    .stat-card {
-        border-radius: 12px;
-        transition: all 0.3s ease;
-        border: none;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    .stat-icon {
-        width: 60px;
-        height: 60px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 28px;
-    }
-
     .status-badge {
         padding: 6px 12px;
         border-radius: 20px;
@@ -71,97 +49,23 @@
     <!-- Statistics Cards -->
     <div class="row row-cols-1 row-cols-md-3 row-cols-lg-5 mb-4">
         <div class="col mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Total Invoice</h6>
-
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-1 fw-bold">{{ $stats['total'] }}</h2>
-                            <small class="opacity-75">Total invoice yang telah dibuat</small>
-                        </div>
-
-                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
-                            <i class="bi bi-receipt"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <x-stat-card title="Total Invoice" :value="$stats['total']" description="Total invoice yang telah dibuat" icon="receipt" gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)" />
         </div>
 
         <div class="col mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Menunggu Pembayaran</h6>
-
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-1 fw-bold">{{ $stats['menunggu_pembayaran'] }}</h2>
-                            <small class="opacity-75">Invoice telah dikirim, PS belum melakukan pembayaran</small>
-                        </div>
-
-                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
-                            <i class="bi bi-hourglass-split"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <x-stat-card title="Menunggu Pembayaran" :value="$stats['menunggu_pembayaran']" description="Invoice telah dikirim, PS belum melakukan pembayaran" icon="hourglass-split" gradient="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" />
         </div>
 
         <div class="col mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Menunggu Validasi</h6>
-
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-1 fw-bold">{{ $stats['menunggu_verifikasi'] }}</h2>
-                            <small class="opacity-75">Bukti bayar telah diupload, menunggu validasi oleh bagian keuangan</small>
-                        </div>
-
-                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
-                            <i class="bi bi-clock-history"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <x-stat-card title="Menunggu Validasi" :value="$stats['menunggu_verifikasi']" description="Bukti bayar telah diupload, menunggu validasi oleh bagian keuangan" icon="clock-history" gradient="linear-gradient(135deg, #ffc107 0%, #ff8c00 100%)" />
         </div>
 
         <div class="col mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #868f96 0%, #596164 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Upload Ulang</h6>
-
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-1 fw-bold">{{ $stats['upload_ulang'] }}</h2>
-                            <small class="opacity-75">Bukti bayar / pembayaran belum valid, perlu perbaikan</small>
-                        </div>
-
-                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
-                            <i class="bi bi-arrow-repeat"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <x-stat-card title="Upload Ulang" :value="$stats['upload_ulang']" description="Bukti bayar / pembayaran belum valid, perlu perbaikan" icon="arrow-repeat" gradient="linear-gradient(135deg, #868f96 0%, #596164 100%)" />
         </div>
+
         <div class="col mb-3">
-            <div class="card stat-card p-0" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
-                <div class="card-body text-white">
-                    <h6 class="mb-1 opacity-75">Tervalidasi</h6>
-
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h2 class="mb-1 fw-bold">{{ $stats['terverifikasi'] }}</h2>
-                            <small class="opacity-75">Pembayaran valid & disetujui oleh bagian keuangan</small>
-                        </div>
-
-                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
-                            <i class="bi bi-check-circle"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <x-stat-card title="Tervalidasi" :value="$stats['terverifikasi']" description="Pembayaran valid & disetujui oleh bagian keuangan" icon="check-circle" gradient="linear-gradient(135deg, #11998e 0%, #38ef7d 100%)" />
         </div>
     </div>
 
