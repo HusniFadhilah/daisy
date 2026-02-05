@@ -64,8 +64,8 @@
                     <thead class="table-light">
                         <tr>
                             <th width="5%">#</th>
-                            <th width="35%">Permohonan Akreditasi</th>
-                            <th width="25%">Program Studi</th>
+                            <th width="40%">Permohonan Akreditasi</th>
+                            <th width="20%">Program Studi</th>
                             <th width="20%">Status Validasi</th>
                             <th width="15%">Tanggal Validasi</th>
                             <th width="10%" class="text-center">Aksi</th>
@@ -116,8 +116,8 @@
                             </td>
 
                             <td>
-                                <p class="mb-0">{{ $prodi }}</p>
-                                <small class="text-muted">{{ $univ }}</small>
+                                <span class="badge bg-light text-dark">{{ $pengajuan->studyProgram->name ?? '-' }}</span>
+                                <small class="text-muted small d-block">{{ $pengajuan->studyProgram->university->name ?? '-' }}</small>
                             </td>
 
                             <td>

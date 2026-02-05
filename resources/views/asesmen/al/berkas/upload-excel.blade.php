@@ -106,16 +106,10 @@
         </div>
 
         {{-- ✅ Status & Actions Footer (SIMPLIFIED - NO REVISION) --}}
+        @if($isSubmittedOnly || $isApproved || $isComplete)
         <div class="card-footer bg-white">
             <div class="row align-items-center my-2">
                 <div class="col-12">
-                    @php
-                    $statusPekerjaan = $assignment->status_pekerjaan ?? 'not_started';
-                    $isSubmittedOnly = $statusPekerjaan === 'submitted';
-                    $isApproved = $statusPekerjaan === 'approved';
-                    $isComplete = $progress['percentage'] == 100;
-                    @endphp
-
                     {{-- ✅ Alert Submit Reminder (100% tapi belum submit) --}}
                     @if(!$isSubmittedOnly && !$isApproved && $isComplete)
                     <div class="alert alert-warning alert-dismissible alert-permanent mb-3" id="alertSubmitReminder">
@@ -131,12 +125,6 @@
                                     Anda telah menyelesaikan <strong>semua {{ $progress['total'] }} elemen penilaian</strong>.
                                     Segera lakukan <strong>Finalisasi dan Kirim</strong> untuk menyelesaikan penilaian.
                                 </p>
-                                <hr>
-                                <div class="mb-0">
-                                    <button type="button" class="btn btn-sm btn-success" id="btnSubmitFromAlert">
-                                        <i class="bi bi-send"></i> Finalisasi Sekarang
-                                    </button>
-                                </div>
                             </div>
                         </div>
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -221,6 +209,7 @@
                 </div>
             </div>
         </div>
+        @endif
     </div>
 
     <div class="row">

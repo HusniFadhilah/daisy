@@ -89,11 +89,11 @@
                     <thead class="table-light">
                         <tr>
                             <th width="5%">#</th>
-                            <th width="30%">Asesmen</th>
-                            <th width="25%">Program Studi</th>
+                            <th width="35%">Asesmen</th>
+                            <th width="20%">Program Studi</th>
                             <th width="20%">Status Validasi</th>
-                            <th width="10%">Tanggal</th>
-                            <th width="10%" class="text-center">Aksi</th>
+                            <th width="15%">Tanggal Validasi</th>
+                            <th width="5%" class="text-center">Aksi</th>
                         </tr>
                     </thead>
 
@@ -130,8 +130,8 @@
                             </td>
 
                             <td>
-                                <small class="text-muted d-block">{{ $univ }}</small>
-                                <span class="badge bg-light text-dark">{{ $prodi }}</span>
+                                <span class="badge bg-light text-dark">{{ $asesmen->studyProgram->name ?? '-' }}</span>
+                                <small class="text-muted small d-block">{{ $asesmen->studyProgram->university->name ?? '-' }}</small>
                             </td>
 
                             <td>
@@ -188,7 +188,7 @@
                         }
                         @endphp
 
-                        <tr class="table-success">
+                        <tr>
                             <td>{{ $no++ }}</td>
 
                             <td>
@@ -200,8 +200,8 @@
                             </td>
 
                             <td>
-                                <small class="text-muted d-block">{{ $univ }}</small>
-                                <span class="badge bg-light text-dark">{{ $prodi }}</span>
+                                <span class="badge bg-light text-dark">{{ $asesmen->studyProgram->name ?? '-' }}</span>
+                                <small class="text-muted small d-block">{{ $asesmen->studyProgram->university->name ?? '-' }}</small>
                             </td>
 
                             <td>

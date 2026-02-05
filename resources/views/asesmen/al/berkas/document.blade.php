@@ -1,277 +1,320 @@
 @extends('layouts.template.app')
 
-@section('content')
-<div class="container">
+@section('title', 'Upload Berita Acara AL - ' . $asesmen->name)
 
-    <div class="d-flex justify-content-between align-items-start mb-3">
-        <div>
-            <h4 class="mb-1">Hasil dan Berita Acara Asesmen Lapangan (AL)</h4>
-            <div class="text-muted" style="font-size: 13px;">
-                Kode Asesmen: <b>{{ $asesmen->code }}</b> —
-                {{ $asesmen->studyProgram?->university?->name ?? '-' }} /
-                {{ $asesmen->studyProgram?->full_name ?? $asesmen->studyProgram?->name ?? '-' }}
-            </div>
-        </div>
-
-        <div class="d-flex gap-2">
-            <a href="{{ route('al.berkas.laporanPdf', $asesmen->id) }}" class="btn btn-primary">
-                <i class="bi bi-file-earmark-pdf"></i>
-                Lihat Laporan PDF
-            </a>
-        </div>
-    </div>
-
-    <div class="card shadow-sm mb-3">
-        <div class="card-body">
-
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <div>
-                    <div class="fw-semibold">Hasil dan Berita Acara Asesmen Lapangan (AL) (PDF)</div>
-                    {{-- <div class="text-muted" style="font-size: 13px;">
-                        Anda bisa upload lebih dari 1 file. Urutan bisa diatur dengan drag & drop.
-                    </div> --}}
-                </div>
-            </div>
-
-            <form id="uploadForm" class="mt-3">
-                @csrf
-                <div class="row g-2 align-items-center">
-                    <div class="col-md-8">
-                        <input type="file" name="files[]" class="form-control" accept="application/pdf" multiple required>
-                        <div class="form-text">Format: PDF, max 10MB per file.</div>
-                    </div>
-                    <div class="col-md-4 d-grid">
-                        <button type="submit" class="btn btn-success">
-                            <i class="bi bi-upload"></i> Upload
-                        </button>
-                    </div>
-                </div>
-            </form>
-
-        </div>
-    </div>
-
-    {{-- <div class="card shadow-sm">
-        <div class="card-header bg-white d-flex justify-content-between align-items-center">
-            <div class="fw-semibold">
-                Daftar Berita Acara
-                <span class="text-muted" style="font-size: 13px;">(drag untuk ubah urutan)</span>
-            </div>
-            <button id="saveOrderBtn" class="btn btn-outline-primary btn-sm" disabled>
-                <i class="bi bi-save"></i> Simpan Urutan
-            </button>
-        </div>
-
-        <div class="card-body p-0">
-            <div id="alertBox" class="p-3 d-none"></div>
-
-            @if($docs->count() === 0)
-            <div class="p-4 text-center text-muted">
-                Belum ada file berita acara.
-            </div>
-            @else
-            <ul id="docList" class="list-group list-group-flush">
-                @foreach($docs as $doc)
-                <li class="list-group-item d-flex justify-content-between align-items-center" data-id="{{ $doc->id }}">
-    <div class="d-flex align-items-center gap-3">
-        <span class="text-muted" style="cursor: grab;">
-            <i class="bi bi-grip-vertical"></i>
-        </span>
-
-        <div>
-            <div class="fw-semibold">
-                <i class="bi bi-file-pdf text-danger"></i>
-                {{ $doc->original_name }}
-            </div>
-            <div class="text-muted" style="font-size: 12px;">
-                {{ number_format(($doc->file_size ?? 0)/1024/1024, 2) }} MB
-                •
-                <span class="badge {{ $doc->is_active ? 'bg-success' : 'bg-secondary' }}">
-                    {{ $doc->is_active ? 'Aktif (ikut merge)' : 'Nonaktif' }}
-                </span>
-            </div>
-        </div>
-    </div>
-
-    <div class="d-flex gap-2">
-        <a class="btn btn-outline-secondary btn-sm" href="{{ route('al.berkas.documents.download', [$asesmen->id, $doc->id]) }}">
-            <i class="bi bi-download"></i>
-        </a>
-
-        <button class="btn btn-outline-warning btn-sm btnToggle" data-id="{{ $doc->id }}">
-            <i class="bi bi-toggle2-on"></i>
-            Toggle
-        </button>
-
-        <button class="btn btn-outline-danger btn-sm btnDelete" data-id="{{ $doc->id }}">
-            <i class="bi bi-trash"></i>
-        </button>
-    </div>
-    </li>
-    @endforeach
-    </ul>
-    @endif
-</div>
-</div> --}}
-
-</div>
-@endsection
-
-@section('scripts')
-{{-- SortableJS (CDN) --}}
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
-
-<script>
-    const asesmenId = @json($asesmen - > id);
-
-    const uploadUrl = @json(route('al.berkas.documents.beritaAcara.upload', $asesmen - > id));
-    const reorderUrl = @json(route('al.berkas.documents.reorder', $asesmen - > id));
-    const toggleBase = @json(route('al.berkas.documents.toggle', [$asesmen - > id, 0])); // replace 0
-    const deleteBase = @json(route('al.berkas.documents.destroy', [$asesmen - > id, 0])); // replace 0
-
-    const alertBox = document.getElementById('alertBox');
-    const saveOrderBtn = document.getElementById('saveOrderBtn');
-    const docList = document.getElementById('docList');
-
-    function showAlert(type, message) {
-        alertBox.classList.remove('d-none');
-        alertBox.className = 'p-3 alert alert-' + type;
-        alertBox.innerHTML = message;
-        setTimeout(() => alertBox.classList.add('d-none'), 4000);
+@push('styles')
+<style>
+    .upload-area {
+        border: 2px dashed #198754;
+        border-radius: 12px;
+        padding: 60px 20px;
+        text-align: center;
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        cursor: pointer;
+        transition: all 0.3s ease;
     }
 
-    // Upload multi file
-    document.getElementById('uploadForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
+    .upload-area:hover {
+        border-color: #146c43;
+        background: linear-gradient(135deg, #f0fff5 0%, #ffffff 100%);
+        transform: translateY(-2px);
+    }
 
-        const formData = new FormData(this);
+    .upload-area.dragover {
+        border-color: #0f5132;
+        background: linear-gradient(135deg, #d5f4e6 0%, #ffffff 100%);
+    }
 
-        try {
-            const res = await fetch(uploadUrl, {
-                method: 'POST'
-                , headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                    , 'X-CSRF-TOKEN': @json(csrf_token())
-                , }
-                , body: formData
-            });
+    .file-icon {
+        font-size: 4rem;
+        color: #198754;
+    }
 
-            const json = await res.json();
+</style>
+@endpush
 
-            if (!res.ok || !json.success) {
-                showAlert('danger', json.message || 'Upload gagal');
-                return;
+@section('content')
+<div class="container-fluid py-3">
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="mb-1">
+                        <i class="bi bi-file-earmark-pdf"></i> Upload Berita Acara AL
+                    </h4>
+                    <p class="text-muted mb-0">{{ $asesmen->name }}</p>
+                </div>
+                <a href="{{ route('al.berkas') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Kembali
+                </a>
+            </div>
+        </div>
+
+        @if(session('success'))
+        <div class="card-footer bg-white">
+            <div class="alert alert-success alert-permanent mb-0">
+                <i class="bi bi-check-circle"></i> {{ session('success') }}
+            </div>
+        </div>
+        @endif
+    </div>
+
+    @if($errors->any())
+    <div class="alert alert-danger alert-permanent">
+        <div class="fw-semibold mb-2">Terjadi kesalahan:</div>
+        <ul class="mb-0">
+            @foreach($errors->all() as $err)
+            <li>{{ $err }}</li>
+            @endforeach
+        </ul>
+    </div>
+    @endif
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-cloud-upload"></i> Upload File Berita Acara (PDF)
+                    </h5>
+                </div>
+
+                <div class="card-body">
+                    <form method="POST" action="{{ route('al.berkas.documents.upload', ['id' => $asesmen->id]) }}" enctype="multipart/form-data" id="uploadForm">
+                        @csrf
+
+                        <div class="upload-area" id="uploadArea">
+                            <input type="file" id="fileInput" name="files[]" accept="application/pdf" class="d-none" multiple required>
+
+                            <div id="uploadPrompt">
+                                <i class="bi bi-cloud-arrow-up file-icon"></i>
+                                <h5 class="mt-3">Silahkan upload file berita acara di sini</h5>
+                                <p class="text-muted mb-0">PDF, maksimal 20MB per file</p>
+                            </div>
+
+                            <div id="fileInfo" class="d-none">
+                                <i class="bi bi-file-earmark-pdf text-danger" style="font-size: 4rem;"></i>
+                                <h6 class="mt-3 mb-1" id="fileCount">-</h6>
+                                <small class="text-muted" id="fileNames">-</small>
+                                <div class="mt-2">
+                                    <button type="button" class="btn btn-sm btn-outline-danger" id="btnRemoveFile">
+                                        <i class="bi bi-x-circle"></i> Batalkan
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 text-center">
+                            <button type="submit" class="btn btn-success" id="btnUploadSubmit" disabled>
+                                <i class="bi bi-upload"></i> Upload
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0"><i class="bi bi-list-ul"></i> Daftar File</h6>
+                        <small class="text-muted">Total: {{ $docs->count() }}</small>
+                    </div>
+                </div>
+
+                <div class="card-body p-0">
+                    @if($docs->count() > 0)
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="5%">#</th>
+                                    <th width="55%">Nama</th>
+                                    <th width="20%">Upload</th>
+                                    <th width="10%" class="text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($docs as $i => $doc)
+                                <tr>
+                                    <td>{{ $i + 1 }}</td>
+                                    <td>
+                                        <div class="fw-semibold">{{ $doc->title }}</div>
+                                        <small class="text-muted">{{ $doc->original_name }}</small>
+                                    </td>
+                                    <td>
+                                        @if($doc->uploaded_at)
+                                        <small>{{ $doc->uploaded_at->format('d M Y, H:i') }}</small>
+                                        @else
+                                        <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a class="btn btn-outline-primary" href="{{ route('al.berkas.documents.download', ['id' => $asesmen->id, 'docId' => $doc->id]) }}" title="Download">
+                                                <i class="bi bi-download"></i>
+                                            </a>
+
+                                            <form method="POST" action="{{ route('al.berkas.documents.delete', ['id' => $asesmen->id, 'docId' => $doc->id]) }}" onsubmit="return confirm('Hapus dokumen ini')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button class="btn btn-outline-danger" type="submit" title="Hapus">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    @else
+                    <div class="text-center py-5">
+                        <i class="bi bi-inbox" style="font-size:64px;color:#ddd;"></i>
+                        <p class="text-muted mt-3 mb-0">Belum ada berita acara yang diunggah</p>
+                    </div>
+                    @endif
+                </div>
+
+                @php
+                $hasActiveDocs = $docs->where('is_active', true)->count() > 0;
+                @endphp
+
+                @if($hasActiveDocs)
+                <div class="card-footer bg-white d-flex justify-content-end gap-2">
+                    <button class="btn btn-success" id="btnFinalize">
+                        <i class="bi bi-check-circle"></i> Finalisasi
+                    </button>
+                </div>
+                @endif
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0">Petunjuk</h6>
+                </div>
+                <div class="card-body">
+                    <ol class="mb-0 small">
+                        <li>Upload berita acara dalam bentuk PDF</li>
+                        <li>Pastikan file bisa dibuka</li>
+                        <li>Setelah upload, lakukan finalisasi</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var uploadArea = document.getElementById('uploadArea');
+        var fileInput = document.getElementById('fileInput');
+        var uploadPrompt = document.getElementById('uploadPrompt');
+        var fileInfo = document.getElementById('fileInfo');
+        var fileCount = document.getElementById('fileCount');
+        var fileNames = document.getElementById('fileNames');
+        var btnRemoveFile = document.getElementById('btnRemoveFile');
+        var btnUploadSubmit = document.getElementById('btnUploadSubmit');
+
+        function resetFile() {
+            fileInput.value = '';
+            uploadPrompt.classList.remove('d-none');
+            fileInfo.classList.add('d-none');
+            btnUploadSubmit.disabled = true;
+        }
+
+        function handleFileSelect() {
+            var files = fileInput.files;
+            if (!files || files.length === 0) return;
+
+            for (var i = 0; i < files.length; i++) {
+                if (files[i].type !== 'application/pdf') {
+                    alert('Semua file harus PDF');
+                    resetFile();
+                    return;
+                }
+                if (files[i].size > 20 * 1024 * 1024) {
+                    alert('Ukuran file maksimal 20MB per file');
+                    resetFile();
+                    return;
+                }
             }
 
-            showAlert('success', json.message || 'Upload berhasil');
-            window.location.reload();
-        } catch (err) {
-            showAlert('danger', 'Terjadi kesalahan saat upload');
+            fileCount.textContent = files.length + ' file dipilih';
+            var names = [];
+            for (var j = 0; j < files.length; j++) names.push(files[j].name);
+            fileNames.textContent = names.join(', ');
+
+            uploadPrompt.classList.add('d-none');
+            fileInfo.classList.remove('d-none');
+            btnUploadSubmit.disabled = false;
+        }
+
+        uploadArea.addEventListener('click', function(e) {
+            if (btnRemoveFile && (e.target === btnRemoveFile || btnRemoveFile.contains(e.target))) return;
+            fileInput.click();
+        });
+
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+
+            var files = e.dataTransfer.files;
+            if (files && files.length > 0) {
+                fileInput.files = files;
+                handleFileSelect();
+            }
+        });
+
+        fileInput.addEventListener('change', handleFileSelect);
+
+        btnRemoveFile.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            resetFile();
+        });
+
+        var btnFinalize = document.getElementById('btnFinalize');
+        if (btnFinalize) {
+            btnFinalize.addEventListener('click', function() {
+                if (!confirm('Finalisasi berita acara')) return;
+
+                fetch("{{ route('al.berkas.documents.finalize', ['id' => $asesmen->id]) }}", {
+                        method: 'POST'
+                        , headers: {
+                            'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                            , 'Accept': 'application/json'
+                            , 'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(function(r) {
+                        return r.json();
+                    })
+                    .then(function(res) {
+                        alert(res.message || 'OK');
+                        if (res.success) window.location.reload();
+                    })
+                    .catch(function() {
+                        alert('Gagal finalisasi');
+                    });
+            });
         }
     });
 
-    // Drag reorder
-    if (docList) {
-        const sortable = new Sortable(docList, {
-            animation: 150
-            , handle: '.bi-grip-vertical'
-            , onEnd: function() {
-                saveOrderBtn.disabled = false;
-            }
-        });
-
-        saveOrderBtn ? .addEventListener('click', async function() {
-            const items = [...docList.querySelectorAll('li[data-id]')];
-            const orders = items.map((li, idx) => ({
-                id: parseInt(li.getAttribute('data-id'))
-                , sort_order: idx
-            }));
-
-            try {
-                const res = await fetch(reorderUrl, {
-                    method: 'PATCH'
-                    , headers: {
-                        'Content-Type': 'application/json'
-                        , 'X-Requested-With': 'XMLHttpRequest'
-                        , 'X-CSRF-TOKEN': @json(csrf_token())
-                    , }
-                    , body: JSON.stringify({
-                        orders
-                    })
-                });
-
-                const json = await res.json();
-                if (!res.ok || !json.success) {
-                    showAlert('danger', json.message || 'Gagal simpan urutan');
-                    return;
-                }
-
-                showAlert('success', json.message || 'Urutan tersimpan');
-                saveOrderBtn.disabled = true;
-            } catch (err) {
-                showAlert('danger', 'Terjadi kesalahan saat menyimpan urutan');
-            }
-        });
-    }
-
-    // Toggle aktif
-    document.querySelectorAll('.btnToggle').forEach(btn => {
-        btn.addEventListener('click', async function() {
-            const id = this.getAttribute('data-id');
-            const url = toggleBase.replace(/\/0\/toggle$/, '/' + id + '/toggle');
-
-            try {
-                const res = await fetch(url, {
-                    method: 'PATCH'
-                    , headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                        , 'X-CSRF-TOKEN': @json(csrf_token())
-                    , }
-                });
-
-                const json = await res.json();
-                if (!res.ok || !json.success) {
-                    showAlert('danger', json.message || 'Gagal toggle');
-                    return;
-                }
-                window.location.reload();
-            } catch (err) {
-                showAlert('danger', 'Terjadi kesalahan saat toggle');
-            }
-        });
-    });
-
-    // Delete file
-    document.querySelectorAll('.btnDelete').forEach(btn => {
-        btn.addEventListener('click', async function() {
-            const id = this.getAttribute('data-id');
-
-            if (!confirm('Hapus dokumen ini?')) return;
-
-            const url = deleteBase.replace(/\/0$/, '/' + id);
-
-            try {
-                const res = await fetch(url, {
-                    method: 'DELETE'
-                    , headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                        , 'X-CSRF-TOKEN': @json(csrf_token())
-                    , }
-                });
-
-                const json = await res.json();
-                if (!res.ok || !json.success) {
-                    showAlert('danger', json.message || 'Gagal hapus');
-                    return;
-                }
-
-                showAlert('success', json.message || 'Dokumen dihapus');
-                window.location.reload();
-            } catch (err) {
-                showAlert('danger', 'Terjadi kesalahan saat hapus dokumen');
-            }
-        });
-    });
-
 </script>
+@endpush
 @endsection

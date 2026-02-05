@@ -119,7 +119,7 @@
                                         Penilaian dengan Form Excel
                                     </a>
 
-                                    <a href="{{ route('al.berkas.show',$asesmen->id) }}" class="btn btn-success btn-fixed" @if($statusInfo['button_disabled']) disabled @endif>
+                                    <a href="{{ route('al.berkas.documents.page', ['id' => $asesmen->id]) }}" class="btn btn-success btn-fixed" @if($statusInfo['button_disabled']) disabled @endif>
                                         <i class="bi bi-file-earmark-text"></i>
                                         Berita Acara AL
                                     </a>
@@ -129,7 +129,7 @@
                             </td>
                             <td class="text-center">
                                 <div class="btn-stack">
-                                    <a href="{{ route('al.berkas.show',$asesmen->id) }}" class="btn btn-blue btn-fixed-sm" @if($statusInfo['button_disabled']) disabled @endif>
+                                    <a href="{{ route('al.berkas.lha-asesor.page', ['idAsesmen' => $asesmen->id]) }}" class="btn btn-blue btn-fixed-sm" @if($statusInfo['button_disabled']) disabled @endif>
                                         <i class="bi bi-file-earmark-text me-1"></i>
                                         Laporan Hasil Asesmen
                                     </a>

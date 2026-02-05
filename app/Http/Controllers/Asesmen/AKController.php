@@ -144,7 +144,16 @@ class AKController extends Controller
         // Calculate progress
         $progress = $this->calculateProgressBulk([$asesmen->id], $user->id)[$asesmen->id];
         $uploadedFiles = $asesmen->pengajuan ? $asesmen->pengajuan->getUploadedDocuments() : null;
-        return view('asesmen.ak.berkas.show', compact('asesmen', 'kriterias', 'progress', 'jenjangs', 'pluckColorSkor', 'needsRevisions', 'countNeedsRevisions', 'assignment', 'uploadedFiles'));
+
+        $statusPekerjaan = $assignment->status_pekerjaan ?? 'not_started';
+        $isSubmittedOnly = $statusPekerjaan === 'submitted';
+        $isSubmitted = isset($assignment) && in_array($statusPekerjaan, ['submitted', 'approved', 'validated']);
+        $isApproved = $statusPekerjaan === 'approved';
+        $needsRevision = $statusPekerjaan === 'revision_required';
+        $hasRevisionRequests = $countNeedsRevisions > 0;
+        $isComplete = $progress['percentage'] == 100;
+
+        return view('asesmen.ak.berkas.show', compact('asesmen', 'kriterias', 'progress', 'jenjangs', 'pluckColorSkor', 'needsRevisions', 'countNeedsRevisions', 'assignment', 'uploadedFiles', 'statusPekerjaan', 'isSubmittedOnly', 'isSubmitted', 'isApproved', 'needsRevision', 'hasRevisionRequests', 'isComplete'));
     }
 
     /**
@@ -901,12 +910,27 @@ class AKController extends Controller
         // ✅ Calculate progress
         $progress = $this->calculateProgressBulk([$asesmen->id], $user->id)[$asesmen->id];
 
+        $statusPekerjaan = $assignment->status_pekerjaan ?? 'not_started';
+        $isSubmittedOnly = $statusPekerjaan === 'submitted';
+        $isSubmitted = isset($assignment) && in_array($statusPekerjaan, ['submitted', 'approved', 'validated']);
+        $isApproved = $statusPekerjaan === 'approved';
+        $needsRevision = $statusPekerjaan === 'revision_required';
+        $hasRevisionRequests = $countNeedsRevisions > 0;
+        $isComplete = $progress['percentage'] == 100;
+
         return view('asesmen.ak.berkas.upload-excel', compact(
             'asesmen',
             'assignment',
             'needsRevisions',
             'countNeedsRevisions',
-            'progress'
+            'progress',
+            'statusPekerjaan',
+            'isSubmittedOnly',
+            'isSubmitted',
+            'isApproved',
+            'needsRevision',
+            'hasRevisionRequests',
+            'isComplete'
         ));
     }
 

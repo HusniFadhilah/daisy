@@ -134,17 +134,6 @@
         <div class="card-footer bg-white">
             <div class="row align-items-center my-2">
                 <div class="col-12 mb-md-0">
-                    {{-- Status Indicator --}}
-                    @php
-                    $statusPekerjaan = $assignment->status_pekerjaan ?? 'not_started';
-                    $isSubmittedOnly = $statusPekerjaan === 'submitted';
-                    $isSubmitted = isset($assignment) && in_array($statusPekerjaan, ['submitted', 'approved', 'validated']);
-                    $isApproved = $statusPekerjaan === 'approved';
-                    $needsRevision = $statusPekerjaan === 'revision_required';
-                    $hasRevisionRequests = $countNeedsRevisions > 0;
-                    $isComplete = $progress['percentage'] == 100;
-                    @endphp
-
                     @if($hasRevisionRequests)
                     <div class="alert alert-warning alert-dismissible alert-permanent mb-3">
                         <div class="d-flex align-items-start">
@@ -225,7 +214,7 @@
                     @if($isApproved)
                     <div class="alert alert-success alert-permanent alert-dismissible mb-3">
                         <i class="bi bi-check-circle me-2"></i>
-                        <strong>Penilaian Disetujui!</strong> Penilaian Anda telah divalidasi dan disetujui oleh validator.
+                        <strong>Penilaian Disetujui!</strong> Penilaian Anda telah divalidasi dan disetujui.
                         Asesmen siap dilanjutkan ke tahap Asesmen Lapangan (AL).
                     </div>
                     @endif

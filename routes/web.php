@@ -158,21 +158,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/berkas/{asesmen}/comparison-data', [ALController::class, 'getComparisonData'])->name('berkas.comparison-data');
         Route::get('/berkas/{id}/laporan-pdf', [ALController::class, 'exportLaporanPdf'])->name('berkas.laporanPdf');
         Route::get('/berkas/{idAsesmen}/upload-excel', [ALController::class, 'uploadExcelPage'])->name('berkas.upload-excel');
+        Route::get('/berkas/{idAsesmen}/upload-berita-acara', [\App\Http\Controllers\Asesmen\ALController::class, 'uploadBeritaAcaraPage'])->name('berkas.upload-berita-acara');
 
         Route::prefix('/berkas/{id}/documents')->name('berkas.documents.')->group(function () {
             Route::get('/', [ALDocumentController::class, 'index'])->name('index');
             Route::post('/upload', [ALDocumentController::class, 'uploadDocument'])->name('upload');
             Route::get('/list', [ALDocumentController::class, 'getFiles'])->name('list');
-            Route::get('/page', [ALDocumentController::class, 'page'])->name('berkas.page');
+            Route::get('/page', [ALDocumentController::class, 'page'])->name('page');
             Route::post('/finalize', [ALDocumentController::class, 'finalize'])->name('finalize');
             Route::post('/unfinalize', [ALDocumentController::class, 'unfinalize'])->name('unfinalize');
-
             Route::patch('/reorder', [ALDocumentController::class, 'reorder'])->name('reorder');
             Route::patch('/{docId}/toggle', [ALDocumentController::class, 'toggleActive'])->name('toggle');
-
             Route::get('/{docId}/download', [ALDocumentController::class, 'download'])->name('download');
             Route::delete('/{docId}', [ALDocumentController::class, 'destroy'])->name('delete');
         });
+
+        Route::get('/berkas/{idAsesmen}/lha-asesor', [\App\Http\Controllers\Asesmen\LHAAsesorController::class, 'page'])->name('berkas.lha-asesor.page');
+        Route::post('/berkas/{idAsesmen}/lha-asesor/upload/{type}', [\App\Http\Controllers\Asesmen\LHAAsesorController::class, 'upload'])->name('berkas.lha-asesor.upload');
+        Route::get('/berkas/{idAsesmen}/lha-asesor/{docId}/download', [\App\Http\Controllers\Asesmen\LHAAsesorController::class, 'download'])->name('berkas.lha-asesor.download');
+        Route::delete('/berkas/{idAsesmen}/lha-asesor/{docId}', [\App\Http\Controllers\Asesmen\LHAAsesorController::class, 'destroy'])->name('berkas.lha-asesor.delete');
     });
 
     // ========== PRODI ROUTES - Permohonan Akreditasi ==========
@@ -558,6 +562,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::prefix('pelaksanaan-al')->name('.pelaksanaan-al')->group(function () {
             Route::get('/', [App\Http\Controllers\UPPS\PelaksanaanALController::class, 'index']);
             Route::get('/{id}', [\App\Http\Controllers\UPPS\PelaksanaanALController::class, 'show'])->name('.show');
+            Route::prefix('{id}/berita-acara')->name('.berita-acara')->group(function () {
+                Route::get('/approve', [\App\Http\Controllers\UPPS\PelaksanaanALController::class, 'showApprovalForm'])->name('.approve.form');
+                Route::post('/approve', [\App\Http\Controllers\UPPS\PelaksanaanALController::class, 'processApproval'])->name('.approve.process');
+            });
         });
 
         Route::prefix('pelaporan-al')->name('.pelaporan-al')->group(function () {
@@ -654,7 +662,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
     });
 
-    Route::prefix('/pelaporan')->name('pelaporan.')->group(function () {
+    Route::prefix('/pelaporan')->name('pelaporan.')->middleware(['role:super_admin,asesi,validator'])->group(function () {
         Route::get('/', [PelaporanController::class, 'index'])->name('index');
         Route::get('/dokumen', [PelaporanController::class, 'indexDokumen'])->name('indexDokumen');
         Route::get('/validasi-ak', [PelaporanController::class, 'indexValidasiAK'])->name('indexValidasiAK');
@@ -682,7 +690,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
     });
 
-    Route::middleware(['role:super_admin,asesi'])->prefix('hasil-akreditasi')->name('hasil-akreditasi.')->group(function () {
+    Route::prefix('hasil-akreditasi')->name('hasil-akreditasi.')->middleware(['role:super_admin,asesi'])->group(function () {
         // View hasil
         Route::get('/asesmen/{id}', [HasilAkreditasiController::class, 'show'])->name('show');
 

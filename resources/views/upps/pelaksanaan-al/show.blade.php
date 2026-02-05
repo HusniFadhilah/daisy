@@ -186,7 +186,7 @@
                                     @endif
                                 </div>
                                 <div class="col-md-4 text-end">
-                                    <a href="{{ route('al.berkas.documents.download', ['id' => $pengajuan->id_asesmen, 'docId' => $beritaAcara->id]) }}" class="btn btn-success btn-md mb-2 w-100">
+                                    <a href="{{ route('al.berkas.documents.download', ['id' => 4, 'docId' => $beritaAcara->id]) }}" class="btn btn-success btn-md mb-2 w-100">
                                         <i class="bi bi-file-earmark-pdf"></i> Lihat File
                                     </a>
 

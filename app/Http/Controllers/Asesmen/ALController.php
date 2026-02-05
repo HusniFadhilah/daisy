@@ -150,6 +150,7 @@ class ALController extends Controller
         $isFinalized = in_array($asesmen->asesmenLapangan->status, ['completed', 'finalized']);
         $isInProgress = $asesmen->asesmenLapangan->isInProgress();
         $uploadedFiles = $asesmen->pengajuan ? $asesmen->pengajuan->getUploadedDocuments() : null;
+
         return view('asesmen.al.berkas.show', compact('asesmen', 'kriterias', 'progress', 'jenjangs', 'step', 'needsRevisions', 'isFinalized', 'assignment', 'uploadedFiles', 'isInProgress'));
     }
 
@@ -1081,11 +1082,20 @@ class ALController extends Controller
         // ✅ Calculate progress untuk AL
         $progress = $this->calculateProgressBulk([$asesmen->id], $user->id)[$asesmen->id];
 
+        $statusPekerjaan = $assignment->status_pekerjaan ?? 'not_started';
+        $isSubmittedOnly = $statusPekerjaan === 'submitted';
+        $isApproved = $statusPekerjaan === 'approved';
+        $isComplete = $progress['percentage'] == 100;
+
         // ✅ TANPA needsRevisions - AL tidak ada revisi
         return view('asesmen.al.berkas.upload-excel', compact(
             'asesmen',
             'assignment',
-            'progress'
+            'progress',
+            'statusPekerjaan',
+            'isSubmittedOnly',
+            'isApproved',
+            'isComplete'
         ));
     }
 }

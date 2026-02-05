@@ -125,19 +125,11 @@
         </div>
 
         {{-- ✅ Status & Actions Footer --}}
+
+        @if($isSubmitted || $isSubmittedOnly || $isApproved || $isComplete || $hasRevisionRequests)
         <div class="card-footer bg-white">
             <div class="row align-items-center my-2">
                 <div class="col-12">
-                    @php
-                    $statusPekerjaan = $assignment->status_pekerjaan ?? 'not_started';
-                    $isSubmittedOnly = $statusPekerjaan === 'submitted';
-                    $isSubmitted = isset($assignment) && in_array($statusPekerjaan, ['submitted', 'approved', 'validated']);
-                    $isApproved = $statusPekerjaan === 'approved';
-                    $needsRevision = $statusPekerjaan === 'revision_required';
-                    $hasRevisionRequests = $countNeedsRevisions > 0;
-                    $isComplete = $progress['percentage'] == 100;
-                    @endphp
-
                     {{-- ✅ Alert Revisi --}}
                     @if($hasRevisionRequests)
                     <div class="alert alert-warning alert-dismissible alert-permanent mb-3">
@@ -268,6 +260,7 @@
                 </div>
             </div>
         </div>
+        @endif
     </div>
 
     <div class="row">
