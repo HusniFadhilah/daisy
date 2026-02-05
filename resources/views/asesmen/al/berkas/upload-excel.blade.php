@@ -328,14 +328,13 @@
 </div>
 
 @push('scripts')
+@php
+$isSubmitted = $isSubmittedOnly || $isApproved;
+@endphp
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const idAsesmen = "{{ $asesmen->id }}";
-        const isSubmitted = {
-            {
-                ($isSubmittedOnly || $isApproved) ? 'true' : 'false'
-            }
-        };
+        const isSubmitted = @json($isSubmitted);
 
         // --- Helper DOM ---
         const qs = function(id) {

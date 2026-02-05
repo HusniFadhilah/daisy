@@ -49,18 +49,18 @@
                         $pengajuan = $asesmen->pengajuan;
 
                         // Get dokumen berkas akreditasi
-                        $dokumenLED = $pengajuan->dokumen
+                        $dokumenLED = $pengajuan?->dokumen
                         ->whereIn('jenis_dokumen', ['data_kualitatif', 'draft_borang', 'borang_final'])
                         ->where('is_latest', true)
                         ->first();
 
                         // ✅ FIX: Suplemen menggunakan data_suplemen
-                        $dokumenSuplemen = $pengajuan->dokumen
+                        $dokumenSuplemen = $pengajuan?->dokumen
                         ->where('jenis_dokumen', 'data_suplemen')
                         ->where('is_latest', true)
                         ->first();
 
-                        $dokumenLKPS = $pengajuan->dokumen
+                        $dokumenLKPS = $pengajuan?->dokumen
                         ->whereIn('jenis_dokumen', ['data_kuantitatif', 'kuantitatif'])
                         ->where('is_latest', true)
                         ->first();

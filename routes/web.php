@@ -523,7 +523,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{id}', [\App\Http\Controllers\UPPS\PenerimaanDokumenController::class, 'show'])->name('.show');
             Route::get('/{id}/upload', [\App\Http\Controllers\UPPS\PenerimaanDokumenController::class, 'showUploadForm'])->name('.upload.form');
             Route::post('/{id}/upload', [\App\Http\Controllers\UPPS\PenerimaanDokumenController::class, 'uploadDokumen'])->name('.upload');
-            Route::get('/dokumen/{id}/download', [\App\Http\Controllers\UPPS\PenerimaanDokumenController::class, 'download'])->name('.dokumen.download');
         });
 
         Route::prefix('validasi-dokumen')->name('.validasi-dokumen')->group(function () {
@@ -602,6 +601,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::prefix('penyimpanan-arsip-pelaksanaan-akreditasi')->name('.penyimpanan-arsip-pelaksanaan-akreditasi')->group(function () {
             Route::get('/', [\App\Http\Controllers\UPPS\PenyimpananArsipPelaksanaanAkreditasiController::class, 'index']);
             Route::get('/{id}', [\App\Http\Controllers\UPPS\PenyimpananArsipPelaksanaanAkreditasiController::class, 'show'])->name('.show');
+        });
+    });
+
+    Route::prefix('upps')->name('upps')->group(function () {
+        Route::prefix('pengiriman-dokumen')->name('.penerimaan-dokumen')->group(function () {
+            Route::get('/dokumen/{id}/download', [\App\Http\Controllers\UPPS\PenerimaanDokumenController::class, 'download'])->name('.dokumen.download');
         });
     });
 

@@ -33,7 +33,7 @@
         <div class="col-lg-8 mb-4">
             @php
             $allowed = [
-            //\App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
+            \App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
             \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
             \App\Models\PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
             ]; // ini contoh, bisa dinamis dari config/db/request
@@ -42,20 +42,18 @@
             @endphp
             <!-- Status Alert -->
             @if($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN)
-            <div class="alert alert-success alert-permanent">
+            <div class="alert alert-info alert-permanent">
                 <i class="bi bi-check-circle"></i>
-                <strong>Pelaporan Validasi Dokumen telah Dilaksanakan</strong><br>
-                Sekretariat LAMDEPILAR menyampaikan laporan tentang validasi dokumen dan menyatakan dokumen akreditasi memasuki tahap asesmen kecukupan. Dan menyatakan bahwa:
-                <ol>
-                    <li>
-                        Sekretariat LAMDEPILAR akan menugaskan asesor untuk melakukan penilaian AK
-                    </li>
-                    <li>
-                        Program Studi diharapkan dapat mengikuti proses selanjutnya
-                    </li>
-                </ol>
+                <strong>Penugasan Asesor AK</strong><br>
+                Sekretariat sedang menugaskan asesor untuk melakukan penilaian AK
             </div>
             @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED)
+            <div class="alert alert-success alert-permanent">
+                <i class="bi bi-person-check"></i>
+                <strong>Penugasan Asesor AK</strong><br>
+                Sekretariat telah menugaskan asesor untuk melakukan penilaian AK
+            </div>
+            @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_AK_IN_PROGRESS)
             <div class="alert alert-success alert-permanent">
                 <i class="bi bi-person-check"></i>
                 <strong>Penugasan Asesor AK</strong><br>
@@ -160,8 +158,8 @@
                 <div class="card-body" style="max-height: 600px; overflow-y: auto;">
                     @php
                     $filterStatuses = [
-                    \App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
                     \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
+                    \App\Models\PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
                     ];
 
                     $logs = $pengajuan->statusLog
@@ -180,8 +178,7 @@
                                     \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
                                     => 'text-success',
                                     \App\Models\PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
-                                    \App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN
-                                    => 'text-warning',
+                                    => 'text-success',
                                     default => 'text-info',
                                     };
                                     @endphp
@@ -221,13 +218,13 @@
                         <strong>Tahapan Asesmen Kecukupan:</strong>
                     </p>
                     <ol class="small mb-0 ps-3">
-                        <li>Hasil validasi dokumen dilaporkan</li>
+                        <li>Pelaporan validasi dokumen telah dikirim</li>
                         <li>LAMDEPILAR menugaskan asesor AK</li>
                         <li>Surat tugas diterbitkan dan dikirim</li>
                         <li>Asesor memulai proses asesmen kecukupan</li>
-                        <li>Asesor melakukan penilaian kecukupan dokumen</li>
-                        <li>Hasil asesmen divalidasi oleh tim</li>
-                        <li>Hasil asesmen kecukupan dilaporkan</li>
+                        <li>Asesor melakukan penilaian kecukupan dari dokumen akreditasi</li>
+                        <li>Hasil asesmen kecukupan divalidasi oleh tim</li>
+                        <li>Pelaporan hasil asesmen kecukupan dibuat</li>
                         <li>Proses dilanjutkan ke tahap berikutnya</li>
                     </ol>
 

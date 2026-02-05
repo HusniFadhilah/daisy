@@ -301,7 +301,7 @@ class PenugasanAKController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Pengajuan berhasil ditetapkan siap untuk Asesmen Kecukupan (AK). Silakan tugaskan asesor & validator.',
+                'message' => 'Akreditasi berhasil ditetapkan menjadi "Siap untuk Asesmen Kecukupan (AK)". Silakan tugaskan asesor & validator.',
                 'data' => [
                     'asesmen_id' => $asesmen->id,
                     'ak_id' => $asesmenKecukupan->id,

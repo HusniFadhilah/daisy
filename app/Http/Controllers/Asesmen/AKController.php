@@ -42,6 +42,7 @@ class AKController extends Controller
                 'pengajuan.dokumen' => function ($q) {
                     // ✅ Load dokumen akreditasi
                     $q->whereIn('jenis_dokumen', [
+                        'surat_tugas_asesor_ak',
                         'data_kualitatif',
                         'draft_borang',
                         'borang_final',  // LED

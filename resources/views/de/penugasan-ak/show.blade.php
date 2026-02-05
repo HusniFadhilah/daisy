@@ -241,7 +241,7 @@
 
                             {{-- Upload surat tugas (optional) --}}
                             <div class="col-md-4">
-                                <label class="form-label fw-bold">Surat Tugas <small class="text-muted">(Opsional)</small></label>
+                                <label class="form-label fw-bold">Surat Tugas <span class="text-danger">*</span></label>
                                 <input type="file" id="fileSuratTugas" name="file_surat_tugas" class="form-control" accept=".pdf">
                                 <small class="text-muted">PDF, max 5MB</small>
                             </div>

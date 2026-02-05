@@ -50,15 +50,19 @@
                         $assignment = $asesmen->userRoles->where('jenis_asesmen','ak')->first();
                         $pengajuan = $asesmen->pengajuan;
 
-                        $dokumenLED = $pengajuan->dokumen
+                        $suratTugas = $pengajuan?->dokumen
+                        ->whereIn('jenis_dokumen',['surat_tugas_asesor_ak'])
+                        ->where('is_latest', true)->first();
+
+                        $dokumenLED = $pengajuan?->dokumen
                         ->whereIn('jenis_dokumen',['data_kualitatif','draft_borang','borang_final'])
                         ->where('is_latest', true)->first();
 
-                        $dokumenSuplemen = $pengajuan->dokumen
+                        $dokumenSuplemen = $pengajuan?->dokumen
                         ->where('jenis_dokumen','data_suplemen')
                         ->where('is_latest', true)->first();
 
-                        $dokumenLKPS = $pengajuan->dokumen
+                        $dokumenLKPS = $pengajuan?->dokumen
                         ->whereIn('jenis_dokumen',['data_kuantitatif','kuantitatif'])
                         ->where('is_latest', true)->first();
                         @endphp
@@ -82,6 +86,18 @@
                             <td class="text-center">
                                 <div class="btn-stack">
 
+                                    @if($suratTugas)
+                                    <a href="{{ route('upps.penerimaan-dokumen.dokumen.download', $suratTugas->id) }}" class="btn btn-sm btn-success btn-fixed-lg mb-3" target="_blank">
+                                        <i class="bi bi-download me-1"></i>
+                                        Surat Tugas Asesor AK
+                                    </a>
+                                    @else
+                                    <div class="btn-fixed-lg text-muted">
+                                        <i class="bi bi-file-earmark-x me-1"></i>
+                                        Surat Tugas belum tersedia
+                                    </div>
+                                    @endif
+
                                     {{-- LED --}}
                                     @if($dokumenLED)
                                     <a href="{{ route('upps.penerimaan-dokumen.dokumen.download', $dokumenLED->id) }}" class="btn btn-sm btn-info btn-fixed-lg" target="_blank">
@@ -98,7 +114,7 @@
                                     {{-- Suplemen --}}
                                     @if($dokumenSuplemen)
                                     <a href="{{ route('upps.penerimaan-dokumen.dokumen.download', $dokumenSuplemen->id) }}" class="btn btn-sm btn-light btn-fixed-lg" target="_blank">
-                                        <i class="bi bi-download"></i>
+                                        <i class="bi bi-download"></i> Suplemen LED
                                     </a>
                                     @else
                                     <div class="btn-fixed-lg text-muted">
@@ -156,7 +172,7 @@
 
                                     <div class="border-top pt-2">
                                         @if($assignment->status_penawaran === 'accepted')
-                                        <a href="{{ route('ak.berkas.show',$asesmen->id) }}" class="btn btn-secondary btn-sm btn-fixed">
+                                        <a href="{{ route('ak.berkas.export', ['idAsesmen'=>$asesmen->id,'mode'=>'full','color'=>false]) }}" class="btn btn-secondary btn-sm btn-fixed" target="_blank">
                                             <i class="bi bi-eye"></i>
                                             Cek Penilaian / Split
                                         </a>

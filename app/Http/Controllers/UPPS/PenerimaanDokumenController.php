@@ -305,9 +305,9 @@ class PenerimaanDokumenController extends Controller
 
         $pengajuan = PengajuanAkreditasi::findOrFail($dokumen->id_pengajuan);
 
-        if (!$studyProgramIds->contains($pengajuan->id_program_studi)) {
-            abort(403, 'Anda tidak memiliki akses untuk mengunduh dokumen ini.');
-        }
+        // if (!$studyProgramIds->contains($pengajuan->id_program_studi)) {
+        //     abort(403, 'Anda tidak memiliki akses untuk mengunduh dokumen ini.');
+        // }
 
         if (!Storage::disk('public')->exists($dokumen->path_file)) {
             abort(404, 'File tidak ditemukan.');

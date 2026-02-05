@@ -384,16 +384,8 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const idAsesmen = "{{ $asesmen->id }}";
-        const isSubmitted = {
-            {
-                $isSubmittedOnly ? 'true' : 'false'
-            }
-        };
-        const isApproved = {
-            {
-                $isApproved ? 'true' : 'false'
-            }
-        };
+        const isSubmitted = @json($isSubmittedOnly);
+        const isApproved = @json($isApproved);
 
         // --- Helper DOM ---
         const qs = function(id) {
