@@ -63,30 +63,18 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1"><i class="bi bi-file-earmark-text"></i> Penerimaan Draft Dokumen</h4>
-            <p class="text-muted mb-0">Monitoring penerimaan draft dokumen dari PS</p>
+            <p class="text-muted mb-0">Monitor penerimaan draft dokumen</p>
         </div>
     </div>
 
     <!-- Statistics Cards -->
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-5 mb-4">
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-2 mb-4">
         <div class="col mb-3">
             <x-stat-card title="Menunggu Dokumen" :value="$stats['total_menunggu_dokumen']" description="Menunggu PS mengupload Draft Dokumen" icon="hourglass-split" gradient="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" />
         </div>
 
         <div class="col mb-3">
             <x-stat-card title="Dokumen Lengkap" :value="$stats['total_dokumen_lengkap']" description="Dokumen siap divalidasi oleh validator" icon="check-circle" gradient="linear-gradient(135deg, #11998e 0%, #38ef7d 100%)" />
-        </div>
-
-        <div class="col mb-3">
-            <x-stat-card title="Dalam Validasi" :value="$stats['total_dalam_validasi']" description="Dokumen sedang divalidasi oleh validator" icon="clipboard-check" gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)" />
-        </div>
-
-        <div class="col mb-3">
-            <x-stat-card title="Perlu Revisi" :value="$stats['total_perlu_revisi']" description="Dokumen diminta revisi oleh validator" icon="exclamation-triangle" gradient="linear-gradient(135deg, #ffc107 0%, #ff8c00 100%)" />
-        </div>
-
-        <div class="col mb-3">
-            <x-stat-card title="Tervalidasi" :value="$stats['total_tervalidasi']" description="Validasi Dokumen selesai" icon="patch-check" gradient="linear-gradient(135deg, #06beb6 0%, #48b1bf 100%)" />
         </div>
     </div>
 
@@ -100,7 +88,7 @@
     <!-- Content -->
     <div class="row">
         <!-- Filters -->
-        <div class="col-lg-3 mb-4">
+        {{-- <div class="col-lg-3 mb-4">
             <div class="card filter-card">
                 <div class="card-header border-0">
                     <h5 class="mb-0">
@@ -113,106 +101,106 @@
                         <div class="mb-3">
                             <label class="form-label text-white">Cari Permohonan Akreditasi</label>
                             <input type="text" name="search" id="searchInput" class="form-control" placeholder="Nomor permohonan atau prodi..." value="{{ request('search') }}">
-                        </div>
+    </div>
 
-                        <!-- Status -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Status Permohonan</label>
-                            <select name="status" id="statusFilter" class="form-select">
-                                <option value="">Semua Status</option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI }}">
-                                    Menunggu Upload
-                                </option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA }}">
-                                    Dokumen Masuk
-                                </option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI }}">
-                                    Dokumen Lengkap
-                                </option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING }}">
-                                    Menunggu Validasi
-                                </option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION }}">
-                                    Dalam Validasi
-                                </option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED }}">
-                                    Perlu Revisi
-                                </option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED }}">
-                                    Tervalidasi
-                                </option>
-                            </select>
-                        </div>
+    <!-- Status -->
+    <div class="mb-3">
+        <label class="form-label text-white">Status Permohonan</label>
+        <select name="status" id="statusFilter" class="form-select">
+            <option value="">Semua Status</option>
+            <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI }}">
+                Menunggu Upload
+            </option>
+            <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA }}">
+                Dokumen Masuk
+            </option>
+            <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI }}">
+                Dokumen Lengkap
+            </option>
+            <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING }}">
+                Menunggu Validasi
+            </option>
+            <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION }}">
+                Dalam Validasi
+            </option>
+            <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED }}">
+                Perlu Revisi
+            </option>
+            <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED }}">
+                Tervalidasi
+            </option>
+        </select>
+    </div>
 
-                        <!-- Document Status -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Status Dokumen</label>
-                            <select name="doc_status" id="docStatusFilter" class="form-select">
-                                <option value="">Semua</option>
-                                <option value="complete">Lengkap (LED + LKPS)</option>
-                                <option value="incomplete">Belum Lengkap</option>
-                                <option value="none">Belum Upload</option>
-                            </select>
-                        </div>
+    <!-- Document Status -->
+    <div class="mb-3">
+        <label class="form-label text-white">Status Dokumen</label>
+        <select name="doc_status" id="docStatusFilter" class="form-select">
+            <option value="">Semua</option>
+            <option value="complete">Lengkap (LED + LKPS)</option>
+            <option value="incomplete">Belum Lengkap</option>
+            <option value="none">Belum Upload</option>
+        </select>
+    </div>
 
-                        <!-- University -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Universitas</label>
-                            <select name="university_id" id="universityFilter" class="form-select">
-                                <option value="">Semua Universitas</option>
-                                @foreach($universities as $univ)
-                                <option value="{{ $univ->id }}">{{ $univ->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
+    <!-- University -->
+    <div class="mb-3">
+        <label class="form-label text-white">Universitas</label>
+        <select name="university_id" id="universityFilter" class="form-select">
+            <option value="">Semua Universitas</option>
+            @foreach($universities as $univ)
+            <option value="{{ $univ->id }}">{{ $univ->name }}</option>
+            @endforeach
+        </select>
+    </div>
 
-                        <!-- Degree Level -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Jenjang</label>
-                            <select name="degree_level_id" id="degreeLevelFilter" class="form-select">
-                                <option value="">Semua Jenjang</option>
-                                @foreach($degreeLevels as $level)
-                                <option value="{{ $level->id }}">{{ $level->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
+    <!-- Degree Level -->
+    <div class="mb-3">
+        <label class="form-label text-white">Jenjang</label>
+        <select name="degree_level_id" id="degreeLevelFilter" class="form-select">
+            <option value="">Semua Jenjang</option>
+            @foreach($degreeLevels as $level)
+            <option value="{{ $level->id }}">{{ $level->name }}</option>
+            @endforeach
+        </select>
+    </div>
 
-                        <!-- Buttons -->
-                        <div class="d-grid gap-2">
-                            <button type="button" class="btn btn-light" onclick="applyFilters()">
-                                <i class="bi bi-search"></i> Terapkan Filter
-                            </button>
-                            <button type="button" class="btn btn-outline-light" onclick="resetFilters()">
-                                <i class="bi bi-x-circle"></i> Reset
-                            </button>
-                        </div>
-                    </form>
+    <!-- Buttons -->
+    <div class="d-grid gap-2">
+        <button type="button" class="btn btn-light" onclick="applyFilters()">
+            <i class="bi bi-search"></i> Terapkan Filter
+        </button>
+        <button type="button" class="btn btn-outline-light" onclick="resetFilters()">
+            <i class="bi bi-x-circle"></i> Reset
+        </button>
+    </div>
+    </form>
+</div>
+</div>
+</div> --}}
+
+<!-- Main Content -->
+<div class="col-lg-12">
+    <div class="position-relative">
+        <!-- Loading Overlay -->
+        <div id="tableLoading" class="position-absolute top-0 start-0 w-100 h-100 d-none" style="background: rgba(255,255,255,0.9); z-index: 1000;">
+            <div class="d-flex justify-content-center align-items-center h-100" style="min-height: 400px;">
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Memuat data...</p>
                 </div>
             </div>
         </div>
 
-        <!-- Main Content -->
-        <div class="col-lg-9">
-            <div class="position-relative">
-                <!-- Loading Overlay -->
-                <div id="tableLoading" class="position-absolute top-0 start-0 w-100 h-100 d-none" style="background: rgba(255,255,255,0.9); z-index: 1000;">
-                    <div class="d-flex justify-content-center align-items-center h-100" style="min-height: 400px;">
-                        <div class="text-center">
-                            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                            <p class="mt-3 text-muted">Memuat data...</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Table Content -->
-                <div id="tableContainer">
-                    @include('de.penerimaan-dokumen.components.table-content', ['pengajuans' => $pengajuans])
-                </div>
-            </div>
+        <!-- Table Content -->
+        <div id="tableContainer">
+            @include('de.penerimaan-dokumen.components.table-content', ['pengajuans' => $pengajuans])
         </div>
     </div>
+</div>
+</div>
 </div>
 
 <!-- Modal Kirim Reminder -->

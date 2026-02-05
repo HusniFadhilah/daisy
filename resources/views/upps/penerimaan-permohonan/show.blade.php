@@ -32,14 +32,23 @@
         <!-- Main Content -->
         <div class="col-lg-8 mb-4">
             <!-- Status Alert -->
-            @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA)
+            @php
+            $allowed = [
+            \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
+            \App\Models\PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM,
+            ]; // ini contoh, bisa dinamis dari config/db/request
+
+            $log = $pengajuan->latestRelevantStatusLog($allowed);
+            @endphp
+            <!-- Status Alert -->
+            @if($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA)
             <div class="alert alert-warning alert-permanent">
                 <i class="bi bi-hourglass-split"></i>
                 <strong>Permohonan Akreditasi telah diterima, menunggu penerimaan permohonan akreditasi dari LAMDEPILAR</strong>
                 <br>
                 Permohonan diterima pada {{ $pengajuan->tanggal_surat_permohonan_diterima->format('d M Y H:i') }}
             </div>
-            @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM)
+            @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM)
             <div class="alert alert-success alert-permanent">
                 <i class="bi bi-check-circle"></i>
                 <strong>Surat penerimaan permohonan akreditasi telah diterima dari LAMDEPILAR</strong>
@@ -94,7 +103,7 @@
             <!-- Informasi Permohonan Akreditasi -->
             <div class="card my-4">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Informasi Penerimaan Permohonan Akreditasi PS</h5>
+                    <h5 class="mb-0">Informasi Penerimaan Permohonan Akreditasi</h5>
                 </div>
                 <div class="card-body">
                     <table class="table table-borderless">

@@ -21,6 +21,8 @@ class ValidasiDokumenController extends Controller
     {
         // Build query untuk assignments yang sedang validasi
         $statuses = [
+            PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
+            PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
             PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
             PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
             PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,

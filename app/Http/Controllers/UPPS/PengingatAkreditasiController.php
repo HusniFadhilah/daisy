@@ -136,7 +136,7 @@ class PengingatAkreditasiController extends Controller
     public function respond(Request $request, $id)
     {
         $request->validate([
-            'jenis_akreditasi' => 'required|in:baru,perpanjangan,menuju_unggul',
+            'jenis_akreditasi' => 'required|in:baru,terakreditasi,perpanjangan,menuju_unggul',
             'file_surat_permohonan' => 'required|file|mimes:pdf|max:5120',
             'catatan_pengaju' => 'nullable|string|max:2000',
         ], [

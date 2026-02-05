@@ -1050,50 +1050,41 @@ class ALController extends Controller
         }
     }
 
-    // public function exportLaporanPdf($idAsesmen)
-    // {
-    //     $asesmen = \App\Models\Asesmen::with([
-    //         'studyProgram',
-    //         'userRoles.user',
-    //         'userRoles.role',
-    //         // penilaian elemen al untuk semua asesor/atau asesor tertentu
-    //     ])->findOrFail($idAsesmen);
+    /**
+     * Halaman Upload Excel Penilaian Manual
+     */
+    public function uploadExcelPage($idAsesmen)
+    {
+        $user = Auth::user();
 
-    //     // 1) Buat PDF utama dulu (cover + penilaian)
-    //     //    Bisa pakai dompdf/snappy untuk render blade -> pdf
-    //     $mainPdfPath = app(\App\Services\LaporanAlPdfService::class)->generateMainPdf($asesmen);
-    //     // $mainPdfPath = storage_path('app/temp/main_xxx.pdf');
+        // Check if user has access to this asesmen
+        $assignment = AsesmenUserRole::where('id_asesmen', $idAsesmen)
+            ->where('id_user', $user->id)
+            ->where('jenis_asesmen', 'al')
+            ->firstOrFail();
 
-    //     // 2) Buat output gabungan via FPDI
-    //     $pdf = new Fpdi();
+        if ($assignment->role->name != $user->role_selected) {
+            abort(403, 'Mohon maaf role Anda sebagai ' . ($user->role_selected) . ' tidak diizinkan membuka halaman ini.');
+        }
 
-    //     // append main pdf
-    //     $this->appendPdf($pdf, $mainPdfPath);
+        // ✅ AUTO-UPDATE STATUS: not_started → in_progress
+        if ($assignment->status_pekerjaan === 'not_started') {
+            $assignment->update([
+                'status_pekerjaan' => 'in_progress',
+                'started_at' => now(),
+            ]);
+        }
 
-    //     // 3) append semua berita acara (multi file)
-    //     $baDocs = $asesmen->documents()
-    //         ->where('type', 'berita_acara_al')
-    //         ->where('is_active', true)
-    //         ->orderBy('sort_order')
-    //         ->get();
+        $asesmen = $assignment->asesmen;
 
-    //     foreach ($baDocs as $doc) {
-    //         $fullPath = Storage::disk('public')->path($doc->path);
-    //         if (is_file($fullPath)) {
-    //             $this->appendPdf($pdf, $fullPath);
-    //         }
-    //     }
+        // ✅ Calculate progress untuk AL
+        $progress = $this->calculateProgressBulk([$asesmen->id], $user->id)[$asesmen->id];
 
-    //     // 4) simpan output
-    //     $outName = 'Laporan_AL_' . $asesmen->id . '_' . date('Ymd_His') . '.pdf';
-    //     $outPath = storage_path('app/temp/' . $outName);
-
-    //     if (!is_dir(dirname($outPath))) {
-    //         mkdir(dirname($outPath), 0755, true);
-    //     }
-
-    //     $pdf->Output($outPath, 'F');
-
-    //     return response()->download($outPath, $outName)->deleteFileAfterSend(true);
-    // }
+        // ✅ TANPA needsRevisions - AL tidak ada revisi
+        return view('asesmen.al.berkas.upload-excel', compact(
+            'asesmen',
+            'assignment',
+            'progress'
+        ));
+    }
 }

@@ -16,7 +16,7 @@
         <div class="d-flex gap-2">
             <a href="{{ route('al.berkas.laporanPdf', $asesmen->id) }}" class="btn btn-primary">
                 <i class="bi bi-file-earmark-pdf"></i>
-                Download Laporan PDF
+                Lihat Laporan PDF
             </a>
         </div>
     </div>

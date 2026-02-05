@@ -170,7 +170,7 @@
                                             {{ $pengajuan->tanggal_penugasan_asesor_ak->diffForHumans() }}
                                         </small>
                                         @else
-                                        <span class="text-muted">Asesor AK sedang dalam proses penugasan</span>
+                                        <span class="text-muted">-</span>
                                         @endif
                                     </td>
                                     <td>

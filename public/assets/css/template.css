@@ -1048,6 +1048,79 @@ button[aria-expanded="true"] .chevron-icon {
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
 }
 
+/* =========================
+   Button fixed width (reusable)
+   ========================= */
+.btn-fixed-sm {
+    width: 220px;
+}
+
+.btn-fixed {
+    width: 250px;
+}
+
+.btn-fixed-lg {
+    width: 320px;
+}
+
+
+/* =========================
+   Button stack (vertical, centered)
+   ========================= */
+.btn-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+
+/* =========================
+   Responsive adjustment
+   ========================= */
+
+/* Large desktop */
+@media (min-width: 1400px) {
+    .btn-fixed-sm {
+        width: 240px;
+    }
+
+    .btn-fixed {
+        width: 280px;
+    }
+
+    .btn-fixed-lg {
+        width: 360px;
+    }
+}
+
+/* Tablet */
+@media (max-width: 992px) {
+    .btn-fixed-sm {
+        width: 200px;
+    }
+
+    .btn-fixed {
+        width: 220px;
+    }
+
+    .btn-fixed-lg {
+        width: 280px;
+    }
+}
+
+/* Mobile */
+@media (max-width: 576px) {
+
+    .btn-fixed-sm,
+    .btn-fixed,
+    .btn-fixed-lg {
+        width: 100%;
+        max-width: 280px;
+        /* tetap tidak full */
+    }
+}
+
 /* Loading Overlay */
 .loading-overlay {
     position: fixed;
@@ -1603,4 +1676,107 @@ button[aria-expanded="true"] .chevron-icon {
     text-decoration: none;
     color: inherit;
     /* opsional, biar warnanya ikut parent */
+}
+
+/* =========================
+   ORANGE
+   ========================= */
+.btn-orange {
+    color: #fff;
+    background-color: #fd7e14;
+    border-color: #fd7e14;
+}
+
+.btn-orange:hover,
+.btn-orange:focus {
+    color: #fff;
+    background-color: #e96b0c;
+    border-color: #e96b0c;
+}
+
+/* =========================
+   PURPLE
+   ========================= */
+.btn-purple {
+    color: #fff;
+    background-color: #6f42c1;
+    border-color: #6f42c1;
+}
+
+.btn-purple:hover,
+.btn-purple:focus {
+    color: #fff;
+    background-color: #59339d;
+    border-color: #59339d;
+}
+
+/* =========================
+   LIGHT GREEN
+   ========================= */
+.btn-lightgreen {
+    color: #155724;
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+}
+
+.btn-lightgreen:hover,
+.btn-lightgreen:focus {
+    color: #155724;
+    background-color: #c3e6cb;
+    border-color: #b1dfbb;
+}
+
+/* =========================
+   BLUE (custom, beda dari primary)
+   ========================= */
+.btn-blue {
+    color: #fff;
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.btn-blue:hover,
+.btn-blue:focus {
+    color: #fff;
+    background-color: #0b5ed7;
+    border-color: #0b5ed7;
+}
+
+/* =========================
+   LIGHT BLUE
+   ========================= */
+.btn-lightblue {
+    color: #055160;
+    background-color: #cff4fc;
+    border-color: #b6effb;
+}
+
+.btn-lightblue:hover,
+.btn-lightblue:focus {
+    color: #055160;
+    background-color: #b6effb;
+    border-color: #9eeaf9;
+}
+
+/* =========================
+   Disabled state (optional)
+   ========================= */
+.btn-orange:disabled,
+.btn-purple:disabled,
+.btn-lightgreen:disabled,
+.btn-blue:disabled,
+.btn-lightblue:disabled {
+    opacity: .65;
+}
+
+.visually-hidden-input {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
 }

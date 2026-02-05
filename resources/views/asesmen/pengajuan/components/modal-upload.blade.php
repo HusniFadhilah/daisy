@@ -211,7 +211,7 @@ $latestImport = $pengajuan->latestBorangImport;
                         <p class="text-muted small mb-2" id="fileSizeModal"></p>
                         <div class="d-flex gap-2 justify-content-center">
                             <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeFileModal()">
-                                <i class="bi bi-trash"></i> Hapus
+                                <i class="bi bi-trash"></i> Batalkan Upload
                             </button>
                             <button type="button" class="btn btn-sm btn-outline-primary" onclick="document.getElementById('inputDraftBorangUlang').click()">
                                 <i class="bi bi-arrow-repeat"></i> Ganti File

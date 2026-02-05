@@ -1,7 +1,7 @@
 <div class="card">
     <div class="card-header bg-light d-flex justify-content-between align-items-center">
         <h6 class="mb-0">
-            <i class="bi bi-table"></i> Daftar Permohonan Akreditasi
+            <i class="bi bi-table"></i> Daftar Pelaporan Dokumen
         </h6>
         <span class="badge bg-primary">Total: {{ $pengajuans->total() }}</span>
     </div>
@@ -15,7 +15,7 @@
                         <th width="20%">Permohonan Akreditasi</th>
                         <th width="20%">Validator</th>
                         <th width="15%">Status Upload</th>
-                        <th width="15%">Status Pelaporan</th>
+                        <th width="15%">Status Pelaporan Dokumen</th>
                         <th width="15%">Tanggal</th>
                         <th width="10%" class="text-center">Aksi</th>
                     </tr>
@@ -117,9 +117,7 @@
                             </span>
                         </td>
                         <td>
-                            <span class="badge bg-{{ $statusPelaporan['class'] }}">
-                                <i class="bi bi-{{ $statusPelaporan['icon'] }}"></i> {{ $statusPelaporan['text'] }}
-                            </span>
+                            {!! $pengajuan->getCustomBadgeLastStatus('pelaporan_dokumen','de','label_short_for') !!}
                         </td>
                         <td>
                             <small>{{ $tanggal }}</small>

@@ -117,7 +117,14 @@ class PenerimaanDokumenController extends Controller
             abort(403, 'Anda tidak memiliki akses ke permohonan ini.');
         }
 
-        return view('upps.penerimaan-dokumen.show', compact('pengajuan'));
+        $needSuplemen = $pengajuan->need_suplemen;
+        $uploadedDocuments = $pengajuan->getUploadedDocuments(
+            $needSuplemen
+                ? ['led', 'suplemen', 'lkps', 'pengesahan']
+                : ['led', 'lkps', 'pengesahan']
+        );
+
+        return view('upps.penerimaan-dokumen.show', compact('pengajuan', 'uploadedDocuments', 'needSuplemen'));
     }
 
     /**
@@ -139,20 +146,25 @@ class PenerimaanDokumenController extends Controller
         }
 
         // Validasi status pengajuan - bisa upload di status ini:
+        $canUploadDokumen = true;
         $allowedStatuses = [
             PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI, // Upload pertama kali
             PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED, // Upload ulang karena revisi
         ];
 
         if (!in_array($pengajuan->status, $allowedStatuses)) {
-            return redirect()
-                ->route('upps.penerimaan-dokumen.show', $id)
-                ->with('error', 'Dokumen tidak dapat diupload pada status saat ini.');
+            $canUploadDokumen = false;
         }
 
         $needSuplemen = $pengajuan->need_suplemen;
 
-        return view('upps.penerimaan-dokumen.upload', compact('pengajuan', 'needSuplemen'));
+        $uploadedDocuments = $pengajuan->getUploadedDocuments(
+            $needSuplemen
+                ? ['led', 'suplemen', 'lkps', 'pengesahan']
+                : ['led', 'lkps', 'pengesahan']
+        );
+
+        return view('upps.penerimaan-dokumen.upload', compact('pengajuan', 'needSuplemen', 'canUploadDokumen', 'uploadedDocuments'));
     }
 
     public function uploadDokumen(Request $request, $id)

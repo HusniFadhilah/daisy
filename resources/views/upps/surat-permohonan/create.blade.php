@@ -95,20 +95,15 @@
                             <small class="text-muted d-block">
                                 <i class="bi bi-clock"></i> Dikirim: {{ $pengingat->tanggal_dikirim->diffForHumans() }}
                             </small>
-                            <hr>
                             <small class="text-muted">
                                 <i class="bi bi-person"></i> Sekretariat LAMDEPILAR
                             </small>
+                            <hr>
+                            <button class="btn btn-success btn-sm mt-3 d-block" type="button">Proses Permohonan Akreditasi <i class="bi bi-arrow-right"></i></button>
                         </div>
                     </div>
                 </div>
                 @endforeach
-            </div>
-
-            <div class="alert alert-info alert-permanent mt-3 mb-0">
-                <i class="bi bi-lightbulb"></i>
-                <strong>Tips:</strong> Klik pada card pengingat untuk mengisi otomatis data program studi dan tahun akreditasi.
-                Anda tetap dapat mengubah data tersebut jika diperlukan.
             </div>
         </div>
     </div>
@@ -258,11 +253,11 @@
                         </div>
 
                         <!-- Action Buttons -->
-                        <div class="d-flex justify-content-between align-items-center gap-2">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
                             <a href="{{ route('upps.surat-permohonan') }}" class="btn btn-secondary">
                                 <i class="bi bi-arrow-left"></i> Kembali
                             </a>
-                            <div class="d-flex gap-2">
+                            <div class="d-flex flex-wrap gap-2">
                                 <button type="submit" name="is_draft" value="1" class="btn btn-outline-primary" id="btnDraft">
                                     <i class="bi bi-save"></i> Simpan sebagai Draft
                                 </button>
@@ -290,7 +285,7 @@
                             <li class="mb-2">
                                 <strong>Simpan sebagai Draft</strong>
                                 <small class="d-block text-muted">
-                                    File surat tidak wajib. Data disimpan dan bisa dilanjutkan nanti.
+                                    Data disimpan dan bisa dilanjutkan nanti.
                                 </small>
                             </li>
                             <li>

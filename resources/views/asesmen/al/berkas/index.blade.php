@@ -31,7 +31,7 @@
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-bordered table-hover align-middle mb-0">
-                    <thead class="table-light">
+                    <thead class="table-light text-center">
                         <tr>
                             <th width="5%" class="text-center">No</th>
                             <th width="15%">Program Studi</th>
@@ -82,57 +82,58 @@
                             </td>
 
                             {{-- Daftar Berkas Akreditasi --}}
-                            <td>
-                                <div class="d-flex flex-column gap-2">
-                                    <div class="border-top pt-2 mt-1">
-                                        <a href="{{ route('ak.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'full','color'=>false]) }}" class="btn btn-outline-success btn-sm" target="_blank">
-                                            <i class="bi bi-file-earmark-excel"></i>
-                                            Hasil Penilaian AK
-                                        </a>
-                                    </div>
+                            <td class="text-center">
+                                <div class="btn-stack">
 
-                                    {{-- ✅ NEW: Download Template Penilaian --}}
-                                    <div class="border-top pt-2 mt-1">
-                                        <a href="{{ route('al.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'template']) }}" class="btn btn-outline-primary btn-sm" target="_blank">
-                                            <i class="bi bi-file-earmark-excel"></i>
-                                            Download Template Penilaian AL
-                                        </a>
-                                    </div>
+                                    <a href="{{ route('ak.berkas.export', ['idAsesmen'=>$asesmen->id,'mode'=>'full','color'=>false]) }}" class="btn btn-outline-success btn-sm btn-fixed-sm" target="_blank">
+                                        <i class="bi bi-file-earmark-excel me-1"></i>
+                                        Hasil Penilaian AK
+                                    </a>
+
+                                    <a href="{{ route('al.berkas.export', ['idAsesmen'=>$asesmen->id,'mode'=>'template']) }}" class="btn btn-outline-primary btn-sm btn-fixed-sm" target="_blank">
+                                        <i class="bi bi-file-earmark-excel me-1"></i>
+                                        Download Template Penilaian AL
+                                    </a>
+
                                 </div>
                             </td>
 
                             {{-- Aksi Penilaian --}}
                             <td class="text-center">
-                                @if($statusInfo['button_route'] ?? false)
-                                {{-- Button ke route khusus (penawaran) --}}
-                                <a href="{{ route($statusInfo['button_route'], ['idAsesmen'=>$asesmen->id,'jenisAsesmen'=>$assignment->jenis_asesmen]) }}" class="btn {{ $statusInfo['button_class'] }} w-100 mb-2" @if($statusInfo['button_disabled']) disabled @endif>
-                                    <i class="{{ $statusInfo['button_icon'] }}"></i>
-                                    {{ $statusInfo['button_text'] }}
-                                </a>
-                                @else
-                                {{-- Button ke berkas show --}}
-                                <a href="{{ route('al.berkas.show', $asesmen->id) }}" class="btn btn-primary w-100 mb-2" @if($statusInfo['button_disabled']) disabled @endif>
-                                    <i class="bi bi-pencil-square"></i>
-                                    Penilaian <i>by System</i>
-                                </a>
-                                <small class="text-center text-muted my-2 fw-semibold">
-                                    — atau —
-                                </small>
-                                <a href="{{ route('al.berkas.show', $asesmen->id) }}" class="btn btn-outline-primary w-100 mb-2" @if($statusInfo['button_disabled']) disabled @endif>
-                                    <i class="bi bi-upload"></i>
-                                    Penilaian dengan Form Excel
-                                </a>
-                                <a href="{{ route('al.berkas.show', $asesmen->id) }}" class="btn btn-outline-success w-100 mb-2" @if($statusInfo['button_disabled']) disabled @endif>
-                                    <i class="bi bi-upload"></i>
-                                    Berita Acara AL
-                                </a>
-                                @endif
+                                <div class="btn-stack">
+
+                                    @if($statusInfo['button_route'] ?? false)
+                                    <a href="{{ route($statusInfo['button_route'], ['idAsesmen'=>$asesmen->id,'jenisAsesmen'=>$assignment->jenis_asesmen]) }}" class="btn {{ $statusInfo['button_class'] }} btn-fixed" @if($statusInfo['button_disabled']) disabled @endif> <i class="{{ $statusInfo['button_icon'] }}"></i> {{ $statusInfo['button_text'] }}
+                                    </a>
+
+                                    @else
+                                    <a href="{{ route('al.berkas.show',$asesmen->id) }}" class="btn btn-primary btn-fixed" @if($statusInfo['button_disabled']) disabled @endif>
+                                        <i class="bi bi-pencil-square"></i>
+                                        Penilaian <i>by System</i>
+                                    </a>
+
+                                    <div class="text-muted fw-semibold">— atau —</div>
+
+                                    <a href="{{ route('al.berkas.upload-excel', $asesmen->id) }}" class="btn btn-info btn-fixed" @if($statusInfo['button_disabled']) disabled @endif>
+                                        <i class="bi bi-upload"></i>
+                                        Penilaian dengan Form Excel
+                                    </a>
+
+                                    <a href="{{ route('al.berkas.show',$asesmen->id) }}" class="btn btn-success btn-fixed" @if($statusInfo['button_disabled']) disabled @endif>
+                                        <i class="bi bi-file-earmark-text"></i>
+                                        Berita Acara AL
+                                    </a>
+                                    @endif
+
+                                </div>
                             </td>
                             <td class="text-center">
-                                <a href="{{ route('al.berkas.show', $asesmen->id) }}" class="btn btn-outline-primary mb-2" @if($statusInfo['button_disabled']) disabled @endif>
-                                    <i class="bi bi-upload"></i>
-                                    Laporan Hasil Asesmen
-                                </a>
+                                <div class="btn-stack">
+                                    <a href="{{ route('al.berkas.show',$asesmen->id) }}" class="btn btn-blue btn-fixed-sm" @if($statusInfo['button_disabled']) disabled @endif>
+                                        <i class="bi bi-file-earmark-text me-1"></i>
+                                        Laporan Hasil Asesmen
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                         @empty

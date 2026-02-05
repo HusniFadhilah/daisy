@@ -49,39 +49,13 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-lg-4 col-md-6 mb-3">
-            <div class="card stat-card p-2" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                <div class="card-body text-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="mb-1 opacity-75">Total Formulir</h6>
-                            <h2 class="mb-0 fw-bold">{{ $stats['total'] }}</h2>
-                            <small class="opacity-75">Formulir yang telah diupload</small>
-                        </div>
-                        <div class="bg-white bg-opacity-25 rounded p-3">
-                            <i class="bi bi-file-earmark-check fs-1"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div class="row mb-4 row-cols-1 row-cols-md-2 g-3">
+        <div class="col">
+            <x-stat-card title="Total Formulir" :value="$stats['total']" description="Formulir yang telah diupload" icon="file-earmark-check" gradient="purple" iconBg="success-subtle" />
         </div>
 
-        <div class="col-lg-4 col-md-6 mb-3">
-            <div class="card stat-card p-2" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                <div class="card-body text-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="mb-1 opacity-75">Hari Ini</h6>
-                            <h2 class="mb-0 fw-bold">{{ $stats['today'] }}</h2>
-                            <small class="opacity-75">Formulir yang telah diupload hari ini</small>
-                        </div>
-                        <div class="bg-white bg-opacity-25 rounded p-3">
-                            <i class="bi bi-calendar-check fs-1"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="col">
+            <x-stat-card title="Hari Ini" :value="$stats['today']" description="Formulir yang telah diupload hari ini" icon="calendar-check" gradient="pink" iconBg="success-subtle" />
         </div>
     </div>
 
@@ -154,8 +128,6 @@
                             <th width="40">#</th>
                             <th>Nomor Invoice</th>
                             <th>Program Studi</th>
-                            <th>Universitas</th>
-                            <th>Jenjang</th>
                             <th>Jumlah</th>
                             <th>Dokumen</th>
                             <th>Tanggal Upload</th>
@@ -181,15 +153,8 @@
                             </td>
 
                             <td>
-                                <strong>{{ $item->studyProgram->name }}</strong>
-                            </td>
-
-                            <td>{{ $item->studyProgram->university->name }}</td>
-
-                            <td>
-                                <span class="badge bg-info">
-                                    {{ $item->studyProgram->degreeLevel->name }}
-                                </span>
+                                <strong>{{ $item->studyProgram->name }}</strong><br>
+                                <small>{{ $item->studyProgram->university->name }}</small>
                             </td>
 
                             <td>

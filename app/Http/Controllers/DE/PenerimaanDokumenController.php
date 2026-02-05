@@ -423,6 +423,7 @@ class PenerimaanDokumenController extends Controller
         $request->validate([
             'id_validator' => 'required|exists:users,id',
             'catatan_de' => 'nullable|string|max:1000',
+            'file_surat_tugas' => 'required|file|mimes:pdf|max:5120',
         ]);
 
         DB::beginTransaction();
@@ -496,6 +497,13 @@ class PenerimaanDokumenController extends Controller
                 'total_sections' => $pengajuan->latestBorangImport->total_sections ?? 0,
                 'validated_sections' => 0,
             ]);
+
+            if ($request->hasFile('file_surat_tugas')) {
+                $this->uploadSuratTugasValidator($pengajuan, $assignment, $request->file('file_surat_tugas'));
+            } else {
+                // Auto-generate surat tugas (placeholder)
+                $this->generateSuratTugasValidator($pengajuan, $assignment);
+            }
 
             // Get current status from log
             $oldStatus = $pengajuan->latestStatusLog
@@ -661,41 +669,52 @@ class PenerimaanDokumenController extends Controller
      */
     private function calculateStatistics(): array
     {
-        // Gunakan subquery untuk mendapatkan status terakhir dari setiap pengajuan
-        $latestStatusSubquery = DB::table('pengajuan_status_log as psl')
-            ->select('psl.id_pengajuan', 'psl.status_to')
-            ->whereRaw('psl.changed_at = (
-                SELECT MAX(psl2.changed_at)
-                FROM pengajuan_status_log psl2
-                WHERE psl2.id_pengajuan = psl.id_pengajuan
-            )')
-            ->groupBy('psl.id_pengajuan', 'psl.status_to');
+        // 1) Ambil id log terakhir per pengajuan (paling aman)
+        $latestLogIdSub = DB::table('pengajuan_status_log as psl')
+            ->selectRaw('psl.id_pengajuan, MAX(psl.id) as last_id')
+            ->groupBy('psl.id_pengajuan');
 
-        // Query dengan join ke latest status
+        // 2) Ambil status_to dari log terakhir
+        $latestStatusSub = DB::table('pengajuan_status_log as psl')
+            ->joinSub($latestLogIdSub, 'mx', function ($join) {
+                $join->on('psl.id_pengajuan', '=', 'mx.id_pengajuan')
+                    ->on('psl.id', '=', 'mx.last_id');
+            })
+            ->select('psl.id_pengajuan', 'psl.status_to');
+
+        // 3) Hitung berdasarkan latest status
         $stats = DB::table('pengajuan_akreditasi as pa')
-            ->joinSub($latestStatusSubquery, 'latest', function ($join) {
+            ->joinSub($latestStatusSub, 'latest', function ($join) {
                 $join->on('pa.id', '=', 'latest.id_pengajuan');
             })
             ->selectRaw("
-                COUNT(DISTINCT CASE WHEN latest.status_to = ? THEN pa.id END) AS total_menunggu_dokumen,
-                COUNT(DISTINCT CASE WHEN latest.status_to = ? THEN pa.id END) AS total_dokumen_lengkap,
-                COUNT(DISTINCT CASE WHEN latest.status_to IN (?, ?) THEN pa.id END) AS total_dalam_validasi,
-                COUNT(DISTINCT CASE WHEN latest.status_to = ? THEN pa.id END) AS total_perlu_revisi
-            ", [
+        COUNT(CASE WHEN latest.status_to = ? THEN 1 END) AS total_menunggu_dokumen,
+        COUNT(CASE WHEN latest.status_to IN (?, ?) THEN 1 END) AS total_dokumen_lengkap,
+        COUNT(CASE WHEN latest.status_to IN (?, ?) THEN 1 END) AS total_dalam_validasi,
+        COUNT(CASE WHEN latest.status_to = ? THEN 1 END) AS total_perlu_revisi
+    ", [
+                // menunggu dokumen
                 PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI,
+
+                // dokumen lengkap (2 status)
                 PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
+                PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
+
+                // dalam validasi (2 status)
                 PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
                 PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
+
+                // perlu revisi
                 PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,
             ])
             ->first();
 
-        // Hitung dokumen masuk dan tervalidasi dari log
+        // 4) Historical (pernah terjadi) — OK kalau memang itu yang diinginkan
         $historyStats = DB::table('pengajuan_status_log')
             ->selectRaw("
-                COUNT(DISTINCT CASE WHEN status_to = ? THEN id_pengajuan END) AS total_dokumen_masuk,
-                COUNT(DISTINCT CASE WHEN status_to = ? THEN id_pengajuan END) AS total_tervalidasi
-            ", [
+            COUNT(DISTINCT CASE WHEN status_to = ? THEN id_pengajuan END) AS total_dokumen_masuk,
+            COUNT(DISTINCT CASE WHEN status_to = ? THEN id_pengajuan END) AS total_tervalidasi
+        ", [
                 PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
                 PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
             ])
@@ -774,6 +793,173 @@ class PenerimaanDokumenController extends Controller
             'percentage' => $percentage,
             'need_suplemen' => $needSuplemen,
         ];
+    }
+
+    private function uploadSuratTugasValidator(PengajuanAkreditasi $pengajuan, AsesmenUserRole $assignment, $file)
+    {
+        // Mark old surat tugas as not latest
+        $pengajuan->dokumen()
+            ->where('jenis_dokumen', 'surat_tugas_validator_dokumen')
+            ->where('is_latest', true)
+            ->update(['is_latest' => false]);
+
+        // Get versi baru
+        $versi = $pengajuan->dokumen()
+            ->where('jenis_dokumen', 'surat_tugas_validator_dokumen')
+            ->max('versi') ?? 0;
+
+        // Sanitize filename
+        $originalName = $file->getClientOriginalName();
+        $sanitizedName = preg_replace('/[^a-zA-Z0-9._-]/', '_', $originalName);
+        $filename = time() . '_SURAT_TUGAS_VAL_DOK_' . $sanitizedName;
+
+        $path = $file->storeAs('dokumen/surat-tugas-validator', $filename, 'public');
+
+        return $pengajuan->dokumen()->create([
+            'jenis_dokumen' => 'surat_tugas_validator_dokumen',
+            'nama_file' => $filename,
+            'path_file' => $path,
+            'original_filename' => $originalName,
+            'file_size' => $file->getSize(),
+            'mime_type' => $file->getMimeType(),
+            'uploaded_by' => auth()->id(),
+            'keterangan' => "Surat Tugas untuk Validator Dokumen: {$assignment->user->name}",
+            'is_latest' => true,
+            'versi' => $versi + 1,
+        ]);
+    }
+
+    private function generateSuratTugasValidator(PengajuanAkreditasi $pengajuan, AsesmenUserRole $assignment)
+    {
+        // Mark old surat tugas as not latest
+        $pengajuan->dokumen()
+            ->where('jenis_dokumen', 'surat_tugas_validator_dokumen')
+            ->where('is_latest', true)
+            ->update(['is_latest' => false]);
+
+        // Get versi baru
+        $versi = $pengajuan->dokumen()
+            ->where('jenis_dokumen', 'surat_tugas_validator_dokumen')
+            ->max('versi') ?? 0;
+
+        // TODO: Implement actual PDF generation using library like TCPDF or DomPDF
+        // For now, create a placeholder record
+        $nomorSurat = 'ST-VAL-DOK/' . date('Y') . '/' . str_pad($pengajuan->id, 4, '0', STR_PAD_LEFT);
+
+        return $pengajuan->dokumen()->create([
+            'jenis_dokumen' => 'surat_tugas_validator_dokumen',
+            'nama_file' => "Surat_Tugas_Validator_Dokumen_{$pengajuan->nomor_pengajuan}.pdf",
+            'path_file' => null, // Will be generated on demand
+            'original_filename' => "Surat Tugas Validator Dokumen - {$assignment->user->name}.pdf",
+            'file_size' => null,
+            'mime_type' => 'application/pdf',
+            'uploaded_by' => auth()->id(),
+            'keterangan' => "Surat Tugas Nomor: {$nomorSurat} untuk Validator: {$assignment->user->name}",
+            'template_link' => null,
+            'is_latest' => true,
+            'versi' => $versi + 1,
+        ]);
+    }
+
+    public function downloadSuratTugasValidator($pengajuanId)
+    {
+        $pengajuan = PengajuanAkreditasi::with('borangValidators.user')->findOrFail($pengajuanId);
+
+        $dokumen = $pengajuan->dokumen()
+            ->where('jenis_dokumen', 'surat_tugas_validator_dokumen')
+            ->where('is_latest', true)
+            ->firstOrFail();
+
+        // Jika link
+        if ($dokumen->template_link) {
+            return redirect($dokumen->template_link);
+        }
+
+        // Jika file upload
+        if ($dokumen->path_file && Storage::disk('public')->exists($dokumen->path_file)) {
+            return Storage::disk('public')->download($dokumen->path_file, $dokumen->original_filename);
+        }
+
+        // ✅ Generate on-the-fly jika belum ada file
+        if (!$dokumen->path_file) {
+            return $this->generateAndDownloadSuratTugas($pengajuan, $dokumen);
+        }
+
+        abort(404, 'File tidak ditemukan.');
+    }
+
+    private function generateAndDownloadSuratTugas(PengajuanAkreditasi $pengajuan, PengajuanDokumen $dokumen)
+    {
+        // Get validator info
+        $validator = $pengajuan->borangValidators()
+            ->where('jenis_asesmen', 'dokumen')
+            ->whereIn('status_penawaran', ['pending', 'accepted'])
+            ->with('user')
+            ->first();
+
+        if (!$validator) {
+            abort(404, 'Data validator tidak ditemukan.');
+        }
+
+        // ✅ TODO: Implement actual PDF generation
+        // Example using DomPDF or TCPDF
+        // For now, return a placeholder response
+
+        $nomorSurat = 'ST-VAL-DOK/' . date('Y') . '/' . str_pad($pengajuan->id, 4, '0', STR_PAD_LEFT);
+        $tanggal = now()->format('d M Y');
+
+        $html = view('de.penerimaan-dokumen.templates.surat-tugas-validator', compact(
+            'pengajuan',
+            'validator',
+            'nomorSurat',
+            'tanggal'
+        ))->render();
+
+        // Generate PDF (example with DomPDF)
+        $pdf = \PDF::loadHTML($html);
+
+        return $pdf->download("Surat_Tugas_Validator_Dokumen_{$pengajuan->nomor_pengajuan}.pdf");
+    }
+
+    public function uploadSuratTugasValidatorForm(Request $request, $pengajuanId)
+    {
+        $request->validate([
+            'file_surat_tugas' => 'required|file|mimes:pdf|max:5120',
+        ], [
+            'file_surat_tugas.required' => 'File surat tugas wajib diupload',
+            'file_surat_tugas.mimes' => 'Format file harus PDF',
+            'file_surat_tugas.max' => 'Ukuran file maksimal 5MB',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $pengajuan = PengajuanAkreditasi::with('borangValidators')->findOrFail($pengajuanId);
+
+            // Get current assignment
+            $assignment = $pengajuan->borangValidators()
+                ->where('jenis_asesmen', 'dokumen')
+                ->whereIn('status_penawaran', ['pending', 'accepted'])
+                ->firstOrFail();
+
+            // Upload surat tugas
+            $this->uploadSuratTugasValidator($pengajuan, $assignment, $request->file('file_surat_tugas'));
+
+            DB::commit();
+
+            return redirect()
+                ->back()
+                ->with('success', 'Surat tugas validator dokumen berhasil diupload.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to upload surat tugas validator', [
+                'pengajuan_id' => $pengajuanId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()
+                ->back()
+                ->with('error', 'Gagal upload surat tugas: ' . $e->getMessage());
+        }
     }
 
     /**

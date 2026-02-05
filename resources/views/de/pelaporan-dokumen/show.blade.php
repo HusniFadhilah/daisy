@@ -1,6 +1,6 @@
 @extends('layouts.template.app')
 
-@section('title', 'Detail Monitoring Pelaporan Validasi Dokumen')
+@section('title', 'Detail Pelaporan Validasi Dokumen')
 
 @push('styles')
 <style>
@@ -107,7 +107,7 @@
         <ol class="breadcrumb">
             <li class="breadcrumb-item">
                 <a href="{{ route('de.pelaporan-dokumen') }}">
-                    <i class="bi bi-arrow-left"></i> Monitoring Pelaporan Validasi Dokumen
+                    <i class="bi bi-arrow-left"></i> Pelaporan Validasi Dokumen
                 </a>
             </li>
             <li class="breadcrumb-item active">Detail</li>
@@ -118,7 +118,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">
-                <i class="bi bi-file-earmark-text"></i> Detail Monitoring Pelaporan Validasi Dokumen
+                <i class="bi bi-file-earmark-text"></i> Detail Pelaporan Validasi Dokumen
             </h4>
             <p class="text-muted mb-0">{{ $pengajuan->nomor_pengajuan }}</p>
         </div>

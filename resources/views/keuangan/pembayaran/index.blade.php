@@ -18,73 +18,21 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-md-3 mb-3">
-            <div class="card stat-card p-2" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                <div class="card-body text-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="mb-1 opacity-75">Total Formulir</h6>
-                            <h2 class="mb-0 fw-bold">{{ $stats['total'] }}</h2>
-                            <small class="opacity-75">Formulir yang telah diupload</small>
-                        </div>
-                        <div class="bg-white bg-opacity-25 rounded p-3">
-                            <i class="bi bi-file-earmark-check fs-1"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div class="row mb-4 row-cols-1 row-cols-md-2 row-cols-lg-4 g-3">
+        <div class="col">
+            <x-stat-card title="Total Formulir" :value="$stats['total']" description="Formulir yang telah diupload" icon="file-earmark-check" gradient="purple" iconBg="success-subtle" />
         </div>
 
-        <div class="col-md-3 mb-3">
-            <div class="card stat-card p-2" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                <div class="card-body text-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="mb-1 opacity-75">Hari Ini</h6>
-                            <h2 class="mb-0 fw-bold">{{ $stats['today'] }}</h2>
-                            <small class="opacity-75">Upload hari ini</small>
-                        </div>
-                        <div class="bg-white bg-opacity-25 rounded p-3">
-                            <i class="bi bi-calendar-check fs-1"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="col">
+            <x-stat-card title="Hari Ini" :value="$stats['today']" description="Upload hari ini" icon="calendar-check" gradient="pink" iconBg="success-subtle" />
         </div>
 
-        <div class="col-md-3 mb-3">
-            <div class="card stat-card p-2" style="background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);">
-                <div class="card-body text-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="mb-1 opacity-75">Menunggu Validasi</h6>
-                            <h2 class="mb-0 fw-bold">{{ $stats['menunggu_verifikasi'] }}</h2>
-                            <small class="opacity-75">Perlu divalidasi</small>
-                        </div>
-                        <div class="bg-white bg-opacity-25 rounded p-3">
-                            <i class="bi bi-clock-history fs-1"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="col">
+            <x-stat-card title="Menunggu Validasi" :value="$stats['menunggu_verifikasi']" description="Perlu divalidasi" icon="clock-history" gradient="orange" iconBg="success-subtle" />
         </div>
 
-        <div class="col-md-3 mb-3">
-            <div class="card stat-card p-2" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
-                <div class="card-body text-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="mb-1 opacity-75">Tervalidasi</h6>
-                            <h2 class="mb-0 fw-bold">{{ $stats['terverifikasi'] }}</h2>
-                            <small class="opacity-75">Telah divalidasi</small>
-                        </div>
-                        <div class="bg-white bg-opacity-25 rounded p-3">
-                            <i class="bi bi-check-circle fs-1"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="col">
+            <x-stat-card title="Tervalidasi" :value="$stats['terverifikasi']" description="Telah divalidasi" icon="check-circle" gradient="green" iconBg="success-subtle" />
         </div>
     </div>
 
@@ -137,7 +85,7 @@
                             </td>
 
                             <td>
-                                <p>{{ $item->judul }}</p>
+                                <p>{{ $item->judul_short }}</p>
                                 <small class="text-muted">{{ $item->nomor_pengajuan }}</small>
                                 <small class="text-muted">{{ optional(optional($item->studyProgram)->university)->name ?? '-' }}</small>
                             </td>

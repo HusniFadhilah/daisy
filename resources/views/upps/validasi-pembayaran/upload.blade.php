@@ -112,7 +112,7 @@
                             <label for="tanggal_pembayaran" class="form-label">
                                 Tanggal Pembayaran <span class="text-danger">*</span>
                             </label>
-                            <input type="date" class="form-control @error('tanggal_pembayaran') is-invalid @enderror" id="tanggal_pembayaran" name="tanggal_pembayaran" value="{{ old('tanggal_pembayaran', now()->format('Y-m-d')) }}" max="{{ now()->format('Y-m-d') }}" required>
+                            <input type="datetime-local" class="form-control @error('tanggal_pembayaran') is-invalid @enderror" id="tanggal_pembayaran" name="tanggal_pembayaran" value="{{ old('tanggal_pembayaran', now()->format('Y-m-d\TH:i')) }}" max="{{ now()->format('Y-m-d\TH:i') }}" required>
                             @error('tanggal_pembayaran')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror

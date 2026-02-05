@@ -270,8 +270,8 @@
                 </div>
 
                 <!-- Warning Card -->
-                <div class="card border-danger">
-                    <div class="card-header bg-danger text-white">
+                <div class="card border-info">
+                    <div class="card-header bg-info text-white">
                         <h6 class="mb-0">
                             <i class="bi bi-shield-exclamation"></i> Perhatian
                         </h6>
@@ -281,7 +281,7 @@
                             <li class="mb-2">File PDF maksimal 5MB</li>
                             <li class="mb-2">
                                 Untuk mengirim, file surat permohonan
-                                <strong class="text-danger">wajib diupload</strong>
+                                <strong class="text-dark">wajib diupload</strong>
                             </li>
                             <li>Permohonan yang sudah dikirim tidak dapat diubah</li>
                         </ul>

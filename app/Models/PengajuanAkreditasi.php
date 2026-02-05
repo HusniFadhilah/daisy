@@ -5,6 +5,7 @@ namespace App\Models;
 
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Model;
 use App\Domain\Akreditasi\PengajuanStatus;
 
@@ -475,23 +476,21 @@ class PengajuanAkreditasi extends Model
 
     public function canAssignValidator(): bool
     {
-        if (!in_array($this->status, [
+        if ((in_array($this->status, [
+            self::STATUS_BORANG_ONLINE_SELESAI
+        ]) && $this->latestBorangImport) || $this->status == self::STATUS_DRAFT_BORANG_DITERIMA) {
+            return true;
+        }
+        if (in_array($this->status, [
             self::STATUS_DRAFT_BORANG_DITERIMA,
             self::STATUS_BORANG_ONLINE_SELESAI,
             self::STATUS_BORANG_VALIDATION_PENDING,
             self::STATUS_BORANG_REVISION_REQUIRED
         ])) {
-            return false;
+            return true;
         }
 
-        if (!in_array($this->status, [
-            self::STATUS_DRAFT_BORANG_DITERIMA,
-            self::STATUS_BORANG_ONLINE_SELESAI
-        ]) && !$this->latestBorangImport) {
-            return false;
-        }
-
-        return true;
+        return false;
     }
 
     public function getCurrentBorangValidator()
@@ -1130,6 +1129,8 @@ class PengajuanAkreditasi extends Model
             $statuses = [self::STATUS_DRAFT_BORANG_DITERIMA, self::STATUS_BORANG_ONLINE_SELESAI, self::STATUS_BORANG_VALIDATION_PENDING, self::STATUS_BORANG_IN_VALIDATION, self::STATUS_BORANG_REVISION_REQUIRED, self::STATUS_BORANG_VALIDATED, self::STATUS_BORANG_FINAL_DITERIMA, self::STATUS_VALIDASI_BORANG_DILAPORKAN];
         if ($attribute == 'validasi_dokumen')
             $statuses = [self::STATUS_BORANG_VALIDATION_PENDING, self::STATUS_BORANG_IN_VALIDATION, self::STATUS_BORANG_REVISION_REQUIRED, self::STATUS_BORANG_VALIDATED];
+        if ($attribute == 'pelaporan_dokumen')
+            $statuses = [self::STATUS_VALIDASI_BORANG_DILAPORKAN, self::STATUS_PENGAJUAN_COMPLETED];
         if ($attribute == 'penugasan_asesor_ak')
             $statuses = [self::STATUS_PENGAJUAN_COMPLETED, self::STATUS_ASESOR_AK_ASSIGNED];
         if ($attribute == 'validasi_ak')
@@ -1259,7 +1260,6 @@ class PengajuanAkreditasi extends Model
              * ===========================================
              */
             'draft_borang' => match ($status) {
-
                 self::STATUS_DRAFT_BORANG_DIKIRIM =>
                 $badge(
                     $bgFromMap(self::STATUS_DRAFT_BORANG_DIKIRIM, 'bg-warning'),
@@ -1280,8 +1280,8 @@ class PengajuanAkreditasi extends Model
 
                 default =>
                 $audience === 'de'
-                    ? $badge('bg-secondary', 'Draft Dokumen belum dikirim')
-                    : $badge('bg-secondary', 'Draft Dokumen belum dikirim'),
+                    ? $badge('bg-secondary', $keyLongShort == 'label_long_for' ? 'Draft Dokumen Belum Dikirim' : 'Draft Belum Dikirim')
+                    : $badge('bg-secondary', $keyLongShort == 'label_long_for' ? 'Draft Dokumen Belum Dikirim' : 'Draft Belum Dikirim'),
             },
 
             /**
@@ -1347,8 +1347,8 @@ class PengajuanAkreditasi extends Model
 
                 default =>
                 $audience === 'de'
-                    ? $badge('bg-secondary', 'Draft Dokumen belum dikirim')
-                    : $badge('bg-secondary', 'Draft Dokumen belum dikirim'),
+                    ? $badge('bg-secondary', '-')
+                    : $badge('bg-secondary', '-'),
             },
             'validasi_dokumen' => match ($status) {
                 self::STATUS_BORANG_VALIDATION_PENDING =>
@@ -1373,8 +1373,20 @@ class PengajuanAkreditasi extends Model
                 ),
                 default =>
                 $audience === 'de'
-                    ? $badge('bg-secondary', 'Draft Dokumen belum dikirim')
-                    : $badge('bg-secondary', 'Draft Dokumen belum dikirim'),
+                    ? $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Validasi Dokumen' : 'Menunggu Validasi')
+                    : $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Validasi Dokumen' : 'Menunggu Validasi'),
+            },
+            'pelaporan_dokumen' => match ($status) {
+                self::STATUS_BORANG_VALIDATED =>
+                $audience === 'de'
+                    ? $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Pelaporan Dokumen' : 'Menunggu Pelaporan')
+                    : $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Pelaporan Dokumen' : 'Menunggu Pelaporan'),
+                self::STATUS_VALIDASI_BORANG_DILAPORKAN =>
+                $badge('bg-success', $labelFor(self::STATUS_VALIDASI_BORANG_DILAPORKAN) ?? '-'),
+                self::STATUS_PENGAJUAN_COMPLETED =>
+                $badge('bg-success', $labelFor(self::STATUS_PENGAJUAN_COMPLETED) ?? '-'),
+
+                default => $badge('bg-secondary', '-'),
             },
             'penugasan_asesor_ak' => match ($status) {
                 self::STATUS_PENGAJUAN_COMPLETED =>
@@ -1382,7 +1394,9 @@ class PengajuanAkreditasi extends Model
                 self::STATUS_ASESOR_AK_ASSIGNED =>
                 $badge('bg-success', $labelFor(self::STATUS_ASESOR_AK_ASSIGNED) ?? '-'),
 
-                default => $badge('bg-secondary', '-'),
+                default => $audience === 'de'
+                    ? $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Penugasan Asesor AK' : 'Menunggu Penugasan')
+                    : $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Penugasan Asesor AK' : 'Menunggu Penugasan'),
             },
             'validasi_ak' => match ($status) {
                 self::STATUS_AK_IN_PROGRESS =>
@@ -1392,7 +1406,9 @@ class PengajuanAkreditasi extends Model
                 self::STATUS_AK_SELESAI =>
                 $badge('bg-success', $labelFor(self::STATUS_AK_SELESAI) ?? '-'),
 
-                default => $badge('bg-secondary', '-'),
+                default => $audience === 'de'
+                    ? $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Validasi AK' : 'Menunggu Validasi')
+                    : $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Validasi AK' : 'Menunggu Validasi'),
             },
             'pelaporan_ak' => match ($status) {
                 self::STATUS_AK_SELESAI =>
@@ -1400,7 +1416,9 @@ class PengajuanAkreditasi extends Model
                 self::STATUS_AK_DILAPORKAN =>
                 $badge('bg-success', $labelFor(self::STATUS_AK_DILAPORKAN) ?? '-'),
 
-                default => $badge('bg-secondary', '-'),
+                default => $audience === 'de'
+                    ? $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Pelaporan AK' : 'Menunggu Pelaporan')
+                    : $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Pelaporan AK' : 'Menunggu Pelaporan'),
             },
             'penugasan_asesor_al' => match ($status) {
                 self::STATUS_AK_DILAPORKAN =>
@@ -1408,7 +1426,9 @@ class PengajuanAkreditasi extends Model
                 self::STATUS_ASESOR_AL_ASSIGNED =>
                 $badge('bg-success', $labelFor(self::STATUS_ASESOR_AL_ASSIGNED) ?? '-'),
 
-                default => $badge('bg-secondary', '-'),
+                default => $audience === 'de'
+                    ? $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Penugasan Asesor AL' : 'Menunggu Penugasan')
+                    : $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Penugasan Asesor AL' : 'Menunggu Penugasan'),
             },
             'pelaksanaan_al' => match ($status) {
                 self::STATUS_ASESOR_AL_ASSIGNED =>
@@ -1421,7 +1441,9 @@ class PengajuanAkreditasi extends Model
                 self::STATUS_AL_SELESAI =>
                 $badge('bg-success', $labelFor(self::STATUS_AL_SELESAI) ?? '-'),
 
-                default => $badge('bg-secondary', '-'),
+                default => $audience === 'de'
+                    ? $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Pelaksanaan AL' : 'Menunggu Pelaksanaan')
+                    : $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Pelaksanaan AL' : 'Menunggu Pelaksanaan'),
             },
             'pelaporan_al' => match ($status) {
                 self::STATUS_AL_SELESAI =>
@@ -1429,7 +1451,9 @@ class PengajuanAkreditasi extends Model
                 self::STATUS_AL_DILAPORKAN =>
                 $badge('bg-success', $labelFor(self::STATUS_AL_DILAPORKAN) ?? '-'),
 
-                default => $badge('bg-secondary', '-'),
+                default => $audience === 'de'
+                    ? $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Pelaporan AL' : 'Menunggu Pelaporan')
+                    : $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Pelaporan AL' : 'Menunggu Pelaporan'),
             },
 
             default => $badge('bg-secondary', '-'),

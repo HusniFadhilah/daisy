@@ -162,15 +162,6 @@
         <div class="col-lg-8">
             @if($pengajuan->asesmen?->asesmenKecukupan)
 
-            {{-- ✅ Get Validator Dokumen --}}
-            @php
-            $validatorDokumen = $pengajuan->borangValidators()
-            ->where('jenis_asesmen', 'dokumen')
-            ->whereIn('status_penawaran', ['accepted', 'pending'])
-            ->with('user')
-            ->first();
-            @endphp
-
             {{-- Alert Info Validator Dokumen --}}
             @if($validatorDokumen)
             <div class="alert alert-info alert-permanent mb-3">
@@ -519,7 +510,7 @@
 </div>
 
 {{-- ✅ NEW: Modal Validator Dokumen Info --}}
-@if($validatorDokumen)
+{{-- @if($validatorDokumen)
 <div class="modal fade" id="modalValidatorInfo" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -534,53 +525,53 @@
                     <tr>
                         <th width="40%">Nama</th>
                         <td>: {{ $validatorDokumen->user->name }}</td>
-                    </tr>
-                    <tr>
-                        <th>Email</th>
-                        <td>: {{ $validatorDokumen->user->email }}</td>
-                    </tr>
-                    <tr>
-                        <th>Status</th>
-                        <td>:
-                            <span class="badge bg-{{ $validatorDokumen->status_penawaran === 'accepted' ? 'success' : 'warning' }}">
-                                {{ ucfirst($validatorDokumen->status_penawaran) }}
-                            </span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Ditugaskan</th>
-                        <td>: {{ $validatorDokumen->created_at->format('d M Y H:i') }}</td>
-                    </tr>
-                </table>
+</tr>
+<tr>
+    <th>Email</th>
+    <td>: {{ $validatorDokumen->user->email }}</td>
+</tr>
+<tr>
+    <th>Status</th>
+    <td>:
+        <span class="badge bg-{{ $validatorDokumen->status_penawaran === 'accepted' ? 'success' : 'warning' }}">
+            {{ ucfirst($validatorDokumen->status_penawaran) }}
+        </span>
+    </td>
+</tr>
+<tr>
+    <th>Ditugaskan</th>
+    <td>: {{ $validatorDokumen->created_at->format('d M Y H:i') }}</td>
+</tr>
+</table>
 
-                @php
-                $suratTugasValDok = $pengajuan->dokumen
-                ->where('jenis_dokumen', 'surat_tugas_validator_dokumen')
-                ->where('is_latest', true)
-                ->first();
-                @endphp
+@php
+$suratTugasValDok = $pengajuan->dokumen
+->where('jenis_dokumen', 'surat_tugas_validator_dokumen')
+->where('is_latest', true)
+->first();
+@endphp
 
-                @if($suratTugasValDok)
-                <div class="alert alert-success alert-permanent">
-                    <i class="bi bi-file-earmark-pdf"></i>
-                    <strong>Surat Tugas Validator Dokumen:</strong><br>
-                    {{ $suratTugasValDok->original_filename }}
-                    <br>
-                    <a href="{{ route('de.penerimaan-dokumen.download-surat-tugas-validator', $pengajuan->id) }}" class="btn btn-sm btn-success mt-2" target="_blank">
-                        <i class="bi bi-download"></i> Lihat File
-                    </a>
-                </div>
-                @endif
-
-                <div class="alert alert-info alert-permanent mb-0">
-                    <i class="bi bi-info-circle"></i>
-                    Jika Anda menggunakan validator yang sama, surat tugas akan otomatis di-copy dari surat tugas validator dokumen.
-                </div>
-            </div>
-        </div>
-    </div>
+@if($suratTugasValDok)
+<div class="alert alert-success alert-permanent">
+    <i class="bi bi-file-earmark-pdf"></i>
+    <strong>Surat Tugas Validator Dokumen:</strong><br>
+    {{ $suratTugasValDok->original_filename }}
+    <br>
+    <a href="{{ route('de.penerimaan-dokumen.download-surat-tugas-validator', $pengajuan->id) }}" class="btn btn-sm btn-success mt-2" target="_blank">
+        <i class="bi bi-download"></i> Lihat File
+    </a>
 </div>
 @endif
+
+<div class="alert alert-info alert-permanent mb-0">
+    <i class="bi bi-info-circle"></i>
+    Jika Anda menggunakan validator yang sama, surat tugas akan otomatis di-copy dari surat tugas validator dokumen.
+</div>
+</div>
+</div>
+</div>
+</div>
+@endif --}}
 
 @push('scripts')
 <script>

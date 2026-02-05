@@ -54,7 +54,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1"><i class="bi bi-file-earmark-text"></i> Pengiriman Formulir dan Template Dokumen</h4>
-            <p class="text-muted mb-0">Kirim template dokumen akreditasi kepada PS</p>
+            <p class="text-muted mb-0">Kirim template dokumen akreditasi</p>
         </div>
     </div>
 

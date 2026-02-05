@@ -194,13 +194,20 @@ class PenugasanAKController extends Controller
         $availableUsers = User::notAdmin()->orderBy('name')->get();
         $roles = Role::whereIn('name', ['asesor', 'validator'])->get();
 
+        $validatorDokumen = $pengajuan->borangValidators()
+            ->where('jenis_asesmen', 'dokumen')
+            ->whereIn('status_penawaran', ['accepted', 'pending'])
+            ->with('user')
+            ->first();
+
         return view('de.penugasan-ak.show', compact(
             'pengajuan',
             'userProgress',
             'requirementsStatus',
             'availableUsers',
             'roles',
-            'totalElemens'
+            'totalElemens',
+            'validatorDokumen'
         ));
     }
 

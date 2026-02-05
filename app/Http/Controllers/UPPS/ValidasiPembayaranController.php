@@ -123,14 +123,16 @@ class ValidasiPembayaranController extends Controller
     {
         $validated = $request->validate([
             'file_formulir_pembayaran' => 'required|file|mimes:xlsx,pdf,jpg,jpeg,png|max:5120',
-            'tanggal_pembayaran' => 'required|date|before_or_equal:today',
+            'tanggal_pembayaran' => 'required|date_format:Y-m-d\TH:i',
             'catatan_pembayaran' => 'nullable|string|max:500',
         ], [
             'file_formulir_pembayaran.required' => 'File formulir & bukti pembayaran harus diupload.',
-            'file_formulir_pembayaran.mimes' => 'File harus berformat PDF, JPG, JPEG, atau PNG.',
+            'file_formulir_pembayaran.mimes' => 'File harus berformat PDF, JPG, JPEG, PNG, atau XLSX.',
             'file_formulir_pembayaran.max' => 'Ukuran file maksimal 5MB.',
             'tanggal_pembayaran.required' => 'Tanggal pembayaran harus diisi.',
-            'tanggal_pembayaran.before_or_equal' => 'Tanggal pembayaran tidak boleh lebih dari hari ini.',
+            'tanggal_pembayaran.date_format' => 'Format tanggal & waktu tidak valid.',
+            'tanggal_pembayaran.before_or_equal' => 'Tanggal pembayaran tidak boleh melebihi saat ini.',
+            'catatan_pembayaran.max' => 'Catatan maksimal 500 karakter.',
         ]);
 
         DB::beginTransaction();
@@ -195,7 +197,7 @@ class ValidasiPembayaranController extends Controller
 
             return redirect()
                 ->route('upps.validasi-pembayaran.show', $id)
-                ->with('success', 'Formulir & Bukti pembayaran berhasil diupload. Menunggu validasi dari bagian keuangan.');
+                ->with('success', 'Formulir & Bukti pembayaran berhasil diupload. Menunggu validasi dari LAMDEPILAR.');
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', 'Gagal mengupload formulir & bukti pembayaran: ' . $e->getMessage());

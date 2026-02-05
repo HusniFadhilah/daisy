@@ -78,7 +78,7 @@
             <!-- Assignment Info -->
             <div class="card mb-4">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Informasi Penugasan</h5>
+                    <h5 class="mb-0">Informasi Validasi Dokumen</h5>
                 </div>
                 <div class="card-body">
                     <table class="table table-bordered">
@@ -117,26 +117,12 @@
                                 </span>
                             </td>
                         </tr>
-                        @if($assignment->status_penawaran === 'accepted')
                         <tr>
-                            <th>Status Pekerjaan</th>
+                            <th>Status Validasi Dokumen</th>
                             <td>
-                                <span class="badge bg-info">
-                                    {{ $assignment->status_label }}
-                                </span>
+                                {!! $pengajuan->getCustomBadgeLastStatus('validasi_dokumen','de','label_long_for') !!}
                             </td>
                         </tr>
-                        @endif
-                        <tr>
-                            <th>Ditugaskan</th>
-                            <td>{{ $assignment->created_at->format('d F Y H:i') }}</td>
-                        </tr>
-                        @if($assignment->responded_at)
-                        <tr>
-                            <th>Dikonfirmasi</th>
-                            <td>{{ $assignment->responded_at->format('d F Y H:i') }}</td>
-                        </tr>
-                        @endif
                     </table>
 
                     @if($assignment->status_penawaran === 'accepted')
@@ -332,7 +318,7 @@
     <div class="card">
         <div class="card-header bg-light">
             <h5 class="mb-0">
-                <i class="bi bi-clock-history"></i> Timeline
+                <i class="bi bi-clock-history"></i> Riwayat Status
             </h5>
         </div>
         <div class="card-body">

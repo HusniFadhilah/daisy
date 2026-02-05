@@ -32,14 +32,23 @@
         <!-- Main Content -->
         <div class="col-lg-8 mb-4">
             <!-- Status Alert -->
-            @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM)
+            @php
+            $allowed = [
+            \App\Models\PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM,
+            \App\Models\PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM,
+            ]; // ini contoh, bisa dinamis dari config/db/request
+
+            $log = $pengajuan->latestRelevantStatusLog($allowed);
+            @endphp
+            <!-- Status Alert -->
+            @if($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM)
             <div class="alert alert-warning alert-permanent mb-4">
                 <i class="bi bi-hourglass-split"></i>
                 <strong>Menunggu formulir dan template dokumen dari LAMDEPILAR</strong>
                 <br>
                 Template belum dikirim oleh LAMDEPILAR
             </div>
-            @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM)
+            @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM)
             <div class="alert alert-success alert-permanent mb-4">
                 <i class="bi bi-check-circle"></i>
                 <strong>Formulir dan template dokumen telah diterima dari LAMDEPILAR</strong>

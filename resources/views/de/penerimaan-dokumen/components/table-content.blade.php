@@ -15,9 +15,9 @@
                 <thead class="table-light">
                     <tr>
                         <th width="5%">No</th>
-                        <th width="25%">Permohonan Akreditasi</th>
+                        <th width="30%">Permohonan Akreditasi</th>
                         <th width="25%">Status Penerimaan Dokumen</th>
-                        <th width="20%">Status Dokumen</th>
+                        <th width="15%">Status Dokumen</th>
                         <th width="20%">Tanggal Update Status</th>
                         <th width="5%" class="text-center">Aksi</th>
                     </tr>

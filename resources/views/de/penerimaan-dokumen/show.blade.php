@@ -205,7 +205,7 @@
                                             @endif
                                         </div>
                                         @else
-                                        <span class="badge bg-danger mt-1">Belum Diupload oleh PS</span>
+                                        <span class="badge bg-danger mt-1">Belum Diupload</span>
                                         @endif
                                     </div>
                                 </div>
@@ -418,7 +418,7 @@
 
                                     <div class="d-flex flex-column gap-2">
                                         <a href="{{ route('de.penerimaan-dokumen.download-surat-tugas-validator', $pengajuan->id) }}" class="btn btn-success btn-sm w-100" target="_blank">
-                                            <i class="bi bi-download"></i> Download Surat Tugas
+                                            <i class="bi bi-eye"></i> Lihat Surat Tugas
                                         </a>
                                         <button type="button" class="btn btn-outline-primary btn-sm w-100" data-bs-toggle="modal" data-bs-target="#modalUploadSuratTugas">
                                             <i class="bi bi-upload"></i> Upload Ulang
@@ -572,4 +572,110 @@
         </div>
     </div>
 </div>
+
+@if($currentValidator)
+<div class="modal fade" id="modalUploadSuratTugas" tabindex="-1" aria-labelledby="modalUploadSuratTugasLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalUploadSuratTugasLabel">
+                    <i class="bi bi-upload"></i> Upload Surat Tugas Validator Dokumen
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('de.penerimaan-dokumen.upload-surat-tugas-validator', $pengajuan->id) }}" method="POST" enctype="multipart/form-data" id="formUploadSuratTugas">
+                @csrf
+                <div class="modal-body">
+                    @php
+                    $suratTugas = $pengajuan->dokumen
+                    ->where('jenis_dokumen', 'surat_tugas_validator_dokumen')
+                    ->where('is_latest', true)
+                    ->first();
+                    @endphp
+
+                    @if($suratTugas)
+                    <div class="alert alert-info alert-permanent mb-3">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>File Saat Ini:</strong><br>
+                        {{ $suratTugas->original_filename }}<br>
+                        <small>Versi {{ $suratTugas->versi }} • {{ $suratTugas->created_at->format('d M Y H:i') }}</small>
+                    </div>
+                    @endif
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">
+                            File Surat Tugas (PDF) <span class="text-danger">*</span>
+                        </label>
+                        <input type="file" name="file_surat_tugas" id="file_surat_tugas_upload" class="form-control @error('file_surat_tugas') is-invalid @enderror" accept=".pdf" required>
+                        <small class="text-muted">
+                            Format: PDF | Maksimal: 5MB
+                        </small>
+                        <div id="suratTugasUploadPreview" class="mt-2"></div>
+                        @error('file_surat_tugas')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="alert alert-warning alert-permanent">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>Perhatian:</strong>
+                        @if($suratTugas)
+                        Surat tugas yang diupload akan menggantikan surat tugas sebelumnya (Versi {{ $suratTugas->versi }}).
+                        Surat tugas lama akan tetap tersimpan sebagai riwayat.
+                        @else
+                        Upload surat tugas untuk validator <strong>{{ $currentValidator->user->name }}</strong>.
+                        @endif
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Batal
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="btnSubmitUpload">
+                        <i class="bi bi-upload"></i> Upload Surat Tugas
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
 @endsection
+
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let fileInput = document.getElementById('file_surat_tugas_upload');
+        let preview = document.getElementById('suratTugasUploadPreview');
+        if (fileInput && preview) {
+            fileInput.addEventListener('change', function(e) {
+                preview.innerHTML = '';
+                if (!e.target.files || !e.target.files.length) return;
+                let file = e.target.files[0];
+                let size = file.size / 1024 / 1024;
+                if (file.type !== 'application/pdf') {
+                    preview.innerHTML = '<div class="alert alert-danger alert-dismissible fade show"><i class="bi bi-x-circle"></i> File harus berformat PDF<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
+                    e.target.value = '';
+                    return;
+                }
+                if (size > 5) {
+                    preview.innerHTML = '<div class="alert alert-danger alert-dismissible fade show"><i class="bi bi-x-circle"></i> Ukuran file terlalu besar (' + size.toFixed(2) + ' MB). Maksimal 5 MB<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
+                    e.target.value = '';
+                    return;
+                }
+                preview.innerHTML = '<div class="alert alert-success alert-dismissible fade show"><i class="bi bi-check-circle"></i> <strong>' + file.name + '</strong> (' + size.toFixed(2) + ' MB)<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
+            });
+        }
+        let form = document.getElementById('formUploadSuratTugas');
+        let btn = document.getElementById('btnSubmitUpload');
+        if (form && btn) {
+            form.addEventListener('submit', function() {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Uploading...';
+            });
+        }
+    });
+
+</script>
+@endpush

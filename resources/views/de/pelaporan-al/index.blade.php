@@ -1,6 +1,6 @@
 @extends('layouts.template.app')
 
-@section('title', 'Monitoring Pelaporan AL')
+@section('title', 'Monitor Pelaporan AL')
 
 @section('content')
 <div class="container-fluid py-3">
@@ -8,9 +8,9 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">
-                <i class="bi bi-file-earmark-text"></i> Monitoring Pelaporan Hasil Asesmen Lapangan (AL)
+                <i class="bi bi-file-earmark-text"></i> Monitor Pelaporan AL
             </h4>
-            <p class="text-muted mb-0">Monitoring pelaporan hasil AL setelah validasi selesai</p>
+            <p class="text-muted mb-0">Monitor pelaporan AL setelah validasi selesai</p>
         </div>
         <div>
             <button class="btn btn-outline-primary" onclick="location.reload()">

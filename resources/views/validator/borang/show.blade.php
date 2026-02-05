@@ -209,16 +209,16 @@
             'btn_class' => 'btn-success',
             'empty_text' => 'Belum ada file LKPS yang diupload.',
             ],
-            'formulir_pembayaran' => [
-            'label' => 'Formulir & Bukti Pembayaran Akreditasi',
-            'btn_class' => 'btn-info',
-            'empty_text' => 'Belum ada file Formulir & Bukti Pembayaran yang diupload.',
-            ],
-            'surat_permohonan' => [
-            'label' => 'Permohonan Akreditasi',
-            'btn_class' => 'btn-primary',
-            'empty_text' => 'Belum ada file Permohonan Akreditasi yang diupload.',
-            ],
+            //'formulir_pembayaran' => [
+            //'label' => 'Formulir & Bukti Pembayaran Akreditasi',
+            //'btn_class' => 'btn-info',
+            //'empty_text' => 'Belum ada file Formulir & Bukti Pembayaran yang diupload.',
+            //],
+            //'surat_permohonan' => [
+            //'label' => 'Permohonan Akreditasi',
+            //'btn_class' => 'btn-primary',
+            //'empty_text' => 'Belum ada file Permohonan Akreditasi yang diupload.',
+            //],
             ];
             @endphp
             <div class="row g-3">
@@ -237,7 +237,7 @@
                                 <div class="fw-bold mb-1">{{ $config['label'] }}</div>
 
                                 @if($file)
-                                <div class="small fw-semibold text-break">
+                                <div class="text-muted small fw-semibold text-break">
                                     {{ $file->original_filename }}
                                 </div>
                                 <div class="text-muted small">
@@ -477,6 +477,21 @@
                                 $isReviewed = isset($reviewData[$elemen->id]);
                                 $badgeClass = $isReviewed ? 'bg-success' : 'bg-warning text-dark';
                                 $badgeText = $isReviewed ? 'Validasi Lengkap' : 'Validasi Belum Lengkap';
+
+                                $grade = $isReviewed ? ($reviewData[$elemen->id]['grade'] ?? null) : null;
+                                $gradeClass = match($grade) {
+                                'A' => 'bg-success',
+                                'B' => 'bg-warning text-dark',
+                                'C' => 'bg-danger',
+                                default => 'bg-secondary'
+                                };
+
+                                $gradeLabel = match($grade) {
+                                'A' => 'A - Sudah Tepat',
+                                'B' => 'B - Kurang Lengkap',
+                                'C' => 'C - Perlu Diperbaiki',
+                                default => '-'
+                                };
                                 @endphp
 
                                 <div class="accordion-item elemen-accordion-item" data-tab="led" data-elemen-id="{{ $elemen->id }}" data-required-count="1" data-reviewed-count="{{ $isReviewed ? 1 : 0 }}">
@@ -485,6 +500,9 @@
                                             <span class="badge bg-light text-dark">{{ $elemen->kode_elemen }}</span>
                                             <span class="flex-grow-1"><strong>{{ $elemen->pernyataan_elemen }}</strong></span>
                                             <span class="badge {{ $badgeClass }} elemen-status-badge">{{ $badgeText }}</span>
+                                            <span class="badge {{ $gradeClass }} elemen-grade-badge" data-grade="{{ $grade ?? '' }}">
+                                                <small>{{ $gradeLabel }}</small>
+                                            </span>
                                         </button>
                                     </h2>
                                     <div id="c-led-{{ $elemen->id }}" class="accordion-collapse collapse" aria-labelledby="h-led-{{ $elemen->id }}" data-bs-parent="#acc-led-{{ $kriteria->id }}">
@@ -544,6 +562,21 @@
                                 $isReviewedItem = isset($reviewData[$it->id]);
                                 $itemBadgeClass = $isReviewedItem ? 'bg-success' : 'bg-warning text-dark';
                                 $itemBadgeText = $isReviewedItem ? 'Validasi Lengkap' : 'Validasi Belum Lengkap';
+                                $grade = $isReviewedItem ? ($reviewData[$it->id]['grade'] ?? null) : null;
+
+                                $gradeClass = match($grade) {
+                                'A' => 'bg-success',
+                                'B' => 'bg-warning text-dark',
+                                'C' => 'bg-danger',
+                                default => 'bg-secondary'
+                                };
+
+                                $gradeLabel = match($grade) {
+                                'A' => 'A - Sudah Tepat',
+                                'B' => 'B - Kurang Lengkap',
+                                'C' => 'C - Perlu Diperbaiki',
+                                default => '-'
+                                };
                                 @endphp
 
                                 <div class="accordion-item elemen-accordion-item" data-tab="suplemen" data-elemen-id="{{ $it->id }}" data-required-count="1" data-reviewed-count="{{ $isReviewedItem ? 1 : 0 }}">
@@ -554,6 +587,9 @@
                                                 <strong>{{ $it->text_content }}</strong>
                                             </span>
                                             <span class="badge {{ $itemBadgeClass }} elemen-status-badge">{{ $itemBadgeText }}</span>
+                                            <span class="badge {{ $gradeClass }} elemen-grade-badge" data-grade="{{ $grade ?? '' }}">
+                                                <small>{{ $gradeLabel }}</small>
+                                            </span>
                                         </button>
                                     </h2>
 
@@ -604,12 +640,38 @@
                                 $required = $indikators->count();
                                 $reviewData = $validation->review_lkps ?? [];
                                 $reviewedCount = 0;
+                                $countA = $countB = $countC = 0;
+                                $grade = null;
                                 foreach($indikators as $ind){
                                 if(isset($reviewData[$ind->id])) $reviewedCount++;
+                                $g = $reviewData[$ind->id]['grade'] ?? null;
+                                if ($g === 'C') {
+                                $grade = 'C';
+                                break;
+                                }
+                                if ($g === 'B') {
+                                $grade = 'B';
+                                }
+                                if ($g === 'A' && $grade === null) {
+                                $grade = 'A';
+                                }
                                 }
                                 $isComplete = ($required > 0) ? ($reviewedCount === $required) : true;
                                 $badgeClass = $isComplete ? 'bg-success' : 'bg-warning text-dark';
                                 $badgeText = $isComplete ? 'Validasi Lengkap' : 'Validasi Belum Lengkap';
+                                $gradeClass = match($grade) {
+                                'A' => 'bg-success',
+                                'B' => 'bg-warning text-dark',
+                                'C' => 'bg-danger',
+                                default => 'bg-secondary'
+                                };
+
+                                $gradeLabel = match($grade) {
+                                'A' => 'A - Sudah Tepat',
+                                'B' => 'B - Kurang Lengkap',
+                                'C' => 'C - Perlu Diperbaiki',
+                                default => '-'
+                                };
                                 @endphp
 
                                 <div class="accordion-item elemen-accordion-item" data-tab="lkps" data-elemen-id="{{ $elemen->id }}" data-required-count="{{ $required }}" data-reviewed-count="{{ $reviewedCount }}">
@@ -618,6 +680,9 @@
                                             <span class="badge bg-light text-dark">{{ $elemen->kode_elemen }}</span>
                                             <span class="flex-grow-1"><strong>{{ $elemen->pernyataan_elemen }}</strong></span>
                                             <span class="badge {{ $badgeClass }} elemen-status-badge">{{ $badgeText }}</span>
+                                            <span class="badge {{ $gradeClass }} elemen-grade-badge" data-grade="{{ $grade ?? '' }}">
+                                                <small>{{ $gradeLabel }}</small>
+                                            </span>
                                             <span class="badge bg-dark ms-2 elemen-lkps-counter">{{ $reviewedCount }}/{{ $required }}</span>
                                         </button>
                                     </h2>
@@ -908,29 +973,60 @@ $assignmentId = $assignment->id;
         });
 
         // =============== UPDATE ELEMEN STATUS (GLOBAL) ===============
-        window.__updateElemenStatus = function({
-            tab
-            , elemenId
-            , reviewedCount
-            , requiredCount
-        }) {
-            const selector = `.elemen-accordion-item[data-tab="${tab}"][data-elemen-id="${elemenId}"]`;
-            const el = document.querySelector(selector);
+        window.__updateElemenStatus = function(opts) {
+            var tab = opts.tab;
+            var elemenId = opts.elemenId;
+            var reviewedCount = opts.reviewedCount;
+            var requiredCount = opts.requiredCount;
+            var grade = opts.grade || null;
+
+            var el = document.querySelector(
+                '.elemen-accordion-item[data-tab="' + tab + '"][data-elemen-id="' + elemenId + '"]'
+            );
             if (!el) return;
 
-            el.dataset.reviewedCount = String(reviewedCount);
-            el.dataset.requiredCount = String(requiredCount);
+            el.dataset.reviewedCount = reviewedCount;
+            el.dataset.requiredCount = requiredCount;
 
-            const badge = el.querySelector('.elemen-status-badge');
-            const counter = el.querySelector('.elemen-lkps-counter');
+            var statusBadge = el.querySelector('.elemen-status-badge');
+            var gradeBadge = el.querySelector('.elemen-grade-badge');
 
-            const isComplete = (requiredCount === 0) ? true : (reviewedCount >= requiredCount);
+            var isComplete = (requiredCount === 0) || (reviewedCount >= requiredCount);
 
-            if (badge) {
-                badge.className = 'badge elemen-status-badge ' + (isComplete ? 'bg-success' : 'bg-warning text-dark');
-                badge.textContent = isComplete ? 'Validasi Lengkap' : 'Validasi Belum Lengkap';
+            if (statusBadge) {
+                statusBadge.className =
+                    'badge elemen-status-badge ' +
+                    (isComplete ? 'bg-success' : 'bg-warning text-dark');
+                statusBadge.textContent =
+                    isComplete ? 'Validasi Lengkap' : 'Validasi Belum Lengkap';
             }
-            if (counter) counter.textContent = `${reviewedCount}/${requiredCount}`;
+
+            if (gradeBadge) {
+                var map = {
+                    A: {
+                        cls: 'bg-success'
+                        , text: 'A - Sudah Tepat'
+                    }
+                    , B: {
+                        cls: 'bg-warning text-dark'
+                        , text: 'B - Kurang Lengkap'
+                    }
+                    , C: {
+                        cls: 'bg-danger'
+                        , text: 'C - Perlu Diperbaiki'
+                    }
+                };
+
+                if (grade && map[grade]) {
+                    gradeBadge.className = 'badge elemen-grade-badge ' + map[grade].cls;
+                    gradeBadge.innerHTML = '<small>' + map[grade].text + '</small>';
+                    gradeBadge.dataset.grade = grade;
+                } else {
+                    gradeBadge.className = 'badge elemen-grade-badge bg-secondary';
+                    gradeBadge.innerHTML = '<small>-</small>';
+                    gradeBadge.dataset.grade = '';
+                }
+            }
 
             updateTabReviewedInfo();
         };
@@ -1347,35 +1443,45 @@ $assignmentId = $assignment->id;
                             , elemenId: itemId
                             , reviewedCount: 1
                             , requiredCount: 1
+                            , grade: grade
                         });
                     }
                 }
 
                 // LKPS: hitung ulang indikator dalam elemen (UI-side)
                 if (category === 'lkps' && elemenId) {
-                    const allInElemen = document.querySelectorAll(`.review-item[data-category="lkps"][data-elemen-id="${elemenId}"]`);
-                    const requiredCount = allInElemen.length;
-                    let reviewedCount = 0;
+                    var wraps = document.querySelectorAll(
+                        '.review-item[data-category="lkps"][data-elemen-id="' + elemenId + '"]'
+                    );
 
-                    allInElemen.forEach(x => {
-                        const activeGrade = x.querySelector('.grade-btn.active');
-                        if (activeGrade) {
-                            const statusText = x.querySelector('.status-text');
-                            const st = statusText ? statusText.innerText : '';
-                            if (st.includes('Tersimpan')) reviewedCount++;
+                    var requiredCount = wraps.length;
+                    var reviewedCount = 0;
+                    var grades = [];
+
+                    wraps.forEach(function(w) {
+                        var statusEl = w.querySelector('.status-text');
+                        if (!statusEl) return;
+
+                        var statusText = statusEl.innerText || '';
+                        if (statusText.indexOf('Tersimpan') === -1) return;
+
+                        reviewedCount++;
+
+                        var activeBtn = w.querySelector('.grade-btn.active');
+                        if (activeBtn && activeBtn.dataset && activeBtn.dataset.grade) {
+                            grades.push(activeBtn.dataset.grade);
                         }
                     });
 
-                    reviewedCount = Math.min(requiredCount, Math.max(reviewedCount, 1));
+                    var highestGrade = pickHighestGrade(grades);
 
-                    if (typeof window.__updateElemenStatus === 'function') {
-                        window.__updateElemenStatus({
-                            tab: 'lkps'
-                            , elemenId
-                            , reviewedCount
-                            , requiredCount
-                        });
-                    }
+                    window.__updateElemenStatus({
+                        tab: 'lkps'
+                        , elemenId: elemenId
+                        , reviewedCount: reviewedCount
+                        , requiredCount: requiredCount
+                        , grade: highestGrade
+                    });
                 }
 
                 await refreshStats();
@@ -1761,6 +1867,13 @@ $assignmentId = $assignment->id;
         updateToggleAllButton();
         updateResetDropdownState();
     });
+
+    function pickHighestGrade(grades) {
+        if (grades.includes('C')) return 'C';
+        if (grades.includes('B')) return 'B';
+        if (grades.includes('A')) return 'A';
+        return null;
+    }
 
 </script>
 @endpush

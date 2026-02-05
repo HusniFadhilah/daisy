@@ -32,29 +32,32 @@
         <!-- Main Content -->
         <div class="col-lg-8 mb-4">
             <!-- Status Alert -->
-            @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI)
-            <div class="alert alert-info alert-permanent">
-                <i class="bi bi-info-circle"></i>
-                <strong>Dokumen telah diupload</strong>
-                <br>
-                Menunggu penugasan validator dari LAMDEPILAR
+            @php
+            $allowed = [
+            \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
+            \App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
+            \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,
+            \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
+            \App\Models\PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
+            ]; // ini contoh, bisa dinamis dari config/db/request
+
+            $log = $pengajuan->latestRelevantStatusLog($allowed);
+            @endphp
+            <!-- Status Alert -->
+            @if(in_array($log?->status_to,[\App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,\App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION]))
+            <div class="alert alert-success alert-permanent">
+                <i class="bi bi-check-circle"></i>
+                <strong>Dokumen sedang divalidasi</strong><br>
+                Mohon menunggu hasil validasi dokumen oleh LAMDEPILAR
             </div>
-            @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING)
-            <div class="alert alert-warning alert-permanent">
-                <i class="bi bi-hourglass-split"></i>
-                <strong>Menunggu validasi dokumen dimulai</strong>
-                <br>
-                Validator telah ditugaskan, mohon menunggu proses validasi dimulai
+            @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED)
+            <div class="alert alert-success alert-permanent">
+                <i class="bi bi-check-circle"></i>
+                <strong>Dokumen telah divalidasi</strong><br>
+                Menunggu pelaporan hasil validasi oleh LAMDEPILAR ke tahap berikutnya
             </div>
-            @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION)
-            <div class="alert alert-warning alert-permanent">
-                <i class="bi bi-clock-history"></i>
-                <strong>Validasi dokumen sedang berlangsung</strong>
-                <br>
-                Validator sedang memeriksa kelengkapan dan kesesuaian dokumen akreditasi. Mohon menunggu proses validasi dokumen selesai dilaksanakan
-            </div>
-            @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED)
-            <div class="alert alert-danger alert-permanent">
+            @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED)
+            <div class="alert alert-success alert-permanent">
                 <i class="bi bi-exclamation-triangle"></i>
                 <strong>Dokumen memerlukan revisi</strong>
                 <br>
@@ -64,20 +67,6 @@
                         <i class="bi bi-arrow-right"></i> Lihat Dokumen & Upload Revisi
                     </a>
                 </div>
-            </div>
-            @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED)
-            <div class="alert alert-success alert-permanent">
-                <i class="bi bi-check-circle"></i>
-                <strong>Dokumen telah divalidasi</strong>
-                <br>
-                Dokumen memenuhi persyaratan dan telah divalidasi oleh validator
-            </div>
-            @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA)
-            <div class="alert alert-success alert-permanent">
-                <i class="bi bi-patch-check"></i>
-                <strong>Draft final dokumen telah diterima</strong>
-                <br>
-                Proses validasi dokumen telah selesai dan siap untuk tahap selanjutnya
             </div>
             @endif
 
@@ -102,18 +91,6 @@
                             <th>Universitas</th>
                             <td>: {{ $pengajuan->studyProgram->university->name }}</td>
                         </tr>
-                        {{-- <tr>
-                            <th>Validator yang Ditugaskan</th>
-                            <td>
-                                @if($pengajuan->validator)
-                                : {{ $pengajuan->validator->name }}
-                        <br>
-                        <small class="text-muted">{{ $pengajuan->validator->email }}</small>
-                        @else
-                        : <span class="text-muted">Belum ditugaskan</span>
-                        @endif
-                        </td>
-                        </tr> --}}
                         <tr>
                             <th>Tanggal Penugasan Validator</th>
                             <td>

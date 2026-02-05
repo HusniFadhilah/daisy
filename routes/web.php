@@ -113,7 +113,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('berkas.reset-all');
 
         Route::get('/berkas/{asesmen}/comparison-data', [AKController::class, 'getComparisonData'])->name('berkas.comparison-data');
-
+        Route::get('/berkas/{idAsesmen}/upload-excel', [AKController::class, 'uploadExcelPage'])->name('berkas.upload-excel');
         Route::prefix('validasi')->name('validasi.')->group(function () {
             Route::middleware(['role:validator'])->group(function () {
                 Route::get('/', [ValidasiController::class, 'index'])->name('index');
@@ -155,6 +155,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('berkas.reset-all');
         Route::get('/berkas/{asesmen}/comparison-data', [ALController::class, 'getComparisonData'])->name('berkas.comparison-data');
         Route::get('/berkas/{id}/laporan-pdf', [ALController::class, 'exportLaporanPdf'])->name('berkas.laporanPdf');
+        Route::get('/berkas/{idAsesmen}/upload-excel', [ALController::class, 'uploadExcelPage'])->name('berkas.upload-excel');
 
         Route::prefix('/berkas/{id}/documents')->name('berkas.documents.')->group(function () {
             Route::get('/', [ALDocumentController::class, 'index'])->name('index');
@@ -351,11 +352,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{id}/assign-validator', [PenerimaanDokumenController::class, 'showAssignValidatorForm'])->name('.assign-validator.form');
             Route::post('/{id}/assign-validator', [PenerimaanDokumenController::class, 'assignValidator'])->name('.assign-validator');
             Route::delete('/{id}/cancel-validator', [PenerimaanDokumenController::class, 'cancelValidator'])->name('.cancel-validator');
+            Route::get('/{id}/download-surat-tugas-validator', [PenerimaanDokumenController::class, 'downloadSuratTugasValidator'])->name('.download-surat-tugas-validator');
+            Route::post('/{id}/upload-surat-tugas-validator', [PenerimaanDokumenController::class, 'uploadSuratTugasValidatorForm'])->name('.upload-surat-tugas-validator');
         });
         Route::prefix('validasi-dokumen')->name('.validasi-dokumen')->group(function () {
             Route::get('/', [ValidasiDokumenController::class, 'index']);
             Route::get('/{id}', [ValidasiDokumenController::class, 'show'])->name('.show');
             Route::post('/kirim-reminder', [ValidasiDokumenController::class, 'kirimReminder'])->name('.kirim-reminder');
+            Route::get('/{id}/assign-validator', [ValidasiDokumenController::class, 'showAssignValidatorForm'])->name('.assign-validator.form');
+            Route::post('/{id}/assign-validator', [ValidasiDokumenController::class, 'assignValidator'])->name('.assign-validator');
+            Route::delete('/{id}/cancel-validator', [ValidasiDokumenController::class, 'cancelValidator'])->name('.cancel-validator');
         });
         Route::prefix('pelaporan-dokumen')->name('.pelaporan-dokumen')->group(function () {
             Route::get('/', [PelaporanDokumenController::class, 'index']);

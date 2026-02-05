@@ -32,21 +32,31 @@
         <!-- Main Content -->
         <div class="col-lg-8 mb-4">
             <!-- Status Alert -->
-            @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM)
-            <div class="alert alert-warning alert-permanent mb-4">
-                <i class="bi bi-hourglass-split"></i>
-                <strong>Menunggu tanggapan dari LAMDEPILAR</strong>
-                <br>
-                Permohonan akreditasi telah dikirim pada {{ $pengajuan->tanggal_surat_permohonan_dikirim->format('d M Y H:i') }}
-            </div>
-            @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA)
+            @php
+            $allowed = [
+            \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM,
+            \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
+            \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITOLAK,
+            ]; // ini contoh, bisa dinamis dari config/db/request
+
+            $log = $pengajuan->latestRelevantStatusLog($allowed);
+            @endphp
+            <!-- Status Alert -->
+            @if($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA)
             <div class="alert alert-success alert-permanent mb-4">
                 <i class="bi bi-check-circle"></i>
                 <strong>Permohonan akreditasi telah diterima oleh LAMDEPILAR</strong>
                 <br>
                 Diterima pada {{ $pengajuan->tanggal_surat_permohonan_diterima->format('d M Y H:i') }}
             </div>
-            @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITOLAK)
+            @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM)
+            <div class="alert alert-warning alert-permanent mb-4">
+                <i class="bi bi-hourglass-split"></i>
+                <strong>Menunggu tanggapan dari LAMDEPILAR</strong>
+                <br>
+                Permohonan akreditasi telah dikirim pada {{ $pengajuan->tanggal_surat_permohonan_dikirim->format('d M Y H:i') }}
+            </div>
+            @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITOLAK)
             <div class="alert alert-danger alert-permanent mb-4">
                 <i class="bi bi-x-circle"></i>
                 <strong>Permohonan akreditasi ditolak oleh LAMDEPILAR</strong>

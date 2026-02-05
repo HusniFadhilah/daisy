@@ -120,7 +120,7 @@ $isComplete = $progress['percentage'] == 100;
                 <a href="{{ route('al.berkas.show', ['idAsesmen' => $asesmen->id, 'step' => 1]) }}" class="text-decoration-none d-flex align-items-center gap-2">
                     <span class="step-circle {{ $step === 1 ? 'active' : 'done' }}">1</span>
                     <div>
-                        <div class="fw-bold {{ $step === 1 ? '' : 'text-muted' }}">Penilaian Asesmen Lapangan (AL)</div>
+                        <div class="fw-bold {{ $step === 1 ? '' : 'text-muted' }}">Penilaian Asesmen Lapangan</div>
                         {{-- <small class="text-muted">Isi kategori & justifikasi per elemen</small> --}}
                     </div>
                 </a>
@@ -146,7 +146,7 @@ $isComplete = $progress['percentage'] == 100;
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
-                    <h3 class="mb-1">Penilaian Asesmen Lapangan (AL)</h3>
+                    <h3 class="mb-1">Penilaian Asesmen Lapangan</h3>
                     <p class="text-muted mb-0">{{ $asesmen->name }}</p>
                 </div>
                 <a href="{{ route('al.berkas') }}" class="btn btn-outline-secondary">

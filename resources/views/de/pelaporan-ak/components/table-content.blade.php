@@ -1,7 +1,7 @@
 <div class="card">
     <div class="card-header bg-light d-flex justify-content-between align-items-center">
         <h6 class="mb-0">
-            <i class="bi bi-table"></i> Daftar Monitoring Pelaporan AK
+            <i class="bi bi-table"></i> Daftar Pelaporan AK
         </h6>
         <span class="badge bg-primary">Total: {{ $pengajuans->total() }}</span>
     </div>

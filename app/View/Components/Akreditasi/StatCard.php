@@ -13,6 +13,7 @@ class StatCard extends Component
     public $icon;
     public $iconBg;
     public $gradient;
+    public $gradientMode;
     public $type;
 
     /**
@@ -42,7 +43,8 @@ class StatCard extends Component
         $iconBg = 'light',
         $gradient = null,
         $type = 'default',
-        $gradientPreset = null // New parameter
+        $gradientMode = 'accent',
+        $gradientPreset = null, // New parameter
     ) {
         $this->title = $title;
         $this->value = $value;
@@ -56,8 +58,8 @@ class StatCard extends Component
         } else {
             $this->gradient = $gradient;
         }
-
         $this->type = $this->gradient ? 'gradient' : $type;
+        $this->gradientMode = $gradientMode;
     }
 
     public function render()

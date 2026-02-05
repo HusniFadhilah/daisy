@@ -6,9 +6,9 @@
                 <i class="bi bi-grid-3x3"></i> Matriks Visualisasi Penilaian
             </h5>
             <div class="btn-group btn-group-sm flex-wrap">
-                <button type="button" class="btn btn-outline-info" id="btnViewComparison" data-id-asesmen="{{ $asesmen->id }}" data-jenis-asesmen="al" title="Lihat Perbandingan Asesor">
-                    <i class="bi bi-people"></i> Lihat Perbandingan Asesor
-                </button>
+                {{-- <button type="button" class="btn btn-outline-info" id="btnViewComparison" data-id-asesmen="{{ $asesmen->id }}" data-jenis-asesmen="al" title="Lihat Perbandingan Penilaian Antar Asesor">
+                <i class="bi bi-people"></i> Cek Split Asesor
+                </button> --}}
                 <button type="button" class="btn btn-outline-primary" id="btnZoomIn" title="Perbesar">
                     <i class="bi bi-zoom-in"></i>
                 </button>

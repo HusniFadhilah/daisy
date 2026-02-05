@@ -231,7 +231,8 @@
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">
-                                Upload Surat Tugas Validator <span class="text-danger">*</span>
+                                Upload Surat Tugas Validator
+                                <span class="badge bg-secondary">Opsional</span>
                             </label>
                             <input type="file" name="file_surat_tugas" id="file_surat_tugas" class="form-control" accept=".pdf">
                             <small class="text-muted">

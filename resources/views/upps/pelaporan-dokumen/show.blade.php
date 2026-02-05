@@ -41,10 +41,10 @@
             @endphp
             <!-- Status Alert -->
             @if($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED)
-            <div class="alert alert-success alert-permanent">
+            <div class="alert alert-info alert-permanent">
                 <i class="bi bi-check-circle"></i>
                 <strong>Dokumen telah divalidasi</strong><br>
-                Menunggu pelaporan hasil validasi oleh LAMDEPILAR ke tahap berikutnya
+                Menunggu pelaporan hasil validasi dokumen oleh LAMDEPILAR
             </div>
             @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN)
             <div class="alert alert-success alert-permanent">
@@ -101,7 +101,7 @@
                         </tr>
                         <tr>
                             <th>Status Pelaporan Validasi Dokumen</th>
-                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('borang_final', 'upps') !!}</td>
+                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('pelaporan_dokumen', 'upps','label_long_for') !!}</td>
                         </tr>
                     </table>
                 </div>

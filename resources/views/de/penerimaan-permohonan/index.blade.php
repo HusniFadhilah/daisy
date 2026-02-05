@@ -81,7 +81,7 @@
             <h4 class="mb-1">
                 <i class="bi bi-send-check"></i> Penerimaan Permohonan Akreditasi
             </h4>
-            <p class="text-muted mb-0">Kirim penerimaan permohonan akreditasi ke PS yang telah mengajukan permohonan akreditasi</p>
+            <p class="text-muted mb-0">Kirim penerimaan permohonan akreditasi</p>
         </div>
     </div>
 

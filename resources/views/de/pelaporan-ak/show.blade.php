@@ -9,7 +9,7 @@
         <ol class="breadcrumb">
             <li class="breadcrumb-item">
                 <a href="{{ route('de.pelaporan-ak') }}">
-                    <i class="bi bi-arrow-left"></i> Monitoring Pelaporan AK
+                    <i class="bi bi-arrow-left"></i> Monitor Pelaporan AK
                 </a>
             </li>
             <li class="breadcrumb-item active">Detail</li>

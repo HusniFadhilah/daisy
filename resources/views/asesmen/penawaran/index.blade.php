@@ -104,197 +104,197 @@ $authUser = Auth::user();
                                     <strong>Perguruan Tinggi:</strong><br>
                                     <span class="ms-4">{{ $penawaran->asesmen->studyProgram->university->name ?? '-' }}</span>
                                 </div>
-                                <div class="info-row">
+                                {{-- <div class="info-row">
                                     <i class="bi bi-tag text-muted me-2"></i>
                                     <strong>Kode Panel:</strong>
                                     <span class="badge bg-secondary ms-2">{{ $penawaran->asesmen->kode_panel ?? 'N/A' }}</span>
-                                </div>
-                                <div class="info-row">
-                                    <i class="bi bi-calendar text-muted me-2"></i>
-                                    <strong>Periode:</strong><br>
-                                    <span class="ms-4">
-                                        @if($penawaran->asesmen->tanggal_mulai && $penawaran->asesmen->tanggal_selesai)
-                                        {{ \App\Libraries\Date::tglIndo($penawaran->asesmen->tanggal_mulai) }} -
-                                        {{ \App\Libraries\Date::tglIndo($penawaran->asesmen->tanggal_selesai) }}
-                                        @else
-                                        -
-                                        @endif
-                                    </span>
-                                </div>
-                                <div class="info-row">
-                                    <i class="bi bi-clock text-muted me-2"></i>
-                                    <strong>Ditawarkan:</strong>
-                                    <span class="text-muted ms-2">{{ $penawaran->created_at->diffForHumans() }}</span>
-                                </div>
+                            </div> --}}
+                            <div class="info-row">
+                                <i class="bi bi-calendar text-muted me-2"></i>
+                                <strong>Periode:</strong><br>
+                                <span class="ms-4">
+                                    @if($penawaran->asesmen->tanggal_mulai && $penawaran->asesmen->tanggal_selesai)
+                                    {{ \App\Libraries\Date::tglIndo($penawaran->asesmen->tanggal_mulai) }} -
+                                    {{ \App\Libraries\Date::tglIndo($penawaran->asesmen->tanggal_selesai) }}
+                                    @else
+                                    -
+                                    @endif
+                                </span>
                             </div>
-
-                            @if($penawaran->asesmen->description)
-                            <div class="alert alert-light alert-permanent alert-dismissible mb-3">
-                                <small><i class="bi bi-info-circle me-1"></i> {{ Str::limit($penawaran->asesmen->description, 150) }}</small>
+                            <div class="info-row">
+                                <i class="bi bi-clock text-muted me-2"></i>
+                                <strong>Ditawarkan:</strong>
+                                <span class="text-muted ms-2">{{ $penawaran->created_at->diffForHumans() }}</span>
                             </div>
-                            @endif
+                        </div>
 
-                            <!-- Links dari DE -->
-                            @if($penawaran->kertas_kerja_link || $penawaran->panduan_link)
-                            <div class="mb-3">
-                                <small class="text-muted"><strong>Dokumen dari Admin:</strong></small>
-                                @if($penawaran->kertas_kerja_link)
-                                <div>
-                                    <a href="{{ $penawaran->kertas_kerja_link }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                        <i class="bi bi-file-earmark-text"></i> Kertas Kerja
-                                    </a>
-                                </div>
-                                @endif
-                                @if($penawaran->panduan_link)
-                                <div class="mt-1">
-                                    <a href="{{ $penawaran->panduan_link }}" target="_blank" class="btn btn-sm btn-outline-info">
-                                        <i class="bi bi-book"></i> Panduan Penilaian
-                                    </a>
-                                </div>
-                                @endif
+                        @if($penawaran->asesmen->description)
+                        <div class="alert alert-light alert-permanent alert-dismissible mb-3">
+                            <small><i class="bi bi-info-circle me-1"></i> {{ Str::limit($penawaran->asesmen->description, 150) }}</small>
+                        </div>
+                        @endif
+
+                        <!-- Links dari DE -->
+                        @if($penawaran->kertas_kerja_link || $penawaran->panduan_link)
+                        <div class="mb-3">
+                            <small class="text-muted"><strong>Dokumen dari Admin:</strong></small>
+                            @if($penawaran->kertas_kerja_link)
+                            <div>
+                                <a href="{{ $penawaran->kertas_kerja_link }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-file-earmark-text"></i> Kertas Kerja
+                                </a>
                             </div>
                             @endif
-
-                            <hr>
-
-                            <div class="d-grid gap-2">
-                                <button type="button" class="btn btn-success" onclick="acceptPenawaran('{{ $penawaran->token }}', '{{ $penawaran->role->alias }}')">
-                                    <i class="bi bi-check-circle"></i> Terima Penawaran
-                                </button>
-                                <button type="button" class="btn btn-outline-danger" onclick="rejectPenawaran('{{ $penawaran->token }}', '{{ $penawaran->asesmen->name }}')">
-                                    <i class="bi bi-x-circle"></i> Tolak Penawaran
-                                </button>
+                            @if($penawaran->panduan_link)
+                            <div class="mt-1">
+                                <a href="{{ $penawaran->panduan_link }}" target="_blank" class="btn btn-sm btn-outline-info">
+                                    <i class="bi bi-book"></i> Panduan Penilaian
+                                </a>
                             </div>
+                            @endif
+                        </div>
+                        @endif
+
+                        <hr>
+
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-success" onclick="acceptPenawaran('{{ $penawaran->token }}', '{{ $penawaran->role->alias }}')">
+                                <i class="bi bi-check-circle"></i> Terima Penawaran
+                            </button>
+                            <button type="button" class="btn btn-outline-danger" onclick="rejectPenawaran('{{ $penawaran->token }}', '{{ $penawaran->asesmen->name }}')">
+                                <i class="bi bi-x-circle"></i> Tolak Penawaran
+                            </button>
                         </div>
                     </div>
                 </div>
-                @endforeach
             </div>
+            @endforeach
         </div>
     </div>
-    @else
-    <div class="alert alert-info alert-permanent alert-dismissible">
-        <i class="bi bi-info-circle me-2"></i>
-        Tidak ada penawaran baru saat ini. Silakan tunggu penawaran dari LAMDEPILAR.
-    </div>
-    @endif
+</div>
+@else
+<div class="alert alert-info alert-permanent alert-dismissible">
+    <i class="bi bi-info-circle me-2"></i>
+    Tidak ada penawaran baru saat ini. Silakan tunggu penawaran dari LAMDEPILAR.
+</div>
+@endif
 
-    <!-- Riwayat Penawaran -->
-    @if($assignments->count() > 0)
-    <div class="card">
-        <div class="card-header bg-white">
-            <h5 class="mb-0"><i class="bi bi-clock-history"></i> Riwayat Penawaran Asesmen</h5>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>No</th>
-                            <th>Asesmen</th>
-                            <th>Role</th>
-                            <th>Status Penawaran</th>
-                            {{-- <th>Status Pekerjaan</th> --}}
-                            <th>Catatan</th>
-                            <th>Tanggal Respon</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($assignments as $key=> $assignment)
-                        @php
-                        $idAsesors = $assignment->where('id_asesmen',$assignment->id_asesmen)->whereNot('id_user', $authUser->id)->pluck('id_user');
-                        $jenisAsesmen = $assignment->jenis_asesmen; // dokumen | ak | al
-                        $asesmen = $assignment->asesmen;
-                        $pengajuan = $asesmen->pengajuan;
-                        $badgePelaporan = $asesmen->pengajuan? $asesmen->pengajuan->getPelaporanBadge($assignment->jenis_asesmen): null;
-                        @endphp
-                        <tr>
-                            <td>{{ $key+1 }}</td>
-                            <td>
-                                <div class="fw-semibold">{{ $pengajuan ? $pengajuan->judul : $asesmen->name }}</div>
-                                <small class="text-muted text-block">
-                                    <i class="bi bi-building"></i>
-                                    {{ $asesmen->studyProgram->university->name ?? '-' }}
-                                </small>
-                            </td>
-                            <td>
-                                <span class="badge bg-primary">{{ $assignment->role->alias.' '.$assignment->jenis_asesmen_label }}</span>
-                            </td>
-                            <td>
-                                @if($assignment->status_penawaran === 'accepted')
-                                <span class="badge bg-success">
-                                    <i class="bi bi-check-circle"></i> Diterima
-                                </span>
-                                @else
-                                <span class="badge bg-danger">
-                                    <i class="bi bi-x-circle"></i> Ditolak
-                                </span>
-                                @endif
-                            </td>
-                            {{-- <td>
-                                @if($assignment->status_pekerjaan && $assignment->status_penawaran === 'accepted')
-                                <span class="badge bg-{{ $assignment->status_badge }}">
-                            {{ $assignment->status_label }}
+<!-- Riwayat Penawaran -->
+@if($assignments->count() > 0)
+<div class="card">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="bi bi-clock-history"></i> Riwayat Penawaran Asesmen</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>No</th>
+                        <th>Asesmen</th>
+                        <th>Role</th>
+                        <th>Status Penawaran</th>
+                        {{-- <th>Status Pekerjaan</th> --}}
+                        <th>Catatan</th>
+                        <th>Tanggal Respon</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($assignments as $key=> $assignment)
+                    @php
+                    $idAsesors = $assignment->where('id_asesmen',$assignment->id_asesmen)->whereNot('id_user', $authUser->id)->pluck('id_user');
+                    $jenisAsesmen = $assignment->jenis_asesmen; // dokumen | ak | al
+                    $asesmen = $assignment->asesmen;
+                    $pengajuan = $asesmen->pengajuan;
+                    $badgePelaporan = $asesmen->pengajuan? $asesmen->pengajuan->getPelaporanBadge($assignment->jenis_asesmen): null;
+                    @endphp
+                    <tr>
+                        <td>{{ $key+1 }}</td>
+                        <td>
+                            <div class="fw-semibold">{{ $pengajuan ? $pengajuan->judul : $asesmen->name }}</div>
+                            <small class="text-muted text-block">
+                                <i class="bi bi-building"></i>
+                                {{ $asesmen->studyProgram->university->name ?? '-' }}
+                            </small>
+                        </td>
+                        <td>
+                            <span class="badge bg-primary">{{ $assignment->role->alias.' '.$assignment->jenis_asesmen_label }}</span>
+                        </td>
+                        <td>
+                            @if($assignment->status_penawaran === 'accepted')
+                            <span class="badge bg-success">
+                                <i class="bi bi-check-circle"></i> Diterima
                             </span>
                             @else
-                            <span class="text-muted">-</span>
-                            @endif
-
-                            @if($badgePelaporan)
-                            <span class="badge bg-success text-wrap mt-2">
-                                <i class="bi bi-check-circle"></i>
-                                {{ $badgePelaporan }}
+                            <span class="badge bg-danger">
+                                <i class="bi bi-x-circle"></i> Ditolak
                             </span>
                             @endif
-                            </td> --}}
-                            <td>
-                                @if($assignment->response_note)
-                                <small>{{ Str::limit($assignment->response_note, 50) }}</small>
-                                @else
-                                <small class="text-muted">-</small>
-                                @endif
-                            </td>
-                            <td>
-                                <small>{{ $assignment->responded_at ? \App\Libraries\Date::tglWaktu($assignment->responded_at) : '-' }}</small>
-                            </td>
-                            <td>
-                                @if($assignment->status_penawaran === 'accepted')
-                                @if($authUser->role_selected == 'asesor')
-                                @if (in_array($jenisAsesmen,['ak','al']))
-                                <a href="{{ route($jenisAsesmen.'.berkas.show',$assignment->id_asesmen) }}" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-arrow-right"></i> Penilaian
-                                </a>
-                                @endif
-                                @elseif($authUser->role_selected == 'validator')
-                                @if ($jenisAsesmen == 'ak')
-                                <a href="{{ route($jenisAsesmen.'.validasi.asesor', ['idAsesmen' => $assignment['asesmen']->id, 'jenisAsesmen' => 'ak']) }}" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-arrow-right"></i> Penilaian
-                                </a>
-                                @elseif ($jenisAsesmen == 'dokumen')
-                                <a href="{{ route('validator.borang.show',$assignment->id) }}" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-arrow-right"></i> Penilaian
-                                </a>
-                                @endif
+                        </td>
+                        {{-- <td>
+                                @if($assignment->status_pekerjaan && $assignment->status_penawaran === 'accepted')
+                                <span class="badge bg-{{ $assignment->status_badge }}">
+                        {{ $assignment->status_label }}
+                        </span>
+                        @else
+                        <span class="text-muted">-</span>
+                        @endif
 
-                                @if($asesmen->pengajuan?->canBeReported($assignment->jenis_asesmen))
-                                <button type="button" class="btn btn-sm btn-success mt-2 js-open-pelaporan" data-type="{{ $assignment->jenis_asesmen }}" data-assignment-id="{{ $assignment->id }}" data-nomor="{{ $asesmen->pengajuan->nomor_pengajuan ?? $asesmen->code }}">
-                                    <i class="bi bi-file-earmark-text"></i>
-                                    Pelaporan {{ $assignment->jenis_asesmen_label }}
-                                </button>
-                                @endif
+                        @if($badgePelaporan)
+                        <span class="badge bg-success text-wrap mt-2">
+                            <i class="bi bi-check-circle"></i>
+                            {{ $badgePelaporan }}
+                        </span>
+                        @endif
+                        </td> --}}
+                        <td>
+                            @if($assignment->response_note)
+                            <small>{{ Str::limit($assignment->response_note, 50) }}</small>
+                            @else
+                            <small class="text-muted">-</small>
+                            @endif
+                        </td>
+                        <td>
+                            <small>{{ $assignment->responded_at ? \App\Libraries\Date::tglWaktu($assignment->responded_at) : '-' }}</small>
+                        </td>
+                        <td>
+                            @if($assignment->status_penawaran === 'accepted')
+                            @if($authUser->role_selected == 'asesor')
+                            @if (in_array($jenisAsesmen,['ak','al']))
+                            <a href="{{ route($jenisAsesmen.'.berkas.show',$assignment->id_asesmen) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-arrow-right"></i> Penilaian
+                            </a>
+                            @endif
+                            @elseif($authUser->role_selected == 'validator')
+                            @if ($jenisAsesmen == 'ak')
+                            <a href="{{ route($jenisAsesmen.'.validasi.asesor', ['idAsesmen' => $assignment['asesmen']->id, 'jenisAsesmen' => 'ak']) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-arrow-right"></i> Penilaian
+                            </a>
+                            @elseif ($jenisAsesmen == 'dokumen')
+                            <a href="{{ route('validator.borang.show',$assignment->id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-arrow-right"></i> Penilaian
+                            </a>
+                            @endif
 
-                                @endif
-                                @endif
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+                            @if($asesmen->pengajuan?->canBeReported($assignment->jenis_asesmen))
+                            <button type="button" class="btn btn-sm btn-success mt-2 js-open-pelaporan" data-type="{{ $assignment->jenis_asesmen }}" data-assignment-id="{{ $assignment->id }}" data-nomor="{{ $asesmen->pengajuan->nomor_pengajuan ?? $asesmen->code }}">
+                                <i class="bi bi-file-earmark-text"></i>
+                                Pelaporan {{ $assignment->jenis_asesmen_label }}
+                            </button>
+                            @endif
+
+                            @endif
+                            @endif
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
     </div>
-    @endif
+</div>
+@endif
 </div>
 
 <!-- Accept Modal -->

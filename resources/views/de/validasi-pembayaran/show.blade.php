@@ -30,6 +30,16 @@
     <div class="row mb-4">
         <!-- Left Column - Informasi Pembayaran -->
         <div class="col-lg-8 mb-4">
+            @if($pembayaran->status_pembayaran == 'menunggu_verifikasi')
+            @elseif($pembayaran->status_pembayaran == 'terverifikasi')
+            <div class="alert alert-success alert-permanent">
+                <h5><i class="bi bi-check-circle"></i> Pembayaran Tervalidasi</h5>
+                <p class="mb-0">
+                    Pembayaran telah divalidasi oleh <strong>{{ $pembayaran->verifier->name }}</strong>
+                    pada {{ $pembayaran->tanggal_verifikasi->format('d F Y H:i') }}
+                </p>
+            </div>
+            @endif
             <div class="card">
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">Informasi Pembayaran</h5>
@@ -147,96 +157,46 @@
 
         <!-- Right Column - Actions -->
         <div class="col-lg-4">
-            @if($pembayaran->status_pembayaran == 'menunggu_verifikasi')
-            {{-- <div class="card border-warning">
-                <div class="card-header bg-warning text-dark">
+            <!-- Timeline -->
+            <div class="card ">
+                <div class="card-header bg-light">
                     <h5 class="mb-0">
-                        <i class="bi bi-shield-exclamation"></i> Validasi Pembayaran
+                        <i class="bi bi-clock-history"></i> Riwayat Status
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('de.validasi-pembayaran.validasi', $pembayaran->id) }}" method="POST">
-            @csrf
-            @method('PUT')
+                    <ul class="list-unstyled timeline">
+                        <li class="mb-3">
+                            <i class="bi bi-circle-fill text-primary"></i>
+                            <strong>Invoice Dibuat</strong>
+                            <br>
+                            <small class="text-muted">{{ $pembayaran->created_at->format('d F Y H:i') }}</small>
+                        </li>
 
-            <div class="mb-3">
-                <label class="form-label fw-bold">Aksi Validasi</label>
-                <select name="action" class="form-select" required onchange="toggleFields(this.value)">
-                    <option value="">-- Pilih Aksi --</option>
-                    <option value="approve">✅ Setujui Pembayaran</option>
-                    <option value="upload_ulang">🔄 Minta Upload Ulang</option>
-                    <option value="reject">❌ Tolak Pembayaran</option>
-                </select>
+                        @if($pembayaran->tanggal_pembayaran)
+                        <li class="mb-3">
+                            <i class="bi bi-circle-fill text-info"></i>
+                            <strong>Pembayaran Dilakukan</strong>
+                            <br>
+                            <small class="text-muted">{{ $pembayaran->tanggal_pembayaran->format('d F Y H:i') }}</small>
+                        </li>
+                        @endif
+
+                        @if($pembayaran->tanggal_verifikasi)
+                        <li class="mb-3">
+                            <i class="bi bi-circle-fill text-success"></i>
+                            <strong>Pembayaran Divalidasi</strong>
+                            <br>
+                            <small class="text-muted">{{ $pembayaran->tanggal_verifikasi->format('d F Y H:i') }}</small>
+                            <br>
+                            <small class="text-muted">oleh {{ $pembayaran->verifier->name }}</small>
+                        </li>
+                        @endif
+                    </ul>
+                </div>
             </div>
-
-            <div class="mb-3">
-                <label class="form-label fw-bold">Catatan Verifikasi</label>
-                <textarea name="catatan_verifikasi" class="form-control" rows="3" placeholder="Tambahkan catatan (opsional)"></textarea>
-            </div>
-
-            <div class="mb-3 d-none" id="alasanPenolakanField">
-                <label class="form-label fw-bold text-danger">Alasan Penolakan *</label>
-                <textarea name="alasan_penolakan" class="form-control" rows="3" placeholder="Jelaskan alasan penolakan..."></textarea>
-            </div>
-
-            <div class="d-grid">
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-check-circle"></i> Submit Validasi
-                </button>
-            </div>
-            </form>
-        </div>
-    </div> --}}
-    @elseif($pembayaran->status_pembayaran == 'terverifikasi')
-    <div class="alert alert-success alert-permanent">
-        <h5><i class="bi bi-check-circle"></i> Pembayaran Tervalidasi</h5>
-        <p class="mb-0">
-            Pembayaran telah divalidasi oleh <strong>{{ $pembayaran->verifier->name }}</strong>
-            pada {{ $pembayaran->tanggal_verifikasi->format('d F Y H:i') }}
-        </p>
-    </div>
-    @endif
-
-    <!-- Timeline -->
-    <div class="card ">
-        <div class="card-header bg-light">
-            <h5 class="mb-0">
-                <i class="bi bi-clock-history"></i> Timeline
-            </h5>
-        </div>
-        <div class="card-body">
-            <ul class="list-unstyled timeline">
-                <li class="mb-3">
-                    <i class="bi bi-circle-fill text-primary"></i>
-                    <strong>Invoice Dibuat</strong>
-                    <br>
-                    <small class="text-muted">{{ $pembayaran->created_at->format('d F Y H:i') }}</small>
-                </li>
-
-                @if($pembayaran->tanggal_pembayaran)
-                <li class="mb-3">
-                    <i class="bi bi-circle-fill text-info"></i>
-                    <strong>Pembayaran Dilakukan</strong>
-                    <br>
-                    <small class="text-muted">{{ $pembayaran->tanggal_pembayaran->format('d F Y H:i') }}</small>
-                </li>
-                @endif
-
-                @if($pembayaran->tanggal_verifikasi)
-                <li class="mb-3">
-                    <i class="bi bi-circle-fill text-success"></i>
-                    <strong>Pembayaran Divalidasi</strong>
-                    <br>
-                    <small class="text-muted">{{ $pembayaran->tanggal_verifikasi->format('d F Y H:i') }}</small>
-                    <br>
-                    <small class="text-muted">oleh {{ $pembayaran->verifier->name }}</small>
-                </li>
-                @endif
-            </ul>
         </div>
     </div>
-</div>
-</div>
 </div>
 
 @push('scripts')

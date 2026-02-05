@@ -174,7 +174,7 @@ class SuratPermohonanController extends Controller
         $rules = [
             'id_program_studi' => 'required|exists:study_programs,id',
             'tahun_akreditasi' => 'required|integer|min:2024|max:' . (date('Y') + 2),
-            'jenis_akreditasi' => 'required|in:baru,perpanjangan,menuju_unggul',
+            'jenis_akreditasi' => 'required|in:baru,terakreditasi,perpanjangan,menuju_unggul',
             'catatan_pengaju' => 'nullable|string|max:2000',
         ];
 
@@ -339,7 +339,7 @@ class SuratPermohonanController extends Controller
         $rules = [
             'id_program_studi' => 'required|exists:study_programs,id',
             'tahun_akreditasi' => 'required|integer|min:2024|max:' . (date('Y') + 2),
-            'jenis_akreditasi' => 'required|in:baru,perpanjangan,menuju_unggul',
+            'jenis_akreditasi' => 'required|in:baru,terakreditasi,perpanjangan,menuju_unggul',
             'catatan_pengaju' => 'nullable|string|max:2000',
         ];
 

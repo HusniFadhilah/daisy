@@ -74,7 +74,7 @@
             <h5 class="mb-1">
                 <i class="bi bi-upload"></i> Pengiriman Dokumen Akreditasi
             </h5>
-            <small class="text-muted">Silahkan lakukan pengiriman dokumen akreditasi</small>
+            <small class="text-muted">{{ $canUploadDokumen ? 'Silahkan lakukan pengiriman dokumen akreditasi' : 'Lihat dokumen akreditasi yang telah Anda kirim' }}</small>
         </div>
         <a href="{{ route('upps.penerimaan-dokumen.show', $pengajuan->id) }}" class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i> Kembali
@@ -110,6 +110,94 @@
 
         <div class="col-lg-8">
             <!-- Upload Form Alert -->
+            @if(!$canUploadDokumen)
+            <div class="alert alert-info alert-permanent mb-4">
+                <h5 class="mb-1">
+                    <i class="bi bi-eye"></i> Mode Preview Dokumen
+                </h5>
+                <p class="mb-0">
+                    Status permohonan saat ini hanya memungkinkan <strong>preview dokumen</strong>.
+                    Upload dokumen akan tersedia ketika status sudah sesuai.
+                </p>
+                <div class="small text-muted mt-1">
+                    Status saat ini: <strong>{{ $pengajuan->status_label ?? $pengajuan->status }}</strong>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-files"></i> Dokumen yang Telah Dikirim
+                    </h5>
+                </div>
+
+                <div class="card-body">
+                    @php
+                    $docCards = [
+                    'led' => [
+                    'label' => 'Laporan Evaluasi Diri (LED)',
+                    'icon' => 'file-word',
+                    'color' => 'info',
+                    ],
+                    'suplemen' => [
+                    'label' => 'Suplemen LED',
+                    'icon' => 'file-earmark-pdf',
+                    'color' => 'warning',
+                    ],
+                    'lkps' => [
+                    'label' => 'Laporan Kinerja Program Studi (LKPS)',
+                    'icon' => 'file-excel',
+                    'color' => 'success',
+                    ],
+                    'pengesahan' => [
+                    'label' => 'Lembar Pengesahan Dokumen',
+                    'icon' => 'file-earmark-pdf',
+                    'color' => 'danger',
+                    ],
+                    ];
+                    @endphp
+
+                    <div class="row">
+                        @foreach($docCards as $key => $cfg)
+                        @continue($key === 'suplemen' && !$needSuplemen)
+
+                        @php $doc = $uploadedDocuments[$key] ?? null; @endphp
+
+                        <div class="col-md-6 mb-3">
+                            <div class="card {{ $doc ? 'border-success' : 'border-danger' }}">
+                                <div class="card-body d-flex gap-3">
+                                    <div>
+                                        <i class="bi bi-{{ $cfg['icon'] }} text-{{ $cfg['color'] }}" style="font-size:34px;"></i>
+                                    </div>
+
+                                    <div class="flex-grow-1">
+                                        <div class="fw-bold">{{ $cfg['label'] }}</div>
+
+                                        @if($doc)
+                                        <small class="text-muted text-wrap mt-1">
+                                            {{ $doc->original_filename ?? '-' }}<br>
+                                            {{ $doc->file_size_formatted ?? '-' }}
+                                            @if($doc->created_at) • {{ $doc->created_at->format('d M Y H:i') }} @endif
+                                        </small>
+
+                                        @if($doc->path_file || $doc->template_link)
+                                        <a href="{{ $doc->download_url }}" class="btn btn-sm btn-success mt-2" target="_blank">
+                                            <i class="bi bi-eye"></i> Lihat File
+                                        </a>
+                                        @endif
+                                        @else
+                                        <span class="badge bg-danger mt-2">Belum Diupload</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+            @endif
+
             @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED)
             <div class="alert alert-warning alert-permanent">
                 <h5><i class="bi bi-exclamation-triangle"></i> Permintaan Revisi Dokumen</h5>
@@ -120,6 +208,7 @@
             @endif
 
             <!-- Upload Form -->
+            @if($canUploadDokumen)
             <div class="card">
                 <div class="card-header bg-secondary text-white">
                     <h5 class="mb-0">
@@ -142,7 +231,7 @@
                                 <p class="mb-1"><strong>Silahkan upload file LED di sini</strong></p>
                                 <p class="text-muted small mb-2">Format: DOCX/DOC • Maksimal 10MB</p>
 
-                                <input type="file" id="file_led" name="file_led" class="d-none" accept=".docx,.doc" required>
+                                <input type="file" id="file_led" name="file_led" class="visually-hidden-input" accept=".docx,.doc" required>
                                 <button type="button" class="btn btn-outline-info btn-sm" id="btnPickLed">
                                     <i class="bi bi-folder2-open"></i> Pilih File LED
                                 </button>
@@ -185,7 +274,7 @@
                                 <p class="mb-1"><strong>Silahkan upload file Suplemen di sini</strong></p>
                                 <p class="text-muted small mb-2">Format: PDF • Maksimal 10MB</p>
 
-                                <input type="file" id="file_suplemen" name="file_suplemen" class="d-none" accept=".pdf" required>
+                                <input type="file" id="file_suplemen" name="file_suplemen" class="visually-hidden-input" accept=".pdf" required>
                                 <button type="button" class="btn btn-outline-success btn-sm" id="btnPickSuplemen">
                                     <i class="bi bi-folder2-open"></i> Pilih File Suplemen
                                 </button>
@@ -228,7 +317,7 @@
                                 <p class="mb-1"><strong>Silahkan upload file LKPS di sini</strong></p>
                                 <p class="text-muted small mb-2">Format: XLSX/XLS • Maksimal 10MB</p>
 
-                                <input type="file" id="file_lkps" name="file_lkps" class="d-none" accept=".xlsx,.xls" required>
+                                <input type="file" id="file_lkps" name="file_lkps" class="visually-hidden-input" accept=".xlsx,.xls" required>
                                 <button type="button" class="btn btn-outline-success btn-sm" id="btnPickLkps">
                                     <i class="bi bi-folder2-open"></i> Pilih File LKPS
                                 </button>
@@ -245,7 +334,7 @@
                                     </div>
                                     <div class="right d-flex gap-2">
                                         <button type="button" class="btn btn-sm btn-outline-danger" id="btnRemoveLkps">
-                                            <i class="bi bi-trash"></i> Hapus
+                                            <i class="bi bi-trash"></i> Batalkan
                                         </button>
                                         <button type="button" class="btn btn-sm btn-outline-secondary" id="btnChangeLkps">
                                             <i class="bi bi-arrow-repeat"></i> Ganti
@@ -270,7 +359,7 @@
                                 <p class="mb-1"><strong>Silahkan upload file Lembar Pengesahan di sini</strong></p>
                                 <p class="text-muted small mb-2">Format: PDF • Maksimal 10MB</p>
 
-                                <input type="file" id="file_pengesahan" name="file_pengesahan" class="d-none" accept=".pdf" required>
+                                <input type="file" id="file_pengesahan" name="file_pengesahan" class="visually-hidden-input" accept=".pdf" required>
                                 <button type="button" class="btn btn-outline-secondary btn-sm" id="btnPickPengesahan">
                                     <i class="bi bi-folder2-open"></i> Pilih File Pengesahan
                                 </button>
@@ -337,7 +426,7 @@
                     </form>
                 </div>
             </div>
-
+            @endif
         </div>
     </div>
 </div>

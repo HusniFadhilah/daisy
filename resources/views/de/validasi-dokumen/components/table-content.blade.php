@@ -15,12 +15,11 @@
                 <thead class="table-light">
                     <tr>
                         <th width="5%">No</th>
-                        <th width="20%">Permohonan Akreditasi</th>
-                        <th width="20%">Validator</th>
-                        <th width="15%">Status Penawaran</th>
-                        <th width="15%">Status Pekerjaan</th>
+                        <th width="30%">Permohonan Akreditasi</th>
+                        <th width="25%">Validator</th>
+                        <th width="20%">Status Validasi Dokumen</th>
                         <th width="15%">Progress</th>
-                        <th width="10%" class="text-center">Aksi</th>
+                        <th width="5%" class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -41,8 +40,9 @@
                             <strong>{{ $assignment->user->name }}</strong>
                             <br>
                             <small class="text-muted">{{ $assignment->user->email }}</small>
-                        </td>
-                        <td>
+
+                            <br>
+                            <small>Status Penawaran:</small>
                             @php
                             $penawaranConfig = [
                             'pending' => ['class' => 'warning', 'icon' => 'hourglass-split', 'text' => 'Menunggu'],
@@ -63,30 +63,7 @@
                             @endif
                         </td>
                         <td>
-                            @if($assignment->status_penawaran === 'accepted')
-                            @php
-                            $pekerjaanConfig = [
-                            'not_started' => ['class' => 'secondary', 'icon' => 'clock', 'text' => 'Belum Mulai'],
-                            'in_progress' => ['class' => 'info', 'icon' => 'arrow-repeat', 'text' => 'Sedang Dikerjakan'],
-                            'submitted' => ['class' => 'primary', 'icon' => 'upload', 'text' => 'Sudah Submit'],
-                            'revision_required' => ['class' => 'danger', 'icon' => 'exclamation-triangle', 'text' => 'Perlu Revisi'],
-                            'approved' => ['class' => 'success', 'icon' => 'check2-circle', 'text' => 'Disetujui'],
-                            ];
-                            $pekerjaan = $pekerjaanConfig[$assignment->status_pekerjaan] ?? ['class' => 'secondary', 'icon' => 'question-circle', 'text' => 'Unknown'];
-                            @endphp
-                            <span class="badge bg-{{ $pekerjaan['class'] }}">
-                                <i class="bi bi-{{ $pekerjaan['icon'] }}"></i>
-                                {{ $pekerjaan['text'] }}
-                            </span>
-                            @if($assignment->submitted_at)
-                            <br>
-                            <small class="text-muted">
-                                {{ $assignment->submitted_at->format('d M H:i') }}
-                            </small>
-                            @endif
-                            @else
-                            <span class="text-muted">-</span>
-                            @endif
+                            {!! $pengajuan->getCustomBadgeLastStatus('validasi_dokumen','de','label_short_for') !!}
                         </td>
                         <td>
                             @if($validation && $assignment->status_penawaran === 'accepted')

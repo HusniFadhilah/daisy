@@ -860,4 +860,52 @@ class AKController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Halaman Upload Excel Penilaian Manual
+     */
+    public function uploadExcelPage($idAsesmen)
+    {
+        $user = Auth::user();
+
+        // Check if user has access to this asesmen
+        $assignment = AsesmenUserRole::where('id_asesmen', $idAsesmen)
+            ->where('id_user', $user->id)
+            ->where('jenis_asesmen', 'ak')
+            ->firstOrFail();
+
+        if ($assignment->role->name != $user->role_selected) {
+            abort(403, 'Mohon maaf role Anda sebagai ' . ($user->role_selected) . ' tidak diizinkan membuka halaman ini.');
+        }
+
+        // ✅ AUTO-UPDATE STATUS: not_started → in_progress
+        if ($assignment->status_pekerjaan === 'not_started') {
+            $assignment->update([
+                'status_pekerjaan' => 'in_progress',
+                'started_at' => now(),
+            ]);
+        }
+
+        $asesmen = $assignment->asesmen;
+
+        // ✅ Get revision requests
+        $needsRevisions = PenilaianElemenAk::where('id_asesmen', $asesmen->id)
+            ->where('id_asesor', $user->id)
+            ->where('status_validasi', 'revision_required')
+            ->with('elemen.kriteria')
+            ->get();
+
+        $countNeedsRevisions = $needsRevisions->count();
+
+        // ✅ Calculate progress
+        $progress = $this->calculateProgressBulk([$asesmen->id], $user->id)[$asesmen->id];
+
+        return view('asesmen.ak.berkas.upload-excel', compact(
+            'asesmen',
+            'assignment',
+            'needsRevisions',
+            'countNeedsRevisions',
+            'progress'
+        ));
+    }
 }

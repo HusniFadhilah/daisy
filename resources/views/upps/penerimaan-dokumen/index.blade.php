@@ -142,7 +142,7 @@
             <div class="card">
                 <div class="card-header bg-white">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Daftar Dokumen</h5>
+                        <h5 class="mb-0">Daftar Pengiriman Dokumen</h5>
                         <div>
                             <span class="text-muted">Total: <strong>{{ $pengajuans->total() }}</strong></span>
                         </div>
@@ -194,21 +194,21 @@
                                                 <i class="bi bi-eye"></i>
                                             </a>
 
-                                            @php
+                                            {{-- @php
                                             $canUpload = in_array($pengajuan->status, [
                                             \App\Models\PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI,
                                             \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,
                                             ]);
                                             @endphp
 
-                                            @if($canUpload)
+                                            @if($canUpload) --}}
                                             <a href="{{ route('pengajuan.borang-online', $pengajuan->id) }}" class="btn btn-success">
                                                 <i class="bi bi-pencil-square"></i>
                                             </a>
                                             <a href="{{ route('upps.penerimaan-dokumen.upload.form', $pengajuan->id) }}" class="btn btn-info">
                                                 <i class="bi bi-upload"></i>
                                             </a>
-                                            @endif
+                                            {{-- @endif --}}
                                         </div>
                                     </td>
                                 </tr>

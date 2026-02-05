@@ -221,8 +221,8 @@ final class PengajuanStatus
                 'label' => 'Draft Dokumen Diterima',
                 'label_short_for' => [
                     'de'   => 'Draft Diterima',
-                    'upps' => 'Draft Diterima LAMDEPILAR',
-                    'prodi' => 'Draft Diterima LAMDEPILAR',
+                    'upps' => 'Draft Diterima',
+                    'prodi' => 'Draft Diterima',
                 ],
                 'label_long_for' => [
                     'de'   => 'Draft Dokumen Telah Diterima',
@@ -332,14 +332,14 @@ final class PengajuanStatus
             PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN => [
                 'label' => 'Pelaporan Validasi Dokumen',
                 'label_short_for' => [
-                    'de'   => 'Pelaporan Telah Dikirimkan',
-                    'upps' => 'Pelaporan Telah Dikirimkan',
-                    'prodi' => 'Pelaporan Telah Dikirimkan',
+                    'de'   => 'Telah Dikirimkan',
+                    'upps' => 'Telah Dikirim',
+                    'prodi' => 'Telah Dikirim',
                 ],
                 'label_long_for' => [
                     'de'   => 'Pelaporan Validasi Dokumen Telah Dikirimkan',
-                    'upps' => 'Pelaporan Validasi Dokumen Telah Dikirimkan',
-                    'prodi' => 'Pelaporan Validasi Dokumen Telah Dikirimkan',
+                    'upps' => 'Pelaporan Validasi Dokumen Telah Dikirim',
+                    'prodi' => 'Pelaporan Validasi Dokumen Telah Dikirim',
                 ],
                 'bg' => 'bg-success',
                 'icon' => 'bi-file-earmark-text',
