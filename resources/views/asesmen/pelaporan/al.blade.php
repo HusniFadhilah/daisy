@@ -65,9 +65,9 @@
         <div class="welcome-content">
             <h2>
                 <i class="bi bi-building-check text-white"></i>
-                Pelaporan Asesmen Lapangan
+                Pelaporan AL
             </h2>
-            <p class="mb-0">Kelola pelaporan hasil asesmen lapangan Program Studi</p>
+            <p class="mb-0">Kelola pelaporan hasil Asesmen Lapangan (AL) Program Studi</p>
         </div>
     </div>
 
@@ -75,100 +75,32 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item">
-                <a href="{{ route('pelaporan.index') }}">
-                    <i class="bi bi-house-door"></i> Dashboard Pelaporan
+                <a href="{{ route('pelaporan.index') }}" class="text-link">
+                    <i class="bi bi-house-door"></i> Dashboard
                 </a>
             </li>
             <li class="breadcrumb-item active">Pelaporan AL</li>
         </ol>
     </nav>
 
-    <!-- Info Banner -->
-    <div class="info-banner">
-        <div class="row align-items-center">
-            <div class="col-md-1 text-center">
-                <i class="bi bi-info-circle" style="font-size: 3rem;"></i>
-            </div>
-            <div class="col-md-11">
-                <h5 class="mb-2">Tentang Pelaporan Asesmen Lapangan</h5>
-                <p class="mb-2">
-                    Laporan Hasil Asesmen Lapangan Program Studi (LHA) mencakup dokumentasi lengkap dari:
-                </p>
-                <div class="timeline-preview">
-                    <div class="timeline-step">
-                        <i class="bi bi-1-circle-fill text-success"></i>
-                        <span class="text-dark">Penunjukan tugas asesor untuk pelaksanaan AL</span>
-                    </div>
-                    <div class="timeline-step">
-                        <i class="bi bi-2-circle-fill text-success"></i>
-                        <span class="text-dark">Proses penilaian LED oleh asesor di lapangan</span>
-                    </div>
-                    <div class="timeline-step">
-                        <i class="bi bi-3-circle-fill text-success"></i>
-                        <span class="text-dark">Validasi penilaian kecukupan asesor</span>
-                    </div>
-                    <div class="timeline-step">
-                        <i class="bi bi-4-circle-fill text-success"></i>
-                        <span class="text-dark">Informasi lokasi, perjalanan, dan berita acara AL</span>
-                    </div>
-                    <div class="timeline-step">
-                        <i class="bi bi-5-circle-fill text-success"></i>
-                        <span class="text-dark">Rekomendasi penetapan hasil akreditasi</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Stats Cards -->
-    <div class="row mb-4">
-        <div class="col-md-3 mb-3">
-            <div class="card border-success">
-                <div class="card-body text-center">
-                    <div class="d-flex justify-content-center align-items-center mb-2">
-                        <i class="bi bi-folder text-success" style="font-size: 2rem;"></i>
-                    </div>
-                    <h3 class="text-success mb-1">{{ $stats['total'] }}</h3>
-                    <small class="text-muted">Total Penugasan</small>
-                </div>
-            </div>
+    <div class="row mb-4 row-cols-1 row-cols-md-2 row-cols-lg-4 g-3">
+        <div class="col">
+            <x-stat-card title="Total Penugasan" :value="$stats['total']" icon="folder" mode="white" description="" color="success" />
         </div>
-        <div class="col-md-3 mb-3">
-            <div class="card border-warning">
-                <div class="card-body text-center">
-                    <div class="d-flex justify-content-center align-items-center mb-2">
-                        <i class="bi bi-hourglass-split text-warning" style="font-size: 2rem;"></i>
-                    </div>
-                    <h3 class="text-warning mb-1">{{ $stats['pending'] }}</h3>
-                    <small class="text-muted">Menunggu Pelaporan</small>
-                </div>
-            </div>
+        <div class="col">
+            <x-stat-card title="Menunggu Pelaporan" :value="$stats['pending']" icon="hourglass-split" mode="white" description="" color="warning" />
         </div>
-        <div class="col-md-3 mb-3">
-            <div class="card border-info">
-                <div class="card-body text-center">
-                    <div class="d-flex justify-content-center align-items-center mb-2">
-                        <i class="bi bi-arrow-repeat text-info" style="font-size: 2rem;"></i>
-                    </div>
-                    <h3 class="text-info mb-1">{{ $stats['in_progress'] }}</h3>
-                    <small class="text-muted">Sedang Diproses</small>
-                </div>
-            </div>
+        <div class="col">
+            <x-stat-card title="Sedang Diproses" :value="$stats['in_progress']" icon="arrow-repeat" mode="white" description="" color="info" />
         </div>
-        <div class="col-md-3 mb-3">
-            <div class="card border-success">
-                <div class="card-body text-center">
-                    <div class="d-flex justify-content-center align-items-center mb-2">
-                        <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
-                    </div>
-                    <h3 class="text-success mb-1">{{ $stats['completed'] }}</h3>
-                    <small class="text-muted">Selesai</small>
-                </div>
-            </div>
+        <div class="col">
+            <x-stat-card title="Selesai" :value="$stats['completed']" icon="check-circle" mode="white" description="" color="success" />
         </div>
     </div>
 
     @if($assignments->count() > 0)
+
     <!-- Filter Section -->
     <div class="filter-section">
         <div class="row align-items-center">
@@ -201,26 +133,141 @@
         </div>
     </div>
 
-    <!-- Cards Grid -->
-    <div class="row" id="assignmentsGrid">
-        @foreach($assignments as $assignment)
-        @php
-        $pengajuan = $assignment->asesmen->pengajuan;
-        $canReport = $pengajuan ? $pengajuan->canBeReported('al') : false;
-        $isReported = $pengajuan?->tanggal_pelaporan_al !== null;
-        $reportedAt = $pengajuan?->tanggal_pelaporan_al;
-
-        $statusClass = $isReported ? 'completed' : ($canReport ? 'pending' : 'waiting');
-        @endphp
-
-        <div class="col-md-6 col-lg-4 mb-4 assignment-card" data-status="{{ $statusClass }}" data-name="{{ strtolower($assignment->asesmen->studyProgram->name ?? '') }}" data-university="{{ strtolower($assignment->asesmen->studyProgram->university->name ?? '') }}" data-date="{{ $assignment->created_at->timestamp }}">
-            <x-pelaporan.pelaporan-card :assignment="$assignment" type="al" :canReport="$canReport" :isReported="$isReported" :reportedAt="$reportedAt" />
+    <!-- Table -->
+    <div class="card">
+        <div class="card-header bg-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-list-check"></i> Daftar Pelaporan AL
+                </h5>
+                <small class="text-muted">Total: {{ $assignments->count() }}</small>
+            </div>
         </div>
-        @endforeach
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="5%">#</th>
+                            <th width="35%">Permohonan Akreditasi</th>
+                            <th width="20%">Program Studi</th>
+                            <th width="20%">Status Pelaporan AL</th>
+                            <th width="15%">Tanggal Pelaporan AL</th>
+                            <th width="5%" class="text-center">Aksi</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="assignmentsTbody">
+                        @foreach($assignments as $index => $assignment)
+                        @php
+                        $asesmen = $assignment->asesmen;
+                        $pengajuan = isset($asesmen->pengajuan) ? $asesmen->pengajuan : null;
+
+                        $judul = $pengajuan ? $pengajuan->judul_short : $asesmen->name;
+                        $nomor = $pengajuan ? $pengajuan->nomor_pengajuan : $asesmen->code;
+
+                        $prodi = '-';
+                        if (isset($asesmen->studyProgram)) {
+                        $prodi = $asesmen->studyProgram->name;
+                        }
+
+                        $univ = '-';
+                        if (isset($asesmen->studyProgram) && isset($asesmen->studyProgram->university)) {
+                        $univ = $asesmen->studyProgram->university->name;
+                        }
+
+                        $canReport = false;
+                        if ($pengajuan) {
+                        $canReport = $pengajuan->canBeReported('al');
+                        }
+
+                        $isReported = false;
+                        $reportedAt = null;
+                        if ($pengajuan && !empty($pengajuan->tanggal_pelaporan_al)) {
+                        $isReported = true;
+                        $reportedAt = $pengajuan->tanggal_pelaporan_al;
+                        }
+
+                        $statusClass = 'in_progress';
+                        if ($isReported) {
+                        $statusClass = 'completed';
+                        } elseif ($canReport) {
+                        $statusClass = 'pending';
+                        }
+
+                        $ts = $assignment->created_at ? $assignment->created_at->timestamp : 0;
+                        @endphp
+
+                        <tr class="assignment-row" data-status="{{ $statusClass }}" data-name="{{ strtolower($prodi) }}" data-university="{{ strtolower($univ) }}" data-date="{{ $ts }}">
+
+                            <td>{{ $index + 1 }}</td>
+
+                            <td>
+                                <p class="mb-0">{{ $judul }}</p>
+                                <small class="text-muted">{{ $nomor }}</small>
+                                <br>
+                                <small class="text-muted">
+                                    Dibuat pada:
+                                    {{ $assignment->created_at ? \App\Libraries\Date::tglIndo($assignment->created_at) : '-' }}
+                                </small>
+                            </td>
+
+                            <td>
+                                <span class="badge bg-light text-dark">{{ $asesmen->studyProgram->name ?? '-' }}</span>
+                                <small class="text-muted small d-block">{{ $asesmen->studyProgram->university->name ?? '-' }}</small>
+                            </td>
+
+                            <td>
+                                @if($isReported)
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle"></i> Selesai
+                                </span>
+                                @elseif($canReport)
+                                <span class="badge bg-warning text-dark">
+                                    <i class="bi bi-hourglass-split"></i> Menunggu Pelaporan
+                                </span>
+                                @else
+                                <span class="badge bg-info text-dark">
+                                    <i class="bi bi-arrow-repeat"></i> Sedang Diproses
+                                </span>
+                                @endif
+                            </td>
+
+                            <td>
+                                @if($reportedAt)
+                                <small>{{ \App\Libraries\Date::tglIndo($reportedAt) }}</small>
+                                <br>
+                                <small class="text-muted">{{ $reportedAt->diffForHumans() }}</small>
+                                @else
+                                <span class="text-muted">-</span>
+                                @endif
+                            </td>
+
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm" role="group">
+                                    @if($canReport && !$isReported)
+                                    <button type="button" class="btn btn-success js-open-pelaporan" title="Upload Pelaporan" data-type="al" data-assignment-id="{{ $assignment->id }}" data-nomor="{{ $nomor }}">
+                                        <i class="bi bi-upload"></i>
+                                    </button>
+                                    @else
+                                    <a href="#" class="btn btn-outline-success" title="Lihat Detail">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    @endif
+                                </div>
+                            </td>
+
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <!-- No Results -->
-    <div class="alert alert-info text-center d-none" id="noResults">
+    <div class="alert alert-info text-center d-none mt-3" id="noResults">
         <i class="bi bi-search"></i>
         Tidak ada hasil yang sesuai dengan filter
     </div>
@@ -232,8 +279,8 @@
             <i class="bi bi-building-x" style="font-size: 64px; opacity: 0.3; color: #198754;"></i>
             <h5 class="mt-3 mb-2">Tidak Ada Pelaporan AL</h5>
             <p class="text-muted mb-4">
-                Anda belum memiliki penugasan pelaporan asesmen lapangan saat ini.<br>
-                Pelaporan AL akan tersedia setelah proses asesmen lapangan selesai.
+                Anda belum memiliki penugasan pelaporan AL saat ini.<br>
+                Pelaporan akan muncul setelah proses AL selesai.
             </p>
             <div class="d-flex gap-2 justify-content-center">
                 <a href="{{ route('pelaporan.index') }}" class="btn btn-outline-success">
@@ -252,52 +299,60 @@
 @push('scripts')
 <script src="{{ asset('assets/js/pelaporan.js') }}"></script>
 <script>
-    // Same filter/sort script
     document.addEventListener('DOMContentLoaded', function() {
-        const searchInput = document.getElementById('searchInput');
-        const filterStatus = document.getElementById('filterStatus');
-        const sortBy = document.getElementById('sortBy');
-        const resetBtn = document.getElementById('resetFilter');
-        const assignmentsGrid = document.getElementById('assignmentsGrid');
-        const noResults = document.getElementById('noResults');
+        var searchInput = document.getElementById('searchInput');
+        var filterStatus = document.getElementById('filterStatus');
+        var sortBy = document.getElementById('sortBy');
+        var resetBtn = document.getElementById('resetFilter');
 
-        if (!assignmentsGrid) return;
+        var tbody = document.getElementById('assignmentsTbody');
+        var noResults = document.getElementById('noResults');
 
-        const cards = Array.from(assignmentsGrid.querySelectorAll('.assignment-card'));
+        if (!tbody) return;
+
+        var rows = Array.prototype.slice.call(tbody.querySelectorAll('.assignment-row'));
 
         function applyFilters() {
-            const searchTerm = searchInput.value.toLowerCase();
-            const statusFilter = filterStatus.value;
-            const sortValue = sortBy.value;
+            var searchTerm = searchInput.value.toLowerCase();
+            var statusFilter = filterStatus.value;
+            var sortValue = sortBy.value;
 
-            let visibleCards = cards.filter(card => {
-                const name = card.dataset.name;
-                const university = card.dataset.university;
-                const status = card.dataset.status;
+            var visible = rows.filter(function(row) {
+                var name = row.dataset.name || '';
+                var university = row.dataset.university || '';
+                var status = row.dataset.status || '';
 
-                const matchesSearch = !searchTerm ||
-                    name.includes(searchTerm) ||
-                    university.includes(searchTerm);
+                var matchSearch = !searchTerm ||
+                    name.indexOf(searchTerm) !== -1 ||
+                    university.indexOf(searchTerm) !== -1;
 
-                const matchesStatus = !statusFilter || status === statusFilter;
+                var matchStatus = !statusFilter || status === statusFilter;
 
-                return matchesSearch && matchesStatus;
+                return matchSearch && matchStatus;
             });
 
             if (sortValue === 'newest') {
-                visibleCards.sort((a, b) => b.dataset.date - a.dataset.date);
+                visible.sort(function(a, b) {
+                    return b.dataset.date - a.dataset.date;
+                });
             } else if (sortValue === 'oldest') {
-                visibleCards.sort((a, b) => a.dataset.date - b.dataset.date);
+                visible.sort(function(a, b) {
+                    return a.dataset.date - b.dataset.date;
+                });
             } else if (sortValue === 'name') {
-                visibleCards.sort((a, b) => a.dataset.name.localeCompare(b.dataset.name));
+                visible.sort(function(a, b) {
+                    return a.dataset.name.localeCompare(b.dataset.name);
+                });
             }
 
-            cards.forEach(card => card.style.display = 'none');
+            rows.forEach(function(row) {
+                row.classList.add('d-none');
+            });
 
-            if (visibleCards.length > 0) {
-                visibleCards.forEach(card => {
-                    card.style.display = 'block';
-                    assignmentsGrid.appendChild(card);
+            if (visible.length > 0) {
+                visible.forEach(function(row) {
+                    row.classList.remove('d-none');
+                    tbody.appendChild(row);
                 });
                 noResults.classList.add('d-none');
             } else {
@@ -317,23 +372,23 @@
         });
     });
 
+</script>
+
+<script>
     window.PELAPORAN_CFG = {
         al: {
-            title: 'Rekap AL dan Pelaporan AL'
+            title: 'Pelaporan AL'
             , label: 'Laporan Hasil Asesmen Lapangan Program Studi (LHA)'
             , upload: @json(route('pelaporan.al.upload', ['assignment' => '__ID__']))
             , finalize: @json(route('pelaporan.al.finalize', ['assignment' => '__ID__']))
             , fileLabel: 'Laporan Hasil Asesmen Lapangan Program Studi (LHA)'
             , finalizeLabel: 'Pelaporan AL Telah Selesai'
             , additionalDescription: `Dokumen yang sudah digabungkan, yang diperlukan isinya adalah:
-                •	Penunjukan tugas Asesor untuk melaksanakan Penilaian LED
-                •	Proses peneliaan LED oleh Asesor.
-                •	Validasi Penilaian Kecukupan Asesor Oleh Validator
-                •	Penyampaian Informasi Kepada DE tentang:
-                    o	Lokasi AL
-                    o	Perjalan asesor ke lokasi AL
-                    o	Berita Acara yang menyatakan AL telah dilaksanakan dan disepakati
-                •	Rekomendasi Penetapan Hasil Akreditasi`
+            • Penunjukan tugas Asesor untuk melaksanakan Penilaian LED
+            • Proses penilaian LED oleh Asesor
+            • Validasi Penilaian Kecukupan Asesor oleh Validator
+            • Penyampaian Informasi kepada DE (lokasi AL, perjalanan asesor, berita acara AL)
+            • Rekomendasi Penetapan Hasil Akreditasi`
         }
     };
 

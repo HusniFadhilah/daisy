@@ -113,7 +113,7 @@
 
                                     {{-- Suplemen --}}
                                     @if($dokumenSuplemen)
-                                    <a href="{{ route('upps.penerimaan-dokumen.dokumen.download', $dokumenSuplemen->id) }}" class="btn btn-sm btn-light btn-fixed-lg" target="_blank">
+                                    <a href="{{ route('upps.penerimaan-dokumen.dokumen.download', $dokumenSuplemen->id) }}" class="btn btn-sm btn-secondary btn-fixed-lg" target="_blank">
                                         <i class="bi bi-download"></i> Suplemen LED
                                     </a>
                                     @else
@@ -172,7 +172,7 @@
 
                                     <div class="border-top pt-2">
                                         @if($assignment->status_penawaran === 'accepted')
-                                        <a href="{{ route('ak.berkas.export', ['idAsesmen'=>$asesmen->id,'mode'=>'full','color'=>false]) }}" class="btn btn-secondary btn-sm btn-fixed" target="_blank">
+                                        <a href="{{ route('ak.berkas.cek-split', ['idAsesmen'=>$asesmen->id]) }}" class="btn btn-secondary btn-sm btn-fixed" target="_blank">
                                             <i class="bi bi-eye"></i>
                                             Cek Penilaian / Split
                                         </a>

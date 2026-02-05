@@ -213,7 +213,7 @@
                     @if($isSubmittedOnly && !$isApproved)
                     <div class="alert alert-info alert-permanent alert-dismissible mb-3">
                         <i class="bi bi-info-circle me-2"></i>
-                        <strong>Telah Di-Submit!</strong> Penilaian Anda sedang menunggu validasi dari validator.
+                        <strong>Telah Di-Submit!</strong> Penilaian Anda sedang menunggu validasi.
                         @if(app()->environment('local'))
                         <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="btnUnsubmit">
                             <i class="bi bi-arrow-counterclockwise"></i> Batalkan Submit

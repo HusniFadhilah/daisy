@@ -6,6 +6,7 @@ use App\Models\Asesmen;
 use App\Models\Kriteria;
 use Illuminate\Support\Str;
 use App\Models\ElemenStandar;
+use App\Models\JenjangPenilaian;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
@@ -32,7 +33,7 @@ class PenilaianExcelService
         $this->penilaianName = $modelPenilaianElemen == \App\Models\PenilaianElemenAl::class ? 'AL' : 'AK';
         $this->penilaianFullName = $this->penilaianName == 'AL' ? 'Asesmen Lapangan' : 'Asesmen Kecukupan';
         $this->asesorName = Auth::user()->name ?? 'Asesor LAMDEPILAR';
-        $this->mode = $mode; // 'full', 'template', 'personal'
+        $this->mode = $mode; // 'full', 'template', 'personal', 'split'
         $this->useColorFormatting = $useColorFormatting;
     }
     /**
@@ -50,9 +51,13 @@ class PenilaianExcelService
      */
     public function generateWithData(Asesmen $asesmen, $userId): string
     {
-        // Jika mode personal, panggil method khusus
         if ($this->mode === 'personal') {
             return $this->generatePersonalAssessment($asesmen, $userId);
+        }
+
+        // ✅ NEW: mode split => hanya sheet Penilaian AK, data dari DB semua asesor
+        if ($this->mode === 'split') {
+            return $this->generateSplitPenilaianAkOnly($asesmen, $userId);
         }
 
         // Mode full (default)
@@ -171,6 +176,243 @@ class PenilaianExcelService
             'Penilaian_' . $this->penilaianName . '_',
             Str::slug($asesmen->code) . '_' . Str::slug($this->asesorName)
         );
+    }
+
+    public function generateSplitPenilaianAkOnly(Asesmen $asesmen, $userId): string
+    {
+        // ⚠️ sesuai request: hanya untuk AK
+        if (strtoupper($this->penilaianName) !== 'AK') {
+            throw new \Exception("Mode split hanya untuk Asesmen Kecukupan (AK).");
+        }
+
+        $spreadsheet = new Spreadsheet();
+
+        // sheet aktif = satu-satunya sheet
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Penilaian ' . ucfirst($this->penilaianFullName));
+        self::addLogoAndZoom($sheet, 60);
+
+        // Build sheet Penilaian AK seperti full-withData, tapi DB untuk semua asesor
+        $this->buildPenilaianJenisSheetOnly(
+            $sheet,
+            $asesmen,
+            strtoupper($this->penilaianName),
+            $userId,
+            true // ✅ forceDbForAllAsesors
+        );
+
+        return $this->saveSpreadsheet(
+            $spreadsheet,
+            'Penilaian_' . $this->penilaianName . '_Split_',
+            Str::slug($asesmen->code) . '_' . Str::slug($this->asesorName)
+        );
+    }
+
+    private function buildPenilaianJenisSheetOnly($sheet, Asesmen $asesmen, $penilaianName, $userId, bool $forceDbForAllAsesors): void
+    {
+        // ambil semua asesor AK (templateOnly = false)
+        $asesors = $this->getAsesors($asesmen, false);
+
+        // reorder: asesor login di depan (opsional, sesuai pola kamu)
+        if ($userId && $asesors->count() > 1) {
+            $currentAsesor = $asesors->where('id_user', $userId)->first();
+            $otherAsesors  = $asesors->where('id_user', '!=', $userId)->values();
+            if ($currentAsesor) $asesors = collect([$currentAsesor])->merge($otherAsesors);
+        }
+
+        // column widths fixed
+        $sheet->getColumnDimension('A')->setWidth(5);
+        $sheet->getColumnDimension('B')->setWidth(5);
+        $sheet->getColumnDimension('C')->setWidth(20);
+        $sheet->getColumnDimension('D')->setWidth(6);
+        $sheet->getColumnDimension('E')->setWidth(6);
+        $sheet->getColumnDimension('F')->setWidth(25);
+
+        // withData => 1 kolom per asesor
+        $startCol = 'G';
+        foreach ($asesors as $index => $asesor) {
+            $col = chr(ord($startCol) + $index);
+            $sheet->getColumnDimension($col)->setWidth(80);
+        }
+
+        $splitCol = chr(ord('G') + $asesors->count());
+        $ketCol   = chr(ord($splitCol) + 1);
+
+        $sheet->getColumnDimension($splitCol)->setWidth(12);
+        $sheet->getColumnDimension($ketCol)->setWidth(80);
+
+        // headers withData
+        $this->buildPenilaianJenisHeaders($sheet, $asesmen, $asesors, false, true);
+
+        // render rows withData, tapi DB untuk semua asesor
+        $lastRow = $this->renderPenilaianJenisRowsDbAll(
+            $sheet,
+            $asesmen,
+            $penilaianName,
+            $asesors,
+            $forceDbForAllAsesors
+        );
+
+        // print area
+        $lastDataCol = chr(ord('F') + $asesors->count() + 2);
+        $printAreaLastCol = chr(ord($lastDataCol) + 1);
+        $printAreaLastRow = $lastRow + 1;
+        $sheet->getPageSetup()->setPrintArea("A1:{$printAreaLastCol}{$printAreaLastRow}");
+        $sheet->getColumnDimension($printAreaLastCol)->setWidth(5);
+
+        // page setup
+        $sheet->getPageSetup()->setOrientation(PageSetup::ORIENTATION_LANDSCAPE);
+        $sheet->getPageSetup()->setPaperSize(PageSetup::PAPERSIZE_A4);
+        $sheet->getPageSetup()->setFitToWidth(1);
+        $sheet->getPageSetup()->setFitToHeight(0);
+
+        $sheet->getPageMargins()->setTop(0);
+        $sheet->getPageMargins()->setRight(0);
+        $sheet->getPageMargins()->setLeft(0);
+        $sheet->getPageMargins()->setBottom(0);
+        $sheet->getPageMargins()->setHeader(0);
+        $sheet->getPageMargins()->setFooter(0);
+    }
+
+    private function renderPenilaianJenisRowsDbAll($sheet, Asesmen $asesmen, $penilaianName, $asesors, bool $forceDbForAllAsesors): int
+    {
+        $currentRow = 7;
+
+        $jenisAsesmen  = strtolower($this->penilaianName); // ak
+        $relationName  = $jenisAsesmen == 'al' ? 'penilaianElemenAl' : 'penilaianElemenAk';
+
+        $kriterias = Kriteria::with([
+            'elemenStandar' => function ($q) {
+                $q->orderBy('kode_elemen');
+            },
+            "elemenStandar.{$relationName}" => function ($q) use ($asesors) {
+                $q->whereIn('id_asesor', $asesors->pluck('id_user'));
+            },
+            "elemenStandar.{$relationName}.asesor"
+        ])->get();
+
+        foreach ($kriterias as $kriteria) {
+            $isFirstElemen = true;
+            $elemenCount = $kriteria->elemenStandar->count();
+
+            if ($elemenCount > 1) {
+                $blockStartRow = $currentRow;
+                $blockEndRow   = $currentRow + $elemenCount - 1;
+                $this->mergeBlock($sheet, 'B', 'B', $blockStartRow, $blockEndRow);
+                $this->mergeBlock($sheet, 'C', 'C', $blockStartRow, $blockEndRow);
+            }
+
+            foreach ($kriteria->elemenStandar as $index => $elemen) {
+                $row = $currentRow;
+
+                if ($isFirstElemen) {
+                    $sheet->setCellValue("B{$row}", $kriteria->kode_kriteria);
+                    $sheet->setCellValue("C{$row}", $kriteria->nama_kriteria);
+                }
+
+                $sheet->setCellValue("D{$row}", $index + 1);
+                $sheet->setCellValue("E{$row}", $elemen->kode_elemen);
+                $sheet->setCellValue("F{$row}", $elemen->pernyataan_elemen);
+
+                $startCol = 'G';
+                foreach ($asesors as $asesorIndex => $asesor) {
+                    $col = chr(ord($startCol) + $asesorIndex);
+
+                    $penilaian = $elemen->{$relationName}
+                        ->where('id_asesor', $asesor->id_user)
+                        ->first();
+
+                    if ($penilaian && $penilaian->skor !== null) {
+                        $skor = (int) $penilaian->skor;
+                        $komentar = $penilaian->komentar ? $penilaian->komentar : '';
+
+                        if ($this->useColorFormatting) {
+                            $bgColor = $this->getSkorColor($skor);
+
+                            $sheet->setCellValue("{$col}{$row}", $komentar);
+                            $sheet->getStyle("{$col}{$row}")
+                                ->getFill()
+                                ->setFillType(Fill::FILL_SOLID)
+                                ->getStartColor()
+                                ->setARGB($this->hexToArgb($bgColor));
+                        } else {
+                            $sheet->setCellValue("{$col}{$row}", $this->formatPenilaianText($skor, $komentar));
+                            $sheet->getStyle("{$col}{$row}")
+                                ->getFill()
+                                ->setFillType(Fill::FILL_SOLID)
+                                ->getStartColor()
+                                ->setARGB('FFFFFFFF');
+                        }
+                    } else {
+                        $sheet->setCellValue("{$col}{$row}", '');
+                    }
+                }
+
+                // ========================
+                // ✅ SPLIT DETECTION (hanya mode split ini)
+                // compare asesor pertama vs kedua
+                // ========================
+                $splitCol = chr(ord('G') + $asesors->count());
+                $ketCol   = chr(ord($splitCol) + 1);
+
+                $splitValue = 'Tidak Split';
+                $keterangan = '';
+
+                if ($asesors->count() >= 2) {
+                    $asesor1 = $asesors[0];
+                    $asesor2 = $asesors[1];
+
+                    $p1 = $elemen->{$relationName}->where('id_asesor', $asesor1->id_user)->first();
+                    $p2 = $elemen->{$relationName}->where('id_asesor', $asesor2->id_user)->first();
+
+                    $skor1 = ($p1 && $p1->skor !== null) ? (int) $p1->skor : null;
+                    $skor2 = ($p2 && $p2->skor !== null) ? (int) $p2->skor : null;
+
+                    // Split hanya dihitung kalau dua-duanya ada skor
+                    if ($skor1 !== null && $skor2 !== null) {
+                        if (abs($skor1 - $skor2) > 1) { // beda 2+ => split
+                            $splitValue = 'Ya';
+
+                            $label1 = JenjangPenilaian::getSkorLabelAttribute($skor1) ?? 'Tidak diketahui';
+                            $label2 = JenjangPenilaian::getSkorLabelAttribute($skor2) ?? 'Tidak diketahui';
+
+                            $keterangan = "Asesor 1 memberikan penilaian {$label1}. Sementara Asesor 2 memberikan penilaian {$label2}";
+                        }
+                    }
+                }
+
+                $sheet->setCellValue("{$splitCol}{$row}", $splitValue);
+                $sheet->setCellValue("{$ketCol}{$row}", $keterangan);
+
+                // style rapih (opsional tapi bagus)
+                $sheet->getStyle("{$splitCol}{$row}:{$ketCol}{$row}")
+                    ->getAlignment()
+                    ->setVertical(Alignment::VERTICAL_TOP)
+                    ->setWrapText(true);
+
+
+                // $lastCol = chr(ord($startCol) + $asesors->count() - 1);
+                $lastCol = $ketCol;
+
+                $this->applyRowStyling($sheet, $row, null, 'B', $lastCol);
+
+                $sheet->getStyle("B{$row}:{$lastCol}{$row}")
+                    ->getAlignment()
+                    ->setVertical(Alignment::VERTICAL_TOP)
+                    ->setWrapText(true);
+
+                $sheet->getStyle("B{$row}:F{$row}")
+                    ->getFont()
+                    ->getColor()
+                    ->setARGB('FF31869B');
+
+                $currentRow++;
+                $isFirstElemen = false;
+            }
+        }
+
+        // ✅ tidak perlu applyPenilaianJenisConditionalFormatting karena kita sudah warnai langsung per cell dari DB
+        return $currentRow - 1;
     }
 
     /**
@@ -1162,13 +1404,17 @@ class PenilaianExcelService
     /**
      * Build headers untuk sheet Penilaian (JENIS) - tanpa kolom indikator
      */
-    private function buildPenilaianJenisHeaders($sheet, $asesmen, $asesors, $isTemplateOnly): void
+    private function buildPenilaianJenisHeaders($sheet, $asesmen, $asesors, $isTemplateOnly, bool $isSplitMode = false): void
     {
         // Hitung kolom terakhir berdasarkan jumlah asesor dan mode
         if ($isTemplateOnly) {
             $lastCol = chr(ord('F') + ($asesors->count() * 2)); // 2 kolom per asesor
         } else {
             $lastCol = chr(ord('F') + $asesors->count()); // 1 kolom per asesor
+        }
+
+        if ($isSplitMode && !$isTemplateOnly) {
+            $lastCol = chr(ord($lastCol) + 2); // +2 kolom: Split & Keterangan Split
         }
 
         // ===== Title =====
@@ -1214,6 +1460,17 @@ class PenilaianExcelService
                 $sheet->mergeCells("{$col}5:{$col}6");
                 $asesorName = $asesor->user->name ?? "Asesor " . ($index + 1);
                 $sheet->setCellValue("{$col}5", "Penilaian {$this->penilaianFullName}\n({$asesorName})");
+            }
+
+            if ($isSplitMode) {
+                $splitCol = chr(ord($startCol) + $asesors->count());
+                $ketCol   = chr(ord($splitCol) + 1);
+
+                $sheet->mergeCells("{$splitCol}5:{$splitCol}6");
+                $sheet->setCellValue("{$splitCol}5", "Split");
+
+                $sheet->mergeCells("{$ketCol}5:{$ketCol}6");
+                $sheet->setCellValue("{$ketCol}5", "Keterangan Split");
             }
         }
 

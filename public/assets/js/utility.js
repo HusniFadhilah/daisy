@@ -196,15 +196,17 @@ function getSkorLabel(skor) {
     return labels[skor] || '-';
 }
 
-function getSkorLabelShort(skor) {
+function getSkorLabelShort(skor, full = false) {
     const labels = {
-        0: 'Tidak Memenuhi'
-        , 1: 'Belum Memenuhi'
-        , 2: 'Lemah'
-        , 3: 'Memenuhi'
-        , 4: 'Pelampauan'
+        0: { short: 'Tidak Memenuhi', full: 'Tidak Memenuhi (Not Met)' },
+        1: { short: 'Belum Memenuhi', full: 'Belum Memenuhi (Not Met)' },
+        2: { short: 'Lemah', full: 'Lemah (Weakness / Cause of Concern)' },
+        3: { short: 'Memenuhi', full: 'Memenuhi (Met)' },
+        4: { short: 'Pelampauan', full: 'Pelampauan Standar (Exceeds Standard)' }
     };
-    return labels[skor] || '-';
+
+    if (!labels[skor]) return '-';
+    return full ? labels[skor].full : labels[skor].short;
 }
 
 function getSkorBadgeClass(skor) {

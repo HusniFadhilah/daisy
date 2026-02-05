@@ -2,7 +2,7 @@
 
 @extends('layouts.template.app')
 
-@section('title', 'Pelaporan AK')
+@section('title', 'Pelaporan Validasi AK')
 
 @push('styles')
 <style>
@@ -29,9 +29,10 @@
     <div class="welcome-section mb-4">
         <div class="welcome-content">
             <h2>
-                <i class="bi bi-clipboard-data text-white"></i>
-                Pelaporan Asesmen Kecukupan (AK)
+                <i class="bi bi-clipboard-check text-white"></i>
+                Pelaporan Validasi AK
             </h2>
+            <p class="mb-0">Kelola pelaporan hasil validasi Asesmen Kecukupan (AK)</p>
         </div>
     </div>
 
@@ -41,8 +42,9 @@
             <div class="redirect-notice">
                 <i class="bi bi-info-circle" style="font-size: 4rem;"></i>
                 <h3 class="mt-3 mb-3">Halaman Dialihkan</h3>
+
                 <p class="mb-4">
-                    Untuk pelaporan Asesmen Kecukupan (AK), silakan gunakan halaman
+                    Untuk pelaporan AK, silakan gunakan halaman
                     <strong>Pelaporan Validasi AK</strong>.
                 </p>
 
@@ -63,11 +65,11 @@
 
 @push('scripts')
 <script>
-    let countdown = 5;
-    const countdownElement = document.getElementById('countdown');
-    const secondsElement = document.getElementById('seconds');
+    var countdown = 5;
+    var countdownElement = document.getElementById('countdown');
+    var secondsElement = document.getElementById('seconds');
 
-    const timer = setInterval(() => {
+    var timer = setInterval(function() {
         countdown--;
         countdownElement.textContent = countdown;
         secondsElement.textContent = countdown;

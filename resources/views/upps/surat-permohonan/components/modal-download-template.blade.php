@@ -9,7 +9,7 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p class="mb-3">Pilih jenjang program studi untuk mendownload template surat permohonan akreditasi:</p>
+                <p class="mb-3">Download template permohonan akreditasi berdasarkan jenjang program studi Anda:</p>
 
                 <div class="list-group">
                     @php

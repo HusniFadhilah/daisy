@@ -180,12 +180,6 @@
                                     Anda telah menyelesaikan <strong>semua {{ $progress['total'] }} elemen penilaian</strong>.
                                     Segera lakukan <strong>Finalisasi dan Kirim</strong> agar penilaian Anda dapat divalidasi oleh validator.
                                 </p>
-                                <hr>
-                                <div class="mb-0">
-                                    <button type="button" class="btn btn-sm btn-success" id="btnSubmitFromAlert">
-                                        <i class="bi bi-send"></i> Finalisasi Sekarang
-                                    </button>
-                                </div>
                             </div>
                         </div>
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -196,7 +190,7 @@
                     @if($isSubmittedOnly && !$isApproved)
                     <div class="alert alert-info alert-permanent alert-dismissible mb-3">
                         <i class="bi bi-info-circle me-2"></i>
-                        <strong>Telah Di-Submit!</strong> Penilaian Anda sedang menunggu validasi dari validator.
+                        <strong>Telah Di-Submit!</strong> Penilaian Anda sedang menunggu validasi.
                     </div>
                     @endif
 
@@ -204,7 +198,7 @@
                     @if($isApproved)
                     <div class="alert alert-success alert-permanent alert-dismissible mb-3">
                         <i class="bi bi-check-circle me-2"></i>
-                        <strong>Penilaian Disetujui!</strong> Penilaian Anda telah divalidasi dan disetujui oleh validator.
+                        <strong>Penilaian Disetujui!</strong> Penilaian Anda telah divalidasi dan disetujui.
                     </div>
                     @endif
 

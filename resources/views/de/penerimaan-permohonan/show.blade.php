@@ -227,7 +227,7 @@
 
             <div class="card mt-4">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Informasi Permohonan Akreditasi PS</h5>
+                    <h5 class="mb-0">Informasi Permohonan Akreditasi</h5>
                 </div>
                 <div class="card-body">
                     <table class="table table-borderless">

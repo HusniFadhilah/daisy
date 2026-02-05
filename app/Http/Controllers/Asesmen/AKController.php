@@ -650,7 +650,7 @@ class AKController extends Controller
             $useColor = $request->query('color', 'true') === 'true';
 
             // Validate mode
-            if (!in_array($mode, ['template', 'full', 'personal'])) {
+            if (!in_array($mode, ['template', 'full', 'personal', 'split'])) {
                 return redirect()->back()->with('error', 'Mode download tidak valid');
             }
 
@@ -798,16 +798,16 @@ class AKController extends Controller
             // Get all kriteria with elemen and penilaian
             $kriterias = Kriteria::with([
                 'elemenStandar' => function ($q) {
-                    $q->orderBy('kode_elemen');
+                    // $q->orderBy('kode_elemen');
                 },
                 'elemenStandar.indikator' => function ($q) {
-                    $q->orderBy('kode_indikator');
+                    // $q->orderBy('kode_indikator');
                 },
                 'elemenStandar.penilaianElemenAk' => function ($q) use ($asesors) {
-                    $q->whereIn('id_asesor', $asesors->pluck('id_user'));
+                    // $q->whereIn('id_asesor', $asesors->pluck('id_user'));
                 },
                 'elemenStandar.penilaianElemenAk.asesor'
-            ])->orderBy('kode_kriteria')->get();
+            ])->get();
 
             // Calculate statistics
             $totalElemen = 0;
@@ -908,5 +908,33 @@ class AKController extends Controller
             'countNeedsRevisions',
             'progress'
         ));
+    }
+
+    /**
+     * Halaman Cek Split Penilaian
+     */
+    public function cekSplitPage($idAsesmen)
+    {
+        $user = Auth::user();
+
+        // Check if user has access to this asesmen
+        $asesmen = Asesmen::whereHas('userRoles', function ($query) use ($user) {
+            $query->where('id_user', $user->id)->where('jenis_asesmen', 'ak');
+        })
+            ->with([
+                'userRoles' => function ($query) use ($user) {
+                    $query->where('id_user', $user->id)
+                        ->where('jenis_asesmen', 'ak')
+                        ->with('role');
+                },
+                'studyProgram.university',
+                'studyProgram.degreeLevel',
+            ])
+            ->findOrFail($idAsesmen);
+
+        $jenjangs = JenjangPenilaian::all();
+        $pluckColorSkor = $jenjangs->pluck('color', 'skor');
+
+        return view('asesmen.ak.berkas.cek-split', compact('asesmen', 'jenjangs', 'pluckColorSkor'));
     }
 }

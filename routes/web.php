@@ -114,6 +114,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('/berkas/{asesmen}/comparison-data', [AKController::class, 'getComparisonData'])->name('berkas.comparison-data');
         Route::get('/berkas/{idAsesmen}/upload-excel', [AKController::class, 'uploadExcelPage'])->name('berkas.upload-excel');
+        Route::get('/berkas/{idAsesmen}/cek-split', [AKController::class, 'cekSplitPage'])->name('berkas.cek-split');
+
         Route::prefix('validasi')->name('validasi.')->group(function () {
             Route::middleware(['role:validator'])->group(function () {
                 Route::get('/', [ValidasiController::class, 'index'])->name('index');

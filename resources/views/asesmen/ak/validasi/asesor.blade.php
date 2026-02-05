@@ -16,9 +16,6 @@
                     <h3 class="mb-1 text-wrap text-break">Validasi Penilaian Asesor</h3>
                     <p class="text-muted mb-0 text-wrap text-break">
                         {{ $asesmen->name }}
-                        <span class="badge bg-primary ms-2">
-                            {{ strtoupper($jenisAsesmen) }}
-                        </span>
                     </p>
                 </div>
 
@@ -34,10 +31,10 @@
                 @php
                 $colors = [
                 ['border' => 'primary', 'bg' => 'primary'],
-                ['border' => 'warning', 'bg' => 'warning'],
-                ['border' => 'success', 'bg' => 'success'],
-                ['border' => 'info', 'bg' => 'info'],
-                ['border' => 'purple', 'bg' => 'purple'],
+                ['border' => 'primary', 'bg' => 'primary'],
+                ['border' => 'primary', 'bg' => 'primary'],
+                ['border' => 'primary', 'bg' => 'primary'],
+                ['border' => 'primary', 'bg' => 'primary'],
                 ];
                 $color = $colors[$index % count($colors)];
                 $progress = $asesorProgress[$asesor->id_user] ?? ['completed' => 0, 'total' => 0, 'completion_percentage' => 0];
@@ -131,23 +128,7 @@
             <div class="alert alert-success alert-permanent mb-3">
                 <i class="bi bi-check-circle me-2"></i>
                 <strong>Penilaian Telah Disetujui!</strong>
-                <p class="mb-0">Validasi {{ $sudahDilaporkan ? 'dan Pelaporan AK ' : '' }}telah diselesaikan dan lolos untuk tahap selanjutnya (Asesmen Lapangan/AL). {{ !$sudahDilaporkan ? 'Silahkan buat & finalisasi Laporan Penilaian Kecukupan LED Program Studi (LHK) pada tombol di bawah berikut' : '' }}</p>
-
-                @if($sudahDilaporkan)
-                <div class="mt-2">
-                    <span class="badge bg-success text-wrap">
-                        <i class="bi bi-check-circle"></i> {{ $labelBtn }} telah Dibuat
-                    </span>
-                </div>
-                @endif
-
-                @if(!$sudahDilaporkan)
-                <div class="mt-2">
-                    <button type="button" class="btn btn-sm btn-success js-open-pelaporan" data-type="{{ $jenisPelaporan }}" data-assignment-id="{{ $assignmentIdPelaporan }}" data-nomor="{{ $nomorTampil }}">
-                        <i class="bi bi-file-earmark-text"></i> {{ $labelBtn }}
-                    </button>
-                </div>
-                @endif
+                <p class="mb-0">Validasi {{ $sudahDilaporkan ? 'dan Pelaporan AK ' : '' }}telah diselesaikan dan lolos untuk tahap selanjutnya (Asesmen Lapangan/AL). {{ !$sudahDilaporkan ? 'Silahkan buat & finalisasi Laporan Penilaian Kecukupan LED Program Studi (LHK)' : '' }}</p>
             </div>
             @endif
 

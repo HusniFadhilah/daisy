@@ -1,61 +1,30 @@
 @extends('layouts.template.app')
 
-@section('title', 'Dashboard Validasi')
+@section('title', 'Validasi AK')
 
 @push('styles')
 <style>
-    .asesmen-validasi-card {
-        transition: all 0.3s ease;
-        border: 2px solid #e0e0e0;
-    }
-
-    .asesmen-validasi-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-        border-color: var(--primary);
-    }
-
-    .asesor-list-item {
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-        margin-bottom: 10px;
-        transition: all 0.2s ease;
-    }
-
-    .asesor-list-item:hover {
+    .filter-section {
         background: #f8f9fa;
-        border-color: var(--primary);
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
     }
 
-    .avatar-circle {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #932136, #870820);
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 700;
-        font-size: 20px;
+    .search-box {
+        position: relative;
     }
 
-    .stat-card {
-        transition: all 0.3s ease;
-        cursor: pointer;
+    .search-box .bi-search {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #999;
     }
 
-    .stat-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    }
-
-    .pending-asesor-item {
-        padding: 12px;
-        border: 1px solid #ffc107;
-        border-radius: 6px;
-        background: #fff9e6;
-        margin-bottom: 8px;
+    .search-box input {
+        padding-left: 36px;
     }
 
 </style>
@@ -64,294 +33,203 @@
 @section('content')
 <div class="container-fluid py-3">
     <!-- Header -->
-    <div class="mb-4">
-        <h4><i class="bi bi-check2-square"></i> Dashboard Validasi</h4>
-        <p class="text-muted mb-0">Validasi penilaian asesor untuk asesmen yang ditugaskan</p>
-    </div>
-
-    <!-- Stats -->
-    <div class="row mb-4">
-        <div class="col-md-4 col-lg-3 mb-2">
-            <div class="card text-center stat-card" data-bs-toggle="modal" data-bs-target="#modalAsesorSubmitted">
-                <div class="card-body">
-                    <h3 class="text-warning mb-0">{{ $stats['total_asesor_submitted'] }}</h3>
-                    <small class="text-muted">Asesor Sudah Submit</small>
-                    <div class="mt-2">
-                        <span class="badge bg-warning">Perlu Divalidasi</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 col-lg-3 mb-2">
-            <div class="card text-center stat-card" data-bs-toggle="modal" data-bs-target="#modalAsesorPending">
-                <div class="card-body">
-                    <h3 class="text-danger mb-0">{{ $stats['total_asesor_pending'] }}</h3>
-                    <small class="text-muted">Asesor Belum Submit</small>
-                    <div class="mt-2">
-                        <span class="badge bg-danger">Menunggu</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 col-lg-3 mb-2">
-            <div class="card text-center stat-card">
-                <div class="card-body">
-                    <h3 class="text-primary mb-0">{{ $stats['total_needs_validation'] }}</h3>
-                    <small class="text-muted">Asesmen Aktif</small>
-                    <div class="mt-2">
-                        <span class="badge bg-primary">Perlu Validasi</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 col-lg-3 mb-2">
-            <div class="card text-center stat-card">
-                <div class="card-body">
-                    <h3 class="text-success mb-0">{{ $stats['total_validated'] }}</h3>
-                    <small class="text-muted">Selesai Divalidasi</small>
-                    <div class="mt-2">
-                        <span class="badge bg-success">Approved</span>
-                    </div>
-                </div>
-            </div>
+    <div class="welcome-section mb-4">
+        <div class="welcome-content">
+            <h2>
+                <i class="bi bi-check2-square text-white"></i>
+                Validasi AK
+            </h2>
+            <p class="mb-0">Validasi penilaian asesor untuk Asesmen Kecukupan (AK)</p>
         </div>
     </div>
 
-    <!-- Asesmen List -->
-    <h4 class="mb-3">
-        <i class="bi bi-clipboard-check"></i> Asesmen Perlu Divalidasi
-    </h4>
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{{ route('dashboard') }}" class="text-link">
+                    <i class="bi bi-house-door"></i> Dashboard
+                </a>
+            </li>
+            <li class="breadcrumb-item active">Validasi AK</li>
+        </ol>
+    </nav>
 
-    @forelse($needsValidation as $item)
-    <div class="card asesmen-validasi-card mb-4">
-        <div class="card-header bg-primary text-white py-3 ps-4">
-            <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-2">
-                <div class="flex-grow-1">
-                    <h5 class="mb-0 text-wrap text-break">{{ $item['asesmen']->name }}</h5>
-                    <small>
-                        @if($item['asesmen']->studyProgram)
-                        {{ $item['asesmen']->studyProgram->full_name }} -
-                        {{ $item['asesmen']->studyProgram->university->name ?? '' }}
-                        @endif
-                    </small>
-                </div>
-                <div class="ms-md-auto text-start text-md-end d-flex flex-wrap gap-1">
-                    <span class="badge bg-warning text-dark mb-1">
-                        {{ $item['asesors']->count() }} Asesor Submit
-                    </span>
-                    @if($item['asesors_pending']->count() > 0)
-                    <br>
-                    <span class="badge bg-danger">
-                        {{ $item['asesors_pending']->count() }} Belum Submit
-                    </span>
-                    @endif
-                </div>
-            </div>
+    <!-- Stats Cards (template pelaporan style) -->
+    <div class="row mb-4 row-cols-1 row-cols-md-2 row-cols-lg-4 g-3">
+        <div class="col">
+            <x-stat-card title="Asesor Sudah Submit" :value="$stats['total_asesor_submitted']" icon="people" mode="white" description="" color="warning" />
         </div>
-        <div class="card-body">
-            <div class="d-flex flex-column flex-md-row align-items-start align-items-md-start gap-2 mb-3">
-                <div class="flex-grow-1">
-                    <p class="mb-1 d-flex align-items-center flex-wrap gap-1">
-                        <i class="bi bi-tag"></i> <strong>Kode Panel:</strong>
-                        <span class="badge bg-secondary">{{ $item['asesmen']->kode_panel ?? 'N/A' }}</span>
-                    </p>
-                    @if($item['asesmen']->description)
-                    <p class="mb-0 text-muted">{{ Str::limit($item['asesmen']->description, 120) }}</p>
-                    @endif
-                </div>
-
-                @php
-                $totalAcceptedAsesors = $item['total_accepted_asesors'];
-                $allAsesorsSubmitted = $item['asesors_pending']->isEmpty() && $item['asesors']->count() >= 2;
-                $hasMinimumAsesors = $totalAcceptedAsesors >= 2;
-                @endphp
-
-                <div class="ms-md-auto">
-                    @if(!$hasMinimumAsesors)
-                    <button class="btn btn-secondary" disabled title="Minimal 2 asesor harus di-assign">
-                        <i class="bi bi-exclamation-triangle"></i> Kurang Asesor
-                    </button>
-                    @elseif(!$allAsesorsSubmitted)
-                    <button class="btn btn-warning" disabled title="Menunggu semua asesor submit penilaian">
-                        <i class="bi bi-clock"></i> Menunggu {{ $item['asesors_pending']->count() }} Asesor Submit
-                    </button>
-                    @else
-                    <a href="{{ route('ak.validasi.asesor', ['idAsesmen' => $item['asesmen']->id, 'jenisAsesmen' => 'ak']) }}" class="btn btn-primary">
-                        <i class="bi bi-check2-square"></i> Validasi Sekarang
-                    </a>
-                    @endif
-                </div>
-            </div>
-
-            <h6 class="mb-3">
-                <i class="bi bi-people-fill"></i> Daftar Asesor yang Sudah Submit:
-            </h6>
-
-            @foreach($item['asesors'] as $asesor)
-            @php
-            $progress = $asesor->validation_progress ?? [
-            'total' => 0,
-            'validated' => 0,
-            'revision' => 0,
-            'pending' => 0,
-            'percentage' => 0
-            ];
-            @endphp
-
-            <div class="asesor-list-item px-3 pb-3 pt-1">
-                <div class="row align-items-center pt-0">
-                    <div class="col-md-12 col-lg-4 mt-2">
-                        <div class="d-flex align-items-center">
-                            <div class="avatar-circle me-3">
-                                {{ substr($asesor->user->name, 0, 1) }}
-                            </div>
-                            <div>
-                                <div class="fw-semibold">{{ $asesor->user->name }}</div>
-                                <small class="text-muted">{{ $asesor->user->email }}</small>
-                                <div class="mt-1">
-                                    <span class="badge bg-{{ $asesor->jenis_asesmen === 'ak' ? 'primary' : 'info' }}">
-                                        {{ strtoupper($asesor->jenis_asesmen) }}
-                                    </span>
-                                    @if($asesor->urutan_asesor)
-                                    <span class="badge bg-secondary">#{{ $asesor->urutan_asesor }}</span>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 col-lg-3 mt-2">
-                        <small class="text-muted d-block">Disubmit pada:</small>
-                        <strong>{{ \App\Libraries\Date::tglWaktu($asesor->submitted_at) }}</strong>
-                    </div>
-                    <div class="col-md-8 col-lg-5 mt-2">
-                        <small class="text-muted d-block mb-1">Progress Validasi:</small>
-                        <div class="progress" style="height: 24px;">
-                            <div class="progress-bar bg-{{ $progress['percentage'] == 100 ? 'success' : ($progress['percentage'] > 0 ? 'warning' : 'secondary') }}" role="progressbar" style="width: {{ $progress['percentage'] }}%">
-                                {{ $progress['percentage'] }}%
-                            </div>
-                        </div>
-                        <div class="d-flex justify-content-between mt-1">
-                            <small class="text-muted">
-                                <i class="bi bi-check-circle"></i> {{ $progress['validated'] }}/{{ $progress['total'] }} Validated
-                            </small>
-                            @if($progress['revision'] > 0)
-                            <small class="text-danger">
-                                <i class="bi bi-exclamation-triangle"></i> {{ $progress['revision'] }} Perlu Revisi
-                            </small>
-                            @endif
-                            @if($progress['pending'] > 0)
-                            <small class="text-warning">
-                                <i class="bi bi-clock"></i> {{ $progress['pending'] }} Pending
-                            </small>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-            </div>
-            @endforeach
-
-            @if($item['asesors_pending']->count() > 0)
-            <h6 class="mb-3 mt-4 text-danger">
-                <i class="bi bi-exclamation-triangle-fill"></i> Daftar Asesor yang Belum Submit:
-            </h6>
-
-            @foreach($item['asesors_pending'] as $asesor)
-            <div class="asesor-list-item px-3 pb-3 pt-1" style="background-color: #fff3cd; border-color: #ffc107;">
-                <div class="row align-items-center">
-                    <div class="col-md-12 col-lg-5">
-                        <div class="d-flex align-items-center">
-                            <div class="avatar-circle me-3" style="background: #ff9800;">
-                                {{ substr($asesor->user->name, 0, 1) }}
-                            </div>
-                            <div class="min-width-0 w-100">
-                                <div class="fw-semibold">{{ $asesor->user->name }}</div>
-                                <small class="text-muted d-block text-break">{{ $asesor->user->email }}</small>
-                                <div class="mt-1">
-                                    <span class="badge bg-{{ $asesor->jenis_asesmen === 'ak' ? 'primary' : 'info' }}">
-                                        {{ strtoupper($asesor->jenis_asesmen) }}
-                                    </span>
-                                    @if($asesor->urutan_asesor)
-                                    <span class="badge bg-secondary">#{{ $asesor->urutan_asesor }}</span>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-8 col-lg-4">
-                        <small class="text-muted d-block">Status Pekerjaan:</small>
-                        <strong>
-                            @if($asesor->status_pekerjaan === 'not_started')
-                            <span class="badge bg-secondary">Belum Mulai</span>
-                            @elseif($asesor->status_pekerjaan === 'in_progress')
-                            <span class="badge bg-info">Sedang Dikerjakan</span>
-                            @elseif($asesor->status_pekerjaan === 'revision_required')
-                            <span class="badge bg-danger">Perlu Revisi</span>
-                            @else
-                            <span class="badge bg-warning">{{ $asesor->status_pekerjaan }}</span>
-                            @endif
-                        </strong>
-                    </div>
-                    <div class="col-md-4 col-lg-3 text-end">
-                        <small class="text-muted">Menunggu Submit</small>
-                    </div>
-                </div>
-            </div>
-            @endforeach
-            @endif
+        <div class="col">
+            <x-stat-card title="Asesor Belum Submit" :value="$stats['total_asesor_pending']" icon="exclamation-triangle" mode="white" description="" color="danger" />
+        </div>
+        <div class="col">
+            <x-stat-card title="Asesmen Aktif" :value="$stats['total_needs_validation']" icon="clipboard-check" mode="white" description="" color="primary" />
+        </div>
+        <div class="col">
+            <x-stat-card title="Selesai Divalidasi" :value="$stats['total_validated']" icon="check-circle" mode="white" description="" color="success" />
         </div>
     </div>
-    @empty
+
     <div class="card">
-        <div class="card-body text-center py-5">
-            <i class="bi bi-inbox" style="font-size: 4rem; color: #ccc;"></i>
-            <p class="text-muted mt-3 mb-0">Belum ada asesor yang submit penilaian untuk divalidasi.</p>
-        </div>
-    </div>
-    @endforelse
-
-    <!-- Validated Section (Optional) -->
-    @if(count($validated) > 0)
-    <hr class="my-5">
-
-    <h4 class="mb-3 text-success">
-        <i class="bi bi-check-circle-fill"></i> Asesmen yang Telah Divalidasi
-    </h4>
-
-    @foreach($validated as $item)
-    <div class="card asesmen-validasi-card mb-3 border-success">
-        <div class="card-header bg-success text-white">
-            <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-2">
-                <div class="flex-grow-1">
-                    <h6 class="mb-0 text-wrap text-break">{{ $item['asesmen']->name }}</h6>
-                    <small class="text-wrap text-break">
-                        @if($item['asesmen']->studyProgram)
-                        {{ $item['asesmen']->studyProgram->full_name }}
-                        @endif
-                    </small>
-                </div>
-                <span class="badge bg-light text-success ms-md-auto">
-                    <i class="bi bi-check-circle"></i> Telah Divalidasi
-                </span>
+        <div class="card-header bg-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-list-check"></i> Daftar Validasi AK
+                </h5>
+                <small class="text-muted">
+                    Total: {{ count($needsValidation) + count($validated) }}
+                </small>
             </div>
         </div>
-        <div class="card-body">
-            <p class="mb-2">
-                <strong>Kode Panel:</strong>
-                <span class="badge bg-secondary">{{ $item['asesmen']->kode_panel ?? 'N/A' }}</span>
-            </p>
-            <p class="mb-2">
-                <small class="text-muted">Disetujui pada: {{ \App\Libraries\Date::tglWaktu($item['assignment']->approved_at) }}</small>
-            </p>
-            <a href="{{ route('ak.validasi.asesor', ['idAsesmen' => $item['asesmen']->id, 'jenisAsesmen' => 'ak']) }}" class="btn btn-sm btn-outline-success">
-                <i class="bi bi-eye"></i> Lihat Detail
-            </a>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="5%">#</th>
+                            <th width="30%">Asesmen</th>
+                            <th width="25%">Program Studi</th>
+                            <th width="20%">Status Validasi</th>
+                            <th width="10%">Tanggal</th>
+                            <th width="10%" class="text-center">Aksi</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @php $no = 1; @endphp
+
+                        {{-- ================= BELUM DIVALIDASI ================= --}}
+                        @foreach($needsValidation as $item)
+                        @php
+                        $asesmen = $item['asesmen'];
+
+                        $prodi = '-';
+                        $univ = '-';
+                        if ($asesmen->studyProgram) {
+                        $prodi = $asesmen->studyProgram->full_name;
+                        if ($asesmen->studyProgram->university) {
+                        $univ = $asesmen->studyProgram->university->name;
+                        }
+                        }
+
+                        $hasMinAsesor = $item['total_accepted_asesors'] >= 2;
+                        $allSubmitted = $item['asesors_pending']->isEmpty() && $item['asesors']->count() >= 2;
+                        @endphp
+
+                        <tr>
+                            <td>{{ $no++ }}</td>
+
+                            <td>
+                                <p class="mb-0">{{ $asesmen->name }}</p>
+                                <small class="text-muted">
+                                    Kode Panel:
+                                    {{ isset($asesmen->kode_panel) && $asesmen->kode_panel ? $asesmen->kode_panel : '-' }}
+                                </small>
+                            </td>
+
+                            <td>
+                                <small class="text-muted d-block">{{ $univ }}</small>
+                                <span class="badge bg-light text-dark">{{ $prodi }}</span>
+                            </td>
+
+                            <td>
+                                @if(!$hasMinAsesor)
+                                <span class="badge bg-secondary">
+                                    <i class="bi bi-exclamation-triangle"></i> Kurang Asesor
+                                </span>
+                                @elseif(!$allSubmitted)
+                                <span class="badge bg-warning text-dark">
+                                    <i class="bi bi-clock"></i> Menunggu Asesor Submit
+                                </span>
+                                @else
+                                <span class="badge bg-primary">
+                                    <i class="bi bi-check2-square"></i> Siap Divalidasi
+                                </span>
+                                @endif
+                            </td>
+
+                            <td>
+                                <span class="text-muted">-</span>
+                            </td>
+
+                            <td class="text-center">
+                                @if($hasMinAsesor && $allSubmitted)
+                                <a href="{{ route('ak.validasi.asesor', ['idAsesmen' => $asesmen->id, 'jenisAsesmen' => 'ak']) }}" class="btn btn-sm btn-primary" title="Validasi">
+                                    <i class="bi bi-check2-square"></i>
+                                </a>
+                                @else
+                                <button class="btn btn-sm btn-secondary" disabled>
+                                    <i class="bi bi-lock"></i>
+                                </button>
+                                @endif
+                            </td>
+                        </tr>
+                        @endforeach
+
+                        {{-- ================= SUDAH DIVALIDASI ================= --}}
+                        @foreach($validated as $item)
+                        @php
+                        $asesmen = $item['asesmen'];
+
+                        $prodi = '-';
+                        $univ = '-';
+                        if ($asesmen->studyProgram) {
+                        $prodi = $asesmen->studyProgram->full_name;
+                        if ($asesmen->studyProgram->university) {
+                        $univ = $asesmen->studyProgram->university->name;
+                        }
+                        }
+
+                        $approvedAt = '-';
+                        if ($item['assignment'] && $item['assignment']->approved_at) {
+                        $approvedAt = \App\Libraries\Date::tglIndo($item['assignment']->approved_at);
+                        }
+                        @endphp
+
+                        <tr class="table-success">
+                            <td>{{ $no++ }}</td>
+
+                            <td>
+                                <p class="mb-0">{{ $asesmen->name }}</p>
+                                <small class="text-muted">
+                                    Kode Panel:
+                                    {{ isset($asesmen->kode_panel) && $asesmen->kode_panel ? $asesmen->kode_panel : '-' }}
+                                </small>
+                            </td>
+
+                            <td>
+                                <small class="text-muted d-block">{{ $univ }}</small>
+                                <span class="badge bg-light text-dark">{{ $prodi }}</span>
+                            </td>
+
+                            <td>
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle"></i> Telah Divalidasi
+                                </span>
+                            </td>
+
+                            <td>
+                                <small>{{ $approvedAt }}</small>
+                            </td>
+
+                            <td class="text-center">
+                                <a href="{{ route('ak.validasi.asesor', ['idAsesmen' => $asesmen->id, 'jenisAsesmen' => 'ak']) }}" class="btn btn-sm btn-outline-success" title="Lihat Detail">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        @endforeach
+
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-    @endforeach
-    @endif
 </div>
 
-<!-- Modal: Asesor yang Sudah Submit -->
+<!-- Modal: Asesor yang Sudah Submit (tetap dipakai dari file lama) -->
 <div class="modal fade" id="modalAsesorSubmitted" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -366,14 +244,9 @@
                 @if($item['asesors']->count() > 0)
                 <h6 class="fw-bold mb-2">{{ $item['asesmen']->name }}</h6>
                 @foreach($item['asesors'] as $asesor)
-                <div class="pending-asesor-item mb-2">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <strong>{{ $asesor->user->name }}</strong>
-                            <br><small class="text-muted d-block text-break">{{ $asesor->user->email }}</small>
-                        </div>
-                        <span class="badge bg-warning">Perlu Validasi</span>
-                    </div>
+                <div class="p-2 mb-2 border rounded" style="background:#fff9e6;border-color:#ffc107;">
+                    <strong>{{ $asesor->user->name }}</strong>
+                    <br><small class="text-muted d-block text-break">{{ $asesor->user->email }}</small>
                 </div>
                 @endforeach
                 <hr>
@@ -384,7 +257,7 @@
     </div>
 </div>
 
-<!-- Modal: Asesor yang Belum Submit -->
+<!-- Modal: Asesor yang Belum Submit (tetap dipakai dari file lama) -->
 <div class="modal fade" id="modalAsesorPending" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -396,24 +269,13 @@
             </div>
             <div class="modal-body">
                 @forelse($asesorsPendingList as $pending)
-                <div class="pending-asesor-item">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <strong>{{ $pending['asesor']->name }}</strong>
-                            <br><small class="text-muted">{{ $pending['asesor']->email }}</small>
-                            <br><small><strong>Asesmen:</strong> {{ $pending['asesmen'] }}</small>
-                        </div>
-                        <div class="text-end">
-                            <span class="badge bg-{{ $pending['jenis_asesmen'] === 'ak' ? 'primary' : 'info' }}">
-                                {{ strtoupper($pending['jenis_asesmen']) }}
-                            </span>
-                            <br>
-                            <span class="badge bg-danger mt-1">{{ ucfirst(str_replace('_', ' ', $pending['status'])) }}</span>
-                        </div>
-                    </div>
+                <div class="p-2 mb-2 border rounded" style="background:#fff3cd;border-color:#ffc107;">
+                    <strong>{{ $pending['asesor']->name }}</strong>
+                    <br><small class="text-muted">{{ $pending['asesor']->email }}</small>
+                    <br><small><strong>Asesmen:</strong> {{ $pending['asesmen'] }}</small>
                 </div>
                 @empty
-                <p class="text-center text-muted">Semua asesor sudah submit! 🎉</p>
+                <p class="text-center text-muted mb-0">Semua asesor sudah submit! 🎉</p>
                 @endforelse
             </div>
         </div>
@@ -421,3 +283,58 @@
 </div>
 
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var searchInput = document.getElementById('searchInput');
+        var filterStatus = document.getElementById('filterStatus');
+        var resetBtn = document.getElementById('resetFilter');
+
+        var tbody = document.getElementById('needsValidationTbody');
+        var noResults = document.getElementById('noResults');
+
+        if (!tbody) return;
+
+        var rows = Array.prototype.slice.call(tbody.querySelectorAll('.js-need-row'));
+
+        function applyFilters() {
+            var searchTerm = searchInput.value.toLowerCase();
+            var statusFilter = filterStatus.value;
+
+            var visible = rows.filter(function(row) {
+                var hay = row.dataset.search || '';
+                var status = row.dataset.status || '';
+
+                var matchSearch = !searchTerm || hay.indexOf(searchTerm) !== -1;
+                var matchStatus = !statusFilter || status === statusFilter;
+
+                return matchSearch && matchStatus;
+            });
+
+            rows.forEach(function(r) {
+                r.classList.add('d-none');
+            });
+
+            if (visible.length > 0) {
+                visible.forEach(function(r) {
+                    r.classList.remove('d-none');
+                });
+                noResults.classList.add('d-none');
+            } else {
+                noResults.classList.remove('d-none');
+            }
+        }
+
+        searchInput.addEventListener('input', applyFilters);
+        filterStatus.addEventListener('change', applyFilters);
+
+        resetBtn.addEventListener('click', function() {
+            searchInput.value = '';
+            filterStatus.value = '';
+            applyFilters();
+        });
+    });
+
+</script>
+@endpush

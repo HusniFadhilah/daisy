@@ -134,20 +134,19 @@ $viewMode = request('view') === 'split' ? 'split' : 'merged'; // split | merged
                         $colors = ['#e3f2fd', '#fff3e0', '#e8f5e9', '#f3e5f5'];
                         $bgColor = $colors[$index % count($colors)];
                         @endphp
-                        <th class="vm-header sticky-header text-center vm-asesor-header" data-asesor="{{ $asesor->urutan_asesor }}" colspan="{{ $viewMode === 'merged' ? 1 : 2 }}" style="background: {{ $bgColor }}; z-index: 30;">
+                        <th class="vm-header sticky-header text-center vm-asesor-header" data-asesor="{{ $asesor->urutan_asesor }}" colspan="{{ $viewMode === 'merged' ? 1 : 2 }}" style="background: #932136; z-index: 30;">
                             <div class="d-flex flex-column align-items-center">
-                                <div class="avatar-circle-sm mb-1" style="background: linear-gradient(135deg, #932136, #870820);">
-                                    {{ substr($asesor->user->name, 0, 2) }}
+                                <div class="d-flex flex-column align-items-center">
+                                    <div class="fw-bold text-white">Penilaian AK Asesor {{ $asesor->urutan_asesor }}</div>
+                                    <small class="text-white">{{ $asesor->user->name }}</small>
                                 </div>
-                                <div class="fw-bold text-dark">Asesor {{ $asesor->urutan_asesor }}</div>
-                                <small class="text-muted">{{ $asesor->user->name }}</small>
                             </div>
                         </th>
                         @endforeach
 
                         {{-- Validasi Column --}}
-                        <th class="vm-header sticky-header text-center" style="background: #e8f5e9; min-width: 120px; z-index: 30;">
-                            <div class="fw-bold text-dark">Validasi</div>
+                        <th class="vm-header sticky-header text-center" style="background: #932136; min-width: 120px; z-index: 30;">
+                            <div class="fw-bold text-white">Validasi</div>
                         </th>
                     </tr>
 
@@ -164,21 +163,21 @@ $viewMode = request('view') === 'split' ? 'split' : 'merged'; // split | merged
                         @endphp
 
                         @if($viewMode === 'merged')
-                        <th class="vm-subheader sticky-header text-center vm-subheader-pemenuhan" style="background: {{ $bgColor }}; min-width: 200px; z-index: 29;">
-                            <small class="fw-bold">Penilaian AK</small>
+                        <th class="vm-subheader sticky-header text-center vm-subheader-pemenuhan" style="background: #fff; min-width: 200px; z-index: 29;">
+                            <small class="fw-bold">Komentar/Justifikasi</small>
                         </th>
                         @else
-                        <th class="vm-subheader sticky-header text-center vm-subheader-pemenuhan" style="background: {{ $bgColor }}; min-width: 100px; z-index: 29;">
+                        <th class="vm-subheader sticky-header text-center vm-subheader-pemenuhan" style="background: #fff; min-width: 100px; z-index: 29;">
                             <small class="fw-bold">Pemenuhan</small>
                         </th>
-                        <th class="vm-subheader sticky-header text-center vm-subheader-pelampauan vm-col-pelampauan" style="background: {{ $bgColor }}; min-width: 100px; z-index: 29;">
+                        <th class="vm-subheader sticky-header text-center vm-subheader-pelampauan vm-col-pelampauan" style="background: #fff; min-width: 100px; z-index: 29;">
                             <small class="fw-bold">Pelampauan</small>
                         </th>
                         @endif
                         @endforeach
 
                         {{-- Validasi --}}
-                        <th class="vm-subheader sticky-header text-center" style="background: #e8f5e9; z-index: 29;">
+                        <th class="vm-subheader sticky-header text-center" style="background: #fff; z-index: 29;">
                             <small class="fw-bold">Status</small>
                         </th>
                     </tr>

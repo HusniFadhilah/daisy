@@ -4,155 +4,161 @@
 
 @section('content')
 <div class="container-fluid py-3">
-    {{-- Header --}}
-    <div class="card mb-4">
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h3 class="mb-1">Validasi Dokumen Akreditasi</h3>
-                    <p class="text-muted mb-0">Daftar Permohonan akreditasi yang Anda validasi sebagai Validator Dokumen</p>
-                </div>
-                <a href="{{ route('penawaran') }}" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left"></i> Kembali
+    <!-- Header -->
+    <div class="welcome-section mb-4">
+        <div class="welcome-content">
+            <h2>
+                <i class="bi bi-file-earmark-check text-white"></i>
+                Validasi Dokumen
+            </h2>
+            <p class="mb-0">Daftar permohonan akreditasi yang Anda validasi sebagai Validator Dokumen</p>
+        </div>
+    </div>
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{{ route('dashboard') }}" class="text-link">
+                    <i class="bi bi-house-door"></i> Dashboard
                 </a>
-            </div>
+            </li>
+            <li class="breadcrumb-item active">Validasi Dokumen</li>
+        </ol>
+    </nav>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4 row-cols-1 row-cols-md-2 row-cols-lg-4 g-3">
+        <div class="col">
+            <x-stat-card title="Menunggu Validasi" :value="$stats['pending']" icon="clock-history" mode="white" description="" color="warning" />
+        </div>
+
+        <div class="col">
+            <x-stat-card title="Sedang Divalidasi" :value="$stats['in_review']" icon="eye" mode="white" description="" color="info" />
+        </div>
+
+        <div class="col">
+            <x-stat-card title="Perlu Revisi" :value="$stats['revision']" icon="exclamation-triangle" mode="white" description="" color="danger" />
+        </div>
+
+        <div class="col">
+            <x-stat-card title="Disetujui" :value="$stats['approved']" icon="check-circle" mode="white" description="" color="success" />
         </div>
     </div>
 
-    {{-- Stats Cards --}}
-    <div class="row mb-4">
-        <div class="col-lg-3 mb-3">
-            <div class="card border-warning">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-1">Menunggu Validasi</h6>
-                            <h2 class="mb-0">{{ $stats['pending'] }}</h2>
-                        </div>
-                        <div class="bg-warning bg-opacity-10 p-3 rounded">
-                            <i class="bi bi-clock-history text-warning" style="font-size: 2rem;"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-3 mb-3">
-            <div class="card border-info">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-1">Sedang Divalidasi</h6>
-                            <h2 class="mb-0">{{ $stats['in_review'] }}</h2>
-                        </div>
-                        <div class="bg-info bg-opacity-10 p-3 rounded">
-                            <i class="bi bi-eye text-info" style="font-size: 2rem;"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-3 mb-3">
-            <div class="card border-danger">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-1">Perlu Revisi</h6>
-                            <h2 class="mb-0">{{ $stats['revision'] }}</h2>
-                        </div>
-                        <div class="bg-danger bg-opacity-10 p-3 rounded">
-                            <i class="bi bi-exclamation-triangle text-danger" style="font-size: 2rem;"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-3 mb-3">
-            <div class="card border-success">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-1">Disetujui</h6>
-                            <h2 class="mb-0">{{ $stats['approved'] }}</h2>
-                        </div>
-                        <div class="bg-success bg-opacity-10 p-3 rounded">
-                            <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Assignment List --}}
+    <!-- Table -->
     <div class="card">
-        <div class="card-header bg-light">
-            <h5 class="mb-0"><i class="bi bi-file-earmark-text"></i> Daftar Validasi Dokumen</h5>
+        <div class="card-header bg-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-list-check"></i> Daftar Validasi Dokumen
+                </h5>
+                <small class="text-muted">Total: {{ $assignments->total() }}</small>
+            </div>
         </div>
-        <div class="card-body">
+
+        <div class="card-body p-0">
             @if($assignments->count() > 0)
             <div class="table-responsive">
-                <table class="table table-hover align-middle">
+                <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>Permohonan Akreditasi</th>
-                            <th>Program Studi</th>
-                            {{-- <th>Status Dokumen</th> --}}
-                            <th>Status Validasi Dokumen</th>
-                            <th>Tanggal Validasi Dokumen</th>
-                            <th>Aksi</th>
+                            <th width="5%">#</th>
+                            <th width="35%">Permohonan Akreditasi</th>
+                            <th width="25%">Program Studi</th>
+                            <th width="20%">Status Validasi</th>
+                            <th width="15%">Tanggal Validasi</th>
+                            <th width="10%" class="text-center">Aksi</th>
                         </tr>
                     </thead>
+
                     <tbody>
-                        @foreach($assignments as $assignment)
+                        @foreach($assignments as $index => $assignment)
                         @php
                         $pengajuan = $assignment->pengajuan;
-                        $statusBadge = [
-                        'not_started' => '<span class="badge bg-warning text-dark"><i class="bi bi-clock"></i> Belum Dimulai</span>',
-                        'in_progress' => '<span class="badge bg-info"><i class="bi bi-eye"></i> Sedang Divalidasi</span>',
-                        'revision_required' => '<span class="badge bg-danger"><i class="bi bi-exclamation-triangle"></i> Prodi Perlu Revisi</span>',
-                        'approved' => '<span class="badge bg-success"><i class="bi bi-check-circle"></i> Disetujui Validator</span>',
-                        ];
-                        $badgePelaporan = $pengajuan? $pengajuan->getPelaporanBadge($assignment->jenis_asesmen): null;
+
+                        $judul = '-';
+                        $nomor = '-';
+                        $createdAt = null;
+
+                        if ($pengajuan) {
+                        $judul = $pengajuan->judul_short;
+                        $nomor = $pengajuan->nomor_pengajuan;
+                        $createdAt = $pengajuan->created_at;
+                        }
+
+                        $prodi = '-';
+                        $univ = '-';
+                        if ($pengajuan && isset($pengajuan->studyProgram) && $pengajuan->studyProgram) {
+                        $prodi = $pengajuan->studyProgram->name;
+                        if (isset($pengajuan->studyProgram->university) && $pengajuan->studyProgram->university) {
+                        $univ = $pengajuan->studyProgram->university->name;
+                        }
+                        }
+
+                        $tglValidasi = null;
+                        if ($pengajuan && !empty($pengajuan->tanggal_validasi_borang_selesai)) {
+                        $tglValidasi = $pengajuan->tanggal_validasi_borang_selesai;
+                        }
                         @endphp
+
                         <tr>
+                            <td>{{ $assignments->firstItem() + $index }}</td>
+
                             <td>
-                                <p>{{ $pengajuan?->judul_short }}</p>
-                                <small class="text-muted">{{ $pengajuan?->nomor_pengajuan }}</small>
-                            </td>
-                            <td>
-                                {{ $pengajuan?->studyProgram->name }}
+                                <p class="mb-0">{{ $judul }}</p>
+                                <small class="text-muted">{{ $nomor }}</small>
                                 <br>
-                                <small class="text-muted">{{ $pengajuan?->studyProgram->university->name }}</small>
+                                <small class="text-muted">
+                                    Dibuat pada:
+                                    {{ $createdAt ? \App\Libraries\Date::tglIndo($createdAt) : '-' }}
+                                </small>
                             </td>
-                            {{-- <td>
-                                {!! $statusBadge[$assignment->status_pekerjaan] !!}
-                            </td> --}}
+
                             <td>
-                                {!! $pengajuan->getCustomBadgeLastStatus('validasi_dokumen', 'upps','label_short_for') !!}
+                                <p class="mb-0">{{ $prodi }}</p>
+                                <small class="text-muted">{{ $univ }}</small>
                             </td>
+
                             <td>
-                                {{ $pengajuan?->tanggal_validasi_borang_selesai ? $pengajuan?->tanggal_validasi_borang_selesai->format('d M Y H:i') : '-' }}
+                                @if($pengajuan)
+                                {!! $pengajuan->getCustomBadgeLastStatus('validasi_dokumen', 'upps', 'label_short_for') !!}
+                                @else
+                                <span class="badge bg-secondary">-</span>
+                                @endif
                             </td>
+
                             <td>
-                                <a href="{{ route('validator.borang.show', $assignment->id) }}" class="btn btn-sm btn-primary">
-                                    <i class="bi bi-eye"></i> Lihat Validasi
+                                @if($tglValidasi)
+                                <small>{{ $tglValidasi->format('d M Y H:i') }}</small>
+                                <br>
+                                <small class="text-muted">{{ $tglValidasi->diffForHumans() }}</small>
+                                @else
+                                <span class="text-muted">-</span>
+                                @endif
+                            </td>
+
+                            <td class="text-center">
+                                <a href="{{ route('validator.borang.show', $assignment->id) }}" class="btn btn-sm btn-primary" title="Lihat Validasi">
+                                    <i class="bi bi-eye"></i>
                                 </a>
                             </td>
                         </tr>
                         @endforeach
                     </tbody>
+
                 </table>
             </div>
 
-            <div class="mt-3">
+            <!-- Pagination -->
+            <div class="card-footer bg-white">
                 {{ $assignments->links() }}
             </div>
+
             @else
-            <div class="alert alert-info alert-permanent">
-                <i class="bi bi-info-circle"></i> Belum ada dokumen yang ditugaskan untuk Anda validasi.
+            <div class="text-center py-5">
+                <i class="bi bi-inbox" style="font-size:64px;color:#ddd;"></i>
+                <p class="text-muted mt-3 mb-0">Belum ada dokumen yang ditugaskan untuk Anda validasi.</p>
             </div>
             @endif
         </div>
@@ -172,10 +178,10 @@
             , fileLabel: 'Laporan Kesiapan LED Program Studi (LKLED)'
             , finalizeLabel: 'Laporan Kesiapan LED Program Studi (LKLED)'
             , additionalDescription: `Dokumen yang telah digabungkan, yang diperlukan isinya adalah:
-            • Surat Permohonan PS untuk Akreditasi
-            • Surat Balasan DE untuk menyusun LED
-            • Bukti Pembayaran Akreditasi
-            • Dokumen LED yang telah memenuhi standar untuk dilakukan Penilaian Kecukupan (AK)`
+• Surat Permohonan PS untuk Akreditasi
+• Surat Balasan DE untuk menyusun LED
+• Bukti Pembayaran Akreditasi
+• Dokumen LED yang telah memenuhi standar untuk dilakukan Penilaian Kecukupan (AK)`
         }
     };
 

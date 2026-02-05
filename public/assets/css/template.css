@@ -1674,7 +1674,6 @@ button[aria-expanded="true"] .chevron-icon {
 
 .text-link {
     text-decoration: none;
-    color: inherit;
     /* opsional, biar warnanya ikut parent */
 }
 
