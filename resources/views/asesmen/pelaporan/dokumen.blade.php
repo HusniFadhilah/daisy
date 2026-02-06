@@ -179,13 +179,27 @@
 
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm" role="group">
-                                    @if($canReport && !$isReported)
-                                    <button type="button" class="btn btn-primary js-open-pelaporan" title="Upload Pelaporan" data-type="dokumen" data-assignment-id="{{ $assignment->id }}" data-nomor="{{ $nomor }}">
+                                    {{-- Tombol Upload --}}
+                                    <button type="button" class="btn btn-info js-open-pelaporan" title="Upload Pelaporan" data-type="dokumen" data-assignment-id="{{ $assignment->id }}" data-nomor="{{ $nomor }}">
                                         <i class="bi bi-upload"></i>
                                     </button>
-                                    @else
-                                    <a href="{{ route('validator.borang.show', $assignment->id) }}" class="btn btn-info" title="Lihat Detail">
+
+                                    {{-- Tombol Lihat Detail --}}
+                                    <a href="{{ route('pelaporan.borang.show', $assignment->id) }}" class="btn btn-outline-primary" title="Lihat Detail">
                                         <i class="bi bi-eye"></i>
+                                    </a>
+
+                                    {{-- Tombol Download --}}
+                                    @php
+                                    $hasDocument = $assignment->asesmen->documents()
+                                    ->where('type', 'laporan_validasi_borang')
+                                    ->where('is_active', true)
+                                    ->exists();
+                                    @endphp
+
+                                    @if($hasDocument)
+                                    <a href="{{ route('pelaporan.borang.download', $assignment->id) }}" class="btn btn-success" title="Download Laporan">
+                                        <i class="bi bi-download"></i>
                                     </a>
                                     @endif
                                 </div>

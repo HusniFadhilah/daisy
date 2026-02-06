@@ -191,4 +191,16 @@ class Asesmen extends Model
             ->orderBy('sort_order')
             ->orderBy('id');
     }
+
+    public function lhaDocuments()
+    {
+        return $this->hasMany(AsesmenDocument::class, 'id_asesmen')
+            ->where('type', 'lha_asesor')
+            ->where('is_active', true);
+    }
+
+    public function LhaAsesor()
+    {
+        return $this->hasOne(LhaAsesor::class, 'id_asesmen');
+    }
 }

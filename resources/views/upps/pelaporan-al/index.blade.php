@@ -15,7 +15,7 @@
     }
 
     .filter-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #932136 0%, #870820 100%);
         color: white;
     }
 
@@ -28,7 +28,7 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item active">Pelaporan Hasil Asesmen Lapangan</li>
+            <li class="breadcrumb-item active">Pelaporan Asesmen Lapangan</li>
         </ol>
     </nav>
 
@@ -36,14 +36,27 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">
-                <i class="bi bi-file-earmark-check"></i> Pelaporan Hasil Asesmen Lapangan
+                <i class="bi bi-file-earmark-check"></i> Pelaporan Asesmen Lapangan
             </h4>
-            <p class="text-muted mb-0">Monitor pelaporan hasil Asesmen Lapangan</p>
+            <p class="text-muted mb-0">Monitor pelaporan Asesmen Lapangan</p>
         </div>
     </div>
 
+    {{-- <div class="alert alert-info alert-permanent">
+        <i class="bi bi-bell-fill"></i>
+        <strong>Proses Pelaporan AL</strong><br>
+        Prodi ... dengan surat permohonan nomor .... telah dilaksanakan pelaporan AL oleh Asesor.<br>
+        Program Studi dipersilahkan untuk menunggu<br>
+    </div> --}}
+
+    <div class="alert alert-info alert-permanent">
+        <i class="bi bi-bell-fill"></i>
+        <strong>Pelaporan AL</strong><br>
+        Pelaporan AL pada permohonan akreditasi program studi tersedia pada daftar berikut
+    </div>
+
     <!-- Statistics Cards -->
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 mb-4">
+    {{-- <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 mb-4">
         <div class="col mb-3">
             <x-stat-card title="Total Berita Acara AL" :value="$stats['total']" description="Disetujui program studi" icon="file-earmark-check" iconBg="success-subtle" />
         </div>
@@ -51,69 +64,14 @@
         <div class="col mb-3">
             <x-stat-card title="Pelaporan AL" :value="$stats['pelaporan_al']" description="Hasil telah dilaporkan" icon="send-check" iconBg="info-subtle" />
         </div>
-    </div>
+    </div> --}}
 
     <!-- Filters & Content -->
     <div class="row">
         <!-- Filters Sidebar -->
-        <div class="col-lg-3 mb-4">
-            <div class="card filter-card">
-                <div class="card-header border-0">
-                    <h5 class="mb-0">
-                        <i class="bi bi-funnel"></i> Filter & Pencarian
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <form method="GET" action="{{ route('upps.pelaporan-al') }}">
-                        <!-- Search -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Cari Permohonan</label>
-                            <input type="text" name="search" class="form-control" placeholder="Nomor/Nama prodi..." value="{{ request('search') }}">
-                        </div>
-
-                        <!-- Status -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Status Pelaporan</label>
-                            <select name="status" class="form-select">
-                                <option value="">Semua Status</option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_AL_SELESAI }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_AL_SELESAI ? 'selected' : '' }}>
-                                    Asesmen Selesai
-                                </option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_AL_DILAPORKAN }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_AL_DILAPORKAN ? 'selected' : '' }}>
-                                    Hasil Dilaporkan
-                                </option>
-                            </select>
-                        </div>
-
-                        <!-- Tahun -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Tahun Akreditasi</label>
-                            <select name="tahun" class="form-select">
-                                <option value="">Semua Tahun</option>
-                                @foreach($tahunList as $tahun)
-                                <option value="{{ $tahun }}" {{ request('tahun') == $tahun ? 'selected' : '' }}>
-                                    {{ $tahun }}
-                                </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <!-- Buttons -->
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-light">
-                                <i class="bi bi-search"></i> Terapkan Filter
-                            </button>
-                            <a href="{{ route('upps.pelaporan-al') }}" class="btn btn-outline-light">
-                                <i class="bi bi-x-circle"></i> Reset
-                            </a>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
 
         <!-- Main Content -->
-        <div class="col-lg-9">
+        <div class="col-lg-12">
             <div class="card">
                 <div class="card-header bg-white">
                     <div class="d-flex justify-content-between align-items-center">

@@ -178,19 +178,38 @@ class ALDocumentController extends Controller
 
     public function download($idAsesmen, $docId)
     {
-        $this->assertAccessOrFail((int)$idAsesmen);
-
         $doc = AsesmenDocument::where('id_asesmen', $idAsesmen)->findOrFail($docId);
 
         $absolutePath = storage_path('app/public/' . $doc->path);
-
         abort_unless(is_file($absolutePath), 404, 'File tidak ditemukan');
 
-        // ✅ Generate nama download dari data dokumen
-        $tanggal = $doc->uploaded_at ? $doc->uploaded_at->locale('id')->isoFormat('DD MMM YYYY') : now()->locale('id')->isoFormat('DD MMM YYYY');
-        $downloadName = "Hasil dan Berita Acara Asesmen Lapangan_{$idAsesmen}_{$tanggal}.pdf";
+        return response()->file($absolutePath, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . $doc->original_name . '"',
+        ]);
+    }
 
-        return response()->download($absolutePath, $downloadName);
+    public function preview($idAsesmen, $docId)
+    {
+        $doc = AsesmenDocument::where('id_asesmen', $idAsesmen)->findOrFail($docId);
+
+        $absolutePath = storage_path('app/public/' . $doc->path);
+        abort_unless(is_file($absolutePath), 404, 'File tidak ditemukan');
+
+        $filename = $doc->original_name ?: 'document.pdf';
+
+        return response()->stream(function () use ($absolutePath) {
+            $stream = fopen($absolutePath, 'rb');
+            fpassthru($stream);
+            fclose($stream);
+        }, 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . $filename . '"',
+            'Content-Length'      => filesize($absolutePath),
+            'Accept-Ranges'       => 'bytes',
+            'Cache-Control'       => 'private, max-age=0, must-revalidate',
+            'Pragma'              => 'public',
+        ]);
     }
 
     public function destroy($idAsesmen, $docId)

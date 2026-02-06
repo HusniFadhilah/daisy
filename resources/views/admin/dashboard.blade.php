@@ -10,18 +10,8 @@ $authUser = auth()->user();
     <!-- Welcome Section -->
     <section class="welcome-section">
         <div class="welcome-content">
-            <h2>Selamat Datang Kembali, {{ $authUser->name }}! 👋</h2>
-            <div class="d-flex flex-wrap align-items-center gap-3">
-                <p class="mb-0">Role Anda adalah <span class="badge bg-primary">{{ $authUser->role_alias }}</span></p>
-
-                @if($authUser->id_university && $authUser->university)
-                <span class="text-muted">|</span>
-                <p class="mb-0">
-                    <i class="bi bi-building me-1"></i>
-                    <strong>{{ $authUser->university->name }}</strong>
-                </p>
-                @endif
-            </div>
+            <h2>Selamat Datang Kembali 👋</h2>
+            <p class="mb-0">Anda bersama Sistem Informasi Akreditasi LAMDEPILAR (DAISY)</p>
         </div>
     </section>
 

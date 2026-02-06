@@ -1,4 +1,4 @@
-@extends('emails.layouts.template', [
+@extends('emails.template', [
 'title' => 'Penerimaan Permohonan Akreditasi',
 'headerTitle' => 'Penerimaan Permohonan Akreditasi',
 'preheader' => 'Penerimaan permohonan akreditasi telah dikirim untuk ' . $pengajuan->studyProgram->name . '.'

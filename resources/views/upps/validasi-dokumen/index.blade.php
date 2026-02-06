@@ -15,7 +15,7 @@
     }
 
     .filter-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #932136 0%, #870820 100%);
         color: white;
     }
 
@@ -42,8 +42,14 @@
         </div>
     </div>
 
+    <div class="alert alert-info alert-permanent">
+        <i class="bi bi-bell-fill"></i>
+        <strong>Validasi Dokumen</strong><br>
+        Validasi dokumen permohonan akreditasi program studi dapat dilihat pada daftar berikut<br>
+    </div>
+
     <!-- Statistics Cards -->
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 mb-4">
+    {{-- <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 mb-4">
         <div class="col mb-3">
             <x-stat-card title="Menunggu Validasi Dokumen" :value="$stats['menunggu_validasi']" description="Validasi dokumen belum dimulai" icon="hourglass-split" iconBg="info-subtle" />
         </div>
@@ -59,81 +65,14 @@
         <div class="col mb-3">
             <x-stat-card title="Dokumen Tervalidasi" :value="$stats['tervalidasi']" description="Dokumen selesai divalidasi, dan dapat dilanjutkan ke tahap berikutnya" icon="patch-check" iconBg="success-subtle" />
         </div>
-    </div>
+    </div> --}}
 
     <!-- Filters & Content -->
     <div class="row">
         <!-- Filters Sidebar -->
-        <div class="col-lg-3 mb-4">
-            <div class="card filter-card">
-                <div class="card-header border-0">
-                    <h5 class="mb-0">
-                        <i class="bi bi-funnel"></i> Filter & Pencarian
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <form method="GET" action="{{ route('upps.validasi-dokumen') }}">
-                        <!-- Search -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Cari Permohonan</label>
-                            <input type="text" name="search" class="form-control" placeholder="Nomor/Nama prodi..." value="{{ request('search') }}">
-                        </div>
-
-                        <!-- Status -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Status Validasi</label>
-                            <select name="status" class="form-select">
-                                <option value="">Semua Status</option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI ? 'selected' : '' }}>
-                                    Dokumen Diterima LAMDEPILAR
-                                </option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING ? 'selected' : '' }}>
-                                    Menunggu Validasi
-                                </option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION ? 'selected' : '' }}>
-                                    Sedang Divalidasi
-                                </option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED ? 'selected' : '' }}>
-                                    Perlu Revisi
-                                </option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED ? 'selected' : '' }}>
-                                    Tervalidasi
-                                </option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA ? 'selected' : '' }}>
-                                    Final Diterima
-                                </option>
-                            </select>
-                        </div>
-
-                        <!-- Tahun -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Tahun Akreditasi</label>
-                            <select name="tahun" class="form-select">
-                                <option value="">Semua Tahun</option>
-                                @foreach($tahunList as $tahun)
-                                <option value="{{ $tahun }}" {{ request('tahun') == $tahun ? 'selected' : '' }}>
-                                    {{ $tahun }}
-                                </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <!-- Buttons -->
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-light">
-                                <i class="bi bi-search"></i> Terapkan Filter
-                            </button>
-                            <a href="{{ route('upps.validasi-dokumen') }}" class="btn btn-outline-light">
-                                <i class="bi bi-x-circle"></i> Reset
-                            </a>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
 
         <!-- Main Content -->
-        <div class="col-lg-9">
+        <div class="col-lg-12">
             <div class="card">
                 <div class="card-header bg-white">
                     <div class="d-flex justify-content-between align-items-center">

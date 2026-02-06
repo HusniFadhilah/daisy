@@ -156,7 +156,7 @@
             ],
             [
             'date' => $pengajuan->tanggal_penyimpanan,
-            'label' => 'Penyimpanan Arsip Pelaksanaan Akreditasi',
+            'label' => 'Penyimpanan Arsip Akreditasi',
             'icon' => 'bi-archive',
             'step' => 20,
             'color' => 'secondary'

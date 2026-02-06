@@ -174,7 +174,7 @@
                                 </h5>
                                 <p class="mb-2">
                                     Anda telah menyelesaikan <strong>semua {{ $progress['total'] }} elemen penilaian</strong>.
-                                    Segera lakukan <strong>Finalisasi dan Kirim</strong> agar penilaian Anda dapat divalidasi oleh validator.
+                                    Segera lakukan <strong>Finalisasi dan Kirim</strong> agar penilaian Anda dapat divalidasi.
                                 </p>
                                 <hr>
                                 <div class="mb-0">

@@ -108,31 +108,11 @@
                 <div class="card-body">
                     <table class="table table-borderless">
                         <tr>
-                            <th width="30%">Nomor Permohonan</th>
-                            <td>: {{ $pengajuan->nomor_pengajuan }}</td>
+                            <th>Tanggal Penerimaan Permohonan</th>
+                            <td>: {{ \App\Libraries\Date::tglIndo($pengajuan->tanggal_surat_penerimaan_dikirim) }}</td>
                         </tr>
                         <tr>
-                            <th>Program Studi</th>
-                            <td>: {{ $pengajuan->studyProgram->full_name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Universitas</th>
-                            <td>: {{ $pengajuan->studyProgram->university->name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Akreditasi Kedaluwarsa</th>
-                            <td>: {{ $pengajuan->studyProgram->days_left ? $pengajuan->studyProgram->days_left.' hari lagi': '-' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Jenis Permohonan</th>
-                            <td>: {{ $pengajuan->jenis_akreditasi_label }}</td>
-                        </tr>
-                        <tr>
-                            <th>Pemohon</th>
-                            <td>: {{ $pengajuan->pengaju->name ?? '-' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Status</th>
+                            <th>Status Penerimaan Permohonan</th>
                             <td>: {!! $pengajuan->getCustomBadgeLastStatus('surat_penerimaan_de','upps') !!}</td>
                         </tr>
                     </table>

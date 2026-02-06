@@ -1,0 +1,47 @@
+<!-- Modal Download Template -->
+<div class="modal fade" id="modalDownloadTemplate" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-download"></i> Download Template Permohonan Banding
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3">Download template permohonan banding berdasarkan jenjang program studi Anda:</p>
+
+                <div class="list-group">
+                    @php
+                    $degreeLevels = \App\Models\DegreeLevel::whereNotIn('code',['d1','spesialis_1','spesialis_2'])->get();
+                    @endphp
+
+                    @foreach($degreeLevels as $level)
+                    <a href="{{ route('upps.permohonan-banding.download-template-surat', ['degree_level' => $level->code]) }}" class="list-group-item list-group-item-action">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-file-earmark-word text-primary me-3" style="font-size: 1.5rem;"></i>
+                            <div>
+                                <h6 class="mb-0">Template Permohonan Banding {{ $level->name }}</h6>
+                                <small class="text-muted">Format: DOCX</small>
+                            </div>
+                            <i class="bi bi-download ms-auto"></i>
+                        </div>
+                    </a>
+                    @endforeach
+                </div>
+
+                <div class="alert alert-warning alert-permanent mt-3 mb-0">
+                    <small>
+                        <i class="bi bi-exclamation-triangle"></i>
+                        Template harus diisi lengkap dan ditandatangani oleh pejabat berwenang
+                    </small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x"></i> Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

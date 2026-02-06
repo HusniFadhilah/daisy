@@ -41,9 +41,9 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h4 class="mb-1">
-                        <i class="bi bi-file-earmark-text"></i> Upload Dokumen LHA Asesor
+                        <i class="bi bi-file-earmark-text"></i> Upload Ringkasan Hasil Akreditasi
                     </h4>
-                    <p class="text-muted mb-0">{{ $asesmen->name }}</p>
+                    <p class="text-muted mb-0">Prodi {{ $asesmen->studyProgram->name }}</p>
                 </div>
                 <a href="{{ route('al.berkas') }}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left"></i> Kembali
@@ -56,111 +56,15 @@
         {{-- LEFT --}}
         <div class="col-lg-8">
 
-            {{-- 1) LHA --}}
-            <div class="card mb-4">
-                <div class="card-header bg-success text-white">
-                    <h5 class="mb-0">
-                        <i class="bi bi-cloud-upload"></i> Upload Laporan Hasil Asesmen Lapangan Program Studi (LHA)
-                    </h5>
-                    <small class="d-block opacity-75 mt-1">
-                        Berisi penunjukan asesor untuk penilaian LED, proses penilaian LED, validasi kecukupan oleh validator,
-                        informasi ke DE (lokasi AL, perjalanan asesor, berita acara pelaksanaan AL), dan rekomendasi penetapan hasil akreditasi.
-                    </small>
-                </div>
-                <div class="card-body">
-                    <form id="formUploadLha">
-                        @csrf
-
-                        <div class="upload-area" id="uploadAreaLha">
-                            <input type="file" id="fileInputLha" name="file" accept="application/pdf" class="d-none" required>
-
-                            <div id="promptLha">
-                                <i class="bi bi-cloud-arrow-up file-icon"></i>
-                                <h6 class="mt-3 mb-1">Klik / drop PDF di sini</h6>
-                                <small class="text-muted">PDF, maksimal 20MB</small>
-                            </div>
-
-                            <div id="infoLha" class="d-none">
-                                <i class="bi bi-file-earmark-pdf text-danger" style="font-size: 3rem;"></i>
-                                <div class="mt-2 fw-semibold" id="lhaName">-</div>
-                                <small class="text-muted" id="lhaSize">-</small>
-                                <div class="mt-2">
-                                    <button type="button" class="btn btn-sm btn-outline-danger" id="btnRemoveLha">
-                                        <i class="bi bi-x-circle"></i> Batalkan
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mt-3 text-end">
-                            <button type="submit" class="btn btn-success" id="btnSubmitLha" disabled>
-                                <i class="bi bi-upload"></i> Upload
-                            </button>
-                        </div>
-                    </form>
-                </div>
-
-                <div class="card-body p-0">
-                    @if($docsLha->count() > 0)
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th width="5%">#</th>
-                                    <th>Nama</th>
-                                    <th width="20%">Upload</th>
-                                    <th width="10%" class="text-center">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($docsLha as $i => $doc)
-                                <tr>
-                                    <td>{{ $i + 1 }}</td>
-                                    <td>
-                                        <div class="fw-semibold">{{ $doc->title }}</div>
-                                        <small class="text-muted">{{ $doc->original_name }}</small>
-                                    </td>
-                                    <td>
-                                        @if($doc->uploaded_at)
-                                        <small>{{ $doc->uploaded_at->format('d M Y, H:i') }}</small>
-                                        @else
-                                        <span class="text-muted">-</span>
-                                        @endif
-                                    </td>
-                                    <td class="text-center">
-                                        <div class="btn-group btn-group-sm" role="group">
-                                            <a class="btn btn-outline-primary" href="{{ route('al.berkas.lha-asesor.download', ['idAsesmen' => $asesmen->id, 'docId' => $doc->id]) }}" title="Download">
-                                                <i class="bi bi-download"></i>
-                                            </a>
-
-                                            <button type="button" class="btn btn-outline-danger js-delete-doc" data-url="{{ route('al.berkas.lha-asesor.delete', ['idAsesmen' => $asesmen->id, 'docId' => $doc->id]) }}" title="Hapus">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                    @else
-                    <div class="text-center py-4">
-                        <i class="bi bi-inbox" style="font-size:54px;color:#ddd;"></i>
-                        <p class="text-muted mt-2 mb-0">Belum ada file LHA</p>
-                    </div>
-                    @endif
-                </div>
-            </div>
-
             {{-- 2) Confidential --}}
             <div class="card">
-                <div class="card-header bg-light text-dark">
+                <div class="card-header bg-light text-dark p-4">
                     <h5 class="mb-0">
-                        <i class="bi bi-shield-lock"></i> Upload Laporan Hasil Akreditasi (Confidential)
+                        <i class="bi bi-shield-lock"></i> Upload Ringkasan Hasil Akreditasi Menyeluruh (Confidential)
                     </h5>
                     <small class="d-block opacity-75 mt-1">
                         Hanya untuk pihak internal. Berisi temuan khusus/indikasi ketidaksesuaian yang disengaja oleh PS
-                        (laporan confidential dari asesor ke komite/Dewan Eksekutif LAMDEPILAR).
+                        (laporan confidential dari asesor ke komite akreditasi LAMDEPILAR).
                     </small>
                 </div>
                 <div class="card-body">
@@ -172,8 +76,8 @@
 
                             <div id="promptConf">
                                 <i class="bi bi-cloud-arrow-up file-icon" style="color:#212529;"></i>
-                                <h6 class="mt-3 mb-1">Klik / drop PDF di sini</h6>
-                                <small class="text-muted">PDF, maksimal 20MB</small>
+                                <h6 class="mt-3 mb-1">Silahkan upload file di sini</h6>
+                                <small class="text-muted">PDF, maksimal 5MB</small>
                             </div>
 
                             <div id="infoConf" class="d-none">
@@ -225,11 +129,11 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="btn-group btn-group-sm" role="group">
-                                            <a class="btn btn-outline-primary" href="{{ route('al.berkas.lha-asesor.download', ['idAsesmen' => $asesmen->id, 'docId' => $doc->id]) }}" title="Download">
+                                            <a class="btn btn-outline-primary" href="{{ route('al.berkas.ringkasan-asesor.download', ['idAsesmen' => $asesmen->id, 'docId' => $doc->id]) }}" title="Download">
                                                 <i class="bi bi-download"></i>
                                             </a>
 
-                                            <button type="button" class="btn btn-outline-danger js-delete-doc" data-url="{{ route('al.berkas.lha-asesor.delete', ['idAsesmen' => $asesmen->id, 'docId' => $doc->id]) }}" title="Hapus">
+                                            <button type="button" class="btn btn-outline-danger js-delete-doc" data-url="{{ route('al.berkas.ringkasan-asesor.delete', ['idAsesmen' => $asesmen->id, 'docId' => $doc->id]) }}" title="Hapus">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </div>
@@ -306,7 +210,7 @@
                     return;
                 }
                 if (file.size > 20 * 1024 * 1024) {
-                    alert('Ukuran file maksimal 20MB');
+                    alert('Ukuran file maksimal 5MB');
                     reset();
                     return;
                 }
@@ -387,19 +291,6 @@
         }
 
         bindUploader({
-            areaId: 'uploadAreaLha'
-            , inputId: 'fileInputLha'
-            , promptId: 'promptLha'
-            , infoId: 'infoLha'
-            , nameId: 'lhaName'
-            , sizeId: 'lhaSize'
-            , removeId: 'btnRemoveLha'
-            , submitId: 'btnSubmitLha'
-            , formId: 'formUploadLha'
-            , uploadUrl: "{{ route('al.berkas.lha-asesor.upload', ['idAsesmen' => $asesmen->id, 'type' => 'lha_asesor']) }}"
-        });
-
-        bindUploader({
             areaId: 'uploadAreaConf'
             , inputId: 'fileInputConf'
             , promptId: 'promptConf'
@@ -409,7 +300,7 @@
             , removeId: 'btnRemoveConf'
             , submitId: 'btnSubmitConf'
             , formId: 'formUploadConf'
-            , uploadUrl: "{{ route('al.berkas.lha-asesor.upload', ['idAsesmen' => $asesmen->id, 'type' => 'hasil_akreditasi_confidential']) }}"
+            , uploadUrl: "{{ route('al.berkas.ringkasan-asesor.upload', ['idAsesmen' => $asesmen->id, 'type' => 'hasil_akreditasi_confidential']) }}"
         });
 
         var delBtns = document.querySelectorAll('.js-delete-doc');

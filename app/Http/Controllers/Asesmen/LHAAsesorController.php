@@ -1,146 +1,238 @@
 <?php
+// app/Http/Controllers/Asesmen/LhaAsesorController.php
 
 namespace App\Http\Controllers\Asesmen;
 
-use App\Http\Controllers\Controller;
 use App\Models\Asesmen;
-use App\Models\AsesmenDocument;
-use App\Models\AsesmenUserRole;
+use App\Models\LhaAsesor;
 use Illuminate\Http\Request;
+use App\Models\AsesmenDocument;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Barryvdh\DomPDF\Facade\Pdf;
 
-class LHAAsesorController extends Controller
+class LhaAsesorController extends Controller
 {
-    private const TYPE_LHA = 'lha_asesor';
-    private const TYPE_CONF = 'hasil_akreditasi_confidential';
-
-    private function assertAccessOrFail(int $idAsesmen): void
+    /**
+     * Show LHA form
+     */
+    public function index($idAsesmen)
     {
-        $user = Auth::user();
+        $asesmen = Asesmen::with([
+            'pengajuan.studyProgram.university',
+            'pengajuan.studyProgram.degreeLevel',
+            'asesmenLapangan',
+        ])->findOrFail($idAsesmen);
 
-        $ok = AsesmenUserRole::where('id_asesmen', $idAsesmen)
+        // Check access - asesor AL only
+        $user = Auth::user();
+        $hasAccess = $asesmen->asesorAL()
             ->where('id_user', $user->id)
-            ->where('jenis_asesmen', 'al')
+            ->where('status_penawaran', 'accepted')
             ->exists();
 
-        abort_if(!$ok, 403, 'Unauthorized');
+        if (!$hasAccess) {
+            abort(403, 'Anda tidak memiliki akses ke halaman ini.');
+        }
+
+        // Get or create LHA
+        $lha = LhaAsesor::firstOrCreate(
+            ['id_asesmen' => $idAsesmen],
+            [
+                'created_by' => $user->id,
+                'status' => 'draft',
+            ]
+        );
+
+        return view('asesmen.lha-asesor.index', compact('asesmen', 'lha'));
     }
 
-    public function page($idAsesmen)
+    /**
+     * Save/Update LHA (auto-save)
+     */
+    public function save(Request $request, $idAsesmen)
     {
-        $this->assertAccessOrFail((int) $idAsesmen);
+        $request->validate([
+            'pendahuluan' => 'nullable|string',
+            'proses_al' => 'nullable|string',
+            'hasil_al' => 'nullable|string',
+            'rekomendasi_ps' => 'nullable|string',
+            'rekomendasi_lamdepilar' => 'nullable|string',
+        ]);
 
-        $asesmen = Asesmen::with(['studyProgram.university'])->findOrFail($idAsesmen);
+        $asesmen = Asesmen::findOrFail($idAsesmen);
+        $user = Auth::user();
 
-        $docsLha = AsesmenDocument::where('id_asesmen', $idAsesmen)
-            ->where('type', self::TYPE_LHA)
-            ->orderBy('sort_order')->orderBy('id')
-            ->get();
+        // Check access
+        $hasAccess = $asesmen->asesorAL()
+            ->where('id_user', $user->id)
+            ->where('status_penawaran', 'accepted')
+            ->exists();
 
-        $docsConf = AsesmenDocument::where('id_asesmen', $idAsesmen)
-            ->where('type', self::TYPE_CONF)
-            ->orderBy('sort_order')->orderBy('id')
-            ->get();
+        if (!$hasAccess) {
+            return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
+        }
 
-        return view('asesmen.al.berkas.lha-asesor', compact('asesmen', 'docsLha', 'docsConf'));
+        $lha = LhaAsesor::updateOrCreate(
+            ['id_asesmen' => $idAsesmen],
+            [
+                'pendahuluan' => $request->pendahuluan,
+                'proses_al' => $request->proses_al,
+                'hasil_al' => $request->hasil_al,
+                'rekomendasi_ps' => $request->rekomendasi_ps,
+                'rekomendasi_lamdepilar' => $request->rekomendasi_lamdepilar,
+                'updated_by' => $user->id,
+            ]
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'LHA berhasil disimpan',
+            'completion' => $lha->getCompletionPercentage(),
+        ]);
     }
 
-    public function upload(Request $request, $idAsesmen, $type)
+    /**
+     * Preview LHA as PDF
+     */
+    public function preview($idAsesmen)
     {
-        try {
-            $this->assertAccessOrFail((int) $idAsesmen);
-
-            if (!in_array($type, [self::TYPE_LHA, self::TYPE_CONF], true)) {
-                return response()->json(['success' => false, 'message' => 'Type tidak valid'], 422);
+        $asesmen = Asesmen::with([
+            'pengajuan.studyProgram.university',
+            'pengajuan.studyProgram.degreeLevel',
+            'asesmenLapangan',
+            'asesorAL.user',  // ✅ Tambahkan ini
+            'documents' => function ($q) {
+                $q->where('type', 'lha_asesor')
+                    ->where('is_active', true);
             }
+        ])->findOrFail($idAsesmen);
 
-            $request->validate([
-                'file' => 'required|file|mimes:pdf|max:20480', // 20MB
-                'title' => 'nullable|string|max:255',
+        $lha = LHAAsesor::where('id_asesmen', $idAsesmen)->firstOrFail();
+
+        // Check access
+        $user = Auth::user();
+        $hasAccess = $asesmen->asesorAL()
+            ->where('id_user', $user->id)
+            ->where('status_penawaran', 'accepted')
+            ->exists();
+
+        if (!$hasAccess) {
+            abort(403, 'Anda tidak memiliki akses.');
+        }
+
+        $pdf = Pdf::loadView('asesmen.lha-asesor.pdf', compact('asesmen', 'lha'))
+            ->setPaper('a4', 'portrait');
+
+        return $pdf->stream('LHA-Preview.pdf');
+    }
+
+    /**
+     * Finalize and generate PDF
+     */
+    public function finalize(Request $request, $idAsesmen)
+    {
+        $asesmen = Asesmen::with('pengajuan')->findOrFail($idAsesmen);
+        $user = Auth::user();
+
+        // Check access
+        $hasAccess = $asesmen->asesorAL()
+            ->where('id_user', $user->id)
+            ->where('status_penawaran', 'accepted')
+            ->exists();
+
+        if (!$hasAccess) {
+            return back()->with('error', 'Akses ditolak');
+        }
+
+        $lha = LhaAsesor::where('id_asesmen', $idAsesmen)->firstOrFail();
+
+        // Validate completion
+        if ($lha->getCompletionPercentage() < 100) {
+            return back()->with('error', 'Harap lengkapi semua bagian LHA sebelum finalisasi.');
+        }
+
+        DB::beginTransaction();
+        try {
+            // Update LHA status
+            $lha->update([
+                'status' => 'finalized',
+                'finalized_at' => now(),
+                'updated_by' => $user->id,
             ]);
 
-            $user = Auth::user();
+            // Generate PDF
+            $pdf = Pdf::loadView('asesmen.lha-asesor.pdf', compact('asesmen', 'lha'))
+                ->setPaper('a4', 'portrait');
 
-            $baseDir = "asesmen/document/{$idAsesmen}/lha_asesor";
-            $maxSort = (int) AsesmenDocument::where('id_asesmen', $idAsesmen)
-                ->where('type', $type)
-                ->max('sort_order');
+            // Save PDF to storage
+            $filename = 'LHA_' . $asesmen->code . '_' . now()->format('YmdHis') . '.pdf';
+            $path = "asesmen/{$idAsesmen}/lha/{$filename}";
 
-            $maxSort++;
+            Storage::disk('public')->put($path, $pdf->output());
 
-            $file = $request->file('file');
-            $tanggal = now()->locale('id')->isoFormat('DD MMM YYYY');
-            $filenameBase = $type === self::TYPE_LHA
-                ? "LHA_{$idAsesmen}_{$tanggal}.pdf"
-                : "Laporan_Hasil_Akreditasi_Confidential_{$idAsesmen}_{$tanggal}.pdf";
+            // Deactivate old LHA documents
+            AsesmenDocument::where('id_asesmen', $idAsesmen)
+                ->where('type', 'lha_asesor')
+                ->update(['is_active' => false]);
 
-            $storedPath = $file->storeAs($baseDir, $filenameBase, 'public');
-
-            $defaultTitle = $type === self::TYPE_LHA
-                ? 'Laporan Hasil Asesment Lapangan Program Studi (LHA)'
-                : 'Laporan Hasil Akreditasi (Confidential)';
-
-            $doc = AsesmenDocument::create([
+            // Create new document record
+            $document = AsesmenDocument::create([
                 'id_asesmen' => $idAsesmen,
-                'type' => $type,
-                'title' => $request->filled('title') ? $request->input('title') : $defaultTitle,
-                'sort_order' => $maxSort,
-                'path' => $storedPath,
-                'original_name' => $file->getClientOriginalName(),
-                'size' => $file->getSize() ? (int) $file->getSize() : 0,
-                'mime' => $file->getMimeType(),
+                'type' => 'lha_asesor',
+                'title' => 'Laporan Hasil Asesmen Lapangan (LHA)',
+                'path' => $path,
+                'original_name' => $filename,
+                'size' => Storage::disk('public')->size($path),
+                'mime' => 'application/pdf',
                 'is_active' => true,
                 'version' => 1,
                 'uploaded_by' => $user->id,
                 'uploaded_at' => now(),
-                'status_persetujuan_prodi' => 'pending',
-                'status_persetujuan_de' => 'pending',
             ]);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Dokumen berhasil diupload',
-                'data' => $doc,
-            ]);
+            DB::commit();
+
+            return redirect()
+                ->route('al.berkas.lha-asesor.page', $idAsesmen)
+                ->with('success', 'LHA berhasil difinalisasi dan PDF telah dibuat. Dokumen siap untuk ditinjau oleh Program Studi.');
         } catch (\Exception $e) {
-            Log::error('Upload LHA Asesor Error: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal upload: ' . $e->getMessage(),
-            ], 500);
+            DB::rollBack();
+            \Log::error('Error finalizing LHA: ' . $e->getMessage());
+            return back()->with('error', 'Gagal finalisasi LHA: ' . $e->getMessage());
         }
     }
 
-    public function download($idAsesmen, $docId)
+    /**
+     * Download LHA PDF
+     */
+    public function download($idAsesmen)
     {
-        $this->assertAccessOrFail((int) $idAsesmen);
+        $asesmen = Asesmen::findOrFail($idAsesmen);
+        $user = Auth::user();
 
-        $doc = AsesmenDocument::where('id_asesmen', $idAsesmen)->findOrFail($docId);
+        // Check access
+        $hasAccess = $asesmen->asesorAL()
+            ->where('id_user', $user->id)
+            ->where('status_penawaran', 'accepted')
+            ->exists();
 
-        $absolutePath = storage_path('app/public/' . $doc->path);
-        abort_unless(is_file($absolutePath), 404, 'File tidak ditemukan');
-
-        $downloadName = ($doc->type === self::TYPE_LHA)
-            ? "LHA_{$idAsesmen}.pdf"
-            : "Laporan_Hasil_Akreditasi_Confidential_{$idAsesmen}.pdf";
-
-        return response()->download($absolutePath, $downloadName);
-    }
-
-    public function destroy($idAsesmen, $docId)
-    {
-        $this->assertAccessOrFail((int) $idAsesmen);
-
-        $doc = AsesmenDocument::where('id_asesmen', $idAsesmen)->findOrFail($docId);
-
-        if (Storage::disk('public')->exists($doc->path)) {
-            Storage::disk('public')->delete($doc->path);
+        if (!$hasAccess) {
+            abort(403, 'Akses ditolak');
         }
 
-        $doc->delete();
+        $document = AsesmenDocument::where('id_asesmen', $idAsesmen)
+            ->where('type', 'lha_asesor')
+            ->where('is_active', true)
+            ->latest('uploaded_at')
+            ->firstOrFail();
 
-        return response()->json(['success' => true, 'message' => 'Dokumen dihapus']);
+        if (!Storage::disk('public')->exists($document->path)) {
+            abort(404, 'File tidak ditemukan');
+        }
+
+        return Storage::disk('public')->download($document->path, $document->original_name);
     }
 }

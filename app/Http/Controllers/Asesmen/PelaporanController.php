@@ -841,4 +841,291 @@ class PelaporanController extends Controller
             return response()->json(['success' => false, 'message' => 'Gagal finalisasi: ' . $e->getMessage()], 500);
         }
     }
+
+    /**
+     * Show detail pelaporan dokumen
+     */
+    public function showDokumen($idAssignment)
+    {
+        $user = Auth::user();
+
+        $assignment = AsesmenUserRole::with([
+            'asesmen.pengajuan.studyProgram.university',
+            'asesmen.pengajuan.studyProgram.degreeLevel',
+            'asesmen.pengajuan.pengaju',
+            'asesmen.pengajuan.statusLog' => fn($q) => $q->orderBy('changed_at', 'desc'),
+            'asesmen.documents' => fn($q) => $q->where('type', 'laporan_validasi_borang')->where('is_active', true),
+            'role_selected',
+        ])
+            ->where('id_user', $user->id)
+            ->whereHas('role', fn($q) => $q->where('name', 'validator'))
+            ->where('jenis_asesmen', 'dokumen')
+            ->findOrFail($idAssignment);
+
+        if ($assignment->status_penawaran !== 'accepted') {
+            abort(403, 'Anda tidak memiliki akses ke pelaporan ini.');
+        }
+
+        $pengajuan = $assignment->asesmen->pengajuan;
+
+        return view('asesmen.pelaporan.dokumen-show', compact('assignment', 'pengajuan'));
+    }
+
+    /**
+     * Download laporan validasi dokumen
+     */
+    public function downloadLaporanDokumen($idAssignment)
+    {
+        $user = Auth::user();
+
+        $assignment = AsesmenUserRole::with([
+            'asesmen.documents' => fn($q) => $q->where('type', 'laporan_validasi_borang')->where('is_active', true)
+        ])
+            ->where('id_user', $user->id)
+            ->whereHas('role', fn($q) => $q->where('name', 'validator'))
+            ->where('jenis_asesmen', 'dokumen')
+            ->findOrFail($idAssignment);
+
+        if ($assignment->status_penawaran !== 'accepted') {
+            abort(403, 'Anda tidak memiliki akses ke file ini.');
+        }
+
+        $document = $assignment->asesmen->documents()
+            ->where('type', 'laporan_validasi_borang')
+            ->where('is_active', true)
+            ->latest('id')
+            ->first();
+
+        if (!$document) {
+            abort(404, 'File laporan tidak ditemukan.');
+        }
+
+        if (!Storage::disk('public')->exists($document->path)) {
+            abort(404, 'File tidak ditemukan di server.');
+        }
+
+        return Storage::disk('public')->download(
+            $document->path,
+            $document->original_name
+        );
+    }
+
+    // ============================================
+    // SHOW & DOWNLOAD - VALIDASI AK
+    // ============================================
+
+    /**
+     * Show detail pelaporan validasi AK
+     */
+    public function showValidasiAK($idAssignment)
+    {
+        $user = Auth::user();
+
+        $assignment = AsesmenUserRole::with([
+            'asesmen.pengajuan.studyProgram.university',
+            'asesmen.pengajuan.studyProgram.degreeLevel',
+            'asesmen.pengajuan.pengaju',
+            'asesmen.pengajuan.statusLog' => fn($q) => $q->orderBy('changed_at', 'desc'),
+            'asesmen.asesmenKecukupan',
+            'asesmen.documents' => fn($q) => $q->where('type', 'laporan_validasi_ak')->where('is_active', true),
+            'role_selected',
+        ])
+            ->where('id_user', $user->id)
+            ->whereHas('role', fn($q) => $q->where('name', 'validator'))
+            ->where('jenis_asesmen', 'ak')
+            ->findOrFail($idAssignment);
+
+        if ($assignment->status_penawaran !== 'accepted') {
+            abort(403, 'Anda tidak memiliki akses ke pelaporan ini.');
+        }
+
+        $pengajuan = $assignment->asesmen->pengajuan;
+
+        return view('asesmen.pelaporan.validasi-ak-show', compact('assignment', 'pengajuan'));
+    }
+
+    /**
+     * Download laporan validasi AK
+     */
+    public function downloadLaporanValidasiAK($idAssignment)
+    {
+        $user = Auth::user();
+
+        $assignment = AsesmenUserRole::with([
+            'asesmen.documents' => fn($q) => $q->where('type', 'laporan_validasi_ak')->where('is_active', true)
+        ])
+            ->where('id_user', $user->id)
+            ->whereHas('role', fn($q) => $q->where('name', 'validator'))
+            ->where('jenis_asesmen', 'ak')
+            ->findOrFail($idAssignment);
+
+        if ($assignment->status_penawaran !== 'accepted') {
+            abort(403, 'Anda tidak memiliki akses ke file ini.');
+        }
+
+        $document = $assignment->asesmen->documents()
+            ->where('type', 'laporan_validasi_ak')
+            ->where('is_active', true)
+            ->latest('id')
+            ->first();
+
+        if (!$document) {
+            abort(404, 'File laporan tidak ditemukan.');
+        }
+
+        if (!Storage::disk('public')->exists($document->path)) {
+            abort(404, 'File tidak ditemukan di server.');
+        }
+
+        return Storage::disk('public')->download(
+            $document->path,
+            $document->original_name
+        );
+    }
+
+    // ============================================
+    // SHOW & DOWNLOAD - AK (ASESOR)
+    // ============================================
+
+    /**
+     * Show detail pelaporan AK
+     */
+    public function showAK($idAssignment)
+    {
+        $user = Auth::user();
+
+        $assignment = AsesmenUserRole::with([
+            'asesmen.pengajuan.studyProgram.university',
+            'asesmen.pengajuan.studyProgram.degreeLevel',
+            'asesmen.pengajuan.pengaju',
+            'asesmen.pengajuan.statusLog' => fn($q) => $q->orderBy('changed_at', 'desc'),
+            'asesmen.asesmenKecukupan',
+            'asesmen.documents' => fn($q) => $q->where('type', 'laporan_ak')->where('is_active', true),
+            'role_selected',
+        ])
+            ->where('id_user', $user->id)
+            ->whereHas('role', fn($q) => $q->where('name', 'asesor'))
+            ->where('jenis_asesmen', 'ak')
+            ->findOrFail($idAssignment);
+
+        if ($assignment->status_penawaran !== 'accepted') {
+            abort(403, 'Anda tidak memiliki akses ke pelaporan ini.');
+        }
+
+        $pengajuan = $assignment->asesmen->pengajuan;
+
+        return view('asesmen.pelaporan.ak-show', compact('assignment', 'pengajuan'));
+    }
+
+    /**
+     * Download laporan AK
+     */
+    public function downloadLaporanAK($idAssignment)
+    {
+        $user = Auth::user();
+
+        $assignment = AsesmenUserRole::with([
+            'asesmen.documents' => fn($q) => $q->where('type', 'laporan_ak')->where('is_active', true)
+        ])
+            ->where('id_user', $user->id)
+            ->whereHas('role', fn($q) => $q->where('name', 'asesor'))
+            ->where('jenis_asesmen', 'ak')
+            ->findOrFail($idAssignment);
+
+        if ($assignment->status_penawaran !== 'accepted') {
+            abort(403, 'Anda tidak memiliki akses ke file ini.');
+        }
+
+        $document = $assignment->asesmen->documents()
+            ->where('type', 'laporan_ak')
+            ->where('is_active', true)
+            ->latest('id')
+            ->first();
+
+        if (!$document) {
+            abort(404, 'File laporan tidak ditemukan.');
+        }
+
+        if (!Storage::disk('public')->exists($document->path)) {
+            abort(404, 'File tidak ditemukan di server.');
+        }
+
+        return Storage::disk('public')->download(
+            $document->path,
+            $document->original_name
+        );
+    }
+
+    // ============================================
+    // SHOW & DOWNLOAD - AL (ASESMEN LAPANGAN)
+    // ============================================
+
+    /**
+     * Show detail pelaporan AL
+     */
+    public function showAL($idAssignment)
+    {
+        $user = Auth::user();
+
+        $assignment = AsesmenUserRole::with([
+            'asesmen.pengajuan.studyProgram.university',
+            'asesmen.pengajuan.studyProgram.degreeLevel',
+            'asesmen.pengajuan.pengaju',
+            'asesmen.pengajuan.statusLog' => fn($q) => $q->orderBy('changed_at', 'desc'),
+            'asesmen.asesmenLapangan',
+            'asesmen.documents' => fn($q) => $q->where('type', 'laporan_al')->where('is_active', true),
+            'role_selected',
+        ])
+            ->where('id_user', $user->id)
+            ->whereHas('role', fn($q) => $q->where('name', 'validator'))
+            ->where('jenis_asesmen', 'al')
+            ->findOrFail($idAssignment);
+
+        if ($assignment->status_penawaran !== 'accepted') {
+            abort(403, 'Anda tidak memiliki akses ke pelaporan ini.');
+        }
+
+        $pengajuan = $assignment->asesmen->pengajuan;
+
+        return view('asesmen.pelaporan.al-show', compact('assignment', 'pengajuan'));
+    }
+
+    /**
+     * Download laporan AL
+     */
+    public function downloadLaporanAL($idAssignment)
+    {
+        $user = Auth::user();
+
+        $assignment = AsesmenUserRole::with([
+            'asesmen.documents' => fn($q) => $q->where('type', 'laporan_al')->where('is_active', true)
+        ])
+            ->where('id_user', $user->id)
+            ->whereHas('role', fn($q) => $q->where('name', 'validator'))
+            ->where('jenis_asesmen', 'al')
+            ->findOrFail($idAssignment);
+
+        if ($assignment->status_penawaran !== 'accepted') {
+            abort(403, 'Anda tidak memiliki akses ke file ini.');
+        }
+
+        $document = $assignment->asesmen->documents()
+            ->where('type', 'laporan_al')
+            ->where('is_active', true)
+            ->latest('id')
+            ->first();
+
+        if (!$document) {
+            abort(404, 'File laporan tidak ditemukan.');
+        }
+
+        if (!Storage::disk('public')->exists($document->path)) {
+            abort(404, 'File tidak ditemukan di server.');
+        }
+
+        return Storage::disk('public')->download(
+            $document->path,
+            $document->original_name
+        );
+    }
 }

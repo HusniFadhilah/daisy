@@ -54,7 +54,7 @@
                                     <p id="detailValidasiStatus" class="mb-0">-</p>
                                 </div>
                                 <div class="col-md-4">
-                                    <small class="text-muted d-none detailValidasiSkor">Kategori Final:</small>
+                                    <small class="text-muted d-none detailValidasiSkor">Kategori:</small>
                                     <p id="detailValidasiSkor" class="mb-0 d-none detailValidasiSkor">
                                         <span class="badge" id="badgeSkorFinal">-</span>
                                     </p>

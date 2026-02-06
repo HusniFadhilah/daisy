@@ -15,7 +15,7 @@
     }
 
     .filter-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #932136 0%, #870820 100%);
         color: white;
     }
 
@@ -42,8 +42,14 @@
         </div>
     </div>
 
+    <div class="alert alert-info alert-permanent">
+        <i class="bi bi-bell-fill"></i>
+        <strong>Validai AK</strong><br>
+        Validasi AK untuk permohonan akreditasi program studi dapat dilihat pada daftar berikut<br>
+    </div>
+
     <!-- Statistics Cards -->
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 mb-4">
+    {{-- <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 mb-4">
         <div class="col mb-3">
             <x-stat-card title="Total Dokumen" :value="$stats['total']" description="Total dokumen yang telah sampai pada tahap Validasi AK" icon="file-earmark-text" iconBg="primary-subtle" />
         </div>
@@ -55,75 +61,14 @@
         <div class="col mb-3">
             <x-stat-card title="Penilaian AK Tervalidasi" :value="$stats['tervalidasi']" description="Penilaian AK yang telah divalidasi" icon="patch-check" iconBg="success-subtle" />
         </div>
-    </div>
+    </div> --}}
 
     <!-- Filters & Content -->
     <div class="row">
         <!-- Filters Sidebar -->
-        <div class="col-lg-3 mb-4">
-            <div class="card filter-card">
-                <div class="card-header border-0">
-                    <h5 class="mb-0">
-                        <i class="bi bi-funnel"></i> Filter & Pencarian
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <form method="GET" action="{{ route('upps.validasi-ak') }}">
-                        <!-- Search -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Cari Permohonan</label>
-                            <input type="text" name="search" class="form-control" placeholder="Nomor/Nama prodi..." value="{{ request('search') }}">
-                        </div>
-
-                        <!-- Status -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Status Validasi</label>
-                            <select name="status" class="form-select">
-                                <option value="">Semua Status</option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_AK_IN_PROGRESS }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_AK_IN_PROGRESS ? 'selected' : '' }}>
-                                    Sedang Dinilai
-                                </option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_AK_ON_VALIDATION }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_AK_ON_VALIDATION ? 'selected' : '' }}>
-                                    Dalam Validasi
-                                </option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_AK_SELESAI }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_AK_SELESAI ? 'selected' : '' }}>
-                                    Validasi Selesai
-                                </option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_AK_DILAPORKAN }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_AK_DILAPORKAN ? 'selected' : '' }}>
-                                    Hasil Dilaporkan
-                                </option>
-                            </select>
-                        </div>
-
-                        <!-- Tahun -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Tahun Akreditasi</label>
-                            <select name="tahun" class="form-select">
-                                <option value="">Semua Tahun</option>
-                                @foreach($tahunList as $tahun)
-                                <option value="{{ $tahun }}" {{ request('tahun') == $tahun ? 'selected' : '' }}>
-                                    {{ $tahun }}
-                                </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <!-- Buttons -->
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-light">
-                                <i class="bi bi-search"></i> Terapkan Filter
-                            </button>
-                            <a href="{{ route('upps.validasi-ak') }}" class="btn btn-outline-light">
-                                <i class="bi bi-x-circle"></i> Reset
-                            </a>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
 
         <!-- Main Content -->
-        <div class="col-lg-9">
+        <div class="col-lg-12">
             <div class="card">
                 <div class="card-header bg-white">
                     <div class="d-flex justify-content-between align-items-center">

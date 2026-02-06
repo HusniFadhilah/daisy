@@ -1,7 +1,7 @@
 <div class="card">
     <div class="card-header bg-light d-flex justify-content-between align-items-center">
         <h6 class="mb-0">
-            <i class="bi bi-table"></i> Daftar Permohonan Akreditasi - Penugasan AL
+            <i class="bi bi-table"></i> Daftar Penugasan Asesor AL
         </h6>
         <span class="badge bg-primary">Total: {{ $pengajuans->total() }}</span>
     </div>
@@ -12,7 +12,7 @@
                 <thead class="table-light">
                     <tr>
                         <th width="5%">#</th>
-                        <th width="12%">Nomor Permohonan Akreditasi</th>
+                        <th width="12%">Permohonan Akreditasi</th>
                         <th width="22%">Program Studi</th>
                         <th width="12%">Status AL</th>
                         <th width="15%">Penugasan</th>

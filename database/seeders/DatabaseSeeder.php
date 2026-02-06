@@ -33,7 +33,7 @@ class DatabaseSeeder extends Seeder
             IndikatorSeeder::class,
             JenjangPenilaianSeeder::class,
             IndikatorPenilaianElemenSeeder::class,
-            AsesmenUserRoleSeeder::class,
+            // AsesmenUserRoleSeeder::class,
             // PengajuanAkreditasiSeeder::class,
             DatasetBorangSeeder::class,
             DatasetSuplemenSeeder::class,

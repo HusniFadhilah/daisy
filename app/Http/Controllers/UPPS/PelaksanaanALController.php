@@ -123,10 +123,9 @@ class PelaksanaanALController extends Controller
         if (!$studyProgramIds->contains($pengajuan->id_program_studi)) {
             abort(403, 'Anda tidak memiliki akses ke permohonan ini.');
         }
-
         // Get berita acara document
         $beritaAcara = AsesmenDocument::where('id', $docId)
-            ->where('id_asesmen', $pengajuan->id_asesmen)
+            ->where('id_asesmen', $pengajuan->asesmen->id)
             ->where('type', 'berita_acara_al')
             ->with('uploader')
             ->firstOrFail();
@@ -138,7 +137,7 @@ class PelaksanaanALController extends Controller
                 ->with('error', 'Berita acara ini sudah ditindaklanjuti.');
         }
 
-        return view('upps.pelaksanaan-al.approve', compact('pengajuan', 'beritaAcara'));
+        return view('upps.pelaksanaan-al.approve-berita-acara', compact('pengajuan', 'beritaAcara'));
     }
 
     /**
@@ -166,7 +165,7 @@ class PelaksanaanALController extends Controller
 
         // Get berita acara document
         $beritaAcara = AsesmenDocument::where('id', $docId)
-            ->where('id_asesmen', $pengajuan->id_asesmen)
+            ->where('id_asesmen', $pengajuan->asesmen->id)
             ->where('type', 'berita_acara_al')
             ->firstOrFail();
 
@@ -225,6 +224,186 @@ class PelaksanaanALController extends Controller
             DB::rollBack();
             Log::error("Error approving berita acara: " . $e->getMessage(), [
                 'berita_acara_id' => $docId,
+                'user_id' => auth()->id(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return back()
+                ->with('error', 'Gagal memproses persetujuan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Process approval from show page (simplified)
+     */
+    public function processApproval(Request $request, $id, $docId)
+    {
+        $request->validate([
+            'action' => 'required|in:approve,revision',
+            'catatan_prodi' => 'nullable|string|max:2000',
+        ], [
+            'action.required' => 'Silakan pilih tindakan yang akan diambil',
+            'action.in' => 'Tindakan tidak valid',
+        ]);
+
+        $pengajuan = PengajuanAkreditasi::with('asesmen')->findOrFail($id);
+
+        // Check access
+        $user = Auth::user();
+        $studyProgramIds = $user->studyPrograms()->pluck('study_programs.id');
+
+        if (!$studyProgramIds->contains($pengajuan->id_program_studi)) {
+            abort(403, 'Anda tidak memiliki akses ke permohonan ini.');
+        }
+
+        // Get berita acara document
+        $beritaAcara = AsesmenDocument::where('id', $docId)
+            ->where('id_asesmen', $pengajuan->asesmen->id)
+            ->where('type', 'berita_acara_al')
+            ->firstOrFail();
+
+        // Check if already in final status
+        if ($beritaAcara->isFinalStatus()) {
+            return back()->with('error', 'Berita acara ini sudah dalam status final.');
+        }
+
+        DB::beginTransaction();
+        try {
+            // Map action to status
+            $statusMap = [
+                'approve' => 'approved',
+                'revision' => 'revision_required',
+            ];
+
+            $newStatus = $statusMap[$request->action];
+
+            // Update berita acara document
+            $beritaAcara->update([
+                'status_persetujuan_prodi' => $newStatus,
+                'approved_by_prodi' => auth()->id(),
+                'approved_at_prodi' => now(),
+                'catatan_prodi' => $request->catatan_prodi,
+            ]);
+
+            // Create log message
+            $logMessages = [
+                'approved' => 'Berita Acara Asesmen Lapangan "' . $beritaAcara->title . '" disetujui oleh Program Studi',
+                'revision_required' => 'Berita Acara Asesmen Lapangan "' . $beritaAcara->title . '" memerlukan revisi',
+            ];
+
+            $pengajuan->statusLog()->create([
+                'status_from' => $pengajuan->status,
+                'status_to' => $pengajuan->status,
+                'changed_by' => auth()->id(),
+                'changed_at' => now(),
+                'keterangan' => $logMessages[$newStatus],
+            ]);
+
+            DB::commit();
+
+            // Success messages
+            $messages = [
+                'approved' => 'Berita acara berhasil disetujui.',
+                'revision_required' => 'Permintaan revisi berita acara berhasil dikirim ke asesor.',
+            ];
+
+            return redirect()
+                ->route('upps.pelaksanaan-al.show', $pengajuan->id)
+                ->with('success', $messages[$newStatus]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Error processing berita acara approval: " . $e->getMessage(), [
+                'berita_acara_id' => $docId,
+                'user_id' => auth()->id(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return back()
+                ->with('error', 'Gagal memproses persetujuan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Process approval for LHA (Laporan Hasil Asesmen)
+     */
+    public function processLHAApproval(Request $request, $id, $docId)
+    {
+        $request->validate([
+            'action' => 'required|in:approve,revision',
+            'catatan_prodi' => 'nullable|string|max:2000',
+        ], [
+            'action.required' => 'Silakan pilih tindakan yang akan diambil',
+            'action.in' => 'Tindakan tidak valid',
+        ]);
+
+        $pengajuan = PengajuanAkreditasi::with('asesmen')->findOrFail($id);
+
+        // Check access
+        $user = Auth::user();
+        $studyProgramIds = $user->studyPrograms()->pluck('study_programs.id');
+
+        if (!$studyProgramIds->contains($pengajuan->id_program_studi)) {
+            abort(403, 'Anda tidak memiliki akses ke permohonan ini.');
+        }
+
+        // Get LHA document
+        $lha = AsesmenDocument::where('id', $docId)
+            ->where('id_asesmen', $pengajuan->asesmen->id)
+            ->where('type', 'lha_asesor')
+            ->firstOrFail();
+
+        // Check if already in final status
+        if ($lha->isFinalStatus()) {
+            return back()->with('error', 'Laporan hasil asesmen ini sudah dalam status final.');
+        }
+
+        DB::beginTransaction();
+        try {
+            // Map action to status
+            $statusMap = [
+                'approve' => 'approved',
+                'revision' => 'revision_required',
+            ];
+
+            $newStatus = $statusMap[$request->action];
+
+            // Update LHA document
+            $lha->update([
+                'status_persetujuan_prodi' => $newStatus,
+                'approved_by_prodi' => auth()->id(),
+                'approved_at_prodi' => now(),
+                'catatan_prodi' => $request->catatan_prodi,
+            ]);
+
+            // Create log message
+            $logMessages = [
+                'approved' => 'Laporan Hasil Asesmen Lapangan "' . $lha->title . '" disetujui oleh Program Studi',
+                'revision_required' => 'Laporan Hasil Asesmen Lapangan "' . $lha->title . '" memerlukan revisi',
+            ];
+
+            $pengajuan->statusLog()->create([
+                'status_from' => $pengajuan->status,
+                'status_to' => $pengajuan->status,
+                'changed_by' => auth()->id(),
+                'changed_at' => now(),
+                'keterangan' => $logMessages[$newStatus],
+            ]);
+
+            DB::commit();
+
+            // Success messages
+            $messages = [
+                'approved' => 'Laporan hasil asesmen berhasil disetujui.',
+                'revision_required' => 'Permintaan revisi laporan berhasil dikirim ke asesor.',
+            ];
+
+            return redirect()
+                ->route('upps.pelaksanaan-al.show', $pengajuan->id)
+                ->with('success', $messages[$newStatus]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Error processing LHA approval: " . $e->getMessage(), [
+                'lha_id' => $docId,
                 'user_id' => auth()->id(),
                 'trace' => $e->getTraceAsString()
             ]);

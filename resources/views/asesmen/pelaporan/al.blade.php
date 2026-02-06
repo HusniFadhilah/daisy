@@ -102,7 +102,7 @@
     @if($assignments->count() > 0)
 
     <!-- Filter Section -->
-    <div class="filter-section">
+    {{-- <div class="filter-section">
         <div class="row align-items-center">
             <div class="col-md-4 mb-2 mb-md-0">
                 <div class="search-box">
@@ -131,7 +131,7 @@
                 </button>
             </div>
         </div>
-    </div>
+    </div> --}}
 
     <!-- Table -->
     <div class="card">
@@ -246,13 +246,27 @@
 
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm" role="group">
-                                    @if($canReport && !$isReported)
+                                    {{-- @if($canReport && !$isReported) --}}
                                     <button type="button" class="btn btn-success js-open-pelaporan" title="Upload Pelaporan" data-type="al" data-assignment-id="{{ $assignment->id }}" data-nomor="{{ $nomor }}">
                                         <i class="bi bi-upload"></i>
                                     </button>
-                                    @else
+                                    {{-- @else
                                     <a href="#" class="btn btn-outline-success" title="Lihat Detail">
                                         <i class="bi bi-eye"></i>
+                                    </a>
+                                    @endif --}}
+
+                                    {{-- Tombol Download --}}
+                                    @php
+                                    $hasDocument = $assignment->asesmen->documents()
+                                    ->where('type', 'laporan_al')
+                                    ->where('is_active', true)
+                                    ->exists();
+                                    @endphp
+
+                                    @if($hasDocument)
+                                    <a href="{{ route('pelaporan.al.download', $assignment->id) }}" class="btn btn-success" title="Download Laporan">
+                                        <i class="bi bi-download"></i>
                                     </a>
                                     @endif
                                 </div>

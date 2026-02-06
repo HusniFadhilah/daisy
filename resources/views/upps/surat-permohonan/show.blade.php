@@ -106,7 +106,7 @@
 
             <!-- File Permohonan Akreditasi -->
             <div class="card">
-                <div class="card-header bg-info text-white">
+                <div class="card-header bg-secondary text-white">
                     <h5 class="mb-0">
                         <i class="bi bi-file-pdf"></i> File Permohonan Akreditasi
                     </h5>

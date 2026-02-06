@@ -432,7 +432,7 @@ class AKController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Penilaian berhasil di-submit! Menunggu validasi oleh validator.',
+                'message' => 'Penilaian berhasil di-submit! Mohon menunggu proses validasi.',
                 'submitted_at' => now()->format('d M Y H:i'),
             ]);
         } catch (\Exception $e) {

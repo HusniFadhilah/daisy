@@ -380,9 +380,9 @@ final class PengajuanStatus
             PengajuanAkreditasi::STATUS_AK_IN_PROGRESS => [
                 'label' => 'Penugasan Asesor AK Berlangsung',
                 'label_short_for' => [
-                    'de'   => 'AK Berlangsung',
-                    'upps' => 'AK Berlangsung',
-                    'prodi' => 'AK Berlangsung',
+                    'de'   => 'Sedang Berlangsung',
+                    'upps' => 'Sedang Berlangsung',
+                    'prodi' => 'Sedang Berlangsung',
                 ],
                 'label_long_for' => [
                     'de'   => 'Proses AK Berlangsung',

@@ -90,7 +90,7 @@
                             <div id="uploadPrompt">
                                 <i class="bi bi-cloud-arrow-up file-icon"></i>
                                 <h5 class="mt-3">Silahkan upload file berita acara di sini</h5>
-                                <p class="text-muted mb-0">PDF, maksimal 20MB per file</p>
+                                <p class="text-muted mb-0">PDF, ukuran maksimal 5MB</p>
                             </div>
 
                             <div id="fileInfo" class="d-none">
@@ -151,17 +151,14 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="btn-group btn-group-sm" role="group">
-                                            <a class="btn btn-outline-primary" href="{{ route('al.berkas.documents.download', ['id' => $asesmen->id, 'docId' => $doc->id]) }}" title="Download">
-                                                <i class="bi bi-download"></i>
+                                            <a href="{{ route('al.berkas.documents.preview', ['id' => $asesmen->id, 'docId' => $doc->id]) }}" class="btn btn-outline-primary d-flex align-items-center justify-content-center" target="_blank" title="Lihat File">
+                                                <i class="bi bi-eye"></i>
                                             </a>
 
-                                            <form method="POST" action="{{ route('al.berkas.documents.delete', ['id' => $asesmen->id, 'docId' => $doc->id]) }}" onsubmit="return confirm('Hapus dokumen ini')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button class="btn btn-outline-danger" type="submit" title="Hapus">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </form>
+                                            {{-- ✅ Ubah jadi button dengan data attribute --}}
+                                            <button type="button" class="btn btn-outline-danger d-flex align-items-center justify-content-center btn-delete-doc" data-doc-id="{{ $doc->id }}" data-doc-name="{{ $doc->title }}" data-url="{{ route('al.berkas.documents.delete', ['id' => $asesmen->id, 'docId' => $doc->id]) }}" title="Hapus">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -197,10 +194,19 @@
                     <h6 class="mb-0">Petunjuk</h6>
                 </div>
                 <div class="card-body">
-                    <ol class="mb-0 small">
-                        <li>Upload berita acara dalam bentuk PDF</li>
-                        <li>Pastikan file bisa dibuka</li>
-                        <li>Setelah upload, lakukan finalisasi</li>
+                    <ol class="mb-4 small ps-3">
+                        <li>
+                            Silahkan <strong>download</strong> format berita acara berikut, di mana telah diisi pada saat proses penilaian AL. Bagian pengesahan terdapat pada halaman paling bawah
+                            <div class="my-2 text-center">
+                                <a href="{{ route('al.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'personal']) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-download"></i> Download Format Berita Acara AL
+                                </a>
+                            </div>
+                        </li>
+                        <li>Mohon lakukan <strong>pengesahan</strong> berita acara tersebut bersama dengan prodi</li>
+                        <li>Lalu <strong>upload</strong> berita acara yang telah disahkan tersebut dalam bentuk PDF</li>
+                        <li>Anda masih dapat mengedit file berita acara tersebut ketika belum difinalisasi</li>
+                        <li>Setelah upload selesai, segera lakukan <strong>finalisasi</strong> dan kirim</li>
                     </ol>
                 </div>
             </div>
@@ -219,6 +225,7 @@
         var fileNames = document.getElementById('fileNames');
         var btnRemoveFile = document.getElementById('btnRemoveFile');
         var btnUploadSubmit = document.getElementById('btnUploadSubmit');
+        var uploadForm = document.getElementById('uploadForm');
 
         function resetFile() {
             fileInput.value = '';
@@ -288,10 +295,96 @@
             resetFile();
         });
 
+        // ✅ AJAX FORM SUBMIT
+        uploadForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            var formData = new FormData(uploadForm);
+
+            btnUploadSubmit.disabled = true;
+            btnUploadSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mengupload...';
+
+            fetch("{{ route('al.berkas.documents.upload', ['id' => $asesmen->id]) }}", {
+                    method: 'POST'
+                    , body: formData
+                    , headers: {
+                        'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                        , 'Accept': 'application/json'
+                    }
+                })
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(data) {
+                    if (data.success) {
+                        alert(data.message || 'File berhasil diupload!');
+                        window.location.reload();
+                    } else {
+                        alert(data.message || 'Gagal upload file');
+                        btnUploadSubmit.disabled = false;
+                        btnUploadSubmit.innerHTML = '<i class="bi bi-upload"></i> Upload';
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Upload error:', error);
+                    alert('Terjadi kesalahan saat upload file');
+                    btnUploadSubmit.disabled = false;
+                    btnUploadSubmit.innerHTML = '<i class="bi bi-upload"></i> Upload';
+                });
+        });
+
+        // ✅ DELETE DOCUMENT HANDLER
+        document.querySelectorAll('.btn-delete-doc').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var docName = this.getAttribute('data-doc-name');
+                var deleteUrl = this.getAttribute('data-url');
+
+                if (!confirm('Apakah Anda yakin ingin menghapus dokumen "' + docName + '"?')) {
+                    return;
+                }
+
+                // Disable button
+                this.disabled = true;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+                fetch(deleteUrl, {
+                        method: 'DELETE'
+                        , headers: {
+                            'X-CSRF-TOKEN': "{{ csrf_token() }}"
+                            , 'Accept': 'application/json'
+                            , 'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(function(response) {
+                        return response.json();
+                    })
+                    .then(function(data) {
+                        if (data.success) {
+                            alert(data.message || 'Dokumen berhasil dihapus');
+                            window.location.reload();
+                        } else {
+                            alert(data.message || 'Gagal menghapus dokumen');
+                            window.location.reload();
+                        }
+                    })
+                    .catch(function(error) {
+                        console.error('Delete error:', error);
+                        alert('Terjadi kesalahan saat menghapus dokumen');
+                        window.location.reload();
+                    });
+            });
+        });
+
+        // ✅ FINALIZE BUTTON
         var btnFinalize = document.getElementById('btnFinalize');
         if (btnFinalize) {
             btnFinalize.addEventListener('click', function() {
-                if (!confirm('Finalisasi berita acara')) return;
+                if (!confirm('Apakah Anda yakin ingin finalisasi berita acara?\n\nSetelah difinalisasi, dokumen akan dikirim ke Program Studi untuk peninjauan.')) {
+                    return;
+                }
+
+                btnFinalize.disabled = true;
+                btnFinalize.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Memproses...';
 
                 fetch("{{ route('al.berkas.documents.finalize', ['id' => $asesmen->id]) }}", {
                         method: 'POST'
@@ -301,15 +394,24 @@
                             , 'Content-Type': 'application/json'
                         }
                     })
-                    .then(function(r) {
-                        return r.json();
+                    .then(function(response) {
+                        return response.json();
                     })
-                    .then(function(res) {
-                        alert(res.message || 'OK');
-                        if (res.success) window.location.reload();
+                    .then(function(data) {
+                        if (data.success) {
+                            alert(data.message || 'Berita acara berhasil difinalisasi!');
+                            window.location.href = "{{ route('al.berkas', $asesmen->id) }}";
+                        } else {
+                            alert(data.message || 'Gagal finalisasi');
+                            btnFinalize.disabled = false;
+                            btnFinalize.innerHTML = '<i class="bi bi-check-circle"></i> Finalisasi';
+                        }
                     })
-                    .catch(function() {
-                        alert('Gagal finalisasi');
+                    .catch(function(error) {
+                        console.error('Finalize error:', error);
+                        alert('Terjadi kesalahan saat finalisasi');
+                        btnFinalize.disabled = false;
+                        btnFinalize.innerHTML = '<i class="bi bi-check-circle"></i> Finalisasi';
                     });
             });
         }

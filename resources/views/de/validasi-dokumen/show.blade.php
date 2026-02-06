@@ -102,22 +102,6 @@
                             </td>
                         </tr>
                         <tr>
-                            <th>Status Penawaran</th>
-                            <td>
-                                @php
-                                $penawaranConfig = [
-                                'pending' => ['class' => 'warning', 'text' => 'Menunggu Konfirmasi'],
-                                'accepted' => ['class' => 'success', 'text' => 'Diterima'],
-                                'rejected' => ['class' => 'danger', 'text' => 'Ditolak'],
-                                ];
-                                $penawaran = $penawaranConfig[$assignment->status_penawaran] ?? ['class' => 'secondary', 'text' => 'Unknown'];
-                                @endphp
-                                <span class="badge bg-{{ $penawaran['class'] }}">
-                                    {{ $penawaran['text'] }}
-                                </span>
-                            </td>
-                        </tr>
-                        <tr>
                             <th>Status Validasi Dokumen</th>
                             <td>
                                 {!! $pengajuan->getCustomBadgeLastStatus('validasi_dokumen','de','label_long_for') !!}

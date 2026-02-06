@@ -15,7 +15,7 @@
     }
 
     .filter-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #932136 0%, #870820 100%);
         color: white;
     }
 
@@ -42,204 +42,170 @@
         </div>
     </div>
 
-    <!-- Pending Approval Alert -->
-    @if($stats['pending_approval'] > 0)
-    <div class="alert alert-warning alert-permanent border-start border-4 border-warning mb-4">
+    {{-- <div class="alert alert-info alert-permanent border-start border-2 border-info mb-4">
         <div class="d-flex align-items-start">
-            <i class="bi bi-bell-fill fs-1 me-3 text-warning"></i>
+            <i class="bi bi-bell-fill fs-1 me-3 text-info"></i>
             <div class="flex-grow-1">
                 <h5 class="mb-2 fw-bold">
                     <i class="bi bi-exclamation-circle-fill"></i> Berita Acara Menunggu Persetujuan
                 </h5>
                 <p class="mb-2">
                     Anda memiliki <strong class="text-danger fs-5">{{ $stats['pending_approval'] }}</strong>
-                    berita acara Asesmen Lapangan yang menunggu persetujuan.
-                </p>
-                <div class="alert alert-light mb-2">
-                    <i class="bi bi-info-circle-fill text-info"></i>
-                    <strong>Penting:</strong> Segera tinjau dan setujui berita acara untuk melanjutkan proses akreditasi.
-                </div>
+    berita acara Asesmen Lapangan yang menunggu persetujuan.
+    </p>
+    <div class="alert alert-light alert-permanent mb-2">
+        <i class="bi bi-info-circle-fill text-info"></i>
+        <strong>Penting:</strong> Mohon segera tinjau dan setujui berita acara untuk melanjutkan proses akreditasi.
+    </div>
+</div>
+</div>
+</div> --}}
+
+<div class="alert alert-info alert-permanent">
+    <i class="bi bi-bell-fill"></i>
+    <strong>Proses Pelaksanaan AL</strong><br>
+    Pelaksanaan AL pada permohonan akreditasi program studi tersedia pada daftar berikut<br>
+    Program studi dimohon memeriksa Laporan Hasil Asesmen (LHA) dan selanjutnya melakukan persetujuan
+</div>
+
+<!-- Pending Approval Alert -->
+@if($stats['pending_approval'] > 0)
+<div class="alert alert-warning alert-permanent border-start border-2 border-warning mb-4">
+    <div class="d-flex align-items-start">
+        <i class="bi bi-bell-fill fs-1 me-3 text-warning"></i>
+        <div class="flex-grow-1">
+            <h5 class="mb-2 fw-bold">
+                <i class="bi bi-exclamation-circle-fill"></i> Berita Acara Menunggu Persetujuan
+            </h5>
+            <p class="mb-2">
+                Anda memiliki <strong class="text-danger fs-5">{{ $stats['pending_approval'] }}</strong>
+                berita acara Asesmen Lapangan yang menunggu persetujuan.
+            </p>
+            <div class="alert alert-light alert-permanent mb-2">
+                <i class="bi bi-info-circle-fill text-info"></i>
+                <strong>Penting:</strong> Mohon segera tinjau dan setujui berita acara untuk melanjutkan proses akreditasi.
             </div>
         </div>
     </div>
-    @endif
+</div>
+@endif
 
-    <!-- Statistics Cards -->
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 mb-4">
-        <div class="col mb-3">
-            <x-stat-card title="Total Dokumen" :value="$stats['total']" description="Total permohonan akreditasi yang telah sampai pada tahap Pelaksanaan AL & Berita Acara" icon="person-check" iconBg="primary-subtle" />
-        </div>
-
-        <div class="col mb-3">
-            <x-stat-card title="Berita Acara AL Menunggu Persetujuan" :value="$stats['pending_approval']" description="Total berita acara AL yang membutuhkan persetujuan" icon="hourglass-split" iconBg="warning-subtle" />
-        </div>
-
-        <div class="col mb-3">
-            <x-stat-card title="Berita Acara AL Disetujui" :value="$stats['berita_acara']" description="Total berita acara AL yang telah disetujui" icon="file-earmark-text" iconBg="success-subtle" />
-        </div>
+<!-- Statistics Cards -->
+{{-- <h4>Informasi Pelaksanaan dan Berita Acara AL Keseluruhan</h4>
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 mb-4">
+    <div class="col mb-3">
+        <x-stat-card title="Total Dokumen" :value="$stats['total']" description="Total permohonan akreditasi yang telah sampai pada tahap Pelaksanaan AL & Berita Acara" icon="person-check" iconBg="primary-subtle" />
     </div>
 
-    <!-- Filters & Content -->
-    <div class="row">
-        <!-- Filters Sidebar -->
-        <div class="col-lg-3 mb-4">
-            <div class="card filter-card">
-                <div class="card-header border-0">
-                    <h5 class="mb-0">
-                        <i class="bi bi-funnel"></i> Filter & Pencarian
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <form method="GET" action="{{ route('upps.pelaksanaan-al') }}">
-                        <!-- Search -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Cari Permohonan</label>
-                            <input type="text" name="search" class="form-control" placeholder="Nomor/Nama prodi..." value="{{ request('search') }}">
-                        </div>
+    <div class="col mb-3">
+        <x-stat-card title="Berita Acara AL Menunggu Persetujuan" :value="$stats['pending_approval']" description="Total berita acara AL yang membutuhkan persetujuan" icon="hourglass-split" iconBg="warning-subtle" />
+    </div>
 
-                        <!-- Status -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Status Pelaksanaan</label>
-                            <select name="status" class="form-select">
-                                <option value="">Semua Status</option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED ? 'selected' : '' }}>
-                                    Asesor Ditugaskan
-                                </option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_AL_IN_PROGRESS }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_AL_IN_PROGRESS ? 'selected' : '' }}>
-                                    Sedang Berlangsung
-                                </option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_AL_SELESAI }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_AL_SELESAI ? 'selected' : '' }}>
-                                    Selesai
-                                </option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_AL_DILAPORKAN }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_AL_DILAPORKAN ? 'selected' : '' }}>
-                                    Dilaporkan
-                                </option>
-                            </select>
-                        </div>
+    <div class="col mb-3">
+        <x-stat-card title="Berita Acara AL Disetujui" :value="$stats['berita_acara']" description="Total berita acara AL yang telah disetujui" icon="file-earmark-text" iconBg="success-subtle" />
+    </div>
+</div> --}}
 
-                        <!-- Tahun -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Tahun Akreditasi</label>
-                            <select name="tahun" class="form-select">
-                                <option value="">Semua Tahun</option>
-                                @foreach($tahunList as $tahun)
-                                <option value="{{ $tahun }}" {{ request('tahun') == $tahun ? 'selected' : '' }}>
-                                    {{ $tahun }}
-                                </option>
-                                @endforeach
-                            </select>
-                        </div>
+<!-- Filters & Content -->
+<div class="row">
+    <!-- Filters Sidebar -->
 
-                        <!-- Buttons -->
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-light">
-                                <i class="bi bi-search"></i> Terapkan Filter
-                            </button>
-                            <a href="{{ route('upps.pelaksanaan-al') }}" class="btn btn-outline-light">
-                                <i class="bi bi-x-circle"></i> Reset
-                            </a>
-                        </div>
-                    </form>
+    <!-- Main Content -->
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header bg-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Daftar Pelaksanaan AL & Berita Acara</h5>
+                    <div>
+                        <span class="text-muted">Total: <strong>{{ $pengajuans->total() }}</strong></span>
+                    </div>
                 </div>
             </div>
-        </div>
+            <div class="card-body p-0">
+                @if($pengajuans->count() > 0)
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th width="5%">#</th>
+                                <th width="30%">Permohonan Akreditasi</th>
+                                <th width="25%">Tanggal Pelaksanaan AL</th>
+                                <th width="25%">Status Pelaksanaan AL & Berita Acara</th>
+                                <th width="5%" class="text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($pengajuans as $index => $pengajuan)
+                            <tr>
+                                <td>{{ $pengajuans->firstItem() + $index }}</td>
+                                <td>
+                                    <p>{{ $pengajuan->judul_short }}</p>
+                                    <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
+                                    <br>
+                                    <small class="text-muted">Dibuat pada: {{ \App\Libraries\Date::tglIndo($pengajuan->created_at) }}</small>
+                                </td>
+                                <td>
+                                    @if($pengajuan->tanggal_pelaksanaan_al)
+                                    <small>{{ $pengajuan->tanggal_pelaksanaan_al->format('d M Y') }}</small>
+                                    <br>
+                                    <small class="text-muted">
+                                        {{ $pengajuan->tanggal_pelaksanaan_al->diffForHumans() }}
+                                    </small>
+                                    @else
+                                    <span class="text-muted">-</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    {!! $pengajuan->getCustomBadgeLastStatus('pelaksanaan_al', 'upps', 'label_short_for') !!}
 
-        <!-- Main Content -->
-        <div class="col-lg-9">
-            <div class="card">
-                <div class="card-header bg-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Daftar Pelaksanaan AL & Berita Acara</h5>
-                        <div>
-                            <span class="text-muted">Total: <strong>{{ $pengajuans->total() }}</strong></span>
-                        </div>
-                    </div>
+                                    @php
+                                    $pendingBA = $pengajuan->asesmen->beritaAcaraAL
+                                    ->whereIn('status_persetujuan_prodi', ['pending', 'revision_required'])
+                                    ->count();
+                                    @endphp
+
+                                    @if($pendingBA > 0)
+                                    <br>
+                                    <span class="badge bg-warning text-dark mt-1">
+                                        <i class="bi bi-bell"></i> {{ $pendingBA }} BA Pending
+                                    </span>
+                                    @endif
+                                </td>
+                                <td class="text-center">
+                                    <a href="{{ route('upps.pelaksanaan-al.show', $pengajuan->id) }}" class="btn btn-primary btn-sm" title="Lihat Detail">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
-                <div class="card-body p-0">
-                    @if($pengajuans->count() > 0)
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th width="5%">#</th>
-                                    <th width="30%">Permohonan Akreditasi</th>
-                                    <th width="25%">Tanggal Pelaksanaan AL</th>
-                                    <th width="25%">Status Pelaksanaan AL & Berita Acara</th>
-                                    <th width="5%" class="text-center">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($pengajuans as $index => $pengajuan)
-                                <tr>
-                                    <td>{{ $pengajuans->firstItem() + $index }}</td>
-                                    <td>
-                                        <p>{{ $pengajuan->judul_short }}</p>
-                                        <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
-                                        <br>
-                                        <small class="text-muted">Dibuat pada: {{ \App\Libraries\Date::tglIndo($pengajuan->created_at) }}</small>
-                                    </td>
-                                    <td>
-                                        @if($pengajuan->tanggal_pelaksanaan_al)
-                                        <small>{{ $pengajuan->tanggal_pelaksanaan_al->format('d M Y') }}</small>
-                                        <br>
-                                        <small class="text-muted">
-                                            {{ $pengajuan->tanggal_pelaksanaan_al->diffForHumans() }}
-                                        </small>
-                                        @else
-                                        <span class="text-muted">-</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        {!! $pengajuan->getCustomBadgeLastStatus('pelaksanaan_al', 'upps', 'label_short_for') !!}
 
-                                        @php
-                                        $pendingBA = $pengajuan->asesmen->beritaAcaraAL
-                                        ->whereIn('status_persetujuan_prodi', ['pending', 'revision_required'])
-                                        ->count();
-                                        @endphp
-
-                                        @if($pendingBA > 0)
-                                        <br>
-                                        <span class="badge bg-warning text-dark mt-1">
-                                            <i class="bi bi-bell"></i> {{ $pendingBA }} BA Pending
-                                        </span>
-                                        @endif
-                                    </td>
-                                    <td class="text-center">
-                                        <a href="{{ route('upps.pelaksanaan-al.show', $pengajuan->id) }}" class="btn btn-info btn-sm" title="Lihat Detail">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Pagination -->
-                    <div class="card-footer bg-white">
-                        {{ $pengajuans->links() }}
-                    </div>
-                    @else
-                    <div class="text-center py-5">
-                        <i class="bi bi-inbox" style="font-size: 64px; color: #ddd;"></i>
-                        <p class="text-muted mt-3">
-                            @if(request()->filled('search') || request()->filled('status'))
-                            Tidak ada data yang sesuai dengan filter
-                            @else
-                            Belum ada data pelaksanaan AL
-                            @endif
-                        </p>
+                <!-- Pagination -->
+                <div class="card-footer bg-white">
+                    {{ $pengajuans->links() }}
+                </div>
+                @else
+                <div class="text-center py-5">
+                    <i class="bi bi-inbox" style="font-size: 64px; color: #ddd;"></i>
+                    <p class="text-muted mt-3">
                         @if(request()->filled('search') || request()->filled('status'))
-                        <a href="{{ route('upps.pelaksanaan-al') }}" class="btn btn-sm btn-info">
-                            <i class="bi bi-arrow-clockwise"></i> Reset Filter
-                        </a>
+                        Tidak ada data yang sesuai dengan filter
+                        @else
+                        Belum ada data pelaksanaan AL
                         @endif
-                    </div>
+                    </p>
+                    @if(request()->filled('search') || request()->filled('status'))
+                    <a href="{{ route('upps.pelaksanaan-al') }}" class="btn btn-sm btn-info">
+                        <i class="bi bi-arrow-clockwise"></i> Reset Filter
+                    </a>
                     @endif
                 </div>
+                @endif
             </div>
         </div>
     </div>
+</div>
 </div>
 @endsection

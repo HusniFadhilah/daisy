@@ -22,7 +22,7 @@
     }
 
     .filter-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #932136 0%, #870820 100%);
         color: white;
     }
 
@@ -60,8 +60,21 @@
         </div>
     </div>
 
+    <div class="alert alert-info alert-permanent">
+        <i class="bi bi-bell-fill"></i>
+        <strong>Formulir Pembayaran dan Template Dokumen</strong><br>
+        Formulir pembayaran dan template dokumen akreditasi program studi tersedia pada link berikut<br>
+        Catatan:
+        <ol>
+            <li>Program studi dimohon dapat melakukan pengisian formulir dan melakukan pembayaran</li>
+            <li>Setelah melakukan pembayaran, program studi dapat melakukan pengisian dokumen akreditasi</li>
+        </ol>
+        <br>
+        Formulir pembayaran dan template dokumen dapat dilihat pada daftar berikut
+    </div>
+
     <!-- Statistics Cards -->
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-2 mb-4">
+    {{-- <div class="row row-cols-1 row-cols-md-2 row-cols-lg-2 mb-4">
         <div class="col mb-3">
             <x-stat-card title="Menunggu Template" :value="$stats['menunggu']" description="Formulir pembayaran dan template dokumen sedang dalam proses pengiriman oleh LAMDEPILAR" icon="hourglass-split" iconBg="warning-subtle" />
         </div>
@@ -69,69 +82,14 @@
         <div class="col mb-3">
             <x-stat-card title="Formulir Pembayaran dan Template Dokumen Diterima" :value="$stats['diterima']" description="Jumlah formulir dan template dokumen yang telah diterima" icon="check-circle" iconBg="success-subtle" />
         </div>
-    </div>
+    </div> --}}
 
     <!-- Filters & Content -->
     <div class="row">
         <!-- Filters Sidebar -->
-        <div class="col-lg-3 mb-4">
-            <div class="card filter-card">
-                <div class="card-header border-0">
-                    <h5 class="mb-0">
-                        <i class="bi bi-funnel"></i> Filter & Pencarian
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <form method="GET" action="{{ route('upps.penyampaian-template') }}">
-                        <!-- Search -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Cari Permohonan</label>
-                            <input type="text" name="search" class="form-control" placeholder="Nomor/Nama prodi..." value="{{ request('search') }}">
-                        </div>
-
-                        <!-- Status -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Status</label>
-                            <select name="status" class="form-select">
-                                <option value="">Semua Status</option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM ? 'selected' : '' }}>
-                                    Menunggu Template
-                                </option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM ? 'selected' : '' }}>
-                                    Template Diterima
-                                </option>
-                            </select>
-                        </div>
-
-                        <!-- Tahun -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Tahun Akreditasi</label>
-                            <select name="tahun" class="form-select">
-                                <option value="">Semua Tahun</option>
-                                @foreach($tahunList as $tahun)
-                                <option value="{{ $tahun }}" {{ request('tahun') == $tahun ? 'selected' : '' }}>
-                                    {{ $tahun }}
-                                </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <!-- Buttons -->
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-light">
-                                <i class="bi bi-search"></i> Terapkan Filter
-                            </button>
-                            <a href="{{ route('upps.penyampaian-template') }}" class="btn btn-outline-light">
-                                <i class="bi bi-x-circle"></i> Reset
-                            </a>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
 
         <!-- Main Content -->
-        <div class="col-lg-9">
+        <div class="col-lg-12">
             <div class="card">
                 <div class="card-header bg-white">
                     <div class="d-flex justify-content-between align-items-center">
@@ -215,7 +173,7 @@
                                         {!! $pengajuan->getCustomBadgeLastStatus('borang_template','upps','label_short_for') !!}
                                     </td>
                                     <td class="text-center">
-                                        <a href="{{ route('upps.penyampaian-template.show', $pengajuan->id) }}" class="btn btn-info btn-sm" title="Lihat Detail">
+                                        <a href="{{ route('upps.penyampaian-template.show', $pengajuan->id) }}" class="btn btn-primary btn-sm" title="Lihat Detail">
                                             <i class="bi bi-eye"></i>
                                         </a>
                                     </td>

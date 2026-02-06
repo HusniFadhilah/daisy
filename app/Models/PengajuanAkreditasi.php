@@ -249,6 +249,28 @@ class PengajuanAkreditasi extends Model
         return $options[$this->jenis_akreditasi] ?? 'Akreditasi untuk pemenuhan status Terakreditasi';
     }
 
+    public function getPermohonanAkreditasiSectionForPsAttribute()
+    {
+        return <<<HTML
+            <p>{$this->judul_short}</p>
+            <small class="text-muted">{$this->nomor_pengajuan}</small><br>
+            <small class="text-muted">
+                Dibuat pada: { \App\Libraries\Date::tglIndo($this->created_at) }
+            </small>
+        HTML;
+    }
+
+    public function getProgramStudiSectionForPsAttribute()
+    {
+        return <<<HTML
+            <p>{$this->judul_short}</p>
+            <small class="text-muted">{$this->nomor_pengajuan}</small><br>
+            <small class="text-muted">
+                Dibuat pada: { \App\Libraries\Date::tglIndo($this->created_at) }
+            </small>
+        HTML;
+    }
+
     // ============================================
     // RELATIONSHIPS (unchanged)
     // ============================================
@@ -775,7 +797,7 @@ class PengajuanAkreditasi extends Model
             18 => ['date' => $this->tanggal_pelaporan_banding, 'label' => 'Pelaporan banding', 'icon' => 'bi-file-earmark-ruled'],
             19 => ['date' => $this->tanggal_penetapan, 'label' => 'Penetapan hasil akreditasi', 'icon' => 'bi-award'],
             20 => ['date' => $this->tanggal_pelaporan_hasil, 'label' => 'Pelaporan hasil akreditasi', 'icon' => 'bi-megaphone'],
-            21 => ['date' => $this->tanggal_penyimpanan, 'label' => 'Penyimpanan arsip pelaksanaan akreditasi', 'icon' => 'bi-archive'],
+            21 => ['date' => $this->tanggal_penyimpanan, 'label' => 'Penyimpanan Arsip Akreditasi', 'icon' => 'bi-archive'],
         ];
 
         $meta = $this->currentTimelineMeta();
@@ -1422,7 +1444,10 @@ class PengajuanAkreditasi extends Model
             },
             'penugasan_asesor_al' => match ($status) {
                 self::STATUS_AK_DILAPORKAN =>
-                $badge('bg-warning', $labelFor(self::STATUS_AK_DILAPORKAN) ?? '-'),
+                $audience === 'de'
+                    ? $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Sedang Proses Penugasan' : 'Sedang Proses Penugasan')
+                    : $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Sedang Proses Penugasan' : 'Sedang Proses Penugasan'),
+
                 self::STATUS_ASESOR_AL_ASSIGNED =>
                 $badge('bg-success', $labelFor(self::STATUS_ASESOR_AL_ASSIGNED) ?? '-'),
 

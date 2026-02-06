@@ -2,7 +2,7 @@
 
 @extends('layouts.template.app')
 
-@section('title', 'Detail Penerimaan Dokumen')
+@section('title', 'Detail Pengiriman Dokumen')
 
 @section('content')
 <div class="container-fluid py-3">
@@ -10,7 +10,7 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('upps.penerimaan-dokumen') }}">Penerimaan Dokumen</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('upps.penerimaan-dokumen') }}">Pengiriman Dokumen</a></li>
             <li class="breadcrumb-item active">Detail</li>
         </ol>
     </nav>
@@ -19,7 +19,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h5 class="mb-1">
-                <i class="bi bi-file-earmark-text"></i> Detail Penerimaan Dokumen
+                <i class="bi bi-file-earmark-text"></i> Detail Pengiriman Dokumen
             </h5>
             <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
@@ -97,31 +97,15 @@
             </div>
             @endif
 
-            <!-- Informasi Penerimaan Dokumen -->
+            <!-- Informasi Pengiriman Dokumen -->
             <div class="card mb-4">
                 <div class="card-header bg-secondary text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-info-circle"></i> Informasi Penerimaan Dokumen
+                        <i class="bi bi-info-circle"></i> Informasi Pengiriman Dokumen
                     </h5>
                 </div>
                 <div class="card-body">
                     <table class="table table-borderless">
-                        <tr>
-                            <th width="30%">Nomor Permohonan</th>
-                            <td>: {{ $pengajuan->nomor_pengajuan }}</td>
-                        </tr>
-                        <tr>
-                            <th>Program Studi</th>
-                            <td>: {{ $pengajuan->studyProgram->full_name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Universitas</th>
-                            <td>: {{ $pengajuan->studyProgram->university->name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Jenis Permohonan</th>
-                            <td>: {{ $pengajuan->jenis_akreditasi_label }}</td>
-                        </tr>
                         <tr>
                             <th>Tanggal Dokumen Diupload</th>
                             <td>

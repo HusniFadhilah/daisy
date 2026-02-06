@@ -12,17 +12,17 @@ $viewMode = request('view') === 'split' ? 'split' : 'merged'; // split | merged
             <div class="btn-group btn-group-sm btn-sm ms-md-auto">
                 <div class="dropdown">
                     <button class="btn btn-success dropdown-toggle" type="button" id="btnDownloadPenilaian" data-bs-toggle="dropdown" aria-expanded="false" title="Download Penilaian">
-                        <i class="bi bi-download"></i> Download Penilaian
+                        <i class="bi bi-download"></i> Download Validasi AK
                     </button>
                     <ul class="dropdown-menu dropdown-wrap" aria-labelledby="btnDownloadPenilaian">
                         <li>
                             <a class="dropdown-item" href="{{ route('ak.validasi.export.comparison', ['asesmen'=>$asesmen->id, 'mode'=>'split']) }}">
-                                Download tampilan Split (pisah kolom Pemenuhan & Pelampauan)
+                                Download tampilan Terpisah (pisah kolom Pemenuhan & Pelampauan)
                             </a>
                         </li>
                         <li>
                             <a class="dropdown-item" href="{{ route('ak.validasi.export.comparison', ['asesmen'=>$asesmen->id, 'mode'=>'merged']) }}">
-                                Download tampilan Merged (gabungkan kolom Pemenuhan & Pelampauan)
+                                Download tampilan Gabungan (gabungkan kolom Pemenuhan & Pelampauan)
                             </a>
                         </li>
                     </ul>
@@ -358,7 +358,7 @@ $viewMode = request('view') === 'split' ? 'split' : 'merged'; // split | merged
                             @if($hasDifference)
                             <div class="mt-1">
                                 <span class="badge bg-danger badge-sm">
-                                    <i class="bi bi-exclamation-circle"></i> Beda
+                                    <i class="bi bi-exclamation-circle"></i> Terdapat Perbedaan
                                 </span>
                             </div>
                             @endif

@@ -18,27 +18,38 @@
                 {{-- Content Container --}}
                 <div id="detailContainer" style="display: none;">
                     {{-- Elemen Info --}}
-                    <div class="card mb-3 bg-light">
-                        <div class="card-body">
-                            <h6 class="mb-3">
-                                <i class="bi bi-info-circle"></i> Informasi Elemen
-                            </h6>
-                            <div class="row">
-                                <div class="col-md-12 mb-2">
-                                    <small class="text-muted">Kriteria:</small>
-                                    <div id="detailKriteria" class="fw-semibold">-</div>
-                                </div>
-                                <div class="col-md-12 mb-2">
-                                    <small class="text-muted">Kode Elemen:</small>
-                                    <div><strong id="detailKodeElemen">-</strong></div>
-                                </div>
-                                <div class="col-md-12 mb-2">
-                                    <small class="text-muted">Pernyataan Elemen:</small>
-                                    <div id="detailElemenStandar">-</div>
-                                </div>
-                                <div class="col-md-12">
-                                    <small class="text-muted">Indikator:</small>
-                                    <div id="detailIndikator">-</div>
+                    <div class="accordion mb-3" id="accordionInformasiElemen">
+                        <div class="accordion-item bg-light">
+                            <h2 class="accordion-header" id="headingInfoElemen">
+                                <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#collapseInfoElemen" aria-expanded="false" aria-controls="collapseInfoElemen">
+                                    <i class="bi bi-info-circle me-2"></i> Informasi Elemen
+                                </button>
+                            </h2>
+
+                            <div id="collapseInfoElemen" class="accordion-collapse collapse" aria-labelledby="headingInfoElemen" data-bs-parent="#accordionInformasiElemen">
+
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-12 mb-2">
+                                            <small class="text-muted">Kriteria:</small>
+                                            <div id="detailKriteria" class="fw-semibold">-</div>
+                                        </div>
+
+                                        <div class="col-md-12 mb-2">
+                                            <small class="text-muted">Kode Elemen:</small>
+                                            <div><strong id="detailKodeElemen">-</strong></div>
+                                        </div>
+
+                                        <div class="col-md-12 mb-2">
+                                            <small class="text-muted">Pernyataan Elemen:</small>
+                                            <div id="detailElemenStandar">-</div>
+                                        </div>
+
+                                        <div class="col-md-12">
+                                            <small class="text-muted">Indikator:</small>
+                                            <div id="detailIndikator">-</div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

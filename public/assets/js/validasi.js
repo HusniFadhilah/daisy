@@ -343,10 +343,6 @@ const PelaporanModule = (() => {
                         <i class="bi bi-file-pdf text-danger"></i>
                         File <strong>${filename}</strong> berhasil diunggah.
                     </p>
-                    <p class="mb-2">
-                        <i class="bi bi-check-circle text-success"></i>
-                        Status pengajuan <strong>${nomor}</strong> akan diperbarui.
-                    </p>
                     <div class="alert alert-warning mt-3">
                         <small>
                             <i class="bi bi-exclamation-triangle"></i>

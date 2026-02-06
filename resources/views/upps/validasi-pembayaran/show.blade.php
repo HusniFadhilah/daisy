@@ -21,7 +21,7 @@
             <h5 class="mb-1">
                 <i class="bi bi-receipt"></i> Detail Pembayaran
             </h5>
-            <small class="text-muted">{{ $pembayaran->nomor_invoice }}</small>
+            <small class="text-muted">{{ $pembayaran->pengajuan->nomor_pengajuan }}</small>
         </div>
         <a href="{{ route('upps.validasi-pembayaran') }}" class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i> Kembali
@@ -91,18 +91,6 @@
                         <tr>
                             <th width="30%">Nomor Invoice</th>
                             <td>: <strong>{{ $pembayaran->nomor_invoice }}</strong></td>
-                        </tr>
-                        <tr>
-                            <th>Nomor Permohonan</th>
-                            <td>: {{ $pembayaran->pengajuan->nomor_pengajuan }}</td>
-                        </tr>
-                        <tr>
-                            <th>Program Studi</th>
-                            <td>: {{ $pembayaran->pengajuan->studyProgram->full_name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Universitas</th>
-                            <td>: {{ $pembayaran->pengajuan->studyProgram->university->name }}</td>
                         </tr>
                         <tr>
                             <th>Jumlah Pembayaran</th>

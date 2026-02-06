@@ -38,7 +38,7 @@
                             <th width="25%">Dokumen AL</th>
                             {{-- <th width="20%" class="text-center">Progress Penilaian</th> --}}
                             <th width="25%" class="text-center">Aksi Penilaian</th>
-                            <th width="25%" class="text-center">Laporan Asesmen Lapangan (LHA)</th>
+                            <th width="25%" class="text-center">Laporan Asesmen Lapangan</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -128,10 +128,16 @@
                                 </div>
                             </td>
                             <td class="text-center">
-                                <div class="btn-stack">
+                                <div class="btn-stack mb-4">
                                     <a href="{{ route('al.berkas.lha-asesor.page', ['idAsesmen' => $asesmen->id]) }}" class="btn btn-blue btn-fixed-sm" @if($statusInfo['button_disabled']) disabled @endif>
                                         <i class="bi bi-file-earmark-text me-1"></i>
                                         Laporan Hasil Asesmen
+                                    </a>
+                                </div>
+                                <div class="btn-stack">
+                                    <a href="{{ route('al.berkas.ringkasan-asesor.page', ['idAsesmen' => $asesmen->id]) }}" class="btn btn-dark btn-fixed-sm" @if($statusInfo['button_disabled']) disabled @endif>
+                                        <i class="bi bi-file-earmark-text me-1"></i>
+                                        Ringkasan Hasil Akreditasi (Rahasia)
                                     </a>
                                 </div>
                             </td>

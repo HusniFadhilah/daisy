@@ -15,7 +15,7 @@
                     <p class="text-muted mb-0">{{ $asesmen->name }}</p>
                 </div>
                 <div class="d-flex gap-2">
-                    <a href="{{ route('ak.berkas.export', ['idAsesmen'=>$asesmen->id,'mode'=>'split','color'=>false]) }}" class="btn btn-success">
+                    <a href="{{ route('ak.berkas.export', ['idAsesmen'=>$asesmen->id,'mode'=>'split','color'=>false]) }}" class="btn btn-outline-success">
                         <i class="bi bi-file-earmark-excel"></i> Download Split Penilaian
                     </a>
                     <a href="{{ route('ak.berkas') }}" class="btn btn-outline-secondary">
@@ -42,7 +42,7 @@
                 {{-- Legend --}}
                 <div class="p-3 bg-white border-bottom">
                     <div class="row">
-                        <div class="col-md-12 mb-2">
+                        <div class="col-md-8 mb-2">
                             <h6 class="mb-3">Legenda Kategori Penilaian:</h6>
                             <div class="d-flex flex-wrap gap-2">
                                 <div class="legend-item">
@@ -749,8 +749,8 @@
 
                 // ===== Split Column =====
                 const splitBadge = isSplit ?
-                    '<span class="badge bg-light text-dark" style="width:50px">Ya</span>' :
-                    '<span class="badge bg-light text-dark" style="width:50px">Tidak</span>';
+                    '<span class="badge bg-light text-dark" style="width:50px;font-size:13px">Ya</span>' :
+                    '<span class="badge bg-light text-dark" style="width:50px;font-size:13px">Tidak</span>';
 
                 bodyHtml += `
                 <td class="comp-cell col-split text-center">
@@ -760,8 +760,8 @@
 
                 // ===== Keterangan Split =====
                 const ketSplitHtml = isSplit && splitInfo.keterangan ?
-                    `<small>${splitInfo.keterangan}</small>` :
-                    '<small class="text-muted fst-italic">Tidak terjadi split</small>';
+                    `<span>${splitInfo.keterangan}</span>` :
+                    '<span class="text-muted fst-italic">Tidak terjadi split</span>';
 
                 bodyHtml += `
                 <td class="comp-cell col-ket-split">

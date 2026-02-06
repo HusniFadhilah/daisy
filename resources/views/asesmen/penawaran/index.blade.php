@@ -59,7 +59,7 @@ $authUser = Auth::user();
     </nav>
 
     <!-- Stats Cards -->
-    <div class="row mb-4 row-cols-1 row-cols-md-3 g-3">
+    {{-- <div class="row mb-4 row-cols-1 row-cols-md-3 g-3">
         <div class="col">
             <x-stat-card title="Menunggu Respon" :value="$penawarans->count()" icon="hourglass-split" mode="white" description="" color="warning" />
         </div>
@@ -71,7 +71,7 @@ $authUser = Auth::user();
         <div class="col">
             <x-stat-card title="Ditolak" :value="$assignments->where('status_penawaran', 'rejected')->count()" icon="x-circle" mode="white" description="" color="danger" />
         </div>
-    </div>
+    </div> --}}
 
     <!-- Pending Penawaran -->
     @if($penawarans->count() > 0)

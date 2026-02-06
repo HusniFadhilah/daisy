@@ -196,13 +196,27 @@
 
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm" role="group">
-                                    @if($canReport && !$isReported)
+                                    {{-- @if($canReport && !$isReported) --}}
                                     <button type="button" class="btn btn-info js-open-pelaporan" title="Upload Pelaporan" data-type="ak" data-assignment-id="{{ $assignment->id }}" data-nomor="{{ $nomor }}">
                                         <i class="bi bi-upload"></i>
                                     </button>
-                                    @else
-                                    <a href="{{ route('ak.validasi.asesor', ['idAsesmen' => $asesmen->id, 'jenisAsesmen' => 'ak']) }}" class="btn btn-outline-info" title="Lihat Detail">
-                                        <i class="bi bi-eye"></i>
+                                    {{-- @else --}}
+                                    {{-- <a href="{{ route('ak.validasi.asesor', ['idAsesmen' => $asesmen->id, 'jenisAsesmen' => 'ak']) }}" class="btn btn-outline-info" title="Lihat Detail">
+                                    <i class="bi bi-eye"></i>
+                                    </a> --}}
+                                    {{-- @endif --}}
+
+                                    {{-- Tombol Download --}}
+                                    @php
+                                    $hasDocument = $assignment->asesmen->documents()
+                                    ->where('type', 'laporan_validasi_ak')
+                                    ->where('is_active', true)
+                                    ->exists();
+                                    @endphp
+
+                                    @if($hasDocument)
+                                    <a href="{{ route('pelaporan.validasiAk.download', $assignment->id) }}" class="btn btn-success" title="Download Laporan">
+                                        <i class="bi bi-download"></i>
                                     </a>
                                     @endif
                                 </div>

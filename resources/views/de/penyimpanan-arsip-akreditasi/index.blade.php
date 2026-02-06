@@ -1,7 +1,7 @@
 {{-- resources/views/de/penyimpanan-arsip-pelaksanaan-akreditasi/index.blade.php --}}
 @extends('layouts.template.app')
 
-@section('title', 'Penyimpanan Arsip Pelaksanaan Akreditasi')
+@section('title', 'Penyimpanan Arsip Akreditasi')
 
 @push('styles')
 <style>
@@ -23,7 +23,7 @@
     }
 
     .filter-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #932136 0%, #870820 100%);
         color: white;
     }
 
@@ -59,14 +59,14 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item active">Penyimpanan Arsip Pelaksanaan Akreditasi</li>
+            <li class="breadcrumb-item active">Penyimpanan Arsip Akreditasi</li>
         </ol>
     </nav>
 
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h4 class="mb-1"><i class="bi bi-archive"></i> Penyimpanan Arsip Pelaksanaan Akreditasi</h4>
+            <h4 class="mb-1"><i class="bi bi-archive"></i> Penyimpanan Arsip Akreditasi</h4>
             <p class="text-muted mb-0">Kelola penyimpanan arsip dan finalisasi proses akreditasi</p>
         </div>
     </div>

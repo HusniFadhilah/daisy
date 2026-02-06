@@ -258,20 +258,20 @@ class PelaksanaanALController extends Controller
             }
 
             // Validasi: AL harus telah selesai (asesor telah submit)
-            $hasAlSelesai = $pengajuan->statusLog()
-                ->where('status_to', PengajuanAkreditasi::STATUS_AL_SELESAI)
-                ->exists();
+            // $hasAlSelesai = $pengajuan->statusLog()
+            //     ->where('status_to', PengajuanAkreditasi::STATUS_AL_SELESAI)
+            //     ->exists();
 
-            $hasAlDilaporkan = $pengajuan->statusLog()
-                ->where('status_to', PengajuanAkreditasi::STATUS_AL_DILAPORKAN)
-                ->exists();
+            // $hasAlDilaporkan = $pengajuan->statusLog()
+            //     ->where('status_to', PengajuanAkreditasi::STATUS_AL_DILAPORKAN)
+            //     ->exists();
 
-            if (!$hasAlSelesai || $hasAlDilaporkan) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'AL harus selesai terlebih dahulu dan belum dilaporkan sebelum menugaskan validator'
-                ], 422);
-            }
+            // if (!$hasAlSelesai || $hasAlDilaporkan) {
+            //     return response()->json([
+            //         'success' => false,
+            //         'message' => 'Proses AL harus selesai terlebih dahulu sebelum menugaskan validator'
+            //     ], 422);
+            // }
 
             $asesmen = $pengajuan->asesmen;
             $asesmenLapangan = $asesmen->asesmenLapangan;

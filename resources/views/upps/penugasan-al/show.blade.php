@@ -34,29 +34,27 @@
             <!-- Status Alert -->
             @php
             $allowed = [
-            //\App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
-            \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
-            \App\Models\PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
+            \App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
+            \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
+            \App\Models\PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
             ]; // ini contoh, bisa dinamis dari config/db/request
 
             $log = $pengajuan->latestRelevantStatusLog($allowed);
             @endphp
             <!-- Status Alert -->
             @if($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN)
-            <div class="alert alert-success alert-permanent">
-                <i class="bi bi-check-circle"></i>
-                <strong>Pelaporan Validasi AK telah Dilaksanakan</strong><br>
-                Sekretariat LAMDEPILAR menyampaikan laporan tentang validasi AK dan menyatakan dokumen akreditasi memasuki tahap asesmen lapangan. Dan menyatakan bahwa:
-                <ol>
-                    <li>
-                        Sekretariat LAMDEPILAR akan menugaskan asesor untuk melakukan penilaian AL
-                    </li>
-                    <li>
-                        Program Studi diharapkan dapat mengikuti proses selanjutnya
-                    </li>
-                </ol>
+            <div class="alert alert-info alert-permanent">
+                <i class="bi bi-person-check"></i>
+                <strong>Penugasan Asesor AL</strong><br>
+                Sekretariat sedang menugaskan asesor untuk melakukan penilaian AL
             </div>
             @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED)
+            <div class="alert alert-success alert-permanent">
+                <i class="bi bi-person-check"></i>
+                <strong>Penugasan Asesor AL</strong><br>
+                Sekretariat telah menugaskan asesor untuk melakukan penilaian AL
+            </div>
+            @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_AL_IN_PROGRESS)
             <div class="alert alert-success alert-permanent">
                 <i class="bi bi-person-check"></i>
                 <strong>Penugasan Asesor AL</strong><br>
@@ -73,18 +71,6 @@
                 </div>
                 <div class="card-body">
                     <table class="table table-borderless">
-                        <tr>
-                            <th width="30%">Nomor Permohonan</th>
-                            <td>: {{ $pengajuan->nomor_pengajuan }}</td>
-                        </tr>
-                        <tr>
-                            <th>Program Studi</th>
-                            <td>: {{ $pengajuan->studyProgram->full_name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Jenis Permohonan</th>
-                            <td>: {{ $pengajuan->jenis_akreditasi_label }}</td>
-                        </tr>
                         <tr>
                             <th>Tanggal Penugasan Asesor AL</th>
                             <td>

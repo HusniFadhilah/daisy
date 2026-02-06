@@ -441,7 +441,7 @@
                         <li>Penetapan hasil akhir akreditasi</li>
                         <li>Pengumuman hasil akreditasi</li>
                         <li>Pelaporan hasil kepada pemangku kepentingan</li>
-                        <li>Penyimpanan arsip pelaksanaan akreditasi</li>
+                        <li>Penyimpanan Arsip Akreditasi</li>
                         <li>Proses akreditasi selesai</li>
                     </ol>
                 </div>

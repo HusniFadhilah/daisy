@@ -128,7 +128,7 @@
             <div class="alert alert-success alert-permanent mb-3">
                 <i class="bi bi-check-circle me-2"></i>
                 <strong>Penilaian Telah Disetujui!</strong>
-                <p class="mb-0">Validasi {{ $sudahDilaporkan ? 'dan Pelaporan AK ' : '' }}telah diselesaikan dan lolos untuk tahap selanjutnya (Asesmen Lapangan/AL). {{ !$sudahDilaporkan ? 'Silahkan buat & finalisasi Laporan Penilaian Kecukupan LED Program Studi (LHK)' : '' }}</p>
+                <p class="mb-0">Validasi {{ $sudahDilaporkan ? 'dan Pelaporan AK ' : '' }}telah diselesaikan dan lolos untuk tahap selanjutnya (Asesmen Lapangan/AL). {{ !$sudahDilaporkan ? 'Mohon membuat Laporan Penilaian Kecukupan LED Program Studi (LHK) pada menu Pelaporan AK' : '' }}</p>
             </div>
             @endif
 

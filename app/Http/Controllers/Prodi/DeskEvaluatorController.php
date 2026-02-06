@@ -785,7 +785,7 @@ class DeskEvaluatorController extends Controller
             PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
             PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN
         ])) {
-            return back()->with('error', 'LED harus divalidasi oleh validator terlebih dahulu.');
+            return back()->with('error', 'LED harus divalidasi terlebih dahulu.');
         }
 
         // 2. Check pembayaran (harus verified)

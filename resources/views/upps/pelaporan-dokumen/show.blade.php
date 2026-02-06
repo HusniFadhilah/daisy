@@ -184,7 +184,7 @@
                         <strong>Proses Pelaporan Validasi Dokumen:</strong>
                     </p>
                     <ol class="small mb-0 ps-3">
-                        <li>Dokumen selesai divalidasi oleh validator</li>
+                        <li>Dokumen selesai divalidasi</li>
                         <li>LAMDEPILAR melaporkan hasil validasi</li>
                         <li>Sistem menugaskan asesor untuk Asesmen Kecukupan</li>
                         <li>Asesor melakukan penilaian kecukupan dokumen</li>

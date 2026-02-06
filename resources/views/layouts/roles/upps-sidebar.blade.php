@@ -132,7 +132,7 @@ $menus = [
 'route' => 'upps.penyimpanan-arsip-pelaksanaan-akreditasi',
 'match' => 'upps.penyimpanan-arsip-pelaksanaan-akreditasi*',
 'icon' => 'bi-archive',
-'label' => 'Penyimpanan Arsip Pelaksanaan Akreditasi',
+'label' => 'Penyimpanan Arsip Akreditasi',
 ],
 ];
 // biar submenu "Banding" otomatis terbuka kalau salah satu route-nya aktif

@@ -15,7 +15,7 @@
     }
 
     .filter-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #932136 0%, #870820 100%);
         color: white;
     }
 
@@ -49,6 +49,12 @@
         </div>
     </div>
 
+    <div class="alert alert-info alert-permanent">
+        <i class="bi bi-bell-fill"></i>
+        <strong>Pelaporan Hasil Akreditasi</strong><br>
+        Pelaporan hasil akreditasi dapat dilihat pada daftar berikut.<br>
+    </div>
+
     <!-- Success Alert -->
     @if($stats['total'] > 0)
     <div class="alert alert-success alert-permanent border-start border-4 border-success mb-4">
@@ -74,7 +80,7 @@
     @endif
 
     <!-- Statistics Cards -->
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 mb-4">
+    {{-- <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 mb-4">
         <div class="col mb-3">
             <x-stat-card title="Total Hasil Dilaporkan" :value="$stats['total']" description="Pelaporan hasil" icon="megaphone" iconBg="primary-subtle" />
         </div>
@@ -86,92 +92,15 @@
         <div class="col mb-3">
             <x-stat-card title="Proses Selesai" :value="$stats['selesai']" description="Akreditasi selesai" icon="patch-check" iconBg="info-subtle" />
         </div>
-    </div>
+    </div> --}}
 
     <!-- Filters & Content -->
     <div class="row">
         <!-- Filters Sidebar -->
-        <div class="col-lg-3 mb-4">
-            <div class="card filter-card">
-                <div class="card-header border-0">
-                    <h5 class="mb-0">
-                        <i class="bi bi-funnel"></i> Filter & Pencarian
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <form method="GET" action="{{ route('upps.pelaporan-hasil-akreditasi') }}">
-                        <!-- Search -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Cari Permohonan</label>
-                            <input type="text" name="search" class="form-control" placeholder="Nomor/Nama prodi..." value="{{ request('search') }}">
-                        </div>
 
-                        <!-- Peringkat -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Peringkat Hasil Akhir</label>
-                            <select name="peringkat" class="form-select">
-                                <option value="">Semua Peringkat</option>
-                                <option value="Unggul" {{ request('peringkat') == 'Unggul' ? 'selected' : '' }}>
-                                    Unggul
-                                </option>
-                                <option value="Baik Sekali" {{ request('peringkat') == 'Baik Sekali' ? 'selected' : '' }}>
-                                    Baik Sekali
-                                </option>
-                                <option value="Baik" {{ request('peringkat') == 'Baik' ? 'selected' : '' }}>
-                                    Baik
-                                </option>
-                                <option value="Tidak Terakreditasi" {{ request('peringkat') == 'Tidak Terakreditasi' ? 'selected' : '' }}>
-                                    Tidak Terakreditasi
-                                </option>
-                            </select>
-                        </div>
-
-                        <!-- Status -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Status</label>
-                            <select name="status" class="form-select">
-                                <option value="">Semua Status</option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN ? 'selected' : '' }}>
-                                    Hasil Dilaporkan
-                                </option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_ARSIP_DISIMPAN }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_ARSIP_DISIMPAN ? 'selected' : '' }}>
-                                    Arsip Disimpan
-                                </option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_SELESAI }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_SELESAI ? 'selected' : '' }}>
-                                    Selesai
-                                </option>
-                            </select>
-                        </div>
-
-                        <!-- Tahun -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Tahun Akreditasi</label>
-                            <select name="tahun" class="form-select">
-                                <option value="">Semua Tahun</option>
-                                @foreach($tahunList as $tahun)
-                                <option value="{{ $tahun }}" {{ request('tahun') == $tahun ? 'selected' : '' }}>
-                                    {{ $tahun }}
-                                </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <!-- Buttons -->
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-light">
-                                <i class="bi bi-search"></i> Terapkan Filter
-                            </button>
-                            <a href="{{ route('upps.pelaporan-hasil-akreditasi') }}" class="btn btn-outline-light">
-                                <i class="bi bi-x-circle"></i> Reset
-                            </a>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
 
         <!-- Main Content -->
-        <div class="col-lg-9">
+        <div class="col-lg-12">
             <div class="card">
                 <div class="card-header bg-white">
                     <div class="d-flex justify-content-between align-items-center">

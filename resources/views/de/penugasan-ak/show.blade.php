@@ -56,7 +56,7 @@
                             <td>{{ $pengajuan->studyProgram->university->name }}</td>
                         </tr>
                         <tr>
-                            <td class="text-muted">Status</td>
+                            <td class="text-muted">Status Penugasan AK</td>
                             <td>
                                 <span class="badge bg-info text-wrap">
                                     {{ $pengajuan->status_label }}
@@ -102,7 +102,7 @@
             <!-- AK Schedule Info -->
             @if($pengajuan->asesmen?->asesmenKecukupan)
             <div class="card">
-                <div class="card-header bg-info text-white">
+                <div class="card-header bg-primary text-white">
                     <h6 class="mb-0">
                         <i class="bi bi-calendar-range"></i> Jadwal AK
                     </h6>
@@ -183,7 +183,7 @@
 
             <!-- Assign Form -->
             <div class="card mb-3">
-                <div class="card-header bg-success text-white">
+                <div class="card-header bg-primary text-white">
                     <h6 class="mb-0">
                         <i class="bi bi-person-plus"></i> Tugaskan Asesor / Validator
                     </h6>

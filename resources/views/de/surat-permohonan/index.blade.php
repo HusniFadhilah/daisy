@@ -22,7 +22,7 @@
     }
 
     .filter-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #932136 0%, #870820 100%);
         color: white;
     }
 
@@ -53,6 +53,19 @@
         <div>
             <h4 class="mb-1"><i class="bi bi-envelope"></i> Permohonan Akreditasi</h4>
             <p class="text-muted mb-0">Kelola permohonan Akreditasi</p>
+        </div>
+    </div>
+
+    <div class="row mb-2">
+        <div class="col-12">
+            <div class="alert alert-warning alert-permanent fade show" style="border-left: 4px solid #ffc107;">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                {{-- <strong>Perhatian!</strong>
+                Ada <strong>{{ $stats['pengingat_bulan_target'] }}</strong> PS yang perlu diingatkan tentang masa akreditasi berakhir dalam 7 bulan dari sekarang ({{ $stats['pengingat']['target_month_label'] }}).
+                <a href="javascript:void(0)" class="mt-2 btn-reminder-bg" onclick="openReminderModal()">
+                    Kirim Pengingat →
+                </a> --}}
+            </div>
         </div>
     </div>
 
