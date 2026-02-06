@@ -161,17 +161,16 @@
     function deleteRecord(id) {
         if (confirm('Yakin ingin menghapus pengguna ini?')) {
             $.ajax({
-                url: '{{ url('
-                users ') }}/' + id
-                , type: 'DELETE'
-                , data: {
+                url: '{{ url('users') }}/' + id,
+                type: 'DELETE',
+                data: {
                     _token: '{{ csrf_token() }}'
-                }
-                , success: function(result) {
+                },
+                success: function(result) {
                     $('#users-table').DataTable().ajax.reload();
                     alert('Pengguna berhasil dihapus');
-                }
-                , error: function(xhr) {
+                },
+                error: function(xhr) {
                     alert('Error: ' + xhr.responseJSON.message);
                 }
             });
