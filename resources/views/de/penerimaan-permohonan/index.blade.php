@@ -139,12 +139,7 @@
                                         {{ $pengajuans->firstItem() + $index }}
                                     </td>
                                     <td>
-                                        <p>{{ $pengajuan->judul_short }}</p>
-                                        <small>{{ $pengajuan->studyProgram->university->name ?? '-' }}</small>
-                                        <br>
-                                        <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
-                                        <br>
-                                        <small class="text-muted">Dibuat pada: {{ \App\Libraries\Date::tglIndo($pengajuan->created_at) }}</small>
+                                        {!! $pengajuan->getPermohonanAkreditasiSectionFor('de') !!}
                                     </td>
                                     <td>
                                         @if($pengajuan->tanggal_surat_permohonan_diterima)

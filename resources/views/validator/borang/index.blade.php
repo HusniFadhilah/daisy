@@ -27,25 +27,6 @@
         </ol>
     </nav>
 
-    <!-- Stats Cards -->
-    <div class="row mb-4 row-cols-1 row-cols-md-2 row-cols-lg-4 g-3">
-        <div class="col">
-            <x-stat-card title="Menunggu Validasi" :value="$stats['pending']" icon="clock-history" mode="white" description="" color="warning" />
-        </div>
-
-        <div class="col">
-            <x-stat-card title="Sedang Divalidasi" :value="$stats['in_review']" icon="eye" mode="white" description="" color="info" />
-        </div>
-
-        <div class="col">
-            <x-stat-card title="Perlu Revisi" :value="$stats['revision']" icon="exclamation-triangle" mode="white" description="" color="danger" />
-        </div>
-
-        <div class="col">
-            <x-stat-card title="Disetujui" :value="$stats['approved']" icon="check-circle" mode="white" description="" color="success" />
-        </div>
-    </div>
-
     <!-- Table -->
     <div class="card">
         <div class="card-header bg-white">
@@ -151,9 +132,11 @@
             </div>
 
             <!-- Pagination -->
+            @if($assignments->count() > 1)
             <div class="card-footer bg-white">
                 {{ $assignments->links() }}
             </div>
+            @endif
 
             @else
             <div class="text-center py-5">
@@ -161,6 +144,25 @@
                 <p class="text-muted mt-3 mb-0">Belum ada dokumen yang ditugaskan untuk Anda validasi.</p>
             </div>
             @endif
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mt-4 row-cols-1 row-cols-md-2 row-cols-lg-4 g-3">
+        <div class="col">
+            <x-stat-card title="Menunggu Validasi" :value="$stats['pending']" icon="clock-history" mode="white" description="" color="warning" />
+        </div>
+
+        <div class="col">
+            <x-stat-card title="Sedang Divalidasi" :value="$stats['in_review']" icon="eye" mode="white" description="" color="info" />
+        </div>
+
+        <div class="col">
+            <x-stat-card title="Perlu Revisi" :value="$stats['revision']" icon="exclamation-triangle" mode="white" description="" color="danger" />
+        </div>
+
+        <div class="col">
+            <x-stat-card title="Disetujui" :value="$stats['approved']" icon="check-circle" mode="white" description="" color="success" />
         </div>
     </div>
 </div>

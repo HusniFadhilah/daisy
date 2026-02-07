@@ -76,7 +76,7 @@
                 <i class="bi bi-send"></i>
                 <strong>Dokumen telah diupload dan dikirim</strong>
                 <br>
-                Menunggu penerimaan dari LAMDEPILAR
+                Menunggu penerimaan dokumen dari LAMDEPILAR
             </div>
             @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA)
             <div class="alert alert-success alert-permanent">
@@ -99,7 +99,7 @@
 
             <!-- Informasi Pengiriman Dokumen -->
             <div class="card mb-4">
-                <div class="card-header bg-secondary text-white">
+                <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">
                         <i class="bi bi-info-circle"></i> Informasi Pengiriman Dokumen
                     </h5>
@@ -175,8 +175,7 @@
                                         @if($doc)
                                         <small class="text-muted text-wrap mt-1">
                                             {{ $doc->original_filename ?? '-' }}<br>
-                                            {{ $doc->file_size_formatted ?? '-' }}
-                                            @if($doc->created_at) • {{ $doc->created_at->format('d M Y H:i') }} @endif
+                                            @if($doc->created_at) {{ $doc->created_at->format('d M Y H:i') }}<br> @endif
                                         </small>
 
                                         @if($doc->path_file || $doc->template_link)
@@ -213,7 +212,7 @@
             @endphp
 
             <div class="card">
-                <div class="card-header bg-info text-white">
+                <div class="card-header bg-secondary text-white">
                     <h5 class="mb-0">
                         <i class="bi bi-clock-history"></i> Riwayat Status
                     </h5>
@@ -225,7 +224,7 @@
                         <div class="timeline-item mb-3">
                             <div class="d-flex">
                                 <div class="flex-shrink-0">
-                                    <i class="bi bi-circle-fill text-info" style="font-size: 8px;"></i>
+                                    <i class="bi bi-circle-fill text-secondary" style="font-size: 8px;"></i>
                                 </div>
                                 <div class="flex-grow-1 ms-3">
                                     <strong>

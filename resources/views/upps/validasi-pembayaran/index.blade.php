@@ -129,11 +129,7 @@
                                     </small>
                                 </td>
                                 <td>
-                                    <strong>{{ $pembayaran->pengajuan->studyProgram->name }}</strong>
-                                    <br>
-                                    <small class="text-muted">
-                                        {{ $pembayaran->pengajuan->studyProgram->degreeLevel->name ?? '-' }}
-                                    </small>
+                                    {{ $pembayaran->pengajuan->studyProgram->name }}
                                 </td>
                                 <td>
                                     <strong class="text-success">
@@ -169,12 +165,12 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="btn-group btn-group-sm" role="group">
-                                        <a href="{{ route('upps.validasi-pembayaran.show', $pembayaran->id) }}" class="btn btn-info" title="Lihat Detail">
+                                        <a href="{{ route('upps.validasi-pembayaran.show', $pembayaran->id) }}" class="btn btn-primary" title="Lihat Detail">
                                             <i class="bi bi-eye"></i>
                                         </a>
 
                                         @if(in_array($pembayaran->status_pembayaran, ['menunggu_pembayaran', 'upload_ulang']))
-                                        <a href="{{ route('upps.validasi-pembayaran.upload.form', $pembayaran->id) }}" class="btn btn-success" title="Upload Formulir & Bukti Pembayaran">
+                                        <a href="{{ route('upps.validasi-pembayaran.upload.form', $pembayaran->id) }}" class="btn btn-outline-success" title="Upload Formulir & Bukti Pembayaran">
                                             <i class="bi bi-upload"></i>
                                         </a>
                                         @endif

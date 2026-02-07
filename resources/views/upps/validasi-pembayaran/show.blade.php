@@ -37,7 +37,7 @@
                 <i class="bi bi-hourglass-split"></i>
                 <strong>Menunggu pembayaran</strong>
                 <br>
-                Segera lakukan pembayaran sebelum jatuh tempo:
+                Mohon segera lakukan pembayaran sebelum jatuh tempo:
                 <strong>{{ $pembayaran->tanggal_jatuh_tempo?->format('d M Y') ?? '-' }}</strong>
                 @if($pembayaran->tanggal_jatuh_tempo && $pembayaran->tanggal_jatuh_tempo < now()) <br>
                     <span class="badge bg-danger mt-2">Pembayaran telah melewati jatuh tempo!</span>
@@ -53,9 +53,9 @@
             @elseif($pembayaran->status_pembayaran === 'terverifikasi')
             <div class="alert alert-success alert-permanent">
                 <i class="bi bi-check-circle"></i>
-                <strong>Pembayaran telah divalidasi oleh LAMDEPILAR</strong>
+                <strong>Pembayaran telah divalidasi</strong>
                 <br>
-                Divalidasi pada {{ $pembayaran->tanggal_verifikasi?->format('d M Y H:i') ?? '-' }}
+                Terima kasih telah melakukan pembayaran akreditasi. Mohon dapat melakukan pengiriman dokumen akreditasi, pada tahap selanjutnya
             </div>
             @elseif($pembayaran->status_pembayaran === 'upload_ulang')
             <div class="alert alert-secondary alert-permanent">
@@ -239,9 +239,9 @@
         <div class="col-lg-4">
             <!-- Timeline -->
             <div class="card">
-                <div class="card-header bg-info text-white">
+                <div class="card-header bg-secondary text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-clock-history"></i> Riwayat Status Pembayaran
+                        <i class="bi bi-clock-history"></i> Riwayat Status
                     </h5>
                 </div>
                 <div class="card-body" style="max-height: 600px; overflow-y: auto;">
@@ -250,7 +250,7 @@
                         <div class="timeline-item mb-3">
                             <div class="d-flex">
                                 <div class="flex-shrink-0">
-                                    <i class="bi bi-circle-fill text-info" style="font-size: 8px;"></i>
+                                    <i class="bi bi-circle-fill text-secondary" style="font-size: 8px;"></i>
                                 </div>
                                 <div class="flex-grow-1 ms-3">
                                     <strong>Invoice Diterima</strong>
@@ -267,7 +267,7 @@
                         <div class="timeline-item mb-3">
                             <div class="d-flex">
                                 <div class="flex-shrink-0">
-                                    <i class="bi bi-circle-fill text-info" style="font-size: 8px;"></i>
+                                    <i class="bi bi-circle-fill text-secondary" style="font-size: 8px;"></i>
                                 </div>
                                 <div class="flex-grow-1 ms-3">
                                     <strong>Formulir & Bukti Pembayaran Diupload</strong>
@@ -305,12 +305,6 @@
                                     <small class="text-muted">
                                         {{ $pembayaran->tanggal_verifikasi->format('d M Y H:i') }}
                                     </small>
-                                    @if($pembayaran->verifier)
-                                    <br>
-                                    <small class="text-muted">
-                                        oleh {{ $pembayaran->verifier->name }}
-                                    </small>
-                                    @endif
                                 </div>
                             </div>
                         </div>

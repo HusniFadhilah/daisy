@@ -55,22 +55,6 @@
         </ol>
     </nav>
 
-    <!-- Stats Cards (template pelaporan style) -->
-    <div class="row mb-4 row-cols-1 row-cols-md-2 row-cols-lg-4 g-3">
-        <div class="col">
-            <x-stat-card title="Asesor Sudah Submit" :value="$stats['total_asesor_submitted']" icon="people" mode="white" description="" color="warning" />
-        </div>
-        <div class="col">
-            <x-stat-card title="Asesor Belum Submit" :value="$stats['total_asesor_pending']" icon="exclamation-triangle" mode="white" description="" color="danger" />
-        </div>
-        <div class="col">
-            <x-stat-card title="Asesmen Aktif" :value="$stats['total_needs_validation']" icon="clipboard-check" mode="white" description="" color="primary" />
-        </div>
-        <div class="col">
-            <x-stat-card title="Selesai Divalidasi" :value="$stats['total_validated']" icon="check-circle" mode="white" description="" color="success" />
-        </div>
-    </div>
-
     <div class="card">
         <div class="card-header bg-white">
             <div class="d-flex justify-content-between align-items-center">
@@ -225,6 +209,22 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards (template pelaporan style) -->
+    <div class="row mt-4 row-cols-1 row-cols-md-2 row-cols-lg-4 g-3">
+        <div class="col">
+            <x-stat-card title="Asesor Sudah Submit" :value="$stats['total_asesor_submitted']" icon="people" mode="white" description="" color="warning" />
+        </div>
+        <div class="col">
+            <x-stat-card title="Asesor Belum Submit" :value="$stats['total_asesor_pending']" icon="exclamation-triangle" mode="white" description="" color="danger" />
+        </div>
+        <div class="col">
+            <x-stat-card title="Asesmen Aktif" :value="$stats['total_needs_validation']" icon="clipboard-check" mode="white" description="" color="primary" />
+        </div>
+        <div class="col">
+            <x-stat-card title="Selesai Divalidasi" :value="$stats['total_validated']" icon="check-circle" mode="white" description="" color="success" />
         </div>
     </div>
 </div>

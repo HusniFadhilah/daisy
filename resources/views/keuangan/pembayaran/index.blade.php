@@ -85,9 +85,7 @@
                             </td>
 
                             <td>
-                                <p>{{ $item->judul_short }}</p>
-                                <small class="text-muted">{{ $item->nomor_pengajuan }}</small>
-                                <small class="text-muted">{{ optional(optional($item->studyProgram)->university)->name ?? '-' }}</small>
+                                {!! $item->getPermohonanAkreditasiSectionFor('de') !!}
                             </td>
 
                             <td><strong>{{ optional($pembayaran)->nomor_invoice ?? '-' }}</strong></td>

@@ -56,18 +56,18 @@
         </div>
     </div>
 
-    <div class="row mb-2">
+    {{-- <div class="row mb-2">
         <div class="col-12">
             <div class="alert alert-warning alert-permanent fade show" style="border-left: 4px solid #ffc107;">
-                <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                {{-- <strong>Perhatian!</strong>
+                <i class="bi bi-exclamation-triangle-fill me-2"></i> --}}
+    {{-- <strong>Perhatian!</strong>
                 Ada <strong>{{ $stats['pengingat_bulan_target'] }}</strong> PS yang perlu diingatkan tentang masa akreditasi berakhir dalam 7 bulan dari sekarang ({{ $stats['pengingat']['target_month_label'] }}).
-                <a href="javascript:void(0)" class="mt-2 btn-reminder-bg" onclick="openReminderModal()">
-                    Kirim Pengingat →
-                </a> --}}
-            </div>
+    <a href="javascript:void(0)" class="mt-2 btn-reminder-bg" onclick="openReminderModal()">
+        Kirim Pengingat →
+    </a> --}}
+    {{-- </div>
         </div>
-    </div>
+    </div> --}}
 
     <!-- Statistics Cards -->
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 mb-4">
@@ -195,12 +195,7 @@
                                 <tr>
                                     <td>{{ $pengajuans->firstItem() + $index }}</td>
                                     <td>
-                                        <p>{{ $pengajuan->judul_short }}</p>
-                                        <small>{{ $pengajuan->studyProgram->university->name ?? '-' }}</small>
-                                        <br>
-                                        <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
-                                        <br>
-                                        <small class="text-muted">Dibuat pada: {{ \App\Libraries\Date::tglIndo($pengajuan->created_at) }}</small>
+                                        {!! $pengajuan->getPermohonanAkreditasiSectionFor('de') !!}
                                     </td>
                                     <td>
                                         @if($pengajuan->tanggal_pengingat)

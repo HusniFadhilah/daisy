@@ -79,7 +79,7 @@
             <h4 class="mb-1">
                 <i class="bi bi-file-earmark-text"></i> Pelaporan Validasi Dokumen
             </h4>
-            <p class="text-muted mb-0">Kelola proses pelaporan validasi dokumen oleh validator</p>
+            <p class="text-muted mb-0">Monitor proses pelaporan validasi dokumen</p>
         </div>
     </div>
 

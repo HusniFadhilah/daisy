@@ -42,7 +42,7 @@
                     <table class="table table-borderless mb-0">
                         <tr>
                             <th width="30%">Program Studi</th>
-                            <td>: {{ $pengingat->studyProgram->full_name }}</td>
+                            <td>: {{ $pengingat->studyProgram->name }}</td>
                         </tr>
                         <tr>
                             <th>Universitas</th>
@@ -51,6 +51,13 @@
                         <tr>
                             <th>Tahun Akreditasi</th>
                             <td>: {{ $pengingat->tahun_akreditasi }}</td>
+                        </tr>
+                        <tr>
+                            <th>Tanggal Kedaluwarsa</th>
+                            <td>:
+                                {{ $pengingat->studyProgram->tanggal_kedaluwarsa ? $pengingat->studyProgram->tanggal_kedaluwarsa->format('d F Y') : '-' }}
+                                <div class="ps-2">{!! $pengingat->studyProgram->full_days_left !!}</div>
+                            </td>
                         </tr>
                         <tr>
                             <th>Pengirim</th>

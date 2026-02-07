@@ -232,8 +232,7 @@
                                 <small class="text-muted">Via Link</small>
                                 @else
                                 <small class="text-muted">
-                                    {{ $templateLed->original_filename }} •
-                                    {{ $templateLed->file_size_formatted }}
+                                    {{ $templateLed->original_filename }}
                                 </small>
                                 @endif
                                 <br>
@@ -276,8 +275,7 @@
                                 <small class="text-muted">Via Link</small>
                                 @else
                                 <small class="text-muted">
-                                    {{ $formulirPembayaran->original_filename }} •
-                                    {{ $formulirPembayaran->file_size_formatted }}
+                                    {{ $formulirPembayaran->original_filename }}
                                 </small>
                                 @endif
                                 <br>

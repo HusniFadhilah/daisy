@@ -105,7 +105,7 @@
 
                         <div class="text-end">
                             <span class="small text-muted">Kedaluwarsa: </span>
-                            <span>{!! $prodi->status_badge_kedaluwarsa !!}</span>
+                            <span>{!! $prodi->getStatusBadgeKedaluwarsa() !!}</span>
                         </div>
                     </div>
                 </div>
@@ -168,12 +168,12 @@
                         <thead class="table-light">
                             <tr>
                                 <th width="5%">#</th>
-                                <th width="25%">Program Studi</th>
-                                <th width="15%">Tanggal Akreditasi Kedaluwarsa</th>
+                                <th width="22%">Program Studi</th>
+                                <th width="20%">Tanggal Akreditasi Kedaluwarsa</th>
                                 <th width="15%">Tanggal Pengingat Dikirim</th>
                                 <th width="15%">Pengirim</th>
                                 <th width="15%">Status Pengingat Akreditasi</th>
-                                <th width="15%" class="text-center">Aksi</th>
+                                <th width="13%" class="text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -188,7 +188,7 @@
                                     </small>
                                 </td>
                                 <td>
-                                    {!! $pengingat->studyProgram->status_badge_kedaluwarsa !!}
+                                    {!! $pengingat->studyProgram->getStatusBadgeKedaluwarsa() !!}
                                 </td>
                                 <td>
                                     <small>

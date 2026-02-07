@@ -176,8 +176,7 @@
                                         @if($doc)
                                         <small class="text-muted text-wrap mt-1">
                                             {{ $doc->original_filename ?? '-' }}<br>
-                                            {{ $doc->file_size_formatted ?? '-' }}
-                                            @if($doc->created_at) • {{ $doc->created_at->format('d M Y H:i') }} @endif
+                                            @if($doc->created_at) {{ $doc->created_at->format('d M Y H:i') }}<br> @endif
                                         </small>
 
                                         @if($doc->path_file || $doc->template_link)

@@ -73,12 +73,8 @@
                 <div class="card-body">
                     <table class="table table-borderless">
                         <tr>
-                            <th width="30%">Nomor Permohonan</th>
-                            <td>: {{ $pengajuan->nomor_pengajuan }}</td>
-                        </tr>
-                        <tr>
-                            <th>Program Studi</th>
-                            <td>: {{ $pengajuan->studyProgram->full_name }}</td>
+                            <th style="width:40%">Program Studi</th>
+                            <td>: {{ $pengajuan->studyProgram->name }}</td>
                         </tr>
                         <tr>
                             <th>Universitas</th>
@@ -86,7 +82,7 @@
                         </tr>
                         <tr>
                             <th>Akreditasi Kedaluwarsa</th>
-                            <td>: {{ $pengajuan->studyProgram->days_left ? $pengajuan->studyProgram->days_left.' hari lagi': '-' }}</td>
+                            <td>: {!! $pengajuan->studyProgram->getStatusBadgeKedaluwarsa('ps-2') !!}</td>
                         </tr>
                         <tr>
                             <th>Jenis Permohonan</th>
@@ -165,7 +161,7 @@
             @endphp
 
             <div class="card">
-                <div class="card-header bg-info text-white">
+                <div class="card-header bg-secondary text-white">
                     <h5 class="mb-0">
                         <i class="bi bi-clock-history"></i> Riwayat Status
                     </h5>
@@ -177,7 +173,7 @@
                         <div class="timeline-item mb-3">
                             <div class="d-flex">
                                 <div class="flex-shrink-0">
-                                    <i class="bi bi-circle-fill text-info" style="font-size: 8px;"></i>
+                                    <i class="bi bi-circle-fill text-secondary" style="font-size: 8px;"></i>
                                 </div>
                                 <div class="flex-grow-1 ms-3">
                                     <strong>

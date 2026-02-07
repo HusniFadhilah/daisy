@@ -88,10 +88,10 @@
                             <thead class="table-light">
                                 <tr>
                                     <th width="5%">#</th>
-                                    <th width="30%">Permohonan Akreditasi</th>
+                                    <th width="20%">Permohonan Akreditasi</th>
                                     <th width="25%">Asesor AL</th>
                                     <th width="25%">Status</th>
-                                    <th width="5%" class="text-center">Aksi</th>
+                                    <th width="10%" class="text-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -99,10 +99,7 @@
                                 <tr>
                                     <td>{{ $pengajuans->firstItem() + $index }}</td>
                                     <td>
-                                        <p>{{ $pengajuan->judul_short }}</p>
-                                        <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
-                                        <br>
-                                        <small class="text-muted">Dibuat pada: {{ \App\Libraries\Date::tglIndo($pengajuan->created_at) }}</small>
+                                        {!! $pengajuan->getPermohonanAkreditasiSectionFor('upps') !!}
                                     </td>
                                     <td>
                                         @if($pengajuan->asesmen->asesorAL)

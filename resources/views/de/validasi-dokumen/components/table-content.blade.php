@@ -15,11 +15,11 @@
                 <thead class="table-light">
                     <tr>
                         <th width="5%">No</th>
-                        <th width="30%">Permohonan Akreditasi</th>
+                        <th width="20%">Permohonan Akreditasi</th>
                         <th width="25%">Validator</th>
                         <th width="20%">Status Validasi Dokumen</th>
-                        <th width="15%">Progress</th>
-                        <th width="5%" class="text-center">Aksi</th>
+                        <th width="20%">Progress</th>
+                        <th width="10%" class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -32,9 +32,7 @@
                     <tr>
                         <td>{{ $assignments->firstItem() + $index }}</td>
                         <td>
-                            <p>{{ $pengajuan->judul_short }}</p>
-                            {{-- <small>{{ $pengajuan->studyProgram->university->name ?? '-' }}</small> --}}
-                            <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
+                            {!! $pengajuan->getPermohonanAkreditasiSectionFor('de') !!}
                         </td>
                         <td>
                             <strong>{{ $assignment->user->name }}</strong>

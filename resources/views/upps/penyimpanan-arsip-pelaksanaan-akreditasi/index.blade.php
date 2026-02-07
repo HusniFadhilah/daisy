@@ -113,7 +113,6 @@
                                 <tr>
                                     <th width="5%">#</th>
                                     <th width="25%">Permohonan Akreditasi</th>
-                                    <th width="20%">Program Studi</th>
                                     <th width="15%">Peringkat Akhir</th>
                                     <th width="15%">Tanggal Arsip</th>
                                     <th width="10%">Status</th>
@@ -137,21 +136,7 @@
                                 <tr>
                                     <td>{{ $pengajuans->firstItem() + $index }}</td>
                                     <td>
-                                        <p class="mb-1"><strong>{{ $pengajuan->judul }}</strong></p>
-                                        <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
-                                        <br>
-                                        <small class="text-muted">
-                                            Tahun: {{ $pengajuan->tahun_akreditasi }}
-                                        </small>
-                                    </td>
-                                    <td>
-                                        <strong>{{ $pengajuan->studyProgram->name }}</strong>
-                                        <br>
-                                        <small class="text-muted">
-                                            {{ $pengajuan->studyProgram->degreeLevel->name ?? '-' }}
-                                        </small>
-                                        <br>
-                                        <small>{{ $pengajuan->studyProgram->university->name ?? '-' }}</small>
+                                        {!! $pengajuan->getPermohonanAkreditasiSectionFor('upps') !!}
                                     </td>
                                     <td>
                                         @if($peringkatAkhir)

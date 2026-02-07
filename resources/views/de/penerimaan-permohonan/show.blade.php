@@ -39,38 +39,6 @@
         border-radius: 12px;
     }
 
-    .timeline-item {
-        position: relative;
-        padding-left: 30px;
-        padding-bottom: 20px;
-        border-left: 2px solid #e9ecef;
-    }
-
-    .timeline-item:last-child {
-        border-left-color: transparent;
-        padding-bottom: 0;
-    }
-
-    .timeline-item::before {
-        content: '';
-        position: absolute;
-        left: -6px;
-        top: 0;
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        background: #0d6efd;
-    }
-
-    .timeline-item.completed::before {
-        background: #198754;
-    }
-
-    .timeline-item.current::before {
-        background: #ffc107;
-        animation: pulse 2s infinite;
-    }
-
 </style>
 @endpush
 
@@ -225,39 +193,19 @@
             </div>
             @endif
 
-            <div class="card mt-4">
+            <div class="card my-4">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Informasi Permohonan Akreditasi</h5>
+                    <h5 class="mb-0">Informasi Penerimaan Permohonan Akreditasi</h5>
                 </div>
                 <div class="card-body">
                     <table class="table table-borderless">
                         <tr>
-                            <th width="30%">Nomor Permohonan</th>
-                            <td>: {{ $pengajuan->nomor_pengajuan }}</td>
+                            <th style="width:45%">Tanggal Penerimaan Permohonan</th>
+                            <td>: {{ \App\Libraries\Date::tglIndo($pengajuan->tanggal_surat_penerimaan_dikirim) }}</td>
                         </tr>
                         <tr>
-                            <th>Program Studi</th>
-                            <td>: {{ $pengajuan->studyProgram->full_name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Universitas</th>
-                            <td>: {{ $pengajuan->studyProgram->university->name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Akreditasi Kedaluwarsa</th>
-                            <td>: {{ $pengajuan->studyProgram->days_left ? $pengajuan->studyProgram->days_left.' hari lagi': '-' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Jenis Permohonan</th>
-                            <td>: {{ $pengajuan->jenis_akreditasi_label }}</td>
-                        </tr>
-                        <tr>
-                            <th>Pemohon</th>
-                            <td>: {{ $pengajuan->pengaju->name ?? '-' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Status Permohonan Akreditasi</th>
-                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('surat_permohonan_ps') !!}</td>
+                            <th>Status Penerimaan Permohonan</th>
+                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('surat_penerimaan_de','de') !!}</td>
                         </tr>
                     </table>
                 </div>
@@ -266,17 +214,18 @@
 
         <!-- Sidebar -->
         <div class="col-lg-4">
+            <!-- Riwayat Status -->
             @php
             $filterStatuses = [
+            \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
             \App\Models\PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM,
             ];
 
             $logs = $pengajuan->statusLog
             ->whereIn('status_to', $filterStatuses)
-            ->sortBy('changed_at');
+            ->sortBy('created_at');
             @endphp
 
-            <!-- Status Log -->
             <div class="card">
                 <div class="card-header bg-secondary text-white">
                     <h5 class="mb-0">
@@ -290,7 +239,7 @@
                         <div class="timeline-item mb-3">
                             <div class="d-flex">
                                 <div class="flex-shrink-0">
-                                    <i class="bi bi-circle-fill text-primary" style="font-size: 8px;"></i>
+                                    <i class="bi bi-circle-fill text-secondary" style="font-size: 8px;"></i>
                                 </div>
                                 <div class="flex-grow-1 ms-3">
                                     <strong>
@@ -307,25 +256,6 @@
                             </div>
                         </div>
                         @endforeach
-                        <div class="timeline-item mb-3">
-                            <div class="d-flex">
-                                <div class="flex-shrink-0">
-                                    <i class="bi bi-circle-fill text-primary" style="font-size: 8px;"></i>
-                                </div>
-                                <div class="flex-grow-1 ms-3">
-                                    <strong>
-                                        Penerimaan Permohonan Akreditasi Diterima
-                                    </strong>
-                                    <br>
-                                    <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
-
-                                    {{-- @if($log->keterangan)
-                                    <br>
-                                    <small class="text-muted fst-italic">Penerimaan Permohonan Akreditasi telah diterima oleh PS</small>
-                                    @endif --}}
-                                </div>
-                            </div>
-                        </div>
                     </div>
                     @else
                     <p class="text-muted text-center mb-0">Belum ada riwayat</p>

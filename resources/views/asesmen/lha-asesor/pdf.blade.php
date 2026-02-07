@@ -216,7 +216,7 @@
     <table class="info-table">
         <tr>
             <td>Program Studi</td>
-            <td>: {{ $asesmen->pengajuan->studyProgram->full_name ?? '-' }}</td>
+            <td>: {{ $asesmen->pengajuan->studyProgram->name ?? '-' }}</td>
         </tr>
         <tr>
             <td>Perguruan Tinggi</td>

@@ -274,47 +274,99 @@ class PemetaanAkreditasiController extends Controller
 
     public function getReminderDetailAjax(Request $request)
     {
-        $targetMonths = (int) $request->get('target_months', 7); // target: now + 7 bulan
-        $windowMonths = (int) $request->get('window_months', 1); // window: berapa bulan ditampilkan
+        $targetMonths = (int) $request->get('target_months', 7);
+        $windowMonths = (int) $request->get('window_months', 1);
+        $page = (int) $request->get('page', 1);
 
-        // amankan input
+        // Validasi input
         if ($targetMonths < 0) $targetMonths = 0;
         if ($windowMonths < 1) $windowMonths = 1;
+        if ($page < 1) $page = 1;
 
         $base = now()->copy()->addMonths($targetMonths);
-
-        // contoh: target=7 (Ags), window=6 -> Ags s/d Jan (6 bulan)
         $start = $base->copy()->startOfMonth();
-        $end   = $base->copy()->addMonths($windowMonths - 1)->endOfMonth();
+        $end = $base->copy()->addMonths($windowMonths - 1)->endOfMonth();
 
-        $programs = StudyProgram::with(['university', 'degreeLevel'])
-            ->whereBetween('tanggal_kedaluwarsa', [$start, $end])
-            ->orderBy('tanggal_kedaluwarsa', 'asc')
-            ->paginate(20);
+        try {
+            // Build query
+            $query = StudyProgram::with(['university', 'degreeLevel'])
+                ->whereBetween('tanggal_kedaluwarsa', [$start, $end]);
 
-        $label = $windowMonths === 1
-            ? $base->locale('id')->translatedFormat('F Y')
-            : $base->locale('id')->translatedFormat('F Y') . ' - ' . $end->locale('id')->translatedFormat('F Y');
+            // ✅ Apply Search Filter
+            if ($request->filled('search')) {
+                $search = $request->get('search');
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('code', 'like', "%{$search}%")
+                        ->orWhereHas('university', function ($subQ) use ($search) {
+                            $subQ->where('name', 'like', "%{$search}%");
+                        });
+                });
+            }
 
-        $html = view('asesmen.pemetaan.components.reminder-detail-table', [
-            'programs'     => $programs,
-            'label'        => $label,
-            'start'        => $start,
-            'end'          => $end,
-            'targetMonths' => $targetMonths,
-            'windowMonths' => $windowMonths,
-        ])->render();
+            // ✅ Apply Peringkat Filter (Multiple)
+            if ($request->filled('peringkat')) {
+                $peringkats = is_array($request->peringkat)
+                    ? $request->peringkat
+                    : [$request->peringkat];
 
-        return response()->json([
-            'success' => true,
-            'html' => $html,
-            'meta' => [
+                if (!empty($peringkats)) {
+                    $query->whereIn('peringkat_akreditasi', $peringkats);
+                }
+            }
+
+            // ✅ Apply Status Filter (Multiple)
+            if ($request->filled('status')) {
+                $statuses = is_array($request->status)
+                    ? $request->status
+                    : [$request->status];
+
+                if (!empty($statuses)) {
+                    $query->whereIn('status_kedaluwarsa', $statuses);
+                }
+            }
+
+            $programs = $query->orderBy('tanggal_kedaluwarsa', 'asc')
+                ->paginate(20, ['*'], 'page', $page);
+
+            $label = $windowMonths === 1
+                ? $base->locale('id')->translatedFormat('F Y')
+                : $base->locale('id')->translatedFormat('F Y') . ' - ' . $end->locale('id')->translatedFormat('F Y');
+
+            $html = view('asesmen.pemetaan.components.reminder-detail-table', [
+                'programs' => $programs,
                 'label' => $label,
-                'start' => $start->format('Y-m-d'),
-                'end'   => $end->format('Y-m-d'),
-                'total' => $programs->total(),
-            ],
-        ]);
+                'start' => $start,
+                'end' => $end,
+                'targetMonths' => $targetMonths,
+                'windowMonths' => $windowMonths,
+            ])->render();
+
+            return response()->json([
+                'success' => true,
+                'html' => $html,
+                'meta' => [
+                    'label' => $label,
+                    'start' => $start->format('Y-m-d'),
+                    'end' => $end->format('Y-m-d'),
+                    'total' => $programs->total(),
+                    'current_page' => $programs->currentPage(),
+                    'last_page' => $programs->lastPage(),
+                    'filters_applied' => [
+                        'search' => $request->get('search'),
+                        'peringkat' => $request->get('peringkat', []),
+                        'status' => $request->get('status', []),
+                    ],
+                ],
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error in getReminderDetailAjax: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function searchProdiAjax(Request $request)

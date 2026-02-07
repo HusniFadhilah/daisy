@@ -12,13 +12,12 @@
                 <thead class="table-light">
                     <tr>
                         <th width="5%">#</th>
-                        <th width="12%">Permohonan Akreditasi</th>
-                        <th width="22%">Program Studi</th>
-                        <th width="12%">Status AL</th>
+                        <th width="15%">Permohonan Akreditasi</th>
+                        <th width="15%">Status AL</th>
                         <th width="15%">Penugasan</th>
                         <th width="15%">Jadwal Visitasi</th>
-                        <th width="12%">Progress</th>
-                        <th width="7%" class="text-center">Aksi</th>
+                        <th width="15%">Progress</th>
+                        <th width="10%" class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -51,16 +50,7 @@
                     <tr>
                         <td>{{ $pengajuans->firstItem() + $index }}</td>
                         <td>
-                            <p>{{ $pengajuan->judul }}</p>
-                            <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
-                        </td>
-                        <td>
-                            <div class="mb-1">
-                                <strong>{{ $pengajuan->studyProgram->name }}</strong>
-                            </div>
-                            <small class="text-muted">
-                                <i class="bi bi-building"></i> {{ $pengajuan->studyProgram->university->name }}
-                            </small>
+                            {!! $pengajuan->getPermohonanAkreditasiSectionFor('de') !!}
                         </td>
                         <td>
                             <span class="badge bg-{{ $statusAL['class'] }}">

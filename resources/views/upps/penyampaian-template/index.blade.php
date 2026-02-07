@@ -106,7 +106,7 @@
                             <thead class="table-light">
                                 <tr>
                                     <th width="5%">#</th>
-                                    <th width="20%">Permohonan</th>
+                                    <th width="20%">Permohonan Akreditasi</th>
                                     <th width="20%">Tanggal Dikirim</th>
                                     <th width="25%">Formulir dan Template Dokumen</th>
                                     <th width="25%">Status Formulir dan Template</th>
@@ -129,12 +129,7 @@
                                 <tr>
                                     <td>{{ $pengajuans->firstItem() + $index }}</td>
                                     <td>
-                                        <p>{{ $pengajuan->judul_short }}</p>
-                                        <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
-                                        <br>
-                                        <small class="text-muted">
-                                            Dibuat pada: {{ $pengajuan->created_at->format('d M Y') }}
-                                        </small>
+                                        {!! $pengajuan->getPermohonanAkreditasiSectionFor('upps') !!}
                                     </td>
                                     <td>
                                         @if($pengajuan->tanggal_template_led_dikirim)

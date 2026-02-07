@@ -110,10 +110,9 @@
                             <thead class="table-light">
                                 <tr>
                                     <th width="5%">#</th>
-                                    <th width="25%">Permohonan Akreditasi</th>
-                                    <th width="25%">Program Studi</th>
+                                    <th width="20%">Permohonan Akreditasi</th>
                                     <th width="20%">Periode Masa Sanggah</th>
-                                    <th width="15%">Status</th>
+                                    <th width="20%">Status</th>
                                     <th width="10%" class="text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -127,21 +126,7 @@
                                 <tr>
                                     <td>{{ $pengajuans->firstItem() + $index }}</td>
                                     <td>
-                                        <p class="mb-1"><strong>{{ $pengajuan->judul }}</strong></p>
-                                        <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
-                                        <br>
-                                        <small class="text-muted">
-                                            Dibuat pada: {{ $pengajuan->created_at->format('d M Y') }}
-                                        </small>
-                                    </td>
-                                    <td>
-                                        <strong>{{ $pengajuan->studyProgram->name }}</strong>
-                                        <br>
-                                        <small class="text-muted">
-                                            {{ $pengajuan->studyProgram->degreeLevel->name ?? '-' }}
-                                        </small>
-                                        <br>
-                                        <small>{{ $pengajuan->studyProgram->university->name ?? '-' }}</small>
+                                        {!! $pengajuan->getPermohonanAkreditasiSectionFor('upps') !!}
                                     </td>
                                     <td>
                                         <small>

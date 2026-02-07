@@ -46,7 +46,6 @@
                                 {{ $file->original_filename }}
                             </div>
                             <div class="text-muted small">
-                                {{ $file->file_size_formatted ?? '' }} •
                                 {{ $file->created_at->diffForHumans() }}
                             </div>
                             @else
@@ -81,7 +80,6 @@
                 <div class="fw-bold">Lembar Pengesahan</div>
                 <div class="text-muted small text-break">
                     {{ $uploadedFiles['pengesahan']->original_filename }}
-                    • {{ $uploadedFiles['pengesahan']->file_size_formatted ?? '' }}
                     • {{ $uploadedFiles['pengesahan']->created_at->diffForHumans() }}
                 </div>
             </div>

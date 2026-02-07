@@ -35,20 +35,20 @@
             @if($pengingat->status === \App\Models\PengingatAkreditasi::STATUS_BELUM_DIRESPON)
             <div class="alert alert-warning alert-permanent">
                 <i class="bi bi-exclamation-triangle"></i>
-                <strong>Pengingat belum direspon!</strong>
+                <strong>Pengingat belum direspon!</strong><br>
                 Silakan buat permohonan akreditasi sebagai respon terhadap pengingat ini.
             </div>
             @elseif($pengingat->status === \App\Models\PengingatAkreditasi::STATUS_DIRESPON)
             <div class="alert alert-success alert-permanent">
                 <i class="bi bi-check-circle"></i>
-                <strong>Pengingat telah direspon!</strong>
+                <strong>Pengingat telah direspon!</strong><br>
                 Respon dikirim pada {{ $pengingat->tanggal_direspon->format('d M Y H:i') }}
                 ({{ $pengingat->durasi_respon }} hari setelah pengingat dikirim)
             </div>
             @elseif($pengingat->status === \App\Models\PengingatAkreditasi::STATUS_KEDALUWARSA)
             <div class="alert alert-secondary alert-permanent">
                 <i class="bi bi-clock-history"></i>
-                <strong>Pengingat kedaluwarsa</strong>
+                <strong>Pengingat kedaluwarsa</strong><br>
                 Batas waktu respon telah terlampaui.
             </div>
             @endif
@@ -118,7 +118,7 @@
                     <table class="table table-borderless mb-0">
                         <tr>
                             <th width="30%">Program Studi</th>
-                            <td>: {{ $pengingat->studyProgram->full_name }}</td>
+                            <td>: {{ $pengingat->studyProgram->name }}</td>
                         </tr>
                         <tr>
                             <th>Universitas</th>
@@ -129,8 +129,8 @@
                             <td>: {{ $pengingat->studyProgram->degreeLevel->name ?? '-' }}</td>
                         </tr>
                         <tr>
-                            <th>Tanggal Kedaluwarsa</th>
-                            <td>: <span>{!! $pengingat->studyProgram->status_badge_kedaluwarsa !!}</span>
+                            <th>Akreditasi Kedaluwarsa</th>
+                            <td>: <span>{!! $pengingat->studyProgram->getStatusBadgeKedaluwarsa('ps-2') !!}</span>
                             </td>
                         </tr>
                     </table>
@@ -156,129 +156,94 @@
                 </div>
             </div>
 
-            <!-- Permohonan Terkait -->
-            {{-- @if($pengingat->pengajuan)
+            <!-- Action Button -->
+            @if($pengingat->status === \App\Models\PengingatAkreditasi::STATUS_BELUM_DIRESPON)
+            <div class="card border-success mt-4">
+                <div class="card-body text-center">
+                    <h5 class="mb-3">Siap untuk merespon pengingat ini?</h5>
+                    <p class="text-muted mb-4">
+                        Anda akan membuat permohonan akreditasi sebagai respon terhadap pengingat ini.
+                    </p>
+                    <a href="{{ route('upps.pengingat-akreditasi.respond.form', $pengingat->id) }}" class="btn btn-success btn-md">
+                        <i class="bi bi-reply-fill"></i> Respon Pengingat & Buat Permohonan
+                    </a>
+                </div>
+            </div>
+            @endif
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Timeline -->
             <div class="card">
-                <div class="card-header bg-success text-white">
+                <div class="card-header bg-secondary text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-file-text"></i> Permohonan Akreditasi Terkait
+                        <i class="bi bi-clock-history"></i> Riwayat Status
                     </h5>
                 </div>
                 <div class="card-body">
-                    <table class="table table-borderless">
-                        <tr>
-                            <th width="30%">Nomor Permohonan</th>
-                            <td>: {{ $pengingat->pengajuan->nomor_pengajuan }}</td>
-            </tr>
-            <tr>
-                <th>Jenis Akreditasi</th>
-                <td>: {{ $pengingat->pengajuan->jenis_akreditasi_label }}</td>
-            </tr>
-            <tr>
-                <th>Status</th>
-                <td>: {!! $pengingat->pengajuan->getCustomBadgeLastStatus('surat_permohonan_ps','upps') !!}</td>
-            </tr>
-            <tr>
-                <th>Tanggal Permohonan</th>
-                <td>: {{ $pengingat->pengajuan->tanggal_surat_permohonan_dikirim?->format('d M Y H:i') ?? '-' }}</td>
-            </tr>
-            </table>
-
-            <a href="{{ route('pengajuan.show', $pengingat->pengajuan->id) }}" class="btn btn-primary btn-sm">
-                <i class="bi bi-eye"></i> Lihat Detail Permohonan Akreditasi
-            </a>
-        </div>
-    </div>
-    @endif --}}
-
-    <!-- Action Button -->
-    @if($pengingat->status === \App\Models\PengingatAkreditasi::STATUS_BELUM_DIRESPON)
-    <div class="card border-success mt-4">
-        <div class="card-body text-center">
-            <h5 class="mb-3">Siap untuk merespon pengingat ini?</h5>
-            <p class="text-muted mb-4">
-                Anda akan membuat permohonan akreditasi sebagai respon terhadap pengingat ini.
-            </p>
-            <a href="{{ route('upps.pengingat-akreditasi.respond.form', $pengingat->id) }}" class="btn btn-success btn-md">
-                <i class="bi bi-reply-fill"></i> Respon Pengingat & Buat Permohonan
-            </a>
-        </div>
-    </div>
-    @endif
-</div>
-
-<!-- Sidebar -->
-<div class="col-lg-4">
-    <!-- Timeline -->
-    <div class="card">
-        <div class="card-header bg-secondary text-white">
-            <h5 class="mb-0">
-                <i class="bi bi-clock-history"></i> Riwayat Status
-            </h5>
-        </div>
-        <div class="card-body">
-            <div class="timeline">
-                <!-- Pengingat Dikirim -->
-                <div class="timeline-item mb-3">
-                    <div class="d-flex">
-                        <div class="flex-shrink-0">
-                            <i class="bi bi-circle-fill text-success" style="font-size: 10px;"></i>
+                    <div class="timeline">
+                        <!-- Pengingat Dikirim -->
+                        <div class="timeline-item mb-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-circle-fill text-success" style="font-size: 10px;"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <strong>Pengingat Masa Akreditasi Telah Diterima</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        {{ $pengingat->tanggal_dikirim->format('d M Y H:i') }}
+                                    </small>
+                                    <br>
+                                    {{-- <small class="text-muted">
+                                        oleh Sekretariat LAMDEPILAR
+                                    </small> --}}
+                                </div>
+                            </div>
                         </div>
-                        <div class="flex-grow-1 ms-3">
-                            <strong>Pengingat Masa Akreditasi Telah Dikirim</strong>
-                            <br>
-                            <small class="text-muted">
-                                {{ $pengingat->tanggal_dikirim->format('d M Y H:i') }}
-                            </small>
-                            <br>
-                            <small class="text-muted">
-                                oleh Sekretariat LAMDEPILAR
-                            </small>
+
+                        @if($pengingat->tanggal_direspon)
+                        <!-- Pengingat Direspon -->
+                        <div class="timeline-item">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-circle-fill text-success" style="font-size: 10px;"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <strong>Pengingat Masa Akreditasi Telah Direspon</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        {{ $pengingat->tanggal_direspon->format('d M Y H:i') }}
+                                    </small>
+                                    <br>
+                                    {{-- <small class="text-success">
+                                        <i class="bi bi-check-circle"></i> Permohonan akreditasi telah dibuat
+                                    </small> --}}
+                                </div>
+                            </div>
                         </div>
+                        @else
+                        <!-- Menunggu Respon -->
+                        <div class="timeline-item">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-circle-fill text-warning" style="font-size: 10px;"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <strong>Menunggu Respon</strong>
+                                    <br>
+                                    {{-- <small class="text-warning">
+                                        <i class="bi bi-hourglass-split"></i> Belum direspon
+                                    </small> --}}
+                                </div>
+                            </div>
+                        </div>
+                        @endif
                     </div>
                 </div>
-
-                @if($pengingat->tanggal_direspon)
-                <!-- Pengingat Direspon -->
-                <div class="timeline-item">
-                    <div class="d-flex">
-                        <div class="flex-shrink-0">
-                            <i class="bi bi-circle-fill text-success" style="font-size: 10px;"></i>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <strong>Pengingat Masa Akreditasi Telah Direspon</strong>
-                            <br>
-                            <small class="text-muted">
-                                {{ $pengingat->tanggal_direspon->format('d M Y H:i') }}
-                            </small>
-                            <br>
-                            <small class="text-success">
-                                <i class="bi bi-check-circle"></i> Permohonan akreditasi telah dibuat
-                            </small>
-                        </div>
-                    </div>
-                </div>
-                @else
-                <!-- Menunggu Respon -->
-                <div class="timeline-item">
-                    <div class="d-flex">
-                        <div class="flex-shrink-0">
-                            <i class="bi bi-circle-fill text-warning" style="font-size: 10px;"></i>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <strong>Menunggu Respon</strong>
-                            <br>
-                            <small class="text-warning">
-                                <i class="bi bi-hourglass-split"></i> Belum direspon
-                            </small>
-                        </div>
-                    </div>
-                </div>
-                @endif
             </div>
         </div>
     </div>
-</div>
-</div>
 </div>
 @endsection

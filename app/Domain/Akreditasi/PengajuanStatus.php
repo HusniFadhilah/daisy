@@ -229,7 +229,7 @@ final class PengajuanStatus
                     'upps' => 'Draft Dokumen Telah Diterima',
                     'prodi' => 'Draft Dokumen Telah Diterima',
                 ],
-                'bg' => 'bg-info',
+                'bg' => 'bg-success',
                 'icon' => 'bi-file-earmark-check',
             ],
 

@@ -100,7 +100,7 @@ $latestImport = $pengajuan->latestBorangImport;
 <div class="alert alert-info alert-permanent">
     <i class="bi bi-info-circle"></i>
     <strong>Draft LED Anda telah diupload!</strong><br>
-    File: <strong>{{ $draftBorang->original_filename }}</strong> ({{ $draftBorang->file_size_formatted ?? '' }})
+    File: <strong>{{ $draftBorang->original_filename }}</strong>
 </div>
 
 <div class="card bg-light mb-3">
@@ -173,10 +173,6 @@ $latestImport = $pengajuan->latestBorangImport;
                             <tr>
                                 <td width="120"><i class="bi bi-file-word text-primary"></i> File:</td>
                                 <td><strong>{{ $draftBorang->original_filename ?? '-' }}</strong></td>
-                            </tr>
-                            <tr>
-                                <td><i class="bi bi-hdd text-info"></i> Ukuran:</td>
-                                <td>{{ $draftBorang->file_size_formatted ?? '-' }}</td>
                             </tr>
                             <tr>
                                 <td><i class="bi bi-clock text-warning"></i> Upload:</td>

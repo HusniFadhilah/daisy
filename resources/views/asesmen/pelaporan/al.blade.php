@@ -83,22 +83,6 @@
         </ol>
     </nav>
 
-    <!-- Stats Cards -->
-    <div class="row mb-4 row-cols-1 row-cols-md-2 row-cols-lg-4 g-3">
-        <div class="col">
-            <x-stat-card title="Total Penugasan" :value="$stats['total']" icon="folder" mode="white" description="" color="success" />
-        </div>
-        <div class="col">
-            <x-stat-card title="Menunggu Pelaporan" :value="$stats['pending']" icon="hourglass-split" mode="white" description="" color="warning" />
-        </div>
-        <div class="col">
-            <x-stat-card title="Sedang Diproses" :value="$stats['in_progress']" icon="arrow-repeat" mode="white" description="" color="info" />
-        </div>
-        <div class="col">
-            <x-stat-card title="Selesai" :value="$stats['completed']" icon="check-circle" mode="white" description="" color="success" />
-        </div>
-    </div>
-
     @if($assignments->count() > 0)
 
     <!-- Filter Section -->
@@ -277,6 +261,22 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mt-4 row-cols-1 row-cols-md-2 row-cols-lg-4 g-3">
+        <div class="col">
+            <x-stat-card title="Total Penugasan" :value="$stats['total']" icon="folder" mode="white" description="" color="success" />
+        </div>
+        <div class="col">
+            <x-stat-card title="Menunggu Pelaporan" :value="$stats['pending']" icon="hourglass-split" mode="white" description="" color="warning" />
+        </div>
+        <div class="col">
+            <x-stat-card title="Sedang Diproses" :value="$stats['in_progress']" icon="arrow-repeat" mode="white" description="" color="info" />
+        </div>
+        <div class="col">
+            <x-stat-card title="Selesai" :value="$stats['completed']" icon="check-circle" mode="white" description="" color="success" />
         </div>
     </div>
 

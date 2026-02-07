@@ -1,7 +1,7 @@
 <div class="card">
     <div class="card-header bg-light d-flex justify-content-between align-items-center">
         <h6 class="mb-0">
-            <i class="bi bi-table"></i> Daftar Permohonan Akreditasi - Penugasan AK
+            <i class="bi bi-table"></i> Daftar Penugasan Asesor AK
         </h6>
         <span class="badge bg-primary">Total: {{ $pengajuans->total() }}</span>
     </div>
@@ -12,12 +12,11 @@
                 <thead class="table-light">
                     <tr>
                         <th width="5%">#</th>
-                        <th width="12%">Nomor Permohonan Akreditasi</th>
-                        <th width="22%">Program Studi</th>
-                        <th width="12%">Status AK</th>
+                        <th width="20%">Permohonan Akreditasi</th>
+                        <th width="15%">Status AK</th>
                         <th width="15%">Penugasan</th>
-                        <th width="12%">Progress</th>
-                        <th width="12%">Tanggal</th>
+                        <th width="15%">Progress</th>
+                        <th width="15%">Tanggal</th>
                         <th width="10%" class="text-center">Aksi</th>
                     </tr>
                 </thead>
@@ -95,16 +94,7 @@
                     <tr>
                         <td>{{ $pengajuans->firstItem() + $index }}</td>
                         <td>
-                            <p>{{ $pengajuan->judul }}</p>
-                            <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
-                        </td>
-                        <td>
-                            <div class="mb-1">
-                                <strong>{{ $pengajuan->studyProgram->name }}</strong>
-                            </div>
-                            <small class="text-muted">
-                                <i class="bi bi-building"></i> {{ $pengajuan->studyProgram->university->name }}
-                            </small>
+                            {!! $pengajuan->getPermohonanAkreditasiSectionFor('de') !!}
                         </td>
                         <td>
                             <span class="badge bg-{{ $statusAK['class'] }}">
@@ -159,7 +149,7 @@
         @else
         <div class="text-center py-5">
             <i class="bi bi-inbox" style="font-size: 3rem; color: #dee2e6;"></i>
-            <p class="text-muted mt-3 mb-0">Tidak ada permohonan akreditasi yang siap untuk AK</p>
+            <p class="text-muted mt-3 mb-0">Tidak ada permohonan akreditasi yang sudah berada pada tahap AK</p>
         </div>
         @endif
     </div>

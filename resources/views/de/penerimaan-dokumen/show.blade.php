@@ -190,9 +190,8 @@
                                                 {{ Str::limit($dokumen->original_filename ?? '-', 40) }}
                                             </div>
                                             <div>
-                                                {{ $dokumen->file_size_formatted ?? '-' }}
                                                 @if($dokumen->created_at)
-                                                • {{ $dokumen->created_at->format('d M Y H:i') }}
+                                                {{ $dokumen->created_at->format('d M Y H:i') }}
                                                 @endif
                                             </div>
                                         </div>
@@ -229,9 +228,8 @@
                                                 {{ Str::limit($uploadedDocuments['suplemen']->original_filename, 40) }}
                                             </div>
                                             <div>
-                                                {{ $uploadedDocuments['suplemen']->file_size_formatted ?? '-' }}
                                                 @if($uploadedDocuments['suplemen']->created_at)
-                                                • {{ $uploadedDocuments['suplemen']->created_at->format('d M Y') }}
+                                                {{ $uploadedDocuments['suplemen']->created_at->format('d M Y') }}
                                                 @endif
                                             </div>
                                         </div>
@@ -479,39 +477,25 @@
         <!-- Left Column -->
         <div class="col-lg-8 mb-4">
             <!-- Informasi Pengajuan -->
-            <div class="card">
+            <div class="card mb-4">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Informasi Penerimaan Dokumen</h5>
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle"></i> Informasi Penerimaan Dokumen
+                    </h5>
                 </div>
                 <div class="card-body">
                     <table class="table table-borderless">
                         <tr>
-                            <th width="30%">Nomor Permohonan Akreditasi</th>
-                            <td>: {{ $pengajuan->nomor_pengajuan }}</td>
+                            <th>Tanggal Dokumen Diupload</th>
+                            <td>
+                                : {{ $pengajuan->tanggal_draft_borang
+                                    ? $pengajuan->tanggal_draft_borang->format('d M Y H:i')
+                                    : '-' }}
+                            </td>
                         </tr>
                         <tr>
-                            <th>Program Studi</th>
-                            <td>: {{ $pengajuan->studyProgram->full_name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Universitas</th>
-                            <td>: {{ $pengajuan->studyProgram->university->name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Akreditasi Kedaluwarsa</th>
-                            <td>: {{ $pengajuan->studyProgram->days_left ? $pengajuan->studyProgram->days_left.' hari lagi': '-' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Jenis Permohonan</th>
-                            <td>: {{ $pengajuan->jenis_akreditasi_label ?? '-' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Pemohon</th>
-                            <td>: {{ $pengajuan->pengaju->name ?? '-' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Status Penerimaan Dokumen</th>
-                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('draft_borang','de','label_long_for') !!}</td>
+                            <th>Status Pengiriman Dokumen</th>
+                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('draft_borang', 'de') !!}</td>
                         </tr>
                     </table>
                 </div>

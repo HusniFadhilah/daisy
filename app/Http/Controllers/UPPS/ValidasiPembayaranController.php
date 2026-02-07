@@ -182,6 +182,7 @@ class ValidasiPembayaranController extends Controller
 
             // Update pembayaran
             $pembayaran->update([
+                'bukti_path' => $filePath,
                 'status_pembayaran' => 'menunggu_verifikasi',
                 'tanggal_pembayaran' => $validated['tanggal_pembayaran'],
                 'catatan_pembayaran' => $validated['catatan_pembayaran'],

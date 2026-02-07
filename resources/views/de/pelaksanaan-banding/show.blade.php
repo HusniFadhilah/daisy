@@ -344,7 +344,6 @@
                                     <strong>{{ $doc->jenis_dokumen_alias }}</strong>
                                     <br>
                                     <small class="text-muted">
-                                        {{ $doc->file_size_formatted }} •
                                         {{ $doc->created_at->format('d M Y') }}
                                     </small>
                                 </div>

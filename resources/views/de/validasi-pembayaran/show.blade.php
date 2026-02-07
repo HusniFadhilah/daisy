@@ -35,7 +35,7 @@
             <div class="alert alert-success alert-permanent">
                 <h5><i class="bi bi-check-circle"></i> Pembayaran Tervalidasi</h5>
                 <p class="mb-0">
-                    Pembayaran telah divalidasi oleh <strong>{{ $pembayaran->verifier->name }}</strong>
+                    Pembayaran telah divalidasi oleh <strong>{{ $pembayaran->verifier->role_alias }}</strong>
                     pada {{ $pembayaran->tanggal_verifikasi->format('d F Y H:i') }}
                 </p>
             </div>
@@ -141,7 +141,7 @@
                             <strong>{{ $dokumen->jenis_dokumen_alias }}</strong>
                             <br>
                             <small class="text-muted">
-                                {{ $dokumen->original_filename }} ({{ $dokumen->file_size_formatted }})
+                                {{ $dokumen->original_filename }}
                             </small>
                         </div>
                         <a href="{{ $dokumen->download_url }}" class="btn btn-sm btn-primary" target="_blank">
@@ -159,40 +159,77 @@
         <div class="col-lg-4">
             <!-- Timeline -->
             <div class="card ">
-                <div class="card-header bg-light">
+                <div class="card-header bg-secondary text-white">
                     <h5 class="mb-0">
                         <i class="bi bi-clock-history"></i> Riwayat Status
                     </h5>
                 </div>
-                <div class="card-body">
-                    <ul class="list-unstyled timeline">
-                        <li class="mb-3">
-                            <i class="bi bi-circle-fill text-primary"></i>
-                            <strong>Invoice Dibuat</strong>
-                            <br>
-                            <small class="text-muted">{{ $pembayaran->created_at->format('d F Y H:i') }}</small>
-                        </li>
+                <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                    <div class="timeline">
+                        <!-- Invoice Dibuat -->
+                        <div class="timeline-item mb-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-circle-fill text-secondary" style="font-size: 8px;"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <strong>Invoice Dibuat</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        {{ $pembayaran->created_at->format('d M Y H:i') }}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
 
+                        <!-- Pembayaran Dilakukan -->
                         @if($pembayaran->tanggal_pembayaran)
-                        <li class="mb-3">
-                            <i class="bi bi-circle-fill text-info"></i>
-                            <strong>Pembayaran Dilakukan</strong>
-                            <br>
-                            <small class="text-muted">{{ $pembayaran->tanggal_pembayaran->format('d F Y H:i') }}</small>
-                        </li>
+                        <div class="timeline-item mb-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-circle-fill text-secondary" style="font-size: 8px;"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <strong>Formulir & Bukti Pembayaran Diupload</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        {{ $pembayaran->pengajuan->formulirPembayaran?->created_at->format('d M Y H:i') }}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
                         @endif
 
+                        <!-- Pembayaran Divalidasi -->
                         @if($pembayaran->tanggal_verifikasi)
-                        <li class="mb-3">
-                            <i class="bi bi-circle-fill text-success"></i>
-                            <strong>Pembayaran Divalidasi</strong>
-                            <br>
-                            <small class="text-muted">{{ $pembayaran->tanggal_verifikasi->format('d F Y H:i') }}</small>
-                            <br>
-                            <small class="text-muted">oleh {{ $pembayaran->verifier->name }}</small>
-                        </li>
+                        <div class="timeline-item mb-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-circle-fill
+                                            {{ $pembayaran->status_pembayaran === 'terverifikasi' ? 'text-success' : 'text-danger' }}" style="font-size: 8px;">
+                                    </i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <strong>
+                                        @if($pembayaran->tanggal_ditolak)
+                                        Ditolak
+                                        @elseif($pembayaran->tanggal_verifikasi && $pembayaran->status_pembayaran == 'terverifikasi')
+                                        Pembayaran Divalidasi
+                                        @elseif($pembayaran->tanggal_upload_ulang)
+                                        Diminta Upload Ulang
+                                        @else
+                                        -
+                                        @endif
+                                    </strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        {{ $pembayaran->tanggal_verifikasi->format('d M Y H:i') }}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
                         @endif
-                    </ul>
+                    </div>
                 </div>
             </div>
         </div>

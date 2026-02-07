@@ -261,7 +261,7 @@
             @endphp
 
             <div class="card">
-                <div class="card-header bg-info text-white">
+                <div class="card-header bg-secondary text-white">
                     <h5 class="mb-0">
                         <i class="bi bi-clock-history"></i> Riwayat Status
                     </h5>
@@ -273,7 +273,7 @@
                         <div class="timeline-item mb-3">
                             <div class="d-flex">
                                 <div class="flex-shrink-0">
-                                    <i class="bi bi-circle-fill text-info" style="font-size: 8px;"></i>
+                                    <i class="bi bi-circle-fill text-secondary" style="font-size: 8px;"></i>
                                 </div>
                                 <div class="flex-grow-1 ms-3">
                                     <strong>

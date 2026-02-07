@@ -8,14 +8,14 @@
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('de.pemetaan.index') }}">Pengingat Masa Akreditasi</a></li>
-            <li class="breadcrumb-item active">{{ $studyProgram->name }}</li>
+            <li class="breadcrumb-item active">Detail Program Studi</li>
         </ol>
     </nav>
 
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2>{{ $studyProgram->name }}</h2>
+            <h4>{{ $studyProgram->name }}</h4>
             <p class="text-muted mb-0">
                 {{ $studyProgram->degreeLevel->name }} - {{ $studyProgram->university->name }}
             </p>
@@ -58,12 +58,7 @@
                     @if($studyProgram->tanggal_kedaluwarsa)
                     <div class="mb-3">
                         <label class="text-muted small">Sisa Waktu</label>
-                        @php
-                        $daysLeft = floor(now()->diffInDays($studyProgram->tanggal_kedaluwarsa, false));
-                        @endphp
-                        <div class="fw-bold {{ $daysLeft < 90 ? 'text-danger' : ($daysLeft < 180 ? 'text-warning' : 'text-success') }}">
-                            {{ round($daysLeft / 30) }} Bulan ({{ $daysLeft }} hari)
-                        </div>
+                        {!! $studyProgram->full_days_left !!}
                     </div>
                     @endif
 

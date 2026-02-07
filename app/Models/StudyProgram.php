@@ -137,6 +137,18 @@ class StudyProgram extends Model
             : null;
     }
 
+    public function getFullDaysLeftAttribute()
+    {
+        $diffInDays = now()->diffInDays($this->tanggal_kedaluwarsa, false);
+        $diff = now()->diff($this->tanggal_kedaluwarsa);
+
+        $class = $diffInDays < 0 ? 'text-muted' : 'text-danger';
+
+        return <<<HTML
+            <small class="$class">{$diff->y} tahun {$diff->m} bulan {$diff->d} hari</small>
+        HTML;
+    }
+
     /**
      * Helper methods for formatting
      */
@@ -194,7 +206,7 @@ class StudyProgram extends Model
         }
     }
 
-    public function getStatusBadgeKedaluwarsaAttribute()
+    public function getStatusBadgeKedaluwarsa($additionalClass = '')
     {
         $tanggal = Carbon::parse($this->tanggal_kedaluwarsa);
         $now = now();
@@ -206,7 +218,7 @@ class StudyProgram extends Model
 
         return '
         ' . Date::tglIndo($tanggal) . '<br>
-        <small class="' . $class . '">
+        <small class="' . $additionalClass . ' ' . $class . '">
             ' . $diff->y . ' tahun ' . $diff->m . ' bulan ' . $diff->d . ' hari
         </small>
     ';

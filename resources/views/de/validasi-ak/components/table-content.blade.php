@@ -1,7 +1,7 @@
 <div class="card">
     <div class="card-header bg-light d-flex justify-content-between align-items-center">
         <h6 class="mb-0">
-            <i class="bi bi-table"></i> Daftar Monitoring Validasi AK
+            <i class="bi bi-table"></i> Daftar Validasi AK
         </h6>
         <span class="badge bg-primary">Total: {{ $pengajuans->total() }}</span>
     </div>
@@ -12,12 +12,11 @@
                 <thead class="table-light">
                     <tr>
                         <th width="5%">#</th>
-                        <th width="12%">Nomor Permohonan Akreditasi</th>
-                        <th width="20%">Program Studi</th>
-                        <th width="13%">Status</th>
+                        <th width="20%">Permohonan Akreditasi</th>
+                        <th width="15%">Status</th>
                         <th width="15%">Validator</th>
                         <th width="15%">Progress Validasi</th>
-                        <th width="10%">Tanggal</th>
+                        <th width="15%">Tanggal</th>
                         <th width="10%" class="text-center">Aksi</th>
                     </tr>
                 </thead>
@@ -104,8 +103,7 @@
                     <tr>
                         <td>{{ $pengajuans->firstItem() + $index }}</td>
                         <td>
-                            <p>{{ $pengajuan->judul }}</p>
-                            <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
+                            {!! $pengajuan->getPermohonanAkreditasiSectionFor('de') !!}
                         </td>
                         <td>
                             <div class="mb-1">

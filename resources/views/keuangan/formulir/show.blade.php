@@ -197,7 +197,6 @@
                                         {{ $dok->original_filename }}
                                     </small>
                                     <small class="text-muted">
-                                        {{ $dok->file_size_formatted }} •
                                         {{ $dok->created_at->format('d M Y H:i') }}
                                     </small>
                                 </div>

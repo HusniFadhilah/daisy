@@ -27,7 +27,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">
-                <i class="bi bi-person-badge"></i> Penugasan Asesmen Kecukupan (AK)
+                <i class="bi bi-person-badge"></i> Penugasan Asesor AK
             </h4>
             <p class="text-muted mb-0">Tugaskan asesor & validator untuk melakukan asesmen kecukupan</p>
         </div>
@@ -40,7 +40,7 @@
         </div>
 
         <div class="col mb-3">
-            <x-stat-card title="Belum Ditugaskan" :value="$stats['belum_ditugaskan']" description="Perlu ditugaskan asesor/validator" icon="exclamation-triangle" gradient="linear-gradient(135deg, #ee0979 0%, #ff6a00 100%)" />
+            <x-stat-card title="Belum Ditugaskan" :value="$stats['belum_ditugaskan']" description="Perlu menugaskan asesor/validator" icon="exclamation-triangle" gradient="linear-gradient(135deg, #ee0979 0%, #ff6a00 100%)" />
         </div>
 
         <div class="col mb-3">
@@ -104,25 +104,6 @@
                             </button>
                         </div>
                     </form>
-                </div>
-            </div>
-
-            <!-- Info Card -->
-            <div class="card mt-3">
-                <div class="card-header bg-info text-white">
-                    <h6 class="mb-0">
-                        <i class="bi bi-info-circle"></i> Persyaratan AK
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <p class="mb-2 small">
-                        <i class="bi bi-person text-primary"></i>
-                        <strong>Asesor:</strong> Minimal 2 orang
-                    </p>
-                    <p class="mb-0 small">
-                        <i class="bi bi-person-check text-success"></i>
-                        <strong>Validator:</strong> Minimal 1 orang
-                    </p>
                 </div>
             </div>
         </div>

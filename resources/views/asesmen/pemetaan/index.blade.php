@@ -976,7 +976,6 @@ Sekretariat LAMDEPILAR</textarea>
     function initDataTable() {
         // ✅ Prevent concurrent initialization
         if (dataTableInitializing) {
-            console.warn('⚠️ DataTable initialization already in progress');
             return;
         }
 
@@ -1989,28 +1988,142 @@ Sekretariat LAMDEPILAR</textarea>
     // ========================================
     // ✅ REMINDER MODAL
     // ========================================
+    let reminderFiltersInitialized = false;
+
     function openReminderModal() {
         const modal = new bootstrap.Modal(document.getElementById('reminderModal'));
         modal.show();
-        loadReminderDetail();
+
+        // Initialize filters on first open
+        if (!reminderFiltersInitialized) {
+            setTimeout(() => {
+                initReminderFilters();
+            }, 300);
+        }
+
+        loadReminderDetail(1);
     }
 
-    async function loadReminderDetail(pageUrl = null) {
+    function initReminderFilters() {
+        // Prevent multiple initialization
+        if (reminderFiltersInitialized) {
+            return;
+        }
+
+        // Wait for modal content to be fully rendered
+        setTimeout(() => {
+            const peringkatSelect = $('#reminderPeringkatFilter');
+            const statusSelect = $('#reminderStatusFilter');
+
+            // Check if elements exist
+            if (peringkatSelect.length === 0 || statusSelect.length === 0) {
+                return;
+            }
+
+            // Destroy existing Select2 instances if any
+            if (peringkatSelect.hasClass('select2-hidden-accessible')) {
+                peringkatSelect.select2('destroy');
+            }
+            if (statusSelect.hasClass('select2-hidden-accessible')) {
+                statusSelect.select2('destroy');
+            }
+
+            // Initialize Select2
+            const select2Config = {
+                theme: 'bootstrap-5'
+                , dropdownParent: $('#reminderModal')
+                , placeholder: 'Pilih...'
+                , allowClear: true
+                , width: '100%'
+                , closeOnSelect: false
+                , language: {
+                    noResults: () => "Tidak ada hasil"
+                    , searching: () => "Mencari..."
+                }
+            };
+
+            peringkatSelect.select2(select2Config);
+            statusSelect.select2(select2Config);
+
+            // Search with debounce
+            let searchTimeout;
+            $('#reminderSearchInput').off('input').on('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    loadReminderDetail(1);
+                }, 500);
+            });
+
+            // Auto-apply on filter change
+            peringkatSelect.off('change').on('change', function() {
+                loadReminderDetail(1);
+            });
+
+            statusSelect.off('change').on('change', function() {
+                loadReminderDetail(1);
+            });
+
+            reminderFiltersInitialized = true;
+        }, 200);
+    }
+
+    function getReminderFilters() {
+        return {
+            search: $('#reminderSearchInput').val() || ''
+            , peringkat: $('#reminderPeringkatFilter').val() || []
+            , status: $('#reminderStatusFilter').val() || []
+        };
+    }
+
+    function applyReminderFilters() {
+        loadReminderDetail(1);
+    }
+
+    function resetReminderFilters() {
+        $('#reminderSearchInput').val('');
+        $('#reminderPeringkatFilter').val(null).trigger('change');
+        $('#reminderStatusFilter').val(null).trigger('change');
+        loadReminderDetail(1);
+    }
+
+    async function loadReminderDetail(page = 1) {
         const loading = document.getElementById('reminderLoading');
         const container = document.getElementById('reminderDetailContainer');
 
         const targetMonths = document.getElementById('reminderTargetMonths').value;
         const windowMonths = document.getElementById('reminderWindowMonths').value;
 
+        // Get filters before clearing container
+        const filters = {
+            search: $('#reminderSearchInput').val() || ''
+            , peringkat: $('#reminderPeringkatFilter').val() || []
+            , status: $('#reminderStatusFilter').val() || []
+        };
+
         try {
             loading.classList.remove('d-none');
-            container.innerHTML = '';
 
-            const baseUrl = `{{ route('de.pemetaan.reminder.detail.ajax') }}`;
-            const url = new URL(baseUrl, window.location.origin);
-
+            const url = new URL('{{ route("de.pemetaan.reminder.detail.ajax") }}', window.location.origin);
             url.searchParams.set('target_months', targetMonths);
             url.searchParams.set('window_months', windowMonths);
+            url.searchParams.set('page', page);
+
+            // Add filters
+            if (filters.search) {
+                url.searchParams.set('search', filters.search);
+            }
+
+            if (filters.peringkat.length > 0) {
+                filters.peringkat.forEach(p => {
+                    url.searchParams.append('peringkat[]', p);
+                });
+            }
+
+            if (filters.status.length > 0) {
+                filters.status.forEach(s => {
+                    url.searchParams.append('status[]', s);
+                });
+            }
 
             const res = await fetch(url.toString(), {
                 headers: {
@@ -2019,38 +2132,84 @@ Sekretariat LAMDEPILAR</textarea>
                 }
             });
 
-            const data = await res.json();
-            if (!data.success) throw new Error('Request gagal');
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
 
+            const data = await res.json();
+
+            if (!data.success) {
+                throw new Error(data.message || 'Request gagal');
+            }
+
+            // Save current filter values
+            const savedFilters = {
+                search: filters.search
+                , peringkat: filters.peringkat
+                , status: filters.status
+            };
+
+            // Update content
             container.innerHTML = data.html;
 
-            // Tangkap klik pagination
-            container.querySelectorAll('.pagination a').forEach(a => {
-                a.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    loadReminderDetail(a.getAttribute('href'));
-                });
-            });
+            // Reset initialization flag
+            reminderFiltersInitialized = false;
+
+            // Re-initialize filters with saved values
+            setTimeout(() => {
+                initReminderFilters();
+
+                // Restore filter values after re-initialization
+                setTimeout(() => {
+                    if (savedFilters.search) {
+                        $('#reminderSearchInput').val(savedFilters.search);
+                    }
+
+                    if (savedFilters.peringkat.length > 0) {
+                        $('#reminderPeringkatFilter').val(savedFilters.peringkat).trigger('change');
+                    }
+
+                    if (savedFilters.status.length > 0) {
+                        $('#reminderStatusFilter').val(savedFilters.status).trigger('change');
+                    }
+                }, 100);
+            }, 100);
 
         } catch (err) {
-            console.error(err);
             container.innerHTML = `
-                <div class="alert alert-danger">
-                    Gagal memuat detail pengingat.
-                </div>
-            `;
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle"></i>
+                Gagal memuat detail pengingat: ${err.message}
+            </div>
+        `;
         } finally {
             loading.classList.add('d-none');
         }
     }
 
     // Auto reload ketika dropdown berubah
-    ['reminderTargetMonths', 'reminderWindowMonths'].forEach(id => {
-        document.addEventListener('change', (e) => {
-            if (e.target && e.target.id === id) {
-                loadReminderDetail();
+    document.addEventListener('DOMContentLoaded', function() {
+        ['reminderTargetMonths', 'reminderWindowMonths'].forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('change', function() {
+                    // Reset filters when changing target/window
+                    reminderFiltersInitialized = false;
+                    loadReminderDetail(1);
+                });
             }
         });
+
+        // Initialize on modal shown
+        const reminderModal = document.getElementById('reminderModal');
+        if (reminderModal) {
+            reminderModal.addEventListener('shown.bs.modal', function() {
+                // Wait a bit for content to load
+                setTimeout(() => {
+                    initReminderFilters();
+                }, 300);
+            });
+        }
     });
 
 </script>

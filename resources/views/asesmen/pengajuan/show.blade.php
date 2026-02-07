@@ -446,10 +446,6 @@
                                             <td><strong>{{ $draftBorang->original_filename ?? '-' }}</strong></td>
                                         </tr>
                                         <tr>
-                                            <td><i class="bi bi-hdd text-info"></i> Ukuran:</td>
-                                            <td>{{ $draftBorang->file_size_formatted ?? '-' }}</td>
-                                        </tr>
-                                        <tr>
                                             <td><i class="bi bi-clock text-warning"></i> Upload:</td>
                                             <td>{{ $draftBorang->created_at->format('d M Y H:i') ?? '-' }}</td>
                                         </tr>
@@ -769,7 +765,6 @@
                                 <td>v{{ $doc->versi }}</td>
                                 <td>{{ $doc->uploader->name ?? '-' }}</td>
                                 <td>{{ $doc->created_at->format('d/m/Y H:i') }}</td>
-                                <td>{{ $doc->file_size_formatted ?? '' }}</td>
                                 <td>
                                     <a href="{{ $doc->download_url }}" class="btn btn-sm btn-primary">
                                         <i class="bi bi-download"></i>

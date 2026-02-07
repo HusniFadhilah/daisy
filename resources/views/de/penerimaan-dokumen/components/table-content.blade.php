@@ -15,11 +15,11 @@
                 <thead class="table-light">
                     <tr>
                         <th width="5%">No</th>
-                        <th width="30%">Permohonan Akreditasi</th>
+                        <th width="20%">Permohonan Akreditasi</th>
                         <th width="25%">Status Penerimaan Dokumen</th>
-                        <th width="15%">Status Dokumen</th>
+                        <th width="20%">Status Dokumen</th>
                         <th width="20%">Tanggal Update Status</th>
-                        <th width="5%" class="text-center">Aksi</th>
+                        <th width="10%" class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -39,11 +39,7 @@
                     <tr>
                         <td>{{ $pengajuans->firstItem() + $index }}</td>
                         <td>
-                            <p>{{ $pengajuan->judul_short }}</p>
-                            {{-- <small>{{ $pengajuan->studyProgram->university->name ?? '-' }}</small> --}}
-                            <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
-                            {{-- <br>
-                            <small class="text-muted">Dibuat pada: {{ \App\Libraries\Date::tglIndo($pengajuan->created_at) }}</small> --}}
+                            {!! $pengajuan->getPermohonanAkreditasiSectionFor('de') !!}
                         </td>
                         <td>
                             {!! $pengajuan->getCustomBadgeLastStatus('draft_borang','de','label_short_for') !!}
@@ -70,6 +66,9 @@
                             <small class="text-muted">
                                 {{ $hasLED ? '✓ LED' : '✗ LED' }} |
                                 {{ $hasLKPS ? '✓ LKPS' : '✗ LKPS' }}
+                                @if($pengajuan->jenis_akreditasi == 'menuju_unggul')
+                                {{ $hasSuplemen ? '| ✓ Suplemen' : '| ✗ Suplemen' }}
+                                @endif
                             </small>
                             @else
                             <div class="doc-status-badge doc-none">

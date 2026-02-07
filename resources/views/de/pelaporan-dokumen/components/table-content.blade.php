@@ -89,12 +89,7 @@
                     <tr>
                         <td>{{ $pengajuans->firstItem() + $index }}</td>
                         <td>
-                            <p>{{ $pengajuan->judul_short }}</p>
-                            <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
-                            <br>
-                            <small class="text-muted">
-                                Dibuat pada: {{ $pengajuan->created_at->format('d M Y') }}
-                            </small>
+                            {!! $pengajuan->getPermohonanAkreditasiSectionFor('de') !!}
                         </td>
                         <td>
                             @if($validator)

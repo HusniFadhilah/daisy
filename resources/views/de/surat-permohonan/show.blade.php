@@ -36,12 +36,8 @@
                 <div class="card-body">
                     <table class="table table-borderless">
                         <tr>
-                            <th width="30%">Nomor Permohonan</th>
-                            <td>: {{ $pengajuan->nomor_pengajuan }}</td>
-                        </tr>
-                        <tr>
-                            <th>Program Studi</th>
-                            <td>: {{ $pengajuan->studyProgram->full_name }}</td>
+                            <th style="width:40%">Program Studi</th>
+                            <td>: {{ $pengajuan->studyProgram->name }}</td>
                         </tr>
                         <tr>
                             <th>Universitas</th>
@@ -49,7 +45,8 @@
                         </tr>
                         <tr>
                             <th>Akreditasi Kedaluwarsa</th>
-                            <td>: {{ $pengajuan->studyProgram->days_left ? $pengajuan->studyProgram->days_left.' hari lagi': '-' }}</td>
+                            <td>: <span>{!! $pengajuan->studyProgram->getStatusBadgeKedaluwarsa('ps-2') !!}</span>
+                            </td>
                         </tr>
                         <tr>
                             <th>Jenis Permohonan</th>
@@ -87,7 +84,6 @@
                                 <strong>{{ $suratPermohonan->original_filename }}</strong>
                                 <br>
                                 <small class="text-muted">
-                                    {{ $suratPermohonan->file_size_formatted ?? '' }} •
                                     Diupload: {{ $suratPermohonan->created_at->format('d M Y H:i') }}
                                 </small>
                             </div>

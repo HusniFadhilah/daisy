@@ -111,8 +111,7 @@
                 <table class="table table-hover align-middle">
                     <thead class="table-light">
                         <tr>
-                            <th>No. Pengajuan</th>
-                            <th>Program Studi</th>
+                            <th>Permohonan Akreditasi</th>
                             <th>Peringkat</th>
                             <th>Skor</th>
                             <th>Tgl Hasil</th>
@@ -160,11 +159,7 @@
                             @endphp
                             <tr>
                                 <td>
-                                    <span class="fw-semibold">{{ $pengajuan->nomor_pengajuan }}</span>
-                                </td>
-                                <td>
-                                    <div>{{ $pengajuan->studyProgram->name }}</div>
-                                    <small class="text-muted">{{ $pengajuan->studyProgram->university->name }}</small>
+                                    {!! $pengajuan->getPermohonanAkreditasiSectionFor('de') !!}
                                 </td>
                                 <td>
                                     @if($hasil && $hasil->peringkat_akreditasi)

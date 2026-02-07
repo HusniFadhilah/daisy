@@ -249,25 +249,43 @@ class PengajuanAkreditasi extends Model
         return $options[$this->jenis_akreditasi] ?? 'Akreditasi untuk pemenuhan status Terakreditasi';
     }
 
-    public function getPermohonanAkreditasiSectionForPsAttribute()
+    public function getPermohonanAkreditasiSectionFor($for = 'de')
     {
-        return <<<HTML
-            <p>{$this->judul_short}</p>
-            <small class="text-muted">{$this->nomor_pengajuan}</small><br>
-            <small class="text-muted">
+        if ($for == 'upps')
+            return <<<HTML
+            <p>{$this->judulPrefix('short')}</p>
+            <small class="text-muted">{$this->studyProgram->name}</small><br>
+            <!-- <small class="text-muted">
                 Dibuat pada: { \App\Libraries\Date::tglIndo($this->created_at) }
-            </small>
+            </small> -->
+        HTML;
+        else if ($for == 'de')
+            return <<<HTML
+        <p>{$this->judulPrefix('short')}</p>
+        <small><b>{$this->studyProgram->name}</b></small><br>
+        <small>{$this->studyProgram->university->name}</small>
+        <!-- <br> -->
+        <!-- <small class="text-muted">{$this->nomor_pengajuan}</small> -->
+        <!-- <br>
+        <small class="text-muted">Dibuat pada: { \App\Libraries\Date::tglIndo($this->created_at)}</small> -->
         HTML;
     }
 
-    public function getProgramStudiSectionForPsAttribute()
+    public function getProgramStudiSectionFor($for = 'de')
     {
-        return <<<HTML
-            <p>{$this->judul_short}</p>
-            <small class="text-muted">{$this->nomor_pengajuan}</small><br>
+        $asesmen = $this->asesmen;
+        if ($for == 'de')
+            return <<<HTML
+            <strong>{{ $asesmen->studyProgram->name ?? '-' }}</strong>
+            <br>
             <small class="text-muted">
-                Dibuat pada: { \App\Libraries\Date::tglIndo($this->created_at) }
+                <i class="bi bi-building"></i>
+                {{ $asesmen->studyProgram->university->name ?? '-' }}
             </small>
+        HTML;
+        else if ($for == 'upps')
+            return <<<HTML
+            {{ $asesmen->studyProgram->name ?? '-' }}
         HTML;
     }
 
