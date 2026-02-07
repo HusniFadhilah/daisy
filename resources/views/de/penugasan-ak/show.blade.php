@@ -278,10 +278,7 @@
                 <p class="mb-0">Silakan tetapkan status "Siap untuk AK" terlebih dahulu dengan mengklik tombol di kanan atas.</p>
             </div>
             @endif
-        </div>
 
-        <!-- Sidebar Info -->
-        <div class="col-lg-4">
             <!-- Informasi Program Studi -->
             <div class="card mb-4">
                 <div class="card-header bg-primary text-white">
@@ -320,7 +317,10 @@
                     </table>
                 </div>
             </div>
+        </div>
 
+        <!-- Sidebar Info -->
+        <div class="col-lg-4">
             <!-- Status Persyaratan -->
             <div class="card mb-4">
                 <div class="card-header bg-{{ $requirementsStatus['met'] ? 'success' : 'warning' }} text-white">

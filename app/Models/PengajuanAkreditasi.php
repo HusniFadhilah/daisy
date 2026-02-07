@@ -24,6 +24,7 @@ class PengajuanAkreditasi extends Model
     // ============================================
     // STATUS CONSTANTS (20 Steps)
     // ============================================
+    public const STATUS_NEW = 'new';
     public const STATUS_DRAFT = 'draft';
 
     // Step 1
@@ -95,11 +96,14 @@ class PengajuanAkreditasi extends Model
     // ============================================
     protected $fillable = [
         'nomor_pengajuan',
+        'nomor_permohonan',
         'id_program_studi',
         'id_user_pengaju',
         'id_de_assigned',
         'id_validator_assigned',
         'tahun_akreditasi',
+        'pemohon_phone',
+        'pemohon_email',
         'jenis_akreditasi',
         'kelompok_akreditasi',
         'tanggal_pengajuan',
@@ -227,10 +231,10 @@ class PengajuanAkreditasi extends Model
     public static function jenisAkreditasiOptions()
     {
         return [
-            self::AKREDITASI_BARU => 'Akreditasi untuk pembukaan prodi baru',
-            self::AKREDITASI_PERPANJANGAN => 'Akreditasi untuk perpanjangan status yang ada saat ini',
-            self::AKREDITASI_TERAKREDITASI => 'Akreditasi untuk pemenuhan status Terakreditasi',
-            self::AKREDITASI_MENUJU_UNGGUL => 'Akreditasi untuk menuju status Unggul',
+            // self::AKREDITASI_BARU => 'Akreditasi untuk pembukaan prodi baru',
+            // self::AKREDITASI_PERPANJANGAN => 'Akreditasi untuk perpanjangan status yang ada saat ini',
+            self::AKREDITASI_TERAKREDITASI => 'Terakreditasi',
+            self::AKREDITASI_MENUJU_UNGGUL => 'Unggul',
         ];
     }
 
@@ -246,7 +250,7 @@ class PengajuanAkreditasi extends Model
     public function getJenisAkreditasiTitleAttribute()
     {
         $options = self::jenisAkreditasiOptions();
-        return $options[$this->jenis_akreditasi] ?? 'Akreditasi untuk pemenuhan status Terakreditasi';
+        return $options[$this->jenis_akreditasi] ?? 'Status Terakreditasi';
     }
 
     public function getPermohonanAkreditasiSectionFor($for = 'de')
@@ -489,7 +493,7 @@ class PengajuanAkreditasi extends Model
             'baru', 'prodi-baru', 'prodi_baru' => 'PRODI-BARU',
             'terakreditasi' => 'TERAKREDITASI',
             'perpanjangan' => 'PERPANJANGAN',
-            'menuju_unggul', 'menuju-unggul', 'unggul' => 'MENUJU-UNGGUL',
+            'menuju_unggul', 'menuju-unggul', 'unggul' => 'UNGGUL',
             default => null, // BARU
         };
 
@@ -733,8 +737,8 @@ class PengajuanAkreditasi extends Model
                 'short' => 'Perpanjangan Status Akreditasi',
             ],
             'menuju_unggul' => [
-                'long'  => 'Permohonan Akreditasi Menuju Unggul',
-                'short' => 'Menuju Unggul',
+                'long'  => 'Permohonan Akreditasi Unggul',
+                'short' => 'Akreditasi Unggul',
             ],
         ];
 
@@ -1012,7 +1016,7 @@ class PengajuanAkreditasi extends Model
             self::STATUS_BORANG_ONLINE_SELESAI => [self::STATUS_BORANG_VALIDATION_PENDING],
             self::STATUS_BORANG_VALIDATION_PENDING => [self::STATUS_BORANG_IN_VALIDATION],
             self::STATUS_BORANG_IN_VALIDATION => [self::STATUS_BORANG_REVISION_REQUIRED, self::STATUS_BORANG_VALIDATED],
-            self::STATUS_BORANG_REVISION_REQUIRED => [self::STATUS_BORANG_ONLINE_SELESAI],
+            self::STATUS_BORANG_REVISION_REQUIRED => [self::STATUS_DRAFT_BORANG_DIKIRIM, self::STATUS_DRAFT_BORANG_DITERIMA, self::STATUS_BORANG_ONLINE_SELESAI],
             self::STATUS_BORANG_VALIDATED => [self::STATUS_BORANG_FINAL_DITERIMA, self::STATUS_VALIDASI_BORANG_DILAPORKAN],
             self::STATUS_BORANG_FINAL_DITERIMA => [self::STATUS_VALIDASI_BORANG_DILAPORKAN],
             self::STATUS_VALIDASI_BORANG_DILAPORKAN => [self::STATUS_PENGAJUAN_COMPLETED],
@@ -1168,7 +1172,7 @@ class PengajuanAkreditasi extends Model
         if ($attribute == 'borang_final')
             $statuses = [self::STATUS_DRAFT_BORANG_DITERIMA, self::STATUS_BORANG_ONLINE_SELESAI, self::STATUS_BORANG_VALIDATION_PENDING, self::STATUS_BORANG_IN_VALIDATION, self::STATUS_BORANG_REVISION_REQUIRED, self::STATUS_BORANG_VALIDATED, self::STATUS_BORANG_FINAL_DITERIMA, self::STATUS_VALIDASI_BORANG_DILAPORKAN];
         if ($attribute == 'validasi_dokumen')
-            $statuses = [self::STATUS_BORANG_VALIDATION_PENDING, self::STATUS_BORANG_IN_VALIDATION, self::STATUS_BORANG_REVISION_REQUIRED, self::STATUS_BORANG_VALIDATED];
+            $statuses = [self::STATUS_DRAFT_BORANG_DIKIRIM, self::STATUS_DRAFT_BORANG_DITERIMA, self::STATUS_BORANG_ONLINE_SELESAI, self::STATUS_BORANG_VALIDATION_PENDING, self::STATUS_BORANG_IN_VALIDATION, self::STATUS_BORANG_REVISION_REQUIRED, self::STATUS_BORANG_VALIDATED];
         if ($attribute == 'pelaporan_dokumen')
             $statuses = [self::STATUS_VALIDASI_BORANG_DILAPORKAN, self::STATUS_PENGAJUAN_COMPLETED];
         if ($attribute == 'penugasan_asesor_ak')
@@ -1391,6 +1395,21 @@ class PengajuanAkreditasi extends Model
                     : $badge('bg-secondary', '-'),
             },
             'validasi_dokumen' => match ($status) {
+                self::STATUS_DRAFT_BORANG_DIKIRIM =>
+                $audience === 'de'
+                    ? $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Validasi Dokumen' : 'Menunggu Validasi')
+                    : $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Validasi Dokumen' : 'Menunggu Validasi'),
+
+                self::STATUS_DRAFT_BORANG_DITERIMA =>
+                $audience === 'de'
+                    ? $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Validasi Dokumen' : 'Menunggu Validasi')
+                    : $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Validasi Dokumen' : 'Menunggu Validasi'),
+
+                self::STATUS_BORANG_ONLINE_SELESAI =>
+                $audience === 'de'
+                    ? $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Validasi Dokumen' : 'Menunggu Validasi')
+                    : $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Validasi Dokumen' : 'Menunggu Validasi'),
+
                 self::STATUS_BORANG_VALIDATION_PENDING =>
                 $badge(
                     $bgFromMap(self::STATUS_BORANG_VALIDATION_PENDING, 'bg-warning'),

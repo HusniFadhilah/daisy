@@ -498,6 +498,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
 
         Route::prefix('surat-permohonan')->name('.surat-permohonan')->group(function () {
+            Route::get('/download-template-surat', [\App\Http\Controllers\UPPS\SuratPermohonanController::class, 'downloadTemplateSurat'])->name('.download-template-surat');
             Route::get('/', [\App\Http\Controllers\UPPS\SuratPermohonanController::class, 'index']);
             Route::get('/create', [\App\Http\Controllers\UPPS\SuratPermohonanController::class, 'create'])->name('.create');
             Route::post('/', [\App\Http\Controllers\UPPS\SuratPermohonanController::class, 'store'])->name('.store');
@@ -505,7 +506,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::put('/{id}', [\App\Http\Controllers\UPPS\SuratPermohonanController::class, 'update'])->name('.update');
             Route::get('/{id}', [\App\Http\Controllers\UPPS\SuratPermohonanController::class, 'show'])->name('.show');
             Route::get('/{id}/download', [\App\Http\Controllers\UPPS\SuratPermohonanController::class, 'download'])->name('.download');
-            Route::get('/download-template-surat', [\App\Http\Controllers\UPPS\SuratPermohonanController::class, 'downloadTemplateSurat'])->name('.download-template-surat');
         });
 
         Route::prefix('penerimaan-permohonan')->name('.penerimaan-permohonan')->group(function () {

@@ -57,13 +57,15 @@
                 Menunggu pelaporan hasil validasi oleh LAMDEPILAR ke tahap berikutnya
             </div>
             @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED)
-            <div class="alert alert-success alert-permanent">
+            <div class="alert alert-warning alert-permanent">
                 <i class="bi bi-exclamation-triangle"></i>
                 <strong>Dokumen memerlukan revisi</strong>
                 <br>
-                Validator telah memberikan catatan perbaikan yang perlu dilakukan.
+                LAMDEPILAR telah memberikan catatan perbaikan yang perlu dilakukan.<br>
+                Mohon memeriksa catatan validator dan lakukan perbaikan pada dokumen<br>
+                kemudian upload ulang dokumen yang telah diperbaiki.
                 <div class="mt-2">
-                    <a href="{{ route('upps.penerimaan-dokumen.show', $pengajuan->id) }}" class="btn btn-warning btn-sm">
+                    <a href="{{ route('upps.penerimaan-dokumen.upload', $pengajuan->id) }}" class="btn btn-warning btn-sm">
                         <i class="bi bi-arrow-right"></i> Lihat Dokumen & Upload Revisi
                     </a>
                 </div>
@@ -256,29 +258,6 @@
             @endif
         </div>
     </div>
-
-    <!-- Info Card -->
-    @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED)
-    <div class="card mt-4 border-warning">
-        <div class="card-header bg-warning text-dark">
-            <h6 class="mb-0">
-                <i class="bi bi-exclamation-triangle"></i> Perhatian
-            </h6>
-        </div>
-        <div class="card-body">
-            <p class="mb-2">
-                <strong>Dokumen memerlukan revisi.</strong>
-            </p>
-            <p class="text-muted small mb-3">
-                Silakan periksa catatan validator dan lakukan perbaikan pada dokumen,
-                kemudian upload ulang dokumen yang telah diperbaiki.
-            </p>
-            <a href="{{ route('upps.penerimaan-dokumen.show', $pengajuan->id) }}" class="btn btn-warning btn-sm w-100">
-                <i class="bi bi-arrow-right"></i> Upload Dokumen Revisi
-            </a>
-        </div>
-    </div>
-    @endif
 
     <!-- Help Card -->
     <div class="card mt-4 border-info">

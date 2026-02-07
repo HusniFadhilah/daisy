@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::create('pengajuan_akreditasi', function (Blueprint $table) {
             $table->id();
             $table->string('nomor_pengajuan')->unique(); // Auto-generated: AK/2024/001
+            $table->string('nomor_permohonan')->nullable(); // Auto-generated: AK/2024/001
 
             // Relasi
             $table->foreignId('id_program_studi')->constrained('study_programs')->onDelete('cascade');
@@ -20,6 +21,8 @@ return new class extends Migration
 
             // Data Pengajuan
             $table->year('tahun_akreditasi');
+            $table->string('pemohon_email')->nullable();
+            $table->string('pemohon_phone', 20)->nullable();
             $table->enum('jenis_akreditasi', ['baru', 'terakreditasi', 'perpanjangan', 'menuju_unggul']);
             $table->enum('kelompok_akreditasi', ['individual', 'kelompok'])->default('individual')->comment('Kelompok akreditasi: individual (per prodi) atau kelompok (beberapa prodi)');
             $table->date('tanggal_pengajuan')->nullable();
@@ -27,6 +30,7 @@ return new class extends Migration
 
             // Status
             $table->enum('status', [
+                'new',
                 'draft',
                 'pengingat_dikirim',
                 'surat_permohonan_dikirim',

@@ -683,6 +683,7 @@ class PengajuanAkreditasiController extends Controller
         $progressData = $this->calculateBorangProgress($kriterias, $existingData);
 
         $lockBorang = in_array($pengajuan->status, [
+            \App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM,
             \App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
             \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
             \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,

@@ -103,20 +103,23 @@ class SuratPermohonanController extends Controller
     /**
      * Show form untuk membuat permohonan baru
      */
+    /**
+     * Show form untuk membuat permohonan baru
+     */
     public function create(Request $request)
     {
-        $user = Auth::user();
-        $studyProgramIds = $user->studyPrograms()->pluck('study_programs.id');
+        $authUser = Auth::user();
+        $studyProgramIds = $authUser->studyPrograms()->pluck('study_programs.id');
 
         // Get study programs untuk dropdown
-        $prodis = $user->studyPrograms()
+        $prodis = $authUser->studyPrograms()
             ->with(['university', 'degreeLevel'])
             ->get();
 
         // Auto-select jika hanya 1 prodi
         $prodiUser = $prodis->count() === 1 ? $prodis->first() : null;
 
-        // Get pengingat yang belum direspon
+        // ✅ OPTIONAL: Tetap tampilkan info pengingat untuk referensi user (tidak wajib dipilih)
         $pengingatBelumDirespon = PengingatAkreditasi::with([
             'studyProgram.university',
             'studyProgram.degreeLevel',
@@ -127,23 +130,11 @@ class SuratPermohonanController extends Controller
             ->orderBy('tanggal_dikirim', 'desc')
             ->get();
 
-        // Check jika ada id_pengingat dari parameter (untuk auto-fill)
-        $selectedPengingat = null;
-        if ($request->filled('id_pengingat')) {
-            $selectedPengingat = $pengingatBelumDirespon->firstWhere('id', $request->id_pengingat);
-
-            if (!$selectedPengingat) {
-                return redirect()
-                    ->route('upps.surat-permohonan')
-                    ->with('error', 'Pengingat tidak ditemukan atau sudah direspon.');
-            }
-        }
-
         return view('upps.surat-permohonan.create', compact(
+            'authUser',
             'prodis',
             'prodiUser',
-            'pengingatBelumDirespon',
-            'selectedPengingat'
+            'pengingatBelumDirespon'
         ));
     }
 
@@ -154,35 +145,23 @@ class SuratPermohonanController extends Controller
     {
         $isDraft = $request->boolean('is_draft');
 
-        // ✅ Check jika merespon pengingat
-        $pengingat = null;
-        if ($request->filled('id_pengingat')) {
-            $pengingat = PengingatAkreditasi::find($request->id_pengingat);
-
-            if ($pengingat && $pengingat->status !== PengingatAkreditasi::STATUS_BELUM_DIRESPON) {
-                return back()->with('error', 'Pengingat ini sudah direspon.');
-            }
-
-            // Validate user access
-            $user = auth()->user();
-            if ($pengingat && !$user->studyPrograms()->where('study_programs.id', $pengingat->id_program_studi)->exists()) {
-                abort(403, 'Anda tidak memiliki akses ke program studi ini.');
-            }
-        }
-
         // ✅ Validation rules - berbeda untuk draft vs submit
         $rules = [
             'id_program_studi' => 'required|exists:study_programs,id',
             'tahun_akreditasi' => 'required|integer|min:2024|max:' . (date('Y') + 2),
             'jenis_akreditasi' => 'required|in:baru,terakreditasi,perpanjangan,menuju_unggul',
             'catatan_pengaju' => 'nullable|string|max:2000',
+            'pemohon_email' => 'nullable|string',
+            'pemohon_phone' => 'nullable|string',
         ];
 
         // File hanya required jika bukan draft
         if (!$isDraft) {
             $rules['file_surat_permohonan'] = 'required|file|mimes:pdf|max:5120';
+            $rules['nomor_permohonan'] = 'required|string|max:100';
         } else {
             $rules['file_surat_permohonan'] = 'nullable|file|mimes:pdf|max:5120';
+            $rules['nomor_permohonan'] = 'nullable|string|max:100';
         }
 
         $messages = [
@@ -194,8 +173,21 @@ class SuratPermohonanController extends Controller
 
         $validated = $request->validate($rules, $messages);
 
+        // ✅ Validate user access to program studi
+        $user = auth()->user();
+        if (!$user->studyPrograms()->where('study_programs.id', $validated['id_program_studi'])->exists()) {
+            abort(403, 'Anda tidak memiliki akses ke program studi ini.');
+        }
+
         DB::beginTransaction();
         try {
+            // ✅ AUTO-DETECT: Cari pengingat yang sesuai
+            $pengingat = PengingatAkreditasi::where('id_program_studi', $validated['id_program_studi'])
+                ->where('tahun_akreditasi', $validated['tahun_akreditasi'])
+                ->where('status', PengingatAkreditasi::STATUS_BELUM_DIRESPON)
+                ->orderBy('tanggal_dikirim', 'desc')
+                ->first();
+
             // Tentukan status berdasarkan draft atau submit
             $status = $isDraft
                 ? PengajuanAkreditasi::STATUS_DRAFT
@@ -204,13 +196,17 @@ class SuratPermohonanController extends Controller
             // ✅ Create pengajuan
             $pengajuan = PengajuanAkreditasi::create([
                 'nomor_pengajuan' => PengajuanAkreditasi::generateNomorPengajuan($validated['jenis_akreditasi']),
+                'nomor_permohonan' => $validated['nomor_permohonan'] ?? null,
+
                 'id_program_studi' => $validated['id_program_studi'],
                 'id_user_pengaju' => auth()->id(),
                 'id_de_assigned' => $pengingat?->id_de_pengirim,
                 'tahun_akreditasi' => $validated['tahun_akreditasi'],
                 'jenis_akreditasi' => $validated['jenis_akreditasi'],
+                'pemohon_email' => $validated['pemohon_email'],
+                'pemohon_phone' => $validated['pemohon_phone'],
                 'status' => $status,
-                'catatan_pengaju' => $validated['catatan_pengaju'],
+                'catatan_pengaju' => $validated['catatan_pengaju'] ?? null,
                 'tanggal_pengingat' => $pengingat?->tanggal_dikirim,
                 'tanggal_surat_permohonan_dikirim' => !$isDraft ? now() : null,
             ]);
@@ -220,31 +216,33 @@ class SuratPermohonanController extends Controller
                 $this->uploadSuratPermohonan($pengajuan, $request->file('file_surat_permohonan'));
             }
 
-            // ✅ Mark pengingat as responded jika submit (bukan draft)
+            // ✅ AUTO-MARK: Tandai pengingat sebagai responded jika submit (bukan draft) dan ada pengingat
             if ($pengingat && !$isDraft) {
                 $pengingat->markAsResponded($pengajuan);
             }
 
             // ✅ Log status
+            $keterangan = $isDraft
+                ? 'Draft permohonan disimpan'
+                : ($pengingat
+                    ? 'Permohonan dikirim sebagai respon otomatis terhadap pengingat akreditasi'
+                    : 'Permohonan akreditasi baru dibuat');
+
             $pengajuan->statusLog()->create([
                 'status_from' => $pengingat
                     ? PengajuanAkreditasi::STATUS_PENGINGAT_DIKIRIM
-                    : null,
+                    : PengajuanAkreditasi::STATUS_NEW,
                 'status_to' => $status,
                 'changed_by' => auth()->id(),
                 'changed_at' => now(),
-                'keterangan' => $isDraft
-                    ? 'Draft permohonan disimpan'
-                    : ($pengingat
-                        ? 'Permohonan dikirim sebagai respon pengingat akreditasi'
-                        : 'Permohonan akreditasi baru dibuat'),
+                'keterangan' => $keterangan,
             ]);
 
             DB::commit();
 
             $message = $isDraft
                 ? 'Draft permohonan berhasil disimpan. Anda dapat melanjutkan pengisian nanti.'
-                : 'Permohonan akreditasi berhasil dikirim.';
+                : 'Permohonan akreditasi berhasil dikirim.' . ($pengingat ? ' Pengingat otomatis ditandai sebagai direspon.' : '');
 
             return redirect()
                 ->route('upps.surat-permohonan')
@@ -263,14 +261,25 @@ class SuratPermohonanController extends Controller
      */
     private function uploadSuratPermohonan(PengajuanAkreditasi $pengajuan, $file)
     {
+        // Cari dokumen existing (kita pakai satu saja, tidak ada versi)
+        $dokumen = $pengajuan->dokumen()
+            ->where('jenis_dokumen', 'surat_permohonan')
+            ->first();
+
+        // Hapus file lama dari storage jika ada
+        if ($dokumen && $dokumen->path_file && Storage::disk('public')->exists($dokumen->path_file)) {
+            Storage::disk('public')->delete($dokumen->path_file);
+        }
+
         // Sanitize filename
         $originalName = $file->getClientOriginalName();
         $sanitizedName = preg_replace('/[^a-zA-Z0-9._-]/', '_', $originalName);
         $filename = time() . '_' . $sanitizedName;
 
+        // Simpan file baru
         $path = $file->storeAs('dokumen/surat-permohonan', $filename, 'public');
 
-        return $pengajuan->dokumen()->create([
+        $payload = [
             'jenis_dokumen' => 'surat_permohonan',
             'nama_file' => $filename,
             'path_file' => $path,
@@ -278,8 +287,16 @@ class SuratPermohonanController extends Controller
             'file_size' => $file->getSize(),
             'mime_type' => $file->getMimeType(),
             'uploaded_by' => auth()->id(),
-            'is_latest' => true,
-        ]);
+            'is_latest' => true, // boleh tetap true, tapi tidak ada versi lagi
+        ];
+
+        // Update kalau sudah ada, create kalau belum ada
+        if ($dokumen) {
+            $dokumen->update($payload);
+            return $dokumen;
+        }
+
+        return $pengajuan->dokumen()->create($payload);
     }
 
     public function edit($id)
@@ -291,8 +308,8 @@ class SuratPermohonanController extends Controller
         ])->findOrFail($id);
 
         // Check access
-        $user = Auth::user();
-        $studyProgramIds = $user->studyPrograms()->pluck('study_programs.id');
+        $authUser = Auth::user();
+        $studyProgramIds = $authUser->studyPrograms()->pluck('study_programs.id');
 
         if (!$studyProgramIds->contains($pengajuan->id_program_studi)) {
             abort(403, 'Anda tidak memiliki akses ke permohonan ini.');
@@ -306,11 +323,20 @@ class SuratPermohonanController extends Controller
         }
 
         // Get study programs untuk dropdown
-        $prodis = $user->studyPrograms()
+        $prodis = $authUser->studyPrograms()
             ->with(['university', 'degreeLevel'])
             ->get();
 
-        return view('upps.surat-permohonan.edit', compact('pengajuan', 'prodis'));
+        // Auto-select jika hanya 1 prodi
+        $prodiUser = $prodis->count() === 1 ? $prodis->first() : null;
+
+        $existingDokumen = $pengajuan->dokumen()
+            ->where('jenis_dokumen', 'surat_permohonan')
+            ->where('is_latest', true)
+            ->latest()
+            ->first();
+
+        return view('upps.surat-permohonan.edit', compact('pengajuan', 'prodis', 'prodiUser', 'authUser', 'existingDokumen'));
     }
 
     /**
@@ -341,7 +367,16 @@ class SuratPermohonanController extends Controller
             'tahun_akreditasi' => 'required|integer|min:2024|max:' . (date('Y') + 2),
             'jenis_akreditasi' => 'required|in:baru,terakreditasi,perpanjangan,menuju_unggul',
             'catatan_pengaju' => 'nullable|string|max:2000',
+            'pemohon_email' => 'nullable|string',
+            'pemohon_phone' => 'nullable|string',
         ];
+
+        // ✅ nomor_permohonan: required saat submit, nullable saat draft (konsisten dengan store)
+        if (!$isDraft) {
+            $rules['nomor_permohonan'] = 'required|string|max:100';
+        } else {
+            $rules['nomor_permohonan'] = 'nullable|string|max:100';
+        }
 
         // File hanya required jika submit (bukan draft)
         $existingFile = $pengajuan->dokumen()
@@ -358,12 +393,18 @@ class SuratPermohonanController extends Controller
 
         $messages = [
             'jenis_akreditasi.required' => 'Jenis akreditasi wajib dipilih',
+            'nomor_permohonan.required' => 'Nomor permohonan wajib diisi untuk mengirim permohonan',
             'file_surat_permohonan.required' => 'File surat permohonan wajib diupload untuk mengirim permohonan',
             'file_surat_permohonan.mimes' => 'File harus berformat PDF',
             'file_surat_permohonan.max' => 'Ukuran file maksimal 5MB',
         ];
 
         $validated = $request->validate($rules, $messages);
+
+        // ✅ Validate user access to (possibly changed) program studi
+        if (!$user->studyPrograms()->where('study_programs.id', $validated['id_program_studi'])->exists()) {
+            abort(403, 'Anda tidak memiliki akses ke program studi ini.');
+        }
 
         DB::beginTransaction();
         try {
@@ -374,50 +415,56 @@ class SuratPermohonanController extends Controller
 
             $oldStatus = $pengajuan->status;
 
+            // ✅ AUTO-DETECT: Cari pengingat yang sesuai (jika belum ada)
+            $pengingat = null;
+            if (!$isDraft && !$pengajuan->id_de_assigned) {
+                $pengingat = PengingatAkreditasi::where('id_program_studi', $validated['id_program_studi'])
+                    ->where('tahun_akreditasi', $validated['tahun_akreditasi'])
+                    ->where('status', PengingatAkreditasi::STATUS_BELUM_DIRESPON)
+                    ->orderBy('tanggal_dikirim', 'desc')
+                    ->first();
+            }
+
             // ✅ Update pengajuan
             $pengajuan->update([
                 'id_program_studi' => $validated['id_program_studi'],
                 'tahun_akreditasi' => $validated['tahun_akreditasi'],
                 'jenis_akreditasi' => $validated['jenis_akreditasi'],
-                'catatan_pengaju' => $validated['catatan_pengaju'],
+                'catatan_pengaju' => $validated['catatan_pengaju'] ?? null,
+                'pemohon_email' => $validated['pemohon_email'] ?? null,
+                'pemohon_phone' => $validated['pemohon_phone'] ?? null,
+                'nomor_permohonan' => $validated['nomor_permohonan'] ?? null,
+
                 'status' => $newStatus,
+                'id_de_assigned' => $pengingat?->id_de_pengirim ?? $pengajuan->id_de_assigned,
+                'tanggal_pengingat' => $pengingat?->tanggal_dikirim ?? $pengajuan->tanggal_pengingat,
                 'tanggal_surat_permohonan_dikirim' => !$isDraft ? now() : null,
             ]);
 
             // ✅ Upload file baru jika ada
             if ($request->hasFile('file_surat_permohonan')) {
-                // Mark old file as not latest
-                $pengajuan->dokumen()
-                    ->where('jenis_dokumen', 'surat_permohonan')
-                    ->update(['is_latest' => false]);
-
-                // Upload new file
                 $this->uploadSuratPermohonan($pengajuan, $request->file('file_surat_permohonan'));
             }
 
-            // ✅ Mark pengingat as responded jika submit dari draft
-            if (!$isDraft && $pengajuan->id_de_assigned) {
-                $pengingat = PengingatAkreditasi::where('id_de_pengirim', $pengajuan->id_de_assigned)
-                    ->where('id_program_studi', $pengajuan->id_program_studi)
-                    ->where('tahun_akreditasi', $pengajuan->tahun_akreditasi)
-                    ->where('status', PengingatAkreditasi::STATUS_BELUM_DIRESPON)
-                    ->first();
-
-                if ($pengingat) {
-                    $pengingat->markAsResponded($pengajuan);
-                }
+            // ✅ AUTO-MARK: Tandai pengingat sebagai responded jika submit dari draft
+            if (!$isDraft && $pengingat) {
+                $pengingat->markAsResponded($pengajuan);
             }
 
             // ✅ Log status jika berubah
             if ($oldStatus !== $newStatus) {
+                $keterangan = $isDraft
+                    ? 'Draft permohonan diperbarui'
+                    : ($pengingat
+                        ? 'Draft permohonan dikirim sebagai respon otomatis terhadap pengingat akreditasi'
+                        : 'Draft permohonan dikirim');
+
                 $pengajuan->statusLog()->create([
                     'status_from' => $oldStatus,
                     'status_to' => $newStatus,
                     'changed_by' => auth()->id(),
                     'changed_at' => now(),
-                    'keterangan' => $isDraft
-                        ? 'Draft permohonan diperbarui'
-                        : 'Draft permohonan dikirim',
+                    'keterangan' => $keterangan,
                 ]);
             }
 
@@ -425,7 +472,7 @@ class SuratPermohonanController extends Controller
 
             $message = $isDraft
                 ? 'Draft permohonan berhasil diperbarui.'
-                : 'Permohonan akreditasi berhasil dikirim.';
+                : 'Permohonan akreditasi berhasil dikirim.' . ($pengingat ? ' Pengingat otomatis ditandai sebagai direspon.' : '');
 
             return redirect()
                 ->route('upps.surat-permohonan')
@@ -568,7 +615,6 @@ class SuratPermohonanController extends Controller
         if (!file_exists($path)) {
             abort(404, 'File template tidak ditemukan');
         }
-
         return response()->download(
             $path,
             'TEMPLATE_PERMOHONAN_AKREDITASI.docx'

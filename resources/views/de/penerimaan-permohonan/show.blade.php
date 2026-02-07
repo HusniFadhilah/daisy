@@ -168,102 +168,102 @@
                         </div>
 
                         <!-- Keterangan -->
-                        <div class="mb-4">
+                        {{-- <div class="mb-4">
                             <label for="keterangan" class="form-label">
                                 <i class="bi bi-chat-left-text"></i> Keterangan
                                 <small class="text-muted">(Opsional)</small>
                             </label>
                             <textarea class="form-control @error('keterangan') is-invalid @enderror" id="keterangan" name="keterangan" rows="3" placeholder="Tambahkan catatan atau keterangan tambahan jika diperlukan">{{ old('keterangan') }}</textarea>
-                            @error('keterangan')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                        @error('keterangan')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                </div> --}}
 
-                        <!-- Action Buttons -->
-                        <div class="d-flex justify-content-between">
-                            <a href="{{ route('de.penerimaan-permohonan') }}" class="btn btn-secondary">
-                                <i class="bi bi-x-circle"></i> Batal
-                            </a>
-                            <button type="submit" class="btn btn-primary" id="btnSubmit">
-                                <i class="bi bi-send"></i> Kirim Penerimaan Akreditasi
-                            </button>
-                        </div>
-                    </form>
+                <!-- Action Buttons -->
+                <div class="d-flex justify-content-between">
+                    <a href="{{ route('de.penerimaan-permohonan') }}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Batal
+                    </a>
+                    <button type="submit" class="btn btn-primary" id="btnSubmit">
+                        <i class="bi bi-send"></i> Kirim Penerimaan Akreditasi
+                    </button>
                 </div>
-            </div>
-            @endif
-
-            <div class="card my-4">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Informasi Penerimaan Permohonan Akreditasi</h5>
-                </div>
-                <div class="card-body">
-                    <table class="table table-borderless">
-                        <tr>
-                            <th style="width:45%">Tanggal Penerimaan Permohonan</th>
-                            <td>: {{ \App\Libraries\Date::tglIndo($pengajuan->tanggal_surat_penerimaan_dikirim) }}</td>
-                        </tr>
-                        <tr>
-                            <th>Status Penerimaan Permohonan</th>
-                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('surat_penerimaan_de','de') !!}</td>
-                        </tr>
-                    </table>
-                </div>
+                </form>
             </div>
         </div>
+        @endif
 
-        <!-- Sidebar -->
-        <div class="col-lg-4">
-            <!-- Riwayat Status -->
-            @php
-            $filterStatuses = [
-            \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
-            \App\Models\PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM,
-            ];
-
-            $logs = $pengajuan->statusLog
-            ->whereIn('status_to', $filterStatuses)
-            ->sortBy('created_at');
-            @endphp
-
-            <div class="card">
-                <div class="card-header bg-secondary text-white">
-                    <h5 class="mb-0">
-                        <i class="bi bi-clock-history"></i> Riwayat Status
-                    </h5>
-                </div>
-                <div class="card-body" style="max-height: 600px; overflow-y: auto;">
-                    @if($logs->count() > 0)
-                    <div class="timeline">
-                        @foreach($logs as $log)
-                        <div class="timeline-item mb-3">
-                            <div class="d-flex">
-                                <div class="flex-shrink-0">
-                                    <i class="bi bi-circle-fill text-secondary" style="font-size: 8px;"></i>
-                                </div>
-                                <div class="flex-grow-1 ms-3">
-                                    <strong>
-                                        {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['de'] ?? $log->status_to }}
-                                    </strong>
-                                    <br>
-                                    <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
-
-                                    {{-- @if($log->keterangan)
-                                    <br>
-                                    <small class="text-muted fst-italic">{{ $log->keterangan }}</small>
-                                    @endif --}}
-                                </div>
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
-                    @else
-                    <p class="text-muted text-center mb-0">Belum ada riwayat</p>
-                    @endif
-                </div>
+        <div class="card my-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Informasi Penerimaan Permohonan Akreditasi</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <th style="width:45%">Tanggal Penerimaan Permohonan</th>
+                        <td>: {{ \App\Libraries\Date::tglIndo($pengajuan->tanggal_surat_penerimaan_dikirim) }}</td>
+                    </tr>
+                    <tr>
+                        <th>Status Penerimaan Permohonan</th>
+                        <td>: {!! $pengajuan->getCustomBadgeLastStatus('surat_penerimaan_de','de') !!}</td>
+                    </tr>
+                </table>
             </div>
         </div>
     </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Riwayat Status -->
+        @php
+        $filterStatuses = [
+        \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
+        \App\Models\PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM,
+        ];
+
+        $logs = $pengajuan->statusLog
+        ->whereIn('status_to', $filterStatuses)
+        ->sortBy('created_at');
+        @endphp
+
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-clock-history"></i> Riwayat Status
+                </h5>
+            </div>
+            <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                @if($logs->count() > 0)
+                <div class="timeline">
+                    @foreach($logs as $log)
+                    <div class="timeline-item mb-3">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0">
+                                <i class="bi bi-circle-fill text-secondary" style="font-size: 8px;"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <strong>
+                                    {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['de'] ?? $log->status_to }}
+                                </strong>
+                                <br>
+                                <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
+
+                                {{-- @if($log->keterangan)
+                                    <br>
+                                    <small class="text-muted fst-italic">{{ $log->keterangan }}</small>
+                                @endif --}}
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+                @else
+                <p class="text-muted text-center mb-0">Belum ada riwayat</p>
+                @endif
+            </div>
+        </div>
+    </div>
+</div>
 </div>
 
 <!-- Modal Konfirmasi Delete -->

@@ -18,8 +18,8 @@ final class PengajuanStatus
                 ],
                 'label_long_for' => [
                     'de'   => 'Draft Permohonan Akreditasi Belum Terkirim',
-                    'upps' => 'Draft Permohonan Akreditasi Siap Dikirim',
-                    'prodi' => 'Draft Permohonan Akreditasi Siap Dikirim',
+                    'upps' => 'Draft Permohonan Akreditasi Dibuat',
+                    'prodi' => 'Draft Permohonan Akreditasi Dibuat',
                 ],
                 'bg' => 'bg-secondary',
                 'icon' => 'bi-pencil',
@@ -229,7 +229,7 @@ final class PengajuanStatus
                     'upps' => 'Draft Dokumen Telah Diterima',
                     'prodi' => 'Draft Dokumen Telah Diterima',
                 ],
-                'bg' => 'bg-success',
+                'bg' => 'bg-info',
                 'icon' => 'bi-file-earmark-check',
             ],
 
@@ -293,7 +293,7 @@ final class PengajuanStatus
                     'upps' => 'Dokumen Perlu Revisi (silakan perbaiki)',
                     'prodi' => 'Dokumen Perlu Revisi (silakan perbaiki)',
                 ],
-                'bg' => 'bg-danger',
+                'bg' => 'bg-warning',
                 'icon' => 'bi-exclamation-triangle',
             ],
 
@@ -549,7 +549,7 @@ final class PengajuanStatus
                     'upps' => 'Banding Telah Diajukan',
                     'prodi' => 'Banding Telah Diajukan',
                 ],
-                'bg' => 'bg-danger',
+                'bg' => 'bg-warning',
                 'icon' => 'bi-file-earmark-break',
             ],
 
@@ -581,7 +581,7 @@ final class PengajuanStatus
                     'upps' => 'Pelaporan Banding Selesai',
                     'prodi' => 'Pelaporan Banding Selesai',
                 ],
-                'bg' => 'bg-danger',
+                'bg' => 'bg-info',
                 'icon' => 'bi-file-earmark-ruled',
             ],
 

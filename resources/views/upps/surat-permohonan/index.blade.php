@@ -82,7 +82,7 @@
                                 <a href="{{ route('upps.surat-permohonan.create') }}" class="btn btn-md btn-primary">
                                     <i class="bi bi-file-earmark-plus"></i>
                                     <br>
-                                    <span class="small">Buat Permohonan Akreditasi</span>
+                                    <span class="small">Kirim Permohonan Akreditasi</span>
                                 </a>
                             </div>
                         </div>
@@ -93,7 +93,7 @@
                                 <a href="{{ route('upps.surat-permohonan.create') }}?draft=true" class="btn btn-md btn-outline-dark">
                                     <i class="bi bi-save"></i>
                                     <br>
-                                    <span class="small">Simpan Draft Permohonan/Kirim</span>
+                                    <span class="small">Pengajuan Permohonan <i>by System</i></span>
                                 </a>
                             </div>
                         </div>

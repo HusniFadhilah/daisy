@@ -172,37 +172,23 @@
             {{-- Informasi Permohonan --}}
             <div class="card">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Informasi Pengiriman Formulir dan Template Dokumen</h5>
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle"></i> Informasi Formulir dan Template Dokumen
+                    </h5>
                 </div>
                 <div class="card-body">
                     <table class="table table-borderless">
                         <tr>
-                            <th width="30%">Nomor Permohonan</th>
-                            <td>: {{ $pengajuan->nomor_pengajuan }}</td>
+                            <th>Tanggal Template Dikirim</th>
+                            <td>
+                                : {{ $pengajuan->tanggal_template_led_dikirim
+                                    ? $pengajuan->tanggal_template_led_dikirim->format('d M Y H:i')
+                                    : '-' }}
+                            </td>
                         </tr>
                         <tr>
-                            <th>Program Studi</th>
-                            <td>: {{ $pengajuan->studyProgram->full_name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Universitas</th>
-                            <td>: {{ $pengajuan->studyProgram->university->name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Akreditasi Kedaluwarsa</th>
-                            <td>: {{ $pengajuan->studyProgram->days_left ? $pengajuan->studyProgram->days_left.' hari lagi': '-' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Jenis Permohonan</th>
-                            <td>: {{ $pengajuan->jenis_akreditasi_label }}</td>
-                        </tr>
-                        <tr>
-                            <th>Pemohon</th>
-                            <td>: {{ $pengajuan->pengaju->name ?? '-' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Status Pengiriman Formulir dan Template Dokumen</th>
-                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('borang_template') !!}</td>
+                            <th>Status Formulir dan Template Dokumen</th>
+                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('borang_template','de') !!}</td>
                         </tr>
                     </table>
                 </div>

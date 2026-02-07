@@ -82,32 +82,6 @@
     </div>
 
     <div class="row justify-content-center">
-        <div class="col-lg-4">
-            <!-- Info Permohonan -->
-            <div class="card mb-4 border-info">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0">
-                        <i class="bi bi-info-circle"></i> Informasi Permohonan Akreditasi
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <div class="fw-bold">Nomor Permohonan Akreditasi</div>
-                        <div>{{ $pengajuan->nomor_pengajuan }}</div>
-                    </div>
-                    <div class="mb-3">
-                        <div class="fw-bold">Jenis Dokumen Diperlukan</div>
-                        <ul class="mb-0 ps-3">
-                            <li>Laporan Evaluasi Diri (LED)</li>
-                            <li>Suplemen LED</li>
-                            <li>Laporan Kinerja Program Studi (LKPS)</li>
-                            <li>Lembar Pengesahan Dokumen</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <div class="col-lg-8">
             <!-- Upload Form Alert -->
             @if(!$canUploadDokumen)
@@ -116,7 +90,7 @@
                     <i class="bi bi-eye"></i> Mode Preview Dokumen
                 </h5>
                 <p class="mb-0">
-                    Status permohonan saat ini hanya memungkinkan <strong>preview dokumen</strong>.
+                    Status permohonan saat ini hanya memungkinkan <strong>preview dokumen</strong>.<br>
                     Upload dokumen akan tersedia ketika status sudah sesuai.
                 </p>
                 <div class="small text-muted mt-1">
@@ -228,7 +202,7 @@
                             <div class="upload-area" id="uploadAreaLed">
                                 <i class="bi bi-file-word text-info" style="font-size: 44px;"></i>
                                 <p class="mb-1"><strong>Silahkan upload file LED di sini</strong></p>
-                                <p class="text-muted small mb-2">Format: DOCX/DOC • Maksimal 10MB</p>
+                                <p class="text-muted small mb-2">Format: DOCX/DOC • Maksimal 5MB</p>
 
                                 <input type="file" id="file_led" name="file_led" class="visually-hidden-input" accept=".docx,.doc" required>
                                 <button type="button" class="btn btn-outline-info btn-sm" id="btnPickLed">
@@ -271,7 +245,7 @@
                             <div class="upload-area" id="uploadAreaSuplemen">
                                 <i class="bi bi-file-earmark-pdf text-danger" style="font-size: 44px;"></i>
                                 <p class="mb-1"><strong>Silahkan upload file Suplemen di sini</strong></p>
-                                <p class="text-muted small mb-2">Format: PDF • Maksimal 10MB</p>
+                                <p class="text-muted small mb-2">Format: PDF • Maksimal 5MB</p>
 
                                 <input type="file" id="file_suplemen" name="file_suplemen" class="visually-hidden-input" accept=".pdf" required>
                                 <button type="button" class="btn btn-outline-success btn-sm" id="btnPickSuplemen">
@@ -314,7 +288,7 @@
                             <div class="upload-area" id="uploadAreaLkps">
                                 <i class="bi bi-file-excel text-success" style="font-size: 44px;"></i>
                                 <p class="mb-1"><strong>Silahkan upload file LKPS di sini</strong></p>
-                                <p class="text-muted small mb-2">Format: XLSX/XLS • Maksimal 10MB</p>
+                                <p class="text-muted small mb-2">Format: XLSX/XLS • Maksimal 5MB</p>
 
                                 <input type="file" id="file_lkps" name="file_lkps" class="visually-hidden-input" accept=".xlsx,.xls" required>
                                 <button type="button" class="btn btn-outline-success btn-sm" id="btnPickLkps">
@@ -356,7 +330,7 @@
                             <div class="upload-area" id="uploadAreaPengesahan">
                                 <i class="bi bi-file-earmark-pdf text-danger" style="font-size: 44px;"></i>
                                 <p class="mb-1"><strong>Silahkan upload file Lembar Pengesahan di sini</strong></p>
-                                <p class="text-muted small mb-2">Format: PDF • Maksimal 10MB</p>
+                                <p class="text-muted small mb-2">Format: PDF • Maksimal 5MB</p>
 
                                 <input type="file" id="file_pengesahan" name="file_pengesahan" class="visually-hidden-input" accept=".pdf" required>
                                 <button type="button" class="btn btn-outline-secondary btn-sm" id="btnPickPengesahan">
@@ -427,7 +401,32 @@
             </div>
             @endif
         </div>
+        <div class="col-lg-4">
+            <!-- Info Permohonan -->
+            <div class="card mb-4 border-info">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle"></i> Informasi Permohonan Akreditasi
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {{-- <div class="mb-3">
+                        <div class="fw-bold">Nomor Permohonan Akreditasi</div>
+                        <div>{{ $pengajuan->nomor_pengajuan }}</div>
+            </div> --}}
+            <div class="mb-3">
+                <div class="fw-bold">Jenis Dokumen Diperlukan</div>
+                <ul class="mb-0 ps-3">
+                    <li>Laporan Evaluasi Diri (LED)</li>
+                    <li>Suplemen LED</li>
+                    <li>Laporan Kinerja Program Studi (LKPS)</li>
+                    <li>Lembar Pengesahan Dokumen</li>
+                </ul>
+            </div>
+        </div>
     </div>
+</div>
+</div>
 </div>
 
 @push('scripts')
@@ -514,7 +513,7 @@
                 return;
             }
             if (file.size > 10 * 1024 * 1024) {
-                alert('Ukuran file LED maksimal 10MB!');
+                alert('Ukuran file LED maksimal 5MB!');
                 removeLed();
                 return;
             }
@@ -583,7 +582,7 @@
                 return;
             }
             if (file.size > 10 * 1024 * 1024) {
-                alert('Ukuran file Suplemen maksimal 10MB!');
+                alert('Ukuran file Suplemen maksimal 5MB!');
                 removeSuplemen();
                 return;
             }
@@ -649,7 +648,7 @@
                 return;
             }
             if (file.size > 10 * 1024 * 1024) {
-                alert('Ukuran file LKPS maksimal 10MB!');
+                alert('Ukuran file LKPS maksimal 5MB!');
                 removeLkps();
                 return;
             }
@@ -711,7 +710,7 @@
                 return;
             }
             if (file.size > 10 * 1024 * 1024) {
-                alert('Ukuran file Lembar Pengesahan maksimal 10MB!');
+                alert('Ukuran file Lembar Pengesahan maksimal 5MB!');
                 removePengesahan();
                 return;
             }

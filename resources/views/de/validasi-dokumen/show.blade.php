@@ -102,6 +102,22 @@
                             </td>
                         </tr>
                         <tr>
+                            <th>Tanggal Penugasan Validator</th>
+                            <td>
+                                : {{ $pengajuan->tanggal_validasi_borang_assigned
+                                    ? $pengajuan->tanggal_validasi_borang_assigned->format('d M Y H:i')
+                                    : '-' }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Tanggal Validasi Selesai</th>
+                            <td>
+                                : {{ $pengajuan->tanggal_validasi_borang_selesai
+                                    ? $pengajuan->tanggal_validasi_borang_selesai->format('d M Y H:i')
+                                    : '-' }}
+                            </td>
+                        </tr>
+                        <tr>
                             <th>Status Validasi Dokumen</th>
                             <td>
                                 {!! $pengajuan->getCustomBadgeLastStatus('validasi_dokumen','de','label_long_for') !!}
@@ -122,7 +138,7 @@
             <!-- Revision Details -->
             @if($revisionDetails && ($revisionDetails['led'] || $revisionDetails['suplemen'] || $revisionDetails['lkps']))
 
-            <div class="card mb-4" id="validationCard">
+            {{-- <div class="card mb-4" id="validationCard">
                 <div class="card-header bg-light d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">
                         <i class="bi bi-clipboard-check"></i> Hasil Validasi Dokumen
@@ -224,7 +240,7 @@
                         Gagal memuat hasil validasi.
                     </div>
                 </div>
-            </div>
+            </div> --}}
             {{-- <div class="card">
                 <div class="card-header bg-warning text-dark">
                     <h5 class="mb-0">
@@ -300,49 +316,66 @@
 <!-- Right Column - Timeline -->
 <div class="col-lg-4">
     <div class="card">
-        <div class="card-header bg-light">
+        <div class="card-header bg-secondary text-white">
             <h5 class="mb-0">
                 <i class="bi bi-clock-history"></i> Riwayat Status
             </h5>
         </div>
-        <div class="card-body">
-            <ul class="list-unstyled timeline">
-                <li class="mb-3">
-                    <i class="bi bi-circle-fill text-primary"></i>
-                    <strong>Validator Ditugaskan</strong>
-                    <br>
-                    <small class="text-muted">{{ $assignment->created_at->format('d F Y H:i') }}</small>
-                </li>
+        <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+            @php
+            $filterStatuses = [
+            \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
+            \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
+            \App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
+            \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,
+            \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
+            \App\Models\PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
+            ];
 
-                @if($assignment->responded_at)
-                <li class="mb-3">
-                    <i class="bi bi-circle-fill text-{{ $assignment->status_penawaran === 'accepted' ? 'success' : 'danger' }}"></i>
-                    <strong>
-                        {{ $assignment->status_penawaran === 'accepted' ? 'Penawaran Diterima' : 'Penawaran Ditolak' }}
-                    </strong>
-                    <br>
-                    <small class="text-muted">{{ $assignment->responded_at->format('d F Y H:i') }}</small>
-                </li>
-                @endif
+            $logs = $pengajuan->statusLog
+            ->whereIn('status_to', $filterStatuses)
+            ->sortBy('changed_at');
+            @endphp
 
-                @if($assignment->submitted_at)
-                <li class="mb-3">
-                    <i class="bi bi-circle-fill text-info"></i>
-                    <strong>Validasi Disubmit</strong>
-                    <br>
-                    <small class="text-muted">{{ $assignment->submitted_at->format('d F Y H:i') }}</small>
-                </li>
-                @endif
+            @if($logs->count() > 0)
+            <div class="timeline">
+                @foreach($logs as $log)
+                <div class="timeline-item mb-3">
+                    <div class="d-flex">
+                        <div class="flex-shrink-0">
+                            @php
+                            $iconColor = match($log->status_to) {
+                            \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
+                            \App\Models\PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA
+                            => 'text-success',
+                            \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED
+                            => 'text-danger',
+                            \App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION
+                            => 'text-warning',
+                            default => 'text-info',
+                            };
+                            @endphp
+                            <i class="bi bi-circle-fill {{ $iconColor }}" style="font-size: 8px;"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <strong>
+                                {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label'] ?? $log->status_to }}
+                            </strong>
+                            <br>
+                            <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
 
-                @if($assignment->approved_at)
-                <li class="mb-3">
-                    <i class="bi bi-circle-fill text-success"></i>
-                    <strong>Validasi Disetujui</strong>
-                    <br>
-                    <small class="text-muted">{{ $assignment->approved_at->format('d F Y H:i') }}</small>
-                </li>
-                @endif
-            </ul>
+                            {{-- @if($log->keterangan)
+                                    <br>
+                                    <small class="text-muted fst-italic">{{ $log->keterangan }}</small>
+                            @endif --}}
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+            @else
+            <p class="text-muted text-center mb-0">Belum ada riwayat validasi</p>
+            @endif
         </div>
     </div>
 </div>

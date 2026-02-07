@@ -412,7 +412,7 @@
                         <br>
                         <small class="text-muted">
                             <i class="bi bi-lock-fill me-1"></i>
-                            Universitas tidak dapat diubah untuk role {{ $user->role_alias }}
+                            Universitas tidak dapat diubah
                         </small>
                     </div>
                     <input type="hidden" name="id_university" value="{{ $user->id_university }}">

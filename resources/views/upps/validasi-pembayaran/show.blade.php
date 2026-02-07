@@ -46,9 +46,9 @@
             @elseif($pembayaran->status_pembayaran === 'menunggu_verifikasi')
             <div class="alert alert-info alert-permanent">
                 <i class="bi bi-clock-history"></i>
-                <strong>Menunggu validasi dari LAMDEPILAR</strong>
+                <strong>Menunggu validasi pembayaran</strong>
                 <br>
-                Formulir & Bukti pembayaran telah diupload pada {{ $pembayaran->tanggal_pembayaran?->format('d M Y H:i') ?? '-' }}
+                Formulir & Bukti pembayaran telah diupload pada {{ $pembayaran->tanggal_pembayaran?->format('d M Y H:i') ?? '-' }}.<br>Mohon menunggu proses validasi pembayaran
             </div>
             @elseif($pembayaran->status_pembayaran === 'terverifikasi')
             <div class="alert alert-success alert-permanent">
@@ -79,8 +79,85 @@
             </div>
             @endif
 
+            <!-- Action Button -->
+            @if(in_array($pembayaran->status_pembayaran, ['menunggu_pembayaran', 'upload_ulang']) && $dokumenPembayaran->count() > 0)
+            <div class="card my-4 border-warning">
+                <div class="card-body text-center">
+                    <h5 class="mb-3">
+                        @if($pembayaran->status_pembayaran === 'upload_ulang')
+                        <i class="bi bi-arrow-repeat"></i> Perlu Upload Ulang Formulir & Bukti Pembayaran
+                        @else
+                        <i class="bi bi-info-circle"></i> Ingin Mengubah Formulir & Bukti Pembayaran?
+                        @endif
+                    </h5>
+                    <p class="text-muted">
+                        @if($pembayaran->status_pembayaran === 'upload_ulang')
+                        LAMDEPILAR meminta Anda untuk upload ulang formulir & bukti pembayaran yang lebih jelas.
+                        @else
+                        Anda dapat mengganti formulir & bukti pembayaran yang telah diupload sebelumnya.
+                        @endif
+                    </p>
+                    <a href="{{ route('upps.validasi-pembayaran.upload.form', $pembayaran->id) }}" class="btn btn-warning btn-md">
+                        <i class="bi bi-upload"></i> Upload Ulang Formulir & Bukti Pembayaran
+                    </a>
+                </div>
+            </div>
+            @endif
+
+            <!-- Bukti Pembayaran -->
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-file-earmark-pdf"></i> Formulir & Bukti Pembayaran
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if($dokumenPembayaran->count() > 0)
+                    @php
+                    $dokumen = $dokumenPembayaran->first();
+                    @endphp
+                    <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded mb-2">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-file-earmark-pdf text-danger me-3" style="font-size: 48px;"></i>
+                            <div>
+                                <strong>{{ $dokumen->original_filename }}</strong>
+                                <br>
+                                <small class="text-muted">
+                                    {{ number_format($dokumen->file_size / 1024, 2) }} KB •
+                                    Diupload: {{ $dokumen->created_at->format('d M Y H:i') }}
+                                </small>
+                                @if($dokumen->is_latest)
+                                <br>
+                                <span class="badge bg-success">Versi Terbaru</span>
+                                @else
+                                <br>
+                                <span class="badge bg-secondary">Versi {{ $dokumen->versi }}</span>
+                                @endif
+                            </div>
+                        </div>
+                        <div>
+                            <a href="{{ route('upps.validasi-pembayaran.dokumen.download', $dokumen->id) }}" class="btn btn-success btn-md">
+                                <i class="bi bi-file-earmark-pdf"></i> Lihat File
+                            </a>
+                        </div>
+                    </div>
+                    @else
+                    <div class="text-center py-4">
+                        <i class="bi bi-file-earmark-x" style="font-size: 48px; color: #ddd;"></i>
+                        <p class="text-muted mt-2 mb-0">Belum ada formulir & bukti pembayaran yang diupload. <br>Mohon upload dengan mengklik tombol berikut</p>
+
+                        @if(in_array($pembayaran->status_pembayaran, ['menunggu_pembayaran', 'upload_ulang']))
+                        <a href="{{ route('upps.validasi-pembayaran.upload.form', $pembayaran->id) }}" class="btn btn-success btn-md mt-3">
+                            <i class="bi bi-upload"></i> Upload Formulir & Bukti Pembayaran
+                        </a>
+                        @endif
+                    </div>
+                    @endif
+                </div>
+            </div>
+
             <!-- Informasi Pembayaran -->
-            <div class="card mb-4">
+            <div class="card mt-4">
                 <div class="card-header bg-secondary text-white">
                     <h5 class="mb-0">
                         <i class="bi bi-info-circle"></i> Informasi Pembayaran
@@ -93,7 +170,7 @@
                             <td>: <strong>{{ $pembayaran->nomor_invoice }}</strong></td>
                         </tr>
                         <tr>
-                            <th>Jumlah Pembayaran</th>
+                            <th>{{ in_array($pembayaran->status_pembayaran,['terverifikasi','menunggu_verifikasi','upload_ulang']) ? 'Nominal Pembayaran' : 'Nominal Tertagih' }}</th>
                             <td>
                                 : <strong class="text-success fs-5">
                                     Rp {{ number_format($pembayaran->jumlah_pembayaran, 0, ',', '.') }}
@@ -157,82 +234,6 @@
                     @endif
                 </div>
             </div>
-
-            <!-- Bukti Pembayaran -->
-            <div class="card">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0">
-                        <i class="bi bi-file-earmark-pdf"></i> Formulir & Bukti Pembayaran
-                    </h5>
-                </div>
-                <div class="card-body">
-                    @if($dokumenPembayaran->count() > 0)
-                    @foreach($dokumenPembayaran as $dokumen)
-                    <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded mb-2">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-file-earmark-pdf text-danger me-3" style="font-size: 48px;"></i>
-                            <div>
-                                <strong>{{ $dokumen->original_filename }}</strong>
-                                <br>
-                                <small class="text-muted">
-                                    {{ number_format($dokumen->file_size / 1024, 2) }} KB •
-                                    Diupload: {{ $dokumen->created_at->format('d M Y H:i') }}
-                                </small>
-                                @if($dokumen->is_latest)
-                                <br>
-                                <span class="badge bg-success">Versi Terbaru</span>
-                                @else
-                                <br>
-                                <span class="badge bg-secondary">Versi {{ $dokumen->versi }}</span>
-                                @endif
-                            </div>
-                        </div>
-                        <div>
-                            <a href="{{ route('upps.validasi-pembayaran.dokumen.download', $dokumen->id) }}" class="btn btn-success btn-md">
-                                <i class="bi bi-file-earmark-pdf"></i> Lihat File
-                            </a>
-                        </div>
-                    </div>
-                    @endforeach
-                    @else
-                    <div class="text-center py-4">
-                        <i class="bi bi-file-earmark-x" style="font-size: 48px; color: #ddd;"></i>
-                        <p class="text-muted mt-2 mb-0">Belum ada formulir & bukti pembayaran yang diupload</p>
-
-                        @if(in_array($pembayaran->status_pembayaran, ['menunggu_pembayaran', 'upload_ulang']))
-                        <a href="{{ route('upps.validasi-pembayaran.upload.form', $pembayaran->id) }}" class="btn btn-success btn-md mt-3">
-                            <i class="bi bi-upload"></i> Upload Formulir & Bukti Pembayaran
-                        </a>
-                        @endif
-                    </div>
-                    @endif
-                </div>
-            </div>
-
-            <!-- Action Button -->
-            @if(in_array($pembayaran->status_pembayaran, ['menunggu_pembayaran', 'upload_ulang']) && $dokumenPembayaran->count() > 0)
-            <div class="card mt-4 border-warning">
-                <div class="card-body text-center">
-                    <h5 class="mb-3">
-                        @if($pembayaran->status_pembayaran === 'upload_ulang')
-                        <i class="bi bi-arrow-repeat"></i> Perlu Upload Ulang Formulir & Bukti Pembayaran
-                        @else
-                        <i class="bi bi-info-circle"></i> Ingin Mengubah Formulir & Bukti Pembayaran?
-                        @endif
-                    </h5>
-                    <p class="text-muted">
-                        @if($pembayaran->status_pembayaran === 'upload_ulang')
-                        LAMDEPILAR meminta Anda untuk upload ulang formulir & bukti pembayaran yang lebih jelas.
-                        @else
-                        Anda dapat mengganti formulir & bukti pembayaran yang telah diupload sebelumnya.
-                        @endif
-                    </p>
-                    <a href="{{ route('upps.validasi-pembayaran.upload.form', $pembayaran->id) }}" class="btn btn-warning btn-md">
-                        <i class="bi bi-upload"></i> Upload Ulang Formulir & Bukti Pembayaran
-                    </a>
-                </div>
-            </div>
-            @endif
         </div>
 
         <!-- Sidebar -->
@@ -295,7 +296,7 @@
                                         Ditolak
                                         @elseif($pembayaran->tanggal_verifikasi && $pembayaran->status_pembayaran == 'terverifikasi')
                                         Pembayaran Divalidasi
-                                        @elseif($pembayaran->tanggal_upload_ulang)
+                                        @elseif($pembayaran->tanggal_upload_ulang || $pembayaran->status_pembayaran == 'upload_ulang')
                                         Diminta Upload Ulang
                                         @else
                                         -

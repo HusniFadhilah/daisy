@@ -33,10 +33,10 @@
         <div class="col-lg-8 mb-4">
             <!-- Status Alert -->
             @if($pengingat->status === \App\Models\PengingatAkreditasi::STATUS_BELUM_DIRESPON)
-            <div class="alert alert-warning alert-permanent">
-                <i class="bi bi-exclamation-triangle"></i>
+            <div class="alert alert-info alert-permanent">
+                <i class="bi bi-info-circle"></i>
                 <strong>Pengingat belum direspon!</strong><br>
-                Silakan buat permohonan akreditasi sebagai respon terhadap pengingat ini.
+                Untuk merespon dan membuat permohonan akreditasi dapat dilakukan pada Menu Permohonan Akreditasi atau <a href="{{ route('upps.surat-permohonan') }}">Klik Link Berikut</a>
             </div>
             @elseif($pengingat->status === \App\Models\PengingatAkreditasi::STATUS_DIRESPON)
             <div class="alert alert-success alert-permanent">
@@ -140,7 +140,7 @@
 
             <!-- Pesan Pengingat -->
             <div class="card mb-4">
-                <div class="card-header bg-info text-white">
+                <div class="card-header bg-secondary text-white">
                     <h5 class="mb-0">
                         <i class="bi bi-envelope-open"></i> Pesan Pengingat
                     </h5>
@@ -155,21 +155,6 @@
                     @endif
                 </div>
             </div>
-
-            <!-- Action Button -->
-            @if($pengingat->status === \App\Models\PengingatAkreditasi::STATUS_BELUM_DIRESPON)
-            <div class="card border-success mt-4">
-                <div class="card-body text-center">
-                    <h5 class="mb-3">Siap untuk merespon pengingat ini?</h5>
-                    <p class="text-muted mb-4">
-                        Anda akan membuat permohonan akreditasi sebagai respon terhadap pengingat ini.
-                    </p>
-                    <a href="{{ route('upps.pengingat-akreditasi.respond.form', $pengingat->id) }}" class="btn btn-success btn-md">
-                        <i class="bi bi-reply-fill"></i> Respon Pengingat & Buat Permohonan
-                    </a>
-                </div>
-            </div>
-            @endif
         </div>
 
         <!-- Sidebar -->

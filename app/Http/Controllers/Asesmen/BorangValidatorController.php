@@ -489,7 +489,7 @@ class BorangValidatorController extends Controller
                 ) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'Tidak ada item yang perlu direvisi. Silakan approve atau ubah grade item yang perlu diperbaiki.',
+                        'message' => 'Tidak ada item yang terdeteksi perlu direvisi. Silakan "Pilih Setujui Dokumen" atau ubah Kategori Validasi pada item yang perlu diperbaiki.',
                     ], 422);
                 }
 

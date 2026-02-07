@@ -19,7 +19,7 @@
             <h5 class="mb-1">
                 <i class="bi bi-envelope-paper"></i> Detail Permohonan Akreditasi
             </h5>
-            <small class="text-muted mb-0">{{ $pengajuan->nomor_pengajuan }}</small>
+            <small class="text-muted mb-0">{{ $pengajuan->nomor_permohonan }}</small>
         </div>
         <a href="{{ route('de.surat-permohonan') }}" class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i> Kembali
@@ -29,43 +29,46 @@
     <div class="row">
         <!-- Informasi Permohonan Akreditasi PS -->
         <div class="col-lg-8 mb-4">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Informasi Permohonan Akreditasi</h5>
-                </div>
-                <div class="card-body">
-                    <table class="table table-borderless">
-                        <tr>
-                            <th style="width:40%">Program Studi</th>
-                            <td>: {{ $pengajuan->studyProgram->name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Universitas</th>
-                            <td>: {{ $pengajuan->studyProgram->university->name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Akreditasi Kedaluwarsa</th>
-                            <td>: <span>{!! $pengajuan->studyProgram->getStatusBadgeKedaluwarsa('ps-2') !!}</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Jenis Permohonan</th>
-                            <td>: {{ $pengajuan->jenis_akreditasi_label }}</td>
-                        </tr>
-                        <tr>
-                            <th>Pemohon</th>
-                            <td>: {{ $pengajuan->pengaju->name ?? '-' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Status Permohonan Akreditasi</th>
-                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('surat_permohonan_ps') !!}</td>
-                        </tr>
-                    </table>
-                </div>
+            <!-- Status Alert -->
+            @php
+            $allowed = [
+            \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM,
+            \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
+            \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITOLAK,
+            ]; // ini contoh, bisa dinamis dari config/db/request
+
+            $log = $pengajuan->latestRelevantStatusLog($allowed);
+            @endphp
+            <!-- Status Alert -->
+            @if($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM)
+            <div class="alert alert-warning alert-permanent mb-4">
+                <i class="bi bi-hourglass-split"></i>
+                <strong>Perlu tanggapan</strong>
+                <br>
+                Permohonan akreditasi telah diterima, mohon segera tanggapi permohonan dengan mengklik tombol berikut
+
+                <button type="button" class="btn btn-success action-btn mt-2" title="Terima Surat" onclick="terimaSurat({{ $pengajuan->id }}, '{{ $pengajuan->judul }}')">
+                    <i class="bi bi-check-circle"></i>
+                </button>
             </div>
+            @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA)
+            <div class="alert alert-success alert-permanent mb-4">
+                <i class="bi bi-check-circle"></i>
+                <strong>Permohonan akreditasi telah ditanggapi</strong>
+                <br>
+                Permohonan akreditasi telah ditanggapi pada {{ $pengajuan->tanggal_surat_permohonan_diterima->format('d M Y H:i') }}
+            </div>
+            @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITOLAK)
+            <div class="alert alert-danger alert-permanent mb-4">
+                <i class="bi bi-x-circle"></i>
+                <strong>Permohonan akreditasi ditolak</strong>
+                <br>
+                Permohonan akreditasi telah ditolak pada {{ $pengajuan->tanggal_surat_permohonan_ditolak->format('d M Y H:i') }}
+            </div>
+            @endif
 
             <!-- Dokumen Permohonan -->
-            <div class="card mt-4">
+            <div class="card my-4">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0">
                         <i class="bi bi-file-pdf"></i> Dokumen Permohonan Akreditasi PS
@@ -100,6 +103,45 @@
                         <p class="text-muted mt-2">Belum ada dokumen permohonan</p>
                     </div>
                     @endif
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Informasi Permohonan Akreditasi</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th style="width:40%">Nomor Permohonan</th>
+                            <td>: {{ $pengajuan->nomor_permohonan }}</td>
+                        </tr>
+                        <tr>
+                            <th style="width:40%">Program Studi</th>
+                            <td>: {{ $pengajuan->studyProgram->name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Universitas</th>
+                            <td>: {{ $pengajuan->studyProgram->university->name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Akreditasi Kedaluwarsa</th>
+                            <td>: <span>{!! $pengajuan->studyProgram->getStatusBadgeKedaluwarsa('ps-2') !!}</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Jenis Permohonan</th>
+                            <td>: {{ $pengajuan->jenis_akreditasi_label }}</td>
+                        </tr>
+                        <tr>
+                            <th>Pemohon</th>
+                            <td>: {{ $pengajuan->pengaju->name ?? '-' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Status Permohonan Akreditasi</th>
+                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('surat_permohonan_ps') !!}</td>
+                        </tr>
+                    </table>
                 </div>
             </div>
         </div>
@@ -181,4 +223,5 @@
         </div>
     </div>
 </div>
+@include('de.surat-permohonan.components.modal-terima-surat')
 @endsection

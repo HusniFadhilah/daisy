@@ -205,11 +205,11 @@ $authUser = Auth::user();
                         <tr>
                             <td>{{ $key+1 }}</td>
                             <td>
-                                <div class="fw-semibold">{{ $pengajuan ? $pengajuan->judul : $asesmen->name }}</div>
-                                <small class="text-muted text-block">
-                                    <i class="bi bi-building"></i>
-                                    {{ $asesmen->studyProgram->university->name ?? '-' }}
-                                </small>
+                                @if($pengajuan)
+                                {!! $pengajuan->getPermohonanAkreditasiSectionFor('de') !!}
+                                @else
+                                {!! $asesmen->getPermohonanAkreditasiSectionFor('de') !!}
+                                @endif
                             </td>
                             <td>
                                 <span class="badge bg-primary">{{ $assignment->role->alias.' '.$assignment->jenis_asesmen_label }}</span>

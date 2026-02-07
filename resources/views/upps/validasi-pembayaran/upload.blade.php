@@ -86,11 +86,11 @@
             <div class="alert alert-warning alert-permanent">
                 <h5><i class="bi bi-arrow-repeat"></i> Permintaan Upload Ulang</h5>
                 <p class="mb-0">
-                    Bagian keuangan LAMDEPILAR meminta Anda untuk upload ulang formulir & bukti pembayaran yang lebih jelas.
+                    LAMDEPILAR meminta Anda untuk upload ulang formulir & bukti pembayaran.
                 </p>
                 @if($pembayaran->catatan_verifikasi)
                 <hr>
-                <strong>Catatan dari Bagian Keuangan:</strong>
+                <strong>Catatan dari LAMDEPILAR:</strong>
                 <p class="mb-0">{{ $pembayaran->catatan_verifikasi }}</p>
                 @endif
             </div>

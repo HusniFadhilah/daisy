@@ -44,14 +44,14 @@
             @if($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM)
             <div class="alert alert-warning alert-permanent mb-4">
                 <i class="bi bi-hourglass-split"></i>
-                <strong>Menunggu formulir dan template dokumen dari LAMDEPILAR</strong>
+                <strong>Menunggu formulir dan template dokumen</strong>
                 <br>
                 Template belum dikirim oleh LAMDEPILAR
             </div>
             @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM)
             <div class="alert alert-success alert-permanent mb-4">
                 <i class="bi bi-check-circle"></i>
-                <strong>Formulir dan template dokumen telah diterima dari LAMDEPILAR</strong>
+                <strong>Formulir dan template dokumen telah diterima</strong>
                 <br>
                 Diterima pada {{ $pengajuan->tanggal_template_led_dikirim->format('d M Y H:i') }}
             </div>
@@ -200,7 +200,7 @@
 
             <!-- Informasi Penyampaian -->
             <div class="card mb-4">
-                <div class="card-header bg-secondary text-white">
+                <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">
                         <i class="bi bi-info-circle"></i> Informasi Formulir dan Template Dokumen
                     </h5>

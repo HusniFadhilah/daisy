@@ -30,7 +30,20 @@
     <div class="row mb-4">
         <!-- Left Column - Informasi Pembayaran -->
         <div class="col-lg-8 mb-4">
-            @if($pembayaran->status_pembayaran == 'menunggu_verifikasi')
+            @if($pembayaran->status_pembayaran === 'menunggu_pembayaran')
+            <div class="alert alert-info alert-permanent">
+                <i class="bi bi-hourglass-split"></i>
+                <strong>Menunggu pembayaran</strong>
+                <br>
+                Program Studi sedang proses melakukan pembayaran akreditasi
+            </div>
+            @elseif($pembayaran->status_pembayaran === 'menunggu_verifikasi')
+            <div class="alert alert-info alert-permanent">
+                <i class="bi bi-hourglass-split"></i>
+                <strong>Menunggu validasi pembayaran</strong>
+                <br>
+                Bagian keuangan sedang proses melakukan validasi pembayaran
+            </div>
             @elseif($pembayaran->status_pembayaran == 'terverifikasi')
             <div class="alert alert-success alert-permanent">
                 <h5><i class="bi bi-check-circle"></i> Pembayaran Tervalidasi</h5>
@@ -40,6 +53,33 @@
                 </p>
             </div>
             @endif
+
+            <!-- Dokumen Pembayaran -->
+            <div class="card my-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Dokumen Terkait</h5>
+                </div>
+                <div class="card-body">
+                    @forelse($dokumenPembayaran as $dokumen)
+                    <div class="d-flex justify-content-between align-items-center p-3 mb-2 border rounded">
+                        <div>
+                            <i class="bi {{ $dokumen->file_icon_class }} me-2"></i>
+                            <strong>{{ $dokumen->jenis_dokumen_alias }}</strong>
+                            <br>
+                            <small class="text-muted">
+                                {{ $dokumen->original_filename }}
+                            </small>
+                        </div>
+                        <a href="{{ $dokumen->download_url }}" class="btn btn-sm btn-primary" target="_blank">
+                            <i class="bi bi-download"></i> Download
+                        </a>
+                    </div>
+                    @empty
+                    <p class="text-muted text-center py-3">Belum ada dokumen pembayaran</p>
+                    @endforelse
+                </div>
+            </div>
+
             <div class="card">
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">Informasi Pembayaran</h5>
@@ -127,32 +167,6 @@
                     @endif
                 </div>
             </div>
-
-            <!-- Dokumen Pembayaran -->
-            <div class="card mt-4">
-                <div class="card-header bg-secondary text-white">
-                    <h5 class="mb-0">Dokumen Terkait</h5>
-                </div>
-                <div class="card-body">
-                    @forelse($dokumenPembayaran as $dokumen)
-                    <div class="d-flex justify-content-between align-items-center p-3 mb-2 border rounded">
-                        <div>
-                            <i class="bi {{ $dokumen->file_icon_class }} me-2"></i>
-                            <strong>{{ $dokumen->jenis_dokumen_alias }}</strong>
-                            <br>
-                            <small class="text-muted">
-                                {{ $dokumen->original_filename }}
-                            </small>
-                        </div>
-                        <a href="{{ $dokumen->download_url }}" class="btn btn-sm btn-primary" target="_blank">
-                            <i class="bi bi-download"></i> Download
-                        </a>
-                    </div>
-                    @empty
-                    <p class="text-muted text-center py-3">Belum ada dokumen pembayaran</p>
-                    @endforelse
-                </div>
-            </div>
         </div>
 
         <!-- Right Column - Actions -->
@@ -215,7 +229,7 @@
                                         Ditolak
                                         @elseif($pembayaran->tanggal_verifikasi && $pembayaran->status_pembayaran == 'terverifikasi')
                                         Pembayaran Divalidasi
-                                        @elseif($pembayaran->tanggal_upload_ulang)
+                                        @elseif($pembayaran->tanggal_upload_ulang || $pembayaran->status_pembayaran == 'upload_ulang')
                                         Diminta Upload Ulang
                                         @else
                                         -

@@ -51,11 +51,11 @@
                     <thead class="table-light">
                         <tr>
                             <th width="5%">#</th>
-                            <th width="40%">Permohonan Akreditasi</th>
-                            <th width="20%">Program Studi</th>
+                            <th width="25%">Permohonan Akreditasi</th>
+                            <th width="25%">Dokumen Akreditasi</th>
                             <th width="20%">Status Validasi</th>
                             <th width="15%">Tanggal Validasi</th>
-                            <th width="10%" class="text-center">Aksi</th>
+                            <th width="15%" class="text-center">Aksi</th>
                         </tr>
                     </thead>
 
@@ -93,13 +93,7 @@
                             <td>{{ $assignments->firstItem() + $index }}</td>
 
                             <td>
-                                <p class="mb-0">{{ $judul }}</p>
-                                <small class="text-muted">{{ $nomor }}</small>
-                                <br>
-                                <small class="text-muted">
-                                    Dibuat pada:
-                                    {{ $createdAt ? \App\Libraries\Date::tglIndo($createdAt) : '-' }}
-                                </small>
+                                {!! $pengajuan->getPermohonanAkreditasiSectionFor('de') !!}
                             </td>
 
                             <td>
