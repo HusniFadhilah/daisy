@@ -22,7 +22,6 @@
             <h5 class="mb-1">
                 <i class="bi bi-reply-fill"></i> Respon Pengingat Masa Akreditasi
             </h5>
-            <small class="text-muted">Buat permohonan akreditasi sebagai respon</small>
         </div>
         <a href="{{ route('upps.pengingat-akreditasi.show', $pengingat->id) }}" class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i> Kembali
@@ -75,69 +74,73 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('upps.pengingat-akreditasi.respond', $pengingat->id) }}" method="POST" enctype="multipart/form-data">
-                        @csrf
+                    <div class="alert alert-info alert-permanent">
+                        <i class="bi bi-info-circle"></i>
+                        Untuk membuat permohonan akreditasi dapat dilakukan pada Menu Permohonan Akreditasi atau <a href="{{ route('upps.surat-permohonan') }}">Klik Link Berikut</a>
+                    </div>
+                    {{-- <form action="{{ route('upps.pengingat-akreditasi.respond', $pengingat->id) }}" method="POST" enctype="multipart/form-data">
+                    @csrf
 
-                        <!-- Jenis Akreditasi -->
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">
-                                Jenis Permohonan Akreditasi <span class="text-danger">*</span>
+                    <!-- Jenis Akreditasi -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            Jenis Permohonan Akreditasi <span class="text-danger">*</span>
+                        </label>
+                        @foreach(\App\Models\PengajuanAkreditasi::jenisAkreditasiOptions() as $value => $label)
+                        <div class="form-check">
+                            <input class="form-check-input @error('jenis_akreditasi') is-invalid @enderror" type="radio" name="jenis_akreditasi" id="jenis_{{ $value }}" value="{{ $value }}" {{ old('jenis_akreditasi') == $value ? 'checked' : '' }}>
+                            <label class="form-check-label" for="jenis_{{ $value }}">
+                                {{ $label }}
                             </label>
-                            @foreach(\App\Models\PengajuanAkreditasi::jenisAkreditasiOptions() as $value => $label)
-                            <div class="form-check">
-                                <input class="form-check-input @error('jenis_akreditasi') is-invalid @enderror" type="radio" name="jenis_akreditasi" id="jenis_{{ $value }}" value="{{ $value }}" {{ old('jenis_akreditasi') == $value ? 'checked' : '' }}>
-                                <label class="form-check-label" for="jenis_{{ $value }}">
-                                    {{ $label }}
-                                </label>
-                            </div>
-                            @endforeach
-                            @error('jenis_akreditasi')
-                            <div class="invalid-feedback d-block">{{ $message }}</div>
-                            @enderror
                         </div>
+                        @endforeach
+                        @error('jenis_akreditasi')
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                    </div>
 
-                        <!-- Upload Surat Permohonan -->
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">
-                                Upload File Permohonan Akreditasi <span class="text-danger">*</span>
-                            </label>
-                            <input type="file" name="file_surat_permohonan" class="form-control @error('file_surat_permohonan') is-invalid @enderror" accept=".pdf">
-                            <small class="text-muted">Format: PDF | Maksimal: 5MB</small>
-                            @error('file_surat_permohonan')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                    <!-- Upload Surat Permohonan -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            Upload File Permohonan Akreditasi <span class="text-danger">*</span>
+                        </label>
+                        <input type="file" name="file_surat_permohonan" class="form-control @error('file_surat_permohonan') is-invalid @enderror" accept=".pdf">
+                        <small class="text-muted">Format: PDF | Maksimal: 5MB</small>
+                        @error('file_surat_permohonan')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
 
-                        <!-- Catatan -->
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">Catatan (Opsional)</label>
-                            <textarea name="catatan_pengaju" class="form-control @error('catatan_pengaju') is-invalid @enderror" rows="4" placeholder="Tambahkan catatan jika diperlukan...">{{ old('catatan_pengaju') }}</textarea>
-                            @error('catatan_pengaju')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                    <!-- Catatan -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Catatan (Opsional)</label>
+                        <textarea name="catatan_pengaju" class="form-control @error('catatan_pengaju') is-invalid @enderror" rows="4" placeholder="Tambahkan catatan jika diperlukan...">{{ old('catatan_pengaju') }}</textarea>
+                        @error('catatan_pengaju')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
 
-                        <!-- Informasi Penting -->
-                        <div class="alert alert-warning alert-permanent">
-                            <i class="bi bi-exclamation-triangle"></i>
-                            <strong>Perhatian:</strong>
-                            <ul class="mb-0 mt-2">
-                                <li>Pastikan surat permohonan telah ditandatangani</li>
-                                <li>File harus dalam format PDF</li>
-                                <li>Setelah submit, permohonan akan langsung dikirim ke LAMDEPILAR</li>
-                            </ul>
-                        </div>
+                    <!-- Informasi Penting -->
+                    <div class="alert alert-warning alert-permanent">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>Perhatian:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Pastikan surat permohonan telah ditandatangani</li>
+                            <li>File harus dalam format PDF</li>
+                            <li>Setelah submit, permohonan akan langsung dikirim ke LAMDEPILAR</li>
+                        </ul>
+                    </div>
 
-                        <!-- Submit Button -->
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-success btn-md">
-                                <i class="bi bi-send"></i> Kirim Permohonan Akreditasi
-                            </button>
-                            <a href="{{ route('upps.pengingat-akreditasi.show', $pengingat->id) }}" class="btn btn-secondary btn-md">
-                                <i class="bi bi-x-circle"></i> Batal
-                            </a>
-                        </div>
-                    </form>
+                    <!-- Submit Button -->
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-md">
+                            <i class="bi bi-send"></i> Kirim Permohonan Akreditasi
+                        </button>
+                        <a href="{{ route('upps.pengingat-akreditasi.show', $pengingat->id) }}" class="btn btn-secondary btn-md">
+                            <i class="bi bi-x-circle"></i> Batal
+                        </a>
+                    </div>
+                    </form> --}}
                 </div>
             </div>
         </div>

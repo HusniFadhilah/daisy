@@ -27,6 +27,12 @@
         </ol>
     </nav>
 
+    <div class="alert alert-info alert-permanent">
+        <i class="bi bi-bell-fill"></i>
+        <strong>Validasi Dokumen</strong><br>
+        Validasi Dokumen dapat dilihat pada daftar berikut<br>
+    </div>
+
     <!-- Table -->
     <div class="card">
         <div class="card-header bg-white">

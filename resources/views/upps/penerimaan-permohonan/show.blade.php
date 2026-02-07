@@ -44,16 +44,16 @@
             @if($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA)
             <div class="alert alert-warning alert-permanent">
                 <i class="bi bi-hourglass-split"></i>
-                <strong>Permohonan Akreditasi telah diterima, menunggu penerimaan permohonan akreditasi dari LAMDEPILAR</strong>
+                <strong>Menunggu penerimaan permohonan akreditasi</strong>
                 <br>
-                Permohonan diterima pada {{ $pengajuan->tanggal_surat_permohonan_diterima->format('d M Y H:i') }}
+                Permohonan Akreditasi telah ditanggapi, mohon menunggu penerimaan permohonan akreditasi dari LAMDEPILAR
             </div>
             @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM)
             <div class="alert alert-success alert-permanent">
                 <i class="bi bi-check-circle"></i>
-                <strong>Surat penerimaan permohonan akreditasi telah diterima dari LAMDEPILAR</strong>
+                <strong>Permohonan akreditasi telah diterima</strong>
                 <br>
-                Diterima pada {{ $pengajuan->tanggal_surat_penerimaan_dikirim->format('d M Y H:i') }}
+                Permohonan akreditasi Anda telah diterima oleh LAMDEPILAR.<br>Berikut adalah detailnya
             </div>
             @endif
 

@@ -141,7 +141,7 @@
             <div class="card">
                 <div class="card-header bg-secondary text-white">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Daftar Dokumen yang Diupload PS</h5>
+                        <h5 class="mb-0">Daftar Dokumen yang Diupload oleh PS</h5>
 
                         @if($docCompleteness['is_complete'])
                         <span class="badge bg-success">
@@ -188,11 +188,6 @@
                                         <div class="doc-meta">
                                             <div class="text-wrap text-truncate" title="{{ $dokumen->original_filename ?? '-' }}">
                                                 {{ Str::limit($dokumen->original_filename ?? '-', 40) }}
-                                            </div>
-                                            <div>
-                                                @if($dokumen->created_at)
-                                                {{ $dokumen->created_at->format('d M Y H:i') }}
-                                                @endif
                                             </div>
                                         </div>
 

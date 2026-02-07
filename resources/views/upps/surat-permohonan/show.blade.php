@@ -42,26 +42,26 @@
             $log = $pengajuan->latestRelevantStatusLog($allowed);
             @endphp
             <!-- Status Alert -->
-            @if($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA)
-            <div class="alert alert-success alert-permanent mb-4">
-                <i class="bi bi-check-circle"></i>
-                <strong>Permohonan akreditasi telah diterima oleh LAMDEPILAR</strong>
-                <br>
-                Diterima pada {{ $pengajuan->tanggal_surat_permohonan_diterima->format('d M Y H:i') }}
-            </div>
-            @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM)
+            @if($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM)
             <div class="alert alert-warning alert-permanent mb-4">
                 <i class="bi bi-hourglass-split"></i>
                 <strong>Menunggu tanggapan dari LAMDEPILAR</strong>
                 <br>
-                Permohonan akreditasi telah dikirim pada {{ $pengajuan->tanggal_surat_permohonan_dikirim->format('d M Y H:i') }}
+                Permohonan akreditasi telah dikirim, dan saat ini sedang menunggu tanggapan
+            </div>
+            @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA)
+            <div class="alert alert-success alert-permanent mb-4">
+                <i class="bi bi-check-circle"></i>
+                <strong>Permohonan akreditasi telah ditanggapi</strong>
+                <br>
+                Permohonan akreditasi telah ditanggapi pada {{ $pengajuan->tanggal_surat_permohonan_diterima->format('d M Y H:i') }}
             </div>
             @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITOLAK)
             <div class="alert alert-danger alert-permanent mb-4">
                 <i class="bi bi-x-circle"></i>
-                <strong>Permohonan akreditasi ditolak oleh LAMDEPILAR</strong>
+                <strong>Permohonan akreditasi ditolak</strong>
                 <br>
-                Ditolak pada {{ $pengajuan->tanggal_surat_permohonan_ditolak->format('d M Y H:i') }}
+                Permohonan akreditasi telah ditolak pada {{ $pengajuan->tanggal_surat_permohonan_ditolak->format('d M Y H:i') }}
             </div>
             @endif
 

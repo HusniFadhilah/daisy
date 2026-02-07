@@ -2,323 +2,221 @@
 
 @section('title', 'Detail Pelaporan Validasi Dokumen')
 
-@push('styles')
-<style>
-    .info-card {
-        border-radius: 12px;
-        border: none;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s ease;
-    }
-
-    .info-card:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    .status-indicator {
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        display: inline-block;
-        margin-right: 8px;
-    }
-
-    .status-success {
-        background: #28a745;
-    }
-
-    .status-warning {
-        background: #ffc107;
-    }
-
-    .status-danger {
-        background: #dc3545;
-    }
-
-    .timeline {
-        position: relative;
-        padding-left: 30px;
-    }
-
-    .timeline::before {
-        content: '';
-        position: absolute;
-        left: 10px;
-        top: 0;
-        bottom: 0;
-        width: 2px;
-        background: #dee2e6;
-    }
-
-    .timeline-item {
-        position: relative;
-        margin-bottom: 20px;
-    }
-
-    .timeline-marker {
-        position: absolute;
-        left: -24px;
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        background: white;
-        border: 3px solid;
-        z-index: 1;
-    }
-
-    .timeline-marker.success {
-        border-color: #28a745;
-    }
-
-    .timeline-marker.warning {
-        border-color: #ffc107;
-    }
-
-    .timeline-marker.danger {
-        border-color: #dc3545;
-    }
-
-    .file-preview {
-        background: #f8f9fa;
-        border: 2px dashed #dee2e6;
-        border-radius: 8px;
-        padding: 20px;
-        text-align: center;
-        transition: all 0.3s ease;
-    }
-
-    .file-preview:hover {
-        background: #e9ecef;
-        border-color: #adb5bd;
-    }
-
-    .file-icon {
-        font-size: 3rem;
-        color: #dc3545;
-    }
-
-</style>
-@endpush
-
 @section('content')
 <div class="container-fluid py-3">
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-                <a href="{{ route('de.pelaporan-dokumen') }}">
-                    <i class="bi bi-arrow-left"></i> Pelaporan Validasi Dokumen
-                </a>
-            </li>
+            <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('de.pelaporan-dokumen') }}">Pelaporan Validasi Dokumen</a></li>
             <li class="breadcrumb-item active">Detail</li>
         </ol>
     </nav>
 
-    <!-- Page Header -->
+    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h4 class="mb-1">
+            <h5 class="mb-1">
                 <i class="bi bi-file-earmark-text"></i> Detail Pelaporan Validasi Dokumen
-            </h4>
-            <p class="text-muted mb-0">{{ $pengajuan->nomor_pengajuan }}</p>
+            </h5>
+            <small class="text-muted mb-0">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
-        <div>
-            <span class="badge bg-{{ $statusPelaporan['class'] }}" style="font-size: 14px; padding: 8px 16px;">
-                <i class="bi bi-{{ $statusPelaporan['icon'] }}"></i> {{ $statusPelaporan['label'] }}
-            </span>
-        </div>
+        <a href="{{ route('de.pelaporan-dokumen') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Kembali
+        </a>
     </div>
 
     <div class="row">
-        <!-- Left Column: Info Cards -->
-        <div class="col-lg-4 mb-4">
-            <!-- Program Studi Info -->
-            <div class="card info-card mb-3">
-                <div class="card-header bg-primary text-white">
-                    <h6 class="mb-0">
-                        <i class="bi bi-info-circle"></i> Informasi Program Studi
-                    </h6>
+        <!-- Informasi & Dokumen -->
+        <div class="col-lg-8 mb-4">
+
+            @php
+            $allowed = [
+            \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
+            \App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
+            ]; // ini contoh, bisa dinamis dari config/db/request
+
+            $log = $pengajuan->latestRelevantStatusLog($allowed);
+            @endphp
+            <!-- Status Alert -->
+            @if($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED)
+            <div class="alert alert-info alert-permanent">
+                <i class="bi bi-check-circle"></i>
+                <strong>Pelaporan Validasi Dokumen</strong><br>
+                Menunggu pelaporan hasil validasi dokumen
+            </div>
+            @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN)
+            <div class="alert alert-success alert-permanent">
+                <i class="bi bi-check-circle"></i>
+                <strong>Pelaporan Validasi Dokumen telah Dilaksanakan</strong><br>
+                Tahap selanjutnya adalah penugasan asesor AK
+            </div>
+            @endif
+
+            <!-- Laporan Validasi Dokumen -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-file-pdf"></i> Laporan Validasi Dokumen (LKLED)
+                    </h5>
                 </div>
                 <div class="card-body">
-                    <table class="table table-sm table-borderless mb-0">
-                        <tr>
-                            <td width="40%" class="text-muted">Program Studi</td>
-                            <td><strong>{{ $pengajuan->studyProgram->name }}</strong></td>
+                    @if($laporanValidasi)
+                    <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-file-earmark-pdf text-danger me-3" style="font-size: 32px;"></i>
+                            <div>
+                                <strong>{{ $laporanValidasi->title }}</strong>
+                                <br>
+                                <small class="text-muted">
+                                    {{ $laporanValidasi->original_name }}
+                                    ({{ number_format($laporanValidasi->size / 1024, 2) }} KB)
+                                </small>
+                                <br>
+                                <small class="text-muted">
+                                    Diupload: {{ $laporanValidasi->uploaded_at->format('d M Y H:i') }}
+                                    @if($laporanValidasi->uploaded_by)
+                                    | Oleh: {{ $laporanValidasi->uploadedBy->name ?? '-' }}
+                                    @endif
+                                </small>
+                                @if($laporanValidasi->version > 1)
+                                <br>
+                                <small class="badge bg-info mt-1">Versi {{ $laporanValidasi->version }}</small>
+                                @endif
+                            </div>
+                        </div>
+                        <div>
+                            <a href="{{ Storage::url($laporanValidasi->path) }}" target="_blank" class="btn btn-primary btn-sm">
+                                <i class="bi bi-download"></i> Download
+                            </a>
+                        </div>
+                    </div>
+                    @else
+                    <div class="text-center py-4">
+                        <i class="bi bi-file-earmark-x" style="font-size: 48px; color: #ddd;"></i>
+                        <p class="text-muted mt-2">Validator belum mengupload laporan validasi dokumen</p>
+                    </div>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Informasi Program Studi -->
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Informasi Pelaporan Validasi Dokumen</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        {{-- <tr>
+                            <th style="width:40%">Program Studi</th>
+                            <td>: {{ $pengajuan->studyProgram->name }}</td>
                         </tr>
                         <tr>
-                            <td class="text-muted">Jenjang</td>
-                            <td>{{ $pengajuan->studyProgram->degreeLevel->name ?? '-' }}</td>
-                        </tr>
+                            <th>Universitas</th>
+                            <td>: {{ $pengajuan->studyProgram->university->name }}</td>
+                        </tr> --}}
                         <tr>
-                            <td class="text-muted">Universitas</td>
-                            <td>{{ $pengajuan->studyProgram->university->name }}</td>
-                        </tr>
-                        <tr>
-                            <td class="text-muted">Nomor Permohonan</td>
-                            <td><code>{{ $pengajuan->nomor_pengajuan }}</code></td>
-                        </tr>
-                        <tr>
-                            <td class="text-muted">Status Permohonan</td>
+                            <th style="width:40%">Tanggal Pelaporan Validasi Dokumen</th>
                             <td>
-                                <span class="badge bg-info text-wrap">
-                                    {{ $pengajuan->status_label }}
-                                </span>
+                                : {{ $pengajuan->tanggal_pelaporan_validasi_borang
+                                    ? $pengajuan->tanggal_pelaporan_validasi_borang->format('d M Y H:i')
+                                    : '-' }}
                             </td>
+                        </tr>
+                        <tr>
+                            <th>Status Pelaporan Validasi Dokumen</th>
+                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('pelaporan_dokumen') !!}</td>
                         </tr>
                     </table>
                 </div>
             </div>
 
-            <!-- Validator Info -->
+            <!-- Informasi Validator -->
             @if($validatorAssignment)
-            <div class="card info-card mb-3">
+            <div class="card mt-4">
                 <div class="card-header bg-success text-white">
-                    <h6 class="mb-0">
-                        <i class="bi bi-person-check"></i> Informasi Validator
-                    </h6>
+                    <h5 class="mb-0">Informasi Validator</h5>
                 </div>
                 <div class="card-body">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="avatar-circle bg-success text-white me-3" style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold;">
-                            {{ strtoupper(substr($validatorAssignment->user->name, 0, 1)) }}
-                        </div>
-                        <div>
-                            <div class="fw-bold">{{ $validatorAssignment->user->name }}</div>
-                            <small class="text-muted">{{ $validatorAssignment->user->email }}</small>
-                        </div>
-                    </div>
-                    <table class="table table-sm table-borderless mb-0">
+                    <table class="table table-borderless">
                         <tr>
-                            <td width="50%" class="text-muted">Role</td>
-                            <td><span class="badge bg-success">{{ $validatorAssignment->role_selected->name ?? '-' }}</span></td>
+                            <th style="width:40%">Nama Validator</th>
+                            <td>: {{ $validatorAssignment->user->name }}</td>
                         </tr>
                         <tr>
-                            <td class="text-muted">Status Penawaran</td>
-                            <td><span class="badge bg-success">{{ ucfirst($validatorAssignment->status_penawaran) }}</span></td>
+                            <th>Email</th>
+                            <td>: {{ $validatorAssignment->user->email }}</td>
+                        </tr>
+                        <tr>
+                            <th>Status Penawaran</th>
+                            <td>: <span class="badge bg-success">{{ ucfirst($validatorAssignment->status_penawaran) }}</span></td>
                         </tr>
                     </table>
                 </div>
             </div>
             @endif
-
-            <!-- Status Pelaporan Card -->
-            <div class="card info-card">
-                <div class="card-header bg-{{ $statusPelaporan['class'] }} text-white">
-                    <h6 class="mb-0">
-                        <i class="bi bi-{{ $statusPelaporan['icon'] }}"></i> Status Pelaporan
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="text-center py-3">
-                        <i class="bi bi-{{ $statusPelaporan['icon'] }}" style="font-size: 3rem; color: var(--bs-{{ $statusPelaporan['class'] }});"></i>
-                        <h5 class="mt-3">{{ $statusPelaporan['label'] }}</h5>
-                        <p class="text-muted mb-0">{{ $statusPelaporan['description'] }}</p>
-                    </div>
-                </div>
-            </div>
         </div>
 
-        <!-- Right Column: Laporan & Timeline -->
-        <div class="col-lg-8">
-            <!-- Laporan Validasi Section -->
-            <div class="card info-card mb-4">
-                <div class="card-header bg-light">
-                    <h6 class="mb-0">
-                        <i class="bi bi-file-earmark-pdf"></i> Laporan Validasi Dokumen (LKLED)
-                    </h6>
+        <!-- Status & Timeline -->
+        <div class="col-lg-4">
+            <!-- Status Pelaporan -->
+            <div class="card mb-4">
+                <div class="card-header bg-{{ $statusPelaporan['class'] }} text-white">
+                    <h5 class="mb-0">Status Pelaporan</h5>
                 </div>
-                <div class="card-body">
-                    @if($laporanValidasi)
-                    <div class="file-preview">
-                        <i class="bi bi-file-earmark-pdf file-icon"></i>
-                        <h6 class="mt-3">{{ $laporanValidasi->title }}</h6>
-                        <p class="text-muted mb-3">
-                            <small>
-                                <i class="bi bi-file-earmark"></i> {{ $laporanValidasi->original_name }}<br>
-                                <i class="bi bi-hdd"></i> {{ number_format($laporanValidasi->size / 1024, 2) }} KB<br>
-                                <i class="bi bi-calendar"></i> Diupload: {{ $laporanValidasi->uploaded_at->format('d F Y, H:i') }}<br>
-                                @if($laporanValidasi->uploaded_by)
-                                <i class="bi bi-person"></i> Oleh: {{ $laporanValidasi->uploadedBy->name ?? '-' }}
-                                @endif
-                            </small>
-                        </p>
-                        <a href="{{ Storage::url($laporanValidasi->path) }}" target="_blank" class="btn btn-danger">
-                            <i class="bi bi-download"></i> Download Laporan
-                        </a>
-                    </div>
-
-                    @if($laporanValidasi->version > 1)
-                    <div class="alert alert-info mt-3 mb-0">
-                        <i class="bi bi-info-circle"></i> Ini adalah versi {{ $laporanValidasi->version }} dari laporan validasi.
-                    </div>
-                    @endif
-                    @else
-                    <div class="text-center py-5">
-                        <i class="bi bi-file-earmark-x" style="font-size: 3rem; color: #dee2e6;"></i>
-                        <p class="text-muted mt-3 mb-0">Validator belum mengupload laporan validasi dokumen</p>
-                    </div>
-                    @endif
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-{{ $statusPelaporan['icon'] }}" style="font-size: 3rem; color: var(--bs-{{ $statusPelaporan['class'] }});"></i>
+                    <h5 class="mt-3 mb-1">{{ $statusPelaporan['label'] }}</h5>
+                    <small class="text-muted">{{ $statusPelaporan['description'] }}</small>
                 </div>
             </div>
 
-            <!-- Timeline History -->
-            <div class="card info-card">
-                <div class="card-header bg-light">
-                    <h6 class="mb-0">
-                        <i class="bi bi-clock-history"></i> Riwayat Status
-                    </h6>
-                </div>
-                <div class="card-body" style="max-height: 500px; overflow-y: auto;">
-                    @if($pengajuan->statusLog && $pengajuan->statusLog->count() > 0)
-                    <div class="timeline">
-                        @foreach($pengajuan->statusLog->take(10) as $log)
-                        @php
-                        $isRelevant = in_array($log->status_to, [
-                        \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
-                        \App\Models\PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
-                        \App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
-                        ]);
+            @php
+            $filterStatuses = [
+            \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
+            \App\Models\PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
+            \App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
+            ];
 
-                        if ($log->status_to === \App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN) {
-                        $markerClass = 'success';
-                        } elseif ($isRelevant) {
-                        $markerClass = 'warning';
-                        } else {
-                        $markerClass = 'danger';
-                        }
-                        @endphp
-                        <div class="timeline-item">
-                            <div class="timeline-marker {{ $markerClass }}"></div>
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-body p-3">
-                                    <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <div>
-                                            <span class="badge bg-{{ $markerClass }} mb-1">
-                                                {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['de'] ?? $log->status_to }}
-                                            </span>
-                                            <p class="mb-0 small text-muted">
-                                                {{ $log->keterangan }}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <small class="text-muted">
-                                            <i class="bi bi-person"></i> {{ $log->changedBy->name ?? 'System' }}
-                                        </small>
-                                        <small class="text-muted">
-                                            <i class="bi bi-clock"></i> {{ $log->changed_at->format('d M Y, H:i') }}
-                                        </small>
-                                    </div>
+            $logs = $pengajuan->statusLog
+            ->whereIn('status_to', $filterStatuses)
+            ->sortBy('changed_at');
+            @endphp
+
+            <!-- Status Log -->
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history"></i> Riwayat Status
+                    </h5>
+                </div>
+                <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                    @if($logs->count() > 0)
+                    <div class="timeline">
+                        @foreach($logs as $log)
+                        <div class="timeline-item mb-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-circle-fill text-primary" style="font-size: 8px;"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <strong>
+                                        {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['de'] ?? $log->status_to }}
+                                    </strong>
+                                    <br>
+                                    <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
+
+                                    {{-- @if($log->keterangan)
+                                    <br>
+                                    <small class="text-muted fst-italic">{{ $log->keterangan }}</small>
+                                    @endif --}}
                                 </div>
                             </div>
                         </div>
                         @endforeach
                     </div>
                     @else
-                    <div class="text-center py-4">
-                        <i class="bi bi-clock-history" style="font-size: 2rem; color: #dee2e6;"></i>
-                        <p class="text-muted mt-2 mb-0">Belum ada riwayat status</p>
-                    </div>
+                    <p class="text-muted text-center mb-0">Belum ada riwayat</p>
                     @endif
                 </div>
             </div>

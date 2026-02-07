@@ -1,8 +1,8 @@
-{{-- resources/views/asesmen/pelaporan/validasi-ak-show.blade.php --}}
+{{-- resources/views/asesmen/pelaporan/dokumen-show.blade.php --}}
 
 @extends('layouts.template.app')
 
-@section('title', 'Detail Pelaporan Validasi AK')
+@section('title', 'Detail Pelaporan Validasi Dokumen')
 
 @section('content')
 <div class="container-fluid py-3">
@@ -13,7 +13,7 @@
                 <a href="{{ route('pelaporan.index') }}">Dashboard Pelaporan</a>
             </li>
             <li class="breadcrumb-item">
-                <a href="{{ route('pelaporan.indexValidasiAK') }}">Pelaporan Validasi AK</a>
+                <a href="{{ route('pelaporan.indexDokumen') }}">Pelaporan Validasi Dokumen</a>
             </li>
             <li class="breadcrumb-item active">Detail</li>
         </ol>
@@ -23,7 +23,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h5 class="mb-1">
-                <i class="bi bi-clipboard-check"></i> Detail Pelaporan Validasi AK
+                <i class="bi bi-file-earmark-check"></i> Detail Pelaporan Validasi Dokumen
             </h5>
             @if($pengajuan)
             <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
@@ -31,7 +31,7 @@
             <small class="text-muted">{{ $assignment->asesmen->code }}</small>
             @endif
         </div>
-        <a href="{{ route('pelaporan.indexValidasiAK') }}" class="btn btn-secondary">
+        <a href="{{ route('pelaporan.indexDokumen') }}" class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i> Kembali
         </a>
     </div>
@@ -41,114 +41,75 @@
         <div class="col-lg-8 mb-4">
             <!-- Status Alert -->
             @php
-            $isReported = $pengajuan && !empty($pengajuan->tanggal_pelaporan_ak);
-            $canReport = $pengajuan && $pengajuan->canBeReported('ak');
+            $isReported = $pengajuan && !empty($pengajuan->tanggal_pelaporan_validasi_borang);
+            $canReport = $pengajuan && $pengajuan->canBeReported('dokumen');
             @endphp
 
             @if($isReported)
             <div class="alert alert-success alert-permanent mb-4">
                 <i class="bi bi-check-circle"></i>
-                <strong>Pelaporan Validasi AK telah selesai</strong>
+                <strong>Pelaporan Validasi Dokumen telah selesai</strong>
                 <br>
-                Dilaporkan pada {{ $pengajuan->tanggal_pelaporan_ak->format('d M Y H:i') }}
+                Dilaporkan pada {{ $pengajuan->tanggal_pelaporan_validasi_borang->format('d M Y H:i') }}
             </div>
             @elseif($canReport)
             <div class="alert alert-warning alert-permanent mb-4">
                 <i class="bi bi-hourglass-split"></i>
-                <strong>Menunggu Pelaporan Validasi AK</strong>
+                <strong>Menunggu Pelaporan Validasi Dokumen</strong>
                 <br>
-                Silakan upload dan finalisasi laporan validasi AK
+                Silakan upload dan finalisasi laporan validasi dokumen
             </div>
             @else
             <div class="alert alert-info alert-permanent mb-4">
                 <i class="bi bi-arrow-repeat"></i>
-                <strong>Proses Asesmen AK Sedang Berlangsung</strong>
+                <strong>Proses Validasi Dokumen Sedang Berlangsung</strong>
                 <br>
-                Pelaporan dapat dilakukan setelah proses asesmen selesai
+                Pelaporan dapat dilakukan setelah proses validasi selesai
             </div>
             @endif
 
             <!-- Informasi Asesmen -->
             <div class="card mb-4">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Informasi Asesmen Kecukupan (AK)</h5>
+                    <h5 class="mb-0">Informasi Validasi Dokumen</h5>
                 </div>
                 <div class="card-body">
                     <table class="table table-borderless">
-                        @if($pengajuan)
                         <tr>
-                            <th width="30%">Nomor Permohonan</th>
-                            <td>: {{ $pengajuan->nomor_pengajuan }}</td>
-                        </tr>
-                        <tr>
-                            <th>Program Studi</th>
-                            <td>: {{ $pengajuan->studyProgram->full_name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Universitas</th>
-                            <td>: {{ $pengajuan->studyProgram->university->name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Jenjang</th>
-                            <td>: {{ $pengajuan->studyProgram->degreeLevel->name ?? '-' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Jenis Permohonan</th>
-                            <td>: {{ $pengajuan->jenis_akreditasi_label }}</td>
-                        </tr>
-                        <tr>
-                            <th>Status Pelaporan</th>
-                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('ak','validator') !!}</td>
-                        </tr>
-                        @else
-                        <tr>
-                            <th width="30%">Kode Asesmen</th>
-                            <td>: {{ $assignment->asesmen->code }}</td>
-                        </tr>
-                        <tr>
-                            <th>Nama Asesmen</th>
-                            <td>: {{ $assignment->asesmen->name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Program Studi</th>
-                            <td>: {{ $assignment->asesmen->studyProgram->full_name ?? '-' }}</td>
-                        </tr>
-                        @endif
-                        <tr>
-                            <th>Validator</th>
-                            <td>: {{ Auth::user()->name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Tanggal Penugasan</th>
-                            <td>: {{ \App\Libraries\Date::tglIndo($assignment->created_at) }}</td>
-                        </tr>
-                        <tr>
-                            <th>Status Pekerjaan</th>
-                            <td>:
-                                @if($assignment->status_pekerjaan === 'submitted')
-                                <span class="badge bg-success">Selesai</span>
-                                @elseif($assignment->status_pekerjaan === 'in_progress')
-                                <span class="badge bg-warning">Sedang Dikerjakan</span>
-                                @else
-                                <span class="badge bg-secondary">{{ ucfirst($assignment->status_pekerjaan) }}</span>
-                                @endif
+                            <th style="width:40%">Tanggal Validasi Dokumen</th>
+                            <td>
+                                : {{ $pengajuan->tanggal_validasi_borang_selesai
+                                    ? $pengajuan->tanggal_validasi_borang_selesai->format('d M Y H:i')
+                                    : '-' }}
                             </td>
+                        </tr>
+                        <tr>
+                            <th>Tanggal Pelaporan Validasi Dokumen</th>
+                            <td>
+                                : {{ $pengajuan->tanggal_pelaporan_validasi_borang
+                                    ? $pengajuan->tanggal_pelaporan_validasi_borang->format('d M Y H:i')
+                                    : '-' }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Status Pelaporan Validasi Dokumen</th>
+                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('pelaporan_dokumen', 'upps','label_long_for') !!}</td>
                         </tr>
                     </table>
                 </div>
             </div>
 
-            <!-- File Laporan Validasi AK -->
+            <!-- File Laporan Validasi Dokumen -->
             <div class="card">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-file-pdf"></i> Laporan Penilaian Kecukupan LED Program Studi (LHK)
+                        <i class="bi bi-file-pdf"></i> Laporan Kesiapan LED Program Studi (LKLED)
                     </h5>
                 </div>
                 <div class="card-body">
                     @php
                     $dokumen = $assignment->asesmen->documents()
-                    ->where('type', 'laporan_validasi_ak')
+                    ->where('type', 'laporan_validasi_borang')
                     ->where('is_active', true)
                     ->latest('id')
                     ->first();
@@ -174,8 +135,8 @@
                             </div>
                         </div>
                         <div>
-                            <a href="{{ route('pelaporan.validasi-ak.download', $assignment->id) }}" class="btn btn-success btn-md">
-                                <i class="bi bi-download"></i> Download
+                            <a href="{{ route('pelaporan.borang.download', $assignment->id) }}" class="btn btn-success btn-md">
+                                <i class="bi bi-eye"></i> Lihat File
                             </a>
                         </div>
                     </div>
@@ -189,9 +150,9 @@
                     @else
                     <div class="text-center py-4">
                         <i class="bi bi-file-earmark-x" style="font-size: 48px; color: #ddd;"></i>
-                        <p class="text-muted mt-2 mb-0">Belum ada file laporan validasi AK</p>
+                        <p class="text-muted mt-2 mb-0">Belum ada file laporan validasi dokumen</p>
                         @if($canReport)
-                        <button type="button" class="btn btn-info mt-3 js-open-pelaporan" data-type="ak" data-assignment-id="{{ $assignment->id }}" data-nomor="{{ $pengajuan->nomor_pengajuan ?? $assignment->asesmen->code }}">
+                        <button type="button" class="btn btn-info mt-3 js-open-pelaporan" data-type="dokumen" data-assignment-id="{{ $assignment->id }}" data-nomor="{{ $pengajuan->nomor_pengajuan ?? $assignment->asesmen->code }}">
                             <i class="bi bi-upload"></i> Upload Laporan
                         </button>
                         @endif
@@ -203,65 +164,61 @@
 
         <!-- Sidebar -->
         <div class="col-lg-4">
-            <!-- Informasi Asesmen Kecukupan -->
-            @if($assignment->asesmen->asesmenKecukupan)
+            <!-- Informasi Assignment -->
             <div class="card mb-4">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-info-circle"></i> Info Asesmen Kecukupan
+                        <i class="bi bi-info-circle"></i> Info Penugasan
                     </h5>
                 </div>
                 <div class="card-body">
-                    @php
-                    $ak = $assignment->asesmen->asesmenKecukupan;
-                    @endphp
                     <table class="table table-sm table-borderless mb-0">
                         <tr>
-                            <th width="45%">Status</th>
+                            <th width="45%">Role</th>
+                            <td>: {{ $assignment->role_selected->name ?? 'Validator' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Status Penawaran</th>
                             <td>:
-                                @if($ak->status === 'completed')
-                                <span class="badge bg-success">Selesai</span>
-                                @elseif($ak->status === 'in_progress')
-                                <span class="badge bg-warning">Berlangsung</span>
+                                @if($assignment->status_penawaran === 'accepted')
+                                <span class="badge bg-success">Diterima</span>
                                 @else
-                                <span class="badge bg-secondary">{{ ucfirst($ak->status) }}</span>
+                                <span class="badge bg-secondary">{{ ucfirst($assignment->status_penawaran) }}</span>
                                 @endif
                             </td>
                         </tr>
-                        @if($ak->completed_at)
+                        @if($assignment->accepted_at)
                         <tr>
-                            <th>Diselesaikan</th>
-                            <td>: {{ \App\Libraries\Date::tglIndo($ak->completed_at) }}</td>
+                            <th>Diterima Pada</th>
+                            <td>: {{ \App\Libraries\Date::tglIndo($assignment->accepted_at) }}</td>
                         </tr>
                         @endif
-                        @if($ak->completed_by)
+                        @if($assignment->submitted_at)
                         <tr>
-                            <th>Diselesaikan Oleh</th>
-                            <td>: {{ $ak->completedBy->name ?? '-' }}</td>
+                            <th>Diserahkan Pada</th>
+                            <td>: {{ \App\Libraries\Date::tglIndo($assignment->submitted_at) }}</td>
                         </tr>
                         @endif
                     </table>
                 </div>
             </div>
-            @endif
 
             <!-- Riwayat Status -->
             @if($pengajuan)
             @php
             $filterStatuses = [
-            \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
-            \App\Models\PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
-            \App\Models\PengajuanAkreditasi::STATUS_AK_SELESAI,
-            \App\Models\PengajuanAkreditasi::STATUS_AK_DILAPORKAN,
+            \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
+            \App\Models\PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
+            \App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
             ];
 
             $logs = $pengajuan->statusLog
             ->whereIn('status_to', $filterStatuses)
-            ->sortByDesc('changed_at');
+            ->sortBy('changed_at');
             @endphp
 
             <div class="card">
-                <div class="card-header bg-secondary text-white">
+                <div class="card-header bg-info text-white">
                     <h5 class="mb-0">
                         <i class="bi bi-clock-history"></i> Riwayat Status
                     </h5>
@@ -273,18 +230,18 @@
                         <div class="timeline-item mb-3">
                             <div class="d-flex">
                                 <div class="flex-shrink-0">
-                                    <i class="bi bi-circle-fill text-secondary" style="font-size: 8px;"></i>
+                                    <i class="bi bi-circle-fill text-info" style="font-size: 8px;"></i>
                                 </div>
                                 <div class="flex-grow-1 ms-3">
                                     <strong>
-                                        {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['validator'] ?? $log->status_to }}
+                                        {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['upps'] ?? $log->status_to }}
                                     </strong>
                                     <br>
                                     <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
-                                    @if($log->keterangan)
+                                    {{-- @if($log->keterangan)
                                     <br>
                                     <small class="text-muted fst-italic">{{ $log->keterangan }}</small>
-                                    @endif
+                                    @endif --}}
                                 </div>
                             </div>
                         </div>

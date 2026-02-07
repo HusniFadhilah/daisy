@@ -57,6 +57,12 @@
         </ol>
     </nav>
 
+    <div class="alert alert-info alert-permanent">
+        <i class="bi bi-bell-fill"></i>
+        <strong>Pelaporan Validasi Dokumen</strong><br>
+        Pelaporan validasi dokumen dapat dilihat pada daftar berikut<br>
+    </div>
+
     @if($assignments->count() > 0)
 
     <!-- Cards Grid -->

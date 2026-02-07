@@ -16,7 +16,7 @@
                         <th width="20%">Validator</th>
                         <th width="15%">Status Upload</th>
                         <th width="15%">Status Pelaporan Dokumen</th>
-                        <th width="15%">Tanggal</th>
+                        <th width="15%">Tanggal Pelaporan</th>
                         <th width="10%" class="text-center">Aksi</th>
                     </tr>
                 </thead>

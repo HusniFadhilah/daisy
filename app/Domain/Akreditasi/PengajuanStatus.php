@@ -337,7 +337,7 @@ final class PengajuanStatus
                     'prodi' => 'Telah Dikirim',
                 ],
                 'label_long_for' => [
-                    'de'   => 'Pelaporan Validasi Dokumen Telah Dikirimkan',
+                    'de'   => 'Pelaporan Validasi Dokumen Telah Dikirim',
                     'upps' => 'Pelaporan Validasi Dokumen Telah Dikirim',
                     'prodi' => 'Pelaporan Validasi Dokumen Telah Dikirim',
                 ],

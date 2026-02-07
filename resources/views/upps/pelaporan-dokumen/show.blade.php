@@ -43,7 +43,7 @@
             @if($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED)
             <div class="alert alert-info alert-permanent">
                 <i class="bi bi-check-circle"></i>
-                <strong>Dokumen telah divalidasi</strong><br>
+                <strong>Pelaporan Validasi Dokumen</strong><br>
                 Menunggu pelaporan hasil validasi dokumen oleh LAMDEPILAR
             </div>
             @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN)
@@ -72,19 +72,7 @@
                 <div class="card-body">
                     <table class="table table-borderless">
                         <tr>
-                            <th width="30%">Nomor Permohonan</th>
-                            <td>: {{ $pengajuan->nomor_pengajuan }}</td>
-                        </tr>
-                        <tr>
-                            <th>Program Studi</th>
-                            <td>: {{ $pengajuan->studyProgram->full_name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Universitas</th>
-                            <td>: {{ $pengajuan->studyProgram->university->name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Tanggal Validasi Dokumen</th>
+                            <th style="width:40%">Tanggal Validasi Dokumen</th>
                             <td>
                                 : {{ $pengajuan->tanggal_validasi_borang_selesai
                                     ? $pengajuan->tanggal_validasi_borang_selesai->format('d M Y H:i')

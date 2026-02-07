@@ -55,6 +55,14 @@
         </ol>
     </nav>
 
+    <div class="alert alert-info alert-permanent">
+        <i class="bi bi-bell-fill"></i>
+        <strong>Validasi AK</strong><br>
+        Validasi AK dapat dilihat pada daftar berikut<br>
+    </div>
+
+    @if(count($needsValidation))
+
     <div class="card">
         <div class="card-header bg-white">
             <div class="d-flex justify-content-between align-items-center">
@@ -227,6 +235,20 @@
             <x-stat-card title="Selesai Divalidasi" :value="$stats['total_validated']" icon="check-circle" mode="white" description="" color="success" />
         </div>
     </div>
+
+    @else
+    <!-- Empty State -->
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-clipboard-x" style="font-size: 64px; opacity: 0.3; color: #0dcaf0;"></i>
+            <h5 class="mt-3 mb-2">Tidak Ada Validasi AK</h5>
+            <p class="text-muted mb-4">
+                Anda belum memiliki penugasan untuk melakukan validasi AK saat ini.<br>
+                Validasi AK akan muncul setelah proses penugasan asesor AK selesai.
+            </p>
+        </div>
+    </div>
+    @endif
 </div>
 
 <!-- Modal: Asesor yang Sudah Submit (tetap dipakai dari file lama) -->

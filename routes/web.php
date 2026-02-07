@@ -505,7 +505,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::put('/{id}', [\App\Http\Controllers\UPPS\SuratPermohonanController::class, 'update'])->name('.update');
             Route::get('/{id}', [\App\Http\Controllers\UPPS\SuratPermohonanController::class, 'show'])->name('.show');
             Route::get('/{id}/download', [\App\Http\Controllers\UPPS\SuratPermohonanController::class, 'download'])->name('.download');
-            Route::middleware('under.dev')->get('/download-template-surat/{degree_level}', [\App\Http\Controllers\UPPS\SuratPermohonanController::class, 'downloadTemplateSurat'])->name('.download-template-surat');
+            Route::get('/download-template-surat', [\App\Http\Controllers\UPPS\SuratPermohonanController::class, 'downloadTemplateSurat'])->name('.download-template-surat');
         });
 
         Route::prefix('penerimaan-permohonan')->name('.penerimaan-permohonan')->group(function () {

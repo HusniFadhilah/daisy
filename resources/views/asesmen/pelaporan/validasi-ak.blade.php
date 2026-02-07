@@ -65,6 +65,12 @@
         </ol>
     </nav>
 
+    <div class="alert alert-info alert-permanent">
+        <i class="bi bi-bell-fill"></i>
+        <strong>Pelaporan AK</strong><br>
+        Pelaporan AK dapat dilihat pada daftar berikut<br>
+    </div>
+
     @if($assignments->count() > 0)
 
     <!-- Table -->
@@ -246,16 +252,6 @@
                 Anda belum memiliki penugasan pelaporan AK saat ini.<br>
                 Pelaporan akan muncul setelah proses validasi AK selesai.
             </p>
-            <div class="d-flex gap-2 justify-content-center">
-                <a href="{{ route('pelaporan.index') }}" class="btn btn-outline-info">
-                    <i class="bi bi-arrow-left"></i> Dashboard Pelaporan
-                </a>
-                @if(Route::has('ak.validasi.index'))
-                <a href="{{ route('ak.validasi.index') }}" class="btn btn-info">
-                    <i class="bi bi-clipboard-check"></i> Validasi AK
-                </a>
-                @endif
-            </div>
         </div>
     </div>
     @endif

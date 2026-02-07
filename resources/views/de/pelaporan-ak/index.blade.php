@@ -36,7 +36,7 @@
 
     <!-- Filters -->
     <div class="card mb-3">
-        <div class="card-body" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="card-body" style="background: linear-gradient(135deg, #932136 0%, #870820 100%);">
             <div class="row g-3">
                 <div class="col-md-4">
                     <label class="form-label text-white">Universitas:</label>

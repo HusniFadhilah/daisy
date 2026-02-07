@@ -107,7 +107,7 @@
                 <div class="card-body">
                     <table class="table table-borderless">
                         <tr>
-                            <th>Tanggal Dokumen Diupload</th>
+                            <th>Tanggal Dokumen Dikirim</th>
                             <td>
                                 : {{ $pengajuan->tanggal_draft_borang
                                     ? $pengajuan->tanggal_draft_borang->format('d M Y H:i')
@@ -175,7 +175,6 @@
                                         @if($doc)
                                         <small class="text-muted text-wrap mt-1">
                                             {{ $doc->original_filename ?? '-' }}<br>
-                                            @if($doc->created_at) {{ $doc->created_at->format('d M Y H:i') }}<br> @endif
                                         </small>
 
                                         @if($doc->path_file || $doc->template_link)

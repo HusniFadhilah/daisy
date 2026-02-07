@@ -83,39 +83,13 @@
         </ol>
     </nav>
 
-    @if($assignments->count() > 0)
+    <div class="alert alert-info alert-permanent">
+        <i class="bi bi-bell-fill"></i>
+        <strong>Pelaporan AL</strong><br>
+        Pelaporan AL dapat dilihat pada daftar berikut<br>
+    </div>
 
-    <!-- Filter Section -->
-    {{-- <div class="filter-section">
-        <div class="row align-items-center">
-            <div class="col-md-4 mb-2 mb-md-0">
-                <div class="search-box">
-                    <i class="bi bi-search"></i>
-                    <input type="text" class="form-control" id="searchInput" placeholder="Cari program studi atau universitas...">
-                </div>
-            </div>
-            <div class="col-md-3 mb-2 mb-md-0">
-                <select class="form-select" id="filterStatus">
-                    <option value="">Semua Status</option>
-                    <option value="pending">Menunggu Pelaporan</option>
-                    <option value="in_progress">Sedang Diproses</option>
-                    <option value="completed">Selesai</option>
-                </select>
-            </div>
-            <div class="col-md-3 mb-2 mb-md-0">
-                <select class="form-select" id="sortBy">
-                    <option value="newest">Terbaru</option>
-                    <option value="oldest">Terlama</option>
-                    <option value="name">Nama A-Z</option>
-                </select>
-            </div>
-            <div class="col-md-2">
-                <button class="btn btn-outline-secondary w-100" id="resetFilter">
-                    <i class="bi bi-arrow-clockwise"></i> Reset
-                </button>
-            </div>
-        </div>
-    </div> --}}
+    @if($assignments->count() > 0)
 
     <!-- Table -->
     <div class="card">
@@ -296,17 +270,17 @@
                 Anda belum memiliki penugasan pelaporan AL saat ini.<br>
                 Pelaporan akan muncul setelah proses AL selesai.
             </p>
-            <div class="d-flex gap-2 justify-content-center">
+            {{-- <div class="d-flex gap-2 justify-content-center">
                 <a href="{{ route('pelaporan.index') }}" class="btn btn-outline-success">
-                    <i class="bi bi-arrow-left"></i> Dashboard Pelaporan
-                </a>
-                <a href="{{ route('penawaran') }}" class="btn btn-success">
-                    <i class="bi bi-envelope"></i> Lihat Penawaran
-                </a>
-            </div>
-        </div>
+            <i class="bi bi-arrow-left"></i> Dashboard Pelaporan
+            </a>
+            <a href="{{ route('penawaran') }}" class="btn btn-success">
+                <i class="bi bi-envelope"></i> Lihat Penawaran
+            </a>
+        </div> --}}
     </div>
-    @endif
+</div>
+@endif
 </div>
 @endsection
 
