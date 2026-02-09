@@ -10,7 +10,7 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item">
-                <a href="{{ route('pelaporan.index') }}">Dashboard Pelaporan</a>
+                <a href="{{ route('dashboard') }}">Dashboard</a>
             </li>
             <li class="breadcrumb-item">
                 <a href="{{ route('pelaporan.indexDokumen') }}">Pelaporan Validasi Dokumen</a>
@@ -68,39 +68,8 @@
             </div>
             @endif
 
-            <!-- Informasi Asesmen -->
-            <div class="card mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Informasi Validasi Dokumen</h5>
-                </div>
-                <div class="card-body">
-                    <table class="table table-borderless">
-                        <tr>
-                            <th style="width:40%">Tanggal Validasi Dokumen</th>
-                            <td>
-                                : {{ $pengajuan->tanggal_validasi_borang_selesai
-                                    ? $pengajuan->tanggal_validasi_borang_selesai->format('d M Y H:i')
-                                    : '-' }}
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Tanggal Pelaporan Validasi Dokumen</th>
-                            <td>
-                                : {{ $pengajuan->tanggal_pelaporan_validasi_borang
-                                    ? $pengajuan->tanggal_pelaporan_validasi_borang->format('d M Y H:i')
-                                    : '-' }}
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Status Pelaporan Validasi Dokumen</th>
-                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('pelaporan_dokumen', 'upps','label_long_for') !!}</td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-
             <!-- File Laporan Validasi Dokumen -->
-            <div class="card">
+            <div class="card mb-4">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0">
                         <i class="bi bi-file-pdf"></i> Laporan Kesiapan LED Program Studi (LKLED)
@@ -160,49 +129,41 @@
                     @endif
                 </div>
             </div>
+
+            <!-- Informasi Asesmen -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Informasi Pelaporan Validasi Dokumen</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th style="width:40%">Tanggal Validasi Dokumen</th>
+                            <td>
+                                : {{ $pengajuan->tanggal_validasi_borang_selesai
+                                    ? $pengajuan->tanggal_validasi_borang_selesai->format('d M Y H:i')
+                                    : '-' }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Tanggal Pelaporan Validasi Dokumen</th>
+                            <td>
+                                : {{ $pengajuan->tanggal_pelaporan_validasi_borang
+                                    ? $pengajuan->tanggal_pelaporan_validasi_borang->format('d M Y H:i')
+                                    : '-' }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Status Pelaporan Validasi Dokumen</th>
+                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('pelaporan_dokumen', 'upps','label_long_for') !!}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
         </div>
 
         <!-- Sidebar -->
         <div class="col-lg-4">
-            <!-- Informasi Assignment -->
-            <div class="card mb-4">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0">
-                        <i class="bi bi-info-circle"></i> Info Penugasan
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <table class="table table-sm table-borderless mb-0">
-                        <tr>
-                            <th width="45%">Role</th>
-                            <td>: {{ $assignment->role_selected->name ?? 'Validator' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Status Penawaran</th>
-                            <td>:
-                                @if($assignment->status_penawaran === 'accepted')
-                                <span class="badge bg-success">Diterima</span>
-                                @else
-                                <span class="badge bg-secondary">{{ ucfirst($assignment->status_penawaran) }}</span>
-                                @endif
-                            </td>
-                        </tr>
-                        @if($assignment->accepted_at)
-                        <tr>
-                            <th>Diterima Pada</th>
-                            <td>: {{ \App\Libraries\Date::tglIndo($assignment->accepted_at) }}</td>
-                        </tr>
-                        @endif
-                        @if($assignment->submitted_at)
-                        <tr>
-                            <th>Diserahkan Pada</th>
-                            <td>: {{ \App\Libraries\Date::tglIndo($assignment->submitted_at) }}</td>
-                        </tr>
-                        @endif
-                    </table>
-                </div>
-            </div>
-
             <!-- Riwayat Status -->
             @if($pengajuan)
             @php
@@ -218,7 +179,7 @@
             @endphp
 
             <div class="card">
-                <div class="card-header bg-info text-white">
+                <div class="card-header bg-secondary text-white">
                     <h5 class="mb-0">
                         <i class="bi bi-clock-history"></i> Riwayat Status
                     </h5>

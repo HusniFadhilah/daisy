@@ -241,7 +241,7 @@ final class PengajuanStatus
                     'prodi' => 'Dokumen Diterima',
                 ],
                 'label_long_for' => [
-                    'de'   => 'Dokumen Online Diterima (siap divalidasi)',
+                    'de'   => 'Dokumen Online Diterima',
                     'upps' => 'Dokumen Online Menunggu Validasi',
                     'prodi' => 'Dokumen Online Menunggu Validasi',
                 ],

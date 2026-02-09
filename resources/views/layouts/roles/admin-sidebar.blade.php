@@ -41,7 +41,7 @@ $menus = [
 'route' => 'de.penerimaan-dokumen',
 'match' => 'de.penerimaan-dokumen*',
 'icon' => 'bi-inbox',
-'label' => 'Penerimaan Draft Dokumen',
+'label' => 'Penerimaan Dokumen',
 ],
 [
 'no' => 7,

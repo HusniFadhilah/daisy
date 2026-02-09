@@ -12,11 +12,10 @@
                 <thead class="table-light">
                     <tr>
                         <th width="5%">#</th>
-                        <th width="15%">Permohonan Akreditasi</th>
-                        <th width="15%">Status</th>
+                        <th width="20%">Permohonan Akreditasi</th>
                         <th width="15%">Validator</th>
-                        <th width="15%">Status Pelaporan</th>
-                        <th width="15%">Tanggal Pelaporan</th>
+                        <th width="20%">Status Pelaporan AK</th>
+                        <th width="20%">Tanggal Pelaporan AK</th>
                         <th width="10%" class="text-center">Aksi</th>
                     </tr>
                 </thead>
@@ -100,11 +99,6 @@
                             {!! $pengajuan->getPermohonanAkreditasiSectionFor('de') !!}
                         </td>
                         <td>
-                            <span class="badge bg-{{ $statusConfig['class'] }}">
-                                <i class="bi bi-{{ $statusConfig['icon'] }}"></i> {{ $statusConfig['text'] }}
-                            </span>
-                        </td>
-                        <td>
                             @if($validators->count() > 0)
                             @foreach($validators as $validator)
                             <div class="mb-1">
@@ -118,23 +112,10 @@
                             @endif
                         </td>
                         <td>
-                            <span class="badge bg-{{ $pelaporanConfig['class'] }}">
-                                <i class="bi bi-{{ $pelaporanConfig['icon'] }}"></i> {{ $pelaporanConfig['text'] }}
-                            </span>
-                            @if($hasLaporan)
-                            <div class="mt-1">
-                                <small class="text-muted">
-                                    <i class="bi bi-file-earmark"></i> {{ $laporanDocs->count() }} file
-                                </small>
-                            </div>
-                            @endif
+                            {!! $pengajuan->getCustomBadgeLastStatus('pelaporan_ak', 'de', 'label_short_for') !!}
                         </td>
                         <td>
                             <small><strong>{{ $tanggalTampil }}</strong></small>
-                            @if($labelTanggal)
-                            <br>
-                            <small class="text-muted">{{ $labelTanggal }}</small>
-                            @endif
                         </td>
                         <td class="text-center">
                             <a href="{{ route('de.pelaporan-ak.show', $pengajuan->id) }}" class="btn btn-sm btn-primary" title="Lihat Detail">

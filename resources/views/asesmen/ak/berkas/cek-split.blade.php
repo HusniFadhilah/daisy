@@ -12,7 +12,7 @@
                     <h3 class="mb-1">
                         <i class="bi bi-people"></i> Cek Split Penilaian Antar Asesor
                     </h3>
-                    <p class="text-muted mb-0">{{ $asesmen->name }}</p>
+                    <p class="text-muted mb-0">{{ $asesmen->getName(false) }}</p>
                 </div>
                 <div class="d-flex gap-2">
                     <a href="{{ route('ak.berkas.export', ['idAsesmen'=>$asesmen->id,'mode'=>'split','color'=>false]) }}" class="btn btn-outline-success">

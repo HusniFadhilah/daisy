@@ -27,7 +27,27 @@ class ALDocumentController extends Controller
             ->orderBy('sort_order')->orderBy('id')
             ->get();
 
-        return view('asesmen.al.berkas.document', compact('asesmen', 'docs'));
+        // ✅ Cek apakah sudah ada yang upload
+        $firstUpload = \App\Models\AsesmenDocument::where('id_asesmen', $idAsesmen)
+            ->where('type', 'berita_acara_al')
+            ->with('uploader')
+            ->orderBy('uploaded_at', 'asc')
+            ->first();
+
+        // ✅ Cek apakah user saat ini adalah yang pertama kali upload
+        $currentUserId = Auth::id();
+        $isUploader = $firstUpload && $firstUpload->uploaded_by == $currentUserId;
+
+        // ✅ User bisa upload jika: belum ada upload ATAU dia adalah uploader pertama
+        $canUpload = !$firstUpload || $isUploader;
+
+        return view('asesmen.al.berkas.document', compact(
+            'asesmen',
+            'docs',
+            'firstUpload',
+            'canUpload',
+            'isUploader'
+        ));
     }
 
     // Function untuk get list files via JSON
@@ -90,6 +110,21 @@ class ALDocumentController extends Controller
         try {
             $this->assertAccessOrFail((int)$idAsesmen);
 
+            // ✅ CEK: Apakah sudah ada yang upload sebelumnya
+            $existingDoc = AsesmenDocument::where('id_asesmen', $idAsesmen)
+                ->where('type', 'berita_acara_al')
+                ->first();
+
+            $currentUserId = Auth::id();
+
+            // ✅ VALIDASI: Hanya uploader pertama yang bisa upload/update
+            if ($existingDoc && $existingDoc->uploaded_by != $currentUserId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Berita acara sudah diupload oleh asesor lain. Hanya asesor yang pertama mengupload yang dapat mengedit dokumen.',
+                ], 403);
+            }
+
             $request->validate([
                 'files' => 'required|array|min:1',
                 'files.*' => 'file|mimes:pdf|max:20480', // 20MB per file
@@ -106,17 +141,11 @@ class ALDocumentController extends Controller
             foreach ($request->file('files') as $file) {
                 $maxSort++;
 
-                // ✅ Format nama file yang lebih deskriptif
-                // Format: Hasil dan Berita Acara Asesmen Lapangan - ID 2 - 12 Jan 2026 - 14.30.45.pdf
                 $tanggal = now()->locale('id')->isoFormat('DD MMM YYYY');
                 $waktu = now()->format('H.i.s');
-                $filename = "Hasil dan Berita Acara Asesmen Lapangan_{$idAsesmen}_{$tanggal}.pdf";
+                $filename = "Hasil dan Berita Acara Asesmen Lapangan_{$idAsesmen}_{$tanggal}_{$waktu}.pdf";
 
-                // storeAs dengan disk 'public'
                 $storedPath = $file->storeAs($baseDir, $filename, 'public');
-
-                // Full path untuk verifikasi
-                $fullPath = storage_path('app/public/' . $storedPath);
 
                 $created[] = AsesmenDocument::create([
                     'id_asesmen' => $idAsesmen,
@@ -218,6 +247,15 @@ class ALDocumentController extends Controller
 
         $doc = AsesmenDocument::where('id_asesmen', $idAsesmen)->findOrFail($docId);
 
+        // ✅ VALIDASI: Hanya uploader yang bisa menghapus
+        $currentUserId = Auth::id();
+        if ($doc->uploaded_by != $currentUserId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki akses untuk menghapus dokumen ini. Hanya asesor yang mengupload yang dapat menghapus.',
+            ], 403);
+        }
+
         if (Storage::disk('public')->exists($doc->path)) {
             Storage::disk('public')->delete($doc->path);
         }
@@ -227,10 +265,6 @@ class ALDocumentController extends Controller
         return response()->json(['success' => true, 'message' => 'Dokumen dihapus']);
     }
 
-    /**
-     * Finalisasi Berita Acara AL
-     * Update status di: asesmens, asesmen_lapangan, asesmen_user_roles
-     */
     public function finalize($idAsesmen)
     {
         $this->assertAccessOrFail((int)$idAsesmen);
@@ -240,7 +274,6 @@ class ALDocumentController extends Controller
 
             $user = Auth::user();
 
-            // 1. Cek apakah ada dokumen berita acara
             $docsCount = AsesmenDocument::where('id_asesmen', $idAsesmen)
                 ->where('type', 'berita_acara_al')
                 ->where('is_active', true)
@@ -253,10 +286,8 @@ class ALDocumentController extends Controller
                 ], 422);
             }
 
-            // 2. Update Asesmen (main table)
             $asesmen = Asesmen::findOrFail($idAsesmen);
 
-            // 4. Update Asesmen User Roles (semua asesor AL)
             AsesmenUserRole::where('id_asesmen', $idAsesmen)
                 ->where('jenis_asesmen', 'al')
                 ->update([
@@ -265,12 +296,12 @@ class ALDocumentController extends Controller
                     'approved_by' => $user->id,
                 ]);
 
-            // 5. Update tanggal selesai AL di pengajuan_akreditasi (jika ada)
             $asesmen->asesmenLapangan->update([
                 'status' => 'finalized',
                 'finalized_at' => now(),
                 'finalized_by' => $user->id
             ]);
+
             if ($asesmen->pengajuan)
                 $asesmen->pengajuan->checkUpdateStatusAKAL('al', 'status_asesor_selesai');
 
@@ -292,9 +323,6 @@ class ALDocumentController extends Controller
         }
     }
 
-    /**
-     * Batalkan finalisasi (jika diperlukan)
-     */
     public function unfinalize($idAsesmen)
     {
         $this->assertAccessOrFail((int)$idAsesmen);
@@ -302,13 +330,11 @@ class ALDocumentController extends Controller
         try {
             DB::beginTransaction();
 
-            // 1. Update Asesmen (main table)
             $asesmen = Asesmen::findOrFail($idAsesmen);
             $asesmen->update([
                 'status' => 'active'
             ]);
 
-            // 2. Update Asesmen Lapangan
             $asesmenLapangan = AsesmenLapangan::where('id_asesmen', $idAsesmen)->first();
 
             if ($asesmenLapangan) {
@@ -319,7 +345,6 @@ class ALDocumentController extends Controller
                 ]);
             }
 
-            // 3. Update Asesmen User Roles
             AsesmenUserRole::where('id_asesmen', $idAsesmen)
                 ->where('jenis_asesmen', 'al')
                 ->update([
@@ -328,7 +353,6 @@ class ALDocumentController extends Controller
                     'approved_by' => null,
                 ]);
 
-            // 4. Update pengajuan_akreditasi (jika ada)
             if ($asesmen->id_pengajuan) {
                 PengajuanAkreditasi::where('id', $asesmen->id_pengajuan)
                     ->update([

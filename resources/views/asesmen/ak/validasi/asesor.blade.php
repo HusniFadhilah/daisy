@@ -940,7 +940,7 @@
                 statusValidasi === 'validated' ?
                 'Ya, Setujui' :
                 statusValidasi === 'validated_diff' ?
-                'Setujui dengan perbedaan nilai' :
+                'Setujui penilaian' :
                 'Ya, Minta Revisi';
             const confirmResult = await Swal.fire({
                 icon: 'question'

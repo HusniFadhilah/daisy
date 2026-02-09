@@ -12,6 +12,7 @@ return new class extends Migration
         Schema::create('lha_asesors', function (Blueprint $table) {
             $table->id();
             $table->foreignId('id_asesmen')->constrained('asesmens')->cascadeOnDelete();
+            // $table->foreignId('id_user')->constrained('users')->nullOnDelete();
 
             // Konten LHA
             $table->text('pendahuluan')->nullable();
@@ -28,6 +29,28 @@ return new class extends Migration
             $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('submitted_at')->nullable();
             $table->timestamp('finalized_at')->nullable();
+
+            $table->unsignedBigInteger('pendahuluan_updated_by')->nullable();
+            $table->timestamp('pendahuluan_updated_at')->nullable();
+
+            $table->unsignedBigInteger('proses_al_updated_by')->nullable();
+            $table->timestamp('proses_al_updated_at')->nullable();
+
+            $table->unsignedBigInteger('hasil_al_updated_by')->nullable();
+            $table->timestamp('hasil_al_updated_at')->nullable();
+
+            $table->unsignedBigInteger('rekomendasi_ps_updated_by')->nullable();
+            $table->timestamp('rekomendasi_ps_updated_at')->nullable();
+
+            $table->unsignedBigInteger('rekomendasi_lamdepilar_updated_by')->nullable();
+            $table->timestamp('rekomendasi_lamdepilar_updated_at')->nullable();
+
+            // Foreign keys
+            $table->foreign('pendahuluan_updated_by')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('proses_al_updated_by')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('hasil_al_updated_by')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('rekomendasi_ps_updated_by')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('rekomendasi_lamdepilar_updated_by')->references('id')->on('users')->onDelete('set null');
 
             $table->timestamps();
 

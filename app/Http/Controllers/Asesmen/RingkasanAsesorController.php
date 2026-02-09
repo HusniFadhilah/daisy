@@ -38,7 +38,34 @@ class RingkasanAsesorController extends Controller
             ->orderBy('sort_order')->orderBy('id')
             ->get();
 
-        return view('asesmen.al.berkas.ringkasan-asesor', compact('asesmen', 'docsConf'));
+        // ✅ Cek apakah sudah ada yang upload
+        $firstUpload = AsesmenDocument::where('id_asesmen', $idAsesmen)
+            ->where('type', self::TYPE_CONF)
+            ->with('uploader')
+            ->orderBy('uploaded_at', 'asc')
+            ->first();
+
+        // ✅ Cek apakah user saat ini adalah yang pertama kali upload
+        $currentUserId = Auth::id();
+        $isUploader = $firstUpload && $firstUpload->uploaded_by == $currentUserId;
+
+        // ✅ User bisa upload jika: belum ada upload ATAU dia adalah uploader pertama
+        $canUpload = !$firstUpload || $isUploader;
+
+        // ✅ Get team asesor
+        $asesorTeam = AsesmenUserRole::where('id_asesmen', $idAsesmen)
+            ->where('jenis_asesmen', 'al')
+            ->with('user')
+            ->get();
+
+        return view('asesmen.al.berkas.ringkasan-asesor', compact(
+            'asesmen',
+            'docsConf',
+            'firstUpload',
+            'canUpload',
+            'isUploader',
+            'asesorTeam'
+        ));
     }
 
     public function upload(Request $request, $idAsesmen, $type)
@@ -48,6 +75,21 @@ class RingkasanAsesorController extends Controller
 
             if (!in_array($type, [self::TYPE_CONF], true)) {
                 return response()->json(['success' => false, 'message' => 'Type tidak valid'], 422);
+            }
+
+            // ✅ CEK: Apakah sudah ada yang upload sebelumnya
+            $existingDoc = AsesmenDocument::where('id_asesmen', $idAsesmen)
+                ->where('type', $type)
+                ->first();
+
+            $currentUserId = Auth::id();
+
+            // ✅ VALIDASI: Hanya uploader pertama yang bisa upload/update
+            if ($existingDoc && $existingDoc->uploaded_by != $currentUserId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ringkasan hasil akreditasi sudah diupload oleh asesor lain. Hanya asesor yang pertama mengupload yang dapat menambah atau mengedit dokumen.',
+                ], 403);
             }
 
             $request->validate([
@@ -66,7 +108,8 @@ class RingkasanAsesorController extends Controller
 
             $file = $request->file('file');
             $tanggal = now()->locale('id')->isoFormat('DD MMM YYYY');
-            $filenameBase = "Laporan_Hasil_Akreditasi_Confidential_{$idAsesmen}_{$tanggal}.pdf";
+            $waktu = now()->format('H.i.s');
+            $filenameBase = "Laporan_Hasil_Akreditasi_Confidential_{$idAsesmen}_{$tanggal}_{$waktu}.pdf";
 
             $storedPath = $file->storeAs($baseDir, $filenameBase, 'public');
 
@@ -123,12 +166,21 @@ class RingkasanAsesorController extends Controller
 
         $doc = AsesmenDocument::where('id_asesmen', $idAsesmen)->findOrFail($docId);
 
+        // ✅ VALIDASI: Hanya uploader yang bisa menghapus
+        $currentUserId = Auth::id();
+        if ($doc->uploaded_by != $currentUserId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki akses untuk menghapus dokumen ini. Hanya asesor yang mengupload yang dapat menghapus.',
+            ], 403);
+        }
+
         if (Storage::disk('public')->exists($doc->path)) {
             Storage::disk('public')->delete($doc->path);
         }
 
         $doc->delete();
 
-        return response()->json(['success' => true, 'message' => 'Dokumen dihapus']);
+        return response()->json(['success' => true, 'message' => 'Dokumen berhasil dihapus']);
     }
 }

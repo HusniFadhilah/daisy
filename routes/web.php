@@ -183,8 +183,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
         Route::get('/berkas/{idAsesmen}/ringkasan-asesor', [\App\Http\Controllers\Asesmen\RingkasanAsesorController::class, 'page'])->name('berkas.ringkasan-asesor.page');
         Route::post('/berkas/{idAsesmen}/ringkasan-asesor/upload/{type}', [\App\Http\Controllers\Asesmen\RingkasanAsesorController::class, 'upload'])->name('berkas.ringkasan-asesor.upload');
-        Route::get('/berkas/{idAsesmen}/lha-asesor/{docId}/download', [\App\Http\Controllers\Asesmen\RingkasanAsesorController::class, 'download'])->name('berkas.lha-asesor.download');
-        Route::delete('/berkas/{idAsesmen}/lha-asesor/{docId}', [\App\Http\Controllers\Asesmen\RingkasanAsesorController::class, 'destroy'])->name('berkas.lha-asesor.delete');
+        Route::get('/berkas/{idAsesmen}/ringkasan-asesor/{docId}/download', [\App\Http\Controllers\Asesmen\RingkasanAsesorController::class, 'download'])->name('berkas.ringkasan-asesor.download');
+        Route::delete('/berkas/{idAsesmen}/ringkasan-asesor/{docId}', [\App\Http\Controllers\Asesmen\RingkasanAsesorController::class, 'destroy'])->name('berkas.ringkasan-asesor.delete');
     });
 
     // ========== PRODI ROUTES - Permohonan Akreditasi ==========

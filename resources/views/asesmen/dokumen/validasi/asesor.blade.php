@@ -13,7 +13,7 @@
                 <div class="flex-grow-1">
                     <h3 class="mb-1 text-wrap text-break">Validasi Laporan Evaluasi Diri</h3>
                     <p class="text-muted mb-0 text-wrap text-break">
-                        {{ $asesmen->name }}
+                        {{ $asesmen->getName(false) }}
                         <span class="badge bg-primary ms-2">
                             {{ strtoupper($jenisAsesmen) }}
                         </span>

@@ -1194,7 +1194,7 @@ class PengajuanAkreditasi extends Model
         if ($attribute == 'validasi_dokumen')
             $statuses = [self::STATUS_DRAFT_BORANG_DIKIRIM, self::STATUS_DRAFT_BORANG_DITERIMA, self::STATUS_BORANG_ONLINE_SELESAI, self::STATUS_BORANG_VALIDATION_PENDING, self::STATUS_BORANG_IN_VALIDATION, self::STATUS_BORANG_REVISION_REQUIRED, self::STATUS_BORANG_VALIDATED];
         if ($attribute == 'pelaporan_dokumen')
-            $statuses = [self::STATUS_VALIDASI_BORANG_DILAPORKAN, self::STATUS_PENGAJUAN_COMPLETED];
+            $statuses = [self::STATUS_VALIDASI_BORANG_DILAPORKAN];
         if ($attribute == 'penugasan_asesor_ak')
             $statuses = [self::STATUS_PENGAJUAN_COMPLETED, self::STATUS_ASESOR_AK_ASSIGNED];
         if ($attribute == 'validasi_ak')
@@ -1462,8 +1462,8 @@ class PengajuanAkreditasi extends Model
                     : $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Pelaporan Dokumen' : 'Menunggu Pelaporan'),
                 self::STATUS_VALIDASI_BORANG_DILAPORKAN =>
                 $badge('bg-success', $labelFor(self::STATUS_VALIDASI_BORANG_DILAPORKAN) ?? '-'),
-                self::STATUS_PENGAJUAN_COMPLETED =>
-                $badge('bg-success', $labelFor(self::STATUS_PENGAJUAN_COMPLETED) ?? '-'),
+                // self::STATUS_PENGAJUAN_COMPLETED =>
+                // $badge('bg-success', $labelFor(self::STATUS_PENGAJUAN_COMPLETED) ?? '-'),
 
                 default => $badge('bg-secondary', '-'),
             },

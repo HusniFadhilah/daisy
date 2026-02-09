@@ -106,29 +106,6 @@
                     </form>
                 </div>
             </div>
-
-            <!-- Info Card -->
-            <div class="card mt-3">
-                <div class="card-header bg-info text-white">
-                    <h6 class="mb-0">
-                        <i class="bi bi-info-circle"></i> Tentang Pelaksanaan AL
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <p class="mb-2 small">
-                        <i class="bi bi-1-circle text-primary"></i>
-                        <strong>Visitasi:</strong> Asesor melakukan visitasi lapangan
-                    </p>
-                    <p class="mb-2 small">
-                        <i class="bi bi-2-circle text-success"></i>
-                        <strong>Pelaporan:</strong> Validator membuat rekap berita acara
-                    </p>
-                    <p class="mb-0 small text-muted">
-                        <i class="bi bi-info-circle"></i>
-                        Monitor progress & tugaskan validator
-                    </p>
-                </div>
-            </div>
         </div>
 
         <!-- Table Content -->

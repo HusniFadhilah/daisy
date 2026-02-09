@@ -56,7 +56,7 @@
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start mb-3">
                                 <div class="flex-grow-1">
-                                    <h5 class="card-title mb-1 text-primary">{{ $asesmen->name }}</h5>
+                                    <h5 class="card-title mb-1 text-primary">{{ $asesmen->getName(false) }}</h5>
                                     <span class="badge bg-primary">{{ $penawaran->role->alias.' '.ucfirst($penawaran->jenis_asesmen) }}</span>
                                 </div>
 
@@ -120,7 +120,7 @@
                                 <button type="button" class="btn btn-success" onclick="acceptPenawaran('{{ $penawaran->token }}', '{{ $penawaran->role->alias }}')">
                                     <i class="bi bi-check-circle"></i> Terima Penawaran
                                 </button>
-                                <button type="button" class="btn btn-outline-danger" onclick="rejectPenawaran('{{ $penawaran->token }}', '{{ $asesmen->name }}')">
+                                <button type="button" class="btn btn-outline-danger" onclick="rejectPenawaran('{{ $penawaran->token }}', '{{ $asesmen->getName(false) }}')">
                                     <i class="bi bi-x-circle"></i> Tolak Penawaran
                                 </button>
                             </div>

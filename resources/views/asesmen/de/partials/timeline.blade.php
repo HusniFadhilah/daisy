@@ -36,7 +36,7 @@
             ],
             [
             'date' => $pengajuan->tanggal_draft_borang,
-            'label' => 'Penerimaan Draft Dokumen dari Prodi',
+            'label' => 'Penerimaan Dokumen dari Prodi',
             'icon' => 'bi-file-earmark-check',
             'step' => 5
             ],

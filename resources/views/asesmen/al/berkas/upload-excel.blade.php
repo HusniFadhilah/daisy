@@ -67,7 +67,7 @@
                     <h4 class="mb-1">
                         <i class="bi bi-upload"></i> Upload Penilaian AL
                     </h4>
-                    <p class="text-muted mb-0">{{ $asesmen->name }}</p>
+                    <p class="text-muted mb-0">{{ $asesmen->getName(false) }}</p>
                 </div>
                 <a href="{{ route('al.berkas') }}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left"></i> Kembali

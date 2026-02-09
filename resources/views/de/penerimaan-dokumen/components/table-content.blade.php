@@ -4,7 +4,7 @@
     <div class="card-header bg-light">
         <div class="d-flex justify-content-between align-items-center">
             <h5 class="mb-0">
-                <i class="bi bi-table"></i> Daftar Penerimaan Draft Dokumen
+                <i class="bi bi-table"></i> Daftar Penerimaan Dokumen
             </h5>
             <span class="badge bg-primary">Total: {{ $pengajuans->total() }}</span>
         </div>

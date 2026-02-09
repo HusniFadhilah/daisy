@@ -7,6 +7,7 @@ use App\Models\Asesmen;
 use App\Models\LhaAsesor;
 use Illuminate\Http\Request;
 use App\Models\AsesmenDocument;
+use App\Models\AsesmenUserRole;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -28,17 +29,23 @@ class LhaAsesorController extends Controller
 
         // Check access - asesor AL only
         $user = Auth::user();
-        $hasAccess = $asesmen->asesorAL()
+        $hasAccess = AsesmenUserRole::where('id_asesmen', $idAsesmen)
             ->where('id_user', $user->id)
-            ->where('status_penawaran', 'accepted')
+            ->where('jenis_asesmen', 'al')
             ->exists();
 
         if (!$hasAccess) {
             abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         }
 
-        // Get or create LHA
-        $lha = LhaAsesor::firstOrCreate(
+        // ✅ Get atau create 1 LHA untuk asesmen ini (tanpa id_user)
+        $lha = LhaAsesor::with([
+            'pendahuluanEditor',
+            'prosesAlEditor',
+            'hasilAlEditor',
+            'rekomendasiPsEditor',
+            'rekomendasiLamdepilarEditor',
+        ])->firstOrCreate(
             ['id_asesmen' => $idAsesmen],
             [
                 'created_by' => $user->id,
@@ -46,7 +53,17 @@ class LhaAsesorController extends Controller
             ]
         );
 
-        return view('asesmen.lha-asesor.index', compact('asesmen', 'lha'));
+        // ✅ Get team asesor
+        $asesorTeam = AsesmenUserRole::where('id_asesmen', $idAsesmen)
+            ->where('jenis_asesmen', 'al')
+            ->with('user')
+            ->get();
+
+        return view('asesmen.lha-asesor.index', compact(
+            'asesmen',
+            'lha',
+            'asesorTeam'
+        ));
     }
 
     /**
@@ -66,31 +83,81 @@ class LhaAsesorController extends Controller
         $user = Auth::user();
 
         // Check access
-        $hasAccess = $asesmen->asesorAL()
+        $hasAccess = AsesmenUserRole::where('id_asesmen', $idAsesmen)
             ->where('id_user', $user->id)
-            ->where('status_penawaran', 'accepted')
+            ->where('jenis_asesmen', 'al')
             ->exists();
 
         if (!$hasAccess) {
             return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
         }
 
-        $lha = LhaAsesor::updateOrCreate(
-            ['id_asesmen' => $idAsesmen],
-            [
-                'pendahuluan' => $request->pendahuluan,
-                'proses_al' => $request->proses_al,
-                'hasil_al' => $request->hasil_al,
-                'rekomendasi_ps' => $request->rekomendasi_ps,
-                'rekomendasi_lamdepilar' => $request->rekomendasi_lamdepilar,
-                'updated_by' => $user->id,
-            ]
-        );
+        // ✅ Update data dengan tracking per field
+        $lha = LhaAsesor::where('id_asesmen', $idAsesmen)->firstOrFail();
+
+        // Check if finalized
+        if ($lha->isFinalized()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'LHA sudah difinalisasi dan tidak dapat diubah'
+            ], 422);
+        }
+
+        $updateData = ['updated_by' => $user->id];
+
+        // ✅ Track per-field updates
+        if ($request->has('pendahuluan')) {
+            $updateData['pendahuluan'] = $request->pendahuluan;
+            $updateData['pendahuluan_updated_by'] = $user->id;
+            $updateData['pendahuluan_updated_at'] = now();
+        }
+
+        if ($request->has('proses_al')) {
+            $updateData['proses_al'] = $request->proses_al;
+            $updateData['proses_al_updated_by'] = $user->id;
+            $updateData['proses_al_updated_at'] = now();
+        }
+
+        if ($request->has('hasil_al')) {
+            $updateData['hasil_al'] = $request->hasil_al;
+            $updateData['hasil_al_updated_by'] = $user->id;
+            $updateData['hasil_al_updated_at'] = now();
+        }
+
+        if ($request->has('rekomendasi_ps')) {
+            $updateData['rekomendasi_ps'] = $request->rekomendasi_ps;
+            $updateData['rekomendasi_ps_updated_by'] = $user->id;
+            $updateData['rekomendasi_ps_updated_at'] = now();
+        }
+
+        if ($request->has('rekomendasi_lamdepilar')) {
+            $updateData['rekomendasi_lamdepilar'] = $request->rekomendasi_lamdepilar;
+            $updateData['rekomendasi_lamdepilar_updated_by'] = $user->id;
+            $updateData['rekomendasi_lamdepilar_updated_at'] = now();
+        }
+
+        $lha->update($updateData);
+
+        // Reload relations
+        $lha->load([
+            'pendahuluanEditor',
+            'prosesAlEditor',
+            'hasilAlEditor',
+            'rekomendasiPsEditor',
+            'rekomendasiLamdepilarEditor',
+        ]);
 
         return response()->json([
             'success' => true,
             'message' => 'LHA berhasil disimpan',
             'completion' => $lha->getCompletionPercentage(),
+            'field_editors' => [
+                'pendahuluan' => $lha->getFieldEditorInfo('pendahuluan'),
+                'proses_al' => $lha->getFieldEditorInfo('proses_al'),
+                'hasil_al' => $lha->getFieldEditorInfo('hasil_al'),
+                'rekomendasi_ps' => $lha->getFieldEditorInfo('rekomendasi_ps'),
+                'rekomendasi_lamdepilar' => $lha->getFieldEditorInfo('rekomendasi_lamdepilar'),
+            ],
         ]);
     }
 
@@ -103,20 +170,15 @@ class LhaAsesorController extends Controller
             'pengajuan.studyProgram.university',
             'pengajuan.studyProgram.degreeLevel',
             'asesmenLapangan',
-            'asesorAL.user',  // ✅ Tambahkan ini
-            'documents' => function ($q) {
-                $q->where('type', 'lha_asesor')
-                    ->where('is_active', true);
-            }
         ])->findOrFail($idAsesmen);
 
-        $lha = LHAAsesor::where('id_asesmen', $idAsesmen)->firstOrFail();
+        $lha = LhaAsesor::where('id_asesmen', $idAsesmen)->firstOrFail();
 
         // Check access
         $user = Auth::user();
-        $hasAccess = $asesmen->asesorAL()
+        $hasAccess = AsesmenUserRole::where('id_asesmen', $idAsesmen)
             ->where('id_user', $user->id)
-            ->where('status_penawaran', 'accepted')
+            ->where('jenis_asesmen', 'al')
             ->exists();
 
         if (!$hasAccess) {
@@ -138,20 +200,23 @@ class LhaAsesorController extends Controller
         $user = Auth::user();
 
         // Check access
-        $hasAccess = $asesmen->asesorAL()
+        $hasAccess = AsesmenUserRole::where('id_asesmen', $idAsesmen)
             ->where('id_user', $user->id)
-            ->where('status_penawaran', 'accepted')
+            ->where('jenis_asesmen', 'al')
             ->exists();
 
         if (!$hasAccess) {
-            return back()->with('error', 'Akses ditolak');
+            return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
         }
 
         $lha = LhaAsesor::where('id_asesmen', $idAsesmen)->firstOrFail();
 
-        // Validate completion
+        // ✅ Validate completion
         if ($lha->getCompletionPercentage() < 100) {
-            return back()->with('error', 'Harap lengkapi semua bagian LHA sebelum finalisasi.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Harap lengkapi semua bagian LHA sebelum finalisasi. Saat ini baru ' . $lha->getCompletionPercentage() . '% terisi.'
+            ], 422);
         }
 
         DB::beginTransaction();
@@ -195,13 +260,18 @@ class LhaAsesorController extends Controller
 
             DB::commit();
 
-            return redirect()
-                ->route('al.berkas.lha-asesor.page', $idAsesmen)
-                ->with('success', 'LHA berhasil difinalisasi dan PDF telah dibuat. Dokumen siap untuk ditinjau oleh Program Studi.');
+            return response()->json([
+                'success' => true,
+                'message' => 'LHA berhasil difinalisasi dan PDF telah dibuat.'
+            ]);
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Error finalizing LHA: ' . $e->getMessage());
-            return back()->with('error', 'Gagal finalisasi LHA: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal finalisasi LHA: ' . $e->getMessage()
+            ], 500);
         }
     }
 
@@ -214,9 +284,9 @@ class LhaAsesorController extends Controller
         $user = Auth::user();
 
         // Check access
-        $hasAccess = $asesmen->asesorAL()
+        $hasAccess = AsesmenUserRole::where('id_asesmen', $idAsesmen)
             ->where('id_user', $user->id)
-            ->where('status_penawaran', 'accepted')
+            ->where('jenis_asesmen', 'al')
             ->exists();
 
         if (!$hasAccess) {

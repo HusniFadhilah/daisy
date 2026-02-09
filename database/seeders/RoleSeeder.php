@@ -48,7 +48,7 @@ class RoleSeeder extends Seeder
             ],
             [
                 'name' => 'admin_prodi',
-                'alias' => 'Pemohon Akreditasi',
+                'alias' => 'PT/UPPS/PS',
             ],
             [
                 'name' => 'keuangan_lamdepilar',

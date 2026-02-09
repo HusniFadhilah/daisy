@@ -160,67 +160,67 @@
         <!-- Status & Timeline -->
         <div class="col-lg-4">
             <!-- Status Pelaporan -->
-            <div class="card mb-4">
+            {{-- <div class="card mb-4">
                 <div class="card-header bg-{{ $statusPelaporan['class'] }} text-white">
-                    <h5 class="mb-0">Status Pelaporan</h5>
-                </div>
-                <div class="card-body text-center py-4">
-                    <i class="bi bi-{{ $statusPelaporan['icon'] }}" style="font-size: 3rem; color: var(--bs-{{ $statusPelaporan['class'] }});"></i>
-                    <h5 class="mt-3 mb-1">{{ $statusPelaporan['label'] }}</h5>
-                    <small class="text-muted">{{ $statusPelaporan['description'] }}</small>
-                </div>
-            </div>
+            <h5 class="mb-0">Status Pelaporan</h5>
+        </div>
+        <div class="card-body text-center py-4">
+            <i class="bi bi-{{ $statusPelaporan['icon'] }}" style="font-size: 3rem; color: var(--bs-{{ $statusPelaporan['class'] }});"></i>
+            <h5 class="mt-3 mb-1">{{ $statusPelaporan['label'] }}</h5>
+            <small class="text-muted">{{ $statusPelaporan['description'] }}</small>
+        </div>
+    </div> --}}
 
-            @php
-            $filterStatuses = [
-            \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
-            \App\Models\PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
-            \App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
-            ];
+    @php
+    $filterStatuses = [
+    \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
+    \App\Models\PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
+    \App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
+    ];
 
-            $logs = $pengajuan->statusLog
-            ->whereIn('status_to', $filterStatuses)
-            ->sortBy('changed_at');
-            @endphp
+    $logs = $pengajuan->statusLog
+    ->whereIn('status_to', $filterStatuses)
+    ->sortBy('changed_at');
+    @endphp
 
-            <!-- Status Log -->
-            <div class="card">
-                <div class="card-header bg-secondary text-white">
-                    <h5 class="mb-0">
-                        <i class="bi bi-clock-history"></i> Riwayat Status
-                    </h5>
-                </div>
-                <div class="card-body" style="max-height: 600px; overflow-y: auto;">
-                    @if($logs->count() > 0)
-                    <div class="timeline">
-                        @foreach($logs as $log)
-                        <div class="timeline-item mb-3">
-                            <div class="d-flex">
-                                <div class="flex-shrink-0">
-                                    <i class="bi bi-circle-fill text-primary" style="font-size: 8px;"></i>
-                                </div>
-                                <div class="flex-grow-1 ms-3">
-                                    <strong>
-                                        {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['de'] ?? $log->status_to }}
-                                    </strong>
-                                    <br>
-                                    <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
+    <!-- Status Log -->
+    <div class="card">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0">
+                <i class="bi bi-clock-history"></i> Riwayat Status
+            </h5>
+        </div>
+        <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+            @if($logs->count() > 0)
+            <div class="timeline">
+                @foreach($logs as $log)
+                <div class="timeline-item mb-3">
+                    <div class="d-flex">
+                        <div class="flex-shrink-0">
+                            <i class="bi bi-circle-fill text-primary" style="font-size: 8px;"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <strong>
+                                {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['de'] ?? $log->status_to }}
+                            </strong>
+                            <br>
+                            <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
 
-                                    {{-- @if($log->keterangan)
+                            {{-- @if($log->keterangan)
                                     <br>
                                     <small class="text-muted fst-italic">{{ $log->keterangan }}</small>
-                                    @endif --}}
-                                </div>
-                            </div>
+                            @endif --}}
                         </div>
-                        @endforeach
                     </div>
-                    @else
-                    <p class="text-muted text-center mb-0">Belum ada riwayat</p>
-                    @endif
                 </div>
+                @endforeach
             </div>
+            @else
+            <p class="text-muted text-center mb-0">Belum ada riwayat</p>
+            @endif
         </div>
     </div>
+</div>
+</div>
 </div>
 @endsection

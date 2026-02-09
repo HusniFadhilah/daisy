@@ -14,9 +14,8 @@
                         <th width="5%">#</th>
                         <th width="20%">Permohonan Akreditasi</th>
                         <th width="20%">Validator</th>
-                        <th width="15%">Status Upload Laporan</th>
-                        <th width="15%">Status Pelaporan Dokumen</th>
-                        <th width="15%">Tanggal Pelaporan</th>
+                        <th width="20%">Status Pelaporan Dokumen</th>
+                        <th width="20%">Tanggal Pelaporan</th>
                         <th width="10%" class="text-center">Aksi</th>
                     </tr>
                 </thead>
@@ -105,11 +104,6 @@
                             @else
                             <span class="text-muted">-</span>
                             @endif
-                        </td>
-                        <td>
-                            <span class="badge bg-{{ $statusUpload['class'] }}">
-                                <i class="bi bi-{{ $statusUpload['icon'] }}"></i> {{ $statusUpload['text'] }}
-                            </span>
                         </td>
                         <td>
                             {!! $pengajuan->getCustomBadgeLastStatus('pelaporan_dokumen','de','label_short_for') !!}

@@ -84,10 +84,9 @@
                     <thead class="table-light">
                         <tr>
                             <th width="5%">#</th>
-                            <th width="30%">Permohonan Akreditasi</th>
-                            <th width="20%">Program Studi</th>
+                            <th width="20%">Permohonan Akreditasi</th>
                             <th width="20%">Status Pelaporan</th>
-                            <th width="15%">Tanggal Pelaporan</th>
+                            <th width="20%">Tanggal Pelaporan</th>
                             <th width="10%" class="text-center">Aksi</th>
                         </tr>
                     </thead>
@@ -122,20 +121,8 @@
                             <td>{{ $index + 1 }}</td>
 
                             <td>
-                                <p class="mb-0">{{ $judul }}</p>
-                                <small class="text-muted">{{ $nomor }}</small>
-                                <br>
-                                <small class="text-muted">
-                                    Dibuat pada:
-                                    {{ $assignment->created_at ? \App\Libraries\Date::tglIndo($assignment->created_at) : '-' }}
-                                </small>
+                                {!! $asesmen->getPermohonanAkreditasiSectionFor('validator') !!}
                             </td>
-
-                            <td>
-                                <span class="badge bg-light text-dark">{{ $asesmen->studyProgram->name ?? '-' }}</span>
-                                <small class="text-muted small d-block">{{ $asesmen->studyProgram->university->name ?? '-' }}</small>
-                            </td>
-
                             <td>
                                 @if($isReported)
                                 <span class="badge bg-success">

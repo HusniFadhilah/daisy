@@ -28,6 +28,29 @@
         display: none;
     }
 
+    .editor-info {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-top: 0.5rem;
+        padding: 0.5rem;
+        background: #f8f9fa;
+        border-left: 3px solid #0d6efd;
+        border-radius: 4px;
+    }
+
+    .editor-info .editor-name {
+        font-weight: 600;
+        color: #0d6efd;
+    }
+
+    .editor-info.me {
+        border-left-color: #198754;
+    }
+
+    .editor-info.me .editor-name {
+        color: #198754;
+    }
+
 </style>
 @endpush
 
@@ -69,15 +92,30 @@
             @if($lha->isFinalized())
             <div class="alert alert-success alert-permanent mb-4">
                 <i class="bi bi-check-circle"></i>
-                <strong>Pengisian Laporan Hasil Asesmen Lapangan (LHA)</strong><br>
+                <strong>LHA Telah Difinalisasi</strong><br>
                 LHA telah difinalisasi pada {{ $lha->finalized_at->format('d M Y H:i') }}.
                 Dokumen telah dikirim ke Program Studi untuk peninjauan.
             </div>
-            @elseif($lha->isDraft())
+            @else
             <div class="alert alert-info alert-permanent mb-4">
-                <i class="bi bi-info-circle"></i>
-                <strong>Pengisian Laporan Hasil Asesmen Lapangan (LHA)</strong><br>
-                Anda dapat melakukan pengisian LHA dan menyimpan draftnya. Kemudian, mohon segera lakukan finalisasi LHA setelah semua bagian terisi lengkap.
+                <div class="d-flex align-items-start">
+                    <div class="flex-shrink-0">
+                        <i class="bi bi-info-circle fs-4 me-3"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h6 class="mb-2">
+                            <i class="bi bi-people"></i> Pengisian Kolaboratif
+                        </h6>
+                        <p class="mb-1">
+                            LHA dapat <strong>diedit bersama-sama</strong> oleh semua asesor. Perubahan akan tersimpan otomatis.
+                        </p>
+                        <ul class="mb-0 small ps-3">
+                            <li>Setiap bagian menampilkan siapa yang terakhir mengedit</li>
+                            <li>Semua asesor dapat mengedit bagian yang sama</li>
+                            <li>Pastikan koordinasi antar tim untuk menghindari perbedaan</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
             @endif
 
@@ -102,7 +140,7 @@
             <form id="lhaForm">
                 @csrf
 
-                <!-- 1. Pendahuluan -->
+                {{-- SECTION 1: PENDAHULUAN --}}
                 <div class="card section-card mb-4">
                     <div class="card-header bg-primary text-white">
                         <h6 class="mb-0">
@@ -110,14 +148,25 @@
                         </h6>
                     </div>
                     <div class="card-body">
-                        <p class="text-muted small mb-2">
-                            Berikan pengantar/pendahuluan mengenai pelaksanaan AL
-                        </p>
-                        <textarea name="pendahuluan" class="form-control lha-field" rows="6" placeholder="Tuliskan pendahuluan mengenai pelaksanaan asesmen lapangan..." {{ $lha->isFinalized() ? 'readonly' : '' }}>{{ old('pendahuluan', $lha->pendahuluan) }}</textarea>
+                        <textarea name="pendahuluan" class="form-control lha-field" rows="6" placeholder="Tuliskan pendahuluan mengenai pelaksanaan asesmen lapangan..." {{ $lha->isFinalized() ? 'readonly' : '' }} data-field="pendahuluan">{{ old('pendahuluan', $lha->pendahuluan) }}</textarea>
+
+                        @if($lha->pendahuluan_updated_by)
+                        <div class="editor-info {{ $lha->pendahuluan_updated_by == Auth::id() ? 'me' : '' }}" id="editor-info-pendahuluan">
+                            <i class="bi bi-pencil-square"></i>
+                            Terakhir diedit oleh:
+                            <span class="editor-name">
+                                {{ $lha->pendahuluanEditor->name ?? 'Asesor' }}
+                                @if($lha->pendahuluan_updated_by == Auth::id())
+                                (Anda)
+                                @endif
+                            </span>
+                            pada {{ $lha->pendahuluan_updated_at->diffForHumans() }}
+                        </div>
+                        @endif
                     </div>
                 </div>
 
-                <!-- 2. Proses AL -->
+                {{-- SECTION 2: PROSES AL --}}
                 <div class="card section-card mb-4">
                     <div class="card-header bg-primary text-white">
                         <h6 class="mb-0">
@@ -125,14 +174,25 @@
                         </h6>
                     </div>
                     <div class="card-body">
-                        <p class="text-muted small mb-2">
-                            Mohon berikan penjelasan mengenai proses AL yang dilaksanakan
-                        </p>
-                        <textarea name="proses_al" class="form-control lha-field" rows="8" placeholder="Jelaskan proses pelaksanaan asesmen lapangan secara detail..." {{ $lha->isFinalized() ? 'readonly' : '' }}>{{ old('proses_al', $lha->proses_al) }}</textarea>
+                        <textarea name="proses_al" class="form-control lha-field" rows="8" placeholder="Jelaskan proses pelaksanaan asesmen lapangan secara detail..." {{ $lha->isFinalized() ? 'readonly' : '' }} data-field="proses_al">{{ old('proses_al', $lha->proses_al) }}</textarea>
+
+                        @if($lha->proses_al_updated_by)
+                        <div class="editor-info {{ $lha->proses_al_updated_by == Auth::id() ? 'me' : '' }}" id="editor-info-proses_al">
+                            <i class="bi bi-pencil-square"></i>
+                            Terakhir diedit oleh:
+                            <span class="editor-name">
+                                {{ $lha->prosesAlEditor->name ?? 'Asesor' }}
+                                @if($lha->proses_al_updated_by == Auth::id())
+                                (Anda)
+                                @endif
+                            </span>
+                            pada {{ $lha->proses_al_updated_at->diffForHumans() }}
+                        </div>
+                        @endif
                     </div>
                 </div>
 
-                <!-- 3. Hasil AL -->
+                {{-- SECTION 3: HASIL AL --}}
                 <div class="card section-card mb-4">
                     <div class="card-header bg-primary text-white">
                         <h6 class="mb-0">
@@ -140,14 +200,25 @@
                         </h6>
                     </div>
                     <div class="card-body">
-                        <p class="text-muted small mb-2">
-                            Berikan penjelasan mengenai hasil akreditasi yang dilaksanakan
-                        </p>
-                        <textarea name="hasil_al" class="form-control lha-field" rows="10" placeholder="Tuliskan hasil dan temuan dari asesmen lapangan..." {{ $lha->isFinalized() ? 'readonly' : '' }}>{{ old('hasil_al', $lha->hasil_al) }}</textarea>
+                        <textarea name="hasil_al" class="form-control lha-field" rows="10" placeholder="Tuliskan hasil dan temuan dari asesmen lapangan..." {{ $lha->isFinalized() ? 'readonly' : '' }} data-field="hasil_al">{{ old('hasil_al', $lha->hasil_al) }}</textarea>
+
+                        @if($lha->hasil_al_updated_by)
+                        <div class="editor-info {{ $lha->hasil_al_updated_by == Auth::id() ? 'me' : '' }}" id="editor-info-hasil_al">
+                            <i class="bi bi-pencil-square"></i>
+                            Terakhir diedit oleh:
+                            <span class="editor-name">
+                                {{ $lha->hasilAlEditor->name ?? 'Asesor' }}
+                                @if($lha->hasil_al_updated_by == Auth::id())
+                                (Anda)
+                                @endif
+                            </span>
+                            pada {{ $lha->hasil_al_updated_at->diffForHumans() }}
+                        </div>
+                        @endif
                     </div>
                 </div>
 
-                <!-- 4. Rekomendasi PS -->
+                {{-- SECTION 4: REKOMENDASI PS --}}
                 <div class="card section-card mb-4">
                     <div class="card-header bg-success text-white">
                         <h6 class="mb-0">
@@ -155,14 +226,25 @@
                         </h6>
                     </div>
                     <div class="card-body">
-                        <p class="text-muted small mb-2">
-                            Berikan rekomendasi untuk program studi
-                        </p>
-                        <textarea name="rekomendasi_ps" class="form-control lha-field" rows="8" placeholder="Tuliskan rekomendasi untuk perbaikan dan pengembangan program studi..." {{ $lha->isFinalized() ? 'readonly' : '' }}>{{ old('rekomendasi_ps', $lha->rekomendasi_ps) }}</textarea>
+                        <textarea name="rekomendasi_ps" class="form-control lha-field" rows="8" placeholder="Tuliskan rekomendasi untuk perbaikan dan pengembangan program studi..." {{ $lha->isFinalized() ? 'readonly' : '' }} data-field="rekomendasi_ps">{{ old('rekomendasi_ps', $lha->rekomendasi_ps) }}</textarea>
+
+                        @if($lha->rekomendasi_ps_updated_by)
+                        <div class="editor-info {{ $lha->rekomendasi_ps_updated_by == Auth::id() ? 'me' : '' }}" id="editor-info-rekomendasi_ps">
+                            <i class="bi bi-pencil-square"></i>
+                            Terakhir diedit oleh:
+                            <span class="editor-name">
+                                {{ $lha->rekomendasiPsEditor->name ?? 'Asesor' }}
+                                @if($lha->rekomendasi_ps_updated_by == Auth::id())
+                                (Anda)
+                                @endif
+                            </span>
+                            pada {{ $lha->rekomendasi_ps_updated_at->diffForHumans() }}
+                        </div>
+                        @endif
                     </div>
                 </div>
 
-                <!-- 5. Rekomendasi LAMDEPILAR -->
+                {{-- SECTION 5: REKOMENDASI LAMDEPILAR --}}
                 <div class="card section-card mb-4">
                     <div class="card-header bg-success text-white">
                         <h6 class="mb-0">
@@ -170,10 +252,21 @@
                         </h6>
                     </div>
                     <div class="card-body">
-                        <p class="text-muted small mb-2">
-                            Berikan rekomendasi untuk LAMDEPILAR
-                        </p>
-                        <textarea name="rekomendasi_lamdepilar" class="form-control lha-field" rows="6" placeholder="Tuliskan rekomendasi untuk LAMDEPILAR..." {{ $lha->isFinalized() ? 'readonly' : '' }}>{{ old('rekomendasi_lamdepilar', $lha->rekomendasi_lamdepilar) }}</textarea>
+                        <textarea name="rekomendasi_lamdepilar" class="form-control lha-field" rows="6" placeholder="Tuliskan rekomendasi untuk LAMDEPILAR..." {{ $lha->isFinalized() ? 'readonly' : '' }} data-field="rekomendasi_lamdepilar">{{ old('rekomendasi_lamdepilar', $lha->rekomendasi_lamdepilar) }}</textarea>
+
+                        @if($lha->rekomendasi_lamdepilar_updated_by)
+                        <div class="editor-info {{ $lha->rekomendasi_lamdepilar_updated_by == Auth::id() ? 'me' : '' }}" id="editor-info-rekomendasi_lamdepilar">
+                            <i class="bi bi-pencil-square"></i>
+                            Terakhir diedit oleh:
+                            <span class="editor-name">
+                                {{ $lha->rekomendasiLamdepilarEditor->name ?? 'Asesor' }}
+                                @if($lha->rekomendasi_lamdepilar_updated_by == Auth::id())
+                                (Anda)
+                                @endif
+                            </span>
+                            pada {{ $lha->rekomendasi_lamdepilar_updated_at->diffForHumans() }}
+                        </div>
+                        @endif
                     </div>
                 </div>
 
@@ -251,6 +344,32 @@
                 </div>
             </div>
 
+            <!-- Tim Asesor -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0">
+                        <i class="bi bi-people"></i> Tim Asesor AL
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless table-sm mb-0">
+                        @foreach($asesorTeam as $asesor)
+                        <tr>
+                            <td width="40">
+                                <i class="bi bi-person-circle"></i>
+                            </td>
+                            <td>
+                                {{ $asesor->user->name ?? '-' }}
+                                @if($asesor->id_user == Auth::id())
+                                <span class="badge bg-success ms-1">Anda</span>
+                                @endif
+                            </td>
+                        </tr>
+                        @endforeach
+                    </table>
+                </div>
+            </div>
+
             <!-- Panduan -->
             <div class="card border-primary">
                 <div class="card-header bg-primary text-white">
@@ -259,12 +378,14 @@
                     </h6>
                 </div>
                 <div class="card-body">
-                    <h6 class="fw-bold mb-2">Tips Pengisian:</h6>
+                    <h6 class="fw-bold mb-2">Tips Pengisian Kolaboratif:</h6>
                     <ol class="small mb-3 ps-3">
-                        <li>Isi setiap bagian dengan lengkap dan detail</li>
-                        <li>Perubahan akan disimpan otomatis</li>
-                        <li>Preview PDF dapat dilakukan sebelum finalisasi LHA</li>
-                        <li>Setelah finalisasi, LHA tidak dapat diubah, kecuali ketika ada permintaan revisi dari prodi</li>
+                        <li>Semua asesor dapat mengedit bagian yang sama</li>
+                        <li>Koordinasikan dengan tim untuk menghindari perbedaan</li>
+                        <li>Perubahan akan disimpan otomatis setelah 2 detik</li>
+                        <li>Informasi editor terakhir ditampilkan di setiap bagian</li>
+                        <li>Preview PDF dapat dilakukan kapan saja</li>
+                        <li>Finalisasi hanya bisa dilakukan jika semua bagian sudah terisi</li>
                     </ol>
 
                     <hr>
@@ -292,6 +413,7 @@ $lhaIsFinalized = $lha->isFinalized();
 @endphp
 <script>
     let autoSaveTimeout;
+    const currentUserId = "{{ Auth::id() }}";
 
     $(document).ready(function() {
         @if(!$lhaIsFinalized)
@@ -321,10 +443,50 @@ $lhaIsFinalized = $lha->isFinalized();
                 if (response.success) {
                     showAutoSaveIndicator();
                     updateProgress(response.completion);
+
+                    // ✅ Update editor info untuk setiap field
+                    if (response.field_editors) {
+                        updateEditorInfo(response.field_editors);
+                    }
                 }
             }
             , error: function(xhr) {
                 console.error('Auto-save failed:', xhr.responseText);
+            }
+        });
+    }
+
+    function updateEditorInfo(fieldEditors) {
+        // Update setiap field editor info
+        Object.keys(fieldEditors).forEach(function(field) {
+            const editorInfo = fieldEditors[field];
+            const infoDiv = $('#editor-info-' + field);
+
+            if (editorInfo && editorInfo.editor) {
+                const isMe = editorInfo.editor.id === currentUserId;
+                const editorName = editorInfo.editor.name + (isMe ? ' (Anda)' : '');
+                const timeAgo = moment(editorInfo.time).fromNow();
+
+                const html = `
+                    <i class="bi bi-pencil-square"></i>
+                    Terakhir diedit oleh:
+                    <span class="editor-name">${editorName}</span>
+                    pada ${timeAgo}
+                `;
+
+                if (infoDiv.length) {
+                    infoDiv.html(html);
+                    infoDiv.toggleClass('me', isMe);
+                } else {
+                    // Create new editor info div
+                    const newDiv = $('<div>')
+                        .addClass('editor-info')
+                        .addClass(isMe ? 'me' : '')
+                        .attr('id', 'editor-info-' + field)
+                        .html(html);
+
+                    $('textarea[name="' + field + '"]').after(newDiv);
+                }
             }
         });
     }
@@ -393,14 +555,31 @@ $lhaIsFinalized = $lha->isFinalized();
                 _token: '{{ csrf_token() }}'
             }
             , success: function(response) {
-                window.location.reload();
+                if (response.success) {
+                    alert(response.message);
+                    window.location.reload();
+                } else {
+                    alert(response.message || 'Gagal finalisasi');
+                    $('#btnFinalize').prop('disabled', false).html('<i class="bi bi-check-circle"></i> Finalisasi LHA');
+                }
             }
             , error: function(xhr) {
-                alert('Gagal finalisasi LHA: ' + (xhr.responseJSON ? xhr.responseJSON.message : 'Terjadi kesalahan'));
+                const errorMsg = xhr.responseJSON && xhr.responseJSON.message ?
+                    xhr.responseJSON.message :
+                    'Terjadi kesalahan';
+                alert('Gagal finalisasi LHA: ' + errorMsg);
                 $('#btnFinalize').prop('disabled', false).html('<i class="bi bi-check-circle"></i> Finalisasi LHA');
             }
         });
     }
+
+</script>
+
+{{-- Moment.js for time formatting --}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/locale/id.min.js"></script>
+<script>
+    moment.locale('id');
 
 </script>
 @endpush

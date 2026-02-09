@@ -28,6 +28,39 @@
         </div>
     </div>
 
+    @php
+    $allowed = [
+    \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
+    \App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
+    \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,
+    \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
+    \App\Models\PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
+    ]; // ini contoh, bisa dinamis dari config/db/request
+
+    $log = $pengajuan->latestRelevantStatusLog($allowed);
+    @endphp
+    <!-- Status Alert -->
+    @if(in_array($log?->status_to,[\App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,\App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION]))
+    <div class="alert alert-info alert-permanent">
+        <i class="bi bi-check-circle"></i>
+        <strong>Dokumen sedang divalidasi</strong><br>
+        Validasi dokumen sedang dalam proses
+    </div>
+    @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED)
+    <div class="alert alert-success alert-permanent">
+        <i class="bi bi-check-circle"></i>
+        <strong>Dokumen telah divalidasi</strong><br>
+        Validasi dokumen telah dilakukan dan dinyatakan lengkap dan sesuai.
+    </div>
+    @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED)
+    <div class="alert alert-warning alert-permanent">
+        <i class="bi bi-exclamation-triangle"></i>
+        <strong>Dokumen memerlukan revisi</strong>
+        <br>
+        Validator menyatakan dokumen memerlukan revisi. <br> Program studi telah menerima poin revisinya
+    </div>
+    @endif
+
     <!-- Progress Summary -->
     @if($progress)
     <div class="row mb-4">
@@ -96,8 +129,7 @@
                                 <strong>{{ $pengajuan->studyProgram->name }}</strong>
                                 <br>
                                 <small class="text-muted">
-                                    {{ $pengajuan->studyProgram->university->name }} -
-                                    {{ $pengajuan->studyProgram->degreeLevel->name }}
+                                    {{ $pengajuan->studyProgram->university->name }}
                                 </small>
                             </td>
                         </tr>

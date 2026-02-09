@@ -60,11 +60,12 @@
             <div class="alert alert-success alert-permanent">
                 <i class="bi bi-person-check"></i>
                 <strong>Penugasan Asesor AK</strong><br>
-                Sekretariat telah menugaskan asesor untuk melakukan penilaian AK
+                Asesor AK telah ditugaskan untuk melakukan penilaian
             </div>
             @endif
 
             <!-- Form Penugasan -->
+            @if(!$requirementsStatus['met'])
             <div class="card mb-4">
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">
@@ -155,6 +156,7 @@
                     </form>
                 </div>
             </div>
+            @endif
 
             <!-- Daftar Penugasan -->
             <div class="card">
@@ -382,7 +384,7 @@
             </div>
 
             <!-- Jadwal AK -->
-            @if($pengajuan->asesmen?->asesmenKecukupan)
+            {{-- @if($pengajuan->asesmen?->asesmenKecukupan)
             <div class="card">
                 <div class="card-header bg-secondary text-white">
                     <h5 class="mb-0">
@@ -396,49 +398,49 @@
                             <td>
                                 : @if($pengajuan->asesmen->asesmenKecukupan->tanggal_mulai)
                                 {{ \Carbon\Carbon::parse($pengajuan->asesmen->asesmenKecukupan->tanggal_mulai)->format('d M Y') }}
-                                @else
-                                <span class="text-muted">-</span>
-                                @endif
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Estimasi Selesai</th>
-                            <td>
-                                : @if($pengajuan->asesmen->asesmenKecukupan->tanggal_selesai)
-                                {{ \Carbon\Carbon::parse($pengajuan->asesmen->asesmenKecukupan->tanggal_selesai)->format('d M Y') }}
-                                @else
-                                <span class="text-muted">-</span>
-                                @endif
-                            </td>
-                        </tr>
-                        @if($pengajuan->asesmen->asesmenKecukupan->tanggal_mulai && $pengajuan->asesmen->asesmenKecukupan->tanggal_selesai)
-                        <tr>
-                            <th>Durasi</th>
-                            <td>
-                                : @php
-                                $start = \Carbon\Carbon::parse($pengajuan->asesmen->asesmenKecukupan->tanggal_mulai);
-                                $end = \Carbon\Carbon::parse($pengajuan->asesmen->asesmenKecukupan->tanggal_selesai);
-                                $days = $start->diffInDays($end);
-                                @endphp
-                                <span class="badge bg-primary">{{ $days }} hari</span>
-                            </td>
-                        </tr>
-                        @endif
-                    </table>
-
-                    @if($pengajuan->asesmen->asesmenKecukupan->catatan)
-                    <div class="mt-3 p-2 bg-light rounded">
-                        <small class="text-muted">
-                            <i class="bi bi-sticky"></i> <strong>Catatan:</strong><br>
-                            {{ $pengajuan->asesmen->asesmenKecukupan->catatan }}
-                        </small>
-                    </div>
+            @else
+            <span class="text-muted">-</span>
+            @endif
+            </td>
+            </tr>
+            <tr>
+                <th>Estimasi Selesai</th>
+                <td>
+                    : @if($pengajuan->asesmen->asesmenKecukupan->tanggal_selesai)
+                    {{ \Carbon\Carbon::parse($pengajuan->asesmen->asesmenKecukupan->tanggal_selesai)->format('d M Y') }}
+                    @else
+                    <span class="text-muted">-</span>
                     @endif
-                </div>
+                </td>
+            </tr>
+            @if($pengajuan->asesmen->asesmenKecukupan->tanggal_mulai && $pengajuan->asesmen->asesmenKecukupan->tanggal_selesai)
+            <tr>
+                <th>Durasi</th>
+                <td>
+                    : @php
+                    $start = \Carbon\Carbon::parse($pengajuan->asesmen->asesmenKecukupan->tanggal_mulai);
+                    $end = \Carbon\Carbon::parse($pengajuan->asesmen->asesmenKecukupan->tanggal_selesai);
+                    $days = $start->diffInDays($end);
+                    @endphp
+                    <span class="badge bg-primary">{{ $days }} hari</span>
+                </td>
+            </tr>
+            @endif
+            </table>
+
+            @if($pengajuan->asesmen->asesmenKecukupan->catatan)
+            <div class="mt-3 p-2 bg-light rounded">
+                <small class="text-muted">
+                    <i class="bi bi-sticky"></i> <strong>Catatan:</strong><br>
+                    {{ $pengajuan->asesmen->asesmenKecukupan->catatan }}
+                </small>
             </div>
             @endif
         </div>
     </div>
+    @endif --}}
+</div>
+</div>
 </div>
 
 <!-- Modal: Mark Ready for AK -->

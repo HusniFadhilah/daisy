@@ -9,7 +9,7 @@
     <span class="menu-icon">🖊️</span>
     <span>Validasi Dokumen</span>
 </a>
-<a href="{{ route('pelaporan.indexDokumen') }}" class="nav-link {{ request()->routeIs('pelaporan.indexDokumen') ? 'active' : '' }}">
+<a href="{{ route('pelaporan.indexDokumen') }}" class="nav-link {{ request()->routeIs('pelaporan.indexDokumen') || request()->routeIs('pelaporan.borang.*') ? 'active' : '' }}">
     <span class="menu-icon">📋</span>
     <span>Pelaporan Validasi Dokumen</span>
 </a>

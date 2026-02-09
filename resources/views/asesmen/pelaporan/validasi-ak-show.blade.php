@@ -13,7 +13,7 @@
                 <a href="{{ route('pelaporan.index') }}">Dashboard Pelaporan</a>
             </li>
             <li class="breadcrumb-item">
-                <a href="{{ route('pelaporan.validasi-ak.index') }}">Pelaporan Validasi AK</a>
+                <a href="{{ route('pelaporan.indexValidasiAK') }}">Pelaporan Validasi AK</a>
             </li>
             <li class="breadcrumb-item active">Detail</li>
         </ol>
@@ -31,7 +31,7 @@
             <small class="text-muted">{{ $assignment->asesmen->code }}</small>
             @endif
         </div>
-        <a href="{{ route('pelaporan.validasi-ak.index') }}" class="btn btn-secondary">
+        <a href="{{ route('pelaporan.indexValidasiAK') }}" class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i> Kembali
         </a>
     </div>
