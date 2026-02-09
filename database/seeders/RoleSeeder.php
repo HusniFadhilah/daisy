@@ -55,6 +55,10 @@ class RoleSeeder extends Seeder
                 'alias' => 'Keuangan LAMDEPILAR',
             ],
             [
+                'name' => 'surveillance',
+                'alias' => 'Surveillance',
+            ],
+            [
                 'name' => 'default',
                 'alias' => 'Default User',
             ],

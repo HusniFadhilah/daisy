@@ -305,3 +305,24 @@ function titleCaseWords(s) {
 $(document).ready(function () {
     $('#datatable,.datatable').DataTable({});
 });
+
+document.querySelectorAll('.form-delete').forEach(form => {
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        Swal.fire({
+            title: 'Yakin ingin menghapus?'
+            , text: 'Data yang sudah dihapus tidak dapat dikembalikan.'
+            , icon: 'warning'
+            , showCancelButton: true
+            , confirmButtonColor: '#d33'
+            , cancelButtonColor: '#6c757d'
+            , confirmButtonText: 'Ya, hapus'
+            , cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+    });
+});

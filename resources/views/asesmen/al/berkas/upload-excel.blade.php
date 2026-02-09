@@ -123,7 +123,7 @@
                                 </h5>
                                 <p class="mb-2">
                                     Anda telah menyelesaikan <strong>semua {{ $progress['total'] }} elemen penilaian</strong>.
-                                    Segera lakukan <strong>Finalisasi dan Kirim</strong> untuk menyelesaikan penilaian.
+                                    Mohon segera lakukan <strong>Finalisasi dan Kirim</strong> untuk menyelesaikan penilaian.
                                 </p>
                             </div>
                         </div>

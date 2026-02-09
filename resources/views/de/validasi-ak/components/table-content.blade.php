@@ -8,15 +8,15 @@
     <div class="card-body p-0">
         @if($pengajuans->count() > 0)
         <div class="table-responsive">
-            <table class="table table-hover mb-0">
+            <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
                         <th width="5%">#</th>
                         <th width="20%">Permohonan Akreditasi</th>
-                        <th width="15%">Status</th>
                         <th width="15%">Validator</th>
+                        <th width="15%">Status Validasi</th>
                         <th width="15%">Progress Validasi</th>
-                        <th width="15%">Tanggal</th>
+                        <th width="15%">Tanggal Validasi AK</th>
                         <th width="10%" class="text-center">Aksi</th>
                     </tr>
                 </thead>
@@ -34,7 +34,7 @@
                     \App\Models\PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
                     \App\Models\PengajuanAkreditasi::STATUS_AK_ON_VALIDATION,
                     \App\Models\PengajuanAkreditasi::STATUS_AK_SELESAI,
-                    \App\Models\PengajuanAkreditasi::STATUS_AK_DILAPORKAN,
+                    //\App\Models\PengajuanAkreditasi::STATUS_AK_DILAPORKAN,
                     ];
 
                     // statusLog sudah di-order by changed_at DESC dari controller
@@ -53,7 +53,7 @@
                     \App\Models\PengajuanAkreditasi::STATUS_AK_IN_PROGRESS => [
                     'class' => 'info',
                     'icon' => 'pencil-square',
-                    'text' => 'Sedang Penilaian',
+                    'text' => 'Menunggu Penilaian AK Selesai',
                     ],
                     \App\Models\PengajuanAkreditasi::STATUS_AK_ON_VALIDATION => [
                     'class' => 'warning',
@@ -63,12 +63,12 @@
                     \App\Models\PengajuanAkreditasi::STATUS_AK_SELESAI => [
                     'class' => 'success',
                     'icon' => 'check-circle',
-                    'text' => 'Selesai',
+                    'text' => 'Validasi Selesai',
                     ],
                     \App\Models\PengajuanAkreditasi::STATUS_AK_DILAPORKAN => [
                     'class' => 'primary',
                     'icon' => 'file-earmark-check',
-                    'text' => 'Dilaporkan',
+                    'text' => 'Validasi Dilaporkan',
                     ],
                     default => [
                     'class' => 'secondary',
@@ -94,29 +94,11 @@
                     $progressColor = $progressPercentage == 100
                     ? 'success'
                     : ($progressPercentage >= 50 ? 'info' : 'warning');
-
-                    // ===== Tanggal dari log AK =====
-                    $tanggalTampil = $lastAkLog?->changed_at
-                    ? \Carbon\Carbon::parse($lastAkLog->changed_at)->format('d M Y')
-                    : $pengajuan->created_at->format('d M Y');
                     @endphp
                     <tr>
                         <td>{{ $pengajuans->firstItem() + $index }}</td>
                         <td>
                             {!! $pengajuan->getPermohonanAkreditasiSectionFor('de') !!}
-                        </td>
-                        <td>
-                            <div class="mb-1">
-                                <strong>{{ $pengajuan->studyProgram->name }}</strong>
-                            </div>
-                            <small class="text-muted">
-                                <i class="bi bi-building"></i> {{ $pengajuan->studyProgram->university->name }}
-                            </small>
-                        </td>
-                        <td>
-                            <span class="badge bg-{{ $statusConfig['class'] }}">
-                                <i class="bi bi-{{ $statusConfig['icon'] }}"></i> {{ $statusConfig['text'] }}
-                            </span>
                         </td>
                         <td>
                             @if($validators->count() > 0)
@@ -133,8 +115,13 @@
                             </div>
                             @endforeach
                             @else
-                            <span class="text-muted">-</span>
+                            <small class="text-muted">Belum ada validator</small>
                             @endif
+                        </td>
+                        <td>
+                            <span class="badge bg-{{ $statusConfig['class'] }}">
+                                <i class="bi bi-{{ $statusConfig['icon'] }}"></i> {{ $statusConfig['text'] }}
+                            </span>
                         </td>
                         <td>
                             <div class="progress mb-1" style="height: 20px;">
@@ -145,7 +132,13 @@
                             <small class="text-muted">{{ $validatedCount }}/{{ $totalElements }} elemen</small>
                         </td>
                         <td>
-                            <small>{{ $tanggalTampil }}</small>
+                            @if($pengajuan->tanggal_validasi_ak)
+                            <small>
+                                {{ $pengajuan->tanggal_validasi_ak->format('d M Y') }}
+                            </small>
+                            @else
+                            <span class="text-muted">-</span>
+                            @endif
                         </td>
                         <td class="text-center">
                             <a href="{{ route('de.validasi-ak.show', $pengajuan->id) }}" class="btn btn-sm btn-primary" title="Lihat Detail">

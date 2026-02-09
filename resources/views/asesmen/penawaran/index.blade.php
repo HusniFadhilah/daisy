@@ -89,7 +89,7 @@ $authUser = Auth::user();
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start mb-3">
                                 <div class="flex-grow-1">
-                                    <h5 class="card-title mb-1 text-primary">{{ $penawaran->asesmen->name }}</h5>
+                                    <h5 class="card-title mb-1 text-primary">{{ $penawaran->asesmen->getName(false) }}</h5>
                                     <span class="badge bg-primary">{{ $penawaran->role->alias.' '.$penawaran->jenis_asesmen_label }}</span>
                                 </div>
                                 <span class="badge bg-warning status-badge ps-2">
@@ -122,149 +122,149 @@ $authUser = Auth::user();
                                 </div>
                             </div>
 
-                            @if($penawaran->asesmen->description)
+                            {{-- @if($penawaran->asesmen->description)
                             <div class="alert alert-light alert-permanent alert-dismissible mb-3">
                                 <small><i class="bi bi-info-circle me-1"></i> {{ Str::limit($penawaran->asesmen->description, 150) }}</small>
+                        </div>
+                        @endif --}}
+
+                        <!-- Links dari DE -->
+                        @if($penawaran->kertas_kerja_link || $penawaran->panduan_link)
+                        <div class="mb-3">
+                            <small class="text-muted"><strong>Dokumen dari Admin:</strong></small>
+                            @if($penawaran->kertas_kerja_link)
+                            <div>
+                                <a href="{{ $penawaran->kertas_kerja_link }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-file-earmark-text"></i> Kertas Kerja
+                                </a>
                             </div>
                             @endif
-
-                            <!-- Links dari DE -->
-                            @if($penawaran->kertas_kerja_link || $penawaran->panduan_link)
-                            <div class="mb-3">
-                                <small class="text-muted"><strong>Dokumen dari Admin:</strong></small>
-                                @if($penawaran->kertas_kerja_link)
-                                <div>
-                                    <a href="{{ $penawaran->kertas_kerja_link }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                        <i class="bi bi-file-earmark-text"></i> Kertas Kerja
-                                    </a>
-                                </div>
-                                @endif
-                                @if($penawaran->panduan_link)
-                                <div class="mt-1">
-                                    <a href="{{ $penawaran->panduan_link }}" target="_blank" class="btn btn-sm btn-outline-info">
-                                        <i class="bi bi-book"></i> Panduan Penilaian
-                                    </a>
-                                </div>
-                                @endif
+                            @if($penawaran->panduan_link)
+                            <div class="mt-1">
+                                <a href="{{ $penawaran->panduan_link }}" target="_blank" class="btn btn-sm btn-outline-info">
+                                    <i class="bi bi-book"></i> Panduan Penilaian
+                                </a>
                             </div>
                             @endif
+                        </div>
+                        @endif
 
-                            <hr>
+                        <hr>
 
-                            <div class="d-grid gap-2">
-                                <button type="button" class="btn btn-success" onclick="acceptPenawaran('{{ $penawaran->token }}', '{{ $penawaran->role->alias }}')">
-                                    <i class="bi bi-check-circle"></i> Terima Penawaran
-                                </button>
-                                <button type="button" class="btn btn-outline-danger" onclick="rejectPenawaran('{{ $penawaran->token }}', '{{ $penawaran->asesmen->name }}')">
-                                    <i class="bi bi-x-circle"></i> Tolak Penawaran
-                                </button>
-                            </div>
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-success" onclick="acceptPenawaran('{{ $penawaran->token }}', '{{ $penawaran->role->alias }}', '{{ $penawaran->jenis_asesmen }}')">
+                                <i class="bi bi-check-circle"></i> Terima Penawaran
+                            </button>
+                            <button type="button" class="btn btn-outline-danger" onclick="rejectPenawaran('{{ $penawaran->token }}', '{{ $penawaran->asesmen->name }}')">
+                                <i class="bi bi-x-circle"></i> Tolak Penawaran
+                            </button>
                         </div>
                     </div>
                 </div>
-                @endforeach
             </div>
+            @endforeach
         </div>
     </div>
-    @else
-    <div class="alert alert-info alert-permanent alert-dismissible">
-        <i class="bi bi-info-circle me-2"></i>
-        Tidak ada penawaran baru saat ini. Silakan tunggu penawaran dari LAMDEPILAR.
-    </div>
-    @endif
+</div>
+@else
+<div class="alert alert-info alert-permanent alert-dismissible">
+    <i class="bi bi-info-circle me-2"></i>
+    Tidak ada penawaran baru saat ini. Silakan tunggu penawaran dari LAMDEPILAR.
+</div>
+@endif
 
-    <!-- Riwayat Penawaran -->
-    @if($assignments->count() > 0)
-    <div class="card">
-        <div class="card-header bg-white">
-            <h5 class="mb-0"><i class="bi bi-clock-history"></i> Riwayat Penawaran Asesmen</h5>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>No</th>
-                            <th>Asesmen</th>
-                            <th>Role</th>
-                            <th>Status Penawaran</th>
-                            <th>Catatan</th>
-                            <th>Tanggal Respon</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($assignments as $key=> $assignment)
-                        @php
-                        $idAsesors = $assignment->where('id_asesmen',$assignment->id_asesmen)->whereNot('id_user', $authUser->id)->pluck('id_user');
-                        $jenisAsesmen = $assignment->jenis_asesmen; // dokumen | ak | al
-                        $asesmen = $assignment->asesmen;
-                        $pengajuan = $asesmen->pengajuan;
-                        $badgePelaporan = $asesmen->pengajuan? $asesmen->pengajuan->getPelaporanBadge($assignment->jenis_asesmen): null;
-                        @endphp
-                        <tr>
-                            <td>{{ $key+1 }}</td>
-                            <td>
-                                @if($pengajuan)
-                                {!! $pengajuan->getPermohonanAkreditasiSectionFor('de') !!}
-                                @else
-                                {!! $asesmen->getPermohonanAkreditasiSectionFor('de') !!}
-                                @endif
-                            </td>
-                            <td>
-                                <span class="badge bg-primary">{{ $assignment->role->alias.' '.$assignment->jenis_asesmen_label }}</span>
-                            </td>
-                            <td>
-                                @if($assignment->status_penawaran === 'accepted')
-                                <span class="badge bg-success">
-                                    <i class="bi bi-check-circle"></i> Diterima
-                                </span>
-                                @else
-                                <span class="badge bg-danger">
-                                    <i class="bi bi-x-circle"></i> Ditolak
-                                </span>
-                                @endif
-                            </td>
-                            <td>
-                                @if($assignment->response_note)
-                                <small>{{ Str::limit($assignment->response_note, 50) }}</small>
-                                @else
-                                <small class="text-muted">-</small>
-                                @endif
-                            </td>
-                            <td>
-                                <small>{{ $assignment->responded_at ? \App\Libraries\Date::tglWaktu($assignment->responded_at) : '-' }}</small>
-                            </td>
-                            <td>
-                                @if($assignment->status_penawaran === 'accepted')
-                                @if($authUser->role_selected == 'asesor')
-                                @if (in_array($jenisAsesmen,['ak','al']))
-                                <a href="{{ route($jenisAsesmen.'.berkas.show',$assignment->id_asesmen) }}" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-arrow-right"></i> Penilaian
-                                </a>
-                                @endif
-                                @elseif($authUser->role_selected == 'validator')
-                                @if ($jenisAsesmen == 'ak')
-                                <a href="{{ route($jenisAsesmen.'.validasi.asesor', ['idAsesmen' => $assignment['asesmen']->id, 'jenisAsesmen' => 'ak']) }}" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-arrow-right"></i> Penilaian
-                                </a>
-                                @elseif ($jenisAsesmen == 'dokumen')
-                                <a href="{{ route('validator.borang.show',$assignment->id) }}" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-arrow-right"></i> Penilaian
-                                </a>
-                                @endif
+<!-- Riwayat Penawaran -->
+@if($assignments->count() > 0)
+<div class="card">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="bi bi-clock-history"></i> Riwayat Penawaran Asesmen</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>No</th>
+                        <th>Asesmen</th>
+                        <th>Role</th>
+                        <th>Status Penawaran</th>
+                        <th>Catatan</th>
+                        <th>Tanggal Respon</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($assignments as $key=> $assignment)
+                    @php
+                    $idAsesors = $assignment->where('id_asesmen',$assignment->id_asesmen)->whereNot('id_user', $authUser->id)->pluck('id_user');
+                    $jenisAsesmen = $assignment->jenis_asesmen; // dokumen | ak | al
+                    $asesmen = $assignment->asesmen;
+                    $pengajuan = $asesmen->pengajuan;
+                    $badgePelaporan = $asesmen->pengajuan? $asesmen->pengajuan->getPelaporanBadge($assignment->jenis_asesmen): null;
+                    @endphp
+                    <tr>
+                        <td>{{ $key+1 }}</td>
+                        <td>
+                            @if($pengajuan)
+                            {!! $pengajuan->getPermohonanAkreditasiSectionFor('de') !!}
+                            @else
+                            {!! $asesmen->getPermohonanAkreditasiSectionFor('de') !!}
+                            @endif
+                        </td>
+                        <td>
+                            <span class="badge bg-primary">{{ $assignment->role->alias.' '.$assignment->jenis_asesmen_label }}</span>
+                        </td>
+                        <td>
+                            @if($assignment->status_penawaran === 'accepted')
+                            <span class="badge bg-success">
+                                <i class="bi bi-check-circle"></i> Diterima
+                            </span>
+                            @else
+                            <span class="badge bg-danger">
+                                <i class="bi bi-x-circle"></i> Ditolak
+                            </span>
+                            @endif
+                        </td>
+                        <td>
+                            @if($assignment->response_note)
+                            <small>{{ Str::limit($assignment->response_note, 50) }}</small>
+                            @else
+                            <small class="text-muted">-</small>
+                            @endif
+                        </td>
+                        <td>
+                            <small>{{ $assignment->responded_at ? \App\Libraries\Date::tglWaktu($assignment->responded_at) : '-' }}</small>
+                        </td>
+                        <td>
+                            @if($assignment->status_penawaran === 'accepted')
+                            @if($authUser->role_selected == 'asesor')
+                            @if (in_array($jenisAsesmen,['ak','al']))
+                            <a href="{{ route($jenisAsesmen.'.berkas.upload-excel',$assignment->id_asesmen) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-arrow-right"></i> Penilaian
+                            </a>
+                            @endif
+                            @elseif($authUser->role_selected == 'validator')
+                            @if ($jenisAsesmen == 'ak')
+                            <a href="{{ route($jenisAsesmen.'.validasi.asesor', ['idAsesmen' => $assignment['asesmen']->id, 'jenisAsesmen' => 'ak']) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-arrow-right"></i> Penilaian
+                            </a>
+                            @elseif ($jenisAsesmen == 'dokumen')
+                            <a href="{{ route('validator.borang.show',$assignment->id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-arrow-right"></i> Penilaian
+                            </a>
+                            @endif
 
-                                @endif
-                                @endif
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+                            @endif
+                            @endif
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
     </div>
-    @endif
+</div>
+@endif
 </div>
 
 <!-- Accept Modal -->
@@ -279,12 +279,13 @@ $authUser = Auth::user();
             </div>
             <form id="acceptForm">
                 <div class="modal-body">
-                    <p>Anda akan menerima penawaran sebagai <strong id="roleText"></strong> dan siap melakukan penilaian.</p>
-
-                    <div class="alert alert-info">
+                    <p id="acceptDesc">
+                        Anda akan menerima penawaran sebagai <strong id="roleText"></strong>.
+                    </p>
+                    <div class="alert alert-info alert-permanent" id="acceptInfo">
                         <small>
                             <i class="bi bi-info-circle"></i>
-                            Setelah menerima, Anda akan dapat mengakses kertas kerja penilaian dan melakukan asesmen.
+                            <span id="acceptInfoText"></span>
                         </small>
                     </div>
 
@@ -340,12 +341,93 @@ $authUser = Auth::user();
 <script>
     let currentPenawaranId = null;
 
-    function acceptPenawaran(id, role) {
+    // =======================
+    // COPYWRITING MAPPING
+    // =======================
+    const ROLE_COPY = {
+        asesor: {
+            desc: (roleLabel) => `Anda akan menerima penawaran sebagai <strong>${roleLabel}</strong> dan siap melakukan penilaian.`
+            , info: (_roleLabel, jenis) => {
+                if (jenis === 'dokumen') return 'Setelah menerima, Anda dapat mengakses dokumen penilaian dan mulai melakukan asesmen.';
+                if (jenis === 'ak') return 'Setelah menerima, Anda dapat mengakses kertas kerja Penilaian Kecukupan dan mulai melakukan asesmen.';
+                if (jenis === 'al') return 'Setelah menerima, Anda dapat mengakses kertas kerja Asesmen Lapangan dan mulai melakukan asesmen.';
+                return 'Setelah menerima, Anda dapat mengakses kertas kerja penilaian dan mulai melakukan asesmen.';
+            }
+        },
+
+        validator: {
+            desc: (roleLabel) => `Anda akan menerima penawaran sebagai <strong>${roleLabel}</strong> untuk melakukan validasi.`
+            , info: (_roleLabel, jenis) => {
+                if (jenis === 'dokumen') return 'Setelah menerima, Anda dapat mengakses dokumen borang/LED, memberi catatan, dan mengirim hasil validasi.';
+                if (jenis === 'ak') return 'Setelah menerima, Anda dapat mengakses hasil penilaian kecukupan, memeriksa kelengkapan, dan mengirim hasil validasi.';
+                if (jenis === 'al') return 'Setelah menerima, Anda dapat mengakses dokumen hasil asesmen lapangan, memeriksa kelengkapan, dan mengirim hasil validasi.';
+                return 'Setelah menerima, Anda dapat mengakses dokumen yang perlu ditinjau, memberi catatan, dan mengirim hasil validasi.';
+            }
+        },
+
+        surveillance: {
+            desc: (roleLabel) => `Anda akan menerima penawaran sebagai <strong>${roleLabel}</strong> untuk melakukan pemantauan (surveillance).`
+            , info: (_roleLabel, jenis) => {
+                if (jenis === 'dokumen') return 'Setelah menerima, Anda dapat mengakses dokumen pemantauan, mencatat temuan, dan menyusun laporan surveillance.';
+                if (jenis === 'ak') return 'Setelah menerima, Anda dapat mengakses instrumen pemantauan, mencatat temuan, dan menyusun laporan surveillance.';
+                if (jenis === 'al') return 'Setelah menerima, Anda dapat mengakses dokumen pemantauan lapangan, mencatat temuan, dan menyusun laporan surveillance.';
+                return 'Setelah menerima, Anda dapat mengakses instrumen pemantauan, mencatat temuan, dan menyusun laporan surveillance.';
+            }
+        },
+
+        default: {
+            desc: (roleLabel) => `Anda akan menerima penawaran sebagai <strong>${roleLabel}</strong>.`
+            , info: () => 'Setelah menerima, Anda dapat membuka detail penugasan dan melanjutkan proses sesuai peran Anda.'
+        }
+    };
+
+    // helper: normalisasi role dari teks (alias / name)
+    function normalizeRoleKey(roleStr) {
+        const s = (roleStr || '').toString().toLowerCase();
+        if (s.includes('asesor')) return 'asesor';
+        if (s.includes('validator')) return 'validator';
+        if (s.includes('surveillance') || s.includes('surveilans')) return 'surveillance';
+        return 'default';
+    }
+
+    // helper: normalisasi jenis asesmen
+    function normalizeJenisKey(jenisStr) {
+        const s = (jenisStr || '').toString().toLowerCase();
+        if (['dokumen', 'ak', 'al'].includes(s)) return s;
+        return null;
+    }
+
+    // =======================
+    // ACCEPT MODAL OPEN
+    // =======================
+    // rekomendasi: kirim juga jenis_asesmen biar copy lebih spesifik
+    // acceptPenawaran(token, roleAliasOrName, jenisAsesmen)
+    function acceptPenawaran(id, role, jenisAsesmen = null) {
         currentPenawaranId = id;
-        document.getElementById('roleText').textContent = role;
+
+        const roleLabel = (role || '').toString();
+        const roleKey = normalizeRoleKey(roleLabel);
+        const jenisKey = normalizeJenisKey(jenisAsesmen);
+
+        const cfg = ROLE_COPY[roleKey] || ROLE_COPY.default;
+
+        const acceptDesc = document.getElementById('acceptDesc');
+        const acceptInfoText = document.getElementById('acceptInfoText');
+        const roleText = document.getElementById('roleText');
+
+        // tampilkan label role
+        if (roleText) roleText.textContent = roleLabel;
+
+        // desc mengandung <strong>, jadi pakai innerHTML
+        if (acceptDesc) acceptDesc.innerHTML = cfg.desc(roleLabel);
+
+        // info plain text supaya aman
+        if (acceptInfoText) acceptInfoText.textContent = cfg.info(roleLabel, jenisKey);
+
         document.getElementById('acceptNote').value = '';
         new bootstrap.Modal(document.getElementById('acceptModal')).show();
     }
+
 
     function rejectPenawaran(id, asesmenName) {
         currentPenawaranId = id;

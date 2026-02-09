@@ -20,14 +20,11 @@
             <div class="card">
                 <div class="card-body text-center">
                     @if($university->logo_path)
-                        <img src="{{ asset('storage/' . $university->logo_path) }}" 
-                             alt="{{ $university->name }}" 
-                             class="img-fluid mb-3" 
-                             style="max-height: 200px;">
+                    <img src="{{ asset('storage/' . $university->logo_path) }}" alt="{{ $university->name }}" class="img-fluid mb-3" style="max-height: 200px;">
                     @else
-                        <div class="bg-light rounded p-4 mb-3">
-                            <i class="fas fa-university fa-5x text-muted"></i>
-                        </div>
+                    <div class="bg-light rounded p-4 mb-3">
+                        <i class="fas fa-university fa-5x text-muted"></i>
+                    </div>
                     @endif
                     <h4>{{ $university->name }}</h4>
                     <p class="text-muted">{{ $university->code }}</p>
@@ -44,9 +41,9 @@
                             <td width="40%"><strong>Email:</strong></td>
                             <td>
                                 @if($university->email && $university->email !== '-')
-                                    <a href="mailto:{{ $university->email }}">{{ $university->email }}</a>
+                                <a href="mailto:{{ $university->email }}">{{ $university->email }}</a>
                                 @else
-                                    <span class="text-muted">-</span>
+                                <span class="text-muted">-</span>
                                 @endif
                             </td>
                         </tr>
@@ -83,69 +80,67 @@
                 </div>
                 <div class="card-body">
                     @if($university->studyPrograms->count() > 0)
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>No</th>
-                                        <th>Nama Program Studi</th>
-                                        <th>Jenjang</th>
-                                        <th>Email</th>
-                                        <th>Akreditasi</th>
-                                        <th>Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($university->studyPrograms as $prodi)
-                                    <tr>
-                                        <td>{{ $loop->iteration }}</td>
-                                        <td>
-                                            <a href="{{ route('study-programs.show', $prodi->id) }}">
-                                                {{ $prodi->name }}
-                                            </a>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-info">
-                                                {{ $prodi->degreeLevel->name ?? '-' }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            @if($prodi->email && $prodi->email !== '-')
-                                                <small>{{ $prodi->email }}</small>
-                                            @else
-                                                <span class="text-muted">-</span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            @if($prodi->peringkat_akreditasi)
-                                                @php
-                                                    $class = match($prodi->status_kedaluwarsa) {
-                                                        'Aktif' => 'success',
-                                                        'Kedaluwarsa' => 'warning',
-                                                        default => 'secondary'
-                                                    };
-                                                @endphp
-                                                <span class="badge bg-{{ $class }}">{{ $prodi->peringkat_akreditasi }}</span>
-                                            @else
-                                                <span class="badge bg-secondary">-</span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            <a href="{{ route('study-programs.show', $prodi->id) }}" 
-                                               class="btn btn-sm btn-info text-white" 
-                                               title="Detail">
-                                                <i class="bi bi-eye"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Nama Program Studi</th>
+                                    <th>Jenjang</th>
+                                    <th>Email</th>
+                                    <th>Akreditasi</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($university->studyPrograms as $prodi)
+                                <tr>
+                                    <td>{{ $loop->iteration }}</td>
+                                    <td>
+                                        <a href="{{ route('study-programs.show', $prodi->id) }}">
+                                            {{ $prodi->name }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">
+                                            {{ $prodi->degreeLevel->name ?? '-' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if($prodi->email && $prodi->email !== '-')
+                                        <small>{{ $prodi->email }}</small>
+                                        @else
+                                        <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($prodi->peringkat_akreditasi)
+                                        @php
+                                        $class = match($prodi->status_kedaluwarsa) {
+                                        'Aktif' => 'success',
+                                        'Kedaluwarsa' => 'warning',
+                                        default => 'secondary'
+                                        };
+                                        @endphp
+                                        <span class="badge bg-{{ $class }}">{{ $prodi->peringkat_akreditasi }}</span>
+                                        @else
+                                        <span class="badge bg-secondary">-</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <a href="{{ route('study-programs.show', $prodi->id) }}" class="btn btn-sm btn-info text-white" title="Detail">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                     @else
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle"></i> Belum ada program studi terdaftar
-                        </div>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> Belum ada program studi terdaftar
+                    </div>
                     @endif
                 </div>
             </div>

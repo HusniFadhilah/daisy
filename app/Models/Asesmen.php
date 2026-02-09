@@ -204,11 +204,22 @@ class Asesmen extends Model
         return $this->hasOne(LhaAsesor::class, 'id_asesmen');
     }
 
+    public function getName($isFull = true)
+    {
+        if ($isFull) {
+            return $this->name;
+        } else {
+            return str_replace('Permohonan ', '', $this->name);
+        }
+    }
+
     public function getPermohonanAkreditasiSectionFor($for = 'de')
     {
+        $pengajuan = $this->pengajuan;
+        $judulPrefix = $pengajuan ? $pengajuan->judulPrefix('short') : $this->getName(false);
         if ($for == 'upps')
             return <<<HTML
-            <p>{$this->judulPrefix('short')}</p>
+            <p>{$judulPrefix}</p>
             <small class="text-muted">{$this->studyProgram->name}</small><br>
             <!-- <small class="text-muted">
                 Dibuat pada: { \App\Libraries\Date::tglIndo($this->created_at) }
@@ -216,7 +227,27 @@ class Asesmen extends Model
         HTML;
         else if ($for == 'de')
             return <<<HTML
-        <p>{$this->judulPrefix('short')}</p>
+        <p>{$judulPrefix}</p>
+        <small><b>{$this->studyProgram->name}</b></small><br>
+        <small>{$this->studyProgram->university->name}</small>
+        <!-- <br> -->
+        <!-- <small class="text-muted">{$this->nomor_pengajuan}</small> -->
+        <!-- <br>
+        <small class="text-muted">Dibuat pada: { \App\Libraries\Date::tglIndo($this->created_at)}</small> -->
+        HTML;
+        else if ($for == 'validator')
+            return <<<HTML
+        <p>{$judulPrefix}</p>
+        <small><b>{$this->studyProgram->name}</b></small><br>
+        <small>{$this->studyProgram->university->name}</small>
+        <!-- <br> -->
+        <!-- <small class="text-muted">{$this->nomor_pengajuan}</small> -->
+        <!-- <br>
+        <small class="text-muted">Dibuat pada: { \App\Libraries\Date::tglIndo($this->created_at)}</small> -->
+        HTML;
+        else if ($for == 'asesor')
+            return <<<HTML
+        <p>{$judulPrefix}</p>
         <small><b>{$this->studyProgram->name}</b></small><br>
         <small>{$this->studyProgram->university->name}</small>
         <!-- <br> -->

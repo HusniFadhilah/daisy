@@ -173,6 +173,14 @@
                                             <a href="{{ route('upps.surat-permohonan.edit', $pengajuan->id) }}" class="btn btn-outline-warning" title="Edit Draft">
                                                 <i class="bi bi-pencil-square"></i>
                                             </a>
+                                            <form action="{{ route('upps.surat-permohonan.destroy', $pengajuan->id) }}" method="POST" class="d-inline form-delete">
+                                                @csrf
+                                                @method('DELETE')
+
+                                                <button type="submit" class="btn btn-sm btn-danger">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
                                             @else
                                             {{-- Tombol Lihat Detail untuk yang sudah dikirim --}}
                                             <a href="{{ route('upps.surat-permohonan.show', $pengajuan->id) }}" class="btn btn-primary" title="Lihat Detail">

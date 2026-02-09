@@ -273,6 +273,26 @@ class PengajuanAkreditasi extends Model
         <!-- <br>
         <small class="text-muted">Dibuat pada: { \App\Libraries\Date::tglIndo($this->created_at)}</small> -->
         HTML;
+        else if ($for == 'validator')
+            return <<<HTML
+        <p>{$this->judulPrefix('short')}</p>
+        <small><b>{$this->studyProgram->name}</b></small><br>
+        <small>{$this->studyProgram->university->name}</small>
+        <!-- <br> -->
+        <!-- <small class="text-muted">{$this->nomor_pengajuan}</small> -->
+        <!-- <br>
+        <small class="text-muted">Dibuat pada: { \App\Libraries\Date::tglIndo($this->created_at)}</small> -->
+        HTML;
+        else if ($for == 'asesor')
+            return <<<HTML
+        <p>{$this->judulPrefix('short')}</p>
+        <small><b>{$this->studyProgram->name}</b></small><br>
+        <small>{$this->studyProgram->university->name}</small>
+        <!-- <br> -->
+        <!-- <small class="text-muted">{$this->nomor_pengajuan}</small> -->
+        <!-- <br>
+        <small class="text-muted">Dibuat pada: { \App\Libraries\Date::tglIndo($this->created_at)}</small> -->
+        HTML;
     }
 
     public function getProgramStudiSectionFor($for = 'de')
@@ -719,7 +739,7 @@ class PengajuanAkreditasi extends Model
         return $this->jenis_akreditasi === 'menuju_unggul';
     }
 
-    private function judulPrefix(string $mode = 'long'): string
+    public function judulPrefix(string $mode = 'long'): string
     {
         $jenis = strtolower($this->jenis_akreditasi ?? '');
 

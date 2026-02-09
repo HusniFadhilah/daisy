@@ -40,23 +40,27 @@
         <!-- Informasi & Form -->
         <div class="col-lg-8 mb-4">
             @if($pengajuan->asesmen?->asesmenKecukupan)
+            @php
+            $allowed = [
+            \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
+            \App\Models\PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
+            ]; // ini contoh, bisa dinamis dari config/db/request
 
-            {{-- Alert Info Validator Dokumen --}}
-            @if($validatorDokumen)
-            <div class="alert alert-info alert-permanent mb-3">
-                <div class="d-flex align-items-center justify-content-between">
-                    <div>
-                        <i class="bi bi-info-circle"></i>
-                        <strong>Validator Dokumen:</strong> {{ $validatorDokumen->user->name }}
-                        <br>
-                        <small class="text-muted">
-                            Gunakan validator yang sama atau pilih validator lain untuk AK
-                        </small>
-                    </div>
-                    <button type="button" class="btn btn-sm btn-primary" onclick="showValidatorInfo()">
-                        <i class="bi bi-person-check"></i> Lihat Detail
-                    </button>
-                </div>
+            $log = $pengajuan->latestRelevantStatusLog($allowed);
+            @endphp
+            <!-- Status Alert -->
+            @if($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED)
+            <div class="alert alert-success alert-permanent">
+                <i class="bi bi-person-check"></i>
+                <strong>Penugasan Asesor AK</strong><br>
+                Penugasan asesor AK telah dilakukan<br>
+                Mohon memastikan asesor dan validator telah menyetujui penawaran asesmen
+            </div>
+            @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_AK_IN_PROGRESS)
+            <div class="alert alert-success alert-permanent">
+                <i class="bi bi-person-check"></i>
+                <strong>Penugasan Asesor AK</strong><br>
+                Sekretariat telah menugaskan asesor untuk melakukan penilaian AK
             </div>
             @endif
 
@@ -81,9 +85,28 @@
                             </div>
 
                             <div class="col-md-8" id="validatorOptionsContainer" style="display: none;">
+                                {{-- Alert Info Validator Dokumen --}}
+                                @if($validatorDokumen)
+                                <div class="alert alert-info alert-permanent mb-3">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <i class="bi bi-info-circle"></i>
+                                            <strong>Validator Dokumen:</strong> {{ $validatorDokumen->user->name }}
+                                            <br>
+                                            <small class="text-muted">
+                                                Gunakan validator yang sama atau pilih validator lain untuk AK
+                                            </small>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-primary" onclick="showValidatorInfo()">
+                                            <i class="bi bi-person-check"></i> Lihat Detail
+                                        </button>
+                                    </div>
+                                </div>
+                                @endif
+
                                 @if($validatorDokumen)
                                 <label class="form-label fw-bold">Pilih Validator:</label>
-                                <div class="btn-group w-100" role="group">
+                                <div class="btn-group btn-sm w-100" role="group">
                                     <input type="radio" class="btn-check" name="validator_option" id="useValidatorDokumen" value="use_existing" checked autocomplete="off">
                                     <label class="btn btn-outline-primary" for="useValidatorDokumen">
                                         <i class="bi bi-person-check"></i>
@@ -135,7 +158,7 @@
 
             <!-- Daftar Penugasan -->
             <div class="card">
-                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Daftar Penugasan AK</h5>
                     <button class="btn btn-sm btn-outline-primary" onclick="location.reload()">
                         <i class="bi bi-arrow-clockwise"></i> Refresh
@@ -143,7 +166,7 @@
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-hover mb-0">
+                        <table class="table table-hover align-middle mb-0">
                             <thead class="table-light">
                                 <tr>
                                     <th>Nama</th>
@@ -221,15 +244,15 @@
                                             @if($showActions)
                                             <div class="btn-group btn-group-sm">
                                                 <a href="{{ route('de.penugasan-ak.download-surat-tugas', [$pengajuan->id, $jenisDokumen]) }}" class="btn btn-sm btn-success" target="_blank" title="Download">
-                                                    <i class="bi bi-download"></i>
+                                                    <i class="bi bi-eye"></i>
                                                 </a>
-                                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="showUploadSuratTugasModal('{{ $jenisDokumen }}')" title="Upload Ulang">
-                                                    <i class="bi bi-upload"></i>
-                                                </button>
+                                                {{-- <button type="button" class="btn btn-sm btn-outline-primary" onclick="showUploadSuratTugasModal('{{ $jenisDokumen }}')" title="Upload Ulang">
+                                                <i class="bi bi-upload"></i> Upload Ulang
+                                                </button> --}}
                                             </div>
                                             @else
-                                            <a href="{{ route('de.penugasan-ak.download-surat-tugas', [$pengajuan->id, $jenisDokumen]) }}" class="btn btn-sm btn-success" target="_blank">
-                                                <i class="bi bi-download"></i>
+                                            <a href="{{ route('de.penugasan-ak.download-surat-tugas', [$pengajuan->id, $jenisDokumen]) }}" class="btn btn-sm btn-success" target="_blank" title="Download">
+                                                <i class="bi bi-eye"></i>
                                             </a>
                                             @endif
                                         </div>
@@ -280,7 +303,7 @@
             @endif
 
             <!-- Informasi Program Studi -->
-            <div class="card mb-4">
+            <div class="card my-4">
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">Informasi Penugasan Asesor AK</h5>
                 </div>
@@ -344,7 +367,7 @@
                     <div class="alert alert-warning alert-permanent mb-0">
                         <small>
                             <i class="bi bi-exclamation-triangle"></i>
-                            {{ implode(', ', $requirementsStatus['missing']) }}
+                            {{ implode(', ', $requirementsStatus['missing']) }} menyetujui penawaran
                         </small>
                     </div>
                     @else
@@ -361,7 +384,7 @@
             <!-- Jadwal AK -->
             @if($pengajuan->asesmen?->asesmenKecukupan)
             <div class="card">
-                <div class="card-header bg-info text-white">
+                <div class="card-header bg-secondary text-white">
                     <h5 class="mb-0">
                         <i class="bi bi-calendar-range"></i> Jadwal AK
                     </h5>
@@ -516,6 +539,72 @@
         </div>
     </div>
 </div>
+
+{{-- ✅ NEW: Add Modal Validator Dokumen Info --}}
+@if(isset($validatorDokumen) && $validatorDokumen)
+<div class="modal fade" id="modalValidatorInfo" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-secondary text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-person-check"></i> Info Validator Dokumen
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <th width="30%">Nama</th>
+                        <td>: {{ $validatorDokumen->user->name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Email</th>
+                        <td>: {{ $validatorDokumen->user->email }}</td>
+                    </tr>
+                    <tr>
+                        <th>Status</th>
+                        <td>:
+                            <span class="badge bg-{{ $validatorDokumen->status_penawaran === 'accepted' ? 'success' : 'warning' }}">
+                                {{ ucfirst($validatorDokumen->status_penawaran) }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Ditugaskan</th>
+                        <td>: {{ $validatorDokumen->created_at->format('d M Y H:i') }}</td>
+                    </tr>
+                </table>
+
+                @php
+                $suratTugasValDok = $pengajuan->dokumen
+                ->where('jenis_dokumen', 'surat_tugas_validator_dokumen')
+                ->where('is_latest', true)
+                ->first();
+                @endphp
+
+                @if($suratTugasValDok)
+                <div class="alert alert-success alert-permanent">
+                    <i class="bi bi-file-earmark-pdf"></i>
+                    <strong>Surat Tugas Validator:</strong><br>
+                    {{ $suratTugasValDok->original_filename }}
+                    <br>
+                    <a href="{{ route('de.penerimaan-dokumen.download-surat-tugas-validator', $pengajuan->id) }}" class="btn btn-sm btn-success mt-2" target="_blank">
+                        <i class="bi bi-eye"></i> Lihat
+                    </a>
+                </div>
+                @endif
+
+                <div class="alert alert-info alert-permanent mb-0">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Catatan:</strong><br>
+                    Jika Anda menggunakan validator yang sama, penugasan akan langsung diterima (accepted) tanpa penawaran,
+                    dan surat tugas akan otomatis sama dengan surat tugas validator dokumen.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
 
 @push('scripts')
 <script>
@@ -785,32 +874,47 @@
         modal.show();
     }
 
-    const modalFileSuratTugas = document.getElementById('modalFileSuratTugas')
-    if (modalFileSuratTugas) modalFileSuratTugas.addEventListener('change', function(e) {
-        const preview = document.getElementById('modalSuratTugasPreview');
-        const file = e.target.files[0];
+    const modalFileSuratTugas = document.getElementById('modalFileSuratTugas');
+    if (modalFileSuratTugas) {
+        modalFileSuratTugas.addEventListener('change', function(e) {
+            const preview = document.getElementById('modalSuratTugasPreview');
+            const file = e.target.files[0];
 
-        if (!file) {
-            preview.innerHTML = '';
-            return;
-        }
+            if (!file) {
+                preview.innerHTML = '';
+                return;
+            }
 
-        const fileSize = file.size / 1024 / 1024;
+            const fileSize = file.size / 1024 / 1024;
 
-        if (file.type !== 'application/pdf') {
-            preview.innerHTML = '<div class="alert alert-danger alert-permanent"><i class="bi bi-x-circle"></i> File harus berformat PDF</div>';
-            e.target.value = '';
-            return;
-        }
+            if (file.type !== 'application/pdf') {
+                preview.innerHTML =
+                    '<div class="alert alert-danger alert-dismissible fade show">' +
+                    '<i class="bi bi-x-circle"></i> File harus berformat PDF' +
+                    '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                    '</div>';
+                e.target.value = '';
+                return;
+            }
 
-        if (fileSize > 5) {
-            preview.innerHTML = '<div class="alert alert-danger alert-permanent"><i class="bi bi-x-circle"></i> Ukuran file maksimal 5 MB</div>';
-            e.target.value = '';
-            return;
-        }
+            if (fileSize > 5) {
+                preview.innerHTML =
+                    '<div class="alert alert-danger alert-dismissible fade show">' +
+                    '<i class="bi bi-x-circle"></i> Ukuran file terlalu besar. Maksimal 5 MB' +
+                    '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                    '</div>';
+                e.target.value = '';
+                return;
+            }
 
-        preview.innerHTML = `<div class="alert alert-success alert-permanent"><i class="bi bi-check-circle"></i> <strong>${file.name}</strong> (${fileSize.toFixed(2)} MB)</div>`;
-    });
+            preview.innerHTML =
+                '<div class="alert alert-success alert-dismissible fade show">' +
+                '<i class="bi bi-check-circle"></i> ' +
+                '<strong>' + file.name + '</strong> (' + fileSize.toFixed(2) + ' MB)' +
+                '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                '</div>';
+        });
+    }
 
     const useValidatorDokumen = document.getElementById('useValidatorDokumen')
     const useNewValidator = document.getElementById('useNewValidator')

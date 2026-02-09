@@ -87,6 +87,18 @@
                         if ($pengajuan && !empty($pengajuan->tanggal_validasi_borang_selesai)) {
                         $tglValidasi = $pengajuan->tanggal_validasi_borang_selesai;
                         }
+
+                        $dokumen = $pengajuan?->dokumen;
+
+                        // LED = draft_borang ATAU data_kualitatif
+                        $ledDoc = $dokumen?->firstWhere('jenis_dokumen', 'draft_borang')
+                        ?? $dokumen?->firstWhere('jenis_dokumen', 'data_kualitatif');
+
+                        // LKPS
+                        $lkpsDoc = $dokumen?->firstWhere('jenis_dokumen', 'data_kuantitatif');
+
+                        // Suplemen
+                        $suplemenDoc = $dokumen?->firstWhere('jenis_dokumen', 'data_suplemen');
                         @endphp
 
                         <tr>
@@ -97,8 +109,42 @@
                             </td>
 
                             <td>
-                                <span class="badge bg-light text-dark">{{ $pengajuan->studyProgram->name ?? '-' }}</span>
-                                <small class="text-muted small d-block">{{ $pengajuan->studyProgram->university->name ?? '-' }}</small>
+                                <div class="d-flex flex-wrap gap-1">
+                                    {{-- LED --}}
+                                    @if($ledDoc && $ledDoc->download_url)
+                                    <a href="{{ $ledDoc->download_url }}" class="btn btn-sm btn-outline-secondary" target="_blank" title="Download LED">
+                                        LED
+                                    </a>
+                                    @else
+                                    <button class="btn btn-sm btn-outline-danger" disabled title="LED belum diupload">
+                                        LED
+                                    </button>
+                                    @endif
+
+                                    {{-- LKPS --}}
+                                    @if($lkpsDoc && $lkpsDoc->download_url)
+                                    <a href="{{ $lkpsDoc->download_url }}" class="btn btn-sm btn-outline-success" target="_blank" title="Download LKPS">
+                                        LKPS
+                                    </a>
+                                    @else
+                                    <button class="btn btn-sm btn-outline-danger" disabled title="LKPS belum diupload">
+                                        LKPS
+                                    </button>
+                                    @endif
+
+                                    {{-- Suplemen (khusus menuju unggul) --}}
+                                    @if($pengajuan->jenis_akreditasi === 'menuju_unggul')
+                                    @if($suplemenDoc && $suplemenDoc->download_url)
+                                    <a href="{{ $suplemenDoc->download_url }}" class="btn btn-sm btn-outline-dark" target="_blank" title="Download Suplemen">
+                                        Suplemen
+                                    </a>
+                                    @else
+                                    <button class="btn btn-sm btn-outline-secondary" disabled title="Suplemen belum diupload">
+                                        Suplemen
+                                    </button>
+                                    @endif
+                                    @endif
+                                </div>
                             </td>
 
                             <td>

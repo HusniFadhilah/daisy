@@ -255,6 +255,40 @@ class BorangValidatorController extends Controller
             \App\Models\PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED,
         ]);
 
+        // =====================
+        // STATUS BANNER (VIEW)
+        // =====================
+        $statusPengajuan = $pengajuan->status;
+        $statusPekerjaan = $assignment->status_pekerjaan;
+        $finalAction = $validation?->final_action; // approve|revision|null
+
+        $statusClass = 'info';
+        $statusText  = '';
+
+        if ($lockBorang) {
+            $statusClass = 'success';
+            $statusText  = 'Validasi telah selesai. Dokumen bersifat read-only dan tidak dapat diubah.';
+        } else {
+            if ($assignment->status_pekerjaan === 'not_started') {
+                $statusClass = 'info';
+                $statusText  = 'Silakan mulai validasi dokumen. Buka setiap elemen dan berikan penilaian.';
+            } elseif ($assignment->status_pekerjaan === 'in_progress') {
+                if ($validation->isCompletelyReviewed()) {
+                    $statusClass = 'info';
+                    $statusText  = 'Semua item sudah divalidasi. Silahkan lanjutkan memilih Setujui Dokumen atau Minta Revisi, lalu lakukan submit final, pada bagian "Finalisasi dan Kirim".';
+                } else {
+                    $statusClass = 'info';
+                    $statusText  = 'Sedang dalam proses validasi. Mohon Lengkapi penilaian seluruh item sebelum melakukan submit final.';
+                }
+            } elseif ($validation->final_action === 'approve') {
+                $statusClass = 'success';
+                $statusText  = 'Dokumen telah disetujui. Menunggu sistem memperbarui status pengajuan.';
+            } elseif ($validation->final_action === 'revision') {
+                $statusClass = 'warning';
+                $statusText  = 'Revisi telah diminta kepada prodi. Menunggu prodi melakukan perbaikan dokumen.';
+            }
+        }
+
         return view('validator.borang.show', compact(
             'assignment',
             'pengajuan',
@@ -267,7 +301,9 @@ class BorangValidatorController extends Controller
             'degreeCode',
             'totalElemenSuplemen',
             'isEnvLocal',
-            'lockBorang'
+            'lockBorang',
+            'statusText',
+            'statusClass'
         ));
     }
 
@@ -475,7 +511,7 @@ class BorangValidatorController extends Controller
                     ]);
                 }
 
-                $message = 'LED berhasil divalidasi dan disetujui.';
+                $message = 'Dokumen akreditasi berhasil divalidasi dan disetujui. Mohon segera lakukan pelaporan validasi dokumen pada menu selanjutnya';
             } else {
                 // ============================================
                 // REVISION REQUIRED - Build revision points

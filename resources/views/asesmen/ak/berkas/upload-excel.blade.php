@@ -86,7 +86,7 @@
                     <h4 class="mb-1">
                         <i class="bi bi-upload"></i> Upload Penilaian AK
                     </h4>
-                    <p class="text-muted mb-0">{{ $asesmen->name }}</p>
+                    <p class="text-muted mb-0">{{ $asesmen->getName(false) }}</p>
                 </div>
                 <a href="{{ route('ak.berkas') }}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left"></i> Kembali
@@ -170,7 +170,7 @@
                                 </h5>
                                 <p class="mb-2">
                                     Anda telah menyelesaikan <strong>semua {{ $progress['total'] }} elemen penilaian</strong>.
-                                    Segera lakukan <strong>Finalisasi dan Kirim</strong> agar penilaian Anda dapat divalidasi.
+                                    Mohon segera lakukan <strong>Finalisasi dan Kirim</strong> agar penilaian Anda dapat divalidasi.
                                 </p>
                             </div>
                         </div>

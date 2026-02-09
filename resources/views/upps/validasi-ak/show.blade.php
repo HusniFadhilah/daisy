@@ -71,22 +71,6 @@
                 <div class="card-body">
                     <table class="table table-borderless">
                         <tr>
-                            <th width="30%">Nomor Permohonan</th>
-                            <td>: {{ $pengajuan->nomor_pengajuan }}</td>
-                        </tr>
-                        <tr>
-                            <th>Program Studi</th>
-                            <td>: {{ $pengajuan->studyProgram->full_name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Universitas</th>
-                            <td>: {{ $pengajuan->studyProgram->university->name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Jenis Permohonan</th>
-                            <td>: {{ $pengajuan->jenis_akreditasi_label }}</td>
-                        </tr>
-                        <tr>
                             <th>Tanggal Penilaian Dimulai</th>
                             <td>
                                 : {{ $pengajuan->tanggal_ak_mulai
@@ -95,18 +79,18 @@
                             </td>
                         </tr>
                         <tr>
-                            <th>Tanggal Penilaian Selesai</th>
-                            <td>
-                                : {{ $pengajuan->tanggal_ak_selesai
-                                    ? $pengajuan->tanggal_ak_selesai->format('d M Y H:i')
-                                    : '-' }}
-                            </td>
-                        </tr>
-                        <tr>
                             <th>Tanggal Validasi AK</th>
                             <td>
                                 : {{ $pengajuan->tanggal_validasi_ak
                                     ? $pengajuan->tanggal_validasi_ak->format('d M Y H:i')
+                                    : '-' }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Tanggal Penilaian Selesai</th>
+                            <td>
+                                : {{ $pengajuan->tanggal_ak_selesai
+                                    ? $pengajuan->tanggal_ak_selesai->format('d M Y H:i')
                                     : '-' }}
                             </td>
                         </tr>

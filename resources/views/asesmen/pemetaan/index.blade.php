@@ -880,7 +880,7 @@ Sekretariat LAMDEPILAR</textarea>
 </div>
 
 <div class="modal fade" id="reminderModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title">
@@ -2014,6 +2014,7 @@ Sekretariat LAMDEPILAR</textarea>
         setTimeout(() => {
             const peringkatSelect = $('#reminderPeringkatFilter');
             const statusSelect = $('#reminderStatusFilter');
+            const modalBody = document.querySelector('#reminderModal .modal-body');
 
             // Check if elements exist
             if (peringkatSelect.length === 0 || statusSelect.length === 0) {
@@ -2044,6 +2045,12 @@ Sekretariat LAMDEPILAR</textarea>
 
             peringkatSelect.select2(select2Config);
             statusSelect.select2(select2Config);
+
+            // ✅ Pastikan modal body tetap scrollable setelah Select2 init
+            if (modalBody) {
+                modalBody.style.overflowY = 'auto';
+                modalBody.style.maxHeight = '70vh';
+            }
 
             // Search with debounce
             let searchTimeout;
@@ -2089,6 +2096,7 @@ Sekretariat LAMDEPILAR</textarea>
     async function loadReminderDetail(page = 1) {
         const loading = document.getElementById('reminderLoading');
         const container = document.getElementById('reminderDetailContainer');
+        const modalBody = document.querySelector('#reminderModal .modal-body');
 
         const targetMonths = document.getElementById('reminderTargetMonths').value;
         const windowMonths = document.getElementById('reminderWindowMonths').value;
@@ -2152,6 +2160,11 @@ Sekretariat LAMDEPILAR</textarea>
             // Update content
             container.innerHTML = data.html;
 
+            // ✅ Scroll modal body ke atas setelah konten dimuat
+            if (modalBody) {
+                modalBody.scrollTop = 0;
+            }
+
             // Reset initialization flag
             reminderFiltersInitialized = false;
 
@@ -2171,6 +2184,12 @@ Sekretariat LAMDEPILAR</textarea>
 
                     if (savedFilters.status.length > 0) {
                         $('#reminderStatusFilter').val(savedFilters.status).trigger('change');
+                    }
+
+                    // ✅ Pastikan modal tetap scrollable setelah re-init
+                    if (modalBody) {
+                        modalBody.style.overflowY = 'auto';
+                        modalBody.style.maxHeight = '70vh';
                     }
                 }, 100);
             }, 100);
@@ -2204,10 +2223,25 @@ Sekretariat LAMDEPILAR</textarea>
         const reminderModal = document.getElementById('reminderModal');
         if (reminderModal) {
             reminderModal.addEventListener('shown.bs.modal', function() {
-                // Wait a bit for content to load
+                const modalBody = this.querySelector('.modal-body');
+                if (modalBody) {
+                    modalBody.style.overflowY = 'auto';
+                    modalBody.style.maxHeight = '70vh';
+                    modalBody.scrollTop = 0;
+                }
+
+                // Initialize filters
                 setTimeout(() => {
                     initReminderFilters();
                 }, 300);
+            });
+
+            // ✅ Prevent scroll issues when Select2 dropdown opens
+            reminderModal.addEventListener('select2:open', function() {
+                const modalBody = this.querySelector('.modal-body');
+                if (modalBody) {
+                    modalBody.style.overflowY = 'auto';
+                }
             });
         }
     });

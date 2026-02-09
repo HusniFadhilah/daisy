@@ -33,7 +33,7 @@
                 <div class="accordion-body">
                     @if($indikatorsByElemen->isNotEmpty())
                     <div class="table-responsive">
-                        <table class="table table-hover table-sm">
+                        <table class="table table-hover align-middle table-sm">
                             <thead>
                                 <tr>
                                     <th style="width: 80px;">Skor</th>

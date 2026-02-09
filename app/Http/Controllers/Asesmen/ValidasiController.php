@@ -145,9 +145,40 @@ class ValidasiController extends Controller
             'total_asesor_pending'  => $totalAsesorPending,
         ];
 
+        $rows = collect();
+
+        foreach ($needsValidation as $item) {
+            $rows->push([
+                'asesmen' => $item['asesmen'],
+                'assignment' => $item['assignment'],
+                'type' => 'needs', // belum divalidasi
+                'total_accepted_asesors' => $item['total_accepted_asesors'] ?? 0,
+                'asesors' => $item['asesors'] ?? collect(),
+                'asesors_pending' => $item['asesors_pending'] ?? collect(),
+                'approved_at' => null,
+            ]);
+        }
+
+        foreach ($validated as $item) {
+            $rows->push([
+                'asesmen' => $item['asesmen'],
+                'assignment' => $item['assignment'],
+                'type' => 'validated', // sudah divalidasi
+                'total_accepted_asesors' => null,
+                'asesors' => $item['asesors'] ?? collect(),
+                'asesors_pending' => collect(),
+                'approved_at' => optional($item['assignment'])->approved_at,
+            ]);
+        }
+
+        // optional: urutkan (misal: yang belum divalidasi di atas)
+        $rows = $rows->sortBy(fn($r) => $r['type'] === 'validated' ? 1 : 0)->values();
+
+        $totalRows = $rows->count();
+
         return view('asesmen.ak.validasi.index', compact(
-            'needsValidation',
-            'validated',
+            'rows',
+            'totalRows',
             'stats',
             'asesorsPendingList'
         ));
@@ -333,6 +364,24 @@ class ValidasiController extends Controller
             }
         }
 
+        $assignmentIdPelaporan = $assignment->id;
+
+        $typeDoc = $jenisAsesmen === 'ak' ? 'laporan_validasi_ak' : 'laporan_al';
+
+        $sudahDilaporkan = \App\Models\AsesmenDocument::where('id_asesmen', $assignment->id_asesmen)
+            ->where('type', $typeDoc)
+            ->where('is_active', true)
+            ->exists();
+
+        $currentAlert = $this->buildCurrentAlertForValidator(
+            $isApproved,
+            $allValidated,
+            $sudahDilaporkan,
+            $validatedCount,
+            $totalElemen,
+            $asesors
+        );
+
         return view('asesmen.ak.validasi.asesor', compact(
             'assignment',
             'asesmen',
@@ -348,8 +397,93 @@ class ValidasiController extends Controller
             'validationPercentage',
             'allValidated',
             'isApproved',
-            'jenjangs'
+            'jenjangs',
+            'currentAlert',
+            'sudahDilaporkan'
         ));
+    }
+
+    /**
+     * Build alert kondisi saat ini untuk halaman validasi asesor (role validator).
+     */
+    private function buildCurrentAlertForValidator(
+        bool $isApproved,
+        bool $allValidated,
+        bool $sudahDilaporkan,
+        int $validatedCount,
+        int $totalElemen,
+        \Illuminate\Support\Collection $asesors
+    ): ?array {
+        $asesorsRevision = $asesors->where('status_pekerjaan', 'revision_required');
+
+        // asesor yang "belum submit pertama kali"
+        $asesorsNeverSubmitted = $asesors->filter(function ($asesor) {
+            if ($asesor->status_pekerjaan === 'revision_required') return false;
+            return in_array($asesor->status_pekerjaan, ['not_started', 'in_progress'])
+                && is_null($asesor->submitted_at);
+        });
+
+        $namesNever = $asesorsNeverSubmitted->pluck('user.name')->values()->all();
+        $namesRev   = $asesorsRevision->pluck('user.name')->values()->all();
+
+        // 1) Sudah approve semua (validator selesai)
+        if ($isApproved) {
+            if ($sudahDilaporkan) {
+                return [
+                    'type' => 'success',
+                    'icon' => 'bi-check-circle',
+                    'title' => 'Proses telah selesai.',
+                    'message' => 'Validasi telah disetujui dan pelaporan sudah dikirim.',
+                ];
+            }
+            return [];
+            // return [
+            //     'type' => 'info',
+            //     'icon' => 'bi-info-circle',
+            //     'title' => 'Pelaporan diperlukan.',
+            //     'message' => 'Validasi sudah disetujui. Lanjutkan dengan finalisasi dan kirim pelaporan.',
+            // ];
+        }
+
+        // 2) Semua elemen sudah divalidasi tapi belum approve-all
+        if ($allValidated) {
+            return [
+                'type' => 'warning',
+                'icon' => 'bi-exclamation-triangle',
+                'title' => 'Siap diselesaikan.',
+                'message' => 'Semua elemen sudah divalidasi. Klik "Setujui Semua Penilaian" untuk menyelesaikan proses.',
+            ];
+        }
+
+        // 3) Menunggu asesor submit pertama kali
+        if ($asesorsNeverSubmitted->count() > 0) {
+            $list = count($namesNever) ? implode(', ', $namesNever) : '-';
+            return [
+                'type' => 'info',
+                'icon' => 'bi-hourglass-split',
+                'title' => 'Menunggu asesor submit.',
+                'message' => "Validasi belum dapat dimulai. Menunggu {$asesorsNeverSubmitted->count()} asesor melakukan submit penilaian pertama kali: {$list}.",
+            ];
+        }
+
+        // 4) Menunggu revisi asesor
+        if ($asesorsRevision->count() > 0) {
+            $list = count($namesRev) ? implode(', ', $namesRev) : '-';
+            return [
+                'type' => 'warning',
+                'icon' => 'bi-arrow-counterclockwise',
+                'title' => 'Menunggu revisi.',
+                'message' => "Terdapat {$asesorsRevision->count()} asesor yang sedang melakukan revisi: {$list}. Mohon lanjutkan validasi setelah revisi disubmit kembali.",
+            ];
+        }
+
+        // 5) Default: validasi berjalan
+        return [
+            'type' => 'primary',
+            'icon' => 'bi-clipboard-check',
+            'title' => 'Validasi sedang berjalan.',
+            'message' => "Progress validasi: {$validatedCount}/{$totalElemen} elemen. Mohon lanjutkan validasi elemen yang belum divalidasi.",
+        ];
     }
 
     /**

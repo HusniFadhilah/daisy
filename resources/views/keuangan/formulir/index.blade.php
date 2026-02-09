@@ -122,7 +122,7 @@
 
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover table-bordered mb-0 align-middle">
+                <table class="table table-hover align-middle table-bordered mb-0 align-middle">
                     <thead class="table-light">
                         <tr>
                             <th width="40">#</th>

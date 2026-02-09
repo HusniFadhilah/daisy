@@ -95,7 +95,7 @@
                                         </label>
                                         <select class="form-select" id="statusValidasi" required>
                                             <option value="">-- Pilih Status --</option>
-                                            <option value="validated_diff">☑ Setujui Penilaian (dengan Perbedaan Nilai)</option>
+                                            <option value="validated_diff">☑ Setujui Penilaian</option>
                                             @if (app()->environment('local'))
                                             <option value="validated">✅ Setujui Penilaian (dengan Preferensi Skor)</option>
                                             @endif

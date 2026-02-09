@@ -408,6 +408,9 @@ class PenugasanAKController extends Controller
                 }
             }
 
+            // ✅ FIX: Jika validator dokumen, langsung accepted
+            $statusPenawaran = ($useValidatorDokumen && $validatorDokumen) ? 'accepted' : 'pending';
+
             // Create assignment
             $assignment = AsesmenUserRole::create([
                 'id_asesmen' => $asesmen->id,
@@ -416,7 +419,7 @@ class PenugasanAKController extends Controller
                 'jenis_asesmen' => 'ak',
                 'id_asesmen_kecukupan' => $asesmenKecukupan->id,
                 'urutan_asesor' => $urutanAsesor,
-                'status_penawaran' => 'pending',
+                'status_penawaran' => $statusPenawaran, // ✅ accepted jika validator dokumen
             ]);
 
             // ✅ Handle Surat Tugas
@@ -424,14 +427,12 @@ class PenugasanAKController extends Controller
 
             if ($role->name === 'asesor') {
                 // ✅ ASESOR: 1 surat tugas untuk SEMUA asesor
-                // Cek apakah sudah ada surat tugas asesor AK
                 $existingSuratTugas = $pengajuan->dokumen()
                     ->where('jenis_dokumen', 'surat_tugas_asesor_ak')
                     ->where('is_latest', true)
                     ->first();
 
                 if (!$existingSuratTugas) {
-                    // Buat surat tugas baru (hanya 1x untuk asesor pertama)
                     if ($request->hasFile('file_surat_tugas')) {
                         $this->uploadSuratTugasAsesorAK($pengajuan, $assignment, $request->file('file_surat_tugas'));
                     } else {
@@ -472,24 +473,37 @@ class PenugasanAKController extends Controller
                 ]
             );
 
-            // Send email
-            try {
-                SendPenawaranAsesmenEmail::dispatch($assignment);
-            } catch (\Exception $e) {
-                Log::error("Gagal dispatch email job penawaran", [
-                    'assignment_id' => $assignment->id,
-                    'error' => $e->getMessage(),
-                ]);
+            // ✅ FIX: Kirim email HANYA jika bukan validator dokumen
+            if (!($useValidatorDokumen && $validatorDokumen)) {
+                try {
+                    SendPenawaranAsesmenEmail::dispatch($assignment);
+                } catch (\Exception $e) {
+                    Log::error("Gagal dispatch email job penawaran", [
+                        'assignment_id' => $assignment->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
             }
 
             DB::commit();
 
+            $message = "User {$user->name} berhasil ditugaskan sebagai {$role->alias} untuk AK" .
+                ($urutanAsesor ? " (Asesor {$urutanAsesor})" : "");
+
+            // ✅ Pesan berbeda jika validator dokumen
+            if ($useValidatorDokumen && $validatorDokumen) {
+                $message .= ". Status langsung diterima (accepted).";
+            } else {
+                $message .= ". Email penawaran telah dikirim.";
+            }
+
+            if ($suratTugasCreated) {
+                $message .= " Surat tugas telah dibuat.";
+            }
+
             return response()->json([
                 'success' => true,
-                'message' => "User {$user->name} berhasil ditugaskan sebagai {$role->alias} untuk AK" .
-                    ($urutanAsesor ? " (Asesor {$urutanAsesor})" : "") .
-                    ". Email penawaran telah dikirim." .
-                    ($suratTugasCreated ? " Surat tugas telah dibuat." : ""),
+                'message' => $message,
                 'data' => [
                     'assignment' => $assignment,
                     'user' => $user,
@@ -497,6 +511,7 @@ class PenugasanAKController extends Controller
                     'urutan_asesor' => $urutanAsesor,
                     'surat_tugas_created' => $suratTugasCreated,
                     'used_validator_dokumen' => $useValidatorDokumen && $validatorDokumen !== null,
+                    'status_penawaran' => $statusPenawaran,
                 ]
             ]);
         } catch (\Exception $e) {

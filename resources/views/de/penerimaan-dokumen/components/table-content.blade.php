@@ -11,7 +11,7 @@
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-hover mb-0">
+            <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
                         <th width="5%">No</th>
@@ -63,13 +63,6 @@
                             <div class="progress progress-custom mt-2">
                                 <div class="progress-bar bg-warning" style="width: {{ ($docCount / 2) * 100 }}%"></div>
                             </div>
-                            <small class="text-muted">
-                                {{ $hasLED ? '✓ LED' : '✗ LED' }} |
-                                {{ $hasLKPS ? '✓ LKPS' : '✗ LKPS' }}
-                                @if($pengajuan->jenis_akreditasi == 'menuju_unggul')
-                                {{ $hasSuplemen ? '| ✓ Suplemen' : '| ✗ Suplemen' }}
-                                @endif
-                            </small>
                             @else
                             <div class="doc-status-badge doc-none">
                                 <i class="bi bi-x-circle-fill"></i> Belum Diupload
@@ -78,6 +71,48 @@
                                 <div class="progress-bar bg-danger" style="width: 0%"></div>
                             </div>
                             @endif
+                            @php
+                            // Ambil dokumen untuk link download (gunakan is_latest=true sudah difilter di controller/with)
+                            $ledDoc = $pengajuan->dokumen->firstWhere('jenis_dokumen', 'draft_borang')
+                            ?? $pengajuan->dokumen->firstWhere('jenis_dokumen', 'data_kualitatif');
+
+                            $lkpsDoc = $pengajuan->dokumen->firstWhere('jenis_dokumen', 'data_kuantitatif');
+                            $suplemenDoc = $pengajuan->dokumen->firstWhere('jenis_dokumen', 'data_suplemen');
+                            @endphp
+
+                            <small class="text-muted d-flex gap-2 flex-wrap">
+                                {{-- LED --}}
+                                @if($ledDoc && $ledDoc->download_url)
+                                <a href="{{ $ledDoc->download_url }}" class="text-success text-decoration-none" target="_blank" title="Download LED">
+                                    <small>✓ LED</small>
+                                </a>
+                                @else
+                                <span class="text-danger" title="LED belum diupload">✗ LED</span>
+                                @endif
+
+                                <span>|</span>
+
+                                {{-- LKPS --}}
+                                @if($lkpsDoc && $lkpsDoc->download_url)
+                                <a href="{{ $lkpsDoc->download_url }}" class="text-success text-decoration-none" target="_blank" title="Download LKPS">
+                                    <small>✓ LKPS</small>
+                                </a>
+                                @else
+                                <span class="text-danger" title="LKPS belum diupload">✗ LKPS</span>
+                                @endif
+
+                                {{-- Suplemen --}}
+                                @if($pengajuan->jenis_akreditasi == 'menuju_unggul')
+                                <span>|</span>
+                                @if($suplemenDoc && $suplemenDoc->download_url)
+                                <a href="{{ $suplemenDoc->download_url }}" class="text-success text-decoration-none" target="_blank" title="Download Suplemen">
+                                    <small>✓ Suplemen</small>
+                                </a>
+                                @else
+                                <span class="text-danger" title="Suplemen belum diupload">✗ Suplemen</span>
+                                @endif
+                                @endif
+                            </small>
                         </td>
                         <td>
                             @if($pengajuan->status_changed_at)

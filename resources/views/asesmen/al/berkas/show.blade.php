@@ -147,7 +147,7 @@ $isComplete = $progress['percentage'] == 100;
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
                     <h3 class="mb-1">Penilaian Asesmen Lapangan</h3>
-                    <p class="text-muted mb-0">{{ $asesmen->name }}</p>
+                    <p class="text-muted mb-0">{{ $asesmen->getName(false) }}</p>
                 </div>
                 <a href="{{ route('al.berkas') }}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left"></i> Kembali
@@ -201,7 +201,7 @@ $isComplete = $progress['percentage'] == 100;
                                 </h5>
                                 <p class="mb-2">
                                     Anda telah menyelesaikan <strong>semua {{ $progress['total'] }} elemen penilaian</strong>.
-                                    Segera lakukan <strong>Finalisasi dan Kirim</strong> agar penilaian Anda dapat divalidasi oleh LAMDEPILAR.
+                                    Mohon segera lakukan <strong>Finalisasi dan Kirim</strong> agar penilaian Anda dapat divalidasi oleh LAMDEPILAR.
                                 </p>
                                 <hr>
                                 <div class="mb-0">
@@ -2121,7 +2121,7 @@ $isComplete = $progress['percentage'] == 100;
 
             let html = `
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table class="table table-hover align-middle">
                     <thead class="table-light">
                         <tr>
                             <th>Waktu</th>

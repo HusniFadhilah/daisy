@@ -35,7 +35,7 @@
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover" id="elemenStandarTable">
+                <table class="table table-hover align-middle" id="elemenStandarTable">
                     <thead>
                         <tr>
                             <th>No</th>

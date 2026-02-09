@@ -55,7 +55,7 @@
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-hover" id="bobotTable">
+                <table class="table table-hover align-middle" id="bobotTable">
                     <thead>
                         <tr>
                             <th>No</th>

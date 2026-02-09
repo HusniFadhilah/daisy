@@ -45,7 +45,7 @@
             @endphp
             <!-- Status Alert -->
             @if(in_array($log?->status_to,[\App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,\App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION]))
-            <div class="alert alert-success alert-permanent">
+            <div class="alert alert-info alert-permanent">
                 <i class="bi bi-check-circle"></i>
                 <strong>Dokumen sedang divalidasi</strong><br>
                 Mohon menunggu hasil validasi dokumen oleh LAMDEPILAR

@@ -248,6 +248,14 @@ class UserSeeder extends Seeder
                 'must_change_password' => true
             ],
             [
+                'name' => 'Surveillance',
+                'email' => 'surveillance@daisy.lamdepilar.or.id',
+                'password' => Hash::make('=Secret1234'),
+                'role' => 'user',
+                'role_selected' => 'surveillance',
+                'roles' => ['surveillance'],
+            ],
+            [
                 'name' => 'Default User',
                 'email' => 'default@daisy.lamdepilar.or.id',
                 'password' => Hash::make('=Secret1234'),

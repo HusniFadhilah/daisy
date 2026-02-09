@@ -928,7 +928,7 @@
          */
         function showLoading() {
             Swal.fire({
-                title: 'Processing...'
+                title: 'Sedang Memproses...'
                 , allowOutsideClick: false
                 , didOpen: () => {
                     Swal.showLoading();

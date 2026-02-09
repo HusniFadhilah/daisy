@@ -1,6 +1,6 @@
 @extends('layouts.template.app')
 
-@section('title', 'Monitoring Validasi AK')
+@section('title', 'Validasi AK')
 
 @section('content')
 <div class="container-fluid py-3">

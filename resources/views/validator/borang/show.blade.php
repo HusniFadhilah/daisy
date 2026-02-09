@@ -74,6 +74,12 @@
         </a>
     </div>
 
+    {{-- STATUS BANNER --}}
+    <div class="alert alert-{{ $statusClass }} alert-permanent mb-3">
+        <i class="bi {{ $statusClass === 'success' ? 'bi-check-circle' : 'bi-info-circle' }}"></i>
+        {{ $statusText }}
+    </div>
+
     {{-- Progress Overview --}}
     <div class="row mb-4">
         <div class="col-md-3">
@@ -184,188 +190,194 @@
 
     {{-- Dokumen yang diupload Prodi --}}
     <div class="card mb-4">
-        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        {{-- Header (clickable) --}}
+        <div class="card-header bg-light d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#collapseDokumenProdi" aria-expanded="false" style="cursor: pointer;">
             <h5 class="mb-0">
-                <i class="bi bi-folder2-open"></i> Dokumen dari Prodi
+                <i class="bi bi-folder2-open me-1"></i> Dokumen dari Prodi
             </h5>
-            <small class="text-muted">File terbaru</small>
+
+            <div class="d-flex align-items-center gap-2">
+                <small class="text-muted">Lihat File terbaru</small>
+                <i class="bi bi-chevron-down"></i>
+            </div>
         </div>
 
-        <div class="card-body">
-            @php
-            $docCards = [
-            'led' => [
-            'label' => 'Laporan Evaluasi Diri (LED)',
-            'btn_class' => 'btn-primary',
-            'empty_text' => 'Belum ada file LED diupload.',
-            ],
-            'suplemen' => [
-            'label' => 'Suplemen',
-            'btn_class' => 'btn-info text-white',
-            'empty_text' => 'Belum ada file suplemen yang diupload.',
-            ],
-            'lkps' => [
-            'label' => 'Laporan Kinerja Program Studi (LKPS)',
-            'btn_class' => 'btn-success',
-            'empty_text' => 'Belum ada file LKPS yang diupload.',
-            ],
-            //'formulir_pembayaran' => [
-            //'label' => 'Formulir & Bukti Pembayaran Akreditasi',
-            //'btn_class' => 'btn-info',
-            //'empty_text' => 'Belum ada file Formulir & Bukti Pembayaran yang diupload.',
-            //],
-            //'surat_permohonan' => [
-            //'label' => 'Permohonan Akreditasi',
-            //'btn_class' => 'btn-primary',
-            //'empty_text' => 'Belum ada file Permohonan Akreditasi yang diupload.',
-            //],
-            ];
-            @endphp
-            <div class="row g-3">
-                @foreach($docCards as $key => $config)
-                @php $file = $uploadedFiles[$key] ?? null; @endphp
+        {{-- Body (collapsible) --}}
+        <div id="collapseDokumenProdi" class="collapse">
+            <div class="card-body">
+                @php
+                $docCards = [
+                'led' => [
+                'label' => 'Laporan Evaluasi Diri (LED)',
+                'btn_class' => 'btn-primary',
+                'empty_text' => 'Belum ada file LED diupload.',
+                ],
+                'suplemen' => [
+                'label' => 'Suplemen',
+                'btn_class' => 'btn-info text-white',
+                'empty_text' => 'Belum ada file suplemen yang diupload.',
+                ],
+                'lkps' => [
+                'label' => 'Laporan Kinerja Program Studi (LKPS)',
+                'btn_class' => 'btn-success',
+                'empty_text' => 'Belum ada file LKPS yang diupload.',
+                ],
+                ];
+                @endphp
 
-                <div class="col-lg-4">
-                    <div class="border rounded p-3 h-100">
-                        <div class="d-flex align-items-start gap-3">
+                <div class="row g-3">
+                    @foreach($docCards as $key => $config)
+                    @php $file = $uploadedFiles[$key] ?? null; @endphp
 
-                            {{-- Icon --}}
-                            <i class="bi {{ $file?->file_icon_class ?? 'bi-file-earmark' }} fs-4 flex-shrink-0"></i>
+                    <div class="col-lg-4">
+                        <div class="border rounded p-3 h-100">
+                            <div class="d-flex align-items-start gap-3">
+                                {{-- Icon --}}
+                                <i class="bi {{ $file?->file_icon_class ?? 'bi-file-earmark' }} fs-4 flex-shrink-0"></i>
 
-                            {{-- Text --}}
-                            <div class="flex-grow-1">
-                                <div class="fw-bold mb-1">{{ $config['label'] }}</div>
+                                {{-- Text --}}
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold mb-1">{{ $config['label'] }}</div>
 
-                                @if($file)
-                                <div class="text-muted small fw-semibold text-break">
-                                    {{ $file->original_filename }}
+                                    @if($file)
+                                    <div class="text-muted small fw-semibold text-break">
+                                        {{ $file->original_filename }}
+                                    </div>
+                                    <div class="text-muted small">
+                                        {{ $file->created_at->diffForHumans() }}
+                                    </div>
+                                    @else
+                                    <div class="text-muted small">
+                                        {{ $config['empty_text'] }}
+                                    </div>
+                                    @endif
                                 </div>
-                                <div class="text-muted small">
-                                    {{ $file->created_at->diffForHumans() }}
-                                </div>
-                                @else
-                                <div class="text-muted small">
-                                    {{ $config['empty_text'] }}
+
+                                {{-- Button --}}
+                                @if($file && $file->download_url)
+                                <div class="flex-shrink-0">
+                                    <a class="btn btn-sm {{ $config['btn_class'] }}" href="{{ $file->download_url }}" target="_blank" rel="noopener">
+                                        <i class="bi bi-download"></i> Buka
+                                    </a>
                                 </div>
                                 @endif
                             </div>
-
-                            {{-- Button --}}
-                            @if($file && $file->download_url)
-                            <div class="flex-shrink-0">
-                                <a class="btn btn-sm {{ $config['btn_class'] }}" href="{{ $file->download_url }}" target="_blank" rel="noopener">
-                                    <i class="bi bi-download"></i> Buka
-                                </a>
-                            </div>
-                            @endif
-
                         </div>
                     </div>
+                    @endforeach
                 </div>
-                @endforeach
-            </div>
 
-            {{-- Optional: pengesahan --}}
-            @if(!empty($uploadedFiles['pengesahan']))
-            <hr class="my-3">
-            <div class="d-flex align-items-start gap-3">
-                <i class="bi {{ $uploadedFiles['pengesahan']->file_icon_class }} fs-4 flex-shrink-0"></i>
+                {{-- Optional: pengesahan --}}
+                @if(!empty($uploadedFiles['pengesahan']))
+                <hr class="my-3">
+                <div class="d-flex align-items-start gap-3">
+                    <i class="bi {{ $uploadedFiles['pengesahan']->file_icon_class }} fs-4 flex-shrink-0"></i>
 
-                <div class="flex-grow-1">
-                    <div class="fw-bold">Lembar Pengesahan</div>
-                    <div class="text-muted small text-break">
-                        {{ $uploadedFiles['pengesahan']->original_filename }}
-                        • {{ $uploadedFiles['pengesahan']->created_at->diffForHumans() }}
+                    <div class="flex-grow-1">
+                        <div class="fw-bold">Lembar Pengesahan</div>
+                        <div class="text-muted small text-break">
+                            {{ $uploadedFiles['pengesahan']->original_filename }}
+                            • {{ $uploadedFiles['pengesahan']->created_at->diffForHumans() }}
+                        </div>
+                    </div>
+
+                    <div class="flex-shrink-0">
+                        <a class="btn btn-sm btn-outline-secondary" href="{{ $uploadedFiles['pengesahan']->download_url }}" target="_blank" rel="noopener">
+                            <i class="bi bi-download"></i> Buka
+                        </a>
                     </div>
                 </div>
-
-                <div class="flex-shrink-0">
-                    <a class="btn btn-sm btn-outline-secondary" href="{{ $uploadedFiles['pengesahan']->download_url }}" target="_blank" rel="noopener">
-                        <i class="bi bi-download"></i> Buka
-                    </a>
-                </div>
+                @endif
             </div>
-            @endif
         </div>
     </div>
 
     {{-- Excel Import/Export --}}
     <div class="card mb-4 border-primary">
-        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        {{-- Header (clickable) --}}
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#collapseExcelValidasi" aria-expanded="false" style="cursor: pointer;">
             <h5 class="mb-0">
                 <i class="bi bi-file-earmark-excel"></i> Upload/Download Excel Validasi
             </h5>
-            <span class="badge bg-light text-dark">Opsional</span>
-        </div>
-        <div class="card-body">
-            <div class="alert alert-info alert-permanent mb-3">
-                <i class="bi bi-info-circle"></i>
-                <strong>Tips:</strong> Anda dapat melakukan validasi melalui Excel untuk mempermudah proses.
-                Download template, isi validasi, lalu upload kembali ke sistem.
+
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-light text-dark">Lihat Detail</span>
+                <i class="bi bi-chevron-down"></i>
             </div>
+        </div>
 
-            <div class="row g-3">
-                {{-- Download Section --}}
-                <div class="col-lg-6">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h6 class="card-title">
-                                <i class="bi bi-download"></i> Download Excel
-                            </h6>
-                            <p class="card-text text-muted small">
-                                Download file Excel untuk validasi offline
-                            </p>
+        {{-- Body (collapsed by default) --}}
+        <div id="collapseExcelValidasi" class="collapse">
+            <div class="card-body">
+                <div class="alert alert-info alert-permanent mb-3">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Tips:</strong> Anda dapat melakukan validasi melalui Excel untuk mempermudah proses.
+                    Download template, isi validasi, lalu upload kembali ke sistem.
+                </div>
 
-                            <div class="btn-group w-100" role="group">
-                                <a href="{{ route('validator.borang.download-template', $assignment->id) }}" class="btn btn-outline-primary">
-                                    <i class="bi bi-file-earmark"></i> Template Kosong
-                                </a>
-                                <a href="{{ route('validator.borang.download-review', $assignment->id) }}" class="btn btn-outline-success">
-                                    <i class="bi bi-file-earmark-check"></i> Hasil Validasi Anda
-                                </a>
-                            </div>
+                <div class="row g-3">
+                    {{-- Download Section --}}
+                    <div class="col-lg-6">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h6 class="card-title">
+                                    <i class="bi bi-download"></i> Download Excel
+                                </h6>
+                                <p class="card-text text-muted small">
+                                    Download file Excel untuk validasi offline
+                                </p>
 
-                            <div class="mt-2">
-                                <small class="text-muted">
-                                    <strong>Template Kosong:</strong> File Excel baru tanpa isian<br>
-                                    <strong>Hasil Validasi:</strong> File Excel berisi validasi yang telah Anda isi
-                                </small>
+                                <div class="btn-group w-100" role="group">
+                                    <a href="{{ route('validator.borang.download-template', $assignment->id) }}" class="btn btn-outline-primary">
+                                        <i class="bi bi-file-earmark"></i> Template Kosong
+                                    </a>
+                                    <a href="{{ route('validator.borang.download-review', $assignment->id) }}" class="btn btn-outline-success">
+                                        <i class="bi bi-file-earmark-check"></i> Hasil Validasi Anda
+                                    </a>
+                                </div>
+
+                                <div class="mt-2">
+                                    <small class="text-muted">
+                                        <strong>Template Kosong:</strong> File Excel baru tanpa isian<br>
+                                        <strong>Hasil Validasi:</strong> File Excel berisi validasi yang telah Anda isi
+                                    </small>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                {{-- Upload Section --}}
-                <div class="col-lg-6">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h6 class="card-title">
-                                <i class="bi bi-upload"></i> Upload Excel
-                            </h6>
-                            <p class="card-text text-muted small">
-                                Upload file Excel yang telah diisi untuk diproses
-                            </p>
+                    {{-- Upload Section --}}
+                    <div class="col-lg-6">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h6 class="card-title">
+                                    <i class="bi bi-upload"></i> Upload Excel
+                                </h6>
+                                <p class="card-text text-muted small">
+                                    Upload file Excel yang telah diisi untuk diproses
+                                </p>
 
-                            <form action="{{ route('validator.borang.upload-review', $assignment->id) }}" method="POST" enctype="multipart/form-data" id="formUploadReview">
-                                @csrf
+                                <form action="{{ route('validator.borang.upload-review', $assignment->id) }}" method="POST" enctype="multipart/form-data" id="formUploadReview">
+                                    @csrf
 
-                                <div class="mb-3">
-                                    <input type="file" class="form-control" name="file" id="fileReview" accept=".xlsx,.xls" required>
-                                    <div class="form-text">
-                                        Format: .xlsx atau .xls (Maks. 10MB)
+                                    <div class="mb-3">
+                                        <input type="file" class="form-control" name="file" id="fileReview" accept=".xlsx,.xls" required>
+                                        <div class="form-text">
+                                            Format: .xlsx atau .xls (Maks. 5MB)
+                                        </div>
                                     </div>
+
+                                    <button type="submit" class="btn btn-primary w-100" id="btnUploadReview">
+                                        <i class="bi bi-upload"></i> Upload File
+                                    </button>
+                                </form>
+
+                                <div class="mt-2">
+                                    <small class="text-muted">
+                                        <i class="bi bi-info-circle"></i>
+                                        Data yang diupload akan digabungkan dengan validasi online yang telah ada
+                                    </small>
                                 </div>
-
-                                <button type="submit" class="btn btn-primary w-100" id="btnUploadReview">
-                                    <i class="bi bi-upload"></i> Upload File
-                                </button>
-                            </form>
-
-                            <div class="mt-2">
-                                <small class="text-muted">
-                                    <i class="bi bi-info-circle"></i>
-                                    Data yang diupload akan digabungkan dengan validasi online yang telah ada
-                                </small>
                             </div>
                         </div>
                     </div>
@@ -730,7 +742,10 @@
                     </span>
                 </div>
                 <div class="card-body">
-
+                    <div class="alert alert-info alert-permanent">
+                        <i class="bi bi-info-circle"></i>
+                        Mohon berikan catatan Umum LED, Suplemen, dan LKPS serta catatan keseluruhan Anda sebelum mengirimkan validasi.<br>Lalu jika seluruh validasi sudah lengkap, pilih aksi "Setujui Dokumen" atau "Minta Revisi" dan klik "Submit Final".
+                    </div>
                     <div class="row">
                         <div class="col-lg-4 mb-3">
                             <label class="form-label fw-bold">Catatan Umum LED</label>
@@ -766,7 +781,7 @@
                         </span>
 
                         {{-- Tombol submit final --}}
-                        <button type="button" class="btn btn-primary ms-auto" id="btnSubmitFinal" disabled>
+                        <button type="button" class="btn btn-primary ms-auto" id="btnSubmitFinal" disabled {{ $lockBorang ? 'disabled' : '' }}>
                             <i class="bi bi-send"></i> Submit Final
                         </button>
                     </div>
@@ -839,6 +854,19 @@ $assignmentId = $assignment->id;
         const formUpload = document.getElementById('formUploadReview');
         const btnUpload = document.getElementById('btnUploadReview');
         const fileInput = document.getElementById('fileReview');
+
+        if (LOCK_BORANG) {
+            if (btnPickApprove) btnPickApprove.disabled = true;
+            if (btnPickRevision) btnPickRevision.disabled = true;
+            if (btnSubmitFinal) btnSubmitFinal.disabled = true;
+
+            // optional: disable semua tombol save review
+            document.querySelectorAll('.btn-save-review').forEach(b => b.disabled = true);
+            document.querySelectorAll('.catatan-input, #catatan_led, #catatan_suplemen, #catatan_lkps, #catatan_validator')
+                .forEach(el => {
+                    if (el) el.setAttribute('readonly', 'readonly');
+                });
+        }
 
         // =============== RENDER PICKED ACTION ===============
         function renderPickedAction() {

@@ -9,7 +9,7 @@
         <ol class="breadcrumb">
             <li class="breadcrumb-item">
                 <a href="{{ route('de.validasi-ak') }}">
-                    <i class="bi bi-arrow-left"></i> Monitoring Validasi AK
+                    <i class="bi bi-arrow-left"></i> Validasi AK
                 </a>
             </li>
             <li class="breadcrumb-item active">Detail</li>
@@ -161,7 +161,7 @@
                 <div class="card-body p-0">
                     @if($pengajuan->asesmen && $pengajuan->asesmen->asesmenUserRoles->count() > 0)
                     <div class="table-responsive">
-                        <table class="table table-hover mb-0">
+                        <table class="table table-hover align-middle mb-0">
                             <thead class="table-light">
                                 <tr>
                                     <th width="5%">#</th>

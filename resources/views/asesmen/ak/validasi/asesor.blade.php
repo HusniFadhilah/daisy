@@ -15,13 +15,13 @@
                 <div class="flex-grow-1">
                     <h3 class="mb-1 text-wrap text-break">Validasi Penilaian Asesor</h3>
                     <p class="text-muted mb-0 text-wrap text-break">
-                        {{ $asesmen->name }}
+                        {{ $asesmen->getName(false) }}
                     </p>
                 </div>
 
                 <!-- Tombol -->
                 <a href="{{ route('ak.validasi.index') }}" class="btn btn-outline-secondary mt-2 mt-md-0">
-                    <i class="bi bi-arrow-left"></i> Kembali ke Dashboard
+                    <i class="bi bi-arrow-left"></i> Kembali
                 </a>
             </div>
 
@@ -31,96 +31,105 @@
                 @php
                 $colors = [
                 ['border' => 'primary', 'bg' => 'primary'],
-                ['border' => 'primary', 'bg' => 'primary'],
-                ['border' => 'primary', 'bg' => 'primary'],
-                ['border' => 'primary', 'bg' => 'primary'],
-                ['border' => 'primary', 'bg' => 'primary'],
                 ];
                 $color = $colors[$index % count($colors)];
-                $progress = $asesorProgress[$asesor->id_user] ?? ['completed' => 0, 'total' => 0, 'completion_percentage' => 0];
+                $progress = $asesorProgress[$asesor->id_user] ?? [
+                'completed' => 0,
+                'total' => 0,
+                'completion_percentage' => 0
+                ];
                 @endphp
 
                 <div class="col-md-12 col-lg-6 mb-3">
-                    <div class="card border-{{ $color['border'] }}">
+                    <div class="accordion" id="accordionAsesor{{ $index }}">
+                        <div class="accordion-item border-{{ $color['border'] }}">
 
-                        <!-- Card Header -->
-                        <div class="card-header bg-{{ $color['bg'] }} text-white
-                            d-flex flex-column flex-md-row
-                            align-items-start align-items-md-center gap-2">
-
-                            <h6 class="mb-0 flex-grow-1 text-wrap text-break">
-                                <i class="bi bi-person"></i> Asesor {{ $asesor->urutan_asesor }}
-                            </h6>
-
-                            @if($asesor->status_pekerjaan === 'revision_required')
-                            <span class="badge bg-danger ms-md-auto">
-                                <i class="bi bi-exclamation-triangle"></i> Revisi
-                            </span>
-                            @elseif($asesor->status_pekerjaan === 'submitted')
-                            <span class="badge bg-success ms-md-auto">
-                                <i class="bi bi-check-circle"></i> Submitted
-                            </span>
-                            @elseif($asesor->status_pekerjaan === 'approved')
-                            <span class="badge bg-success ms-md-auto">
-                                <i class="bi bi-patch-check"></i> Approved
-                            </span>
-                            @endif
-                        </div>
-
-                        <!-- Card Body -->
-                        <div class="card-body">
-                            <div class="d-flex align-items-center">
-                                <!-- Avatar -->
-                                <div class="avatar-circle me-3 bg-{{ $color['bg'] }}">
-                                    {{ substr($asesor->user->name, 0, 2) }}
-                                </div>
-
-                                <!-- Nama + Email -->
-                                <div>
-                                    <h6 class="mb-0 text-truncate">{{ $asesor->user->name }}</h6>
-                                    <span class="badge bg-light text-dark d-block text-break">
-                                        {{ $asesor->user->email }}
-                                    </span>
-                                </div>
-                            </div>
-
-                            <!-- Progress -->
-                            <div class="mt-3">
-                                <div class="d-flex justify-content-between">
-                                    <span>Progress Penilaian:</span>
-                                    <strong>{{ $progress['completed'] }}/{{ $progress['total'] }}</strong>
-                                </div>
-                                <div class="progress mt-2" style="height: 20px;">
-                                    <div class="progress-bar bg-{{ $color['bg'] }}" style="width: {{ $progress['completion_percentage'] }}%">
-                                        {{ $progress['completion_percentage'] }}%
+                            {{-- HEADER --}}
+                            <h2 class="accordion-header" id="headingAsesor{{ $index }}">
+                                <button class="accordion-button collapsed bg-{{ $color['bg'] }} text-white d-flex align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAsesor{{ $index }}" aria-expanded="false" aria-controls="collapseAsesor{{ $index }}">
+                                    {{-- Left content --}}
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="bi bi-person"></i>
+                                        <span>Asesor {{ $asesor->urutan_asesor }}</span>
                                     </div>
+
+                                    {{-- Spacer --}}
+                                    <div class="flex-grow-1"></div>
+
+                                    {{-- Status badge (near chevron) --}}
+                                    @if($asesor->status_pekerjaan === 'revision_required')
+                                    <span class="badge bg-danger me-2">
+                                        <i class="bi bi-exclamation-triangle"></i> Revisi
+                                    </span>
+                                    @elseif($asesor->status_pekerjaan === 'submitted')
+                                    <span class="badge bg-success me-2">
+                                        <i class="bi bi-check-circle"></i> Submitted
+                                    </span>
+                                    @elseif($asesor->status_pekerjaan === 'approved')
+                                    <span class="badge bg-success me-2">
+                                        <i class="bi bi-patch-check"></i> Approved
+                                    </span>
+                                    @endif
+                                </button>
+                            </h2>
+
+                            {{-- BODY --}}
+                            <div id="collapseAsesor{{ $index }}" class="accordion-collapse collapse" aria-labelledby="headingAsesor{{ $index }}">
+                                <div class="accordion-body">
+
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="avatar-circle me-3 bg-{{ $color['bg'] }}">
+                                            {{ substr($asesor->user->name, 0, 2) }}
+                                        </div>
+
+                                        <div>
+                                            <h6 class="mb-0">{{ $asesor->user->name }}</h6>
+                                            <span class="badge bg-light text-dark d-block">
+                                                {{ $asesor->user->email }}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {{-- Progress --}}
+                                    <div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Progress Penilaian:</span>
+                                            <strong>{{ $progress['completed'] }}/{{ $progress['total'] }}</strong>
+                                        </div>
+                                        <div class="progress mt-2" style="height: 20px;">
+                                            <div class="progress-bar bg-{{ $color['bg'] }}" style="width: {{ $progress['completion_percentage'] }}%">
+                                                {{ $progress['completion_percentage'] }}%
+                                            </div>
+                                        </div>
+                                    </div>
+
                                 </div>
                             </div>
+
                         </div>
                     </div>
                 </div>
                 @endforeach
             </div>
+
+            @if(!empty($currentAlert))
+            <div class="alert alert-{{ $currentAlert['type'] }} alert-permanent mb-0">
+                <i class="bi {{ $currentAlert['icon'] }} me-2"></i>
+                <strong>{{ $currentAlert['title'] }}</strong>
+                <div class="mt-1">{{ $currentAlert['message'] }}</div>
+            </div>
+            @endif
         </div>
 
         {{-- Action Buttons --}}
         <div class="card-footer bg-white py-3">
             @php
-            $jenisPelaporan = $jenisAsesmen; // ak | al
-            $assignmentIdPelaporan = $assignment->id;
-
-            $typeDoc = $jenisPelaporan === 'ak' ? 'laporan_validasi_ak' : 'laporan_al';
-
-            $sudahDilaporkan = \App\Models\AsesmenDocument::where('id_asesmen', $assignment->id_asesmen)
-            ->where('type', $typeDoc)
-            ->where('is_active', true)
-            ->exists();
-
             $nomorTampil = '';
             if ($asesmen->pengajuan && $asesmen->pengajuan->nomor_pengajuan) $nomorTampil = $asesmen->pengajuan->nomor_pengajuan;
             if (!$nomorTampil && isset($asesmen->code)) $nomorTampil = $asesmen->code;
             if (!$nomorTampil) $nomorTampil = $asesmen->name;
 
+            $jenisPelaporan = $jenisAsesmen; // ak | al
             $labelBtn = $jenisPelaporan === 'ak' ? 'Laporan Penilaian Kecukupan LED Program Studi (LHK)' : 'Pelaporan AL';
             @endphp
 
@@ -128,7 +137,7 @@
             <div class="alert alert-success alert-permanent mb-3">
                 <i class="bi bi-check-circle me-2"></i>
                 <strong>Penilaian Telah Disetujui!</strong>
-                <p class="mb-0">Validasi {{ $sudahDilaporkan ? 'dan Pelaporan AK ' : '' }}telah diselesaikan dan lolos untuk tahap selanjutnya (Asesmen Lapangan/AL). {{ !$sudahDilaporkan ? 'Mohon membuat Laporan Penilaian Kecukupan LED Program Studi (LHK) pada menu Pelaporan AK' : '' }}</p>
+                <p class="mb-0">Validasi {{ $sudahDilaporkan ? 'dan Pelaporan AK ' : '' }}telah diselesaikan dan lolos untuk tahap selanjutnya (Asesmen Lapangan/AL). {!! !$sudahDilaporkan ? '<br>Mohon membuat Laporan Penilaian Kecukupan LED Program Studi (LHK) pada menu Pelaporan AK' : '' !!}</p>
             </div>
             @endif
 
@@ -330,6 +339,21 @@
         opacity: 0.8;
     }
 
+    .accordion-button::after {
+        filter: brightness(0) invert(1);
+    }
+
+    .comment-truncate {
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        /* 1 baris */
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        cursor: pointer;
+        line-height: 1.5;
+    }
+
 </style>
 @endpush
 
@@ -463,7 +487,23 @@
                         </div>
                         <div>
                             <small class="text-muted">Komentar:</small>
-                            <p class="small mb-0 mt-1">${penilaian.komentar || '<em class="text-muted">Tidak ada komentar</em>'}</p>
+                            <div class="small mt-1">
+                                ${
+                                    penilaian.komentar
+                                        ? `
+                                        <div class="comment-truncate" title="Klik untuk melihat selengkapnya"
+                                            onclick="showFullComment('${asesor.name}', ${skor}, ${JSON.stringify(penilaian.komentar).replace(/'/g, "\\'")})">
+                                            ${penilaian.komentar}
+                                        </div>
+                                        <a href="javascript:void(0)"
+                                        class="text-primary small fw-semibold"
+                                        onclick="showFullComment('${asesor.name}', ${skor}, ${JSON.stringify(penilaian.komentar).replace(/'/g, "\\'")})">
+                                            Lihat selengkapnya
+                                        </a>
+                                        `
+                                        : '<em class="text-muted">Tidak ada komentar</em>'
+                                }
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -477,9 +517,14 @@
         const rowDifference = document.getElementById('rowDifference');
         if (rowDifference) {
             if (hasDifference) {
-                const uniqueScores = [...new Set(skorList)];
+                const uniqueScores = [...new Set(skorList)].sort((a, b) => a - b);
+
+                const labels = uniqueScores.map(s => `${s} - ${getSkorLabelShort(s)}`);
+                // kalau mau full label: `${s} - ${getSkorLabel(s)}`
+
                 document.getElementById('differenceMessage').textContent =
-                    `Terdapat perbedaan penilaian: Kategori ${uniqueScores.join(', ')}`;
+                    `Terdapat perbedaan penilaian: ${labels.join(' dan ')}`;
+
                 rowDifference.style.display = 'block';
             } else {
                 rowDifference.style.display = 'none';
@@ -1002,7 +1047,7 @@
          */
         function showLoading() {
             Swal.fire({
-                title: 'Processing...'
+                title: 'Sedang Memproses...'
                 , allowOutsideClick: false
                 , didOpen: () => {
                     Swal.showLoading();

@@ -1,4 +1,56 @@
 {{-- resources/views/asesmen/pemetaan/components/reminder-detail-table.blade.php --}}
+@push('styles')
+<style>
+    /* ✅ Modal Reminder Scrollability - FORCE */
+    #reminderModal .modal-body {
+        max-height: 80vh !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    #reminderModal .modal-dialog {
+        max-height: 95vh !important;
+    }
+
+    #reminderModal .modal-content {
+        max-height: 95vh !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    #reminderModal .modal-header {
+        flex-shrink: 0 !important;
+    }
+
+    #reminderModal .modal-footer {
+        flex-shrink: 0 !important;
+    }
+
+    /* Pastikan tidak ada overflow hidden dari parent */
+    #reminderModal .modal-dialog,
+    #reminderModal .modal-content,
+    #reminderModal {
+        overflow: visible !important;
+    }
+
+    /* Pastikan Select2 tidak menghalangi */
+    .select2-container--open {
+        z-index: 1056 !important;
+    }
+
+    .select2-dropdown {
+        z-index: 1056 !important;
+    }
+
+    /* Fix untuk backdrop yang mungkin menghalangi */
+    .modal-backdrop {
+        z-index: 1050 !important;
+    }
+
+</style>
+@endpush
+
 
 <div class="accordion mb-3" id="accordionFilterReminder">
     <div class="accordion-item">
@@ -73,7 +125,7 @@
 </div>
 
 <div class="table-responsive">
-    <table class="table table-hover datatable">
+    <table class="table table-hover align-middle datatable">
         <thead class="table-light">
             <tr>
                 <th>No</th>

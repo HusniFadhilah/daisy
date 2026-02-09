@@ -61,7 +61,11 @@
         Validasi AK dapat dilihat pada daftar berikut<br>
     </div>
 
-    @if(count($needsValidation))
+    @php
+    $totalRows = $totalRows ?? ($rows->count() ?? 0);
+    @endphp
+
+    @if($totalRows > 0)
 
     <div class="card">
         <div class="card-header bg-white">
@@ -69,9 +73,7 @@
                 <h5 class="mb-0">
                     <i class="bi bi-list-check"></i> Daftar Validasi AK
                 </h5>
-                <small class="text-muted">
-                    Total: {{ count($needsValidation) + count($validated) }}
-                </small>
+                <small class="text-muted">Total: {{ $totalRows }}</small>
             </div>
         </div>
 
@@ -81,55 +83,50 @@
                     <thead class="table-light">
                         <tr>
                             <th width="5%">#</th>
-                            <th width="35%">Asesmen</th>
-                            <th width="20%">Program Studi</th>
+                            <th width="25%">Permohonan Akreditasi</th>
                             <th width="20%">Status Validasi</th>
-                            <th width="15%">Tanggal Validasi</th>
-                            <th width="5%" class="text-center">Aksi</th>
+                            <th width="20%">Tanggal Validasi</th>
+                            <th width="10%" class="text-center">Aksi</th>
                         </tr>
                     </thead>
 
                     <tbody>
                         @php $no = 1; @endphp
 
-                        {{-- ================= BELUM DIVALIDASI ================= --}}
-                        @foreach($needsValidation as $item)
+                        @foreach($rows as $row)
                         @php
-                        $asesmen = $item['asesmen'];
+                        $asesmen = $row['asesmen'];
 
-                        $prodi = '-';
-                        $univ = '-';
-                        if ($asesmen->studyProgram) {
-                        $prodi = $asesmen->studyProgram->full_name;
-                        if ($asesmen->studyProgram->university) {
-                        $univ = $asesmen->studyProgram->university->name;
-                        }
-                        }
+                        $prodi = $asesmen->studyProgram->full_name ?? '-';
+                        $univ = $asesmen->studyProgram->university->name ?? '-';
 
-                        $hasMinAsesor = $item['total_accepted_asesors'] >= 2;
-                        $allSubmitted = $item['asesors_pending']->isEmpty() && $item['asesors']->count() >= 2;
+                        $isValidated = $row['type'] === 'validated';
+
+                        // kondisi untuk yg belum divalidasi
+                        $hasMinAsesor = ($row['total_accepted_asesors'] ?? 0) >= 2;
+                        $allSubmitted = ($row['asesors_pending'] ?? collect())->isEmpty() && (($row['asesors'] ?? collect())->count() >= 2);
+
+                        $approvedAt = $isValidated && $row['approved_at']
+                        ? \App\Libraries\Date::tglIndo($row['approved_at'])
+                        : '-';
                         @endphp
 
                         <tr>
                             <td>{{ $no++ }}</td>
 
                             <td>
-                                <p class="mb-0">{{ $asesmen->name }}</p>
-                                <small class="text-muted">
-                                    Kode Panel:
-                                    {{ isset($asesmen->kode_panel) && $asesmen->kode_panel ? $asesmen->kode_panel : '-' }}
-                                </small>
+                                {!! $asesmen->getPermohonanAkreditasiSectionFor('validator') !!}
                             </td>
 
                             <td>
-                                <span class="badge bg-light text-dark">{{ $asesmen->studyProgram->name ?? '-' }}</span>
-                                <small class="text-muted small d-block">{{ $asesmen->studyProgram->university->name ?? '-' }}</small>
-                            </td>
-
-                            <td>
+                                @if($isValidated)
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle"></i> Telah Divalidasi
+                                </span>
+                                @else
                                 @if(!$hasMinAsesor)
                                 <span class="badge bg-secondary">
-                                    <i class="bi bi-exclamation-triangle"></i> Kurang Asesor
+                                    <i class="bi bi-exclamation-triangle"></i> Menunggu Penugasan Asesor
                                 </span>
                                 @elseif(!$allSubmitted)
                                 <span class="badge bg-warning text-dark">
@@ -140,13 +137,19 @@
                                     <i class="bi bi-check2-square"></i> Siap Divalidasi
                                 </span>
                                 @endif
+                                @endif
                             </td>
 
                             <td>
-                                <span class="text-muted">-</span>
+                                <small>{{ $approvedAt }}</small>
                             </td>
 
                             <td class="text-center">
+                                @if($isValidated)
+                                <a href="{{ route('ak.validasi.asesor', ['idAsesmen' => $asesmen->id, 'jenisAsesmen' => 'ak']) }}" class="btn btn-sm btn-outline-success" title="Lihat Detail">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                @else
                                 @if($hasMinAsesor && $allSubmitted)
                                 <a href="{{ route('ak.validasi.asesor', ['idAsesmen' => $asesmen->id, 'jenisAsesmen' => 'ak']) }}" class="btn btn-sm btn-primary" title="Validasi">
                                     <i class="bi bi-check2-square"></i>
@@ -156,64 +159,10 @@
                                     <i class="bi bi-lock"></i>
                                 </button>
                                 @endif
+                                @endif
                             </td>
                         </tr>
                         @endforeach
-
-                        {{-- ================= SUDAH DIVALIDASI ================= --}}
-                        @foreach($validated as $item)
-                        @php
-                        $asesmen = $item['asesmen'];
-
-                        $prodi = '-';
-                        $univ = '-';
-                        if ($asesmen->studyProgram) {
-                        $prodi = $asesmen->studyProgram->full_name;
-                        if ($asesmen->studyProgram->university) {
-                        $univ = $asesmen->studyProgram->university->name;
-                        }
-                        }
-
-                        $approvedAt = '-';
-                        if ($item['assignment'] && $item['assignment']->approved_at) {
-                        $approvedAt = \App\Libraries\Date::tglIndo($item['assignment']->approved_at);
-                        }
-                        @endphp
-
-                        <tr>
-                            <td>{{ $no++ }}</td>
-
-                            <td>
-                                <p class="mb-0">{{ $asesmen->name }}</p>
-                                <small class="text-muted">
-                                    Kode Panel:
-                                    {{ isset($asesmen->kode_panel) && $asesmen->kode_panel ? $asesmen->kode_panel : '-' }}
-                                </small>
-                            </td>
-
-                            <td>
-                                <span class="badge bg-light text-dark">{{ $asesmen->studyProgram->name ?? '-' }}</span>
-                                <small class="text-muted small d-block">{{ $asesmen->studyProgram->university->name ?? '-' }}</small>
-                            </td>
-
-                            <td>
-                                <span class="badge bg-success">
-                                    <i class="bi bi-check-circle"></i> Telah Divalidasi
-                                </span>
-                            </td>
-
-                            <td>
-                                <small>{{ $approvedAt }}</small>
-                            </td>
-
-                            <td class="text-center">
-                                <a href="{{ route('ak.validasi.asesor', ['idAsesmen' => $asesmen->id, 'jenisAsesmen' => 'ak']) }}" class="btn btn-sm btn-outline-success" title="Lihat Detail">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                            </td>
-                        </tr>
-                        @endforeach
-
                     </tbody>
                 </table>
             </div>
@@ -262,7 +211,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                @foreach($needsValidation as $item)
+                @foreach($rows as $item)
                 @if($item['asesors']->count() > 0)
                 <h6 class="fw-bold mb-2">{{ $item['asesmen']->name }}</h6>
                 @foreach($item['asesors'] as $asesor)

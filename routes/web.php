@@ -505,6 +505,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{id}/edit', [\App\Http\Controllers\UPPS\SuratPermohonanController::class, 'edit'])->name('.edit');
             Route::put('/{id}', [\App\Http\Controllers\UPPS\SuratPermohonanController::class, 'update'])->name('.update');
             Route::get('/{id}', [\App\Http\Controllers\UPPS\SuratPermohonanController::class, 'show'])->name('.show');
+            Route::delete('/{id}', [\App\Http\Controllers\UPPS\SuratPermohonanController::class, 'destroy'])->name('.destroy');
             Route::get('/{id}/download', [\App\Http\Controllers\UPPS\SuratPermohonanController::class, 'download'])->name('.download');
         });
 

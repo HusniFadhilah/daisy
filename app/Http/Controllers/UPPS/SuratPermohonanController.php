@@ -203,8 +203,8 @@ class SuratPermohonanController extends Controller
                 'id_de_assigned' => $pengingat?->id_de_pengirim,
                 'tahun_akreditasi' => $validated['tahun_akreditasi'],
                 'jenis_akreditasi' => $validated['jenis_akreditasi'],
-                'pemohon_email' => $validated['pemohon_email'],
-                'pemohon_phone' => $validated['pemohon_phone'],
+                'pemohon_email' => $validated['pemohon_email'] ?? null,
+                'pemohon_phone' => $validated['pemohon_phone'] ?? null,
                 'status' => $status,
                 'catatan_pengaju' => $validated['catatan_pengaju'] ?? null,
                 'tanggal_pengingat' => $pengingat?->tanggal_dikirim,
@@ -249,7 +249,7 @@ class SuratPermohonanController extends Controller
                 ->with('success', $message);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error creating pengajuan: ' . $e->getMessage());
+            Log::error($e);
             return back()
                 ->withInput()
                 ->with('error', 'Gagal menyimpan permohonan: ' . $e->getMessage());
@@ -417,7 +417,7 @@ class SuratPermohonanController extends Controller
 
             // ✅ AUTO-DETECT: Cari pengingat yang sesuai (jika belum ada)
             $pengingat = null;
-            if (!$isDraft && !$pengajuan->id_de_assigned) {
+            if (!$isDraft) {
                 $pengingat = PengingatAkreditasi::where('id_program_studi', $validated['id_program_studi'])
                     ->where('tahun_akreditasi', $validated['tahun_akreditasi'])
                     ->where('status', PengingatAkreditasi::STATUS_BELUM_DIRESPON)
@@ -619,5 +619,19 @@ class SuratPermohonanController extends Controller
             $path,
             'TEMPLATE_PERMOHONAN_AKREDITASI.docx'
         );
+    }
+
+    public function destroy(Request $request, $id)
+    {
+        $pengajuan = PengajuanAkreditasi::findOrFail($id);
+
+        // optional: authorization tambahan
+        // $this->authorize('delete', $pengajuan);
+
+        $pengajuan->delete();
+
+        return redirect()
+            ->back()
+            ->with('success', 'Data Permohonan akreditasi berhasil dihapus.');
     }
 }

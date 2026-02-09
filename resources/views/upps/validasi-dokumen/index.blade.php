@@ -88,11 +88,12 @@
                         <table class="table table-hover align-middle mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th width="5%">#</th>
-                                    <th width="20%">Permohonan Akreditasi</th>
-                                    <th width="25%">Status Validator</th>
-                                    <th width="25%">Status Validasi Dokumen</th>
-                                    <th width="10%" class="text-center">Aksi</th>
+                                    <th width="5%" class="align-middle">#</th>
+                                    <th width="22%" class="align-middle">Permohonan Akreditasi</th>
+                                    <th width="15%" class="align-middle">Status Validator</th>
+                                    <th width="20%" class="align-middle">Status Validasi Dokumen</th>
+                                    <th width="20%" class="align-middle">Tanggal Validasi Dokumen</th>
+                                    <th width="10%" class="text-center align-middle">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -111,6 +112,17 @@
                                     </td>
                                     <td>
                                         {!! $pengajuan->getCustomBadgeLastStatus('validasi_dokumen', 'upps','label_short_for') !!}
+                                    </td>
+                                    <td>
+                                        @if($pengajuan->tanggal_validasi_dokumen)
+                                        <small>{{ $pengajuan->tanggal_validasi_dokumen->format('d M Y') }}</small>
+                                        <br>
+                                        <small class="text-muted">
+                                            {{ $pengajuan->tanggal_validasi_dokumen->diffForHumans() }}
+                                        </small>
+                                        @else
+                                        <span class="text-muted">-</span>
+                                        @endif
                                     </td>
                                     <td class="text-center">
                                         <a href="{{ route('upps.validasi-dokumen.show', $pengajuan->id) }}" class="btn btn-info btn-sm" title="Lihat Detail">
