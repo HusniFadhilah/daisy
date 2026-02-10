@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Model;
 
 class HasilAkreditasi extends Model
@@ -101,24 +103,37 @@ class HasilAkreditasi extends Model
         }
 
         if ($skor <= 300) {
-            return 'Terakreditasi Sementara (2 Tahun)';
+            // return 'Terakreditasi Sementara (2 Tahun)';
+            return 'Terakreditasi';
         }
 
         if ($skor <= 350) {
-            return 'Terakreditasi (5 Tahun)';
+            return 'Terakreditasi';
         }
 
         // 351–360
         if ($skor <= 360) {
             return $this->memenuhi_syarat_unggul
-                ? 'Terakreditasi Unggul 2 Tahun (dengan Syarat)'
-                : 'Terakreditasi (5 Tahun)';
+                ? 'Terakreditasi Unggul'
+                : 'Terakreditasi';
         }
 
         // 361–400
         return $this->memenuhi_syarat_unggul
-            ? 'Terakreditasi Unggul (5 Tahun)'
-            : 'Terakreditasi (5 Tahun)';
+            ? 'Terakreditasi Unggul'
+            : 'Terakreditasi';
+    }
+
+    public static function getPeringkatColor($skor): string
+    {
+        return match ($skor) {
+            'Tidak Terakreditasi'          => '#f8d7da', // Gray
+            'Terakreditasi Sementara (2 Tahun)' => '#fff3cd', // Yellow
+            'Terakreditasi'                => '#d1ecf1', // Blue
+            'Terakreditasi Unggul 2 Tahun (dengan Syarat)' => '#d4edda', // Green
+            'Terakreditasi Unggul (5 Tahun)' => '#c3e6cb', // Dark Green
+            default                        => '#c3e6cb', // Gray
+        };
     }
 
     public static function getStatusHasilAkreditasi($asesmen): string
@@ -205,23 +220,81 @@ class HasilAkreditasi extends Model
         }
 
         if ($skor <= 300) {
-            return 'Terakreditasi Sementara (2 Tahun)';
+            return 'Terakreditasi';
         }
 
         if ($skor <= 350) {
-            return 'Terakreditasi (5 Tahun)';
+            return 'Terakreditasi';
         }
 
         // Skor 351–360
         if ($skor <= 360) {
             return $this->memenuhi_syarat_unggul
-                ? 'Terakreditasi Unggul 2 Tahun (dengan Syarat)'
-                : 'Terakreditasi (5 Tahun)';
+                ? 'Terakreditasi Unggul'
+                : 'Terakreditasi';
         }
 
         // Skor 361–400
         return $this->memenuhi_syarat_unggul
-            ? 'Terakreditasi Unggul (5 Tahun)'
-            : 'Terakreditasi (5 Tahun)';
+            ? 'Terakreditasi Unggul'
+            : 'Terakreditasi';
+    }
+
+    public static function initializeHasil($hasilService, $pengajuan, $authId)
+    {
+        $asesmen = $pengajuan->asesmen;
+        // ✅ AUTO-CALCULATE: Check if hasil exists, if not create it
+        $hasil = HasilAkreditasi::firstOrCreate(
+            [
+                'id_pengajuan' => $pengajuan->id,
+                'id_asesmen' => $asesmen->id,
+            ],
+            [
+                'id_study_program' => $asesmen->id_study_program,
+                'id_category' => $pengajuan->studyProgram->id_category,
+                'status' => 'draft_al',
+            ]
+        );
+
+        // Auto-calculate if not yet calculated or still draft
+        if ($hasil->status === 'draft_al') {
+            try {
+                DB::beginTransaction();
+
+                // Calculate AK first (if not exists)
+                if (!$hasil->skor_ak) {
+                    $hasilService->saveHasilAK($asesmen, $authId);
+                    $hasil->refresh();
+                }
+
+                // Calculate AL
+                $hasilService->saveHasilAL($asesmen, $authId);
+                $hasil->refresh();
+                $statusFrom = $pengajuan->status;
+                $pengajuan->checkUpdateStatusAKAL('al', 'status_hasil_akreditasi_dihitung');
+                $pengajuan->statusLog()->firstOrCreate(
+                    [
+                        'status_from' => $statusFrom,
+                        'status_to'   => PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIHITUNG,
+                    ],
+                    [
+                        'changed_by'  => $authId,
+                        'keterangan'  => 'Hasil akreditasi telah dihitung secara otomatis.',
+                        'changed_at'  => now(),
+                    ]
+                );
+
+                DB::commit();
+            } catch (\Exception $e) {
+                DB::rollBack();
+                Log::error('Auto-calculate failed', [
+                    'pengajuan_id' => $pengajuan->id,
+                    'error' => $e->getMessage()
+                ]);
+                Log::error($e->getTraceAsString());
+            }
+        }
+
+        return $hasil;
     }
 }

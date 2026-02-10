@@ -204,7 +204,7 @@
                                 {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['de'] ?? $log->status_to }}
                             </strong>
                             <br>
-                            <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
+                            <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
 
                             {{-- @if($log->keterangan)
                                     <br>

@@ -7,6 +7,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Model;
+use App\Domain\Akreditasi\AllowedStatus;
 use App\Domain\Akreditasi\PengajuanStatus;
 
 class PengajuanAkreditasi extends Model
@@ -693,6 +694,12 @@ class PengajuanAkreditasi extends Model
                     $this->update(['status' => PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM, 'tanggal_hasil_akreditasi_dikirim' => now()]);
             }
         }
+        if ($statusToUpdate == 'status_masa_sanggah_dimulai') {
+            if ($jenisAsesmen == 'al') {
+                if ($this->status == PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM)
+                    $this->update(['status' => PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI, 'tanggal_masa_sanggah_mulai' => now(), 'tanggal_masa_sanggah_selesai' => now()->addMinute(1)]);
+            }
+        }
     }
 
     public function canBeReported(string $jenisAsesmen): bool
@@ -909,7 +916,7 @@ class PengajuanAkreditasi extends Model
             ],
 
             2 => [
-                'warning' => [self::STATUS_SURAT_PERMOHONAN_DIKIRIM],
+                'warning' => [self::STATUS_SURAT_PERMOHONAN_DIKIRIM, self::STATUS_SURAT_PERMOHONAN_UPLOAD_ULANG],
                 'success' => [self::STATUS_SURAT_PERMOHONAN_DITERIMA],
                 'danger' => [self::STATUS_SURAT_PERMOHONAN_DITOLAK],
             ],
@@ -976,6 +983,7 @@ class PengajuanAkreditasi extends Model
             ],
 
             15 => [
+                'warning' => [self::STATUS_HASIL_AKREDITASI_DIHITUNG],
                 'success' => [self::STATUS_HASIL_AKREDITASI_DIKIRIM],
             ],
 
@@ -985,7 +993,7 @@ class PengajuanAkreditasi extends Model
             ],
 
             17 => [
-                'warning' => [self::STATUS_BANDING_DIAJUKAN],
+                'warning' => [self::STATUS_BANDING_DIAJUKAN, self::STATUS_BANDING_DITERIMA, self::STATUS_BANDING_DITUGASKAN],
                 'success' => [self::STATUS_BANDING_DILAKSANAKAN],
             ],
 
@@ -1036,59 +1044,7 @@ class PengajuanAkreditasi extends Model
      */
     public static function allowedStatusTransitions(): array
     {
-        return [
-            // Steps 1-13 (existing)
-            self::STATUS_DRAFT => [self::STATUS_PENGINGAT_DIKIRIM],
-            self::STATUS_PENGINGAT_DIKIRIM => [self::STATUS_SURAT_PERMOHONAN_DIKIRIM],
-            self::STATUS_SURAT_PERMOHONAN_DIKIRIM => [self::STATUS_SURAT_PERMOHONAN_DITERIMA, self::STATUS_SURAT_PERMOHONAN_DITOLAK],
-            self::STATUS_SURAT_PERMOHONAN_DITERIMA => [self::STATUS_SURAT_PENERIMAAN_DIKIRIM],
-            self::STATUS_SURAT_PENERIMAAN_DIKIRIM => [self::STATUS_TEMPLATE_LED_DIKIRIM, self::STATUS_MENUNGGU_PEMBAYARAN],
-            self::STATUS_TEMPLATE_LED_DIKIRIM => [self::STATUS_MENUNGGU_PEMBAYARAN],
-            self::STATUS_MENUNGGU_PEMBAYARAN => [self::STATUS_PEMBAYARAN_DITERIMA, self::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN],
-            self::STATUS_PEMBAYARAN_DITERIMA => [self::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN],
-            self::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN => [self::STATUS_PEMBAYARAN_DIVERIFIKASI, self::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN, self::STATUS_MENUNGGU_PEMBAYARAN],
-            self::STATUS_PEMBAYARAN_DIVERIFIKASI => [self::STATUS_DRAFT_BORANG_DIKIRIM, self::STATUS_DRAFT_BORANG_DITERIMA],
-            self::STATUS_DRAFT_BORANG_DIKIRIM => [self::STATUS_DRAFT_BORANG_DITERIMA],
-            self::STATUS_DRAFT_BORANG_DITERIMA => [self::STATUS_BORANG_ONLINE_SELESAI],
-            self::STATUS_BORANG_ONLINE_SELESAI => [self::STATUS_BORANG_VALIDATION_PENDING],
-            self::STATUS_BORANG_VALIDATION_PENDING => [self::STATUS_BORANG_IN_VALIDATION],
-            self::STATUS_BORANG_IN_VALIDATION => [self::STATUS_BORANG_REVISION_REQUIRED, self::STATUS_BORANG_VALIDATED],
-            self::STATUS_BORANG_REVISION_REQUIRED => [self::STATUS_DRAFT_BORANG_DIKIRIM, self::STATUS_DRAFT_BORANG_DITERIMA, self::STATUS_BORANG_ONLINE_SELESAI],
-            self::STATUS_BORANG_VALIDATED => [self::STATUS_BORANG_FINAL_DITERIMA, self::STATUS_VALIDASI_BORANG_DILAPORKAN],
-            self::STATUS_BORANG_FINAL_DITERIMA => [self::STATUS_VALIDASI_BORANG_DILAPORKAN],
-            self::STATUS_VALIDASI_BORANG_DILAPORKAN => [self::STATUS_PENGAJUAN_COMPLETED],
-            self::STATUS_PENGAJUAN_COMPLETED => [self::STATUS_ASESOR_AK_ASSIGNED],
-            self::STATUS_ASESOR_AK_ASSIGNED => [self::STATUS_AK_IN_PROGRESS],
-            self::STATUS_AK_IN_PROGRESS => [self::STATUS_AK_ON_VALIDATION],
-            self::STATUS_AK_ON_VALIDATION => [self::STATUS_AK_SELESAI],
-            self::STATUS_AK_SELESAI => [self::STATUS_AK_DILAPORKAN],
-            self::STATUS_AK_DILAPORKAN => [self::STATUS_ASESOR_AL_ASSIGNED],
-            self::STATUS_ASESOR_AL_ASSIGNED => [self::STATUS_AL_IN_PROGRESS],
-            self::STATUS_AL_IN_PROGRESS => [self::STATUS_AL_SELESAI],
-            self::STATUS_AL_SELESAI => [self::STATUS_AL_DILAPORKAN],
-
-            // ✅ NEW: Steps 14-20 (SEQUENTIAL ENFORCEMENT)
-            self::STATUS_AL_DILAPORKAN => [self::STATUS_HASIL_AKREDITASI_DIKIRIM], // 13 → 14 ONLY
-
-            self::STATUS_HASIL_AKREDITASI_DIKIRIM => [self::STATUS_MASA_SANGGAH_DIMULAI], // 14 → 15 ONLY
-
-            self::STATUS_MASA_SANGGAH_DIMULAI => [
-                self::STATUS_BANDING_DIAJUKAN,  // 15 → 16 (if banding)
-                self::STATUS_HASIL_DITETAPKAN    // 15 → 18 (skip banding)
-            ],
-
-            self::STATUS_BANDING_DIAJUKAN => [self::STATUS_BANDING_DILAKSANAKAN], // 16 → 17
-            self::STATUS_BANDING_DILAKSANAKAN => [self::STATUS_BANDING_DILAPORKAN], // 17 → 18
-            self::STATUS_BANDING_DILAPORKAN => [self::STATUS_HASIL_DITETAPKAN], // 18 → 19
-
-            self::STATUS_HASIL_DITETAPKAN => [self::STATUS_HASIL_DIUMUMKAN], // 18 → 19
-            self::STATUS_HASIL_DIUMUMKAN => [self::STATUS_HASIL_DILAPORKAN], // 19 → 20
-            self::STATUS_HASIL_DILAPORKAN => [self::STATUS_ARSIP_DISIMPAN], // 20 → 21
-            self::STATUS_ARSIP_DISIMPAN => [self::STATUS_SELESAI], // 21 → DONE
-
-            self::STATUS_SELESAI => [], // Terminal state
-            self::STATUS_DITOLAK => [], // Terminal state
-        ];
+        return AllowedStatus::transitions();
     }
 
     /**
@@ -1225,6 +1181,15 @@ class PengajuanAkreditasi extends Model
         if ($attribute == 'pelaporan_al')
             $statuses = [self::STATUS_AL_SELESAI, self::STATUS_AL_DILAPORKAN];
 
+        if (empty($statuses)) {
+            $statuses = AllowedStatus::phaseAfterPelaporanAl($attribute);
+        }
+
+        // kalau masih kosong, fallback aman
+        if (empty($statuses)) {
+            return $this->status;
+        }
+
         // status fase terakhir (berdasarkan log)
         $lastStatus = optional($this->statusLog()->whereIn('status_to', $statuses)->latest()->first())->status_to;
         // fallback kalau belum ada log (harusnya jarang) -> pakai current status
@@ -1246,13 +1211,14 @@ class PengajuanAkreditasi extends Model
      * Badge status berdasarkan last status per-attribute + sudut pandang.
      * $audience: 'de' | 'upps' | 'prodi' | dst.
      */
-    public function getCustomBadgeLastStatus(string $attribute, string $audience = 'de', string $keyLongShort = 'label_long_for'): string
+    public function getCustomBadgeLastStatus(string $attribute, string $audience = 'de', string $keyLongShort = 'label_long_for', $additionalClass = ''): string
     {
         $status = $this->getCustomLastStatus($attribute);
 
         $badge = fn(string $bg, string $text) => sprintf(
-            '<span class="badge %s text-wrap">%s</span>',
+            '<span class="badge %s %s text-wrap">%s</span>',
             e($bg),
+            e($additionalClass),
             e($text)
         );
 
@@ -1553,6 +1519,170 @@ class PengajuanAkreditasi extends Model
                 default => $audience === 'de'
                     ? $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Pelaporan AL' : 'Menunggu Pelaporan')
                     : $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Pelaporan AL' : 'Menunggu Pelaporan'),
+            },
+
+            /**
+             * ===========================================
+             * 15) Penyampaian Hasil Akreditasi
+             * ===========================================
+             */
+            'penyampaian_hasil' => match ($status) {
+                self::STATUS_HASIL_AKREDITASI_DIHITUNG =>
+                $badge(
+                    $bgFromMap(self::STATUS_HASIL_AKREDITASI_DIHITUNG, 'bg-light'),
+                    $labelFor(self::STATUS_HASIL_AKREDITASI_DIHITUNG) ?? 'Hasil Akreditasi Sedang Dihitung'
+                ),
+
+                self::STATUS_HASIL_AKREDITASI_DIKIRIM =>
+                $badge(
+                    $bgFromMap(self::STATUS_HASIL_AKREDITASI_DIKIRIM, 'bg-light'),
+                    $labelFor(self::STATUS_HASIL_AKREDITASI_DIKIRIM) ?? 'Hasil Akreditasi Telah Disampaikan'
+                ),
+
+                default =>
+                $badge('bg-secondary', '-'),
+            },
+
+            /**
+             * ===========================================
+             * 16) Masa Sanggah
+             * ===========================================
+             */
+            'masa_sanggah' => match ($status) {
+                self::STATUS_MASA_SANGGAH_DIMULAI =>
+                $badge(
+                    $bgFromMap(self::STATUS_MASA_SANGGAH_DIMULAI, 'bg-info'),
+                    $labelFor(self::STATUS_MASA_SANGGAH_DIMULAI) ?? 'Masa Sanggah Dimulai'
+                ),
+
+                self::STATUS_MASA_SANGGAH_SELESAI =>
+                $badge(
+                    $bgFromMap(self::STATUS_MASA_SANGGAH_SELESAI, 'bg-success'),
+                    $labelFor(self::STATUS_MASA_SANGGAH_SELESAI) ?? 'Masa Sanggah Selesai'
+                ),
+
+                default =>
+                $badge('bg-secondary', '-'),
+            },
+
+            /**
+             * ===========================================
+             * 17) Permohonan Banding (Administrasi)
+             * ===========================================
+             */
+            'permohonan_banding' => match ($status) {
+                self::STATUS_BANDING_DIAJUKAN =>
+                $badge(
+                    $bgFromMap(self::STATUS_BANDING_DIAJUKAN, 'bg-warning'),
+                    $labelFor(self::STATUS_BANDING_DIAJUKAN) ?? 'Banding Diajukan'
+                ),
+
+                self::STATUS_BANDING_DITERIMA =>
+                $badge(
+                    $bgFromMap(self::STATUS_BANDING_DITERIMA, 'bg-info'),
+                    $labelFor(self::STATUS_BANDING_DITERIMA) ?? 'Banding Diterima'
+                ),
+
+                self::STATUS_BANDING_DITUGASKAN =>
+                $badge(
+                    $bgFromMap(self::STATUS_BANDING_DITUGASKAN, 'bg-info'),
+                    $labelFor(self::STATUS_BANDING_DITUGASKAN) ?? 'Banding Ditugaskan'
+                ),
+
+                default =>
+                $badge('bg-secondary', '-'),
+            },
+
+            /**
+             * ===========================================
+             * 17) Pelaksanaan Banding
+             * ===========================================
+             */
+            'pelaksanaan_banding' => match ($status) {
+                self::STATUS_BANDING_DILAKSANAKAN =>
+                $badge(
+                    $bgFromMap(self::STATUS_BANDING_DILAKSANAKAN, 'bg-warning'),
+                    $labelFor(self::STATUS_BANDING_DILAKSANAKAN) ?? 'Banding Dilaksanakan'
+                ),
+
+                default =>
+                $badge('bg-secondary', '-'),
+            },
+
+            /**
+             * ===========================================
+             * 18) Pelaporan Banding
+             * ===========================================
+             */
+            'pelaporan_banding' => match ($status) {
+                self::STATUS_BANDING_DILAPORKAN =>
+                $badge(
+                    $bgFromMap(self::STATUS_BANDING_DILAPORKAN, 'bg-success'),
+                    $labelFor(self::STATUS_BANDING_DILAPORKAN) ?? 'Pelaporan Banding Telah Dibuat'
+                ),
+
+                default =>
+                $badge('bg-secondary', '-'),
+            },
+
+            /**
+             * ===========================================
+             * 19) Penetapan Hasil Akreditasi
+             * ===========================================
+             */
+            'penetapan_hasil' => match ($status) {
+                self::STATUS_HASIL_DITETAPKAN =>
+                $badge(
+                    $bgFromMap(self::STATUS_HASIL_DITETAPKAN, 'bg-warning'),
+                    $labelFor(self::STATUS_HASIL_DITETAPKAN) ?? 'Hasil Akreditasi Ditetapkan'
+                ),
+
+                default =>
+                $badge('bg-secondary', '-'),
+            },
+
+            /**
+             * ===========================================
+             * 20) Pelaporan Hasil (dan Pengumuman)
+             * ===========================================
+             */
+            'pelaporan_hasil' => match ($status) {
+                self::STATUS_HASIL_DIUMUMKAN =>
+                $badge(
+                    $bgFromMap(self::STATUS_HASIL_DIUMUMKAN, 'bg-info'),
+                    $labelFor(self::STATUS_HASIL_DIUMUMKAN) ?? 'Hasil Akreditasi Diumumkan'
+                ),
+
+                self::STATUS_HASIL_DILAPORKAN =>
+                $badge(
+                    $bgFromMap(self::STATUS_HASIL_DILAPORKAN, 'bg-success'),
+                    $labelFor(self::STATUS_HASIL_DILAPORKAN) ?? 'Pelaporan Hasil Akreditasi Telah Dibuat'
+                ),
+
+                default =>
+                $badge('bg-secondary', '-'),
+            },
+
+            /**
+             * ===========================================
+             * 21) Penyimpanan Arsip
+             * ===========================================
+             */
+            'penyimpanan_arsip' => match ($status) {
+                self::STATUS_ARSIP_DISIMPAN =>
+                $badge(
+                    $bgFromMap(self::STATUS_ARSIP_DISIMPAN, 'bg-success'),
+                    $labelFor(self::STATUS_ARSIP_DISIMPAN) ?? 'Arsip Disimpan'
+                ),
+
+                self::STATUS_SELESAI =>
+                $badge(
+                    $bgFromMap(self::STATUS_SELESAI, 'bg-success'),
+                    $labelFor(self::STATUS_SELESAI) ?? 'Selesai'
+                ),
+
+                default =>
+                $badge('bg-secondary', '-'),
             },
 
             default => $badge('bg-secondary', '-'),

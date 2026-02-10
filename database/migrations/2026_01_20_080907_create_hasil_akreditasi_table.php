@@ -47,8 +47,10 @@ return new class extends Migration
             $table->decimal('skor_final', 8, 2)->nullable()->comment('Skor akhir (0-400)');
             $table->enum('peringkat_akreditasi', [
                 'Tidak Terakreditasi',
+                'Terakreditasi',
                 'Terakreditasi Sementara (2 Tahun)',
                 'Terakreditasi (5 Tahun)',
+                'Terakreditasi Unggul',
                 'Terakreditasi Unggul 2 Tahun (dengan Syarat)',
                 'Terakreditasi Unggul (5 Tahun)'
             ])->nullable();

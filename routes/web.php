@@ -430,6 +430,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{id}', [PenyampaianHasilAkreditasiController::class, 'show'])->name('.show');
             Route::post('/{id}/calculate', [PenyampaianHasilAkreditasiController::class, 'calculate'])->name('.calculate');
             Route::post('/{id}/finalize', [PenyampaianHasilAkreditasiController::class, 'finalize'])->name('.finalize');
+            Route::post('/{id}/upload-berita-acara', [PenyampaianHasilAkreditasiController::class, 'uploadBeritaAcara'])
+                ->name('.upload-berita-acara');
+            Route::get('/{id}/download-berita-acara', [PenyampaianHasilAkreditasiController::class, 'downloadBeritaAcara'])
+                ->name('.download-berita-acara');
+            Route::delete('/{id}/delete-berita-acara', [PenyampaianHasilAkreditasiController::class, 'deleteBeritaAcara'])
+                ->name('.delete-berita-acara');
             Route::get('/{id}/download-summary', [PenyampaianHasilAkreditasiController::class, 'downloadSummary'])->name('.download-summary');
         });
         Route::prefix('masa-sanggah')->name('.masa-sanggah')->group(function () {
@@ -589,6 +595,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::prefix('penyampaian-hasil-akreditasi')->name('.penyampaian-hasil-akreditasi')->group(function () {
             Route::get('/', [\App\Http\Controllers\UPPS\PenyampaianHasilAkreditasiController::class, 'index']);
             Route::get('/{id}', [\App\Http\Controllers\UPPS\PenyampaianHasilAkreditasiController::class, 'show'])->name('.show');
+            Route::get('/{id}/download-berita-acara', [PenyampaianHasilAkreditasiController::class, 'downloadBeritaAcara'])
+                ->name('.download-berita-acara');
         });
 
         Route::prefix('masa-sanggah')->name('.masa-sanggah')->group(function () {
@@ -597,6 +605,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
 
         Route::prefix('permohonan-banding')->name('.permohonan-banding')->group(function () {
+            Route::get('/download-template-surat', [\App\Http\Controllers\UPPS\PermohonanBandingController::class, 'downloadTemplateSurat'])->name('.download-template-surat');
             Route::get('/', [\App\Http\Controllers\UPPS\PermohonanBandingController::class, 'index']);
             Route::get('/{id}', [\App\Http\Controllers\UPPS\PermohonanBandingController::class, 'show'])->name('.show');
 
@@ -605,8 +614,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{id}/edit', [\App\Http\Controllers\UPPS\PermohonanBandingController::class, 'edit'])->name('.edit');
             Route::put('/{id}', [\App\Http\Controllers\UPPS\PermohonanBandingController::class, 'update'])->name('.update');
             Route::get('/{id}', [\App\Http\Controllers\UPPS\PermohonanBandingController::class, 'show'])->name('.show');
+            Route::delete('/{id}', [\App\Http\Controllers\UPPS\SuratPermohonanController::class, 'destroy'])->name('.destroy');
             Route::get('/{id}/download', [\App\Http\Controllers\UPPS\PermohonanBandingController::class, 'download'])->name('.download');
-            Route::middleware('under.dev')->get('/download-template-surat/{degree_level}', [\App\Http\Controllers\UPPS\PermohonanBandingController::class, 'downloadTemplateSurat'])->name('.download-template-surat');
         });
 
         Route::prefix('pelaksanaan-banding')->name('.pelaksanaan-banding')->group(function () {

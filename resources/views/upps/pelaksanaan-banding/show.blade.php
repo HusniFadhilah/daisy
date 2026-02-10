@@ -88,7 +88,7 @@
             <div class="card mb-4 border-warning">
                 <div class="card-header bg-warning text-dark">
                     <h5 class="mb-0">
-                        <i class="bi bi-trophy"></i> Hasil Akreditasi Awal (Sebelum Banding)
+                        <i class="bi bi-megaphone"></i> Hasil Akreditasi Awal (Sebelum Banding)
                     </h5>
                 </div>
                 <div class="card-body">
@@ -371,7 +371,7 @@
                                     {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label'] ?? $log->status_to }}
                                 </strong>
                                 <br>
-                                <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
+                                <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
 
                                 @if($log->keterangan)
                                 <br>

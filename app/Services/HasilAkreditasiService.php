@@ -436,7 +436,6 @@ class HasilAkreditasiService
                 'memenuhi_syarat_unggul' => $memenuhi_syarat,
                 'catatan_validasi' => implode("\n", $catatanValidasi),
             ]);
-            $hasil->pengajuan->checkUpdateStatusAKAL('al', 'status_hasil_akreditasi_disampaikan');
             DB::commit();
             return $hasil;
         } catch (\Exception $e) {

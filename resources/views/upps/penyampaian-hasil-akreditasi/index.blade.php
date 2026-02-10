@@ -43,7 +43,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">
-                <i class="bi bi-trophy"></i> Penyampaian Hasil Akreditasi
+                <i class="bi bi-megaphone"></i> Penyampaian Hasil Akreditasi
             </h4>
             <p class="text-muted mb-0">Hasil akreditasi program studi dari LAMDEPILAR</p>
         </div>
@@ -120,10 +120,10 @@
                         <thead class="table-light">
                             <tr>
                                 <th width="5%">#</th>
-                                <th width="30%">Permohonan Akreditasi</th>
-                                <th width="20%">Peringkat</th>
-                                <th width="15%">Nilai</th>
-                                <th width="20%">Status</th>
+                                <th width="20%">Permohonan Akreditasi</th>
+                                <th width="15%">Penyampaian Hasil Akreditasi</th>
+                                <th width="20%">Status Penyampaian Hasil</th>
+                                <th width="20%">Tanggal Penyampaian Hasil</th>
                                 <th width="10%" class="text-center">Aksi</th>
                             </tr>
                         </thead>
@@ -134,28 +134,37 @@
                             $nilaiSaatIni = $pengajuan->nilai_saat_ini;
                             $badgeClass = $pengajuan->getPeringkatBadgeClass();
                             $icon = $pengajuan->getPeringkatIcon();
+                            $hasil = $pengajuan->asesmen->hasil ?? null;
                             @endphp
                             <tr>
                                 <td>{{ $pengajuans->firstItem() + $index }}</td>
                                 <td>
-                                    <p>{{ $pengajuan->judul_short }}</p>
-                                    <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
-                                    <br>
-                                    <small class="text-muted">Dibuat pada: {{ \App\Libraries\Date::tglIndo($pengajuan->created_at) }}</small>
+                                    {!! $pengajuan->getPermohonanAkreditasiSectionFor('upps') !!}
                                 </td>
                                 <td>
-                                    @if($peringkatSaatIni)
-                                    <span class="badge {{ $badgeClass }} peringkat-badge">
-                                        <i class="{{ $icon }}"></i>
-                                        {{ $peringkatSaatIni }}
-                                    </span>
-                                    @if($nilaiSaatIni)
-                                    <br>
-                                    <small class="text-muted">Nilai: <strong>{{ $nilaiSaatIni }}</strong></small>
-                                    @endif
+                                    @if($hasil && $hasil->skor_al)
+                                    @php
+                                    $peringkatAL = $hasil->getPeringkatFromSkorAL($hasil->skor_al);
+                                    @endphp
+                                    {{-- <span class="badge bg-light text-dark fs-6 p-2 px-3">{{ number_format($hasil->skor_al, 2) }}</span> --}}
+                                    <span class="badge p-2 px-3 my-2 fs-6" style="background-color: {{ $hasil->getPeringkatColor($peringkatAL) }}; color:#222">{{ $peringkatAL }}</span>
                                     @else
                                     <span class="text-muted">-</span>
                                     @endif
+                                </td>
+                                {{-- <td>
+                                    @if($peringkatSaatIni)
+                                    <span class="badge {{ $badgeClass }} peringkat-badge">
+                                <i class="{{ $icon }}"></i>
+                                {{ $peringkatSaatIni }}
+                                </span>
+                                @if($nilaiSaatIni)
+                                <br>
+                                <small class="text-muted">Nilai: <strong>{{ $nilaiSaatIni }}</strong></small>
+                                @endif
+                                @else
+                                <span class="text-muted">-</span>
+                                @endif
                                 </td>
                                 <td>
                                     @if($pengajuan->nilai_akhir)
@@ -163,11 +172,20 @@
                                     @else
                                     <span class="text-muted">-</span>
                                     @endif
+                                </td> --}}
+                                <td>
+                                    {!! $pengajuan->getCustomBadgeLastStatus('penyampaian_hasil','upps','label_short_for','text-dark') !!}
                                 </td>
                                 <td>
-                                    <span class="badge {{ $pengajuan->status_badge_class }}">
-                                        {{ $pengajuan->status_label }}
-                                    </span>
+                                    @if($pengajuan->tanggal_hasil_akreditasi_dikirim)
+                                    <small>{{ $pengajuan->tanggal_hasil_akreditasi_dikirim->format('d M Y') }}</small>
+                                    <br>
+                                    <small class="text-muted">
+                                        {{ $pengajuan->tanggal_hasil_akreditasi_dikirim->diffForHumans() }}
+                                    </small>
+                                    @else
+                                    <span class="text-muted">-</span>
+                                    @endif
                                 </td>
                                 <td class="text-center">
                                     <a href="{{ route('upps.penyampaian-hasil-akreditasi.show', $pengajuan->id) }}" class="btn btn-info btn-sm" title="Lihat Detail">

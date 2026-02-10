@@ -30,13 +30,13 @@
                         <p>Menyajikan ringkasan progres dan data pendukung</p>
                     </div>
                 </div>
-                <div class="auth-feature">
+                {{-- <div class="auth-feature">
                     <div class="auth-feature-icon">🔒</div>
                     <div class="auth-feature-text">
                         <h4>Keamanan Data</h4>
                         <p>Data terenkripsi dengan standar keamanan yang memadai</p>
                     </div>
-                </div>
+                </div> --}}
             </div>
         </div>
 

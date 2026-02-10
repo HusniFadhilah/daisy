@@ -1,338 +1,389 @@
 @extends('layouts.template.app')
 
+@section('title', 'Detail Masa Sanggah')
+
 @section('content')
-<div class="container-fluid">
-    {{-- Header --}}
+<div class="container-fluid py-3">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('de.masa-sanggah') }}">Masa Sanggah</a></li>
+            <li class="breadcrumb-item active">Detail</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-2">
-                    <li class="breadcrumb-item">
-                        <a href="{{ route('de.masa-sanggah') }}">Masa Sanggah</a>
-                    </li>
-                    <li class="breadcrumb-item active">Detail</li>
-                </ol>
-            </nav>
-            <h1 class="h3 mb-0">
-                <i class="bi bi-clock-history text-primary"></i>
-                Masa Sanggah: {{ $pengajuan->studyProgram->name }}
-            </h1>
-        </div>
-
-        <div>
-            <a href="{{ route('de.masa-sanggah') }}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i> Kembali
-            </a>
-        </div>
-    </div>
-
-    {{-- Summary Cards --}}
-    <div class="row mb-4">
-        {{-- Peringkat --}}
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body text-center">
-                    <h6 class="text-muted mb-2">Peringkat Akreditasi</h6>
-                    @if($hasil && $hasil->peringkat_akreditasi)
-                    @php
-                    $badgeClass = match($hasil->peringkat_akreditasi) {
-                    'Unggul' => 'success',
-                    'Baik Sekali' => 'primary',
-                    'Baik' => 'info',
-                    default => 'secondary'
-                    };
-                    @endphp
-                    <h2 class="mb-0 text-{{ $badgeClass }}">{{ $hasil->peringkat_akreditasi }}</h2>
-                    @else
-                    <h2 class="mb-0 text-muted">-</h2>
-                    @endif
-                </div>
-            </div>
-        </div>
-
-        {{-- Skor Final --}}
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body text-center">
-                    <h6 class="text-muted mb-2">Skor Final</h6>
-                    @if($hasil && $hasil->skor_final)
-                    <h1 class="mb-0 text-info display-4">{{ number_format($hasil->skor_final, 2) }}</h1>
-                    <small class="text-muted">dari 400</small>
-                    @else
-                    <h2 class="mb-0 text-muted">-</h2>
-                    @endif
-                </div>
-            </div>
-        </div>
-
-        {{-- Status Masa Sanggah --}}
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body text-center">
-                    <h6 class="text-muted mb-2">Status Masa Sanggah</h6>
-                    <span class="badge bg-{{ $masaSanggahInfo['badge_class'] }} fs-6 px-4 py-2">
-                        @if($masaSanggahInfo['is_active'])
-                        <i class="bi bi-hourglass-split"></i> Aktif
-                        @elseif($masaSanggahInfo['is_expired'])
-                        <i class="bi bi-check-circle"></i> Selesai
-                        @else
-                        <i class="bi bi-clock"></i> Belum Dimulai
-                        @endif
-                    </span>
-                </div>
-            </div>
-        </div>
-
-        {{-- Countdown --}}
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body text-center">
-                    <h6 class="text-muted mb-2">
-                        @if($masaSanggahInfo['is_expired'])
-                        Sudah Lewat
-                        @else
-                        Sisa Waktu
-                        @endif
-                    </h6>
-                    <h3 class="mb-0 text-{{ $masaSanggahInfo['badge_class'] }}">
-                        {{ $masaSanggahInfo['countdown_text'] }}
-                    </h3>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Timeline Masa Sanggah --}}
-    @if($pengajuan->tanggal_masa_sanggah_mulai)
-    <div class="card mb-4">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">
-                <i class="bi bi-calendar-range"></i>
-                Timeline Masa Sanggah
+            <h5 class="mb-1">
+                <i class="bi bi-clock-history"></i> Detail Masa Sanggah
             </h5>
+            <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="border-end pe-3">
-                        <h6 class="text-muted">Tanggal Hasil Akreditasi</h6>
-                        <p class="mb-0 fw-semibold">
-                            {{ $pengajuan->tanggal_hasil_akreditasi_dikirim->format('d F Y') }}
+        <a href="{{ route('de.masa-sanggah') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Kembali
+        </a>
+    </div>
+
+    @php
+    $now = now();
+    $isAktif = $pengajuan->tanggal_masa_sanggah_mulai && $pengajuan->tanggal_masa_sanggah_selesai
+    && $now->between($pengajuan->tanggal_masa_sanggah_mulai, $pengajuan->tanggal_masa_sanggah_selesai);
+    $sisaHari = $isAktif ? $now->diffInDays($pengajuan->tanggal_masa_sanggah_selesai, false) : 0;
+    $totalDurasi = $pengajuan->tanggal_masa_sanggah_mulai && $pengajuan->tanggal_masa_sanggah_selesai
+    ? $pengajuan->tanggal_masa_sanggah_mulai->diffInDays($pengajuan->tanggal_masa_sanggah_selesai)
+    : 0;
+    @endphp
+
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8 mb-4">
+            <!-- Status Alert -->
+            @if($isAktif)
+            <div class="alert alert-warning alert-permanent border-start border-4 border-warning">
+                <div class="d-flex align-items-start">
+                    <i class="bi bi-clock-history fs-1 me-3 text-warning"></i>
+                    <div class="flex-grow-1">
+                        <h5 class="mb-2 fw-bold">
+                            <i class="bi bi-exclamation-triangle-fill"></i> Masa Sanggah Sedang Berlangsung
+                        </h5>
+                        <p class="mb-2">
+                            Saat ini dalam periode masa sanggah hasil akreditasi.
+                            Jika ada keberatan terhadap hasil, dapat mengajukan banding.
                         </p>
+                        <div class="alert alert-light border border-warning mb-0">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>Sisa Waktu:</strong>
+                                    <div class="fs-4 fw-bold text-warning">{{ $sisaHari }} hari</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Berakhir pada:</strong>
+                                    <div class="fs-6 fw-bold">{{ $pengajuan->tanggal_masa_sanggah_selesai->format('d M Y H:i') }}</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="border-end pe-3">
-                        <h6 class="text-muted">Masa Sanggah Mulai</h6>
-                        <p class="mb-0 fw-semibold">
-                            {{ \Carbon\Carbon::parse($pengajuan->tanggal_masa_sanggah_mulai)->format('d F Y') }}
-                        </p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <h6 class="text-muted">Masa Sanggah Selesai</h6>
-                    <p class="mb-0 fw-semibold">
-                        {{ \Carbon\Carbon::parse($pengajuan->tanggal_masa_sanggah_selesai)->format('d F Y, H:i') }}
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-    @endif
-
-    {{-- Action Buttons --}}
-    @if($pengajuan->status === App\Models\PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM)
-    <div class="alert alert-info">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <i class="bi bi-info-circle me-2"></i>
-                Hasil akreditasi telah disampaikan. Klik tombol di bawah untuk memulai masa sanggah (7 hari).
-            </div>
-            <form action="{{ route('de.masa-sanggah.start', $pengajuan->id) }}" method="POST">
-                @csrf
-                <button type="submit" class="btn btn-primary" onclick="return confirm('Mulai masa sanggah sekarang?')">
-                    <i class="bi bi-play-circle"></i> Mulai Masa Sanggah
-                </button>
-            </form>
-        </div>
-    </div>
-    @endif
-
-    @if($masaSanggahInfo['is_expired'] && !$masaSanggahInfo['has_banding'] && $pengajuan->status === App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI)
-    <div class="alert alert-warning">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <i class="bi bi-exclamation-triangle me-2"></i>
-                Masa sanggah telah selesai dan tidak ada pengajuan banding. Akhiri masa sanggah untuk melanjutkan ke penetapan hasil.
-            </div>
-            <form action="{{ route('de.masa-sanggah.end', $pengajuan->id) }}" method="POST">
-                @csrf
-                <button type="submit" class="btn btn-success" onclick="return confirm('Akhiri masa sanggah dan tetapkan hasil?')">
-                    <i class="bi bi-check-circle"></i> Akhiri Masa Sanggah
-                </button>
-            </form>
-        </div>
-    </div>
-    @endif
-
-    {{-- Countdown Alert --}}
-    @if($masaSanggahInfo['is_hampir_habis'])
-    <div class="alert alert-warning">
-        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-        <strong>Perhatian!</strong> Masa sanggah akan berakhir dalam {{ $masaSanggahInfo['countdown_text'] }}.
-    </div>
-    @endif
-
-    {{-- Status Banding --}}
-    <div class="card mb-4">
-        <div class="card-header bg-{{ $masaSanggahInfo['has_banding'] ? 'danger' : 'secondary' }} text-white">
-            <h5 class="mb-0">
-                <i class="bi bi-file-earmark-break"></i>
-                Status Banding
-            </h5>
-        </div>
-        <div class="card-body">
-            @if($masaSanggahInfo['has_banding'])
-            <div class="alert alert-danger mb-3">
-                <i class="bi bi-exclamation-circle me-2"></i>
-                <strong>Program studi telah mengajukan banding!</strong>
-            </div>
-
-            <div class="row">
-                <div class="col-md-6">
-                    <h6>Informasi Banding</h6>
-                    <table class="table table-sm">
-                        <tr>
-                            <th width="40%">Tanggal Pengajuan:</th>
-                            <td>{{ $pengajuan->tanggal_permohonan_banding ? $pengajuan->tanggal_permohonan_banding->format('d F Y, H:i') : '-' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Tanggal Pelaksanaan:</th>
-                            <td>{{ $pengajuan->tanggal_pelaksanaan_banding ? \Carbon\Carbon::parse($pengajuan->tanggal_pelaksanaan_banding)->format('d F Y') : '-' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Status:</th>
-                            <td>
-                                <span class="badge {{ $pengajuan->status_badge_class }}">
-                                    {{ $pengajuan->status_label }}
-                                </span>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-                <div class="col-md-6">
-                    <h6>Dokumen Banding</h6>
-                    @if($dokumenBanding)
-                    <div class="list-group">
-                        <a href="{{ route('pengajuan.dokumen.download', $dokumenBanding->id) }}" class="list-group-item list-group-item-action" target="_blank">
-                            <i class="bi bi-file-pdf text-danger"></i>
-                            {{ $dokumenBanding->original_filename }}
-                            <small class="text-muted d-block">
-                                {{ $dokumenBanding->created_at->format('d M Y, H:i') }}
-                            </small>
-                        </a>
-                    </div>
-                    @else
-                    <p class="text-muted">Belum ada dokumen</p>
-                    @endif
-
-                    @if($laporanBanding)
-                    <h6 class="mt-3">Laporan Banding</h6>
-                    <div class="list-group">
-                        <a href="{{ route('pengajuan.dokumen.download', $laporanBanding->id) }}" class="list-group-item list-group-item-action" target="_blank">
-                            <i class="bi bi-file-pdf text-success"></i>
-                            {{ $laporanBanding->original_filename }}
-                            <small class="text-muted d-block">
-                                {{ $laporanBanding->created_at->format('d M Y, H:i') }}
-                            </small>
-                        </a>
-                    </div>
-                    @endif
                 </div>
             </div>
             @else
-            <div class="text-center py-4">
-                <i class="bi bi-check-circle display-1 text-success"></i>
-                <p class="text-muted mt-3 mb-0">Tidak ada pengajuan banding</p>
+            <div class="alert alert-success alert-permanent">
+                <i class="bi bi-info-circle"></i>
+                <strong>Masa Sanggah Telah Selesai</strong><br>
+                Periode masa sanggah telah berakhir pada
+                <strong>{{ $pengajuan->tanggal_masa_sanggah_selesai->format('d M Y H:i') }}</strong>
             </div>
             @endif
-        </div>
-    </div>
 
-    {{-- Detail Hasil Akreditasi --}}
-    <div class="card mb-4">
-        <div class="card-header bg-info text-white">
-            <h5 class="mb-0">
-                <i class="bi bi-clipboard-data"></i>
-                Detail Hasil Akreditasi
-            </h5>
-        </div>
-        <div class="card-body">
-            @if($hasil)
-            <div class="row">
-                <div class="col-md-6">
-                    <table class="table table-sm">
+            <!-- Informasi Permohonan -->
+            {{-- <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle"></i> Informasi Permohonan Akreditasi
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
                         <tr>
-                            <th width="40%">Peringkat:</th>
+                            <th>Peringkat Akreditasi</th>
                             <td>
-                                @php
-                                $badgeClass = match($hasil->peringkat_akreditasi) {
-                                'Unggul' => 'bg-success',
-                                'Baik Sekali' => 'bg-primary',
+                                : @php
+                                $badgeClass = match($pengajuan->peringkat_hasil) {
+                                'Unggul' => 'bg-warning text-dark',
+                                'Baik Sekali' => 'bg-success',
                                 'Baik' => 'bg-info',
-                                default => 'bg-secondary'
+                                'Tidak Terakreditasi' => 'bg-danger',
+                                default => 'bg-secondary',
                                 };
                                 @endphp
-                                <span class="badge {{ $badgeClass }}">{{ $hasil->peringkat_akreditasi }}</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Skor AK:</th>
-                            <td>{{ number_format($hasil->skor_ak, 2) }}</td>
-                        </tr>
-                        <tr>
-                            <th>Skor AL:</th>
-                            <td>{{ number_format($hasil->skor_al, 2) }}</td>
-                        </tr>
-                        <tr>
-                            <th>Skor Final:</th>
-                            <td><strong>{{ number_format($hasil->skor_final, 2) }}</strong></td>
-                        </tr>
-                    </table>
-                </div>
-                <div class="col-md-6">
-                    <table class="table table-sm">
-                        <tr>
-                            <th width="40%">Tanggal Finalisasi:</th>
-                            <td>{{ $hasil->tanggal_finalisasi_al ? $hasil->tanggal_finalisasi_al->format('d M Y') : '-' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Memenuhi Syarat Unggul:</th>
-                            <td>
-                                @if($hasil->memenuhi_syarat_unggul)
-                                <i class="bi bi-check-circle-fill text-success"></i> Ya
-                                @else
-                                <i class="bi bi-x-circle-fill text-danger"></i> Tidak
-                                @endif
-                            </td>
-                        </tr>
-                    </table>
+                                <span class="badge {{ $badgeClass }} fs-6">
+            @if($pengajuan->peringkat_hasil === 'Unggul')
+            <i class="bi bi-star-fill"></i>
+            @elseif($pengajuan->peringkat_hasil === 'Baik Sekali')
+            <i class="bi bi-award-fill"></i>
+            @elseif($pengajuan->peringkat_hasil === 'Baik')
+            <i class="bi bi-check-circle-fill"></i>
+            @endif
+            {{ $pengajuan->peringkat_hasil ?? '-' }}
+            </span>
+            </td>
+            </tr>
+            <tr>
+                <th>Nilai Akhir</th>
+                <td>: <strong>{{ $pengajuan->nilai_akhir ?? '-' }}</strong></td>
+            </tr>
+            </table>
+        </div>
+    </div> --}}
 
-                    <a href="{{ route('de.penyampaian-hasil-akreditasi.show', $pengajuan->id) }}" class="btn btn-sm btn-outline-primary" target="_blank">
-                        <i class="bi bi-eye"></i> Lihat Detail Lengkap
-                    </a>
+    <!-- Detail Masa Sanggah -->
+    <div class="card mb-4 border-{{ $isAktif ? 'warning' : 'success' }}">
+        <div class="card-header bg-{{ $isAktif ? 'warning' : 'success' }} text-{{ $isAktif ? 'dark' : 'white' }}">
+            <h5 class="mb-0">
+                <i class="bi bi-calendar-range"></i> Detail Masa Sanggah
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="text-muted small">Tanggal Mulai</label>
+                    <p class="fw-bold mb-0">
+                        {{ $pengajuan->tanggal_masa_sanggah_mulai
+                                    ? $pengajuan->tanggal_masa_sanggah_mulai->format('d M Y H:i')
+                                    : '-' }}
+                    </p>
                 </div>
+                <div class="col-md-6 mb-3">
+                    <label class="text-muted small">Tanggal Selesai</label>
+                    <p class="fw-bold mb-0">
+                        {{ $pengajuan->tanggal_masa_sanggah_selesai
+                                    ? $pengajuan->tanggal_masa_sanggah_selesai->format('d M Y H:i')
+                                    : '-' }}
+                    </p>
+                </div>
+                {{-- <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Durasi Masa Sanggah</label>
+                            <p class="fw-bold mb-0">{{ $totalDurasi }} hari</p>
+            </div> --}}
+            <div class="col-md-6 mb-3">
+                <label class="text-muted small">Status</label>
+                <p class="mb-0">
+                    @if($isAktif)
+                    <span class="badge bg-warning text-dark fs-6">
+                        <i class="bi bi-clock"></i> Sedang Berlangsung
+                    </span>
+                    @else
+                    <span class="badge bg-success fs-6">
+                        <i class="bi bi-check-circle"></i> Masa Sanggah Selesai
+                    </span>
+                    @endif
+                </p>
             </div>
 
-            @if($hasil->catatan_validasi)
-            <hr>
-            <h6>Catatan Validasi:</h6>
-            <pre class="border rounded p-3 bg-light" style="white-space: pre-wrap;">{{ $hasil->catatan_validasi }}</pre>
-            @endif
-            @else
-            <p class="text-muted mb-0">Hasil akreditasi belum tersedia</p>
+            @if($isAktif)
+            <div class="col-12">
+                <hr>
+                <div class="alert alert-light border border-warning mb-0">
+                    <div class="row">
+                        <div class="col-md-6 text-center mb-3 mb-md-0">
+                            <label class="text-muted small d-block">Sisa Waktu</label>
+                            <div class="display-4 fw-bold text-warning">{{ $sisaHari }}</div>
+                            <small class="text-muted">hari tersisa</small>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="small mb-2"><strong>Progress Waktu:</strong></p>
+                            @php
+                            $elapsed = $pengajuan->tanggal_masa_sanggah_mulai->diffInDays($now);
+                            $progress = $totalDurasi > 0 ? ($elapsed / $totalDurasi) * 100 : 0;
+                            @endphp
+                            <div class="progress" style="height: 25px;">
+                                <div class="progress-bar bg-warning" role="progressbar" style="width: {{ min($progress, 100) }}%">
+                                    {{ number_format(min($progress, 100), 1) }}%
+                                </div>
+                            </div>
+                            <small class="text-muted">{{ $elapsed }} dari {{ $totalDurasi }} hari</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
             @endif
         </div>
     </div>
+</div>
+
+<!-- Informasi Banding -->
+{{-- <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-arrow-repeat"></i> Informasi Banding
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if($pengajuan->tanggal_permohonan_banding)
+                    <div class="alert alert-primary border border-primary">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <strong>Banding Telah Diajukan</strong>
+                        <br>
+                        <small>
+                            Tanggal pengajuan: {{ $pengajuan->tanggal_permohonan_banding->format('d M Y H:i') }}
+</small>
+</div>
+
+<table class="table table-borderless mb-0">
+    <tr>
+        <th width="30%">Status Banding</th>
+        <td>: {!! $pengajuan->getCustomBadgeLastStatus('banding', 'de') !!}</td>
+    </tr>
+    <tr>
+        <th>Tanggal Pengajuan</th>
+        <td>: {{ $pengajuan->tanggal_permohonan_banding->format('d M Y H:i') }}</td>
+    </tr>
+    @if($pengajuan->tanggal_pelaksanaan_banding)
+    <tr>
+        <th>Tanggal Pelaksanaan</th>
+        <td>: {{ $pengajuan->tanggal_pelaksanaan_banding->format('d M Y H:i') }}</td>
+    </tr>
+    @endif
+    @if($pengajuan->tanggal_pelaporan_banding)
+    <tr>
+        <th>Tanggal Pelaporan</th>
+        <td>: {{ $pengajuan->tanggal_pelaporan_banding->format('d M Y H:i') }}</td>
+    </tr>
+    @endif
+</table>
+@else
+<div class="text-center py-4">
+    <i class="bi bi-file-earmark-x" style="font-size: 48px; color: #ddd;"></i>
+    <p class="text-muted mt-2 mb-0">
+        @if($isAktif)
+        Belum ada pengajuan banding. Anda masih dapat mengajukan banding selama masa sanggah berlangsung.
+        @else
+        Tidak ada pengajuan banding pada periode ini.
+        @endif
+    </p>
+</div>
+@endif
+</div>
+</div> --}}
+</div>
+
+<!-- Sidebar -->
+<div class="col-lg-4">
+    <!-- Countdown Card (if active) -->
+    @if($isAktif)
+    <div class="card mb-4 border-warning">
+        <div class="card-header bg-warning text-dark">
+            <h6 class="mb-0">
+                <i class="bi bi-alarm"></i> Countdown Masa Sanggah
+            </h6>
+        </div>
+        <div class="card-body text-center">
+            <div class="display-1 fw-bold text-warning mb-2">{{ $sisaHari }}</div>
+            <p class="h5 mb-3">Hari Tersisa</p>
+            <hr>
+            <p class="small mb-2">
+                <strong>Berakhir pada:</strong>
+            </p>
+            <p class="mb-0">
+                {{ $pengajuan->tanggal_masa_sanggah_selesai->format('l, d F Y') }}
+                <br>
+                <strong>{{ $pengajuan->tanggal_masa_sanggah_selesai->format('H:i') }} WIB</strong>
+            </p>
+        </div>
+    </div>
+    @endif
+
+    <!-- Timeline -->
+    <div class="card">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">
+                <i class="bi bi-clock-history"></i> Timeline
+            </h5>
+        </div>
+        <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+            @php
+            $filterStatuses = [
+            \App\Models\PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM,
+            \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
+            \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
+            \App\Models\PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
+            \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
+            \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
+            ];
+
+            $logs = $pengajuan->statusLog
+            ->whereIn('status_to', $filterStatuses)
+            ->sortBy('created_at')
+            ->unique('status_to')
+            ->values();
+            @endphp
+
+            @if($logs->count() > 0)
+            <div class="timeline">
+                @foreach($logs as $log)
+                <div class="timeline-item mb-3">
+                    <div class="d-flex">
+                        <div class="flex-shrink-0">
+                            @php
+                            $iconColor = match($log->status_to) {
+                            \App\Models\PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM,
+                            \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
+                            \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN
+                            => 'text-success',
+                            \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
+                            \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
+                            \App\Models\PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN
+                            => 'text-warning',
+                            default => 'text-info',
+                            };
+                            @endphp
+                            <i class="bi bi-circle-fill {{ $iconColor }}" style="font-size: 8px;"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <strong>
+                                {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label'] ?? $log->status_to }}
+                            </strong>
+                            <br>
+                            <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
+
+                            {{-- @if($log->keterangan)
+                            <br>
+                            <small class="text-muted fst-italic">{{ $log->keterangan }}</small>
+                            @endif --}}
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+            @else
+            <p class="text-muted text-center mb-0">Belum ada riwayat</p>
+            @endif
+        </div>
+    </div>
+
+    <!-- Info Card -->
+    {{-- <div class="card mt-4 border-info">
+        <div class="card-header bg-info text-white">
+            <h6 class="mb-0">
+                <i class="bi bi-info-circle"></i> Informasi Masa Sanggah
+            </h6>
+        </div>
+        <div class="card-body">
+            <p class="small mb-2">
+                <strong>Apa itu Masa Sanggah?</strong>
+            </p>
+            <p class="small text-muted mb-3">
+                Masa sanggah adalah periode waktu yang diberikan kepada program studi
+                untuk mengajukan keberatan (banding) terhadap hasil akreditasi jika merasa
+                ada ketidaksesuaian.
+            </p>
+
+            <p class="small mb-2">
+                <strong>Proses Banding:</strong>
+            </p>
+            <ol class="small mb-3 ps-3 text-muted">
+                <li>Program studi mengajukan banding selama masa sanggah</li>
+                <li>LAMDEPILAR meninjau pengajuan banding</li>
+                <li>Pelaksanaan banding dilakukan</li>
+                <li>Hasil banding dilaporkan</li>
+                <li>Hasil akhir ditetapkan dan diumumkan</li>
+            </ol>
+
+            <hr>
+
+            <p class="small text-muted mb-0">
+                <i class="bi bi-exclamation-circle"></i>
+                @if($isAktif)
+                <strong>Perhatian:</strong> Anda masih memiliki waktu <strong>{{ $sisaHari }} hari</strong>
+    untuk mengajukan banding jika diperlukan.
+    @else
+    Jika tidak ada banding, hasil akreditasi akan langsung ditetapkan setelah masa sanggah berakhir.
+    @endif
+    </p>
+</div>
+</div> --}}
+</div>
+</div>
 </div>
 @endsection

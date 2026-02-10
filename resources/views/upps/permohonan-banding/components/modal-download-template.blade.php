@@ -9,25 +9,19 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p class="mb-3">Download template permohonan banding berdasarkan jenjang program studi Anda:</p>
+                <p class="mb-3">Download template permohonan banding:</p>
 
                 <div class="list-group">
-                    @php
-                    $degreeLevels = \App\Models\DegreeLevel::whereNotIn('code',['d1','spesialis_1','spesialis_2'])->get();
-                    @endphp
-
-                    @foreach($degreeLevels as $level)
-                    <a href="{{ route('upps.permohonan-banding.download-template-surat', ['degree_level' => $level->code]) }}" class="list-group-item list-group-item-action">
+                    <a href="{{ route('upps.permohonan-banding.download-template-surat') }}" class="list-group-item list-group-item-action">
                         <div class="d-flex align-items-center">
                             <i class="bi bi-file-earmark-word text-primary me-3" style="font-size: 1.5rem;"></i>
                             <div>
-                                <h6 class="mb-0">Template Permohonan Banding {{ $level->name }}</h6>
+                                <h6 class="mb-0">Template Permohonan Banding</h6>
                                 <small class="text-muted">Format: DOCX</small>
                             </div>
                             <i class="bi bi-download ms-auto"></i>
                         </div>
                     </a>
-                    @endforeach
                 </div>
 
                 <div class="alert alert-warning alert-permanent mt-3 mb-0">

@@ -89,8 +89,8 @@
                                 <tr>
                                     <th width="5%">#</th>
                                     <th width="20%">Permohonan Akreditasi</th>
-                                    <th width="25%">Asesor AL</th>
-                                    <th width="25%">Status</th>
+                                    <th width="25%">Tanggal Pelaporan AL</th>
+                                    <th width="25%">Status Pelaporan AL</th>
                                     <th width="10%" class="text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -102,9 +102,11 @@
                                         {!! $pengajuan->getPermohonanAkreditasiSectionFor('upps') !!}
                                     </td>
                                     <td>
-                                        @if($pengajuan->asesmen->asesorAL)
-                                        <small>
-                                            {{ $pengajuan->asesmen->asesorAL()->name }}
+                                        @if($pengajuan->tanggal_pelaporan_al)
+                                        <small>{{ $pengajuan->tanggal_pelaporan_al->format('d M Y') }}</small>
+                                        <br>
+                                        <small class="text-muted">
+                                            {{ $pengajuan->tanggal_pelaporan_al->diffForHumans() }}
                                         </small>
                                         @else
                                         <span class="text-muted">-</span>

@@ -509,47 +509,47 @@ final class PengajuanStatus
                 'label' => 'Penyampaian Hasil Akreditasi',
                 'label_short_for' => [
                     'de'   => 'Hasil Dikirim',
-                    'upps' => 'Hasil Diterima',
-                    'prodi' => 'Hasil Diterima',
+                    'upps' => 'Hasil Disampaikan',
+                    'prodi' => 'Hasil Disampaikan',
                 ],
                 'label_long_for' => [
-                    'de'   => 'Hasil Akreditasi Disampaikan ke PS',
-                    'upps' => 'Hasil Akreditasi Diterima dari LAMDEPILAR',
-                    'prodi' => 'Hasil Akreditasi Diterima dari LAMDEPILAR',
+                    'de'   => 'Hasil Akreditasi Disampaikan',
+                    'upps' => 'Hasil Akreditasi Disampaikan',
+                    'prodi' => 'Hasil Akreditasi Disampaikan',
                 ],
-                'bg' => 'bg-warning',
+                'bg' => 'bg-light',
                 'icon' => 'bi-envelope-paper',
             ],
 
             PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI => [
                 'label' => 'Masa Sanggah Berlangsung',
                 'label_short_for' => [
-                    'de'   => 'Masa Sanggah',
-                    'upps' => 'Masa Sanggah',
-                    'prodi' => 'Masa Sanggah',
+                    'de'   => 'Masa Sanggah Berlangsung',
+                    'upps' => 'Masa Sanggah Berlangsung',
+                    'prodi' => 'Masa Sanggah Berlangsung',
                 ],
                 'label_long_for' => [
                     'de'   => 'Masa Sanggah Berlangsung',
                     'upps' => 'Masa Sanggah Berlangsung',
                     'prodi' => 'Masa Sanggah Berlangsung',
                 ],
-                'bg' => 'bg-warning',
+                'bg' => 'bg-light',
                 'icon' => 'bi-clock-history',
             ],
 
             PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI => [
                 'label' => 'Masa Sanggah Selesai',
                 'label_short_for' => [
-                    'de'   => 'Masa Sanggah',
-                    'upps' => 'Masa Sanggah',
-                    'prodi' => 'Masa Sanggah',
+                    'de'   => 'Masa Sanggah Selesai',
+                    'upps' => 'Masa Sanggah Selesai',
+                    'prodi' => 'Masa Sanggah Selesai',
                 ],
                 'label_long_for' => [
                     'de'   => 'Masa Sanggah Selesai',
                     'upps' => 'Masa Sanggah Selesai',
                     'prodi' => 'Masa Sanggah Selesai',
                 ],
-                'bg' => 'bg-warning',
+                'bg' => 'bg-light',
                 'icon' => 'bi-clock-history',
             ],
 

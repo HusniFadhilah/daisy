@@ -36,9 +36,9 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">
-                <i class="bi bi-clock-history"></i> Masa Sanggah Hasil Akreditasi
+                <i class="bi bi-clock-history"></i> Masa Sanggah
             </h4>
-            <p class="text-muted mb-0">Monitor periode masa sanggah dan pengajuan banding</p>
+            <p class="text-muted mb-0">Monitor periode masa sanggah hasil akreditasi</p>
         </div>
     </div>
 
@@ -47,7 +47,7 @@
         <strong>Masa Sanggah</strong><br>
         Permohonan akreditasi untuk program studi memasuki masa sanggah<br>
         Program studi memiliki masa sanggah selama 1 minggu.<br>
-        Untuk melakukan permohonan banding, silahkan klik pada tombol berikut.
+        Untuk melakukan permohonan banding, silahkan menuju ke menu Permohonan Banding atau <a href="{{ route('upps.permohonan-banding') }}" class="text-link">klik link berikut</a>.
     </div>
 
     <!-- Active Masa Sanggah Alert -->
@@ -136,7 +136,8 @@
                                         </small>
                                     </td>
                                     <td>
-                                        @if($isAktif)
+                                        {!! $pengajuan->getCustomBadgeLastStatus('masa_sanggah','upps','label_short_for','text-dark') !!}
+                                        {{-- @if($isAktif)
                                         <span class="badge bg-warning text-dark">
                                             <i class="bi bi-clock"></i> Aktif ({{ $sisaHari }} hari)
                                         </span>
@@ -144,7 +145,7 @@
                                         <span class="badge bg-success">
                                             <i class="bi bi-check-circle"></i> Selesai
                                         </span>
-                                        @endif
+                                        @endif --}}
                                     </td>
                                     <td class="text-center">
                                         <a href="{{ route('upps.masa-sanggah.show', $pengajuan->id) }}" class="btn btn-primary btn-sm" title="Lihat Detail">

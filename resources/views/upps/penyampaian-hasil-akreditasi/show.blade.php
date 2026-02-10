@@ -19,7 +19,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h5 class="mb-1">
-                <i class="bi bi-trophy"></i> Detail Hasil Akreditasi
+                <i class="bi bi-info-circle"></i> Detail Hasil Akreditasi
             </h5>
             <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
@@ -32,13 +32,13 @@
         <!-- Main Content -->
         <div class="col-lg-8 mb-4">
             <!-- Congratulations Alert -->
-            <div class="alert alert-success alert-permanent border-start border-4 border-success">
+            <div class="alert alert-light alert-permanent border-start border-2 border-dark">
                 <div class="d-flex align-items-start">
-                    <i class="bi bi-trophy-fill fs-1 me-3 text-success"></i>
+                    <i class="bi bi-info-circle fs-1 me-3 text-dark"></i>
                     <div class="flex-grow-1">
-                        <h5 class="mb-2 fw-bold">
-                            <i class="bi bi-check-circle-fill"></i> Selamat! Program Studi Terakreditasi
-                        </h5>
+                        {{-- <h5 class="mb-2 fw-bold">
+                            <i class="bi bi-check-circle-fill"></i> Program Studi Anda <span class="badge p-2 px-3 my-2 fs-6" style="background-color: {{ $hasil->getPeringkatColor($peringkat) }}; color:#222">{{ $peringkat }}</span>
+                        </h5> --}}
                         <p class="mb-2">
                             Hasil akreditasi untuk program studi <strong>{{ $pengajuan->studyProgram->name }}</strong>
                             telah disampaikan oleh LAMDEPILAR.
@@ -55,249 +55,265 @@
             </div>
 
             <!-- Info Tahap Selanjutnya -->
-            <div class="alert alert-info alert-permanent">
+            <div class="alert alert-light alert-permanent">
                 <i class="bi bi-info-circle"></i>
                 <strong>Tahap Selanjutnya:</strong> Setelah penyampaian hasil akreditasi, akan memasuki periode
                 <strong>Masa Sanggah</strong>. Program studi dapat mengajukan banding jika memiliki keberatan
                 terhadap hasil akreditasi.
             </div>
 
-            <!-- Informasi Hasil Akreditasi -->
-            <div class="card mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">
-                        <i class="bi bi-info-circle"></i> Informasi Hasil Akreditasi
-                    </h5>
-                </div>
+            <!-- ✅ Berita Acara Section -->
+            @if($beritaAcara)
+            <div class="card shadow-sm mb-4">
                 <div class="card-body">
-                    <table class="table table-borderless">
-                        <tr>
-                            <th width="30%">Nomor Permohonan</th>
-                            <td>: {{ $pengajuan->nomor_pengajuan }}</td>
-                        </tr>
-                        <tr>
-                            <th>Program Studi</th>
-                            <td>: {{ $pengajuan->studyProgram->full_name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Universitas</th>
-                            <td>: {{ $pengajuan->studyProgram->university->name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Jenjang</th>
-                            <td>: {{ $pengajuan->studyProgram->degreeLevel->name ?? '-' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Jenis Permohonan</th>
-                            <td>: {{ $pengajuan->jenis_akreditasi_label }}</td>
-                        </tr>
-                        <tr>
-                            <th>Tahun Akreditasi</th>
-                            <td>: {{ $pengajuan->tahun_akreditasi }}</td>
-                        </tr>
-                        <tr>
-                            <th>Peringkat Akreditasi</th>
-                            <td>
-                                : @php
-                                $badgeClass = match($pengajuan->peringkat_hasil) {
-                                'Unggul' => 'bg-warning text-dark',
-                                'Baik Sekali' => 'bg-success',
-                                'Baik' => 'bg-info',
-                                'Tidak Terakreditasi' => 'bg-danger',
-                                default => 'bg-secondary',
-                                };
-                                @endphp
-                                <span class="badge {{ $badgeClass }} fs-6">
-                                    @if($pengajuan->peringkat_hasil === 'Unggul')
-                                    <i class="bi bi-star-fill"></i>
-                                    @elseif($pengajuan->peringkat_hasil === 'Baik Sekali')
-                                    <i class="bi bi-award-fill"></i>
-                                    @elseif($pengajuan->peringkat_hasil === 'Baik')
-                                    <i class="bi bi-check-circle-fill"></i>
-                                    @endif
-                                    {{ $pengajuan->peringkat_hasil ?? '-' }}
-                                </span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Nilai Akhir</th>
-                            <td>: <strong>{{ $pengajuan->nilai_akhir ?? '-' }}</strong></td>
-                        </tr>
-                        <tr>
-                            <th>Tanggal Hasil Disampaikan</th>
-                            <td>
-                                : {{ $pengajuan->tanggal_hasil_akreditasi_dikirim
-                                    ? $pengajuan->tanggal_hasil_akreditasi_dikirim->format('d M Y H:i')
-                                    : '-' }}
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Status</th>
-                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('hasil_akreditasi', 'upps') !!}</td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Dokumen Hasil Akreditasi -->
-            <div class="card">
-                <div class="card-header bg-success text-white">
-                    <h5 class="mb-0">
-                        <i class="bi bi-file-earmark-check"></i> Dokumen Hasil Akreditasi
-                    </h5>
-                </div>
-                <div class="card-body">
-                    @php
-                    $dokumenHasil = $pengajuan->dokumen
-                    ->whereIn('jenis_dokumen', ['sertifikat_akreditasi', 'sk_akreditasi'])
-                    ->where('is_latest', true);
-                    @endphp
-
-                    @if($dokumenHasil->count() > 0)
-                    @foreach($dokumenHasil as $dokumen)
-                    <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded mb-2">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-file-earmark-pdf text-danger me-3" style="font-size: 48px;"></i>
-                            <div>
-                                <strong>{{ $dokumen->original_filename }}</strong>
-                                <br>
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="d-flex align-items-start flex-grow-1">
+                            <div class="flex-grow-1 ms-2">
+                                <h5 class="mb-1">Berita Acara Rapat Penyampaian Hasil</h5>
+                                <p class="text-muted mb-2">
+                                    <i class="bi bi-file-pdf text-danger"></i>
+                                    {{ $beritaAcara->original_name }}
+                                </p>
                                 <small class="text-muted">
-                                    {{ number_format($dokumen->file_size / 1024, 2) }} KB •
-                                    Diupload: {{ $dokumen->created_at->format('d M Y H:i') }}
+                                    Diupload pada {{ $beritaAcara->uploaded_at?->format('d M Y, H:i') }}
                                 </small>
-                                <br>
-                                @if($dokumen->jenis_dokumen === 'sertifikat_akreditasi')
-                                <span class="badge bg-success">Sertifikat Akreditasi</span>
-                                @else
-                                <span class="badge bg-primary">SK Akreditasi</span>
-                                @endif
+                                {{-- @if($beritaAcara->keterangan)
+                                <div class="mt-2">
+                                    <small class="text-muted">
+                                        <i class="bi bi-chat-left-text"></i>
+                                        {{ $beritaAcara->keterangan }}
+                                </small>
                             </div>
-                        </div>
-                        <div>
-                            <a href="{{ route('upps.penerimaan-dokumen.dokumen.download', $dokumen->id) }}" class="btn btn-success btn-md">
-                                <i class="bi bi-file-earmark-pdf"></i> Lihat File
-                            </a>
+                            @endif --}}
                         </div>
                     </div>
-                    @endforeach
-                    @else
-                    <div class="text-center py-4">
-                        <i class="bi bi-file-earmark-x" style="font-size: 48px; color: #ddd;"></i>
-                        <p class="text-muted mt-2 mb-0">Dokumen hasil akreditasi belum tersedia</p>
+                    <div>
+                        <a href="{{ route('upps.penyampaian-hasil-akreditasi.download-berita-acara', $pengajuan->id) }}" class="btn btn-outline-primary" target="_blank">
+                            <i class="bi bi-eye"></i> Lihat File
+                        </a>
                     </div>
-                    @endif
                 </div>
             </div>
         </div>
+        @endif
 
-        <!-- Sidebar -->
-        <div class="col-lg-4">
-            <!-- Ringkasan Hasil -->
-            <div class="card mb-4 border-{{ $badgeClass === 'bg-warning text-dark' ? 'warning' : ($badgeClass === 'bg-success' ? 'success' : 'info') }}">
-                <div class="card-header {{ $badgeClass }}">
-                    <h6 class="mb-0">
-                        <i class="bi bi-award"></i> Ringkasan Hasil Akreditasi
-                    </h6>
-                </div>
-                <div class="card-body text-center">
-                    <div class="mb-3">
-                        <i class="bi bi-trophy-fill text-{{ $badgeClass === 'bg-warning text-dark' ? 'warning' : ($badgeClass === 'bg-success' ? 'success' : 'info') }}" style="font-size: 64px;"></i>
-                    </div>
-                    <h3 class="fw-bold mb-2">{{ $pengajuan->peringkat_hasil ?? '-' }}</h3>
-                    @if($pengajuan->nilai_akhir)
-                    <p class="mb-3">
-                        <span class="text-muted">Nilai Akhir:</span>
-                        <br>
-                        <span class="fs-4 fw-bold">{{ $pengajuan->nilai_akhir }}</span>
-                    </p>
-                    @endif
-                    <hr>
-                    <p class="small text-muted mb-0">
-                        Program studi <strong>{{ $pengajuan->studyProgram->name }}</strong>
-                        telah meraih peringkat akreditasi <strong>{{ $pengajuan->peringkat_hasil }}</strong>.
-                    </p>
-                </div>
+        <!-- Informasi Hasil Akreditasi -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-info-circle"></i> Informasi Penyampaian Hasil Akreditasi
+                </h5>
             </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <th>Program Studi</th>
+                        <td>: {{ $pengajuan->studyProgram->name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Universitas</th>
+                        <td>: {{ $pengajuan->studyProgram->university->name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Jenis Permohonan Akreditasi</th>
+                        <td>: {{ $pengajuan->jenis_akreditasi_label }}</td>
+                    </tr>
+                    <tr>
+                        <th>Tahun Akreditasi</th>
+                        <td>: {{ $pengajuan->tahun_akreditasi }}</td>
+                    </tr>
+                    <tr>
+                        <th>Peringkat Akreditasi</th>
+                        <td>
+                            : <span class="badge p-2 px-3 my-2 fs-6" style="background-color: {{ $hasil->getPeringkatColor($peringkat) }}; color:#222">{{ $peringkat }}</span>
+                        </td>
+                    </tr>
+                    {{-- <tr>
+                            <th>Nilai Akhir</th>
+                            <td>: <strong>{{ $pengajuan->nilai_akhir ?? '-' }}</strong></td>
+                    </tr> --}}
+                    <tr>
+                        <th>Tanggal Hasil Disampaikan</th>
+                        <td>
+                            : {{ $pengajuan->tanggal_hasil_akreditasi_dikirim
+                                    ? $pengajuan->tanggal_hasil_akreditasi_dikirim->format('d M Y H:i')
+                                    : '-' }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Status Penyampaian Hasil Akreditasi</th>
+                        <td>: {!! $pengajuan->getCustomBadgeLastStatus('penyampaian_hasil', 'upps','label_long_for','text-dark') !!}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
 
-            <!-- Timeline -->
-            <div class="card">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0">
-                        <i class="bi bi-clock-history"></i> Timeline Proses
-                    </h5>
-                </div>
-                <div class="card-body" style="max-height: 600px; overflow-y: auto;">
-                    @php
-                    $filterStatuses = [
-                    \App\Models\PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
-                    \App\Models\PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM,
-                    ];
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Ringkasan Hasil -->
 
-                    $logs = $pengajuan->statusLog
-                    ->whereIn('status_to', $filterStatuses)
-                    ->sortBy('created_at')
-                    ->unique('status_to')
-                    ->values();
-                    @endphp
+        <!-- Timeline -->
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-clock-history"></i> Riwayat Status
+                </h5>
+            </div>
+            <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                @php
+                $filterStatuses = [
+                \App\Models\PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
+                \App\Models\PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM,
+                ];
 
-                    @if($logs->count() > 0)
-                    <div class="timeline">
-                        @foreach($logs as $log)
-                        <div class="timeline-item mb-3">
-                            <div class="d-flex">
-                                <div class="flex-shrink-0">
-                                    <i class="bi bi-circle-fill text-success" style="font-size: 8px;"></i>
-                                </div>
-                                <div class="flex-grow-1 ms-3">
-                                    <strong>
-                                        {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label'] ?? $log->status_to }}
-                                    </strong>
-                                    <br>
-                                    <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
+                $logs = $pengajuan->statusLog
+                ->whereIn('status_to', $filterStatuses)
+                ->sortBy('created_at')
+                ->unique('status_to')
+                ->values();
+                @endphp
 
-                                    @if($log->keterangan)
+                @if($logs->count() > 0)
+                <div class="timeline">
+                    @foreach($logs as $log)
+                    <div class="timeline-item mb-3">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0">
+                                <i class="bi bi-circle-fill text-success" style="font-size: 8px;"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <strong>
+                                    {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label'] ?? $log->status_to }}
+                                </strong>
+                                <br>
+                                <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
+
+                                {{-- @if($log->keterangan)
                                     <br>
                                     <small class="text-muted fst-italic">{{ $log->keterangan }}</small>
-                                    @endif
-                                </div>
+                                @endif --}}
                             </div>
                         </div>
-                        @endforeach
                     </div>
-                    @else
-                    <p class="text-muted text-center mb-0">Belum ada riwayat</p>
-                    @endif
+                    @endforeach
                 </div>
+                @else
+                <p class="text-muted text-center mb-0">Belum ada riwayat</p>
+                @endif
             </div>
+        </div>
 
-            <!-- Info Card -->
-            <div class="card mt-4 border-info">
-                <div class="card-header bg-info text-white">
-                    <h6 class="mb-0">
-                        <i class="bi bi-info-circle"></i> Informasi Proses
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <p class="small mb-2">
-                        <strong>Tahapan Berikutnya:</strong>
-                    </p>
-                    <ol class="small mb-0 ps-3 text-muted">
-                        <li>Penyampaian hasil akreditasi (selesai)</li>
-                        <li><strong>Masa sanggah</strong> - periode untuk pengajuan banding</li>
-                        <li>Penetapan hasil akhir akreditasi</li>
-                        <li>Pengumuman hasil akreditasi</li>
-                        <li>Proses selesai</li>
-                    </ol>
+        <!-- Info Card -->
+        <div class="card mt-4 border-secondary">
+            <div class="card-header bg-secondary text-white">
+                <h6 class="mb-0">
+                    <i class="bi bi-info-circle"></i> Informasi Proses
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="small mb-2">
+                    <strong>Tahapan Berikutnya:</strong>
+                </p>
+                <ol class="small mb-0 ps-3 text-muted">
+                    <li>Penyampaian hasil akreditasi (selesai)</li>
+                    <li><strong>Masa sanggah</strong> - periode untuk pengajuan banding</li>
+                    <li>Penetapan hasil akhir akreditasi</li>
+                    <li>Pengumuman hasil akreditasi</li>
+                    <li>Proses selesai</li>
+                </ol>
 
-                    <hr>
+                <hr>
 
-                    <p class="small text-muted mb-0">
-                        <i class="bi bi-exclamation-circle"></i>
-                        Jika memiliki keberatan terhadap hasil, dapat mengajukan banding pada tahap masa sanggah.
-                    </p>
-                </div>
+                <p class="small text-muted mb-0">
+                    <i class="bi bi-exclamation-circle"></i>
+                    Jika memiliki keberatan terhadap hasil, dapat mengajukan banding pada tahap masa sanggah.
+                </p>
             </div>
         </div>
     </div>
 </div>
+<div class="row">
+    <div class="col-lg-12">
+        <!-- ✅ Detail Skor per Elemen Standar (UPDATED) -->
+        @if(!empty($elemenList))
+        @php
+        // ✅ Group elements by kriteria
+        $groupedByKriteria = collect($elemenList)->groupBy('kode_kriteria');
+        @endphp
+
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-bottom">
+                <h5 class="mb-0">
+                    <i class="bi bi-list-check text-secondary"></i>
+                    Detail Kategori per Elemen Standar
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <!-- Alternative: Tanpa merged cells (untuk DataTables) -->
+                    <table class="table table-sm table-hover table-bordered align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th width="8%" class="text-center">Kriteria</th>
+                                <th width="57%">Pernyataan Elemen</th>
+                                <th width="35%" class="text-center">Kategori</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($groupedByKriteria as $kodeKriteria => $elemens)
+                            @foreach($elemens as $index => $elemen)
+                            @php
+                            $kategori = $elemen['skor_kategori'] ?? ['label' => '-', 'color' => '#e9ecef'];
+                            @endphp
+                            <tr>
+                                {{-- ✅ Merge kriteria cells --}}
+                                @if($index === 0)
+                                <td class="text-center align-middle fw-bold" rowspan="{{ count($elemens) }}">
+                                    <span class="badge bg-secondary fs-6 py-2 px-3">{{ $kodeKriteria }}</span>
+                                </td>
+                                @endif
+
+                                {{-- ✅ Kode elemen + nama elemen --}}
+                                <td>
+                                    <code class="text-primary me-2 fw-bold">{{ $elemen['kode_elemen'] }}</code>
+                                    {{ $elemen['nama_elemen'] }}
+                                </td>
+
+                                {{-- ✅ Kategori --}}
+                                <td class="text-center">
+                                    <span class="badge text-wrap py-2 px-3" style="background-color: {{ $kategori['color'] }}; color: #222; width: 220px; font-size: 0.85rem;">
+                                        {{ $kategori['label'] }}
+                                    </span>
+                                </td>
+                            </tr>
+                            @endforeach
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        @endif
+    </div>
+</div>
+</div>
 @endsection
+@push('scripts')
+<script>
+    $(document).ready(function() {
+        $('#table-elemen').DataTable({
+            pageLength: 25
+            , order: []
+            , columnDefs: [{
+                orderable: false
+                , targets: '_all'
+            }]
+            , language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json'
+            }
+        });
+    });
+
+</script>
+@endpush

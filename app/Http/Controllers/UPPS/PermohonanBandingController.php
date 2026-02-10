@@ -495,6 +495,14 @@ class PermohonanBandingController extends Controller
 
     public function downloadTemplateSurat()
     {
-        return "";
+        $path = public_path('assets/file/TEMPLATE PERMOHONAN AKREDITASI.docx');
+
+        if (!file_exists($path)) {
+            abort(404, 'File template tidak ditemukan');
+        }
+        return response()->download(
+            $path,
+            'TEMPLATE_PERMOHONAN_AKREDITASI.docx'
+        );
     }
 }

@@ -37,6 +37,8 @@ class AsesmenDocument extends Model
         'is_active' => 'boolean',
     ];
 
+    public const TYPE_BERITA_ACARA_PENYAMPAIAN_HASIL = 'berita_acara_penyampaian_hasil';
+
     /**
      * Get the uploader
      */
@@ -113,5 +115,27 @@ class AsesmenDocument extends Model
     public function isFinalStatus(): bool
     {
         return in_array($this->status_persetujuan_prodi, ['approved', 'rejected']);
+    }
+
+    // ✅ Add to allowed types (if you have validation)
+    public static function allowedTypes(): array
+    {
+        return [
+            'surat_tugas',
+            'laporan_ak',
+            'laporan_al',
+            'berita_acara_penyampaian_hasil',
+        ];
+    }
+
+    /**
+     * ✅ Check if berita acara exists
+     */
+    public static function hasBeritaAcaraPenyampaianHasil(int $asesmenId): bool
+    {
+        return self::where('id_asesmen', $asesmenId)
+            ->where('type', self::TYPE_BERITA_ACARA_PENYAMPAIAN_HASIL)
+            ->where('is_active', true)
+            ->exists();
     }
 }

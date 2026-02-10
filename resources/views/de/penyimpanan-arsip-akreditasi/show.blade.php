@@ -229,7 +229,7 @@
                         <strong class="d-block">
                             {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['de'] ?? $log->status_to }}
                         </strong>
-                        <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
+                        <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
                         @if($log->keterangan)
                         <p class="text-muted small mb-0 mt-1">{{ $log->keterangan }}</p>
                         @endif

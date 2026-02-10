@@ -4,11 +4,13 @@ namespace App\Http\Controllers\DE;
 
 use App\Models\Asesmen;
 use Illuminate\Http\Request;
+use App\Models\AsesmenDocument;
 use App\Models\HasilAkreditasi;
 use Illuminate\Support\Facades\DB;
 use App\Models\PengajuanAkreditasi;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
 use App\Services\HasilAkreditasiService;
 
 class PenyampaianHasilAkreditasiController extends Controller
@@ -25,6 +27,13 @@ class PenyampaianHasilAkreditasiController extends Controller
      */
     public function index(Request $request)
     {
+        $scopeStatuses = [
+            PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
+            PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM,
+            PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
+            PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
+        ];
+
         $query = PengajuanAkreditasi::with([
             'studyProgram.university',
             'studyProgram.degreeLevel',
@@ -33,49 +42,35 @@ class PenyampaianHasilAkreditasiController extends Controller
             'asesmen.hasil' => function ($q) {
                 $q->select('id', 'id_pengajuan', 'id_asesmen', 'skor_al', 'skor_final', 'peringkat_akreditasi', 'status', 'tanggal_finalisasi_al');
             },
-            'statusLog' => function ($q) {
-                $q->whereIn('status_to', [
-                    PengajuanAkreditasi::STATUS_AL_SELESAI,
-                    PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
-                    PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM,
-                    PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
-                    PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
-                ])->orderBy('changed_at', 'desc');
+            'statusLog' => function ($q) use ($scopeStatuses) {
+                $q->whereIn('status_to', $scopeStatuses)->orderBy('created_at', 'desc');
             },
         ])
-            // Filter: AL sudah selesai
-            ->whereExists(function ($q) {
+            ->whereExists(function ($q) use ($scopeStatuses) {
                 $q->select(DB::raw(1))
                     ->from('pengajuan_status_log as l')
                     ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
-                    ->whereIn('l.status_to', [
-                        PengajuanAkreditasi::STATUS_AL_SELESAI,
-                        PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
-                        PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM,
-                        PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
-                        PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
-                    ]);
-            })->whereHas('asesmen.asesmenLapangan', function ($q) {
-                $q->where('status', 'completed');
+                    ->whereIn('l.status_to', $scopeStatuses);
+            })
+            ->whereHas('asesmen.asesmenLapangan', function ($q) {
+                $q->where('status', 'finalized');
             });
 
-        // Filter by status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        // Filter by peringkat
         if ($request->filled('peringkat')) {
             $query->whereHas('asesmen.hasil', function ($q) use ($request) {
                 $q->where('peringkat_akreditasi', $request->peringkat);
             });
         }
 
-        // Search
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('nomor_pengajuan', 'like', "%{$search}%")
+                $q->where('nomor_permohonan', 'like', "%{$search}%")
+                    ->orWhere('nomor_pengajuan', 'like', "%{$search}%")
                     ->orWhereHas('studyProgram', function ($sq) use ($search) {
                         $sq->where('name', 'like', "%{$search}%")
                             ->orWhere('code', 'like', "%{$search}%");
@@ -85,7 +80,40 @@ class PenyampaianHasilAkreditasiController extends Controller
 
         $pengajuans = $query->latest()->paginate(15);
 
-        return view('de.penyampaian-hasil-akreditasi.index', compact('pengajuans'));
+        $stats = $this->calculateStatistics($scopeStatuses);
+
+        if ($request->ajax() || $request->wantsJson()) {
+            $html = view('de.penyampaian-hasil-akreditasi.components.table-content', compact('pengajuans'))->render();
+
+            return response()->json([
+                'success' => true,
+                'html' => $html,
+                'total' => $pengajuans->total(),
+            ]);
+        }
+
+        return view('de.penyampaian-hasil-akreditasi.index', compact('pengajuans', 'stats'));
+    }
+
+    private function calculateStatistics(array $scopeStatuses): array
+    {
+        $base = PengajuanAkreditasi::query()
+            ->whereHas('statusLog', fn($q) => $q->whereIn('status_to', $scopeStatuses))
+            ->whereHas('asesmen.asesmenLapangan', fn($q) => $q->where('status', 'finalized'));
+
+        $total = (clone $base)->count();
+
+        $sudahFinal = (clone $base)->whereHas('asesmen.hasil', function ($q) {
+            $q->whereNotNull('tanggal_finalisasi_al');
+        })->count();
+
+        $belumFinal = $total - $sudahFinal;
+
+        return [
+            'total' => $total,
+            'belum_final' => $belumFinal,
+            'sudah_final' => $sudahFinal,
+        ];
     }
 
     /**
@@ -93,6 +121,7 @@ class PenyampaianHasilAkreditasiController extends Controller
      */
     public function show($id)
     {
+        $authId = auth()->id();
         $pengajuan = PengajuanAkreditasi::with([
             'studyProgram.university',
             'studyProgram.degreeLevel',
@@ -109,50 +138,22 @@ class PenyampaianHasilAkreditasiController extends Controller
             return back()->with('error', 'Asesmen Lapangan belum selesai.');
         }
 
-        // ✅ AUTO-CALCULATE: Check if hasil exists, if not create it
-        $hasil = HasilAkreditasi::firstOrCreate(
-            [
-                'id_pengajuan' => $pengajuan->id,
-                'id_asesmen' => $asesmen->id,
-            ],
-            [
-                'id_study_program' => $asesmen->id_study_program,
-                'id_category' => $pengajuan->studyProgram->id_category,
-                'status' => 'draft_al',
-            ]
-        );
+        $hasil = HasilAkreditasi::initializeHasil($this->hasilService, $pengajuan, $authId);
 
-        // Auto-calculate if not yet calculated or still draft
-        if (!$hasil->skor_al || $hasil->status === 'draft_al') {
-            try {
-                DB::beginTransaction();
-
-                // Calculate AK first (if not exists)
-                if (!$hasil->skor_ak) {
-                    $this->hasilService->saveHasilAK($asesmen, auth()->id());
-                    $hasil->refresh();
-                }
-
-                // Calculate AL
-                $this->hasilService->saveHasilAL($asesmen, auth()->id());
-                $hasil->refresh();
-
-                DB::commit();
-            } catch (\Exception $e) {
-                DB::rollBack();
-                Log::error('Auto-calculate failed', [
-                    'pengajuan_id' => $id,
-                    'error' => $e->getMessage()
-                ]);
-            }
-        }
-
-        // Load full hasil with relations
         $hasil->load([
             'studyProgram',
             'category',
             'finalizedAlBy',
         ]);
+
+        // ✅ Check if berita acara exists
+        $beritaAcara = AsesmenDocument::where('id_asesmen', $asesmen->id)
+            ->where('type', AsesmenDocument::TYPE_BERITA_ACARA_PENYAMPAIAN_HASIL)
+            ->where('is_active', true)
+            ->latest()
+            ->first();
+
+        $canFinalize = $beritaAcara !== null;
 
         // Get validation summary for Unggul
         $validationSummary = $this->hasilService->getValidationSummary($hasil);
@@ -168,7 +169,9 @@ class PenyampaianHasilAkreditasiController extends Controller
             'hasil',
             'validationSummary',
             'kriteriaList',
-            'elemenList'
+            'elemenList',
+            'beritaAcara',      // ✅ NEW
+            'canFinalize'       // ✅ NEW
         ));
     }
 
@@ -179,6 +182,7 @@ class PenyampaianHasilAkreditasiController extends Controller
     {
         DB::beginTransaction();
         try {
+            $authId = auth()->id();
             $pengajuan = PengajuanAkreditasi::findOrFail($id);
             $asesmen = $pengajuan->asesmen;
 
@@ -192,10 +196,10 @@ class PenyampaianHasilAkreditasiController extends Controller
             }
 
             // Recalculate AK
-            $this->hasilService->saveHasilAK($asesmen, auth()->id());
+            $this->hasilService->saveHasilAK($asesmen, $authId);
 
             // Recalculate AL
-            $hasil = $this->hasilService->saveHasilAL($asesmen, auth()->id());
+            $hasil = $this->hasilService->saveHasilAL($asesmen, $authId);
 
             DB::commit();
 
@@ -220,10 +224,16 @@ class PenyampaianHasilAkreditasiController extends Controller
     {
         DB::beginTransaction();
         try {
+            $authId = auth()->id();
             $pengajuan = PengajuanAkreditasi::findOrFail($id);
             $asesmen = $pengajuan->asesmen;
 
             $hasil = HasilAkreditasi::where('id_asesmen', $asesmen->id)->firstOrFail();
+
+            // ✅ Validate: Berita Acara must be uploaded
+            if (!AsesmenDocument::hasBeritaAcaraPenyampaianHasil($asesmen->id)) {
+                throw new \Exception('Berita Acara Rapat Penyampaian Hasil harus diupload terlebih dahulu.');
+            }
 
             // Check if already finalized
             if ($hasil->isAlFinalized()) {
@@ -231,25 +241,51 @@ class PenyampaianHasilAkreditasiController extends Controller
             }
 
             // Recalculate before finalize (ensure latest data)
-            $this->hasilService->saveHasilAK($asesmen, auth()->id());
-            $this->hasilService->saveHasilAL($asesmen, auth()->id());
+            $this->hasilService->saveHasilAK($asesmen, $authId);
+            $this->hasilService->saveHasilAL($asesmen, $authId);
             $hasil->refresh();
 
             // Finalize AK first
             if (!$hasil->isAkFinalized()) {
-                $this->hasilService->finalizeHasilAK($hasil, auth()->id());
+                $this->hasilService->finalizeHasilAK($hasil, $authId);
                 $hasil->refresh();
             }
 
             // Finalize AL
-            $this->hasilService->finalizeHasilAL($hasil, auth()->id());
+            $this->hasilService->finalizeHasilAL($hasil, $authId);
             $hasil->refresh();
+            $statusFrom = $pengajuan->status;
+            $pengajuan->checkUpdateStatusAKAL('al', 'status_hasil_akreditasi_disampaikan');
+            $pengajuan->statusLog()->firstOrCreate(
+                [
+                    'status_from' => $statusFrom,
+                    'status_to'   => PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM,
+                ],
+                [
+                    'changed_by'  => $authId,
+                    'keterangan'  => 'Hasil akreditasi telah dikirim ke prodi.',
+                    'changed_at'  => now(),
+                ]
+            );
+            $statusFrom = $pengajuan->status;
+            $pengajuan->checkUpdateStatusAKAL('al', 'status_masa_sanggah_dimulai');
+            $pengajuan->statusLog()->firstOrCreate(
+                [
+                    'status_from' => $statusFrom,
+                    'status_to'   => PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
+                ],
+                [
+                    'changed_by'  => $authId,
+                    'keterangan'  => 'Masa sanggah hasil akreditasi telah dimulai.',
+                    'changed_at'  => now(),
+                ]
+            );
 
             DB::commit();
 
             return redirect()
                 ->route('de.penyampaian-hasil-akreditasi.show', $id)
-                ->with('success', "Hasil akreditasi berhasil difinalisasi! Peringkat: {$hasil->peringkat_akreditasi} (Skor: {$hasil->skor_final})");
+                ->with('success', "Hasil akreditasi berhasil difinalisasi dan disampaikan ke prodi! Peringkat: {$hasil->peringkat_akreditasi} (Skor: {$hasil->skor_final})");
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Finalize hasil failed', [
@@ -285,6 +321,141 @@ class PenyampaianHasilAkreditasiController extends Controller
                 ->with('info', 'Fitur download PDF dalam pengembangan.');
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * ✅ Upload Berita Acara
+     */
+    public function uploadBeritaAcara(Request $request, $id)
+    {
+        $request->validate([
+            'berita_acara' => 'required|file|mimes:pdf|max:10240', // max 10MB
+            'keterangan' => 'nullable|string|max:500',
+        ], [
+            'berita_acara.required' => 'File Berita Acara harus diupload.',
+            'berita_acara.mimes' => 'File harus berformat PDF.',
+            'berita_acara.max' => 'Ukuran file maksimal 10MB.',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $pengajuan = PengajuanAkreditasi::findOrFail($id);
+            $asesmen = $pengajuan->asesmen;
+
+            if (!$asesmen) {
+                throw new \Exception('Asesmen tidak ditemukan.');
+            }
+
+            $file = $request->file('berita_acara');
+            $originalName = $file->getClientOriginalName();
+            $extension = $file->getClientOriginalExtension();
+            $fileName = 'berita_acara_penyampaian_hasil_' . time() . '.' . $extension;
+
+            // Store file
+            $path = $file->storeAs(
+                'asesmen_documents/' . $asesmen->id . '/berita_acara',
+                $fileName,
+                'public'
+            );
+
+            // Deactivate previous berita acara (if exists)
+            AsesmenDocument::where('id_asesmen', $asesmen->id)
+                ->where('type', AsesmenDocument::TYPE_BERITA_ACARA_PENYAMPAIAN_HASIL)
+                ->update(['is_active' => false]);
+
+            // Create new record
+            $document = AsesmenDocument::create([
+                'id_asesmen' => $asesmen->id,
+                'type' => AsesmenDocument::TYPE_BERITA_ACARA_PENYAMPAIAN_HASIL,
+                'title' => 'Berita Acara Rapat Penyampaian Hasil Akreditasi',
+                'path' => $path,
+                'original_name' => $originalName,
+                'size' => $file->getSize(),
+                'mime' => $file->getMimeType(),
+                'uploaded_by' => auth()->id(),
+                'uploaded_at' => now(),
+                'keterangan' => $request->keterangan,
+                'is_active' => true,
+                'version' => 1,
+            ]);
+
+            DB::commit();
+
+            return redirect()
+                ->route('de.penyampaian-hasil-akreditasi.show', $id)
+                ->with('success', 'Berita Acara berhasil diupload!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Upload berita acara failed', [
+                'pengajuan_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+
+            return back()->with('error', 'Gagal upload: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * ✅ Download Berita Acara
+     */
+    public function downloadBeritaAcara($id)
+    {
+        try {
+            $pengajuan = PengajuanAkreditasi::findOrFail($id);
+            $asesmen = $pengajuan->asesmen;
+
+            $beritaAcara = AsesmenDocument::where('id_asesmen', $asesmen->id)
+                ->where('type', AsesmenDocument::TYPE_BERITA_ACARA_PENYAMPAIAN_HASIL)
+                ->where('is_active', true)
+                ->latest()
+                ->firstOrFail();
+
+            if (!Storage::disk('public')->exists($beritaAcara->path)) {
+                throw new \Exception('File tidak ditemukan.');
+            }
+
+            return Storage::disk('public')->download(
+                $beritaAcara->path,
+                $beritaAcara->original_name
+            );
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal download: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * ✅ Delete Berita Acara
+     */
+    public function deleteBeritaAcara($id)
+    {
+        DB::beginTransaction();
+        try {
+            $pengajuan = PengajuanAkreditasi::findOrFail($id);
+            $asesmen = $pengajuan->asesmen;
+
+            $beritaAcara = AsesmenDocument::where('id_asesmen', $asesmen->id)
+                ->where('type', AsesmenDocument::TYPE_BERITA_ACARA_PENYAMPAIAN_HASIL)
+                ->where('is_active', true)
+                ->latest()
+                ->firstOrFail();
+
+            // Delete file from storage
+            if (Storage::disk('public')->exists($beritaAcara->path)) {
+                Storage::disk('public')->delete($beritaAcara->path);
+            }
+
+            // Soft delete (mark as inactive)
+            $beritaAcara->update(['is_active' => false]);
+
+            DB::commit();
+
+            return redirect()
+                ->route('de.penyampaian-hasil-akreditasi.show', $id)
+                ->with('success', 'Berita Acara berhasil dihapus!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal hapus: ' . $e->getMessage());
         }
     }
 }

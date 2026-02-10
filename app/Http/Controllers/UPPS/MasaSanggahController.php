@@ -27,12 +27,12 @@ class MasaSanggahController extends Controller
                 PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
                 PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
                 PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
-            ])->orderBy('changed_at', 'desc'),
+            ])->orderBy('created_at', 'desc'),
         ])
             ->whereIn('id_program_studi', $studyProgramIds)
-            ->whereNotNull('tanggal_masa_sanggah_mulai')
-            ->whereNotNull('tanggal_masa_sanggah_selesai');
-
+            ->whereNotNull('tanggal_masa_sanggah_mulai');
+        // ->whereNotNull('tanggal_masa_sanggah_selesai');
+        // dd($query->get());
         // Apply filters
         $this->applyFilters($query, $request);
 
