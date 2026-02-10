@@ -126,8 +126,8 @@
                         <tr>
                             <th>Tanggal Hasil Disampaikan</th>
                             <td>
-                                : {{ $pengajuan->tanggal_hasil_akreditasi
-                                    ? $pengajuan->tanggal_hasil_akreditasi->format('d M Y H:i')
+                                : {{ $pengajuan->tanggal_hasil_akreditasi_dikirim
+                                    ? $pengajuan->tanggal_hasil_akreditasi_dikirim->format('d M Y H:i')
                                     : '-' }}
                             </td>
                         </tr>
@@ -235,7 +235,7 @@
 
                     $logs = $pengajuan->statusLog
                     ->whereIn('status_to', $filterStatuses)
-                    ->sortBy('changed_at')
+                    ->sortBy('created_at')
                     ->unique('status_to')
                     ->values();
                     @endphp

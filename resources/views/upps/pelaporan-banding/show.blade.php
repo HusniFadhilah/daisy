@@ -136,8 +136,8 @@
                         <tr>
                             <th width="30%">Tanggal Pengajuan Banding</th>
                             <td>
-                                : {{ $pengajuan->tanggal_banding
-                                    ? $pengajuan->tanggal_banding->format('d M Y H:i')
+                                : {{ $pengajuan->tanggal_permohonan_banding
+                                    ? $pengajuan->tanggal_permohonan_banding->format('d M Y H:i')
                                     : '-' }}
                             </td>
                         </tr>
@@ -166,11 +166,11 @@
                             </td>
                         </tr>
 
-                        @if($pengajuan->tanggal_banding && $pengajuan->tanggal_pelaporan_banding)
+                        @if($pengajuan->tanggal_permohonan_banding && $pengajuan->tanggal_pelaporan_banding)
                         <tr>
                             <th>Total Durasi Banding</th>
                             <td>
-                                : {{ $pengajuan->tanggal_banding->diffInDays($pengajuan->tanggal_pelaporan_banding) }} hari
+                                : {{ $pengajuan->tanggal_permohonan_banding->diffInDays($pengajuan->tanggal_pelaporan_banding) }} hari
                                 <small class="text-muted">(dari pengajuan hingga pelaporan)</small>
                             </td>
                         </tr>
@@ -383,7 +383,7 @@
 
                     $logs = $pengajuan->statusLog
                     ->whereIn('status_to', $filterStatuses)
-                    ->sortBy('changed_at')
+                    ->sortBy('created_at')
                     ->unique('status_to')
                     ->values();
                     @endphp

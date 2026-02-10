@@ -93,7 +93,7 @@
                             <label class="form-label text-white">Status Penetapan</label>
                             <select name="status" class="form-select">
                                 <option value="">Semua Status</option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH ? 'selected' : '' }}>
+                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI ? 'selected' : '' }}>
                                     Menunggu (Masa Sanggah)
                                 </option>
                                 <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN ? 'selected' : '' }}>

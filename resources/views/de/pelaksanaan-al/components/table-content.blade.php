@@ -87,11 +87,11 @@
                             </span> --}}
                         </td>
                         <td>
-                            @if($pengajuan->tanggal_pelaksanaan_al_selesai)
-                            <small>{{ $pengajuan->tanggal_pelaksanaan_al_selesai->format('d M Y') }}</small>
+                            @if($pengajuan->tanggal_al_selesai)
+                            <small>{{ $pengajuan->tanggal_al_selesai->format('d M Y') }}</small>
                             <br>
                             <small class="text-muted">
-                                {{ $pengajuan->tanggal_pelaksanaan_al_selesai->diffForHumans() }}
+                                {{ $pengajuan->tanggal_al_selesai->diffForHumans() }}
                             </small>
                             @else
                             <span class="text-muted">-</span>

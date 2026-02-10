@@ -117,7 +117,7 @@
                     <div class="border-end pe-3">
                         <h6 class="text-muted">Tanggal Hasil Akreditasi</h6>
                         <p class="mb-0 fw-semibold">
-                            {{ $pengajuan->tanggal_hasil_akreditasi->format('d F Y') }}
+                            {{ $pengajuan->tanggal_hasil_akreditasi_dikirim->format('d F Y') }}
                         </p>
                     </div>
                 </div>
@@ -158,7 +158,7 @@
     </div>
     @endif
 
-    @if($masaSanggahInfo['is_expired'] && !$masaSanggahInfo['has_banding'] && $pengajuan->status === App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH)
+    @if($masaSanggahInfo['is_expired'] && !$masaSanggahInfo['has_banding'] && $pengajuan->status === App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI)
     <div class="alert alert-warning">
         <div class="d-flex justify-content-between align-items-center">
             <div>
@@ -204,7 +204,7 @@
                     <table class="table table-sm">
                         <tr>
                             <th width="40%">Tanggal Pengajuan:</th>
-                            <td>{{ $pengajuan->tanggal_banding ? $pengajuan->tanggal_banding->format('d F Y, H:i') : '-' }}</td>
+                            <td>{{ $pengajuan->tanggal_permohonan_banding ? $pengajuan->tanggal_permohonan_banding->format('d F Y, H:i') : '-' }}</td>
                         </tr>
                         <tr>
                             <th>Tanggal Pelaksanaan:</th>

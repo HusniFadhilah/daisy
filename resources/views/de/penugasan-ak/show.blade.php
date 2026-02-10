@@ -44,6 +44,7 @@
             $allowed = [
             \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
             \App\Models\PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
+            \App\Models\PengajuanAkreditasi::STATUS_AK_SELESAI,
             ]; // ini contoh, bisa dinamis dari config/db/request
 
             $log = $pengajuan->latestRelevantStatusLog($allowed);
@@ -61,6 +62,12 @@
                 <i class="bi bi-person-check"></i>
                 <strong>Penugasan Asesor AK</strong><br>
                 Asesor AK telah ditugaskan untuk melakukan penilaian
+            </div>
+            @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_AK_SELESAI)
+            <div class="alert alert-success alert-permanent">
+                <i class="bi bi-person-check"></i>
+                <strong>Penugasan Asesor AK</strong><br>
+                Asesor AK telah ditugaskan dan telah menyelesaikan penilaian
             </div>
             @endif
 
@@ -399,7 +406,7 @@
 
                     $logs = $pengajuan->statusLog
                     ->whereIn('status_to', $filterStatuses)
-                    ->sortBy('changed_at')
+                    ->sortBy('created_at')
                     ->unique('status_to')
                     ->values();
                     @endphp

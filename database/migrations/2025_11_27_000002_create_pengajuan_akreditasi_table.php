@@ -62,13 +62,18 @@ return new class extends Migration
                 'al_in_progress',
                 'al_selesai',
                 'al_dilaporkan',
-                'hasil_diumumkan',
+                'hasil_akreditasi_dihitung',
                 'hasil_akreditasi_dikirim',
-                'masa_sanggah',
+                'masa_sanggah_dimulai',
+                'masa_sanggah_selesai',
                 'banding_diajukan',
+                'banding_diterima',
+                'banding_ditugaskan',
                 'banding_dilaksanakan',
+                'banding_dilaporkan',
                 'hasil_ditetapkan',
                 'hasil_dilaporkan',
+                'hasil_diumumkan',
                 'arsip_disimpan',
                 'selesai',
                 'ditolak',
@@ -108,15 +113,18 @@ return new class extends Migration
             $table->timestamp('tanggal_pelaporan_al')->nullable();
 
             // Final Timeline
-            $table->timestamp('tanggal_hasil_akreditasi')->nullable()->comment('Tanggal penyampaian hasil akreditasi');
+            $table->timestamp('tanggal_hasil_akreditasi_dihitung')->nullable()->comment('Tanggal hasil akreditasi dihitung');
+            $table->timestamp('tanggal_hasil_akreditasi_dikirim')->nullable()->comment('Tanggal penyampaian hasil akreditasi');
             $table->timestamp('tanggal_masa_sanggah_mulai')->nullable();
             $table->timestamp('tanggal_masa_sanggah_selesai')->nullable();
-            $table->timestamp('tanggal_banding')->nullable()->comment('Tanggal pengajuan banding (optional)');
+            $table->timestamp('tanggal_permohonan_banding')->nullable()->comment('Tanggal pengajuan banding (optional)');
+            $table->timestamp('tanggal_penerimaan_banding')->nullable()->comment('Tanggal penerimaan banding (optional)');
+            $table->timestamp('tanggal_penugasan_banding')->nullable()->comment('Tanggal penugasan banding (optional)');
             $table->timestamp('tanggal_pelaksanaan_banding')->nullable();
             $table->timestamp('tanggal_pelaporan_banding')->nullable();
             $table->timestamp('tanggal_penetapan')->nullable()->comment('Tanggal penetapan hasil akreditasi');
-            $table->timestamp('tanggal_pengumuman')->nullable()->comment('Tanggal pengumuman hasil akreditasi');
             $table->timestamp('tanggal_pelaporan_hasil')->nullable();
+            $table->timestamp('tanggal_pengumuman')->nullable()->comment('Tanggal pengumuman hasil akreditasi');
             $table->timestamp('tanggal_penyimpanan')->nullable()->comment('Tanggal penyimpanan berkas akreditasi');
 
             $table->string('peringkat_hasil')->nullable()->comment('Peringkat hasil akreditasi awal yang disampaikan ke prodi');

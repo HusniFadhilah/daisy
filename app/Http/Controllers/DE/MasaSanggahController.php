@@ -24,12 +24,13 @@ class MasaSanggahController extends Controller
         ])
             ->whereIn('status', [
                 PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM,
-                PengajuanAkreditasi::STATUS_MASA_SANGGAH,
+                PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
+                PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
                 PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
                 PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
                 PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
             ])
-            ->whereNotNull('tanggal_hasil_akreditasi');
+            ->whereNotNull('tanggal_hasil_akreditasi_dikirim');
 
         // Filter by status
         if ($request->filled('status')) {
@@ -48,15 +49,14 @@ class MasaSanggahController extends Controller
             $now = now();
 
             if ($request->masa_sanggah_status === 'aktif') {
-                $query->where('status', PengajuanAkreditasi::STATUS_MASA_SANGGAH)
+                $query->where('status', PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI)
                     ->where('tanggal_masa_sanggah_selesai', '>', $now);
             } elseif ($request->masa_sanggah_status === 'hampir_habis') {
-                $query->where('status', PengajuanAkreditasi::STATUS_MASA_SANGGAH)
+                $query->where('status', PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI)
                     ->where('tanggal_masa_sanggah_selesai', '>', $now)
                     ->where('tanggal_masa_sanggah_selesai', '<=', $now->copy()->addDays(2));
             } elseif ($request->masa_sanggah_status === 'selesai') {
-                $query->where('status', PengajuanAkreditasi::STATUS_MASA_SANGGAH)
-                    ->where('tanggal_masa_sanggah_selesai', '<=', $now);
+                $query->where('status', PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI);
             } elseif ($request->masa_sanggah_status === 'ada_banding') {
                 $query->whereIn('status', [
                     PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
@@ -78,21 +78,22 @@ class MasaSanggahController extends Controller
             });
         }
 
-        $pengajuans = $query->latest('tanggal_hasil_akreditasi')->paginate(15);
+        $pengajuans = $query->latest('tanggal_hasil_akreditasi_dikirim')->paginate(15);
 
         // Calculate statistics
         $stats = [
             'total' => PengajuanAkreditasi::whereIn('status', [
                 PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM,
-                PengajuanAkreditasi::STATUS_MASA_SANGGAH,
+                PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
+                PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
                 PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
             ])->count(),
 
-            'aktif' => PengajuanAkreditasi::where('status', PengajuanAkreditasi::STATUS_MASA_SANGGAH)
+            'aktif' => PengajuanAkreditasi::where('status', PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI)
                 ->where('tanggal_masa_sanggah_selesai', '>', now())
                 ->count(),
 
-            'hampir_habis' => PengajuanAkreditasi::where('status', PengajuanAkreditasi::STATUS_MASA_SANGGAH)
+            'hampir_habis' => PengajuanAkreditasi::where('status', PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI)
                 ->where('tanggal_masa_sanggah_selesai', '>', now())
                 ->where('tanggal_masa_sanggah_selesai', '<=', now()->addDays(2))
                 ->count(),
@@ -123,7 +124,7 @@ class MasaSanggahController extends Controller
         ])->findOrFail($id);
 
         // Validate: Hasil akreditasi harus sudah disampaikan
-        if (!$pengajuan->tanggal_hasil_akreditasi) {
+        if (!$pengajuan->tanggal_hasil_akreditasi_dikirim) {
             return back()->with('error', 'Hasil akreditasi belum disampaikan.');
         }
 
@@ -166,16 +167,16 @@ class MasaSanggahController extends Controller
                 throw new \Exception('Status pengajuan tidak valid untuk memulai masa sanggah.');
             }
 
-            if (!$pengajuan->tanggal_hasil_akreditasi) {
+            if (!$pengajuan->tanggal_hasil_akreditasi_dikirim) {
                 throw new \Exception('Hasil akreditasi belum disampaikan.');
             }
 
             // Set masa sanggah (7 days from hasil akreditasi)
-            $tanggalMulai = $pengajuan->tanggal_hasil_akreditasi;
+            $tanggalMulai = $pengajuan->tanggal_hasil_akreditasi_dikirim;
             $tanggalSelesai = Carbon::parse($tanggalMulai)->addDays(7);
 
             $pengajuan->updateStatusSafely(
-                PengajuanAkreditasi::STATUS_MASA_SANGGAH,
+                PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
                 "Masa sanggah dimulai: {$tanggalMulai->format('d M Y')} - {$tanggalSelesai->format('d M Y')}"
             );
 
@@ -210,7 +211,7 @@ class MasaSanggahController extends Controller
             $pengajuan = PengajuanAkreditasi::findOrFail($id);
 
             // Validate
-            if ($pengajuan->status !== PengajuanAkreditasi::STATUS_MASA_SANGGAH) {
+            if ($pengajuan->status !== PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI) {
                 throw new \Exception('Status pengajuan tidak valid.');
             }
 
@@ -220,7 +221,7 @@ class MasaSanggahController extends Controller
             }
 
             // Check if ada banding
-            if ($pengajuan->tanggal_banding) {
+            if ($pengajuan->tanggal_permohonan_banding) {
                 throw new \Exception('Tidak dapat mengakhiri masa sanggah karena ada pengajuan banding.');
             }
 
@@ -274,7 +275,7 @@ class MasaSanggahController extends Controller
         $selesai = Carbon::parse($pengajuan->tanggal_masa_sanggah_selesai);
 
         // Check if has banding
-        $info['has_banding'] = !is_null($pengajuan->tanggal_banding);
+        $info['has_banding'] = !is_null($pengajuan->tanggal_permohonan_banding);
 
         if ($now->lt($selesai)) {
             // Active

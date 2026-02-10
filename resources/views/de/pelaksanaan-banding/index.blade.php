@@ -233,8 +233,8 @@
                                         @endif
                                     </td>
                                     <td>
-                                        @if($pengajuan->tanggal_banding)
-                                        <small>{{ $pengajuan->tanggal_banding->format('d M Y') }}</small>
+                                        @if($pengajuan->tanggal_pelaksanaan_banding)
+                                        <small>{{ $pengajuan->tanggal_pelaksanaan_banding->format('d M Y') }}</small>
                                         @else
                                         <span class="text-muted">-</span>
                                         @endif

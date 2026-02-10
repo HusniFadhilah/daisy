@@ -30,7 +30,8 @@ class PermohonanBandingController extends Controller
             'dokumen' => fn($q) => $q->where('jenis_dokumen', 'surat_permohonan_banding')
                 ->where('is_latest', true),
             'statusLog' => fn($q) => $q->whereIn('status_to', [
-                PengajuanAkreditasi::STATUS_MASA_SANGGAH,
+                PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
+                PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
                 PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
                 PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
                 PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
@@ -174,7 +175,7 @@ class PermohonanBandingController extends Controller
 
             // ✅ Log status
             $pengajuan->statusLog()->create([
-                'status_from' => PengajuanAkreditasi::STATUS_MASA_SANGGAH,
+                'status_from' => PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
                 'status_to' => $status,
                 'changed_by' => auth()->id(),
                 'changed_at' => now(),

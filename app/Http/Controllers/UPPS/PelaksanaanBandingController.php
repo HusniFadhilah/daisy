@@ -27,7 +27,7 @@ class PelaksanaanBandingController extends Controller
                 PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
             ])->orderBy('changed_at', 'desc'),
         ])->whereIn('id_program_studi', $studyProgramIds)
-            ->whereNotNull('tanggal_banding')->whereExists(function ($q) {
+            ->whereNotNull('tanggal_pelaksanaan_banding')->whereExists(function ($q) {
                 $q->select(DB::raw(1))
                     ->from('pengajuan_status_log as l')
                     ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
@@ -41,7 +41,7 @@ class PelaksanaanBandingController extends Controller
         $this->applyFilters($query, $request);
 
         $pengajuans = $query
-            ->orderBy($request->get('sort_by', 'tanggal_banding'), $request->get('sort_order', 'desc'))
+            ->orderBy($request->get('sort_by', 'tanggal_pelaksanaan_banding'), $request->get('sort_order', 'desc'))
             ->paginate(20)
             ->appends($request->query());
 
@@ -125,7 +125,7 @@ class PelaksanaanBandingController extends Controller
     {
         // Total banding dalam pelaksanaan
         $total = PengajuanAkreditasi::whereIn('id_program_studi', $studyProgramIds)
-            ->whereNotNull('tanggal_banding')
+            ->whereNotNull('tanggal_pelaksanaan_banding')
             ->whereIn('status', [
                 PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
                 PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,

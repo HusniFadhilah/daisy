@@ -25,7 +25,8 @@ class PelaksanaanBandingController extends Controller
             'asesmen.hasil',
             'statusLog' => function ($q) {
                 $q->whereIn('status_to', [
-                    PengajuanAkreditasi::STATUS_MASA_SANGGAH,
+                    PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
+                    PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
                     PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
                     PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
                     PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
@@ -78,11 +79,11 @@ class PelaksanaanBandingController extends Controller
         }
 
         // Sort
-        $sortBy = $request->get('sort_by', 'tanggal_banding');
+        $sortBy = $request->get('sort_by', 'tanggal_pelaksanaan_banding');
         $sortOrder = $request->get('sort_order', 'desc');
 
-        if ($sortBy === 'tanggal_banding') {
-            $query->orderByRaw('COALESCE(tanggal_banding, created_at) ' . $sortOrder);
+        if ($sortBy === 'tanggal_pelaksanaan_banding') {
+            $query->orderByRaw('COALESCE(tanggal_pelaksanaan_banding, created_at) ' . $sortOrder);
         } else {
             $query->orderBy($sortBy, $sortOrder);
         }
@@ -94,7 +95,7 @@ class PelaksanaanBandingController extends Controller
 
         // Get filter data
         $universities = University::nonExample()->orderBy('name')->get();
-        $tahunList = PengajuanAkreditasi::whereNotNull('tanggal_banding')
+        $tahunList = PengajuanAkreditasi::whereNotNull('tanggal_pelaksanaan_banding')
             ->distinct()
             ->pluck('tahun_akreditasi')
             ->filter()
@@ -130,7 +131,7 @@ class PelaksanaanBandingController extends Controller
         ])->findOrFail($id);
 
         // Check if banding exists
-        if (!$pengajuan->tanggal_banding) {
+        if (!$pengajuan->tanggal_pelaksanaan_banding) {
             return redirect()
                 ->route('de.pelaksanaan-banding')
                 ->with('error', 'Pengajuan ini belum mengajukan banding.');

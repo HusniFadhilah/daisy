@@ -86,7 +86,7 @@ class PelaporanBandingController extends Controller
         $sortOrder = $request->get('sort_order', 'desc');
 
         if ($sortBy === 'tanggal_pelaksanaan_banding') {
-            $query->orderByRaw('COALESCE(tanggal_pelaksanaan_banding, tanggal_banding, created_at) ' . $sortOrder);
+            $query->orderByRaw('COALESCE(tanggal_pelaksanaan_banding, tanggal_pelaporan_banding, created_at) ' . $sortOrder);
         } else {
             $query->orderBy($sortBy, $sortOrder);
         }
@@ -250,7 +250,8 @@ class PelaporanBandingController extends Controller
         $pengajuan = PengajuanAkreditasi::with([
             'statusLog' => function ($q) {
                 $q->whereIn('status_to', [
-                    PengajuanAkreditasi::STATUS_MASA_SANGGAH,
+                    PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
+                    PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
                     PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
                     PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
                     PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,

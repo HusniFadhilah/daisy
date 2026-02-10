@@ -93,7 +93,7 @@
                         <div class="col-md-6 mb-3">
                             <label class="text-muted small">Tanggal Banding Diajukan</label>
                             <p class="fw-bold">
-                                {{ $pengajuan->tanggal_banding ? $pengajuan->tanggal_banding->format('d F Y') : '-' }}
+                                {{ $pengajuan->tanggal_permohonan_banding ? $pengajuan->tanggal_permohonan_banding->format('d F Y') : '-' }}
                             </p>
                         </div>
                         <div class="col-md-6 mb-3">

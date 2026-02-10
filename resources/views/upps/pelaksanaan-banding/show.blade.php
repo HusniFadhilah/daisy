@@ -134,8 +134,8 @@
                         <div class="col-12">
                             <label class="text-muted small">Tanggal Hasil Disampaikan</label>
                             <p class="mb-0">
-                                {{ $pengajuan->tanggal_hasil_akreditasi
-                                    ? $pengajuan->tanggal_hasil_akreditasi->format('d M Y H:i')
+                                {{ $pengajuan->tanggal_hasil_akreditasi_dikirim
+                                    ? $pengajuan->tanggal_hasil_akreditasi_dikirim->format('d M Y H:i')
                                     : '-' }}
                             </p>
                         </div>
@@ -155,8 +155,8 @@
                         <tr>
                             <th width="30%">Tanggal Pengajuan Banding</th>
                             <td>
-                                : {{ $pengajuan->tanggal_banding
-                                    ? $pengajuan->tanggal_banding->format('d M Y H:i')
+                                : {{ $pengajuan->tanggal_permohonan_banding
+                                    ? $pengajuan->tanggal_permohonan_banding->format('d M Y H:i')
                                     : '-' }}
                             </td>
                         </tr>
@@ -177,11 +177,11 @@
                             </td>
                         </tr>
 
-                        @if($pengajuan->tanggal_banding && $pengajuan->tanggal_pelaksanaan_banding)
+                        @if($pengajuan->tanggal_permohonan_banding && $pengajuan->tanggal_pelaksanaan_banding)
                         <tr>
                             <th>Durasi Tunggu</th>
                             <td>
-                                : {{ $pengajuan->tanggal_banding->diffInDays($pengajuan->tanggal_pelaksanaan_banding) }} hari
+                                : {{ $pengajuan->tanggal_permohonan_banding->diffInDays($pengajuan->tanggal_pelaksanaan_banding) }} hari
                                 <small class="text-muted">(dari pengajuan hingga pelaksanaan)</small>
                             </td>
                         </tr>
@@ -271,7 +271,7 @@
                     [
                     'status' => 'completed',
                     'label' => 'Banding Diajukan',
-                    'date' => $pengajuan->tanggal_banding,
+                    'date' => $pengajuan->tanggal_permohonan_banding,
                     'icon' => 'check-circle-fill',
                     'color' => 'success'
                     ],
@@ -338,7 +338,8 @@
             <div class="card-body" style="max-height: 600px; overflow-y: auto;">
                 @php
                 $filterStatuses = [
-                \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH,
+                \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
+                \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
                 \App\Models\PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
                 \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
                 ];

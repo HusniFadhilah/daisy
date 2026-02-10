@@ -113,7 +113,7 @@
             // FASE 5: PENYELESAIAN
             // ========================================
             [
-            'date' => $pengajuan->tanggal_hasil_akreditasi,
+            'date' => $pengajuan->tanggal_hasil_akreditasi_dikirim,
             'label' => 'Penyampaian Hasil Akreditasi',
             'icon' => 'bi-envelope-paper',
             'step' => 14,

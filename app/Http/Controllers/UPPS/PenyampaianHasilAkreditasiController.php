@@ -20,7 +20,8 @@ class PenyampaianHasilAkreditasiController extends Controller
             'studyProgram.degreeLevel',
             'statusLog' => fn($q) => $q->whereIn('status_to', [
                 PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM,
-                PengajuanAkreditasi::STATUS_MASA_SANGGAH,
+                PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
+                PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
                 PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
                 PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
                 PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
@@ -31,10 +32,11 @@ class PenyampaianHasilAkreditasiController extends Controller
             ])->orderBy('changed_at', 'desc'),
         ])
             ->whereIn('id_program_studi', $studyProgramIds)
-            ->whereNotNull('tanggal_hasil_akreditasi')
+            ->whereNotNull('tanggal_hasil_akreditasi_dikirim')
             ->whereIn('status', [
                 PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM,
-                PengajuanAkreditasi::STATUS_MASA_SANGGAH,
+                PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
+                PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
                 PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
                 PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
                 PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
@@ -131,10 +133,11 @@ class PenyampaianHasilAkreditasiController extends Controller
     private function calculateStatistics($studyProgramIds): array
     {
         $totalHasilAkreditasi = PengajuanAkreditasi::whereIn('id_program_studi', $studyProgramIds)
-            ->whereNotNull('tanggal_hasil_akreditasi')
+            ->whereNotNull('tanggal_hasil_akreditasi_dikirim')
             ->whereIn('status', [
                 PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM,
-                PengajuanAkreditasi::STATUS_MASA_SANGGAH,
+                PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
+                PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
                 PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
                 PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
                 PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
@@ -151,7 +154,7 @@ class PenyampaianHasilAkreditasiController extends Controller
 
         // ✅ Smart grouping: prioritas hasil banding
         $pengajuans = PengajuanAkreditasi::whereIn('id_program_studi', $studyProgramIds)
-            ->whereNotNull('tanggal_hasil_akreditasi')
+            ->whereNotNull('tanggal_hasil_akreditasi_dikirim')
             ->get();
 
         $byPeringkat = $pengajuans->groupBy(function ($item) {

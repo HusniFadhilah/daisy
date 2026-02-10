@@ -74,14 +74,18 @@ class PengajuanAkreditasi extends Model
     public const STATUS_AL_DILAPORKAN = 'al_dilaporkan';
 
     // Step 14-20
+    public const STATUS_HASIL_AKREDITASI_DIHITUNG = 'hasil_akreditasi_dihitung';
     public const STATUS_HASIL_AKREDITASI_DIKIRIM = 'hasil_akreditasi_dikirim';
-    public const STATUS_MASA_SANGGAH = 'masa_sanggah';
+    public const STATUS_MASA_SANGGAH_DIMULAI = 'masa_sanggah_dimulai';
+    public const STATUS_MASA_SANGGAH_SELESAI = 'masa_sanggah_selesai';
     public const STATUS_BANDING_DIAJUKAN = 'banding_diajukan';
+    public const STATUS_BANDING_DITERIMA = 'banding_diterima';
+    public const STATUS_BANDING_DITUGASKAN = 'banding_ditugaskan';
     public const STATUS_BANDING_DILAKSANAKAN = 'banding_dilaksanakan';
     public const STATUS_BANDING_DILAPORKAN = 'banding_dilaporkan';
     public const STATUS_HASIL_DITETAPKAN = 'hasil_ditetapkan';
-    public const STATUS_HASIL_DIUMUMKAN = 'hasil_diumumkan';
     public const STATUS_HASIL_DILAPORKAN = 'hasil_dilaporkan';
+    public const STATUS_HASIL_DIUMUMKAN = 'hasil_diumumkan';
     public const STATUS_ARSIP_DISIMPAN = 'arsip_disimpan';
     public const STATUS_SELESAI = 'selesai';
 
@@ -135,10 +139,13 @@ class PengajuanAkreditasi extends Model
         'tanggal_al_mulai',
         'tanggal_al_selesai',
         'tanggal_pelaporan_al',
-        'tanggal_hasil_akreditasi',
+        'tanggal_hasil_akreditasi_dihitung',
+        'tanggal_hasil_akreditasi_dikirim',
         'tanggal_masa_sanggah_mulai',
         'tanggal_masa_sanggah_selesai',
-        'tanggal_banding',
+        'tanggal_permohonan_banding',
+        'tanggal_penerimaan_banding',
+        'tanggal_penugasan_banding',
         'tanggal_pelaksanaan_banding',
         'tanggal_pelaporan_banding',
         'tanggal_penetapan',
@@ -190,10 +197,13 @@ class PengajuanAkreditasi extends Model
         'tanggal_al_mulai' => 'datetime',
         'tanggal_al_selesai' => 'datetime',
         'tanggal_pelaporan_al' => 'datetime',
-        'tanggal_hasil_akreditasi' => 'datetime',
+        'tanggal_hasil_akreditasi_dihitung' => 'datetime',
+        'tanggal_hasil_akreditasi_dikirim' => 'datetime',
         'tanggal_masa_sanggah_mulai' => 'datetime',
         'tanggal_masa_sanggah_selesai' => 'datetime',
-        'tanggal_banding' => 'datetime',
+        'tanggal_permohonan_banding' => 'datetime',
+        'tanggal_penerimaan_banding' => 'datetime',
+        'tanggal_penugasan_banding' => 'datetime',
         'tanggal_pelaksanaan_banding' => 'datetime',
         'tanggal_pelaporan_banding' => 'datetime',
         'tanggal_penetapan' => 'datetime',
@@ -400,7 +410,7 @@ class PengajuanAkreditasi extends Model
 
         return $this->statusLog()
             ->whereIn('status_to', $statusesTo)
-            ->orderByDesc('changed_at')   // atau created_at
+            ->orderByDesc('created_at')   // atau created_at
             ->first();
     }
 
@@ -671,10 +681,16 @@ class PengajuanAkreditasi extends Model
                     $this->update(['status' => PengajuanAkreditasi::STATUS_AL_DILAPORKAN, 'tanggal_pelaporan_al' => now()]);
             }
         }
-        if ($statusToUpdate == 'status_hasil_akreditasi_disampaikan') {
+        if ($statusToUpdate == 'status_hasil_akreditasi_dihitung') {
             if ($jenisAsesmen == 'al') {
                 if ($this->status == PengajuanAkreditasi::STATUS_AL_DILAPORKAN)
-                    $this->update(['status' => PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM, 'tanggal_hasil_akreditasi' => now()]);
+                    $this->update(['status' => PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIHITUNG, 'tanggal_hasil_akreditasi_dihitung' => now()]);
+            }
+        }
+        if ($statusToUpdate == 'status_hasil_akreditasi_disampaikan') {
+            if ($jenisAsesmen == 'al') {
+                if ($this->status == PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIHITUNG)
+                    $this->update(['status' => PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM, 'tanggal_hasil_akreditasi_dikirim' => now()]);
             }
         }
     }
@@ -833,7 +849,7 @@ class PengajuanAkreditasi extends Model
             12 => ['date' => $this->tanggal_penugasan_asesor_al, 'label' => 'Penugasan asesor untuk AL', 'icon' => 'bi-person-badge'],
             13 => ['date' => ($this->tanggal_pelaksanaan_al ?? $this->tanggal_al_selesai), 'label' => 'Pelaksanaan AL dan penyampaian berita acara AL', 'icon' => 'bi-building'],
             14 => ['date' => $this->tanggal_pelaporan_al, 'label' => 'Pelaporan AL', 'icon' => 'bi-clipboard-data'],
-            15 => ['date' => $this->tanggal_hasil_akreditasi, 'label' => 'Penyampaian hasil akreditasi', 'icon' => 'bi-envelope-paper'],
+            15 => ['date' => $this->tanggal_hasil_akreditasi_dikirim, 'label' => 'Penyampaian hasil akreditasi', 'icon' => 'bi-envelope-paper'],
             16 => ['date' => $this->tanggal_masa_sanggah_mulai, 'label' => 'Masa sanggah', 'icon' => 'bi-clock-history'],
             17 => ['date' => $this->tanggal_pelaksanaan_banding, 'label' => 'Pelaksanaan banding', 'icon' => 'bi-arrow-repeat'],
             18 => ['date' => $this->tanggal_pelaporan_banding, 'label' => 'Pelaporan banding', 'icon' => 'bi-file-earmark-ruled'],
@@ -964,7 +980,8 @@ class PengajuanAkreditasi extends Model
             ],
 
             16 => [
-                'success' => [self::STATUS_MASA_SANGGAH],
+                'info' => [self::STATUS_MASA_SANGGAH_DIMULAI],
+                'success' => [self::STATUS_MASA_SANGGAH_SELESAI],
             ],
 
             17 => [
@@ -1053,9 +1070,9 @@ class PengajuanAkreditasi extends Model
             // ✅ NEW: Steps 14-20 (SEQUENTIAL ENFORCEMENT)
             self::STATUS_AL_DILAPORKAN => [self::STATUS_HASIL_AKREDITASI_DIKIRIM], // 13 → 14 ONLY
 
-            self::STATUS_HASIL_AKREDITASI_DIKIRIM => [self::STATUS_MASA_SANGGAH], // 14 → 15 ONLY
+            self::STATUS_HASIL_AKREDITASI_DIKIRIM => [self::STATUS_MASA_SANGGAH_DIMULAI], // 14 → 15 ONLY
 
-            self::STATUS_MASA_SANGGAH => [
+            self::STATUS_MASA_SANGGAH_DIMULAI => [
                 self::STATUS_BANDING_DIAJUKAN,  // 15 → 16 (if banding)
                 self::STATUS_HASIL_DITETAPKAN    // 15 → 18 (skip banding)
             ],
@@ -1167,7 +1184,7 @@ class PengajuanAkreditasi extends Model
     public function canStartMasaSanggah(): bool
     {
         return $this->status === self::STATUS_HASIL_AKREDITASI_DIKIRIM
-            && $this->tanggal_hasil_akreditasi !== null;
+            && $this->tanggal_hasil_akreditasi_dikirim !== null;
     }
 
     /**
@@ -1175,7 +1192,7 @@ class PengajuanAkreditasi extends Model
      */
     public function hasBanding(): bool
     {
-        return $this->tanggal_banding !== null;
+        return $this->tanggal_permohonan_banding !== null;
     }
 
     public function getCustomLastStatus($attribute)

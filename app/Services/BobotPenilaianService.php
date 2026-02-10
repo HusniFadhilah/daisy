@@ -25,13 +25,10 @@ class BobotPenilaianService
         return $this;
     }
 
-    /**
-     * Ambil bobot untuk elemen dan kategori tertentu
-     */
-    public function getBobotForCategory($elemenId, $categoryId)
+    public function getBobotForDegreeLevel($elemenId, $degreeLevelId)
     {
         return BobotPenilaian::where('id_elemen', $elemenId)
-            ->where('id_category', $categoryId)
+            ->where('id_degree_level', $degreeLevelId)
             ->first();
     }
 
@@ -56,7 +53,7 @@ class BobotPenilaianService
         $hasil = [];
 
         foreach ($penilaians as $penilaian) {
-            $bobot = $this->getBobotForCategory($penilaian->id_elemen, $categoryId);
+            $bobot = $this->getBobotForDegreeLevel($penilaian->id_elemen, $penilaian->studyProgram->id_degree_level);
 
             if (!$bobot) {
                 continue;

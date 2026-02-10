@@ -306,7 +306,7 @@ class HasilAkreditasiController extends Controller
             );
 
             $pengajuan->update([
-                'tanggal_hasil_akreditasi' => $request->tanggal_penyampaian,
+                'tanggal_hasil_akreditasi_dikirim' => $request->tanggal_penyampaian,
             ]);
 
             // Update study program accreditation
@@ -412,11 +412,11 @@ class HasilAkreditasiController extends Controller
             }
 
             // Set masa sanggah (7 days from hasil akreditasi)
-            $tanggalMulai = $pengajuan->tanggal_hasil_akreditasi;
+            $tanggalMulai = $pengajuan->tanggal_hasil_akreditasi_dikirim;
             $tanggalSelesai = Carbon::parse($tanggalMulai)->addDays(7);
 
             $pengajuan->updateStatusSafely(
-                PengajuanAkreditasi::STATUS_MASA_SANGGAH,
+                PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
                 "Masa sanggah dimulai: {$tanggalMulai->format('d M Y')} - {$tanggalSelesai->format('d M Y')}"
             );
 
@@ -451,7 +451,7 @@ class HasilAkreditasiController extends Controller
             $pengajuan = PengajuanAkreditasi::findOrFail($id);
 
             // Must be in masa sanggah
-            if ($pengajuan->status !== PengajuanAkreditasi::STATUS_MASA_SANGGAH) {
+            if ($pengajuan->status !== PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI) {
                 throw new \Exception('Banding hanya bisa diajukan selama masa sanggah.');
             }
 
@@ -488,7 +488,7 @@ class HasilAkreditasiController extends Controller
             );
 
             $pengajuan->update([
-                'tanggal_banding' => now(),
+                'tanggal_permohonan_banding' => now(),
                 'tanggal_pelaksanaan_banding' => $request->tanggal_pelaksanaan,
             ]);
 
@@ -580,7 +580,7 @@ class HasilAkreditasiController extends Controller
 
             // Validate: either masa sanggah ended OR banding reported
             $canProceed = (
-                $pengajuan->status === PengajuanAkreditasi::STATUS_MASA_SANGGAH &&
+                $pengajuan->status === PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI &&
                 now()->gt($pengajuan->tanggal_masa_sanggah_selesai)
             ) || (
                 $pengajuan->status === PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN

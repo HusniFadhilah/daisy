@@ -67,7 +67,6 @@ class HasilAkreditasiService
 
             // Get bobot
             $bobot = BobotPenilaian::where('id_elemen', $elemen->id)
-                ->where('id_category', $categoryId)
                 ->where('id_degree_level', $degreeLevelId)
                 ->where('is_active', true)
                 ->first();
@@ -193,7 +192,6 @@ class HasilAkreditasiService
 
             // Get bobot
             $bobot = BobotPenilaian::where('id_elemen', $elemen->id)
-                ->where('id_category', $categoryId)
                 ->where('id_degree_level', $degreeLevelId)
                 ->where('is_active', true)
                 ->first();
@@ -518,7 +516,7 @@ class HasilAkreditasiService
             // Update Permohonan akreditasi status
             $hasil->pengajuan->update([
                 'status' => PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM,
-                'tanggal_hasil_akreditasi' => now(),
+                'tanggal_hasil_akreditasi_dikirim' => now(),
             ]);
 
             // Update study program

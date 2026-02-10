@@ -33,6 +33,7 @@
             $allowed = [
             \App\Models\PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
             \App\Models\PengajuanAkreditasi::STATUS_AL_SELESAI,
+            \App\Models\PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
             ];
 
             $log = $pengajuan->latestRelevantStatusLog($allowed);
@@ -43,13 +44,19 @@
             <div class="alert alert-info alert-permanent">
                 <i class="bi bi-clock-history"></i>
                 <strong>Asesmen Lapangan Berlangsung</strong><br>
-                Proses visitasi asesmen lapangan sedang berlangsung. Pantau progress penilaian asesor secara berkala
+                Proses asesmen lapangan sedang berlangsung. Pantau progress penilaian asesor secara berkala
             </div>
             @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_AL_SELESAI)
             <div class="alert alert-success alert-permanent">
                 <i class="bi bi-check-circle"></i>
                 <strong>Asesmen Lapangan Selesai</strong><br>
-                Visitasi asesmen lapangan telah selesai dilaksanakan. Menunggu validator untuk membuat rekap dan laporan
+                Asesmen lapangan telah selesai dilaksanakan. <br>Menunggu validator untuk membuat rekap dan laporan
+            </div>
+            @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_AL_DILAPORKAN)
+            <div class="alert alert-success alert-permanent">
+                <i class="bi bi-check-circle"></i>
+                <strong>Asesmen Lapangan Selesai</strong><br>
+                Asesmen lapangan telah selesai dilaksanakan
             </div>
             @endif
 

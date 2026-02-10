@@ -24,7 +24,8 @@ class MasaSanggahController extends Controller
             'studyProgram.degreeLevel',
             'statusLog' => fn($q) => $q->whereIn('status_to', [
                 PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM,
-                PengajuanAkreditasi::STATUS_MASA_SANGGAH,
+                PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
+                PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
                 PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
             ])->orderBy('changed_at', 'desc'),
         ])
@@ -98,18 +99,20 @@ class MasaSanggahController extends Controller
             $search = $request->search;
             $q->where(function ($sq) use ($search) {
                 $sq->where('nomor_pengajuan', 'like', "%{$search}%")
-                    ->orWhereHas('studyProgram', fn($ssq) =>
+                    ->orWhereHas(
+                        'studyProgram',
+                        fn($ssq) =>
                         $ssq->where('name', 'like', "%{$search}%")
                     );
             });
         });
 
         // Filter by status masa sanggah
-        $query->when($request->filled('status_sanggah'), function($q) use ($request) {
+        $query->when($request->filled('status_sanggah'), function ($q) use ($request) {
             $now = now();
             if ($request->status_sanggah === 'aktif') {
                 $q->where('tanggal_masa_sanggah_mulai', '<=', $now)
-                  ->where('tanggal_masa_sanggah_selesai', '>=', $now);
+                    ->where('tanggal_masa_sanggah_selesai', '>=', $now);
             } elseif ($request->status_sanggah === 'selesai') {
                 $q->where('tanggal_masa_sanggah_selesai', '<', $now);
             }

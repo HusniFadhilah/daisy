@@ -25,7 +25,8 @@ class PenetapanHasilAkreditasiController extends Controller
             'asesmen.hasil',
             'statusLog' => function ($q) {
                 $q->whereIn('status_to', [
-                    PengajuanAkreditasi::STATUS_MASA_SANGGAH,
+                    PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
+                    PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
                     PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
                     PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
                 ])->orderBy('changed_at', 'desc');
@@ -35,8 +36,8 @@ class PenetapanHasilAkreditasiController extends Controller
             // Yaitu: masa sanggah selesai (tanpa banding) ATAU banding sudah dilaporkan
             ->where(function ($q) {
                 // Sudah masa sanggah dan tidak ada banding
-                $q->where('status', PengajuanAkreditasi::STATUS_MASA_SANGGAH)
-                    ->whereNull('tanggal_banding');
+                $q->where('status', PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI)
+                    ->whereNull('tanggal_pelaporan_banding');
             })
             ->orWhere(function ($q) {
                 // Atau banding sudah dilaporkan
@@ -100,7 +101,7 @@ class PenetapanHasilAkreditasiController extends Controller
         // Get filter data
         $universities = University::nonExample()->orderBy('name')->get();
         $tahunList = PengajuanAkreditasi::whereIn('status', [
-            PengajuanAkreditasi::STATUS_MASA_SANGGAH,
+            PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
             PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
             PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
         ])
@@ -155,7 +156,7 @@ class PenetapanHasilAkreditasiController extends Controller
 
         // Validasi status
         if (!in_array($pengajuan->status, [
-            PengajuanAkreditasi::STATUS_MASA_SANGGAH,
+            PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
             PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
         ])) {
             return back()->with('error', 'Status saat ini tidak sesuai untuk penetapan hasil.');
@@ -244,7 +245,7 @@ class PenetapanHasilAkreditasiController extends Controller
             // Tentukan status sebelumnya
             $previousStatus = $pengajuan->hasil_banding
                 ? PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN
-                : PengajuanAkreditasi::STATUS_MASA_SANGGAH;
+                : PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI;
 
             // Rollback status
             $pengajuan->update([
@@ -296,8 +297,8 @@ class PenetapanHasilAkreditasiController extends Controller
 
         // Total yang siap penetapan atau sudah ditetapkan
         $stats['total'] = PengajuanAkreditasi::where(function ($q) {
-            $q->where('status', PengajuanAkreditasi::STATUS_MASA_SANGGAH)
-                ->whereNull('tanggal_banding');
+            $q->where('status', PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI)
+                ->whereNull('tanggal_pelaporan_banding');
         })
             ->orWhere('status', PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN)
             ->orWhere('status', PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN)
@@ -305,8 +306,8 @@ class PenetapanHasilAkreditasiController extends Controller
 
         // Menunggu penetapan
         $stats['menunggu_penetapan'] = PengajuanAkreditasi::where(function ($q) {
-            $q->where('status', PengajuanAkreditasi::STATUS_MASA_SANGGAH)
-                ->whereNull('tanggal_banding');
+            $q->where('status', PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI)
+                ->whereNull('tanggal_pelaporan_banding');
         })
             ->orWhere('status', PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN)
             ->count();

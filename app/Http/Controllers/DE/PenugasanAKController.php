@@ -960,12 +960,6 @@ class PenugasanAKController extends Controller
             'versi' => $newVersi + 1,
         ]);
 
-        Log::info('Surat tugas validator dokumen berhasil dicopy ke validator AK', [
-            'pengajuan_id' => $pengajuan->id,
-            'source_dokumen_id' => $suratTugasValidatorDokumen->id,
-            'new_dokumen_id' => $newDokumen->id,
-        ]);
-
         return true;
     }
 

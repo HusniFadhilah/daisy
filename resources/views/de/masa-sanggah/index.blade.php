@@ -77,7 +77,7 @@
                         <option value="{{ App\Models\PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM }}" {{ request('status') == App\Models\PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM ? 'selected' : '' }}>
                             Hasil Dikirim
                         </option>
-                        <option value="{{ App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH }}" {{ request('status') == App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH ? 'selected' : '' }}>
+                        <option value="{{ App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI }}" {{ request('status') == App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI ? 'selected' : '' }}>
                             Masa Sanggah
                         </option>
                         <option value="{{ App\Models\PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN }}" {{ request('status') == App\Models\PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN ? 'selected' : '' }}>
@@ -155,7 +155,7 @@
                             }
                             }
 
-                            $hasBanding = !is_null($pengajuan->tanggal_banding);
+                            $hasBanding = !is_null($pengajuan->tanggal_permohonan_banding);
                             @endphp
                             <tr>
                                 <td>
@@ -186,14 +186,14 @@
                                     @endif
                                 </td>
                                 <td>
-                                    @if($pengajuan->tanggal_hasil_akreditasi)
-                                    {{ $pengajuan->tanggal_hasil_akreditasi->format('d M Y') }}
+                                    @if($pengajuan->tanggal_hasil_akreditasi_dikirim)
+                                    {{ $pengajuan->tanggal_hasil_akreditasi_dikirim->format('d M Y') }}
                                     @else
                                     <span class="text-muted">-</span>
                                     @endif
                                 </td>
                                 <td>
-                                    @if($pengajuan->status === App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH)
+                                    @if($pengajuan->status === App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI)
                                     <span class="badge bg-{{ $masaSanggahInfo['badge_class'] }}">
                                         @if($masaSanggahInfo['is_active'])
                                         <i class="bi bi-hourglass-split"></i> Aktif

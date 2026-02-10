@@ -521,8 +521,8 @@ final class PengajuanStatus
                 'icon' => 'bi-envelope-paper',
             ],
 
-            PengajuanAkreditasi::STATUS_MASA_SANGGAH => [
-                'label' => 'Masa Sanggah',
+            PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI => [
+                'label' => 'Masa Sanggah Berlangsung',
                 'label_short_for' => [
                     'de'   => 'Masa Sanggah',
                     'upps' => 'Masa Sanggah',
@@ -532,6 +532,22 @@ final class PengajuanStatus
                     'de'   => 'Masa Sanggah Berlangsung',
                     'upps' => 'Masa Sanggah Berlangsung',
                     'prodi' => 'Masa Sanggah Berlangsung',
+                ],
+                'bg' => 'bg-warning',
+                'icon' => 'bi-clock-history',
+            ],
+
+            PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI => [
+                'label' => 'Masa Sanggah Selesai',
+                'label_short_for' => [
+                    'de'   => 'Masa Sanggah',
+                    'upps' => 'Masa Sanggah',
+                    'prodi' => 'Masa Sanggah',
+                ],
+                'label_long_for' => [
+                    'de'   => 'Masa Sanggah Selesai',
+                    'upps' => 'Masa Sanggah Selesai',
+                    'prodi' => 'Masa Sanggah Selesai',
                 ],
                 'bg' => 'bg-warning',
                 'icon' => 'bi-clock-history',

@@ -364,7 +364,8 @@
                                     \App\Models\PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN
                                     => 'text-success',
                                     \App\Models\PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
-                                    \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH
+                                    \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
+                                    \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI
                                     => 'text-warning',
                                     default => 'text-info',
                                     };

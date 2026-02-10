@@ -235,13 +235,13 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    @if($pengajuan->tanggal_banding)
+                    @if($pengajuan->tanggal_permohonan_banding)
                     <div class="alert alert-primary border border-primary">
                         <i class="bi bi-info-circle-fill"></i>
                         <strong>Banding Telah Diajukan</strong>
                         <br>
                         <small>
-                            Tanggal pengajuan: {{ $pengajuan->tanggal_banding->format('d M Y H:i') }}
+                            Tanggal pengajuan: {{ $pengajuan->tanggal_permohonan_banding->format('d M Y H:i') }}
                         </small>
                     </div>
 
@@ -252,7 +252,7 @@
                         </tr>
                         <tr>
                             <th>Tanggal Pengajuan</th>
-                            <td>: {{ $pengajuan->tanggal_banding->format('d M Y H:i') }}</td>
+                            <td>: {{ $pengajuan->tanggal_permohonan_banding->format('d M Y H:i') }}</td>
                         </tr>
                         @if($pengajuan->tanggal_pelaksanaan_banding)
                         <tr>
@@ -320,7 +320,8 @@
                     @php
                     $filterStatuses = [
                     \App\Models\PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM,
-                    \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH,
+                    \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
+                    \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
                     \App\Models\PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
                     \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
                     \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
@@ -328,7 +329,7 @@
 
                     $logs = $pengajuan->statusLog
                     ->whereIn('status_to', $filterStatuses)
-                    ->sortBy('changed_at')
+                    ->sortBy('created_at')
                     ->unique('status_to')
                     ->values();
                     @endphp
@@ -345,7 +346,8 @@
                                     \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
                                     \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN
                                     => 'text-success',
-                                    \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH,
+                                    \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
+                                    \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
                                     \App\Models\PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN
                                     => 'text-warning',
                                     default => 'text-info',

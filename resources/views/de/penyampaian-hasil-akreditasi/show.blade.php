@@ -220,13 +220,18 @@
             </div>
         </div>
     </div>
-    @else
+    @elseif($hasil->isAlFinalized())
     <div class="alert alert-success alert-permanent">
         <i class="bi bi-check-circle-fill me-2"></i>
         Hasil telah <strong>Disampaikan ke Program Studi</strong> pada {{ $hasil->tanggal_finalisasi_al?->format('d F Y, H:i') }}
         @if($hasil->finalizedAlBy)
         oleh <strong>{{ $hasil->finalizedAlBy->name }}</strong>
         @endif
+    </div>
+    @else
+    <div class="alert alert-light alert-permanent">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        Hasil belum diketahui
     </div>
     @endif
 

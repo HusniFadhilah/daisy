@@ -133,8 +133,8 @@
                                     </td>
                                     <td>
                                         <small>
-                                            {{ $pengajuan->tanggal_banding
-                                                        ? $pengajuan->tanggal_banding->format('d M Y')
+                                            {{ $pengajuan->tanggal_permohonan_banding
+                                                        ? $pengajuan->tanggal_permohonan_banding->format('d M Y')
                                                         : '-' }}
                                         </small>
                                     </td>

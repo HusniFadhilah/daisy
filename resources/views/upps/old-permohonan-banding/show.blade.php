@@ -317,7 +317,8 @@
             <div class="card-body" style="max-height: 600px; overflow-y: auto;">
                 @php
                 $filterStatuses = [
-                \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH,
+                \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
+                \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
                 \App\Models\PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
                 \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
                 \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,

@@ -38,7 +38,8 @@ class PenyampaianHasilAkreditasiController extends Controller
                     PengajuanAkreditasi::STATUS_AL_SELESAI,
                     PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
                     PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM,
-                    PengajuanAkreditasi::STATUS_MASA_SANGGAH,
+                    PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
+                    PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
                 ])->orderBy('changed_at', 'desc');
             },
         ])
@@ -51,7 +52,8 @@ class PenyampaianHasilAkreditasiController extends Controller
                         PengajuanAkreditasi::STATUS_AL_SELESAI,
                         PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
                         PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM,
-                        PengajuanAkreditasi::STATUS_MASA_SANGGAH,
+                        PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
+                        PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
                     ]);
             })->whereHas('asesmen.asesmenLapangan', function ($q) {
                 $q->where('status', 'completed');
@@ -103,7 +105,7 @@ class PenyampaianHasilAkreditasiController extends Controller
         $asesmen = $pengajuan->asesmen;
 
         // Validation: AL must be completed
-        if (!$asesmen || !$asesmen->asesmenLapangan || $asesmen->asesmenLapangan->status !== 'completed') {
+        if (!$asesmen || !$asesmen->asesmenLapangan || !in_array($asesmen->asesmenLapangan->status, ['completed', 'finalized'])) {
             return back()->with('error', 'Asesmen Lapangan belum selesai.');
         }
 
@@ -185,7 +187,7 @@ class PenyampaianHasilAkreditasiController extends Controller
             }
 
             // Validate: AL must be completed
-            if (!$asesmen->asesmenLapangan || $asesmen->asesmenLapangan->status !== 'completed') {
+            if (!$asesmen->asesmenLapangan || !in_array($asesmen->asesmenLapangan->status, ['completed', 'finalized'])) {
                 throw new \Exception('Asesmen Lapangan belum selesai.');
             }
 
