@@ -1,277 +1,614 @@
 {{-- resources/views/de/penetapan-hasil-akreditasi/show.blade.php --}}
+
 @extends('layouts.template.app')
 
-@section('title', 'Detail Penetapan Hasil')
-
-@push('styles')
-<style>
-    .info-card {
-        border-left: 4px solid #667eea;
-        border-radius: 8px;
-    }
-
-    .result-card {
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-</style>
-@endpush
-
 @section('content')
-<div class="container-fluid py-3">
-    <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb" class="mb-3">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('de.penetapan-hasil-akreditasi') }}">Penetapan Hasil</a></li>
-            <li class="breadcrumb-item active">Detail</li>
-        </ol>
-    </nav>
-
-    <!-- Page Header -->
+<div class="container-fluid">
+    {{-- Header --}}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h4 class="mb-1">
-                <i class="bi bi-award"></i> Detail Penetapan Hasil Akreditasi
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2">
+                    <li class="breadcrumb-item">
+                        <a href="{{ route('de.penetapan-hasil-akreditasi') }}" class="text-dark">Penetapan Hasil</a>
+                    </li>
+                    <li class="breadcrumb-item active">Detail Hasil</li>
+                </ol>
+            </nav>
+            <h4 class="mb-0">
+                <i class="bi bi-clipboard-check text-primary"></i>
+                Penetapan Hasil Akreditasi
             </h4>
-            <p class="text-muted mb-0">{{ $pengajuan->nomor_pengajuan }}</p>
+            <p class="mb-2">{{ $pengajuan->judul }}</p>
         </div>
+
         <div>
-            <a href="{{ route('de.penetapan-hasil-akreditasi') }}" class="btn btn-secondary">
+            <a href="{{ route('de.penetapan-hasil-akreditasi') }}" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left"></i> Kembali
             </a>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-lg-8 mb-4">
-            <!-- Basic Info Card -->
-            <div class="card info-card mb-4">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Informasi Pengajuan</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Nomor Permohonan Akreditasi</label>
-                            <p class="fw-bold">{{ $pengajuan->nomor_pengajuan }}</p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Tahun Akreditasi</label>
-                            <p class="fw-bold">{{ $pengajuan->tahun_akreditasi }}</p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Program Studi</label>
-                            <p class="fw-bold">{{ $pengajuan->studyProgram->name }}</p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Universitas</label>
-                            <p class="fw-bold">{{ $pengajuan->studyProgram->university->name ?? '-' }}</p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Status</label>
-                            <p>
-                                @if($pengajuan->status == \App\Models\PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN)
-                                <span class="badge bg-success">Sudah Ditetapkan</span>
-                                @else
-                                <span class="badge bg-warning text-dark">Menunggu Penetapan</span>
-                                @endif
-                            </p>
-                        </div>
-                        @if($pengajuan->tanggal_penetapan)
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Tanggal Penetapan</label>
-                            <p class="fw-bold">{{ $pengajuan->tanggal_penetapan->format('d F Y') }}</p>
-                        </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-
-            <!-- Hasil Akreditasi -->
-            @php
-            if ($pengajuan->hasil_banding === 'diterima') {
-            $peringkat = $pengajuan->peringkat_final;
-            $skor = $pengajuan->skor_final;
-            } else {
-            $hasil = $pengajuan->asesmen->hasil ?? null;
-            $peringkat = $hasil->peringkat_akreditasi ?? '-';
-            $skor = $hasil->skor_final ?? 0;
-            }
-
-            $badgeClass = match($peringkat) {
-            'Unggul' => 'success',
-            'Baik Sekali' => 'primary',
-            'Baik' => 'info',
-            default => 'secondary'
-            };
-            @endphp
-
-            <div class="card result-card mb-4">
-                <div class="card-header bg-{{ $badgeClass }} text-white">
-                    <h5 class="mb-0">
-                        <i class="bi bi-award"></i> Hasil Akreditasi Final
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row text-center mb-3">
-                        <div class="col-md-6">
-                            <div class="p-4 bg-light rounded">
-                                <h6 class="text-muted small mb-2">Peringkat</h6>
-                                <h2 class="mb-0">
-                                    <span class="badge bg-{{ $badgeClass }} badge-peringkat">
-                                        {{ $peringkat }}
-                                    </span>
-                                </h2>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="p-4 bg-light rounded">
-                                <h6 class="text-muted small mb-2">Skor Final</h6>
-                                <h2 class="mb-0 fw-bold">{{ number_format($skor, 2) }}</h2>
-                                <small class="text-muted">dari 400</small>
-                            </div>
-                        </div>
-                    </div>
-
-                    @if($pengajuan->hasil_banding === 'diterima')
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle"></i>
-                        Hasil ini merupakan hasil revisi setelah banding diterima.
-                    </div>
+    {{-- Summary Cards --}}
+    <div class="row mb-4">
+        {{-- Skor AL --}}
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-2">Skor AL</h6>
+                    @if($hasil->skor_al)
+                    <h1 class="mb-0 text-dark display-4">{{ number_format($hasil->skor_al, 0) }}</h1>
+                    <small class="text-muted">dari 400</small>
+                    @else
+                    <h2 class="mb-0 text-muted">-</h2>
+                    <small class="text-muted">Belum dihitung</small>
                     @endif
                 </div>
             </div>
-
-            <!-- Action Buttons (if not yet penetapan) -->
-            @if($pengajuan->status != \App\Models\PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN)
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="bi bi-check-circle"></i> Tetapkan Hasil</h5>
-                </div>
-                <div class="card-body">
-                    <form method="POST" action="{{ route('de.penetapan-hasil-akreditasi.tetapkan', $pengajuan->id) }}">
-                        @csrf
-
-                        <div class="alert alert-info">
-                            <i class="bi bi-info-circle"></i>
-                            Pastikan hasil akreditasi sudah benar sebelum menetapkan.
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Catatan Penetapan (Opsional)</label>
-                            <textarea name="catatan_penetapan" class="form-control" rows="3" placeholder="Catatan tambahan mengenai penetapan hasil..."></textarea>
-                        </div>
-
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-success btn-lg">
-                                <i class="bi bi-check-circle"></i> Tetapkan Hasil Akreditasi
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            @else
-            <!-- Batalkan Penetapan (if already penetapan) -->
-            <div class="card border-danger">
-                <div class="card-header bg-danger text-white">
-                    <h5 class="mb-0"><i class="bi bi-x-circle"></i> Batalkan Penetapan</h5>
-                </div>
-                <div class="card-body">
-                    <p class="text-muted">
-                        Gunakan dengan hati-hati. Pembatalan penetapan akan mengembalikan status ke sebelumnya.
-                    </p>
-                    <button type="button" class="btn btn-danger" onclick="batalkanPenetapan({{ $pengajuan->id }}, '{{ $pengajuan->nomor_pengajuan }}')">
-                        <i class="bi bi-x-circle"></i> Batalkan Penetapan
-                    </button>
-                </div>
-            </div>
-            @endif
         </div>
 
-        <!-- Right Column: Timeline & Info -->
-        <div class="col-lg-4">
-            <!-- Status Log -->
-            <div class="card">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Timeline</h5>
+        {{-- Peringkat --}}
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-2">Peringkat Akreditasi (yang ditetapkan)</h6>
+                    @if($hasil->peringkat_akreditasi)
+                    @php
+                    $peringkatAkreditasi = $hasil->peringkat_akreditasi;
+                    @endphp
+                    <span class="badge p-2 px-3 my-4 fs-5" style="background-color: {{ $hasil->getPeringkatColor($peringkatAkreditasi) }}; color:#222">
+                        {{ $peringkatAkreditasi }}
+                    </span>
+                    @else
+                    <h3 class="mb-0 text-muted">Belum Ditetapkan</h3>
+                    @endif
                 </div>
-                <div class="card-body">
-                    @forelse($pengajuan->statusLog->sortBy('changed_at')->take(10) as $log)
-                    <div class="mb-3 pb-3 border-bottom">
-                        <strong class="d-block">
-                            {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['de'] ?? $log->status_to }}
-                        </strong>
-                        <small class="text-muted">
-                            {{ $log->changed_at->format('d M Y H:i') }}
-                        </small>
-                        @if($log->keterangan)
-                        <p class="text-muted small mb-0 mt-1">{{ $log->keterangan }}</p>
-                        @endif
+            </div>
+        </div>
+
+        {{-- Status --}}
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-4">Status Penetapan</h6>
+                    @if($sudahDitetapkan)
+                    <span class="badge bg-light text-dark rounded-pill px-4 py-2 my-3 fs-6">
+                        <i class="bi bi-check-circle"></i> Ditetapkan
+                    </span>
+                    @if($pengajuan->tanggal_penetapan)
+                    <div class="mt-2">
+                        <small class="text-muted">{{ $pengajuan->tanggal_penetapan->format('d M Y') }}</small>
                     </div>
-                    @empty
-                    <p class="text-muted mb-0">Tidak ada riwayat.</p>
-                    @endforelse
+                    @endif
+                    @else
+                    <span class="badge bg-light text-dark rounded-pill px-4 py-2 my-3 fs-6">
+                        <i class="bi bi-clock"></i> Menunggu Penetapan
+                    </span>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        {{-- Total Elemen --}}
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-2">Total Elemen Dinilai</h6>
+                    <h1 class="mb-0 display-4">{{ count($elemenList) }}</h1>
+                    <small class="text-muted">Elemen standar</small>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Modal Batalkan Penetapan -->
-<div class="modal fade" id="modalBatalkanPenetapan" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <form id="formBatalkanPenetapan" method="POST">
-                @csrf
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title">
-                        <i class="bi bi-x-circle"></i> Batalkan Penetapan
+    {{-- Action Buttons --}}
+    @if(!$sudahDitetapkan)
+    <div class="card border-info mb-4">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h5 class="mb-1">
+                        <i class="bi bi-info-circle text-info"></i>
+                        Menunggu Penetapan
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <p class="text-muted mb-0">
+                        @php
+                        $peringkatAL = $hasil->getPeringkatFromSkorAL($hasil->skor_al);
+                        @endphp
+                        Hasil masih dalam status <strong>MENUNGGU PENETAPAN</strong> dengan skor akhir yaitu: {{ number_format($hasil->skor_al, 0) }},
+                        dan masuk ke kategori:
+                        <span class="badge p-2 px-3 my-2" style="background-color: {{ $hasil->getPeringkatColor($peringkatAL) }}; color:#222">
+                            {{ $peringkatAL }}
+                        </span>
+                        <br>Anda dapat menetapkan hasil akreditasi setelah mengupload Berita Acara Rapat Penetapan Hasil.
+                    </p>
                 </div>
-                <div class="modal-body">
-                    <p>Anda akan membatalkan penetapan hasil untuk:</p>
-                    <div class="alert alert-danger">
-                        <strong id="nomorPengajuanBatal"></strong>
-                    </div>
+                <div class="col-md-4 text-end">
+                    <form action="{{ route('de.penetapan-hasil-akreditasi.tetapkan', $pengajuan->id) }}" method="POST" class="d-inline">
+                        @csrf
+                        <button type="submit" class="btn btn-success {{ !$canTetapkan ? 'disabled' : '' }}" {{ !$canTetapkan ? 'disabled' : '' }} onclick="return confirm('Tetapkan hasil akreditasi? Tindakan ini tidak dapat dibatalkan!')" @if(!$canTetapkan) title="Upload Berita Acara terlebih dahulu" @endif>
+                            <i class="bi bi-lock"></i> Tetapkan Hasil
+                        </button>
+                    </form>
 
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">
-                            Alasan Pembatalan <span class="text-danger">*</span>
-                        </label>
-                        <textarea name="alasan_pembatalan" class="form-control" rows="3" placeholder="Jelaskan alasan pembatalan penetapan..." required></textarea>
+                    @if(!$canTetapkan)
+                    <div class="mt-2">
+                        <small class="text-danger">
+                            <i class="bi bi-exclamation-circle"></i>
+                            Upload Berita Acara untuk penetapan
+                        </small>
                     </div>
-
-                    <div class="alert alert-warning mb-0">
-                        <i class="bi bi-exclamation-triangle"></i>
-                        Status akan dikembalikan ke sebelum penetapan.
-                    </div>
+                    @endif
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-danger">
-                        <i class="bi bi-x-circle"></i> Batalkan Penetapan
+            </div>
+        </div>
+    </div>
+    @else
+    <div class="alert alert-success alert-permanent">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        Hasil telah <strong>Ditetapkan</strong> pada {{ $pengajuan->tanggal_penetapan?->format('d F Y, H:i') }}
+    </div>
+
+    {{-- Optional: Tombol Batalkan (jika sudah ditetapkan tapi belum diumumkan) --}}
+    {{-- @if(!in_array($pengajuan->status, [
+    \App\Models\PengajuanAkreditasi::STATUS_HASIL_DIUMUMKAN,
+    \App\Models\PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN,
+    \App\Models\PengajuanAkreditasi::STATUS_SELESAI,
+    ]))
+    <div class="alert alert-warning alert-permanent">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                Penetapan masih dapat dibatalkan sebelum hasil diumumkan.
+            </div>
+            <form action="{{ route('de.penetapan-hasil-akreditasi.batalkan', $pengajuan->id) }}" method="POST" class="d-inline">
+                @csrf
+                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Batalkan penetapan hasil? Anda perlu menetapkan ulang.')">
+                    <i class="bi bi-x-circle"></i> Batalkan Penetapan
+                </button>
+            </form>
+        </div>
+    </div>
+    @endif --}}
+    @endif
+
+    {{-- Berita Acara Penetapan --}}
+    @if(!$sudahDitetapkan)
+    {{-- Jika Berita Acara belum diupload --}}
+    @if(!$beritaAcaraPenetapan)
+    <div class="card border-light mb-4">
+        <div class="card-header bg-light text-dark">
+            <h5 class="mb-0">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                Upload Berita Acara Rapat Penetapan Hasil
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-light border-2 alert-permanent">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>Perhatian:</strong> Anda harus mengupload <strong>Berita Acara Rapat Penetapan Hasil Akreditasi</strong>
+                sebelum dapat melakukan penetapan hasil.
+            </div>
+
+            <form action="{{ route('de.penetapan-hasil-akreditasi.upload-berita-acara', $pengajuan->id) }}" method="POST" enctype="multipart/form-data">
+                @csrf
+
+                <div class="mb-3">
+                    <label for="berita_acara" class="form-label">
+                        File Berita Acara <span class="text-danger">*</span>
+                    </label>
+                    <input type="file" class="form-control @error('berita_acara') is-invalid @enderror" id="berita_acara" name="berita_acara" accept=".pdf" required>
+                    <small class="text-muted">Format: PDF, Maksimal 10MB</small>
+                    @error('berita_acara')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="mb-3">
+                    <label for="keterangan" class="form-label">Keterangan (Opsional)</label>
+                    <textarea class="form-control @error('keterangan') is-invalid @enderror" id="keterangan" name="keterangan" rows="3" placeholder="Catatan tambahan...">{{ old('keterangan') }}</textarea>
+                    @error('keterangan')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-outline-dark">
+                        <i class="bi bi-cloud-upload"></i> Upload Berita Acara
                     </button>
                 </div>
             </form>
         </div>
     </div>
+
+    {{-- Jika Berita Acara sudah diupload --}}
+    @else
+    <div class="card mb-4">
+        <div class="card-header bg-light text-dark">
+            <h5 class="mb-0">
+                <i class="bi bi-file-earmark-check-fill"></i>
+                Berita Acara Rapat Penetapan Hasil
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-1">{{ $beritaAcaraPenetapan->title }}</h6>
+                    <p class="text-muted mb-2">
+                        <i class="bi bi-file-pdf text-danger"></i>
+                        {{ $beritaAcaraPenetapan->original_name }}
+                    </p>
+                    <small class="text-muted">
+                        Diupload pada {{ $beritaAcaraPenetapan->uploaded_at?->format('d M Y, H:i') }}
+                    </small>
+                    @if($beritaAcaraPenetapan->keterangan)
+                    <div class="mt-2">
+                        <small class="text-muted">
+                            <i class="bi bi-chat-left-text"></i>
+                            {{ $beritaAcaraPenetapan->keterangan }}
+                        </small>
+                    </div>
+                    @endif
+                </div>
+                <div class="btn-group">
+                    <a href="{{ route('de.penetapan-hasil-akreditasi.download-berita-acara', $pengajuan->id) }}" class="btn btn-outline-primary" target="_blank">
+                        <i class="bi bi-eye"></i> Lihat File
+                    </a>
+                    <form action="{{ route('de.penetapan-hasil-akreditasi.delete-berita-acara', $pengajuan->id) }}" method="POST" class="d-inline">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Hapus berita acara ini? Anda harus upload ulang untuk penetapan.')">
+                            <i class="bi bi-trash"></i> Hapus
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+    @else
+    {{-- Jika sudah ditetapkan, tampilkan berita acara (read-only) --}}
+    @if($beritaAcaraPenetapan)
+    <div class="card mb-4">
+        <div class="card-header bg-light text-dark">
+            <h5 class="mb-0">
+                <i class="bi bi-file-earmark-check-fill"></i>
+                Berita Acara Rapat Penetapan Hasil
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-1">{{ $beritaAcaraPenetapan->title }}</h6>
+                    <p class="text-muted mb-2">
+                        <i class="bi bi-file-pdf text-danger"></i>
+                        {{ $beritaAcaraPenetapan->original_name }}
+                    </p>
+                    <small class="text-muted">
+                        Diupload pada {{ $beritaAcaraPenetapan->uploaded_at?->format('d M Y, H:i') }}
+                    </small>
+                </div>
+                <div>
+                    <a href="{{ route('de.penetapan-hasil-akreditasi.download-berita-acara', $pengajuan->id) }}" class="btn btn-outline-primary" target="_blank">
+                        <i class="bi bi-download"></i> Download
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+    @endif
+
+    {{-- Keterangan Batasan Skor Akreditasi --}}
+    <div class="card mb-4 border-0 shadow-sm">
+        <div class="card-header bg-secondary text-white border-0">
+            <h5 class="mb-0">
+                <i class="bi bi-info-circle"></i>
+                Keterangan Batasan Skor Akreditasi
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-2">
+                {{-- 0-250: Tidak Terakreditasi --}}
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center p-3 rounded h-100" style="background-color: #f8d7da;">
+                        <div class="me-3">
+                            <strong class="text-dark">0 - 250</strong>
+                        </div>
+                        <div class="flex-grow-1">
+                            <strong class="text-dark">Tidak Terakreditasi</strong>
+                            <div><small class="text-muted">Ditolak validator dokumen</small></div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- 251-350: Terakreditasi --}}
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center p-3 rounded h-100" style="background-color: #d1ecf1;">
+                        <div class="me-3">
+                            <strong class="text-dark">251 - 350</strong>
+                        </div>
+                        <div class="flex-grow-1">
+                            <strong class="text-dark">Terakreditasi</strong>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- 351-360: Terakreditasi Unggul with requirement --}}
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center p-3 rounded h-100" style="background-color: #d4edda;">
+                        <div class="me-3">
+                            <strong class="text-dark">351 - 360</strong>
+                        </div>
+                        <div class="flex-grow-1">
+                            <strong class="text-dark">⁠Terakreditasi Unggul with Requirement (2 Tahun)*</strong>
+                            <div><small class="text-muted">*Dengan syarat pelampauan standar</small></div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- 361-400: Terakreditasi Unggul --}}
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center p-3 rounded h-100" style="background-color: #c3e6cb;">
+                        <div class="me-3">
+                            <strong class="text-dark">361 - 400</strong>
+                        </div>
+                        <div class="flex-grow-1">
+                            <strong class="text-dark">Terakreditasi Unggul (5 Tahun)</strong>
+                            <div><small class="text-muted">*Dengan syarat pelampauan standar</small></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-light alert-permanent mt-3 mb-0">
+                <i class="bi bi-info-circle me-2"></i>
+                <strong>Catatan:</strong> Untuk peringkat <strong>Unggul</strong>, selain mencapai skor >= 351,
+                program studi harus memiliki <strong>minimal 1 elemen dengan kategori: Pelampauan Standar (Exceeding Standard)</strong>
+                di <strong>setiap kriteria</strong> (D, E, P, I, L, A, R).
+            </div>
+        </div>
+    </div>
+
+    {{-- Validasi Peringkat Unggul --}}
+    @if($hasil->skor_al >= 361)
+    <div class="card mb-4 border-{{ $validationSummary['dapat_unggul'] ? 'success' : 'warning' }}">
+        <div class="card-header bg-{{ $validationSummary['dapat_unggul'] ? 'success' : 'warning' }} text-white">
+            <h5 class="mb-0">
+                <i class="bi bi-{{ $validationSummary['dapat_unggul'] ? 'shield-check' : 'exclamation-triangle' }}"></i>
+                Validasi Syarat Peringkat UNGGUL
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center p-3 bg-success bg-opacity-10 rounded">
+                        <i class="bi bi-check-circle-fill text-success fs-3 me-3"></i>
+                        <div>
+                            <strong>Skor Memenuhi Syarat</strong>
+                            <div class="text-muted">Skor >= 361 ({{ number_format($hasil->skor_al, 2) }})</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center p-3 bg-{{ $validationSummary['pelampauan_memenuhi'] ? 'success' : 'danger' }} bg-opacity-10 rounded">
+                        <i class="bi bi-{{ $validationSummary['pelampauan_memenuhi'] ? 'check-circle-fill text-success' : 'x-circle-fill text-danger' }} fs-3 me-3"></i>
+                        <div>
+                            <strong>Pelampauan Standar</strong>
+                            <div class="text-muted">
+                                @if($validationSummary['pelampauan_memenuhi'])
+                                Semua kriteria terpenuhi ✓
+                                @else
+                                {{ count($validationSummary['missing_kriteria']) }} kriteria belum memiliki pelampauan
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Detail per Kriteria --}}
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="15%">Kriteria</th>
+                            <th class="text-center" width="25%">Status Pelampauan</th>
+                            <th class="text-center" width="20%">Jumlah Elemen Skor 4</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach(\App\Models\HasilAkreditasi::KRITERIA_REQUIRED as $kode)
+                        @php
+                        $status = $validationSummary['kriteria_status'][$kode] ?? ['has_pelampauan' => false, 'jumlah_elemen_skor_4' => 0];
+                        @endphp
+                        <tr>
+                            <td class="text-center"><strong>{{ $kode }}</strong></td>
+                            <td class="text-center">
+                                @if($status['has_pelampauan'])
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle"></i> Terpenuhi
+                                </span>
+                                @else
+                                <span class="badge bg-danger">
+                                    <i class="bi bi-x-circle"></i> Belum Terpenuhi
+                                </span>
+                                @endif
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-info">{{ $status['jumlah_elemen_skor_4'] }}</span>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            @if(!$validationSummary['pelampauan_memenuhi'])
+            <div class="alert alert-warning alert-permanent mt-3 mb-0">
+                <strong>⚠️ Perhatian:</strong> Meskipun skor mencapai >= 361, peringkat <strong>TIDAK DAPAT</strong> ditetapkan sebagai UNGGUL
+                karena kriteria <strong>{{ implode(', ', $validationSummary['missing_kriteria']) }}</strong>
+                belum memiliki minimal 1 elemen dengan kategori Pelampauan Standar (Exceeding Standard).
+                <br><br>
+                Peringkat akan diturunkan menjadi: <strong class="text-danger">BAIK SEKALI</strong>
+            </div>
+            @endif
+        </div>
+    </div>
+    @endif
+
+    {{-- Detail Skor per Kriteria --}}
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                <i class="bi bi-bar-chart-fill"></i>
+                Detail Skor per Kriteria
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="10%">Kode</th>
+                            <th width="40%">Nama Kriteria</th>
+                            <th class="text-center" width="15%">Jumlah Elemen</th>
+                            <th class="text-center" width="15%">Total Bobot</th>
+                            <th class="text-center" width="15%">Skor Tertimbang</th>
+                            <th class="text-center" width="10%">Pelampauan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($kriteriaList as $kode => $data)
+                        <tr>
+                            <td><span class="badge bg-secondary">{{ $kode }}</span></td>
+                            <td>{{ $data['nama'] }}</td>
+                            <td class="text-center">{{ $data['elemen_count'] }}</td>
+                            <td class="text-center">{{ number_format($data['total_bobot'], 2) }}</td>
+                            <td class="text-center">
+                                <strong class="text-primary">{{ number_format($data['total_skor'], 2) }}</strong>
+                            </td>
+                            <td class="text-center">
+                                @if($data['has_pelampauan'])
+                                <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                                @else
+                                <i class="bi bi-dash-circle text-muted fs-5"></i>
+                                @endif
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">Belum ada data</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                    @if(!empty($kriteriaList))
+                    <tfoot class="table-light">
+                        <tr>
+                            <th colspan="3" class="text-end">TOTAL:</th>
+                            <th class="text-center">{{ number_format($hasil->total_bobot_al ?? 0, 2) }}</th>
+                            <th class="text-center">
+                                <strong class="text-primary fs-5">{{ number_format($hasil->skor_al ?? 0, 2) }}</strong>
+                            </th>
+                            <th></th>
+                        </tr>
+                    </tfoot>
+                    @endif
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {{-- Detail Skor per Elemen Standar --}}
+    <div class="card mb-4">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0">
+                <i class="bi bi-list-check"></i>
+                Detail Skor per Elemen Standar
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-sm table-hover" id="table-elemen">
+                    <thead class="table-light align-middle">
+                        <tr>
+                            <th width="5%">Kriteria - Elemen</th>
+                            <th width="30%">Pernyataan Elemen</th>
+                            <th class="text-center" width="35%">Kategori</th>
+                            <th class="text-center" width="10%">Bobot</th>
+                            <th class="text-center" width="15%">Skor Tertimbang</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($elemenList as $elemen)
+                        @php
+                        $kategori = $elemen['skor_kategori'] ?? ['label' => '-', 'class' => 'secondary'];
+                        @endphp
+                        <tr>
+                            <td>
+                                <div class="d-flex flex-column">
+                                    <span class="badge bg-secondary mb-1" style="width: fit-content;">{{ $elemen['kode_kriteria'] }}</span>
+                                    <code class="text-primary">{{ $elemen['kode_elemen'] }}</code>
+                                </div>
+                            </td>
+                            <td>{{ Str::limit($elemen['nama_elemen'], 120) }}</td>
+                            <td class="text-center">
+                                <span class="badge text-wrap" style="width: 15rem; background-color: {{ $kategori['color'] }}; color: #222;">
+                                    {{ $kategori['label'] }}
+                                </span>
+                                <div class="mt-1">
+                                    <small class="text-muted">({{ number_format($elemen['skor'], 2) }})</small>
+                                </div>
+                            </td>
+                            <td class="text-center">{{ number_format($elemen['bobot'], 2) }}</td>
+                            <td class="text-center">
+                                <strong>{{ number_format($elemen['skor_tertimbang'], 2) }}</strong>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">Belum ada data</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {{-- Catatan Validasi --}}
+    @if($hasil->catatan_validasi)
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">
+                <i class="bi bi-chat-left-text-fill"></i>
+                Catatan Validasi
+            </h5>
+        </div>
+        <div class="card-body">
+            <pre class="mb-0" style="white-space: pre-wrap;">{{ $hasil->catatan_validasi }}</pre>
+        </div>
+    </div>
+    @endif
 </div>
-@endsection
 
 @push('scripts')
 <script>
-    function batalkanPenetapan(id, nomorPengajuan) {
-        const modal = new bootstrap.Modal(document.getElementById('modalBatalkanPenetapan'));
-        const form = document.getElementById('formBatalkanPenetapan');
-
-        form.action = `{{ route('de.penetapan-hasil-akreditasi') }}/${id}/batalkan`;
-        document.getElementById('nomorPengajuanBatal').textContent = nomorPengajuan;
-
-        modal.show();
-    }
+    $(document).ready(function() {
+        $('#table-elemen').DataTable({
+            pageLength: 25
+            , order: [], // ✅ NO SORT - preserve insertion order
+            columnDefs: [{
+                    orderable: false
+                    , targets: '_all'
+                } // Disable sorting on all columns
+            ]
+            , language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json'
+            }
+        });
+    });
 
 </script>
 @endpush
+@endsection

@@ -159,4 +159,28 @@ class Fungsi
         $base64Image = base64_encode($imageData);
         return 'data:image/png;base64,' . $base64Image;
     }
+
+    public static function terbilang($angka)
+    {
+        $angka = abs($angka);
+        $bilangan = ['', 'satu', 'dua', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan', 'sepuluh', 'sebelas'];
+
+        if ($angka < 12) {
+            return $bilangan[$angka];
+        } elseif ($angka < 20) {
+            return self::terbilang($angka - 10) . ' belas';
+        } elseif ($angka < 100) {
+            return self::terbilang($angka / 10) . ' puluh ' . self::terbilang($angka % 10);
+        } elseif ($angka < 200) {
+            return 'seratus ' . self::terbilang($angka - 100);
+        } elseif ($angka < 1000) {
+            return self::terbilang($angka / 100) . ' ratus ' . self::terbilang($angka % 100);
+        } elseif ($angka < 2000) {
+            return 'seribu ' . self::terbilang($angka - 1000);
+        } elseif ($angka < 1000000) {
+            return self::terbilang($angka / 1000) . ' ribu ' . self::terbilang($angka % 1000);
+        }
+
+        return $angka;
+    }
 }

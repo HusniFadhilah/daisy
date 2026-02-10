@@ -165,7 +165,7 @@
                                     @endif
                                 </td>
                                 <td>
-                                    {!! $pengajuan->getCustomBadgeLastStatus('surat_permohonan_ps','upps','label_short_for') !!}
+                                    {!! $pengajuan->getCustomBadgeLastStatus('permohonan_banding','upps','label_short_for') !!}
                                 </td>
                                 <td class="text-center">
                                     <div class="btn-group btn-group-sm" role="group">

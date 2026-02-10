@@ -431,6 +431,7 @@ final class AllowedStatus
 
             // Step 17 (permohonan/admin banding)
             'permohonan_banding' => [
+                P::STATUS_MASA_SANGGAH_DIMULAI,
                 P::STATUS_BANDING_DIAJUKAN,
                 P::STATUS_BANDING_DITERIMA,
                 P::STATUS_BANDING_DITUGASKAN,

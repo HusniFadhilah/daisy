@@ -613,7 +613,7 @@ final class PengajuanStatus
                     'upps' => 'Hasil Akreditasi Ditetapkan',
                     'prodi' => 'Hasil Akreditasi Ditetapkan',
                 ],
-                'bg' => 'bg-success',
+                'bg' => 'bg-light',
                 'icon' => 'bi-award',
             ],
 
@@ -629,7 +629,7 @@ final class PengajuanStatus
                     'upps' => 'Hasil Akreditasi Diumumkan',
                     'prodi' => 'Hasil Akreditasi Diumumkan',
                 ],
-                'bg' => 'bg-primary',
+                'bg' => 'bg-light',
                 'icon' => 'bi-megaphone-fill',
             ],
 
@@ -645,7 +645,7 @@ final class PengajuanStatus
                     'upps' => 'Pelaporan Hasil Akreditasi Selesai',
                     'prodi' => 'Pelaporan Hasil Akreditasi Selesai',
                 ],
-                'bg' => 'bg-success',
+                'bg' => 'bg-light',
                 'icon' => 'bi-megaphone',
             ],
 

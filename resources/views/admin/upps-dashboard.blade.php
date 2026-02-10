@@ -3,8 +3,8 @@
 <!-- ============================================ -->
 <div class="alert alert-light alert-permanent">
     <i class="bi bi-info-circle me-1"></i>
-    Tahapan akreditasi program studi <strong>LAMDEPILAR</strong> terdiri dari kurang lebih <strong>20 langkah</strong><br>
-    Anda dapat mengikuti <strong>permohonan akreditasi</strong> Anda dengan mengunjungi menu yang tersedia
+    Tahapan akreditasi program studi <strong>LAMDEPILAR</strong> terdiri dari <strong>4 tahapan</strong><br>
+    Secara keseluruhan, terdapat 20 langkah yang dapat dipantau melalui klik menu.<br>
 </div>
 
 {{-- <div class="card border-0 shadow-sm mb-4">

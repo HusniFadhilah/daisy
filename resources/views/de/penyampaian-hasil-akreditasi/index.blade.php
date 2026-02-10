@@ -42,70 +42,20 @@
         </div>
     </div>
 
-    <!-- Filters -->
-    {{-- <div class="card mb-3">
-        <div class="card-body" style="background: linear-gradient(135deg, #932136 0%, #870820 100%);">
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label text-white">Cari:</label>
-                    <input type="text" id="searchInput" class="form-control" placeholder="Nomor permohonan / nomor pengajuan / nama prodi..." value="{{ request('search') }}">
-</div>
-
-<div class="col-md-3">
-    <label class="form-label text-white">Status Pengajuan:</label>
-    <select id="filterStatus" class="form-select">
-        <option value="">Semua Status</option>
-        <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_AL_DILAPORKAN }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_AL_DILAPORKAN ? 'selected' : '' }}>
-            AL Dilaporkan
-        </option>
-        <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM ? 'selected' : '' }}>
-            Hasil Dikirim
-        </option>
-        <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI ? 'selected' : '' }}>
-            Masa Sanggah Dimulai
-        </option>
-        <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI ? 'selected' : '' }}>
-            Masa Sanggah Selesai
-        </option>
-    </select>
-</div>
-
-<div class="col-md-3">
-    <label class="form-label text-white">Peringkat:</label>
-    <select id="filterPeringkat" class="form-select">
-        <option value="">Semua Peringkat</option>
-        <option value="Unggul" {{ request('peringkat') == 'Unggul' ? 'selected' : '' }}>Unggul</option>
-        <option value="Baik Sekali" {{ request('peringkat') == 'Baik Sekali' ? 'selected' : '' }}>Baik Sekali</option>
-        <option value="Baik" {{ request('peringkat') == 'Baik' ? 'selected' : '' }}>Baik</option>
-    </select>
-</div>
-
-<div class="col-md-2 d-flex align-items-end gap-2">
-    <button class="btn btn-light w-100" id="btnApply">
-        <i class="bi bi-search"></i> Terapkan
-    </button>
-    <a href="{{ route('de.penyampaian-hasil-akreditasi') }}" class="btn btn-outline-light" title="Reset">
-        <i class="bi bi-arrow-counterclockwise"></i>
-    </a>
-</div>
-</div>
-</div>
-</div> --}}
-
-<!-- Table -->
-<div id="tableContainer" class="position-relative">
-    <div id="loadingOverlay" class="position-absolute top-0 start-0 w-100 h-100 d-none" style="background: rgba(255,255,255,0.8); z-index: 10;">
-        <div class="d-flex justify-content-center align-items-center h-100">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
+    <!-- Table -->
+    <div id="tableContainer" class="position-relative">
+        <div id="loadingOverlay" class="position-absolute top-0 start-0 w-100 h-100 d-none" style="background: rgba(255,255,255,0.8); z-index: 10;">
+            <div class="d-flex justify-content-center align-items-center h-100">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div id="tableContent">
-        @include('de.penyampaian-hasil-akreditasi.components.table-content', ['pengajuans' => $pengajuans])
+        <div id="tableContent">
+            @include('de.penyampaian-hasil-akreditasi.components.table-content', ['pengajuans' => $pengajuans])
+        </div>
     </div>
-</div>
 </div>
 
 @push('scripts')

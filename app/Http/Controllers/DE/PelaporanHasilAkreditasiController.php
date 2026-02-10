@@ -3,12 +3,13 @@
 
 namespace App\Http\Controllers\DE;
 
-use App\Http\Controllers\Controller;
-use App\Models\PengajuanAkreditasi;
-use App\Models\PengajuanDokumen;
 use App\Models\University;
 use Illuminate\Http\Request;
+use App\Models\PengajuanDokumen;
 use Illuminate\Support\Facades\DB;
+use App\Models\PengajuanAkreditasi;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
 
 class PelaporanHasilAkreditasiController extends Controller
@@ -460,5 +461,156 @@ class PelaporanHasilAkreditasiController extends Controller
         $stats['tidak_terakreditasi'] = $peringkatDist['Tidak Terakreditasi'] ?? 0;
 
         return $stats;
+    }
+
+
+
+    /**
+     * ✅ Generate Sertifikat Akreditasi (PDF)
+     */
+    public function generateSertifikat($id)
+    {
+        try {
+            $pengajuan = PengajuanAkreditasi::with([
+                'studyProgram.university',
+                'studyProgram.degreeLevel',
+                'studyProgram.category',
+                'asesmen.hasil',
+            ])->findOrFail($id);
+
+            // Validate: Harus sudah ditetapkan
+            if (!$pengajuan->tanggal_penetapan) {
+                return back()->with('error', 'Hasil belum ditetapkan. Sertifikat hanya dapat digenerate setelah pelaporan.');
+            }
+
+            $asesmen = $pengajuan->asesmen;
+            $hasil = $asesmen->hasil;
+
+            // Generate nomor sertifikat (jika belum ada)
+            if (!$pengajuan->nomor_sertifikat) {
+                $nomorSertifikat = $this->generateNomorSertifikat($pengajuan);
+                $pengajuan->update(['nomor_sertifikat' => $nomorSertifikat]);
+            }
+
+            // Calculate masa berlaku berdasarkan peringkat
+            $masaBerlaku = $this->calculateMasaBerlaku($hasil->peringkat_akreditasi, $pengajuan->tanggal_penetapan);
+
+            $data = [
+                'pengajuan' => $pengajuan,
+                'hasil' => $hasil,
+                'studyProgram' => $pengajuan->studyProgram,
+                'university' => $pengajuan->studyProgram->university,
+                'nomorSertifikat' => $pengajuan->nomor_sertifikat,
+                'tanggalPenetapan' => $pengajuan->tanggal_penetapan,
+                'masaBerlaku' => $masaBerlaku,
+            ];
+
+            // Generate PDF
+            $pdf = Pdf::loadView('de.pelaporan-hasil-akreditasi.sertifikat-pdf', $data);
+            $pdf->setPaper('A4', 'portrait');
+
+            $fileName = 'Sertifikat_Akreditasi_' . $pengajuan->studyProgram->code . '_' . time() . '.pdf';
+
+            return $pdf->download($fileName);
+        } catch (\Exception $e) {
+            Log::error('Generate sertifikat failed', [
+                'pengajuan_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+
+            return back()->with('error', 'Gagal generate sertifikat: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * ✅ Generate Nomor Sertifikat
+     */
+    private function generateNomorSertifikat($pengajuan): string
+    {
+        $tahun = $pengajuan->tanggal_penetapan->format('Y');
+        $bulan = $pengajuan->tanggal_penetapan->format('m');
+
+        // Format: XXXX/LAMDIK-SER/KAT/MM/YYYY
+        // Example: 0001/LAMDIK-SER/S1/01/2025
+
+        $count = PengajuanAkreditasi::whereYear('tanggal_penetapan', $tahun)
+            ->whereMonth('tanggal_penetapan', $bulan)
+            ->whereNotNull('nomor_sertifikat')
+            ->count() + 1;
+
+        $kategori = $pengajuan->studyProgram->degreeLevel->code ?? 'XX';
+
+        return sprintf(
+            '%04d/LAMDIK-SER/%s/%s/%s',
+            $count,
+            $kategori,
+            $bulan,
+            $tahun
+        );
+    }
+
+    /**
+     * ✅ Calculate Masa Berlaku Sertifikat
+     */
+    private function calculateMasaBerlaku($peringkat, $tanggalPenetapan)
+    {
+        $tahunBerlaku = match ($peringkat) {
+            'Unggul' => 5,
+            'Baik Sekali' => 5,
+            'Baik' => 3,
+            default => 2,
+        };
+
+        $tanggalMulai = \Carbon\Carbon::parse($tanggalPenetapan);
+        $tanggalBerakhir = $tanggalMulai->copy()->addYears($tahunBerlaku);
+
+        return [
+            'tahun' => $tahunBerlaku,
+            'tanggal_mulai' => $tanggalMulai,
+            'tanggal_berakhir' => $tanggalBerakhir,
+        ];
+    }
+
+    /**
+     * ✅ Preview Sertifikat (HTML)
+     */
+    public function previewSertifikat($id)
+    {
+        try {
+            $pengajuan = PengajuanAkreditasi::with([
+                'studyProgram.university',
+                'studyProgram.degreeLevel',
+                'studyProgram.category',
+                'asesmen.hasil',
+            ])->findOrFail($id);
+
+            // Validate: Harus sudah ditetapkan
+            if (!$pengajuan->tanggal_penetapan) {
+                return back()->with('error', 'Hasil belum ditetapkan.');
+            }
+
+            $asesmen = $pengajuan->asesmen;
+            $hasil = $asesmen->hasil;
+
+            // Generate nomor sertifikat temporary (jika belum ada)
+            $nomorSertifikat = $pengajuan->nomor_sertifikat ?? '[Akan digenerate saat download]';
+
+            // Calculate masa berlaku
+            $masaBerlaku = $this->calculateMasaBerlaku($hasil->peringkat_akreditasi, $pengajuan->tanggal_penetapan);
+
+            $data = [
+                'pengajuan' => $pengajuan,
+                'hasil' => $hasil,
+                'studyProgram' => $pengajuan->studyProgram,
+                'university' => $pengajuan->studyProgram->university,
+                'nomorSertifikat' => $nomorSertifikat,
+                'tanggalPenetapan' => $pengajuan->tanggal_penetapan,
+                'masaBerlaku' => $masaBerlaku,
+            ];
+
+            return view('de.pelaporan-hasil-akreditasi.sertifikat-pdf', $data);
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal preview sertifikat: ' . $e->getMessage());
+        }
     }
 }
