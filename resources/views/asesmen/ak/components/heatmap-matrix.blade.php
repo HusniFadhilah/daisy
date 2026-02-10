@@ -28,7 +28,7 @@
     <div class="card-body p-0" id="matrixContainer">
         <!-- Legend -->
         <div class="p-3 bg-light border-bottom">
-            <h6 class="mb-2">Legenda Kategori Penilaian:</h6>
+            <h6 class="mb-2">Keterangan Kategori Penilaian:</h6>
             <div class="d-flex flex-wrap gap-3">
                 <div class="legend-item">
                     <span class="legend-box" style="background: #9e9e9e;"></span>

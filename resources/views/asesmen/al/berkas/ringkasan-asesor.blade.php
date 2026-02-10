@@ -196,7 +196,7 @@
                     @else
                     <div class="text-center py-4">
                         <i class="bi bi-inbox" style="font-size:54px;color:#ddd;"></i>
-                        <p class="text-muted mt-2 mb-0">Belum ada file confidential</p>
+                        <p class="text-muted mt-2 mb-0">Belum ada file Ringkasan Hasil Akreditasi</p>
                     </div>
                     @endif
                 </div>

@@ -10,7 +10,7 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item">
-                <a href="{{ route('pelaporan.index') }}">Dashboard Pelaporan</a>
+                <a href="{{ route('dashboard') }}">Dashboard</a>
             </li>
             <li class="breadcrumb-item">
                 <a href="{{ route('pelaporan.indexValidasiAK') }}">Pelaporan Validasi AK</a>
@@ -68,60 +68,6 @@
             </div>
             @endif
 
-            <!-- Informasi Asesmen -->
-            <div class="card mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Informasi Asesmen Kecukupan (AK)</h5>
-                </div>
-                <div class="card-body">
-                    <table class="table table-borderless">
-                        @if($pengajuan)
-                        <tr>
-                            <th width="30%">Nomor Permohonan</th>
-                            <td>: {{ $pengajuan->nomor_pengajuan }}</td>
-                        </tr>
-                        <tr>
-                            <th>Program Studi</th>
-                            <td>: {{ $pengajuan->studyProgram->full_name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Universitas</th>
-                            <td>: {{ $pengajuan->studyProgram->university->name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Jenis Permohonan</th>
-                            <td>: {{ $pengajuan->jenis_akreditasi_label }}</td>
-                        </tr>
-                        <tr>
-                            <th>Status Pelaporan</th>
-                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('ak','validator') !!}</td>
-                        </tr>
-                        @else
-                        <tr>
-                            <th width="30%">Kode Asesmen</th>
-                            <td>: {{ $assignment->asesmen->code }}</td>
-                        </tr>
-                        <tr>
-                            <th>Nama Asesmen</th>
-                            <td>: {{ $assignment->asesmen->name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Program Studi</th>
-                            <td>: {{ $assignment->asesmen->studyProgram->full_name ?? '-' }}</td>
-                        </tr>
-                        @endif
-                        <tr>
-                            <th>Validator</th>
-                            <td>: {{ Auth::user()->name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Tanggal Penugasan</th>
-                            <td>: {{ \App\Libraries\Date::tglIndo($assignment->created_at) }}</td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-
             <!-- File Laporan Validasi AK -->
             <div class="card">
                 <div class="card-header bg-info text-white">
@@ -155,7 +101,7 @@
                         </div>
                         <div>
                             <a href="{{ route('pelaporan.validasiAk.download', $assignment->id) }}" class="btn btn-success btn-md">
-                                <i class="bi bi-download"></i> Download
+                                <i class="bi bi-eye"></i> Lihat File
                             </a>
                         </div>
                     </div>
@@ -172,52 +118,45 @@
                     @endif
                 </div>
             </div>
+
+            <!-- Informasi Asesmen -->
+            <div class="card mt-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Informasi Pelaporan Validasi AK</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        @if($pengajuan)
+                        <tr>
+                            <th>Tanggal Pelaporan Validasi AK</th>
+                            <td>: {{ \App\Libraries\Date::tglIndo($pengajuan->tanggal_pelaporan_ak) }}</td>
+                        </tr>
+                        <tr>
+                            <th>Status Pelaporan Validasi AK</th>
+                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('pelaporan_ak','validator') !!}</td>
+                        </tr>
+                        @endif
+                        <tr>
+                            <th style="width: 40%;">Program Studi</th>
+                            <td>: {{ $pengajuan->studyProgram->name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Universitas</th>
+                            <td>: {{ $pengajuan->studyProgram->university->name }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
         </div>
 
         <!-- Sidebar -->
         <div class="col-lg-4">
-            <!-- Informasi Asesmen Kecukupan -->
-            @if($assignment->asesmen->asesmenKecukupan)
-            <div class="card mb-4">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0">
-                        <i class="bi bi-info-circle"></i> Info Asesmen Kecukupan
-                    </h5>
-                </div>
-                <div class="card-body">
-                    @php
-                    $ak = $assignment->asesmen->asesmenKecukupan;
-                    @endphp
-                    <table class="table table-sm table-borderless">
-                        <tr>
-                            <th width="45%">Status</th>
-                            <td>:
-                                @if($ak->status === 'completed')
-                                <span class="badge bg-success">Selesai</span>
-                                @elseif($ak->status === 'in_progress')
-                                <span class="badge bg-warning">Berlangsung</span>
-                                @else
-                                <span class="badge bg-secondary">{{ ucfirst($ak->status) }}</span>
-                                @endif
-                            </td>
-                        </tr>
-                        @if($ak->completed_at)
-                        <tr>
-                            <th>Diselesaikan</th>
-                            <td>: {{ \App\Libraries\Date::tglIndo($ak->completed_at) }}</td>
-                        </tr>
-                        @endif
-                    </table>
-                </div>
-            </div>
-            @endif
-
             <!-- Riwayat Status -->
             @if($pengajuan)
             @php
             $filterStatuses = [
-            \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
-            \App\Models\PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
+            //\App\Models\PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
+            //\App\Models\PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
             \App\Models\PengajuanAkreditasi::STATUS_AK_SELESAI,
             \App\Models\PengajuanAkreditasi::STATUS_AK_DILAPORKAN,
             ];
@@ -244,14 +183,14 @@
                                 </div>
                                 <div class="flex-grow-1 ms-3">
                                     <strong>
-                                        {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['validator'] ?? $log->status_to }}
+                                        {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['de'] ?? $log->status_to }}
                                     </strong>
                                     <br>
                                     <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
-                                    @if($log->keterangan)
+                                    {{-- @if($log->keterangan)
                                     <br>
                                     <small class="text-muted fst-italic">{{ $log->keterangan }}</small>
-                                    @endif
+                                    @endif --}}
                                 </div>
                             </div>
                         </div>
@@ -260,6 +199,42 @@
                     @else
                     <p class="text-muted text-center mb-0">Belum ada riwayat</p>
                     @endif
+                </div>
+            </div>
+            @endif
+
+            <!-- Informasi Asesmen Kecukupan -->
+            @if($assignment->asesmen->asesmenKecukupan)
+            <div class="card mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle"></i> Info Asesmen Kecukupan
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @php
+                    $ak = $assignment->asesmen->asesmenKecukupan;
+                    @endphp
+                    <table class="table table-sm table-borderless">
+                        <tr>
+                            <th width="45%">Status</th>
+                            <td>:
+                                @if($ak->status === 'completed')
+                                <span class="badge bg-success">Selesai</span>
+                                @elseif($ak->status === 'in_progress')
+                                <span class="badge bg-warning">Berlangsung</span>
+                                @else
+                                <span class="badge bg-secondary">{{ ucfirst($ak->status) }}</span>
+                                @endif
+                            </td>
+                        </tr>
+                        @if($ak->completed_at)
+                        <tr>
+                            <th>AK Selesai pada</th>
+                            <td>: {{ \App\Libraries\Date::tglIndo($ak->completed_at) }}</td>
+                        </tr>
+                        @endif
+                    </table>
                 </div>
             </div>
             @endif

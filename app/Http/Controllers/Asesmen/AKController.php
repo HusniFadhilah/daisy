@@ -95,30 +95,8 @@ class AKController extends Controller
         if ($assignment->role->name != $user->role_selected) {
             abort(403, 'Mohon maaf role Anda sebagai ' . ($user->role_selected) . ' tidak diizinkan membuka halaman ini. Silahkan pindah ke role lain');
         }
-        // ✅ AUTO-UPDATE STATUS: not_started → in_progress
-        if ($assignment->status_pekerjaan === 'not_started') {
-            $assignment->update([
-                'status_pekerjaan' => 'in_progress',
-                'started_at' => now(), // Opsional: track kapan mulai
-            ]);
-            $pengajuan = $assignment->asesmen->pengajuan;
-            if ($pengajuan) {
-                $statusFrom = $pengajuan->status;
-                $pengajuan->checkUpdateStatusAKAL('ak', 'status_asesor_in_progress');
-                $pengajuan->statusLog()->firstOrCreate(
-                    [
-                        'status_from' => $statusFrom,
-                        'status_to'   => PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
-                    ],
-                    [
-                        'changed_by'  => Auth::id(),
-                        'keterangan'  => 'Asesor AK telah memulai proses penilaian kecukupan',
-                        'changed_at'  => now(),
-                    ]
-                );
-            }
-        }
 
+        $this->updateStatusAK($assignment);
         $asesmen = $assignment->asesmen;
 
         // Get all kriteria with elemen and indikator
@@ -154,6 +132,33 @@ class AKController extends Controller
         $isComplete = $progress['percentage'] == 100;
 
         return view('asesmen.ak.berkas.show', compact('asesmen', 'kriterias', 'progress', 'jenjangs', 'pluckColorSkor', 'needsRevisions', 'countNeedsRevisions', 'assignment', 'uploadedFiles', 'statusPekerjaan', 'isSubmittedOnly', 'isSubmitted', 'isApproved', 'needsRevision', 'hasRevisionRequests', 'isComplete'));
+    }
+
+    private function updateStatusAK($assignment)
+    {
+        // ✅ AUTO-UPDATE STATUS: not_started → in_progress
+        if ($assignment->status_pekerjaan === 'not_started') {
+            $assignment->update([
+                'status_pekerjaan' => 'in_progress',
+                'started_at' => now(), // Opsional: track kapan mulai
+            ]);
+            $pengajuan = $assignment->asesmen->pengajuan;
+            if ($pengajuan) {
+                $statusFrom = $pengajuan->status;
+                $pengajuan->checkUpdateStatusAKAL('ak', 'status_asesor_in_progress');
+                $pengajuan->statusLog()->firstOrCreate(
+                    [
+                        'status_from' => $statusFrom,
+                        'status_to'   => PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
+                    ],
+                    [
+                        'changed_by'  => Auth::id(),
+                        'keterangan'  => 'Asesor AK telah memulai proses penilaian kecukupan',
+                        'changed_at'  => now(),
+                    ]
+                );
+            }
+        }
     }
 
     /**
@@ -888,14 +893,7 @@ class AKController extends Controller
             abort(403, 'Mohon maaf role Anda sebagai ' . ($user->role_selected) . ' tidak diizinkan membuka halaman ini.');
         }
 
-        // ✅ AUTO-UPDATE STATUS: not_started → in_progress
-        if ($assignment->status_pekerjaan === 'not_started') {
-            $assignment->update([
-                'status_pekerjaan' => 'in_progress',
-                'started_at' => now(),
-            ]);
-        }
-
+        $this->updateStatusAK($assignment);
         $asesmen = $assignment->asesmen;
 
         // ✅ Get revision requests

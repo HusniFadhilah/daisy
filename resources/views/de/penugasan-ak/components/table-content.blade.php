@@ -13,10 +13,10 @@
                     <tr>
                         <th width="5%">#</th>
                         <th width="20%">Permohonan Akreditasi</th>
-                        <th width="15%">Status AK</th>
                         <th width="15%">Penugasan</th>
-                        <th width="15%">Progress</th>
-                        <th width="15%">Tanggal</th>
+                        {{-- <th width="15%">Progress</th> --}}
+                        <th width="15%">Status Penugasan Asesor AK</th>
+                        <th width="15%">Tanggal Penugasan</th>
                         <th width="10%" class="text-center">Aksi</th>
                     </tr>
                 </thead>
@@ -34,9 +34,9 @@
                     $akStatuses = [
                     \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
                     \App\Models\PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
-                    \App\Models\PengajuanAkreditasi::STATUS_AK_ON_VALIDATION,
-                    \App\Models\PengajuanAkreditasi::STATUS_AK_SELESAI,
-                    \App\Models\PengajuanAkreditasi::STATUS_AK_DILAPORKAN,
+                    //\App\Models\PengajuanAkreditasi::STATUS_AK_ON_VALIDATION,
+                    //\App\Models\PengajuanAkreditasi::STATUS_AK_SELESAI,
+                    //\App\Models\PengajuanAkreditasi::STATUS_AK_DILAPORKAN,
                     ];
 
                     // log AK terakhir (yang paling baru di fase AK)
@@ -97,11 +97,6 @@
                             {!! $pengajuan->getPermohonanAkreditasiSectionFor('de') !!}
                         </td>
                         <td>
-                            <span class="badge bg-{{ $statusAK['class'] }}">
-                                <i class="bi bi-{{ $statusAK['icon'] }}"></i> {{ $statusAK['text'] }}
-                            </span>
-                        </td>
-                        <td>
                             @if($asesorCount > 0 || $validatorCount > 0)
                             <div class="mb-1">
                                 <small><i class="bi bi-person"></i> Asesor: <strong>{{ $asesorCount }}</strong></small>
@@ -123,18 +118,18 @@
                             @endif
                         </td>
                         <td>
-                            @if($progress)
-                            <div class="progress" style="height: 20px;">
-                                <div class="progress-bar bg-{{ $progress['class'] }}" style="width: {{ $progress['width'] }}%">
-                                    {{ $progress['text'] }}
-                                </div>
-                            </div>
+                            {!! $pengajuan->getCustomBadgeLastStatus('penugasan_asesor_ak','de','label_short_for') !!}
+                        </td>
+                        <td>
+                            @if($pengajuan->tanggal_penugasan_asesor_ak)
+                            <small>{{ $pengajuan->tanggal_penugasan_asesor_ak->format('d M Y') }}</small>
+                            <br>
+                            <small class="text-muted">
+                                {{ $pengajuan->tanggal_penugasan_asesor_ak->diffForHumans() }}
+                            </small>
                             @else
                             <span class="text-muted">-</span>
                             @endif
-                        </td>
-                        <td>
-                            <small>{{ $pengajuan->created_at->format('d M Y') }}</small>
                         </td>
                         <td class="text-center">
                             <a href="{{ route('de.penugasan-ak.show', $pengajuan->id) }}" class="btn btn-sm btn-primary" title="Lihat Detail & Tugaskan">

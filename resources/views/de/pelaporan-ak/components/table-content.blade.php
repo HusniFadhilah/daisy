@@ -115,7 +115,7 @@
                             {!! $pengajuan->getCustomBadgeLastStatus('pelaporan_ak', 'de', 'label_short_for') !!}
                         </td>
                         <td>
-                            <small><strong>{{ $tanggalTampil }}</strong></small>
+                            <small>{{ $tanggalTampil }}</small>
                         </td>
                         <td class="text-center">
                             <a href="{{ route('de.pelaporan-ak.show', $pengajuan->id) }}" class="btn btn-sm btn-primary" title="Lihat Detail">

@@ -185,7 +185,7 @@
         </div>
         <div class="card-body">
             <div class="row g-3">
-                @if (app()->environment('local'))
+                {{-- @if (app()->environment('local')) --}}
                 <div class="col-md-6">
                     <button type="button" class="btn btn-outline-success w-100" id="btnValidateAllAgreed" {{ $isApproved ? 'disabled' : '' }}>
                         <i class="bi bi-check-circle"></i>
@@ -193,7 +193,7 @@
                         <small>Otomatis approve nilai yang sama dari semua asesor</small>
                     </button>
                 </div>
-                @endif
+                {{-- @endif --}}
                 <div class="col-md-6">
                     <button type="button" class="btn btn-outline-warning w-100" id="btnReviewDifferences">
                         <i class="bi bi-exclamation-triangle"></i>
@@ -377,10 +377,10 @@
 
     window.PELAPORAN_CFG.al = {
         title: 'Rekap AL dan Pelaporan AL'
-        , label: 'Laporan Hasil Asesmen Lapangan Program Studi (LHA)'
+        , label: 'Laporan Hasil Asesmen Lapangan'
         , upload: @json(route('pelaporan.al.upload', ['assignment' => '__ID__']))
         , finalize: @json(route('pelaporan.al.finalize', ['assignment' => '__ID__']))
-        , fileLabel: 'Laporan Hasil Asesmen Lapangan Program Studi (LHA)'
+        , fileLabel: 'Laporan Hasil Asesmen Lapangan'
         , finalizeLabel: 'Pelaporan AL Telah Selesai'
         , additionalDescription: `Dokumen yang telah digabungkan, yang diperlukan isinya adalah:
         •	Penunjukan tugas Asesor untuk melaksanakan Penilaian LED

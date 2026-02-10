@@ -235,7 +235,9 @@
 
                     $logs = $pengajuan->statusLog
                     ->whereIn('status_to', $filterStatuses)
-                    ->sortBy('changed_at');
+                    ->sortBy('changed_at')
+                    ->unique('status_to')
+                    ->values();
                     @endphp
 
                     @if($logs->count() > 0)

@@ -58,7 +58,7 @@
     </div>
 
     {{-- Borang Info --}}
-    @if($pengajuan->latestBorangImport)
+    {{-- @if($pengajuan->latestBorangImport)
     <div class="card">
         <div class="card-header bg-info text-white">
             <h5 class="mb-0">
@@ -69,30 +69,30 @@
             <div class="mb-2">
                 <label class="text-muted small">File</label>
                 <p class="mb-0">{{ $pengajuan->latestBorangImport->original_filename }}</p>
-            </div>
-            <div class="mb-2">
-                <label class="text-muted small">Kelengkapan</label>
-                <div class="progress" style="height: 20px;">
-                    <div class="progress-bar bg-{{ $pengajuan->latestBorangImport->completion_percentage >= 80 ? 'success' : 'warning' }}" style="width: {{ $pengajuan->latestBorangImport->completion_percentage }}%">
-                        {{ $pengajuan->latestBorangImport->completion_percentage }}%
-                    </div>
-                </div>
-            </div>
-            <div class="mb-2">
-                <label class="text-muted small">Status</label>
-                <p>
-                    <span class="badge bg-{{ $pengajuan->latestBorangImport->status === 'completed' ? 'success' : 'warning' }}">
-                        {{ strtoupper($pengajuan->latestBorangImport->status) }}
-                    </span>
-                </p>
-            </div>
-            <div class="mb-0">
-                <label class="text-muted small">Diproses</label>
-                <p class="mb-0">{{ $pengajuan->latestBorangImport->imported_at->format('d M Y H:i') }}</p>
-            </div>
+</div>
+<div class="mb-2">
+    <label class="text-muted small">Kelengkapan</label>
+    <div class="progress" style="height: 20px;">
+        <div class="progress-bar bg-{{ $pengajuan->latestBorangImport->completion_percentage >= 80 ? 'success' : 'warning' }}" style="width: {{ $pengajuan->latestBorangImport->completion_percentage }}%">
+            {{ $pengajuan->latestBorangImport->completion_percentage }}%
         </div>
     </div>
-    @endif
+</div>
+<div class="mb-2">
+    <label class="text-muted small">Status</label>
+    <p>
+        <span class="badge bg-{{ $pengajuan->latestBorangImport->status === 'completed' ? 'success' : 'warning' }}">
+            {{ strtoupper($pengajuan->latestBorangImport->status) }}
+        </span>
+    </p>
+</div>
+<div class="mb-0">
+    <label class="text-muted small">Diproses</label>
+    <p class="mb-0">{{ $pengajuan->latestBorangImport->imported_at->format('d M Y H:i') }}</p>
+</div>
+</div>
+</div>
+@endif --}}
 </div>
 
 {{-- Right: Assign Form --}}

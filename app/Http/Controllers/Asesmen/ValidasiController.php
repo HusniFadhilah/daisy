@@ -678,7 +678,7 @@ class ValidasiController extends Controller
                 $statusValidasi === 'validated'
                     ? 'Penilaian berhasil divalidasi'
                     : ($statusValidasi === 'validated_diff'
-                        ? 'Penilaian berhasil divalidasi dengan perbedaan nilai'
+                        ? 'Penilaian berhasil divalidasi'
                         : 'Permintaan revisi berhasil dikirim ke asesor terpilih.'),
             ]);
         } catch (\Exception $e) {

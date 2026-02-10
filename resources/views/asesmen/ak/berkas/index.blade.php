@@ -100,7 +100,7 @@
 
                                     {{-- LED --}}
                                     @if($dokumenLED)
-                                    <a href="{{ route('upps.penerimaan-dokumen.dokumen.download', $dokumenLED->id) }}" class="btn btn-sm btn-info btn-fixed-lg" target="_blank">
+                                    <a href="{{ route('upps.penerimaan-dokumen.dokumen.download', $dokumenLED->id) }}" class="btn btn-sm btn-outline-dark btn-fixed-lg" target="_blank">
                                         <i class="bi bi-download me-1"></i>
                                         Laporan Evaluasi Diri (LED)
                                     </a>
@@ -113,7 +113,7 @@
 
                                     {{-- Suplemen --}}
                                     @if($dokumenSuplemen)
-                                    <a href="{{ route('upps.penerimaan-dokumen.dokumen.download', $dokumenSuplemen->id) }}" class="btn btn-sm btn-secondary btn-fixed-lg" target="_blank">
+                                    <a href="{{ route('upps.penerimaan-dokumen.dokumen.download', $dokumenSuplemen->id) }}" class="btn btn-sm btn-outline-dark btn-fixed-lg" target="_blank">
                                         <i class="bi bi-download"></i> Suplemen LED
                                     </a>
                                     @else
@@ -125,7 +125,7 @@
 
                                     {{-- LKPS --}}
                                     @if($dokumenLKPS)
-                                    <a href="{{ route('upps.penerimaan-dokumen.dokumen.download', $dokumenLKPS->id) }}" class="btn btn-sm btn-success btn-fixed-lg" target="_blank">
+                                    <a href="{{ route('upps.penerimaan-dokumen.dokumen.download', $dokumenLKPS->id) }}" class="btn btn-sm btn-outline-success btn-fixed-lg" target="_blank">
                                         <i class="bi bi-download me-1"></i>
                                         Laporan Kinerja Program Studi (LKPS)
                                     </a>

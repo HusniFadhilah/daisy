@@ -10,7 +10,7 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item">
-                <a href="{{ route('pelaporan.index') }}">Dashboard Pelaporan</a>
+                <a href="{{ route('dashboard') }}">Dashboard</a>
             </li>
             <li class="breadcrumb-item">
                 <a href="{{ route('pelaporan.indexAL') }}">Pelaporan AL</a>
@@ -68,81 +68,11 @@
             </div>
             @endif
 
-            <!-- Informasi Asesmen -->
-            <div class="card mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Informasi Asesmen Lapangan (AL)</h5>
-                </div>
-                <div class="card-body">
-                    <table class="table table-borderless">
-                        @if($pengajuan)
-                        <tr>
-                            <th width="30%">Nomor Permohonan</th>
-                            <td>: {{ $pengajuan->nomor_pengajuan }}</td>
-                        </tr>
-                        <tr>
-                            <th>Program Studi</th>
-                            <td>: {{ $pengajuan->studyProgram->full_name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Universitas</th>
-                            <td>: {{ $pengajuan->studyProgram->university->name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Jenjang</th>
-                            <td>: {{ $pengajuan->studyProgram->degreeLevel->name ?? '-' }}</td>
-                        </tr>
-                        <tr>
-                            <th>Jenis Permohonan</th>
-                            <td>: {{ $pengajuan->jenis_akreditasi_label }}</td>
-                        </tr>
-                        <tr>
-                            <th>Status Pelaporan</th>
-                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('al','validator') !!}</td>
-                        </tr>
-                        @else
-                        <tr>
-                            <th width="30%">Kode Asesmen</th>
-                            <td>: {{ $assignment->asesmen->code }}</td>
-                        </tr>
-                        <tr>
-                            <th>Nama Asesmen</th>
-                            <td>: {{ $assignment->asesmen->name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Program Studi</th>
-                            <td>: {{ $assignment->asesmen->studyProgram->full_name ?? '-' }}</td>
-                        </tr>
-                        @endif
-                        <tr>
-                            <th>Validator</th>
-                            <td>: {{ Auth::user()->name }}</td>
-                        </tr>
-                        <tr>
-                            <th>Tanggal Penugasan</th>
-                            <td>: {{ \App\Libraries\Date::tglIndo($assignment->created_at) }}</td>
-                        </tr>
-                        <tr>
-                            <th>Status Pekerjaan</th>
-                            <td>:
-                                @if($assignment->status_pekerjaan === 'submitted')
-                                <span class="badge bg-success">Selesai</span>
-                                @elseif($assignment->status_pekerjaan === 'in_progress')
-                                <span class="badge bg-warning">Sedang Dikerjakan</span>
-                                @else
-                                <span class="badge bg-secondary">{{ ucfirst($assignment->status_pekerjaan) }}</span>
-                                @endif
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-
             <!-- File Laporan AL -->
             <div class="card">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-file-pdf"></i> Laporan Hasil Asesmen Lapangan Program Studi (LHA)
+                        <i class="bi bi-file-pdf"></i> Laporan Hasil Asesmen Lapangan
                     </h5>
                 </div>
                 <div class="card-body">
@@ -199,13 +129,92 @@
                     @endif
                 </div>
             </div>
+
+            <!-- Informasi Asesmen -->
+            <div class="card mt-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Informasi Pelaporan AL</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        @if($pengajuan)
+                        <tr>
+                            <th>Tanggal Pelaporan AL</th>
+                            <td>: {{ \App\Libraries\Date::tglIndo($pengajuan->tanggal_pelaporan_al) }}</td>
+                        </tr>
+                        <tr>
+                            <th>Status Pelaporan AL</th>
+                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('pelaporan_al','validator') !!}</td>
+                        </tr>
+                        @endif
+                        <tr>
+                            <th style="width: 40%;">Program Studi</th>
+                            <td>: {{ $pengajuan->studyProgram->name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Universitas</th>
+                            <td>: {{ $pengajuan->studyProgram->university->name }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
         </div>
 
         <!-- Sidebar -->
         <div class="col-lg-4">
+            <!-- Riwayat Status -->
+            @if($pengajuan)
+            @php
+            $filterStatuses = [
+            \App\Models\PengajuanAkreditasi::STATUS_AL_SELESAI,
+            \App\Models\PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
+            ];
+
+            $logs = $pengajuan->statusLog
+            ->whereIn('status_to', $filterStatuses)
+            ->sortBy('changed_at');
+            @endphp
+
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history"></i> Riwayat Status
+                    </h5>
+                </div>
+                <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                    @if($logs->count() > 0)
+                    <div class="timeline">
+                        @foreach($logs as $log)
+                        <div class="timeline-item mb-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-circle-fill text-secondary" style="font-size: 8px;"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <strong>
+                                        {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['de'] ?? $log->status_to }}
+                                    </strong>
+                                    <br>
+                                    <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
+                                    {{-- @if($log->keterangan)
+                                    <br>
+                                    <small class="text-muted fst-italic">{{ $log->keterangan }}</small>
+                                    @endif --}}
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                    @else
+                    <p class="text-muted text-center mb-0">Belum ada riwayat</p>
+                    @endif
+                </div>
+            </div>
+            @endif
+
             <!-- Informasi Asesmen Lapangan -->
             @if($assignment->asesmen->asesmenLapangan)
-            <div class="card mb-4">
+            <div class="card mt-4">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0">
                         <i class="bi bi-info-circle"></i> Info Asesmen Lapangan
@@ -221,6 +230,8 @@
                             <td>:
                                 @if($al->status === 'completed')
                                 <span class="badge bg-success">Selesai</span>
+                                @elseif($al->status === 'finalized')
+                                <span class="badge bg-success">Selesai & Difinalisasi</span>
                                 @elseif($al->status === 'in_progress')
                                 <span class="badge bg-warning">Berlangsung</span>
                                 @else
@@ -242,69 +253,17 @@
                         @endif
                         @if($al->completed_at)
                         <tr>
-                            <th>Diselesaikan</th>
+                            <th>AL Selesai pada</th>
                             <td>: {{ \App\Libraries\Date::tglIndo($al->completed_at) }}</td>
                         </tr>
                         @endif
-                        @if($al->completed_by)
+                        {{-- @if($al->completed_by)
                         <tr>
                             <th>Diselesaikan Oleh</th>
                             <td>: {{ $al->completedBy->name ?? '-' }}</td>
                         </tr>
-                        @endif
+                        @endif --}}
                     </table>
-                </div>
-            </div>
-            @endif
-
-            <!-- Riwayat Status -->
-            @if($pengajuan)
-            @php
-            $filterStatuses = [
-            \App\Models\PengajuanAkreditasi::STATUS_AL_DIJADWALKAN,
-            \App\Models\PengajuanAkreditasi::STATUS_AL_SEDANG_BERLANGSUNG,
-            \App\Models\PengajuanAkreditasi::STATUS_AL_SELESAI,
-            \App\Models\PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
-            ];
-
-            $logs = $pengajuan->statusLog
-            ->whereIn('status_to', $filterStatuses)
-            ->sortByDesc('changed_at');
-            @endphp
-
-            <div class="card">
-                <div class="card-header bg-secondary text-white">
-                    <h5 class="mb-0">
-                        <i class="bi bi-clock-history"></i> Riwayat Status
-                    </h5>
-                </div>
-                <div class="card-body" style="max-height: 600px; overflow-y: auto;">
-                    @if($logs->count() > 0)
-                    <div class="timeline">
-                        @foreach($logs as $log)
-                        <div class="timeline-item mb-3">
-                            <div class="d-flex">
-                                <div class="flex-shrink-0">
-                                    <i class="bi bi-circle-fill text-secondary" style="font-size: 8px;"></i>
-                                </div>
-                                <div class="flex-grow-1 ms-3">
-                                    <strong>
-                                        {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['validator'] ?? $log->status_to }}
-                                    </strong>
-                                    <br>
-                                    <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
-                                    @if($log->keterangan)
-                                    <br>
-                                    <small class="text-muted fst-italic">{{ $log->keterangan }}</small>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
-                    @else
-                    <p class="text-muted text-center mb-0">Belum ada riwayat</p>
-                    @endif
                 </div>
             </div>
             @endif

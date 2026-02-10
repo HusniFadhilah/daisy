@@ -23,6 +23,14 @@
 
 @section('content')
 <div class="container-fluid py-3">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item active">Penugasan Asesor AK</li>
+        </ol>
+    </nav>
+
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -55,7 +63,7 @@
     <!-- Main Content -->
     <div class="row">
         <!-- Filters -->
-        <div class="col-lg-3 mb-4">
+        {{-- <div class="col-lg-3 mb-4">
             <div class="card filter-card">
                 <div class="card-header border-0">
                     <h5 class="mb-0">
@@ -68,68 +76,68 @@
                         <div class="mb-3">
                             <label class="form-label text-white">Cari Permohonan</label>
                             <input type="text" name="search" id="searchInput" class="form-control" placeholder="Nomor / nama prodi..." value="{{ request('search') }}">
-                        </div>
+    </div>
 
-                        <!-- University -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Universitas</label>
-                            <select name="university_id" id="universityFilter" class="form-select">
-                                <option value="">Semua Universitas</option>
-                                @foreach($universities as $univ)
-                                <option value="{{ $univ->id }}" {{ request('university_id') == $univ->id ? 'selected' : '' }}>
-                                    {{ $univ->name }}
-                                </option>
-                                @endforeach
-                            </select>
-                        </div>
+    <!-- University -->
+    <div class="mb-3">
+        <label class="form-label text-white">Universitas</label>
+        <select name="university_id" id="universityFilter" class="form-select">
+            <option value="">Semua Universitas</option>
+            @foreach($universities as $univ)
+            <option value="{{ $univ->id }}" {{ request('university_id') == $univ->id ? 'selected' : '' }}>
+                {{ $univ->name }}
+            </option>
+            @endforeach
+        </select>
+    </div>
 
-                        <!-- Status AK -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Status AK</label>
-                            <select name="status_ak" id="statusAKFilter" class="form-select">
-                                <option value="">Semua Status</option>
-                                <option value="belum_ditugaskan" {{ request('status_ak') == 'belum_ditugaskan' ? 'selected' : '' }}>Belum Ditugaskan</option>
-                                <option value="sudah_ditugaskan" {{ request('status_ak') == 'sudah_ditugaskan' ? 'selected' : '' }}>Sudah Ditugaskan</option>
-                                <option value="selesai" {{ request('status_ak') == 'selesai' ? 'selected' : '' }}>Selesai</option>
-                            </select>
-                        </div>
+    <!-- Status AK -->
+    <div class="mb-3">
+        <label class="form-label text-white">Status AK</label>
+        <select name="status_ak" id="statusAKFilter" class="form-select">
+            <option value="">Semua Status</option>
+            <option value="belum_ditugaskan" {{ request('status_ak') == 'belum_ditugaskan' ? 'selected' : '' }}>Belum Ditugaskan</option>
+            <option value="sudah_ditugaskan" {{ request('status_ak') == 'sudah_ditugaskan' ? 'selected' : '' }}>Sudah Ditugaskan</option>
+            <option value="selesai" {{ request('status_ak') == 'selesai' ? 'selected' : '' }}>Selesai</option>
+        </select>
+    </div>
 
-                        <!-- Buttons -->
-                        <div class="d-grid gap-2">
-                            <button type="button" class="btn btn-light" onclick="applyFilters()">
-                                <i class="bi bi-search"></i> Terapkan Filter
-                            </button>
-                            <button type="button" class="btn btn-outline-light" onclick="resetFilters()">
-                                <i class="bi bi-x-circle"></i> Reset
-                            </button>
-                        </div>
-                    </form>
+    <!-- Buttons -->
+    <div class="d-grid gap-2">
+        <button type="button" class="btn btn-light" onclick="applyFilters()">
+            <i class="bi bi-search"></i> Terapkan Filter
+        </button>
+        <button type="button" class="btn btn-outline-light" onclick="resetFilters()">
+            <i class="bi bi-x-circle"></i> Reset
+        </button>
+    </div>
+    </form>
+</div>
+</div>
+</div> --}}
+
+<!-- Table Content -->
+<div class="col-lg-12">
+    <div class="position-relative">
+        <!-- Loading Overlay -->
+        <div id="tableLoading" class="position-absolute top-0 start-0 w-100 h-100 d-none" style="background: rgba(255,255,255,0.9); z-index: 1000;">
+            <div class="d-flex justify-content-center align-items-center h-100" style="min-height: 400px;">
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Memuat data...</p>
                 </div>
             </div>
         </div>
 
-        <!-- Table Content -->
-        <div class="col-lg-9">
-            <div class="position-relative">
-                <!-- Loading Overlay -->
-                <div id="tableLoading" class="position-absolute top-0 start-0 w-100 h-100 d-none" style="background: rgba(255,255,255,0.9); z-index: 1000;">
-                    <div class="d-flex justify-content-center align-items-center h-100" style="min-height: 400px;">
-                        <div class="text-center">
-                            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                            <p class="mt-3 text-muted">Memuat data...</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Table Container -->
-                <div id="tableContainer">
-                    @include('de.penugasan-ak.components.table-content', ['pengajuans' => $pengajuans])
-                </div>
-            </div>
+        <!-- Table Container -->
+        <div id="tableContainer">
+            @include('de.penugasan-ak.components.table-content', ['pengajuans' => $pengajuans])
         </div>
     </div>
+</div>
+</div>
 </div>
 
 @push('scripts')

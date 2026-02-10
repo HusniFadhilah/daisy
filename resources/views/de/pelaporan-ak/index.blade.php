@@ -4,6 +4,14 @@
 
 @section('content')
 <div class="container-fluid py-3">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item active">Pelaporan AK</li>
+        </ol>
+    </nav>
+
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -35,7 +43,7 @@
     </div>
 
     <!-- Filters -->
-    <div class="card mb-3">
+    {{-- <div class="card mb-3">
         <div class="card-body" style="background: linear-gradient(135deg, #932136 0%, #870820 100%);">
             <div class="row g-3">
                 <div class="col-md-4">
@@ -44,39 +52,39 @@
                         <option value="">Semua Universitas</option>
                         @foreach($universities as $univ)
                         <option value="{{ $univ->id }}">{{ $univ->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label text-white">Status Pelaporan:</label>
-                    <select id="filterStatus" class="form-select">
-                        <option value="">Semua Status</option>
-                        <option value="belum_lapor">Belum Dilaporkan</option>
-                        <option value="sudah_lapor">Sudah Dilaporkan</option>
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label text-white">Cari:</label>
-                    <input type="text" id="searchInput" class="form-control" placeholder="Nomor permohonan atau nama prodi...">
-                </div>
+    @endforeach
+    </select>
+</div>
+<div class="col-md-4">
+    <label class="form-label text-white">Status Pelaporan:</label>
+    <select id="filterStatus" class="form-select">
+        <option value="">Semua Status</option>
+        <option value="belum_lapor">Belum Dilaporkan</option>
+        <option value="sudah_lapor">Sudah Dilaporkan</option>
+    </select>
+</div>
+<div class="col-md-4">
+    <label class="form-label text-white">Cari:</label>
+    <input type="text" id="searchInput" class="form-control" placeholder="Nomor permohonan atau nama prodi...">
+</div>
+</div>
+</div>
+</div> --}}
+
+<!-- Table -->
+<div id="tableContainer" class="position-relative">
+    <div id="loadingOverlay" class="position-absolute top-0 start-0 w-100 h-100 d-none" style="background: rgba(255,255,255,0.8); z-index: 10;">
+        <div class="d-flex justify-content-center align-items-center h-100">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
             </div>
         </div>
     </div>
 
-    <!-- Table -->
-    <div id="tableContainer" class="position-relative">
-        <div id="loadingOverlay" class="position-absolute top-0 start-0 w-100 h-100 d-none" style="background: rgba(255,255,255,0.8); z-index: 10;">
-            <div class="d-flex justify-content-center align-items-center h-100">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-            </div>
-        </div>
-
-        <div id="tableContent">
-            @include('de.pelaporan-ak.components.table-content', ['pengajuans' => $pengajuans])
-        </div>
+    <div id="tableContent">
+        @include('de.pelaporan-ak.components.table-content', ['pengajuans' => $pengajuans])
     </div>
+</div>
 </div>
 
 @push('scripts')

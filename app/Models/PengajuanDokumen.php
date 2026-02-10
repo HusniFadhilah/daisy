@@ -50,7 +50,7 @@ class PengajuanDokumen extends Model
         'lembar_pengesahan'            => 'Lembar Pengesahan Dokumen',
         'dokumen_pendukung'            => 'Dokumen Pendukung',
         'laporan_ak'                   => 'Laporan Penilaian Kecukupan LED Program Studi (LHK)',
-        'laporan_al'                   => 'Laporan Hasil Asesmen Lapangan Program Studi (LHA)',
+        'laporan_al'                   => 'Laporan AL',
         'sertifikat'                   => 'Sertifikat Akreditasi',
         'data_kualitatif'              => 'Laporan Evaluasi Diri (LED)',
         'data_kuantitatif'             => 'Laporan Kinerja Program Studi (LKPS)',

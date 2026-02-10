@@ -8,11 +8,12 @@ use App\Models\LhaAsesor;
 use Illuminate\Http\Request;
 use App\Models\AsesmenDocument;
 use App\Models\AsesmenUserRole;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Barryvdh\DomPDF\Facade\Pdf;
 
 class LhaAsesorController extends Controller
 {
@@ -56,6 +57,9 @@ class LhaAsesorController extends Controller
         // ✅ Get team asesor
         $asesorTeam = AsesmenUserRole::where('id_asesmen', $idAsesmen)
             ->where('jenis_asesmen', 'al')
+            ->whereHas('role', function ($q) {
+                $q->where('name', 'asesor');
+            })
             ->with('user')
             ->get();
 
@@ -258,6 +262,12 @@ class LhaAsesorController extends Controller
                 'uploaded_at' => now(),
             ]);
 
+            $asesmen->asesmenLapangan->update([
+                'status' => 'completed',
+                'completed_at' => now(),
+                'completed_by' => $user->id
+            ]);
+
             DB::commit();
 
             return response()->json([
@@ -266,7 +276,7 @@ class LhaAsesorController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Error finalizing LHA: ' . $e->getMessage());
+            Log::error('Error finalizing LHA: ' . $e->getMessage());
 
             return response()->json([
                 'success' => false,

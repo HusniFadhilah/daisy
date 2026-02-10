@@ -32,16 +32,28 @@ class PenyampaianHasilAkreditasiController extends Controller
             'asesmen.asesmenLapangan',
             'asesmen.hasil' => function ($q) {
                 $q->select('id', 'id_pengajuan', 'id_asesmen', 'skor_al', 'skor_final', 'peringkat_akreditasi', 'status', 'tanggal_finalisasi_al');
-            }
+            },
+            'statusLog' => function ($q) {
+                $q->whereIn('status_to', [
+                    PengajuanAkreditasi::STATUS_AL_SELESAI,
+                    PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
+                    PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM,
+                    PengajuanAkreditasi::STATUS_MASA_SANGGAH,
+                ])->orderBy('changed_at', 'desc');
+            },
         ])
             // Filter: AL sudah selesai
-            ->whereIn('status', [
-                PengajuanAkreditasi::STATUS_AL_SELESAI,
-                PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
-                PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM,
-                PengajuanAkreditasi::STATUS_MASA_SANGGAH,
-            ])
-            ->whereHas('asesmen.asesmenLapangan', function ($q) {
+            ->whereExists(function ($q) {
+                $q->select(DB::raw(1))
+                    ->from('pengajuan_status_log as l')
+                    ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
+                    ->whereIn('l.status_to', [
+                        PengajuanAkreditasi::STATUS_AL_SELESAI,
+                        PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
+                        PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM,
+                        PengajuanAkreditasi::STATUS_MASA_SANGGAH,
+                    ]);
+            })->whereHas('asesmen.asesmenLapangan', function ($q) {
                 $q->where('status', 'completed');
             });
 

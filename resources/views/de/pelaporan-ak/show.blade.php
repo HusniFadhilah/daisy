@@ -7,211 +7,64 @@
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-                <a href="{{ route('de.pelaporan-ak') }}">
-                    <i class="bi bi-arrow-left"></i> Monitor Pelaporan AK
-                </a>
-            </li>
+            <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('de.pelaporan-ak') }}">Monitor Pelaporan AK</a></li>
             <li class="breadcrumb-item active">Detail</li>
         </ol>
     </nav>
 
-    <!-- Page Header -->
+    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h4 class="mb-1">
+            <h5 class="mb-1">
                 <i class="bi bi-file-earmark-text"></i> Detail Pelaporan AK
-            </h4>
-            <p class="text-muted mb-0">{{ $pengajuan->nomor_pengajuan }}</p>
+            </h5>
+            <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
-        <div>
-            @if($statusPelaporan['is_reported'])
-            <span class="badge bg-success fs-6">
-                <i class="bi bi-check-circle-fill"></i> Sudah Dilaporkan
-            </span>
-            @else
-            <span class="badge bg-warning fs-6">
-                <i class="bi bi-clock"></i> Menunggu Pelaporan
-            </span>
-            @endif
-        </div>
+        <a href="{{ route('de.pelaporan-ak') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Kembali
+        </a>
     </div>
 
     <div class="row">
-        <!-- Left Column: Info -->
-        <div class="col-lg-4">
-            <!-- Program Studi Info -->
-            <div class="card mb-3">
-                <div class="card-header bg-primary text-white">
-                    <h6 class="mb-0">
-                        <i class="bi bi-info-circle"></i> Informasi Program Studi
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <table class="table table-sm table-borderless mb-0">
-                        <tr>
-                            <td class="text-muted" width="40%">Program Studi</td>
-                            <td><strong>{{ $pengajuan->studyProgram->name }}</strong></td>
-                        </tr>
-                        <tr>
-                            <td class="text-muted">Universitas</td>
-                            <td>{{ $pengajuan->studyProgram->university->name }}</td>
-                        </tr>
-                        <tr>
-                            <td class="text-muted">Jenjang</td>
-                            <td>{{ $pengajuan->studyProgram->degreeLevel->name ?? '-' }}</td>
-                        </tr>
-                        <tr>
-                            <td class="text-muted">Status</td>
-                            <td>
-                                <span class="badge bg-info text-wrap">
-                                    {{ $pengajuan->status_label }}
-                                </span>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
+        <!-- Main Content -->
+        <div class="col-lg-8 mb-4">
+            @php
+            $allowed = [
+            \App\Models\PengajuanAkreditasi::STATUS_AK_SELESAI,
+            \App\Models\PengajuanAkreditasi::STATUS_AK_DILAPORKAN,
+            ];
+
+            $log = $pengajuan->latestRelevantStatusLog($allowed);
+            @endphp
+
+            <!-- Status Alert -->
+            @if($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_AK_SELESAI)
+            <div class="alert alert-warning alert-permanent">
+                <i class="bi bi-clock-history"></i>
+                <strong>Menunggu Pelaporan</strong><br>
+                Validasi AK telah selesai. Validator perlu melaporkan hasil asesmen kecukupan untuk melanjutkan proses ke tahap berikutnya
             </div>
-
-            <!-- Validation Summary -->
-            <div class="card mb-3">
-                <div class="card-header bg-success text-white">
-                    <h6 class="mb-0">
-                        <i class="bi bi-check-circle"></i> Hasil Validasi AK
-                    </h6>
-                </div>
-                <div class="card-body">
-                    @php
-                    $totalDinilai = $validationSummary->total_dinilai ?? 0;
-                    $validatedCount = $validationSummary->validated_count ?? 0;
-                    $avgSkor = $validationSummary->avg_skor ?? 0;
-                    $progressPct = $totalElements > 0 ? round(($validatedCount / $totalElements) * 100, 1) : 0;
-                    @endphp
-
-                    <table class="table table-sm table-borderless mb-3">
-                        <tr>
-                            <td class="text-muted">Total Elemen</td>
-                            <td class="text-end"><strong>{{ $totalElements }}</strong></td>
-                        </tr>
-                        <tr>
-                            <td class="text-muted">Sudah Dinilai</td>
-                            <td class="text-end"><strong>{{ $totalDinilai }}</strong></td>
-                        </tr>
-                        <tr>
-                            <td class="text-muted">Sudah Divalidasi</td>
-                            <td class="text-end"><strong>{{ $validatedCount }}</strong></td>
-                        </tr>
-                        {{-- <tr>
-                            <td class="text-muted">Rata-rata Skor</td>
-                            <td class="text-end">
-                                <span class="badge bg-{{ $avgSkor >= 3 ? 'success' : ($avgSkor >= 2 ? 'warning' : 'danger') }}">
-                        {{ number_format($avgSkor, 2) }}
-                        </span>
-                        </td>
-                        </tr> --}}
-                    </table>
-
-                    <div>
-                        <div class="d-flex justify-content-between mb-1">
-                            <small>Progress Validasi</small>
-                            <strong>{{ $progressPct }}%</strong>
-                        </div>
-                        <div class="progress" style="height: 25px;">
-                            <div class="progress-bar bg-success" style="width: {{ $progressPct }}%">
-                                {{ $validatedCount }}/{{ $totalElements }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- AK Schedule -->
-            @if($pengajuan->asesmen?->asesmenKecukupan)
-            <div class="card">
-                <div class="card-header bg-info text-white">
-                    <h6 class="mb-0">
-                        <i class="bi bi-calendar-range"></i> Jadwal AK
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <table class="table table-sm table-borderless mb-0">
-                        @if($pengajuan->asesmen->asesmenKecukupan->tanggal_mulai)
-                        <tr>
-                            <td class="text-muted" width="40%">Tanggal Mulai</td>
-                            <td><strong>{{ \Carbon\Carbon::parse($pengajuan->asesmen->asesmenKecukupan->tanggal_mulai)->format('d M Y') }}</strong></td>
-                        </tr>
-                        @endif
-                        @if($pengajuan->asesmen->asesmenKecukupan->tanggal_selesai)
-                        <tr>
-                            <td class="text-muted">Tanggal Selesai</td>
-                            <td><strong>{{ \Carbon\Carbon::parse($pengajuan->asesmen->asesmenKecukupan->tanggal_selesai)->format('d M Y') }}</strong></td>
-                        </tr>
-                        @endif
-                        @if($statusPelaporan['reported_at'])
-                        <tr>
-                            <td class="text-muted">Tanggal Dilaporkan</td>
-                            <td>
-                                <strong class="text-success">
-                                    {{ \Carbon\Carbon::parse($statusPelaporan['reported_at'])->format('d M Y') }}
-                                </strong>
-                            </td>
-                        </tr>
-                        @endif
-                    </table>
-                </div>
+            @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_AK_DILAPORKAN)
+            <div class="alert alert-success alert-permanent">
+                <i class="bi bi-check-circle"></i>
+                <strong>Pelaporan AK Selesai</strong><br>
+                Hasil asesmen kecukupan telah dilaporkan pada {{ $statusPelaporan['reported_at'] ? \Carbon\Carbon::parse($statusPelaporan['reported_at'])->format('d M Y H:i') : '-' }}
             </div>
             @endif
-        </div>
 
-        <!-- Right Column: Laporan Documents -->
-        <div class="col-lg-8">
-            <!-- Validator Info -->
-            <div class="card mb-3">
-                <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0">Validator yang Ditugaskan</h6>
-                </div>
-                <div class="card-body">
-                    @php
-                    $validators = $pengajuan->asesmen?->asesmenUserRoles->filter(function($aur) {
-                    return $aur->role_selected->name === 'validator';
-                    }) ?? collect();
-                    @endphp
-
-                    @if($validators->count() > 0)
-                    <div class="row">
-                        @foreach($validators as $validator)
-                        <div class="col-md-6 mb-2">
-                            <div class="d-flex align-items-center">
-                                <div class="flex-shrink-0">
-                                    <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
-                                        <i class="bi bi-person-check fs-4"></i>
-                                    </div>
-                                </div>
-                                <div class="flex-grow-1 ms-3">
-                                    <strong>{{ $validator->user->name }}</strong>
-                                    <br>
-                                    <small class="text-muted">{{ $validator->user->email }}</small>
-                                </div>
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
-                    @else
-                    <p class="text-muted mb-0">Belum ada validator yang ditugaskan</p>
-                    @endif
-                </div>
-            </div>
-
-            <!-- Laporan Documents -->
-            <div class="card">
-                <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0">Dokumen Laporan AK</h6>
+            <!-- Dokumen Laporan AK -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-file-earmark-pdf"></i> Dokumen Laporan AK
+                    </h5>
                     @if($statusPelaporan['has_laporan'])
-                    <span class="badge bg-success">
+                    <span class="badge bg-white text-primary">
                         <i class="bi bi-check-circle"></i> {{ $laporanDocuments->count() }} file
                     </span>
                     @else
-                    <span class="badge bg-danger">
+                    <span class="badge bg-white text-danger">
                         <i class="bi bi-x-circle"></i> Belum ada laporan
                     </span>
                     @endif
@@ -235,20 +88,20 @@
                                 <tr>
                                     <td>{{ $index + 1 }}</td>
                                     <td>
-                                        <i class="bi bi-file-earmark-pdf text-danger"></i>
+                                        <i class="bi bi-file-earmark-pdf text-danger me-2"></i>
                                         <strong>{{ $doc->title ?? $doc->original_name }}</strong>
                                     </td>
                                     <td>
-                                        <small>{{ $doc->size ? number_format($doc->size / 1024, 2) : '-' }} KB</small>
+                                        <small class="text-muted">{{ $doc->size ? number_format($doc->size / 1024, 2) : '-' }} KB</small>
                                     </td>
                                     <td>
                                         <small>{{ $doc->uploadedBy->name ?? '-' }}</small>
                                     </td>
                                     <td>
-                                        <small>{{ $doc->uploaded_at?->format('d M Y H:i') ?? '-' }}</small>
+                                        <small class="text-muted">{{ $doc->uploaded_at?->format('d M Y H:i') ?? '-' }}</small>
                                     </td>
                                     <td class="text-center">
-                                        <a href="{{ asset('storage/' . $doc->path) }}" target="_blank" class="btn btn-sm btn-primary" title="Lihat File">
+                                        <a href="{{ asset('storage/' . $doc->path) }}" target="_blank" class="btn btn-sm btn-success" title="Lihat File">
                                             <i class="bi bi-eye"></i>
                                         </a>
                                     </td>
@@ -260,9 +113,105 @@
                     @else
                     <div class="text-center py-5">
                         <i class="bi bi-file-earmark-x" style="font-size: 4rem; color: #dee2e6;"></i>
-                        <p class="text-muted mt-3 mb-0">Belum ada dokumen laporan yang diupload</p>
+                        <p class="text-muted mt-3 mb-1">Belum ada dokumen laporan yang diupload</p>
                         <small class="text-muted">Validator perlu mengupload laporan hasil AK</small>
                     </div>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Informasi Pelaporan AK -->
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle"></i> Informasi Pelaporan AK
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th>Tanggal Validasi Selesai</th>
+                            <td>
+                                : {{ $pengajuan->tanggal_ak_selesai
+                                    ? $pengajuan->tanggal_ak_selesai->format('d M Y H:i')
+                                    : '-' }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Tanggal Dilaporkan</th>
+                            <td>
+                                : {{ $statusPelaporan['reported_at']
+                                    ? \Carbon\Carbon::parse($statusPelaporan['reported_at'])->format('d M Y H:i')
+                                    : '-' }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Status Pelaporan AK</th>
+                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('pelaporan_ak', 'de', 'label_long_for') !!}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Riwayat Status -->
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history"></i> Riwayat Status
+                    </h5>
+                </div>
+                <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                    @php
+                    $filterStatuses = [
+                    \App\Models\PengajuanAkreditasi::STATUS_AK_SELESAI,
+                    \App\Models\PengajuanAkreditasi::STATUS_AK_DILAPORKAN,
+                    ];
+
+                    $logs = $pengajuan->statusLog
+                    ->whereIn('status_to', $filterStatuses)
+                    ->sortBy('changed_at')
+                    ->unique('status_to')
+                    ->values();
+                    @endphp
+
+                    @if($logs->count() > 0)
+                    <div class="timeline">
+                        @foreach($logs as $log)
+                        <div class="timeline-item mb-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    @php
+                                    $iconColor = match($log->status_to) {
+                                    \App\Models\PengajuanAkreditasi::STATUS_AK_DILAPORKAN
+                                    => 'text-success',
+                                    \App\Models\PengajuanAkreditasi::STATUS_AK_SELESAI
+                                    => 'text-warning',
+                                    default => 'text-secondary',
+                                    };
+                                    @endphp
+                                    <i class="bi bi-circle-fill {{ $iconColor }}" style="font-size: 8px;"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <strong>
+                                        {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['de'] ?? $log->status_to }}
+                                    </strong>
+                                    <br>
+                                    <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
+
+                                    {{-- @if($log->keterangan)
+                                    <br>
+                                    <small class="text-muted fst-italic">{{ $log->keterangan }}</small>
+                                    @endif --}}
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                    @else
+                    <p class="text-muted text-center mb-0">Belum ada riwayat pelaporan</p>
                     @endif
                 </div>
             </div>

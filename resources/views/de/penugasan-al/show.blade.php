@@ -7,145 +7,53 @@
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-                <a href="{{ route('de.penugasan-al') }}">
-                    <i class="bi bi-arrow-left"></i> Penugasan AL
-                </a>
-            </li>
+            <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('de.penugasan-al') }}">Penugasan AL</a></li>
             <li class="breadcrumb-item active">Detail</li>
         </ol>
     </nav>
 
-    <!-- Page Header -->
+    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h4 class="mb-1">
+            <h5 class="mb-1">
                 <i class="bi bi-geo-alt"></i> Detail Penugasan AL
-            </h4>
-            <p class="text-muted mb-0">{{ $pengajuan->nomor_pengajuan }}</p>
+            </h5>
+            <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
+        <a href="{{ route('de.penugasan-al') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Kembali
+        </a>
     </div>
 
     <div class="row">
-        <!-- Left: Info -->
-        <div class="col-lg-4">
-            <div class="card mb-3">
-                <div class="card-header bg-primary text-white">
-                    <h6 class="mb-0">
-                        <i class="bi bi-info-circle"></i> Informasi Program Studi
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <table class="table table-sm table-borderless">
-                        <tr>
-                            <td class="text-muted" width="40%">Program Studi</td>
-                            <td><strong>{{ $pengajuan->studyProgram->name }}</strong></td>
-                        </tr>
-                        <tr>
-                            <td class="text-muted">Universitas</td>
-                            <td>{{ $pengajuan->studyProgram->university->name }}</td>
-                        </tr>
-                        <tr>
-                            <td class="text-muted">Jenjang</td>
-                            <td>{{ $pengajuan->studyProgram->degreeLevel->name ?? '-' }}</td>
-                        </tr>
-                        <tr>
-                            <td class="text-muted">Status</td>
-                            <td>
-                                <span class="badge bg-info text-wrap">
-                                    {{ $pengajuan->status_label }}
-                                </span>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
+        <!-- Main Content -->
+        <div class="col-lg-8 mb-4">
+            @php
+            $allowed = [
+            \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
+            \App\Models\PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
+            ];
 
-            <!-- Requirements Status -->
-            <div class="card mb-3">
-                <div class="card-header bg-{{ $requirementsStatus['met'] ? 'success' : 'warning' }} text-white">
-                    <h6 class="mb-0">
-                        <i class="bi bi-{{ $requirementsStatus['met'] ? 'check-circle' : 'exclamation-triangle' }}"></i> Status Persyaratan
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="mb-2">
-                        <i class="bi bi-person"></i> Asesor: <strong>{{ $requirementsStatus['asesor_count'] }}</strong> / 2
-                    </div>
-                    @if(!$requirementsStatus['met'])
-                    <div class="alert alert-warning alert-permanent mt-3 mb-0">
-                        <small>
-                            <i class="bi bi-exclamation-triangle"></i>
-                            {{ implode(', ', $requirementsStatus['missing']) }}
-                        </small>
-                    </div>
-                    @else
-                    <div class="alert alert-success alert-permanent mt-3 mb-0">
-                        <small>
-                            <i class="bi bi-check-circle"></i>
-                            Persyaratan terpenuhi!
-                        </small>
-                    </div>
-                    @endif
-                </div>
-            </div>
+            $log = $pengajuan->latestRelevantStatusLog($allowed);
+            @endphp
 
-            <!-- AL Schedule Info -->
-            @if($pengajuan->asesmen?->asesmenLapangan)
-            <div class="card">
-                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0">
-                        <i class="bi bi-calendar-range"></i> Jadwal Visitasi AL
-                    </h6>
-                    <button class="btn btn-sm btn-light" onclick="showUpdateScheduleModal({{ $pengajuan->id }})">
-                        <i class="bi bi-pencil"></i>
-                    </button>
-                </div>
-                <div class="card-body">
-                    @php $al = $pengajuan->asesmen->asesmenLapangan; @endphp
-                    <table class="table table-sm table-borderless mb-0">
-                        @if($al->tanggal_mulai)
-                        <tr>
-                            <td class="text-muted" width="40%">Tanggal Mulai</td>
-                            <td><strong>{{ \Carbon\Carbon::parse($al->tanggal_mulai)->format('d M Y') }}</strong></td>
-                        </tr>
-                        @endif
-                        @if($al->tanggal_selesai)
-                        <tr>
-                            <td class="text-muted">Estimasi Tanggal Selesai</td>
-                            <td><strong>{{ \Carbon\Carbon::parse($al->tanggal_selesai)->format('d M Y') }}</strong></td>
-                        </tr>
-                        @endif
-                        @if($al->tanggal_mulai && $al->tanggal_selesai)
-                        <tr>
-                            <td class="text-muted">Durasi</td>
-                            <td>
-                                @php
-                                $start = \Carbon\Carbon::parse($al->tanggal_mulai);
-                                $end = \Carbon\Carbon::parse($al->tanggal_selesai);
-                                $days = $start->diffInDays($end);
-                                @endphp
-                                <span class="badge bg-primary">{{ $days }} hari</span>
-                            </td>
-                        </tr>
-                        @endif
-                        @if($al->lokasi_visitasi)
-                        <tr>
-                            <td class="text-muted">Lokasi Visitasi</td>
-                            <td>
-                                <i class="bi bi-geo-alt-fill text-danger"></i>
-                                {{ $al->lokasi_visitasi }}
-                            </td>
-                        </tr>
-                        @endif
-                    </table>
-                </div>
+            <!-- Status Alert -->
+            @if($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED)
+            <div class="alert alert-success alert-permanent">
+                <i class="bi bi-person-check"></i>
+                <strong>Penugasan Asesor AL</strong><br>
+                Penugasan asesor AL telah dilakukan. Mohon memastikan asesor telah menyetujui penawaran asesmen lapangan
+            </div>
+            @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_AL_IN_PROGRESS)
+            <div class="alert alert-info alert-permanent">
+                <i class="bi bi-clock-history"></i>
+                <strong>Asesmen Lapangan Berlangsung</strong><br>
+                Asesor AL telah ditugaskan dan proses asesmen lapangan sedang berlangsung
             </div>
             @endif
-        </div>
 
-        <!-- Right: Assignment -->
-        <div class="col-lg-8">
+            <!-- Surat Tugas Asesor AL -->
             @php
             $suratTugasAsesor = $pengajuan->dokumen
             ->where('jenis_dokumen', 'surat_tugas_asesor_al')
@@ -154,11 +62,11 @@
             @endphp
 
             @if($suratTugasAsesor)
-            <div class="card mb-3 border-success">
+            <div class="card mb-4 border-success">
                 <div class="card-header bg-success text-white">
-                    <h6 class="mb-0">
+                    <h5 class="mb-0">
                         <i class="bi bi-file-earmark-text"></i> Surat Tugas Asesor AL
-                    </h6>
+                    </h5>
                 </div>
                 <div class="card-body">
                     <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded">
@@ -181,13 +89,13 @@
                                 <span class="badge bg-secondary">Versi {{ $suratTugasAsesor->versi }}</span>
                             </div>
                         </div>
-                        <div class="btn-group btn-group-sm">
+                        <div class="btn-group-vertical">
                             @if($suratTugasAsesor->path_file || $suratTugasAsesor->template_link)
-                            <a href="{{ route('de.penugasan-al.download-surat-tugas', [$pengajuan->id, 'surat_tugas_asesor_al']) }}" class="btn btn-success" target="_blank">
-                                <i class="bi bi-download"></i> Lihat File
+                            <a href="{{ route('de.penugasan-al.download-surat-tugas', [$pengajuan->id, 'surat_tugas_asesor_al']) }}" class="btn btn-success mb-2" target="_blank">
+                                <i class="bi bi-eye"></i> Lihat File
                             </a>
                             @endif
-                            <button type="button" class="btn btn-outline-primary" onclick="showUploadSuratTugasModal()">
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="showUploadSuratTugasModal()">
                                 <i class="bi bi-upload"></i> Upload Ulang
                             </button>
                         </div>
@@ -195,7 +103,7 @@
                 </div>
             </div>
             @elseif($pengajuan->asesmen && $pengajuan->asesmen->asesmenUserRoles->where('jenis_asesmen', 'al')->count() > 0)
-            <div class="alert alert-warning alert-permanent mb-3">
+            <div class="alert alert-warning alert-permanent mb-4">
                 <i class="bi bi-exclamation-triangle"></i>
                 <strong>Surat Tugas Belum Tersedia</strong>
                 <br>
@@ -206,42 +114,42 @@
             </div>
             @endif
 
-            <!-- Assign Form -->
-            <div class="card mb-3">
-                <div class="card-header bg-success text-white">
-                    <h6 class="mb-0">
+            <!-- Form Penugasan -->
+            @if(!$requirementsStatus['met'])
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
                         <i class="bi bi-person-plus"></i> Tugaskan Asesor AL
-                    </h6>
+                    </h5>
                 </div>
                 <div class="card-body">
                     <form id="assignForm" onsubmit="assignAsesor(event, {{ $pengajuan->id }})">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label">Pilih Asesor: <span class="text-danger">*</span></label>
+                                <label class="form-label fw-bold">Pilih Asesor: <span class="text-danger">*</span></label>
                                 <select id="userId" class="form-select" required>
                                     <option value="">-- Pilih Asesor --</option>
                                     @foreach($availableUsers as $user)
-                                    <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                    <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
                                     @endforeach
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Lokasi Visitasi: <span class="text-danger">*</span></label>
+                                <label class="form-label fw-bold">Surat Tugas <span class="text-danger">*</span></label>
+                                <input type="file" id="fileSuratTugas" class="form-control" accept=".pdf">
+                                <small class="text-muted">PDF, max 5MB</small>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold">Lokasi Visitasi: <span class="text-danger">*</span></label>
                                 <input type="text" id="lokasiVisitasi" class="form-control" maxlength="500" placeholder="Alamat lengkap lokasi visitasi" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Tanggal Mulai: <span class="text-danger">*</span></label>
+                                <label class="form-label fw-bold">Tanggal Mulai: <span class="text-danger">*</span></label>
                                 <input type="date" id="tanggalMulai" class="form-control" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Estimasi Tanggal Selesai: <span class="text-danger">*</span></label>
+                                <label class="form-label fw-bold">Estimasi Tanggal Selesai: <span class="text-danger">*</span></label>
                                 <input type="date" id="tanggalSelesai" class="form-control" required>
-                            </div>
-                            {{-- ✅ NEW: Upload surat tugas (optional) --}}
-                            <div class="col-md-6">
-                                <label class="form-label">Surat Tugas <span class="text-danger">*</span></label>
-                                <input type="file" id="fileSuratTugas" class="form-control" accept=".pdf">
-                                <small class="text-muted">PDF, max 5MB</small>
                             </div>
                             <div class="col-12">
                                 <button type="submit" class="btn btn-success">
@@ -252,71 +160,276 @@
                     </form>
                 </div>
             </div>
+            @endif
 
-            <!-- Assigned List -->
-            <div class="card">
-                <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0">Daftar Asesor AL</h6>
+            <!-- Daftar Penugasan -->
+            <div class="card mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Daftar Penugasan AL</h5>
                     <button class="btn btn-sm btn-outline-primary" onclick="location.reload()">
                         <i class="bi bi-arrow-clockwise"></i> Refresh
                     </button>
                 </div>
                 <div class="card-body p-0">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Nama</th>
-                                <th>Status Penawaran</th>
-                                <th>Status Pekerjaan</th>
-                                <th>Progress</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($pengajuan->asesmen?->asesmenUserRoles ?? [] as $assignment)
-                            @php
-                            $progress = $userProgress[$assignment->id_user] ?? ['percentage' => 0, 'completed' => 0, 'total' => 0];
-                            @endphp
-                            <tr>
-                                <td>
-                                    <strong>{{ $assignment->user->name }}</strong>
-                                    <span class="badge bg-secondary">#{{ $assignment->urutan_asesor }}</span>
-                                </td>
-                                <td>
-                                    <span class="badge bg-{{ $assignment->status_penawaran === 'accepted' ? 'success' : ($assignment->status_penawaran === 'pending' ? 'warning' : 'danger') }}">
-                                        {{ ucfirst($assignment->status_penawaran) }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="badge bg-{{ $assignment->status_pekerjaan === 'submitted' ? 'success' : ($assignment->status_pekerjaan === 'in_progress' ? 'info' : 'secondary') }}">
-                                        {{ ucfirst(str_replace('_', ' ', $assignment->status_pekerjaan ?? 'not_started')) }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <div class="progress" style="height: 20px;">
-                                        <div class="progress-bar bg-{{ $progress['percentage'] == 100 ? 'success' : 'info' }}" style="width: {{ $progress['percentage'] }}%">
-                                            {{ $progress['percentage'] }}%
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Nama</th>
+                                    <th>Status</th>
+                                    {{-- <th>Progress</th> --}}
+                                    <th width="80">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($pengajuan->asesmen?->asesmenUserRoles ?? [] as $assignment)
+                                @php
+                                $progress = $userProgress[$assignment->id_user] ?? ['percentage' => 0, 'completed' => 0, 'total' => 0];
+                                @endphp
+                                <tr>
+                                    <td>
+                                        <strong>{{ $assignment->user->name }}</strong>
+                                        @if($assignment->urutan_asesor)
+                                        <span class="badge bg-secondary">#{{ $assignment->urutan_asesor }}</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ $assignment->status_penawaran === 'accepted' ? 'success' : ($assignment->status_penawaran === 'pending' ? 'warning' : 'danger') }}">
+                                            {{ ucfirst($assignment->status_penawaran) }}
+                                        </span>
+                                        {{-- <br>
+                                        <small>
+                                            <span class="badge bg-{{ $assignment->status_pekerjaan === 'submitted' ? 'success' : ($assignment->status_pekerjaan === 'in_progress' ? 'info' : 'secondary') }}">
+                                                {{ ucfirst(str_replace('_', ' ', $assignment->status_pekerjaan ?? 'not_started')) }}
+                                            </span>
+                                        </small> --}}
+                                    </td>
+                                    {{-- <td>
+                                        <div class="progress mb-1" style="height: 20px;">
+                                            <div class="progress-bar bg-{{ $progress['percentage'] == 100 ? 'success' : 'info' }}" style="width: {{ $progress['percentage'] }}%">
+                                                {{ $progress['percentage'] }}%
+                                            </div>
                                         </div>
-                                    </div>
-                                    <small class="text-muted">{{ $progress['completed'] }}/{{ $progress['total'] }}</small>
-                                </td>
-                                <td>
-                                    <button class="btn btn-sm btn-danger" onclick="removeAsesor({{ $pengajuan->id }}, {{ $assignment->id_user }}, '{{ $assignment->user->name }}')" {{ ($assignment->status_pekerjaan ?? 'not_started') !== 'not_started' ? 'disabled' : '' }}>
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="5" class="text-center py-4 text-muted">
-                                    Belum ada asesor yang ditugaskan
-                                </td>
-                            </tr>
-                            @endforelse
-                        </tbody>
+                                        <small class="text-muted">{{ $progress['completed'] }}/{{ $progress['total'] }}</small>
+                                    </td> --}}
+                                    <td>
+                                        <button class="btn btn-sm btn-danger" onclick="removeAsesor({{ $pengajuan->id }}, {{ $assignment->id_user }}, '{{ $assignment->user->name }}')" {{ ($assignment->status_pekerjaan ?? 'not_started') !== 'not_started' ? 'disabled' : '' }}>
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted">
+                                        Belum ada asesor yang ditugaskan
+                                    </td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informasi Penugasan AL -->
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle"></i> Informasi Penugasan AL
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th>Tanggal Penugasan Asesor AL</th>
+                            <td>
+                                : {{ $pengajuan->tanggal_penugasan_asesor_al
+                                    ? $pengajuan->tanggal_penugasan_asesor_al->format('d M Y H:i')
+                                    : '-' }}
+                            </td>
+                        </tr>
+                        @if($pengajuan->asesmen?->asesmenLapangan)
+                        <tr>
+                            <th>Tanggal Mulai AL</th>
+                            <td>
+                                : {{ $pengajuan->asesmen->asesmenLapangan->tanggal_mulai
+                                    ? \Carbon\Carbon::parse($pengajuan->asesmen->asesmenLapangan->tanggal_mulai)->format('d M Y')
+                                    : '-' }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Estimasi Tanggal Selesai AL</th>
+                            <td>
+                                : {{ $pengajuan->asesmen->asesmenLapangan->tanggal_selesai
+                                    ? \Carbon\Carbon::parse($pengajuan->asesmen->asesmenLapangan->tanggal_selesai)->format('d M Y')
+                                    : '-' }}
+                            </td>
+                        </tr>
+                        @if($pengajuan->asesmen->asesmenLapangan->lokasi_visitasi)
+                        <tr>
+                            <th>Lokasi Visitasi</th>
+                            <td>: <i class="bi bi-geo-alt-fill text-danger"></i>
+                                {{ $pengajuan->asesmen->asesmenLapangan->lokasi_visitasi }}
+                            </td>
+                        </tr>
+                        @endif
+                        @endif
+                        <tr>
+                            <th>Status Penugasan Asesor AL</th>
+                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('penugasan_asesor_al', 'de', 'label_long_for') !!}</td>
+                        </tr>
                     </table>
                 </div>
             </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Status Persyaratan -->
+            <div class="card mb-4">
+                <div class="card-header bg-{{ $requirementsStatus['met'] ? 'success' : 'warning' }} text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-{{ $requirementsStatus['met'] ? 'check-circle' : 'exclamation-triangle' }}"></i> Status Persyaratan
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless mb-3">
+                        <tr>
+                            <th style="width:60%"><i class="bi bi-person"></i> Asesor</th>
+                            <td>: <strong>{{ $requirementsStatus['asesor_count'] }}</strong> / 2</td>
+                        </tr>
+                    </table>
+
+                    @if(!$requirementsStatus['met'])
+                    <div class="alert alert-warning alert-permanent mb-0">
+                        <small>
+                            <i class="bi bi-exclamation-triangle"></i>
+                            {{ implode(', ', $requirementsStatus['missing']) }} menyetujui penawaran
+                        </small>
+                    </div>
+                    @else
+                    <div class="alert alert-success alert-permanent mb-0">
+                        <small>
+                            <i class="bi bi-check-circle"></i>
+                            Persyaratan terpenuhi!
+                        </small>
+                    </div>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Riwayat Status -->
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history"></i> Riwayat Status
+                    </h5>
+                </div>
+                <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                    @php
+                    $filterStatuses = [
+                    \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
+                    \App\Models\PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
+                    ];
+
+                    $logs = $pengajuan->statusLog
+                    ->whereIn('status_to', $filterStatuses)
+                    ->sortBy('changed_at')
+                    ->unique('status_to')
+                    ->values();
+                    @endphp
+
+                    @if($logs->count() > 0)
+                    <div class="timeline">
+                        @foreach($logs as $log)
+                        <div class="timeline-item mb-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    @php
+                                    $iconColor = match($log->status_to) {
+                                    \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED
+                                    => 'text-success',
+                                    \App\Models\PengajuanAkreditasi::STATUS_AL_IN_PROGRESS
+                                    => 'text-info',
+                                    default => 'text-secondary',
+                                    };
+                                    @endphp
+                                    <i class="bi bi-circle-fill {{ $iconColor }}" style="font-size: 8px;"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <strong>
+                                        {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['de'] ?? $log->status_to }}
+                                    </strong>
+                                    <br>
+                                    <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
+
+                                    {{-- @if($log->keterangan)
+                                    <br>
+                                    <small class="text-muted fst-italic">{{ $log->keterangan }}</small>
+                                    @endif --}}
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                    @else
+                    <p class="text-muted text-center mb-0">Belum ada riwayat penugasan</p>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Jadwal Visitasi AL -->
+            @if($pengajuan->asesmen?->asesmenLapangan)
+            <div class="card mt-4">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-calendar-range"></i> Jadwal Visitasi AL
+                    </h5>
+                    <button class="btn btn-sm btn-light" onclick="showUpdateScheduleModal({{ $pengajuan->id }})">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                </div>
+                <div class="card-body">
+                    @php $al = $pengajuan->asesmen->asesmenLapangan; @endphp
+                    <table class="table table-sm table-borderless mb-0">
+                        @if($al->tanggal_mulai)
+                        <tr>
+                            <th class="text-muted" width="45%">Tanggal Mulai</th>
+                            <td>: <strong>{{ \Carbon\Carbon::parse($al->tanggal_mulai)->format('d M Y') }}</strong></td>
+                        </tr>
+                        @endif
+                        @if($al->tanggal_selesai)
+                        <tr>
+                            <th class="text-muted">Estimasi Selesai</th>
+                            <td>: <strong>{{ \Carbon\Carbon::parse($al->tanggal_selesai)->format('d M Y') }}</strong></td>
+                        </tr>
+                        @endif
+                        @if($al->tanggal_mulai && $al->tanggal_selesai)
+                        <tr>
+                            <th class="text-muted">Durasi</th>
+                            <td>:
+                                @php
+                                $start = \Carbon\Carbon::parse($al->tanggal_mulai);
+                                $end = \Carbon\Carbon::parse($al->tanggal_selesai);
+                                $days = $start->diffInDays($end);
+                                @endphp
+                                <span class="badge bg-primary">{{ $days }} hari</span>
+                            </td>
+                        </tr>
+                        @endif
+                        @if($al->lokasi_visitasi)
+                        <tr>
+                            <th class="text-muted">Lokasi Visitasi</th>
+                            <td>:
+                                <i class="bi bi-geo-alt-fill text-danger"></i>
+                                {{ $al->lokasi_visitasi }}
+                            </td>
+                        </tr>
+                        @endif
+                    </table>
+                </div>
+            </div>
+            @endif
         </div>
     </div>
 </div>
@@ -334,17 +447,17 @@
             <form id="formUpdateSchedule" onsubmit="submitUpdateSchedule(event)">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Tanggal Mulai <span class="text-danger">*</span></label>
+                        <label class="form-label fw-bold">Tanggal Mulai <span class="text-danger">*</span></label>
                         <input type="date" class="form-control" id="updateTanggalMulai" required>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Estimasi Tanggal Selesai <span class="text-danger">*</span></label>
+                        <label class="form-label fw-bold">Estimasi Tanggal Selesai <span class="text-danger">*</span></label>
                         <input type="date" class="form-control" id="updateTanggalSelesai" required>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Lokasi Visitasi <span class="text-danger">*</span></label>
+                        <label class="form-label fw-bold">Lokasi Visitasi <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" id="updateLokasiVisitasi" maxlength="500" required>
                     </div>
                 </div>
@@ -359,6 +472,7 @@
     </div>
 </div>
 
+<!-- Modal: Upload Surat Tugas -->
 <div class="modal fade" id="modalUploadSuratTugas" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -380,7 +494,7 @@
                         <div id="modalSuratTugasPreview" class="mt-2"></div>
                     </div>
 
-                    <div class="alert alert-info alert-permanent">
+                    <div class="alert alert-info alert-permanent mb-0">
                         <i class="bi bi-info-circle"></i>
                         File yang diupload akan menggantikan surat tugas sebelumnya (jika ada).
                     </div>

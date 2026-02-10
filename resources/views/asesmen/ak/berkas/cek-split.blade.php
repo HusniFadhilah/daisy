@@ -9,9 +9,9 @@
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
-                    <h3 class="mb-1">
+                    <h4 class="mb-1">
                         <i class="bi bi-people"></i> Cek Split Penilaian Antar Asesor
-                    </h3>
+                    </h4>
                     <p class="text-muted mb-0">{{ $asesmen->getName(false) }}</p>
                 </div>
                 <div class="d-flex gap-2">
@@ -43,7 +43,7 @@
                 <div class="p-3 bg-white border-bottom">
                     <div class="row">
                         <div class="col-md-8 mb-2">
-                            <h6 class="mb-3">Legenda Kategori Penilaian:</h6>
+                            <h6 class="mb-3">Keterangan Kategori Penilaian:</h6>
                             <div class="d-flex flex-wrap gap-2">
                                 <div class="legend-item">
                                     <span class="legend-box" style="background: #9e9e9e;"></span>

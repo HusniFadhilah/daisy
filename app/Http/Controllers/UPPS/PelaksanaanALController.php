@@ -381,8 +381,17 @@ class PelaksanaanALController extends Controller
                 'revision_required' => 'Laporan Hasil Asesmen Lapangan "' . $lha->title . '" memerlukan revisi',
             ];
 
+            $pengajuan->asesmen->asesmenLapangan->update([
+                'status' => 'finalized',
+                'finalized_at' => now(),
+                'finalized_by' => $user->id
+            ]);
+
+            if ($pengajuan)
+                $pengajuan->checkUpdateStatusAKAL('al', 'status_asesor_selesai');
+
             $pengajuan->statusLog()->create([
-                'status_from' => $pengajuan->status,
+                'status_from' => PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
                 'status_to' => $pengajuan->status,
                 'changed_by' => auth()->id(),
                 'changed_at' => now(),

@@ -55,6 +55,9 @@ class RingkasanAsesorController extends Controller
         // ✅ Get team asesor
         $asesorTeam = AsesmenUserRole::where('id_asesmen', $idAsesmen)
             ->where('jenis_asesmen', 'al')
+            ->whereHas('role', function ($q) {
+                $q->where('name', 'asesor');
+            })
             ->with('user')
             ->get();
 
@@ -113,7 +116,7 @@ class RingkasanAsesorController extends Controller
 
             $storedPath = $file->storeAs($baseDir, $filenameBase, 'public');
 
-            $defaultTitle = 'Laporan Hasil Akreditasi (Confidential)';
+            $defaultTitle = 'Ringkasan Hasil Akreditasi (Confidential)';
 
             $doc = AsesmenDocument::create([
                 'id_asesmen' => $idAsesmen,

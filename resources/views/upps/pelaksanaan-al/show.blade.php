@@ -257,22 +257,32 @@
                 </div>
                 <div class="card-body">
                     <table class="table table-borderless">
+                        @if($pengajuan->asesmen?->asesmenLapangan)
                         <tr>
                             <th>Tanggal Mulai AL</th>
                             <td>
-                                : {{ $pengajuan->tanggal_al_mulai
-                                    ? $pengajuan->tanggal_al_mulai->format('d M Y H:i')
+                                : {{ $pengajuan->asesmen->asesmenLapangan->tanggal_mulai
+                                    ? \Carbon\Carbon::parse($pengajuan->asesmen->asesmenLapangan->tanggal_mulai)->format('d M Y')
                                     : '-' }}
                             </td>
                         </tr>
                         <tr>
-                            <th>Tanggal AL Selesai</th>
+                            <th>Tanggal Selesai AL</th>
                             <td>
-                                : {{ $pengajuan->tanggal_al_selesai
-                                    ? $pengajuan->tanggal_al_selesai->format('d M Y H:i')
+                                : {{ $pengajuan->asesmen->asesmenLapangan->tanggal_selesai
+                                    ? \Carbon\Carbon::parse($pengajuan->asesmen->asesmenLapangan->tanggal_selesai)->format('d M Y')
                                     : '-' }}
                             </td>
                         </tr>
+                        @if($pengajuan->asesmen->asesmenLapangan->lokasi_visitasi)
+                        <tr>
+                            <th>Lokasi Visitasi</th>
+                            <td>: <i class="bi bi-geo-alt-fill text-danger"></i>
+                                {{ $pengajuan->asesmen->asesmenLapangan->lokasi_visitasi }}
+                            </td>
+                        </tr>
+                        @endif
+                        @endif
                         <tr>
                             <th>Status Pelaksanaan AL & Berita Acara</th>
                             <td>: {!! $pengajuan->getCustomBadgeLastStatus('pelaksanaan_al', 'upps', 'label_long_for') !!}</td>
@@ -301,7 +311,9 @@
 
                     $logs = $pengajuan->statusLog
                     ->whereIn('status_to', $filterStatuses)
-                    ->sortBy('changed_at');
+                    ->sortBy('changed_at')
+                    ->unique('status_to')
+                    ->values();
                     @endphp
 
                     @if($logs->count() > 0)

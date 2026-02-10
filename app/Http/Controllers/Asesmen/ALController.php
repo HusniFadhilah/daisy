@@ -103,30 +103,8 @@ class ALController extends Controller
         if ($assignment->role->name != $user->role_selected) {
             abort(403, 'Mohon maaf role Anda sebagai ' . ($user->role_selected) . ' tidak diizinkan membuka halaman ini. Silahkan pindah ke role lain');
         }
-        // ✅ AUTO-UPDATE STATUS: not_started → in_progress
-        if ($assignment->status_pekerjaan === 'not_started') {
-            $assignment->update([
-                'status_pekerjaan' => 'in_progress',
-                'started_at' => now(), // Opsional: track kapan mulai
-            ]);
-            $pengajuan = $assignment->asesmen->pengajuan;
-            if ($pengajuan) {
-                $statusFrom = $pengajuan->status;
-                $pengajuan->checkUpdateStatusAKAL('al', 'status_asesor_in_progress');
-                $pengajuan->statusLog()->firstOrCreate(
-                    [
-                        'status_from' => $statusFrom,
-                        'status_to'   => PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
-                    ],
-                    [
-                        'changed_by'  => Auth::id(),
-                        'keterangan'  => 'Asesor AL telah memulai proses penilaian lapangan',
-                        'changed_at'  => now(),
-                    ]
-                );
-            }
-        }
 
+        $this->updateStatusAL($assignment);
         $asesmen = $assignment->asesmen;
 
         // Get all kriteria with elemen and indikator
@@ -152,6 +130,33 @@ class ALController extends Controller
         $uploadedFiles = $asesmen->pengajuan ? $asesmen->pengajuan->getUploadedDocuments() : null;
 
         return view('asesmen.al.berkas.show', compact('asesmen', 'kriterias', 'progress', 'jenjangs', 'step', 'needsRevisions', 'isFinalized', 'assignment', 'uploadedFiles', 'isInProgress'));
+    }
+
+    private function updateStatusAL($assignment)
+    {
+        // ✅ AUTO-UPDATE STATUS: not_started → in_progress
+        if ($assignment->status_pekerjaan === 'not_started') {
+            $assignment->update([
+                'status_pekerjaan' => 'in_progress',
+                'started_at' => now(), // Opsional: track kapan mulai
+            ]);
+            $pengajuan = $assignment->asesmen->pengajuan;
+            if ($pengajuan) {
+                $statusFrom = $pengajuan->status;
+                $pengajuan->checkUpdateStatusAKAL('al', 'status_asesor_in_progress');
+                $pengajuan->statusLog()->firstOrCreate(
+                    [
+                        'status_from' => $statusFrom,
+                        'status_to'   => PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
+                    ],
+                    [
+                        'changed_by'  => Auth::id(),
+                        'keterangan'  => 'Asesor AL telah memulai proses penilaian lapangan',
+                        'changed_at'  => now(),
+                    ]
+                );
+            }
+        }
     }
 
     /**
@@ -629,52 +634,52 @@ class ALController extends Controller
         }
     }
 
-    /**
-     * Import penilaian dari Excel (using Queue)
-     */
-    public function importExcel(Request $request, $idAsesmen)
-    {
-        $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls|max:10240', // 10MB max
-        ]);
+    // /**
+    //  * Import penilaian dari Excel (using Queue)
+    //  */
+    // public function importExcel(Request $request, $idAsesmen)
+    // {
+    //     $request->validate([
+    //         'file' => 'required|file|mimes:xlsx,xls|max:10240', // 10MB max
+    //     ]);
 
-        try {
-            $user = Auth::user();
+    //     try {
+    //         $user = Auth::user();
 
-            // Verify access
-            $asesmen = Asesmen::whereHas('userRoles', function ($query) use ($user) {
-                $query->where('id_user', $user->id);
-            })->findOrFail($idAsesmen);
+    //         // Verify access
+    //         $asesmen = Asesmen::whereHas('userRoles', function ($query) use ($user) {
+    //             $query->where('id_user', $user->id);
+    //         })->findOrFail($idAsesmen);
 
-            // Store file temporarily
-            $file = $request->file('file');
-            $filename = 'import_' . $asesmen->code . '_' . time() . '.' . $file->getClientOriginalExtension();
-            $filePath = $file->storeAs('temp/imports', $filename);
+    //         // Store file temporarily
+    //         $file = $request->file('file');
+    //         $filename = 'import_' . $asesmen->code . '_' . time() . '.' . $file->getClientOriginalExtension();
+    //         $filePath = $file->storeAs('temp/imports', $filename);
 
-            // Create import log
-            $importLog = PenilaianImportLog::create([
-                'id_asesmen' => $asesmen->id,
-                'id_asesor' => $user->id,
-                'filename' => $file->getClientOriginalName(),
-                'status' => 'queued',
-            ]);
+    //         // Create import log
+    //         $importLog = PenilaianImportLog::create([
+    //             'id_asesmen' => $asesmen->id,
+    //             'id_asesor' => $user->id,
+    //             'filename' => $file->getClientOriginalName(),
+    //             'status' => 'queued',
+    //         ]);
 
-            // Dispatch job
-            ImportPenilaianExcelJob::dispatch(PenilaianElemenAl::class, $filePath, $asesmen->id, $user->id, $importLog->id);
+    //         // Dispatch job
+    //         ImportPenilaianExcelJob::dispatch(PenilaianElemenAl::class, $filePath, $asesmen->id, $user->id, $importLog->id);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'File berhasil diupload. Proses input data penilaian sedang diproses di background.',
-                'import_log_id' => $importLog->id,
-            ]);
-        } catch (\Exception $e) {
-            Log::error($e);
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal upload excel penilaian: ' . $e->getMessage(),
-            ], 500);
-        }
-    }
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => 'File berhasil diupload. Proses input data penilaian sedang diproses di background.',
+    //             'import_log_id' => $importLog->id,
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         Log::error($e);
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Gagal upload excel penilaian: ' . $e->getMessage(),
+    //         ], 500);
+    //     }
+    // }
 
     /**
      * Check import status (AJAX)
@@ -1069,14 +1074,7 @@ class ALController extends Controller
             abort(403, 'Mohon maaf role Anda sebagai ' . ($user->role_selected) . ' tidak diizinkan membuka halaman ini.');
         }
 
-        // ✅ AUTO-UPDATE STATUS: not_started → in_progress
-        if ($assignment->status_pekerjaan === 'not_started') {
-            $assignment->update([
-                'status_pekerjaan' => 'in_progress',
-                'started_at' => now(),
-            ]);
-        }
-
+        $this->updateStatusAL($assignment);
         $asesmen = $assignment->asesmen;
 
         // ✅ Calculate progress untuk AL
@@ -1087,7 +1085,30 @@ class ALController extends Controller
         $isApproved = $statusPekerjaan === 'approved';
         $isComplete = $progress['percentage'] == 100;
 
-        // ✅ TANPA needsRevisions - AL tidak ada revisi
+        // ✅ CEK UPLOADER PERTAMA (from import log)
+        $firstUpload = PenilaianImportLog::where('id_asesmen', $idAsesmen)
+            ->where('status', 'completed') // Hanya yang berhasil
+            ->with('asesor')
+            ->orderBy('created_at', 'asc')
+            ->first();
+
+        // ✅ Cek apakah user saat ini adalah uploader pertama
+        $currentUserId = Auth::id();
+        $isUploader = $firstUpload && $firstUpload->id_asesor == $currentUserId;
+
+        // ✅ User bisa upload jika: belum ada upload ATAU dia adalah uploader pertama
+        $canUpload = !$firstUpload || $isUploader;
+
+        // ✅ Get team asesor AL
+        $asesorTeam = AsesmenUserRole::where('id_asesmen', $idAsesmen)
+            ->where('jenis_asesmen', 'al')
+            ->whereHas('role', function ($q) {
+                $q->where('name', 'asesor');
+            })
+            ->with('user')
+            ->orderBy('urutan_asesor')
+            ->get();
+
         return view('asesmen.al.berkas.upload-excel', compact(
             'asesmen',
             'assignment',
@@ -1095,7 +1116,73 @@ class ALController extends Controller
             'statusPekerjaan',
             'isSubmittedOnly',
             'isApproved',
-            'isComplete'
+            'isComplete',
+            'firstUpload',      // ✅ Tambahkan
+            'canUpload',        // ✅ Tambahkan
+            'isUploader',       // ✅ Tambahkan
+            'asesorTeam'        // ✅ Tambahkan
         ));
+    }
+
+    /**
+     * Import penilaian dari Excel (using Queue)
+     */
+    public function importExcel(Request $request, $idAsesmen)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls|max:10240', // 10MB max
+        ]);
+
+        try {
+            $user = Auth::user();
+
+            // Verify access
+            $asesmen = Asesmen::whereHas('userRoles', function ($query) use ($user) {
+                $query->where('id_user', $user->id);
+            })->findOrFail($idAsesmen);
+
+            // ✅ CEK: Apakah sudah ada yang upload sebelumnya
+            $existingUpload = PenilaianImportLog::where('id_asesmen', $idAsesmen)
+                ->where('status', 'completed')
+                ->first();
+
+            $currentUserId = Auth::id();
+
+            // ✅ VALIDASI: Hanya uploader pertama yang bisa upload ulang
+            if ($existingUpload && $existingUpload->id_asesor != $currentUserId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'File Excel sudah diupload oleh asesor lain. Hanya asesor yang pertama mengupload yang dapat mengupload ulang.',
+                ], 403);
+            }
+
+            // Store file temporarily
+            $file = $request->file('file');
+            $filename = 'import_' . $asesmen->code . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $filePath = $file->storeAs('temp/imports', $filename);
+
+            // Create import log
+            $importLog = PenilaianImportLog::create([
+                'id_asesmen' => $asesmen->id,
+                'id_asesor' => $user->id,
+                'filename' => $file->getClientOriginalName(),
+                'status' => 'queued',
+            ]);
+
+            // Dispatch job
+            ImportPenilaianExcelJob::dispatch(PenilaianElemenAl::class, $filePath, $asesmen->id, $user->id, $importLog->id);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'File berhasil diupload. Proses input data penilaian sedang diproses di background.',
+                'import_log_id' => $importLog->id,
+            ]);
+        } catch (\Exception $e) {
+            Log::error($e);
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal upload excel penilaian: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 }

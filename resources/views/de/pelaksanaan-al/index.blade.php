@@ -23,13 +23,20 @@
 
 @section('content')
 <div class="container-fluid py-3">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item active">Pelaksanaan AL & Berita Acara</li>
+        </ol>
+    </nav>
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">
-                <i class="bi bi-clipboard-data"></i> Pelaksanaan & Monitoring AL
+                <i class="bi bi-clipboard-data"></i> Pelaksanaan AL & Berita Acara
             </h4>
-            <p class="text-muted mb-0">Monitor visitasi lapangan dan tugaskan validator untuk pelaporan</p>
+            <p class="text-muted mb-0">Monitor pelaksanaan asesmen lapangan</p>
         </div>
     </div>
 
@@ -55,61 +62,9 @@
     <!-- Main Content -->
     <div class="row">
         <!-- Filters -->
-        <div class="col-lg-3 mb-4">
-            <div class="card filter-card">
-                <div class="card-header border-0">
-                    <h5 class="mb-0">
-                        <i class="bi bi-funnel"></i> Filter & Pencarian
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <form id="filterForm" onsubmit="return false;">
-                        <!-- Search -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Cari Permohonan</label>
-                            <input type="text" name="search" id="searchInput" class="form-control" placeholder="Nomor / nama prodi..." value="{{ request('search') }}">
-                        </div>
-
-                        <!-- University -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Universitas</label>
-                            <select name="university_id" id="universityFilter" class="form-select">
-                                <option value="">Semua Universitas</option>
-                                @foreach($universities as $univ)
-                                <option value="{{ $univ->id }}" {{ request('university_id') == $univ->id ? 'selected' : '' }}>
-                                    {{ $univ->name }}
-                                </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <!-- Status AL -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Status</label>
-                            <select name="status_al" id="statusALFilter" class="form-select">
-                                <option value="">Semua Status</option>
-                                <option value="sedang_visitasi" {{ request('status_al') == 'sedang_visitasi' ? 'selected' : '' }}>Sedang Visitasi</option>
-                                <option value="perlu_validator" {{ request('status_al') == 'perlu_validator' ? 'selected' : '' }}>Perlu Validator</option>
-                                <option value="selesai" {{ request('status_al') == 'selesai' ? 'selected' : '' }}>Selesai</option>
-                            </select>
-                        </div>
-
-                        <!-- Buttons -->
-                        <div class="d-grid gap-2">
-                            <button type="button" class="btn btn-light" onclick="applyFilters()">
-                                <i class="bi bi-search"></i> Terapkan Filter
-                            </button>
-                            <button type="button" class="btn btn-outline-light" onclick="resetFilters()">
-                                <i class="bi bi-x-circle"></i> Reset
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
 
         <!-- Table Content -->
-        <div class="col-lg-9">
+        <div class="col-lg-12">
             <div class="position-relative">
                 <!-- Loading Overlay -->
                 <div id="tableLoading" class="position-absolute top-0 start-0 w-100 h-100 d-none" style="background: rgba(255,255,255,0.9); z-index: 1000;">

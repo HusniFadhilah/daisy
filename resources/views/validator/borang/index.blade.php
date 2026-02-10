@@ -105,7 +105,7 @@
                             <td>{{ $assignments->firstItem() + $index }}</td>
 
                             <td>
-                                {!! $pengajuan->getPermohonanAkreditasiSectionFor('de') !!}
+                                {!! $pengajuan?->getPermohonanAkreditasiSectionFor('de') !!}
                             </td>
 
                             <td>
@@ -133,7 +133,7 @@
                                     @endif
 
                                     {{-- Suplemen (khusus menuju unggul) --}}
-                                    @if($pengajuan->jenis_akreditasi === 'menuju_unggul')
+                                    @if($pengajuan?->jenis_akreditasi === 'menuju_unggul')
                                     @if($suplemenDoc && $suplemenDoc->download_url)
                                     <a href="{{ $suplemenDoc->download_url }}" class="btn btn-sm btn-outline-dark" target="_blank" title="Download Suplemen">
                                         Suplemen

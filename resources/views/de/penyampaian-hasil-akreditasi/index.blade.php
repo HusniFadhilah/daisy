@@ -73,9 +73,7 @@
                 <table class="table table-hover align-middle">
                     <thead class="table-light">
                         <tr>
-                            <th>No. Pengajuan</th>
-                            <th>Program Studi</th>
-                            <th>Universitas</th>
+                            <th>Permohonan Akreditasi</th>
                             <th>Status</th>
                             <th>Skor AL</th>
                             <th>Peringkat</th>
@@ -89,18 +87,14 @@
                         $hasil = $pengajuan->asesmen->hasil ?? null;
                         @endphp
                         <tr>
+
                             <td>
-                                <span class="fw-semibold">{{ $pengajuan->nomor_pengajuan }}</span>
+                                {!! $pengajuan->getPermohonanAkreditasiSectionFor('de') !!}
                             </td>
                             <td>
-                                <div>{{ $pengajuan->studyProgram->name }}</div>
-                                <small class="text-muted">{{ $pengajuan->studyProgram->degreeLevel->alias }}</small>
-                            </td>
-                            <td>{{ $pengajuan->studyProgram->university->name }}</td>
-                            <td>
-                                <span class="badge {{ $pengajuan->status_badge_class }}">
-                                    {{ $pengajuan->status_label }}
-                                </span>
+                                {{-- <span class="badge {{ $pengajuan->status_badge_class }}">
+                                {{ $pengajuan->status_label }}
+                                </span> --}}
                             </td>
                             <td>
                                 @if($hasil && $hasil->skor_al)

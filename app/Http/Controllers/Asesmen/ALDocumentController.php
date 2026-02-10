@@ -296,15 +296,6 @@ class ALDocumentController extends Controller
                     'approved_by' => $user->id,
                 ]);
 
-            $asesmen->asesmenLapangan->update([
-                'status' => 'finalized',
-                'finalized_at' => now(),
-                'finalized_by' => $user->id
-            ]);
-
-            if ($asesmen->pengajuan)
-                $asesmen->pengajuan->checkUpdateStatusAKAL('al', 'status_asesor_selesai');
-
             DB::commit();
 
             return response()->json([

@@ -106,25 +106,26 @@
         <div class="card-header bg-light border-0">
             <h5 class="mb-0">
                 <i class="bi bi-info-circle text-primary"></i>
-                Legenda Batasan Skor Akreditasi
+                Keterangan Batasan Skor Akreditasi
             </h5>
         </div>
         <div class="card-body">
             <div class="row g-2">
                 {{-- 0-250: Tidak Terakreditasi --}}
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <div class="d-flex align-items-center p-3 rounded" style="background-color: #f8d7da;">
                         <div class="me-3">
                             <strong class="text-dark">0 - 250</strong>
                         </div>
                         <div class="flex-grow-1">
                             <strong class="text-dark">Tidak Terakreditasi</strong>
+                            <div><small class="text-muted">Ditolak validator dokumen</small></div>
                         </div>
                     </div>
                 </div>
 
                 {{-- 251-300: Terakreditasi Sementara (2 tahun) --}}
-                <div class="col-md-4">
+                {{-- <div class="col-md-4">
                     <div class="d-flex align-items-center p-3 rounded" style="background-color: #fff3cd;">
                         <div class="me-3">
                             <strong class="text-dark">251 - 300</strong>
@@ -134,17 +135,17 @@
                             <div><small class="text-muted">(2 tahun)</small></div>
                         </div>
                     </div>
-                </div>
+                </div> --}}
 
                 {{-- 301-350: Terakreditasi (5 tahun) / Baik --}}
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <div class="d-flex align-items-center p-3 rounded" style="background-color: #d1ecf1;">
                         <div class="me-3">
-                            <strong class="text-dark">301 - 350</strong>
+                            <strong class="text-dark">251 - 350</strong>
                         </div>
                         <div class="flex-grow-1">
                             <strong class="text-dark">Terakreditasi</strong>
-                            <div><small class="text-muted">(5 tahun)</small></div>
+                            {{-- <div><small class="text-muted">(5 tahun)</small></div> --}}
                         </div>
                     </div>
                 </div>
@@ -222,7 +223,7 @@
     @else
     <div class="alert alert-success alert-permanent">
         <i class="bi bi-check-circle-fill me-2"></i>
-        Hasil telah <strong>Disampaikan ke Program Studi</strong> pada {{ $hasil->tanggal_finalisasi_al->format('d F Y, H:i') }}
+        Hasil telah <strong>Disampaikan ke Program Studi</strong> pada {{ $hasil->tanggal_finalisasi_al?->format('d F Y, H:i') }}
         @if($hasil->finalizedAlBy)
         oleh <strong>{{ $hasil->finalizedAlBy->name }}</strong>
         @endif

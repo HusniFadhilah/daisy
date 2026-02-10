@@ -575,10 +575,10 @@ $authUser = Auth::user();
             }
             , al: {
                 title: 'Rekap AL dan Pelaporan AL'
-                , label: 'Laporan Hasil Asesmen Lapangan Program Studi (LHA)'
+                , label: 'Laporan Hasil Asesmen Lapangan'
                 , upload: @json(route('pelaporan.al.upload', ['assignment' => '__ID__']))
                 , finalize: @json(route('pelaporan.al.finalize', ['assignment' => '__ID__']))
-                , fileLabel: 'Laporan Hasil Asesmen Lapangan Program Studi (LHA)'
+                , fileLabel: 'Laporan Hasil Asesmen Lapangan'
                 , finalizeLabel: 'Pelaporan AL Telah Selesai'
                 , additionalDescription: `Dokumen yang sudah digabungkan, yang diperlukan isinya adalah:
                 •	Penunjukan tugas Asesor untuk melaksanakan Penilaian LED

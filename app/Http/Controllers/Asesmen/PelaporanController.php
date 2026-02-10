@@ -732,7 +732,7 @@ class PelaporanController extends Controller
             $payload = [
                 'id_asesmen'     => $assignment->id_asesmen,
                 'type'           => 'laporan_al',
-                'title'          => $request->title ?: 'Laporan Hasil Asesmen Lapangan Program Studi (LHA)',
+                'title'          => $request->title ?: 'Laporan Hasil Asesmen Lapangan',
                 'sort_order'     => 1,
                 'path'           => $path,
                 'original_name'  => $file->getClientOriginalName(),

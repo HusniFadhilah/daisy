@@ -114,11 +114,11 @@
                                         {!! $pengajuan->getCustomBadgeLastStatus('validasi_dokumen', 'upps','label_short_for') !!}
                                     </td>
                                     <td>
-                                        @if($pengajuan->tanggal_validasi_dokumen)
-                                        <small>{{ $pengajuan->tanggal_validasi_dokumen->format('d M Y') }}</small>
+                                        @if($pengajuan->tanggal_validasi_borang_selesai)
+                                        <small>{{ $pengajuan->tanggal_validasi_borang_selesai->format('d M Y') }}</small>
                                         <br>
                                         <small class="text-muted">
-                                            {{ $pengajuan->tanggal_validasi_dokumen->diffForHumans() }}
+                                            {{ $pengajuan->tanggal_validasi_borang_selesai->diffForHumans() }}
                                         </small>
                                         @else
                                         <span class="text-muted">-</span>

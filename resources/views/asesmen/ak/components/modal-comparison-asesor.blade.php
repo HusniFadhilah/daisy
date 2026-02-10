@@ -24,7 +24,7 @@
                     <div class="p-3 bg-light border-bottom">
                         <div class="row">
                             <div class="col-md-12 mb-3">
-                                <h6 class="mb-2">Legenda Kategori Penilaian:</h6>
+                                <h6 class="mb-2">Keterangan Kategori Penilaian:</h6>
                                 <div class="d-flex flex-wrap gap-2">
                                     <div class="legend-item">
                                         <span class="legend-box" style="background: #9e9e9e;"></span>

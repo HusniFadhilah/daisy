@@ -278,6 +278,9 @@
             @php
             $asesorTeam = \App\Models\AsesmenUserRole::where('id_asesmen', $asesmen->id)
             ->where('jenis_asesmen', 'al')
+            ->whereHas('role', function ($q) {
+            $q->where('name', 'asesor');
+            })
             ->with('user')
             ->get();
             @endphp

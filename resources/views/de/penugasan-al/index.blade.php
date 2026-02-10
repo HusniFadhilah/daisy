@@ -23,13 +23,20 @@
 
 @section('content')
 <div class="container-fluid py-3">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item active">Penugasan Asesor AL</li>
+        </ol>
+    </nav>
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">
-                <i class="bi bi-geo-alt"></i> Penugasan Asesmen Lapangan (AL)
+                <i class="bi bi-geo-alt"></i> Penugasan Asesor AL
             </h4>
-            <p class="text-muted mb-0">Tugaskan asesor untuk melakukan visitasi lapangan</p>
+            <p class="text-muted mb-0">Tugaskan asesor untuk melakukan Asesmen Lapangan</p>
         </div>
     </div>
 
@@ -55,80 +62,9 @@
     <!-- Main Content -->
     <div class="row">
         <!-- Filters -->
-        <div class="col-lg-3 mb-4">
-            <div class="card filter-card">
-                <div class="card-header border-0">
-                    <h5 class="mb-0">
-                        <i class="bi bi-funnel"></i> Filter & Pencarian
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <form id="filterForm" onsubmit="return false;">
-                        <!-- Search -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Cari Permohonan</label>
-                            <input type="text" name="search" id="searchInput" class="form-control" placeholder="Nomor / nama prodi..." value="{{ request('search') }}">
-                        </div>
-
-                        <!-- University -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Universitas</label>
-                            <select name="university_id" id="universityFilter" class="form-select">
-                                <option value="">Semua Universitas</option>
-                                @foreach($universities as $univ)
-                                <option value="{{ $univ->id }}" {{ request('university_id') == $univ->id ? 'selected' : '' }}>
-                                    {{ $univ->name }}
-                                </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <!-- Status AL -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Status AL</label>
-                            <select name="status_al" id="statusALFilter" class="form-select">
-                                <option value="">Semua Status</option>
-                                <option value="siap_al" {{ request('status_al') == 'siap_al' ? 'selected' : '' }}>Siap AL</option>
-                                <option value="sudah_ditugaskan" {{ request('status_al') == 'sudah_ditugaskan' ? 'selected' : '' }}>Sudah Ditugaskan</option>
-                                <option value="selesai" {{ request('status_al') == 'selesai' ? 'selected' : '' }}>Selesai</option>
-                            </select>
-                        </div>
-
-                        <!-- Buttons -->
-                        <div class="d-grid gap-2">
-                            <button type="button" class="btn btn-light" onclick="applyFilters()">
-                                <i class="bi bi-search"></i> Terapkan Filter
-                            </button>
-                            <button type="button" class="btn btn-outline-light" onclick="resetFilters()">
-                                <i class="bi bi-x-circle"></i> Reset
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Info Card -->
-            <div class="card mt-3">
-                <div class="card-header bg-info text-white">
-                    <h6 class="mb-0">
-                        <i class="bi bi-info-circle"></i> Persyaratan AL
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <p class="mb-2 small">
-                        <i class="bi bi-person text-primary"></i>
-                        <strong>Asesor:</strong> Minimal 2 orang
-                    </p>
-                    <p class="mb-0 small text-muted">
-                        <i class="bi bi-info-circle"></i>
-                        AL tidak memerlukan validator
-                    </p>
-                </div>
-            </div>
-        </div>
 
         <!-- Table Content -->
-        <div class="col-lg-9">
+        <div class="col-lg-12">
             <div class="position-relative">
                 <!-- Loading Overlay -->
                 <div id="tableLoading" class="position-absolute top-0 start-0 w-100 h-100 d-none" style="background: rgba(255,255,255,0.9); z-index: 1000;">

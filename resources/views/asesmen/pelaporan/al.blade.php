@@ -193,9 +193,13 @@
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm" role="group">
                                     {{-- @if($canReport && !$isReported) --}}
-                                    <button type="button" class="btn btn-success js-open-pelaporan" title="Upload Pelaporan" data-type="al" data-assignment-id="{{ $assignment->id }}" data-nomor="{{ $nomor }}">
+                                    <button type="button" class="btn btn-info js-open-pelaporan" title="Upload Pelaporan" data-type="al" data-assignment-id="{{ $assignment->id }}" data-nomor="{{ $nomor }}">
                                         <i class="bi bi-upload"></i>
                                     </button>
+
+                                    <a href="{{ route('pelaporan.al.show', $assignment->id) }}" class="btn btn-outline-primary" title="Lihat Detail">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
                                     {{-- @else
                                     <a href="#" class="btn btn-outline-success" title="Lihat Detail">
                                         <i class="bi bi-eye"></i>
@@ -354,10 +358,10 @@
     window.PELAPORAN_CFG = {
         al: {
             title: 'Pelaporan AL'
-            , label: 'Laporan Hasil Asesmen Lapangan Program Studi (LHA)'
+            , label: 'Laporan Hasil Asesmen Lapangan'
             , upload: @json(route('pelaporan.al.upload', ['assignment' => '__ID__']))
             , finalize: @json(route('pelaporan.al.finalize', ['assignment' => '__ID__']))
-            , fileLabel: 'Laporan Hasil Asesmen Lapangan Program Studi (LHA)'
+            , fileLabel: 'Laporan Hasil Asesmen Lapangan'
             , finalizeLabel: 'Pelaporan AL Telah Selesai'
             , additionalDescription: `Dokumen yang sudah digabungkan, yang diperlukan isinya adalah:
             • Penunjukan tugas Asesor untuk melaksanakan Penilaian LED

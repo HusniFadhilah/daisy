@@ -27,6 +27,12 @@
         background: linear-gradient(135deg, #d5f4e6 0%, #ffffff 100%);
     }
 
+    .upload-area.disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+        border-color: #6c757d;
+    }
+
     .file-icon {
         font-size: 4rem;
         color: #932136;
@@ -42,17 +48,13 @@
     }
 
     @keyframes pulseAlert {
-
-        0%,
-        100% {
+        0%, 100% {
             box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.4);
         }
-
         50% {
             box-shadow: 0 0 15px 5px rgba(255, 152, 0, 0.2);
         }
     }
-
 </style>
 @endpush
 
@@ -73,6 +75,56 @@
                     <i class="bi bi-arrow-left"></i> Kembali
                 </a>
             </div>
+
+            {{-- ✅ ALERT: Info Uploader --}}
+            @if($firstUpload)
+            <div class="mt-3">
+                @if($isUploader)
+                <div class="alert alert-success alert-permanent">
+                    <div class="d-flex align-items-start">
+                        <div class="flex-shrink-0">
+                            <i class="bi bi-check-circle fs-4 me-3"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-2">
+                                <i class="bi bi-person-check"></i> Anda adalah Asesor yang Mengupload Excel
+                            </h6>
+                            <p class="mb-0">
+                                Anda dapat mengupload file Excel baru untuk memperbarui data penilaian.
+                            </p>
+                            <small class="text-muted">
+                                <i class="bi bi-clock"></i> Pertama kali diupload: {{ $firstUpload->created_at->format('d M Y, H:i') }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                @else
+                <div class="alert alert-info alert-permanent">
+                    <div class="d-flex align-items-start">
+                        <div class="flex-shrink-0">
+                            <i class="bi bi-info-circle fs-4 me-3"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-2">
+                                <i class="bi bi-file-earmark-check"></i> Excel Telah Diupload
+                            </h6>
+                            <p class="mb-1">
+                                File Excel telah diupload oleh asesor: <strong>{{ $firstUpload->asesor->name ?? 'Asesor' }}</strong>
+                            </p>
+                            <small class="text-muted">
+                                <i class="bi bi-clock"></i> Diupload pada: {{ $firstUpload->created_at->format('d M Y, H:i') }}
+                            </small>
+                            <hr class="my-2">
+                            <p class="mb-0 small text-muted">
+                                <i class="bi bi-lock"></i> Hanya asesor yang pertama kali mengupload yang dapat mengupload file baru.
+                                Anda dapat melihat hasil penilaian di halaman detail.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                @endif
+            </div>
+            @endif
 
             {{-- ✅ Progress Section --}}
             <div class="progress-wrapper mt-4">
@@ -105,12 +157,12 @@
             </div>
         </div>
 
-        {{-- ✅ Status & Actions Footer (SIMPLIFIED - NO REVISION) --}}
+        {{-- Status & Actions Footer --}}
         @if($isSubmittedOnly || $isApproved || $isComplete)
         <div class="card-footer bg-white">
             <div class="row align-items-center my-2">
                 <div class="col-12">
-                    {{-- ✅ Alert Submit Reminder (100% tapi belum submit) --}}
+                    {{-- Alert Submit Reminder --}}
                     @if(!$isSubmittedOnly && !$isApproved && $isComplete)
                     <div class="alert alert-warning alert-dismissible alert-permanent mb-3" id="alertSubmitReminder">
                         <div class="d-flex align-items-start">
@@ -131,7 +183,7 @@
                     </div>
                     @endif
 
-                    {{-- ✅ Alert Progress (sedang mengerjakan) --}}
+                    {{-- Alert Progress --}}
                     @if(!$isSubmittedOnly && !$isApproved && !$isComplete && $progress['percentage'] > 0)
                     <div class="alert alert-info alert-dismissible alert-permanent mb-3">
                         <i class="bi bi-info-circle me-2"></i>
@@ -143,7 +195,7 @@
                     </div>
                     @endif
 
-                    {{-- ✅ Alert Submitted (sudah submit, selesai) --}}
+                    {{-- Alert Submitted --}}
                     @if($isSubmittedOnly || $isApproved)
                     <div class="alert alert-success alert-permanent alert-dismissible mb-3">
                         <i class="bi bi-check-circle me-2"></i>
@@ -157,10 +209,8 @@
                     </div>
                     @endif
 
-                    {{-- ✅ Action Buttons --}}
+                    {{-- Action Buttons --}}
                     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3">
-
-                        {{-- Finalisasi Button --}}
                         <div>
                             @if(!$isSubmittedOnly && !$isApproved)
                             <button class="btn btn-success w-md-100 w-md-auto" id="btnSubmit">
@@ -177,7 +227,6 @@
                             @endif
                         </div>
 
-                        {{-- Link to Detail View --}}
                         <div>
                             <a href="{{ route('al.berkas.show', $asesmen->id) }}" class="btn btn-outline-primary">
                                 <i class="bi bi-eye"></i> Lihat Detail Penilaian
@@ -185,7 +234,7 @@
                         </div>
                     </div>
 
-                    {{-- ✅ Progress Summary --}}
+                    {{-- Progress Summary --}}
                     <div class="mt-3 p-3 bg-light rounded">
                         <div class="row text-center">
                             <div class="col-md-3">
@@ -215,26 +264,40 @@
     <div class="row">
         {{-- Left: Upload Form --}}
         <div class="col-lg-8">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
+            <div class="card {{ !$canUpload ? 'border-secondary' : '' }}">
+                <div class="card-header {{ $canUpload ? 'bg-primary' : 'bg-secondary' }} text-white">
                     <h5 class="mb-0">
                         <i class="bi bi-cloud-upload"></i> Upload File Penilaian AL
+                        @if(!$canUpload)
+                        <span class="badge bg-light text-dark ms-2">Dinonaktifkan</span>
+                        @endif
                     </h5>
                 </div>
                 <div class="card-body">
+                    {{-- ✅ Warning jika tidak bisa upload --}}
+                    @if(!$canUpload)
+                    <div class="alert alert-warning alert-permanent">
+                        <i class="bi bi-lock"></i>
+                        <strong>Upload Dinonaktifkan</strong><br>
+                        File Excel sudah diupload oleh asesor lain. Hanya asesor yang pertama mengupload yang dapat mengupload file baru.
+                    </div>
+                    @endif
 
                     {{-- Upload Area --}}
                     <form id="uploadForm" enctype="multipart/form-data">
                         @csrf
 
-                        <div class="upload-area" id="uploadArea">
-                            <input type="file" id="fileInput" name="file" accept=".xlsx,.xls" class="d-none" required {{ ($isSubmittedOnly || $isApproved) ? 'disabled' : '' }}>
+                        <div class="upload-area {{ (!$canUpload || $isSubmittedOnly || $isApproved) ? 'disabled' : '' }}" id="uploadArea">
+                            <input type="file" id="fileInput" name="file" accept=".xlsx,.xls" class="d-none" required
+                                {{ (!$canUpload || $isSubmittedOnly || $isApproved) ? 'disabled' : '' }}>
 
                             <div id="uploadPrompt">
                                 <i class="bi bi-cloud-arrow-up file-icon"></i>
                                 <h5 class="mt-3">
                                     @if($isSubmittedOnly || $isApproved)
                                     Upload Dinonaktifkan (Sudah Di-Submit)
+                                    @elseif(!$canUpload)
+                                    Upload Dinonaktifkan (Sudah Diupload Asesor Lain)
                                     @else
                                     Silahkan Upload File Excel Penilaian AL di Sini
                                     @endif
@@ -271,7 +334,8 @@
 
                         {{-- Submit Button --}}
                         <div class="mt-4 text-center">
-                            <button type="submit" class="btn btn-primary btn-md" id="btnUploadSubmit" {{ ($isSubmittedOnly || $isApproved) ? 'disabled' : '' }}>
+                            <button type="submit" class="btn btn-primary btn-md" id="btnUploadSubmit"
+                                {{ (!$canUpload || $isSubmittedOnly || $isApproved) ? 'disabled' : '' }}>
                                 <i class="bi bi-upload"></i> Upload dan Proses
                             </button>
                         </div>
@@ -281,7 +345,7 @@
             </div>
         </div>
 
-        {{-- Right: Instructions --}}
+        {{-- Right: Instructions & Team Info --}}
         <div class="col-lg-4">
             <div class="card mb-4">
                 <div class="card-header bg-success text-white">
@@ -290,7 +354,6 @@
                     </h6>
                 </div>
                 <div class="card-body">
-                    {{-- Instructions --}}
                     <div class="alert alert-info alert-permanent alert-dismissible mb-4">
                         <h6 class="alert-heading">
                             <i class="bi bi-info-circle"></i> Petunjuk Upload
@@ -304,7 +367,6 @@
                         </ol>
                     </div>
 
-                    {{-- Download Template Button --}}
                     <div class="mb-4 text-center">
                         <a href="{{ route('al.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'template']) }}" class="btn btn-md btn-outline-primary">
                             <i class="bi bi-download"></i> Download Template Penilaian AL
@@ -312,6 +374,41 @@
                     </div>
                 </div>
             </div>
+
+            {{-- ✅ Tim Asesor Info --}}
+            @if($asesorTeam->count() > 0)
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0">
+                        <i class="bi bi-people"></i> Tim Asesor AL
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless table-sm mb-0">
+                        @foreach($asesorTeam as $asesor)
+                        <tr>
+                            <td width="40">
+                                @if($firstUpload && $firstUpload->id_asesor == $asesor->id_user)
+                                <i class="bi bi-person-check-fill text-success" title="Uploader"></i>
+                                @else
+                                <i class="bi bi-person"></i>
+                                @endif
+                            </td>
+                            <td>
+                                {{ $asesor->user->name ?? '-' }}
+                                @if($asesor->id_user == Auth::id())
+                                <span class="badge bg-info ms-1">Anda</span>
+                                @endif
+                                @if($firstUpload && $firstUpload->id_asesor == $asesor->id_user)
+                                <span class="badge bg-success ms-1">Uploader</span>
+                                @endif
+                            </td>
+                        </tr>
+                        @endforeach
+                    </table>
+                </div>
+            </div>
+            @endif
         </div>
     </div>
 </div>
@@ -324,8 +421,8 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
     document.addEventListener('DOMContentLoaded', function() {
         const idAsesmen = "{{ $asesmen->id }}";
         const isSubmitted = @json($isSubmitted);
+        const canUpload = @json($canUpload);
 
-        // --- Helper DOM ---
         const qs = function(id) {
             return document.getElementById(id);
         };
@@ -335,30 +432,30 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
             if (el) el.textContent = value;
         };
 
-        // --- Cache elemen ---
         const el = {
-            uploadArea: qs('uploadArea')
-            , fileInput: qs('fileInput')
-            , uploadPrompt: qs('uploadPrompt')
-            , fileInfo: qs('fileInfo')
-            , fileName: qs('fileName')
-            , fileSize: qs('fileSize')
-            , btnUploadSubmit: qs('btnUploadSubmit')
-            , btnRemoveFile: qs('btnRemoveFile')
-            , uploadForm: qs('uploadForm')
-            , progressWrapper: qs('progressWrapper')
-            , progressBar: qs('progressBar')
-            , progressText: qs('progressText')
-        , };
+            uploadArea: qs('uploadArea'),
+            fileInput: qs('fileInput'),
+            uploadPrompt: qs('uploadPrompt'),
+            fileInfo: qs('fileInfo'),
+            fileName: qs('fileName'),
+            fileSize: qs('fileSize'),
+            btnUploadSubmit: qs('btnUploadSubmit'),
+            btnRemoveFile: qs('btnRemoveFile'),
+            uploadForm: qs('uploadForm'),
+            progressWrapper: qs('progressWrapper'),
+            progressBar: qs('progressBar'),
+            progressText: qs('progressText'),
+        };
 
-        // ✅ Disable upload if submitted
-        if (isSubmitted) {
+        // ✅ Disable upload if submitted OR not uploader
+        if (isSubmitted || !canUpload) {
             if (el.uploadArea) el.uploadArea.style.cursor = 'not-allowed';
             if (el.fileInput) el.fileInput.disabled = true;
+            console.log('Upload disabled:', isSubmitted ? 'Already submitted' : 'Not the uploader');
             return; // Stop all upload functionality
         }
 
-        // --- Upload area click ---
+        // Upload area click
         if (el.uploadArea && el.fileInput) {
             el.uploadArea.addEventListener('click', function(e) {
                 if (el.btnRemoveFile) {
@@ -394,23 +491,22 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
         // File input change
         if (el.fileInput) el.fileInput.addEventListener('change', handleFileSelect);
 
-        // --- Handle file select ---
         function handleFileSelect() {
             if (!el.fileInput) return;
             const file = el.fileInput.files[0];
             if (!file) return;
 
             const validTypes = [
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-                , 'application/vnd.ms-excel'
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'application/vnd.ms-excel'
             ];
             const fileExtension = file.name.split('.').pop().toLowerCase();
 
             if (!validTypes.includes(file.type) && !['xlsx', 'xls'].includes(fileExtension)) {
                 Swal.fire({
-                    icon: 'error'
-                    , title: 'Format File Salah'
-                    , text: 'Hanya file Excel (.xlsx atau .xls) yang diperbolehkan'
+                    icon: 'error',
+                    title: 'Format File Salah',
+                    text: 'Hanya file Excel (.xlsx atau .xls) yang diperbolehkan'
                 });
                 el.fileInput.value = '';
                 return;
@@ -418,9 +514,9 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
 
             if (file.size > 10 * 1024 * 1024) {
                 Swal.fire({
-                    icon: 'error'
-                    , title: 'File Terlalu Besar'
-                    , text: 'Ukuran file maksimal 10MB'
+                    icon: 'error',
+                    title: 'File Terlalu Besar',
+                    text: 'Ukuran file maksimal 10MB'
                 });
                 el.fileInput.value = '';
                 return;
@@ -433,7 +529,7 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
             if (el.btnUploadSubmit) el.btnUploadSubmit.disabled = false;
         }
 
-        // --- Remove file ---
+        // Remove file
         if (el.btnRemoveFile) el.btnRemoveFile.addEventListener('click', function(e) {
             e.stopPropagation();
             if (el.fileInput) el.fileInput.value = '';
@@ -442,7 +538,7 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
             if (el.btnUploadSubmit) el.btnUploadSubmit.disabled = true;
         });
 
-        // --- Submit form ---
+        // Submit form
         if (el.uploadForm) el.uploadForm.addEventListener('submit', async function(e) {
             e.preventDefault();
 
@@ -465,25 +561,28 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
 
             try {
                 const response = await fetch(`/al/berkas/${idAsesmen}/import`, {
-                    method: 'POST'
-                    , body: formData
-                    , headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        , 'Accept': 'application/json'
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
                     }
                 });
 
                 const data = await response.json();
-                if (!response.ok) throw new Error(data.message || 'Upload gagal');
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Upload gagal');
+                }
 
                 if (data.success) {
                     const importLogId = data.import_log_id;
                     Swal.fire({
-                        icon: 'info'
-                        , title: 'Sedang Memproses File'
-                        , html: 'File sedang diproses.<br>Halaman akan dimuat ulang setelah selesai.'
-                        , showConfirmButton: false
-                        , allowOutsideClick: false
+                        icon: 'info',
+                        title: 'Sedang Memproses File',
+                        html: 'File sedang diproses.<br>Halaman akan dimuat ulang setelah selesai.',
+                        showConfirmButton: false,
+                        allowOutsideClick: false
                     });
                     pollImportStatus(importLogId);
                 }
@@ -495,14 +594,14 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
                 }
                 if (el.progressWrapper) el.progressWrapper.style.display = 'none';
                 Swal.fire({
-                    icon: 'error'
-                    , title: 'Upload Gagal'
-                    , text: error.message
+                    icon: 'error',
+                    title: 'Upload Gagal',
+                    text: error.message
                 });
             }
         });
 
-        // --- Polling ---
+        // Polling
         let pollInterval = null;
         let pollCount = 0;
         const MAX_POLL = 150;
@@ -513,10 +612,10 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
                 if (pollCount >= MAX_POLL) {
                     clearInterval(pollInterval);
                     Swal.fire({
-                        icon: 'warning'
-                        , title: 'Timeout'
-                        , text: 'Proses memakan waktu lama. Mohon ulangi upload file'
-                        , confirmButtonText: 'OK'
+                        icon: 'warning',
+                        title: 'Timeout',
+                        text: 'Proses memakan waktu lama. Mohon ulangi upload file',
+                        confirmButtonText: 'OK'
                     }).then(function() {
                         window.location.reload();
                     });
@@ -552,20 +651,20 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
         function showResult(log) {
             if (log.status === 'completed') {
                 Swal.fire({
-                    icon: 'success'
-                    , title: 'Proses Selesai!'
-                    , html: '<div class="text-center"><p>File telah berhasil diupload dan diproses</p></div>'
-                    , timer: 3000
-                    , timerProgressBar: true
+                    icon: 'success',
+                    title: 'Proses Selesai!',
+                    html: '<div class="text-center"><p>File telah berhasil diupload dan diproses</p></div>',
+                    timer: 3000,
+                    timerProgressBar: true
                 }).then(function() {
                     window.location.reload();
                 });
             } else {
                 Swal.fire({
-                    icon: 'error'
-                    , title: 'Proses Upload Gagal'
-                    , text: log.errors || 'Terjadi kesalahan saat memproses file'
-                    , confirmButtonText: 'OK'
+                    icon: 'error',
+                    title: 'Proses Upload Gagal',
+                    text: log.errors || 'Terjadi kesalahan saat memproses file',
+                    confirmButtonText: 'OK'
                 }).then(function() {
                     window.location.reload();
                 });
@@ -580,12 +679,10 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
             return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
         }
 
-        // ✅ Submit Penilaian Handler
+        // Submit Penilaian Handler
         const btnSubmit = document.getElementById('btnSubmit');
-        const btnSubmitFromAlert = document.getElementById('btnSubmitFromAlert');
 
         if (btnSubmit) btnSubmit.addEventListener('click', submitPenilaian);
-        if (btnSubmitFromAlert) btnSubmitFromAlert.addEventListener('click', submitPenilaian);
 
         async function submitPenilaian() {
             const completed = parseInt(document.getElementById('progressCompleted').textContent);
@@ -593,19 +690,19 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
 
             if (completed < total) {
                 Swal.fire({
-                    icon: 'warning'
-                    , title: 'Penilaian Belum Lengkap'
-                    , html: `<p>Anda baru menilai <strong>${completed} dari ${total}</strong> elemen.</p>
-                           <p class="text-danger">Anda harus menilai semua elemen sebelum submit!</p>`
-                    , confirmButtonText: 'OK'
+                    icon: 'warning',
+                    title: 'Penilaian Belum Lengkap',
+                    html: `<p>Anda baru menilai <strong>${completed} dari ${total}</strong> elemen.</p>
+                           <p class="text-danger">Anda harus menilai semua elemen sebelum submit!</p>`,
+                    confirmButtonText: 'OK'
                 });
                 return;
             }
 
             const confirmed = await Swal.fire({
-                icon: 'question'
-                , title: 'Konfirmasi Submit Penilaian'
-                , html: `
+                icon: 'question',
+                title: 'Konfirmasi Submit Penilaian',
+                html: `
                     <div class="text-start">
                         <p><strong>Anda akan mengirim penilaian untuk finalisasi.</strong></p>
                         <p>Setelah di-submit:</p>
@@ -616,23 +713,23 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
                         </ul>
                         <p class="text-primary">Total: <strong>${total} elemen</strong> telah dinilai</p>
                     </div>
-                `
-                , showCancelButton: true
-                , confirmButtonText: 'Ya, Submit Sekarang'
-                , cancelButtonText: 'Batal'
-                , confirmButtonColor: '#28a745'
-                , cancelButtonColor: '#6c757d'
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Submit Sekarang',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#6c757d'
             });
 
             if (!confirmed.isConfirmed) return;
 
             try {
                 const response = await fetch(`/al/berkas/${idAsesmen}/submit`, {
-                    method: 'POST'
-                    , headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        , 'Accept': 'application/json'
-                        , 'Content-Type': 'application/json'
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
                     }
                 });
 
@@ -640,15 +737,15 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
 
                 if (data.success) {
                     await Swal.fire({
-                        icon: 'success'
-                        , title: 'Submit Berhasil!'
-                        , html: `
+                        icon: 'success',
+                        title: 'Submit Berhasil!',
+                        html: `
                             <div class="text-center">
                                 <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
                                 <p class="mt-3">${data.message}</p>
                             </div>
-                        `
-                        , confirmButtonText: 'OK'
+                        `,
+                        confirmButtonText: 'OK'
                     });
                     window.location.reload();
                 } else {
@@ -657,14 +754,13 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
             } catch (error) {
                 console.error('Submit error:', error);
                 Swal.fire({
-                    icon: 'error'
-                    , title: 'Gagal Submit'
-                    , text: error.message
+                    icon: 'error',
+                    title: 'Gagal Submit',
+                    text: error.message
                 });
             }
         }
     });
-
 </script>
 @endpush
 @endsection

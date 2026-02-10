@@ -13,11 +13,11 @@
                     <tr>
                         <th width="5%">#</th>
                         <th width="15%">Permohonan Akreditasi</th>
-                        <th width="15%">Status AL</th>
                         <th width="15%">Penugasan</th>
                         <th width="15%">Jadwal Visitasi</th>
-                        <th width="15%">Progress</th>
-                        <th width="10%" class="text-center">Aksi</th>
+                        <th width="16%">Status Penugasan AL</th>
+                        <th width="16%">Tanggal Penugasan AL</th>
+                        <th width="8%" class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -53,11 +53,6 @@
                             {!! $pengajuan->getPermohonanAkreditasiSectionFor('de') !!}
                         </td>
                         <td>
-                            <span class="badge bg-{{ $statusAL['class'] }}">
-                                <i class="bi bi-{{ $statusAL['icon'] }}"></i> {{ $statusAL['text'] }}
-                            </span>
-                        </td>
-                        <td>
                             @if($asesorCount > 0)
                             <div class="mb-1">
                                 <small><i class="bi bi-person"></i> Asesor: <strong>{{ $asesorCount }}</strong></small>
@@ -81,31 +76,26 @@
                                 <i class="bi bi-calendar-event"></i>
                                 {{ \Carbon\Carbon::parse($jadwal->tanggal_mulai)->format('d M') }} -
                                 {{ \Carbon\Carbon::parse($jadwal->tanggal_selesai)->format('d M Y') }}
+                                @if($jadwal->lokasi)
                                 <br>
                                 <i class="bi bi-geo-alt text-danger"></i>
-                                <span class="text-muted">{{ Str::limit($jadwal->lokasi_visitasi, 25) }}</span>
+                                <span class="text-muted">{{ Str::limit($jadwal->lokasi, 25) }}</span>
+                                @endif
                             </small>
                             @else
                             <span class="text-muted">Belum dijadwalkan</span>
                             @endif
                         </td>
                         <td>
-                            @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AL_DILAPORKAN)
-                            <div class="progress" style="height: 20px;">
-                                <div class="progress-bar bg-success" style="width: 100%">100%</div>
-                            </div>
-                            @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AL_SELESAI)
-                            <div class="progress" style="height: 20px;">
-                                <div class="progress-bar bg-success" style="width: 90%">90%</div>
-                            </div>
-                            @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AL_IN_PROGRESS)
-                            <div class="progress" style="height: 20px;">
-                                <div class="progress-bar bg-info" style="width: 50%">50%</div>
-                            </div>
-                            @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED)
-                            <div class="progress" style="height: 20px;">
-                                <div class="progress-bar bg-secondary" style="width: 10%">10%</div>
-                            </div>
+                            {!! $pengajuan->getCustomBadgeLastStatus('penugasan_asesor_al','de','label_short_for') !!}
+                        </td>
+                        <td>
+                            @if($pengajuan->tanggal_penugasan_asesor_al)
+                            <small>{{ $pengajuan->tanggal_penugasan_asesor_al->format('d M Y') }}</small>
+                            <br>
+                            <small class="text-muted">
+                                {{ $pengajuan->tanggal_penugasan_asesor_al->diffForHumans() }}
+                            </small>
                             @else
                             <span class="text-muted">-</span>
                             @endif

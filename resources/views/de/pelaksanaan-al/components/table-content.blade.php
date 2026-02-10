@@ -13,10 +13,11 @@
                     <tr>
                         <th width="5%">#</th>
                         <th width="15%">Permohonan Akreditasi</th>
-                        <th width="15%">Status</th>
-                        <th width="15%">Asesor</th>
-                        <th width="15%">Validator</th>
-                        <th width="15%">Progress</th>
+                        <th width="13%">Asesor</th>
+                        <th width="13%">Validator</th>
+                        {{-- <th width="15%">Progress</th> --}}
+                        <th width="17%">Status Pelaksanaan AL</th>
+                        <th width="17%">Tanggal AL Selesai</th>
                         <th width="10%" class="text-center">Aksi</th>
                     </tr>
                 </thead>
@@ -60,11 +61,6 @@
                             {!! $pengajuan->getPermohonanAkreditasiSectionFor('de') !!}
                         </td>
                         <td>
-                            <span class="badge bg-{{ $statusBadge['class'] }}">
-                                <i class="bi bi-{{ $statusBadge['icon'] }}"></i> {{ $statusBadge['text'] }}
-                            </span>
-                        </td>
-                        <td>
                             @if($asesorCount > 0)
                             <div>
                                 <i class="bi bi-people"></i> <strong>{{ $asesorCount }}</strong> asesor
@@ -85,7 +81,23 @@
                             @endif
                         </td>
                         <td>
-                            @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AL_DILAPORKAN)
+                            {!! $pengajuan->getCustomBadgeLastStatus('pelaksanaan_al','de','label_short_for') !!}
+                            {{-- <span class="badge bg-{{ $statusBadge['class'] }}">
+                            <i class="bi bi-{{ $statusBadge['icon'] }}"></i> {{ $statusBadge['text'] }}
+                            </span> --}}
+                        </td>
+                        <td>
+                            @if($pengajuan->tanggal_pelaksanaan_al_selesai)
+                            <small>{{ $pengajuan->tanggal_pelaksanaan_al_selesai->format('d M Y') }}</small>
+                            <br>
+                            <small class="text-muted">
+                                {{ $pengajuan->tanggal_pelaksanaan_al_selesai->diffForHumans() }}
+                            </small>
+                            @else
+                            <span class="text-muted">-</span>
+                            @endif
+
+                            {{-- @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AL_DILAPORKAN)
                             <div class="progress" style="height: 20px;">
                                 <div class="progress-bar bg-success" style="width: 100%">100%</div>
                             </div>
@@ -103,7 +115,7 @@
                             </div>
                             @else
                             <span class="text-muted">-</span>
-                            @endif
+                            @endif --}}
                         </td>
                         <td class="text-center">
                             <a href="{{ route('de.pelaksanaan-al.show', $pengajuan->id) }}" class="btn btn-sm btn-primary" title="Lihat Detail">

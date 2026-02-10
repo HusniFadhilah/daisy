@@ -33,7 +33,7 @@ const PelaporanModule = (() => {
         },
         al: {
             title: 'Rekap AL dan Pelaporan AL',
-            label: 'Laporan Hasil Asesmen Lapangan Program Studi (LHA)',
+            label: 'Laporan Hasil Asesmen Lapangan',
             description: `Dokumen yang sudah digabungkan, yang diperlukan isinya adalah:
 - Penunjukan tugas Asesor untuk melaksanakan Penilaian LED
 - Proses penilaian LED oleh Asesor

@@ -168,9 +168,25 @@ class PelaksanaanALController extends Controller
             'studyProgram.university',
             'studyProgram.degreeLevel',
             'asesmen.asesmenLapangan',
+            'asesmen.beritaAcaraAL' => function ($q) {
+                $q->where('type', 'berita_acara_al')
+                    ->where('is_active', true)
+                    ->with('uploader')
+                    ->latest('uploaded_at');
+            },
+            'asesmen.documents' => function ($q) {
+                $q->where('type', 'lha_asesor')
+                    ->where('is_active', true)
+                    ->with('uploadedBy')
+                    ->latest('uploaded_at');
+            },
             'asesmen.asesmenUserRoles' => function ($q) {
                 $q->where('jenis_asesmen', 'al')
                     ->with(['user', 'role_selected']);
+            },
+            'asesmen.asesmenKecukupan.validators' => function ($q) {
+                $q->whereIn('status_penawaran', ['accepted', 'pending'])
+                    ->with('user');
             },
             'statusLog' => function ($q) {
                 $q->orderBy('changed_at', 'desc')->with('changedBy');
@@ -224,6 +240,12 @@ class PelaksanaanALController extends Controller
             ->whereHas('role', fn($q) => $q->where('name', 'validator'))
             ->exists();
 
+        // ✅ Get Validator AK (jika ada)
+        $validatorAK = $pengajuan->asesmen?->asesmenKecukupan?->validators()
+            ->whereIn('status_penawaran', ['accepted', 'pending'])
+            ->with('user')
+            ->first();
+
         // Available validators
         $availableValidators = User::notAdmin()->orderBy('name')->get();
 
@@ -233,22 +255,27 @@ class PelaksanaanALController extends Controller
             'hasValidator',
             'beritaAcaraProgress',
             'availableValidators',
+            'validatorAK', // ✅ NEW
             'totalElemens'
         ));
     }
 
     /**
-     * Assign validator untuk rekap berita acara & pelaporan AL
+     * ✅ UPDATE: Assign validator untuk rekap berita acara & pelaporan AL
      */
     public function assignValidator(Request $request, $id)
     {
         $request->validate([
-            'id_user' => 'required|exists:users,id',
+            'id_user' => 'nullable|exists:users,id',
+            'use_validator_ak' => 'nullable|boolean',
         ]);
 
         DB::beginTransaction();
         try {
-            $pengajuan = PengajuanAkreditasi::with('asesmen.asesmenLapangan')->findOrFail($id);
+            $pengajuan = PengajuanAkreditasi::with([
+                'asesmen.asesmenLapangan',
+                'asesmen.asesmenKecukupan.validators'
+            ])->findOrFail($id);
 
             if (!$pengajuan->asesmen || !$pengajuan->asesmen->asesmenLapangan) {
                 return response()->json([
@@ -257,31 +284,46 @@ class PelaksanaanALController extends Controller
                 ], 404);
             }
 
-            // Validasi: AL harus telah selesai (asesor telah submit)
-            // $hasAlSelesai = $pengajuan->statusLog()
-            //     ->where('status_to', PengajuanAkreditasi::STATUS_AL_SELESAI)
-            //     ->exists();
-
-            // $hasAlDilaporkan = $pengajuan->statusLog()
-            //     ->where('status_to', PengajuanAkreditasi::STATUS_AL_DILAPORKAN)
-            //     ->exists();
-
-            // if (!$hasAlSelesai || $hasAlDilaporkan) {
-            //     return response()->json([
-            //         'success' => false,
-            //         'message' => 'Proses AL harus selesai terlebih dahulu sebelum menugaskan validator'
-            //     ], 422);
-            // }
-
             $asesmen = $pengajuan->asesmen;
             $asesmenLapangan = $asesmen->asesmenLapangan;
 
             // Get validator role
             $validatorRole = Role::where('name', 'validator')->firstOrFail();
 
+            // ✅ Handle Validator AK Logic (mirip pattern di Penugasan AK)
+            $useValidatorAK = $request->boolean('use_validator_ak', false);
+            $validatorAK = null;
+            $user = null;
+
+            if ($useValidatorAK) {
+                // Get validator AK
+                $validatorAK = $asesmen->asesmenKecukupan?->validators()
+                    ->whereIn('status_penawaran', ['accepted', 'pending'])
+                    ->first();
+
+                if (!$validatorAK) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Validator AK tidak ditemukan. Silakan pilih validator lain.'
+                    ], 422);
+                }
+
+                // Override user dengan validator AK
+                $user = $validatorAK->user;
+            } else {
+                // Pilih validator baru
+                if (!$request->id_user) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Silakan pilih validator atau gunakan validator AK yang ada'
+                    ], 422);
+                }
+                $user = User::findOrFail($request->id_user);
+            }
+
             // Check if validator already assigned
             $exists = AsesmenUserRole::where('id_asesmen', $asesmen->id)
-                ->where('id_user', $request->id_user)
+                ->where('id_user', $user->id)
                 ->where('id_role', $validatorRole->id)
                 ->where('jenis_asesmen', 'al')
                 ->exists();
@@ -293,42 +335,52 @@ class PelaksanaanALController extends Controller
                 ], 422);
             }
 
+            // ✅ Status langsung accepted jika menggunakan validator AK
+            $statusPenawaran = ($useValidatorAK && $validatorAK) ? 'accepted' : 'pending';
+
             // Create assignment
             $assignment = AsesmenUserRole::create([
                 'id_asesmen' => $asesmen->id,
-                'id_user' => $request->id_user,
+                'id_user' => $user->id,
                 'id_role' => $validatorRole->id,
                 'jenis_asesmen' => 'al',
                 'id_asesmen_lapangan' => $asesmenLapangan->id,
                 'urutan_asesor' => null, // NULL for validator
-                'status_penawaran' => 'pending',
+                'status_penawaran' => $statusPenawaran, // ✅
                 'status_pekerjaan' => 'not_started',
                 'tanggal_penugasan' => now(),
             ]);
 
-            $user = User::find($request->id_user);
-
-            // Status tidak berubah saat assign validator
-            // Status akan berubah ke AL_ON_PELAPORAN saat validator mulai bekerja
-
-            // Send email
-            try {
-                SendPenawaranAsesmenEmail::dispatch($assignment);
-            } catch (\Exception $e) {
-                Log::error("Gagal dispatch email job penawaran validator AL", [
-                    'assignment_id' => $assignment->id,
-                    'error' => $e->getMessage(),
-                ]);
+            // ✅ Kirim email HANYA jika bukan validator AK
+            if (!($useValidatorAK && $validatorAK)) {
+                try {
+                    SendPenawaranAsesmenEmail::dispatch($assignment);
+                } catch (\Exception $e) {
+                    Log::error("Gagal dispatch email job penawaran validator AL", [
+                        'assignment_id' => $assignment->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
             }
 
             DB::commit();
 
+            $message = "Validator {$user->name} berhasil ditugaskan untuk rekap berita acara & pelaporan AL.";
+
+            if ($useValidatorAK && $validatorAK) {
+                $message .= " Status langsung diterima (accepted).";
+            } else {
+                $message .= " Email penawaran telah dikirim.";
+            }
+
             return response()->json([
                 'success' => true,
-                'message' => "Validator {$user->name} berhasil ditugaskan untuk rekap berita acara & pelaporan AL. Email penawaran telah dikirim.",
+                'message' => $message,
                 'data' => [
                     'assignment' => $assignment,
                     'user' => $user,
+                    'used_validator_ak' => $useValidatorAK && $validatorAK !== null,
+                    'status_penawaran' => $statusPenawaran,
                 ]
             ]);
         } catch (\Exception $e) {

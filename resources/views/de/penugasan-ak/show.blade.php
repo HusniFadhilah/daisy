@@ -383,64 +383,67 @@
                 </div>
             </div>
 
-            <!-- Jadwal AK -->
-            {{-- @if($pengajuan->asesmen?->asesmenKecukupan)
+            <!-- Timeline Penugasan -->
             <div class="card">
                 <div class="card-header bg-secondary text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-calendar-range"></i> Jadwal AK
+                        <i class="bi bi-clock-history"></i> Riwayat Status
                     </h5>
                 </div>
-                <div class="card-body">
-                    <table class="table table-borderless">
-                        <tr>
-                            <th style="width:40%">Tanggal Mulai</th>
-                            <td>
-                                : @if($pengajuan->asesmen->asesmenKecukupan->tanggal_mulai)
-                                {{ \Carbon\Carbon::parse($pengajuan->asesmen->asesmenKecukupan->tanggal_mulai)->format('d M Y') }}
-            @else
-            <span class="text-muted">-</span>
-            @endif
-            </td>
-            </tr>
-            <tr>
-                <th>Estimasi Selesai</th>
-                <td>
-                    : @if($pengajuan->asesmen->asesmenKecukupan->tanggal_selesai)
-                    {{ \Carbon\Carbon::parse($pengajuan->asesmen->asesmenKecukupan->tanggal_selesai)->format('d M Y') }}
-                    @else
-                    <span class="text-muted">-</span>
-                    @endif
-                </td>
-            </tr>
-            @if($pengajuan->asesmen->asesmenKecukupan->tanggal_mulai && $pengajuan->asesmen->asesmenKecukupan->tanggal_selesai)
-            <tr>
-                <th>Durasi</th>
-                <td>
-                    : @php
-                    $start = \Carbon\Carbon::parse($pengajuan->asesmen->asesmenKecukupan->tanggal_mulai);
-                    $end = \Carbon\Carbon::parse($pengajuan->asesmen->asesmenKecukupan->tanggal_selesai);
-                    $days = $start->diffInDays($end);
-                    @endphp
-                    <span class="badge bg-primary">{{ $days }} hari</span>
-                </td>
-            </tr>
-            @endif
-            </table>
+                <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                    @php
+                    $filterStatuses = [
+                    \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
+                    \App\Models\PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
+                    ];
 
-            @if($pengajuan->asesmen->asesmenKecukupan->catatan)
-            <div class="mt-3 p-2 bg-light rounded">
-                <small class="text-muted">
-                    <i class="bi bi-sticky"></i> <strong>Catatan:</strong><br>
-                    {{ $pengajuan->asesmen->asesmenKecukupan->catatan }}
-                </small>
+                    $logs = $pengajuan->statusLog
+                    ->whereIn('status_to', $filterStatuses)
+                    ->sortBy('changed_at')
+                    ->unique('status_to')
+                    ->values();
+                    @endphp
+
+                    @if($logs->count() > 0)
+                    <div class="timeline">
+                        @foreach($logs as $log)
+                        <div class="timeline-item mb-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    @php
+                                    $iconColor = match($log->status_to) {
+                                    \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AK_ASSIGNED,
+                                    => 'text-success',
+                                    \App\Models\PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
+                                    => 'text-success',
+                                    default => 'text-info',
+                                    };
+                                    @endphp
+                                    <i class="bi bi-circle-fill {{ $iconColor }}" style="font-size: 8px;"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <strong>
+                                        {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['de'] ?? $log->status_to }}
+                                    </strong>
+                                    <br>
+                                    <small class="text-muted">{{ $log->changed_at->format('d M Y H:i') }}</small>
+
+                                    {{-- @if($log->keterangan)
+                                    <br>
+                                    <small class="text-muted fst-italic">{{ $log->keterangan }}</small>
+                                    @endif --}}
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                    @else
+                    <p class="text-muted text-center mb-0">Belum ada riwayat penugasan</p>
+                    @endif
+                </div>
             </div>
-            @endif
         </div>
     </div>
-    @endif --}}
-</div>
-</div>
 </div>
 
 <!-- Modal: Mark Ready for AK -->
