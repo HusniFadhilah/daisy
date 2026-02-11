@@ -20,7 +20,7 @@ class AsesmenDocument extends Model
         'version',
         'uploaded_by',
         'uploaded_at',
-        'keterangan', // ✅ ADD: field keterangan yang digunakan di upload berita acara
+        'keterangan',
         'status_persetujuan_prodi',
         'approved_by_prodi',
         'approved_at_prodi',
@@ -46,6 +46,7 @@ class AsesmenDocument extends Model
     public const TYPE_LAPORAN_AL = 'laporan_al';
     public const TYPE_BERITA_ACARA_PENYAMPAIAN_HASIL = 'berita_acara_penyampaian_hasil';
     public const TYPE_BERITA_ACARA_PENETAPAN_HASIL = 'berita_acara_penetapan_hasil'; // ✅ ADD
+    public const TYPE_BERITA_ACARA_PENYIMPANAN_ARSIP = 'berita_acara_penyimpanan_arsip'; // ✅ NEW
     public const TYPE_BERITA_ACARA_AL = 'berita_acara_al';
     public const TYPE_BERITA_ACARA_AK = 'berita_acara_ak';
 
@@ -309,6 +310,29 @@ class AsesmenDocument extends Model
             ->where('is_active', true)
             ->orderBy('uploaded_at', 'desc')
             ->get();
+    }
+
+    /**
+     * ✅ Check if berita acara penyimpanan arsip exists
+     */
+    public static function hasBeritaAcaraPenyimpananArsip(int $asesmenId): bool
+    {
+        return self::where('id_asesmen', $asesmenId)
+            ->where('type', self::TYPE_BERITA_ACARA_PENYIMPANAN_ARSIP)
+            ->where('is_active', true)
+            ->exists();
+    }
+
+    /**
+     * ✅ Get latest berita acara penyimpanan arsip
+     */
+    public static function getLatestBeritaAcaraPenyimpananArsip(int $asesmenId): ?self
+    {
+        return self::where('id_asesmen', $asesmenId)
+            ->where('type', self::TYPE_BERITA_ACARA_PENYIMPANAN_ARSIP)
+            ->where('is_active', true)
+            ->latest()
+            ->first();
     }
 
     // ============================================

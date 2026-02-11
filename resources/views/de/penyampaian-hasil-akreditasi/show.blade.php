@@ -4,29 +4,26 @@
 
 @section('content')
 <div class="container-fluid">
-    {{-- Header --}}
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('de.penyampaian-hasil-akreditasi') }}">Penyampaian Hasil</a></li>
+            <li class="breadcrumb-item active">Detail</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-2">
-                    <li class="breadcrumb-item">
-                        <a href="{{ route('de.penyampaian-hasil-akreditasi') }}" class="text-dark">Penyampaian Hasil</a>
-                    </li>
-                    <li class="breadcrumb-item active">Detail Hasil</li>
-                </ol>
-            </nav>
-            <h4 class="mb-0">
-                <i class="bi bi-clipboard-data text-primary"></i>
-                Hasil Akreditasi
-            </h4>
-            <p class="mb-2">{{ $pengajuan->judul }}</p>
+            <h5 class="mb-1">
+                <i class="bi bi-file-earmark-text"></i> Detail Penyampaian Hasil
+            </h5>
+            <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
-
-        <div>
-            <a href="{{ route('de.penyampaian-hasil-akreditasi') }}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i> Kembali
-            </a>
-        </div>
+        <a href="{{ route('de.penyampaian-hasil-akreditasi') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Kembali
+        </a>
     </div>
 
     {{-- Summary Cards --}}
@@ -251,7 +248,7 @@
                     @endif
                 </div>
                 <div class="btn-group">
-                    <a href="{{ route('de.penyampaian-hasil-akreditasi.download-berita-acara', $pengajuan->id) }}" class="btn btn-outline-primary" target="_blank">
+                    <a href="{{ route('de.penyampaian-hasil-akreditasi.download-berita-acara', $pengajuan->id) }}" class="btn btn-outline-dark" target="_blank">
                         <i class="bi bi-eye"></i> Lihat File
                     </a>
                     <form action="{{ route('de.penyampaian-hasil-akreditasi.delete-berita-acara', $pengajuan->id) }}" method="POST" class="d-inline">
@@ -289,7 +286,7 @@
                     </small>
                 </div>
                 <div>
-                    <a href="{{ route('de.penyampaian-hasil-akreditasi.download-berita-acara', $pengajuan->id) }}" class="btn btn-outline-primary" target="_blank">
+                    <a href="{{ route('de.penyampaian-hasil-akreditasi.download-berita-acara', $pengajuan->id) }}" class="btn btn-outline-dark" target="_blank">
                         <i class="bi bi-download"></i> Download
                     </a>
                 </div>

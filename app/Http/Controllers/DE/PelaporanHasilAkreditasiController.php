@@ -150,7 +150,9 @@ class PelaporanHasilAkreditasiController extends Controller
                 ->with('error', 'Hasil akreditasi belum ditetapkan.');
         }
 
-        return view('de.pelaporan-hasil-akreditasi.show', compact('pengajuan'));
+        $hasil = $pengajuan->asesmen->hasil ?? null;
+        $peringkat = $hasil->peringkat_akreditasi ?? null;
+        return view('de.pelaporan-hasil-akreditasi.show', compact('pengajuan', 'hasil', 'peringkat'));
     }
 
     /**

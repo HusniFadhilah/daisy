@@ -54,7 +54,7 @@
                     Anda akan dialihkan secara otomatis dalam <span id="seconds">5</span> detik...
                 </p>
 
-                <a href="{{ route('pelaporan.indexValidasiAK') }}" class="btn btn-light btn-lg">
+                <a href="{{ route('pelaporan.indexValidasiAK') }}" class="btn btn-light btn-md">
                     <i class="bi bi-arrow-right"></i> Pergi Sekarang
                 </a>
             </div>

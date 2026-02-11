@@ -1,4 +1,4 @@
-{{-- resources/views/de/penyimpanan-arsip-pelaksanaan-akreditasi/index.blade.php --}}
+{{-- resources/views/de/penyimpanan-arsip-akreditasi/index.blade.php --}}
 @extends('layouts.template.app')
 
 @section('title', 'Penyimpanan Arsip Akreditasi')
@@ -72,117 +72,30 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 mb-4">
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 mb-4">
         <div class="col mb-3">
-            <x-stat-card title="Total Hasil Dilaporkan" :value="$stats['total']" description="Siap atau telah diarsipkan" icon="archive" gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)" />
+            <x-stat-card title="Total Permohonan Akreditasi" :value="$stats['total']" description="Permohonan akreditasi yang telah sampai tahap penyimpanan arsip" icon="archive" gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)" />
         </div>
 
         <div class="col mb-3">
-            <x-stat-card title="Belum Diarsipkan" :value="$stats['belum_diarsipkan']" description="Menunggu penyimpanan arsip" icon="hourglass-split" gradient="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" />
+            <x-stat-card title="Belum Diarsipkan" :value="$stats['belum_diarsipkan']" description="Penyimpanan arsip sedang proses dilakukan" icon="hourglass-split" gradient="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" />
         </div>
 
         <div class="col mb-3">
-            <x-stat-card title="Telah Diarsipkan" :value="$stats['sudah_diarsipkan']" description="Arsip tersimpan" icon="archive-fill" gradient="linear-gradient(135deg, #11998e 0%, #38ef7d 100%)" />
-        </div>
-
-        <div class="col mb-3">
-            <x-stat-card title="Proses Selesai" :value="$stats['selesai']" description="Akreditasi selesai sempurna" icon="check-circle-fill" gradient="linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" />
+            <x-stat-card title="Telah Diarsipkan" :value="$stats['selesai']" description="Dokumen akreditasi telah selesai dan arsip tersimpan" icon="archive-fill" gradient="linear-gradient(135deg, #11998e 0%, #38ef7d 100%)" />
         </div>
     </div>
 
     <!-- Filters & Content -->
     <div class="row">
         <!-- Filters Sidebar -->
-        <div class="col-lg-3 mb-4">
-            <div class="card filter-card">
-                <div class="card-header border-0">
-                    <h5 class="mb-0">
-                        <i class="bi bi-funnel"></i> Filter & Pencarian
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <form method="GET" action="{{ route('de.penyimpanan-arsip-pelaksanaan-akreditasi') }}">
-                        <!-- Search -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Cari Pengajuan</label>
-                            <input type="text" name="search" class="form-control" placeholder="Nomor/Nama prodi..." value="{{ request('search') }}">
-                        </div>
-
-                        <!-- Status Filter -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Status Arsip</label>
-                            <select name="status" class="form-select">
-                                <option value="">Semua Status</option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN ? 'selected' : '' }}>
-                                    Belum Diarsipkan
-                                </option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_ARSIP_DISIMPAN }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_ARSIP_DISIMPAN ? 'selected' : '' }}>
-                                    Telah Diarsipkan
-                                </option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_SELESAI }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_SELESAI ? 'selected' : '' }}>
-                                    Proses Selesai
-                                </option>
-                            </select>
-                        </div>
-
-                        <!-- Peringkat Filter -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Peringkat</label>
-                            <select name="peringkat" class="form-select">
-                                <option value="">Semua Peringkat</option>
-                                <option value="Unggul" {{ request('peringkat') == 'Unggul' ? 'selected' : '' }}>Unggul</option>
-                                <option value="Baik Sekali" {{ request('peringkat') == 'Baik Sekali' ? 'selected' : '' }}>Baik Sekali</option>
-                                <option value="Baik" {{ request('peringkat') == 'Baik' ? 'selected' : '' }}>Baik</option>
-                                <option value="Tidak Terakreditasi" {{ request('peringkat') == 'Tidak Terakreditasi' ? 'selected' : '' }}>Tidak Terakreditasi</option>
-                            </select>
-                        </div>
-
-                        <!-- University -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Universitas</label>
-                            <select name="university_id" class="form-select">
-                                <option value="">Semua Universitas</option>
-                                @foreach($universities as $univ)
-                                <option value="{{ $univ->id }}" {{ request('university_id') == $univ->id ? 'selected' : '' }}>
-                                    {{ $univ->name }}
-                                </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <!-- Tahun -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Tahun Akreditasi</label>
-                            <select name="tahun" class="form-select">
-                                <option value="">Semua Tahun</option>
-                                @foreach($tahunList as $tahun)
-                                <option value="{{ $tahun }}" {{ request('tahun') == $tahun ? 'selected' : '' }}>
-                                    {{ $tahun }}
-                                </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <!-- Buttons -->
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-light">
-                                <i class="bi bi-search"></i> Terapkan Filter
-                            </button>
-                            <a href="{{ route('de.penyimpanan-arsip-pelaksanaan-akreditasi') }}" class="btn btn-outline-light">
-                                <i class="bi bi-x-circle"></i> Reset
-                            </a>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
 
         <!-- Main Content -->
-        <div class="col-lg-9">
+        <div class="col-lg-12">
             <div class="card">
                 <div class="card-header bg-white">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Daftar Arsip Akreditasi</h5>
+                        <h5 class="mb-0">Daftar Penyimpanan Arsip Akreditasi</h5>
                         <div>
                             <span class="text-muted">Total: <strong>{{ $pengajuans->total() }}</strong></span>
                         </div>
@@ -190,113 +103,64 @@
                 </div>
                 <div class="card-body p-0">
                     @if($pengajuans->count() > 0)
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th width="5%">#</th>
-                                    <th width="15%">Nomor Permohonan Akreditasi</th>
-                                    <th width="20%">Program Studi</th>
-                                    <th width="10%">Peringkat</th>
-                                    <th width="8%">Skor</th>
-                                    <th width="12%">Status</th>
-                                    <th width="10%">Tgl Arsip</th>
-                                    <th width="10%">Dokumen</th>
-                                    <th width="10%" class="text-center">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($pengajuans as $index => $pengajuan)
-                                @php
-                                $peringkat = $pengajuan->peringkat_final;
-                                $skor = $pengajuan->skor_final;
-
-                                $badgeClass = match($peringkat) {
-                                'Unggul' => 'success',
-                                'Baik Sekali' => 'primary',
-                                'Baik' => 'info',
-                                'Tidak Terakreditasi' => 'danger',
-                                default => 'secondary'
-                                };
-
-                                $totalDocs = $pengajuan->dokumen->count();
-                                @endphp
-                                <tr>
-                                    <td>{{ $pengajuans->firstItem() + $index }}</td>
-                                    <td>
-                                        <strong>{{ $pengajuan->nomor_pengajuan }}</strong>
-                                        <br>
-                                        <small class="text-muted">{{ $pengajuan->tahun_akreditasi }}</small>
-                                    </td>
-                                    <td>
-                                        <div>
-                                            <strong>{{ $pengajuan->studyProgram->name }}</strong>
-                                            <br>
-                                            <small class="text-muted">
-                                                {{ $pengajuan->studyProgram->university->name ?? '-' }}
-                                            </small>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-peringkat bg-{{ $badgeClass }}">
-                                            {{ $peringkat }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <strong>{{ number_format($skor, 2) }}</strong>
-                                    </td>
-                                    <td>
-                                        @if($pengajuan->status == \App\Models\PengajuanAkreditasi::STATUS_SELESAI)
-                                        <span class="badge bg-success status-completed">
-                                            <i class="bi bi-check-circle-fill"></i> Selesai
-                                        </span>
-                                        @elseif($pengajuan->status == \App\Models\PengajuanAkreditasi::STATUS_ARSIP_DISIMPAN)
-                                        <span class="badge bg-info">
-                                            <i class="bi bi-archive-fill"></i> Diarsipkan
-                                        </span>
-                                        @else
-                                        <span class="badge bg-warning text-dark">
-                                            <i class="bi bi-hourglass-split"></i> Belum
-                                        </span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if($pengajuan->tanggal_penyimpanan)
-                                        <small>{{ $pengajuan->tanggal_penyimpanan->format('d M Y') }}</small>
-                                        @else
-                                        <span class="text-muted">-</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-secondary">
-                                            <i class="bi bi-files"></i> {{ $totalDocs }}
-                                        </span>
-                                    </td>
-                                    <td class="text-center">
-                                        <div class="btn-group btn-group-sm" role="group">
-                                            <a href="{{ route('de.penyimpanan-arsip-pelaksanaan-akreditasi.show', $pengajuan->id) }}" class="btn btn-info action-btn" title="Detail">
-                                                <i class="bi bi-eye"></i>
-                                            </a>
-
-                                            <a href="{{ route('de.penyimpanan-arsip-pelaksanaan-akreditasi.download-all', $pengajuan->id) }}" class="btn btn-secondary action-btn" title="Download All">
-                                                <i class="bi bi-download"></i>
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Pagination -->
-                    <div class="card-footer bg-white">
-                        {{ $pengajuans->links() }}
-                    </div>
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th width="5%">#</th>
+                                <th width="25%">Permohonan Akreditasi</th>
+                                <th width="20%">Peringkat Akhir</th>
+                                <th width="20%">Status Penyimpanan Arsip Akreditasi</th>
+                                <th width="20%">Tanggal Penyimpanan Arsip Akreditasi</th>
+                                <th width="10%" class="text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($pengajuans as $index => $pengajuan)
+                            @php
+                            $peringkatAkhir = $pengajuan->peringkat_hasil_banding ?? $pengajuan->peringkat_hasil;
+                            $nilaiAkhir = $pengajuan->nilai_akhir_banding ?? $pengajuan->nilai_akhir;
+                            $hasil = $pengajuan->asesmen->hasil ?? null;
+                            @endphp
+                            <tr>
+                                <td>{{ $pengajuans->firstItem() + $index }}</td>
+                                <td>
+                                    {!! $pengajuan->getPermohonanAkreditasiSectionFor('de') !!}
+                                </td>
+                                <td>
+                                    @if($hasil && $hasil->skor_final)
+                                    @php
+                                    $peringkatFinal = $hasil->getPeringkatFromSkorAL($hasil->skor_final);
+                                    @endphp
+                                    <span class="badge p-2 px-3 my-2 fs-6" style="background-color: {{ $hasil->getPeringkatColor($peringkatFinal) }}; color:#222">
+                                        {{ $peringkatFinal }}
+                                    </span>
+                                    @else
+                                    <span class="text-muted">-</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    {!! $pengajuan->getCustomBadgeLastStatus('penyimpanan_arsip','de','label_short_for','text-dark') !!}
+                                </td>
+                                <td>
+                                    <small>
+                                        {{ $pengajuan->tanggal_penyimpanan
+                                                        ? $pengajuan->tanggal_penyimpanan->format('d M Y')
+                                                        : '-' }}
+                                    </small>
+                                </td>
+                                <td class="text-center">
+                                    <a href="{{ route('de.penyimpanan-arsip-akreditasi.show', $pengajuan->id) }}" class="btn btn-info btn-sm" title="Lihat Detail">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                     @else
                     <div class="text-center py-5">
-                        <i class="bi bi-inbox" style="font-size: 64px; color: #ddd;"></i>
-                        <p class="text-muted mt-3">Tidak ada arsip akreditasi</p>
+                        <i class="bi bi-inbox" style="font-size: 3rem; color: #dee2e6;"></i>
+                        <p class="text-muted mt-3 mb-0">Tidak ada data penyimpanan arsip akreditasi</p>
                     </div>
                     @endif
                 </div>

@@ -21,16 +21,13 @@ class MasaSanggahController extends Controller
             'studyProgram.degreeLevel',
             'studyProgram.category',
             'asesmen.hasil',
-        ])
-            ->whereIn('status', [
+            'statusLog' => fn($q) => $q->whereIn('status_to', [
                 PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM,
                 PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
                 PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
                 PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
-                PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
-                PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
-            ])
-            ->whereNotNull('tanggal_hasil_akreditasi_dikirim');
+            ])->orderBy('created_at', 'desc'),
+        ])->whereNotNull('tanggal_masa_sanggah_mulai');
 
         // Filter by status
         if ($request->filled('status')) {

@@ -1682,7 +1682,7 @@ class PengajuanAkreditasi extends Model
                 ),
 
                 default =>
-                $badge('bg-secondary', '-'),
+                $badge('bg-light', 'Menunggu Penyimpanan Arsip'),
             },
 
             default => $badge('bg-secondary', '-'),

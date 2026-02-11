@@ -8,7 +8,7 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('de.pelaporan-al') }}">Monitor Pelaporan AL</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('de.pelaporan-al') }}">Pelaporan AL</a></li>
             <li class="breadcrumb-item active">Detail</li>
         </ol>
     </nav>

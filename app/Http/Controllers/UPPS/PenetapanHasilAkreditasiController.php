@@ -68,7 +68,6 @@ class PenetapanHasilAkreditasiController extends Controller
             'asesmen.hasil',
             'dokumen' => fn($q) => $q->whereIn('jenis_dokumen', [
                 'sertifikat',
-                'sertifikat_akreditasi',
                 'sk_akreditasi',
             ])->orderBy('created_at', 'desc'),
             'statusLog' => fn($q) => $q->orderBy('changed_at', 'desc'),

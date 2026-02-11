@@ -6,6 +6,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laporan Hasil Asesmen Lapangan</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('assets/favicon/apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('assets/favicon/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('assets/favicon/favicon-16x16.png') }}">
+    <link rel="manifest" href="{{ asset('assets/favicon/site.webmanifest') }}">
     <style>
         @page {
             margin: 1.5cm 2cm 2cm 2cm;
@@ -227,8 +231,8 @@
             <td>: {{ $asesmen->pengajuan->studyProgram->degreeLevel->name ?? '-' }}</td>
         </tr>
         <tr>
-            <td>Nomor Permohonan</td>
-            <td>: {{ $asesmen->pengajuan->nomor_pengajuan ?? '-' }}</td>
+            <td>Nomor Permohonan Akreditasi</td>
+            <td>: {{ $asesmen->pengajuan->nomor_permohonan ?? '-' }}</td>
         </tr>
         @if($asesmen->asesmenLapangan && $asesmen->asesmenLapangan->scheduled_date)
         <tr>

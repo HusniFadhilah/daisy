@@ -251,7 +251,7 @@
             <!-- Action Button -->
             @if($pengajuan->pembayaran && $pengajuan->pembayaran->status_pembayaran == 'menunggu_verifikasi')
             <div class="d-grid gap-2 mt-3">
-                <a href="{{ route('keuangan.pembayaran.show', $pengajuan->id) }}" class="btn btn-success btn-lg">
+                <a href="{{ route('keuangan.pembayaran.show', $pengajuan->id) }}" class="btn btn-success btn-md">
                     <i class="bi bi-check-circle"></i> Validasi Pembayaran
                 </a>
             </div>

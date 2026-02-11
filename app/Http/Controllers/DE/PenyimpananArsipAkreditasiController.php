@@ -1,0 +1,710 @@
+<?php
+// app/Http/Controllers/DE/PenyimpananArsipPelaksanaanAkreditasiController.php
+
+namespace App\Http\Controllers\DE;
+
+use ZipArchive;
+use App\Models\University;
+use Illuminate\Http\Request;
+use App\Models\AsesmenDocument;
+use App\Models\PengajuanDokumen;
+use Illuminate\Support\Facades\DB;
+use App\Models\PengajuanAkreditasi;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
+
+class PenyimpananArsipAkreditasiController extends Controller
+{
+    /**
+     * Display list of pengajuan yang perlu/sudah diarsipkan
+     */
+    public function index(Request $request)
+    {
+        $query = PengajuanAkreditasi::with([
+            'studyProgram.university',
+            'studyProgram.degreeLevel',
+            'studyProgram.category',
+            'pengaju',
+            'asesmen.hasil',
+            'dokumen' => function ($q) {
+                $q->where('is_latest', true);
+            },
+            'statusLog' => function ($q) {
+                $q->whereIn('status_to', [
+                    PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN,
+                    PengajuanAkreditasi::STATUS_ARSIP_DISIMPAN,
+                    PengajuanAkreditasi::STATUS_SELESAI,
+                ])->orderBy('changed_at', 'desc');
+            },
+        ])
+            // ✅ Filter: yang sudah dilaporkan atau lebih lanjut
+            ->whereIn('status', [
+                PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN,
+                PengajuanAkreditasi::STATUS_ARSIP_DISIMPAN,
+                PengajuanAkreditasi::STATUS_SELESAI,
+            ]);
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Filter by university
+        if ($request->filled('university_id')) {
+            $query->whereHas('studyProgram', function ($q) use ($request) {
+                $q->where('id_university', $request->university_id);
+            });
+        }
+
+        // Filter by tahun
+        if ($request->filled('tahun')) {
+            $query->where('tahun_akreditasi', $request->tahun);
+        }
+
+        // Filter by peringkat
+        if ($request->filled('peringkat')) {
+            $query->where('peringkat_final', $request->peringkat);
+        }
+
+        // Search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nomor_pengajuan', 'like', "%{$search}%")
+                    ->orWhereHas('studyProgram', function ($sq) use ($search) {
+                        $sq->where('name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        // Sort
+        $sortBy = $request->get('sort_by', 'tanggal_pelaporan_hasil');
+        $sortOrder = $request->get('sort_order', 'desc');
+
+        if ($sortBy === 'tanggal_pelaporan_hasil') {
+            $query->orderByRaw('COALESCE(tanggal_pelaporan_hasil, created_at) ' . $sortOrder);
+        } else {
+            $query->orderBy($sortBy, $sortOrder);
+        }
+
+        $pengajuans = $query->paginate(20);
+
+        // Calculate statistics
+        $stats = $this->calculateStatistics();
+
+        // Get filter data
+        $universities = University::nonExample()->orderBy('name')->get();
+        $tahunList = PengajuanAkreditasi::whereIn('status', [
+            PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN,
+            PengajuanAkreditasi::STATUS_ARSIP_DISIMPAN,
+            PengajuanAkreditasi::STATUS_SELESAI,
+        ])
+            ->distinct()
+            ->pluck('tahun_akreditasi')
+            ->filter()
+            ->sort()
+            ->values();
+
+        return view('de.penyimpanan-arsip-akreditasi.index', compact(
+            'pengajuans',
+            'stats',
+            'universities',
+            'tahunList'
+        ));
+    }
+
+    public function show($id)
+    {
+        $pengajuan = PengajuanAkreditasi::with([
+            'studyProgram.university',
+            'studyProgram.degreeLevel',
+            'studyProgram.category',
+            'pengaju',
+            'asesmen.hasil',
+            'asesmen.asesmenKecukupan',
+            'asesmen.asesmenLapangan',
+            'dokumen' => function ($q) {
+                $q->where('is_latest', true)
+                    ->orderBy('jenis_dokumen')
+                    ->orderBy('created_at', 'desc');
+            },
+            'statusLog',
+        ])->findOrFail($id);
+
+        if (!in_array($pengajuan->status, [
+            PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN,
+            PengajuanAkreditasi::STATUS_ARSIP_DISIMPAN,
+            PengajuanAkreditasi::STATUS_SELESAI,
+        ])) {
+            return redirect()
+                ->route('de.penyimpanan-arsip-akreditasi')
+                ->with('error', 'Hasil akreditasi belum dilaporkan.');
+        }
+
+        $documentChecklist = $this->getDocumentChecklist($pengajuan);
+
+        // ✅ Get berita acara penyimpanan arsip
+        $beritaAcara = null;
+        if ($pengajuan->asesmen) {
+            $beritaAcara = AsesmenDocument::where('id_asesmen', $pengajuan->asesmen->id)
+                ->where('type', AsesmenDocument::TYPE_BERITA_ACARA_PENYIMPANAN_ARSIP)
+                ->where('is_active', true)
+                ->latest()
+                ->first();
+        }
+
+        // ✅ Check if can save arsip
+        $canSaveArsip = $beritaAcara !== null;
+
+        return view('de.penyimpanan-arsip-akreditasi.show', compact(
+            'pengajuan',
+            'documentChecklist',
+            'beritaAcara',
+            'canSaveArsip'
+        ));
+    }
+
+    /**
+     * ✅ Upload Berita Acara Penyimpanan Arsip
+     */
+    public function uploadBeritaAcara(Request $request, $id)
+    {
+        $request->validate([
+            'berita_acara' => 'required|file|mimes:pdf|max:10240',
+            'keterangan' => 'nullable|string|max:500',
+        ], [
+            'berita_acara.required' => 'File Berita Acara harus diupload.',
+            'berita_acara.mimes' => 'File harus berformat PDF.',
+            'berita_acara.max' => 'Ukuran file maksimal 10MB.',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $pengajuan = PengajuanAkreditasi::findOrFail($id);
+            $asesmen = $pengajuan->asesmen;
+
+            if (!$asesmen) {
+                throw new \Exception('Asesmen tidak ditemukan.');
+            }
+
+            $file = $request->file('berita_acara');
+            $originalName = $file->getClientOriginalName();
+            $extension = $file->getClientOriginalExtension();
+            $fileName = 'berita_acara_penyimpanan_arsip_' . time() . '.' . $extension;
+
+            $path = $file->storeAs(
+                'asesmen_documents/' . $asesmen->id . '/berita_acara_arsip',
+                $fileName,
+                'public'
+            );
+
+            // Deactivate previous berita acara
+            AsesmenDocument::where('id_asesmen', $asesmen->id)
+                ->where('type', AsesmenDocument::TYPE_BERITA_ACARA_PENYIMPANAN_ARSIP)
+                ->update(['is_active' => false]);
+
+            // Create new record
+            $document = AsesmenDocument::create([
+                'id_asesmen' => $asesmen->id,
+                'type' => AsesmenDocument::TYPE_BERITA_ACARA_PENYIMPANAN_ARSIP,
+                'title' => 'Berita Acara Penyimpanan Arsip Akreditasi',
+                'path' => $path,
+                'original_name' => $originalName,
+                'size' => $file->getSize(),
+                'mime' => $file->getMimeType(),
+                'uploaded_by' => auth()->id(),
+                'uploaded_at' => now(),
+                'keterangan' => $request->keterangan,
+                'is_active' => true,
+                'version' => 1,
+            ]);
+
+            DB::commit();
+
+            return redirect()
+                ->route('de.penyimpanan-arsip-akreditasi.show', $id)
+                ->with('success', 'Berita Acara berhasil diupload!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Upload berita acara arsip failed', [
+                'pengajuan_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+
+            return back()->with('error', 'Gagal upload: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * ✅ Download Berita Acara Penyimpanan Arsip
+     */
+    public function downloadBeritaAcara($id)
+    {
+        try {
+            $pengajuan = PengajuanAkreditasi::findOrFail($id);
+            $asesmen = $pengajuan->asesmen;
+
+            if (!$asesmen) {
+                throw new \Exception('Asesmen tidak ditemukan.');
+            }
+
+            $beritaAcara = AsesmenDocument::where('id_asesmen', $asesmen->id)
+                ->where('type', AsesmenDocument::TYPE_BERITA_ACARA_PENYIMPANAN_ARSIP)
+                ->where('is_active', true)
+                ->latest()
+                ->firstOrFail();
+
+            if (!Storage::disk('public')->exists($beritaAcara->path)) {
+                throw new \Exception('File tidak ditemukan.');
+            }
+
+            return Storage::disk('public')->download(
+                $beritaAcara->path,
+                $beritaAcara->original_name
+            );
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal download: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * ✅ Delete Berita Acara Penyimpanan Arsip
+     */
+    public function deleteBeritaAcara($id)
+    {
+        DB::beginTransaction();
+        try {
+            $pengajuan = PengajuanAkreditasi::findOrFail($id);
+            $asesmen = $pengajuan->asesmen;
+
+            if (!$asesmen) {
+                throw new \Exception('Asesmen tidak ditemukan.');
+            }
+
+            // Cannot delete if already saved arsip
+            if ($pengajuan->status != PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN) {
+                throw new \Exception('Berita acara tidak dapat dihapus karena arsip sudah disimpan.');
+            }
+
+            $beritaAcara = AsesmenDocument::where('id_asesmen', $asesmen->id)
+                ->where('type', AsesmenDocument::TYPE_BERITA_ACARA_PENYIMPANAN_ARSIP)
+                ->where('is_active', true)
+                ->latest()
+                ->firstOrFail();
+
+            // Delete file from storage
+            if (Storage::disk('public')->exists($beritaAcara->path)) {
+                Storage::disk('public')->delete($beritaAcara->path);
+            }
+
+            // Soft delete (mark as inactive)
+            $beritaAcara->update(['is_active' => false]);
+
+            DB::commit();
+
+            return redirect()
+                ->route('de.penyimpanan-arsip-akreditasi.show', $id)
+                ->with('success', 'Berita Acara berhasil dihapus!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal hapus: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * ✅ Simpan arsip (UPDATED with validation)
+     */
+    public function simpanArsip(Request $request, $id)
+    {
+        $request->validate([
+            'catatan_penyimpanan' => 'nullable|string|max:2000',
+        ]);
+
+        $pengajuan = PengajuanAkreditasi::findOrFail($id);
+
+        if ($pengajuan->status !== PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN) {
+            return back()->with('error', 'Status saat ini tidak sesuai untuk penyimpanan arsip.');
+        }
+
+        // ✅ Validate berita acara
+        if (!AsesmenDocument::hasBeritaAcaraPenyimpananArsip($pengajuan->asesmen->id)) {
+            return back()->with('error', 'Berita Acara Penyimpanan Arsip harus diupload terlebih dahulu.');
+        }
+
+        // Validate document checklist
+        $checklist = $this->getDocumentChecklist($pengajuan);
+        $missingCritical = array_filter($checklist, function ($item) {
+            return $item['critical'] && !$item['exists'];
+        });
+
+        if (!empty($missingCritical)) {
+            $missingList = implode(', ', array_column($missingCritical, 'label'));
+            return back()->with('error', 'Dokumen penting masih kurang: ' . $missingList);
+        }
+
+        DB::beginTransaction();
+        try {
+            $pengajuan->update([
+                'status' => PengajuanAkreditasi::STATUS_ARSIP_DISIMPAN,
+                'tanggal_penyimpanan' => now(),
+            ]);
+
+            $pengajuan->statusLog()->create([
+                'status_from' => PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN,
+                'status_to' => PengajuanAkreditasi::STATUS_ARSIP_DISIMPAN,
+                'changed_by' => auth()->id(),
+                'changed_at' => now(),
+                'keterangan' => 'Arsip pelaksanaan akreditasi disimpan. ' . ($request->catatan_penyimpanan ? $request->catatan_penyimpanan : ''),
+            ]);
+
+            DB::commit();
+
+            return redirect()
+                ->route('de.penyimpanan-arsip-akreditasi.show', $id)
+                ->with('success', 'Arsip pelaksanaan akreditasi berhasil disimpan.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal menyimpan arsip: ' . $e->getMessage());
+        }
+    }
+    /**
+     * Selesaikan proses akreditasi (final step)
+     */
+    public function selesaikanProses(Request $request, $id)
+    {
+        $request->validate([
+            'catatan_penyelesaian' => 'nullable|string|max:2000',
+        ]);
+
+        $pengajuan = PengajuanAkreditasi::findOrFail($id);
+
+        // Validasi status
+        if ($pengajuan->status !== PengajuanAkreditasi::STATUS_ARSIP_DISIMPAN) {
+            return back()->with('error', 'Arsip belum disimpan. Simpan arsip terlebih dahulu.');
+        }
+
+        DB::beginTransaction();
+        try {
+            // Update status to SELESAI (final)
+            $pengajuan->update([
+                'status' => PengajuanAkreditasi::STATUS_SELESAI,
+            ]);
+
+            // Log status change
+            $pengajuan->statusLog()->create([
+                'status_from' => PengajuanAkreditasi::STATUS_ARSIP_DISIMPAN,
+                'status_to' => PengajuanAkreditasi::STATUS_SELESAI,
+                'changed_by' => auth()->id(),
+                'changed_at' => now(),
+                'keterangan' => 'Proses akreditasi selesai. ' . ($request->catatan_penyelesaian ?? ''),
+            ]);
+
+            DB::commit();
+
+            return redirect()
+                ->route('de.penyimpanan-arsip-akreditasi.show', $id)
+                ->with('success', 'Proses akreditasi berhasil diselesaikan! 🎉');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal menyelesaikan proses: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Download all documents as ZIP
+     */
+    public function downloadAllDocuments($id)
+    {
+        $pengajuan = PengajuanAkreditasi::with(['dokumen' => function ($q) {
+            $q->where('is_latest', true);
+        }])->findOrFail($id);
+
+        $dokumens = $pengajuan->dokumen;
+
+        if ($dokumens->isEmpty()) {
+            return back()->with('error', 'Tidak ada dokumen untuk diunduh.');
+        }
+
+        $zipFileName = 'arsip_' . $pengajuan->nomor_pengajuan . '_' . time() . '.zip';
+        $zipPath = storage_path('app/temp/' . $zipFileName);
+
+        // Create temp directory if not exists
+        if (!file_exists(storage_path('app/temp'))) {
+            mkdir(storage_path('app/temp'), 0755, true);
+        }
+
+        $zip = new ZipArchive();
+        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== TRUE) {
+            return back()->with('error', 'Gagal membuat file ZIP.');
+        }
+
+        foreach ($dokumens as $dokumen) {
+            $filePath = storage_path('app/public/' . $dokumen->path_file);
+
+            if (file_exists($filePath)) {
+                // Create folder structure in ZIP
+                $folderName = $dokumen->jenis_dokumen_alias;
+                $zip->addFile($filePath, $folderName . '/' . $dokumen->original_filename);
+            }
+        }
+
+        $zip->close();
+
+        return response()->download($zipPath, $zipFileName)->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Get document checklist for validation
+     */
+    private function getDocumentChecklist($pengajuan): array
+    {
+        // Dokumen dari pengajuan (PengajuanDokumen)
+        $dokumens = $pengajuan->dokumen->keyBy('jenis_dokumen');
+
+        // Dokumen dari asesmen (AsesmenDocument)
+        $asesmen = $pengajuan->asesmen ?? null;
+
+        $asesmenTypes = [
+            'laporan_validasi_borang',
+            'laporan_validasi_ak',
+            'berita_acara_al',
+            'lha_asesor',
+            'laporan_al',
+            'berita_acara_penyampaian_hasil', // sesuai yang kamu tulis (kalau typo -> perbaiki ke "hasil")
+            'berita_acara_penetapan_hasil',
+        ];
+
+        $asesmenDokumens = collect();
+
+        if ($asesmen) {
+            $asesmenDokumens = AsesmenDocument::query()
+                ->where('id_asesmen', $asesmen->id)
+                ->whereIn('type', $asesmenTypes)
+                ->get()
+                ->keyBy('type');
+        }
+
+        return [
+            // =========================
+            // Dokumen Pengajuan (lama)
+            // =========================
+            'sertifikat' => [
+                'label' => 'Sertifikat Akreditasi',
+                'critical' => true,
+                'exists' => $dokumens->has('sertifikat'),
+                'dokumen' => $dokumens->get('sertifikat'),
+                'source' => 'pengajuan',
+            ],
+            'surat_permohonan' => [
+                'label' => PengajuanDokumen::JENIS_DOKUMEN_ALIAS['surat_permohonan'] ?? 'Surat Permohonan Akreditasi',
+                'critical' => true,
+                'exists' => $dokumens->has('surat_permohonan'),
+                'dokumen' => $dokumens->get('surat_permohonan'),
+                'source' => 'pengajuan',
+            ],
+            'surat_penerimaan' => [
+                'label' => PengajuanDokumen::JENIS_DOKUMEN_ALIAS['surat_penerimaan_de'] ?? 'Surat Penerimaan Akreditasi',
+                'critical' => true,
+                'exists' => $dokumens->has('surat_penerimaan_de'),
+                'dokumen' => $dokumens->get('surat_penerimaan_de'),
+                'source' => 'pengajuan',
+            ],
+            'formulir_pembayaran' => [
+                'label' => PengajuanDokumen::JENIS_DOKUMEN_ALIAS['formulir_pembayaran'] ?? 'Bukti Pembayaran',
+                'critical' => true,
+                'exists' => $dokumens->has('formulir_pembayaran'),
+                'dokumen' => $dokumens->get('formulir_pembayaran'),
+                'source' => 'pengajuan',
+            ],
+            'data_kualitatif' => [
+                'label' => PengajuanDokumen::JENIS_DOKUMEN_ALIAS['data_kualitatif'] ?? 'Laporan Evaluasi Diri (LED)',
+                'critical' => true,
+                'exists' => $dokumens->has('data_kualitatif'),
+                'dokumen' => $dokumens->get('data_kualitatif'),
+                'source' => 'pengajuan',
+            ],
+            'data_kuantitatif' => [
+                'label' => PengajuanDokumen::JENIS_DOKUMEN_ALIAS['data_kuantitatif'] ?? 'Laporan Kinerja Program Studi (LKPS)',
+                'critical' => true,
+                'exists' => $dokumens->has('data_kuantitatif'),
+                'dokumen' => $dokumens->get('data_kuantitatif'),
+                'source' => 'pengajuan',
+            ],
+            'data_suplemen' => [
+                'label' => PengajuanDokumen::JENIS_DOKUMEN_ALIAS['data_suplemen'] ?? 'Suplemen Laporan Evaluasi Diri',
+                'critical' => true,
+                'exists' => $dokumens->has('data_suplemen'),
+                'dokumen' => $dokumens->get('data_suplemen'),
+                'source' => 'pengajuan',
+            ],
+            'lembar_pengesahan' => [
+                'label' => PengajuanDokumen::JENIS_DOKUMEN_ALIAS['lembar_pengesahan'] ?? 'Lembar Pengesahan Dokumen',
+                'critical' => true,
+                'exists' => $dokumens->has('lembar_pengesahan'),
+                'dokumen' => $dokumens->get('lembar_pengesahan'),
+                'source' => 'pengajuan',
+            ],
+            'surat_tugas_validator_dokumen' => [
+                'label' => 'Surat Tugas Validator',
+                'critical' => true,
+                'exists' => $dokumens->has('surat_tugas_validator_dokumen'),
+                'dokumen' => $dokumens->get('surat_tugas_validator_dokumen'),
+                'source' => 'pengajuan',
+            ],
+            'surat_tugas_asesor_ak' => [
+                'label' => PengajuanDokumen::JENIS_DOKUMEN_ALIAS['surat_tugas_asesor_ak'] ?? 'Surat Tugas Asesor AK',
+                'critical' => true,
+                'exists' => $dokumens->has('surat_tugas_asesor_ak'),
+                'dokumen' => $dokumens->get('surat_tugas_asesor_ak'),
+                'source' => 'pengajuan',
+            ],
+            'surat_tugas_asesor_al' => [
+                'label' => PengajuanDokumen::JENIS_DOKUMEN_ALIAS['surat_tugas_asesor_al'] ?? 'Surat Tugas Asesor AL',
+                'critical' => true,
+                'exists' => $dokumens->has('surat_tugas_asesor_al'),
+                'dokumen' => $dokumens->get('surat_tugas_asesor_al'),
+                'source' => 'pengajuan',
+            ],
+            'laporan_hasil' => [
+                'label' => 'Laporan Hasil Akreditasi',
+                'critical' => true,
+                'exists' => $dokumens->has('laporan_hasil'),
+                'dokumen' => $dokumens->get('laporan_hasil'),
+                'source' => 'pengajuan',
+            ],
+
+            // =========================
+            // Dokumen Asesmen (baru)
+            // =========================
+            'asesmen_laporan_validasi_borang' => [
+                'label' => 'Laporan Validasi Borang',
+                'critical' => false,
+                'exists' => $asesmenDokumens->has('laporan_validasi_borang'),
+                'dokumen' => $asesmenDokumens->get('laporan_validasi_borang'),
+                'source' => 'asesmen',
+            ],
+            'asesmen_laporan_validasi_ak' => [
+                'label' => 'Laporan Validasi AK',
+                'critical' => false,
+                'exists' => $asesmenDokumens->has('laporan_validasi_ak'),
+                'dokumen' => $asesmenDokumens->get('laporan_validasi_ak'),
+                'source' => 'asesmen',
+            ],
+            'asesmen_berita_acara_al' => [
+                'label' => 'Berita Acara AL',
+                'critical' => false,
+                'exists' => $asesmenDokumens->has('berita_acara_al'),
+                'dokumen' => $asesmenDokumens->get('berita_acara_al'),
+                'source' => 'asesmen',
+            ],
+            'asesmen_lha_asesor' => [
+                'label' => 'Laporan Hasil Asesmen Lapangan (Asesor)',
+                'critical' => false,
+                'exists' => $asesmenDokumens->has('lha_asesor'),
+                'dokumen' => $asesmenDokumens->get('lha_asesor'),
+                'source' => 'asesmen',
+            ],
+            'asesmen_laporan_al' => [
+                'label' => 'Laporan Rekap AL',
+                'critical' => false,
+                'exists' => $asesmenDokumens->has('laporan_al'),
+                'dokumen' => $asesmenDokumens->get('laporan_al'),
+                'source' => 'asesmen',
+            ],
+            'asesmen_berita_acara_penyampaian_hasil' => [
+                'label' => 'Berita Acara Penyampaian Hasil',
+                'critical' => false,
+                'exists' => $asesmenDokumens->has('berita_acara_penyampaian_hasil'),
+                'dokumen' => $asesmenDokumens->get('berita_acara_penyampaian_hasil'),
+                'source' => 'asesmen',
+            ],
+            'asesmen_berita_acara_penetapan_hasil' => [
+                'label' => 'Berita Acara Penetapan Hasil',
+                'critical' => false,
+                'exists' => $asesmenDokumens->has('berita_acara_penetapan_hasil'),
+                'dokumen' => $asesmenDokumens->get('berita_acara_penetapan_hasil'),
+                'source' => 'asesmen',
+            ],
+
+
+            // 'laporan_ak' => [
+            //     'label' => 'Laporan Hasil AK',
+            //     'critical' => true,
+            //     'exists' => $dokumens->has('laporan_ak'),
+            //     'dokumen' => $dokumens->get('laporan_ak'),
+            // ],
+            // 'laporan_al' => [
+            //     'label' => 'Laporan Hasil AL',
+            //     'critical' => true,
+            //     'exists' => $dokumens->has('laporan_al'),
+            //     'dokumen' => $dokumens->get('laporan_al'),
+            // ],
+            // 'laporan_hasil' => [
+            //     'label' => 'Laporan Hasil Akreditasi',
+            //     'critical' => true,
+            //     'exists' => $dokumens->has('laporan_hasil'),
+            //     'dokumen' => $dokumens->get('laporan_hasil'),
+            // ],
+            // 'laporan_banding' => [
+            //     'label' => 'Laporan Banding',
+            //     'critical' => false,
+            //     'exists' => $dokumens->has('laporan_banding'),
+            //     'dokumen' => $dokumens->get('laporan_banding'),
+            // ],
+        ];
+    }
+
+    /**
+     * Calculate statistics
+     */
+    private function calculateStatistics(): array
+    {
+        $stats = [
+            'total' => 0,
+            'belum_diarsipkan' => 0,
+            'sudah_diarsipkan' => 0,
+            'selesai' => 0,
+            'unggul' => 0,
+            'baik_sekali' => 0,
+            'baik' => 0,
+            'tidak_terakreditasi' => 0,
+        ];
+
+        // Total yang siap arsip
+        $stats['total'] = PengajuanAkreditasi::whereIn('status', [
+            PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN,
+            PengajuanAkreditasi::STATUS_ARSIP_DISIMPAN,
+            PengajuanAkreditasi::STATUS_SELESAI,
+        ])->count();
+
+        // Belum diarsipkan
+        $stats['belum_diarsipkan'] = PengajuanAkreditasi::where('status', PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN)
+            ->count();
+
+        // Sudah diarsipkan
+        $stats['sudah_diarsipkan'] = PengajuanAkreditasi::where('status', PengajuanAkreditasi::STATUS_ARSIP_DISIMPAN)
+            ->count();
+
+        // Selesai
+        $stats['selesai'] = PengajuanAkreditasi::where('status', PengajuanAkreditasi::STATUS_SELESAI)
+            ->count();
+
+        // Distribusi peringkat
+        $peringkatDist = PengajuanAkreditasi::whereIn('status', [
+            PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN,
+            PengajuanAkreditasi::STATUS_ARSIP_DISIMPAN,
+            PengajuanAkreditasi::STATUS_SELESAI,
+        ])
+            ->select('peringkat_final', DB::raw('count(*) as total'))
+            ->groupBy('peringkat_final')
+            ->pluck('total', 'peringkat_final');
+
+        $stats['unggul'] = $peringkatDist['Unggul'] ?? 0;
+        $stats['baik_sekali'] = $peringkatDist['Baik Sekali'] ?? 0;
+        $stats['baik'] = $peringkatDist['Baik'] ?? 0;
+        $stats['tidak_terakreditasi'] = $peringkatDist['Tidak Terakreditasi'] ?? 0;
+
+        return $stats;
+    }
+}

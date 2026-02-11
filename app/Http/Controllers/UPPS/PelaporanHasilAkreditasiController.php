@@ -72,7 +72,7 @@ class PelaporanHasilAkreditasiController extends Controller
             'studyProgram.degreeLevel',
             'pengaju',
             'dokumen' => fn($q) => $q->whereIn('jenis_dokumen', [
-                'sertifikat_akreditasi',
+                'sertifikat',
                 'sk_akreditasi',
                 'sk_penetapan',
                 'laporan_hasil',
@@ -88,7 +88,10 @@ class PelaporanHasilAkreditasiController extends Controller
             abort(403, 'Anda tidak memiliki akses ke permohonan ini.');
         }
 
-        return view('upps.pelaporan-hasil-akreditasi.show', compact('pengajuan'));
+        $hasil = $pengajuan->asesmen->hasil ?? null;
+        $peringkat = $hasil->peringkat_akreditasi ?? null;
+
+        return view('upps.pelaporan-hasil-akreditasi.show', compact('pengajuan', 'hasil', 'peringkat'));
     }
 
     /**
@@ -105,25 +108,27 @@ class PelaporanHasilAkreditasiController extends Controller
             $search = $request->search;
             $q->where(function ($sq) use ($search) {
                 $sq->where('nomor_pengajuan', 'like', "%{$search}%")
-                    ->orWhereHas('studyProgram', fn($ssq) =>
+                    ->orWhereHas(
+                        'studyProgram',
+                        fn($ssq) =>
                         $ssq->where('name', 'like', "%{$search}%")
                     );
             });
         });
 
         // Filter by status
-        $query->when($request->filled('status'), function($q) use ($request) {
+        $query->when($request->filled('status'), function ($q) use ($request) {
             $q->where('status', $request->status);
         });
 
         // Filter by peringkat hasil akhir
-        $query->when($request->filled('peringkat'), function($q) use ($request) {
-            $q->where(function($sq) use ($request) {
+        $query->when($request->filled('peringkat'), function ($q) use ($request) {
+            $q->where(function ($sq) use ($request) {
                 $sq->where('peringkat_hasil_banding', $request->peringkat)
-                   ->orWhere(function($ssq) use ($request) {
-                       $ssq->whereNull('peringkat_hasil_banding')
-                          ->where('peringkat_hasil', $request->peringkat);
-                   });
+                    ->orWhere(function ($ssq) use ($request) {
+                        $ssq->whereNull('peringkat_hasil_banding')
+                            ->where('peringkat_hasil', $request->peringkat);
+                    });
             });
         });
     }

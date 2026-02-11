@@ -6,7 +6,7 @@ use App\Http\Controllers\Prodi\{DeskEvaluatorController, PengajuanAkreditasiCont
 use App\Http\Controllers\Master\{ElemenStandarController, JenisIndikatorController, IndikatorController, IndikatorPenilaianElemenController, KriteriaController, UniversityController, StudyProgramController};
 use App\Http\Controllers\Asesmen\{AsesmenController, AKController, ALController, ALDocumentController, BorangValidatorController, HasilAkreditasiController, PenawaranController, PelaporanController, ValidasiController};
 use App\Http\Controllers\{AuthController, BobotPenilaianController, DashboardController, PenugasanController, BandingController, PedomanController, DokumenController, PanduanController, BantuanController, SettingsController, ActivityController, TaskController, LaporanController, TinyMceImageController, UserController};
-use App\Http\Controllers\DE\{ValidasiAKController, MasaSanggahController, PelaporanAKController, PelaporanALController, PenugasanAKController, PenugasanALController, PelaksanaanALController, SuratPermohonanController, ValidasiDokumenController, PelaporanBandingController, PelaporanDokumenController, PenerimaanDokumenController, PelaksanaanBandingController, ValidasiPembayaranController, FormulirPembayaranController, PenyampaianTemplateController, PelaporanHasilAkreditasiController, PenerimaanPermohonanController, PenetapanHasilAkreditasiController, PenyampaianHasilAkreditasiController, PenyimpananArsipPelaksanaanAkreditasiController, PermohonanBandingController, PaymentSummaryController};
+use App\Http\Controllers\DE\{ValidasiAKController, MasaSanggahController, PelaporanAKController, PelaporanALController, PenugasanAKController, PenugasanALController, PelaksanaanALController, SuratPermohonanController, ValidasiDokumenController, PelaporanBandingController, PelaporanDokumenController, PenerimaanDokumenController, PelaksanaanBandingController, ValidasiPembayaranController, FormulirPembayaranController, PenyampaianTemplateController, PelaporanHasilAkreditasiController, PenerimaanPermohonanController, PenetapanHasilAkreditasiController, PenyampaianHasilAkreditasiController, PenyimpananArsipAkreditasiController, PermohonanBandingController, PaymentSummaryController};
 
 
 // Dashboard (awal)
@@ -481,12 +481,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{id}/preview-sertifikat', [PelaporanHasilAkreditasiController::class, 'previewSertifikat'])->name('.preview-sertifikat');
             Route::get('/{id}/generate-sertifikat', [PelaporanHasilAkreditasiController::class, 'generateSertifikat'])->name('.generate-sertifikat');
         });
-        Route::prefix('penyimpanan-arsip-pelaksanaan-akreditasi')->name('.penyimpanan-arsip-pelaksanaan-akreditasi')->group(function () {
-            Route::get('/', [PenyimpananArsipPelaksanaanAkreditasiController::class, 'index']);
-            Route::get('/{id}', [PenyimpananArsipPelaksanaanAkreditasiController::class, 'show'])->name('.show');
-            Route::post('/{id}/simpan', [PenyimpananArsipPelaksanaanAkreditasiController::class, 'simpanArsip'])->name('.simpan');
-            Route::post('/{id}/selesaikan', [PenyimpananArsipPelaksanaanAkreditasiController::class, 'selesaikanProses'])->name('.selesaikan');
-            Route::get('/{id}/download-all', [PenyimpananArsipPelaksanaanAkreditasiController::class, 'downloadAllDocuments'])->name('.download-all');
+        Route::prefix('penyimpanan-arsip-akreditasi')->name('.penyimpanan-arsip-akreditasi')->group(function () {
+            Route::get('/', [PenyimpananArsipAkreditasiController::class, 'index']);
+            Route::get('/{id}', [PenyimpananArsipAkreditasiController::class, 'show'])->name('.show');
+            Route::post('/{id}/simpan', [PenyimpananArsipAkreditasiController::class, 'simpanArsip'])->name('.simpan');
+            Route::post('/{id}/selesaikan', [PenyimpananArsipAkreditasiController::class, 'selesaikanProses'])->name('.selesaikan');
+            Route::get('/{id}/download-all', [PenyimpananArsipAkreditasiController::class, 'downloadAllDocuments'])->name('.download-all');
+
+            Route::post('/{id}/upload-berita-acara', [PenyimpananArsipAkreditasiController::class, 'uploadBeritaAcara'])->name('.upload-berita-acara');
+            Route::get('/{id}/download-berita-acara', [PenyimpananArsipAkreditasiController::class, 'downloadBeritaAcara'])->name('.download-berita-acara');
+            Route::delete('/{id}/delete-berita-acara', [PenyimpananArsipAkreditasiController::class, 'deleteBeritaAcara'])->name('.delete-berita-acara');
         });
         Route::prefix('payment-summary')->name('.payment-summary')->group(function () {
             Route::post('/verify', [PaymentSummaryController::class, 'verifyPassword'])->name('.verify');
@@ -661,15 +665,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{id}', [\App\Http\Controllers\UPPS\PelaporanHasilAkreditasiController::class, 'show'])->name('.show');
         });
 
-        Route::prefix('penyimpanan-arsip-pelaksanaan-akreditasi')->name('.penyimpanan-arsip-pelaksanaan-akreditasi')->group(function () {
-            Route::get('/', [\App\Http\Controllers\UPPS\PenyimpananArsipPelaksanaanAkreditasiController::class, 'index']);
-            Route::get('/{id}', [\App\Http\Controllers\UPPS\PenyimpananArsipPelaksanaanAkreditasiController::class, 'show'])->name('.show');
+        Route::prefix('penyimpanan-arsip-akreditasi')->name('.penyimpanan-arsip-akreditasi')->group(function () {
+            Route::get('/', [\App\Http\Controllers\UPPS\PenyimpananArsipAkreditasiController::class, 'index']);
+            Route::get('/{id}', [\App\Http\Controllers\UPPS\PenyimpananArsipAkreditasiController::class, 'show'])->name('.show');
+
+            Route::get('/{id}/download-berita-acara', [\App\Http\Controllers\UPPS\PenyimpananArsipAkreditasiController::class, 'downloadBeritaAcara'])->name('.download-berita-acara');
         });
     });
 
     Route::prefix('upps')->name('upps')->group(function () {
         Route::prefix('pengiriman-dokumen')->name('.penerimaan-dokumen')->group(function () {
             Route::get('/dokumen/{id}/download', [\App\Http\Controllers\UPPS\PenerimaanDokumenController::class, 'download'])->name('.dokumen.download');
+            Route::get('/dokumen/{id}/preview', [\App\Http\Controllers\UPPS\PenerimaanDokumenController::class, 'preview'])->name('.dokumen.preview');
         });
     });
 

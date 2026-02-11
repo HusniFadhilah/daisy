@@ -57,7 +57,7 @@
             <div class="alert alert-light alert-permanent">
                 <i class="bi bi-info-circle"></i>
                 <strong>Tahap Selanjutnya:</strong> Setelah penetapan hasil akreditasi, hasil akan masuk ke tahap
-                <strong>Pengumuman</strong> sesuai ketentuan yang berlaku.
+                <strong>Pelaporan Hasil</strong> sesuai ketentuan yang berlaku.<br>Program studi dapat mengunduh berita acara rapat penetapan hasil sebagai berikut
             </div>
 
             <!-- ✅ Berita Acara Section -->

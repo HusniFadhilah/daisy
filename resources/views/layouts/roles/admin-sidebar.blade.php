@@ -129,8 +129,8 @@ $menus = [
 ],
 [
 'no' => 20,
-'route' => 'de.penyimpanan-arsip-pelaksanaan-akreditasi',
-'match' => 'de.penyimpanan-arsip-pelaksanaan-akreditasi*',
+'route' => 'de.penyimpanan-arsip-akreditasi',
+'match' => 'de.penyimpanan-arsip-akreditasi*',
 'icon' => 'bi-archive',
 'label' => 'Penyimpanan Arsip Akreditasi',
 ],

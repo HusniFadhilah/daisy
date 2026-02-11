@@ -4,29 +4,27 @@
 
 @section('content')
 <div class="container-fluid">
-    {{-- Header --}}
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('de.penetapan-hasil-akreditasi') }}">Penetapan Hasil Akreditasi</a></li>
+            <li class="breadcrumb-item active">Detail</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-2">
-                    <li class="breadcrumb-item">
-                        <a href="{{ route('de.penetapan-hasil-akreditasi') }}" class="text-dark">Penetapan Hasil</a>
-                    </li>
-                    <li class="breadcrumb-item active">Detail Hasil</li>
-                </ol>
-            </nav>
-            <h4 class="mb-0">
-                <i class="bi bi-clipboard-check text-primary"></i>
-                Penetapan Hasil Akreditasi
-            </h4>
-            <p class="mb-2">{{ $pengajuan->judul }}</p>
+            <h5 class="mb-1">
+                <i class="bi bi-file-earmark-text"></i> Detail Penetapan Hasil Akreditasi
+            </h5>
+            <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
-
-        <div>
-            <a href="{{ route('de.penetapan-hasil-akreditasi') }}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i> Kembali
-            </a>
-        </div>
+        <a href="{{ route('de.penetapan-hasil-akreditasi') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Kembali
+        </a>
     </div>
 
     {{-- Summary Cards --}}
@@ -144,7 +142,7 @@
         </div>
     </div>
     @else
-    <div class="alert alert-success alert-permanent">
+    <div class="alert alert-light border-3 alert-permanent">
         <i class="bi bi-check-circle-fill me-2"></i>
         Hasil telah <strong>Ditetapkan</strong> pada {{ $pengajuan->tanggal_penetapan?->format('d F Y, H:i') }}
     </div>
@@ -162,434 +160,434 @@
                 Penetapan masih dapat dibatalkan sebelum hasil diumumkan.
             </div>
             <form action="{{ route('de.penetapan-hasil-akreditasi.batalkan', $pengajuan->id) }}" method="POST" class="d-inline">
-                @csrf
-                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Batalkan penetapan hasil? Anda perlu menetapkan ulang.')">
-                    <i class="bi bi-x-circle"></i> Batalkan Penetapan
+    @csrf
+    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Batalkan penetapan hasil? Anda perlu menetapkan ulang.')">
+        <i class="bi bi-x-circle"></i> Batalkan Penetapan
+    </button>
+    </form>
+</div>
+</div>
+@endif --}}
+@endif
+
+{{-- Berita Acara Penetapan --}}
+@if(!$sudahDitetapkan)
+{{-- Jika Berita Acara belum diupload --}}
+@if(!$beritaAcaraPenetapan)
+<div class="card border-light mb-4">
+    <div class="card-header bg-light text-dark">
+        <h5 class="mb-0">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            Upload Berita Acara Rapat Penetapan Hasil
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-light border-2 alert-permanent">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>Perhatian:</strong> Anda harus mengupload <strong>Berita Acara Rapat Penetapan Hasil Akreditasi</strong>
+            sebelum dapat melakukan penetapan hasil.
+        </div>
+
+        <form action="{{ route('de.penetapan-hasil-akreditasi.upload-berita-acara', $pengajuan->id) }}" method="POST" enctype="multipart/form-data">
+            @csrf
+
+            <div class="mb-3">
+                <label for="berita_acara" class="form-label">
+                    File Berita Acara <span class="text-danger">*</span>
+                </label>
+                <input type="file" class="form-control @error('berita_acara') is-invalid @enderror" id="berita_acara" name="berita_acara" accept=".pdf" required>
+                <small class="text-muted">Format: PDF, Maksimal 10MB</small>
+                @error('berita_acara')
+                <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+
+            <div class="mb-3">
+                <label for="keterangan" class="form-label">Keterangan (Opsional)</label>
+                <textarea class="form-control @error('keterangan') is-invalid @enderror" id="keterangan" name="keterangan" rows="3" placeholder="Catatan tambahan...">{{ old('keterangan') }}</textarea>
+                @error('keterangan')
+                <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-outline-dark">
+                    <i class="bi bi-cloud-upload"></i> Upload Berita Acara
                 </button>
-            </form>
-        </div>
-    </div>
-    @endif --}}
-    @endif
-
-    {{-- Berita Acara Penetapan --}}
-    @if(!$sudahDitetapkan)
-    {{-- Jika Berita Acara belum diupload --}}
-    @if(!$beritaAcaraPenetapan)
-    <div class="card border-light mb-4">
-        <div class="card-header bg-light text-dark">
-            <h5 class="mb-0">
-                <i class="bi bi-exclamation-triangle-fill"></i>
-                Upload Berita Acara Rapat Penetapan Hasil
-            </h5>
-        </div>
-        <div class="card-body">
-            <div class="alert alert-light border-2 alert-permanent">
-                <i class="bi bi-info-circle me-2"></i>
-                <strong>Perhatian:</strong> Anda harus mengupload <strong>Berita Acara Rapat Penetapan Hasil Akreditasi</strong>
-                sebelum dapat melakukan penetapan hasil.
             </div>
+        </form>
+    </div>
+</div>
 
-            <form action="{{ route('de.penetapan-hasil-akreditasi.upload-berita-acara', $pengajuan->id) }}" method="POST" enctype="multipart/form-data">
-                @csrf
-
-                <div class="mb-3">
-                    <label for="berita_acara" class="form-label">
-                        File Berita Acara <span class="text-danger">*</span>
-                    </label>
-                    <input type="file" class="form-control @error('berita_acara') is-invalid @enderror" id="berita_acara" name="berita_acara" accept=".pdf" required>
-                    <small class="text-muted">Format: PDF, Maksimal 10MB</small>
-                    @error('berita_acara')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+{{-- Jika Berita Acara sudah diupload --}}
+@else
+<div class="card mb-4">
+    <div class="card-header bg-light text-dark">
+        <h5 class="mb-0">
+            <i class="bi bi-file-earmark-check-fill"></i>
+            Berita Acara Rapat Penetapan Hasil
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h6 class="mb-1">{{ $beritaAcaraPenetapan->title }}</h6>
+                <p class="text-muted mb-2">
+                    <i class="bi bi-file-pdf text-danger"></i>
+                    {{ $beritaAcaraPenetapan->original_name }}
+                </p>
+                <small class="text-muted">
+                    Diupload pada {{ $beritaAcaraPenetapan->uploaded_at?->format('d M Y, H:i') }}
+                </small>
+                @if($beritaAcaraPenetapan->keterangan)
+                <div class="mt-2">
+                    <small class="text-muted">
+                        <i class="bi bi-chat-left-text"></i>
+                        {{ $beritaAcaraPenetapan->keterangan }}
+                    </small>
                 </div>
-
-                <div class="mb-3">
-                    <label for="keterangan" class="form-label">Keterangan (Opsional)</label>
-                    <textarea class="form-control @error('keterangan') is-invalid @enderror" id="keterangan" name="keterangan" rows="3" placeholder="Catatan tambahan...">{{ old('keterangan') }}</textarea>
-                    @error('keterangan')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-outline-dark">
-                        <i class="bi bi-cloud-upload"></i> Upload Berita Acara
+                @endif
+            </div>
+            <div class="btn-group">
+                <a href="{{ route('de.penetapan-hasil-akreditasi.download-berita-acara', $pengajuan->id) }}" class="btn btn-outline-dark" target="_blank">
+                    <i class="bi bi-eye"></i> Lihat File
+                </a>
+                <form action="{{ route('de.penetapan-hasil-akreditasi.delete-berita-acara', $pengajuan->id) }}" method="POST" class="d-inline">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Hapus berita acara ini? Anda harus upload ulang untuk penetapan.')">
+                        <i class="bi bi-trash"></i> Hapus
                     </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    {{-- Jika Berita Acara sudah diupload --}}
-    @else
-    <div class="card mb-4">
-        <div class="card-header bg-light text-dark">
-            <h5 class="mb-0">
-                <i class="bi bi-file-earmark-check-fill"></i>
-                Berita Acara Rapat Penetapan Hasil
-            </h5>
-        </div>
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="mb-1">{{ $beritaAcaraPenetapan->title }}</h6>
-                    <p class="text-muted mb-2">
-                        <i class="bi bi-file-pdf text-danger"></i>
-                        {{ $beritaAcaraPenetapan->original_name }}
-                    </p>
-                    <small class="text-muted">
-                        Diupload pada {{ $beritaAcaraPenetapan->uploaded_at?->format('d M Y, H:i') }}
-                    </small>
-                    @if($beritaAcaraPenetapan->keterangan)
-                    <div class="mt-2">
-                        <small class="text-muted">
-                            <i class="bi bi-chat-left-text"></i>
-                            {{ $beritaAcaraPenetapan->keterangan }}
-                        </small>
-                    </div>
-                    @endif
-                </div>
-                <div class="btn-group">
-                    <a href="{{ route('de.penetapan-hasil-akreditasi.download-berita-acara', $pengajuan->id) }}" class="btn btn-outline-primary" target="_blank">
-                        <i class="bi bi-eye"></i> Lihat File
-                    </a>
-                    <form action="{{ route('de.penetapan-hasil-akreditasi.delete-berita-acara', $pengajuan->id) }}" method="POST" class="d-inline">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Hapus berita acara ini? Anda harus upload ulang untuk penetapan.')">
-                            <i class="bi bi-trash"></i> Hapus
-                        </button>
-                    </form>
-                </div>
+                </form>
             </div>
         </div>
     </div>
-    @endif
-    @else
-    {{-- Jika sudah ditetapkan, tampilkan berita acara (read-only) --}}
-    @if($beritaAcaraPenetapan)
-    <div class="card mb-4">
-        <div class="card-header bg-light text-dark">
-            <h5 class="mb-0">
-                <i class="bi bi-file-earmark-check-fill"></i>
-                Berita Acara Rapat Penetapan Hasil
-            </h5>
-        </div>
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="mb-1">{{ $beritaAcaraPenetapan->title }}</h6>
-                    <p class="text-muted mb-2">
-                        <i class="bi bi-file-pdf text-danger"></i>
-                        {{ $beritaAcaraPenetapan->original_name }}
-                    </p>
-                    <small class="text-muted">
-                        Diupload pada {{ $beritaAcaraPenetapan->uploaded_at?->format('d M Y, H:i') }}
-                    </small>
-                </div>
-                <div>
-                    <a href="{{ route('de.penetapan-hasil-akreditasi.download-berita-acara', $pengajuan->id) }}" class="btn btn-outline-primary" target="_blank">
-                        <i class="bi bi-download"></i> Download
-                    </a>
-                </div>
+</div>
+@endif
+@else
+{{-- Jika sudah ditetapkan, tampilkan berita acara (read-only) --}}
+@if($beritaAcaraPenetapan)
+<div class="card mb-4">
+    <div class="card-header bg-light text-dark">
+        <h5 class="mb-0">
+            <i class="bi bi-file-earmark-check-fill"></i>
+            Berita Acara Rapat Penetapan Hasil
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h6 class="mb-1">{{ $beritaAcaraPenetapan->title }}</h6>
+                <p class="text-muted mb-2">
+                    <i class="bi bi-file-pdf text-danger"></i>
+                    {{ $beritaAcaraPenetapan->original_name }}
+                </p>
+                <small class="text-muted">
+                    Diupload pada {{ $beritaAcaraPenetapan->uploaded_at?->format('d M Y, H:i') }}
+                </small>
+            </div>
+            <div>
+                <a href="{{ route('de.penetapan-hasil-akreditasi.download-berita-acara', $pengajuan->id) }}" class="btn btn-outline-dark" target="_blank">
+                    <i class="bi bi-download"></i> Download
+                </a>
             </div>
         </div>
     </div>
-    @endif
-    @endif
+</div>
+@endif
+@endif
 
-    {{-- Keterangan Batasan Skor Akreditasi --}}
-    <div class="card mb-4 border-0 shadow-sm">
-        <div class="card-header bg-secondary text-white border-0">
-            <h5 class="mb-0">
-                <i class="bi bi-info-circle"></i>
-                Keterangan Batasan Skor Akreditasi
-            </h5>
-        </div>
-        <div class="card-body">
-            <div class="row g-2">
-                {{-- 0-250: Tidak Terakreditasi --}}
-                <div class="col-md-6">
-                    <div class="d-flex align-items-center p-3 rounded h-100" style="background-color: #f8d7da;">
-                        <div class="me-3">
-                            <strong class="text-dark">0 - 250</strong>
-                        </div>
-                        <div class="flex-grow-1">
-                            <strong class="text-dark">Tidak Terakreditasi</strong>
-                            <div><small class="text-muted">Ditolak validator dokumen</small></div>
-                        </div>
+{{-- Keterangan Batasan Skor Akreditasi --}}
+<div class="card mb-4 border-0 shadow-sm">
+    <div class="card-header bg-secondary text-white border-0">
+        <h5 class="mb-0">
+            <i class="bi bi-info-circle"></i>
+            Keterangan Batasan Skor Akreditasi
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-2">
+            {{-- 0-250: Tidak Terakreditasi --}}
+            <div class="col-md-6">
+                <div class="d-flex align-items-center p-3 rounded h-100" style="background-color: #f8d7da;">
+                    <div class="me-3">
+                        <strong class="text-dark">0 - 250</strong>
                     </div>
-                </div>
-
-                {{-- 251-350: Terakreditasi --}}
-                <div class="col-md-6">
-                    <div class="d-flex align-items-center p-3 rounded h-100" style="background-color: #d1ecf1;">
-                        <div class="me-3">
-                            <strong class="text-dark">251 - 350</strong>
-                        </div>
-                        <div class="flex-grow-1">
-                            <strong class="text-dark">Terakreditasi</strong>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- 351-360: Terakreditasi Unggul with requirement --}}
-                <div class="col-md-6">
-                    <div class="d-flex align-items-center p-3 rounded h-100" style="background-color: #d4edda;">
-                        <div class="me-3">
-                            <strong class="text-dark">351 - 360</strong>
-                        </div>
-                        <div class="flex-grow-1">
-                            <strong class="text-dark">⁠Terakreditasi Unggul with Requirement (2 Tahun)*</strong>
-                            <div><small class="text-muted">*Dengan syarat pelampauan standar</small></div>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- 361-400: Terakreditasi Unggul --}}
-                <div class="col-md-6">
-                    <div class="d-flex align-items-center p-3 rounded h-100" style="background-color: #c3e6cb;">
-                        <div class="me-3">
-                            <strong class="text-dark">361 - 400</strong>
-                        </div>
-                        <div class="flex-grow-1">
-                            <strong class="text-dark">Terakreditasi Unggul (5 Tahun)</strong>
-                            <div><small class="text-muted">*Dengan syarat pelampauan standar</small></div>
-                        </div>
+                    <div class="flex-grow-1">
+                        <strong class="text-dark">Tidak Terakreditasi</strong>
+                        <div><small class="text-muted">Ditolak validator dokumen</small></div>
                     </div>
                 </div>
             </div>
 
-            <div class="alert alert-light alert-permanent mt-3 mb-0">
-                <i class="bi bi-info-circle me-2"></i>
-                <strong>Catatan:</strong> Untuk peringkat <strong>Unggul</strong>, selain mencapai skor >= 351,
-                program studi harus memiliki <strong>minimal 1 elemen dengan kategori: Pelampauan Standar (Exceeding Standard)</strong>
-                di <strong>setiap kriteria</strong> (D, E, P, I, L, A, R).
+            {{-- 251-350: Terakreditasi --}}
+            <div class="col-md-6">
+                <div class="d-flex align-items-center p-3 rounded h-100" style="background-color: #d1ecf1;">
+                    <div class="me-3">
+                        <strong class="text-dark">251 - 350</strong>
+                    </div>
+                    <div class="flex-grow-1">
+                        <strong class="text-dark">Terakreditasi</strong>
+                    </div>
+                </div>
+            </div>
+
+            {{-- 351-360: Terakreditasi Unggul with requirement --}}
+            <div class="col-md-6">
+                <div class="d-flex align-items-center p-3 rounded h-100" style="background-color: #d4edda;">
+                    <div class="me-3">
+                        <strong class="text-dark">351 - 360</strong>
+                    </div>
+                    <div class="flex-grow-1">
+                        <strong class="text-dark">⁠Terakreditasi Unggul with Requirement (2 Tahun)*</strong>
+                        <div><small class="text-muted">*Dengan syarat pelampauan standar</small></div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- 361-400: Terakreditasi Unggul --}}
+            <div class="col-md-6">
+                <div class="d-flex align-items-center p-3 rounded h-100" style="background-color: #c3e6cb;">
+                    <div class="me-3">
+                        <strong class="text-dark">361 - 400</strong>
+                    </div>
+                    <div class="flex-grow-1">
+                        <strong class="text-dark">Terakreditasi Unggul (5 Tahun)</strong>
+                        <div><small class="text-muted">*Dengan syarat pelampauan standar</small></div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
 
-    {{-- Validasi Peringkat Unggul --}}
-    @if($hasil->skor_al >= 361)
-    <div class="card mb-4 border-{{ $validationSummary['dapat_unggul'] ? 'success' : 'warning' }}">
-        <div class="card-header bg-{{ $validationSummary['dapat_unggul'] ? 'success' : 'warning' }} text-white">
-            <h5 class="mb-0">
-                <i class="bi bi-{{ $validationSummary['dapat_unggul'] ? 'shield-check' : 'exclamation-triangle' }}"></i>
-                Validasi Syarat Peringkat UNGGUL
-            </h5>
+        <div class="alert alert-light alert-permanent mt-3 mb-0">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>Catatan:</strong> Untuk peringkat <strong>Unggul</strong>, selain mencapai skor >= 351,
+            program studi harus memiliki <strong>minimal 1 elemen dengan kategori: Pelampauan Standar (Exceeding Standard)</strong>
+            di <strong>setiap kriteria</strong> (D, E, P, I, L, A, R).
         </div>
-        <div class="card-body">
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <div class="d-flex align-items-center p-3 bg-success bg-opacity-10 rounded">
-                        <i class="bi bi-check-circle-fill text-success fs-3 me-3"></i>
-                        <div>
-                            <strong>Skor Memenuhi Syarat</strong>
-                            <div class="text-muted">Skor >= 361 ({{ number_format($hasil->skor_al, 2) }})</div>
+    </div>
+</div>
+
+{{-- Validasi Peringkat Unggul --}}
+@if($hasil->skor_al >= 361)
+<div class="card mb-4 border-{{ $validationSummary['dapat_unggul'] ? 'success' : 'warning' }}">
+    <div class="card-header bg-{{ $validationSummary['dapat_unggul'] ? 'success' : 'warning' }} text-white">
+        <h5 class="mb-0">
+            <i class="bi bi-{{ $validationSummary['dapat_unggul'] ? 'shield-check' : 'exclamation-triangle' }}"></i>
+            Validasi Syarat Peringkat UNGGUL
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="d-flex align-items-center p-3 bg-success bg-opacity-10 rounded">
+                    <i class="bi bi-check-circle-fill text-success fs-3 me-3"></i>
+                    <div>
+                        <strong>Skor Memenuhi Syarat</strong>
+                        <div class="text-muted">Skor >= 361 ({{ number_format($hasil->skor_al, 2) }})</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="d-flex align-items-center p-3 bg-{{ $validationSummary['pelampauan_memenuhi'] ? 'success' : 'danger' }} bg-opacity-10 rounded">
+                    <i class="bi bi-{{ $validationSummary['pelampauan_memenuhi'] ? 'check-circle-fill text-success' : 'x-circle-fill text-danger' }} fs-3 me-3"></i>
+                    <div>
+                        <strong>Pelampauan Standar</strong>
+                        <div class="text-muted">
+                            @if($validationSummary['pelampauan_memenuhi'])
+                            Semua kriteria terpenuhi ✓
+                            @else
+                            {{ count($validationSummary['missing_kriteria']) }} kriteria belum memiliki pelampauan
+                            @endif
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="d-flex align-items-center p-3 bg-{{ $validationSummary['pelampauan_memenuhi'] ? 'success' : 'danger' }} bg-opacity-10 rounded">
-                        <i class="bi bi-{{ $validationSummary['pelampauan_memenuhi'] ? 'check-circle-fill text-success' : 'x-circle-fill text-danger' }} fs-3 me-3"></i>
-                        <div>
-                            <strong>Pelampauan Standar</strong>
-                            <div class="text-muted">
-                                @if($validationSummary['pelampauan_memenuhi'])
-                                Semua kriteria terpenuhi ✓
-                                @else
-                                {{ count($validationSummary['missing_kriteria']) }} kriteria belum memiliki pelampauan
-                                @endif
+            </div>
+        </div>
+
+        {{-- Detail per Kriteria --}}
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th width="15%">Kriteria</th>
+                        <th class="text-center" width="25%">Status Pelampauan</th>
+                        <th class="text-center" width="20%">Jumlah Elemen Skor 4</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach(\App\Models\HasilAkreditasi::KRITERIA_REQUIRED as $kode)
+                    @php
+                    $status = $validationSummary['kriteria_status'][$kode] ?? ['has_pelampauan' => false, 'jumlah_elemen_skor_4' => 0];
+                    @endphp
+                    <tr>
+                        <td class="text-center"><strong>{{ $kode }}</strong></td>
+                        <td class="text-center">
+                            @if($status['has_pelampauan'])
+                            <span class="badge bg-success">
+                                <i class="bi bi-check-circle"></i> Terpenuhi
+                            </span>
+                            @else
+                            <span class="badge bg-danger">
+                                <i class="bi bi-x-circle"></i> Belum Terpenuhi
+                            </span>
+                            @endif
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-info">{{ $status['jumlah_elemen_skor_4'] }}</span>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+
+        @if(!$validationSummary['pelampauan_memenuhi'])
+        <div class="alert alert-warning alert-permanent mt-3 mb-0">
+            <strong>⚠️ Perhatian:</strong> Meskipun skor mencapai >= 361, peringkat <strong>TIDAK DAPAT</strong> ditetapkan sebagai UNGGUL
+            karena kriteria <strong>{{ implode(', ', $validationSummary['missing_kriteria']) }}</strong>
+            belum memiliki minimal 1 elemen dengan kategori Pelampauan Standar (Exceeding Standard).
+            <br><br>
+            Peringkat akan diturunkan menjadi: <strong class="text-danger">BAIK SEKALI</strong>
+        </div>
+        @endif
+    </div>
+</div>
+@endif
+
+{{-- Detail Skor per Kriteria --}}
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">
+            <i class="bi bi-bar-chart-fill"></i>
+            Detail Skor per Kriteria
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th width="10%">Kode</th>
+                        <th width="40%">Nama Kriteria</th>
+                        <th class="text-center" width="15%">Jumlah Elemen</th>
+                        <th class="text-center" width="15%">Total Bobot</th>
+                        <th class="text-center" width="15%">Skor Tertimbang</th>
+                        <th class="text-center" width="10%">Pelampauan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($kriteriaList as $kode => $data)
+                    <tr>
+                        <td><span class="badge bg-secondary">{{ $kode }}</span></td>
+                        <td>{{ $data['nama'] }}</td>
+                        <td class="text-center">{{ $data['elemen_count'] }}</td>
+                        <td class="text-center">{{ number_format($data['total_bobot'], 2) }}</td>
+                        <td class="text-center">
+                            <strong class="text-primary">{{ number_format($data['total_skor'], 2) }}</strong>
+                        </td>
+                        <td class="text-center">
+                            @if($data['has_pelampauan'])
+                            <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                            @else
+                            <i class="bi bi-dash-circle text-muted fs-5"></i>
+                            @endif
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">Belum ada data</td>
+                    </tr>
+                    @endforelse
+                </tbody>
+                @if(!empty($kriteriaList))
+                <tfoot class="table-light">
+                    <tr>
+                        <th colspan="3" class="text-end">TOTAL:</th>
+                        <th class="text-center">{{ number_format($hasil->total_bobot_al ?? 0, 2) }}</th>
+                        <th class="text-center">
+                            <strong class="text-primary fs-5">{{ number_format($hasil->skor_al ?? 0, 2) }}</strong>
+                        </th>
+                        <th></th>
+                    </tr>
+                </tfoot>
+                @endif
+            </table>
+        </div>
+    </div>
+</div>
+
+{{-- Detail Skor per Elemen Standar --}}
+<div class="card mb-4">
+    <div class="card-header bg-secondary text-white">
+        <h5 class="mb-0">
+            <i class="bi bi-list-check"></i>
+            Detail Skor per Elemen Standar
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm table-hover" id="table-elemen">
+                <thead class="table-light align-middle">
+                    <tr>
+                        <th width="5%">Kriteria - Elemen</th>
+                        <th width="30%">Pernyataan Elemen</th>
+                        <th class="text-center" width="35%">Kategori</th>
+                        <th class="text-center" width="10%">Bobot</th>
+                        <th class="text-center" width="15%">Skor Tertimbang</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($elemenList as $elemen)
+                    @php
+                    $kategori = $elemen['skor_kategori'] ?? ['label' => '-', 'class' => 'secondary'];
+                    @endphp
+                    <tr>
+                        <td>
+                            <div class="d-flex flex-column">
+                                <span class="badge bg-secondary mb-1" style="width: fit-content;">{{ $elemen['kode_kriteria'] }}</span>
+                                <code class="text-primary">{{ $elemen['kode_elemen'] }}</code>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Detail per Kriteria --}}
-            <div class="table-responsive">
-                <table class="table table-sm table-bordered mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th width="15%">Kriteria</th>
-                            <th class="text-center" width="25%">Status Pelampauan</th>
-                            <th class="text-center" width="20%">Jumlah Elemen Skor 4</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach(\App\Models\HasilAkreditasi::KRITERIA_REQUIRED as $kode)
-                        @php
-                        $status = $validationSummary['kriteria_status'][$kode] ?? ['has_pelampauan' => false, 'jumlah_elemen_skor_4' => 0];
-                        @endphp
-                        <tr>
-                            <td class="text-center"><strong>{{ $kode }}</strong></td>
-                            <td class="text-center">
-                                @if($status['has_pelampauan'])
-                                <span class="badge bg-success">
-                                    <i class="bi bi-check-circle"></i> Terpenuhi
-                                </span>
-                                @else
-                                <span class="badge bg-danger">
-                                    <i class="bi bi-x-circle"></i> Belum Terpenuhi
-                                </span>
-                                @endif
-                            </td>
-                            <td class="text-center">
-                                <span class="badge bg-info">{{ $status['jumlah_elemen_skor_4'] }}</span>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-
-            @if(!$validationSummary['pelampauan_memenuhi'])
-            <div class="alert alert-warning alert-permanent mt-3 mb-0">
-                <strong>⚠️ Perhatian:</strong> Meskipun skor mencapai >= 361, peringkat <strong>TIDAK DAPAT</strong> ditetapkan sebagai UNGGUL
-                karena kriteria <strong>{{ implode(', ', $validationSummary['missing_kriteria']) }}</strong>
-                belum memiliki minimal 1 elemen dengan kategori Pelampauan Standar (Exceeding Standard).
-                <br><br>
-                Peringkat akan diturunkan menjadi: <strong class="text-danger">BAIK SEKALI</strong>
-            </div>
-            @endif
+                        </td>
+                        <td>{{ Str::limit($elemen['nama_elemen'], 120) }}</td>
+                        <td class="text-center">
+                            <span class="badge text-wrap" style="width: 15rem; background-color: {{ $kategori['color'] }}; color: #222;">
+                                {{ $kategori['label'] }}
+                            </span>
+                            <div class="mt-1">
+                                <small class="text-muted">({{ number_format($elemen['skor'], 2) }})</small>
+                            </div>
+                        </td>
+                        <td class="text-center">{{ number_format($elemen['bobot'], 2) }}</td>
+                        <td class="text-center">
+                            <strong>{{ number_format($elemen['skor_tertimbang'], 2) }}</strong>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">Belum ada data</td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
-    @endif
+</div>
 
-    {{-- Detail Skor per Kriteria --}}
-    <div class="card mb-4">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">
-                <i class="bi bi-bar-chart-fill"></i>
-                Detail Skor per Kriteria
-            </h5>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th width="10%">Kode</th>
-                            <th width="40%">Nama Kriteria</th>
-                            <th class="text-center" width="15%">Jumlah Elemen</th>
-                            <th class="text-center" width="15%">Total Bobot</th>
-                            <th class="text-center" width="15%">Skor Tertimbang</th>
-                            <th class="text-center" width="10%">Pelampauan</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($kriteriaList as $kode => $data)
-                        <tr>
-                            <td><span class="badge bg-secondary">{{ $kode }}</span></td>
-                            <td>{{ $data['nama'] }}</td>
-                            <td class="text-center">{{ $data['elemen_count'] }}</td>
-                            <td class="text-center">{{ number_format($data['total_bobot'], 2) }}</td>
-                            <td class="text-center">
-                                <strong class="text-primary">{{ number_format($data['total_skor'], 2) }}</strong>
-                            </td>
-                            <td class="text-center">
-                                @if($data['has_pelampauan'])
-                                <i class="bi bi-check-circle-fill text-success fs-5"></i>
-                                @else
-                                <i class="bi bi-dash-circle text-muted fs-5"></i>
-                                @endif
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="6" class="text-center text-muted py-4">Belum ada data</td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                    @if(!empty($kriteriaList))
-                    <tfoot class="table-light">
-                        <tr>
-                            <th colspan="3" class="text-end">TOTAL:</th>
-                            <th class="text-center">{{ number_format($hasil->total_bobot_al ?? 0, 2) }}</th>
-                            <th class="text-center">
-                                <strong class="text-primary fs-5">{{ number_format($hasil->skor_al ?? 0, 2) }}</strong>
-                            </th>
-                            <th></th>
-                        </tr>
-                    </tfoot>
-                    @endif
-                </table>
-            </div>
-        </div>
+{{-- Catatan Validasi --}}
+@if($hasil->catatan_validasi)
+<div class="card mb-4">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">
+            <i class="bi bi-chat-left-text-fill"></i>
+            Catatan Validasi
+        </h5>
     </div>
-
-    {{-- Detail Skor per Elemen Standar --}}
-    <div class="card mb-4">
-        <div class="card-header bg-secondary text-white">
-            <h5 class="mb-0">
-                <i class="bi bi-list-check"></i>
-                Detail Skor per Elemen Standar
-            </h5>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-sm table-hover" id="table-elemen">
-                    <thead class="table-light align-middle">
-                        <tr>
-                            <th width="5%">Kriteria - Elemen</th>
-                            <th width="30%">Pernyataan Elemen</th>
-                            <th class="text-center" width="35%">Kategori</th>
-                            <th class="text-center" width="10%">Bobot</th>
-                            <th class="text-center" width="15%">Skor Tertimbang</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($elemenList as $elemen)
-                        @php
-                        $kategori = $elemen['skor_kategori'] ?? ['label' => '-', 'class' => 'secondary'];
-                        @endphp
-                        <tr>
-                            <td>
-                                <div class="d-flex flex-column">
-                                    <span class="badge bg-secondary mb-1" style="width: fit-content;">{{ $elemen['kode_kriteria'] }}</span>
-                                    <code class="text-primary">{{ $elemen['kode_elemen'] }}</code>
-                                </div>
-                            </td>
-                            <td>{{ Str::limit($elemen['nama_elemen'], 120) }}</td>
-                            <td class="text-center">
-                                <span class="badge text-wrap" style="width: 15rem; background-color: {{ $kategori['color'] }}; color: #222;">
-                                    {{ $kategori['label'] }}
-                                </span>
-                                <div class="mt-1">
-                                    <small class="text-muted">({{ number_format($elemen['skor'], 2) }})</small>
-                                </div>
-                            </td>
-                            <td class="text-center">{{ number_format($elemen['bobot'], 2) }}</td>
-                            <td class="text-center">
-                                <strong>{{ number_format($elemen['skor_tertimbang'], 2) }}</strong>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="5" class="text-center text-muted py-4">Belum ada data</td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
+    <div class="card-body">
+        <pre class="mb-0" style="white-space: pre-wrap;">{{ $hasil->catatan_validasi }}</pre>
     </div>
-
-    {{-- Catatan Validasi --}}
-    @if($hasil->catatan_validasi)
-    <div class="card mb-4">
-        <div class="card-header bg-info text-white">
-            <h5 class="mb-0">
-                <i class="bi bi-chat-left-text-fill"></i>
-                Catatan Validasi
-            </h5>
-        </div>
-        <div class="card-body">
-            <pre class="mb-0" style="white-space: pre-wrap;">{{ $hasil->catatan_validasi }}</pre>
-        </div>
-    </div>
-    @endif
+</div>
+@endif
 </div>
 
 @push('scripts')

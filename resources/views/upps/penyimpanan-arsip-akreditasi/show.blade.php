@@ -1,4 +1,4 @@
-{{-- resources/views/de/penyimpanan-arsip-akreditasi/show.blade.php --}}
+{{-- resources/views/upps/penyimpanan-arsip-akreditasi/show.blade.php --}}
 
 @extends('layouts.template.app')
 
@@ -34,7 +34,7 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('de.penyimpanan-arsip-akreditasi') }}">Penyimpanan Arsip Akreditasi</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('upps.penyimpanan-arsip-akreditasi') }}">Penyimpanan Arsip Akreditasi</a></li>
             <li class="breadcrumb-item active">Detail</li>
         </ol>
     </nav>
@@ -47,7 +47,7 @@
             </h5>
             <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
-        <a href="{{ route('de.penyimpanan-arsip-akreditasi') }}" class="btn btn-secondary">
+        <a href="{{ route('upps.penyimpanan-arsip-akreditasi') }}" class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i> Kembali
         </a>
     </div>
@@ -96,7 +96,7 @@
                         </div>
                     </div>
 
-                    <form action="{{ route('de.penyimpanan-arsip-akreditasi.upload-berita-acara', $pengajuan->id) }}" method="POST" enctype="multipart/form-data" class="mt-4">
+                    <form action="{{ route('upps.penyimpanan-arsip-akreditasi.upload-berita-acara', $pengajuan->id) }}" method="POST" enctype="multipart/form-data" class="mt-4">
                         @csrf
 
                         <div class="row">
@@ -163,11 +163,11 @@
                             </div>
                         </div>
                         <div class="btn-group">
-                            <a href="{{ route('de.penyimpanan-arsip-akreditasi.download-berita-acara', $pengajuan->id) }}" class="btn btn-outline-primary" target="_blank">
+                            <a href="{{ route('upps.penyimpanan-arsip-akreditasi.download-berita-acara', $pengajuan->id) }}" class="btn btn-outline-primary" target="_blank">
                                 <i class="bi bi-download"></i> Download
                             </a>
                             @if($pengajuan->status == \App\Models\PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN)
-                            <form action="{{ route('de.penyimpanan-arsip-akreditasi.delete-berita-acara', $pengajuan->id) }}" method="POST" class="d-inline">
+                            <form action="{{ route('upps.penyimpanan-arsip-akreditasi.delete-berita-acara', $pengajuan->id) }}" method="POST" class="d-inline">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Hapus berita acara ini? Anda harus upload ulang untuk menyimpan arsip.')">
@@ -202,7 +202,7 @@
                             </div>
                         </div>
                         <div>
-                            <a href="{{ route('de.penyimpanan-arsip-akreditasi.download-berita-acara', $pengajuan->id) }}" class="btn btn-outline-primary" target="_blank">
+                            <a href="{{ route('upps.penyimpanan-arsip-akreditasi.download-berita-acara', $pengajuan->id) }}" class="btn btn-outline-primary" target="_blank">
                                 <i class="bi bi-download"></i> Download
                             </a>
                         </div>
@@ -261,7 +261,7 @@
                     <h5 class="mb-0"><i class="bi bi-archive"></i> Simpan Arsip</h5>
                 </div>
                 <div class="card-body">
-                    <form method="POST" action="{{ route('de.penyimpanan-arsip-akreditasi.simpan', $pengajuan->id) }}">
+                    <form method="POST" action="{{ route('upps.penyimpanan-arsip-akreditasi.simpan', $pengajuan->id) }}">
                         @csrf
                         <div class="alert alert-light alert-permanent border">
                             <i class="bi bi-info-circle"></i>
@@ -292,7 +292,7 @@
                     <h5 class="mb-0"><i class="bi bi-check-circle"></i> Selesaikan Proses</h5>
                 </div>
                 <div class="card-body">
-                    <form method="POST" action="{{ route('de.penyimpanan-arsip-akreditasi.selesaikan', $pengajuan->id) }}">
+                    <form method="POST" action="{{ route('upps.penyimpanan-arsip-akreditasi.selesaikan', $pengajuan->id) }}">
                         @csrf
                         <div class="alert alert-light alert-permanent border border-warning">
                             <i class="bi bi-info-circle"></i>

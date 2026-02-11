@@ -74,8 +74,8 @@
                         <tr>
                             <th>Tanggal Pelaporan AK</th>
                             <td>
-                                : {{ $pengajuan->tanggal_ak_dilaporkan
-                                    ? $pengajuan->tanggal_ak_dilaporkan->format('d M Y H:i')
+                                : {{ $pengajuan->tanggal_pelaporan_ak
+                                    ? $pengajuan->tanggal_pelaporan_ak->format('d M Y H:i')
                                     : '-' }}
                             </td>
                         </tr>

@@ -68,7 +68,7 @@ class MasaSanggahController extends Controller
             'studyProgram.degreeLevel',
             'pengaju',
             'dokumen' => fn($q) => $q->whereIn('jenis_dokumen', [
-                'sertifikat_akreditasi',
+                'sertifikat',
                 'sk_akreditasi',
             ])->orderBy('created_at', 'desc'),
             'statusLog' => fn($q) => $q->orderBy('changed_at', 'desc'),

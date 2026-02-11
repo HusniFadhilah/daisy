@@ -1,31 +1,8 @@
 {{-- resources/views/de/pelaporan-hasil-akreditasi/show.blade.php --}}
+
 @extends('layouts.template.app')
 
 @section('title', 'Detail Pelaporan Hasil Akreditasi')
-
-@push('styles')
-<style>
-    .info-card {
-        border-left: 4px solid #667eea;
-        border-radius: 8px;
-    }
-
-    .result-card {
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .doc-card {
-        transition: all 0.3s ease;
-    }
-
-    .doc-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
-</style>
-@endpush
 
 @section('content')
 <div class="container-fluid py-3">
@@ -33,239 +10,295 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('de.pelaporan-hasil-akreditasi') }}">Pelaporan Hasil</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('de.pelaporan-hasil-akreditasi') }}">Pelaporan Hasil Akreditasi</a></li>
             <li class="breadcrumb-item active">Detail</li>
         </ol>
     </nav>
 
-    <!-- Page Header -->
+    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h4 class="mb-1"><i class="bi bi-megaphone"></i> Detail Pelaporan Hasil Akreditasi</h4>
-            <p class="text-muted mb-0">{{ $pengajuan->nomor_pengajuan }}</p>
+            <h5 class="mb-1">
+                <i class="bi bi-megaphone"></i> Detail Pelaporan Hasil Akreditasi
+            </h5>
+            <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
-        <div>
-            <a href="{{ route('de.pelaporan-hasil-akreditasi') }}" class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i> Kembali
-            </a>
-        </div>
+        <a href="{{ route('de.pelaporan-hasil-akreditasi') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Kembali
+        </a>
     </div>
 
+    @php
+    // Peringkat akhir: prioritas hasil banding jika ada
+    $hasil = $pengajuan->asesmen->hasil ?? null;
+    @endphp
+
     <div class="row">
+        <!-- Main Content -->
         <div class="col-lg-8 mb-4">
-            <!-- Basic Info -->
-            <div class="card info-card mb-4">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Informasi Pengajuan</h5>
+            <!-- Success Alert -->
+            @php
+            $allowed = [
+            \App\Models\PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN,
+            \App\Models\PengajuanAkreditasi::STATUS_SELESAI,
+            ]; // ini contoh, bisa dinamis dari config/db/request
+
+            $log = $pengajuan->latestRelevantStatusLog($allowed);
+            @endphp
+            <!-- Status Alert -->
+            @if($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN)
+            <div class="alert alert-light alert-permanent">
+                <i class="bi bi-person-check"></i>
+                <strong>Proses Pelaporan Hasil</strong><br>
+                Keseluruhan permohonan dan pelaporan proses akreditasi program studi dapat dilihat pada detail berikut
+            </div>
+            @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_SELESAI)
+            <div class="alert alert-light alert-permanent">
+                <i class="bi bi-person-check"></i>
+                <strong>Pelaporan Hasil Selesai</strong><br>
+                Keseluruhan permohonan dan pelaporan proses akreditasi program studi dapat dilihat pada detail berikut
+            </div>
+            @endif
+
+            <!-- Dokumen Hasil & Laporan -->
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-file-earmark-text"></i> Laporan Hasil Akreditasi dan Sertifikat Akreditasi
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @php
+                    $dokumenHasil = $pengajuan->dokumen
+                    ->whereIn('jenis_dokumen', ['sertifikat','laporan_hasil'])
+                    ->where('is_latest', true);
+                    @endphp
+
+                    @if($dokumenHasil->count() > 0)
+                    @foreach($dokumenHasil as $dokumen)
+                    <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded mb-2">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-file-earmark-pdf text-dark me-3" style="font-size: 48px;"></i>
+                            <div>
+                                <strong>{{ $dokumen->original_filename }}</strong>
+                                <br>
+                                <small class="text-muted">
+                                    {{ number_format($dokumen->file_size / 1024, 2) }} KB •
+                                    Diupload: {{ $dokumen->created_at->format('d M Y H:i') }}
+                                </small>
+                                <br>
+                                @if($dokumen->jenis_dokumen === 'sertifikat')
+                                <small class="text-dark">Sertifikat Akreditasi</small>
+                                @elseif($dokumen->jenis_dokumen === 'sk_akreditasi')
+                                <small class="text-dark">SK Akreditasi</small>
+                                @elseif($dokumen->jenis_dokumen === 'sk_penetapan')
+                                <small class="text-dark">SK Penetapan</small>
+                                @elseif($dokumen->jenis_dokumen === 'laporan_hasil')
+                                <small class="text-dark">Laporan Hasil</small>
+                                @endif
+                            </div>
+                        </div>
+                        <div>
+                            <a href="{{ route('upps.penerimaan-dokumen.dokumen.download', $dokumen->id) }}" class="btn btn-outline-dark btn-md">
+                                <i class="bi bi-file-earmark-pdf"></i> Lihat File
+                            </a>
+                        </div>
+                    </div>
+                    @endforeach
+                    @else
+                    <div class="text-center py-4">
+                        <i class="bi bi-file-earmark-x" style="font-size: 48px; color: #ddd;"></i>
+                        <p class="text-muted mt-2 mb-0">Dokumen hasil & laporan belum tersedia</p>
+                    </div>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Informasi Permohonan -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle"></i> Informasi Permohonan Akreditasi
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th width="35%">Nomor Permohonan</th>
+                            <td>: {{ $pengajuan->nomor_permohonan }}</td>
+                        </tr>
+                        <tr>
+                            <th>Program Studi</th>
+                            <td>: {{ $pengajuan->studyProgram->name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Universitas</th>
+                            <td>: {{ $pengajuan->studyProgram->university->name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Jenjang</th>
+                            <td>: {{ $pengajuan->studyProgram->degreeLevel->name ?? '-' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Jenis Permohonan</th>
+                            <td>: {{ $pengajuan->jenis_akreditasi_label }}</td>
+                        </tr>
+                        <tr>
+                            <th>Tahun Akreditasi</th>
+                            <td>: {{ $pengajuan->tahun_akreditasi }}</td>
+                        </tr>
+                        <tr>
+                            <th>Status Pelaporan Hasil Akreditasi</th>
+                            <td>
+                                : {!! $pengajuan->getCustomBadgeLastStatus('pelaporan_hasil', 'de', 'label_long_for','text-dark') !!}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Hasil Akhir Akreditasi -->
+            <div class="card mb-4 border-secondary">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle"></i> Hasil Akhir Akreditasi
+                    </h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Program Studi</label>
-                            <p class="fw-bold">{{ $pengajuan->studyProgram->name }}</p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Universitas</label>
-                            <p class="fw-bold">{{ $pengajuan->studyProgram->university->name ?? '-' }}</p>
+                            <label class="text-muted small">Peringkat Akreditasi</label><br>
+                            <span class="badge p-2 px-3 my-2 fs-6" style="background-color: {{ $hasil->getPeringkatColor($peringkat) }}; color:#222">
+                                {{ $peringkat }}
+                            </span>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="text-muted small">Tanggal Penetapan</label>
-                            <p class="fw-bold">{{ $pengajuan->tanggal_penetapan?->format('d F Y') ?? '-' }}</p>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Status Pelaporan</label>
-                            <p>
-                                @if($pengajuan->status == \App\Models\PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN)
-                                <span class="badge bg-success">Sudah Dilaporkan</span>
-                                @else
-                                <span class="badge bg-warning text-dark">Belum Dilaporkan</span>
-                                @endif
+                            <p class="mb-0">
+                                {{ $pengajuan->tanggal_penetapan
+                                    ? $pengajuan->tanggal_penetapan->format('d M Y H:i')
+                                    : '-' }}
                             </p>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Hasil Akreditasi -->
-            @php
-            $peringkat = $pengajuan->peringkat_final;
-            $skor = $pengajuan->skor_final;
-            $badgeClass = match($peringkat) {
-            'Unggul' => 'success',
-            'Baik Sekali' => 'primary',
-            'Baik' => 'info',
-            default => 'secondary'
-            };
-            @endphp
-
-            <div class="card result-card mb-4">
-                <div class="card-header bg-{{ $badgeClass }} text-white">
-                    <h5 class="mb-0"><i class="bi bi-award"></i> Hasil Akreditasi</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-md-6">
-                            <div class="p-4 bg-light rounded">
-                                <h6 class="text-muted small mb-2">Peringkat</h6>
-                                <h2 class="mb-0">
-                                    <span class="badge bg-{{ $badgeClass }}">{{ $peringkat }}</span>
-                                </h2>
-                            </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Tanggal Pelaporan</label>
+                            <p class="mb-0">
+                                {{ $pengajuan->tanggal_pelaporan_hasil
+                                    ? $pengajuan->tanggal_pelaporan_hasil->format('d M Y H:i')
+                                    : '-' }}
+                            </p>
                         </div>
-                        <div class="col-md-6">
-                            <div class="p-4 bg-light rounded">
-                                <h6 class="text-muted small mb-2">Skor Final</h6>
-                                <h2 class="mb-0 fw-bold">{{ number_format($skor, 2) }}</h2>
-                            </div>
+                        @if($pengajuan->tanggal_surat_permohonan_dikirim && $pengajuan->tanggal_pelaporan_hasil)
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Total Durasi Proses</label>
+                            <p class="mb-0">
+                                {{ max(1,$pengajuan->tanggal_surat_permohonan_dikirim->diffInDays($pengajuan->tanggal_pelaporan_hasil)) }} hari
+                                <small class="text-muted">(dari permohonan akreditasi hingga pelaporan hasil)</small>
+                            </p>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Upload Forms (if not yet dilaporkan) -->
-            @if($pengajuan->status != \App\Models\PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN)
-            <div class="row mb-4">
-                <!-- Upload Laporan Hasil -->
-                <div class="col-md-6 mb-3">
-                    <div class="card doc-card h-100">
-                        <div class="card-header bg-primary text-white">
-                            <h6 class="mb-0"><i class="bi bi-file-text"></i> Upload Laporan Hasil</h6>
-                        </div>
-                        <div class="card-body">
-                            <form method="POST" action="{{ route('de.pelaporan-hasil-akreditasi.upload-laporan', $pengajuan->id) }}" enctype="multipart/form-data">
-                                @csrf
-                                <div class="mb-3">
-                                    <input type="file" name="file_laporan" class="form-control form-control-sm" accept=".pdf,.doc,.docx" required>
-                                    <small class="text-muted">PDF, DOC, DOCX (Max: 10MB)</small>
-                                </div>
-                                <div class="mb-3">
-                                    <textarea name="keterangan" class="form-control form-control-sm" rows="2" placeholder="Keterangan..."></textarea>
-                                </div>
-                                <button type="submit" class="btn btn-primary btn-sm w-100">
-                                    <i class="bi bi-upload"></i> Upload
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Upload Sertifikat -->
-                <div class="col-md-6 mb-3">
-                    <div class="card doc-card h-100">
-                        <div class="card-header bg-success text-white">
-                            <h6 class="mb-0"><i class="bi bi-patch-check"></i> Upload Sertifikat</h6>
-                        </div>
-                        <div class="card-body">
-                            <form method="POST" action="{{ route('de.pelaporan-hasil-akreditasi.upload-sertifikat', $pengajuan->id) }}" enctype="multipart/form-data">
-                                @csrf
-                                <div class="mb-3">
-                                    <input type="file" name="file_sertifikat" class="form-control form-control-sm" accept=".pdf" required>
-                                    <small class="text-muted">PDF (Max: 5MB)</small>
-                                </div>
-                                <div class="mb-3">
-                                    <input type="number" name="masa_berlaku_tahun" class="form-control form-control-sm" placeholder="Masa berlaku (tahun)" min="1" max="10">
-                                </div>
-                                <button type="submit" class="btn btn-success btn-sm w-100">
-                                    <i class="bi bi-upload"></i> Upload
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Selesaikan Pelaporan Button -->
-            @php
-            $hasLaporan = $pengajuan->dokumen->where('jenis_dokumen', 'laporan_hasil')->isNotEmpty();
-            $hasSertifikat = $pengajuan->dokumen->where('jenis_dokumen', 'sertifikat')->isNotEmpty();
-            @endphp
-            @if($hasLaporan || $hasSertifikat)
-            <div class="card">
-                <div class="card-header bg-warning">
-                    <h5 class="mb-0"><i class="bi bi-check-circle"></i> Selesaikan Pelaporan</h5>
-                </div>
-                <div class="card-body">
-                    <form method="POST" action="{{ route('de.pelaporan-hasil-akreditasi.selesaikan', $pengajuan->id) }}">
-                        @csrf
-                        <div class="alert alert-info">
-                            <i class="bi bi-info-circle"></i>
-                            Setelah diselesaikan, status akan berubah menjadi "Hasil Dilaporkan" dan siap untuk arsip.
-                        </div>
-                        <div class="mb-3">
-                            <textarea name="catatan_pelaporan" class="form-control" rows="3" placeholder="Catatan pelaporan (opsional)..."></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-warning btn-lg w-100">
-                            <i class="bi bi-check-circle"></i> Selesaikan Pelaporan
-                        </button>
-                    </form>
-                </div>
-            </div>
-            @endif
-            @endif
-
-            <!-- Dokumen yang sudah diupload -->
-            @php
-            $laporanHasil = $pengajuan->dokumen->where('jenis_dokumen', 'laporan_hasil')->first();
-            $sertifikat = $pengajuan->dokumen->where('jenis_dokumen', 'sertifikat')->first();
-            @endphp
-            @if($laporanHasil || $sertifikat)
-            <div class="card">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="bi bi-files"></i> Dokumen Terupload</h5>
-                </div>
-                <div class="card-body">
-                    @if($laporanHasil)
-                    <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded mb-2">
-                        <div>
-                            <i class="bi bi-file-text text-primary me-2"></i>
-                            <strong>Laporan Hasil</strong>
-                            <br>
-                            <small class="text-muted">{{ $laporanHasil->original_filename }}</small>
-                        </div>
-                        <a href="{{ route('de.pelaporan-hasil-akreditasi.download', [$pengajuan->id, 'laporan_hasil']) }}" class="btn btn-sm btn-primary">
-                            <i class="bi bi-download"></i>
-                        </a>
-                    </div>
-                    @endif
-
-                    @if($sertifikat)
-                    <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded">
-                        <div>
-                            <i class="bi bi-patch-check text-success me-2"></i>
-                            <strong>Sertifikat Akreditasi</strong>
-                            <br>
-                            <small class="text-muted">{{ $sertifikat->original_filename }}</small>
-                        </div>
-                        <a href="{{ route('de.pelaporan-hasil-akreditasi.download', [$pengajuan->id, 'sertifikat']) }}" class="btn btn-sm btn-success">
-                            <i class="bi bi-download"></i>
-                        </a>
-                    </div>
-                    @endif
-                </div>
-            </div>
-            @endif
-        </div>
-
-        <!-- Right Column: Timeline -->
-        <div class="col-lg-4">
-            <div class="card">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Timeline</h5>
-                </div>
-                <div class="card-body">
-                    @forelse($pengajuan->statusLog->sortBy('changed_at')->take(10) as $log)
-                    <div class="mb-3 pb-3 border-bottom">
-                        <strong class="d-block">
-                            {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['de'] ?? $log->status_to }}
-                        </strong>
-                        <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
-                        @if($log->keterangan)
-                        <p class="text-muted small mb-0 mt-1">{{ $log->keterangan }}</p>
                         @endif
                     </div>
-                    @empty
-                    <p class="text-muted mb-0">Tidak ada riwayat.</p>
-                    @endforelse
+
+                    @if($pengajuan->peringkat_hasil_banding)
+                    <hr>
+                    <div class="alert alert-info border border-info mb-0">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <strong>Catatan:</strong> Hasil yang ditampilkan adalah hasil akhir setelah proses banding.
+                    </div>
+                    @endif
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Ringkasan Hasil Akhir -->
+
+            <!-- Statistik Proses -->
+            @if($pengajuan->tanggal_pengajuan && $pengajuan->tanggal_pelaporan_hasil)
+            <div class="card mb-4 border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0">
+                        <i class="bi bi-graph-up"></i> Statistik Proses
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="text-muted small">Total Durasi</label>
+                        <div class="display-6 fw-bold text-primary">
+                            {{ max(1,$pengajuan->tanggal_surat_permohonan_dikirim->diffInDays($pengajuan->tanggal_pelaporan_hasil)) }}
+                        </div>
+                        <small class="text-muted">hari</small>
+                    </div>
+
+                    <hr>
+
+                    <div class="small">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Mulai:</span>
+                            <strong>{{ $pengajuan->tanggal_pengajuan->format('d M Y') }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Selesai:</span>
+                            <strong>{{ $pengajuan->tanggal_pelaporan_hasil->format('d M Y') }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            <!-- Timeline -->
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history"></i> Riwayat Status
+                    </h5>
+                </div>
+                <div class="card-body" style="max-height: 500px; overflow-y: auto;">
+                    @php
+                    $filterStatuses = [
+                    \App\Models\PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
+                    \App\Models\PengajuanAkreditasi::STATUS_HASIL_DIUMUMKAN,
+                    \App\Models\PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN,
+                    //\App\Models\PengajuanAkreditasi::STATUS_ARSIP_DISIMPAN,
+                    //\App\Models\PengajuanAkreditasi::STATUS_SELESAI,
+                    ];
+
+                    $logs = $pengajuan->statusLog
+                    ->whereIn('status_to', $filterStatuses)
+                    ->sortBy('created_at')
+                    ->unique('status_to')
+                    ->values();
+                    @endphp
+
+                    @if($logs->count() > 0)
+                    <div class="timeline">
+                        @foreach($logs as $log)
+                        <div class="timeline-item mb-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-circle-fill text-success" style="font-size: 8px;"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <strong>
+                                        {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label'] ?? $log->status_to }}
+                                    </strong>
+                                    <br>
+                                    <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
+
+                                    {{-- @if($log->keterangan)
+                            <br>
+                            <small class="text-muted fst-italic">{{ $log->keterangan }}</small>
+                                    @endif --}}
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                    @else
+                    <p class="text-muted text-center mb-0">Belum ada riwayat</p>
+                    @endif
                 </div>
             </div>
         </div>

@@ -75,7 +75,7 @@ class OldPermohonanBandingController extends Controller
             'studyProgram.degreeLevel',
             'pengaju',
             'dokumen' => fn($q) => $q->whereIn('jenis_dokumen', [
-                'sertifikat_akreditasi',
+                'sertifikat',
                 'sk_akreditasi',
                 'dokumen_banding',
             ])->orderBy('created_at', 'desc'),

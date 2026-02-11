@@ -492,9 +492,9 @@ final class PengajuanStatus
             PengajuanAkreditasi::STATUS_AL_DILAPORKAN => [
                 'label' => 'Pelaporan AL Selesai',
                 'label_short_for' => [
-                    'de'   => 'Laporan AL',
-                    'upps' => 'Laporan AL',
-                    'prodi' => 'Laporan AL',
+                    'de'   => 'Laporan AL Selesai',
+                    'upps' => 'Laporan AL Selesai',
+                    'prodi' => 'Laporan AL Selesai',
                 ],
                 'label_long_for' => [
                     'de'   => 'Pelaporan AL Selesai',
@@ -588,9 +588,9 @@ final class PengajuanStatus
             PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN => [
                 'label' => 'Pelaporan Banding',
                 'label_short_for' => [
-                    'de'   => 'Laporan Banding',
-                    'upps' => 'Laporan Banding',
-                    'prodi' => 'Laporan Banding',
+                    'de'   => 'Laporan Banding Selesai',
+                    'upps' => 'Laporan Banding Selesai',
+                    'prodi' => 'Laporan Banding Selesai',
                 ],
                 'label_long_for' => [
                     'de'   => 'Pelaporan Banding Selesai',
@@ -636,9 +636,9 @@ final class PengajuanStatus
             PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN => [
                 'label' => 'Pelaporan Hasil Akreditasi',
                 'label_short_for' => [
-                    'de'   => 'Laporan Hasil',
-                    'upps' => 'Laporan Hasil',
-                    'prodi' => 'Laporan Hasil',
+                    'de'   => 'Laporan Hasil Selesai',
+                    'upps' => 'Laporan Hasil Selesai',
+                    'prodi' => 'Laporan Hasil Selesai',
                 ],
                 'label_long_for' => [
                     'de'   => 'Pelaporan Hasil Akreditasi Selesai',
@@ -661,7 +661,7 @@ final class PengajuanStatus
                     'upps' => 'Arsip Tersedia',
                     'prodi' => 'Arsip Tersedia',
                 ],
-                'bg' => 'bg-dark',
+                'bg' => 'bg-light',
                 'icon' => 'bi-archive',
             ],
 

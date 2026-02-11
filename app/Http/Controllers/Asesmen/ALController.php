@@ -1149,12 +1149,12 @@ class ALController extends Controller
             $currentUserId = Auth::id();
 
             // ✅ VALIDASI: Hanya uploader pertama yang bisa upload ulang
-            if ($existingUpload && $existingUpload->id_asesor != $currentUserId) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'File Excel sudah diupload oleh asesor lain. Hanya asesor yang pertama mengupload yang dapat mengupload ulang.',
-                ], 403);
-            }
+            // if ($existingUpload && $existingUpload->id_asesor != $currentUserId) {
+            //     return response()->json([
+            //         'success' => false,
+            //         'message' => 'File Excel sudah diupload oleh asesor lain. Hanya asesor yang pertama mengupload yang dapat mengupload ulang.',
+            //     ], 403);
+            // }
 
             // Store file temporarily
             $file = $request->file('file');

@@ -74,8 +74,8 @@
                         <tr>
                             <th>Tanggal Pelaporan AL</th>
                             <td>
-                                : {{ $pengajuan->tanggal_al_dilaporkan
-                                    ? $pengajuan->tanggal_al_dilaporkan->format('d M Y H:i')
+                                : {{ $pengajuan->tanggal_pelaporan_al
+                                    ? $pengajuan->tanggal_pelaporan_al->format('d M Y H:i')
                                     : '-' }}
                             </td>
                         </tr>

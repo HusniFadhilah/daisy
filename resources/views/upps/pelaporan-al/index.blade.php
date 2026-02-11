@@ -89,8 +89,8 @@
                                 <tr>
                                     <th width="5%">#</th>
                                     <th width="20%">Permohonan Akreditasi</th>
-                                    <th width="25%">Tanggal Pelaporan AL</th>
                                     <th width="25%">Status Pelaporan AL</th>
+                                    <th width="25%">Tanggal Pelaporan AL</th>
                                     <th width="10%" class="text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -102,6 +102,9 @@
                                         {!! $pengajuan->getPermohonanAkreditasiSectionFor('upps') !!}
                                     </td>
                                     <td>
+                                        {!! $pengajuan->getCustomBadgeLastStatus('pelaporan_al', 'upps', 'label_short_for') !!}
+                                    </td>
+                                    <td>
                                         @if($pengajuan->tanggal_pelaporan_al)
                                         <small>{{ $pengajuan->tanggal_pelaporan_al->format('d M Y') }}</small>
                                         <br>
@@ -111,9 +114,6 @@
                                         @else
                                         <span class="text-muted">-</span>
                                         @endif
-                                    </td>
-                                    <td>
-                                        {!! $pengajuan->getCustomBadgeLastStatus('pelaporan_al', 'upps', 'label_short_for') !!}
                                     </td>
                                     <td class="text-center">
                                         <a href="{{ route('upps.pelaporan-al.show', $pengajuan->id) }}" class="btn btn-info btn-sm" title="Lihat Detail">

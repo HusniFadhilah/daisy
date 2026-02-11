@@ -197,6 +197,7 @@ return new class extends Migration
                 'dokumen_pendukung',
                 'laporan_ak',
                 'laporan_al',
+                'laporan_hasil',
                 'sertifikat',
                 'data_kualitatif',
                 'data_kuantitatif',

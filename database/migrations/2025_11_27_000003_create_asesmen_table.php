@@ -242,6 +242,7 @@ return new class extends Migration
 
             // optional: versi per dokumen (kalau kamu mau revisi file yang sama)
             $table->unsignedInteger('version')->default(1);
+            $table->text('keterangan')->nullable();
 
             $table->foreignId('uploaded_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('uploaded_at')->nullable();

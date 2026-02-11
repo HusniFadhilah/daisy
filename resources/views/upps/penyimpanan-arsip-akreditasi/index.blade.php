@@ -1,8 +1,8 @@
-{{-- resources/views/upps/pelaporan-hasil-akreditasi/index.blade.php --}}
+{{-- resources/views/upps/penyimpanan-arsip-akreditasi/index.blade.php --}}
 
 @extends('layouts.template.app')
 
-@section('title', 'Pelaporan Hasil Akreditasi')
+@section('title', 'Penyimpanan Arsip Akreditasi')
 
 @push('styles')
 <style>
@@ -35,7 +35,7 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item active">Pelaporan Hasil Akreditasi</li>
+            <li class="breadcrumb-item active">Penyimpanan Arsip Akreditasi</li>
         </ol>
     </nav>
 
@@ -43,34 +43,34 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">
-                <i class="bi bi-megaphone"></i> Pelaporan Hasil Akreditasi
+                <i class="bi bi-archive"></i> Penyimpanan Arsip Akreditasi
             </h4>
-            <p class="text-muted mb-0">Pelaporan hasil akreditasi kepada pemangku kepentingan</p>
+            <p class="text-muted mb-0">Dokumentasi lengkap proses dan hasil akreditasi program studi</p>
         </div>
     </div>
 
     <div class="alert alert-info alert-permanent">
         <i class="bi bi-bell-fill"></i>
-        <strong>Pelaporan Hasil Akreditasi</strong><br>
-        Pelaporan hasil akreditasi dapat dilihat pada daftar berikut.<br>
+        <strong>Penyimpanan Arsip Akreditasi Program Studi</strong><br>
+        Arsip akreditasi program studi dapat dilihat pada daftar berikut.<br>
     </div>
 
     <!-- Success Alert -->
     {{-- @if($stats['total'] > 0)
     <div class="alert alert-success alert-permanent border-start border-4 border-success mb-4">
         <div class="d-flex align-items-start">
-            <i class="bi bi-megaphone-fill fs-1 me-3 text-success"></i>
+            <i class="bi bi-archive-fill fs-1 me-3 text-success"></i>
             <div class="flex-grow-1">
                 <h5 class="mb-2 fw-bold">
-                    <i class="bi bi-check-circle-fill"></i> Hasil Akreditasi Telah Dilaporkan
+                    <i class="bi bi-check-circle-fill"></i> Arsip Akreditasi Tersimpan
                 </h5>
                 <p class="mb-2">
-                    Total <strong class="fs-5">{{ $stats['total'] }}</strong> hasil akreditasi
-    telah dilaporkan kepada pemangku kepentingan.
+                    Total <strong class="fs-5">{{ $stats['total'] }}</strong> arsip pelaksanaan akreditasi
+    telah disimpan dengan lengkap untuk dokumentasi dan keperluan masa depan.
     </p>
     @if($stats['selesai'] > 0)
     <div class="alert alert-light border border-success mb-0">
-        <i class="bi bi-check-circle-fill text-success"></i>
+        <i class="bi bi-patch-check-fill text-success"></i>
         <strong>{{ $stats['selesai'] }}</strong> proses akreditasi telah selesai seluruhnya.
     </div>
     @endif
@@ -80,17 +80,13 @@
 @endif --}}
 
 <!-- Statistics Cards -->
-{{-- <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 mb-4">
+{{-- <div class="row row-cols-1 row-cols-md-2 row-cols-lg-2 mb-4">
         <div class="col mb-3">
-            <x-stat-card title="Total Hasil Dilaporkan" :value="$stats['total']" description="Pelaporan hasil" icon="megaphone" iconBg="primary-subtle" />
+            <x-stat-card title="Total Arsip Tersimpan" :value="$stats['total']" description="Dokumen akreditasi" icon="archive" iconBg="primary-subtle" />
         </div>
 
         <div class="col mb-3">
-            <x-stat-card title="Arsip Disimpan" :value="$stats['arsip_disimpan']" description="Dokumen diarsipkan" icon="archive" iconBg="success-subtle" />
-        </div>
-
-        <div class="col mb-3">
-            <x-stat-card title="Proses Selesai" :value="$stats['selesai']" description="Akreditasi selesai" icon="patch-check" iconBg="info-subtle" />
+            <x-stat-card title="Proses Selesai" :value="$stats['selesai']" description="Akreditasi selesai" icon="patch-check" iconBg="success-subtle" />
         </div>
     </div> --}}
 
@@ -98,13 +94,12 @@
 <div class="row">
     <!-- Filters Sidebar -->
 
-
     <!-- Main Content -->
     <div class="col-lg-12">
         <div class="card">
             <div class="card-header bg-white">
                 <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Daftar Pelaporan Hasil Akreditasi</h5>
+                    <h5 class="mb-0">Daftar Arsip Akreditasi</h5>
                     <div>
                         <span class="text-muted">Total: <strong>{{ $pengajuans->total() }}</strong></span>
                     </div>
@@ -119,8 +114,8 @@
                                 <th width="5%">#</th>
                                 <th width="25%">Permohonan Akreditasi</th>
                                 <th width="20%">Peringkat Akhir</th>
-                                <th width="20%">Status Pelaporan</th>
-                                <th width="20%">Tanggal Pelaporan</th>
+                                <th width="20%">Status Penyimpanan Arsip</th>
+                                <th width="20%">Tanggal Penyimpanan Arsip</th>
                                 <th width="10%" class="text-center">Aksi</th>
                             </tr>
                         </thead>
@@ -149,17 +144,17 @@
                                     @endif
                                 </td>
                                 <td>
-                                    {!! $pengajuan->getCustomBadgeLastStatus('pelaporan_hasil','upps','label_short_for','text-dark') !!}
+                                    {!! $pengajuan->getCustomBadgeLastStatus('penyimpanan_arsip','upps','label_short_for','text-dark') !!}
                                 </td>
                                 <td>
                                     <small>
-                                        {{ $pengajuan->tanggal_pelaporan_hasil
-                                                        ? $pengajuan->tanggal_pelaporan_hasil->format('d M Y')
+                                        {{ $pengajuan->tanggal_penyimpanan
+                                                        ? $pengajuan->tanggal_penyimpanan->format('d M Y')
                                                         : '-' }}
                                     </small>
                                 </td>
                                 <td class="text-center">
-                                    <a href="{{ route('upps.pelaporan-hasil-akreditasi.show', $pengajuan->id) }}" class="btn btn-info btn-sm" title="Lihat Detail">
+                                    <a href="{{ route('upps.penyimpanan-arsip-akreditasi.show', $pengajuan->id) }}" class="btn btn-info btn-sm" title="Lihat Detail">
                                         <i class="bi bi-eye"></i>
                                     </a>
                                 </td>
@@ -177,14 +172,14 @@
                 <div class="text-center py-5">
                     <i class="bi bi-inbox" style="font-size: 64px; color: #ddd;"></i>
                     <p class="text-muted mt-3">
-                        @if(request()->filled('search') || request()->filled('status') || request()->filled('peringkat'))
+                        @if(request()->filled('search') || request()->filled('peringkat'))
                         Tidak ada data yang sesuai dengan filter
                         @else
-                        Belum ada pelaporan hasil akreditasi
+                        Belum ada arsip akreditasi tersimpan
                         @endif
                     </p>
-                    @if(request()->filled('search') || request()->filled('status') || request()->filled('peringkat'))
-                    <a href="{{ route('upps.pelaporan-hasil-akreditasi') }}" class="btn btn-sm btn-info">
+                    @if(request()->filled('search') || request()->filled('peringkat'))
+                    <a href="{{ route('upps.penyimpanan-arsip-akreditasi') }}" class="btn btn-sm btn-info">
                         <i class="bi bi-arrow-clockwise"></i> Reset Filter
                     </a>
                     @endif

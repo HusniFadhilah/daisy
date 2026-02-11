@@ -356,7 +356,7 @@ final class AllowedStatus
             // STEP 21: Penyimpanan arsip (dan selesai)
             'penyimpanan_arsip' => [
                 P::STATUS_ARSIP_DISIMPAN,
-                P::STATUS_SELESAI,
+                // P::STATUS_SELESAI,
             ],
 
             default => [],
@@ -461,7 +461,7 @@ final class AllowedStatus
             // Step 21
             'penyimpanan_arsip' => [
                 P::STATUS_ARSIP_DISIMPAN,
-                P::STATUS_SELESAI,
+                // P::STATUS_SELESAI,
             ],
 
             default => [],

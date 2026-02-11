@@ -191,10 +191,10 @@
 
                         <!-- Action Buttons -->
                         <div class="d-flex gap-2 justify-content-end">
-                            <button type="button" class="btn btn-danger btn-lg" onclick="submitAction('reject')">
+                            <button type="button" class="btn btn-danger btn-md" onclick="submitAction('reject')">
                                 <i class="bi bi-x-circle"></i> Tolak & Minta Revisi
                             </button>
-                            <button type="button" class="btn btn-success btn-lg" onclick="confirmApproval()">
+                            <button type="button" class="btn btn-success btn-md" onclick="confirmApproval()">
                                 <i class="bi bi-check-circle"></i> Setujui Berita Acara
                             </button>
                         </div>
