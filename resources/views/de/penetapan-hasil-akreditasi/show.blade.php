@@ -80,7 +80,7 @@
                     @endif
                     @else
                     <span class="badge bg-light text-dark rounded-pill px-4 py-2 my-3 fs-6">
-                        <i class="bi bi-clock"></i> Menunggu Penetapan
+                        <i class="bi bi-clock"></i> Menunggu
                     </span>
                     @endif
                 </div>

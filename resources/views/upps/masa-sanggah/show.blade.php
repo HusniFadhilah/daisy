@@ -163,35 +163,36 @@
                 </p>
             </div>
 
-            @if($isAktif)
+            {{-- @if($isAktif)
             <div class="col-12">
                 <hr>
                 <div class="alert alert-light border border-warning mb-0">
                     <div class="row">
                         <div class="col-md-6 text-center mb-3 mb-md-0">
                             <label class="text-muted small d-block">Sisa Waktu</label>
-                            <div class="display-4 fw-bold text-warning">{{ $sisaHari }}</div>
-                            <small class="text-muted">hari tersisa</small>
-                        </div>
-                        <div class="col-md-6">
-                            <p class="small mb-2"><strong>Progress Waktu:</strong></p>
-                            @php
-                            $elapsed = $pengajuan->tanggal_masa_sanggah_mulai->diffInDays($now);
-                            $progress = $totalDurasi > 0 ? ($elapsed / $totalDurasi) * 100 : 0;
-                            @endphp
-                            <div class="progress" style="height: 25px;">
-                                <div class="progress-bar bg-warning" role="progressbar" style="width: {{ min($progress, 100) }}%">
-                                    {{ number_format(min($progress, 100), 1) }}%
-                                </div>
-                            </div>
-                            <small class="text-muted">{{ $elapsed }} dari {{ $totalDurasi }} hari</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            @endif
+                            <div class="display-4 fw-bold text-warning">{{ $sisaHari }}
         </div>
+        <small class="text-muted">hari tersisa</small>
     </div>
+    <div class="col-md-6">
+        <p class="small mb-2"><strong>Progress Waktu:</strong></p>
+        @php
+        $elapsed = $pengajuan->tanggal_masa_sanggah_mulai->diffInDays($now);
+        $progress = $totalDurasi > 0 ? ($elapsed / $totalDurasi) * 100 : 0;
+        @endphp
+        <div class="progress" style="height: 25px;">
+            <div class="progress-bar bg-warning" role="progressbar" style="width: {{ min($progress, 100) }}%">
+                {{ number_format(min($progress, 100), 1) }}%
+            </div>
+        </div>
+        <small class="text-muted">{{ $elapsed }} dari {{ $totalDurasi }} hari</small>
+    </div>
+</div>
+</div>
+</div>
+@endif --}}
+</div>
+</div>
 </div>
 
 <!-- Informasi Banding -->
@@ -253,7 +254,7 @@
 <!-- Sidebar -->
 <div class="col-lg-4">
     <!-- Countdown Card (if active) -->
-    @if($isAktif)
+    {{-- @if($isAktif)
     <div class="card mb-4 border-warning">
         <div class="card-header bg-warning text-dark">
             <h6 class="mb-0">
@@ -262,90 +263,90 @@
         </div>
         <div class="card-body text-center">
             <div class="display-1 fw-bold text-warning mb-2">{{ $sisaHari }}</div>
-            <p class="h5 mb-3">Hari Tersisa</p>
-            <hr>
-            <p class="small mb-2">
-                <strong>Berakhir pada:</strong>
-            </p>
-            <p class="mb-0">
-                {{ $pengajuan->tanggal_masa_sanggah_selesai->format('l, d F Y') }}
-                <br>
-                <strong>{{ $pengajuan->tanggal_masa_sanggah_selesai->format('H:i') }} WIB</strong>
-            </p>
-        </div>
+<p class="h5 mb-3">Hari Tersisa</p>
+<hr>
+<p class="small mb-2">
+    <strong>Berakhir pada:</strong>
+</p>
+<p class="mb-0">
+    {{ $pengajuan->tanggal_masa_sanggah_selesai->format('l, d F Y') }}
+    <br>
+    <strong>{{ $pengajuan->tanggal_masa_sanggah_selesai->format('H:i') }} WIB</strong>
+</p>
+</div>
+</div>
+@endif --}}
+
+<!-- Timeline -->
+<div class="card">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">
+            <i class="bi bi-clock-history"></i> Timeline
+        </h5>
     </div>
-    @endif
+    <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+        @php
+        $filterStatuses = [
+        \App\Models\PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM,
+        \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
+        \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
+        \App\Models\PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
+        \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
+        \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
+        ];
 
-    <!-- Timeline -->
-    <div class="card">
-        <div class="card-header bg-info text-white">
-            <h5 class="mb-0">
-                <i class="bi bi-clock-history"></i> Timeline
-            </h5>
-        </div>
-        <div class="card-body" style="max-height: 600px; overflow-y: auto;">
-            @php
-            $filterStatuses = [
-            \App\Models\PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM,
-            \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
-            \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
-            \App\Models\PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
-            \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
-            \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
-            ];
+        $logs = $pengajuan->statusLog
+        ->whereIn('status_to', $filterStatuses)
+        ->sortBy('created_at')
+        ->unique('status_to')
+        ->values();
+        @endphp
 
-            $logs = $pengajuan->statusLog
-            ->whereIn('status_to', $filterStatuses)
-            ->sortBy('created_at')
-            ->unique('status_to')
-            ->values();
-            @endphp
+        @if($logs->count() > 0)
+        <div class="timeline">
+            @foreach($logs as $log)
+            <div class="timeline-item mb-3">
+                <div class="d-flex">
+                    <div class="flex-shrink-0">
+                        @php
+                        $iconColor = match($log->status_to) {
+                        \App\Models\PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM,
+                        \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
+                        \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN
+                        => 'text-success',
+                        \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
+                        \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
+                        \App\Models\PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN
+                        => 'text-warning',
+                        default => 'text-info',
+                        };
+                        @endphp
+                        <i class="bi bi-circle-fill {{ $iconColor }}" style="font-size: 8px;"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <strong>
+                            {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label'] ?? $log->status_to }}
+                        </strong>
+                        <br>
+                        <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
 
-            @if($logs->count() > 0)
-            <div class="timeline">
-                @foreach($logs as $log)
-                <div class="timeline-item mb-3">
-                    <div class="d-flex">
-                        <div class="flex-shrink-0">
-                            @php
-                            $iconColor = match($log->status_to) {
-                            \App\Models\PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM,
-                            \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
-                            \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN
-                            => 'text-success',
-                            \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
-                            \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
-                            \App\Models\PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN
-                            => 'text-warning',
-                            default => 'text-info',
-                            };
-                            @endphp
-                            <i class="bi bi-circle-fill {{ $iconColor }}" style="font-size: 8px;"></i>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <strong>
-                                {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label'] ?? $log->status_to }}
-                            </strong>
-                            <br>
-                            <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
-
-                            {{-- @if($log->keterangan)
+                        {{-- @if($log->keterangan)
                             <br>
                             <small class="text-muted fst-italic">{{ $log->keterangan }}</small>
-                            @endif --}}
-                        </div>
+                        @endif --}}
                     </div>
                 </div>
-                @endforeach
             </div>
-            @else
-            <p class="text-muted text-center mb-0">Belum ada riwayat</p>
-            @endif
+            @endforeach
         </div>
+        @else
+        <p class="text-muted text-center mb-0">Belum ada riwayat</p>
+        @endif
     </div>
+</div>
 
-    <!-- Info Card -->
-    {{-- <div class="card mt-4 border-info">
+<!-- Info Card -->
+{{-- <div class="card mt-4 border-info">
         <div class="card-header bg-info text-white">
             <h6 class="mb-0">
                 <i class="bi bi-info-circle"></i> Informasi Masa Sanggah
@@ -378,11 +379,11 @@
                 <i class="bi bi-exclamation-circle"></i>
                 @if($isAktif)
                 <strong>Perhatian:</strong> Anda masih memiliki waktu <strong>{{ $sisaHari }} hari</strong>
-    untuk mengajukan banding jika diperlukan.
-    @else
-    Jika tidak ada banding, hasil akreditasi akan langsung ditetapkan setelah masa sanggah berakhir.
-    @endif
-    </p>
+untuk mengajukan banding jika diperlukan.
+@else
+Jika tidak ada banding, hasil akreditasi akan langsung ditetapkan setelah masa sanggah berakhir.
+@endif
+</p>
 </div>
 </div> --}}
 </div>

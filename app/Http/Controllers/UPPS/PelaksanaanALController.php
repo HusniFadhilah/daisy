@@ -424,10 +424,10 @@ class PelaksanaanALController extends Controller
 
     private function approveLHA($pengajuan, $authId, $logMessages, $newStatus)
     {
-        $pengajuan->asesmen->asesmenLapangan->update([
-            'status' => 'finalized',
-            'finalized_at' => now(),
-            'finalized_by' => $authId
+        $pengajuan->asesmen->beritaAcaraAL->update([
+            'status_persetujuan_prodi' => 'approved',
+            'approved_by_prodi' => $authId,
+            'approved_at_prodi' => now(),
         ]);
 
         if ($pengajuan)
@@ -440,8 +440,6 @@ class PelaksanaanALController extends Controller
             'changed_at' => now(),
             'keterangan' => $logMessages[$newStatus],
         ]);   //
-
-        $hasil = HasilAkreditasi::initializeHasil($this->hasilService, $pengajuan, $authId);
     }
 
     /**

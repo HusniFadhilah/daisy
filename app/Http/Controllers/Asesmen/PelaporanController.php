@@ -6,15 +6,24 @@ use Illuminate\Http\Request;
 use App\Models\AsesmenDocument;
 use App\Models\AsesmenLapangan;
 use App\Models\AsesmenUserRole;
+use App\Models\HasilAkreditasi;
 use Illuminate\Support\Facades\DB;
 use App\Models\PengajuanAkreditasi;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use App\Services\HasilAkreditasiService;
 
 class PelaporanController extends Controller
 {
+    protected $hasilService;
+
+    public function __construct(HasilAkreditasiService $hasilService)
+    {
+        $this->hasilService = $hasilService;
+    }
+
     /**
      * ============================================
      * MAIN INDEX - Overview All Types
@@ -830,6 +839,7 @@ class PelaporanController extends Controller
             }
 
             $assignment->update(['status_pekerjaan' => 'submitted', 'submitted_at' => now()]);
+            $hasil = HasilAkreditasi::initializeHasil($this->hasilService, $pengajuan, $user->id);
             DB::commit();
             return response()->json([
                 'success' => true,

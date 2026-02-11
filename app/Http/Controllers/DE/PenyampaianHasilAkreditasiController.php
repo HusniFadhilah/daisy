@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\PengajuanAkreditasi;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use App\Jobs\SelesaikanMasaSanggahJob;
 use Illuminate\Support\Facades\Storage;
 use App\Services\HasilAkreditasiService;
 
@@ -29,6 +30,7 @@ class PenyampaianHasilAkreditasiController extends Controller
     {
         $scopeStatuses = [
             PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
+            PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIHITUNG,
             PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM,
             PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
             PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
@@ -280,6 +282,8 @@ class PenyampaianHasilAkreditasiController extends Controller
                     'changed_at'  => now(),
                 ]
             );
+
+            SelesaikanMasaSanggahJob::dispatch($pengajuan->id)->delay(now()->addMinute());
 
             DB::commit();
 

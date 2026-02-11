@@ -256,6 +256,12 @@ class HasilAkreditasi extends Model
             ]
         );
 
+        $pengajuan->asesmen->asesmenLapangan->update([
+            'status' => 'finalized',
+            'finalized_at' => now(),
+            'finalized_by' => $authId
+        ]);
+
         // Auto-calculate if not yet calculated or still draft
         if ($hasil->status === 'draft_al') {
             try {

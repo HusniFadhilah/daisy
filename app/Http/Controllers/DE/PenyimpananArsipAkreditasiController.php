@@ -224,7 +224,7 @@ class PenyimpananArsipAkreditasiController extends Controller
 
             return redirect()
                 ->route('de.penyimpanan-arsip-akreditasi.show', $id)
-                ->with('success', 'Berita Acara berhasil diupload!');
+                ->with('success', 'Berita Acara berhasil diupload! silahkan lakukan penyimpanan arsip dengan mengklik tombol di bawah');
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Upload berita acara arsip failed', [

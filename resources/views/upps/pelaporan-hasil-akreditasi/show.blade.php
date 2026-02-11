@@ -64,7 +64,7 @@
             <div class="card mb-4">
                 <div class="card-header bg-secondary text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-file-earmark-text"></i> Laporan Hasil Akreditasi dan Sertifikat Akreditasi
+                        <i class="bi bi-file-earmark-text"></i> Sertifikat Akreditasi dan Laporan Hasil Akreditasi
                     </h5>
                 </div>
                 <div class="card-body">

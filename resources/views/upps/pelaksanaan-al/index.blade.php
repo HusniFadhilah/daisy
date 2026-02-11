@@ -72,14 +72,13 @@
 @if($stats['pending_approval'] > 0)
 <div class="alert alert-warning alert-permanent border-start border-2 border-warning mb-4">
     <div class="d-flex align-items-start">
-        <i class="bi bi-bell-fill fs-1 me-3 text-warning"></i>
         <div class="flex-grow-1">
             <h5 class="mb-2 fw-bold">
-                <i class="bi bi-exclamation-circle-fill"></i> Berita Acara Menunggu Persetujuan
+                <i class="bi bi-exclamation-circle-fill"></i> Laporan Hasil AL Menunggu Persetujuan
             </h5>
             <p class="mb-2">
                 Anda memiliki <strong class="text-danger fs-5">{{ $stats['pending_approval'] }}</strong>
-                berita acara Asesmen Lapangan yang menunggu persetujuan.
+                Laporan Hasil Asesmen Lapangan yang menunggu persetujuan.
             </p>
             <div class="alert alert-light alert-permanent mb-2">
                 <i class="bi bi-info-circle-fill text-info"></i>
