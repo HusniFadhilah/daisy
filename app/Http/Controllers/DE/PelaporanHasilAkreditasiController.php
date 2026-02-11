@@ -38,11 +38,16 @@ class PelaporanHasilAkreditasiController extends Controller
             },
         ])
             // ✅ Filter: yang sudah ditetapkan atau lebih lanjut
-            ->whereIn('status', [
-                PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
-                PengajuanAkreditasi::STATUS_HASIL_DIUMUMKAN,
-                PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN,
-            ]);
+            ->whereExists(function ($q) {
+                $q->select(DB::raw(1))
+                    ->from('pengajuan_status_log as l')
+                    ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
+                    ->whereIn('l.status_to', [
+                        PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
+                        PengajuanAkreditasi::STATUS_HASIL_DIUMUMKAN,
+                        PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN,
+                    ]);
+            });
 
         // Filter by status
         if ($request->filled('status')) {
@@ -140,15 +145,15 @@ class PelaporanHasilAkreditasiController extends Controller
         ])->findOrFail($id);
 
         // Check if hasil sudah ditetapkan
-        if (!in_array($pengajuan->status, [
-            PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
-            PengajuanAkreditasi::STATUS_HASIL_DIUMUMKAN,
-            PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN,
-        ])) {
-            return redirect()
-                ->route('de.pelaporan-hasil-akreditasi')
-                ->with('error', 'Hasil akreditasi belum ditetapkan.');
-        }
+        // if (!in_array($pengajuan->status, [
+        //     PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
+        //     PengajuanAkreditasi::STATUS_HASIL_DIUMUMKAN,
+        //     PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN,
+        // ])) {
+        //     return redirect()
+        //         ->route('de.pelaporan-hasil-akreditasi')
+        //         ->with('error', 'Hasil akreditasi belum ditetapkan.');
+        // }
 
         $hasil = $pengajuan->asesmen->hasil ?? null;
         $peringkat = $hasil->peringkat_akreditasi ?? null;

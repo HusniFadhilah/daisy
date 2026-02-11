@@ -424,11 +424,14 @@ class PelaksanaanALController extends Controller
 
     private function approveLHA($pengajuan, $authId, $logMessages, $newStatus)
     {
-        $pengajuan->asesmen->beritaAcaraAL->update([
-            'status_persetujuan_prodi' => 'approved',
-            'approved_by_prodi' => $authId,
-            'approved_at_prodi' => now(),
-        ]);
+        $beritaAcaraAL = $pengajuan->asesmen->beritaAcaraAL;
+        if ($beritaAcaraAL) {
+            $beritaAcaraAL->first()->update([
+                'status_persetujuan_prodi' => 'approved',
+                'approved_by_prodi' => $authId,
+                'approved_at_prodi' => now(),
+            ]);
+        }
 
         if ($pengajuan)
             $pengajuan->checkUpdateStatusAKAL('al', 'status_asesor_selesai');

@@ -3,12 +3,13 @@
 
 namespace App\Http\Controllers\UPPS;
 
-use App\Http\Controllers\Controller;
-use App\Models\PengajuanAkreditasi;
-use App\Models\PengajuanDokumen;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Models\PengajuanDokumen;
 use Illuminate\Support\Facades\DB;
+use App\Models\PengajuanAkreditasi;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class PenerimaanDokumenController extends Controller
@@ -308,8 +309,10 @@ class PenerimaanDokumenController extends Controller
         // if (!$studyProgramIds->contains($pengajuan->id_program_studi)) {
         //     abort(403, 'Anda tidak memiliki akses untuk mengunduh dokumen ini.');
         // }
-
         if (!Storage::disk('public')->exists($dokumen->path_file)) {
+            if (($dokumen->jenis_dokumen == 'data_kualitatif' || $dokumen->jenis_dokumen == 'draft_borang') && Str::startsWith($dokumen->nama_file, 'kualitatif_')) {
+                return redirect()->route('pengajuan.borang.export-docx', $pengajuan->id);
+            }
             abort(404, 'File tidak ditemukan.');
         }
 

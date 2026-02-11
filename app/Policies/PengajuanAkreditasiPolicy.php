@@ -16,7 +16,7 @@ class PengajuanAkreditasiPolicy
     public function viewAny(User $user)
     {
         // Prodi can view their own, DE can view assigned
-        return $user->hasRole(['admin_prodi', 'asesi', 'super_admin']);
+        return $user->hasRole(['admin_prodi', 'asesi', 'super_admin', 'asesor']);
     }
 
     /**

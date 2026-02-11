@@ -69,7 +69,7 @@
 </div>
 
 <!-- Pending Approval Alert -->
-@if($stats['pending_approval'] > 0)
+{{-- @if($stats['pending_approval'] > 0)
 <div class="alert alert-warning alert-permanent border-start border-2 border-warning mb-4">
     <div class="d-flex align-items-start">
         <div class="flex-grow-1">
@@ -78,16 +78,16 @@
             </h5>
             <p class="mb-2">
                 Anda memiliki <strong class="text-danger fs-5">{{ $stats['pending_approval'] }}</strong>
-                Laporan Hasil Asesmen Lapangan yang menunggu persetujuan.
-            </p>
-            <div class="alert alert-light alert-permanent mb-2">
-                <i class="bi bi-info-circle-fill text-info"></i>
-                <strong>Penting:</strong> Mohon segera tinjau dan setujui berita acara untuk melanjutkan proses akreditasi.
-            </div>
-        </div>
-    </div>
+Laporan Hasil Asesmen Lapangan yang menunggu persetujuan.
+</p>
+<div class="alert alert-light alert-permanent mb-2">
+    <i class="bi bi-info-circle-fill text-info"></i>
+    <strong>Penting:</strong> Mohon segera tinjau dan setujui berita acara untuk melanjutkan proses akreditasi.
 </div>
-@endif
+</div>
+</div>
+</div>
+@endif --}}
 
 <!-- Statistics Cards -->
 {{-- <h4>Informasi Pelaksanaan dan Berita Acara AL Keseluruhan</h4>
@@ -160,12 +160,12 @@
                                     ->count();
                                     @endphp
 
-                                    @if($pendingBA > 0)
+                                    {{-- @if($pendingBA > 0)
                                     <br>
                                     <span class="badge bg-warning text-dark mt-1">
                                         <i class="bi bi-bell"></i> {{ $pendingBA }} BA Pending
                                     </span>
-                                    @endif
+                                    @endif --}}
                                 </td>
                                 <td class="text-center">
                                     <a href="{{ route('upps.pelaksanaan-al.show', $pengajuan->id) }}" class="btn btn-primary btn-sm" title="Lihat Detail">
