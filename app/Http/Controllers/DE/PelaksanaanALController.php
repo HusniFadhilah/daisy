@@ -336,7 +336,8 @@ class PelaksanaanALController extends Controller
             }
 
             // ✅ Status langsung accepted jika menggunakan validator AK
-            $statusPenawaran = ($useValidatorAK && $validatorAK) ? 'accepted' : 'pending';
+            // $statusPenawaran = ($useValidatorAK && $validatorAK) ? 'accepted' : 'pending';
+            $statusPenawaran = 'accepted';
 
             // Create assignment
             $assignment = AsesmenUserRole::create([

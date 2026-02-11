@@ -132,9 +132,9 @@ class SuratPermohonanController extends Controller
         $pengajuan = PengajuanAkreditasi::findOrFail($id);
 
         // Validasi status
-        if ($pengajuan->status !== PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM) {
-            return back()->with('error', 'Status permohonan saat ini tidak sesuai untuk menerima permohonan akreditasi PS.');
-        }
+        // if ($pengajuan->status !== PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM) {
+        //     return back()->with('error', 'Status permohonan saat ini tidak sesuai untuk menerima permohonan akreditasi PS.');
+        // }
 
         // Check apakah dokumen surat permohonan sudah ada
         $hasSuratPermohonan = PengajuanDokumen::where('id_pengajuan', $id)

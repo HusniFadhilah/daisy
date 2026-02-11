@@ -496,7 +496,9 @@ class PelaporanHasilAkreditasiController extends Controller
 
             // Calculate masa berlaku berdasarkan peringkat
             $masaBerlaku = $this->calculateMasaBerlaku($hasil->peringkat_akreditasi, $pengajuan->tanggal_penetapan);
-
+            // Parse detail skor
+            $detailSkorAL = $hasil->detail_skor_al ?? [];
+            $elemenList = $detailSkorAL['elemen'] ?? [];
             $data = [
                 'pengajuan' => $pengajuan,
                 'hasil' => $hasil,
@@ -505,11 +507,11 @@ class PelaporanHasilAkreditasiController extends Controller
                 'nomorSertifikat' => $pengajuan->nomor_sertifikat,
                 'tanggalPenetapan' => $pengajuan->tanggal_penetapan,
                 'masaBerlaku' => $masaBerlaku,
+                'elemenList' => $elemenList,
             ];
-
             // Generate PDF
             $pdf = Pdf::loadView('de.pelaporan-hasil-akreditasi.sertifikat-pdf', $data);
-            $pdf->setPaper('A4', 'portrait');
+            $pdf->setPaper('A4', 'landscape');
 
             $fileName = 'Sertifikat_Akreditasi_' . $pengajuan->studyProgram->code . '_' . time() . '.pdf';
 
@@ -600,6 +602,8 @@ class PelaporanHasilAkreditasiController extends Controller
             // Calculate masa berlaku
             $masaBerlaku = $this->calculateMasaBerlaku($hasil->peringkat_akreditasi, $pengajuan->tanggal_penetapan);
 
+            $detailSkorAL = $hasil->detail_skor_al ?? [];
+            $elemenList = $detailSkorAL['elemen'] ?? [];
             $data = [
                 'pengajuan' => $pengajuan,
                 'hasil' => $hasil,
@@ -608,6 +612,7 @@ class PelaporanHasilAkreditasiController extends Controller
                 'nomorSertifikat' => $nomorSertifikat,
                 'tanggalPenetapan' => $pengajuan->tanggal_penetapan,
                 'masaBerlaku' => $masaBerlaku,
+                'elemenList' => $elemenList,
             ];
 
             return view('de.pelaporan-hasil-akreditasi.sertifikat-pdf', $data);

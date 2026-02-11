@@ -19,6 +19,9 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            color-adjust: exact;
         }
 
         html,
@@ -350,6 +353,9 @@
             padding: 1.4vh 1.4vh 0.8vh 1.4vh;
             background: #fbfcff;
             text-align: left;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            color-adjust: exact;
         }
 
         @media (min-width: 768px) {
@@ -414,6 +420,9 @@
             padding: 1.1vh 1.1vh;
             text-align: center;
             box-shadow: 0 0.15vh 0.6vh rgba(0, 0, 0, 0.08);
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            color-adjust: exact;
         }
 
         @media (min-width: 768px) {
@@ -533,6 +542,9 @@
             text-align: center;
             padding: 0.6vh;
             flex-shrink: 0;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            color-adjust: exact;
         }
 
         @media (min-width: 768px) {
@@ -700,6 +712,9 @@
             margin-bottom: 1.5vh;
             font-size: 1vh;
             color: #333;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            color-adjust: exact;
         }
 
         @media (min-width: 768px) {
@@ -742,6 +757,9 @@
 
         .elemen-table thead {
             background: #f8f9fa;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            color-adjust: exact;
         }
 
         .elemen-table th,
@@ -753,6 +771,7 @@
         }
 
         @media (min-width: 768px) {
+
             .elemen-table th,
             .elemen-table td {
                 padding: 1vmin 0.8vmin;
@@ -796,6 +815,9 @@
             text-align: center;
             min-width: 16vh;
             color: #222;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            color-adjust: exact;
         }
 
         @media (min-width: 768px) {
@@ -814,6 +836,9 @@
             border-radius: 0.3vh;
             font-size: 1.05vh;
             font-weight: 600;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            color-adjust: exact;
         }
 
         @media (min-width: 768px) {
@@ -860,6 +885,7 @@
         }
 
         @media print {
+
             html,
             body {
                 overflow: visible;
@@ -868,6 +894,13 @@
                 margin: 0;
                 padding: 0;
                 height: auto;
+            }
+
+            /* Force colors to print */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
             }
 
             /* Show both pages when printing */
@@ -953,6 +986,7 @@
         .validity {
             font-weight: 400;
         }
+
     </style>
 </head>
 <body>
@@ -1132,48 +1166,48 @@
 
                     {{-- ===== TABEL ELEMEN ===== --}}
                     @if(!empty($elemenList))
-                        @php
-                        $groupedByKriteria = collect($elemenList)->groupBy('kode_kriteria');
-                        @endphp
+                    @php
+                    $groupedByKriteria = collect($elemenList)->groupBy('kode_kriteria');
+                    @endphp
 
-                        <div class="elemen-table-wrapper">
-                            <table class="elemen-table">
-                                <thead>
-                                    <tr>
-                                        <th width="10%">Kriteria</th>
-                                        <th width="55%">Pernyataan Elemen</th>
-                                        <th width="35%">Kategori</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($groupedByKriteria as $kodeKriteria => $elemens)
-                                        @foreach($elemens as $index => $elemen)
-                                            @php
-                                            $kategori = $elemen['skor_kategori'] ?? ['label' => '-', 'color' => '#e9ecef'];
-                                            @endphp
-                                            <tr>
-                                                @if($index === 0)
-                                                <td class="kriteria-cell" rowspan="{{ count($elemens) }}">
-                                                    <span class="kriteria-badge">{{ $kodeKriteria }}</span>
-                                                </td>
-                                                @endif
+                    <div class="elemen-table-wrapper">
+                        <table class="elemen-table">
+                            <thead>
+                                <tr>
+                                    <th width="10%">Kriteria</th>
+                                    <th width="55%">Pernyataan Elemen</th>
+                                    <th width="35%">Kategori</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($groupedByKriteria as $kodeKriteria => $elemens)
+                                @foreach($elemens as $index => $elemen)
+                                @php
+                                $kategori = $elemen['skor_kategori'] ?? ['label' => '-', 'color' => '#e9ecef'];
+                                @endphp
+                                <tr>
+                                    @if($index === 0)
+                                    <td class="kriteria-cell" rowspan="{{ count($elemens) }}">
+                                        <span class="kriteria-badge">{{ $kodeKriteria }}</span>
+                                    </td>
+                                    @endif
 
-                                                <td>
-                                                    <span class="kode-elemen">{{ $elemen['kode_elemen'] }}</span>
-                                                    {{ $elemen['nama_elemen'] }}
-                                                </td>
+                                    <td>
+                                        <span class="kode-elemen">{{ $elemen['kode_elemen'] }}</span>
+                                        {{ $elemen['nama_elemen'] }}
+                                    </td>
 
-                                                <td style="text-align: center;">
-                                                    <span class="kategori-badge" style="background-color: {{ $kategori['color'] }};">
-                                                        {{ $kategori['label'] }}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
+                                    <td style="text-align: center;">
+                                        <span class="kategori-badge" style="background-color: {{ $kategori['color'] }};">
+                                            {{ $kategori['label'] }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                @endforeach
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                     @endif
 
                     {{-- ===== FOOTER ===== --}}
@@ -1212,6 +1246,7 @@
 
         // Initialize - show page 1
         showPage(1);
+
     </script>
 </body>
 </html>

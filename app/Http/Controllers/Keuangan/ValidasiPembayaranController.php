@@ -187,12 +187,12 @@ class ValidasiPembayaranController extends Controller
             }
 
             if ($pengajuan->pembayaran->status_pembayaran !== 'menunggu_verifikasi') {
-                return back()->with('error', 'Pembayaran tidak dalam status "menunggu_verifikasi".');
+                return back()->with('error', 'Pembayaran tidak dalam status "Menunggu Validasi".');
             }
 
             $statusInput = $request->input('status_pembayaran');
             $messages = [
-                'terverifikasi' => 'Pembayaran diverifikasi oleh Keuangan.',
+                'terverifikasi' => 'Pembayaran divalidasi oleh Keuangan.',
                 'upload_ulang'  => 'Keuangan meminta upload ulang bukti pembayaran.',
             ];
 
@@ -256,7 +256,7 @@ class ValidasiPembayaranController extends Controller
         } catch (\Throwable $e) {
 
             // ❌ Log error lengkap
-            Log::error('Gagal verifikasi pembayaran', [
+            Log::error('Gagal validasi pembayaran', [
                 'pengajuan_id' => $id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -264,7 +264,7 @@ class ValidasiPembayaranController extends Controller
 
             return back()->with(
                 'error',
-                'Terjadi kesalahan saat memproses verifikasi. Silakan coba lagi.'
+                'Terjadi kesalahan saat memproses validasi. Silakan coba lagi.'
             );
         }
     }

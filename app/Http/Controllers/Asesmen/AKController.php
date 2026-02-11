@@ -817,8 +817,8 @@ class AKController extends Controller
                 'elemenStandar.indikator' => function ($q) {
                     // $q->orderBy('kode_indikator');
                 },
-                'elemenStandar.penilaianElemenAk' => function ($q) use ($asesors) {
-                    // $q->whereIn('id_asesor', $asesors->pluck('id_user'));
+                'elemenStandar.penilaianElemenAk' => function ($q) use ($asesors, $asesmen) {
+                    $q->whereIn('id_asesor', $asesors->pluck('id_user'))->where('id_asesmen', $asesmen->id);
                 },
                 'elemenStandar.penilaianElemenAk.asesor'
             ])->get();

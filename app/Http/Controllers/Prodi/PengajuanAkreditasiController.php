@@ -1675,8 +1675,11 @@ class PengajuanAkreditasiController extends Controller
         // if (!$hasAccess) {
         //     abort(403, 'Anda tidak memiliki akses untuk mengunduh dokumen ini.');
         // }
-        // dd($dokumen->path_file);
+        // return $dokumen->path_file;
         if (!Storage::disk('public')->exists($dokumen->path_file)) {
+            if ($dokumen->jenis_dokumen === 'data_kualitatif' && Str::startsWith($dokumen->nama_file, 'kualitatif_')) {
+                return redirect()->route('pengajuan.borang.export-docx', $pengajuan->id);
+            }
             abort(404, 'File tidak ditemukan.');
         }
 

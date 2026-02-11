@@ -3,16 +3,25 @@
 
 namespace App\Http\Controllers\UPPS;
 
-use App\Http\Controllers\Controller;
-use App\Models\PengajuanAkreditasi;
-use App\Models\AsesmenDocument;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Models\AsesmenDocument;
+use App\Models\HasilAkreditasi;
 use Illuminate\Support\Facades\DB;
+use App\Models\PengajuanAkreditasi;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use App\Services\HasilAkreditasiService;
 
 class PelaksanaanALController extends Controller
 {
+    protected $hasilService;
+
+    public function __construct(HasilAkreditasiService $hasilService)
+    {
+        $this->hasilService = $hasilService;
+    }
+
     /**
      * Display list of pelaksanaan AL
      */
@@ -250,6 +259,7 @@ class PelaksanaanALController extends Controller
 
         // Check access
         $user = Auth::user();
+        $authId = $user->id;
         $studyProgramIds = $user->studyPrograms()->pluck('study_programs.id');
 
         if (!$studyProgramIds->contains($pengajuan->id_program_studi)) {
@@ -280,7 +290,7 @@ class PelaksanaanALController extends Controller
             // Update berita acara document
             $beritaAcara->update([
                 'status_persetujuan_prodi' => $newStatus,
-                'approved_by_prodi' => auth()->id(),
+                'approved_by_prodi' => $authId,
                 'approved_at_prodi' => now(),
                 'catatan_prodi' => $request->catatan_prodi,
             ]);
@@ -294,10 +304,14 @@ class PelaksanaanALController extends Controller
             $pengajuan->statusLog()->create([
                 'status_from' => $pengajuan->status,
                 'status_to' => $pengajuan->status,
-                'changed_by' => auth()->id(),
+                'changed_by' => $authId,
                 'changed_at' => now(),
                 'keterangan' => $logMessages[$newStatus],
             ]);
+
+            if ($request->action === 'approve') {
+                $this->approveLHA($pengajuan, $authId, $logMessages, $newStatus);
+            }
 
             DB::commit();
 
@@ -340,6 +354,7 @@ class PelaksanaanALController extends Controller
 
         // Check access
         $user = Auth::user();
+        $authId = $user->id;
         $studyProgramIds = $user->studyPrograms()->pluck('study_programs.id');
 
         if (!$studyProgramIds->contains($pengajuan->id_program_studi)) {
@@ -370,7 +385,7 @@ class PelaksanaanALController extends Controller
             // Update LHA document
             $lha->update([
                 'status_persetujuan_prodi' => $newStatus,
-                'approved_by_prodi' => auth()->id(),
+                'approved_by_prodi' => $authId,
                 'approved_at_prodi' => now(),
                 'catatan_prodi' => $request->catatan_prodi,
             ]);
@@ -381,22 +396,7 @@ class PelaksanaanALController extends Controller
                 'revision_required' => 'Laporan Hasil Asesmen Lapangan "' . $lha->title . '" memerlukan revisi',
             ];
 
-            $pengajuan->asesmen->asesmenLapangan->update([
-                'status' => 'finalized',
-                'finalized_at' => now(),
-                'finalized_by' => $user->id
-            ]);
-
-            if ($pengajuan)
-                $pengajuan->checkUpdateStatusAKAL('al', 'status_asesor_selesai');
-
-            $pengajuan->statusLog()->create([
-                'status_from' => PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
-                'status_to' => $pengajuan->status,
-                'changed_by' => auth()->id(),
-                'changed_at' => now(),
-                'keterangan' => $logMessages[$newStatus],
-            ]);
+            $this->approveLHA($pengajuan, $authId, $logMessages, $newStatus);
 
             DB::commit();
 
@@ -420,6 +420,28 @@ class PelaksanaanALController extends Controller
             return back()
                 ->with('error', 'Gagal memproses persetujuan: ' . $e->getMessage());
         }
+    }
+
+    private function approveLHA($pengajuan, $authId, $logMessages, $newStatus)
+    {
+        $pengajuan->asesmen->asesmenLapangan->update([
+            'status' => 'finalized',
+            'finalized_at' => now(),
+            'finalized_by' => $authId
+        ]);
+
+        if ($pengajuan)
+            $pengajuan->checkUpdateStatusAKAL('al', 'status_asesor_selesai');
+
+        $pengajuan->statusLog()->create([
+            'status_from' => PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
+            'status_to' => $pengajuan->status,
+            'changed_by' => $authId,
+            'changed_at' => now(),
+            'keterangan' => $logMessages[$newStatus],
+        ]);   //
+
+        $hasil = HasilAkreditasi::initializeHasil($this->hasilService, $pengajuan, $authId);
     }
 
     /**

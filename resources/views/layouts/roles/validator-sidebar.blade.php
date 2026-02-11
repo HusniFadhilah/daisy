@@ -19,9 +19,9 @@
 <a href="{{ route('ak.validasi.index') }}" class="nav-link {{ request()->routeIs('ak*') ? 'active' : '' }}">
     <span class="menu-icon">☑️</span>
     <span>Validasi AK</span>
-    @if(isset($penugasanAktif) && $penugasanAktif > 0)
+    {{-- @if(isset($penugasanAktif) && $penugasanAktif > 0)
     <span class="badge bg-warning menu-badge">{{ $penugasanAktif }}</span>
-    @endif
+    @endif --}}
 </a>
 @endif
 

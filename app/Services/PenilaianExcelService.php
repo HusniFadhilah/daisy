@@ -285,8 +285,8 @@ class PenilaianExcelService
             'elemenStandar' => function ($q) {
                 $q->orderBy('kode_elemen');
             },
-            "elemenStandar.{$relationName}" => function ($q) use ($asesors) {
-                $q->whereIn('id_asesor', $asesors->pluck('id_user'));
+            "elemenStandar.{$relationName}" => function ($q) use ($asesors, $asesmen) {
+                $q->whereIn('id_asesor', $asesors->pluck('id_user'))->where('id_asesmen', $asesmen->id);
             },
             "elemenStandar.{$relationName}.asesor"
         ])->get();
