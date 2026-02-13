@@ -263,7 +263,7 @@ class PelaporanBandingController extends Controller
         $timeline = $pengajuan->statusLog->map(function ($log) {
             return [
                 'status' => \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label'] ?? $log->status_to,
-                'date' => $log->changed_at->format('d M Y H:i'),
+                'date' => $log->changed_at->locale('id')->translatedFormat('d M Y H:i'),
                 'keterangan' => $log->keterangan,
                 'changed_by' => $log->changedBy->name ?? '-',
             ];

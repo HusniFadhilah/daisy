@@ -157,7 +157,7 @@
 
                             <td>
                                 @if($tglValidasi)
-                                <small>{{ $tglValidasi->format('d M Y H:i') }}</small>
+                                <small>{{ $tglValidasi->locale('id')->translatedFormat('d M Y H:i') }}</small>
                                 <br>
                                 <small class="text-muted">{{ $tglValidasi->diffForHumans() }}</small>
                                 @else

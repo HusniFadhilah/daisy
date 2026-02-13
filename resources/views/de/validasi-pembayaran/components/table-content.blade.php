@@ -32,7 +32,7 @@
                             <strong>{{ $pembayaran->nomor_invoice }}</strong>
                             <br>
                             <small class="text-muted">
-                                Dibuat pada: {{ $pembayaran->created_at->format('d M Y') }}
+                                Dibuat pada: {{ $pembayaran->created_at->locale('id')->translatedFormat('d M Y') }}
                             </small>
                         </td>
                         <td>
@@ -53,7 +53,7 @@
                         </td>
                         <td>
                             @if($pembayaran->tanggal_jatuh_tempo)
-                            {{ $pembayaran->tanggal_jatuh_tempo->format('d M Y') }}
+                            {{ $pembayaran->tanggal_jatuh_tempo->locale('id')->translatedFormat('d M Y') }}
                             <br>
                             @if($pembayaran->tanggal_jatuh_tempo < now() && $pembayaran->status_pembayaran == 'menunggu_pembayaran')
                                 <span class="badge bg-danger">Terlambat</span>
@@ -64,7 +64,7 @@
                         </td>
                         <td>
                             @if($pembayaran->tanggal_pembayaran)
-                            {{ $pembayaran->tanggal_pembayaran->format('d M Y H:i') }}
+                            {{ $pembayaran->tanggal_pembayaran->locale('id')->translatedFormat('d M Y H:i') }}
                             @else
                             <span class="text-muted">Belum dibayar</span>
                             @endif

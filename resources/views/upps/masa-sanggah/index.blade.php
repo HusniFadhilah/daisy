@@ -36,7 +36,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">
-                <i class="bi bi-clock-history"></i> Masa Sanggah
+                <i class="bi bi-hourglass-split"></i> Masa Sanggah
             </h4>
             <p class="text-muted mb-0">Monitor periode masa sanggah hasil akreditasi</p>
         </div>
@@ -130,9 +130,9 @@
                                     </td>
                                     <td>
                                         <small>
-                                            <strong>Mulai:</strong> {{ $pengajuan->tanggal_masa_sanggah_mulai->format('d M Y') }}
+                                            <strong>Mulai:</strong> {{ $pengajuan->tanggal_masa_sanggah_mulai->locale('id')->translatedFormat('d M Y') }}
                                             <br>
-                                            <strong>Selesai:</strong> {{ $pengajuan->tanggal_masa_sanggah_selesai->format('d M Y') }}
+                                            <strong>Selesai:</strong> {{ $pengajuan->tanggal_masa_sanggah_selesai->locale('id')->translatedFormat('d M Y') }}
                                         </small>
                                     </td>
                                     <td>

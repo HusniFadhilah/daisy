@@ -234,7 +234,7 @@ class PelaporanAKController extends Controller
                     'status_from' => $log->status_from,
                     'status_to' => $log->status_to,
                     'changed_by' => $log->changedBy->name ?? 'System',
-                    'changed_at' => $log->changed_at->format('d M Y H:i'),
+                    'changed_at' => $log->changed_at->locale('id')->translatedFormat('d M Y H:i'),
                     'keterangan' => $log->keterangan,
                 ];
             });
@@ -276,7 +276,7 @@ class PelaporanAKController extends Controller
                     'size' => $document->size,
                     'mime' => $document->mime,
                     'uploaded_by' => $document->uploadedBy->name ?? 'Unknown',
-                    'uploaded_at' => $document->uploaded_at?->format('d M Y H:i'),
+                    'uploaded_at' => $document->uploaded_at?->locale('id')->translatedFormat('d M Y H:i'),
                 ]
             ]);
         } catch (\Exception $e) {

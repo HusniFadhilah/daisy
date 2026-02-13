@@ -200,7 +200,7 @@
                                     File Permohonan Akreditasi
                                     <span class="text-danger" id="label-required">*</span>
                                 </label>
-                                <input type="file" name="file_surat_permohonan" id="file_surat_permohonan" class="form-control @error('file_surat_permohonan') is-invalid @enderror" accept=".pdf" data-existing="{{ $existingDokumen ? 1 : 0 }}" data-existing-name="{{ $existingDokumen?->original_filename }}" data-existing-size="{{ $existingDokumen?->file_size }}" data-existing-uploaded="{{ $existingDokumen?->created_at?->format('d M Y H:i') }}" data-existing-url="{{ $existingDokumen ? route('upps.surat-permohonan.download', $pengajuan->id) : '' }}">
+                                <input type="file" name="file_surat_permohonan" id="file_surat_permohonan" class="form-control @error('file_surat_permohonan') is-invalid @enderror" accept=".pdf" data-existing="{{ $existingDokumen ? 1 : 0 }}" data-existing-name="{{ $existingDokumen?->original_filename }}" data-existing-size="{{ $existingDokumen?->file_size }}" data-existing-uploaded="{{ $existingDokumen?->created_at?->locale('id')->translatedFormat('d M Y H:i') }}" data-existing-url="{{ $existingDokumen ? route('upps.surat-permohonan.download', $pengajuan->id) : '' }}">
                                 <small class="text-muted">
                                     <i class="bi bi-info-circle"></i> Format: PDF | Maksimal: 5 MB
                                 </small>
@@ -244,10 +244,10 @@
                             <strong>Nomor:</strong> {{ $pengajuan->nomor_permohonan }}
                         </p>
                         <p class="mb-2">
-                            <strong>Dibuat:</strong> {{ $pengajuan->created_at->format('d M Y H:i') }}
+                            <strong>Dibuat:</strong> {{ $pengajuan->created_at->locale('id')->translatedFormat('d M Y H:i') }}
                         </p>
                         <p class="mb-3">
-                            <strong>Terakhir Diubah:</strong> {{ $pengajuan->updated_at->format('d M Y H:i') }}
+                            <strong>Terakhir Diubah:</strong> {{ $pengajuan->updated_at->locale('id')->translatedFormat('d M Y H:i') }}
                         </p>
 
                         <hr>

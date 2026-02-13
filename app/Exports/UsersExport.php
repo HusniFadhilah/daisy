@@ -66,7 +66,7 @@ class UsersExport implements FromCollection, WithHeadings, WithMapping, WithStyl
             $user->role_selected,
             implode(', ', $user->roles ?? []),
             $user->is_multiple_role ? 'Ya' : 'Tidak',
-            $user->created_at->format('d/m/Y H:i'),
+            $user->created_at->locale('id')->translatedFormat('d/m/Y H:i'),
         ];
     }
 

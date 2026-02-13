@@ -56,13 +56,13 @@
                     $tanggalKeterangan = null;
 
                     if ($hasil?->tanggal_finalisasi_al) {
-                    $tanggalLabel = \Carbon\Carbon::parse($hasil->tanggal_finalisasi_al)->format('d M Y');
+                    $tanggalLabel = \Carbon\Carbon::parse($hasil->tanggal_finalisasi_al)->locale('id')->translatedFormat('d M Y');
                     $tanggalKeterangan = 'Finalisasi';
                     } else if ($pengajuan->tanggal_hasil_akreditasi_dikirim) {
-                    $tanggalLabel = \Carbon\Carbon::parse($pengajuan->tanggal_hasil_akreditasi_dikirim)->format('d M Y');
+                    $tanggalLabel = \Carbon\Carbon::parse($pengajuan->tanggal_hasil_akreditasi_dikirim)->locale('id')->translatedFormat('d M Y');
                     $tanggalKeterangan = 'Hasil dikirim';
                     } else {
-                    $tanggalLabel = optional($pengajuan->created_at)->format('d M Y');
+                    $tanggalLabel = optional($pengajuan->created_at)->locale('id')->translatedFormat('d M Y');
                     $tanggalKeterangan = 'Dibuat';
                     }
 

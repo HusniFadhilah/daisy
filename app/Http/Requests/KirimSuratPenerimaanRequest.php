@@ -9,7 +9,7 @@ class KirimSuratPenerimaanRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return auth()->user()->hasRole(['asesi', 'super_admin']);
+        return auth()->user()->hasRole(['sekretariat', 'super_admin']);
     }
 
     public function rules(): array

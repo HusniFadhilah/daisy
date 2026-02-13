@@ -174,7 +174,7 @@ class MasaSanggahController extends Controller
 
             $pengajuan->updateStatusSafely(
                 PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
-                "Masa sanggah dimulai: {$tanggalMulai->format('d M Y')} - {$tanggalSelesai->format('d M Y')}"
+                "Masa sanggah dimulai: {$tanggalMulai->locale('id')->translatedFormat('d M Y')} - {$tanggalSelesai->locale('id')->translatedFormat('d M Y')}"
             );
 
             $pengajuan->update([

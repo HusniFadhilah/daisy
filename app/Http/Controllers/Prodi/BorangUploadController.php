@@ -202,7 +202,7 @@ class BorangUploadController extends Controller
                         'filename' => $dok->original_filename,
                         'file_size' => $this->formatFileSize($dok->file_size),
                         'uploaded_by' => $dok->uploader->name ?? 'Unknown',
-                        'uploaded_at' => $dok->created_at->format('d M Y H:i'),
+                        'uploaded_at' => $dok->created_at->locale('id')->translatedFormat('d M Y H:i'),
                         'is_latest' => $dok->is_latest,
                         'keterangan' => $dok->keterangan,
                         'download_url' => route('pengajuan.download-dokumen', [$dok->id_pengajuan, $dok->id]),
@@ -378,7 +378,7 @@ class BorangUploadController extends Controller
     //                 'dokumen_id' => $dokumen->id,
     //                 'filename' => $dokumen->original_filename,
     //                 'file_size' => $this->formatFileSize($dokumen->file_size),
-    //                 'uploaded_at' => $dokumen->created_at->format('d M Y H:i'),
+    //                 'uploaded_at' => $dokumen->created_at->locale('id')->translatedFormat('d M Y H:i'),
     //             ]
     //         ]);
     //     } catch (\Exception $e) {

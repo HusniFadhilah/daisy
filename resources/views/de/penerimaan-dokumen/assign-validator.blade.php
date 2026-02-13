@@ -88,7 +88,7 @@
 </div>
 <div class="mb-0">
     <label class="text-muted small">Diproses</label>
-    <p class="mb-0">{{ $pengajuan->latestBorangImport->imported_at->format('d M Y H:i') }}</p>
+    <p class="mb-0">{{ $pengajuan->latestBorangImport->imported_at->locale('id')->translatedFormat('d M Y H:i') }}</p>
 </div>
 </div>
 </div>
@@ -172,7 +172,7 @@
 
             @if($currentAssignment->responded_at)
             <small class="text-muted">
-                <i class="bi bi-clock"></i> Diterima pada: {{ $currentAssignment->responded_at->format('d M Y H:i') }}
+                <i class="bi bi-clock"></i> Diterima pada: {{ $currentAssignment->responded_at->locale('id')->translatedFormat('d M Y H:i') }}
             </small>
             @endif
 

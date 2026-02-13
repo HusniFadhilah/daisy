@@ -173,7 +173,7 @@
 
                             <td>
                                 @if($dokumenFormulir)
-                                {{ $dokumenFormulir->created_at->format('d M Y') }}
+                                {{ $dokumenFormulir->created_at->locale('id')->translatedFormat('d M Y') }}
                                 <br>
                                 <small class="text-muted">
                                     {{ $dokumenFormulir->created_at->format('H:i') }}

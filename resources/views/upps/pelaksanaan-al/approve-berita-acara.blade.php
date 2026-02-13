@@ -109,9 +109,9 @@
                         <tr>
                             <th>Tanggal Pelaksanaan</th>
                             <td>
-                                : {{ $al->tanggal_mulai ? $al->tanggal_mulai->format('d M Y') : '-' }}
+                                : {{ $al->tanggal_mulai ? $al->tanggal_mulai->locale('id')->translatedFormat('d M Y') : '-' }}
                                 @if($al->tanggal_selesai)
-                                s/d {{ $al->tanggal_selesai->format('d M Y') }}
+                                s/d {{ $al->tanggal_selesai->locale('id')->translatedFormat('d M Y') }}
                                 @endif
                             </td>
                         </tr>
@@ -154,7 +154,7 @@
                                     <small>
                                         File: {{ $doc->original_name }}<br>
                                         Ukuran: {{ number_format($doc->size / 1024, 2) }} KB<br>
-                                        Diupload: {{ $doc->uploaded_at ? $doc->uploaded_at->format('d M Y H:i') : '-' }}
+                                        Diupload: {{ $doc->uploaded_at ? $doc->uploaded_at->locale('id')->translatedFormat('d M Y H:i') : '-' }}
                                     </small>
                                 </p>
                                 <a href="{{ route('asesmen.document.download', $doc->id) }}" class="btn btn-success btn-md" target="_blank">
@@ -229,7 +229,7 @@
                         <h5 class="mt-3 text-success">Sudah Disetujui</h5>
                         <p class="text-muted mb-0">
                             Berita Acara telah disetujui pada:<br>
-                            <strong>{{ $al->completed_at ? $al->completed_at->format('d M Y H:i') : '-' }}</strong>
+                            <strong>{{ $al->completed_at ? $al->completed_at->locale('id')->translatedFormat('d M Y H:i') : '-' }}</strong>
                         </p>
                     </div>
                     @else

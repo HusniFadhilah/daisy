@@ -166,7 +166,7 @@
                                         <span class="badge bg-secondary">Belum Terakreditasi</span>
                                         @endif
                                     </td>
-                                    <td>{{ $program->tanggal_kedaluwarsa ? $program->tanggal_kedaluwarsa->format('d/m/Y') : '-' }}</td>
+                                    <td>{{ $program->tanggal_kedaluwarsa ? $program->tanggal_kedaluwarsa->locale('id')->translatedFormat('d/m/Y') : '-' }}</td>
                                     <td>
                                         <div class="btn-group" role="group">
                                             <a href="{{ route('study-programs.edit', $program->id) }}" class="btn btn-sm btn-warning text-white" title="Edit">

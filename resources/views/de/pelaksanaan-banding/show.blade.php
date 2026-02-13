@@ -93,7 +93,7 @@
                         <div class="col-md-6 mb-3">
                             <label class="text-muted small">Tanggal Banding Diajukan</label>
                             <p class="fw-bold">
-                                {{ $pengajuan->tanggal_permohonan_banding ? $pengajuan->tanggal_permohonan_banding->format('d F Y') : '-' }}
+                                {{ $pengajuan->tanggal_permohonan_banding ? \App\Libraries\Date::tglIndo($pengajuan->tanggal_permohonan_banding) : '-' }}
                             </p>
                         </div>
                         <div class="col-md-6 mb-3">
@@ -296,7 +296,9 @@
             <!-- Status Timeline -->
             <div class="card mb-4">
                 <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Timeline Status</h5>
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history"></i> Riwayat Status
+                    </h5>
                 </div>
                 <div class="card-body">
                     @forelse($pengajuan->statusLog->sortBy('changed_at')->take(10) as $log)
@@ -315,7 +317,7 @@
                                 {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['de'] ?? $log->status_to }}
                             </strong>
                             <small class="text-muted">
-                                {{ $log->changed_at->format('d M Y H:i') }}
+                                {{ $log->changed_at->locale('id')->translatedFormat('d M Y H:i') }}
                             </small>
                         </div>
                         @if($log->keterangan)
@@ -344,7 +346,7 @@
                                     <strong>{{ $doc->jenis_dokumen_alias }}</strong>
                                     <br>
                                     <small class="text-muted">
-                                        {{ $doc->created_at->format('d M Y') }}
+                                        {{ $doc->created_at->locale('id')->translatedFormat('d M Y') }}
                                     </small>
                                 </div>
                                 <a href="{{ route('pengajuan.dokumen.download', $doc->id) }}" class="btn btn-sm btn-outline-primary" title="Download">

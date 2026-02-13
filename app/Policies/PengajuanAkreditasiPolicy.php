@@ -16,7 +16,7 @@ class PengajuanAkreditasiPolicy
     public function viewAny(User $user)
     {
         // Prodi can view their own, DE can view assigned
-        return $user->hasRole(['admin_prodi', 'asesi', 'super_admin', 'asesor']);
+        return $user->hasRole(['admin_prodi', 'sekretariat', 'super_admin', 'asesor']);
     }
 
     /**
@@ -30,12 +30,12 @@ class PengajuanAkreditasiPolicy
         }
 
         // DE can view if assigned
-        // if ($user->hasRole('asesi')) {
+        // if ($user->hasRole('sekretariat')) {
         //     return $pengajuan->id_de_assigned === $user->id ||$pengajuan->id_validator_assigned === $user->id;
         // }
 
         // Admin can view all
-        return $user->hasRole(['asesi', 'super_admin']);
+        return $user->hasRole(['sekretariat', 'super_admin']);
     }
 
     /**
@@ -82,7 +82,7 @@ class PengajuanAkreditasiPolicy
      */
     public function review(User $user, PengajuanAkreditasi $pengajuan)
     {
-        return $user->hasRole(['asesi', 'super_admin', 'validator']) && $pengajuan->id_de_assigned === $user->id || $pengajuan->id_validator_assigned === $user->id;
+        return $user->hasRole(['sekretariat', 'super_admin', 'validator']) && $pengajuan->id_de_assigned === $user->id || $pengajuan->id_validator_assigned === $user->id;
     }
 
     /**
@@ -90,7 +90,7 @@ class PengajuanAkreditasiPolicy
      */
     public function verifyPayment(User $user, PengajuanAkreditasi $pengajuan)
     {
-        return $user->hasRole(['asesi', 'super_admin', 'validator', 'keuangan_lamdepilar']) && $pengajuan->id_de_assigned === $user->id || $pengajuan->id_validator_assigned === $user->id;
+        return $user->hasRole(['sekretariat', 'super_admin', 'validator', 'keuangan_lamdepilar']) && $pengajuan->id_de_assigned === $user->id || $pengajuan->id_validator_assigned === $user->id;
     }
 
     /**
@@ -98,7 +98,7 @@ class PengajuanAkreditasiPolicy
      */
     public function approveToAK(User $user, PengajuanAkreditasi $pengajuan)
     {
-        return $user->hasRole(['asesi', 'super_admin', 'validator']) && $pengajuan->id_de_assigned === $user->id || $pengajuan->id_validator_assigned === $user->id;
+        return $user->hasRole(['sekretariat', 'super_admin', 'validator']) && $pengajuan->id_de_assigned === $user->id || $pengajuan->id_validator_assigned === $user->id;
     }
 
     /**

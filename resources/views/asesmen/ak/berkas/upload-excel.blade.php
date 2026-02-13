@@ -170,7 +170,10 @@
                                 </h5>
                                 <p class="mb-2">
                                     Anda telah menyelesaikan <strong>semua {{ $progress['total'] }} elemen penilaian</strong>.
-                                    Mohon segera lakukan <strong>Finalisasi dan Kirim</strong> agar penilaian Anda dapat divalidasi.
+                                    Anda dapat melakukan cek split penilaian antar asesor di tombol berikut <a class="btn btn-info btn-sm" href="{{ route('ak.berkas.cek-split', $asesmen->id) }}" target="_blank">
+                                        <i class="bi bi-search"></i> Cek Split Penilaian
+                                    </a>
+                                    <br>Mohon segera lakukan <strong>Finalisasi dan Kirim</strong> setelah melakukan cek split, agar penilaian Anda dapat divalidasi.
                                 </p>
                             </div>
                         </div>
@@ -606,19 +609,30 @@
                     , html: '<div class="text-center"><p>File telah berhasil diupload dan diproses</p></div>'
                     , timer: 3000
                     , timerProgressBar: true
-                }).then(function() {
-                    window.location.reload();
-                });
-            } else {
-                Swal.fire({
-                    icon: 'error'
-                    , title: 'Proses Upload Gagal'
-                    , text: log.errors || 'Terjadi kesalahan saat memproses file'
-                    , confirmButtonText: 'OK'
-                }).then(function() {
-                    window.location.reload();
-                });
+                }).then(() => window.location.reload());
+                return;
             }
+
+            // ✅ Format errors
+            let errHtml = '';
+            if (Array.isArray(log.errors)) {
+                errHtml = `<div class="text-start">
+      <p class="mb-2">Import gagal karena:</p>
+      <ul style="text-align:left; padding-left:18px;">
+        ${log.errors.map(e => `<li>${escapeHtml(e)}</li>`).join('')}
+      </ul>
+      <p class="mt-2">Mohon lakukan pengecekan template excel dan coba upload ulang.</p>
+    </div>`;
+            } else {
+                errHtml = `<p>${log.errors || 'Terjadi kesalahan saat memproses file'}</p>`;
+            }
+
+            Swal.fire({
+                icon: 'error'
+                , title: 'Proses Upload Gagal'
+                , html: errHtml
+                , confirmButtonText: 'OK'
+            }).then(() => window.location.reload());
         }
 
         function formatFileSize(bytes) {

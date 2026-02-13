@@ -85,7 +85,7 @@
                 <br>
                 Dokumen siap untuk tahap selanjutnya
                 {{-- Mohon menunggu proses validasi dokumen selesai dilakukan. --}}
-                {{-- Diterima pada {{ $pengajuan->tanggal_draft_borang?->format('d M Y H:i') ?? '-' }} --}}
+                {{-- Diterima pada {{ $pengajuan->tanggal_draft_borang?->locale('id')->translatedFormat('d M Y H:i') ?? '-' }} --}}
             </div>
             @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI)
             <div class="alert alert-success alert-permanent">
@@ -110,7 +110,7 @@
                             <th>Tanggal Dokumen Dikirim</th>
                             <td>
                                 : {{ $pengajuan->tanggal_draft_borang
-                                    ? $pengajuan->tanggal_draft_borang->format('d M Y H:i')
+                                    ? $pengajuan->tanggal_draft_borang->locale('id')->translatedFormat('d M Y H:i')
                                     : '-' }}
                             </td>
                         </tr>
@@ -232,7 +232,7 @@
                                         {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label'] ?? $log->status_to }}
                                     </strong>
                                     <br>
-                                    <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
+                                    <small class="text-muted">{{ $log->created_at->locale('id')->translatedFormat('d M Y H:i') }}</small>
 
                                     {{-- @if($log->keterangan)
                                     <br>

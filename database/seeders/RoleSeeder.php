@@ -27,7 +27,7 @@ class RoleSeeder extends Seeder
                 'alias' => 'Super Admin',
             ],
             [
-                'name' => 'asesi',
+                'name' => 'sekretariat',
                 'alias' => 'DE',
             ],
             [

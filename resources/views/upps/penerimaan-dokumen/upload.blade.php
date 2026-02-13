@@ -150,7 +150,7 @@
                                         @if($doc)
                                         <small class="text-muted text-wrap mt-1">
                                             {{ $doc->original_filename ?? '-' }}<br>
-                                            @if($doc->created_at) {{ $doc->created_at->format('d M Y H:i') }}<br> @endif
+                                            @if($doc->created_at) {{ $doc->created_at->locale('id')->translatedFormat('d M Y H:i') }}<br> @endif
                                         </small>
 
                                         @if($doc->path_file || $doc->template_link)

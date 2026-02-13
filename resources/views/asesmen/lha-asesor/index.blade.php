@@ -93,7 +93,7 @@
             <div class="alert alert-success alert-permanent mb-4">
                 <i class="bi bi-check-circle"></i>
                 <strong>LHA Telah Difinalisasi</strong><br>
-                LHA telah difinalisasi pada {{ $lha->finalized_at->format('d M Y H:i') }}.<br>
+                LHA telah difinalisasi pada {{ $lha->finalized_at->locale('id')->translatedFormat('d M Y H:i') }}.<br>
                 Dokumen telah dikirim ke Program Studi untuk peninjauan.
             </div>
             @else

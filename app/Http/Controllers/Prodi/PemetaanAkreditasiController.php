@@ -830,7 +830,7 @@ class PemetaanAkreditasiController extends Controller
                     ? \App\Libraries\Date::tglIndo($program->tanggal_kedaluwarsa)
                     : '-',
                 'tanggal_kedaluwarsa_raw' => $program->tanggal_kedaluwarsa
-                    ? $program->tanggal_kedaluwarsa->format('Y-m-d')
+                    ? $program->tanggal_kedaluwarsa->locale('id')->translatedFormat('Y-m-d')
                     : null,
                 'sisa_waktu' => [
                     'days' => $daysLeft,

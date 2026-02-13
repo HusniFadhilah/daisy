@@ -32,7 +32,7 @@ $validatorAssignment = $pengajuan->borangValidators()
                     </div>
                     <div class="col-md-6 mb-3">
                         <label class="text-muted small">Tanggal Review</label>
-                        <p class="mb-0">{{ $validatorAssignment->updated_at->format('d M Y H:i') }}</p>
+                        <p class="mb-0">{{ $validatorAssignment->updated_at->locale('id')->translatedFormat('d M Y H:i') }}</p>
                     </div>
                 </div>
 

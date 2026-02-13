@@ -388,7 +388,7 @@ class ALController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => $assignment->status_pekerjaan == 'submitted' ? 'Penilaian berhasil di-submit! Menunggu validasi oleh LAMDEPILAR.' : 'Penilaian berhasil di-submit dan difinalisasi!',
-                'submitted_at' => now()->format('d M Y H:i'),
+                'submitted_at' => now()->locale('id')->translatedFormat('d M Y H:i'),
             ]);
         } catch (\Exception $e) {
             Log::error($e);
@@ -701,8 +701,8 @@ class ALController extends Controller
                     'failed_rows' => $importLog->failed_rows,
                     'errors' => $importLog->errors,
                     'success_rate' => $importLog->success_rate,
-                    'started_at' => $importLog->started_at?->format('d M Y H:i:s'),
-                    'completed_at' => $importLog->completed_at?->format('d M Y H:i:s'),
+                    'started_at' => $importLog->started_at?->locale('id')->translatedFormat('d M Y H:i:s'),
+                    'completed_at' => $importLog->completed_at?->locale('id')->translatedFormat('d M Y H:i:s'),
                 ],
             ]);
         } catch (\Exception $e) {
@@ -894,7 +894,7 @@ class ALController extends Controller
 
         $periode = '-';
         if ($asesmen->tanggal_mulai && $asesmen->tanggal_selesai) {
-            $periode = $asesmen->tanggal_mulai->format('d M Y') . ' s/d ' . $asesmen->tanggal_selesai->format('d M Y');
+            $periode = $asesmen->tanggal_mulai->locale('id')->translatedFormat('d M Y') . ' s/d ' . $asesmen->tanggal_selesai->locale('id')->translatedFormat('d M Y');
         }
 
         $asesorLines = '';
@@ -947,7 +947,7 @@ class ALController extends Controller
         <table style="width:100%;" cellpadding="6">
             <tr>
                 <td style="width:50%; text-align:left;">
-                    <b>Dibuat pada:</b><br>' . now()->format('d M Y H:i') . '
+                    <b>Dibuat pada:</b><br>' . now()->locale('id')->translatedFormat('d M Y H:i') . '
                 </td>
                 <td style="width:50%; text-align:right;">
                     <b>Asesor penyusun:</b><br>' . e($user->name) . '

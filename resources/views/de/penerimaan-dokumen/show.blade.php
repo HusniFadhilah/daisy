@@ -168,7 +168,7 @@
         <br>
         Dokumen siap untuk tahap selanjutnya yaitu penugasan validator
         {{-- Mohon menunggu proses validasi dokumen selesai dilakukan. --}}
-        {{-- Diterima pada {{ $pengajuan->tanggal_draft_borang?->format('d M Y H:i') ?? '-' }} --}}
+        {{-- Diterima pada {{ $pengajuan->tanggal_draft_borang?->locale('id')->translatedFormat('d M Y H:i') ?? '-' }} --}}
     </div>
     @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI)
     <div class="alert alert-success alert-permanent">
@@ -261,7 +261,7 @@
                                     <label class="text-muted small">Ditugaskan</label>
                                     <p class="mb-0">
                                         @if($currentValidator->created_at)
-                                        {{ $currentValidator->created_at->format('d M Y H:i') }}
+                                        {{ $currentValidator->created_at->locale('id')->translatedFormat('d M Y H:i') }}
                                         @else
                                         -
                                         @endif
@@ -271,14 +271,14 @@
                                 @if($currentValidator->responded_at)
                                 <div class="col-md-6 mb-3">
                                     <label class="text-muted small">Respon</label>
-                                    <p class="mb-0">{{ $currentValidator->responded_at->format('d M Y H:i') }}</p>
+                                    <p class="mb-0">{{ $currentValidator->responded_at->locale('id')->translatedFormat('d M Y H:i') }}</p>
                                 </div>
                                 @endif
 
                                 @if($currentValidator->status_penawaran === 'accepted' && $currentValidator->approved_at)
                                 <div class="col-md-6 mb-3">
                                     <label class="text-muted small">Selesai Review</label>
-                                    <p class="mb-0">{{ $currentValidator->approved_at->format('d M Y H:i') }}</p>
+                                    <p class="mb-0">{{ $currentValidator->approved_at->locale('id')->translatedFormat('d M Y H:i') }}</p>
                                 </div>
                                 @endif
                             </div>
@@ -338,7 +338,7 @@
                                                     <span class="badge bg-info">Versi {{ $suratTugas->versi }}</span>
                                                 </div>
                                                 <div>
-                                                    <small>Dibuat: {{ $suratTugas->created_at->format('d M Y H:i') }}</small>
+                                                    <small>Dibuat: {{ $suratTugas->created_at->locale('id')->translatedFormat('d M Y H:i') }}</small>
                                                 </div>
                                             </div>
                                         </div>
@@ -492,7 +492,7 @@
                                         </div>
                                         <div>
                                             @if($uploadedDocuments['suplemen']->created_at)
-                                            {{ $uploadedDocuments['suplemen']->created_at->format('d M Y') }}
+                                            {{ $uploadedDocuments['suplemen']->created_at->locale('id')->translatedFormat('d M Y') }}
                                             @endif
                                         </div>
                                     </div>
@@ -529,7 +529,7 @@
                         <th>Tanggal Dokumen Diupload</th>
                         <td>
                             : {{ $pengajuan->tanggal_draft_borang
-                                    ? $pengajuan->tanggal_draft_borang->format('d M Y H:i')
+                                    ? $pengajuan->tanggal_draft_borang->locale('id')->translatedFormat('d M Y H:i')
                                     : '-' }}
                         </td>
                     </tr>
@@ -579,7 +579,7 @@
                                     {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['de'] ?? $log->status_to }}
                                 </strong>
                                 <br>
-                                <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
+                                <small class="text-muted">{{ $log->created_at->locale('id')->translatedFormat('d M Y H:i') }}</small>
 
                                 {{-- @if($log->keterangan)
                                     <br>
@@ -624,7 +624,7 @@
                         <i class="bi bi-info-circle"></i>
                         <strong>File Saat Ini:</strong><br>
                         {{ $suratTugas->original_filename }}<br>
-                        <small>Versi {{ $suratTugas->versi }} • {{ $suratTugas->created_at->format('d M Y H:i') }}</small>
+                        <small>Versi {{ $suratTugas->versi }} • {{ $suratTugas->created_at->locale('id')->translatedFormat('d M Y H:i') }}</small>
                     </div>
                     @endif
 

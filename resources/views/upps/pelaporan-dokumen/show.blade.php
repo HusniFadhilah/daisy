@@ -19,7 +19,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h5 class="mb-1">
-                <i class="bi bi-file-earmark-check"></i> Detail Pelaporan Validasi Dokumen
+                <i class="bi bi-file-earmark-diff"></i> Detail Pelaporan Validasi Dokumen
             </h5>
             <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
@@ -75,7 +75,7 @@
                             <th style="width:40%">Tanggal Validasi Dokumen</th>
                             <td>
                                 : {{ $pengajuan->tanggal_validasi_borang_selesai
-                                    ? $pengajuan->tanggal_validasi_borang_selesai->format('d M Y H:i')
+                                    ? $pengajuan->tanggal_validasi_borang_selesai->locale('id')->translatedFormat('d M Y H:i')
                                     : '-' }}
                             </td>
                         </tr>
@@ -83,7 +83,7 @@
                             <th>Tanggal Pelaporan Validasi Dokumen</th>
                             <td>
                                 : {{ $pengajuan->tanggal_pelaporan_validasi_borang
-                                    ? $pengajuan->tanggal_pelaporan_validasi_borang->format('d M Y H:i')
+                                    ? $pengajuan->tanggal_pelaporan_validasi_borang->locale('id')->translatedFormat('d M Y H:i')
                                     : '-' }}
                             </td>
                         </tr>
@@ -145,7 +145,7 @@
                                         {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['upps'] ?? $log->status_to }}
                                     </strong>
                                     <br>
-                                    <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
+                                    <small class="text-muted">{{ $log->created_at->locale('id')->translatedFormat('d M Y H:i') }}</small>
 
                                     {{-- @if($log->keterangan)
                                     <br>

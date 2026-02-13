@@ -32,7 +32,7 @@ class UserController extends Controller
                     return $row->role_alias;
                 })
                 ->addColumn('created_at', function ($row) {
-                    return $row->created_at ? $row->created_at->format('d M Y') : '-';
+                    return $row->created_at ? $row->created_at->locale('id')->translatedFormat('d M Y') : '-';
                 })
                 ->addColumn('action', function ($row) {
                     $btn = '<div class="btn-group" role="group">';
@@ -70,9 +70,9 @@ class UserController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
             'role' => 'required|in:admin,user',
-            'role_selected' => 'required|in:super_admin,asesi,asesor,validator,verifikator,admin_univ,admin_prodi,default',
+            'role_selected' => 'required|in:super_admin,sekretariat,asesor,validator,verifikator,admin_univ,admin_prodi,default',
             'roles' => 'nullable|array',
-            'roles.*' => 'in:super_admin,asesi,asesor,validator,verifikator,admin_univ,admin_prodi,default',
+            'roles.*' => 'in:super_admin,sekretariat,asesor,validator,verifikator,admin_univ,admin_prodi,default',
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string',
             'institution' => 'nullable|string|max:255',
@@ -131,9 +131,9 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $id,
             'role' => 'required|in:admin,user',
-            'role_selected' => 'required|in:super_admin,asesi,asesor,validator,verifikator,admin_univ,admin_prodi,default',
+            'role_selected' => 'required|in:super_admin,sekretariat,asesor,validator,verifikator,admin_univ,admin_prodi,default',
             'roles' => 'nullable|array',
-            'roles.*' => 'in:super_admin,asesi,asesor,validator,verifikator,admin_univ,admin_prodi,default',
+            'roles.*' => 'in:super_admin,sekretariat,asesor,validator,verifikator,admin_univ,admin_prodi,default',
             'password' => 'nullable|string|min:8|confirmed',
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string',
@@ -200,7 +200,7 @@ class UserController extends Controller
     {
         $template = [
             ['nama', 'email', 'password', 'role', 'role_aktif', 'semua_roles', 'no_telepon', 'alamat', 'institusi', 'id_universitas', 'id_program_studi', 'jabatan'],
-            ['John Doe', 'john@example.com', 'password123', 'user', 'asesi', 'asesi,asesor', '081234567890', 'Jl. Contoh No. 123', 'Universitas Contoh', '1', '1', 'Dosen'],
+            ['John Doe', 'john@example.com', 'password123', 'user', 'sekretariat', 'sekretariat,asesor', '081234567890', 'Jl. Contoh No. 123', 'Universitas Contoh', '1', '1', 'Dosen'],
             ['Jane Smith', 'jane@example.com', 'password123', 'admin', 'admin_univ', 'admin_univ,validator', '081234567891', 'Jl. Contoh No. 456', 'Universitas Contoh', '1', '2', 'Kaprodi'],
         ];
 

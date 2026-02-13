@@ -121,7 +121,7 @@
                 <p><strong>Nomor Permohonan:</strong> {{ $pengajuan->nomor_pengajuan }}</p>
                 <p><strong>Program Studi:</strong> {{ $pengajuan->studyProgram->name }}</p>
                 <p><strong>Versi Review:</strong> {{ $review->versi_review }}</p>
-                <p><strong>Tanggal Review:</strong> {{ $review->tanggal_review->format('d F Y H:i') }}</p>
+                <p><strong>Tanggal Review:</strong> {{ $review->tanggal_review->locale('id')->translatedFormat('d F Y H:i') }}</p>
                 <p><strong>Reviewer:</strong> {{ $review->reviewer->name }}</p>
             </div>
 

@@ -401,7 +401,7 @@ class PelaporanHasilAkreditasiController extends Controller
         $timeline = $pengajuan->statusLog->map(function ($log) {
             return [
                 'status' => \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label'] ?? $log->status_to,
-                'date' => $log->changed_at->format('d M Y H:i'),
+                'date' => $log->changed_at->locale('id')->translatedFormat('d M Y H:i'),
                 'keterangan' => $log->keterangan,
                 'changed_by' => $log->changedBy->name ?? '-',
             ];
@@ -602,13 +602,15 @@ class PelaporanHasilAkreditasiController extends Controller
             $hasil = $asesmen->hasil;
 
             // Generate nomor sertifikat temporary (jika belum ada)
-            $nomorSertifikat = $pengajuan->nomor_sertifikat ?? '[Akan digenerate saat download]';
+            // $nomorSertifikat = $pengajuan->nomor_pengajuan ?? '[Akan digenerate saat download]';
+            $nomorSertifikat = $pengajuan->generateNomorSertifikat();
 
             // Calculate masa berlaku
             $masaBerlaku = $this->calculateMasaBerlaku($hasil->peringkat_akreditasi, $pengajuan->tanggal_penetapan);
 
             $detailSkorAL = $hasil->detail_skor_al ?? [];
             $elemenList = $detailSkorAL['elemen'] ?? [];
+
             $data = [
                 'pengajuan' => $pengajuan,
                 'hasil' => $hasil,

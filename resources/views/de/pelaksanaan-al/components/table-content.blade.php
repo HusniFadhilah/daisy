@@ -88,7 +88,7 @@
                         </td>
                         <td>
                             @if($pengajuan->tanggal_al_selesai)
-                            <small>{{ $pengajuan->tanggal_al_selesai->format('d M Y') }}</small>
+                            <small>{{ $pengajuan->tanggal_al_selesai->locale('id')->translatedFormat('d M Y') }}</small>
                             <br>
                             <small class="text-muted">
                                 {{ $pengajuan->tanggal_al_selesai->diffForHumans() }}

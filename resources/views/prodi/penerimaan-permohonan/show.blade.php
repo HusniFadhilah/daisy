@@ -66,7 +66,7 @@
                         </tr>
                         <tr>
                             <th>Tanggal Permohonan Diterima DE</th>
-                            <td>: {{ $pengajuan->tanggal_surat_permohonan_diterima?->format('d M Y') ?? '-' }}</td>
+                            <td>: {{ $pengajuan->tanggal_surat_permohonan_diterima?->locale('id')->translatedFormat('d M Y') ?? '-' }}</td>
                         </tr>
                     </table>
                 </div>
@@ -90,7 +90,7 @@
                         <i class="bi bi-check-circle"></i>
                         <strong>File Penerimaan Permohonan Akreditasi telah tersedia!</strong>
                         <br>
-                        <small>Tersedia pada: {{ $dokumenPenerimaan->created_at->format('d M Y H:i') }}</small>
+                        <small>Tersedia pada: {{ $dokumenPenerimaan->created_at->locale('id')->translatedFormat('d M Y H:i') }}</small>
                     </div>
 
                     <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded mb-3">
@@ -105,7 +105,7 @@
                                 <br>
                                 <small class="text-muted">
                                     <i class="bi bi-calendar"></i>
-                                    {{ $dokumenPenerimaan->created_at->format('d M Y H:i') }}
+                                    {{ $dokumenPenerimaan->created_at->locale('id')->translatedFormat('d M Y H:i') }}
                                 </small>
                                 @if($dokumenPenerimaan->keterangan && $dokumenPenerimaan->keterangan != 'Penerimaan Permohonan Akreditasi dari LAMDEPILAR')
                                 <br>
@@ -156,7 +156,7 @@
                         <h6 class="mt-3">Menunggu Penerimaan Permohonan Akreditasi dari LAMDEPILAR</h6>
                         <p class="text-muted">
                             Permohonan Akreditasi PS telah diterima oleh LAMDEPILAR pada
-                            <strong>{{ $pengajuan->tanggal_surat_permohonan_diterima?->format('d M Y') ?? '-' }}</strong>.
+                            <strong>{{ $pengajuan->tanggal_surat_permohonan_diterima?->locale('id')->translatedFormat('d M Y') ?? '-' }}</strong>.
                             <br>
                             File penerimaan permohonan akreditasi akan segera tersedia di halaman ini.
                         </p>
@@ -197,7 +197,7 @@
                                     <strong>Pengingat Diterima</strong>
                                     <br>
                                     <small class="text-muted">
-                                        {{ $pengajuan->tanggal_pengingat?->format('d M Y') ?? 'Belum' }}
+                                        {{ $pengajuan->tanggal_pengingat?->locale('id')->translatedFormat('d M Y') ?? 'Belum' }}
                                     </small>
                                 </div>
                             </div>
@@ -212,7 +212,7 @@
                                     <strong>Permohonan Akreditasi Dikirim</strong>
                                     <br>
                                     <small class="text-muted">
-                                        {{ $pengajuan->tanggal_surat_permohonan_dikirim?->format('d M Y') ?? 'Belum' }}
+                                        {{ $pengajuan->tanggal_surat_permohonan_dikirim?->locale('id')->translatedFormat('d M Y') ?? 'Belum' }}
                                     </small>
                                 </div>
                             </div>
@@ -227,7 +227,7 @@
                                     <strong>Permohonan Diterima LAMDEPILAR</strong>
                                     <br>
                                     <small class="text-muted">
-                                        {{ $pengajuan->tanggal_surat_permohonan_diterima?->format('d M Y') ?? 'Belum' }}
+                                        {{ $pengajuan->tanggal_surat_permohonan_diterima?->locale('id')->translatedFormat('d M Y') ?? 'Belum' }}
                                     </small>
                                 </div>
                             </div>
@@ -244,7 +244,7 @@
                                     @if($dokumenPenerimaan)
                                     <small class="text-success">
                                         <i class="bi bi-check-circle"></i>
-                                        {{ $dokumenPenerimaan->created_at->format('d M Y') }}
+                                        {{ $dokumenPenerimaan->created_at->locale('id')->translatedFormat('d M Y') }}
                                     </small>
                                     @elseif($pengajuan->tanggal_surat_permohonan_diterima)
                                     <small class="text-warning">
@@ -263,10 +263,10 @@
                                     <i class="bi bi-circle-fill {{ $pengajuan->tanggal_template_led_dikirim ? 'text-success' : 'text-secondary' }}" style="font-size: 10px;"></i>
                                 </div>
                                 <div class="flex-grow-1 ms-3">
-                                    <strong>Template LED Dikirim</strong>
+                                    <strong>Templat Dokumen Dikirim</strong>
                                     <br>
                                     <small class="text-muted">
-                                        {{ $pengajuan->tanggal_template_led_dikirim?->format('d M Y') ?? 'Belum' }}
+                                        {{ $pengajuan->tanggal_template_led_dikirim?->locale('id')->translatedFormat('d M Y') ?? 'Belum' }}
                                     </small>
                                 </div>
                             </div>
@@ -307,7 +307,7 @@
                                         {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label'] ?? $log->status_to }}
                                     </strong>
                                     <br>
-                                    <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
+                                    <small class="text-muted">{{ $log->created_at->locale('id')->translatedFormat('d M Y H:i') }}</small>
 
                                     @if($log->keterangan)
                                     <br>

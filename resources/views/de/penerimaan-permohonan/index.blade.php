@@ -144,7 +144,7 @@
                                     <td>
                                         @if($pengajuan->tanggal_surat_permohonan_diterima)
                                         <small>
-                                            {{ $pengajuan->tanggal_surat_permohonan_diterima->format('d M Y') }}
+                                            {{ $pengajuan->tanggal_surat_permohonan_diterima->locale('id')->translatedFormat('d M Y') }}
                                         </small>
                                         <br>
                                         <small class="text-muted">
@@ -161,7 +161,7 @@
                                         </span>
                                         <br>
                                         <small class="text-muted">
-                                            {{ $suratPenerimaan->created_at->format('d M Y') }}
+                                            {{ $suratPenerimaan->created_at->locale('id')->translatedFormat('d M Y') }}
                                         </small>
                                         @else
                                         <span class="badge bg-warning">

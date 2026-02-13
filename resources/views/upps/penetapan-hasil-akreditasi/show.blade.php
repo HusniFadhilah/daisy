@@ -73,7 +73,7 @@
                                     {{ $beritaAcara->original_name }}
                                 </p>
                                 <small class="text-muted">
-                                    Diupload pada {{ $beritaAcara->uploaded_at?->format('d M Y, H:i') }}
+                                    Diupload pada {{ $beritaAcara->uploaded_at?->locale('id')->translatedFormat('d M Y, H:i') }}
                                 </small>
                             </div>
                         </div>
@@ -124,7 +124,7 @@
                             <th>Tanggal Hasil Ditetapkan</th>
                             <td>
                                 : {{ $pengajuan->tanggal_hasil_akreditasi_dikirim
-                                        ? $pengajuan->tanggal_hasil_akreditasi_dikirim->format('d M Y H:i')
+                                        ? $pengajuan->tanggal_hasil_akreditasi_dikirim->locale('id')->translatedFormat('d M Y H:i')
                                         : '-' }}
                             </td>
                         </tr>
@@ -175,7 +175,7 @@
                                         {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label'] ?? $log->status_to }}
                                     </strong>
                                     <br>
-                                    <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
+                                    <small class="text-muted">{{ $log->created_at->locale('id')->translatedFormat('d M Y H:i') }}</small>
                                 </div>
                             </div>
                         </div>

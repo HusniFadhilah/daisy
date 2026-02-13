@@ -134,7 +134,7 @@
                                     <td>
                                         <small>
                                             {{ $pengajuan->tanggal_permohonan_banding
-                                                        ? $pengajuan->tanggal_permohonan_banding->format('d M Y')
+                                                        ? $pengajuan->tanggal_permohonan_banding->locale('id')->translatedFormat('d M Y')
                                                         : '-' }}
                                         </small>
                                     </td>

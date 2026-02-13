@@ -50,7 +50,7 @@
                         <option value="">Pilih Role Aktif</option>
                         <option value="default" {{ old('role_selected') === 'default' ? 'selected' : '' }}>Default User</option>
                         <option value="super_admin" {{ old('role_selected') === 'super_admin' ? 'selected' : '' }}>Super Admin</option>
-                        <option value="asesi" {{ old('role_selected') === 'asesi' ? 'selected' : '' }}>DE (Asesi)</option>
+                        <option value="sekretariat" {{ old('role_selected') === 'sekretariat' ? 'selected' : '' }}>Sekretariat</option>
                         <option value="asesor" {{ old('role_selected') === 'asesor' ? 'selected' : '' }}>Asesor</option>
                         <option value="validator" {{ old('role_selected') === 'validator' ? 'selected' : '' }}>Validator</option>
                         <option value="verifikator" {{ old('role_selected') === 'verifikator' ? 'selected' : '' }}>Verifikator</option>
@@ -71,8 +71,8 @@
                             <label class="form-check-label" for="role_super_admin">Super Admin</label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="roles[]" value="asesi" id="role_asesi" {{ in_array('asesi', old('roles', [])) ? 'checked' : '' }}>
-                            <label class="form-check-label" for="role_asesi">DE (Asesi)</label>
+                            <input class="form-check-input" type="checkbox" name="roles[]" value="sekretariat" id="role_sekretariat" {{ in_array('sekretariat', old('roles', [])) ? 'checked' : '' }}>
+                            <label class="form-check-label" for="role_sekretariat">Sekretariat</label>
                         </div>
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" name="roles[]" value="asesor" id="role_asesor" {{ in_array('asesor', old('roles', [])) ? 'checked' : '' }}>

@@ -91,7 +91,7 @@
                                             </tr>
                                             <tr>
                                                 <th>Tanggal Dikirim</th>
-                                                <td>: {{ $pengingat->tanggal_dikirim->format('d F Y H:i') }}</td>
+                                                <td>: {{ $pengingat->tanggal_dikirim->locale('id')->translatedFormat('d F Y H:i') }}</td>
                                             </tr>
                                             <tr>
                                                 <th>Dikirim Oleh</th>

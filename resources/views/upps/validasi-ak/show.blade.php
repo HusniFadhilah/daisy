@@ -19,7 +19,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h5 class="mb-1">
-                <i class="bi bi-clipboard-check"></i> Detail Validasi AK
+                <i class="bi bi-patch-check"></i> Detail Validasi AK
             </h5>
             <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
@@ -74,7 +74,7 @@
                             <th>Tanggal Penilaian Dimulai</th>
                             <td>
                                 : {{ $pengajuan->tanggal_ak_mulai
-                                    ? $pengajuan->tanggal_ak_mulai->format('d M Y H:i')
+                                    ? $pengajuan->tanggal_ak_mulai->locale('id')->translatedFormat('d M Y H:i')
                                     : '-' }}
                             </td>
                         </tr>
@@ -82,7 +82,7 @@
                             <th>Tanggal Validasi AK</th>
                             <td>
                                 : {{ $pengajuan->tanggal_validasi_ak
-                                    ? $pengajuan->tanggal_validasi_ak->format('d M Y H:i')
+                                    ? $pengajuan->tanggal_validasi_ak->locale('id')->translatedFormat('d M Y H:i')
                                     : '-' }}
                             </td>
                         </tr>
@@ -90,7 +90,7 @@
                             <th>Tanggal Penilaian Selesai</th>
                             <td>
                                 : {{ $pengajuan->tanggal_ak_selesai
-                                    ? $pengajuan->tanggal_ak_selesai->format('d M Y H:i')
+                                    ? $pengajuan->tanggal_ak_selesai->locale('id')->translatedFormat('d M Y H:i')
                                     : '-' }}
                             </td>
                         </tr>
@@ -150,7 +150,7 @@
                                         {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['upps'] ?? $log->status_to }}
                                     </strong>
                                     <br>
-                                    <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
+                                    <small class="text-muted">{{ $log->created_at->locale('id')->translatedFormat('d M Y H:i') }}</small>
 
                                     {{-- @if($log->keterangan)
                                     <br>

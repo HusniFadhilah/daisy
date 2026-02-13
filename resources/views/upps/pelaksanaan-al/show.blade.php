@@ -19,7 +19,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h5 class="mb-1">
-                <i class="bi bi-clipboard-check"></i> Detail Pelaksanaan AL & Berita Acara
+                <i class="bi bi-geo-alt"></i> Detail Pelaksanaan AL & Berita Acara
             </h5>
             <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
@@ -91,7 +91,7 @@
                                         <strong>{{ $beritaAcara->title }}</strong>
                                     </h6>
                                     <small class="text-muted">
-                                        Diupload: {{ $beritaAcara->uploaded_at ? $beritaAcara->uploaded_at->format('d M Y H:i') : '-' }}
+                                        Diupload: {{ $beritaAcara->uploaded_at ? $beritaAcara->uploaded_at->locale('id')->translatedFormat('d M Y H:i') : '-' }}
                                     </small>
                                 </div>
                                 <div>
@@ -154,7 +154,7 @@
                                         <strong>{{ $lha->title }}</strong>
                                     </h6>
                                     <small class="text-muted">
-                                        Diupload: {{ $lha->uploaded_at ? $lha->uploaded_at->format('d M Y H:i') : '-' }}
+                                        Diupload: {{ $lha->uploaded_at ? $lha->uploaded_at->locale('id')->translatedFormat('d M Y H:i') : '-' }}
                                     </small>
                                     <br>
                                     Status: <span class="badge {{ $lha->status_prodi_badge_class }} mt-1">
@@ -175,7 +175,7 @@
                                 {{ $lha->catatan_prodi }}
                                 @if($lha->approved_at_prodi)
                                 <br><small class="text-muted">
-                                    <i class="bi bi-clock"></i> {{ $lha->approved_at_prodi->format('d M Y H:i') }}
+                                    <i class="bi bi-clock"></i> {{ $lha->approved_at_prodi->locale('id')->translatedFormat('d M Y H:i') }}
                                 </small>
                                 @endif
                             </div>
@@ -262,7 +262,7 @@
                             <th>Tanggal Mulai AL</th>
                             <td>
                                 : {{ $pengajuan->asesmen->asesmenLapangan->tanggal_mulai
-                                    ? \Carbon\Carbon::parse($pengajuan->asesmen->asesmenLapangan->tanggal_mulai)->format('d M Y')
+                                    ? \Carbon\Carbon::parse($pengajuan->asesmen->asesmenLapangan->tanggal_mulai)->locale('id')->translatedFormat('d M Y')
                                     : '-' }}
                             </td>
                         </tr>
@@ -270,7 +270,7 @@
                             <th>Tanggal Selesai AL</th>
                             <td>
                                 : {{ $pengajuan->asesmen->asesmenLapangan->tanggal_selesai
-                                    ? \Carbon\Carbon::parse($pengajuan->asesmen->asesmenLapangan->tanggal_selesai)->format('d M Y')
+                                    ? \Carbon\Carbon::parse($pengajuan->asesmen->asesmenLapangan->tanggal_selesai)->locale('id')->translatedFormat('d M Y')
                                     : '-' }}
                             </td>
                         </tr>
@@ -340,7 +340,7 @@
                                         {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label'] ?? $log->status_to }}
                                     </strong>
                                     <br>
-                                    <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
+                                    <small class="text-muted">{{ $log->created_at->locale('id')->translatedFormat('d M Y H:i') }}</small>
 
                                     {{-- @if($log->keterangan)
                                     <br>

@@ -81,7 +81,7 @@
                                 <br>
                                 <small class="text-muted">
                                     {{ number_format($dokumen->file_size / 1024, 2) }} KB •
-                                    Diupload: {{ $dokumen->created_at->format('d M Y H:i') }}
+                                    Diupload: {{ $dokumen->created_at->locale('id')->translatedFormat('d M Y H:i') }}
                                 </small>
                             </div>
                         </div>
@@ -154,7 +154,7 @@
                                         {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['upps'] ?? $log->status_to }}
                                     </strong>
                                     <br>
-                                    <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
+                                    <small class="text-muted">{{ $log->created_at->locale('id')->translatedFormat('d M Y H:i') }}</small>
 
                                     {{-- @if($log->keterangan)
                                     <br>

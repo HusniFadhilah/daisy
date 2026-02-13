@@ -51,7 +51,7 @@
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h4 class="mb-1"><i class="bi bi-envelope"></i> Permohonan Akreditasi</h4>
+            <h4 class="mb-1"><i class="bi bi-envelope-paper"></i> Permohonan Akreditasi</h4>
             <p class="text-muted mb-0">Kelola permohonan Akreditasi</p>
         </div>
     </div>
@@ -199,7 +199,7 @@
                                     </td>
                                     <td>
                                         @if($pengajuan->tanggal_pengingat)
-                                        <small>{{ $pengajuan->tanggal_pengingat->format('d M Y') }}</small>
+                                        <small>{{ $pengajuan->tanggal_pengingat->locale('id')->translatedFormat('d M Y') }}</small>
                                         @else
                                         <span class="text-muted">-</span>
                                         @endif

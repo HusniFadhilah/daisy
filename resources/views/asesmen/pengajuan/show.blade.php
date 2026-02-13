@@ -447,7 +447,7 @@
                                         </tr>
                                         <tr>
                                             <td><i class="bi bi-clock text-warning"></i> Upload:</td>
-                                            <td>{{ $draftBorang->created_at->format('d M Y H:i') ?? '-' }}</td>
+                                            <td>{{ $draftBorang->created_at->locale('id')->translatedFormat('d M Y H:i') ?? '-' }}</td>
                                         </tr>
                                         <tr>
                                             <td><i class="bi bi-tag text-secondary"></i> Versi:</td>
@@ -764,7 +764,7 @@
                                 </td>
                                 <td>v{{ $doc->versi }}</td>
                                 <td>{{ $doc->uploader->name ?? '-' }}</td>
-                                <td>{{ $doc->created_at->format('d/m/Y H:i') }}</td>
+                                <td>{{ $doc->created_at->locale('id')->translatedFormat('d/m/Y H:i') }}</td>
                                 <td>
                                     <a href="{{ $doc->download_url }}" class="btn btn-sm btn-primary">
                                         <i class="bi bi-download"></i>
@@ -823,7 +823,7 @@
 
                             @if($item['date'])
                             <span class="badge bg-{{ $itemColor }}">
-                                {{ $item['date']->format('d M Y') }}
+                                {{ $item['date']->locale('id')->translatedFormat('d M Y') }}
                             </span>
                             @endif
                         </div>
@@ -852,7 +852,7 @@
             <div class="mb-3 pb-3 {{ !$loop->last ? 'border-bottom' : '' }}">
                 <div class="d-flex justify-content-between">
                     <small class="text-muted">
-                        {{ $log->changed_at->format('d/m/Y H:i') }}
+                        {{ $log->changed_at->locale('id')->translatedFormat('d/m/Y H:i') }}
                     </small>
                     <small class="text-muted">
                         {{ $log->changedBy->name }}

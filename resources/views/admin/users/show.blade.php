@@ -47,7 +47,7 @@
                             @if($user->email_verified_at)
                             <span class="badge bg-success fs-6">Terverifikasi</span>
                             <br>
-                            <small class="text-muted">{{ $user->email_verified_at->format('d M Y H:i') }}</small>
+                            <small class="text-muted">{{ $user->email_verified_at->locale('id')->translatedFormat('d M Y H:i') }}</small>
                             @else
                             <span class="badge bg-warning fs-6">Belum Terverifikasi</span>
                             @endif
@@ -56,12 +56,12 @@
 
                     <div class="mb-3">
                         <label class="form-label fw-bold">Terdaftar Sejak</label>
-                        <p class="form-control-plaintext">{{ $user->created_at->format('d F Y H:i') }}</p>
+                        <p class="form-control-plaintext">{{ $user->created_at->locale('id')->translatedFormat('d F Y H:i') }}</p>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-bold">Terakhir Diperbarui</label>
-                        <p class="form-control-plaintext">{{ $user->updated_at->format('d F Y H:i') }}</p>
+                        <p class="form-control-plaintext">{{ $user->updated_at->locale('id')->translatedFormat('d F Y H:i') }}</p>
                     </div>
                 </div>
             </div>

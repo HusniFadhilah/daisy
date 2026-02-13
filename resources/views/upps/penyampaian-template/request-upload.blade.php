@@ -74,7 +74,7 @@
                                 <br>
                                 <small class="text-muted">
                                     {{ number_format($formulirPembayaran->file_size / 1024, 2) }} KB •
-                                    Diupload: {{ $formulirPembayaran->created_at->format('d M Y H:i') }}
+                                    Diupload: {{ $formulirPembayaran->created_at->locale('id')->translatedFormat('d M Y H:i') }}
                                 </small>
                                 <br>
                                 <span class="badge bg-info">Versi {{ $formulirPembayaran->versi }}</span>
@@ -98,7 +98,7 @@
                                 <br>
                                 <small class="text-muted">
                                     {{ number_format($templateLed->file_size / 1024, 2) }} KB •
-                                    Diupload: {{ $templateLed->created_at->format('d M Y H:i') }}
+                                    Diupload: {{ $templateLed->created_at->locale('id')->translatedFormat('d M Y H:i') }}
                                 </small>
                                 <br>
                                 <span class="badge bg-info">Versi {{ $templateLed->versi }}</span>

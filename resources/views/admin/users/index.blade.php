@@ -72,8 +72,8 @@
                             <strong>Catatan:</strong>
                             <ul class="mb-0">
                                 <li>Kolom wajib: <strong>nama, email</strong></li>
-                                <li>Role aktif harus salah satu: super_admin, asesi, asesor, validator, verifikator, admin_univ, admin_prodi, default</li>
-                                <li>Semua roles dipisah dengan koma (contoh: asesi,asesor)</li>
+                                <li>Role aktif harus salah satu: super_admin, sekretariat, asesor, validator, verifikator, admin_univ, admin_prodi, default</li>
+                                <li>Semua roles dipisah dengan koma (contoh: sekretariat,asesor)</li>
                                 <li>Password default: <strong>password123</strong> jika tidak diisi</li>
                                 <li>Email yang sudah ada akan di-update</li>
                             </ul>

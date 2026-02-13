@@ -19,7 +19,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h5 class="mb-1">
-                <i class="bi bi-receipt"></i> Detail Pembayaran
+                <i class="bi bi-credit-card"></i> Detail Pembayaran
             </h5>
             <small class="text-muted">{{ $pembayaran->pengajuan->nomor_pengajuan }}</small>
         </div>
@@ -38,7 +38,7 @@
                 <strong>Menunggu pembayaran</strong>
                 <br>
                 Mohon segera lakukan pembayaran sebelum jatuh tempo:
-                <strong>{{ $pembayaran->tanggal_jatuh_tempo?->format('d M Y') ?? '-' }}</strong>
+                <strong>{{ $pembayaran->tanggal_jatuh_tempo?->locale('id')->translatedFormat('d M Y') ?? '-' }}</strong>
                 @if($pembayaran->tanggal_jatuh_tempo && $pembayaran->tanggal_jatuh_tempo < now()) <br>
                     <span class="badge bg-danger mt-2">Pembayaran telah melewati jatuh tempo!</span>
                     @endif
@@ -48,7 +48,7 @@
                 <i class="bi bi-clock-history"></i>
                 <strong>Menunggu validasi pembayaran</strong>
                 <br>
-                Formulir & Bukti pembayaran telah diupload pada {{ $pembayaran->tanggal_pembayaran?->format('d M Y H:i') ?? '-' }}.<br>Mohon menunggu proses validasi pembayaran
+                Formulir & Bukti pembayaran telah diupload pada {{ $pembayaran->tanggal_pembayaran?->locale('id')->translatedFormat('d M Y H:i') ?? '-' }}.<br>Mohon menunggu proses validasi pembayaran
             </div>
             @elseif($pembayaran->status_pembayaran === 'terverifikasi')
             <div class="alert alert-success alert-permanent">
@@ -124,7 +124,7 @@
                                 <br>
                                 <small class="text-muted">
                                     {{ number_format($dokumen->file_size / 1024, 2) }} KB •
-                                    Diupload: {{ $dokumen->created_at->format('d M Y H:i') }}
+                                    Diupload: {{ $dokumen->created_at->locale('id')->translatedFormat('d M Y H:i') }}
                                 </small>
                                 @if($dokumen->is_latest)
                                 <br>
@@ -179,12 +179,12 @@
                         </tr>
                         <tr>
                             <th>Tanggal Invoice</th>
-                            <td>: {{ $pembayaran->created_at->format('d M Y H:i') }}</td>
+                            <td>: {{ $pembayaran->created_at->locale('id')->translatedFormat('d M Y H:i') }}</td>
                         </tr>
                         <tr>
                             <th>Tanggal Jatuh Tempo</th>
                             <td>
-                                : {{ $pembayaran->tanggal_jatuh_tempo?->format('d M Y') ?? '-' }}
+                                : {{ $pembayaran->tanggal_jatuh_tempo?->locale('id')->translatedFormat('d M Y') ?? '-' }}
                                 @if($pembayaran->tanggal_jatuh_tempo && $pembayaran->tanggal_jatuh_tempo < now() && in_array($pembayaran->status_pembayaran, ['menunggu_pembayaran', 'upload_ulang']))
                                     <span class="badge bg-danger ms-2">Terlambat</span>
                                     @endif
@@ -192,7 +192,7 @@
                         </tr>
                         <tr>
                             <th>Tanggal Pembayaran</th>
-                            <td>: {{ $pembayaran->tanggal_pembayaran?->format('d M Y H:i') ?? '-' }}</td>
+                            <td>: {{ $pembayaran->tanggal_pembayaran?->locale('id')->translatedFormat('d M Y H:i') ?? '-' }}</td>
                         </tr>
                         <tr>
                             <th>Status Pembayaran</th>
@@ -257,7 +257,7 @@
                                     <strong>Invoice Diterima</strong>
                                     <br>
                                     <small class="text-muted">
-                                        {{ $pembayaran->created_at->format('d M Y H:i') }}
+                                        {{ $pembayaran->created_at->locale('id')->translatedFormat('d M Y H:i') }}
                                     </small>
                                 </div>
                             </div>
@@ -274,7 +274,7 @@
                                     <strong>Formulir & Bukti Pembayaran Diupload</strong>
                                     <br>
                                     <small class="text-muted">
-                                        {{ $pembayaran->pengajuan->formulirPembayaran?->created_at->format('d M Y H:i') }}
+                                        {{ $pembayaran->pengajuan->formulirPembayaran?->created_at->locale('id')->translatedFormat('d M Y H:i') }}
                                     </small>
                                 </div>
                             </div>
@@ -304,7 +304,7 @@
                                     </strong>
                                     <br>
                                     <small class="text-muted">
-                                        {{ $pembayaran->tanggal_verifikasi->format('d M Y H:i') }}
+                                        {{ $pembayaran->tanggal_verifikasi->locale('id')->translatedFormat('d M Y H:i') }}
                                     </small>
                                 </div>
                             </div>

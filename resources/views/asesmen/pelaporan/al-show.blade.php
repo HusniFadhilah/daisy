@@ -50,7 +50,7 @@
                 <i class="bi bi-check-circle"></i>
                 <strong>Pelaporan AL telah selesai</strong>
                 <br>
-                Dilaporkan pada {{ $pengajuan->tanggal_pelaporan_al->format('d M Y H:i') }}
+                Dilaporkan pada {{ $pengajuan->tanggal_pelaporan_al->locale('id')->translatedFormat('d M Y H:i') }}
             </div>
             @elseif($canReport)
             <div class="alert alert-warning alert-permanent mb-4">
@@ -95,7 +95,7 @@
                                 <br>
                                 <small class="text-muted">
                                     {{ number_format($dokumen->size / 1024, 2) }} KB •
-                                    Diupload: {{ $dokumen->uploaded_at->format('d M Y H:i') }}
+                                    Diupload: {{ $dokumen->uploaded_at->locale('id')->translatedFormat('d M Y H:i') }}
                                 </small>
                                 @if($dokumen->version > 1)
                                 <br>
@@ -195,7 +195,7 @@
                                         {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['de'] ?? $log->status_to }}
                                     </strong>
                                     <br>
-                                    <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
+                                    <small class="text-muted">{{ $log->created_at->locale('id')->translatedFormat('d M Y H:i') }}</small>
                                     {{-- @if($log->keterangan)
                                     <br>
                                     <small class="text-muted fst-italic">{{ $log->keterangan }}</small>

@@ -35,7 +35,7 @@ class BorangApprovedNotification extends Notification implements ShouldQueue
             ->greeting('Halo ' . $notifiable->name . ',')
             ->line("Selamat! Borang LED untuk {$this->pengajuan->studyProgram->name} telah disetujui oleh validator.")
             ->line("**Validator:** {$this->validation->assignment->user->name}")
-            ->line("**Tanggal Persetujuan:** {$this->validation->assignment->approved_at->format('d M Y H:i')}")
+            ->line("**Tanggal Persetujuan:** {$this->validation->assignment->approved_at->locale('id')->translatedFormat('d M Y H:i')}")
             ->line('')
             ->line('**Catatan Validator:**')
             ->line($this->validation->catatan_validator ?? 'Borang memenuhi standar dan siap untuk proses selanjutnya.')

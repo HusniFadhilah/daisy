@@ -193,7 +193,7 @@
                     </div>
                     @if($isCompleted)
                     <span class="badge bg-{{ $itemColor }}">
-                        {{ $item['date'] ? \Carbon\Carbon::parse($item['date'])->format('d M Y') : '' }}
+                        {{ $item['date'] ? \Carbon\Carbon::parse($item['date'])->locale('id')->translatedFormat('d M Y') : '' }}
                     </span>
                     @endif
                 </div>

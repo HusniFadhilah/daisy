@@ -19,7 +19,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h5 class="mb-1">
-                <i class="bi bi-info-circle"></i> Detail Hasil Akreditasi
+                <i class="bi bi-clipboard-data"></i> Detail Penyampaian Hasil Akreditasi
             </h5>
             <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
@@ -75,7 +75,7 @@
                                     {{ $beritaAcara->original_name }}
                                 </p>
                                 <small class="text-muted">
-                                    Diupload pada {{ $beritaAcara->uploaded_at?->format('d M Y, H:i') }}
+                                    Diupload pada {{ $beritaAcara->uploaded_at?->locale('id')->translatedFormat('d M Y, H:i') }}
                                 </small>
                                 {{-- @if($beritaAcara->keterangan)
                                 <div class="mt-2">
@@ -136,7 +136,7 @@
                         <th>Tanggal Hasil Disampaikan</th>
                         <td>
                             : {{ $pengajuan->tanggal_hasil_akreditasi_dikirim
-                                    ? $pengajuan->tanggal_hasil_akreditasi_dikirim->format('d M Y H:i')
+                                    ? $pengajuan->tanggal_hasil_akreditasi_dikirim->locale('id')->translatedFormat('d M Y H:i')
                                     : '-' }}
                         </td>
                     </tr>
@@ -187,7 +187,7 @@
                                     {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label'] ?? $log->status_to }}
                                 </strong>
                                 <br>
-                                <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
+                                <small class="text-muted">{{ $log->created_at->locale('id')->translatedFormat('d M Y H:i') }}</small>
 
                                 {{-- @if($log->keterangan)
                                     <br>

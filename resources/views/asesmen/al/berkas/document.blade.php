@@ -47,7 +47,7 @@
                             Anda dapat menambah, mengedit, atau menghapus file berita acara sampai proses finalisasi dilakukan.
                         </p>
                         <small class="text-muted">
-                            <i class="bi bi-clock"></i> Pertama kali diupload: {{ $firstUpload->uploaded_at->format('d M Y, H:i') }}
+                            <i class="bi bi-clock"></i> Pertama kali diupload: {{ $firstUpload->uploaded_at->locale('id')->translatedFormat('d M Y, H:i') }}
                         </small>
                     </div>
                 </div>
@@ -66,7 +66,7 @@
                             Berita acara telah diupload oleh asesor: <strong>{{ $firstUpload->uploader->name ?? 'Asesor' }}</strong>
                         </p>
                         <small class="text-muted">
-                            <i class="bi bi-clock"></i> Diupload pada: {{ $firstUpload->uploaded_at->format('d M Y, H:i') }}
+                            <i class="bi bi-clock"></i> Diupload pada: {{ $firstUpload->uploaded_at->locale('id')->translatedFormat('d M Y, H:i') }}
                         </small>
                         <hr class="my-2">
                         <p class="mb-0 small text-muted">
@@ -185,7 +185,7 @@
                                     </td>
                                     <td>
                                         @if($doc->uploaded_at)
-                                        <small>{{ $doc->uploaded_at->format('d M Y, H:i') }}</small>
+                                        <small>{{ $doc->uploaded_at->locale('id')->translatedFormat('d M Y, H:i') }}</small>
                                         @else
                                         <span class="text-muted">-</span>
                                         @endif

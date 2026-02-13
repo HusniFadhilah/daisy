@@ -123,7 +123,7 @@
                             <td><strong>Tanggal Kedaluwarsa:</strong></td>
                             <td>
                                 @if($studyProgram->tanggal_kedaluwarsa)
-                                {{ \Carbon\Carbon::parse($studyProgram->tanggal_kedaluwarsa)->format('d M Y') }}
+                                {{ \Carbon\Carbon::parse($studyProgram->tanggal_kedaluwarsa)->locale('id')->translatedFormat('d M Y') }}
                                 @else
                                 -
                                 @endif

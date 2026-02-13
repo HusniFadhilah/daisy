@@ -16,7 +16,7 @@
                         <div class="d-flex align-items-center">
                             <i class="bi bi-file-earmark-word text-primary me-3" style="font-size: 1.5rem;"></i>
                             <div>
-                                <h6 class="mb-0">Template Permohonan Banding</h6>
+                                <h6 class="mb-0">Templat Permohonan Banding</h6>
                                 <small class="text-muted">Format: DOCX</small>
                             </div>
                             <i class="bi bi-download ms-auto"></i>

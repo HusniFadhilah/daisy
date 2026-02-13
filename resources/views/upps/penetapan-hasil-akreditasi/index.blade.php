@@ -116,7 +116,7 @@
 
                                     <td>
                                         @if($pengajuan->tanggal_hasil_akreditasi_dikirim)
-                                        <small>{{ $pengajuan->tanggal_hasil_akreditasi_dikirim->format('d M Y') }}</small>
+                                        <small>{{ $pengajuan->tanggal_hasil_akreditasi_dikirim->locale('id')->translatedFormat('d M Y') }}</small>
                                         <br>
                                         <small class="text-muted">
                                             {{ $pengajuan->tanggal_hasil_akreditasi_dikirim->diffForHumans() }}

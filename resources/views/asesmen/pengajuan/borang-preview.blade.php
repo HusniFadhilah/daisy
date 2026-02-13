@@ -304,7 +304,7 @@
                     <small class="text-muted">Nama & Tanda Tangan</small>
                 </div>
                 <div class="col-md-6 text-end">
-                    <p class="mb-1"><strong>Tanggal:</strong> {{ now()->format('d F Y') }}</p>
+                    <p class="mb-1"><strong>Tanggal:</strong> {{ \App\Libraries\Date::tglIndo(now()) }}</p>
                 </div>
             </div>
         </div>

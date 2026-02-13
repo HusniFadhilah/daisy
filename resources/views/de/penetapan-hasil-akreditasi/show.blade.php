@@ -75,7 +75,7 @@
                     </span>
                     @if($pengajuan->tanggal_penetapan)
                     <div class="mt-2">
-                        <small class="text-muted">{{ $pengajuan->tanggal_penetapan->format('d M Y') }}</small>
+                        <small class="text-muted">{{ $pengajuan->tanggal_penetapan->locale('id')->translatedFormat('d M Y') }}</small>
                     </div>
                     @endif
                     @else
@@ -144,7 +144,7 @@
     @else
     <div class="alert alert-light border-3 alert-permanent">
         <i class="bi bi-check-circle-fill me-2"></i>
-        Hasil telah <strong>Ditetapkan</strong> pada {{ $pengajuan->tanggal_penetapan?->format('d F Y, H:i') }}
+        Hasil telah <strong>Ditetapkan</strong> pada {{ $pengajuan->tanggal_penetapan?->locale('id')->translatedFormat('d F Y, H:i') }}
     </div>
 
     {{-- Optional: Tombol Batalkan (jika sudah ditetapkan tapi belum diumumkan) --}}
@@ -237,7 +237,7 @@
                     {{ $beritaAcaraPenetapan->original_name }}
                 </p>
                 <small class="text-muted">
-                    Diupload pada {{ $beritaAcaraPenetapan->uploaded_at?->format('d M Y, H:i') }}
+                    Diupload pada {{ $beritaAcaraPenetapan->uploaded_at?->locale('id')->translatedFormat('d M Y, H:i') }}
                 </small>
                 @if($beritaAcaraPenetapan->keterangan)
                 <div class="mt-2">
@@ -283,7 +283,7 @@
                     {{ $beritaAcaraPenetapan->original_name }}
                 </p>
                 <small class="text-muted">
-                    Diupload pada {{ $beritaAcaraPenetapan->uploaded_at?->format('d M Y, H:i') }}
+                    Diupload pada {{ $beritaAcaraPenetapan->uploaded_at?->locale('id')->translatedFormat('d M Y, H:i') }}
                 </small>
             </div>
             <div>
@@ -362,7 +362,7 @@
         <div class="alert alert-light alert-permanent mt-3 mb-0">
             <i class="bi bi-info-circle me-2"></i>
             <strong>Catatan:</strong> Untuk status akreditasi <strong>Unggul</strong>, selain mencapai skor >= 351,
-            program studi harus memiliki <strong>minimal 1 elemen dengan kategori: Pelampauan Standar (Exceeding Standard)</strong>
+            program studi harus memiliki <strong>minimal 1 elemen dengan kategori: Pelampauan Standar</strong>
             di <strong>setiap kriteria</strong> (D, E, P, I, L, A, R).
         </div>
     </div>
@@ -446,7 +446,7 @@
         <div class="alert alert-warning alert-permanent mt-3 mb-0">
             <strong>⚠️ Perhatian:</strong> Meskipun skor mencapai >= 361, status akreditasi <strong>TIDAK DAPAT</strong> ditetapkan sebagai UNGGUL
             karena kriteria <strong>{{ implode(', ', $validationSummary['missing_kriteria']) }}</strong>
-            belum memiliki minimal 1 elemen dengan kategori Pelampauan Standar (Exceeding Standard).
+            belum memiliki minimal 1 elemen dengan kategori Pelampauan Standar.
             <br><br>
             Status akreditasi akan diubah menjadi: <strong class="text-danger">BAIK SEKALI</strong>
         </div>

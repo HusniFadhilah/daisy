@@ -135,7 +135,7 @@
                             <label class="text-muted small">Tanggal Hasil Disampaikan</label>
                             <p class="mb-0">
                                 {{ $pengajuan->tanggal_hasil_akreditasi_dikirim
-                                    ? $pengajuan->tanggal_hasil_akreditasi_dikirim->format('d M Y H:i')
+                                    ? $pengajuan->tanggal_hasil_akreditasi_dikirim->locale('id')->translatedFormat('d M Y H:i')
                                     : '-' }}
                             </p>
                         </div>
@@ -156,7 +156,7 @@
                             <th width="30%">Tanggal Pengajuan Banding</th>
                             <td>
                                 : {{ $pengajuan->tanggal_permohonan_banding
-                                    ? $pengajuan->tanggal_permohonan_banding->format('d M Y H:i')
+                                    ? $pengajuan->tanggal_permohonan_banding->locale('id')->translatedFormat('d M Y H:i')
                                     : '-' }}
                             </td>
                         </tr>
@@ -164,7 +164,7 @@
                             <th>Tanggal Pelaksanaan</th>
                             <td>
                                 : {{ $pengajuan->tanggal_pelaksanaan_banding
-                                    ? $pengajuan->tanggal_pelaksanaan_banding->format('d M Y H:i')
+                                    ? $pengajuan->tanggal_pelaksanaan_banding->locale('id')->translatedFormat('d M Y H:i')
                                     : '-' }}
                             </td>
                         </tr>
@@ -233,7 +233,7 @@
                                 <br>
                                 <small class="text-muted">
                                     {{ number_format($dokumen->file_size / 1024, 2) }} KB •
-                                    Diupload: {{ $dokumen->created_at->format('d M Y H:i') }}
+                                    Diupload: {{ $dokumen->created_at->locale('id')->translatedFormat('d M Y H:i') }}
                                 </small>
                                 <br>
                                 <span class="badge bg-success">Dokumen Banding</span>
@@ -308,7 +308,7 @@
                                     @if($step['date'])
                                     <br>
                                     <small class="text-muted">
-                                        {{ $step['date']->format('d M Y H:i') }}
+                                        {{ $step['date']->locale('id')->translatedFormat('d M Y H:i') }}
                                     </small>
                                     @endif
                                     @if($step['status'] === 'current')
@@ -371,7 +371,7 @@
                                     {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label'] ?? $log->status_to }}
                                 </strong>
                                 <br>
-                                <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
+                                <small class="text-muted">{{ $log->created_at->locale('id')->translatedFormat('d M Y H:i') }}</small>
 
                                 @if($log->keterangan)
                                 <br>

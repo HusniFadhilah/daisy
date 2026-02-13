@@ -19,7 +19,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h5 class="mb-1">
-                <i class="bi bi-file-earmark-arrow-down"></i> Detail Formulir dan Templat Dokumen
+                <i class="bi bi-file-earmark"></i> Detail Formulir dan Templat Dokumen
             </h5>
             <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
@@ -53,7 +53,7 @@
                 <i class="bi bi-check-circle"></i>
                 <strong>Formulir dan templat dokumen telah diterima</strong>
                 <br>
-                Diterima pada {{ $pengajuan->tanggal_template_led_dikirim->format('d M Y H:i') }}
+                Diterima pada {{ $pengajuan->tanggal_template_led_dikirim->locale('id')->translatedFormat('d M Y H:i') }}
             </div>
             @endif
 
@@ -71,7 +71,7 @@
                         <strong>{{ $data['jenis_dokumen_label'] ?? 'Dokumen' }}</strong>
                         <br>
                         <small class="text-muted">
-                            Dikirim: {{ \Carbon\Carbon::parse($data['requested_at'])->format('d M Y H:i') }}
+                            Dikirim: {{ \Carbon\Carbon::parse($data['requested_at'])->locale('id')->translatedFormat('d M Y H:i') }}
                         </small>
                         <br>
                         <small>Alasan: {{ $data['alasan_request'] ?? '-' }}</small>
@@ -107,7 +107,7 @@
                                 <br>
                                 <small class="text-muted">
                                     {{ number_format($formulirPembayaran->file_size / 1024, 2) }} KB •
-                                    Diupload: {{ $formulirPembayaran->created_at->format('d M Y H:i') }}
+                                    Diupload: {{ $formulirPembayaran->created_at->locale('id')->translatedFormat('d M Y H:i') }}
                                 </small>
                                 <br>
                                 <span class="badge bg-info">Versi {{ $formulirPembayaran->versi }}</span>
@@ -154,7 +154,7 @@
                                 <br>
                                 <small class="text-muted">
                                     {{ number_format($templateLed->file_size / 1024, 2) }} KB •
-                                    Diupload: {{ $templateLed->created_at->format('d M Y H:i') }}
+                                    Diupload: {{ $templateLed->created_at->locale('id')->translatedFormat('d M Y H:i') }}
                                 </small>
                                 <br>
                                 <span class="badge bg-info">Versi {{ $templateLed->versi }}</span>
@@ -211,7 +211,7 @@
                             <th>Tanggal Templat Dikirim</th>
                             <td>
                                 : {{ $pengajuan->tanggal_template_led_dikirim
-                                    ? $pengajuan->tanggal_template_led_dikirim->format('d M Y H:i')
+                                    ? $pengajuan->tanggal_template_led_dikirim->locale('id')->translatedFormat('d M Y H:i')
                                     : '-' }}
                             </td>
                         </tr>
@@ -257,7 +257,7 @@
                                         {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['upps'] ?? $log->status_to }}
                                     </strong>
                                     <br>
-                                    <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
+                                    <small class="text-muted">{{ $log->created_at->locale('id')->translatedFormat('d M Y H:i') }}</small>
 
                                     {{-- @if($log->keterangan)
                                     <br>

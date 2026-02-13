@@ -8,7 +8,7 @@
     <div class="welcome-content">
         <h2>Selamat Datang Kembali, {{ auth()->user()->name }}! 👋</h2>
         <p>
-            @if(auth()->user()->role_selected === 'asesi' || auth()->user()->role_selected === 'admin_prodi')
+            @if(auth()->user()->role_selected === 'sekretariat' || auth()->user()->role_selected === 'admin_prodi')
             Anda memiliki {{ $prosesAK ?? 0 }} proses akreditasi aktif. Mari selesaikan persiapan dengan baik 😊
             @elseif(auth()->user()->role_selected === 'asesor')
             Anda memiliki {{ $penawaranBaru ?? 0 }} penawaran baru, dan {{ $penugasanAktif ?? 0 }} tugas aktif. Mari kita selesaikan tugas ini dengan senyum 😊
@@ -32,7 +32,7 @@
             @if(Route::has('penugasan.aktif'))
             <a href="{{ route('penugasan.aktif') }}" class="quick-btn">📋 Tugas Aktif</a>
             @endif
-            @elseif(auth()->user()->role_selected === 'asesi' || auth()->user()->role_selected === 'admin_prodi')
+            @elseif(auth()->user()->role_selected === 'sekretariat' || auth()->user()->role_selected === 'admin_prodi')
             <a href="{{ route('de.pemetaan.index') }}" class="quick-btn">📄 Kelola Dokumen</a>
             @endif
             @if(Route::has('laporan'))

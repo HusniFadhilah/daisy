@@ -29,7 +29,7 @@
                 <p class="mb-2">
                     Pengingat akreditasi telah dikirim oleh
                     <strong>{{ $pengingat->pengirim->name }}</strong> (Dewan Eksekutif)
-                    pada <strong>{{ $pengingat->tanggal_dikirim->format('d F Y, H:i') }} WIB</strong>
+                    pada <strong>{{ $pengingat->tanggal_dikirim->locale('id')->translatedFormat('d F Y, H:i') }} WIB</strong>
                 </p>
 
                 <div class="bg-white p-3 rounded border mb-2">
@@ -230,7 +230,7 @@
                         </tr>
                         <tr>
                             <td class="text-muted">Tanggal Kirim</td>
-                            <td><strong>{{ $pengingat->tanggal_dikirim->format('d M Y') }}</strong></td>
+                            <td><strong>{{ $pengingat->tanggal_dikirim->locale('id')->translatedFormat('d M Y') }}</strong></td>
                         </tr>
                         {{-- <tr>
                             <td class="text-muted">Status</td>
@@ -313,7 +313,7 @@
 
                                     @if($isCompleted)
                                     <span class="badge bg-{{ $itemColor }}">
-                                        {{ $item['date']->format('d M Y') }}
+                                        {{ $item['date']->locale('id')->translatedFormat('d M Y') }}
                                     </span>
                                     @elseif($isCurrent)
                                     <span class="badge bg-primary">

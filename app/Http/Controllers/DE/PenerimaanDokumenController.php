@@ -907,7 +907,7 @@ class PenerimaanDokumenController extends Controller
         // For now, return a placeholder response
 
         $nomorSurat = 'ST-VAL-DOK/' . date('Y') . '/' . str_pad($pengajuan->id, 4, '0', STR_PAD_LEFT);
-        $tanggal = now()->format('d M Y');
+        $tanggal = now()->locale('id')->translatedFormat('d M Y');
 
         $html = view('de.penerimaan-dokumen.templates.surat-tugas-validator', compact(
             'pengajuan',

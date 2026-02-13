@@ -26,7 +26,7 @@ $menus = [
 'no' => 4,
 'route' => 'de.penyampaian-template',
 'match' => 'de.penyampaian-template*',
-'icon' => 'bi-file-earmark-text',
+'icon' => 'bi-file-earmark',
 'label' => 'Pengiriman Formulir dan Templat Dokumen',
 ],
 [
@@ -40,21 +40,21 @@ $menus = [
 'no' => 6,
 'route' => 'de.penerimaan-dokumen',
 'match' => 'de.penerimaan-dokumen*',
-'icon' => 'bi-inbox',
+'icon' => 'bi-file-earmark-text',
 'label' => 'Penerimaan Dokumen',
 ],
 [
 'no' => 7,
 'route' => 'de.validasi-dokumen',
 'match' => 'de.validasi-dokumen*',
-'icon' => 'bi-check-circle',
+'icon' => 'bi-clipboard-check',
 'label' => 'Validasi Dokumen',
 ],
 [
 'no' => 8,
 'route' => 'de.pelaporan-dokumen',
 'match' => 'de.pelaporan-dokumen*',
-'icon' => 'bi-bar-chart-line',
+'icon' => 'bi-file-earmark-diff',
 'label' => 'Pelaporan Validasi Dokumen',
 ],
 [
@@ -103,7 +103,7 @@ $menus = [
 'no' => 15,
 'route' => 'de.penyampaian-hasil-akreditasi',
 'match' => 'de.penyampaian-hasil-akreditasi*',
-'icon' => 'bi-megaphone',
+'icon' => 'bi-clipboard-data',
 'label' => 'Penyampaian Hasil Akreditasi',
 ],
 [

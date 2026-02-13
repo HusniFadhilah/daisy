@@ -187,10 +187,10 @@ function textColorByBgJS(hex) {
 
 function getSkorLabel(skor) {
     const labels = {
-        0: '0 - Tidak Memenuhi (Not Met)'
-        , 1: '1 - Belum Memenuhi (Not Met)'
-        , 2: '2 - Lemah (Weakness/Cause of Concern)'
-        , 3: '3 - Memenuhi (Met)'
+        0: '0 - Tidak Memenuhi'
+        , 1: '1 - Belum Memenuhi'
+        , 2: '2 - Lemah'
+        , 3: '3 - Memenuhi'
         , 4: '4 - Pelampauan Standar'
     };
     return labels[skor] || '-';
@@ -198,11 +198,11 @@ function getSkorLabel(skor) {
 
 function getSkorLabelShort(skor, full = false) {
     const labels = {
-        0: { short: 'Tidak Memenuhi', full: 'Tidak Memenuhi (Not Met)' },
-        1: { short: 'Belum Memenuhi', full: 'Belum Memenuhi (Not Met)' },
-        2: { short: 'Lemah', full: 'Lemah (Weakness / Cause of Concern)' },
-        3: { short: 'Memenuhi', full: 'Memenuhi (Met)' },
-        4: { short: 'Pelampauan', full: 'Pelampauan Standar (Exceeds Standard)' }
+        0: { short: 'Tidak Memenuhi', full: 'Tidak Memenuhi' },
+        1: { short: 'Belum Memenuhi', full: 'Belum Memenuhi' },
+        2: { short: 'Lemah', full: 'Lemah' },
+        3: { short: 'Memenuhi', full: 'Memenuhi' },
+        4: { short: 'Pelampauan', full: 'Pelampauan Standar' }
     };
 
     if (!labels[skor]) return '-';

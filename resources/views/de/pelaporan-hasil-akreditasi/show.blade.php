@@ -51,7 +51,7 @@
     $sertifikat = $dokumenHasil->firstWhere('jenis_dokumen', 'sertifikat');
 
     // Rule upload: hanya jika belum "HASIL_DILAPORKAN"
-    $canUpload = $pengajuan->status != \App\Models\PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN;
+    $canUpload = !in_array($log?->status_to, [\App\Models\PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN,\App\Models\PengajuanAkreditasi::STATUS_HASIL_DIUMUMKAN,\App\Models\PengajuanAkreditasi::STATUS_ARSIP_DISIMPAN,\App\Models\PengajuanAkreditasi::STATUS_SELESAI]);
 
     $hasLaporan = !is_null($laporanHasil);
     $hasSertifikat = !is_null($sertifikat);
@@ -276,7 +276,7 @@
                             <label class="text-muted small">Tanggal Penetapan</label>
                             <p class="mb-0">
                                 {{ $pengajuan->tanggal_penetapan
-                                    ? $pengajuan->tanggal_penetapan->format('d M Y H:i')
+                                    ? $pengajuan->tanggal_penetapan->locale('id')->translatedFormat('d M Y H:i')
                                     : '-' }}
                             </p>
                         </div>
@@ -284,7 +284,7 @@
                             <label class="text-muted small">Tanggal Pelaporan</label>
                             <p class="mb-0">
                                 {{ $pengajuan->tanggal_pelaporan_hasil
-                                    ? $pengajuan->tanggal_pelaporan_hasil->format('d M Y H:i')
+                                    ? $pengajuan->tanggal_pelaporan_hasil->locale('id')->translatedFormat('d M Y H:i')
                                     : '-' }}
                             </p>
                         </div>
@@ -349,11 +349,11 @@
                 <div class="small">
                     <div class="d-flex justify-content-between mb-2">
                         <span class="text-muted">Mulai:</span>
-                        <strong>{{ $pengajuan->tanggal_pengajuan->format('d M Y') }}</strong>
+                        <strong>{{ $pengajuan->tanggal_pengajuan->locale('id')->translatedFormat('d M Y') }}</strong>
                     </div>
                     <div class="d-flex justify-content-between">
                         <span class="text-muted">Selesai:</span>
-                        <strong>{{ $pengajuan->tanggal_pelaporan_hasil->format('d M Y') }}</strong>
+                        <strong>{{ $pengajuan->tanggal_pelaporan_hasil->locale('id')->translatedFormat('d M Y') }}</strong>
                     </div>
                 </div>
             </div>
@@ -395,7 +395,7 @@
                                     {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label'] ?? $log->status_to }}
                                 </strong>
                                 <br>
-                                <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
+                                <small class="text-muted">{{ $log->created_at->locale('id')->translatedFormat('d M Y H:i') }}</small>
                             </div>
                         </div>
                     </div>

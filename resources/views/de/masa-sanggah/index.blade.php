@@ -78,16 +78,16 @@
                                     </td>
                                     <td>
                                         @if($pengajuan->tanggal_hasil_akreditasi_dikirim)
-                                        {{ $pengajuan->tanggal_hasil_akreditasi_dikirim->format('d M Y') }}
+                                        {{ $pengajuan->tanggal_hasil_akreditasi_dikirim->locale('id')->translatedFormat('d M Y') }}
                                         @else
                                         <span class="text-muted">-</span>
                                         @endif
                                     </td>
                                     <td>
                                         <small>
-                                            <strong>Mulai:</strong> {{ $pengajuan->tanggal_masa_sanggah_mulai->format('d M Y') }}
+                                            <strong>Mulai:</strong> {{ $pengajuan->tanggal_masa_sanggah_mulai->locale('id')->translatedFormat('d M Y') }}
                                             <br>
-                                            <strong>Selesai:</strong> {{ $pengajuan->tanggal_masa_sanggah_selesai->format('d M Y') }}
+                                            <strong>Selesai:</strong> {{ $pengajuan->tanggal_masa_sanggah_selesai->locale('id')->translatedFormat('d M Y') }}
                                         </small>
                                     </td>
                                     <td>

@@ -11,12 +11,12 @@ $authUser = auth()->user();
     <section class="welcome-section">
         <div class="welcome-content">
             <h2>Selamat Datang Kembali 👋</h2>
-            <p class="mb-0">Anda bersama Sistem Informasi Akreditasi LAMDEPILAR (DAISY)</p>
+            <p class="mb-0">Anda bersama Sistem Informasi Akreditasi LAMDEPILAR - DAISY</p>
         </div>
     </section>
 
     <!-- Stats Grid -->
-    @if(in_array($authUser->role_selected,['super_admin','asesi']))
+    @if(in_array($authUser->role_selected,['super_admin','sekretariat']))
     @include('admin.admin-dashboard')
     @endif
 

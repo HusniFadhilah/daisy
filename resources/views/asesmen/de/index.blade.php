@@ -140,7 +140,7 @@
                                 {{-- @if($pengajuan->reviewKesiapan->last())
                                 <small>
                                     <i class="bi bi-calendar"></i>
-                                    {{ $pengajuan->reviewKesiapan->last()->tanggal_review->format('d/m/Y') }}
+                                    {{ $pengajuan->reviewKesiapan->last()->tanggal_review->locale('id')->translatedFormat('d/m/Y') }}
                                 </small>
                                 @else
                                 <small class="text-muted">Belum ada review</small>

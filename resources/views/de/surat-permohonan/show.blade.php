@@ -56,14 +56,14 @@
                 <i class="bi bi-check-circle"></i>
                 <strong>Permohonan akreditasi telah ditanggapi</strong>
                 <br>
-                Permohonan akreditasi telah ditanggapi pada {{ $pengajuan->tanggal_surat_permohonan_diterima->format('d M Y H:i') }}
+                Permohonan akreditasi telah ditanggapi pada {{ $pengajuan->tanggal_surat_permohonan_diterima->locale('id')->translatedFormat('d M Y H:i') }}
             </div>
             @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITOLAK)
             <div class="alert alert-danger alert-permanent mb-4">
                 <i class="bi bi-x-circle"></i>
                 <strong>Permohonan akreditasi ditolak</strong>
                 <br>
-                Permohonan akreditasi telah ditolak pada {{ $pengajuan->tanggal_surat_permohonan_ditolak->format('d M Y H:i') }}
+                Permohonan akreditasi telah ditolak pada {{ $pengajuan->tanggal_surat_permohonan_ditolak->locale('id')->translatedFormat('d M Y H:i') }}
             </div>
             @endif
 
@@ -87,7 +87,7 @@
                                 <strong>{{ $suratPermohonan->original_filename }}</strong>
                                 <br>
                                 <small class="text-muted">
-                                    Diupload: {{ $suratPermohonan->created_at->format('d M Y H:i') }}
+                                    Diupload: {{ $suratPermohonan->created_at->locale('id')->translatedFormat('d M Y H:i') }}
                                 </small>
                             </div>
                         </div>
@@ -204,7 +204,7 @@
                                         {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['de'] ?? $log->status_to }}
                                     </strong>
                                     <br>
-                                    <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
+                                    <small class="text-muted">{{ $log->created_at->locale('id')->translatedFormat('d M Y H:i') }}</small>
 
                                     {{-- @if($log->keterangan)
                                     <br>

@@ -63,7 +63,7 @@
                 </div>
                 <div class="col-md-6">
                     <strong>Berakhir pada:</strong>
-                    <div class="fs-6 fw-bold">{{ $pengajuan->tanggal_masa_sanggah_selesai->format('d M Y H:i') }}</div>
+                    <div class="fs-6 fw-bold">{{ $pengajuan->tanggal_masa_sanggah_selesai->locale('id')->translatedFormat('d M Y H:i') }}</div>
                 </div>
             </div>
         </div> --}}
@@ -75,7 +75,7 @@
     <i class="bi bi-info-circle"></i>
     <strong>Masa Sanggah Telah Selesai</strong><br>
     Periode masa sanggah telah berakhir pada
-    <strong>{{ $pengajuan->tanggal_masa_sanggah_selesai->format('d M Y H:i') }}</strong>
+    <strong>{{ $pengajuan->tanggal_masa_sanggah_selesai->locale('id')->translatedFormat('d M Y H:i') }}</strong>
 </div>
 @endif
 
@@ -133,7 +133,7 @@
                 <label class="text-muted small">Tanggal Mulai</label>
                 <p class="fw-bold mb-0">
                     {{ $pengajuan->tanggal_masa_sanggah_mulai
-                                    ? $pengajuan->tanggal_masa_sanggah_mulai->format('d M Y H:i')
+                                    ? $pengajuan->tanggal_masa_sanggah_mulai->locale('id')->translatedFormat('d M Y H:i')
                                     : '-' }}
                 </p>
             </div>
@@ -141,7 +141,7 @@
                 <label class="text-muted small">Tanggal Selesai</label>
                 <p class="fw-bold mb-0">
                     {{ $pengajuan->tanggal_masa_sanggah_selesai
-                                    ? $pengajuan->tanggal_masa_sanggah_selesai->format('d M Y H:i')
+                                    ? $pengajuan->tanggal_masa_sanggah_selesai->locale('id')->translatedFormat('d M Y H:i')
                                     : '-' }}
                 </p>
             </div>
@@ -210,7 +210,7 @@
                         <strong>Banding Telah Diajukan</strong>
                         <br>
                         <small>
-                            Tanggal pengajuan: {{ $pengajuan->tanggal_permohonan_banding->format('d M Y H:i') }}
+                            Tanggal pengajuan: {{ $pengajuan->tanggal_permohonan_banding->locale('id')->translatedFormat('d M Y H:i') }}
 </small>
 </div>
 
@@ -221,18 +221,18 @@
     </tr>
     <tr>
         <th>Tanggal Pengajuan</th>
-        <td>: {{ $pengajuan->tanggal_permohonan_banding->format('d M Y H:i') }}</td>
+        <td>: {{ $pengajuan->tanggal_permohonan_banding->locale('id')->translatedFormat('d M Y H:i') }}</td>
     </tr>
     @if($pengajuan->tanggal_pelaksanaan_banding)
     <tr>
         <th>Tanggal Pelaksanaan</th>
-        <td>: {{ $pengajuan->tanggal_pelaksanaan_banding->format('d M Y H:i') }}</td>
+        <td>: {{ $pengajuan->tanggal_pelaksanaan_banding->locale('id')->translatedFormat('d M Y H:i') }}</td>
     </tr>
     @endif
     @if($pengajuan->tanggal_pelaporan_banding)
     <tr>
         <th>Tanggal Pelaporan</th>
-        <td>: {{ $pengajuan->tanggal_pelaporan_banding->format('d M Y H:i') }}</td>
+        <td>: {{ $pengajuan->tanggal_pelaporan_banding->locale('id')->translatedFormat('d M Y H:i') }}</td>
     </tr>
     @endif
 </table>
@@ -282,7 +282,7 @@
 <div class="card">
     <div class="card-header bg-info text-white">
         <h5 class="mb-0">
-            <i class="bi bi-clock-history"></i> Timeline
+            <i class="bi bi-hourglass-split"></i> Timeline
         </h5>
     </div>
     <div class="card-body" style="max-height: 600px; overflow-y: auto;">
@@ -329,7 +329,7 @@
                             {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label'] ?? $log->status_to }}
                         </strong>
                         <br>
-                        <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
+                        <small class="text-muted">{{ $log->created_at->locale('id')->translatedFormat('d M Y H:i') }}</small>
 
                         {{-- @if($log->keterangan)
                             <br>

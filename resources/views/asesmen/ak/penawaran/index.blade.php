@@ -114,8 +114,8 @@ $authUser = Auth::user();
                                 <strong>Periode:</strong><br>
                                 <span class="ms-4">
                                     @if($penawaran->asesmen->tanggal_mulai && $penawaran->asesmen->tanggal_selesai)
-                                    {{ \Carbon\Carbon::parse($penawaran->asesmen->tanggal_mulai)->format('d M Y') }} -
-                                    {{ \Carbon\Carbon::parse($penawaran->asesmen->tanggal_selesai)->format('d M Y') }}
+                                    {{ \Carbon\Carbon::parse($penawaran->asesmen->tanggal_mulai)->locale('id')->translatedFormat('d M Y') }} -
+                                    {{ \Carbon\Carbon::parse($penawaran->asesmen->tanggal_selesai)->locale('id')->translatedFormat('d M Y') }}
                                     @else
                                     -
                                     @endif

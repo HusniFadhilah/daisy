@@ -19,7 +19,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h5 class="mb-1">
-                <i class="bi bi-file-earmark-check"></i> Detail Pelaporan AK
+                <i class="bi bi-file-earmark-bar-graph"></i> Detail Pelaporan AK
             </h5>
             <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
@@ -67,7 +67,7 @@
                             <th style="width:40%">Tanggal Penilaian AK Selesai</th>
                             <td>
                                 : {{ $pengajuan->tanggal_ak_selesai
-                                    ? $pengajuan->tanggal_ak_selesai->format('d M Y H:i')
+                                    ? $pengajuan->tanggal_ak_selesai->locale('id')->translatedFormat('d M Y H:i')
                                     : '-' }}
                             </td>
                         </tr>
@@ -75,7 +75,7 @@
                             <th>Tanggal Pelaporan AK</th>
                             <td>
                                 : {{ $pengajuan->tanggal_pelaporan_ak
-                                    ? $pengajuan->tanggal_pelaporan_ak->format('d M Y H:i')
+                                    ? $pengajuan->tanggal_pelaporan_ak->locale('id')->translatedFormat('d M Y H:i')
                                     : '-' }}
                             </td>
                         </tr>
@@ -132,7 +132,7 @@
                                         {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label'] ?? $log->status_to }}
                                     </strong>
                                     <br>
-                                    <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
+                                    <small class="text-muted">{{ $log->created_at->locale('id')->translatedFormat('d M Y H:i') }}</small>
 
                                     {{-- @if($log->keterangan)
                                     <br>

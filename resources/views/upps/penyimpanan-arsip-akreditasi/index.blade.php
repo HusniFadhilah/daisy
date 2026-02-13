@@ -149,7 +149,7 @@
                                 <td>
                                     <small>
                                         {{ $pengajuan->tanggal_penyimpanan
-                                                        ? $pengajuan->tanggal_penyimpanan->format('d M Y')
+                                                        ? $pengajuan->tanggal_penyimpanan->locale('id')->translatedFormat('d M Y')
                                                         : '-' }}
                                     </small>
                                 </td>

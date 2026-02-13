@@ -6,7 +6,7 @@
 function getRoleIcon($roleName) {
 $icons = [
 'super_admin' => 'shield-fill-check',
-'asesi' => 'person-badge',
+'sekretariat' => 'person-badge',
 'asesor' => 'clipboard-check',
 'validator' => 'check2-circle',
 'verifikator' => 'shield-check',
@@ -20,7 +20,7 @@ return $icons[$roleName] ?? 'person';
 function getRoleDescription($roleName) {
 $descriptions = [
 'super_admin' => 'Akses penuh ke seluruh sistem',
-'asesi' => 'LAMDEPILAR - Review dan evaluasi asesmen akreditasi',
+'sekretariat' => 'LAMDEPILAR - Review dan evaluasi asesmen akreditasi',
 'asesor' => 'Melakukan penilaian dokumen akreditasi',
 'validator' => 'Validasi hasil penilaian asesor',
 'verifikator' => 'Verifikasi dokumen dan data',

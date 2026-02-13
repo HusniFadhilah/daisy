@@ -74,7 +74,7 @@
                             <th>Tanggal Penugasan Asesor AK</th>
                             <td>
                                 : {{ $pengajuan->tanggal_penugasan_asesor_ak
-                                    ? $pengajuan->tanggal_penugasan_asesor_ak->format('d M Y H:i')
+                                    ? $pengajuan->tanggal_penugasan_asesor_ak->locale('id')->translatedFormat('d M Y H:i')
                                     : '-' }}
                             </td>
                         </tr>
@@ -82,7 +82,7 @@
                             <th>Tanggal Mulai AK</th>
                             <td>
                                 : {{ $pengajuan->asesmen?->asesmenKecukupan?->tanggal_mulai
-                                    ? \Carbon\Carbon::parse($pengajuan->asesmen->asesmenKecukupan->tanggal_mulai)->format('d M Y')
+                                    ? \Carbon\Carbon::parse($pengajuan->asesmen->asesmenKecukupan->tanggal_mulai)->locale('id')->translatedFormat('d M Y')
                                     : '-' }}
                             </td>
                         </tr>
@@ -90,7 +90,7 @@
                             <th>Tanggal AK Selesai</th>
                             <td>
                                 : {{ $pengajuan->asesmen?->asesmenKecukupan?->tanggal_selesai
-                                    ? \Carbon\Carbon::parse($pengajuan->asesmen->asesmenKecukupan->tanggal_selesai)->format('d M Y')
+                                    ? \Carbon\Carbon::parse($pengajuan->asesmen->asesmenKecukupan->tanggal_selesai)->locale('id')->translatedFormat('d M Y')
                                     : '-' }}
                             </td>
                         </tr>
@@ -179,7 +179,7 @@
                                         {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['upps'] ?? $log->status_to }}
                                     </strong>
                                     <br>
-                                    <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
+                                    <small class="text-muted">{{ $log->created_at->locale('id')->translatedFormat('d M Y H:i') }}</small>
 
                                     {{-- @if($log->keterangan)
                                     <br>

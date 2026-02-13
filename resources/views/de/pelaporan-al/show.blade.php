@@ -17,7 +17,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h5 class="mb-1">
-                <i class="bi bi-file-earmark-text"></i> Detail Pelaporan AL
+                <i class="bi bi-journal-text"></i> Detail Pelaporan AL
             </h5>
             <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
@@ -49,7 +49,7 @@
             <div class="alert alert-success alert-permanent">
                 <i class="bi bi-check-circle"></i>
                 <strong>Pelaporan AL Selesai</strong><br>
-                Hasil asesmen lapangan telah dilaporkan pada {{ $statusPelaporan['reported_at'] ? \Carbon\Carbon::parse($statusPelaporan['reported_at'])->format('d M Y H:i') : '-' }}
+                Hasil asesmen lapangan telah dilaporkan pada {{ $statusPelaporan['reported_at'] ? \Carbon\Carbon::parse($statusPelaporan['reported_at'])->locale('id')->translatedFormat('d M Y H:i') : '-' }}
             </div>
             @endif
 
@@ -98,7 +98,7 @@
                                         <small>{{ $doc->uploadedBy->name ?? '-' }}</small>
                                     </td>
                                     <td>
-                                        <small class="text-muted">{{ $doc->uploaded_at?->format('d M Y H:i') ?? '-' }}</small>
+                                        <small class="text-muted">{{ $doc->uploaded_at?->locale('id')->translatedFormat('d M Y H:i') ?? '-' }}</small>
                                     </td>
                                     <td class="text-center">
                                         <a href="{{ asset('storage/' . $doc->path) }}" target="_blank" class="btn btn-sm btn-success" title="Lihat File">
@@ -134,7 +134,7 @@
                             <th>Tanggal AL Selesai</th>
                             <td>
                                 : {{ $pengajuan->asesmen->asesmenLapangan->tanggal_selesai
-                                    ? \Carbon\Carbon::parse($pengajuan->asesmen->asesmenLapangan->tanggal_selesai)->format('d M Y')
+                                    ? \Carbon\Carbon::parse($pengajuan->asesmen->asesmenLapangan->tanggal_selesai)->locale('id')->translatedFormat('d M Y')
                                     : '-' }}
                             </td>
                         </tr>
@@ -143,7 +143,7 @@
                             <th>Tanggal Dilaporkan</th>
                             <td>
                                 : {{ $statusPelaporan['reported_at']
-                                    ? \Carbon\Carbon::parse($statusPelaporan['reported_at'])->format('d M Y H:i')
+                                    ? \Carbon\Carbon::parse($statusPelaporan['reported_at'])->locale('id')->translatedFormat('d M Y H:i')
                                     : '-' }}
                             </td>
                         </tr>
@@ -245,7 +245,7 @@
                                         {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['de'] ?? $log->status_to }}
                                     </strong>
                                     <br>
-                                    <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
+                                    <small class="text-muted">{{ $log->created_at->locale('id')->translatedFormat('d M Y H:i') }}</small>
                                 </div>
                             </div>
                         </div>
@@ -272,7 +272,7 @@
                     <strong>Laporan Telah Dikirim</strong>
                     <br>
                     <small class="text-muted">
-                        Dilaporkan: {{ \Carbon\Carbon::parse($statusPelaporan['reported_at'])->format('d M Y H:i') }}
+                        Dilaporkan: {{ \Carbon\Carbon::parse($statusPelaporan['reported_at'])->locale('id')->translatedFormat('d M Y H:i') }}
                     </small>
                 </div>
             </div>

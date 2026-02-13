@@ -20,10 +20,10 @@ Urutan: **Asesor {{ $assignment->urutan_asesor }}**
 - **Kode:** {{ $asesmen->code }}
 - **Program Studi:** {{ $asesmen->studyProgram->name ?? '-' }}
 @if($asesmen->tanggal_mulai)
-- **Tanggal Mulai:** {{ \Carbon\Carbon::parse($asesmen->tanggal_mulai)->format('d F Y') }}
+- **Tanggal Mulai:** {{ \App\Libraries\Date::tglIndo($asesmen->tanggal_mulai) }}
 @endif
 @if($asesmen->tanggal_selesai)
-- **Tanggal Selesai:** {{ \Carbon\Carbon::parse($asesmen->tanggal_selesai)->format('d F Y') }}
+- **Tanggal Selesai:** {{ \App\Libraries\Date::tglIndo($asesmen->tanggal_selesai) }}
 @endif
 
 ## Langkah Selanjutnya

@@ -142,7 +142,7 @@ class PaymentSummaryController extends Controller
                         'nomor_invoice' => $payment->nomor_invoice,
                         'prodi' => $payment->pengajuan->studyProgram->name,
                         'jumlah' => $payment->jumlah_pembayaran,
-                        'tanggal' => $payment->tanggal_verifikasi->format('d M Y H:i'),
+                        'tanggal' => $payment->tanggal_verifikasi->locale('id')->translatedFormat('d M Y H:i'),
                     ];
                 });
 

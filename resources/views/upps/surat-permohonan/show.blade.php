@@ -19,7 +19,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h5 class="mb-1">
-                <i class="bi bi-envelope"></i> Detail Permohonan Akreditasi
+                <i class="bi bi-envelope-paper"></i> Detail Permohonan Akreditasi
             </h5>
             <small class="text-muted">{{ $pengajuan->nomor_permohonan }}</small>
         </div>
@@ -54,14 +54,14 @@
                 <i class="bi bi-check-circle"></i>
                 <strong>Permohonan akreditasi telah ditanggapi</strong>
                 <br>
-                Permohonan akreditasi telah ditanggapi pada {{ $pengajuan->tanggal_surat_permohonan_diterima->format('d M Y H:i') }}
+                Permohonan akreditasi telah ditanggapi pada {{ $pengajuan->tanggal_surat_permohonan_diterima->locale('id')->translatedFormat('d M Y H:i') }}
             </div>
             @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITOLAK)
             <div class="alert alert-danger alert-permanent mb-4">
                 <i class="bi bi-x-circle"></i>
                 <strong>Permohonan akreditasi ditolak</strong>
                 <br>
-                Permohonan akreditasi telah ditolak pada {{ $pengajuan->tanggal_surat_permohonan_ditolak->format('d M Y H:i') }}
+                Permohonan akreditasi telah ditolak pada {{ $pengajuan->tanggal_surat_permohonan_ditolak->locale('id')->translatedFormat('d M Y H:i') }}
             </div>
             @endif
 
@@ -128,7 +128,7 @@
                                 <br>
                                 <small class="text-muted">
                                     {{ number_format($dokumen->file_size / 1024, 2) }} KB •
-                                    Diupload: {{ $dokumen->created_at->format('d M Y H:i') }}
+                                    Diupload: {{ $dokumen->created_at->locale('id')->translatedFormat('d M Y H:i') }}
                                 </small>
                             </div>
                         </div>
@@ -184,7 +184,7 @@
                                         {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['upps'] ?? $log->status_to }}
                                     </strong>
                                     <br>
-                                    <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
+                                    <small class="text-muted">{{ $log->created_at->locale('id')->translatedFormat('d M Y H:i') }}</small>
 
                                     {{-- @if($log->keterangan)
                                     <br>

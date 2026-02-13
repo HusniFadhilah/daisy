@@ -24,9 +24,9 @@ class DashboardController extends Controller
 
         // Tentukan data berdasarkan role
         switch ($role) {
-            case 'asesi':
+            case 'sekretariat':
             case 'super_admin':
-                return $this->dashboardAsesi();
+                return $this->dashboardSekretariat();
             case 'asesor':
                 return $this->dashboardAsesor();
             case 'validator':
@@ -45,9 +45,9 @@ class DashboardController extends Controller
     }
 
     /**
-     * ✅ Dashboard DE (Asesi) dan Super Admin
+     * ✅ Dashboard Sekretariat dan Super Admin
      */
-    private function dashboardAsesi()
+    private function dashboardSekretariat()
     {
         $now = Carbon::now();
         $sevenMonthsFromNow = $now->copy()->addMonths(7);
@@ -753,7 +753,7 @@ class DashboardController extends Controller
                 'title' => 'Validasi Dokumen',
                 'priority' => 'high',
                 'description' => $pengajuan->studyProgram->name ?? '-',
-                'deadline' => $pengajuan->updated_at->addDays(7)->format('d M Y'),
+                'deadline' => $pengajuan->updated_at->addDays(7)->locale('id')->translatedFormat('d M Y'),
                 'days_left' => max(0, $pengajuan->updated_at->addDays(7)->diffInDays(now(), false)),
             ];
         }
@@ -777,7 +777,7 @@ class DashboardController extends Controller
                 'title' => 'Penilaian ' . strtoupper($assignment->jenis_asesmen),
                 'priority' => 'high',
                 'description' => $assignment->asesmen->studyProgram->name ?? '-',
-                'deadline' => $assignment->updated_at->addDays(14)->format('d M Y'),
+                'deadline' => $assignment->updated_at->addDays(14)->locale('id')->translatedFormat('d M Y'),
                 'days_left' => max(0, $assignment->updated_at->addDays(14)->diffInDays(now(), false)),
             ];
         }
@@ -805,7 +805,7 @@ class DashboardController extends Controller
                 'title' => 'Monitor Proses Akreditasi',
                 'priority' => 'medium',
                 'description' => $pengajuan->studyProgram->name ?? '-',
-                'deadline' => $pengajuan->updated_at->addMonths(2)->format('d M Y'),
+                'deadline' => $pengajuan->updated_at->addMonths(2)->locale('id')->translatedFormat('d M Y'),
                 'days_left' => max(0, $pengajuan->updated_at->addMonths(2)->diffInDays(now(), false)),
             ];
         }
@@ -836,7 +836,7 @@ class DashboardController extends Controller
                 'title' => 'Validasi Pembayaran',
                 'priority' => 'high',
                 'description' => $payment->pengajuan->studyProgram->name ?? '-',
-                'deadline' => $deadline->format('d M Y'),
+                'deadline' => $deadline->locale('id')->translatedFormat('d M Y'),
                 'days_left' => max(0, $deadline->diffInDays(now(), false)),
             ];
         }

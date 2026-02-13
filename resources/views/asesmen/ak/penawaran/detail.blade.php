@@ -90,8 +90,8 @@
                                     <strong>Periode:</strong><br>
                                     <span class="ms-4">
                                         @if($asesmen->tanggal_mulai && $asesmen->tanggal_selesai)
-                                        {{ \Carbon\Carbon::parse($asesmen->tanggal_mulai)->format('d M Y') }} -
-                                        {{ \Carbon\Carbon::parse($asesmen->tanggal_selesai)->format('d M Y') }}
+                                        {{ \Carbon\Carbon::parse($asesmen->tanggal_mulai)->locale('id')->translatedFormat('d M Y') }} -
+                                        {{ \Carbon\Carbon::parse($asesmen->tanggal_selesai)->locale('id')->translatedFormat('d M Y') }}
                                         @else
                                         -
                                         @endif

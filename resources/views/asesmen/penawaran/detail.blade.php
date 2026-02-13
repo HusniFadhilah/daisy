@@ -67,13 +67,13 @@
                         @if($asesmen->tanggal_mulai)
                         <tr>
                             <td><strong>Tanggal Mulai</strong></td>
-                            <td>{{ \Carbon\Carbon::parse($asesmen->tanggal_mulai)->format('d F Y') }}</td>
+                            <td>{{ \App\Libraries\Date::tglIndo($asesmen->tanggal_mulai) }}</td>
                         </tr>
                         @endif
                         @if($asesmen->tanggal_selesai)
                         <tr>
                             <td><strong>Tanggal Selesai</strong></td>
-                            <td>{{ \Carbon\Carbon::parse($asesmen->tanggal_selesai)->format('d F Y') }}</td>
+                            <td>{{ \App\Libraries\Date::tglIndo($asesmen->tanggal_selesai) }}</td>
                         </tr>
                         @endif
                     </table>
@@ -125,7 +125,7 @@
                 <div class="card-body">
                     <p class="mb-2">
                         <strong>Waktu Respons:</strong>
-                        {{ \Carbon\Carbon::parse($assignment->responded_at)->format('d F Y H:i') }}
+                        {{ \Carbon\Carbon::parse($assignment->responded_at)->locale('id')->translatedFormat('d F Y H:i') }}
                     </p>
                     @if($assignment->response_note)
                     <p class="mb-0">

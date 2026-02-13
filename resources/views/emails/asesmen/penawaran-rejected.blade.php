@@ -17,7 +17,7 @@ Penawaran asesmen berikut telah **ditolak** oleh yang bersangkutan:
 
 ## Detail Penolakan
 
-📅 **Waktu Penolakan:** {{ \Carbon\Carbon::parse($assignment->responded_at)->format('d F Y H:i') }}
+📅 **Waktu Penolakan:** {{ \Carbon\Carbon::parse($assignment->responded_at)->locale('id')->translatedFormat('d F Y H:i') }}
 
 **Alasan Penolakan:**
 > {{ $assignment->response_note ?? 'Tidak ada catatan' }}

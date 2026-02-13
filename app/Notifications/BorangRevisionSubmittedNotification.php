@@ -38,7 +38,7 @@ class BorangRevisionSubmittedNotification extends Notification implements Should
             ->greeting('Halo ' . $notifiable->name . ',')
             ->line("Prodi telah submit revisi borang {$this->pengajuan->studyProgram->name}.")
             ->line("**Revisi ke:** #{$revisionNumber}")
-            ->line("**Tanggal Submit:** {$latestRevision->revised_at->format('d M Y H:i')}")
+            ->line("**Tanggal Submit:** {$latestRevision->revised_at->locale('id')->translatedFormat('d M Y H:i')}")
             ->line('')
             ->line('**Catatan dari Prodi:**')
             ->line($latestRevision->revision_notes ?? 'Revisi sesuai catatan validator.')

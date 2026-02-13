@@ -12,7 +12,7 @@ class PengajuanAkreditasiSeeder extends Seeder
 {
     public function run()
     {
-        $de = User::where('role_selected', 'asesi')->first();
+        $de = User::where('role_selected', 'sekretariat')->first();
 
         $prodi = StudyProgram::first();
         $userProdi = User::where('role_selected', 'admin_prodi')->first();

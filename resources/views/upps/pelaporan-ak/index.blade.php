@@ -36,7 +36,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">
-                <i class="bi bi-file-earmark-check"></i> Pelaporan AK
+                <i class="bi bi-file-earmark-bar-graph"></i> Pelaporan AK
             </h4>
             <p class="text-muted mb-0">Monitor pelaporan AK</p>
         </div>
@@ -100,7 +100,7 @@
                                     </td>
                                     <td>
                                         @if($pengajuan->tanggal_pelaporan_ak)
-                                        <small>{{ $pengajuan->tanggal_pelaporan_ak->format('d M Y') }}</small>
+                                        <small>{{ $pengajuan->tanggal_pelaporan_ak->locale('id')->translatedFormat('d M Y') }}</small>
                                         <br>
                                         <small class="text-muted">
                                             {{ $pengajuan->tanggal_pelaporan_ak->diffForHumans() }}

@@ -136,7 +136,7 @@ class BorangRevisionHistory extends Model
      */
     public function getRevisedDateFormattedAttribute()
     {
-        return $this->revised_at ? $this->revised_at->format('d M Y H:i') : null;
+        return $this->revised_at ? $this->revised_at->locale('id')->translatedFormat('d M Y H:i') : null;
     }
 
     /**

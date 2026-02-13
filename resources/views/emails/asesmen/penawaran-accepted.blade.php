@@ -14,7 +14,7 @@ Jenis: **{{ $jenisAsesmen }}**
 ## Status Penerimaan
 
 ✅ **Status:** Diterima<br>
-📅 **Waktu Respons:** {{ \Carbon\Carbon::parse($assignment->responded_at)->format('d F Y H:i') }}
+📅 **Waktu Respons:** {{ \Carbon\Carbon::parse($assignment->responded_at)->locale('id')->translatedFormat('d F Y H:i') }}
 
 @if($assignment->response_note)
 **Catatan Anda:**

@@ -46,7 +46,7 @@ class PengajuanBorangController extends Controller
                 'name' => $assignment->user->name,
             ] : null,
             'validation' => [
-                'updated_at' => optional($validation->updated_at)->format('d M Y H:i'),
+                'updated_at' => optional($validation->updated_at)->locale('id')->translatedFormat('d M Y H:i'),
                 'final_action' => $validation->final_action ?? null, // kalau ada di tabelmu
                 'is_complete' => $validation->isCompletelyReviewed(),
                 'counts' => [
@@ -160,7 +160,7 @@ class PengajuanBorangController extends Controller
                 'id' => $assignment->user->id,
                 'name' => $assignment->user->name,
             ] : null,
-            'updated_at' => optional($validation->updated_at)->format('d M Y H:i'),
+            'updated_at' => optional($validation->updated_at)->locale('id')->translatedFormat('d M Y H:i'),
             'items' => $items,
         ]);
     }

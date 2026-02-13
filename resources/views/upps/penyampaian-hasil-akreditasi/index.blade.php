@@ -43,7 +43,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">
-                <i class="bi bi-megaphone"></i> Penyampaian Hasil Akreditasi
+                <i class="bi bi-clipboard-data"></i> Penyampaian Hasil Akreditasi
             </h4>
             <p class="text-muted mb-0">Hasil akreditasi program studi dari LAMDEPILAR</p>
         </div>
@@ -178,7 +178,7 @@
                                 </td>
                                 <td>
                                     @if($pengajuan->tanggal_hasil_akreditasi_dikirim)
-                                    <small>{{ $pengajuan->tanggal_hasil_akreditasi_dikirim->format('d M Y') }}</small>
+                                    <small>{{ $pengajuan->tanggal_hasil_akreditasi_dikirim->locale('id')->translatedFormat('d M Y') }}</small>
                                     <br>
                                     <small class="text-muted">
                                         {{ $pengajuan->tanggal_hasil_akreditasi_dikirim->diffForHumans() }}

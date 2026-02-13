@@ -43,7 +43,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">
-                <i class="bi bi-envelope"></i> Permohonan Akreditasi
+                <i class="bi bi-envelope-paper"></i> Permohonan Akreditasi
             </h4>
             <p class="text-muted mb-0">Kelola permohonan akreditasi program studi</p>
         </div>
@@ -155,7 +155,7 @@
                                     </td>
                                     <td>
                                         @if($pengajuan->tanggal_surat_permohonan_dikirim)
-                                        <small>{{ $pengajuan->tanggal_surat_permohonan_dikirim->format('d M Y') }}</small>
+                                        <small>{{ $pengajuan->tanggal_surat_permohonan_dikirim->locale('id')->translatedFormat('d M Y') }}</small>
                                         <br>
                                         <small class="text-muted">
                                             {{ $pengajuan->tanggal_surat_permohonan_dikirim->diffForHumans() }}

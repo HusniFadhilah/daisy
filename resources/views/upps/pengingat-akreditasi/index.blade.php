@@ -43,7 +43,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">
-                <i class="bi bi-bell"></i> Pengingat Masa Akreditasi
+                <i class="bi bi-clock-history"></i> Pengingat Masa Akreditasi
             </h4>
             <p class="text-muted mb-0">Daftar pengingat masa akreditasi dari LAMDEPILAR</p>
         </div>
@@ -191,7 +191,7 @@
                                     </td>
                                     <td>
                                         <small>
-                                            {{ $pengingat->tanggal_dikirim->format('d M Y') }}
+                                            {{ $pengingat->tanggal_dikirim->locale('id')->translatedFormat('d M Y') }}
                                         </small>
                                         <br>
                                         <small class="text-muted">

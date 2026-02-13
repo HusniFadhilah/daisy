@@ -103,7 +103,7 @@
                                     </td>
                                     <td>
                                         @if($pengajuan->tanggal_draft_borang)
-                                        <small>{{ $pengajuan->tanggal_draft_borang->format('d M Y') }}</small>
+                                        <small>{{ $pengajuan->tanggal_draft_borang->locale('id')->translatedFormat('d M Y') }}</small>
                                         <br>
                                         <small class="text-muted">
                                             {{ $pengajuan->tanggal_draft_borang->diffForHumans() }}

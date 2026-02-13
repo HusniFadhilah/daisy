@@ -208,11 +208,11 @@
         }
 
         .header-left {
-            width: 18%;
+            width: 15%;
         }
 
         .header-mid {
-            width: 64%;
+            width: 67%;
             text-align: center;
         }
 
@@ -230,7 +230,7 @@
         }
 
         .logo-wrap {
-            width: 16vh;
+            width: 13vh;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -239,7 +239,7 @@
 
         @media (min-width: 768px) {
             .logo-wrap {
-                width: 20vmin;
+                width: 17vmin;
             }
         }
 
@@ -250,7 +250,7 @@
         }
 
         .inst-name {
-            font-size: 1.3vh;
+            font-size: 1.2vh;
             font-weight: bold;
             color: #932136;
             line-height: 1.25;
@@ -260,7 +260,7 @@
 
         @media (min-width: 768px) {
             .inst-name {
-                font-size: 2vmin;
+                font-size: 1.8vmin;
                 letter-spacing: 0.6px;
             }
         }
@@ -661,9 +661,9 @@
 
         .page-2-header {
             text-align: center;
-            padding: 1.5vh 0 1vh 0;
+            padding: 0.7vh 0 0.5vh 0 !important;
+            margin-bottom: 0.7vh !important;
             border-bottom: 0.2vh solid #932136;
-            margin-bottom: 1.5vh;
         }
 
         @media (min-width: 768px) {
@@ -675,12 +675,12 @@
         }
 
         .page-2-title {
-            font-size: 2.2vh;
+            font-size: 2.5vh !important;
             font-weight: 700;
             color: #932136;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 0.5vh;
+            letter-spacing: 0.5px !important;
+            margin-bottom: 1vmin;
         }
 
         @media (min-width: 768px) {
@@ -732,7 +732,7 @@
         }
 
         .elemen-table-wrapper {
-            margin-top: 1vh;
+            margin-top: 0.5vh !important;
             overflow-x: auto;
         }
 
@@ -740,13 +740,13 @@
         .elemen-two-cols {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 1vh;
+            gap: 0.8vh;
             align-items: start;
         }
 
         /* tabel dibuat lebih rapat supaya muat 1 halaman */
         .elemen-two-cols .elemen-table {
-            font-size: 0.85vh;
+            font-size: 0.88vh;
             /* kecilkan sedikit */
             table-layout: fixed;
             /* penting biar kolom stabil */
@@ -754,7 +754,7 @@
 
         .elemen-two-cols .elemen-table th,
         .elemen-two-cols .elemen-table td {
-            padding: 0.45vh 0.45vh;
+            padding: 0.35vh 0.4vh;
             /* rapatkan padding */
         }
 
@@ -779,8 +779,8 @@
         .elemen-two-cols .kategori-badge {
             min-width: 0 !important;
             width: 100%;
-            font-size: 0.78vh;
-            padding: 0.35vh 0.55vh;
+            font-size: 0.72vh;
+            padding: 0.3vh 0.5vh;
         }
 
         @media (min-width: 768px) {
@@ -838,6 +838,8 @@
         .elemen-table .kriteria-cell {
             text-align: center;
             font-weight: 700;
+            padding: 0.4vh 0.8vh !important;
+            vertical-align: middle;
         }
 
         .elemen-table .kode-elemen {
@@ -845,6 +847,11 @@
             font-weight: 700;
             font-family: monospace;
             margin-right: 0.5vh;
+            font-size: 1.5vh;
+        }
+
+        .elemen-table .nama-elemen {
+            font-size: 1.2vh;
         }
 
         @media (min-width: 768px) {
@@ -858,9 +865,9 @@
             padding: 0.45vh 0.9vh;
             border-radius: 0.3vh;
             font-weight: 600;
-            font-size: 0.85vh;
+            font-size: 0.8vh;
             text-align: center;
-            min-width: 16vh;
+            min-width: 14vh;
             color: #222;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
@@ -872,7 +879,7 @@
                 padding: 0.65vmin 1.2vmin;
                 border-radius: 0.4vmin;
                 font-size: 1.2vmin;
-                min-width: 20vmin;
+                min-width: 18vmin;
             }
         }
 
@@ -881,11 +888,25 @@
             color: #fff;
             padding: 0.4vh 0.8vh;
             border-radius: 0.3vh;
+            display: block;
+            margin: 0 auto 0.3vh auto;
+            width: fit-content;
             font-size: 1.05vh;
             font-weight: 600;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
             color-adjust: exact;
+        }
+
+        .nama-kriteria {
+            font-size: 0.7vh;
+            line-height: 1.15;
+            text-align: center;
+            font-weight: 600;
+            color: #333;
+            margin-top: 1vh;
+            word-wrap: break-word;
+            hyphens: auto;
         }
 
         @media (min-width: 768px) {
@@ -929,6 +950,15 @@
             background: #ccc;
             cursor: not-allowed;
             box-shadow: none;
+        }
+
+
+
+        .page-2-wrapper .footer {
+            margin-top: 0.8vh !important;
+            padding-top: 0.6vh !important;
+            font-size: 1vh !important;
+            line-height: 1.3;
         }
 
         @media print {
@@ -1169,148 +1199,160 @@
     <div class="certificate-wrapper page-2-wrapper">
         <div class="certificate-container">
             <div class="certificate-frame">
-                <div class="certificate-inner" style="padding:0.5vh 1vh;">
+                <div class="certificate-inner">
                     <div class="watermark-logo"></div>
 
                     {{-- ===== HEADER ===== --}}
                     <div class="header">
                         <div class="header-col header-left">
-                            <div class="logo-wrap" style="width:10vh;">
-                                <img src="https://daisy.sp3stab.id/assets/images/logo.png" alt="Logo LAMDEPILAR" style="max-height:6vh;">
+                            <div class="logo-wrap">
+                                <img src="https://daisy.sp3stab.id/assets/images/logo.png" alt="Logo LAMDEPILAR">
                             </div>
                         </div>
 
                         <div class="header-col header-mid">
-                            <div class="inst-name" style="font-size:1.05vh; line-height:1.15;">
+                            <div class="inst-name">
                                 Lembaga Akreditasi Mandiri Desain Perencanaan Lingkungan Arsitektur
                                 (LAMDEPILAR)
                             </div>
-                            <div class="inst-sub" style="font-size:0.85vh; line-height:1.2; margin-top:0.2vh;">
+                            <div class="inst-sub">
                                 Lampiran Sertifikat Akreditasi Program Studi
                             </div>
                         </div>
 
-                        <div class="header-col header-right" style="font-size:0.8vh; line-height:1.2;">
+                        <div class="header-col header-right">
                             <div><strong>Nomor</strong></div>
                             <div>{{ $nomorSertifikat }}</div>
-                            <div style="margin-top:4px;"><strong>Tanggal</strong></div>
+                            <div style="margin-top:3px;"><strong>Tanggal</strong></div>
                             <div>{{ \App\Libraries\Date::tglIndo($tanggalPenetapan) }}</div>
                         </div>
                     </div>
 
                     {{-- ===== PAGE 2 HEADER ===== --}}
-                    <div class="page-2-header" style="padding:1.0vh 0 0.7vh 0; margin-bottom:1.0vh;">
-                        <div class="page-2-title" style="font-size:1.6vh; letter-spacing:0.6px;">
+                    <div class="page-2-header">
+                        <div class="page-2-title">
                             Surat Keterangan Capaian Akreditasi
                         </div>
                     </div>
 
-                    {{-- ===== INFO PROGRAM STUDI ===== --}}
-                    {{-- <div class="page-2-info">
-                        <strong>Program Studi:</strong> {{ $studyProgram->name }}<br>
-                    <strong>Perguruan Tinggi:</strong> {{ $university->name }}<br>
-                    <strong>Status Akreditasi:</strong> {{ strtoupper($hasil->peringkat_akreditasi) }}
-                </div> --}}
+                    {{-- ===== TABEL ELEMEN ===== --}}
+                    @if(!empty($elemenList))
 
-                {{-- ===== TABEL ELEMEN ===== --}}
-                @if(!empty($elemenList))
-                @php
-                // Flat rows (tanpa rowspan) supaya aman saat di-split jadi 2 kolom
-                $rows = [];
-                $groupedByKriteria = collect($elemenList)->groupBy('kode_kriteria');
+                    @php
+                    $grouped = collect($elemenList)->groupBy('kode_kriteria');
 
-                foreach ($groupedByKriteria as $kodeKriteria => $elemens) {
-                foreach ($elemens as $elemen) {
-                $kategori = $elemen['skor_kategori'] ?? ['label' => '-', 'color' => '#e9ecef'];
+                    $halfGroupCount = (int) ceil($grouped->count() / 2);
+                    $leftGroups = $grouped->take($halfGroupCount);
+                    $rightGroups = $grouped->slice($halfGroupCount);
 
-                $rows[] = [
-                'kode_kriteria' => $kodeKriteria,
-                'kode_elemen' => $elemen['kode_elemen'],
-                'nama_elemen' => $elemen['nama_elemen'],
-                'kategori_label'=> $kategori['label'],
-                'kategori_color'=> $kategori['color'],
-                ];
-                }
-                }
+                    $defaultKategori = ['label' => '-', 'color' => '#e9ecef'];
+                    @endphp
 
-                $half = (int) ceil(count($rows) / 2);
-                $left = array_slice($rows, 0, $half);
-                $right = array_slice($rows, $half);
-                @endphp
+                    <div class="elemen-table-wrapper">
+                        <div class="elemen-two-cols">
 
-                <div class="elemen-table-wrapper">
-                    <div class="elemen-two-cols">
+                            {{-- TABEL KIRI --}}
+                            <table class="elemen-table">
+                                <thead>
+                                    <tr>
+                                        <th>Kriteria</th>
+                                        <th>Pernyataan Elemen</th>
+                                        <th>Kategori</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($leftGroups as $kodeKriteria => $elemens)
+                                    @php
+                                    $rowspan = $elemens->count();
+                                    $namaKriteria = $elemens->first()['nama_kriteria'] ?? '';
+                                    @endphp
 
-                        {{-- KIRI --}}
-                        <table class="elemen-table">
-                            <thead>
-                                <tr>
-                                    <th>Kriteria</th>
-                                    <th>Pernyataan Elemen</th>
-                                    <th>Kategori</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($left as $r)
-                                <tr>
-                                    <td class="kriteria-cell">
-                                        <span class="kriteria-badge">{{ $r['kode_kriteria'] }}</span>
-                                    </td>
-                                    <td>
-                                        <span class="kode-elemen">{{ $r['kode_elemen'] }}</span>
-                                        {{ $r['nama_elemen'] }}
-                                    </td>
-                                    <td style="text-align:center;">
-                                        <span class="kategori-badge" style="background-color: {{ $r['kategori_color'] }};">
-                                            {{ $r['kategori_label'] }}
-                                        </span>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                                    @foreach($elemens as $i => $elemen)
+                                    @php
+                                    $kategori = $elemen['skor_kategori'] ?? $defaultKategori;
+                                    @endphp
 
-                        {{-- KANAN (header diulang) --}}
-                        <table class="elemen-table">
-                            <thead>
-                                <tr>
-                                    <th>Kriteria</th>
-                                    <th>Pernyataan Elemen</th>
-                                    <th>Kategori</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($right as $r)
-                                <tr>
-                                    <td class="kriteria-cell">
-                                        <span class="kriteria-badge">{{ $r['kode_kriteria'] }}</span>
-                                    </td>
-                                    <td>
-                                        <span class="kode-elemen">{{ $r['kode_elemen'] }}</span>
-                                        {{ $r['nama_elemen'] }}
-                                    </td>
-                                    <td style="text-align:center;">
-                                        <span class="kategori-badge" style="background-color: {{ $r['kategori_color'] }};">
-                                            {{ $r['kategori_label'] }}
-                                        </span>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                                    <tr>
+                                        @if($i === 0)
+                                        <td rowspan="{{ $rowspan }}" class="kriteria-cell">
+                                            <span class="kriteria-badge">{{ $kodeKriteria }}</span>
+                                            <div class="nama-kriteria">{{ $namaKriteria }}</div>
+                                        </td>
+                                        @endif
 
+                                        <td>
+                                            <span class="kode-elemen">{{ $elemen['kode_elemen'] }}</span>
+                                            <span class="nama-elemen">{{ $elemen['nama_elemen'] }}</span>
+                                        </td>
+
+                                        <td style="text-align:center;">
+                                            <span class="kategori-badge" style="background-color: {{ $kategori['color'] }};">
+                                                {{ $kategori['label'] }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                    @endforeach
+                                </tbody>
+                            </table>
+
+                            {{-- TABEL KANAN --}}
+                            <table class="elemen-table">
+                                <thead>
+                                    <tr>
+                                        <th>Kriteria</th>
+                                        <th>Pernyataan Elemen</th>
+                                        <th>Kategori</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($rightGroups as $kodeKriteria => $elemens)
+                                    @php
+                                    $rowspan = $elemens->count();
+                                    $namaKriteria = $elemens->first()['nama_kriteria'] ?? '';
+                                    @endphp
+
+                                    @foreach($elemens as $i => $elemen)
+                                    @php
+                                    $kategori = $elemen['skor_kategori'] ?? $defaultKategori;
+                                    @endphp
+
+                                    <tr>
+                                        @if($i === 0)
+                                        <td rowspan="{{ $rowspan }}" class="kriteria-cell">
+                                            <span class="kriteria-badge">{{ $kodeKriteria }}</span>
+                                            <div class="nama-kriteria">{{ $namaKriteria }}</div>
+                                        </td>
+                                        @endif
+
+                                        <td>
+                                            <span class="kode-elemen">{{ $elemen['kode_elemen'] }}</span>
+                                            <span class="nama-elemen">{{ $elemen['nama_elemen'] }}</span>
+                                        </td>
+
+                                        <td style="text-align:center;">
+                                            <span class="kategori-badge" style="background-color: {{ $kategori['color'] }};">
+                                                {{ $kategori['label'] }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                    @endforeach
+                                </tbody>
+                            </table>
+
+                        </div>
                     </div>
-                </div>
-                @endif
+                    @endif
 
-                {{-- ===== FOOTER ===== --}}
-                <div class="footer">
-                    Dokumen ini merupakan lampiran dari Sertifikat Akreditasi Nomor: {{ $nomorSertifikat }}<br>
-                    Diterbitkan oleh LAMDEPILAR sebagai rincian capaian standar akreditasi program studi.
+                    {{-- ===== FOOTER ===== --}}
+                    <div class="footer">
+                        Dokumen ini merupakan lampiran dari Sertifikat Akreditasi Nomor: {{ $nomorSertifikat }}<br>
+                        Diterbitkan oleh LAMDEPILAR sebagai rincian capaian standar akreditasi program studi.
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
     </div>
 
     <script>

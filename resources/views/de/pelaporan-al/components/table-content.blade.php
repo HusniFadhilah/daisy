@@ -98,11 +98,11 @@
                         </td>
                         <td>
                             @if($pengajuan->tanggal_pelaporan_al)
-                            <small><strong>{{ \Carbon\Carbon::parse($pengajuan->tanggal_pelaporan_al)->format('d M Y') }}</strong></small>
+                            <small><strong>{{ \Carbon\Carbon::parse($pengajuan->tanggal_pelaporan_al)->locale('id')->translatedFormat('d M Y') }}</strong></small>
                             <br>
                             <small class="text-muted">Dilaporkan</small>
                             @else
-                            <small>{{ $pengajuan->created_at->format('d M Y') }}</small>
+                            <small>{{ $pengajuan->created_at->locale('id')->translatedFormat('d M Y') }}</small>
                             @endif
                         </td>
                         <td class="text-center">

@@ -122,7 +122,7 @@
                         </td>
                         <td>
                             @if($pengajuan->tanggal_penugasan_asesor_ak)
-                            <small>{{ $pengajuan->tanggal_penugasan_asesor_ak->format('d M Y') }}</small>
+                            <small>{{ $pengajuan->tanggal_penugasan_asesor_ak->locale('id')->translatedFormat('d M Y') }}</small>
                             <br>
                             <small class="text-muted">
                                 {{ $pengajuan->tanggal_penugasan_asesor_ak->diffForHumans() }}

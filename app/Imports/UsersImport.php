@@ -72,7 +72,7 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnErr
             'nama' => 'required|string|max:255',
             'email' => 'required|email',
             'role' => 'nullable|in:admin,user',
-            'role_aktif' => 'nullable|in:super_admin,asesi,asesor,validator,verifikator,admin_univ,admin_prodi,default',
+            'role_aktif' => 'nullable|in:super_admin,sekretariat,asesor,validator,verifikator,admin_univ,admin_prodi,default',
             'no_telepon' => 'nullable|string|max:20',
             'alamat' => 'nullable|string',
             'institusi' => 'nullable|string|max:255',

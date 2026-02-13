@@ -34,7 +34,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">
-                <i class="bi bi-clipboard-data"></i> Pelaksanaan AL & Berita Acara
+                <i class="bi bi-geo-alt"></i> Pelaksanaan AL & Berita Acara
             </h4>
             <p class="text-muted mb-0">Monitor pelaksanaan asesmen lapangan</p>
         </div>

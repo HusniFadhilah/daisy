@@ -598,7 +598,7 @@ class AsesmenController extends Controller
                         'urutan_asesor' => $item->urutan_asesor,
                         'status_penawaran' => $item->status_penawaran,
                         'status_pekerjaan' => $item->status_pekerjaan,
-                        'created_at' => $item->created_at->format('d M Y H:i'),
+                        'created_at' => $item->created_at->locale('id')->translatedFormat('d M Y H:i'),
                     ];
                 });
             });

@@ -54,7 +54,7 @@
                         <tr>
                             <th>Tanggal Kedaluwarsa</th>
                             <td>:
-                                {{ $pengingat->studyProgram->tanggal_kedaluwarsa ? $pengingat->studyProgram->tanggal_kedaluwarsa->format('d F Y') : '-' }}
+                                {{ $pengingat->studyProgram->tanggal_kedaluwarsa ? \App\Libraries\Date::tglIndo($pengingat->studyProgram->tanggal_kedaluwarsa) : '-' }}
                                 <div class="ps-2">{!! $pengingat->studyProgram->full_days_left !!}</div>
                             </td>
                         </tr>

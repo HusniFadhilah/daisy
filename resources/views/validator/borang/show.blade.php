@@ -338,7 +338,7 @@
 
                                 <div class="mt-2">
                                     <small class="text-muted">
-                                        <strong>Template Kosong:</strong> File Excel baru tanpa isian<br>
+                                        <strong>Templat Kosong:</strong> File Excel baru tanpa isian<br>
                                         <strong>Hasil Validasi:</strong> File Excel berisi validasi yang telah Anda isi
                                     </small>
                                 </div>

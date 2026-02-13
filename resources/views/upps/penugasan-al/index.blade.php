@@ -36,7 +36,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">
-                <i class="bi bi-person-check"></i> Penugasan Asesor AL
+                <i class="bi bi-building"></i> Penugasan Asesor AL
             </h4>
             <p class="text-muted mb-0">Monitor penugasan asesor untuk AL (Asesmen Lapangan)</p>
         </div>
@@ -100,7 +100,7 @@
                                     </td>
                                     <td>
                                         @if($pengajuan->tanggal_penugasan_asesor_al)
-                                        <small>{{ $pengajuan->tanggal_penugasan_asesor_al->format('d M Y') }}</small>
+                                        <small>{{ $pengajuan->tanggal_penugasan_asesor_al->locale('id')->translatedFormat('d M Y') }}</small>
                                         <br>
                                         <small class="text-muted">
                                             {{ $pengajuan->tanggal_penugasan_asesor_al->diffForHumans() }}

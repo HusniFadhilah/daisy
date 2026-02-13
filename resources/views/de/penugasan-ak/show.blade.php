@@ -17,7 +17,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h5 class="mb-1">
-                <i class="bi bi-person-badge"></i> Detail Penugasan AK
+                <i class="bi bi-person-check"></i> Detail Penugasan AK
             </h5>
             <small class="text-muted mb-0">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
@@ -322,7 +322,7 @@
                             <th>Tanggal Penugasan Asesor AK</th>
                             <td>
                                 : {{ $pengajuan->tanggal_penugasan_asesor_ak
-                                    ? $pengajuan->tanggal_penugasan_asesor_ak->format('d M Y H:i')
+                                    ? $pengajuan->tanggal_penugasan_asesor_ak->locale('id')->translatedFormat('d M Y H:i')
                                     : '-' }}
                             </td>
                         </tr>
@@ -330,7 +330,7 @@
                             <th>Tanggal Mulai AK</th>
                             <td>
                                 : {{ $pengajuan->asesmen?->asesmenKecukupan?->tanggal_mulai
-                                    ? \Carbon\Carbon::parse($pengajuan->asesmen->asesmenKecukupan->tanggal_mulai)->format('d M Y')
+                                    ? \Carbon\Carbon::parse($pengajuan->asesmen->asesmenKecukupan->tanggal_mulai)->locale('id')->translatedFormat('d M Y')
                                     : '-' }}
                             </td>
                         </tr>
@@ -338,7 +338,7 @@
                             <th>Tanggal AK Selesai</th>
                             <td>
                                 : {{ $pengajuan->asesmen?->asesmenKecukupan?->tanggal_selesai
-                                    ? \Carbon\Carbon::parse($pengajuan->asesmen->asesmenKecukupan->tanggal_selesai)->format('d M Y')
+                                    ? \Carbon\Carbon::parse($pengajuan->asesmen->asesmenKecukupan->tanggal_selesai)->locale('id')->translatedFormat('d M Y')
                                     : '-' }}
                             </td>
                         </tr>
@@ -433,7 +433,7 @@
                                         {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['de'] ?? $log->status_to }}
                                     </strong>
                                     <br>
-                                    <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
+                                    <small class="text-muted">{{ $log->created_at->locale('id')->translatedFormat('d M Y H:i') }}</small>
 
                                     {{-- @if($log->keterangan)
                                     <br>
@@ -583,7 +583,7 @@
                     </tr>
                     <tr>
                         <th>Ditugaskan</th>
-                        <td>: {{ $validatorDokumen->created_at->format('d M Y H:i') }}</td>
+                        <td>: {{ $validatorDokumen->created_at->locale('id')->translatedFormat('d M Y H:i') }}</td>
                     </tr>
                 </table>
 

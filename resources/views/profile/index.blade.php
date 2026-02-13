@@ -311,7 +311,7 @@
                             <div>
                                 <div class="info-item-label">Bergabung Sejak</div>
                                 <div class="info-item-value">
-                                    {{ isset($user->created_at) ? $user->created_at->format('d F Y') : '-' }}
+                                    {{ isset($user->created_at) ? \App\Libraries\Date::tglIndo($user->created_at) : '-' }}
                                 </div>
                             </div>
                         </div>
@@ -322,7 +322,7 @@
                             <div>
                                 <div class="info-item-label">Terakhir Update</div>
                                 <div class="info-item-value">
-                                    {{ isset($user->updated_at) ? $user->updated_at->format('d F Y H:i') : '-' }}
+                                    {{ isset($user->updated_at) ? \App\Libraries\Date::tglWaktu($user->updated_at) : '-' }}
                                 </div>
                             </div>
                         </div>

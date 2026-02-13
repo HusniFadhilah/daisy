@@ -115,7 +115,7 @@
                                     </td>
                                     <td>
                                         @if($pengajuan->tanggal_validasi_borang_selesai)
-                                        <small>{{ $pengajuan->tanggal_validasi_borang_selesai->format('d M Y') }}</small>
+                                        <small>{{ $pengajuan->tanggal_validasi_borang_selesai->locale('id')->translatedFormat('d M Y') }}</small>
                                         <br>
                                         <small class="text-muted">
                                             {{ $pengajuan->tanggal_validasi_borang_selesai->diffForHumans() }}

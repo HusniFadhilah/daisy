@@ -154,7 +154,7 @@
                                 <td>
                                     <small>
                                         {{ $pengajuan->tanggal_pelaporan_hasil
-                                                        ? $pengajuan->tanggal_pelaporan_hasil->format('d M Y')
+                                                        ? $pengajuan->tanggal_pelaporan_hasil->locale('id')->translatedFormat('d M Y')
                                                         : '-' }}
                                     </small>
                                 </td>

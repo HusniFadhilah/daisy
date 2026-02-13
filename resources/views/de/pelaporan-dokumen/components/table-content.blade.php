@@ -78,9 +78,9 @@
                     // 3) fallback '-'
                     // ===============================
                     if ($isReported && $lastPelaporanLog?->changed_at) {
-                    $tanggal = \Carbon\Carbon::parse($lastPelaporanLog->changed_at)->format('d M Y H:i');
+                    $tanggal = \Carbon\Carbon::parse($lastPelaporanLog->changed_at)->locale('id')->translatedFormat('d M Y H:i');
                     } elseif ($hasLaporan && $laporan?->uploaded_at) {
-                    $tanggal = $laporan->uploaded_at->format('d M Y H:i');
+                    $tanggal = $laporan->uploaded_at->locale('id')->translatedFormat('d M Y H:i');
                     } else {
                     $tanggal = '-';
                     }

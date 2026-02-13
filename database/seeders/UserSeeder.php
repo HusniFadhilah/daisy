@@ -27,16 +27,16 @@ class UserSeeder extends Seeder
                 'email' => 'sekretariat@lamdepilar.or.id',
                 'password' => Hash::make('=Secret1234'),
                 'role' => 'admin',
-                'role_selected' => 'asesi',
-                'roles' => ['asesi'],
+                'role_selected' => 'sekretariat',
+                'roles' => ['sekretariat'],
             ],
             [
                 'name' => 'Budi Santoso',
                 'email' => 'budi.santoso@daisy.lamdepilar.or.id',
                 'password' => Hash::make('=Secret1234'),
                 'role' => 'user',
-                'role_selected' => 'asesi',
-                'roles' => ['asesi'],
+                'role_selected' => 'sekretariat',
+                'roles' => ['sekretariat'],
                 'must_change_password' => true
             ],
             [
@@ -269,7 +269,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('=Secret1234'),
                 'role' => 'admin',
                 'role_selected' => 'super_admin',
-                'roles' => ['super_admin', 'asesi', 'asesor', 'validator', 'verifikator', 'admin_univ', 'admin_prodi', 'keuangan_lamdepilar', 'default'],
+                'roles' => ['super_admin', 'sekretariat', 'asesor', 'validator', 'verifikator', 'admin_univ', 'admin_prodi', 'keuangan_lamdepilar', 'default'],
             ],
         ];
 

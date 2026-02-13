@@ -88,8 +88,8 @@
                     // 2) kalau belum -> tanggal dari log AK_SELESAI (changed_at)
                     // 3) fallback created_at
                     $tanggalTampil = $lastPelaporanLog?->changed_at
-                    ? \Carbon\Carbon::parse($lastPelaporanLog->changed_at)->format('d M Y')
-                    : $pengajuan->created_at->format('d M Y');
+                    ? \Carbon\Carbon::parse($lastPelaporanLog->changed_at)->locale('id')->translatedFormat('d M Y')
+                    : $pengajuan->created_at->locale('id')->translatedFormat('d M Y');
 
                     $labelTanggal = $isReported ? 'Dilaporkan' : (($lastStatus === \App\Models\PengajuanAkreditasi::STATUS_AK_SELESAI) ? 'Validasi Selesai' : null);
                     @endphp

@@ -722,20 +722,20 @@
 
                                 <div class="col-md-4 mb-3">
                                     <label class="text-muted small">Ditugaskan</label>
-                                    <p class="mb-0">{{ $currentValidator->created_at->format('d M Y H:i') }}</p>
+                                    <p class="mb-0">{{ $currentValidator->created_at->locale('id')->translatedFormat('d M Y H:i') }}</p>
                                 </div>
 
                                 @if($currentValidator->responded_at)
                                 <div class="col-md-4 mb-3">
                                     <label class="text-muted small">Respon</label>
-                                    <p class="mb-0">{{ $currentValidator->responded_at->format('d M Y H:i') }}</p>
+                                    <p class="mb-0">{{ $currentValidator->responded_at->locale('id')->translatedFormat('d M Y H:i') }}</p>
                                 </div>
                                 @endif
 
                                 @if($currentValidator->status_penawaran === 'accepted' && $currentValidator->approved_at)
                                 <div class="col-md-4 mb-3">
                                     <label class="text-muted small">Selesai Review</label>
-                                    <p class="mb-0">{{ $currentValidator->approved_at->format('d M Y H:i') }}</p>
+                                    <p class="mb-0">{{ $currentValidator->approved_at->locale('id')->translatedFormat('d M Y H:i') }}</p>
                                 </div>
                                 @endif
                             </div>
@@ -938,7 +938,7 @@
                     <small class="text-muted">Versi {{ $review->versi_review }}</small>
                 </div>
                 <small class="text-muted">
-                    {{ $review->tanggal_review->format('d M Y H:i') }}
+                    {{ $review->tanggal_review->locale('id')->translatedFormat('d M Y H:i') }}
                 </small>
             </div>
             <p class="mb-2"><strong>Reviewer:</strong> {{ $review->reviewer->name }}</p>
@@ -995,7 +995,7 @@
                             </td>
                             <td>v{{ $doc->versi }}</td>
                             <td>{{ $doc->uploader->name }}</td>
-                            <td>{{ $doc->created_at->format('d/m/Y H:i') }}</td>
+                            <td>{{ $doc->created_at->locale('id')->translatedFormat('d/m/Y H:i') }}</td>
                             <td>
                                 <a href="{{ $doc->download_url }}" class="btn btn-sm btn-primary">
                                     <i class="bi bi-download"></i>
@@ -1054,7 +1054,7 @@
 
                             @if($item['date'])
                             <span class="badge bg-{{ $itemColor }}">
-                                {{ $item['date']->format('d M Y') }}
+                                {{ $item['date']->locale('id')->translatedFormat('d M Y') }}
                             </span>
                             @endif
                         </div>
@@ -1083,7 +1083,7 @@
             <div class="mb-3 pb-3 {{ !$loop->last ? 'border-bottom' : '' }}">
                 <div class="d-flex justify-content-between">
                     <small class="text-muted">
-                        {{ $log->changed_at->format('d/m/Y H:i') }}
+                        {{ $log->changed_at->locale('id')->translatedFormat('d/m/Y H:i') }}
                     </small>
                 </div>
                 <p class="mb-1 small">

@@ -53,7 +53,7 @@
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h4 class="mb-1"><i class="bi bi-file-earmark-text"></i> Pengiriman Formulir dan Templat Dokumen</h4>
+            <h4 class="mb-1"><i class="bi bi-file-earmark"></i> Pengiriman Formulir dan Templat Dokumen</h4>
             <p class="text-muted mb-0">Kirim templat dokumen akreditasi</p>
         </div>
     </div>
@@ -195,7 +195,7 @@
                                         @if($pengajuan->tanggal_template_led_dikirim)
                                         <small class="text-muted">
                                             <i class="bi bi-send"></i> Telah Dikirim:
-                                            {{ $pengajuan->tanggal_template_led_dikirim->format('d M Y') }}
+                                            {{ $pengajuan->tanggal_template_led_dikirim->locale('id')->translatedFormat('d M Y') }}
                                         </small>
                                         <br>
                                         @else
@@ -204,7 +204,7 @@
                                         @if($pengajuan->tanggal_template_led_dikirim)
                                         <small class="text-success">
                                             <i class="bi bi-check-circle"></i> Telah Diterima:
-                                            {{ $pengajuan->tanggal_template_led_dikirim->format('d M Y') }}
+                                            {{ $pengajuan->tanggal_template_led_dikirim->locale('id')->translatedFormat('d M Y') }}
                                         </small>
                                         @endif
                                     </td>

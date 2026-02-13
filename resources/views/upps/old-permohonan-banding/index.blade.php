@@ -181,7 +181,7 @@
                                     <td>
                                         <small>
                                             {{ $pengajuan->tanggal_banding
-                                                        ? $pengajuan->tanggal_banding->format('d M Y H:i')
+                                                        ? $pengajuan->tanggal_banding->locale('id')->translatedFormat('d M Y H:i')
                                                         : '-' }}
                                         </small>
                                     </td>

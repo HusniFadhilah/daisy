@@ -19,7 +19,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h5 class="mb-1">
-                <i class="bi bi-file-earmark-text"></i> Detail Pengiriman Formulir dan Templat Dokumen
+                <i class="bi bi-file-earmark"></i> Detail Pengiriman Formulir dan Templat Dokumen
             </h5>
             <small class="text-muted mb-0">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
@@ -51,7 +51,7 @@
             </p>
             <p class="mb-1">
                 <strong>Tanggal Permintaan:</strong>
-                {{ \Carbon\Carbon::parse($data['requested_at'])->format('d M Y H:i') }}
+                {{ \Carbon\Carbon::parse($data['requested_at'])->locale('id')->translatedFormat('d M Y H:i') }}
             </p>
             <p class="mb-2">
                 <strong>Alasan:</strong><br>
@@ -182,7 +182,7 @@
                             <th>Tanggal Templat Dikirim</th>
                             <td>
                                 : {{ $pengajuan->tanggal_template_led_dikirim
-                                    ? $pengajuan->tanggal_template_led_dikirim->format('d M Y H:i')
+                                    ? $pengajuan->tanggal_template_led_dikirim->locale('id')->translatedFormat('d M Y H:i')
                                     : '-' }}
                             </td>
                         </tr>
@@ -223,7 +223,7 @@
                                 @endif
                                 <br>
                                 <small class="text-muted">
-                                    Dikirim: {{ $templateLed->created_at->format('d M Y H:i') }}
+                                    Dikirim: {{ $templateLed->created_at->locale('id')->translatedFormat('d M Y H:i') }}
                                 </small>
                                 @if($templateLed->keterangan)
                                 <br>
@@ -266,7 +266,7 @@
                                 @endif
                                 <br>
                                 <small class="text-muted">
-                                    Dikirim: {{ $formulirPembayaran->created_at->format('d M Y H:i') }}
+                                    Dikirim: {{ $formulirPembayaran->created_at->locale('id')->translatedFormat('d M Y H:i') }}
                                 </small>
                                 @if($formulirPembayaran->keterangan)
                                 <br>
@@ -326,7 +326,7 @@
                                         {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['de'] ?? $log->status_to }}
                                     </strong>
                                     <br>
-                                    <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
+                                    <small class="text-muted">{{ $log->created_at->locale('id')->translatedFormat('d M Y H:i') }}</small>
 
                                     {{-- @if($log->keterangan)
                                     <br>
@@ -346,7 +346,7 @@
                                         Formulir dan Templat Dokumen Diterima
                                     </strong>
                                     <br>
-                                    <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
+                                    <small class="text-muted">{{ $log->created_at->locale('id')->translatedFormat('d M Y H:i') }}</small>
 
                                     {{-- @if($log->keterangan)
                                     <br>

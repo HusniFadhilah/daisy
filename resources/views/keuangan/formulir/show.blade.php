@@ -137,13 +137,13 @@
                         <tr>
                             <td><strong>Jatuh Tempo</strong></td>
                             <td>
-                                {{ $pengajuan->pembayaran->tanggal_jatuh_tempo?->format('d M Y') ?? '-' }}
+                                {{ $pengajuan->pembayaran->tanggal_jatuh_tempo?->locale('id')->translatedFormat('d M Y') ?? '-' }}
                             </td>
                         </tr>
                         <tr>
                             <td><strong>Tanggal Bayar</strong></td>
                             <td>
-                                {{ $pengajuan->pembayaran->tanggal_pembayaran?->format('d M Y H:i') ?? '-' }}
+                                {{ $pengajuan->pembayaran->tanggal_pembayaran?->locale('id')->translatedFormat('d M Y H:i') ?? '-' }}
                             </td>
                         </tr>
                         <tr>
@@ -197,7 +197,7 @@
                                         {{ $dok->original_filename }}
                                     </small>
                                     <small class="text-muted">
-                                        {{ $dok->created_at->format('d M Y H:i') }}
+                                        {{ $dok->created_at->locale('id')->translatedFormat('d M Y H:i') }}
                                     </small>
                                 </div>
                                 <div class="btn-group-vertical btn-group-sm">
@@ -230,7 +230,7 @@
                                         {{ basename($buktiPembayaran) }}
                                     </small>
                                     <small class="text-muted">
-                                        Upload: {{ $pengajuan->pembayaran->tanggal_pembayaran?->format('d M Y H:i') ?? '-' }}
+                                        Upload: {{ $pengajuan->pembayaran->tanggal_pembayaran?->locale('id')->translatedFormat('d M Y H:i') ?? '-' }}
                                     </small>
                                 </div>
                                 <div class="btn-group-vertical btn-group-sm">

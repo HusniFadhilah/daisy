@@ -102,7 +102,7 @@
 </head>
 <body>
     <div class="header">
-        <h1 style="margin: 0;">📄 Templat LED</h1>
+        <h1 style="margin: 0;">📄 Templat Dokumen</h1>
         <p style="margin: 10px 0 0 0;">{{ config('app.name') }}</p>
     </div>
 
@@ -110,7 +110,7 @@
         <p>Halo <strong>{{ $pengajuan->pengaju->name }}</strong>,</p>
 
         <p>
-            Desk Evaluator (DE) telah mengirimkan templat LED untuk permohonan akreditasi program studi Anda.
+            Desk Evaluator (DE) telah mengirimkan Templat Dokumen untuk permohonan akreditasi program studi Anda.
         </p>
 
         {{-- Detail Permohonan akreditasi --}}
@@ -138,10 +138,10 @@
         @if($metode === 'link')
         <div class="info-box">
             <h3>🔗 Link Templat</h3>
-            <p>Akses templat LED melalui link berikut:</p>
+            <p>Akses Templat Dokumen melalui link berikut:</p>
             <p style="text-align: center;">
                 <a href="{{ $dokumen->template_link }}" class="button">
-                    📥 Download Templat LED
+                    📥 Download Templat Dokumen
                 </a>
             </p>
             <div class="info-row">
@@ -181,7 +181,7 @@
         <div class="steps">
             <h3>✅ Langkah Selanjutnya</h3>
             <ol>
-                <li>Download templat LED</li>
+                <li>Download Templat Dokumen</li>
                 <li>Lengkapi data sesuai panduan</li>
                 <li>Upload draft LED melalui sistem</li>
             </ol>

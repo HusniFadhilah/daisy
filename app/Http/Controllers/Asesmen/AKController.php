@@ -438,7 +438,7 @@ class AKController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Penilaian berhasil di-submit! Mohon menunggu proses validasi.',
-                'submitted_at' => now()->format('d M Y H:i'),
+                'submitted_at' => now()->locale('id')->translatedFormat('d M Y H:i'),
             ]);
         } catch (\Exception $e) {
             Log::error($e);
@@ -752,8 +752,8 @@ class AKController extends Controller
                     'failed_rows' => $importLog->failed_rows,
                     'errors' => $importLog->errors,
                     'success_rate' => $importLog->success_rate,
-                    'started_at' => $importLog->started_at?->format('d M Y H:i:s'),
-                    'completed_at' => $importLog->completed_at?->format('d M Y H:i:s'),
+                    'started_at' => $importLog->started_at?->locale('id')->translatedFormat('d M Y H:i:s'),
+                    'completed_at' => $importLog->completed_at?->locale('id')->translatedFormat('d M Y H:i:s'),
                 ],
             ]);
         } catch (\Exception $e) {

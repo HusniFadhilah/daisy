@@ -36,7 +36,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">
-                <i class="bi bi-clipboard-check"></i> Pelaksanaan AL & Berita Acara
+                <i class="bi bi-geo-alt"></i> Pelaksanaan AL & Berita Acara
             </h4>
             <p class="text-muted mb-0">Monitor pelaksanaan AL dan persetujuan berita acara AL</p>
         </div>
@@ -142,7 +142,7 @@ Laporan Hasil Asesmen Lapangan yang menunggu persetujuan.
                                 </td>
                                 <td>
                                     @if($pengajuan->tanggal_pelaksanaan_al)
-                                    <small>{{ $pengajuan->tanggal_pelaksanaan_al->format('d M Y') }}</small>
+                                    <small>{{ $pengajuan->tanggal_pelaksanaan_al->locale('id')->translatedFormat('d M Y') }}</small>
                                     <br>
                                     <small class="text-muted">
                                         {{ $pengajuan->tanggal_pelaksanaan_al->diffForHumans() }}

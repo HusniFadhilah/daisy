@@ -74,8 +74,8 @@
                             @if($jadwal && $jadwal->tanggal_mulai)
                             <small>
                                 <i class="bi bi-calendar-event"></i>
-                                {{ \Carbon\Carbon::parse($jadwal->tanggal_mulai)->format('d M') }} -
-                                {{ \Carbon\Carbon::parse($jadwal->tanggal_selesai)->format('d M Y') }}
+                                {{ \Carbon\Carbon::parse($jadwal->tanggal_mulai)->locale('id')->translatedFormat('d M') }} -
+                                {{ \Carbon\Carbon::parse($jadwal->tanggal_selesai)->locale('id')->translatedFormat('d M Y') }}
                                 @if($jadwal->lokasi)
                                 <br>
                                 <i class="bi bi-geo-alt text-danger"></i>
@@ -91,7 +91,7 @@
                         </td>
                         <td>
                             @if($pengajuan->tanggal_penugasan_asesor_al)
-                            <small>{{ $pengajuan->tanggal_penugasan_asesor_al->format('d M Y') }}</small>
+                            <small>{{ $pengajuan->tanggal_penugasan_asesor_al->locale('id')->translatedFormat('d M Y') }}</small>
                             <br>
                             <small class="text-muted">
                                 {{ $pengajuan->tanggal_penugasan_asesor_al->diffForHumans() }}

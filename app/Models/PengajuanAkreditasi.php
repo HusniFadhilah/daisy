@@ -549,6 +549,14 @@ class PengajuanAkreditasi extends Model
             : sprintf('LAMDEPILAR/%s/%03d', $year, $newNum);
     }
 
+    public function generateNomorSertifikat(): string
+    {
+        $year = date('Y');
+        $num = $this->id;
+
+        return sprintf('LAMDEPILAR/%s/%03d', $year, $num);
+    }
+
     public function canAssignValidator(): bool
     {
         if ((in_array($this->status, [

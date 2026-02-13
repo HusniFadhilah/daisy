@@ -101,7 +101,7 @@
                                         <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
                                         <br>
                                         <small class="text-muted">
-                                            Dibuat: {{ $pengajuan->created_at->format('d M Y') }}
+                                            Dibuat: {{ $pengajuan->created_at->locale('id')->translatedFormat('d M Y') }}
                                         </small>
                                     </td>
                                     <td>
@@ -116,7 +116,7 @@
                                     <td>
                                         <small>
                                             {{ $pengajuan->tanggal_pelaporan_banding
-                                                        ? $pengajuan->tanggal_pelaporan_banding->format('d M Y H:i')
+                                                        ? $pengajuan->tanggal_pelaporan_banding->locale('id')->translatedFormat('d M Y H:i')
                                                         : '-' }}
                                         </small>
                                     </td>

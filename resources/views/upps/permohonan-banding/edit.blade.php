@@ -148,7 +148,7 @@
                                             <br>
                                             <small class="text-muted">
                                                 {{ number_format($existingDokumen->file_size / 1024, 2) }} KB •
-                                                Diupload: {{ $existingDokumen->created_at->format('d M Y H:i') }}
+                                                Diupload: {{ $existingDokumen->created_at->locale('id')->translatedFormat('d M Y H:i') }}
                                             </small>
                                         </div>
                                     </div>
@@ -249,10 +249,10 @@
                             <strong>Nomor:</strong> {{ $pengajuan->nomor_pengajuan }}
                         </p>
                         <p class="mb-2">
-                            <strong>Dibuat:</strong> {{ $pengajuan->created_at->format('d M Y H:i') }}
+                            <strong>Dibuat:</strong> {{ $pengajuan->created_at->locale('id')->translatedFormat('d M Y H:i') }}
                         </p>
                         <p class="mb-3">
-                            <strong>Terakhir Diubah:</strong> {{ $pengajuan->updated_at->format('d M Y H:i') }}
+                            <strong>Terakhir Diubah:</strong> {{ $pengajuan->updated_at->locale('id')->translatedFormat('d M Y H:i') }}
                         </p>
 
                         <hr>

@@ -810,8 +810,8 @@
                                             <th style="width: 50px;">#</th>
                                             <th>Program Studi</th>
                                             <th style="width: 80px;">Jenjang</th>
-                                            <th style="width: 120px;">Peringkat</th>
-                                            <th style="width: 150px;">Status</th>
+                                            <th style="width: 120px;">Status Akreditasi</th>
+                                            <th style="width: 150px;">Status Kedaluwarsa</th>
                                             <th style="width: 150px;">Kedaluwarsa</th>
                                             <th style="width: 100px;">Sisa Waktu</th>
                                             <th style="width: 150px;">Aksi</th>
@@ -1138,20 +1138,11 @@ Sekretariat LAMDEPILAR</textarea>
                         , render: function(data, type, row) {
                             let buttons = `
                         <div class="btn-group btn-group-sm">
-                            <a href="/de/pengingat-masa-akredi/${row.program_studi.id}/show"
+                            <a href="/de/pengingat-masa-akreditasi/${row.program_studi.id}"
                                class="btn btn-outline-primary action-btn">
                                 <i class="bi bi-eye"></i>
                             </a>
                     `;
-
-                            if (row.can_ajukan) {
-                                buttons += `
-                            <a href="{{ route('pengajuan.create') }}?study_program_id=${row.program_studi.id}"
-                               class="btn btn-outline-success action-btn">
-                                <i class="bi bi-plus-circle"></i>
-                            </a>
-                        `;
-                            }
 
                             buttons += '</div>';
                             return buttons;

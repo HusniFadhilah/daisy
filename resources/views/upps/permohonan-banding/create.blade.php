@@ -118,7 +118,7 @@
                 $skor = $hasil ? $hasil->skor_final : 0;
                 $badgeColor = $hasil ? $hasil->getPeringkatColor($peringkat) : '#e9ecef';
                 $isSelected = $selectedPengajuan && $selectedPengajuan->id === $p->id;
-                $tanggalHasil = $p->tanggal_hasil_akreditasi_dikirim ? $p->tanggal_hasil_akreditasi_dikirim->format('d M Y') : '-';
+                $tanggalHasil = $p->tanggal_hasil_akreditasi_dikirim ? $p->tanggal_hasil_akreditasi_dikirim->locale('id')->translatedFormat('d M Y') : '-';
                 @endphp
                 <div class="col-md-6 mb-3">
                     <div class="card pengajuan-card h-100 {{ $isSelected ? 'selected' : '' }}" onclick="selectPengajuan({{ $p->id }})" data-pengajuan-id="{{ $p->id }}">

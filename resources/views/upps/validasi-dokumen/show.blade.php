@@ -85,7 +85,7 @@
                             <th>Tanggal Penugasan Validator</th>
                             <td>
                                 : {{ $pengajuan->tanggal_validasi_borang_assigned
-                                    ? $pengajuan->tanggal_validasi_borang_assigned->format('d M Y H:i')
+                                    ? $pengajuan->tanggal_validasi_borang_assigned->locale('id')->translatedFormat('d M Y H:i')
                                     : '-' }}
                             </td>
                         </tr>
@@ -93,7 +93,7 @@
                             <th>Tanggal Validasi Selesai</th>
                             <td>
                                 : {{ $pengajuan->tanggal_validasi_borang_selesai
-                                    ? $pengajuan->tanggal_validasi_borang_selesai->format('d M Y H:i')
+                                    ? $pengajuan->tanggal_validasi_borang_selesai->locale('id')->translatedFormat('d M Y H:i')
                                     : '-' }}
                             </td>
                         </tr>
@@ -158,7 +158,7 @@
                                         {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label'] ?? $log->status_to }}
                                     </strong>
                                     <br>
-                                    <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
+                                    <small class="text-muted">{{ $log->created_at->locale('id')->translatedFormat('d M Y H:i') }}</small>
 
                                     {{-- @if($log->keterangan)
                                     <br>

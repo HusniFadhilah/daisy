@@ -56,7 +56,7 @@
                             @if($assignment->responded_at)
                             <br>
                             <small class="text-muted">
-                                {{ $assignment->responded_at->format('d M H:i') }}
+                                {{ $assignment->responded_at->locale('id')->translatedFormat('d M H:i') }}
                             </small>
                             @endif
                         </td>

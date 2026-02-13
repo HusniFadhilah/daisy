@@ -51,7 +51,7 @@
                     <div class="mb-3">
                         <label class="text-muted small">Tanggal Kedaluwarsa</label>
                         <div class="fw-bold">
-                            {{ $studyProgram->tanggal_kedaluwarsa ? $studyProgram->tanggal_kedaluwarsa->format('d F Y') : '-' }}
+                            {{ $studyProgram->tanggal_kedaluwarsa ? \App\Libraries\Date::tglIndo($studyProgram->tanggal_kedaluwarsa) : '-' }}
                         </div>
                     </div>
 

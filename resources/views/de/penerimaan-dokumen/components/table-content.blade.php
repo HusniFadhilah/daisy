@@ -118,10 +118,10 @@
                             @if($pengajuan->status_changed_at)
                             <small class="text-muted">
                                 <i class="bi bi-clock"></i>
-                                {{ \Carbon\Carbon::parse($pengajuan->status_changed_at)->format('d M Y H:i') }}
+                                {{ \Carbon\Carbon::parse($pengajuan->status_changed_at)->locale('id')->translatedFormat('d M Y H:i') }}
                             </small>
                             @elseif($pengajuan->tanggal_draft_borang)
-                            {{ $pengajuan->tanggal_draft_borang->format('d M Y H:i') }}
+                            {{ $pengajuan->tanggal_draft_borang->locale('id')->translatedFormat('d M Y H:i') }}
                             @else
                             <span class="text-muted">-</span>
                             @endif

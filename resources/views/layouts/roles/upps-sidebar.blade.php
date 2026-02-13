@@ -26,7 +26,7 @@ $menus = [
 'no' => 4,
 'route' => 'upps.penyampaian-template',
 'match' => 'upps.penyampaian-template*',
-'icon' => 'bi-file-earmark-text',
+'icon' => 'bi-file-earmark',
 'label' => 'Formulir Pembayaran dan Templat Dokumen',
 ],
 [
@@ -40,21 +40,21 @@ $menus = [
 'no' => 6,
 'route' => 'upps.penerimaan-dokumen',
 'match' => 'upps.penerimaan-dokumen*',
-'icon' => 'bi-inbox',
+'icon' => 'bi-file-earmark-text',
 'label' => 'Pengiriman Dokumen',
 ],
 [
 'no' => 7,
 'route' => 'upps.validasi-dokumen',
 'match' => 'upps.validasi-dokumen*',
-'icon' => 'bi-check-circle',
+'icon' => 'bi-clipboard-check',
 'label' => 'Validasi Dokumen',
 ],
 [
 'no' => 8,
 'route' => 'upps.pelaporan-dokumen',
 'match' => 'upps.pelaporan-dokumen*',
-'icon' => 'bi-bar-chart-line',
+'icon' => 'bi-file-earmark-diff',
 'label' => 'Pelaporan Validasi Dokumen',
 ],
 [
@@ -103,7 +103,7 @@ $menus = [
 'no' => 15,
 'route' => 'upps.penyampaian-hasil-akreditasi',
 'match' => 'upps.penyampaian-hasil-akreditasi*',
-'icon' => 'bi-megaphone',
+'icon' => 'bi-clipboard-data',
 'label' => 'Penyampaian Hasil Akreditasi',
 ],
 [

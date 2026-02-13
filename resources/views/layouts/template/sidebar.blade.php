@@ -18,7 +18,7 @@ $authUser = Auth::user();
         </a>
 
         @auth
-        @if(in_array($authUser->role_selected,['super_admin','asesi']))
+        @if(in_array($authUser->role_selected,['super_admin','sekretariat']))
         @include('layouts.roles.admin-sidebar')
         @elseif(in_array($authUser->role_selected,['asesor']))
         @include('layouts.roles.asesor-sidebar')

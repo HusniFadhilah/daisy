@@ -33,7 +33,7 @@
                 <strong>Nomor Permohonan:</strong> {{ $pengajuan->nomor_pengajuan }}
             </p>
             <p style="margin:0;font-size:14px;line-height:1.5;">
-                <strong>Tanggal Dikirim:</strong> {{ $dokumen->created_at->format('d M Y H:i') }}
+                <strong>Tanggal Dikirim:</strong> {{ $dokumen->created_at->locale('id')->translatedFormat('d M Y H:i') }}
             </p>
         </td>
     </tr>

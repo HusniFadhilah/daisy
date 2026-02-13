@@ -216,45 +216,49 @@ class Asesmen extends Model
     public function getPermohonanAkreditasiSectionFor($for = 'de')
     {
         $pengajuan = $this->pengajuan;
-        $judulPrefix = $pengajuan ? $pengajuan->judulPrefix('short') : $this->getName(false);
-        if ($for == 'upps')
-            return <<<HTML
+        if ($pengajuan) {
+            $judulPrefix = $pengajuan->judulPrefix('short');
+            if ($for == 'upps')
+                return <<<HTML
             <p>{$judulPrefix}</p>
-            <small class="text-muted">{$this->studyProgram->name}</small><br>
+            <small class="text-muted">{$pengajuan->studyProgram->name}</small><br>
             <!-- <small class="text-muted">
                 Dibuat pada: { \App\Libraries\Date::tglIndo($this->created_at) }
             </small> -->
         HTML;
-        else if ($for == 'de')
-            return <<<HTML
+            else if ($for == 'de')
+                return <<<HTML
         <p>{$judulPrefix}</p>
-        <small><b>{$this->studyProgram->name}</b></small><br>
-        <small>{$this->studyProgram->university->name}</small>
+        <small><b>{$pengajuan->studyProgram->name}</b></small><br>
+        <small>{$pengajuan->studyProgram->university->name}</small>
         <!-- <br> -->
         <!-- <small class="text-muted">{$this->nomor_pengajuan}</small> -->
         <!-- <br>
         <small class="text-muted">Dibuat pada: { \App\Libraries\Date::tglIndo($this->created_at)}</small> -->
         HTML;
-        else if ($for == 'validator')
-            return <<<HTML
+            else if ($for == 'validator')
+                return <<<HTML
         <p>{$judulPrefix}</p>
-        <small><b>{$this->studyProgram->name}</b></small><br>
-        <small>{$this->studyProgram->university->name}</small>
+        <small><b>{$pengajuan->studyProgram->name}</b></small><br>
+        <small>{$pengajuan->studyProgram->university->name}</small>
         <!-- <br> -->
         <!-- <small class="text-muted">{$this->nomor_pengajuan}</small> -->
         <!-- <br>
         <small class="text-muted">Dibuat pada: { \App\Libraries\Date::tglIndo($this->created_at)}</small> -->
         HTML;
-        else if ($for == 'asesor')
-            return <<<HTML
+            else if ($for == 'asesor')
+                return <<<HTML
         <p>{$judulPrefix}</p>
-        <small><b>{$this->studyProgram->name}</b></small><br>
-        <small>{$this->studyProgram->university->name}</small>
+        <small><b>{$pengajuan->studyProgram->name}</b></small><br>
+        <small>{$pengajuan->studyProgram->university->name}</small>
         <!-- <br> -->
         <!-- <small class="text-muted">{$this->nomor_pengajuan}</small> -->
         <!-- <br>
         <small class="text-muted">Dibuat pada: { \App\Libraries\Date::tglIndo($this->created_at)}</small> -->
         HTML;
+        } else {
+            return $this->getName(false);
+        }
     }
 
     public function getProgramStudiSectionFor($for = 'de')

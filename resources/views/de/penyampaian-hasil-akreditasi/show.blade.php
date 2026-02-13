@@ -17,7 +17,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h5 class="mb-1">
-                <i class="bi bi-file-earmark-text"></i> Detail Penyampaian Hasil
+                <i class="bi bi-clipboard-data"></i> Detail Penyampaian Hasil
             </h5>
             <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
@@ -80,7 +80,7 @@
                     </span>
                     @if($hasil->tanggal_finalisasi_al)
                     <div class="mt-2">
-                        <small class="text-muted">{{ $hasil->tanggal_finalisasi_al->format('d M Y') }}</small>
+                        <small class="text-muted">{{ $hasil->tanggal_finalisasi_al->locale('id')->translatedFormat('d M Y') }}</small>
                     </div>
                     @endif
                     @else
@@ -158,7 +158,7 @@
     @elseif($hasil->isAlFinalized())
     <div class="alert alert-light alert-permanent">
         <i class="bi bi-check-circle-fill me-2"></i>
-        Hasil telah <strong>Disampaikan ke Program Studi</strong> pada {{ $hasil->tanggal_finalisasi_al?->format('d F Y, H:i') }}
+        Hasil telah <strong>Disampaikan ke Program Studi</strong> pada {{ $hasil->tanggal_finalisasi_al?->locale('id')->translatedFormat('d F Y, H:i') }}
     </div>
     @else
     <div class="alert alert-light alert-permanent">
@@ -236,7 +236,7 @@
                         </span> --}}
                     </p>
                     <small class="text-muted">
-                        Diupload pada {{ $beritaAcara->uploaded_at?->format('d M Y, H:i') }}
+                        Diupload pada {{ $beritaAcara->uploaded_at?->locale('id')->translatedFormat('d M Y, H:i') }}
                     </small>
                     @if($beritaAcara->keterangan)
                     <div class="mt-2">
@@ -282,7 +282,7 @@
                         {{ $beritaAcara->original_name }}
                     </p>
                     <small class="text-muted">
-                        Diupload pada {{ $beritaAcara->uploaded_at?->format('d M Y, H:i') }}
+                        Diupload pada {{ $beritaAcara->uploaded_at?->locale('id')->translatedFormat('d M Y, H:i') }}
                     </small>
                 </div>
                 <div>
@@ -374,7 +374,7 @@
             <div class="alert alert-light alert-permanent mt-3 mb-0">
                 <i class="bi bi-info-circle me-2"></i>
                 <strong>Catatan:</strong> Untuk status akreditasi <strong>Unggul</strong>, selain mencapai skor >= 351,
-                program studi harus memiliki <strong>minimal 1 elemen dengan kategori: Pelampauan Standar (Exceeding Standard)</strong>
+                program studi harus memiliki <strong>minimal 1 elemen dengan kategori: Pelampauan Standar</strong>
                 di <strong>setiap kriteria</strong> (D, E, P, I, L, A, R).
             </div>
         </div>
@@ -458,7 +458,7 @@
             <div class="alert alert-warning alert-permanent mt-3 mb-0">
                 <strong>⚠️ Perhatian:</strong> Meskipun skor mencapai >= 361, status akreditasi <strong>TIDAK DAPAT</strong> ditetapkan sebagai UNGGUL
                 karena kriteria <strong>{{ implode(', ', $validationSummary['missing_kriteria']) }}</strong>
-                belum memiliki minimal 1 elemen dengan kategori Pelampauan Standar (Exceeding Standard).
+                belum memiliki minimal 1 elemen dengan kategori Pelampauan Standar.
                 <br><br>
                 Status akreditasi akan diubah menjadi: <strong class="text-danger">BAIK SEKALI</strong>
             </div>

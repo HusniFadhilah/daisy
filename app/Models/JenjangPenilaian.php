@@ -30,10 +30,10 @@ class JenjangPenilaian extends Model
     public static function getSkorLabelAttribute($skor, $isFull = False)
     {
         $labels = [
-            0 => ($isFull ? '0 - ' : '') . 'Tidak Memenuhi (Not Met)',
-            1 => ($isFull ? '1 - ' : '') . 'Belum Memenuhi (Not Met)',
-            2 => ($isFull ? '2 - ' : '') . 'Lemah (Weakness/Cause of Concern)',
-            3 => ($isFull ? '3 - ' : '') . 'Memenuhi (Met)',
+            0 => ($isFull ? '0 - ' : '') . 'Tidak Memenuhi',
+            1 => ($isFull ? '1 - ' : '') . 'Belum Memenuhi',
+            2 => ($isFull ? '2 - ' : '') . 'Lemah',
+            3 => ($isFull ? '3 - ' : '') . 'Memenuhi',
             4 => ($isFull ? '4 - ' : '') . 'Pelampauan Standar',
         ];
 
@@ -63,27 +63,27 @@ class JenjangPenilaian extends Model
     {
         $skorMapping = [
             0 => [
-                'label' => ($isFull ? '0 - ' : '') . 'Tidak Memenuhi (Not Met)',
+                'label' => ($isFull ? '0 - ' : '') . 'Tidak Memenuhi',
                 'color' => '#f5c6cb',
                 'class' => 'danger',
             ],
             1 => [
-                'label' => ($isFull ? '1 - ' : '') . 'Belum Memenuhi (Not Met)',
+                'label' => ($isFull ? '1 - ' : '') . 'Belum Memenuhi',
                 'color' => '#ffe0b2',
                 'class' => 'warning',
             ],
             2 => [
-                'label' => ($isFull ? '2 - ' : '') . 'Lemah (Weakness/Cause of Concern)',
+                'label' => ($isFull ? '2 - ' : '') . 'Lemah',
                 'color' => '#fff9c4',
                 'class' => 'warning',
             ],
             3 => [
-                'label' => ($isFull ? '3 - ' : '') . 'Memenuhi (Met)',
+                'label' => ($isFull ? '3 - ' : '') . 'Memenuhi',
                 'color' => '#dcedc8',
                 'class' => 'success',
             ],
             4 => [
-                'label' => ($isFull ? '4 - ' : '') . 'Pelampauan Standar (Exceeding Standard)',
+                'label' => ($isFull ? '4 - ' : '') . 'Pelampauan Standar',
                 'color' => '#c8e6c9',
                 'class' => 'success',
             ],

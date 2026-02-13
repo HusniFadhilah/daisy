@@ -35,7 +35,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">
-                <i class="bi bi-person-badge"></i> Penugasan Asesor AK
+                <i class="bi bi-person-check"></i> Penugasan Asesor AK
             </h4>
             <p class="text-muted mb-0">Tugaskan asesor & validator untuk melakukan asesmen kecukupan</p>
         </div>

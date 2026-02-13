@@ -19,7 +19,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h5 class="mb-1">
-                <i class="bi bi-bell"></i> Detail Pengingat Masa Akreditasi
+                <i class="bi bi-clock-history"></i> Detail Pengingat Masa Akreditasi
             </h5>
             <small class="text-muted">Tahun Akreditasi {{ $pengingat->tahun_akreditasi }}</small>
         </div>
@@ -42,7 +42,7 @@
             <div class="alert alert-success alert-permanent">
                 <i class="bi bi-check-circle"></i>
                 <strong>Pengingat telah direspon!</strong><br>
-                Respon dikirim pada {{ $pengingat->tanggal_direspon->format('d M Y H:i') }}
+                Respon dikirim pada {{ $pengingat->tanggal_direspon->locale('id')->translatedFormat('d M Y H:i') }}
                 ({{ $pengingat->durasi_respon }} hari setelah pengingat dikirim)
             </div>
             @elseif($pengingat->status === \App\Models\PengingatAkreditasi::STATUS_KEDALUWARSA)
@@ -83,7 +83,7 @@
                         </tr>
                         <tr>
                             <th>Tanggal Dikirim</th>
-                            <td>: {{ $pengingat->tanggal_dikirim->format('d M Y H:i') }}</td>
+                            <td>: {{ $pengingat->tanggal_dikirim->locale('id')->translatedFormat('d M Y H:i') }}</td>
                         </tr>
                         <tr>
                             <th>Status</th>
@@ -97,7 +97,7 @@
                         @if($pengingat->tanggal_direspon)
                         <tr>
                             <th>Tanggal Direspon</th>
-                            <td>: {{ $pengingat->tanggal_direspon->format('d M Y H:i') }}</td>
+                            <td>: {{ $pengingat->tanggal_direspon->locale('id')->translatedFormat('d M Y H:i') }}</td>
                         </tr>
                         <tr>
                             <th>Durasi Respon</th>
@@ -178,7 +178,7 @@
                                     <strong>Pengingat Masa Akreditasi Telah Diterima</strong>
                                     <br>
                                     <small class="text-muted">
-                                        {{ $pengingat->tanggal_dikirim->format('d M Y H:i') }}
+                                        {{ $pengingat->tanggal_dikirim->locale('id')->translatedFormat('d M Y H:i') }}
                                     </small>
                                     <br>
                                     {{-- <small class="text-muted">
@@ -199,7 +199,7 @@
                                     <strong>Pengingat Masa Akreditasi Telah Direspon</strong>
                                     <br>
                                     <small class="text-muted">
-                                        {{ $pengingat->tanggal_direspon->format('d M Y H:i') }}
+                                        {{ $pengingat->tanggal_direspon->locale('id')->translatedFormat('d M Y H:i') }}
                                     </small>
                                     <br>
                                     {{-- <small class="text-success">

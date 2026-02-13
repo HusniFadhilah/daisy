@@ -385,7 +385,7 @@ class HasilAkreditasiController extends Controller
                     "Dari: {$oldPeringkat} → Ke: {$request->peringkat}\n" .
                     "Alasan: {$request->alasan_override}\n" .
                     "Oleh: " . auth()->user()->name . "\n" .
-                    "Tanggal: " . now()->format('d M Y H:i'),
+                    "Tanggal: " . now()->locale('id')->translatedFormat('d M Y H:i'),
             ]);
 
             DB::commit();
@@ -394,7 +394,7 @@ class HasilAkreditasiController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Override peringkat failed', ['error' => $e->getMessage()]);
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan, silahkan coba beberapa saat lagi');
         }
     }
 
@@ -417,7 +417,7 @@ class HasilAkreditasiController extends Controller
 
             $pengajuan->updateStatusSafely(
                 PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
-                "Masa sanggah dimulai: {$tanggalMulai->format('d M Y')} - {$tanggalSelesai->format('d M Y')}"
+                "Masa sanggah dimulai: {$tanggalMulai->locale('id')->translatedFormat('d M Y')} - {$tanggalSelesai->locale('id')->translatedFormat('d M Y')}"
             );
 
             $pengajuan->update([

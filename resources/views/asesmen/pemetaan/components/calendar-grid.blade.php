@@ -32,7 +32,7 @@
                                 </p>
                                 <small class="text-danger">
                                     <i class="bi bi-calendar-x"></i>
-                                    Kedaluwarsa: {{ $prog->tanggal_kedaluwarsa->format('d F Y') }}
+                                    Kedaluwarsa: {{ \App\Libraries\Date::tglIndo($prog->tanggal_kedaluwarsa) }}
                                 </small>
                             </div>
                             <div>

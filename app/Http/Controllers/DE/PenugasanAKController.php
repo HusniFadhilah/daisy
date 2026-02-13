@@ -642,7 +642,7 @@ class PenugasanAKController extends Controller
                         'urutan_asesor' => $item->urutan_asesor,
                         'status_penawaran' => $item->status_penawaran,
                         'status_pekerjaan' => $item->status_pekerjaan,
-                        'created_at' => $item->created_at->format('d M Y H:i'),
+                        'created_at' => $item->created_at->locale('id')->translatedFormat('d M Y H:i'),
                     ];
                 });
             });
@@ -1034,7 +1034,7 @@ class PenugasanAKController extends Controller
             ? 'ST-ASESOR-AK/' . date('Y') . '/' . str_pad($pengajuan->id, 4, '0', STR_PAD_LEFT) . '/' . $assignment->urutan_asesor
             : 'ST-VALIDATOR-AK/' . date('Y') . '/' . str_pad($pengajuan->id, 4, '0', STR_PAD_LEFT);
 
-        $tanggal = now()->format('d M Y');
+        $tanggal = now()->locale('id')->translatedFormat('d M Y');
         $roleLabel = $jenisDokumen === 'surat_tugas_asesor_ak' ? "Asesor AK #{$assignment->urutan_asesor}" : 'Validator AK';
 
         $html = view('de.penugasan-ak.templates.surat-tugas', compact(

@@ -174,7 +174,10 @@
                                 </h5>
                                 <p class="mb-2">
                                     Anda telah menyelesaikan <strong>semua {{ $progress['total'] }} elemen penilaian</strong>.
-                                    Mohon segera lakukan <strong>Finalisasi dan Kirim</strong> agar penilaian Anda dapat divalidasi.
+                                    Anda dapat melakukan cek split penilaian antar asesor di tombol berikut <a class="btn btn-info btn-sm" href="{{ route('ak.berkas.cek-split', $asesmen->id) }}" target="_blank">
+                                        <i class="bi bi-search"></i> Cek Split Penilaian
+                                    </a>
+                                    <br>Mohon segera lakukan <strong>Finalisasi dan Kirim</strong> setelah melakukan cek split, agar penilaian Anda dapat divalidasi.
                                 </p>
                                 <hr>
                                 <div class="mb-0">
@@ -265,7 +268,7 @@
                                 <li>
                                     <a class="dropdown-item" href="{{ route('ak.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'template']) }}" id="btnDownloadTemplate">
                                         <i class="bi bi-file-earmark-text text-info"></i> Download Templat
-                                        <small class="d-block text-muted">Format Excel sebagai template</small>
+                                        <small class="d-block text-muted">Format Excel sebagai templat</small>
                                     </a>
                                 </li>
 

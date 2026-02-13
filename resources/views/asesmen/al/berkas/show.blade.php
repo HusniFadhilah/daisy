@@ -296,12 +296,12 @@ $isComplete = $progress['percentage'] == 100;
                                 </li>
 
                                 <!-- Hasil Penilaian - Lengkap -->
-                                <li>
+                                {{-- <li>
                                     <a class="dropdown-item btnDownloadData" data-mode="full" href="{{ route('al.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'full']) }}">
-                                        <i class="bi bi-file-earmark-spreadsheet text-primary"></i> Hasil Penilaian Lengkap
-                                        <small class="d-block text-muted">Menu + Kertas Kerja + Semua Asesor</small>
-                                    </a>
-                                </li>
+                                <i class="bi bi-file-earmark-spreadsheet text-primary"></i> Hasil Penilaian Lengkap
+                                <small class="d-block text-muted">Menu + Kertas Kerja + Semua Asesor</small>
+                                </a>
+                                </li> --}}
 
                                 <!-- Hasil Penilaian - Personal -->
                                 <li>

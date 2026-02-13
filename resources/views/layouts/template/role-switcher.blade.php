@@ -96,7 +96,7 @@
 function getRoleIcon($roleName) {
 $icons = [
 'super_admin' => 'shield-fill-check',
-'asesi' => 'person-badge',
+'sekretariat' => 'person-badge',
 'asesor' => 'clipboard-check',
 'validator' => 'check2-circle',
 'verifikator' => 'shield-check',

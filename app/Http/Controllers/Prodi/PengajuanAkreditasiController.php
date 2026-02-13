@@ -478,7 +478,7 @@ class PengajuanAkreditasiController extends Controller
                 'message' => 'Laporan Evaluasi Diri, Suplemen, dan LKPS berhasil disubmit!',
                 'data' => [
                     'status' => $pengajuan->status,
-                    'submitted_at' => now()->format('d M Y H:i'),
+                    'submitted_at' => now()->locale('id')->translatedFormat('d M Y H:i'),
                 ]
             ]);
         } catch (\Exception $e) {
@@ -573,7 +573,7 @@ class PengajuanAkreditasiController extends Controller
                 'message' => 'Submit Dokumen berhasil dibatalkan.',
                 'data' => [
                     'status' => $pengajuan->status,
-                    'unsubmitted_at' => now()->format('d M Y H:i'),
+                    'unsubmitted_at' => now()->locale('id')->translatedFormat('d M Y H:i'),
                 ]
             ]);
         } catch (\Exception $e) {
@@ -1126,12 +1126,12 @@ class PengajuanAkreditasiController extends Controller
                     'total_data' => $totalData,
                     'total_imports' => $totalImports,
                     'last_import' => $lastImport ? [
-                        'date' => $lastImport->imported_at?->format('d M Y H:i'),
+                        'date' => $lastImport->imported_at?->locale('id')->translatedFormat('d M Y H:i'),
                         'status' => $lastImport->status,
                     ] : null,
                     'draft_borang' => $draftBorang ? [
                         'filename' => $draftBorang->original_filename,
-                        'uploaded_at' => $draftBorang->created_at->format('d M Y H:i'),
+                        'uploaded_at' => $draftBorang->created_at->locale('id')->translatedFormat('d M Y H:i'),
                     ] : null,
                     'can_reset' => in_array($pengajuan->status, $allowedStatuses)
                 ]

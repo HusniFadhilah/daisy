@@ -27,14 +27,14 @@ class AkreditasiHelper
             'Terakreditasi Unggul 2 Tahun (dengan Syarat)' => [
                 'Skor AL 351–360',
                 'Memenuhi syarat unggul',
-                'Setiap kriteria (D, E, P, I, L, A, R) memiliki minimal 1 elemen dengan skor 4 (Pelampauan Standar)',
+                'Setiap kriteria (D, E, P, I, L, A, R) memiliki minimal 1 elemen dengan kategori: 4 - Pelampauan Standar',
                 'Semua elemen lain minimal skor 3 (Memenuhi)',
             ],
 
             'Terakreditasi Unggul (5 Tahun)' => [
                 'Skor AL 361–400',
                 'Memenuhi syarat unggul',
-                'Setiap kriteria (D, E, P, I, L, A, R) memiliki minimal 1 elemen dengan skor 4 (Pelampauan Standar)',
+                'Setiap kriteria (D, E, P, I, L, A, R) memiliki minimal 1 elemen dengan kategori: 4 - Pelampauan Standar',
                 'Semua elemen lain minimal skor 3 (Memenuhi)',
             ],
 

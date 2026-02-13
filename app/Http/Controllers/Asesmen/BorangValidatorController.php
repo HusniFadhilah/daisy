@@ -109,7 +109,7 @@ class BorangValidatorController extends Controller
             'role_selected',
             'user',
         ]);
-        if (!in_array($authUser->role_selected, ['super_admin', 'asesi'])) {
+        if (!in_array($authUser->role_selected, ['super_admin', 'sekretariat'])) {
             $assignment = $assignment->where('id_user', $authUser->id);
         }
         $assignment = $assignment->whereHas('role', function ($q) {

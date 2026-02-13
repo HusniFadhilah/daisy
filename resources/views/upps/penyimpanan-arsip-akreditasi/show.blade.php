@@ -150,7 +150,7 @@
                                 </p>
                                 <small class="text-muted">
                                     Diupload oleh: <strong>{{ $beritaAcara->uploader ? $beritaAcara->uploader->name : '-' }}</strong>
-                                    pada {{ $beritaAcara->uploaded_at ? $beritaAcara->uploaded_at->format('d M Y, H:i') : '-' }}
+                                    pada {{ $beritaAcara->uploaded_at ? $beritaAcara->uploaded_at->locale('id')->translatedFormat('d M Y, H:i') : '-' }}
                                 </small>
                                 @if($beritaAcara->keterangan)
                                 <div class="mt-2">
@@ -197,7 +197,7 @@
                                     {{ $beritaAcara->original_name }}
                                 </p>
                                 <small class="text-muted">
-                                    Diupload pada {{ $beritaAcara->uploaded_at ? $beritaAcara->uploaded_at->format('d M Y, H:i') : '-' }}
+                                    Diupload pada {{ $beritaAcara->uploaded_at ? $beritaAcara->uploaded_at->locale('id')->translatedFormat('d M Y, H:i') : '-' }}
                                 </small>
                             </div>
                         </div>
@@ -321,7 +321,7 @@
                             <th>Tanggal Penyimpanan Arsip Akreditasi</th>
                             <td>
                                 : {{ $pengajuan->tanggal_penyimpanan
-                                    ? $pengajuan->tanggal_penyimpanan->format('d M Y H:i')
+                                    ? $pengajuan->tanggal_penyimpanan->locale('id')->translatedFormat('d M Y H:i')
                                     : '-' }}
                             </td>
                         </tr>
@@ -371,7 +371,7 @@
                                         {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label'] ?? $log->status_to }}
                                     </strong>
                                     <br>
-                                    <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
+                                    <small class="text-muted">{{ $log->created_at->locale('id')->translatedFormat('d M Y H:i') }}</small>
 
                                     {{-- @if($log->keterangan)
                             <br>

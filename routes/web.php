@@ -7,6 +7,7 @@ use App\Http\Controllers\Master\{ElemenStandarController, JenisIndikatorControll
 use App\Http\Controllers\Asesmen\{AsesmenController, AKController, ALController, ALDocumentController, BorangValidatorController, HasilAkreditasiController, PenawaranController, PelaporanController, ValidasiController};
 use App\Http\Controllers\{AuthController, BobotPenilaianController, DashboardController, PenugasanController, BandingController, PedomanController, DokumenController, PanduanController, BantuanController, SettingsController, ActivityController, TaskController, LaporanController, TinyMceImageController, UserController};
 use App\Http\Controllers\DE\{ValidasiAKController, MasaSanggahController, PelaporanAKController, PelaporanALController, PenugasanAKController, PenugasanALController, PelaksanaanALController, SuratPermohonanController, ValidasiDokumenController, PelaporanBandingController, PelaporanDokumenController, PenerimaanDokumenController, PelaksanaanBandingController, ValidasiPembayaranController, FormulirPembayaranController, PenyampaianTemplateController, PelaporanHasilAkreditasiController, PenerimaanPermohonanController, PenetapanHasilAkreditasiController, PenyampaianHasilAkreditasiController, PenyimpananArsipAkreditasiController, PermohonanBandingController, PaymentSummaryController};
+use App\Http\Controllers\Master\JenjangPenilaianController;
 
 
 // Dashboard (awal)
@@ -251,7 +252,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{id}/validation-details', [PengajuanBorangController::class, 'validationDetails'])->name('.borang.validation-details');
         });
 
-        Route::middleware(['role:admin_prodi,admin_univ,super_admin,asesi'])->group(function () {
+        Route::middleware(['role:admin_prodi,admin_univ,super_admin,sekretariat'])->group(function () {
             Route::get('/{id}/borang/download-template', [PengajuanAkreditasiController::class, 'downloadBorangTemplate'])->name('.borang.download-template');
             Route::get('/{id}/borang/export-docx', [PengajuanAkreditasiController::class, 'exportBorangDocx'])->name('.borang.export-docx');
         });
@@ -270,7 +271,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // ========== DE ROUTES - Desk Evaluator ==========
-    Route::prefix('de')->name('de')->middleware(['role:asesi,super_admin'])->group(function () {
+    Route::prefix('de')->name('de')->middleware(['role:sekretariat,super_admin'])->group(function () {
         Route::prefix('permohonan-akreditasi')->name('.pengajuan')->group(function () {
             // List & Show
             Route::get('/', [DeskEvaluatorController::class, 'index']);
@@ -303,7 +304,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
     });
 
-    Route::prefix('de')->name('de')->middleware(['role:asesi,super_admin'])->group(function () {
+    Route::prefix('de')->name('de')->middleware(['role:sekretariat,super_admin'])->group(function () {
         // PEMETAAN AKREDITASI
         Route::prefix('pengingat-masa-akreditasi')->name('.pemetaan.')->group(function () {
             Route::get('/', [PemetaanAkreditasiController::class, 'index'])->name('index');
@@ -335,7 +336,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{id}/download', [PenerimaanPermohonanController::class, 'download'])->name('.download');
             Route::delete('/{id}', [PenerimaanPermohonanController::class, 'destroy'])->name('.destroy');
         });
-        Route::prefix('penyampaian-template')->name('.penyampaian-template')->group(function () {
+        Route::prefix('penyampaian-templat')->name('.penyampaian-template')->group(function () {
             Route::get('/', [PenyampaianTemplateController::class, 'index']);
             Route::get('/{id}', [PenyampaianTemplateController::class, 'show'])->name('.show');
             Route::post('/{id}/kirim-link', [PenyampaianTemplateController::class, 'kirimTemplateLink'])->name('.kirim-link');
@@ -530,7 +531,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{id}/download', [\App\Http\Controllers\UPPS\PenerimaanPermohonanController::class, 'download'])->name('.download');
         });
 
-        Route::prefix('penyampaian-template')->name('.penyampaian-template')->group(function () {
+        Route::prefix('penyampaian-templat')->name('.penyampaian-template')->group(function () {
             Route::get('/', [\App\Http\Controllers\UPPS\PenyampaianTemplateController::class, 'index']);
             Route::get('/{id}', [\App\Http\Controllers\UPPS\PenyampaianTemplateController::class, 'show'])->name('.show');
             Route::get('/{id}/download/{jenisDokumen}', [\App\Http\Controllers\UPPS\PenyampaianTemplateController::class, 'download'])->name('.download');
@@ -722,7 +723,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
     });
 
-    Route::prefix('/pelaporan')->name('pelaporan.')->middleware(['role:super_admin,asesi,validator'])->group(function () {
+    Route::prefix('/pelaporan')->name('pelaporan.')->middleware(['role:super_admin,sekretariat,validator'])->group(function () {
         Route::get('/', [PelaporanController::class, 'index'])->name('index');
         Route::get('/dokumen', [PelaporanController::class, 'indexDokumen'])->name('indexDokumen');
         Route::get('/validasi-ak', [PelaporanController::class, 'indexValidasiAK'])->name('indexValidasiAK');
@@ -758,7 +759,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
     });
 
-    Route::prefix('hasil-akreditasi')->name('hasil-akreditasi.')->middleware(['role:super_admin,asesi'])->group(function () {
+    Route::prefix('hasil-akreditasi')->name('hasil-akreditasi.')->middleware(['role:super_admin,sekretariat'])->group(function () {
         // View hasil
         Route::get('/asesmen/{id}', [HasilAkreditasiController::class, 'show'])->name('show');
 
@@ -799,7 +800,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/{id}/simpan-arsip', [HasilAkreditasiController::class, 'simpanArsip'])->name('simpan-arsip');
     });
 
-    Route::middleware(['role:super_admin,asesi'])->group(function () {
+    Route::middleware(['role:super_admin,sekretariat'])->group(function () {
         Route::resource('asesmen', AsesmenController::class);
 
         // INDIKATOR MANAGEMENT (Kriteria, Elemen Standar, Indikator)
@@ -949,6 +950,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('bobot-penilaian', BobotPenilaianController::class);
         Route::get('/bobot-penilaian/hitung/{asesmenId}/{categoryId}', [BobotPenilaianController::class, 'calculate'])
             ->name('bobot-penilaian.calculate');
+
+        Route::prefix('jenjang-penilaian')->name('jenjang-penilaian.')->group(function () {
+            Route::get('/', [JenjangPenilaianController::class, 'index'])->name('index');
+            Route::get('/create', [JenjangPenilaianController::class, 'create'])->name('create');
+            Route::post('/', [JenjangPenilaianController::class, 'store'])->name('store');
+            Route::get('/{id}/edit', [JenjangPenilaianController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [JenjangPenilaianController::class, 'update'])->name('update');
+            Route::delete('/{id}', [JenjangPenilaianController::class, 'destroy'])->name('destroy');
+
+            // ✅ NEW ROUTES
+            Route::get('/sync-confirmation', [JenjangPenilaianController::class, 'showSyncConfirmation'])->name('sync-confirmation');
+            Route::post('/sync-all', [JenjangPenilaianController::class, 'syncAllHasilAkreditasi'])->name('sync-all');
+        });
     });
 
     // NOTIFIKASI

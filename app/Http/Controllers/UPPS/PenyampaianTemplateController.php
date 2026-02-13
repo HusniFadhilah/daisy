@@ -196,7 +196,7 @@ class PenyampaianTemplateController extends Controller
             $requestedLabelText = implode(', ', $requestedLabels);
 
             // Create notification for DE (LAMDEPILAR)
-            $deUsers = User::where('role_selected', 'asesi')->get();
+            $deUsers = User::where('role_selected', 'sekretariat')->get();
 
             foreach ($deUsers as $deUser) {
                 Notification::create([

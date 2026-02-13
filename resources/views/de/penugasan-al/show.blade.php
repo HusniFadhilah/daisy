@@ -17,7 +17,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h5 class="mb-1">
-                <i class="bi bi-geo-alt"></i> Detail Penugasan AL
+                <i class="bi bi-building"></i> Detail Penugasan AL
             </h5>
             <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
@@ -89,7 +89,7 @@
                                 </small>
                                 <br>
                                 <small class="text-muted">
-                                    <i class="bi bi-calendar"></i> Dibuat: {{ $suratTugasAsesor->created_at->format('d M Y H:i') }}
+                                    <i class="bi bi-calendar"></i> Dibuat: {{ $suratTugasAsesor->created_at->locale('id')->translatedFormat('d M Y H:i') }}
                                 </small>
                                 <br>
                                 <span class="badge bg-success">Surat Tugas Asesor AL</span>
@@ -251,7 +251,7 @@
                     <th>Tanggal Penugasan Asesor AL</th>
                     <td>
                         : {{ $pengajuan->tanggal_penugasan_asesor_al
-                                    ? $pengajuan->tanggal_penugasan_asesor_al->format('d M Y H:i')
+                                    ? $pengajuan->tanggal_penugasan_asesor_al->locale('id')->translatedFormat('d M Y H:i')
                                     : '-' }}
                     </td>
                 </tr>
@@ -260,7 +260,7 @@
                     <th>Tanggal Mulai AL</th>
                     <td>
                         : {{ $pengajuan->asesmen->asesmenLapangan->tanggal_mulai
-                                    ? \Carbon\Carbon::parse($pengajuan->asesmen->asesmenLapangan->tanggal_mulai)->format('d M Y')
+                                    ? \Carbon\Carbon::parse($pengajuan->asesmen->asesmenLapangan->tanggal_mulai)->locale('id')->translatedFormat('d M Y')
                                     : '-' }}
                     </td>
                 </tr>
@@ -268,7 +268,7 @@
                     <th>Estimasi Tanggal Selesai AL</th>
                     <td>
                         : {{ $pengajuan->asesmen->asesmenLapangan->tanggal_selesai
-                                    ? \Carbon\Carbon::parse($pengajuan->asesmen->asesmenLapangan->tanggal_selesai)->format('d M Y')
+                                    ? \Carbon\Carbon::parse($pengajuan->asesmen->asesmenLapangan->tanggal_selesai)->locale('id')->translatedFormat('d M Y')
                                     : '-' }}
                     </td>
                 </tr>
@@ -368,7 +368,7 @@
                                 {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['de'] ?? $log->status_to }}
                             </strong>
                             <br>
-                            <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
+                            <small class="text-muted">{{ $log->created_at->locale('id')->translatedFormat('d M Y H:i') }}</small>
 
                             {{-- @if($log->keterangan)
                                     <br>
@@ -402,13 +402,13 @@
                 @if($al->tanggal_mulai)
                 <tr>
                     <th class="text-muted" width="45%">Tanggal Mulai</th>
-                    <td>: <strong>{{ \Carbon\Carbon::parse($al->tanggal_mulai)->format('d M Y') }}</strong></td>
+                    <td>: <strong>{{ \Carbon\Carbon::parse($al->tanggal_mulai)->locale('id')->translatedFormat('d M Y') }}</strong></td>
                 </tr>
                 @endif
                 @if($al->tanggal_selesai)
                 <tr>
                     <th class="text-muted">Estimasi Selesai</th>
-                    <td>: <strong>{{ \Carbon\Carbon::parse($al->tanggal_selesai)->format('d M Y') }}</strong></td>
+                    <td>: <strong>{{ \Carbon\Carbon::parse($al->tanggal_selesai)->locale('id')->translatedFormat('d M Y') }}</strong></td>
                 </tr>
                 @endif
                 @if($al->tanggal_mulai && $al->tanggal_selesai)

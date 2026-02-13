@@ -176,7 +176,7 @@ $latestImport = $pengajuan->latestBorangImport;
                             </tr>
                             <tr>
                                 <td><i class="bi bi-clock text-warning"></i> Upload:</td>
-                                <td>{{ $draftBorang->created_at->format('d M Y H:i') ?? '-' }}</td>
+                                <td>{{ $draftBorang->created_at->locale('id')->translatedFormat('d M Y H:i') ?? '-' }}</td>
                             </tr>
                             <tr>
                                 <td><i class="bi bi-tag text-secondary"></i> Versi:</td>

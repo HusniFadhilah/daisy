@@ -134,7 +134,7 @@
                         <td>
                             @if($pengajuan->tanggal_validasi_ak)
                             <small>
-                                {{ $pengajuan->tanggal_validasi_ak->format('d M Y') }}
+                                {{ $pengajuan->tanggal_validasi_ak->locale('id')->translatedFormat('d M Y') }}
                             </small>
                             @else
                             <span class="text-muted">-</span>

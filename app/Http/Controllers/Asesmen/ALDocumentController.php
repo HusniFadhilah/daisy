@@ -71,7 +71,7 @@ class ALDocumentController extends Controller
                     'original_name' => $doc->original_name,
                     'size' => $doc->size,
                     'size_formatted' => number_format($doc->size / 1024, 2) . ' KB',
-                    'uploaded_at' => $doc->uploaded_at ? $doc->uploaded_at->format('d M Y, H:i') : '-',
+                    'uploaded_at' => $doc->uploaded_at ? $doc->uploaded_at->locale('id')->translatedFormat('d M Y, H:i') : '-',
                     'uploader_name' => $doc->uploader ? $doc->uploader->name : '-',
                     'download_url' => route('al.berkas.documents.download', ['id' => $idAsesmen, 'docId' => $doc->id]),
                     'delete_url' => route('al.berkas.documents.delete', [$idAsesmen, $doc->id]),

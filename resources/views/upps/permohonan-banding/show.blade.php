@@ -47,21 +47,21 @@
                 <i class="bi bi-check-circle"></i>
                 <strong>Permohonan Banding telah diterima oleh LAMDEPILAR</strong>
                 <br>
-                Diterima pada {{ $pengajuan->tanggal_surat_permohonan_diterima->format('d M Y H:i') }}
+                Diterima pada {{ $pengajuan->tanggal_surat_permohonan_diterima->locale('id')->translatedFormat('d M Y H:i') }}
             </div>
             @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM)
             <div class="alert alert-warning alert-permanent mb-4">
                 <i class="bi bi-hourglass-split"></i>
                 <strong>Menunggu tanggapan dari LAMDEPILAR</strong>
                 <br>
-                Permohonan Banding telah dikirim pada {{ $pengajuan->tanggal_surat_permohonan_dikirim->format('d M Y H:i') }}
+                Permohonan Banding telah dikirim pada {{ $pengajuan->tanggal_surat_permohonan_dikirim->locale('id')->translatedFormat('d M Y H:i') }}
             </div>
             @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITOLAK)
             <div class="alert alert-danger alert-permanent mb-4">
                 <i class="bi bi-x-circle"></i>
                 <strong>Permohonan Banding ditolak oleh LAMDEPILAR</strong>
                 <br>
-                Ditolak pada {{ $pengajuan->tanggal_surat_permohonan_ditolak->format('d M Y H:i') }}
+                Ditolak pada {{ $pengajuan->tanggal_surat_permohonan_ditolak->locale('id')->translatedFormat('d M Y H:i') }}
             </div>
             @endif
 
@@ -128,7 +128,7 @@
                                 <br>
                                 <small class="text-muted">
                                     {{ number_format($dokumen->file_size / 1024, 2) }} KB •
-                                    Diupload: {{ $dokumen->created_at->format('d M Y H:i') }}
+                                    Diupload: {{ $dokumen->created_at->locale('id')->translatedFormat('d M Y H:i') }}
                                 </small>
                             </div>
                         </div>
@@ -184,7 +184,7 @@
                                         {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['upps'] ?? $log->status_to }}
                                     </strong>
                                     <br>
-                                    <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
+                                    <small class="text-muted">{{ $log->created_at->locale('id')->translatedFormat('d M Y H:i') }}</small>
 
                                     {{-- @if($log->keterangan)
                                     <br>

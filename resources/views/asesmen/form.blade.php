@@ -166,9 +166,9 @@
             <div class="card-body">
                 <small class="text-muted">
                     <i class="bi bi-info-circle"></i>
-                    Asesmen ini dibuat pada {{ $asesmen->created_at->format('d M Y H:i') }}
+                    Asesmen ini dibuat pada {{ $asesmen->created_at->locale('id')->translatedFormat('d M Y H:i') }}
                     @if($asesmen->updated_at != $asesmen->created_at)
-                    dan terakhir diupdate pada {{ $asesmen->updated_at->format('d M Y H:i') }}
+                    dan terakhir diupdate pada {{ $asesmen->updated_at->locale('id')->translatedFormat('d M Y H:i') }}
                     @endif
                 </small>
             </div>

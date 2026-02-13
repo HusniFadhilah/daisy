@@ -9,7 +9,7 @@
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h4 class="mb-1">
-                        <i class="bi bi-receipt"></i> Detail Pembayaran
+                        <i class="bi bi-credit-card"></i> Detail Pembayaran
                     </h4>
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0">
@@ -49,7 +49,7 @@
                 <h5><i class="bi bi-check-circle"></i> Pembayaran Tervalidasi</h5>
                 <p class="mb-0">
                     Pembayaran telah divalidasi oleh <strong>{{ $pembayaran->verifier->role_alias }}</strong>
-                    pada {{ $pembayaran->tanggal_verifikasi->format('d F Y H:i') }}
+                    pada {{ $pembayaran->tanggal_verifikasi->locale('id')->translatedFormat('d F Y H:i') }}
                 </p>
             </div>
             @endif
@@ -110,19 +110,19 @@
                         </tr>
                         <tr>
                             <th>Tanggal Invoice</th>
-                            <td>{{ $pembayaran->created_at->format('d F Y H:i') }}</td>
+                            <td>{{ $pembayaran->created_at->locale('id')->translatedFormat('d F Y H:i') }}</td>
                         </tr>
                         <tr>
                             <th>Jatuh Tempo</th>
                             <td>
-                                {{ $pembayaran->tanggal_jatuh_tempo?->format('d F Y') ?? '-' }}
+                                {{ \App\Libraries\Date::tglIndo($pembayaran->tanggal_jatuh_tempo) }}
                                 @if($pembayaran->tanggal_jatuh_tempo && $pembayaran->tanggal_jatuh_tempo < now()) <span class="badge bg-danger ms-2">Terlambat</span>
                                     @endif
                             </td>
                         </tr>
                         <tr>
                             <th>Tanggal Pembayaran</th>
-                            <td>{{ $pembayaran->tanggal_pembayaran?->format('d F Y H:i') ?? '-' }}</td>
+                            <td>{{ $pembayaran->tanggal_pembayaran ? \App\Libraries\Date::tglIndo($pembayaran->tanggal_pembayaran) : '-' }}</td>
                         </tr>
                         <tr>
                             <th>Status Pembayaran</th>
@@ -190,7 +190,7 @@
                                     <strong>Invoice Dibuat</strong>
                                     <br>
                                     <small class="text-muted">
-                                        {{ $pembayaran->created_at->format('d M Y H:i') }}
+                                        {{ $pembayaran->created_at->locale('id')->translatedFormat('d M Y H:i') }}
                                     </small>
                                 </div>
                             </div>
@@ -207,7 +207,7 @@
                                     <strong>Formulir & Bukti Pembayaran Diupload</strong>
                                     <br>
                                     <small class="text-muted">
-                                        {{ $pembayaran->pengajuan->formulirPembayaran?->created_at->format('d M Y H:i') }}
+                                        {{ $pembayaran->pengajuan->formulirPembayaran?->created_at->locale('id')->translatedFormat('d M Y H:i') }}
                                     </small>
                                 </div>
                             </div>
@@ -237,7 +237,7 @@
                                     </strong>
                                     <br>
                                     <small class="text-muted">
-                                        {{ $pembayaran->tanggal_verifikasi->format('d M Y H:i') }}
+                                        {{ $pembayaran->tanggal_verifikasi->locale('id')->translatedFormat('d M Y H:i') }}
                                     </small>
                                 </div>
                             </div>

@@ -17,7 +17,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h5 class="mb-1">
-                <i class="bi bi-clipboard-data"></i> Detail Pelaksanaan AL
+                <i class="bi bi-geo-alt"></i> Detail Pelaksanaan AL
             </h5>
             <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
@@ -239,7 +239,7 @@
                             <strong>{{ $beritaAcara->title }}</strong>
                         </h6>
                         <small class="text-muted">
-                            Diupload: {{ $beritaAcara->uploaded_at ? $beritaAcara->uploaded_at->format('d M Y H:i') : '-' }}
+                            Diupload: {{ $beritaAcara->uploaded_at ? $beritaAcara->uploaded_at->locale('id')->translatedFormat('d M Y H:i') : '-' }}
                         </small>
                         <br>
                         <small class="text-muted">
@@ -304,7 +304,7 @@
                             <strong>{{ $lha->title }}</strong>
                         </h6>
                         <small class="text-muted">
-                            Diupload: {{ $lha->uploaded_at ? $lha->uploaded_at->format('d M Y H:i') : '-' }}
+                            Diupload: {{ $lha->uploaded_at ? $lha->uploaded_at->locale('id')->translatedFormat('d M Y H:i') : '-' }}
                         </small>
                         <br>
                         <small class="text-muted">
@@ -327,7 +327,7 @@
                     {{ $lha->catatan_prodi }}
                     @if($lha->approved_at_prodi)
                     <br><small class="text-muted">
-                        <i class="bi bi-clock"></i> {{ $lha->approved_at_prodi->format('d M Y H:i') }}
+                        <i class="bi bi-clock"></i> {{ $lha->approved_at_prodi->locale('id')->translatedFormat('d M Y H:i') }}
                     </small>
                     @endif
                 </div>
@@ -359,7 +359,7 @@
                 <th>Tanggal Mulai AL</th>
                 <td>
                     : {{ $pengajuan->asesmen->asesmenLapangan->tanggal_mulai
-                                    ? \Carbon\Carbon::parse($pengajuan->asesmen->asesmenLapangan->tanggal_mulai)->format('d M Y')
+                                    ? \Carbon\Carbon::parse($pengajuan->asesmen->asesmenLapangan->tanggal_mulai)->locale('id')->translatedFormat('d M Y')
                                     : '-' }}
                 </td>
             </tr>
@@ -367,7 +367,7 @@
                 <th>Tanggal Selesai AL</th>
                 <td>
                     : {{ $pengajuan->asesmen->asesmenLapangan->tanggal_selesai
-                                    ? \Carbon\Carbon::parse($pengajuan->asesmen->asesmenLapangan->tanggal_selesai)->format('d M Y')
+                                    ? \Carbon\Carbon::parse($pengajuan->asesmen->asesmenLapangan->tanggal_selesai)->locale('id')->translatedFormat('d M Y')
                                     : '-' }}
                 </td>
             </tr>
@@ -434,7 +434,7 @@
                                 {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label_long_for']['de'] ?? $log->status_to }}
                             </strong>
                             <br>
-                            <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
+                            <small class="text-muted">{{ $log->created_at->locale('id')->translatedFormat('d M Y H:i') }}</small>
 
                             {{-- @if($log->keterangan)
                                     <br>
@@ -465,13 +465,13 @@
                 @if($al->tanggal_mulai)
                 <tr>
                     <th class="text-muted" width="45%">Tanggal Mulai</th>
-                    <td>: <strong>{{ \Carbon\Carbon::parse($al->tanggal_mulai)->format('d M Y') }}</strong></td>
+                    <td>: <strong>{{ \Carbon\Carbon::parse($al->tanggal_mulai)->locale('id')->translatedFormat('d M Y') }}</strong></td>
                 </tr>
                 @endif
                 @if($al->tanggal_selesai)
                 <tr>
                     <th class="text-muted">Tanggal Selesai</th>
-                    <td>: <strong>{{ \Carbon\Carbon::parse($al->tanggal_selesai)->format('d M Y') }}</strong></td>
+                    <td>: <strong>{{ \Carbon\Carbon::parse($al->tanggal_selesai)->locale('id')->translatedFormat('d M Y') }}</strong></td>
                 </tr>
                 @endif
                 @if($al->tanggal_mulai && $al->tanggal_selesai)
@@ -516,7 +516,7 @@
                     <strong>Berita Acara Tersedia</strong>
                     <br>
                     <small class="text-muted">
-                        Dibuat: {{ \Carbon\Carbon::parse($beritaAcaraProgress->created_at)->format('d M Y H:i') }}
+                        Dibuat: {{ \Carbon\Carbon::parse($beritaAcaraProgress->created_at)->locale('id')->translatedFormat('d M Y H:i') }}
                     </small>
                 </div>
             </div>

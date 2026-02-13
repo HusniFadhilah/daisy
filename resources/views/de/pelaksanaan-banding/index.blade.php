@@ -199,7 +199,7 @@
                                         <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
                                         <br>
                                         <small class="text-muted">
-                                            Dibuat pada: {{ $pengajuan->created_at->format('d M Y') }}
+                                            Dibuat pada: {{ $pengajuan->created_at->locale('id')->translatedFormat('d M Y') }}
                                         </small>
                                     </td>
                                     <td>
@@ -234,7 +234,7 @@
                                     </td>
                                     <td>
                                         @if($pengajuan->tanggal_pelaksanaan_banding)
-                                        <small>{{ $pengajuan->tanggal_pelaksanaan_banding->format('d M Y') }}</small>
+                                        <small>{{ $pengajuan->tanggal_pelaksanaan_banding->locale('id')->translatedFormat('d M Y') }}</small>
                                         @else
                                         <span class="text-muted">-</span>
                                         @endif

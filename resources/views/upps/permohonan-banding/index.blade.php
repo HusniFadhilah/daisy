@@ -155,7 +155,7 @@
                                 </td>
                                 <td>
                                     @if($pengajuan->tanggal_surat_permohonan_dikirim)
-                                    <small>{{ $pengajuan->tanggal_surat_permohonan_dikirim->format('d M Y') }}</small>
+                                    <small>{{ $pengajuan->tanggal_surat_permohonan_dikirim->locale('id')->translatedFormat('d M Y') }}</small>
                                     <br>
                                     <small class="text-muted">
                                         {{ $pengajuan->tanggal_surat_permohonan_dikirim->diffForHumans() }}
