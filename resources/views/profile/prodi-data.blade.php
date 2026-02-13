@@ -1,6 +1,6 @@
 @extends('layouts.template.app')
 
-@section('title', 'Data Program Studi - DAISY')
+@section('title', 'Data Program Studi - DAISY LAMDEPILAR')
 
 @push('styles')
 <style>
@@ -214,11 +214,11 @@
                                     {{ $prodi->degreeLevel->alias }}
                                 </span>
                                 @endif
-                                @if($prodi->peringkat_akreditasi)
+                                {{-- @if($prodi->peringkat_akreditasi)
                                 <span class="badge badge-jenjang bg-warning text-dark">
                                     {{ $prodi->peringkat_akreditasi }}
                                 </span>
-                                @endif
+                                @endif --}}
                             </div>
                         </div>
                     </div>

@@ -97,7 +97,7 @@
                             <tr>
                                 <th width="5%">#</th>
                                 <th width="25%">Permohonan Akreditasi</th>
-                                <th width="20%">Peringkat Akhir</th>
+                                <th width="20%">Status Akreditasi</th>
                                 <th width="20%">Status Pelaporan</th>
                                 <th width="20%">Tanggal Pelaporan</th>
                                 <th width="10%" class="text-center">Aksi</th>

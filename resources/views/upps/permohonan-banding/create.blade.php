@@ -142,7 +142,7 @@
                                     <i class="bi bi-tag"></i> Jenis: {{ $p->jenis_akreditasi_label }}
                                 </small>
                                 <small class="text-muted d-block">
-                                    <i class="bi bi-award"></i> Peringkat Disampaikan:
+                                    <i class="bi bi-award"></i> Status Akreditasi Disampaikan:
                                     <span class="badge" style="background-color: {{ $badgeColor }}; color: #222;">
                                         {{ $peringkat }}
                                     </span>
@@ -244,11 +244,11 @@
                                     <li>Menggunakan kop surat program studi/universitas</li>
                                     <li>Ditandatangani oleh pejabat berwenang (Ketua Program Studi/Dekan)</li>
                                     <li>Mencantumkan alasan banding secara jelas</li>
-                                    <li>Dapat menggunakan template yang disediakan</li>
+                                    <li>Dapat menggunakan templat yang disediakan</li>
                                 </ul>
                                 <hr>
                                 <a href="{{ route('upps.permohonan-banding.download-template-surat') }}" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-download"></i> Download Template Surat
+                                    <i class="bi bi-download"></i> Download Templat Surat
                                 </a>
                             </div>
                         </div>

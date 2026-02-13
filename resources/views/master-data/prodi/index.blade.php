@@ -1,6 +1,6 @@
 @extends('layouts.template.app')
 
-@section('title', 'Daftar Program Studi - Daisy')
+@section('title', 'Daftar Program Studi - Daisy LAMDEPILAR')
 
 @section('content')
 <div class="container-fluid">
@@ -32,7 +32,7 @@
                             <th>Bentuk PT</th>
                             <th>Jenjang</th>
                             <th>Kategori</th>
-                            <th>Peringkat</th>
+                            <th>Status Akreditasi</th>
                             <th width="100px">Aksi</th>
                         </tr>
                     </thead>
@@ -56,45 +56,80 @@
     .table td {
         vertical-align: middle;
     }
+
 </style>
 @endpush
 
 @push('scripts')
 <script>
-$(document).ready(function() {
-    $('#studyProgramTable').DataTable({
-        processing: true,
-        serverSide: true,
-        ajax: "{{ route('study-programs.index') }}",
-        columns: [
-            {data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false},
-            {data: 'code', name: 'code'},
-            {data: 'name', name: 'name'},
-            {data: 'university_name', name: 'university.name'},
-            {data: 'bentuk_pt', name: 'bentuk_pt'},
-            {data: 'degree_level_name', name: 'degreeLevel.name'},
-            {data: 'category_name', name: 'category.name'},
-            {data: 'peringkat', name: 'peringkat_akreditasi'},
-            {data: 'action', name: 'action', orderable: false, searchable: false}
-        ],
-        responsive: true,
-        language: {
-            url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json'
-        },
-        pageLength: 25,
-        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Semua"]],
-        dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
-             "<'row'<'col-sm-12'tr>>" +
-             "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
+    $(document).ready(function() {
+        $('#studyProgramTable').DataTable({
+            processing: true
+            , serverSide: true
+            , ajax: "{{ route('study-programs.index') }}"
+            , columns: [{
+                    data: 'DT_RowIndex'
+                    , name: 'DT_RowIndex'
+                    , orderable: false
+                    , searchable: false
+                }
+                , {
+                    data: 'code'
+                    , name: 'code'
+                }
+                , {
+                    data: 'name'
+                    , name: 'name'
+                }
+                , {
+                    data: 'university_name'
+                    , name: 'university.name'
+                }
+                , {
+                    data: 'bentuk_pt'
+                    , name: 'bentuk_pt'
+                }
+                , {
+                    data: 'degree_level_name'
+                    , name: 'degreeLevel.name'
+                }
+                , {
+                    data: 'category_name'
+                    , name: 'category.name'
+                }
+                , {
+                    data: 'peringkat'
+                    , name: 'peringkat_akreditasi'
+                }
+                , {
+                    data: 'action'
+                    , name: 'action'
+                    , orderable: false
+                    , searchable: false
+                }
+            ]
+            , responsive: true
+            , language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json'
+            }
+            , pageLength: 25
+            , lengthMenu: [
+                [10, 25, 50, 100, -1]
+                , [10, 25, 50, 100, "Semua"]
+            ]
+            , dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                "<'row'<'col-sm-12'tr>>" +
+                "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
+        });
     });
-});
 
-function deleteRecord(id) {
-    if (confirm('Apakah Anda yakin ingin menghapus program studi ini?')) {
-        var form = document.getElementById('deleteForm');
-        form.action = '/study-programs/' + id;
-        form.submit();
+    function deleteRecord(id) {
+        if (confirm('Apakah Anda yakin ingin menghapus program studi ini?')) {
+            var form = document.getElementById('deleteForm');
+            form.action = '/study-programs/' + id;
+            form.submit();
+        }
     }
-}
+
 </script>
 @endpush

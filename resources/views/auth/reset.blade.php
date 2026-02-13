@@ -1,6 +1,6 @@
 @extends('layouts.template.auth')
 
-@section('title', 'Reset Password - DAISY')
+@section('title', 'Reset Password - DAISY LAMDEPILAR')
 @section('content')
 <div class="auth-wrapper">
     <div class="auth-container fade-in" style="max-width: 600px;">

@@ -188,7 +188,7 @@ class PenyampaianTemplateController extends Controller
             }
 
             $labelMap = [
-                'borang_template' => 'Template Dokumen Akreditasi',
+                'borang_template' => 'Templat Dokumen Akreditasi',
                 'template_formulir_pembayaran' => 'Formulir Pembayaran',
             ];
 
@@ -230,7 +230,7 @@ class PenyampaianTemplateController extends Controller
     }
 
     /**
-     * Download template dokumen
+     * Download templat dokumen
      */
     public function download($id, $jenisDokumen)
     {
@@ -332,7 +332,7 @@ class PenyampaianTemplateController extends Controller
                 $stats['menunggu']++;
             }
 
-            // Template Dikirim
+            // Templat Dikirim
             if (in_array(PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM, $statuses)) {
                 $stats['diterima']++;
             }

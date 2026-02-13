@@ -30,10 +30,10 @@
                             <!-- Peringkat -->
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">
-                                    Peringkat Akreditasi <span class="text-danger">*</span>
+                                    Status Akreditasi <span class="text-danger">*</span>
                                 </label>
                                 <select name="peringkat_akreditasi" class="form-select @error('peringkat_akreditasi') is-invalid @enderror" required>
-                                    <option value="">Pilih Peringkat</option>
+                                    <option value="">Pilih Status</option>
                                     <option value="Unggul" {{ old('peringkat_akreditasi') === 'Unggul' ? 'selected' : '' }}>
                                         Unggul
                                     </option>

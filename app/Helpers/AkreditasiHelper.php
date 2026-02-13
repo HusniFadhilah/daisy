@@ -53,7 +53,7 @@ class AkreditasiHelper
             $messages[] = "⚠️ Skor mencapai syarat Unggul (>= 361), namun tidak memenuhi syarat pelampauan standar.";
             $messages[] = "📋 Kriteria yang belum memiliki pelampauan: " .
                 implode(', ', $validationSummary['missing_kriteria']);
-            $messages[] = "🔽 Peringkat diturunkan menjadi: Baik Sekali";
+            $messages[] = "🔽 Status akreditasi diturunkan menjadi: Baik Sekali";
         }
 
         return implode("\n", $messages);

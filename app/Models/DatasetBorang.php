@@ -123,7 +123,7 @@ class DatasetBorang extends Model
     // ==========================================
 
     /**
-     * Generate default HTML template for table fields
+     * Generate default HTML templat for table fields
      */
     private function generateDefaultTemplate()
     {
@@ -175,7 +175,7 @@ class DatasetBorang extends Model
             ];
         }
 
-        // Fallback ke template default
+        // Fallback ke templat default
         return [
             'template_html' => $this->template_html,
             'expected_columns' => $this->expected_columns,

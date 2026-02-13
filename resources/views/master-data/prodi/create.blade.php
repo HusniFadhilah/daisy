@@ -1,6 +1,6 @@
 @extends('layouts.template.app')
 
-@section('title', 'Tambah Program Studi - Daisy')
+@section('title', 'Tambah Program Studi - Daisy LAMDEPILAR')
 
 @section('content')
 <div class="container-fluid">
@@ -90,7 +90,7 @@
                 </div>
 
                 <div class="mb-3">
-                    <label for="peringkat_akreditasi" class="form-label">Peringkat Akreditasi</label>
+                    <label for="peringkat_akreditasi" class="form-label">Status Akreditasi</label>
                     <input type="text" class="form-control @error('peringkat_akreditasi') is-invalid @enderror" id="peringkat_akreditasi" name="peringkat_akreditasi" value="{{ old('peringkat_akreditasi') }}" placeholder="Contoh: Unggul, Baik Sekali, A, B, dll">
                     @error('peringkat_akreditasi')
                     <div class="invalid-feedback">{{ $message }}</div>

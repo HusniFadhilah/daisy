@@ -122,16 +122,16 @@ final class PengajuanStatus
             ],
 
             PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM => [
-                'label' => 'Pengiriman Formulir dan Template Dokumen',
+                'label' => 'Pengiriman Formulir dan Templat Dokumen',
                 'label_short_for' => [
-                    'de'   => 'Formulir & Template Terkirim',
-                    'upps' => 'Formulir & Template Diterima',
-                    'prodi' => 'Formulir & Template Diterima',
+                    'de'   => 'Formulir & Templat Terkirim',
+                    'upps' => 'Formulir & Templat Diterima',
+                    'prodi' => 'Formulir & Templat Diterima',
                 ],
                 'label_long_for' => [
-                    'de'   => 'Formulir & Template Dokumen Telah Dikirim',
-                    'upps' => 'Formulir & Template Dokumen Diterima',
-                    'prodi' => 'Formulir & Template Dokumen Diterima',
+                    'de'   => 'Formulir & Templat Dokumen Telah Dikirim',
+                    'upps' => 'Formulir & Templat Dokumen Diterima',
+                    'prodi' => 'Formulir & Templat Dokumen Diterima',
                 ],
                 'bg' => 'bg-primary',
                 'icon' => 'bi-file-earmark-arrow-down',

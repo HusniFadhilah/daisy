@@ -708,7 +708,7 @@
                                 {{-- Peringkat Filter --}}
                                 <div class="mb-3">
                                     <label class="form-label text-white">
-                                        <i class="bi bi-star"></i> Peringkat
+                                        <i class="bi bi-star"></i> Status Akreditasi
                                         <span class="clear-single-filter float-end" onclick="clearSingleFilter('peringkat')" style="display: {{ request('peringkat') ? 'inline' : 'none' }};">
                                             <i class="bi bi-x-circle"></i>
                                         </span>
@@ -749,7 +749,7 @@
                     <div class="card mt-3">
                         <div class="card-header bg-light">
                             <h6 class="mb-0">
-                                <i class="bi bi-bar-chart"></i> Distribusi Peringkat
+                                <i class="bi bi-bar-chart"></i> Distribusi Status Akreditasi
                             </h6>
                         </div>
                         <div class="card-body">
@@ -1456,7 +1456,7 @@ Sekretariat LAMDEPILAR</textarea>
         if (params.peringkat.length > 0) {
             count++;
             filtersList.push(`<span class="badge bg-danger me-1 mb-1">
-            <i class="bi bi-star"></i> ${params.peringkat.length} Peringkat
+            <i class="bi bi-star"></i> ${params.peringkat.length} Status Akreditasi
             <i class="bi bi-x-circle ms-1 cursor-pointer" onclick="clearSingleFilter('peringkat')"></i>
         </span>`);
         }

@@ -1,6 +1,6 @@
 @extends('layouts.template.app')
 
-@section('title', 'Detail Program Studi - Daisy')
+@section('title', 'Detail Program Studi - Daisy LAMDEPILAR')
 
 @section('content')
 <div class="container-fluid">
@@ -39,11 +39,11 @@
                             <td><strong>Universitas:</strong></td>
                             <td>
                                 @if($studyProgram->university)
-                                    <a href="{{ route('universities.show', $studyProgram->university->id) }}">
-                                        {{ $studyProgram->university->name }}
-                                    </a>
+                                <a href="{{ route('universities.show', $studyProgram->university->id) }}">
+                                    {{ $studyProgram->university->name }}
+                                </a>
                                 @else
-                                    -
+                                -
                                 @endif
                             </td>
                         </tr>
@@ -51,9 +51,9 @@
                             <td><strong>Jenjang:</strong></td>
                             <td>
                                 @if($studyProgram->degreeLevel)
-                                    <span class="badge bg-info">{{ $studyProgram->degreeLevel->name }}</span>
+                                <span class="badge bg-info">{{ $studyProgram->degreeLevel->name }}</span>
                                 @else
-                                    -
+                                -
                                 @endif
                             </td>
                         </tr>
@@ -61,9 +61,9 @@
                             <td><strong>Kategori:</strong></td>
                             <td>
                                 @if($studyProgram->category)
-                                    <span class="badge bg-secondary">{{ $studyProgram->category->name }}</span>
+                                <span class="badge bg-secondary">{{ $studyProgram->category->name }}</span>
                                 @else
-                                    -
+                                -
                                 @endif
                             </td>
                         </tr>
@@ -75,9 +75,9 @@
                             <td><strong>Email:</strong></td>
                             <td>
                                 @if($studyProgram->email && $studyProgram->email !== '-')
-                                    <a href="mailto:{{ $studyProgram->email }}">{{ $studyProgram->email }}</a>
+                                <a href="mailto:{{ $studyProgram->email }}">{{ $studyProgram->email }}</a>
                                 @else
-                                    <span class="text-muted">-</span>
+                                <span class="text-muted">-</span>
                                 @endif
                             </td>
                         </tr>
@@ -103,19 +103,19 @@
                 <div class="card-body">
                     <table class="table table-sm table-borderless">
                         <tr>
-                            <td><strong>Peringkat:</strong></td>
+                            <td><strong>Status Akreditasi:</strong></td>
                             <td>
                                 @if($studyProgram->peringkat_akreditasi)
-                                    @php
-                                        $class = match($studyProgram->status_kedaluwarsa) {
-                                            'Aktif' => 'success',
-                                            'Kedaluwarsa' => 'warning',
-                                            default => 'secondary'
-                                        };
-                                    @endphp
-                                    <span class="badge bg-{{ $class }}">{{ $studyProgram->peringkat_akreditasi }}</span>
+                                @php
+                                $class = match($studyProgram->status_kedaluwarsa) {
+                                'Aktif' => 'success',
+                                'Kedaluwarsa' => 'warning',
+                                default => 'secondary'
+                                };
+                                @endphp
+                                <span class="badge bg-{{ $class }}">{{ $studyProgram->peringkat_akreditasi }}</span>
                                 @else
-                                    <span class="badge bg-secondary">Belum Terakreditasi</span>
+                                <span class="badge bg-secondary">Belum Terakreditasi</span>
                                 @endif
                             </td>
                         </tr>
@@ -123,9 +123,9 @@
                             <td><strong>Tanggal Kedaluwarsa:</strong></td>
                             <td>
                                 @if($studyProgram->tanggal_kedaluwarsa)
-                                    {{ \Carbon\Carbon::parse($studyProgram->tanggal_kedaluwarsa)->format('d M Y') }}
+                                {{ \Carbon\Carbon::parse($studyProgram->tanggal_kedaluwarsa)->format('d M Y') }}
                                 @else
-                                    -
+                                -
                                 @endif
                             </td>
                         </tr>
@@ -133,11 +133,11 @@
                             <td><strong>Status:</strong></td>
                             <td>
                                 @php
-                                    $statusClass = match($studyProgram->status_kedaluwarsa) {
-                                        'Aktif' => 'success',
-                                        'Kedaluwarsa' => 'danger',
-                                        default => 'secondary'
-                                    };
+                                $statusClass = match($studyProgram->status_kedaluwarsa) {
+                                'Aktif' => 'success',
+                                'Kedaluwarsa' => 'danger',
+                                default => 'secondary'
+                                };
                                 @endphp
                                 <span class="badge bg-{{ $statusClass }}">{{ $studyProgram->status_kedaluwarsa }}</span>
                             </td>
@@ -149,10 +149,7 @@
             @if($studyProgram->university && $studyProgram->university->logo_path)
             <div class="card mt-3">
                 <div class="card-body text-center">
-                    <img src="{{ asset('storage/' . $studyProgram->university->logo_path) }}" 
-                         alt="{{ $studyProgram->university->name }}" 
-                         class="img-fluid" 
-                         style="max-height: 150px;">
+                    <img src="{{ asset('storage/' . $studyProgram->university->logo_path) }}" alt="{{ $studyProgram->university->name }}" class="img-fluid" style="max-height: 150px;">
                 </div>
             </div>
             @endif

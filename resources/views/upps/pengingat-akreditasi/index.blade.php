@@ -49,12 +49,12 @@
         </div>
     </div>
 
-    <div class="alert alert-info alert-permanent">
+    {{-- <div class="alert alert-info alert-permanent">
         <i class="bi bi-bell-fill"></i>
         <strong>Pengingat Masa Akreditasi</strong><br>
         Masa akreditasi Program studi ... akan habis pada. <br>
         Waktu yang tersedia untuk melakukan reakreditasi adalah
-    </div>
+    </div> --}}
 
     <!-- Expiring Accreditation Alert -->
     @if($expiringStats['has_expiring'])

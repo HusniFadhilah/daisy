@@ -166,7 +166,7 @@ class DeskEvaluatorController extends Controller
 
             if (!in_array($pengajuan->status, [PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA, PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM])) {
                 DB::rollBack();
-                return back()->with('error', 'Status Permohonan akreditasi tidak sesuai untuk kirim template.');
+                return back()->with('error', 'Status Permohonan akreditasi tidak sesuai untuk kirim templat.');
             }
 
             // hindari ?. : ambil degree level dengan aman
@@ -188,7 +188,7 @@ class DeskEvaluatorController extends Controller
                 $file = $request->file('borang_template');
                 if (!$file) {
                     DB::rollBack();
-                    return back()->with('error', 'File template tidak ditemukan.');
+                    return back()->with('error', 'File templat tidak ditemukan.');
                 }
 
                 $filename = 'template_dokumen_akreditasi_' . time() . '.' . $file->getClientOriginalExtension();
@@ -201,7 +201,7 @@ class DeskEvaluatorController extends Controller
                 $templateLink = $request->input('template_link');
                 if (!$templateLink) {
                     DB::rollBack();
-                    return back()->with('error', 'URL template wajib diisi.');
+                    return back()->with('error', 'URL templat wajib diisi.');
                 }
 
                 $filename = 'led_template_link_' . time() . '.url';
@@ -233,8 +233,8 @@ class DeskEvaluatorController extends Controller
             ]);
 
             $keteranganLog = ($metode === 'link')
-                ? "Template LED/LKPS dikirim via link: {$templateLink}"
-                : "Template LED/LKPS diupload: {$originalFilename}";
+                ? "Templat LED/LKPS dikirim via link: {$templateLink}"
+                : "Templat LED/LKPS diupload: {$originalFilename}";
 
             $this->logStatus($pengajuan, $pengajuan->status, PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM, $keteranganLog);
 
@@ -249,7 +249,7 @@ class DeskEvaluatorController extends Controller
                     );
                 }
             } catch (\Exception $e) {
-                Log::error('Failed to send template email', [
+                Log::error('Failed to send templat email', [
                     'pengajuan_id' => $id,
                     'error' => $e->getMessage(),
                 ]);
@@ -362,7 +362,7 @@ class DeskEvaluatorController extends Controller
             $this->tryUpdateStatusMenungguPembayaran($pengajuan);
 
             DB::commit();
-            return back()->with('success', 'Formulir pembayaran berhasil dikirim. Status akan menjadi Menunggu Pembayaran setelah template LED/LKPS juga dikirim.');
+            return back()->with('success', 'Formulir pembayaran berhasil dikirim. Status akan menjadi Menunggu Pembayaran setelah templat LED/LKPS juga dikirim.');
         } catch (\Exception $e) {
             Log::error($e);
             DB::rollBack();
@@ -407,7 +407,7 @@ class DeskEvaluatorController extends Controller
             $pengajuan,
             $oldStatus,
             PengajuanAkreditasi::STATUS_MENUNGGU_PEMBAYARAN,
-            'Formulir pembayaran dan template dokumen sudah lengkap. Menunggu pembayaran dari PS.'
+            'Formulir pembayaran dan templat dokumen sudah lengkap. Menunggu pembayaran dari PS.'
         );
     }
 

@@ -265,7 +265,7 @@ class PenetapanHasilAkreditasiController extends Controller
 
             return redirect()
                 ->route('de.penetapan-hasil-akreditasi.show', $id)
-                ->with('success', "Hasil akreditasi berhasil ditetapkan! Peringkat: {$hasil->peringkat_akreditasi} (Skor: {$hasil->skor_final})");
+                ->with('success', "Hasil akreditasi berhasil ditetapkan! Status akreditasi: {$hasil->peringkat_akreditasi} (Skor: {$hasil->skor_final})");
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Penetapan hasil failed', [

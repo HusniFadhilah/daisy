@@ -2,7 +2,7 @@
 
 @extends('layouts.template.app')
 
-@section('title', 'Detail Pengiriman Formulir dan Template Dokumen')
+@section('title', 'Detail Pengiriman Formulir dan Templat Dokumen')
 
 @section('content')
 <div class="container-fluid py-3">
@@ -10,7 +10,7 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('de.penyampaian-template') }}">Pengiriman Formulir dan Template Dokumen</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('de.penyampaian-template') }}">Pengiriman Formulir dan Templat Dokumen</a></li>
             <li class="breadcrumb-item active">Detail</li>
         </ol>
     </nav>
@@ -19,7 +19,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h5 class="mb-1">
-                <i class="bi bi-file-earmark-text"></i> Detail Pengiriman Formulir dan Template Dokumen
+                <i class="bi bi-file-earmark-text"></i> Detail Pengiriman Formulir dan Templat Dokumen
             </h5>
             <small class="text-muted mb-0">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
@@ -79,7 +79,7 @@
                     <h5 class="mb-0">
                         <i class="bi bi-upload"></i>
                         {{ $hasExistingDokumen ? 'Kirim Ulang' : 'Proses Pengiriman' }}
-                        Formulir dan Template Dokumen
+                        Formulir dan Templat Dokumen
                     </h5>
                 </div>
 
@@ -98,10 +98,10 @@
                         {{-- ✅ Hidden field untuk notification_id --}}
                         <input type="hidden" name="notification_id" id="notification_id" value="">
 
-                        {{-- TEMPLATE FORMULIR PEMBAYARAN --}}
+                        {{-- TEMPLAT FORMULIR PEMBAYARAN --}}
                         <div class="mb-3">
                             <label class="form-label fw-bold">
-                                Template Formulir Pembayaran
+                                Templat Formulir Pembayaran
                                 @if(!$formulirPembayaran)
                                 <span class="text-danger">*</span>
                                 @else
@@ -122,10 +122,10 @@
                             </small>
                         </div>
 
-                        {{-- TEMPLATE DOKUMEN --}}
+                        {{-- TEMPLAT DOKUMEN --}}
                         <div class="mb-3">
                             <label class="form-label fw-bold">
-                                Template Dokumen
+                                Templat Dokumen
                                 @if(!$templateLed)
                                 <span class="text-danger">*</span>
                                 @else
@@ -152,7 +152,7 @@
                                 Pemberitahuan Pengiriman
                                 <span class="text-danger">*</span>
                             </label>
-                            <textarea name="keterangan" class="form-control @error('keterangan') is-invalid @enderror" rows="3" required>{{ old('keterangan', 'Template Dokumen LED telah tersedia dalam satu berkas Ms.Word (.docx) (termasuk lembar pengesahan), sedangkan template LKPS disediakan dalam file Excel (.xlsx).') }}</textarea>
+                            <textarea name="keterangan" class="form-control @error('keterangan') is-invalid @enderror" rows="3" required>{{ old('keterangan', 'Templat Dokumen LED telah tersedia dalam satu berkas Ms.Word (.docx) (termasuk lembar pengesahan), sedangkan templat LKPS disediakan dalam file Excel (.xlsx).') }}</textarea>
                             @error('keterangan')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -173,13 +173,13 @@
             <div class="card">
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-info-circle"></i> Informasi Formulir dan Template Dokumen
+                        <i class="bi bi-info-circle"></i> Informasi Formulir dan Templat Dokumen
                     </h5>
                 </div>
                 <div class="card-body">
                     <table class="table table-borderless">
                         <tr>
-                            <th>Tanggal Template Dikirim</th>
+                            <th>Tanggal Templat Dikirim</th>
                             <td>
                                 : {{ $pengajuan->tanggal_template_led_dikirim
                                     ? $pengajuan->tanggal_template_led_dikirim->format('d M Y H:i')
@@ -187,7 +187,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <th>Status Formulir dan Template Dokumen</th>
+                            <th>Status Formulir dan Templat Dokumen</th>
                             <td>: {!! $pengajuan->getCustomBadgeLastStatus('borang_template','de') !!}</td>
                         </tr>
                     </table>
@@ -211,7 +211,7 @@
                             <i class="{{ $templateLed->file_icon_class }} me-3" style="font-size: 48px;"></i>
                             @endif
                             <div>
-                                <strong>Template Dokumen Akreditasi</strong>
+                                <strong>Templat Dokumen Akreditasi</strong>
                                 <span class="badge bg-info ms-2">Versi {{ $templateLed->versi }}</span>
                                 <br>
                                 @if($templateLed->template_link)
@@ -343,14 +343,14 @@
                                 </div>
                                 <div class="flex-grow-1 ms-3">
                                     <strong>
-                                        Formulir dan Template Dokumen Diterima
+                                        Formulir dan Templat Dokumen Diterima
                                     </strong>
                                     <br>
                                     <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
 
                                     {{-- @if($log->keterangan)
                                     <br>
-                                    <small class="text-muted fst-italic">Formulir Pembayaran (Formulir Pembayaran Akreditasi LAMDEPILAR.xlsx) dan Template Dokumen (Template Dokumen.rar) telah diterima oleh PS</small>
+                                    <small class="text-muted fst-italic">Formulir Pembayaran (Formulir Pembayaran Akreditasi LAMDEPILAR.xlsx) dan Templat Dokumen (Templat Dokumen.rar) telah diterima oleh PS</small>
                                     @endif --}}
                                 </div>
                             </div>

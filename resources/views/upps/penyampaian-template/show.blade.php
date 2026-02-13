@@ -2,7 +2,7 @@
 
 @extends('layouts.template.app')
 
-@section('title', 'Detail Formulir dan Template Dokumen')
+@section('title', 'Detail Formulir dan Templat Dokumen')
 
 @section('content')
 <div class="container-fluid py-3">
@@ -10,7 +10,7 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('upps.penyampaian-template') }}">Formulir dan Template Dokumen</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('upps.penyampaian-template') }}">Formulir dan Templat Dokumen</a></li>
             <li class="breadcrumb-item active">Detail</li>
         </ol>
     </nav>
@@ -19,7 +19,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h5 class="mb-1">
-                <i class="bi bi-file-earmark-arrow-down"></i> Detail Formulir dan Template Dokumen
+                <i class="bi bi-file-earmark-arrow-down"></i> Detail Formulir dan Templat Dokumen
             </h5>
             <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
@@ -44,14 +44,14 @@
             @if($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM)
             <div class="alert alert-warning alert-permanent mb-4">
                 <i class="bi bi-hourglass-split"></i>
-                <strong>Menunggu formulir dan template dokumen</strong>
+                <strong>Menunggu formulir dan templat dokumen</strong>
                 <br>
-                Template belum dikirim oleh LAMDEPILAR
+                Templat belum dikirim oleh LAMDEPILAR
             </div>
             @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM)
             <div class="alert alert-success alert-permanent mb-4">
                 <i class="bi bi-check-circle"></i>
-                <strong>Formulir dan template dokumen telah diterima</strong>
+                <strong>Formulir dan templat dokumen telah diterima</strong>
                 <br>
                 Diterima pada {{ $pengajuan->tanggal_template_led_dikirim->format('d M Y H:i') }}
             </div>
@@ -128,7 +128,7 @@
                 </div>
             </div>
 
-            <!-- Template Dokumen -->
+            <!-- Templat Dokumen -->
             @php
             $templateLed = $pengajuan->dokumen
             ->where('jenis_dokumen', 'borang_template')
@@ -140,7 +140,7 @@
                 <div class="card-header bg-info text-white">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">
-                            <i class="bi bi-file-earmark-text"></i> Template Dokumen Akreditasi
+                            <i class="bi bi-file-earmark-text"></i> Templat Dokumen Akreditasi
                         </h5>
                     </div>
                 </div>
@@ -169,7 +169,7 @@
                     @else
                     <div class="text-center py-4">
                         <i class="bi bi-file-earmark-x" style="font-size: 48px; color: #ddd;"></i>
-                        <p class="text-muted mt-2 mb-0">Template dokumen belum dikirim oleh LAMDEPILAR</p>
+                        <p class="text-muted mt-2 mb-0">Templat dokumen belum dikirim oleh LAMDEPILAR</p>
                     </div>
                     @endif
                 </div>
@@ -186,7 +186,7 @@
                         <i class="bi bi-info-circle"></i> Informasi Pengiriman Ulang Dokumen
                     </h6>
                     <div class="small">
-                        Apabila Program Studi Anda membutuhkan <strong>pengiriman ulang</strong> formulir pembayaran atau template dokumen, silakan klik tombol <strong>Pengiriman Ulang</strong> untuk mengajukan permintaan pengiriman ulang formulir dan template dokumen ke LAMDEPILAR.
+                        Apabila Program Studi Anda membutuhkan <strong>pengiriman ulang</strong> formulir pembayaran atau templat dokumen, silakan klik tombol <strong>Pengiriman Ulang</strong> untuk mengajukan permintaan pengiriman ulang formulir dan templat dokumen ke LAMDEPILAR.
                     </div>
                 </div>
 
@@ -202,13 +202,13 @@
             <div class="card mb-4">
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-info-circle"></i> Informasi Formulir dan Template Dokumen
+                        <i class="bi bi-info-circle"></i> Informasi Formulir dan Templat Dokumen
                     </h5>
                 </div>
                 <div class="card-body">
                     <table class="table table-borderless">
                         <tr>
-                            <th>Tanggal Template Dikirim</th>
+                            <th>Tanggal Templat Dikirim</th>
                             <td>
                                 : {{ $pengajuan->tanggal_template_led_dikirim
                                     ? $pengajuan->tanggal_template_led_dikirim->format('d M Y H:i')
@@ -216,7 +216,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <th>Status Formulir dan Template Dokumen</th>
+                            <th>Status Formulir dan Templat Dokumen</th>
                             <td>: {!! $pengajuan->getCustomBadgeLastStatus('borang_template','upps') !!}</td>
                         </tr>
                     </table>

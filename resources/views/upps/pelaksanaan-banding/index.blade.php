@@ -119,7 +119,7 @@
                                         <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
                                         <br>
                                         <small class="text-muted">
-                                            Peringkat: <strong>{{ $pengajuan->peringkat_hasil ?? '-' }}</strong>
+                                            Status Akreditasi: <strong>{{ $pengajuan->peringkat_hasil ?? '-' }}</strong>
                                         </small>
                                     </td>
                                     <td>

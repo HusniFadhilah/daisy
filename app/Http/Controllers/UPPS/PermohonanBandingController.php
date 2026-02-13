@@ -287,14 +287,14 @@ class PermohonanBandingController extends Controller
     }
 
     /**
-     * ✅ Download template surat
+     * ✅ Download templat surat
      */
     public function downloadTemplateSurat()
     {
         $path = public_path('assets/file/TEMPLATE PERMOHONAN BANDING.docx');
 
         if (!file_exists($path)) {
-            abort(404, 'File template tidak ditemukan');
+            abort(404, 'File templat tidak ditemukan');
         }
 
         return response()->download(

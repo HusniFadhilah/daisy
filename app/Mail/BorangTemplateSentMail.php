@@ -37,7 +37,7 @@ class BorangTemplateSentMail extends Mailable implements ShouldQueue // ✅ Impl
 
     public function build()
     {
-        $subject = "Template Borang LED - {$this->pengajuan->nomor_pengajuan}";
+        $subject = "Templat Dokumen - {$this->pengajuan->nomor_pengajuan}";
 
         return $this->subject($subject)
             ->view('emails.pengajuan.borang-template-sent')

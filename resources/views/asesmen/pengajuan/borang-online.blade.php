@@ -460,9 +460,9 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
                         <p class="text-muted small mb-3">File DOCX berisi deskripsi/narasi</p>
                         @endif
                         <div class="action-buttons">
-                            {{-- Download Template --}}
+                            {{-- Download Templat --}}
                             <a href="{{ route('pengajuan.borang.download-template', $pengajuan->id) }}" class="btn btn-outline-primary btn-sm my-1">
-                                <i class="bi bi-download"></i> Download Template DOCX
+                                <i class="bi bi-download"></i> Download Templat DOCX
                             </a>
 
                             {{-- Import DOCX --}}
@@ -478,7 +478,7 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
 
                         <small class="text-muted d-block mt-2">
                             <i class="bi bi-info-circle"></i>
-                            Download template, isi offline, lalu upload kembali. Atau isi online dan download hasilnya.
+                            Download templat, isi offline, lalu upload kembali. Atau isi online dan download hasilnya.
                         </small>
                     </div>
                 </div>
@@ -494,7 +494,7 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
                         </p>
                         <small class="text-muted">{{ $uploadedFiles['suplemen']->created_at->diffForHumans() }}</small>
                         @else
-                        <p class="text-muted small mb-2">PDF sesuai template</p>
+                        <p class="text-muted small mb-2">PDF sesuai templat</p>
                         <button type="button" class="btn btn-outline-primary btn-sm">
                             <i class="bi bi-upload"></i> Upload PDF
                         </button>
@@ -539,7 +539,7 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
                         </p>
                         <small class="text-muted">{{ $uploadedFiles['kuantitatif']->created_at->diffForHumans() }}</small>
                         @else
-                        <p class="text-muted small mb-2">File Excel berisi data tabel (sesuai template)</p>
+                        <p class="text-muted small mb-2">File Excel berisi data tabel (sesuai templat)</p>
                         <button type="button" class="btn btn-outline-success btn-sm">
                             <i class="bi bi-upload"></i> Upload Excel
                         </button>
@@ -589,7 +589,7 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
                                 <li><strong>Lembar Pengesahan:</strong> Upload PDF yang sudah ditandatangani pimpinan</li>
                                 <li><strong>Laporan Evaluasi Diri:</strong> Upload DOCX dengan deskripsi setiap elemen - akan diproses otomatis</li>
                                 <li><strong>LKPS:</strong> Upload Excel dengan sheet terpisah untuk setiap tabel - hanya tersimpan sebagai file</li>
-                                <li><strong>Alternatif:</strong> Download template, isi offline, lalu upload kembali</li>
+                                <li><strong>Alternatif:</strong> Download templat, isi offline, lalu upload kembali</li>
                             </ul>
                         </div>
                     </div>
@@ -925,7 +925,7 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
                         <strong>Perhatian:</strong>
                         <ul class="mb-0 mt-2">
                             <li>Data yang ada akan ditimpa dengan data dari file</li>
-                            <li>Pastikan format file sesuai template</li>
+                            <li>Pastikan format file sesuai templat</li>
                         </ul>
                     </div>
                 </form>

@@ -1,15 +1,15 @@
-<!-- Modal Download Template -->
+<!-- Modal Download Templat -->
 <div class="modal fade" id="modalDownloadTemplate" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header bg-info text-white">
                 <h5 class="modal-title">
-                    <i class="bi bi-download"></i> Download Template Permohonan Banding
+                    <i class="bi bi-download"></i> Download Templat Permohonan Banding
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p class="mb-3">Download template permohonan banding:</p>
+                <p class="mb-3">Download templat permohonan banding:</p>
 
                 <div class="list-group">
                     <a href="{{ route('upps.permohonan-banding.download-template-surat') }}" class="list-group-item list-group-item-action">
@@ -27,7 +27,7 @@
                 <div class="alert alert-warning alert-permanent mt-3 mb-0">
                     <small>
                         <i class="bi bi-exclamation-triangle"></i>
-                        Template harus diisi lengkap dan ditandatangani oleh pejabat berwenang
+                        Templat harus diisi lengkap dan ditandatangani oleh pejabat berwenang
                     </small>
                 </div>
             </div>

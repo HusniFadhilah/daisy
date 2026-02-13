@@ -347,7 +347,7 @@
                             <i class="bi bi-info-circle"></i> Petunjuk Upload
                         </h6>
                         <ol class="mb-0 small">
-                            <li>Download template Excel terlebih dahulu menggunakan tombol di bawah</li>
+                            <li>Download templat Excel terlebih dahulu menggunakan tombol di bawah</li>
                             <li>Silahkan mengisi penilaian pada kolom yang tersedia (cell berwarna kuning)</li>
                             <li>Mohon jangan mengubah struktur, nama sheet, atau kode elemen pada excel</li>
                             <li>Upload file Excel yang telah diisi</li>
@@ -355,10 +355,10 @@
                         </ol>
                     </div>
 
-                    {{-- Download Template Button --}}
+                    {{-- Download Templat Button --}}
                     <div class="mb-4 text-center">
                         <a href="{{ route('ak.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'template']) }}" class="btn btn-md btn-outline-primary">
-                            <i class="bi bi-download"></i> Download Template Penilaian AK
+                            <i class="bi bi-download"></i> Download Templat Penilaian AK
                         </a>
                     </div>
                 </div>

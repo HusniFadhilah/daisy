@@ -10,7 +10,7 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('upps.penyampaian-template') }}">Formulir dan Template Dokumen</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('upps.penyampaian-template') }}">Formulir dan Templat Dokumen</a></li>
             <li class="breadcrumb-item"><a href="{{ route('upps.penyampaian-template.show', $pengajuan->id) }}">Detail</a></li>
             <li class="breadcrumb-item active">Permintaan Pengiriman Ulang</li>
         </ol>
@@ -35,7 +35,7 @@
             <div class="card mb-4 border-info">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-info-circle"></i> Informasi Permohonan Pengiriman Ulang Template
+                        <i class="bi bi-info-circle"></i> Informasi Permohonan Pengiriman Ulang Templat
                     </h5>
                 </div>
                 <div class="card-body">
@@ -45,7 +45,7 @@
                     </div>
                     <div class="mb-3">
                         <div class="fw-bold">Jenis Dokumen</div>
-                        <div>Formulir Pembayaran & Template Dokumen Akreditasi</div>
+                        <div>Formulir Pembayaran & Templat Dokumen Akreditasi</div>
                     </div>
                 </div>
             </div>
@@ -102,7 +102,7 @@
                                 </small>
                                 <br>
                                 <span class="badge bg-info">Versi {{ $templateLed->versi }}</span>
-                                <span class="badge bg-secondary">Template Dokumen Akreditasi</span>
+                                <span class="badge bg-secondary">Templat Dokumen Akreditasi</span>
                             </div>
                         </div>
                         <div>
@@ -122,7 +122,7 @@
                 <ul class="mb-0">
                     <li>Permintaan <strong>pengiriman ulang</strong> akan dikirim ke LAMDEPILAR</li>
                     <li>Status permohonan akreditasi <strong>tidak akan berubah</strong></li>
-                    <li>Dokumen saat ini tetap tersimpan sampai LAMDEPILAR mengirim template dokumen terbaru</li>
+                    <li>Dokumen saat ini tetap tersimpan sampai LAMDEPILAR mengirim templat dokumen terbaru</li>
                     <li>Anda akan mendapat notifikasi setelah LAMDEPILAR merespon permintaan ini</li>
                     <li>Pastikan alasan yang Anda berikan jelas dan spesifik</li>
                 </ul>
@@ -157,7 +157,7 @@
                                 @if($templateLed)
                                 <input class="form-check-input @error('jenis_dokumen') is-invalid @enderror" type="checkbox" name="jenis_dokumen[]" value="borang_template" id="dok_borang" {{ in_array('borang_template', old('jenis_dokumen', [])) ? 'checked' : '' }}>
                                 <label class="form-check-label" for="dok_borang">
-                                    Template Dokumen Akreditasi
+                                    Templat Dokumen Akreditasi
                                 </label>
                                 @endif
                             </div>
@@ -181,7 +181,7 @@
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                             <small class="form-text text-muted">
-                                Contoh: "Formulir pembayaran tidak terbaca" atau "Template dokumen tidak dapat dibuka"
+                                Contoh: "Formulir pembayaran tidak terbaca" atau "Templat dokumen tidak dapat dibuka"
                             </small>
                         </div>
 

@@ -1,6 +1,6 @@
 @extends('layouts.template.app')
 
-@section('title', 'Ubah Password - DAISY')
+@section('title', 'Ubah Password - DAISY LAMDEPILAR')
 
 @push('styles')
 <style>

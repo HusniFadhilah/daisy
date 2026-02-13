@@ -1,6 +1,6 @@
 @extends('layouts.template.app')
 
-@section('title', 'Data User - Daisy')
+@section('title', 'Data User - Daisy LAMDEPILAR')
 
 @section('content')
 <div class="container-fluid">
@@ -20,8 +20,8 @@
                 <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#importModal" title="Import dari Excel">
                     <i class="fas fa-file-upload me-1"></i> Import
                 </button>
-                <a href="{{ route('users.template') }}" class="btn btn-outline-secondary" title="Download Template Excel">
-                    <i class="fas fa-download me-1"></i> Template
+                <a href="{{ route('users.template') }}" class="btn btn-outline-secondary" title="Download Templat Excel">
+                    <i class="fas fa-download me-1"></i> Templat
                 </a>
             </div>
         </div>
@@ -64,7 +64,7 @@
                             <div class="form-text">
                                 Format: .xlsx, .xls, atau .csv (maksimal 2MB)<br>
                                 <a href="{{ route('users.template') }}" class="text-primary">
-                                    <i class="fas fa-download"></i> Download template untuk melihat format yang benar
+                                    <i class="fas fa-download"></i> Download templat untuk melihat format yang benar
                                 </a>
                             </div>
                         </div>

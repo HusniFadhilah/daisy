@@ -44,7 +44,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="text-muted small">Peringkat</label>
+                        <label class="text-muted small">Status Akreditasi</label>
                         <div class="fw-bold">{{ $studyProgram->peringkat_akreditasi ?? '-' }}</div>
                     </div>
 

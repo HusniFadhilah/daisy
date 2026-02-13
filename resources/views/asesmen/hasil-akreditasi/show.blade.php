@@ -33,7 +33,7 @@
                 <div class="card-header bg-{{ $validationSummary['dapat_unggul'] ? 'success' : 'warning' }} text-white">
                     <h5 class="mb-0">
                         <i class="bi bi-shield-check"></i>
-                        Validasi Syarat Peringkat Unggul
+                        Validasi Syarat Status Akreditasi Unggul
                     </h5>
                 </div>
                 <div class="card-body">
@@ -128,7 +128,7 @@
                         <i class="bi bi-exclamation-triangle"></i>
                         <strong>Perhatian:</strong>
                         Meskipun skor mencapai {{ number_format($hasil->skor_al, 2) }} (>= 361),
-                        peringkat akan diturunkan menjadi <strong>Baik Sekali</strong> karena
+                        Status akreditasi akan diturunkan menjadi <strong>Baik Sekali</strong> karena
                         kriteria berikut belum memiliki pelampauan standar:
                         <strong>{{ implode(', ', $validationSummary['missing_kriteria']) }}</strong>
                     </div>
@@ -139,7 +139,7 @@
                     <div class="alert alert-success alert-permanent mt-3">
                         <i class="bi bi-check-circle"></i>
                         <strong>Selamat!</strong>
-                        Semua syarat untuk peringkat <strong>Unggul</strong> telah terpenuhi.
+                        Semua syarat untuk status akreditasi <strong>Unggul</strong> telah terpenuhi.
                     </div>
                     @endif
                 </div>
@@ -353,7 +353,7 @@
                             <h2 class="display-4 fw-bold text-success">
                                 {{ $hasil->peringkat_akreditasi }}
                             </h2>
-                            <p class="text-muted">Peringkat Akreditasi</p>
+                            <p class="text-muted">Status Akreditasi</p>
 
                             @if($hasil->peringkat_akreditasi === 'Unggul')
                             <span class="badge bg-success">

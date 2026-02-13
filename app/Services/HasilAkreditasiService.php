@@ -415,12 +415,12 @@ class HasilAkreditasiService
 
             if ($skorFinal >= 361) {
                 if ($memenuhi_syarat) {
-                    $catatanValidasi[] = "✅ Memenuhi syarat peringkat Unggul (skor >= 361)";
+                    $catatanValidasi[] = "✅ Memenuhi syarat Status akreditasi Unggul (skor >= 361)";
                     $catatanValidasi[] = "✅ Semua kriteria (D, E, P, I, L, A, R) memiliki minimal 1 pelampauan standar";
                 } else {
                     $catatanValidasi[] = "⚠️ Skor mencapai >= 361, namun TIDAK memenuhi syarat Unggul";
                     $catatanValidasi[] = "⚠️ Kriteria yang belum memiliki pelampauan standar: " . implode(', ', $missingKriteria);
-                    $catatanValidasi[] = "⚠️ Peringkat diturunkan menjadi: Baik Sekali";
+                    $catatanValidasi[] = "⚠️ Status akreditasi diturunkan menjadi: Baik Sekali";
                 }
             }
 

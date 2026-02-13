@@ -2,7 +2,7 @@
 
 @extends('layouts.template.app')
 
-@section('title', 'Pengiriman Formulir dan Template Dokumen')
+@section('title', 'Pengiriman Formulir dan Templat Dokumen')
 
 @push('styles')
 <style>
@@ -46,30 +46,30 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item active">Pengiriman Formulir dan Template Dokumen</li>
+            <li class="breadcrumb-item active">Pengiriman Formulir dan Templat Dokumen</li>
         </ol>
     </nav>
 
     <!-- Page Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h4 class="mb-1"><i class="bi bi-file-earmark-text"></i> Pengiriman Formulir dan Template Dokumen</h4>
-            <p class="text-muted mb-0">Kirim template dokumen akreditasi</p>
+            <h4 class="mb-1"><i class="bi bi-file-earmark-text"></i> Pengiriman Formulir dan Templat Dokumen</h4>
+            <p class="text-muted mb-0">Kirim templat dokumen akreditasi</p>
         </div>
     </div>
 
     <!-- Statistics Cards -->
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 mb-4">
         <div class="col mb-3">
-            <x-stat-card title="Total Pengiriman Formulir dan Template Dokumen" :value="$stats['total']" description="Total pengiriman formulir dan template dokumen saat ini" icon="file-earmark-text" gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)" />
+            <x-stat-card title="Total Pengiriman Formulir dan Templat Dokumen" :value="$stats['total']" description="Total pengiriman formulir dan templat dokumen saat ini" icon="file-earmark-text" gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)" />
         </div>
 
         <div class="col mb-3">
-            <x-stat-card title="Belum Dikirim Template" :value="$stats['belum_dikirim']" description="Permohonan akreditasi dari PS yang menunggu pengiriman formulir dan template dokumen" icon="hourglass-split" gradient="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" />
+            <x-stat-card title="Belum Dikirim Templat" :value="$stats['belum_dikirim']" description="Permohonan akreditasi dari PS yang menunggu pengiriman formulir dan templat dokumen" icon="hourglass-split" gradient="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" />
         </div>
 
         <div class="col mb-3">
-            <x-stat-card title="Telah Dikirim Template" :value="$stats['sudah_dikirim']" description="Jumlah formulir dan template dokumen yang telah dikirim ke PS" icon="check-circle" gradient="linear-gradient(135deg, #11998e 0%, #38ef7d 100%)" />
+            <x-stat-card title="Telah Dikirim Templat" :value="$stats['sudah_dikirim']" description="Jumlah formulir dan templat dokumen yang telah dikirim ke PS" icon="check-circle" gradient="linear-gradient(135deg, #11998e 0%, #38ef7d 100%)" />
         </div>
     </div>
 
@@ -112,10 +112,10 @@
                             <select name="status" class="form-select">
                                 <option value="">Semua Status</option>
                                 <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA ? 'selected' : '' }}>
-                                    Belum Dikirim Template
+                                    Belum Dikirim Templat
                                 </option>
                                 <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM ? 'selected' : '' }}>
-                                    Telah Dikirim Template
+                                    Telah Dikirim Templat
                                 </option>
                             </select>
                         </div>
@@ -165,7 +165,7 @@
             <div class="card">
                 <div class="card-header bg-white">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Daftar Pengiriman Formulir dan Template Dokumen</h5>
+                        <h5 class="mb-0">Daftar Pengiriman Formulir dan Templat Dokumen</h5>
                         <div>
                             <span class="text-muted">Total: <strong>{{ $pengajuans->total() }}</strong></span>
                         </div>
@@ -179,8 +179,8 @@
                                 <tr>
                                     <th width="5%">#</th>
                                     <th width="25%">Permohonan Akreditasi</th>
-                                    <th width="25%">Tanggal Pengiriman Template Dokumen</th>
-                                    <th width="25%">Status Pengiriman Formulir dan Template Dokumen</th>
+                                    <th width="25%">Tanggal Pengiriman Templat Dokumen</th>
+                                    <th width="25%">Status Pengiriman Formulir dan Templat Dokumen</th>
                                     <th width="10%" class="text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -218,7 +218,7 @@
                                             </a>
 
                                             @if($pengajuan->status == \App\Models\PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM)
-                                            <button type="button" class="btn btn-primary action-btn" title="Kirim Template" onclick="kirimTemplate({{ $pengajuan->id }}, '{{ $pengajuan->judul }}')">
+                                            <button type="button" class="btn btn-primary action-btn" title="Kirim Templat" onclick="kirimTemplate({{ $pengajuan->id }}, '{{ $pengajuan->judul }}')">
                                                 <i class="bi bi-send"></i>
                                             </button>
                                             @endif
@@ -249,13 +249,13 @@
 <!-- Modal Kirim Invoice -->
 @include('de.penyampaian-template.components.modal-kirim-invoice')
 
-<!-- Modal Kirim Template -->
+<!-- Modal Kirim Templat -->
 <div class="modal fade" id="modalKirimTemplate" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title">
-                    <i class="bi bi-send"></i> Kirim Template Dokumen serta Formulir Pembayaran
+                    <i class="bi bi-send"></i> Kirim Templat Dokumen serta Formulir Pembayaran
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
@@ -286,12 +286,12 @@
                             @csrf
                             <div class="mb-3">
                                 <label class="form-label fw-bold">
-                                    <i class="bi bi-file-earmark-text"></i> Link Template Dokumen
+                                    <i class="bi bi-file-earmark-text"></i> Link Templat Dokumen
                                     <span class="text-danger">*</span>
                                 </label>
                                 <input type="url" name="template_led_link" class="form-control" placeholder="https://drive.google.com/..." required>
                                 <small class="text-muted">
-                                    Link untuk Template Dokumen (Google Drive, Dropbox, dll)
+                                    Link untuk Templat Dokumen (Google Drive, Dropbox, dll)
                                 </small>
                             </div>
 
@@ -318,7 +318,7 @@
 
                             <div class="d-grid">
                                 <button type="submit" class="btn btn-primary">
-                                    <i class="bi bi-send"></i> Kirim Kedua Template via Link
+                                    <i class="bi bi-send"></i> Kirim Kedua Templat via Link
                                 </button>
                             </div>
                         </form>
@@ -341,7 +341,7 @@
                             </div>
                             <div class="mb-3">
                                 <label class="form-label fw-bold">
-                                    <i class="bi bi-file-earmark-text"></i> File Template Dokumen
+                                    <i class="bi bi-file-earmark-text"></i> File Templat Dokumen
                                     <span class="text-danger">*</span>
                                 </label>
                                 <input type="file" name="file_template_led" class="form-control" accept=".pdf,.zip,.rar,.docx" required>
@@ -363,7 +363,7 @@
 
                             <div class="d-grid">
                                 <button type="submit" class="btn btn-primary">
-                                    <i class="bi bi-upload"></i> Upload dan Kirim Kedua Template
+                                    <i class="bi bi-upload"></i> Upload dan Kirim Kedua Templat
                                 </button>
                             </div>
                         </form>

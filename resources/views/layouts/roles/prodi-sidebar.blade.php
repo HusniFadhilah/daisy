@@ -14,12 +14,12 @@
     <span>Penerimaan Permohonan Akreditasi</span>
 </a>
 
-<!-- Template Dokumen -->
+<!-- Templat Dokumen -->
 <a href="{{ route('pedoman') }}" class="nav-link {{ request()->routeIs('pedoman') ? 'active' : '' }} text-secondary" style="color: #ddd">
     <span class="menu-icon text-secondary">
         <i class="bi bi-folder2-open"></i>
     </span>
-    <span class="text-secondary">Template Dokumen</span>
+    <span class="text-secondary">Templat Dokumen</span>
 </a>
 
 <!-- Permohonan Banding -->

@@ -1,6 +1,6 @@
 @extends('layouts.template.auth')
 
-@section('title', 'Login - DAISY')
+@section('title', 'Login - DAISY LAMDEPILAR')
 
 @php
 function getRoleIcon($roleName) {

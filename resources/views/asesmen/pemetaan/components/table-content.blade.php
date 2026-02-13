@@ -67,8 +67,8 @@
                         <th style="width: 50px;">#</th>
                         <th>Program Studi</th>
                         <th style="width: 80px;">Jenjang</th>
-                        <th style="width: 120px;">Peringkat</th>
-                        <th style="width: 150px;">Status</th>
+                        <th style="width: 120px;">Status Akreditasi</th>
+                        <th style="width: 150px;">Status Kedaluwarsa</th>
                         <th style="width: 150px;">Kedaluwarsa</th>
                         <th style="width: 100px;">Sisa Waktu</th>
                         <th style="width: 150px;">Aksi</th>

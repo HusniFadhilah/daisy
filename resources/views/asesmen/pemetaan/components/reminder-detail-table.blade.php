@@ -71,10 +71,10 @@
                         <input type="text" class="form-control form-control-sm" id="reminderSearchInput" placeholder="Ketik nama prodi atau universitas...">
                     </div>
 
-                    {{-- Peringkat --}}
+                    {{-- Status akreditasi --}}
                     <div class="col-md-4">
                         <label class="form-label small fw-bold">
-                            Peringkat Akreditasi
+                            Status Akreditasi
                         </label>
                         <select class="form-select form-select-sm select2" id="reminderPeringkatFilter" multiple>
                             <option value="Unggul">Unggul</option>
@@ -131,7 +131,7 @@
                 <th>No</th>
                 <th>Program Studi</th>
                 <th>Universitas</th>
-                <th>Peringkat</th>
+                <th>Status Akreditasi</th>
                 <th>Kedaluwarsa</th>
                 <th>Aksi</th>
             </tr>

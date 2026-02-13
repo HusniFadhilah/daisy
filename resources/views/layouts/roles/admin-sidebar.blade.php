@@ -27,7 +27,7 @@ $menus = [
 'route' => 'de.penyampaian-template',
 'match' => 'de.penyampaian-template*',
 'icon' => 'bi-file-earmark-text',
-'label' => 'Pengiriman Formulir dan Template Dokumen',
+'label' => 'Pengiriman Formulir dan Templat Dokumen',
 ],
 [
 'no' => 5,
@@ -232,7 +232,7 @@ request()->routeIs('de.permohonan-banding*')
     </li>
     <li>
         <a href="{{ route('dokumen.template') }}" class="nav-link">
-            Template Penilaian
+            Templat Penilaian
         </a>
     </li>
     <li>

@@ -940,7 +940,7 @@ class BorangValidatorController extends Controller
     }
 
     /**
-     * Download template Excel kosong
+     * Download templat Excel kosong
      */
     public function downloadTemplate($idAssignment)
     {
@@ -964,12 +964,12 @@ class BorangValidatorController extends Controller
 
             return response()->download($result['file'], $result['filename'])->deleteFileAfterSend(true);
         } catch (\Exception $e) {
-            Log::error('Download template failed', [
+            Log::error('Download templat failed', [
                 'assignment_id' => $idAssignment,
                 'error' => $e->getMessage(),
             ]);
 
-            return back()->with('error', 'Gagal download template: ' . $e->getMessage());
+            return back()->with('error', 'Gagal download templat: ' . $e->getMessage());
         }
     }
 

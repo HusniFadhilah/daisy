@@ -98,7 +98,7 @@ class BorangExampleSeeder extends Seeder
 
         $objWriter = IOFactory::createWriter($this->phpWord, 'Word2007');
         $safeCode = $degreeLevel->code; // contoh: "s2-terapan" jadi "s2_terapan"
-        $filePath = storage_path("app/public/templates/TEMPLATE_LAPORAN_EVALUASI_DIRI_{$safeCode}.docx");
+        $filePath = storage_path("app/public/templates/TEMPLAT_LAPORAN_EVALUASI_DIRI_{$safeCode}.docx");
 
         if (!file_exists(dirname($filePath))) {
             mkdir(dirname($filePath), 0755, true);
@@ -106,7 +106,7 @@ class BorangExampleSeeder extends Seeder
 
         $objWriter->save($filePath);
 
-        // $this->command->info("✅ Template DOCX dibuat untuk {$safeCode}: " . $filePath);
+        // $this->command->info("✅ Templat DOCX dibuat untuk {$safeCode}: " . $filePath);
     }
 
     private function addCoverPage()
@@ -1397,7 +1397,7 @@ class BorangExampleSeeder extends Seeder
     private function saveProtectionInstructions(string $degreeCode): void
     {
         $guide = <<<'TXT'
-# 🔒 PANDUAN PROTECT TEMPLATE LED
+# 🔒 PANDUAN PROTECT TEMPLAT LED
 
 ## Password Default
 **Password:** lamdepilar

@@ -137,7 +137,7 @@
                     <div class="row text-center">
                         <div class="col-md-4 mb-3">
                             <div class="p-3 bg-light rounded">
-                                <h6 class="text-muted small mb-2">Peringkat</h6>
+                                <h6 class="text-muted small mb-2">Status Akreditasi</h6>
                                 @php
                                 $peringkat = $hasil->peringkat_akreditasi ?? '-';
                                 $badgeClass = match($peringkat) {
@@ -201,9 +201,9 @@
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Peringkat Akreditasi Baru <span class="text-danger">*</span></label>
+                                    <label class="form-label">Status Akreditasi <span class="text-danger">*</span></label>
                                     <select name="peringkat_final" class="form-select @error('peringkat_final') is-invalid @enderror">
-                                        <option value="">-- Pilih Peringkat --</option>
+                                        <option value="">-- Pilih Status Akreditasi --</option>
                                         <option value="Unggul">Unggul</option>
                                         <option value="Baik Sekali">Baik Sekali</option>
                                         <option value="Baik">Baik</option>
@@ -261,7 +261,7 @@
                     <div class="row text-center mb-3">
                         <div class="col-md-6">
                             <div class="p-3 bg-light rounded">
-                                <h6 class="text-muted small mb-2">Peringkat Baru</h6>
+                                <h6 class="text-muted small mb-2">Status Akreditasi Baru</h6>
                                 <h4 class="mb-0">
                                     <span class="badge bg-success">{{ $pengajuan->peringkat_final ?? '-' }}</span>
                                 </h4>

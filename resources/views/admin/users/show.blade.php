@@ -1,6 +1,6 @@
 @extends('layouts.template.app')
 
-@section('title', 'Detail User - Daisy')
+@section('title', 'Detail User - Daisy LAMDEPILAR')
 
 @section('content')
 <div class="container-fluid">
@@ -45,11 +45,11 @@
                         <label class="form-label fw-bold">Status Email</label>
                         <p class="form-control-plaintext">
                             @if($user->email_verified_at)
-                                <span class="badge bg-success fs-6">Terverifikasi</span>
-                                <br>
-                                <small class="text-muted">{{ $user->email_verified_at->format('d M Y H:i') }}</small>
+                            <span class="badge bg-success fs-6">Terverifikasi</span>
+                            <br>
+                            <small class="text-muted">{{ $user->email_verified_at->format('d M Y H:i') }}</small>
                             @else
-                                <span class="badge bg-warning fs-6">Belum Terverifikasi</span>
+                            <span class="badge bg-warning fs-6">Belum Terverifikasi</span>
                             @endif
                         </p>
                     </div>

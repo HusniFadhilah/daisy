@@ -87,7 +87,7 @@
                 <div class="card-body">
                     <table class="table table-borderless">
                         <tr>
-                            <th>Peringkat Akreditasi</th>
+                            <th>Status Akreditasi</th>
                             <td>
                                 : @php
                                 $badgeClass = match($pengajuan->peringkat_hasil) {

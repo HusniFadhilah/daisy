@@ -46,7 +46,7 @@
                         @if($pengajuan->peringkat_hasil)
                         <div class="alert alert-light border border-success mb-0">
                             <i class="bi bi-star-fill text-warning"></i>
-                            Peringkat Akreditasi:
+                            Status Akreditasi:
                             <strong class="text-success fs-5">{{ $pengajuan->peringkat_hasil }}</strong>
                         </div>
                         @endif
@@ -123,7 +123,7 @@
                         <td>: {{ $pengajuan->tahun_akreditasi }}</td>
                     </tr>
                     <tr>
-                        <th>Peringkat Akreditasi</th>
+                        <th>Status Akreditasi</th>
                         <td>
                             : <span class="badge p-2 px-3 my-2 fs-6" style="background-color: {{ $hasil->getPeringkatColor($peringkat) }}; color:#222">{{ $peringkat }}</span>
                         </td>

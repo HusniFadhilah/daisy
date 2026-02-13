@@ -1,6 +1,6 @@
 @extends('layouts.template.app')
 
-@section('title', 'Ganti Password - DAISY')
+@section('title', 'Ganti Password - DAISY LAMDEPILAR')
 
 @section('content')
 <div class="container-fluid py-3">

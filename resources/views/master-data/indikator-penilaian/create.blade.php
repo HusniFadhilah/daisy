@@ -1,6 +1,6 @@
 @extends('layouts.template.app')
 
-@section('title', 'Tambah Indikator Penilaian - Daisy')
+@section('title', 'Tambah Indikator Penilaian - Daisy LAMDEPILAR')
 
 @section('content')
 <div class="container-fluid">

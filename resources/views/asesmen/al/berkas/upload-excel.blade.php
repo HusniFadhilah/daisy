@@ -48,13 +48,17 @@
     }
 
     @keyframes pulseAlert {
-        0%, 100% {
+
+        0%,
+        100% {
             box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.4);
         }
+
         50% {
             box-shadow: 0 0 15px 5px rgba(255, 152, 0, 0.2);
         }
     }
+
 </style>
 @endpush
 
@@ -288,8 +292,7 @@
                         @csrf
 
                         <div class="upload-area {{ (!$canUpload || $isSubmittedOnly || $isApproved) ? 'disabled' : '' }}" id="uploadArea">
-                            <input type="file" id="fileInput" name="file" accept=".xlsx,.xls" class="d-none" required
-                                {{ (!$canUpload || $isSubmittedOnly || $isApproved) ? 'disabled' : '' }}>
+                            <input type="file" id="fileInput" name="file" accept=".xlsx,.xls" class="d-none" required {{ (!$canUpload || $isSubmittedOnly || $isApproved) ? 'disabled' : '' }}>
 
                             <div id="uploadPrompt">
                                 <i class="bi bi-cloud-arrow-up file-icon"></i>
@@ -334,8 +337,7 @@
 
                         {{-- Submit Button --}}
                         <div class="mt-4 text-center">
-                            <button type="submit" class="btn btn-primary btn-md" id="btnUploadSubmit"
-                                {{ (!$canUpload || $isSubmittedOnly || $isApproved) ? 'disabled' : '' }}>
+                            <button type="submit" class="btn btn-primary btn-md" id="btnUploadSubmit" {{ (!$canUpload || $isSubmittedOnly || $isApproved) ? 'disabled' : '' }}>
                                 <i class="bi bi-upload"></i> Upload dan Proses
                             </button>
                         </div>
@@ -359,7 +361,7 @@
                             <i class="bi bi-info-circle"></i> Petunjuk Upload
                         </h6>
                         <ol class="mb-0 small">
-                            <li>Download template Excel terlebih dahulu menggunakan tombol di bawah</li>
+                            <li>Download templat Excel terlebih dahulu menggunakan tombol di bawah</li>
                             <li>Silahkan mengisi penilaian pada kolom yang tersedia (cell berwarna kuning)</li>
                             <li>Mohon jangan mengubah struktur, nama sheet, atau kode elemen pada excel</li>
                             <li>Upload file Excel yang telah diisi</li>
@@ -369,7 +371,7 @@
 
                     <div class="mb-4 text-center">
                         <a href="{{ route('al.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'template']) }}" class="btn btn-md btn-outline-primary">
-                            <i class="bi bi-download"></i> Download Template Penilaian AL
+                            <i class="bi bi-download"></i> Download Templat Penilaian AL
                         </a>
                     </div>
                 </div>
@@ -433,19 +435,19 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
         };
 
         const el = {
-            uploadArea: qs('uploadArea'),
-            fileInput: qs('fileInput'),
-            uploadPrompt: qs('uploadPrompt'),
-            fileInfo: qs('fileInfo'),
-            fileName: qs('fileName'),
-            fileSize: qs('fileSize'),
-            btnUploadSubmit: qs('btnUploadSubmit'),
-            btnRemoveFile: qs('btnRemoveFile'),
-            uploadForm: qs('uploadForm'),
-            progressWrapper: qs('progressWrapper'),
-            progressBar: qs('progressBar'),
-            progressText: qs('progressText'),
-        };
+            uploadArea: qs('uploadArea')
+            , fileInput: qs('fileInput')
+            , uploadPrompt: qs('uploadPrompt')
+            , fileInfo: qs('fileInfo')
+            , fileName: qs('fileName')
+            , fileSize: qs('fileSize')
+            , btnUploadSubmit: qs('btnUploadSubmit')
+            , btnRemoveFile: qs('btnRemoveFile')
+            , uploadForm: qs('uploadForm')
+            , progressWrapper: qs('progressWrapper')
+            , progressBar: qs('progressBar')
+            , progressText: qs('progressText')
+        , };
 
         // ✅ Disable upload if submitted OR not uploader
         if (isSubmitted || !canUpload) {
@@ -497,16 +499,16 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
             if (!file) return;
 
             const validTypes = [
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'application/vnd.ms-excel'
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                , 'application/vnd.ms-excel'
             ];
             const fileExtension = file.name.split('.').pop().toLowerCase();
 
             if (!validTypes.includes(file.type) && !['xlsx', 'xls'].includes(fileExtension)) {
                 Swal.fire({
-                    icon: 'error',
-                    title: 'Format File Salah',
-                    text: 'Hanya file Excel (.xlsx atau .xls) yang diperbolehkan'
+                    icon: 'error'
+                    , title: 'Format File Salah'
+                    , text: 'Hanya file Excel (.xlsx atau .xls) yang diperbolehkan'
                 });
                 el.fileInput.value = '';
                 return;
@@ -514,9 +516,9 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
 
             if (file.size > 10 * 1024 * 1024) {
                 Swal.fire({
-                    icon: 'error',
-                    title: 'File Terlalu Besar',
-                    text: 'Ukuran file maksimal 10MB'
+                    icon: 'error'
+                    , title: 'File Terlalu Besar'
+                    , text: 'Ukuran file maksimal 10MB'
                 });
                 el.fileInput.value = '';
                 return;
@@ -561,11 +563,11 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
 
             try {
                 const response = await fetch(`/al/berkas/${idAsesmen}/import`, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json'
+                    method: 'POST'
+                    , body: formData
+                    , headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        , 'Accept': 'application/json'
                     }
                 });
 
@@ -578,11 +580,11 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
                 if (data.success) {
                     const importLogId = data.import_log_id;
                     Swal.fire({
-                        icon: 'info',
-                        title: 'Sedang Memproses File',
-                        html: 'File sedang diproses.<br>Halaman akan dimuat ulang setelah selesai.',
-                        showConfirmButton: false,
-                        allowOutsideClick: false
+                        icon: 'info'
+                        , title: 'Sedang Memproses File'
+                        , html: 'File sedang diproses.<br>Halaman akan dimuat ulang setelah selesai.'
+                        , showConfirmButton: false
+                        , allowOutsideClick: false
                     });
                     pollImportStatus(importLogId);
                 }
@@ -594,9 +596,9 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
                 }
                 if (el.progressWrapper) el.progressWrapper.style.display = 'none';
                 Swal.fire({
-                    icon: 'error',
-                    title: 'Upload Gagal',
-                    text: error.message
+                    icon: 'error'
+                    , title: 'Upload Gagal'
+                    , text: error.message
                 });
             }
         });
@@ -612,10 +614,10 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
                 if (pollCount >= MAX_POLL) {
                     clearInterval(pollInterval);
                     Swal.fire({
-                        icon: 'warning',
-                        title: 'Timeout',
-                        text: 'Proses memakan waktu lama. Mohon ulangi upload file',
-                        confirmButtonText: 'OK'
+                        icon: 'warning'
+                        , title: 'Timeout'
+                        , text: 'Proses memakan waktu lama. Mohon ulangi upload file'
+                        , confirmButtonText: 'OK'
                     }).then(function() {
                         window.location.reload();
                     });
@@ -651,20 +653,20 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
         function showResult(log) {
             if (log.status === 'completed') {
                 Swal.fire({
-                    icon: 'success',
-                    title: 'Proses Selesai!',
-                    html: '<div class="text-center"><p>File telah berhasil diupload dan diproses</p></div>',
-                    timer: 3000,
-                    timerProgressBar: true
+                    icon: 'success'
+                    , title: 'Proses Selesai!'
+                    , html: '<div class="text-center"><p>File telah berhasil diupload dan diproses</p></div>'
+                    , timer: 3000
+                    , timerProgressBar: true
                 }).then(function() {
                     window.location.reload();
                 });
             } else {
                 Swal.fire({
-                    icon: 'error',
-                    title: 'Proses Upload Gagal',
-                    text: log.errors || 'Terjadi kesalahan saat memproses file',
-                    confirmButtonText: 'OK'
+                    icon: 'error'
+                    , title: 'Proses Upload Gagal'
+                    , text: log.errors || 'Terjadi kesalahan saat memproses file'
+                    , confirmButtonText: 'OK'
                 }).then(function() {
                     window.location.reload();
                 });
@@ -690,19 +692,19 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
 
             if (completed < total) {
                 Swal.fire({
-                    icon: 'warning',
-                    title: 'Penilaian Belum Lengkap',
-                    html: `<p>Anda baru menilai <strong>${completed} dari ${total}</strong> elemen.</p>
-                           <p class="text-danger">Anda harus menilai semua elemen sebelum submit!</p>`,
-                    confirmButtonText: 'OK'
+                    icon: 'warning'
+                    , title: 'Penilaian Belum Lengkap'
+                    , html: `<p>Anda baru menilai <strong>${completed} dari ${total}</strong> elemen.</p>
+                           <p class="text-danger">Anda harus menilai semua elemen sebelum submit!</p>`
+                    , confirmButtonText: 'OK'
                 });
                 return;
             }
 
             const confirmed = await Swal.fire({
-                icon: 'question',
-                title: 'Konfirmasi Submit Penilaian',
-                html: `
+                icon: 'question'
+                , title: 'Konfirmasi Submit Penilaian'
+                , html: `
                     <div class="text-start">
                         <p><strong>Anda akan mengirim penilaian untuk finalisasi.</strong></p>
                         <p>Setelah di-submit:</p>
@@ -713,23 +715,23 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
                         </ul>
                         <p class="text-primary">Total: <strong>${total} elemen</strong> telah dinilai</p>
                     </div>
-                `,
-                showCancelButton: true,
-                confirmButtonText: 'Ya, Submit Sekarang',
-                cancelButtonText: 'Batal',
-                confirmButtonColor: '#28a745',
-                cancelButtonColor: '#6c757d'
+                `
+                , showCancelButton: true
+                , confirmButtonText: 'Ya, Submit Sekarang'
+                , cancelButtonText: 'Batal'
+                , confirmButtonColor: '#28a745'
+                , cancelButtonColor: '#6c757d'
             });
 
             if (!confirmed.isConfirmed) return;
 
             try {
                 const response = await fetch(`/al/berkas/${idAsesmen}/submit`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
+                    method: 'POST'
+                    , headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        , 'Accept': 'application/json'
+                        , 'Content-Type': 'application/json'
                     }
                 });
 
@@ -737,15 +739,15 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
 
                 if (data.success) {
                     await Swal.fire({
-                        icon: 'success',
-                        title: 'Submit Berhasil!',
-                        html: `
+                        icon: 'success'
+                        , title: 'Submit Berhasil!'
+                        , html: `
                             <div class="text-center">
                                 <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
                                 <p class="mt-3">${data.message}</p>
                             </div>
-                        `,
-                        confirmButtonText: 'OK'
+                        `
+                        , confirmButtonText: 'OK'
                     });
                     window.location.reload();
                 } else {
@@ -754,13 +756,14 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
             } catch (error) {
                 console.error('Submit error:', error);
                 Swal.fire({
-                    icon: 'error',
-                    title: 'Gagal Submit',
-                    text: error.message
+                    icon: 'error'
+                    , title: 'Gagal Submit'
+                    , text: error.message
                 });
             }
         }
     });
+
 </script>
 @endpush
 @endsection

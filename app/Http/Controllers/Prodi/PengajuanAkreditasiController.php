@@ -1366,7 +1366,7 @@ class PengajuanAkreditasiController extends Controller
     }
 
     /**
-     * Download template DOCX
+     * Download templat DOCX
      */
     public function downloadBorangTemplate($id)
     {
@@ -1387,7 +1387,7 @@ class PengajuanAkreditasiController extends Controller
             }
             return response()->download($templatePath, $fileName);
         } catch (\Exception $e) {
-            Log::error('Download template DOCX Error', [
+            Log::error('Download templat DOCX Error', [
                 'error' => $e->getMessage()
             ]);
 
@@ -1395,10 +1395,10 @@ class PengajuanAkreditasiController extends Controller
             $current = request()->fullUrl();
 
             if (!$previous || rtrim($previous, '/') === rtrim($current, '/')) {
-                abort(500, 'Gagal mendownload template: ' . $e->getMessage());
+                abort(500, 'Gagal mendownload templat: ' . $e->getMessage());
             }
 
-            return redirect()->to($previous)->with('error', 'Gagal mendownload template: ' . $e->getMessage());
+            return redirect()->to($previous)->with('error', 'Gagal mendownload templat: ' . $e->getMessage());
         }
     }
 

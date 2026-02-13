@@ -24,7 +24,7 @@
             ],
             [
             'date' => $pengajuan->tanggal_template_led_dikirim,
-            'label' => 'Pengiriman Formulir dan Template Dokumen',
+            'label' => 'Pengiriman Formulir dan Templat Dokumen',
             'icon' => 'bi-file-earmark-arrow-down',
             'step' => 3
             ],

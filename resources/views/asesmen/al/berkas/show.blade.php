@@ -287,11 +287,11 @@ $isComplete = $progress['percentage'] == 100;
                                     <hr class="dropdown-divider">
                                 </li>
 
-                                <!-- Download Template -->
+                                <!-- Download Templat -->
                                 <li>
                                     <a class="dropdown-item" href="{{ route('al.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'template']) }}" id="btnDownloadTemplate">
-                                        <i class="bi bi-file-earmark-text text-info"></i> Download Template
-                                        <small class="d-block text-muted">Format Excel sebagai template</small>
+                                        <i class="bi bi-file-earmark-text text-info"></i> Download Templat
+                                        <small class="d-block text-muted">Format Excel sebagai templat</small>
                                     </a>
                                 </li>
 
@@ -383,7 +383,7 @@ $isComplete = $progress['percentage'] == 100;
                 <i class="bi bi-info-circle me-2"></i>
                 <strong>Petunjuk:</strong>
                 <ol class="mb-0 mt-2">
-                    <li>Gunakan <strong>tombol Finalisasi & Kirim</strong> untuk submit penilaian, <strong>tombol Download Excel</strong> untuk mengunduh template atau hasil penilaian dalam format excel, serta <strong>tombol Upload Excel</strong> untuk mengupload penilaian excel serta menyimpannya ke sistem</li>
+                    <li>Gunakan <strong>tombol Finalisasi & Kirim</strong> untuk submit penilaian, <strong>tombol Download Excel</strong> untuk mengunduh templat atau hasil penilaian dalam format excel, serta <strong>tombol Upload Excel</strong> untuk mengupload penilaian excel serta menyimpannya ke sistem</li>
                     <li>Klik <strong>Expand/Collapse All</strong> untuk membuka/menutup semua form elemen penilaian</li>
                     <li>Klik <strong>sel di matriks visualisasi penilaian</strong> untuk langsung membuka elemen penilaian dan menilai elemen tersebut</li>
                     <li>Pilih kategori penilaian:
@@ -836,7 +836,7 @@ $isComplete = $progress['percentage'] == 100;
                         </h6>
                         <ul class="mb-0 small">
                             <li>File harus berformat Excel (.xlsx atau .xls)</li>
-                            <li>Gunakan template yang telah disediakan</li>
+                            <li>Gunakan templat yang telah disediakan</li>
                             <li>Jangan ubah struktur atau nama sheet</li>
                             <li>Kolom <strong>Kode Elemen (E)</strong> tidak boleh diubah</li>
                             <li>Isi penilaian pada kolom I-M (pilih salah satu kategori, dan berikan justifikasi), pada cell warna kuning</li>
@@ -1043,7 +1043,7 @@ $isComplete = $progress['percentage'] == 100;
             // Import Form Submit
             document.getElementById('importForm').addEventListener('submit', importExcel);
 
-            // Download Template
+            // Download Templat
             const btnDownloadTemplate = document.getElementById('btnDownloadTemplate')
             if (btnDownloadTemplate) btnDownloadTemplate.addEventListener('click', downloadTemplate);
             document.querySelectorAll('.btnDownloadData').forEach(btn => {
@@ -1928,7 +1928,7 @@ $isComplete = $progress['percentage'] == 100;
         }
 
         /**
-         * Download Template (Empty Format)
+         * Download Templat (Empty Format)
          */
         ['btnDownloadTemplate', 'btnDownloadTemplateModal'].forEach(id => {
             const el = document.getElementById(id);
@@ -1948,7 +1948,7 @@ $isComplete = $progress['percentage'] == 100;
                 Swal.fire({
                     icon: 'success'
                     , title: 'Download Dimulai!'
-                    , text: 'Template Excel sedang didownload'
+                    , text: 'Templat Excel sedang didownload'
                     , timer: 2000
                     , showConfirmButton: false
                 });

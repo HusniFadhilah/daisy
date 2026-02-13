@@ -390,7 +390,7 @@ class HasilAkreditasiController extends Controller
 
             DB::commit();
 
-            return back()->with('success', "Peringkat berhasil diubah dari {$oldPeringkat} ke {$request->peringkat}");
+            return back()->with('success', "Status akreditasi berhasil diubah dari {$oldPeringkat} ke {$request->peringkat}");
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Override peringkat failed', ['error' => $e->getMessage()]);

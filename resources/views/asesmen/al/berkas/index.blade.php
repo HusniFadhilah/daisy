@@ -92,7 +92,7 @@
 
                                     <a href="{{ route('al.berkas.export', ['idAsesmen'=>$asesmen->id,'mode'=>'template']) }}" class="btn btn-outline-primary btn-sm btn-fixed-sm" target="_blank">
                                         <i class="bi bi-file-earmark-excel me-1"></i>
-                                        Download Template Penilaian AL
+                                        Download Templat Penilaian AL
                                     </a>
 
                                 </div>

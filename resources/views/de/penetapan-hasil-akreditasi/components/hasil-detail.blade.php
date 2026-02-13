@@ -64,7 +64,7 @@
 
         <div class="alert alert-light alert-permanent mt-3 mb-0">
             <i class="bi bi-info-circle me-2"></i>
-            <strong>Catatan:</strong> Untuk peringkat <strong>Unggul</strong>, selain mencapai skor >= 351,
+            <strong>Catatan:</strong> Untuk status akreditasi <strong>Unggul</strong>, selain mencapai skor >= 351,
             program studi harus memiliki <strong>minimal 1 elemen dengan kategori: Pelampauan Standar (Exceeding Standard)</strong>
             di <strong>setiap kriteria</strong> (D, E, P, I, L, A, R).
         </div>
@@ -77,7 +77,7 @@
     <div class="card-header bg-{{ $validationSummary['dapat_unggul'] ? 'success' : 'warning' }} text-white">
         <h5 class="mb-0">
             <i class="bi bi-{{ $validationSummary['dapat_unggul'] ? 'shield-check' : 'exclamation-triangle' }}"></i>
-            Validasi Syarat Peringkat UNGGUL
+            Validasi Syarat Status Akreditasi UNGGUL
         </h5>
     </div>
     <div class="card-body">
@@ -147,11 +147,11 @@
 
         @if(!$validationSummary['pelampauan_memenuhi'])
         <div class="alert alert-warning alert-permanent mt-3 mb-0">
-            <strong>⚠️ Perhatian:</strong> Meskipun skor mencapai >= 361, peringkat <strong>TIDAK DAPAT</strong> ditetapkan sebagai UNGGUL
+            <strong>⚠️ Perhatian:</strong> Meskipun skor mencapai >= 361, status akreditasi <strong>TIDAK DAPAT</strong> ditetapkan sebagai UNGGUL
             karena kriteria <strong>{{ implode(', ', $validationSummary['missing_kriteria']) }}</strong>
             belum memiliki minimal 1 elemen dengan kategori Pelampauan Standar (Exceeding Standard).
             <br><br>
-            Peringkat akan diturunkan menjadi: <strong class="text-danger">BAIK SEKALI</strong>
+            Status akreditasi akan diubah menjadi: <strong class="text-danger">BAIK SEKALI</strong>
         </div>
         @endif
     </div>

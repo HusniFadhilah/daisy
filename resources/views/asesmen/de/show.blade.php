@@ -57,13 +57,13 @@
             @if(in_array($pengajuan->status,[\App\Models\PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,\App\Models\PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM]))
             <div class="card mb-4">
                 <div class="card-header bg-warning text-white">
-                    <h5 class="mb-0"> <i class="bi bi-receipt"></i> Aksi Diperlukan: Kirim Template Dokumen, Formulir Pembayaran </h5>
+                    <h5 class="mb-0"> <i class="bi bi-receipt"></i> Aksi Diperlukan: Kirim Templat Dokumen, Formulir Pembayaran </h5>
                 </div>
             </div>
             <ul class="nav nav-tabs mb-3" id="aksiPengajuanTab" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active" id="tab-template" data-bs-toggle="tab" data-bs-target="#pane-template" type="button" role="tab">
-                        <i class="bi bi-file-earmark-arrow-down"></i> Template LED & LKPS
+                        <i class="bi bi-file-earmark-arrow-down"></i> Templat LED & LKPS
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
@@ -81,12 +81,12 @@
                         <div class="card-header bg-primary text-white">
                             <h5 class="mb-0">
                                 <i class="bi bi-file-earmark-arrow-down"></i>
-                                Kirim Template Dokumen
+                                Kirim Templat Dokumen
                             </h5>
                         </div>
                         <div class="card-body">
                             <p class="mb-3">
-                                Permohonan Akreditasi telah diterima. Kirimkan form Template Dokumen ke prodi untuk dilengkapi.
+                                Permohonan Akreditasi telah diterima. Kirimkan form Templat Dokumen ke prodi untuk dilengkapi.
                             </p>
 
                             <form action="{{ route('de.pengajuan.kirim-borang', $pengajuan->id) }}" method="POST" enctype="multipart/form-data" id="formKirimBorang">
@@ -95,17 +95,17 @@
                                 {{-- Pilihan Metode Pengiriman --}}
                                 <div class="mb-4">
                                     <label class="form-label fw-bold">
-                                        Metode Pengiriman Template <span class="text-danger">*</span>
+                                        Metode Pengiriman Templat <span class="text-danger">*</span>
                                     </label>
                                     <div class="btn-group w-100" role="group">
                                         <input type="radio" class="btn-check @error('metode_kirim') is-invalid @enderror" name="metode_kirim" id="metodeLink" value="link" {{ old('metode_kirim', 'link') == 'link' ? 'checked' : '' }}>
                                         <label class="btn btn-outline-primary" for="metodeLink">
-                                            <i class="bi bi-link-45deg"></i> Kirim Link Template
+                                            <i class="bi bi-link-45deg"></i> Kirim Link Templat
                                         </label>
 
                                         <input type="radio" class="btn-check @error('metode_kirim') is-invalid @enderror" name="metode_kirim" id="metodeUpload" value="upload" {{ old('metode_kirim') == 'upload' ? 'checked' : '' }}>
                                         <label class="btn btn-outline-primary" for="metodeUpload">
-                                            <i class="bi bi-cloud-upload"></i> Upload File Template
+                                            <i class="bi bi-cloud-upload"></i> Upload File Templat
                                         </label>
                                     </div>
                                     @error('metode_kirim')
@@ -113,17 +113,17 @@
                                     @enderror
                                 </div>
 
-                                {{-- OPTION 1: Link Template --}}
+                                {{-- OPTION 1: Link Templat --}}
                                 <div id="divLink" class="mb-4">
                                     <div class="card bg-light">
                                         <div class="card-body">
                                             <h6 class="fw-bold mb-3">
-                                                <i class="bi bi-link"></i> Link Template Dokumen
+                                                <i class="bi bi-link"></i> Link Templat Dokumen
                                             </h6>
 
                                             <div class="mb-3">
                                                 <label class="form-label fw-bold">
-                                                    URL Template <span class="text-danger">*</span>
+                                                    URL Templat <span class="text-danger">*</span>
                                                 </label>
                                                 <div class="input-group">
                                                     <span class="input-group-text">
@@ -135,14 +135,14 @@
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                                 @enderror
                                                 <small class="text-muted">
-                                                    Link ke Template Dokumen yang dapat diakses oleh prodi
+                                                    Link ke Templat Dokumen yang dapat diakses oleh prodi
                                                 </small>
                                             </div>
 
                                             <div class="alert alert-info alert-permanent mb-0">
-                                                <strong><i class="bi bi-info-circle"></i> Default Template:</strong>
+                                                <strong><i class="bi bi-info-circle"></i> Templat Default:</strong>
                                                 <p class="mb-2">
-                                                    Template default tersedia di:
+                                                    Templat default tersedia di:
                                                     <a href="{{ route('pengajuan.borang.download-template', $pengajuan->id) }}" target="_blank" class="alert-link">
                                                         <i class="bi bi-download"></i> Download Preview
                                                     </a>
@@ -165,12 +165,12 @@
                                     <div class="card bg-light">
                                         <div class="card-body">
                                             <h6 class="fw-bold mb-3">
-                                                <i class="bi bi-cloud-upload"></i> Upload File Template
+                                                <i class="bi bi-cloud-upload"></i> Upload File Templat
                                             </h6>
 
                                             <div class="mb-3">
                                                 <label class="form-label fw-bold">
-                                                    File Template Dokumen, formulir pembayaran <span class="text-danger">*</span>
+                                                    File Templat Dokumen, formulir pembayaran <span class="text-danger">*</span>
                                                 </label>
                                                 <input type="file" name="borang_template" id="borang_template" class="form-control @error('borang_template') is-invalid @enderror" accept=".docx,.doc,.zip,.rar,.pdf,.xlsx">
                                                 @error('borang_template')
@@ -209,9 +209,9 @@
                                             <i class="bi bi-info-circle"></i> Yang Akan Terjadi:
                                         </h6>
                                         <ul class="mb-0 small">
-                                            <li id="infoMetode">Link template akan dikirim ke email prodi</li>
-                                            <li>Prodi dapat mengakses template melalui link/download file</li>
-                                            <li>Status Permohonan akreditasi akan diupdate ke <code>Pengiriman Formulir dan Template Dokumen</code></li>
+                                            <li id="infoMetode">Link templat akan dikirim ke email prodi</li>
+                                            <li>Prodi dapat mengakses templat melalui link/download file</li>
+                                            <li>Status Permohonan akreditasi akan diupdate ke <code>Pengiriman Formulir dan Templat Dokumen</code></li>
                                             <li>Notifikasi email akan dikirim ke UPPS</li>
                                         </ul>
                                     </div>
@@ -220,7 +220,7 @@
                                 {{-- Submit Button --}}
                                 <div class="d-flex gap-2">
                                     <button type="submit" class="btn btn-primary" id="btnSubmit">
-                                        <i class="bi bi-send"></i> Kirim Template ke Prodi
+                                        <i class="bi bi-send"></i> Kirim Templat ke Prodi
                                     </button>
                                     <button type="reset" class="btn btn-outline-secondary">
                                         <i class="bi bi-arrow-counterclockwise"></i> Reset
@@ -244,7 +244,7 @@
                         </div>
                         <div class="card-body">
                             <p class="mb-3">
-                                Kirimkan formulir pembayaran ke prodi. Formulir ini terpisah dari Template Dokumen.
+                                Kirimkan formulir pembayaran ke prodi. Formulir ini terpisah dari Templat Dokumen.
                             </p>
 
                             <form action="{{ route('de.pengajuan.kirim-formulir-pembayaran', $pengajuan->id) }}" method="POST" enctype="multipart/form-data" id="formKirimFormulirPembayaran">
@@ -1198,13 +1198,13 @@
                 divUpload.style.display = 'none';
                 templateLink.required = true;
                 borangTemplate.required = false;
-                infoMetode.textContent = 'Link template akan dikirim ke email prodi';
+                infoMetode.textContent = 'Link templat akan dikirim ke email prodi';
             } else {
                 divLink.style.display = 'none';
                 divUpload.style.display = 'block';
                 templateLink.required = false;
                 borangTemplate.required = true;
-                infoMetode.textContent = 'File template akan diupload dan dapat didownload oleh prodi';
+                infoMetode.textContent = 'File templat akan diupload dan dapat didownload oleh prodi';
             }
         });
     });
@@ -1230,7 +1230,7 @@
             const link = document.getElementById('template_link').value;
             if (!link) {
                 e.preventDefault();
-                alert('Mohon masukkan URL template!');
+                alert('Mohon masukkan URL templat!');
                 return false;
             }
 
@@ -1246,7 +1246,7 @@
             const file = document.getElementById('borang_template').files[0];
             if (!file) {
                 e.preventDefault();
-                alert('Mohon pilih file template!');
+                alert('Mohon pilih file templat!');
                 return false;
             }
 

@@ -1,6 +1,6 @@
 @extends('layouts.template.app')
 
-@section('title', 'Profil Saya - DAISY')
+@section('title', 'Profil Saya - DAISY LAMDEPILAR')
 
 @push('styles')
 <!-- Select2 CSS -->

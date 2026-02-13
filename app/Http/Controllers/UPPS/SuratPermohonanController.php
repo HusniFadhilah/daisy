@@ -613,7 +613,7 @@ class SuratPermohonanController extends Controller
         $path = public_path('assets/file/TEMPLATE PERMOHONAN AKREDITASI.docx');
 
         if (!file_exists($path)) {
-            abort(404, 'File template tidak ditemukan');
+            abort(404, 'File templat tidak ditemukan');
         }
         return response()->download(
             $path,

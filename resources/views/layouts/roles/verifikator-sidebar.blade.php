@@ -73,7 +73,7 @@
     @if(Route::has('dokumen.template'))
     <li>
         <a href="{{ route('dokumen.template') }}" class="nav-link">
-            Template Laporan
+            Templat Laporan
         </a>
     </li>
     @endif

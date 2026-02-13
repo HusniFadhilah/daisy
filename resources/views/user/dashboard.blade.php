@@ -1,6 +1,6 @@
 @extends('layouts.template.app')
 
-@section('title', 'Dashboard User - DAISY')
+@section('title', 'Dashboard User - DAISY LAMDEPILAR')
 
 @section('content')
 <!-- Welcome Section -->

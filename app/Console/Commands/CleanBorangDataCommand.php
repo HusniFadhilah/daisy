@@ -24,7 +24,7 @@ class CleanBorangDataCommand extends Command
     }
 
     /* ============================================================
-     | 1️⃣ Hapus template tabel kosong
+     | 1️⃣ Hapus templat tabel kosong
      * ============================================================ */
     private function cleanEmptyTemplates($pengajuanId = null)
     {

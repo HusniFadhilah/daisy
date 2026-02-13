@@ -1,6 +1,6 @@
 @extends('layouts.template.app')
 
-@section('title', 'Univ & Prodi - Daisy')
+@section('title', 'Univ & Prodi - Daisy LAMDEPILAR')
 
 @section('content')
 <div class="container-fluid">
@@ -114,8 +114,8 @@
                                     <th>Nama Program Studi</th>
                                     <th>Jenjang</th>
                                     <th>Universitas</th>
-                                    <th>Peringkat</th>
-                                    <th>Status</th>
+                                    <th>Status Akreditasi</th>
+                                    <th>Status Kedaluwarsa</th>
                                     <th>Tanggal Kedaluwarsa</th>
                                     <th>Aksi</th>
                                 </tr>

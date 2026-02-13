@@ -53,7 +53,7 @@ class PasswordResetController extends Controller
             'token' => $token,
             'email' => $request->email,
         ], function ($m) use ($request) {
-            $m->to($request->email)->subject('Reset Password Akun Daisy');
+            $m->to($request->email)->subject('Reset Password Akun Daisy LAMDEPILAR');
         });
 
         return back()->with('success', 'Link reset password telah dikirim ke email.');

@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Template Borang LED</title>
+    <title>Templat Dokumen</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -102,7 +102,7 @@
 </head>
 <body>
     <div class="header">
-        <h1 style="margin: 0;">📄 Template LED</h1>
+        <h1 style="margin: 0;">📄 Templat LED</h1>
         <p style="margin: 10px 0 0 0;">{{ config('app.name') }}</p>
     </div>
 
@@ -110,7 +110,7 @@
         <p>Halo <strong>{{ $pengajuan->pengaju->name }}</strong>,</p>
 
         <p>
-            Desk Evaluator (DE) telah mengirimkan template LED untuk permohonan akreditasi program studi Anda.
+            Desk Evaluator (DE) telah mengirimkan templat LED untuk permohonan akreditasi program studi Anda.
         </p>
 
         {{-- Detail Permohonan akreditasi --}}
@@ -134,14 +134,14 @@
             </div>
         </div>
 
-        {{-- Template Link atau File --}}
+        {{-- Templat Link atau File --}}
         @if($metode === 'link')
         <div class="info-box">
-            <h3>🔗 Link Template</h3>
-            <p>Akses template LED melalui link berikut:</p>
+            <h3>🔗 Link Templat</h3>
+            <p>Akses templat LED melalui link berikut:</p>
             <p style="text-align: center;">
                 <a href="{{ $dokumen->template_link }}" class="button">
-                    📥 Download Template LED
+                    📥 Download Templat LED
                 </a>
             </p>
             <div class="info-row">
@@ -151,11 +151,11 @@
         </div>
         @else
         <div class="info-box">
-            <h3>📄 File Template</h3>
-            <p>File template telah diupload dan dapat Anda download:</p>
+            <h3>📄 File Templat</h3>
+            <p>File templat telah diupload dan dapat Anda download:</p>
             <p style="text-align: center;">
                 <a href="{{ route('pengajuan.dokumen.download', $dokumen->id) }}" class="button">
-                    📥 Download File Template
+                    📥 Download File Templat
                 </a>
             </p>
             <div class="info-row">
@@ -181,7 +181,7 @@
         <div class="steps">
             <h3>✅ Langkah Selanjutnya</h3>
             <ol>
-                <li>Download template LED</li>
+                <li>Download templat LED</li>
                 <li>Lengkapi data sesuai panduan</li>
                 <li>Upload draft LED melalui sistem</li>
             </ol>

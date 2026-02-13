@@ -194,7 +194,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/', [PengajuanAkreditasiController::class, 'index']);
             Route::get('/create', [PengajuanAkreditasiController::class, 'create'])->name('.create');
             Route::post('/', [PengajuanAkreditasiController::class, 'store'])->name('.store');
-            // Template Download (must be before /{id} to avoid conflict)
+            // Templat Download (must be before /{id} to avoid conflict)
             Route::get('/template/download', [PengajuanAkreditasiController::class, 'downloadTemplateBorang'])->name('.template.download');
 
             // Show detail
@@ -278,7 +278,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::delete('/{id}', [DeskEvaluatorController::class, 'destroy'])->name('.destroy');
 
             // === Actions ===
-            // Template LED
+            // Templat LED
             Route::post('/{id}/kirim-borang', [DeskEvaluatorController::class, 'kirimFormBorang'])->name('.kirim-borang');
 
             // View Parsed Borang (Read-only for DE)

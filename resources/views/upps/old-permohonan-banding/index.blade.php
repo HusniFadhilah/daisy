@@ -70,13 +70,13 @@
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
-                        <!-- Download Template -->
+                        <!-- Download Templat -->
                         <div class="col-md-4">
                             <div class="d-grid">
                                 <button type="button" class="btn btn-md btn-info" data-bs-toggle="modal" data-bs-target="#modalDownloadTemplate">
                                     <i class="bi bi-download"></i>
                                     <br>
-                                    <span class="small">Download Template Permohonan Banding</span>
+                                    <span class="small">Download Templat Permohonan Banding</span>
                                 </button>
                             </div>
                         </div>

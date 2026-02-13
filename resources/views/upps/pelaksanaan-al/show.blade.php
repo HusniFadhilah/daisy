@@ -404,7 +404,7 @@
 <script>
     $(document).ready(function() {
         const prodiName = '{{ $pengajuan->studyProgram->name ?? "" }} '
-        // Template catatan
+        // Templat catatan
         const catatanTemplates = {
             approve: `Program Studi ${prodiName}menyatakan menyetujui laporan hasil akreditasi (LHA)`
             , revision: "Program Studi meminta revisi pada Laporan Hasil Asesmen Lapangan dengan catatan sebagai berikut:\n\n[Jelaskan bagian yang perlu diperbaiki]"

@@ -47,7 +47,7 @@ class BorangValidationExcelService
             $spreadsheet->setActiveSheetIndex(0);
 
             // Generate filename
-            $type = $withData ? 'Validasi' : 'Template';
+            $type = $withData ? 'Validasi' : 'Templat';
             $filename = $type . '_LED-Suplemen_LKPS_Lengkap_' . Str::slug($pengajuan->nomor_pengajuan) . '_' . date('Ymd') . '.xlsx';
 
             // Save to temp file

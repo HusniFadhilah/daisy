@@ -21,24 +21,24 @@ class UserController extends Controller
     {
         if ($request->ajax()) {
             $data = User::with(['university', 'studyProgram'])->select('users.*');
-            
+
             return DataTables::of($data)
                 ->addIndexColumn()
-                ->addColumn('role', function($row){
+                ->addColumn('role', function ($row) {
                     $class = $row->role === 'admin' ? 'danger' : 'primary';
-                    return '<span class="badge bg-'.$class.'">'.ucfirst($row->role).'</span>';
+                    return '<span class="badge bg-' . $class . '">' . ucfirst($row->role) . '</span>';
                 })
-                ->addColumn('role_alias', function($row){
+                ->addColumn('role_alias', function ($row) {
                     return $row->role_alias;
                 })
-                ->addColumn('created_at', function($row){
+                ->addColumn('created_at', function ($row) {
                     return $row->created_at ? $row->created_at->format('d M Y') : '-';
                 })
-                ->addColumn('action', function($row){
+                ->addColumn('action', function ($row) {
                     $btn = '<div class="btn-group" role="group">';
-                    $btn .= '<a href="'.route('users.edit', $row->id).'" class="btn btn-sm btn-warning" title="Edit"><i class="bi bi-pencil"></i></a>';
-                    if($row->id !== auth()->id()) {
-                        $btn .= '<button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord('.$row->id.')" title="Hapus"><i class="bi bi-trash"></i></button>';
+                    $btn .= '<a href="' . route('users.edit', $row->id) . '" class="btn btn-sm btn-warning" title="Edit"><i class="bi bi-pencil"></i></a>';
+                    if ($row->id !== auth()->id()) {
+                        $btn .= '<button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord(' . $row->id . ')" title="Hapus"><i class="bi bi-trash"></i></button>';
                     }
                     $btn .= '</div>';
                     return $btn;
@@ -46,7 +46,7 @@ class UserController extends Controller
                 ->rawColumns(['role', 'action'])
                 ->make(true);
         }
-        
+
         return view('admin.users.index');
     }
 
@@ -83,7 +83,7 @@ class UserController extends Controller
 
         // Set roles - jika tidak diisi, gunakan role_selected sebagai default
         $roles = $request->roles ?? [$validated['role_selected']];
-        
+
         // Pastikan role_selected ada di dalam roles
         if (!in_array($validated['role_selected'], $roles)) {
             $roles[] = $validated['role_selected'];
@@ -93,7 +93,7 @@ class UserController extends Controller
         $validated['roles'] = array_values(array_unique($roles));
         $validated['is_multiple_role'] = count($validated['roles']) > 1;
         $validated['must_change_password'] = true; // Admin create user, set true agar user ganti password
-        
+
         User::create($validated);
 
         return redirect()->route('users.index')
@@ -145,7 +145,7 @@ class UserController extends Controller
 
         // Set roles - jika tidak diisi, gunakan role_selected sebagai default
         $roles = $request->roles ?? [$validated['role_selected']];
-        
+
         // Pastikan role_selected ada di dalam roles
         if (!in_array($validated['role_selected'], $roles)) {
             $roles[] = $validated['role_selected'];
@@ -172,7 +172,7 @@ class UserController extends Controller
     public function destroy(string $id)
     {
         $user = User::findOrFail($id);
-        
+
         // Prevent deleting own account
         if ($user->id === auth()->id()) {
             return redirect()->route('users.index')
@@ -194,7 +194,7 @@ class UserController extends Controller
     }
 
     /**
-     * Download Excel template for import
+     * Download Excel templat for import
      */
     public function downloadTemplate()
     {
@@ -206,19 +206,22 @@ class UserController extends Controller
 
         return Excel::download(new class($template) implements FromArray, WithHeadings {
             protected $data;
-            
-            public function __construct($data) {
+
+            public function __construct($data)
+            {
                 $this->data = $data;
             }
-            
-            public function array(): array {
+
+            public function array(): array
+            {
                 return array_slice($this->data, 1); // Skip headers
             }
-            
-            public function headings(): array {
+
+            public function headings(): array
+            {
                 return $this->data[0];
             }
-        }, 'template_users.xlsx');
+        }, 'templat_users.xlsx');
     }
 
     /**
@@ -235,13 +238,13 @@ class UserController extends Controller
             Excel::import($import, $request->file('file'));
 
             $failures = $import->failures();
-            
+
             if ($failures->isNotEmpty()) {
                 $errors = [];
                 foreach ($failures as $failure) {
                     $errors[] = "Baris {$failure->row()}: " . implode(', ', $failure->errors());
                 }
-                
+
                 return redirect()->route('users.index')
                     ->with('warning', 'Import selesai dengan beberapa error: ' . implode(' | ', $errors));
             }

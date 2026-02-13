@@ -65,13 +65,13 @@
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
-                        <!-- Download Template -->
+                        <!-- Download Templat -->
                         <div class="col-md-4">
                             <div class="d-grid">
                                 <button type="button" class="btn btn-md btn-outline-dark" data-bs-toggle="modal" data-bs-target="#modalDownloadTemplate">
                                     <i class="bi bi-download"></i>
                                     <br>
-                                    <span class="small">Download Template Permohonan Akreditasi</span>
+                                    <span class="small">Download Templat Permohonan Akreditasi</span>
                                 </button>
                             </div>
                         </div>

@@ -557,7 +557,7 @@ class ALController extends Controller
     }
 
     /**
-     * Download template Excel (format kosong)
+     * Download templat Excel (format kosong)
      */
     public function downloadTemplate($idAsesmen)
     {
@@ -591,7 +591,7 @@ class ALController extends Controller
             return response()->download($filePath, basename($filePath))->deleteFileAfterSend(true);
         } catch (\Exception $e) {
             Log::error($e);
-            return redirect()->back()->with('error', 'Gagal download template: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal download templat: ' . $e->getMessage());
         }
     }
 

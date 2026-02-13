@@ -167,7 +167,7 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Peringkat Akreditasi</label><br>
+                            <label class="text-muted small">Status Akreditasi</label><br>
                             <span class="badge p-2 px-3 my-2 fs-6" style="background-color: {{ $hasil->getPeringkatColor($peringkat) }}; color:#222">
                                 {{ $peringkat }}
                             </span>

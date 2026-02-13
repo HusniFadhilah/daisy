@@ -111,7 +111,7 @@ class ImportPenilaianExcelJob implements ShouldQueue
                     }
 
                     // 2) ✅ FIX: Ambil kode elemen dari TEMPLATE ROW (row - 1)
-                    //    Karena format Excel: template di baris genap, asesor di baris ganjil
+                    //    Karena format Excel: templat di baris genap, asesor di baris ganjil
                     $templateRow = $row - 1;
 
                     // Coba baca dari template row (yang pasti punya nilai)
@@ -123,7 +123,7 @@ class ImportPenilaianExcelJob implements ShouldQueue
                     }
 
                     if ($kodeElemen === '') {
-                        $errors[] = "Row {$row}: Kode elemen tidak ditemukan (template row: {$templateRow})";
+                        $errors[] = "Row {$row}: Kode elemen tidak ditemukan (baris templat: {$templateRow})";
                         $failedRows++;
                         Log::error("Row {$row}: Kode elemen kosong");
                         continue;

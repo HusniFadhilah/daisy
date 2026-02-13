@@ -15,7 +15,7 @@
                         <th width="5%">#</th>
                         <th width="18%">Permohonan Akreditasi</th>
                         <th width="10%" class="text-center">Skor AL</th>
-                        <th width="15%" class="text-center">Peringkat Hasil</th>
+                        <th width="15%" class="text-center">Status Akreditasi</th>
                         <th width="20%">Status Penyampaian Hasil</th>
                         <th width="15%">Tanggal Penyampaian</th>
                         <th width="5%" class="text-center">Aksi</th>

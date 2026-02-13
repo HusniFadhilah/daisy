@@ -1,6 +1,6 @@
 @extends('layouts.template.app')
 
-@section('title', 'Tambah Universitas - Daisy')
+@section('title', 'Tambah Universitas - Daisy LAMDEPILAR')
 
 @section('content')
 <div class="container-fluid">
@@ -19,45 +19,28 @@
         <div class="card-body">
             <form action="{{ route('universities.store') }}" method="POST">
                 @csrf
-                
+
                 <div class="mb-3">
                     <label for="code" class="form-label">Kode Universitas <span class="text-danger">*</span></label>
-                    <input type="text" 
-                           class="form-control @error('code') is-invalid @enderror" 
-                           id="code" 
-                           name="code" 
-                           value="{{ old('code') }}"
-                           placeholder="Contoh: UGM"
-                           required>
+                    <input type="text" class="form-control @error('code') is-invalid @enderror" id="code" name="code" value="{{ old('code') }}" placeholder="Contoh: UGM" required>
                     @error('code')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                    <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
                 <div class="mb-3">
                     <label for="name" class="form-label">Nama Universitas <span class="text-danger">*</span></label>
-                    <input type="text" 
-                           class="form-control @error('name') is-invalid @enderror" 
-                           id="name" 
-                           name="name" 
-                           value="{{ old('name') }}"
-                           placeholder="Contoh: Universitas Gadjah Mada"
-                           required>
+                    <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name') }}" placeholder="Contoh: Universitas Gadjah Mada" required>
                     @error('name')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                    <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
                 <div class="mb-3">
                     <label for="email" class="form-label">Email Resmi / Humas</label>
-                    <input type="email" 
-                           class="form-control @error('email') is-invalid @enderror" 
-                           id="email" 
-                           name="email" 
-                           value="{{ old('email') }}"
-                           placeholder="Contoh: info@ugm.ac.id">
+                    <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email" value="{{ old('email') }}" placeholder="Contoh: info@ugm.ac.id">
                     @error('email')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                    <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 

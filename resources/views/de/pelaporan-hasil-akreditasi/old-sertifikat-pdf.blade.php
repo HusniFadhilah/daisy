@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -957,21 +958,21 @@
 
         @font-face {
             font-family: 'Montserrat';
-            src: url('{{ public_path('assets/fonts/Montserrat/static/Montserrat-Regular.ttf') }}') format('truetype');
+            src: url('{{ public_path(' assets/fonts/Montserrat/static/Montserrat-Regular.ttf') }}') format('truetype');
             font-weight: 400;
             font-style: normal;
         }
 
         @font-face {
             font-family: 'Montserrat';
-            src: url('{{ public_path('assets/fonts/Montserrat/static/Montserrat-Bold.ttf') }}') format('truetype');
+            src: url('{{ public_path(' assets/fonts/Montserrat/static/Montserrat-Bold.ttf') }}') format('truetype');
             font-weight: 700;
             font-style: normal;
         }
 
         @font-face {
             font-family: 'Montserrat';
-            src: url('{{ public_path('assets/fonts/Montserrat/static/Montserrat-SemiBold.ttf') }}') format('truetype');
+            src: url('{{ public_path(' assets/fonts/Montserrat/static/Montserrat-SemiBold.ttf') }}') format('truetype');
             font-weight: 600;
             font-style: normal;
         }
@@ -986,9 +987,9 @@
         .validity {
             font-weight: 400;
         }
-
     </style>
 </head>
+
 <body>
     {{-- ===== HALAMAN 1: SERTIFIKAT AKREDITASI ===== --}}
     <div class="certificate-wrapper page-1-wrapper">
@@ -1055,7 +1056,7 @@
                         </div>
 
                         <div class="badge">
-                            <div class="badge-label">Peringkat Akreditasi</div>
+                            <div class="badge-label">Status Akreditasi</div>
                             <div class="badge-rank">{{ strtoupper($hasil->peringkat_akreditasi) }}</div>
                         </div>
 
@@ -1161,7 +1162,7 @@
                     <div class="page-2-info">
                         <strong>Program Studi:</strong> {{ $studyProgram->name }}<br>
                         <strong>Perguruan Tinggi:</strong> {{ $university->name }}<br>
-                        <strong>Peringkat Akreditasi:</strong> {{ strtoupper($hasil->peringkat_akreditasi) }}
+                        <strong>Status Akreditasi:</strong> {{ strtoupper($hasil->peringkat_akreditasi) }}
                     </div>
 
                     {{-- ===== TABEL ELEMEN ===== --}}
@@ -1246,7 +1247,7 @@
 
         // Initialize - show page 1
         showPage(1);
-
     </script>
 </body>
+
 </html>

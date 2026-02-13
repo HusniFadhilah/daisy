@@ -21,7 +21,7 @@ class PengajuanAkreditasi extends Model
     public const AKREDITASI_PERPANJANGAN = 'perpanjangan';
     public const AKREDITASI_MENUJU_UNGGUL = 'menuju_unggul';
 
-    public const DAFTAR_TEMPLATE = 'Template Dokumen';
+    public const DAFTAR_TEMPLATE = 'Templat Dokumen';
     // ============================================
     // STATUS CONSTANTS (20 Steps)
     // ============================================
@@ -242,8 +242,8 @@ class PengajuanAkreditasi extends Model
     public static function jenisAkreditasiOptions()
     {
         return [
-            // self::AKREDITASI_BARU => 'Akreditasi untuk pembukaan prodi baru',
-            // self::AKREDITASI_PERPANJANGAN => 'Akreditasi untuk perpanjangan status yang ada saat ini',
+            self::AKREDITASI_BARU => 'Pembukaan prodi baru',
+            self::AKREDITASI_PERPANJANGAN => 'Perpanjangan status akreditasi',
             self::AKREDITASI_TERAKREDITASI => 'Terakreditasi',
             self::AKREDITASI_MENUJU_UNGGUL => 'Unggul',
         ];
@@ -845,7 +845,7 @@ class PengajuanAkreditasi extends Model
             1 => ['date' => $this->tanggal_pengingat, 'label' => 'Pengingat Masa Akreditasi', 'icon' => 'bi-bell'],
             2 => ['date' => ($this->tanggal_surat_permohonan_dikirim ?? $this->tanggal_surat_permohonan_diterima), 'label' => 'Permohonan Akreditasi', 'icon' => 'bi-envelope'],
             3 => ['date' => $this->tanggal_surat_penerimaan_dikirim, 'label' => 'Penerimaan Permohonan Akreditasi', 'icon' => 'bi-envelope'],
-            4 => ['date' => $this->tanggal_template_led_dikirim, 'label' => 'Formulir Pembayaran dan Template Dokumen', 'icon' => 'bi-file-earmark-arrow-down'],
+            4 => ['date' => $this->tanggal_template_led_dikirim, 'label' => 'Formulir Pembayaran dan Templat Dokumen', 'icon' => 'bi-file-earmark-arrow-down'],
             5 => ['date' => $this->tanggal_pembayaran, 'label' => 'Validasi pembayaran', 'icon' => 'bi-credit-card-2-front'],
             6 => ['date' => $this->tanggal_draft_borang, 'label' => 'Penerimaan Dokumen dari Prodi', 'icon' => 'bi-file-earmark-check'],
             7 => ['date' => $this->tanggal_validasi_borang_assigned, 'label' => 'Validasi Dokumen', 'icon' => 'bi-clipboard-check'],
@@ -1292,11 +1292,11 @@ class PengajuanAkreditasi extends Model
             'borang_template' => match ($status) {
                 self::STATUS_SURAT_PENERIMAAN_DIKIRIM =>
                 $audience === 'de'
-                    ? $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Formulir & Template Dokumen Belum Dikirim' : 'Belum Dikirim')
-                    : $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Formulir & Template Dokumen Belum Dikirim' : 'Belum Dikirim'),
+                    ? $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Formulir & Templat Dokumen Belum Dikirim' : 'Belum Dikirim')
+                    : $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Formulir & Templat Dokumen Belum Dikirim' : 'Belum Dikirim'),
 
                 self::STATUS_TEMPLATE_LED_DIKIRIM =>
-                $badge('bg-success', $labelFor(self::STATUS_TEMPLATE_LED_DIKIRIM) ?? 'Pengiriman Formulir & Template Dokumen'),
+                $badge('bg-success', $labelFor(self::STATUS_TEMPLATE_LED_DIKIRIM) ?? 'Pengiriman Formulir & Templat Dokumen'),
 
                 default => $badge('bg-secondary', '-'),
             },

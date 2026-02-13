@@ -55,7 +55,7 @@
                                 <th>No</th>
                                 <th>Program Studi</th>
                                 <th>Universitas</th>
-                                <th>Peringkat</th>
+                                <th>Status Akreditasi</th>
                                 <th>Kedaluwarsa</th>
                                 <th>Aksi</th>
                             </tr>

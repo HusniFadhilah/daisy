@@ -312,7 +312,7 @@
                 <div class="alert alert-info alert-permanent mb-3">
                     <i class="bi bi-info-circle"></i>
                     <strong>Tips:</strong> Anda dapat melakukan validasi melalui Excel untuk mempermudah proses.
-                    Download template, isi validasi, lalu upload kembali ke sistem.
+                    Download templat, isi validasi, lalu upload kembali ke sistem.
                 </div>
 
                 <div class="row g-3">
@@ -329,7 +329,7 @@
 
                                 <div class="btn-group w-100" role="group">
                                     <a href="{{ route('validator.borang.download-template', $assignment->id) }}" class="btn btn-outline-primary">
-                                        <i class="bi bi-file-earmark"></i> Template Kosong
+                                        <i class="bi bi-file-earmark"></i> Templat Kosong
                                     </a>
                                     <a href="{{ route('validator.borang.download-review', $assignment->id) }}" class="btn btn-outline-success">
                                         <i class="bi bi-file-earmark-check"></i> Hasil Validasi Anda

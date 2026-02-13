@@ -2,7 +2,7 @@
 
 @extends('layouts.template.app')
 
-@section('title', 'Formulir Pembayaran dan Template Dokumen')
+@section('title', 'Formulir Pembayaran dan Templat Dokumen')
 
 @push('styles')
 <style>
@@ -46,7 +46,7 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item active">Formulir Pembayaran dan Template Dokumen</li>
+            <li class="breadcrumb-item active">Formulir Pembayaran dan Templat Dokumen</li>
         </ol>
     </nav>
 
@@ -54,33 +54,33 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">
-                <i class="bi bi-file-earmark-arrow-down"></i> Formulir Pembayaran dan Template Dokumen
+                <i class="bi bi-file-earmark-arrow-down"></i> Formulir Pembayaran dan Templat Dokumen
             </h4>
-            <p class="text-muted mb-0">Formulir dan template dokumen akreditasi dari LAMDEPILAR</p>
+            <p class="text-muted mb-0">Formulir dan templat dokumen akreditasi dari LAMDEPILAR</p>
         </div>
     </div>
 
     <div class="alert alert-info alert-permanent">
         <i class="bi bi-bell-fill"></i>
-        <strong>Formulir Pembayaran dan Template Dokumen</strong><br>
-        Formulir pembayaran dan template dokumen akreditasi program studi tersedia pada link berikut<br>
+        <strong>Formulir Pembayaran dan Templat Dokumen</strong><br>
+        Formulir pembayaran dan templat dokumen akreditasi program studi tersedia pada link berikut<br>
         Catatan:
         <ol>
             <li>Program studi dimohon dapat melakukan pengisian formulir dan melakukan pembayaran</li>
             <li>Setelah melakukan pembayaran, program studi dapat melakukan pengisian dokumen akreditasi</li>
         </ol>
         <br>
-        Formulir pembayaran dan template dokumen dapat dilihat pada daftar berikut
+        Formulir pembayaran dan templat dokumen dapat dilihat pada daftar berikut
     </div>
 
     <!-- Statistics Cards -->
     {{-- <div class="row row-cols-1 row-cols-md-2 row-cols-lg-2 mb-4">
         <div class="col mb-3">
-            <x-stat-card title="Menunggu Template" :value="$stats['menunggu']" description="Formulir pembayaran dan template dokumen sedang dalam proses pengiriman oleh LAMDEPILAR" icon="hourglass-split" iconBg="warning-subtle" />
+            <x-stat-card title="Menunggu Templat" :value="$stats['menunggu']" description="Formulir pembayaran dan templat dokumen sedang dalam proses pengiriman oleh LAMDEPILAR" icon="hourglass-split" iconBg="warning-subtle" />
         </div>
 
         <div class="col mb-3">
-            <x-stat-card title="Formulir Pembayaran dan Template Dokumen Diterima" :value="$stats['diterima']" description="Jumlah formulir dan template dokumen yang telah diterima" icon="check-circle" iconBg="success-subtle" />
+            <x-stat-card title="Formulir Pembayaran dan Templat Dokumen Diterima" :value="$stats['diterima']" description="Jumlah formulir dan templat dokumen yang telah diterima" icon="check-circle" iconBg="success-subtle" />
         </div>
     </div> --}}
 
@@ -93,7 +93,7 @@
             <div class="card">
                 <div class="card-header bg-white">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Daftar Formulir Pembayaran dan Template Dokumen</h5>
+                        <h5 class="mb-0">Daftar Formulir Pembayaran dan Templat Dokumen</h5>
                         <div>
                             <span class="text-muted">Total: <strong>{{ $pengajuans->total() }}</strong></span>
                         </div>
@@ -108,8 +108,8 @@
                                     <th width="5%">#</th>
                                     <th width="20%">Permohonan Akreditasi</th>
                                     <th width="20%">Tanggal Dikirim</th>
-                                    <th width="25%">Formulir dan Template Dokumen</th>
-                                    <th width="25%">Status Formulir dan Template</th>
+                                    <th width="25%">Formulir dan Templat Dokumen</th>
+                                    <th width="25%">Status Formulir dan Templat</th>
                                     <th width="5%" class="text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -156,10 +156,10 @@
                                             <div class="dokumen-indicator">
                                                 @if($hasTemplateLed)
                                                 <i class="bi bi-check-circle-fill text-success"></i>
-                                                <span class="text-success">Template Dokumen</span>
+                                                <span class="text-success">Templat Dokumen</span>
                                                 @else
                                                 <i class="bi bi-x-circle-fill text-muted"></i>
-                                                <span class="text-muted">Template Dokumen</span>
+                                                <span class="text-muted">Templat Dokumen</span>
                                                 @endif
                                             </div>
                                         </div>
@@ -189,7 +189,7 @@
                             @if(request()->filled('search') || request()->filled('status'))
                             Tidak ada data yang sesuai dengan filter
                             @else
-                            Belum ada pengiriman formulir dan template dokumen
+                            Belum ada pengiriman formulir dan templat dokumen
                             @endif
                         </p>
                         @if(request()->filled('search') || request()->filled('status'))

@@ -167,7 +167,7 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Peringkat Akreditasi</label><br>
+                            <label class="text-muted small">Status Akreditasi</label><br>
                             <span class="badge p-2 px-3 my-2 fs-6" style="background-color: {{ $hasil->getPeringkatColor($peringkat) }}; color:#222">
                                 {{ $peringkat }}
                             </span>
@@ -188,120 +188,120 @@
                                     : '-' }}
                             </p>
                         </div>
-                        @if($pengajuan->tanggal_surat_permohonan_dikirim && $pengajuan->tanggal_pelaporan_hasil)
+                        {{-- @if($pengajuan->tanggal_surat_permohonan_dikirim && $pengajuan->tanggal_pelaporan_hasil)
                         <div class="col-md-6 mb-3">
                             <label class="text-muted small">Total Durasi Proses</label>
                             <p class="mb-0">
                                 {{ max(1,$pengajuan->tanggal_surat_permohonan_dikirim->diffInDays($pengajuan->tanggal_pelaporan_hasil)) }} hari
-                                <small class="text-muted">(dari permohonan akreditasi hingga pelaporan hasil)</small>
-                            </p>
-                        </div>
-                        @endif
+                        <small class="text-muted">(dari permohonan akreditasi hingga pelaporan hasil)</small>
+                        </p>
                     </div>
-
-                    @if($pengajuan->peringkat_hasil_banding)
-                    <hr>
-                    <div class="alert alert-info border border-info mb-0">
-                        <i class="bi bi-info-circle-fill"></i>
-                        <strong>Catatan:</strong> Hasil yang ditampilkan adalah hasil akhir setelah proses banding.
-                    </div>
-                    @endif
+                    @endif --}}
                 </div>
-            </div>
 
+                @if($pengajuan->peringkat_hasil_banding)
+                <hr>
+                <div class="alert alert-info border border-info mb-0">
+                    <i class="bi bi-info-circle-fill"></i>
+                    <strong>Catatan:</strong> Hasil yang ditampilkan adalah hasil akhir setelah proses banding.
+                </div>
+                @endif
+            </div>
         </div>
 
-        <!-- Sidebar -->
-        <div class="col-lg-4">
-            <!-- Ringkasan Hasil Akhir -->
+    </div>
 
-            <!-- Statistik Proses -->
-            @if($pengajuan->tanggal_pengajuan && $pengajuan->tanggal_pelaporan_hasil)
-            <div class="card mb-4 border-primary">
-                <div class="card-header bg-primary text-white">
-                    <h6 class="mb-0">
-                        <i class="bi bi-graph-up"></i> Statistik Proses
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <label class="text-muted small">Total Durasi</label>
-                        <div class="display-6 fw-bold text-primary">
-                            {{ max(1,$pengajuan->tanggal_surat_permohonan_dikirim->diffInDays($pengajuan->tanggal_pelaporan_hasil)) }}
-                        </div>
-                        <small class="text-muted">hari</small>
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Ringkasan Hasil Akhir -->
+
+        <!-- Statistik Proses -->
+        @if($pengajuan->tanggal_pengajuan && $pengajuan->tanggal_pelaporan_hasil)
+        <div class="card mb-4 border-primary">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0">
+                    <i class="bi bi-graph-up"></i> Statistik Proses
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="text-muted small">Total Durasi</label>
+                    <div class="display-6 fw-bold text-primary">
+                        {{ max(1,$pengajuan->tanggal_surat_permohonan_dikirim->diffInDays($pengajuan->tanggal_pelaporan_hasil)) }}
                     </div>
+                    <small class="text-muted">hari</small>
+                </div>
 
-                    <hr>
+                <hr>
 
-                    <div class="small">
-                        <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">Mulai:</span>
-                            <strong>{{ $pengajuan->tanggal_pengajuan->format('d M Y') }}</strong>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <span class="text-muted">Selesai:</span>
-                            <strong>{{ $pengajuan->tanggal_pelaporan_hasil->format('d M Y') }}</strong>
-                        </div>
+                <div class="small">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Mulai:</span>
+                        <strong>{{ $pengajuan->tanggal_pengajuan->format('d M Y') }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Selesai:</span>
+                        <strong>{{ $pengajuan->tanggal_pelaporan_hasil->format('d M Y') }}</strong>
                     </div>
                 </div>
             </div>
-            @endif
+        </div>
+        @endif
 
-            <!-- Timeline -->
-            <div class="card">
-                <div class="card-header bg-secondary text-white">
-                    <h5 class="mb-0">
-                        <i class="bi bi-clock-history"></i> Riwayat Status
-                    </h5>
-                </div>
-                <div class="card-body" style="max-height: 500px; overflow-y: auto;">
-                    @php
-                    $filterStatuses = [
-                    \App\Models\PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
-                    \App\Models\PengajuanAkreditasi::STATUS_HASIL_DIUMUMKAN,
-                    \App\Models\PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN,
-                    //\App\Models\PengajuanAkreditasi::STATUS_ARSIP_DISIMPAN,
-                    //\App\Models\PengajuanAkreditasi::STATUS_SELESAI,
-                    ];
+        <!-- Timeline -->
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-clock-history"></i> Riwayat Status
+                </h5>
+            </div>
+            <div class="card-body" style="max-height: 500px; overflow-y: auto;">
+                @php
+                $filterStatuses = [
+                \App\Models\PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
+                \App\Models\PengajuanAkreditasi::STATUS_HASIL_DIUMUMKAN,
+                \App\Models\PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN,
+                //\App\Models\PengajuanAkreditasi::STATUS_ARSIP_DISIMPAN,
+                //\App\Models\PengajuanAkreditasi::STATUS_SELESAI,
+                ];
 
-                    $logs = $pengajuan->statusLog
-                    ->whereIn('status_to', $filterStatuses)
-                    ->sortBy('created_at')
-                    ->unique('status_to')
-                    ->values();
-                    @endphp
+                $logs = $pengajuan->statusLog
+                ->whereIn('status_to', $filterStatuses)
+                ->sortBy('created_at')
+                ->unique('status_to')
+                ->values();
+                @endphp
 
-                    @if($logs->count() > 0)
-                    <div class="timeline">
-                        @foreach($logs as $log)
-                        <div class="timeline-item mb-3">
-                            <div class="d-flex">
-                                <div class="flex-shrink-0">
-                                    <i class="bi bi-circle-fill text-success" style="font-size: 8px;"></i>
-                                </div>
-                                <div class="flex-grow-1 ms-3">
-                                    <strong>
-                                        {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label'] ?? $log->status_to }}
-                                    </strong>
-                                    <br>
-                                    <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
+                @if($logs->count() > 0)
+                <div class="timeline">
+                    @foreach($logs as $log)
+                    <div class="timeline-item mb-3">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0">
+                                <i class="bi bi-circle-fill text-success" style="font-size: 8px;"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <strong>
+                                    {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label'] ?? $log->status_to }}
+                                </strong>
+                                <br>
+                                <small class="text-muted">{{ $log->created_at->format('d M Y H:i') }}</small>
 
-                                    {{-- @if($log->keterangan)
+                                {{-- @if($log->keterangan)
                             <br>
                             <small class="text-muted fst-italic">{{ $log->keterangan }}</small>
-                                    @endif --}}
-                                </div>
+                                @endif --}}
                             </div>
                         </div>
-                        @endforeach
                     </div>
-                    @else
-                    <p class="text-muted text-center mb-0">Belum ada riwayat</p>
-                    @endif
+                    @endforeach
                 </div>
+                @else
+                <p class="text-muted text-center mb-0">Belum ada riwayat</p>
+                @endif
             </div>
         </div>
     </div>
+</div>
 </div>
 @endsection

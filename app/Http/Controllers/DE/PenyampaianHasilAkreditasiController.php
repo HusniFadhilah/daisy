@@ -289,7 +289,7 @@ class PenyampaianHasilAkreditasiController extends Controller
 
             return redirect()
                 ->route('de.penyampaian-hasil-akreditasi.show', $id)
-                ->with('success', "Hasil akreditasi berhasil difinalisasi dan disampaikan ke prodi! Peringkat: {$hasil->peringkat_akreditasi} (Skor: {$hasil->skor_final})");
+                ->with('success', "Hasil akreditasi berhasil difinalisasi dan disampaikan ke prodi! Status akreditasi: {$hasil->peringkat_akreditasi} (Skor: {$hasil->skor_final})");
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Finalize hasil failed', [

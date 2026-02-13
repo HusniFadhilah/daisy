@@ -27,7 +27,7 @@ $menus = [
 'route' => 'upps.penyampaian-template',
 'match' => 'upps.penyampaian-template*',
 'icon' => 'bi-file-earmark-text',
-'label' => 'Formulir Pembayaran dan Template Dokumen',
+'label' => 'Formulir Pembayaran dan Templat Dokumen',
 ],
 [
 'no' => 5,

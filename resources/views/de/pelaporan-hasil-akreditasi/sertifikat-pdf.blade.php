@@ -1102,7 +1102,7 @@
                         </div>
 
                         <div class="badge">
-                            <div class="badge-label">Peringkat Akreditasi</div>
+                            <div class="badge-label">Status Akreditasi</div>
                             <div class="badge-rank">{{ strtoupper($hasil->peringkat_akreditasi) }}</div>
                         </div>
 
@@ -1169,7 +1169,7 @@
     <div class="certificate-wrapper page-2-wrapper">
         <div class="certificate-container">
             <div class="certificate-frame">
-                <div class="certificate-inner">
+                <div class="certificate-inner" style="padding:0.5vh 1vh;">
                     <div class="watermark-logo"></div>
 
                     {{-- ===== HEADER ===== --}}
@@ -1209,7 +1209,7 @@
                     {{-- <div class="page-2-info">
                         <strong>Program Studi:</strong> {{ $studyProgram->name }}<br>
                     <strong>Perguruan Tinggi:</strong> {{ $university->name }}<br>
-                    <strong>Peringkat Akreditasi:</strong> {{ strtoupper($hasil->peringkat_akreditasi) }}
+                    <strong>Status Akreditasi:</strong> {{ strtoupper($hasil->peringkat_akreditasi) }}
                 </div> --}}
 
                 {{-- ===== TABEL ELEMEN ===== --}}

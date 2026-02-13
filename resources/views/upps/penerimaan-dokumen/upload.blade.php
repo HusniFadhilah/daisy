@@ -376,7 +376,7 @@
                         <div class="alert alert-info alert-permanent">
                             <h6><i class="bi bi-info-circle"></i> Informasi Penting</h6>
                             <ul class="mb-0">
-                                <li>Mohon memastikan dokumen yang diupload, sudah sesuai template yang diberikan.</li>
+                                <li>Mohon memastikan dokumen yang diupload, sudah sesuai templat yang diberikan.</li>
                                 <li><strong>LED</strong>: format file DOCX/DOC, <strong>LKPS</strong>: format file XLSX/XLS (maks 10MB per file).</li>
                                 @if($needSuplemen)
                                 <li><strong>Suplemen</strong>: PDF (wajib untuk jenis akreditasi <strong>menuju unggul</strong>).</li>

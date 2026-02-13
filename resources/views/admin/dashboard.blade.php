@@ -3,7 +3,7 @@ $authUser = auth()->user();
 @endphp
 @extends('layouts.template.app')
 
-@section('title', 'Dashboard ' . $authUser->role_alias . ' - DAISY')
+@section('title', 'Dashboard ' . $authUser->role_alias . ' - DAISY LAMDEPILAR')
 
 @section('content')
 <div class="container-fluid py-3">
