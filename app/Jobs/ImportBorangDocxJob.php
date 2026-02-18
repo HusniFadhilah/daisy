@@ -3,20 +3,23 @@
 
 namespace App\Jobs;
 
+use App\Models\BorangData;
+use App\Models\BorangImport;
+use App\Models\ElemenStandar;
+use App\Models\PengajuanAkreditasi;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use App\Models\PengajuanAkreditasi;
-use App\Models\BorangData;
-use App\Models\BorangImport;
-use App\Models\ElemenStandar;
-use PhpOffice\PhpWord\IOFactory;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use PhpOffice\PhpWord\Element\Image;
 use PhpOffice\PhpWord\Element\Table;
 use PhpOffice\PhpWord\Element\Text;
 use PhpOffice\PhpWord\Element\TextRun;
-use Illuminate\Support\Facades\Log;
+use PhpOffice\PhpWord\IOFactory;
+use PhpOffice\PhpWord\Settings;
 
 class ImportBorangDocxJob implements ShouldQueue
 {
@@ -52,6 +55,19 @@ class ImportBorangDocxJob implements ShouldQueue
                 $borangImport->markAsProcessing();
             }
 
+            $tempDir = storage_path('app/tmp/phpword_' . uniqid());
+            if (!is_dir($tempDir)) {
+                @mkdir($tempDir, 0775, true);
+            }
+            Settings::setTempDir($tempDir);
+            Settings::setOutputEscapingEnabled(true);
+
+            // ✅ EXTRACT IMAGES FROM ZIP FIRST (backup method)
+            $extractedImages = $this->extractImagesFromDocxZip();
+            $extractedImageUrls = $this->saveExtractedImages($extractedImages);
+
+            Log::error("Pre-extracted images: " . count($extractedImageUrls));
+
             $phpWord = IOFactory::load($this->filePath);
 
             $frontMatter = $this->extractFrontMatter($phpWord);
@@ -61,7 +77,12 @@ class ImportBorangDocxJob implements ShouldQueue
             $tableIndex = 0;
 
             foreach ($phpWord->getSections() as $sectionIdx => $section) {
-                foreach ($section->getElements() as $element) {
+                Log::error("Processing section #{$sectionIdx}");
+
+                foreach ($section->getElements() as $elementIdx => $element) {
+                    $elementClass = get_class($element);
+                    Log::error("Section element #{$elementIdx}: {$elementClass}");
+
                     if ($element instanceof Table) {
                         $tableText = $this->extractTableText($element);
 
@@ -69,21 +90,24 @@ class ImportBorangDocxJob implements ShouldQueue
                         if (preg_match('/\b([DEPILLAR])\.(\d+)\.\s+/i', $tableText, $matches)) {
                             $elemenCode = $matches[1] . '.' . $matches[2];
 
-                            // ✅ PARSE ROW 2 (description + nested tables)
+                            Log::error("Found elemen box: {$elemenCode}");
+
                             $deskripsi = '';
                             $tablesBuffer = [];
 
                             $rows = $element->getRows();
 
+                            Log::error("Table has " . count($rows) . " rows");
+
                             if (count($rows) >= 2) {
-                                // Row 2 contains description + nested tables
                                 $descriptionRow = $rows[1];
 
-                                foreach ($descriptionRow->getCells() as $cell) {
+                                Log::error("Processing description row with " . count($descriptionRow->getCells()) . " cells");
+
+                                foreach ($descriptionRow->getCells() as $cellIdx => $cell) {
+                                    Log::error("Processing cell #{$cellIdx}");
                                     $this->parseCell($cell, $deskripsi, $tablesBuffer);
                                 }
-                            } else {
-                                // Log::warning("│ ⚠️  Table has < 2 rows");
                             }
 
                             // Save
@@ -116,8 +140,13 @@ class ImportBorangDocxJob implements ShouldQueue
             if (file_exists($this->filePath)) {
                 @unlink($this->filePath);
             }
+
+            // if (is_dir($tempDir)) {
+            //     $this->deleteTempDir($tempDir);
+            // }
         } catch (\Exception $e) {
-            Log::error($e);
+            Log::error("Job failed: " . $e->getMessage());
+            Log::error($e->getTraceAsString());
 
             if ($borangImport) {
                 $borangImport->markAsFailed(['error' => $e->getMessage()]);
@@ -132,19 +161,45 @@ class ImportBorangDocxJob implements ShouldQueue
      */
     private function parseCell($cell, &$deskripsi, &$tablesBuffer)
     {
-        foreach ($cell->getElements() as $element) {
+        Log::error("parseCell called, elements count: " . count($cell->getElements()));
+
+        foreach ($cell->getElements() as $index => $element) {
+            $elementClass = get_class($element);
+            Log::error("Element #{$index}: {$elementClass}");
 
             // Extract text
             if ($element instanceof Text || $element instanceof TextRun) {
                 $text = $this->extractTextContent($element);
 
-                // ✅ FIXED: Better filtering
                 if (!$this->isPlaceholderText($text)) {
                     $cleaned = trim($text);
                     if (!empty($cleaned)) {
                         $deskripsi .= $cleaned . "\n";
                     }
                 }
+            }
+
+            // ✅ Extract images - dengan logging detail
+            if ($element instanceof Image) {
+                Log::error("🖼️ Image element detected!");
+
+                $imgUrl = $this->storeImageElement($element);
+
+                if ($imgUrl) {
+                    $alt = "Gambar untuk elemen borang";
+                    $deskripsi .= "<img src=\"{$imgUrl}\" alt=\"{$alt}\" style=\"max-width:100%;height:auto;display:block;margin:10px 0;\" />\n";
+
+                    Log::error("✅ Image embedded in description: {$imgUrl}");
+                } else {
+                    $deskripsi .= "<p><em>[Gambar tidak dapat dimuat]</em></p>\n";
+                    Log::warning("❌ Failed to embed image in description");
+                }
+            }
+
+            // ✅ Cek untuk Drawing/Shape elements (gambar mungkin dalam bentuk ini)
+            if ($element instanceof \PhpOffice\PhpWord\Element\AbstractContainer) {
+                Log::error("Container element found, checking children...");
+                $this->extractImagesFromContainer($element, $deskripsi);
             }
 
             // Extract nested tables
@@ -158,6 +213,226 @@ class ImportBorangDocxJob implements ShouldQueue
                     ];
                 }
             }
+        }
+    }
+
+    /**
+     * ✅ Extract images dari container elements (Drawing, Shape, etc)
+     */
+    private function extractImagesFromContainer($container, &$deskripsi)
+    {
+        if (!method_exists($container, 'getElements')) {
+            return;
+        }
+
+        foreach ($container->getElements() as $child) {
+            $childClass = get_class($child);
+            Log::error("Container child: {$childClass}");
+
+            if ($child instanceof Image) {
+                Log::error("🖼️ Image found in container!");
+
+                $imgUrl = $this->storeImageElement($child);
+
+                if ($imgUrl) {
+                    $alt = "Gambar untuk elemen borang";
+                    $deskripsi .= "<img src=\"{$imgUrl}\" alt=\"{$alt}\" style=\"max-width:100%;height:auto;display:block;margin:10px 0;\" />\n";
+                    Log::error("✅ Container image embedded: {$imgUrl}");
+                }
+            }
+
+            // Recursive untuk nested containers
+            if ($child instanceof \PhpOffice\PhpWord\Element\AbstractContainer) {
+                $this->extractImagesFromContainer($child, $deskripsi);
+            }
+        }
+    }
+
+    /**
+     * ✅ NEW: Extract all images directly from DOCX file (ZIP extraction)
+     */
+    private function extractImagesFromDocxZip(): array
+    {
+        $images = [];
+
+        try {
+            $zip = new \ZipArchive();
+
+            if ($zip->open($this->filePath) === true) {
+                Log::error("DOCX opened as ZIP, checking for media...");
+
+                // List all files in word/media/
+                for ($i = 0; $i < $zip->numFiles; $i++) {
+                    $filename = $zip->getNameIndex($i);
+
+                    // Check if it's a media file
+                    if (preg_match('#^word/media/image\d+\.(png|jpg|jpeg|gif|bmp|webp)$#i', $filename, $matches)) {
+                        Log::error("Found media file: {$filename}");
+
+                        $ext = strtolower($matches[1]);
+                        $content = $zip->getFromIndex($i);
+
+                        if ($content) {
+                            $images[] = [
+                                'filename' => basename($filename),
+                                'ext' => $ext,
+                                'content' => $content
+                            ];
+                        }
+                    }
+                }
+
+                $zip->close();
+
+                Log::error("Extracted " . count($images) . " images from DOCX");
+            } else {
+                Log::warning("Failed to open DOCX as ZIP");
+            }
+        } catch (\Exception $e) {
+            Log::error("Error extracting images from ZIP: " . $e->getMessage());
+        }
+
+        return $images;
+    }
+
+    /**
+     * ✅ Save extracted images from ZIP
+     */
+    private function saveExtractedImages(array $extractedImages): array
+    {
+        $savedUrls = [];
+
+        foreach ($extractedImages as $index => $imageData) {
+            try {
+                $dir = "permohonan-akreditasi/{$this->pengajuanId}/kualitatif/images";
+                $timestamp = now()->format('YmdHis');
+                $random = substr(md5(uniqid()), 0, 8);
+                $name = "img_{$this->importId}_{$timestamp}_{$random}_{$index}.{$imageData['ext']}";
+                $storedPath = "{$dir}/{$name}";
+
+                Storage::disk('public')->put($storedPath, $imageData['content']);
+
+                if (Storage::disk('public')->exists($storedPath)) {
+                    $url = Storage::disk('public')->url($storedPath);
+                    $savedUrls[] = $url;
+                    Log::error("Saved image from ZIP: {$url}");
+                }
+            } catch (\Exception $e) {
+                Log::error("Failed to save extracted image: " . $e->getMessage());
+            }
+        }
+
+        return $savedUrls;
+    }
+
+    private function storeImageElement(\PhpOffice\PhpWord\Element\Image $image): ?string
+    {
+        try {
+            Log::error("Attempting to extract image", [
+                'has_getImageStringData' => method_exists($image, 'getImageStringData'),
+                'has_getSource' => method_exists($image, 'getSource'),
+                'has_getMediaIndex' => method_exists($image, 'getMediaIndex'),
+            ]);
+
+            $binary = null;
+            $ext = 'png';
+            $mimeType = null;
+
+            // METHOD 1: getImageStringData
+            if (method_exists($image, 'getImageStringData')) {
+                Log::error("Trying getImageStringData...");
+                try {
+                    $binary = $image->getImageStringData(true);
+                    Log::error("getImageStringData result: " . (is_string($binary) ? strlen($binary) . " bytes" : "not string"));
+                } catch (\Exception $e) {
+                    Log::warning("getImageStringData failed: " . $e->getMessage());
+                }
+
+                if ($binary) {
+                    $finfo = new \finfo(FILEINFO_MIME_TYPE);
+                    $mimeType = $finfo->buffer($binary);
+                    $ext = $this->getExtensionFromMime($mimeType);
+                    Log::error("Image from getImageStringData: {$mimeType}, {$ext}");
+                }
+            }
+
+            // METHOD 2: getSource
+            if (!$binary && method_exists($image, 'getSource')) {
+                Log::error("Trying getSource...");
+                $src = $image->getSource();
+                Log::error("getSource result: {$src}");
+
+                if ($src && file_exists($src)) {
+                    $binary = file_get_contents($src);
+                    $pathInfo = pathinfo($src);
+
+                    if (!empty($pathInfo['extension'])) {
+                        $ext = strtolower($pathInfo['extension']);
+                    }
+
+                    $finfo = new \finfo(FILEINFO_MIME_TYPE);
+                    $mimeType = $finfo->file($src);
+                    Log::error("Image from getSource: {$src}, {$mimeType}, " . strlen($binary) . " bytes");
+                } else {
+                    Log::warning("Source file not found or not accessible: {$src}");
+                }
+            }
+
+            // METHOD 3: Try reflection to get private properties
+            if (!$binary) {
+                Log::error("Trying reflection to access image data...");
+                try {
+                    $reflection = new \ReflectionClass($image);
+
+                    // Try to get source property
+                    if ($reflection->hasProperty('source')) {
+                        $sourceProp = $reflection->getProperty('source');
+                        $sourceProp->setAccessible(true);
+                        $source = $sourceProp->getValue($image);
+                        Log::error("Reflection source: {$source}");
+
+                        if ($source && file_exists($source)) {
+                            $binary = file_get_contents($source);
+                            Log::error("Got binary from reflection: " . strlen($binary) . " bytes");
+                        }
+                    }
+                } catch (\Exception $e) {
+                    Log::warning("Reflection failed: " . $e->getMessage());
+                }
+            }
+
+            if (!$binary) {
+                Log::error("Could not extract image binary from element - all methods failed");
+                return null;
+            }
+
+            if (!$this->isValidImage($binary)) {
+                Log::warning("Invalid image data");
+                return null;
+            }
+
+            // Generate filename
+            $dir = "permohonan-akreditasi/{$this->pengajuanId}/kualitatif/images";
+            $timestamp = now()->format('YmdHis');
+            $random = substr(md5(uniqid()), 0, 8);
+            $name = "img_{$this->importId}_{$timestamp}_{$random}.{$ext}";
+            $storedPath = "{$dir}/{$name}";
+
+            Storage::disk('public')->put($storedPath, $binary);
+
+            if (!Storage::disk('public')->exists($storedPath)) {
+                Log::error("Failed to save image to storage: {$storedPath}");
+                return null;
+            }
+
+            $url = Storage::disk('public')->url($storedPath);
+            Log::error("✅ Image saved successfully: {$url}");
+
+            return $url;
+        } catch (\Throwable $e) {
+            Log::error("Failed storing image: " . $e->getMessage());
+            Log::error($e->getTraceAsString());
+            return null;
         }
     }
 
@@ -437,21 +712,37 @@ class ImportBorangDocxJob implements ShouldQueue
             foreach ($row->getCells() as $cell) {
                 $cellTag = $isFirstRow ? 'th' : 'td';
                 $style = 'border:1px solid #ddd;padding:8px;';
-
-                if ($isFirstRow) {
-                    $style .= 'background-color:#f2f2f2;font-weight:bold;text-align:center;';
-                }
+                if ($isFirstRow) $style .= 'background-color:#f2f2f2;font-weight:bold;text-align:center;';
 
                 $html .= '<' . $cellTag . ' style="' . $style . '">';
 
-                $cellText = '';
+                $cellParts = [];
+
                 foreach ($cell->getElements() as $element) {
+                    // Text content
                     if ($element instanceof Text || $element instanceof TextRun) {
-                        $cellText .= $this->extractTextContent($element);
+                        $t = trim($this->extractTextContent($element));
+                        if ($t !== '') $cellParts[] = htmlspecialchars($t);
+                    }
+
+                    // ✅ Images in table cells
+                    if ($element instanceof Image) {
+                        $imgUrl = $this->storeImageElement($element);
+
+                        if ($imgUrl) {
+                            $cellParts[] = '<img src="' . htmlspecialchars($imgUrl) . '" alt="Gambar dalam tabel" style="max-width:100%;height:auto;max-height:200px;" />';
+                        } else {
+                            $cellParts[] = '<em>[Gambar]</em>';
+                        }
+                    }
+
+                    // Nested tables
+                    if ($element instanceof Table) {
+                        $cellParts[] = $this->convertTableToHtml($element);
                     }
                 }
 
-                $html .= !empty(trim($cellText)) ? htmlspecialchars(trim($cellText)) : '&nbsp;';
+                $html .= !empty($cellParts) ? implode('<br>', $cellParts) : '&nbsp;';
                 $html .= '</' . $cellTag . '>';
             }
 
@@ -772,5 +1063,76 @@ class ImportBorangDocxJob implements ShouldQueue
         $text = preg_replace('/\s{2,}/', ' ', $text);
 
         return trim($text);
+    }
+
+    /**
+     * ✅ Helper: Get extension from MIME type
+     */
+    private function getExtensionFromMime(?string $mimeType): string
+    {
+        if (!$mimeType) return 'png';
+
+        $mimeMap = [
+            'image/jpeg' => 'jpg',
+            'image/jpg' => 'jpg',
+            'image/png' => 'png',
+            'image/gif' => 'gif',
+            'image/webp' => 'webp',
+            'image/bmp' => 'bmp',
+            'image/svg+xml' => 'svg',
+        ];
+
+        return $mimeMap[$mimeType] ?? 'png';
+    }
+
+    /**
+     * ✅ Helper: Validate image binary
+     */
+    private function isValidImage(string $binary): bool
+    {
+        if (empty($binary) || strlen($binary) < 100) {
+            return false;
+        }
+
+        // Check magic bytes
+        $magicBytes = [
+            'png' => "\x89PNG",
+            'jpg' => "\xFF\xD8\xFF",
+            'gif' => "GIF",
+            'bmp' => "BM",
+            'webp' => "RIFF",
+        ];
+
+        foreach ($magicBytes as $type => $magic) {
+            if (strpos($binary, $magic) === 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * ✅ Cleanup temporary directory
+     */
+    private function deleteTempDir(string $dir): void
+    {
+        try {
+            if (!is_dir($dir)) return;
+
+            $files = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS),
+                \RecursiveIteratorIterator::CHILD_FIRST
+            );
+
+            foreach ($files as $fileinfo) {
+                $method = ($fileinfo->isDir() ? 'rmdir' : 'unlink');
+                @$method($fileinfo->getRealPath());
+            }
+
+            @rmdir($dir);
+        } catch (\Throwable $e) {
+            Log::warning("Failed to cleanup temp dir: " . $e->getMessage());
+        }
     }
 }

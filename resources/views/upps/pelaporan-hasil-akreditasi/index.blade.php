@@ -43,7 +43,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">
-                <i class="bi bi-megaphone"></i> Pelaporan Hasil Akreditasi
+                <i class="bi bi-graph-up"></i> Pelaporan Hasil Akreditasi
             </h4>
             <p class="text-muted mb-0">Pelaporan hasil akreditasi kepada pemangku kepentingan</p>
         </div>

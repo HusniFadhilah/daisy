@@ -302,9 +302,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{id}/download-surat-tugas-validator', [PenerimaanDokumenController::class, 'downloadSuratTugasValidator'])->name('.download-surat-tugas-validator');
             Route::post('/{id}/upload-surat-tugas-validator', [PenerimaanDokumenController::class, 'uploadSuratTugasValidatorForm'])->name('.upload-surat-tugas-validator');
         });
-    });
 
-    Route::prefix('de')->name('de')->middleware(['role:sekretariat,super_admin'])->group(function () {
         // PEMETAAN AKREDITASI
         Route::prefix('pengingat-masa-akreditasi')->name('.pemetaan.')->group(function () {
             Route::get('/', [PemetaanAkreditasiController::class, 'index'])->name('index');
@@ -316,7 +314,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/reminder-detail/ajax', [PemetaanAkreditasiController::class, 'getReminderDetailAjax'])->name('reminder.detail.ajax');
             Route::get('/export/excel', [PemetaanAkreditasiController::class, 'export'])->name('export');
             Route::get('/prodi/search', [PemetaanAkreditasiController::class, 'searchProdiAjax'])->name('prodi.search.ajax');
-            Route::get('/export/excel', [PemetaanAkreditasiController::class, 'export'])->name('export');
             Route::get('/{id}', [PemetaanAkreditasiController::class, 'show'])->name('show');
 
             // Pengingat
@@ -985,6 +982,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // Route::get('/preview/email/penawaran/{assignment}', function (\App\Models\AsesmenUserRole $assignment) {
 //     return new \App\Mail\PenawaranAsesmenMail($assignment);
 // })->name('email.preview.penawaran');
+Route::get('/lkps/test', [\App\Http\Controllers\Test\Asesmen\TestLKPSController::class, 'test']);
+Route::get('/lkps/test2', [\App\Http\Controllers\Test\Asesmen\TestLKPSController::class, 'test2']);
+Route::get('/lkps/model', [\App\Http\Controllers\Test\Asesmen\TestLKPSController::class, 'model']);
+Route::post('/lkps/cells', [\App\Http\Controllers\Test\Asesmen\TestLKPSController::class, 'updateCells']);
+
 
 Route::get('clearcache', function () {
     Illuminate\Support\Facades\Artisan::call('cache:clear');

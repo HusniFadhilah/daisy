@@ -27,5 +27,17 @@ class AppServiceProvider extends ServiceProvider
         $this->registerPolicies();
         Blade::component('asesmen.pelaporan._card', 'pelaporan-card');
         Blade::component('stat-card', StatCard::class);
+
+        // Ensure image directories exist
+        $dirs = [
+            storage_path('app/public/permohonan-akreditasi'),
+            storage_path('app/tmp'),
+        ];
+
+        foreach ($dirs as $dir) {
+            if (!is_dir($dir)) {
+                @mkdir($dir, 0775, true);
+            }
+        }
     }
 }

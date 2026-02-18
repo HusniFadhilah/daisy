@@ -18,7 +18,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">
-                <i class="bi bi-clipboard-check"></i> Penetapan Hasil Akreditasi
+                <i class="bi bi-award"></i> Penetapan Hasil Akreditasi
             </h4>
             <p class="text-muted mb-0">Kelola dan tetapkan hasil akreditasi program studi</p>
         </div>
