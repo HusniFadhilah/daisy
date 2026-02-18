@@ -239,7 +239,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             // Upload dokumen
             Route::post('/{id}/upload-pengesahan', [BorangUploadController::class, 'uploadPengesahan'])->name('.upload-pengesahan');
             Route::post('/{id}/upload-suplemen',   [BorangUploadController::class, 'uploadSuplemen'])->name('.upload-suplemen');
-            Route::post('/{id}/upload-kualitatif', [BorangUploadController::class, 'uploadKualitatif']);
+            Route::post('/{id}/upload-kualitatif', [BorangUploadController::class, 'uploadKualitatif'])->name('.upload-kualitatif');
             Route::post('/{id}/upload-kuantitatif', [BorangUploadController::class, 'uploadKuantitatif'])->name('.upload-kuantitatif');
 
             // Dokumen action
