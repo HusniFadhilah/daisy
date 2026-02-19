@@ -20,6 +20,6 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           remote_folder: /home/ubuntu/daisy/daisy
           local_folder: './'
-          port: 22
+          port: 2222
           exclude: '["vendor/**", ".vscode/**", "public/assets/plugins/**", "public/gs/**", ".git/**", "node_modules/**"]'
 
