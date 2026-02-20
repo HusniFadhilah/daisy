@@ -2,12 +2,15 @@
 
 namespace App\Services;
 
-use PhpOffice\PhpWord\SimpleType\Jc;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
+use PhpOffice\PhpWord\SimpleType\Jc;
 
 class HtmlToPhpWordParser
 {
     protected array $tmpImages = [];
+    protected array $pendingImages = [];
     protected array $numberingRegistered = [];
     protected $phpWord;
     protected int $pengajuanId;
@@ -30,33 +33,38 @@ class HtmlToPhpWordParser
 
         // ✅ PRE-EXTRACT images with regex (fallback)
         $images = $this->extractImagesWithRegex($html);
+        $this->pendingImages = $images;
 
         // Remove images from HTML temporarily
-        $htmlWithoutImages = preg_replace('/<img[^>]+>/i', '<!-- IMAGE_PLACEHOLDER -->', $html);
+        $htmlWithoutImages = preg_replace('/<img\b[^>]*\/?>/i', '<phpword-image-placeholder></phpword-image-placeholder>', $html);
 
         // Parse HTML without images
-        if (strlen($htmlWithoutImages) > 10000) {
-            $chunks = $this->chunkHtml($htmlWithoutImages, 5000);
-            foreach ($chunks as $chunk) {
-                $this->parseAndAddHtml($container, $chunk);
-            }
-        } else {
+        if (str_contains($htmlWithoutImages, 'phpword-image-placeholder')) {
             $this->parseAndAddHtml($container, $htmlWithoutImages);
+        } else {
+            if (strlen($htmlWithoutImages) > 10000) {
+                $chunks = $this->chunkHtml($htmlWithoutImages, 5000);
+                foreach ($chunks as $chunk) {
+                    $this->parseAndAddHtml($container, $chunk);
+                }
+            } else {
+                $this->parseAndAddHtml($container, $htmlWithoutImages);
+            }
         }
 
         // ✅ Add images at the end (or wherever placeholder is)
-        foreach ($images as $imgData) {
-            try {
-                $this->addImageFromSrc($container, $imgData['src'], $imgData['width'], $imgData['height']);
-            } catch (\Exception $e) {
-                Log::error("Failed to add extracted image: " . $e->getMessage());
-                $container->addText(
-                    '[Gambar tidak dapat dimuat]',
-                    ['size' => 10, 'italic' => true, 'color' => 'FF0000'],
-                    ['alignment' => Jc::CENTER, 'spaceAfter' => 200]
-                );
-            }
-        }
+        // foreach ($images as $imgData) {
+        //     try {
+        //         $this->addImageFromSrc($container, $imgData['src'], $imgData['width'], $imgData['height']);
+        //     } catch (\Exception $e) {
+        //         Log::error("Failed to add extracted image: " . $e->getMessage());
+        //         $container->addText(
+        //             '[Gambar tidak dapat dimuat]',
+        //             ['size' => 10, 'italic' => true, 'color' => 'FF0000'],
+        //             ['alignment' => Jc::CENTER, 'spaceAfter' => 200]
+        //         );
+        //     }
+        // }
     }
 
     /**
@@ -118,7 +126,12 @@ class HtmlToPhpWordParser
 
             switch ($nodeName) {
                 case 'p':
-                    $this->addHtmlParagraph($container, $child);
+                    // kalau p mengandung image/placeholder, jangan pakai addHtmlParagraph biasa
+                    if ($this->nodeHasImageOrPlaceholder($child)) {
+                        $this->addParagraphWithImages($container, $child);
+                    } else {
+                        $this->addHtmlParagraph($container, $child);
+                    }
                     break;
 
                 case 'table':
@@ -135,8 +148,29 @@ class HtmlToPhpWordParser
                     break;
 
                 case 'img':
-                    $this->handleHtmlImage($container, $child);
+                    // $this->handleHtmlImage($container, $child);
                     break;
+                case 'phpword-image-placeholder':
+                    $imgData = array_shift($this->pendingImages);
+                    if ($imgData) {
+                        $this->addImageFromSrc($container, $imgData['src'], $imgData['width'], $imgData['height'], $child->parentNode);
+                    }
+                    break;
+                // case '#comment':
+                //     $comment = trim($child->textContent);
+                //     if ($comment === 'IMAGE_PLACEHOLDER') {
+                //         $imgData = array_shift($this->pendingImages); // ambil gambar berikutnya
+                //         if ($imgData) {
+                //             $this->addImageFromSrc(
+                //                 $container,
+                //                 $imgData['src'],
+                //                 $imgData['width'],
+                //                 $imgData['height'],
+                //                 $child->parentNode // supaya bisa baca align dari <p> parent
+                //             );
+                //         }
+                //     }
+                //     break;
 
                 case '#text':
                     $text = trim($child->textContent);
@@ -161,48 +195,73 @@ class HtmlToPhpWordParser
         }
     }
 
+    private function nodeHasImageOrPlaceholder(\DOMNode $node): bool
+    {
+        foreach ($node->childNodes as $ch) {
+            $name = strtolower($ch->nodeName);
+            if ($name === 'img' || $name === 'phpword-image-placeholder') return true;
+            if ($ch->hasChildNodes() && $this->nodeHasImageOrPlaceholder($ch)) return true;
+        }
+        return false;
+    }
+
     /**
      * ✅ Add HTML paragraph dengan inline formatting
      */
     private function addHtmlParagraph($container, \DOMNode $pNode): void
     {
-        $textRun = $container->addTextRun(['alignment' => Jc::BOTH, 'spaceAfter' => 200]);
-        $this->addInlineHtmlContent($textRun, $pNode);
+        $css = [];
+        if ($pNode instanceof \DOMElement && $pNode->hasAttribute('style')) {
+            $css = $this->parseCss($pNode->getAttribute('style'));
+        }
+
+        $pStyle = $this->cssToParagraphStyle($css);
+
+        $textRun = $container->addTextRun($pStyle + ['spaceAfter' => ($pStyle['spaceAfter'] ?? 200)]);
+        $this->addInlineHtmlContent($textRun, $pNode, ['size' => 11], $css);
     }
 
     /**
      * ✅ Add inline HTML content (bold, italic, etc)
      */
-    private function addInlineHtmlContent($textRun, \DOMNode $node): void
+    private function addInlineHtmlContent($textRun, \DOMNode $node, array $fontStyle = ['size' => 11], array $inheritedCss = []): void
     {
         foreach ($node->childNodes as $child) {
-            $fontStyle = ['size' => 11];
+            $childCss = $inheritedCss;
 
-            switch ($child->nodeName) {
+            if ($child instanceof \DOMElement && $child->hasAttribute('style')) {
+                $childCss = array_merge($childCss, $this->parseCss($child->getAttribute('style')));
+            }
+
+            $currentFont = $this->cssToFontStyle($childCss, $fontStyle);
+
+            switch (strtolower($child->nodeName)) {
                 case 'strong':
                 case 'b':
-                    $fontStyle['bold'] = true;
-                    $text = $this->getNodeText($child);
-                    if (trim($text) !== '') {
-                        $textRun->addText($text, $fontStyle);
-                    }
+                    $currentFont['bold'] = true;
+                    $this->addInlineHtmlContent($textRun, $child, $currentFont, $childCss);
                     break;
 
                 case 'em':
                 case 'i':
-                    $fontStyle['italic'] = true;
-                    $text = $this->getNodeText($child);
-                    if (trim($text) !== '') {
-                        $textRun->addText($text, $fontStyle);
-                    }
+                    $currentFont['italic'] = true;
+                    $this->addInlineHtmlContent($textRun, $child, $currentFont, $childCss);
                     break;
 
                 case 'u':
-                    $fontStyle['underline'] = \PhpOffice\PhpWord\Style\Font::UNDERLINE_SINGLE;
-                    $text = $this->getNodeText($child);
-                    if (trim($text) !== '') {
-                        $textRun->addText($text, $fontStyle);
-                    }
+                    $currentFont['underline'] = \PhpOffice\PhpWord\Style\Font::UNDERLINE_SINGLE;
+                    $this->addInlineHtmlContent($textRun, $child, $currentFont, $childCss);
+                    break;
+
+                case 's':
+                case 'strike':
+                case 'del':
+                    $currentFont['strikethrough'] = true;
+                    $this->addInlineHtmlContent($textRun, $child, $currentFont, $childCss);
+                    break;
+
+                case 'span':
+                    $this->addInlineHtmlContent($textRun, $child, $currentFont, $childCss);
                     break;
 
                 case 'br':
@@ -210,15 +269,18 @@ class HtmlToPhpWordParser
                     break;
 
                 case '#text':
-                    $text = $child->textContent;
-                    if (trim($text) !== '') {
-                        $textRun->addText($text, $fontStyle);
-                    }
+                    $t = $child->textContent;
+                    if (trim($t) !== '') $textRun->addText($t, $currentFont);
+                    break;
+
+                case 'img':
+                    // kalau masih ada <img> lolos (misal conditional), bisa fallback:
+                    // $this->handleHtmlImage($textRun->getParent(), $child);
                     break;
 
                 default:
                     if ($child->hasChildNodes()) {
-                        $this->addInlineHtmlContent($textRun, $child);
+                        $this->addInlineHtmlContent($textRun, $child, $currentFont, $childCss);
                     }
                     break;
             }
@@ -230,15 +292,37 @@ class HtmlToPhpWordParser
      */
     private function addHtmlList($container, \DOMNode $listNode): void
     {
-        $isOrdered = $listNode->nodeName === 'ol';
+        $isOrdered = strtolower($listNode->nodeName) === 'ol';
+
+        // list-style-type dari style HTML (decimal/lower-alpha/disk/circle/square/upper-roman etc)
+        $marker = 'decimal';
+        if ($listNode instanceof \DOMElement && $listNode->hasAttribute('style')) {
+            $css = $this->parseCss($listNode->getAttribute('style'));
+            if (!empty($css['list-style-type'])) $marker = strtolower($css['list-style-type']);
+        }
+
+        $format = $isOrdered ? 'decimal' : 'bullet';
+        if ($isOrdered) {
+            $map = [
+                'decimal' => 'decimal',
+                'lower-alpha' => 'lowerLetter',
+                'upper-alpha' => 'upperLetter',
+                'lower-roman' => 'lowerRoman',
+                'upper-roman' => 'upperRoman',
+                'decimal-leading-zero' => 'decimalZero',
+            ];
+            if (isset($map[$marker])) $format = $map[$marker];
+        } else {
+            $format = 'bullet';
+        }
 
         $numberingName = 'htmlList_' . uniqid();
         $this->ensureNumberingStyle($numberingName, [
             'type' => 'multilevel',
             'levels' => [[
                 'level'   => 0,
-                'format'  => $isOrdered ? 'decimal' : 'bullet',
-                'text'    => $isOrdered ? '%1.' : '•',
+                'format'  => $format,
+                'text'    => $format === 'bullet' ? '•' : '%1.',
                 'left'    => 360,
                 'hanging' => 360,
                 'tabPos'  => 720,
@@ -246,23 +330,26 @@ class HtmlToPhpWordParser
         ]);
 
         foreach ($listNode->childNodes as $li) {
-            if ($li->nodeName === 'li') {
-                $text = $this->getNodeText($li);
-                if (trim($text) !== '') {
-                    $container->addListItem(
-                        $text,
-                        0,
-                        ['size' => 11],
-                        $numberingName,
-                        ['alignment' => Jc::BOTH, 'spaceAfter' => 120]
-                    );
+            if (strtolower($li->nodeName) !== 'li') continue;
+
+            // pakai ListItemRun supaya inline formatting kebawa
+            $run = $container->addListItemRun(0, $numberingName, ['spaceAfter' => 120]);
+
+            // render isi li (text + span + strong + u + s + br)
+            $this->addInlineHtmlContent($run, $li, ['size' => 11], []);
+
+            // nested list di dalam li
+            foreach ($li->childNodes as $maybeNested) {
+                $n = strtolower($maybeNested->nodeName);
+                if ($n === 'ol' || $n === 'ul') {
+                    $this->addHtmlList($container, $maybeNested);
                 }
             }
         }
     }
 
     /**
-     * ✅ SIMPLEST: Table dengan fixed twips width
+     * ✅ SIMPLEST: dengan fixed twips width
      */
     private function addHtmlTableFromNode($container, \DOMNode $tableNode): void
     {
@@ -723,7 +810,7 @@ class HtmlToPhpWordParser
             }
         }
 
-        return Jc::CENTER;
+        return Jc::START;
     }
 
     /**
@@ -731,91 +818,25 @@ class HtmlToPhpWordParser
      */
     private function handleHtmlImage($container, \DOMElement $imgNode): void
     {
-        if (!$imgNode->hasAttribute('src')) {
-            Log::warning("Image tag without src attribute");
-            return;
-        }
-
         $src = $imgNode->getAttribute('src');
+        $localPath = $this->resolveImageToLocalPath($src);
 
-        // ✅ Log panjang src untuk debug
-        $srcLength = strlen($src);
-        $srcPreview = substr($src, 0, 100);
-
-        // Skip blob URLs
-        if (strpos($src, 'blob:') === 0) {
-            Log::warning("Skipping blob image: {$src}");
+        if (!$localPath) {
             $container->addText(
-                '[Gambar tidak dapat dimuat - blob URL]',
+                '[Gambar tidak dapat dimuat]',
                 ['size' => 10, 'italic' => true, 'color' => 'FF0000'],
                 ['alignment' => Jc::CENTER, 'spaceAfter' => 200]
             );
             return;
         }
 
-        // ✅ Handle data URI (base64)
-        if (strpos($src, 'data:image') === 0) {
-            try {
-                $this->addDataUriImage($container, $src, $imgNode);
-                // ✅ Add confirmation text (temporary for debug)
-                $container->addText(
-                    '[✓ Gambar berhasil ditambahkan]',
-                    ['size' => 9, 'italic' => true, 'color' => '00FF00'],
-                    ['alignment' => Jc::CENTER, 'spaceAfter' => 100]
-                );
-            } catch (\Exception $e) {
-                Log::error("❌ Failed to process data URI image: " . $e->getMessage());
-                Log::error("Stack trace: " . $e->getTraceAsString());
+        // width (optional)
+        $width = $imgNode->hasAttribute('width') ? (int)$imgNode->getAttribute('width') : 300;
 
-                $container->addText(
-                    '[Gambar gagal dimuat: ' . $e->getMessage() . ']',
-                    ['size' => 10, 'italic' => true, 'color' => 'FF0000'],
-                    ['alignment' => Jc::CENTER, 'spaceAfter' => 200]
-                );
-            }
-            return;
-        }
-
-        // Handle HTTP/HTTPS
-        if (strpos($src, 'http://') === 0 || strpos($src, 'https://') === 0) {
-
-            try {
-                $tmpPath = $this->downloadImage($src);
-                $container->addImage($tmpPath, [
-                    'width' => 300,
-                    'alignment' => Jc::CENTER
-                ]);
-            } catch (\Exception $e) {
-                Log::error("❌ Failed to download image: " . $e->getMessage());
-                $container->addText(
-                    '[Gambar tidak dapat dimuat dari: ' . $src . ']',
-                    ['size' => 10, 'italic' => true, 'color' => 'FF0000'],
-                    ['alignment' => Jc::CENTER]
-                );
-            }
-            return;
-        }
-
-        // Handle relative paths
-        $imagePath = storage_path('app/public/' . ltrim($src, '/'));
-
-        if (file_exists($imagePath)) {
-            try {
-                $container->addImage($imagePath, [
-                    'width' => 300,
-                    'alignment' => Jc::CENTER
-                ]);
-            } catch (\Exception $e) {
-                Log::error("❌ Failed to add local image: " . $e->getMessage());
-            }
-        } else {
-            Log::warning("❌ Image not found: {$imagePath}");
-            $container->addText(
-                '[Gambar tidak ditemukan: ' . basename($src) . ']',
-                ['size' => 10, 'italic' => true, 'color' => 'FF0000'],
-                ['alignment' => Jc::CENTER]
-            );
-        }
+        $container->addImage($localPath, [
+            'width' => $width > 0 ? $width : 300,
+            'alignment' => Jc::CENTER
+        ]);
     }
 
     /**
@@ -936,36 +957,49 @@ class HtmlToPhpWordParser
     {
         $images = [];
 
-        // Pattern untuk extract img tags (including dalam conditional comments)
-        $pattern = '/<img\s+([^>]+)>/is';
-
+        // lebih robust: dukung <img ...> dan <img .../>
+        $pattern = '/<img\b([^>]*?)\/?>/is';
         preg_match_all($pattern, $html, $matches, PREG_SET_ORDER);
 
         foreach ($matches as $match) {
-            $attributes = $match[1];
+            $attributes = $match[1] ?? '';
 
-            // Extract src
-            if (preg_match('/src=["\']([^"\']+)["\']/i', $attributes, $srcMatch)) {
-                $src = $srcMatch[1];
-
-                // Extract width (optional)
-                $width = null;
-                if (preg_match('/width=["\']?(\d+)["\']/i', $attributes, $widthMatch)) {
-                    $width = (int)$widthMatch[1];
-                }
-
-                // Extract height (optional)
-                $height = null;
-                if (preg_match('/height=["\']?(\d+)["\']/i', $attributes, $heightMatch)) {
-                    $height = (int)$heightMatch[1];
-                }
-
-                $images[] = [
-                    'src' => $src,
-                    'width' => $width,
-                    'height' => $height
-                ];
+            if (!preg_match('/src=["\']([^"\']+)["\']/i', $attributes, $srcMatch)) {
+                continue;
             }
+
+            $src = $srcMatch[1];
+
+            $width = null;
+            $height = null;
+
+            if (preg_match('/\bwidth=["\']?(\d+)["\']?/i', $attributes, $m)) {
+                $width = (int)$m[1];
+            }
+            if (preg_match('/\bheight=["\']?(\d+)["\']?/i', $attributes, $m)) {
+                $height = (int)$m[1];
+            }
+
+            // fallback dari style (px)
+            if ($width === null && preg_match('/style=["\'][^"\']*?\bwidth\s*:\s*(\d+)px\s*;?/i', $attributes, $m)) {
+                $width = (int)$m[1];
+            }
+            if ($height === null && preg_match('/style=["\'][^"\']*?\bheight\s*:\s*(\d+)px\s*;?/i', $attributes, $m)) {
+                $height = (int)$m[1];
+            }
+
+            // simpan style utk alignment/margin auto
+            $style = null;
+            if (preg_match('/style=["\']([^"\']+)["\']/i', $attributes, $m)) {
+                $style = $m[1];
+            }
+
+            $images[] = [
+                'src' => $src,
+                'width' => $width,
+                'height' => $height,
+                'style' => $style,
+            ];
         }
 
         return $images;
@@ -974,65 +1008,94 @@ class HtmlToPhpWordParser
     /**
      * ✅ Add image dari src string
      */
-    private function addImageFromSrc($container, string $src, ?int $width, ?int $height): void
+    private function addImageFromSrc($container, string $src, ?int $width, ?int $height, ?\DOMNode $parentNode = null): void
     {
-        // Handle data URI
-        if (strpos($src, 'data:image') === 0) {
-            // Parse manually
-            if (!preg_match('/^data:image\/(\w+);base64,(.+)$/s', $src, $matches)) {
-                throw new \Exception("Invalid data URI format");
-            }
+        $localPath = $this->resolveImageToLocalPath($src);
+        if (!$localPath) throw new \Exception("Cannot resolve image src: {$src}");
 
-            $extension = strtolower($matches[1]);
-            $base64Data = $matches[2];
-
-            // ✅ Clean whitespace dari base64
-            $base64Data = preg_replace('/\s+/', '', $base64Data);
-
-            $imageData = base64_decode($base64Data, true);
-            if ($imageData === false) {
-                throw new \Exception("Failed to decode base64");
-            }
-
-            // Save to temp
-            $tmpDir = $this->tmpExportPath();
-            if (!is_dir($tmpDir)) {
-                mkdir($tmpDir, 0777, true);
-            }
-
-            $tmpFile = $tmpDir . '/' . uniqid('img_', true) . '.' . $extension;
-            file_put_contents($tmpFile, $imageData);
-
-            // Get dimensions
-            $imageInfo = @getimagesize($tmpFile);
-            if ($imageInfo !== false) {
-                $origWidth = $imageInfo[0];
-                $origHeight = $imageInfo[1];
-
-                // Calculate display width
-                if ($width) {
-                    $displayWidth = $width;
-                } elseif ($origWidth > 500) {
-                    $displayWidth = 500;
-                } else {
-                    $displayWidth = $origWidth;
-                }
-            } else {
-                $displayWidth = $width ?: 300;
-            }
-
-            // Add to container
-            $container->addImage($tmpFile, [
-                'width' => $displayWidth,
-                'alignment' => Jc::CENTER
-            ]);
-
-            $this->tmpImages[] = $tmpFile;
+        // Tentukan alignment dari parent <p> (center/left/right)
+        $alignment = Jc::CENTER;
+        if ($parentNode instanceof \DOMElement && $parentNode->hasAttribute('style')) {
+            $style = $parentNode->getAttribute('style');
+            if (stripos($style, 'text-align: right') !== false) $alignment = Jc::END;
+            elseif (stripos($style, 'text-align: left') !== false) $alignment = Jc::START;
+            elseif (stripos($style, 'text-align: center') !== false) $alignment = Jc::CENTER;
+            elseif (stripos($style, 'text-align: justify') !== false) $alignment = Jc::CENTER; // gambar biasanya center
         }
-        // Handle HTTP/local paths (existing logic)
-        else {
-            $this->handleImageUrl($container, $src);
+
+        // Kalau width/height tidak ada, ambil dari file asli
+        if (!$width || !$height) {
+            $info = @getimagesize($localPath);
+            if ($info) {
+                $width = $width ?: $info[0];
+                $height = $height ?: $info[1];
+            }
         }
+
+        // Batasi agar tidak lebih lebar dari halaman (sesuaikan angka ini)
+        // Biasanya aman: 520-560 px untuk A4 margin normal
+        $maxWidth = 520;
+        if ($width && $width > $maxWidth) {
+            $ratio = $height && $width ? ($height / $width) : null;
+            $width = $maxWidth;
+            if ($ratio) $height = (int) round($maxWidth * $ratio);
+        }
+
+        $opts = [
+            'alignment' => $alignment,
+            'wrappingStyle' => 'inline',
+        ];
+        if ($width) $opts['width'] = $width;
+        if ($height) $opts['height'] = $height;
+
+        $container->addImage($localPath, $opts);
+    }
+
+    private function resolveImageSize(string $localPath, ?int $w, ?int $h, ?int $maxW, bool $heightAuto, int $fallbackMaxW): array
+    {
+        $info = @getimagesize($localPath);
+        $origW = $info ? (int)$info[0] : null;
+        $origH = $info ? (int)$info[1] : null;
+
+        // Jika tidak ada info, pakai fallback aman
+        if (!$origW || !$origH) {
+            $w = $w ?: min($fallbackMaxW, 520);
+            return [$w, null];
+        }
+
+        // Interpret "max-width:100%" sebagai fit container => pakai fallbackMaxW
+        $effectiveMaxW = $fallbackMaxW;
+        if ($maxW !== null) {
+            $effectiveMaxW = ($maxW >= 99999) ? $fallbackMaxW : min($fallbackMaxW, $maxW);
+        }
+
+        // Jika hanya height ada (dan width kosong) -> hitung width dari ratio
+        if (!$w && $h) {
+            $w = (int) round(($h * $origW) / $origH);
+        }
+
+        // Jika width ada, height auto atau kosong -> hitung height dari ratio
+        if ($w && (!$h || $heightAuto)) {
+            $h = (int) round(($w * $origH) / $origW);
+        }
+
+        // Jika keduanya kosong -> pakai original
+        if (!$w && !$h) {
+            $w = $origW;
+            $h = $origH;
+        }
+
+        // Fit to max width (scale down, keep ratio)
+        if ($w > $effectiveMaxW) {
+            $scale = $effectiveMaxW / $w;
+            $w = (int) floor($w * $scale);
+            $h = $h ? (int) floor($h * $scale) : null;
+        }
+
+        // Hard guard biar nggak terlalu kecil / aneh
+        if ($w < 50) $w = 50;
+
+        return [$w, $h];
     }
 
     /**
@@ -1040,23 +1103,57 @@ class HtmlToPhpWordParser
      */
     private function handleImageUrl($container, string $url): void
     {
+        // 1) Kalau bentuknya URL http(s), cek dulu apakah itu /storage/...
         if (strpos($url, 'http://') === 0 || strpos($url, 'https://') === 0) {
+
+            $path = parse_url($url, PHP_URL_PATH) ?: '';
+
+            // contoh path: /storage/permohonan-akreditasi/1/xxx.png
+            if (strpos($path, '/storage/') === 0) {
+                $relative = ltrim(substr($path, strlen('/storage/')), '/');
+
+                $local = storage_path('app/public/' . $relative);
+                if (file_exists($local)) {
+                    $container->addImage($local, [
+                        'width' => 300,
+                        'alignment' => Jc::CENTER
+                    ]);
+                    return;
+                }
+
+                // fallback kalau file benerannya ada di public/storage
+                $local2 = public_path('storage/' . $relative);
+                if (file_exists($local2)) {
+                    $container->addImage($local2, [
+                        'width' => 300,
+                        'alignment' => Jc::CENTER
+                    ]);
+                    return;
+                }
+
+                throw new \Exception("Local storage image not found for URL: {$url}");
+            }
+
+            // 2) Kalau bukan /storage/..., baru download
             $tmpPath = $this->downloadImage($url);
             $container->addImage($tmpPath, [
                 'width' => 300,
                 'alignment' => Jc::CENTER
             ]);
-        } else {
-            $imagePath = storage_path('app/public/' . ltrim($url, '/'));
-            if (file_exists($imagePath)) {
-                $container->addImage($imagePath, [
-                    'width' => 300,
-                    'alignment' => Jc::CENTER
-                ]);
-            } else {
-                throw new \Exception("Image not found: {$imagePath}");
-            }
+            return;
         }
+
+        // 3) Kalau bukan URL (relatif), existing logic
+        $imagePath = storage_path('app/public/' . ltrim($url, '/'));
+        if (file_exists($imagePath)) {
+            $container->addImage($imagePath, [
+                'width' => 300,
+                'alignment' => Jc::CENTER
+            ]);
+            return;
+        }
+
+        throw new \Exception("Image not found: {$imagePath}");
     }
 
     /**
@@ -1076,6 +1173,128 @@ class HtmlToPhpWordParser
         $this->tmpImages[] = $tmpFile;
 
         return $tmpFile;
+    }
+
+    private function resolveImageToLocalPath(string $src): ?string
+    {
+        $src = trim($src);
+
+        // 1) blob: tidak bisa dari backend
+        if (Str::startsWith($src, 'blob:')) {
+            return null;
+        }
+
+        // 2) data URI (base64) -> simpan temp
+        if (Str::startsWith($src, 'data:image')) {
+            return $this->saveDataUriToTemp($src);
+        }
+
+        // 3) URL http(s)
+        if (preg_match('#^https?://#i', $src)) {
+            $path = parse_url($src, PHP_URL_PATH) ?: '';
+
+            // 3a) Kalau ini URL /storage/... milik aplikasi sendiri -> map ke file lokal
+            if (Str::startsWith($path, '/storage/')) {
+                $relative = Str::after($path, '/storage/');
+                $local = storage_path('app/public/' . $relative);
+                if (file_exists($local)) return $local;
+
+                $local2 = public_path('storage/' . $relative);
+                if (file_exists($local2)) return $local2;
+
+                return null;
+            }
+
+            // 3b) URL remote lain -> download ke temp (lebih aman dari file_get_contents)
+            return $this->downloadRemoteImageToTemp($src);
+        }
+
+        // 4) src relatif: /storage/.. atau path lokal
+        if (Str::startsWith($src, '/storage/')) {
+            $relative = Str::after($src, '/storage/');
+            $local = storage_path('app/public/' . $relative);
+            if (file_exists($local)) return $local;
+
+            $local2 = public_path('storage/' . $relative);
+            if (file_exists($local2)) return $local2;
+
+            return null;
+        }
+
+        // 5) relative biasa: permohonan-akreditasi/...
+        $local = storage_path('app/public/' . ltrim($src, '/'));
+        if (file_exists($local)) return $local;
+
+        // 6) kalau ternyata sudah absolute path
+        if (file_exists($src)) return $src;
+
+        return null;
+    }
+
+    private function saveDataUriToTemp(string $dataUri): ?string
+    {
+        if (!preg_match('/^data:image\/(\w+);base64,(.+)$/s', $dataUri, $m)) {
+            return null;
+        }
+
+        $ext = strtolower($m[1]);
+        $base64 = preg_replace('/\s+/', '', $m[2]);
+        $bin = base64_decode($base64, true);
+        if ($bin === false) return null;
+
+        $tmpDir = $this->tmpExportPath();
+        $tmpFile = $tmpDir . '/' . uniqid('img_', true) . '.' . $ext;
+
+        file_put_contents($tmpFile, $bin);
+        $this->tmpImages[] = $tmpFile;
+
+        return file_exists($tmpFile) ? $tmpFile : null;
+    }
+
+    private function downloadRemoteImageToTemp(string $url): ?string
+    {
+        try {
+            $resp = Http::timeout(15)
+                ->withHeaders(['User-Agent' => 'Mozilla/5.0'])
+                ->get($url);
+
+            if (!$resp->ok()) return null;
+
+            // Batasi ukuran (misal 8MB)
+            $body = $resp->body();
+            if (strlen($body) > 8 * 1024 * 1024) return null;
+
+            $ct = strtolower($resp->header('Content-Type', ''));
+            $ext = 'img';
+            if (str_contains($ct, 'jpeg')) $ext = 'jpg';
+            elseif (str_contains($ct, 'png')) $ext = 'png';
+            elseif (str_contains($ct, 'webp')) $ext = 'webp';
+            elseif (str_contains($ct, 'gif')) $ext = 'gif';
+
+            // fallback: coba dari URL
+            if ($ext === 'img') {
+                $path = parse_url($url, PHP_URL_PATH) ?: '';
+                $guess = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+                if (in_array($guess, ['jpg', 'jpeg', 'png', 'webp', 'gif'], true)) {
+                    $ext = $guess === 'jpeg' ? 'jpg' : $guess;
+                }
+            }
+
+            $tmpFile = $this->tmpExportPath(uniqid('img_', true) . '.' . $ext);
+            file_put_contents($tmpFile, $body);
+
+            // Validasi beneran gambar
+            if (@getimagesize($tmpFile) === false) {
+                @unlink($tmpFile);
+                return null;
+            }
+
+            $this->tmpImages[] = $tmpFile;
+            return $tmpFile;
+        } catch (\Throwable $e) {
+            Log::warning("downloadRemoteImageToTemp failed: {$e->getMessage()}");
+            return null;
+        }
     }
 
     /**
@@ -1103,7 +1322,7 @@ class HtmlToPhpWordParser
         $html = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', '', $html);
         $html = preg_replace('/<style\b[^>]*>(.*?)<\/style>/is', '', $html);
         $html = str_replace('&nbsp;', ' ', $html);
-        $html = preg_replace('/\s+/', ' ', $html);
+        // $html = preg_replace('/\s+/', ' ', $html);
 
         return trim($html);
     }
@@ -1190,5 +1409,220 @@ class HtmlToPhpWordParser
         return $filename
             ? $basePath . DIRECTORY_SEPARATOR . $filename
             : $basePath;
+    }
+
+    private function parseCss(string $style): array
+    {
+        $out = [];
+        foreach (explode(';', $style) as $decl) {
+            $decl = trim($decl);
+            if ($decl === '' || !str_contains($decl, ':')) continue;
+            [$k, $v] = array_map('trim', explode(':', $decl, 2));
+            $out[strtolower($k)] = $v;
+        }
+        return $out;
+    }
+
+    private function cssColorToHex(?string $v): ?string
+    {
+        if (!$v) return null;
+        $v = trim($v);
+        if ($v === '') return null;
+
+        // #RRGGBB / #RGB
+        if (preg_match('/^#([0-9a-f]{3}|[0-9a-f]{6})$/i', $v, $m)) {
+            $hex = strtoupper($m[1]);
+            if (strlen($hex) === 3) {
+                $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+            }
+            return $hex;
+        }
+
+        // rgb(r,g,b)
+        if (preg_match('/rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/i', $v, $m)) {
+            $r = max(0, min(255, (int)$m[1]));
+            $g = max(0, min(255, (int)$m[2]));
+            $b = max(0, min(255, (int)$m[3]));
+            return sprintf('%02X%02X%02X', $r, $g, $b);
+        }
+
+        return null;
+    }
+
+    private function cssToParagraphStyle(array $css): array
+    {
+        $p = [];
+
+        // alignment
+        $ta = strtolower($css['text-align'] ?? '');
+        $map = [
+            'left' => Jc::START,
+            'right' => Jc::END,
+            'center' => Jc::CENTER,
+            'justify' => Jc::BOTH,
+        ];
+        if (isset($map[$ta])) $p['alignment'] = $map[$ta];
+
+        // margin-top/bottom px -> twips-ish (PhpWord expects "spaceBefore/After" in twips)
+        // 1px ~ 20 twips (kamu pakai mapping ini juga di import)
+        foreach (['margin-top' => 'spaceBefore', 'margin-bottom' => 'spaceAfter'] as $k => $dest) {
+            if (!empty($css[$k]) && preg_match('/(\d+)\s*px/i', $css[$k], $m)) {
+                $p[$dest] = (int)$m[1] * 20;
+            }
+        }
+
+        // line-height: "1.5" atau "24px"
+        if (!empty($css['line-height'])) {
+            $lh = trim($css['line-height']);
+            if (preg_match('/^\d+(\.\d+)?$/', $lh)) {
+                // multiplier (PhpWord supports 'lineHeight' multiplier)
+                $p['lineHeight'] = (float)$lh;
+            } elseif (preg_match('/(\d+)\s*px/i', $lh, $m)) {
+                // px -> twips, pakai spacing + rule "exact"
+                $p['spacing'] = (int)$m[1] * 20;
+                $p['spacingLineRule'] = \PhpOffice\PhpWord\SimpleType\LineSpacingRule::EXACT;
+            }
+        }
+
+        // indent (margin-left / text-indent)
+        // PhpWord indentation uses twips, 1px ~ 15 twips (mengikuti import kamu)
+        $indent = [];
+        if (!empty($css['margin-left']) && preg_match('/(\d+)\s*px/i', $css['margin-left'], $m)) {
+            $indent['left'] = (int)$m[1] * 15;
+        }
+        if (!empty($css['margin-right']) && preg_match('/(\d+)\s*px/i', $css['margin-right'], $m)) {
+            $indent['right'] = (int)$m[1] * 15;
+        }
+        if (!empty($css['text-indent'])) {
+            if (preg_match('/-?(\d+)\s*px/i', $css['text-indent'], $m)) {
+                $px = (int)$m[1];
+                // negative indent => hanging, positive => firstLine
+                if (str_starts_with(trim($css['text-indent']), '-')) $indent['hanging'] = $px * 15;
+                else $indent['firstLine'] = $px * 15;
+            }
+        }
+        if (!empty($indent)) $p['indentation'] = $indent;
+
+        return $p;
+    }
+
+    private function cssToFontStyle(array $css, array $base = []): array
+    {
+        $f = $base;
+
+        // color
+        $hex = $this->cssColorToHex($css['color'] ?? null);
+        if ($hex) $f['color'] = $hex;
+
+        // background-color => highlight-ish (PhpWord: 'bgColor' on FontStyle works in some writers)
+        $bg = $this->cssColorToHex($css['background-color'] ?? null);
+        if ($bg) $f['bgColor'] = $bg;
+
+        // font-size: pt atau px
+        if (!empty($css['font-size'])) {
+            $v = strtolower(trim($css['font-size']));
+            if (preg_match('/(\d+(\.\d+)?)\s*pt/', $v, $m)) $f['size'] = (float)$m[1];
+            elseif (preg_match('/(\d+)\s*px/', $v, $m)) {
+                // px ~ pt*(96/72) => pt = px*0.75
+                $f['size'] = round(((int)$m[1]) * 0.75, 1);
+            }
+        }
+
+        // text-decoration
+        if (!empty($css['text-decoration'])) {
+            $td = strtolower($css['text-decoration']);
+            if (str_contains($td, 'underline')) $f['underline'] = \PhpOffice\PhpWord\Style\Font::UNDERLINE_SINGLE;
+            if (str_contains($td, 'line-through')) $f['strikethrough'] = true;
+        }
+
+        // font-weight/font-style
+        if (!empty($css['font-weight']) && (str_contains($css['font-weight'], 'bold') || (int)$css['font-weight'] >= 600)) $f['bold'] = true;
+        if (!empty($css['font-style']) && str_contains(strtolower($css['font-style']), 'italic')) $f['italic'] = true;
+
+        // font-family (opsional)
+        if (!empty($css['font-family'])) {
+            // ambil font pertama aja
+            $name = trim(explode(',', $css['font-family'])[0], " \t\n\r\0\x0B\"'");
+            if ($name !== '') $f['name'] = $name;
+        }
+
+        return $f;
+    }
+
+    private function addParagraphWithImages($container, \DOMNode $pNode): void
+    {
+        $css = [];
+        if ($pNode instanceof \DOMElement && $pNode->hasAttribute('style')) {
+            $css = $this->parseCss($pNode->getAttribute('style'));
+        }
+        $pStyle = $this->cssToParagraphStyle($css);
+        $pStyle = $pStyle + ['spaceAfter' => ($pStyle['spaceAfter'] ?? 200)];
+
+        // kasus paling umum: <p><img ...></p> (atau placeholder)
+        // kalau hanya berisi img/placeholder (dan whitespace), langsung addImage saja
+        $onlyImage = true;
+        foreach ($pNode->childNodes as $ch) {
+            $name = strtolower($ch->nodeName);
+            if ($name === '#text' && trim($ch->textContent) === '') continue;
+            if ($name === 'img' || $name === 'phpword-image-placeholder' || $name === 'span' || $name === 'div') {
+                // masih mungkin berisi image di dalam span/div
+            } else {
+                $onlyImage = false;
+            }
+        }
+
+        // buat textRun aktif untuk teks (kalau ada)
+        $textRun = null;
+        $ensureRun = function () use ($container, &$textRun, $pStyle, $css) {
+            if (!$textRun) $textRun = $container->addTextRun($pStyle);
+            return $textRun;
+        };
+
+        // recursive walker untuk isi <p>
+        $walk = function (\DOMNode $node) use (&$walk, $container, $pNode, &$textRun, $ensureRun, $css) {
+            foreach ($node->childNodes as $ch) {
+                $name = strtolower($ch->nodeName);
+
+                if ($name === 'phpword-image-placeholder') {
+                    $imgData = array_shift($this->pendingImages);
+                    if ($imgData) {
+                        // close run (biar gambar tidak “inline” ke textRun)
+                        $textRun = null;
+                        $this->addImageFromSrc($container, $imgData['src'], $imgData['width'], $imgData['height'], $pNode);
+                    }
+                    continue;
+                }
+
+                if ($name === 'img') {
+                    // fallback kalau ada <img> yang lolos tanpa placeholder
+                    $src = $ch instanceof \DOMElement ? $ch->getAttribute('src') : null;
+                    if ($src) {
+                        $w = $ch->hasAttribute('width') ? (int)$ch->getAttribute('width') : null;
+                        $h = $ch->hasAttribute('height') ? (int)$ch->getAttribute('height') : null;
+                        $textRun = null;
+                        $this->addImageFromSrc($container, $src, $w, $h, $pNode);
+                    }
+                    continue;
+                }
+
+                if ($name === '#text') {
+                    $t = $ch->textContent;
+                    if (trim($t) !== '') {
+                        $run = $ensureRun();
+                        $run->addText($t, ['size' => 11]); // bisa pakai cssToFontStyle kalau mau konsisten
+                    }
+                    continue;
+                }
+
+                // span/div/strong/em dst: recurse
+                if ($ch->hasChildNodes()) {
+                    $walk($ch);
+                }
+            }
+        };
+
+        $walk($pNode);
+
+        // kalau p hanya gambar, boleh kasih spaceAfter via paragraph lain / atau biarkan
     }
 }

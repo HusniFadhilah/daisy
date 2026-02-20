@@ -528,24 +528,56 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
                 </div>
                 {{-- 3. LKPS (Data Kuantitatif) --}}
                 <div class="col-md-6">
-                    <div class="upload-card h-100 {{ !$lockBorang ? 'clickable' : '' }} {{ isset($uploadedFiles['kuantitatif']) && $uploadedFiles['kuantitatif'] ? 'has-file' : '' }}" @if(!$lockBorang) onclick="triggerUploadKuantitatif()" @endif style="{{ $lockBorang ? 'opacity:.65; pointer-events:none;' : '' }}">
+                    <div class="upload-card h-100">
                         <div class="upload-icon">
-                            <i class="bi {{ isset($uploadedFiles['kuantitatif']) && $uploadedFiles['kuantitatif'] ? 'bi-file-earmark-check' : 'bi-file-excel' }}"></i>
+                            <i class="bi bi-file-excel {{ isset($uploadedFiles['kuantitatif']) ? 'text-success' : '' }}"></i>
                         </div>
                         <h6 class="fw-bold">Laporan Kinerja Program Studi (LKPS)</h6>
-                        @if(isset($uploadedFiles['kuantitatif']) && $uploadedFiles['kuantitatif'])
-                        <p class="text-success mb-2">
-                            <i class="bi bi-check-circle"></i> {{ $uploadedFiles['kuantitatif']->original_filename }}
+
+                        @if(isset($uploadedFiles['kuantitatif']))
+                        <p class="text-success mb-1 small">
+                            <i class="bi bi-check-circle"></i>
+                            {{ $uploadedFiles['kuantitatif']->original_filename }}
                         </p>
-                        <small class="text-muted">{{ $uploadedFiles['kuantitatif']->created_at->diffForHumans() }}</small>
-                        @else
-                        <p class="text-muted small mb-2">File Excel berisi data tabel (sesuai templat)</p>
-                        <button type="button" class="btn btn-outline-success btn-sm">
-                            <i class="bi bi-upload"></i> Upload Excel
+                        <div id="lkpsImportStatus" class="mb-2">
+                            <span class="badge bg-secondary">
+                                <span class="spinner-border spinner-border-sm me-1"></span>Cek status...
+                            </span>
+                        </div>
+                        @endif
+
+                        {{-- ✅ Toggle 2 mode --}}
+                        <div class="btn-group w-100 mb-2" role="group">
+                            <button type="button" class="btn btn-outline-success btn-sm" id="btnUploadExcelLkps" {{ $lockBorang ? 'disabled' : '' }} onclick="triggerUploadKuantitatif()">
+                                <i class="bi bi-cloud-upload"></i> Upload Excel LKPS
+                            </button>
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="btnIsianOnlineLkps" {{ $lockBorang ? 'disabled' : '' }}>
+                                <i class="bi bi-pencil-square"></i> Isi Online
+                            </button>
+                        </div>
+
+                        {{-- Download Template Kosong --}}
+                        <a href="{{ route('pengajuan.borang.lkps.download-template', $pengajuan->id) }}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-download"></i> Download Template LKPS
+                        </a>
+
+                        {{-- Export Data Terisi --}}
+                        <a href="{{ route('pengajuan.borang.lkps.export', $pengajuan->id) }}" class="btn btn-outline-success btn-sm">
+                            <i class="bi bi-file-excel"></i> Export LKPS Terisi
+                        </a>
+
+                        @if(isset($uploadedFiles['kuantitatif']))
+                        <button type="button" class="btn btn-outline-info btn-sm w-100" id="btnLihatDataLkps">
+                            <i class="bi bi-table"></i> Lihat Data Terimpor
                         </button>
                         @endif
+
+                        <small class="text-muted d-block mt-2">
+                            <i class="bi bi-info-circle"></i>
+                            Upload Excel templat resmi, atau isi tabel secara online.
+                        </small>
                     </div>
-                    <input type="file" id="inputKuantitatif" class="d-none" accept=".xlsx,.xls" onchange="handleUploadKuantitatif(event)">
+                    <input type="file" id="inputKuantitatif" class="d-none" accept=".xlsx,.xls" onchange="handleUploadKuantitatif(event)" {{ $lockBorang ? 'disabled' : '' }}>
                 </div>
             </div>
         </div>
@@ -780,7 +812,7 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
                                     </div>
 
                                     {{-- Dataset Fields (If Any) --}}
-                                    @if($elemen->datasetBorang->count() > 0)
+                                    {{-- @if($elemen->datasetBorang->count() > 0)
                                     <div>
                                         @foreach($elemen->datasetBorang as $dataset)
                                         @if(str_ends_with($dataset->kode, '.DESC'))
@@ -790,73 +822,73 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
                                             <div class="d-flex justify-content-between align-items-center mb-2">
                                                 <label class="form-label fw-semibold mb-0">
                                                     {{ $dataset->nama }}
-                                                    @if($dataset->is_required) <span class="text-danger">*</span> @endif
-                                                </label>
+                                    @if($dataset->is_required) <span class="text-danger">*</span> @endif
+                                    </label>
 
-                                                <button type="button" class="btn btn-sm btn-primary btn-save-field" data-target-field="{{ $dataset->kode }}" {{ $lockBorang ? 'disabled' : '' }}>
-                                                    <i class="bi bi-save"></i> Simpan
-                                                </button>
-                                            </div>
-
-                                            @if($dataset->deskripsi)
-                                            <small class="d-block text-muted mb-2">{{ $dataset->deskripsi }}</small>
-                                            @endif
-
-                                            @if($dataset->tipe_field === 'table')
-                                            <textarea id="editor_{{ \Illuminate\Support\Str::slug($dataset->kode, '_') }}" class="tinymce-editor" data-dataset-id="{{ $dataset->kode }}" data-field-type="table" data-template="{{ $dataset->expected_columns ? e(json_encode($dataset->expected_columns)) : '' }}">{!! $existingData[$dataset->kode] ?? $dataset->template_html ?? '' !!}</textarea>
-                                            <div class="editor-actions">
-                                                <small class="text-muted">
-                                                    <i class="bi bi-info-circle"></i> Gunakan toolbar editor untuk mengedit tabel
-                                                </small>
-                                                <button type="button" class="btn btn-sm btn-primary btn-save-editor" data-dataset-id="{{ $dataset->kode }}" {{ $lockBorang ? 'disabled' : '' }}>
-                                                    <i class="bi bi-save"></i> Simpan
-                                                </button>
-                                            </div>
-
-                                            <div class="save-status text-muted mt-1">
-                                                <i class="bi bi-cloud-check"></i>
-                                                <span class="status-text">
-                                                    @if(isset($existingData[$dataset->kode]))
-                                                    Tersimpan
-                                                    @else
-                                                    Belum ada data
-                                                    @endif
-                                                </span>
-                                            </div>
-
-                                            @elseif($dataset->tipe_field === 'narasi' || $dataset->tipe_field === 'textarea')
-                                            <textarea class="form-control auto-save-field" name="{{ $dataset->kode }}" data-field-id="{{ $dataset->kode }}" data-field-type="textarea" rows="4" placeholder="{{ $dataset->placeholder }}" @if($dataset->is_required) required @endif {{ $lockBorang ? 'readonly' : '' }}>{{ $existingData[$dataset->kode] ?? '' }}</textarea>
-
-                                            <div class="save-status text-muted mt-1">
-                                                <i class="bi bi-cloud-check"></i>
-                                                <span class="status-text">Belum ada perubahan</span>
-                                            </div>
-
-                                            @else
-                                            <input type="text" class="form-control auto-save-field" name="{{ $dataset->kode }}" data-field-id="{{ $dataset->kode }}" data-field-type="text" placeholder="{{ $dataset->placeholder }}" value="{{ $existingData[$dataset->kode] ?? '' }}" @if($dataset->is_required) required @endif>
-
-                                            <div class="save-status text-muted mt-1">
-                                                <i class="bi bi-cloud-check"></i>
-                                                <span class="status-text">Belum ada perubahan</span>
-                                            </div>
-                                            @endif
-                                        </div>
-                                        @endforeach
-                                    </div>
-                                    @endif
+                                    <button type="button" class="btn btn-sm btn-primary btn-save-field" data-target-field="{{ $dataset->kode }}" {{ $lockBorang ? 'disabled' : '' }}>
+                                        <i class="bi bi-save"></i> Simpan
+                                    </button>
                                 </div>
+
+                                @if($dataset->deskripsi)
+                                <small class="d-block text-muted mb-2">{{ $dataset->deskripsi }}</small>
+                                @endif
+
+                                @if($dataset->tipe_field === 'table')
+                                <textarea id="editor_{{ \Illuminate\Support\Str::slug($dataset->kode, '_') }}" class="tinymce-editor" data-dataset-id="{{ $dataset->kode }}" data-field-type="table" data-template="{{ $dataset->expected_columns ? e(json_encode($dataset->expected_columns)) : '' }}">{!! $existingData[$dataset->kode] ?? $dataset->template_html ?? '' !!}</textarea>
+                                <div class="editor-actions">
+                                    <small class="text-muted">
+                                        <i class="bi bi-info-circle"></i> Gunakan toolbar editor untuk mengedit tabel
+                                    </small>
+                                    <button type="button" class="btn btn-sm btn-primary btn-save-editor" data-dataset-id="{{ $dataset->kode }}" {{ $lockBorang ? 'disabled' : '' }}>
+                                        <i class="bi bi-save"></i> Simpan
+                                    </button>
+                                </div>
+
+                                <div class="save-status text-muted mt-1">
+                                    <i class="bi bi-cloud-check"></i>
+                                    <span class="status-text">
+                                        @if(isset($existingData[$dataset->kode]))
+                                        Tersimpan
+                                        @else
+                                        Belum ada data
+                                        @endif
+                                    </span>
+                                </div>
+
+                                @elseif($dataset->tipe_field === 'narasi' || $dataset->tipe_field === 'textarea')
+                                <textarea class="form-control auto-save-field" name="{{ $dataset->kode }}" data-field-id="{{ $dataset->kode }}" data-field-type="textarea" rows="4" placeholder="{{ $dataset->placeholder }}" @if($dataset->is_required) required @endif {{ $lockBorang ? 'readonly' : '' }}>{{ $existingData[$dataset->kode] ?? '' }}</textarea>
+
+                                <div class="save-status text-muted mt-1">
+                                    <i class="bi bi-cloud-check"></i>
+                                    <span class="status-text">Belum ada perubahan</span>
+                                </div>
+
+                                @else
+                                <input type="text" class="form-control auto-save-field" name="{{ $dataset->kode }}" data-field-id="{{ $dataset->kode }}" data-field-type="text" placeholder="{{ $dataset->placeholder }}" value="{{ $existingData[$dataset->kode] ?? '' }}" @if($dataset->is_required) required @endif>
+
+                                <div class="save-status text-muted mt-1">
+                                    <i class="bi bi-cloud-check"></i>
+                                    <span class="status-text">Belum ada perubahan</span>
+                                </div>
+                                @endif
                             </div>
+                            @endforeach
                         </div>
-                        @endforeach
+                        @endif --}}
                     </div>
                 </div>
             </div>
+            @endforeach
         </div>
-        @endforeach
     </div>
+</div>
+</div>
+@endforeach
+</div>
 
-    {{-- ✅ ACCORDION 10: Suplemen --}}
-    {{-- <div class="card mb-3 suplemen-card">
+{{-- ✅ ACCORDION 10: Suplemen --}}
+{{-- <div class="card mb-3 suplemen-card">
         <div class="card-header" id="headingSuplemen">
             <button class="btn btn-link w-100 text-start collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSuplemen" aria-expanded="false" aria-controls="collapseSuplemen">
                 <i class="bi bi-chevron-right me-2 chevron-icon"></i>
@@ -939,6 +971,62 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
         </div>
     </div>
 </div>
+
+{{-- ✅ Modal LKPS Data Preview --}}
+<div class="modal fade" id="modalLkpsData" tabindex="-1" style="--bs-modal-width: 90vw;">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-table"></i> Data LKPS — Tabel Terimpor
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+
+                {{-- Tabs: Sheet grouping --}}
+                <div id="lkpsDataLoading" class="text-center p-4">
+                    <span class="spinner-border text-primary"></span>
+                    <div class="mt-2 text-muted">Memuat data...</div>
+                </div>
+
+                <div id="lkpsDataContent" class="d-none">
+                    {{-- Tab nav generated by JS --}}
+                    <ul class="nav nav-tabs px-3 pt-3" id="lkpsSheetTabs"></ul>
+                    {{-- Tab panes --}}
+                    <div class="tab-content p-3" id="lkpsSheetPanes"></div>
+                </div>
+
+                <div id="lkpsDataEmpty" class="d-none text-center p-4 text-muted">
+                    <i class="bi bi-inbox fs-1"></i>
+                    <div class="mt-2">Belum ada data yang diimpor.</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <small class="text-muted me-auto" id="lkpsTotalInfo"></small>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- ✅ Modal Preview Tabel (1 tabel) --}}
+<div class="modal fade" id="modalTablePreview" tabindex="-1" style="--bs-modal-width: 85vw;">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title" id="tablePreviewTitle">Preview Tabel</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body overflow-auto" id="tablePreviewBody">
+                <div class="text-center p-4">
+                    <span class="spinner-border"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@include('asesmen.pengajuan.components.modal-lkps-online')
 @endsection
 
 @push('scripts')
@@ -947,7 +1035,7 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const LOCK_BORANG = @json($lockBorang);
-        const pengajuanId = "{{ $pengajuan->id }}";
+        let pengajuanId = "{{ $pengajuan->id }}";
         const initialProgress = @json($progressData);
         const showHasilValidasiBorang = @json($isShowHasilValidasiBorang);
 
@@ -1320,22 +1408,8 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
 
                 if (tableCount > 0) {
                     tableFields.forEach(function(tableField) {
-                        const datasetId = tableField.dataset.datasetId;
-                        const editor = editorInstances[datasetId];
-
-                        if (editor) {
-                            const content = editor.getContent();
-                            const hasData = hasTableData(content);
-
-                            if (!hasData) {
-                                hasAllTables = false;
-                            }
-                        } else {
-                            // Fallback: check textarea value
-                            const content = tableField.value;
-                            if (!hasTableData(content)) {
-                                hasAllTables = false;
-                            }
+                        if (!checkTableData(tableField, editorInstances)) {
+                            hasAllTables = false;
                         }
                     });
                 }
@@ -1459,18 +1533,8 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
 
                     if (tableFields.length > 0) {
                         tableFields.forEach(function(tableField) {
-                            const datasetId = tableField.dataset.datasetId;
-                            const editor = editorInstances[datasetId];
-
-                            if (editor) {
-                                const content = editor.getContent();
-                                if (!hasTableData(content)) {
-                                    hasAllTables = false;
-                                }
-                            } else {
-                                if (!hasTableData(tableField.value)) {
-                                    hasAllTables = false;
-                                }
+                            if (!checkTableData(tableField, editorInstances)) {
+                                hasAllTables = false;
                             }
                         });
                     }
@@ -1496,6 +1560,15 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
                     percentageText.textContent = percentage + '%';
                 }
             });
+        }
+
+        function checkTableData(tableField, editorInstances) {
+            return true;
+            //const datasetId = tableField.dataset.datasetId;
+            //const editor = editorInstances[datasetId];
+
+            //const content = editor ? editor.getContent() : tableField.value;
+            //return hasTableData(content);
         }
 
         function initializeToggleButton() {
@@ -1735,20 +1808,51 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
 
             const result = await Swal.fire({
                 icon: 'question'
-                , title: 'Upload Data Kuantitatif?'
+                , title: 'Upload LKPS?'
                 , html: `
-                    <p>File: <strong>${file.name}</strong></p>
-                    <p>Ukuran: <strong>${formatFileSize(file.size)}</strong></p>
-                    <p class="text-muted mt-2">File akan disimpan (tidak diproses otomatis)</p>
-                `
+            <p>File: <strong>${file.name}</strong>
+            (${formatFileSize(file.size)})</p>
+            <p class="text-muted mb-0">
+                Data tabel akan diimpor otomatis dari setiap sheet.
+            </p>
+        `
                 , showCancelButton: true
-                , confirmButtonText: 'Ya, Upload'
+                , confirmButtonText: 'Ya, Upload & Proses'
                 , cancelButtonText: 'Batal'
-            });
+            , });
 
             if (!result.isConfirmed) return;
 
-            await uploadFile(file, 'file_kuantitatif', '{{ route("pengajuan.upload-kuantitatif", $pengajuan->id) }}');
+            const formData = new FormData();
+            formData.append('file', file);
+
+            showLoading();
+
+            try {
+                const response = await fetch(
+                    `/permohonan-akreditasi/${pengajuanId}/borang/import-lkps`, {
+                        method: 'POST'
+                        , headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            , 'Accept': 'application/json'
+                        , }
+                        , body: formData
+                    , });
+
+                const data = await response.json();
+                hideLoading();
+
+                if (data.success) {
+                    await Swal.fire('Diproses', data.message, 'info');
+                    // Poll status seperti DOCX
+                    pollLkpsImport(data.borang_import_id);
+                } else {
+                    throw new Error(data.message || 'Upload gagal');
+                }
+            } catch (error) {
+                hideLoading();
+                Swal.fire('Error', error.message, 'error');
+            }
         };
 
         async function uploadFile(file, fieldName, url) {
@@ -2243,6 +2347,236 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
                 openElemenCollapse();
             }
         };
+
+        // ✅ Poll status import LKPS
+        async function pollLkpsImport(importId) {
+            showLoading();
+            const MAX = 120000; // 2 menit
+            const INTERVAL = 2000;
+            const start = Date.now();
+
+            while (Date.now() - start < MAX) {
+                await new Promise(r => setTimeout(r, INTERVAL));
+
+                try {
+                    const res = await fetch(
+                        `/permohonan-akreditasi/${pengajuanId}/borang/import-lkps/${importId}/status`, {
+                            headers: {
+                                Accept: 'application/json'
+                            }
+                        }
+                    );
+                    const data = await res.json();
+                    const st = data && data.summary && data.summary.status;
+
+                    if (st === 'completed') {
+                        hideLoading();
+                        await Swal.fire(
+                            'Selesai!'
+                            , `Berhasil mengimpor ${data.summary.tables?.parsed} tabel LKPS.`
+                            , 'success'
+                        );
+                        window.location.reload();
+                        return;
+                    }
+
+                    if (st === 'failed') {
+                        hideLoading();
+                        Swal.fire('Gagal', 'Import LKPS gagal. Silakan coba ulang.', 'error');
+                        return;
+                    }
+                } catch (e) {
+                    /* continue polling */
+                }
+            }
+
+            hideLoading();
+            Swal.fire('Timeout', 'Proses berjalan lama. Refresh halaman untuk cek hasil.', 'warning');
+        }
+
+        // ✅ Fetch & render data LKPS ke modal
+        async function loadLkpsData() {
+            const loading = document.getElementById('lkpsDataLoading');
+            const content = document.getElementById('lkpsDataContent');
+            const empty = document.getElementById('lkpsDataEmpty');
+
+            loading.classList.remove('d-none');
+            content.classList.add('d-none');
+            empty.classList.add('d-none');
+
+            try {
+                const res = await fetch(
+                    `/permohonan-akreditasi/${pengajuanId}/borang/lkps-data`, {
+                        headers: {
+                            Accept: 'application/json'
+                        }
+                    }
+                );
+                const data = await res.json();
+
+                loading.classList.add('d-none');
+
+                if (!data.success || !data.total) {
+                    empty.classList.remove('d-none');
+                    return;
+                }
+
+                const sheets = data.data; // { "E.2": [...], "P.1": [...] }
+                const sheetNames = Object.keys(sheets);
+
+                // Build tabs
+                const tabNav = document.getElementById('lkpsSheetTabs');
+                const tabPane = document.getElementById('lkpsSheetPanes');
+                tabNav.innerHTML = '';
+                tabPane.innerHTML = '';
+
+                sheetNames.forEach((sheet, i) => {
+                    const tables = sheets[sheet];
+                    const isFirst = i === 0;
+
+                    // Tab button
+                    tabNav.innerHTML += `
+                <li class="nav-item">
+                    <button class="nav-link ${isFirst ? 'active' : ''}"
+                        data-bs-toggle="tab"
+                        data-bs-target="#lkps-pane-${sheet.replace('.', '-')}">
+                        ${sheet}
+                        <span class="badge bg-secondary ms-1">${tables.length}</span>
+                    </button>
+                </li>`;
+
+                    // Tab pane content
+                    let rows = tables.map(t => `
+                <tr>
+                    <td><small>${t.table_index}</small></td>
+                    <td>
+                        <div class="fw-semibold small">${escapeHtml(t.table_title || '-')}</div>
+                        <small class="text-muted">${t.row_count} baris data</small>
+                    </td>
+                    <td>
+                        <span class="badge ${reviewBadgeClass(t.status_review)}">
+                            ${reviewBadgeLabel(t.status_review)}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary"
+                            onclick="previewTable(${t.id}, '${escapeHtml(t.table_title)}')">
+                            <i class="bi bi-eye"></i> Preview
+                        </button>
+                    </td>
+                </tr>`).join('');
+
+                    tabPane.innerHTML += `
+                <div class="tab-pane fade ${isFirst ? 'show active' : ''}"
+                    id="lkps-pane-${sheet.replace('.', '-')}">
+                    <table class="table table-sm table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width:40px">#</th>
+                                <th>Nama Tabel</th>
+                                <th style="width:120px">Status</th>
+                                <th style="width:100px">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>`;
+                });
+
+                document.getElementById('lkpsTotalInfo').textContent =
+                    `Total: ${data.total} tabel dari ${sheetNames.length} sheet`;
+                content.classList.remove('d-none');
+
+            } catch (e) {
+                loading.classList.add('d-none');
+                empty.classList.remove('d-none');
+                console.error(e);
+            }
+        }
+
+        // ✅ Preview satu tabel
+        window.previewTable = async function(id, title) {
+            document.getElementById('tablePreviewTitle').textContent = title;
+            document.getElementById('tablePreviewBody').innerHTML =
+                '<div class="text-center p-4"><span class="spinner-border"></span></div>';
+
+            // Buka modal preview
+            bootstrap.Modal.getOrCreateInstance(
+                document.getElementById('modalTablePreview')
+            ).show();
+
+            const res = await fetch(
+                `/permohonan-akreditasi/${pengajuanId}/borang/lkps-data/${id}/html`, {
+                    headers: {
+                        Accept: 'application/json'
+                    }
+                }
+            );
+            const data = await res.json();
+
+            document.getElementById('tablePreviewBody').innerHTML = data.success ?
+                `<div class="overflow-auto">${data.html}</div>` :
+                '<div class="text-danger p-3">Gagal memuat data.</div>';
+        };
+
+        // ✅ Helper badge
+        function reviewBadgeClass(status) {
+            return {
+                raw: 'bg-secondary'
+                , reviewed: 'bg-info'
+                , approved: 'bg-success'
+                , rejected: 'bg-danger'
+            }
+            [status] || 'bg-secondary';
+        }
+
+        function reviewBadgeLabel(status) {
+            return {
+                raw: 'Baru'
+                , reviewed: 'Direview'
+                , approved: 'Disetujui'
+                , rejected: 'Ditolak'
+            }
+            [status] || status;
+        }
+
+        // ✅ Tombol Lihat Data → load & buka modal
+        const btnLihatDataLkps = document.getElementById('btnLihatDataLkps')
+        if (btnLihatDataLkps) btnLihatDataLkps.addEventListener('click', function() {
+            bootstrap.Modal.getOrCreateInstance(
+                document.getElementById('modalLkpsData')
+            ).show();
+            loadLkpsData();
+        });
+
+        // ✅ Cek status import LKPS terbaru saat halaman load
+        (async function checkLkpsImportStatus() {
+            const statusEl = document.getElementById('lkpsImportStatus');
+            if (!statusEl) return;
+
+            try {
+                // Cek import terbaru via lkps-data endpoint
+                const res = await fetch(
+                    `/permohonan-akreditasi/${pengajuanId}/borang/lkps-data`, {
+                        headers: {
+                            Accept: 'application/json'
+                        }
+                    }
+                );
+                const data = await res.json();
+                const total = data.total || 0;
+
+                statusEl.innerHTML = total > 0 ?
+                    `<span class="badge bg-success">
+                   <i class="bi bi-check-circle"></i> ${total} tabel terimpor
+               </span>` :
+                    `<span class="badge bg-warning text-dark">
+                   <i class="bi bi-exclamation-circle"></i> Belum diproses
+               </span>`;
+            } catch {
+                statusEl.innerHTML = '';
+            }
+        })();
 
         function escapeHtml(str) {
             return String(str || '')

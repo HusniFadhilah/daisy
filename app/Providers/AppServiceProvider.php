@@ -3,10 +3,13 @@
 namespace App\Providers;
 
 use App\Models\PengajuanAkreditasi;
-use Illuminate\Support\Facades\Blade;
 use App\Policies\PengajuanAkreditasiPolicy;
+use App\Services\BorangImport\BorangExcelImportService;
+use App\Services\BorangImport\BorangExcelSheetParser;
+use App\Services\BorangImport\DatasetIdResolver;
 use App\View\Components\Akreditasi\StatCard;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\Blade;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -39,5 +42,12 @@ class AppServiceProvider extends ServiceProvider
                 @mkdir($dir, 0775, true);
             }
         }
+
+        $this->app->bind(BorangExcelImportService::class, function () {
+            return new BorangExcelImportService(
+                new BorangExcelSheetParser(),
+                new DatasetIdResolver()
+            );
+        });
     }
 }

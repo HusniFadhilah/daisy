@@ -8,6 +8,7 @@ use App\Http\Controllers\Asesmen\{AsesmenController, AKController, ALController,
 use App\Http\Controllers\{AuthController, BobotPenilaianController, DashboardController, PenugasanController, BandingController, PedomanController, DokumenController, PanduanController, BantuanController, SettingsController, ActivityController, TaskController, LaporanController, TinyMceImageController, UserController};
 use App\Http\Controllers\DE\{ValidasiAKController, MasaSanggahController, PelaporanAKController, PelaporanALController, PenugasanAKController, PenugasanALController, PelaksanaanALController, SuratPermohonanController, ValidasiDokumenController, PelaporanBandingController, PelaporanDokumenController, PenerimaanDokumenController, PelaksanaanBandingController, ValidasiPembayaranController, FormulirPembayaranController, PenyampaianTemplateController, PelaporanHasilAkreditasiController, PenerimaanPermohonanController, PenetapanHasilAkreditasiController, PenyampaianHasilAkreditasiController, PenyimpananArsipAkreditasiController, PermohonanBandingController, PaymentSummaryController};
 use App\Http\Controllers\Master\JenjangPenilaianController;
+use App\Http\Controllers\UPPS\{BorangLkpsImportController, BorangLkpsOnlineController, BorangLkpsExportController, LkpsExportController};
 
 
 // Dashboard (awal)
@@ -250,6 +251,41 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{id}/borang-online/check-files', [PengajuanAkreditasiController::class, 'checkBorangFiles'])->name('.borang.check-files');
             Route::get('/{pengajuan}/validation-summary', [PengajuanBorangController::class, 'validationSummary'])->name('.borang.validation-summary');
             Route::get('/{id}/validation-details', [PengajuanBorangController::class, 'validationDetails'])->name('.borang.validation-details');
+
+            // ===== BORANG LKPS EXCEL IMPORT =====
+            Route::post('/{pengajuan}/borang/import-lkps', [BorangLkpsImportController::class, 'import'])
+                ->name('.borang.import-lkps');
+
+            Route::get('/{pengajuan}/borang/import-lkps/{importId}/status', [BorangLkpsImportController::class, 'status'])
+                ->name('.borang.import-lkps.status');
+
+            Route::get('/{pengajuan}/borang/lkps-data', [BorangLkpsImportController::class, 'getData'])
+                ->name('.borang.lkps-data');
+
+            Route::get('/{pengajuan}/borang/lkps-data/{id}/html', [BorangLkpsImportController::class, 'getTableHtml'])
+                ->name('.borang.lkps-data.html');
+
+            // Review (untuk admin/validator)
+            Route::patch('/{pengajuan}/borang/lkps-data/{id}/review', [BorangLkpsImportController::class, 'review'])
+                ->name('.borang.lkps-data.review');
+
+            Route::get('/{pengajuan}/borang/lkps-online/definitions', [BorangLkpsOnlineController::class, 'definitions'])
+                ->name('.borang.lkps-online.definitions');
+
+            Route::post('/{pengajuan}/borang/lkps-online/save', [BorangLkpsOnlineController::class, 'save'])
+                ->name('.borang.lkps-online.save');
+
+            Route::get('/{pengajuan}/borang/lkps-online/load/{datasetBorangId}', [BorangLkpsOnlineController::class, 'load'])
+                ->name('.borang.lkps-online.load');
+
+            Route::delete('/{pengajuan}/borang/lkps-online/{id}', [BorangLkpsOnlineController::class, 'destroy'])
+                ->name('.borang.lkps-online.destroy');
+            Route::get('/{pengajuan}/borang/lkps/download-template', [BorangLkpsExportController::class, 'downloadTemplate'])->name('.borang.lkps.download-template');
+            // Export LKPS terisi
+            Route::get('/{pengajuan}/borang/lkps/export', [BorangLkpsExportController::class, 'exportFilled'])->name('.borang.lkps.export');
+            Route::get('/{pengajuan}/borang/lkps/export', [LkpsExportController::class, 'exportFilled'])->name('.borang.lkps.export');
+            Route::get('/{pengajuan}/borang/lkps-export', [LkpsExportController::class, 'export']);
+            Route::get('/{pengajuan}/borang/lkps-preview', [LkpsExportController::class, 'preview'])->name('.borang.lkps.preview');
         });
 
         Route::middleware(['role:admin_prodi,admin_univ,super_admin,sekretariat'])->group(function () {

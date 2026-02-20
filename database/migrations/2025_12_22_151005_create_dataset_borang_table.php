@@ -163,6 +163,66 @@ return new class extends Migration
             $table->index(['dataset_id']);
         });
 
+        Schema::create('borang_data_excel', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('id_pengajuan')
+                ->constrained('pengajuan_akreditasi')
+                ->onDelete('cascade');
+            $table->foreignId('id_degree_level')
+                ->nullable()
+                ->constrained('degree_levels')
+                ->onDelete('set null');
+            $table->foreignId('id_borang_import')
+                ->constrained('borang_imports')
+                ->onDelete('cascade');
+
+            $table->enum('source', ['excel_import', 'online_input'])
+                ->default('excel_import');
+
+            // Identifikasi tabel
+            $table->string('sheet_name', 50);       // "E.2", "R.3.1.a"
+            $table->string('elemen_kode', 20);      // "E.2", "R.3" (normalized)
+            $table->tinyInteger('table_index');     // 1, 2, 3 (urutan tabel dalam sheet)
+            $table->string('table_title', 255)->nullable(); // "Tabel E.2.1 Mahasiswa..."
+
+            // Optional link ke dataset_borang (untuk mapping ke template)
+            $table->foreignId('id_dataset_borang')
+                ->nullable()
+                ->constrained('dataset_borang')
+                ->onDelete('set null');
+
+            // Data
+            $table->json('headers')->nullable();    // [[col1, col2, ...], [...]]
+            $table->json('rows');                   // [[val1, val2, ...], [...]]
+
+            // Status review
+            $table->enum('status_review', [
+                'raw',       // Baru diimport, belum direview
+                'reviewed',  // Sudah direview admin/prodi
+                'approved',  // Disetujui
+                'rejected',  // Ditolak, perlu upload ulang
+            ])->default('raw');
+
+            $table->text('catatan_review')->nullable();
+            $table->foreignId('reviewed_by')
+                ->nullable()
+                ->constrained('users')
+                ->onDelete('set null');
+            $table->timestamp('reviewed_at')->nullable();
+
+            $table->timestamps();
+
+            // Satu sheet+tabel per import (idempotent re-import)
+            $table->unique(
+                ['id_borang_import', 'sheet_name', 'table_index'],
+                'excel_import_table_unique'
+            );
+
+            $table->index(['id_pengajuan', 'sheet_name']);
+            $table->index(['id_pengajuan', 'elemen_kode']);
+            $table->index(['id_borang_import']);
+            $table->index('status_review');
+        });
 
         Schema::create('borang_validations', function (Blueprint $table) {
             $table->id();
