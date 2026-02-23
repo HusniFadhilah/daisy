@@ -34,8 +34,8 @@ class PelaksanaanALController extends Controller
             'studyProgram.university',
             'studyProgram.degreeLevel',
             'asesmen.asesorAL',
-            'asesmen.beritaAcaraAL' => function ($q) {
-                $q->where('type', 'berita_acara_al')
+            'asesmen.lhaDocuments' => function ($q) {
+                $q->where('type', 'lha_asesor')
                     ->where('is_active', true)
                     ->latest();
             },
@@ -90,8 +90,8 @@ class PelaksanaanALController extends Controller
             'studyProgram.degreeLevel',
             'pengaju',
             'asesmen.asesorAL',
-            'asesmen.beritaAcaraAL' => function ($q) {
-                $q->where('type', 'berita_acara_al')
+            'asesmen.lhaDocuments' => function ($q) {
+                $q->where('type', 'lha_asesor')
                     ->where('is_active', true)
                     ->with('uploader')
                     ->latest();
@@ -122,7 +122,7 @@ class PelaksanaanALController extends Controller
     {
         $pengajuan = PengajuanAkreditasi::with([
             'studyProgram',
-            'asesmen.beritaAcaraAL'
+            'asesmen.lhaDocuments'
         ])->findOrFail($id);
 
         // Check access
@@ -135,7 +135,7 @@ class PelaksanaanALController extends Controller
         // Get berita acara document
         $beritaAcara = AsesmenDocument::where('id', $docId)
             ->where('id_asesmen', $pengajuan->asesmen->id)
-            ->where('type', 'berita_acara_al')
+            ->where('type', 'lha_asesor')
             ->with('uploader')
             ->firstOrFail();
 
@@ -147,194 +147,6 @@ class PelaksanaanALController extends Controller
         }
 
         return view('upps.pelaksanaan-al.approve-berita-acara', compact('pengajuan', 'beritaAcara'));
-    }
-
-    /**
-     * Approve, request revision, or reject berita acara
-     */
-    public function approveBeritaAcara(Request $request, $id, $docId)
-    {
-        $request->validate([
-            'action' => 'required|in:approve,revision,reject',
-            'catatan_prodi' => 'nullable|string|max:2000',
-        ], [
-            'action.required' => 'Silakan pilih tindakan yang akan diambil',
-            'action.in' => 'Tindakan tidak valid',
-        ]);
-
-        $pengajuan = PengajuanAkreditasi::with('asesmen')->findOrFail($id);
-
-        // Check access
-        $user = Auth::user();
-        $studyProgramIds = $user->studyPrograms()->pluck('study_programs.id');
-
-        if (!$studyProgramIds->contains($pengajuan->id_program_studi)) {
-            abort(403, 'Anda tidak memiliki akses ke permohonan ini.');
-        }
-
-        // Get berita acara document
-        $beritaAcara = AsesmenDocument::where('id', $docId)
-            ->where('id_asesmen', $pengajuan->asesmen->id)
-            ->where('type', 'berita_acara_al')
-            ->firstOrFail();
-
-        // Check if already approved/rejected (final status)
-        if (in_array($beritaAcara->status_persetujuan_prodi, ['approved', 'rejected'])) {
-            return back()->with('error', 'Berita acara ini sudah ditindaklanjuti.');
-        }
-
-        DB::beginTransaction();
-        try {
-            // Map action to status
-            $statusMap = [
-                'approve' => 'approved',
-                'revision' => 'revision_required',
-                'reject' => 'rejected',
-            ];
-
-            $newStatus = $statusMap[$request->action];
-
-            // Update berita acara document
-            $beritaAcara->update([
-                'status_persetujuan_prodi' => $newStatus,
-                'approved_by_prodi' => auth()->id(),
-                'approved_at_prodi' => now(),
-                'catatan_prodi' => $request->catatan_prodi,
-            ]);
-
-            // Create appropriate log message
-            $logMessages = [
-                'approved' => 'Berita Acara Asesmen Lapangan disetujui oleh Program Studi',
-                'revision_required' => 'Berita Acara Asesmen Lapangan memerlukan revisi: ' . $request->catatan_prodi,
-                'rejected' => 'Berita Acara Asesmen Lapangan ditolak oleh Program Studi: ' . $request->catatan_prodi,
-            ];
-
-            $pengajuan->statusLog()->create([
-                'status_from' => $pengajuan->status,
-                'status_to' => $pengajuan->status,
-                'changed_by' => auth()->id(),
-                'changed_at' => now(),
-                'keterangan' => $logMessages[$newStatus],
-            ]);
-
-            DB::commit();
-
-            // Success messages
-            $messages = [
-                'approved' => 'Berita acara berhasil disetujui.',
-                'revision_required' => 'Permintaan revisi berita acara berhasil dikirim.',
-                'rejected' => 'Berita acara ditolak.',
-            ];
-
-            return redirect()
-                ->route('upps.pelaksanaan-al.show', $pengajuan->id)
-                ->with('success', $messages[$newStatus]);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error("Error approving berita acara: " . $e->getMessage(), [
-                'berita_acara_id' => $docId,
-                'user_id' => auth()->id(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return back()
-                ->with('error', 'Gagal memproses persetujuan: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Process approval from show page (simplified)
-     */
-    public function processApproval(Request $request, $id, $docId)
-    {
-        $request->validate([
-            'action' => 'required|in:approve,revision',
-            'catatan_prodi' => 'nullable|string|max:2000',
-        ], [
-            'action.required' => 'Silakan pilih tindakan yang akan diambil',
-            'action.in' => 'Tindakan tidak valid',
-        ]);
-
-        $pengajuan = PengajuanAkreditasi::with('asesmen')->findOrFail($id);
-
-        // Check access
-        $user = Auth::user();
-        $authId = $user->id;
-        $studyProgramIds = $user->studyPrograms()->pluck('study_programs.id');
-
-        if (!$studyProgramIds->contains($pengajuan->id_program_studi)) {
-            abort(403, 'Anda tidak memiliki akses ke permohonan ini.');
-        }
-
-        // Get berita acara document
-        $beritaAcara = AsesmenDocument::where('id', $docId)
-            ->where('id_asesmen', $pengajuan->asesmen->id)
-            ->where('type', 'berita_acara_al')
-            ->firstOrFail();
-
-        // Check if already in final status
-        if ($beritaAcara->isFinalStatus()) {
-            return back()->with('error', 'Berita acara ini sudah dalam status final.');
-        }
-
-        DB::beginTransaction();
-        try {
-            // Map action to status
-            $statusMap = [
-                'approve' => 'approved',
-                'revision' => 'revision_required',
-            ];
-
-            $newStatus = $statusMap[$request->action];
-
-            // Update berita acara document
-            $beritaAcara->update([
-                'status_persetujuan_prodi' => $newStatus,
-                'approved_by_prodi' => $authId,
-                'approved_at_prodi' => now(),
-                'catatan_prodi' => $request->catatan_prodi,
-            ]);
-
-            // Create log message
-            $logMessages = [
-                'approved' => 'Berita Acara Asesmen Lapangan "' . $beritaAcara->title . '" disetujui oleh Program Studi',
-                'revision_required' => 'Berita Acara Asesmen Lapangan "' . $beritaAcara->title . '" memerlukan revisi',
-            ];
-
-            $pengajuan->statusLog()->create([
-                'status_from' => $pengajuan->status,
-                'status_to' => $pengajuan->status,
-                'changed_by' => $authId,
-                'changed_at' => now(),
-                'keterangan' => $logMessages[$newStatus],
-            ]);
-
-            if ($request->action === 'approve') {
-                $this->approveLHA($pengajuan, $authId, $logMessages, $newStatus);
-            }
-
-            DB::commit();
-
-            // Success messages
-            $messages = [
-                'approved' => 'Berita acara berhasil disetujui.',
-                'revision_required' => 'Permintaan revisi berita acara berhasil dikirim ke asesor.',
-            ];
-
-            return redirect()
-                ->route('upps.pelaksanaan-al.show', $pengajuan->id)
-                ->with('success', $messages[$newStatus]);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error("Error processing berita acara approval: " . $e->getMessage(), [
-                'berita_acara_id' => $docId,
-                'user_id' => auth()->id(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return back()
-                ->with('error', 'Gagal memproses persetujuan: ' . $e->getMessage());
-        }
     }
 
     /**
@@ -424,20 +236,26 @@ class PelaksanaanALController extends Controller
 
     private function approveLHA($pengajuan, $authId, $logMessages, $newStatus)
     {
-        $beritaAcaraAL = $pengajuan->asesmen->beritaAcaraAL;
-        if ($beritaAcaraAL) {
-            $beritaAcaraAL->first()->update([
-                'status_persetujuan_prodi' => 'approved',
-                'approved_by_prodi' => $authId,
-                'approved_at_prodi' => now(),
+        $lhaAsesor = $pengajuan->asesmen->lhaAsesor;
+        $lhaDocument = $pengajuan->asesmen->lhaDocuments->first();
+        if ($lhaAsesor) {
+            $lhaAsesor->update([
+                'status' => $newStatus == 'approved' ? 'finalized' : ($newStatus == 'revision_required' ? 'revision_required' : 'draft')
+            ]);
+        }
+        if ($lhaDocument) {
+            $lhaDocument->update([
+                'status_persetujuan_prodi' => $newStatus,
+                'approved_by_prodi' => $newStatus == 'approved' ? $authId : null,
+                'approved_at_prodi' => $newStatus == 'approved' ? now() : null,
             ]);
         }
 
-        if ($pengajuan)
+        if ($pengajuan && $newStatus == 'approved')
             $pengajuan->checkUpdateStatusAKAL('al', 'status_asesor_selesai');
 
         $pengajuan->statusLog()->create([
-            'status_from' => PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
+            'status_from' => PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
             'status_to' => $pengajuan->status,
             'changed_by' => $authId,
             'changed_at' => now(),
@@ -489,8 +307,8 @@ class PelaksanaanALController extends Controller
 
         // Berita acara AL (yang sudah diupload)
         $beritaAcaraCount = PengajuanAkreditasi::whereIn('id_program_studi', $studyProgramIds)
-            ->whereHas('asesmen.beritaAcaraAL', function ($q) {
-                $q->where('type', 'berita_acara_al')
+            ->whereHas('asesmen.lhaDocuments', function ($q) {
+                $q->where('type', 'lha_asesor')
                     ->where('is_active', true);
             })
             ->count();
@@ -499,7 +317,7 @@ class PelaksanaanALController extends Controller
         $pendingApproval = AsesmenDocument::whereHas('asesmen.pengajuan', function ($q) use ($studyProgramIds) {
             $q->whereIn('id_program_studi', $studyProgramIds);
         })
-            ->where('type', 'berita_acara_al')
+            ->where('type', 'lha_asesor')
             ->where('is_active', true)
             ->whereIn('status_persetujuan_prodi', ['pending', 'revision_required'])
             ->count();

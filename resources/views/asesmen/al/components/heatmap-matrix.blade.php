@@ -61,14 +61,14 @@
                         {{-- Kolom 1: Pemenuhan Standar --}}
                         <th class="matrix-header-kriteria sticky-header">
                             <div class="kriteria-label">
-                                <span class="fw-bold">Pemenuhan Standar</span>
+                                <span class="fw-bold">Memenuhi Standar</span>
                             </div>
                         </th>
 
                         {{-- Kolom 2: Pelampauan Standar --}}
                         <th class="matrix-header-kriteria sticky-header">
                             <div class="kriteria-label">
-                                <span class="fw-bold">Pelampauan Standar</span>
+                                <span class="fw-bold">Melampaui Standar</span>
                             </div>
                         </th>
                     </tr>

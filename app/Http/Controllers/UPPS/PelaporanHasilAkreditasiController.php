@@ -89,7 +89,7 @@ class PelaporanHasilAkreditasiController extends Controller
         }
 
         $hasil = $pengajuan->asesmen->hasil ?? null;
-        $peringkat = $hasil->peringkat_akreditasi ?? null;
+        $peringkat = $hasil->peringkat_akreditasi_final ?? null;
 
         return view('upps.pelaporan-hasil-akreditasi.show', compact('pengajuan', 'hasil', 'peringkat'));
     }

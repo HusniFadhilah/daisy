@@ -163,14 +163,14 @@
                             </div>
                         </div>
                         <div class="btn-group">
-                            <a href="{{ route('de.penyimpanan-arsip-akreditasi.download-berita-acara', $pengajuan->id) }}" class="btn btn-outline-primary" target="_blank">
-                                <i class="bi bi-download"></i> Download
+                            <a href="{{ route('de.penyimpanan-arsip-akreditasi.download-berita-acara', $pengajuan->id) }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                <i class="bi bi-eye"></i> Lihat
                             </a>
                             @if($pengajuan->status == \App\Models\PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN)
                             <form action="{{ route('de.penyimpanan-arsip-akreditasi.delete-berita-acara', $pengajuan->id) }}" method="POST" class="d-inline">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Hapus berita acara ini? Anda harus upload ulang untuk menyimpan arsip.')">
+                                <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Hapus berita acara ini? Anda harus upload ulang untuk menyimpan arsip.')">
                                     <i class="bi bi-trash"></i> Hapus
                                 </button>
                             </form>
@@ -203,7 +203,7 @@
                         </div>
                         <div>
                             <a href="{{ route('de.penyimpanan-arsip-akreditasi.download-berita-acara', $pengajuan->id) }}" class="btn btn-outline-primary" target="_blank">
-                                <i class="bi bi-download"></i> Download
+                                <i class="bi bi-eye"></i> Lihat
                             </a>
                         </div>
                     </div>
@@ -211,47 +211,6 @@
             </div>
             @endif
             @endif
-
-            <!-- Document Checklist -->
-            <div class="card mb-4">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="bi bi-list-check"></i> Kelengkapan Dokumen</h5>
-                </div>
-                <div class="card-body">
-                    @foreach($documentChecklist as $key => $item)
-                    <div class="checklist-item {{ $item['exists'] ? 'checklist-complete' : 'checklist-missing' }}">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                @if($item['exists'])
-                                <i class="bi bi-check-circle-fill text-success me-2"></i>
-                                @else
-                                <i class="bi bi-x-circle-fill text-danger me-2"></i>
-                                @endif
-                                <strong>{{ $item['label'] }}</strong>
-                                {{-- @if($item['critical'])
-                                <span class="badge bg-danger ms-2">Wajib</span>
-                                @endif --}}
-                            </div>
-                            @if($item['exists'] && $item['dokumen'])
-                            <a href="{{ route('pengajuan.dokumen.download', $item['dokumen']->id) }}" class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-download"></i>
-                            </a>
-                            @endif
-                        </div>
-                    </div>
-                    @endforeach
-
-                    @php
-                    $missingCritical = array_filter($documentChecklist, fn($item) => $item['critical'] && !$item['exists']);
-                    @endphp
-                    @if(!empty($missingCritical))
-                    <div class="alert alert-danger alert-permanent mt-3">
-                        <i class="bi bi-exclamation-triangle"></i>
-                        <strong>Dokumen penting masih kurang!</strong> Lengkapi sebelum menyimpan arsip.
-                    </div>
-                    @endif
-                </div>
-            </div>
 
             <!-- Actions -->
             @if($pengajuan->status == \App\Models\PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN)
@@ -265,7 +224,7 @@
                         @csrf
                         <div class="alert alert-light alert-permanent border">
                             <i class="bi bi-info-circle"></i>
-                            Arsip akan disimpan dan dapat dilanjutkan ke penyelesaian proses.
+                            Mohon klik "Simpan Arsip" agar Arsip segera disimpan dan dapat dilanjutkan ke penyelesaian proses.
                         </div>
                         <div class="mb-3">
                             <textarea name="catatan_penyimpanan" class="form-control" rows="3" placeholder="Catatan penyimpanan (opsional)..."></textarea>
@@ -308,6 +267,47 @@
                 </div>
             </div>
             @endif
+
+            <!-- Document Checklist -->
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-list-check"></i> Kelengkapan Dokumen</h5>
+                </div>
+                <div class="card-body">
+                    @foreach($documentChecklist as $key => $item)
+                    <div class="checklist-item {{ $item['exists'] ? 'checklist-complete' : 'checklist-missing' }}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                @if($item['exists'])
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                @else
+                                <i class="bi bi-x-circle-fill text-danger me-2"></i>
+                                @endif
+                                <strong>{{ $item['label'] }}</strong>
+                                {{-- @if($item['critical'])
+                                <span class="badge bg-danger ms-2">Wajib</span>
+                                @endif --}}
+                            </div>
+                            @if($item['exists'] && $item['dokumen'])
+                            <a href="{{ route('pengajuan.dokumen.download', $item['dokumen']->id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            @endif
+                        </div>
+                    </div>
+                    @endforeach
+
+                    @php
+                    $missingCritical = array_filter($documentChecklist, fn($item) => $item['critical'] && !$item['exists']);
+                    @endphp
+                    @if(!empty($missingCritical))
+                    <div class="alert alert-danger alert-permanent mt-3">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>Dokumen penting masih kurang!</strong> Lengkapi sebelum menyimpan arsip.
+                    </div>
+                    @endif
+                </div>
+            </div>
 
             <div class="card">
                 <div class="card-header bg-secondary text-white">

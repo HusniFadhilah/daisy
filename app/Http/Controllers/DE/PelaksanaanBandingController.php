@@ -216,7 +216,7 @@ class PelaksanaanBandingController extends Controller
                 if ($pengajuan->asesmen && $pengajuan->asesmen->hasil) {
                     $pengajuan->asesmen->hasil->update([
                         'skor_final' => $request->skor_final,
-                        'peringkat_akreditasi' => $request->peringkat_final,
+                        'peringkat_akreditasi_banding' => $request->peringkat_final,
                         'catatan_perhitungan' => 'Hasil banding diterima. ' . ($request->catatan_hasil ?? ''),
                     ]);
                 }

@@ -804,11 +804,11 @@ class PenilaianExcelService
         $sheet->mergeCells('H6:H7');
 
         // Subheader penilaian row 6
-        $sheet->setCellValue('I6', 'Tidak Memenuhi');
-        $sheet->setCellValue('J6', 'Belum Memenuhi');
+        $sheet->setCellValue('I6', 'Tidak Dapat Dinilai');
+        $sheet->setCellValue('J6', 'Tidak Memenuhi');
         $sheet->setCellValue('K6', 'Lemah');
         $sheet->setCellValue('L6', 'Memenuhi');
-        $sheet->setCellValue('M6', 'Pelampauan Standar');
+        $sheet->setCellValue('M6', 'Melampaui Standar');
 
         // Skor row 7
         $sheet->setCellValue('I7', '0');
@@ -1476,8 +1476,8 @@ class PenilaianExcelService
                 $asesorName = $asesor->user->name ?? "Asesor " . ($index + 1);
                 $sheet->setCellValue("{$col1}5", "Penilaian Asesor ({$asesorName})");
 
-                $sheet->setCellValue("{$col1}6", 'Pemenuhan Standar');
-                $sheet->setCellValue("{$col2}6", 'Pelampauan Standar');
+                $sheet->setCellValue("{$col1}6", 'Memenuhi Standar');
+                $sheet->setCellValue("{$col2}6", 'Melampaui Standar');
             }
         } else {
             // ===== WITHDATA MODE: 1 kolom per asesor =====

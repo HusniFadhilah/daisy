@@ -412,14 +412,14 @@
 
         /* ===== Badge akreditasi ===== */
         .badge {
-            width: 35vh;
+            width: 45vh;
             margin: 1.4vh auto 0 auto;
             border-radius: 0.8vh;
-            border: 0.2vh solid #a67c00;
-            background: linear-gradient(135deg, #ffe58a 0%, #ffd24d 45%, #fff1b8 100%);
+            border: 0.2vh solid #1f1801ff;
+            /* background: linear-gradient(135deg, #ffe58a 0%, #ffd24d 45%, #fff1b8 100%); */
             padding: 1.1vh 1.1vh;
             text-align: center;
-            box-shadow: 0 0.15vh 0.6vh rgba(0, 0, 0, 0.08);
+            box-shadow: 0 0.15vh 0.6vh rgba(12, 12, 12, 0.08);
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
             color-adjust: exact;
@@ -427,7 +427,7 @@
 
         @media (min-width: 768px) {
             .badge {
-                width: 50vmin;
+                width: 70vmin;
                 margin-top: 1.8vmin;
                 border-radius: 1vmin;
                 border-width: 0.25vmin;
@@ -453,7 +453,7 @@
         }
 
         .badge .badge-rank {
-            font-size: 2.8vh;
+            font-size: 2.5vh;
             font-weight: 900;
             color: #932136;
             letter-spacing: 0.8px;
@@ -462,7 +462,7 @@
 
         @media (min-width: 768px) {
             .badge .badge-rank {
-                font-size: 4.2vmin;
+                font-size: 4vmin;
                 letter-spacing: 1px;
             }
         }
@@ -1130,10 +1130,12 @@
                                 <div class="val"><strong>{{ $university->name }}</strong></div>
                             </div>
                         </div>
-
-                        <div class="badge">
+                        @php
+                        $peringkatFinal = $hasil->getPeringkatFromSkor((float)($hasil->skor_al ?? 0));
+                        @endphp
+                        <div class="badge" style="background-color: {{ $hasil->getPeringkatColor($peringkatFinal) }}; color:#222">
                             <div class="badge-label">Status Akreditasi</div>
-                            <div class="badge-rank">{{ strtoupper($hasil->peringkat_akreditasi) }}</div>
+                            <div class="badge-rank">{{ strtoupper($peringkatFinal) }}</div>
                         </div>
 
                         <div class="validity">

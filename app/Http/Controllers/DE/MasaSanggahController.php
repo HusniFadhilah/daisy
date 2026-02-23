@@ -37,7 +37,7 @@ class MasaSanggahController extends Controller
         // Filter by peringkat
         if ($request->filled('peringkat')) {
             $query->whereHas('asesmen.hasil', function ($q) use ($request) {
-                $q->where('peringkat_akreditasi', $request->peringkat);
+                $q->where('peringkat_akreditasi_hasil', $request->peringkat);
             });
         }
 

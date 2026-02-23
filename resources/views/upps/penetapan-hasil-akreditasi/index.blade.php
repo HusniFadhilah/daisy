@@ -98,12 +98,12 @@
                                     </td>
 
                                     <td>
-                                        @if($hasil && $hasil->skor_al)
+                                        @if($hasil && $hasil->skor_final)
                                         @php
-                                        $peringkatAL = $hasil->getPeringkatFromSkorAL($hasil->skor_al);
+                                        $peringkatFinal = $hasil->getPeringkatFromSkor($hasil->skor_final);
                                         @endphp
-                                        <span class="badge p-2 px-3 my-2 fs-6" style="background-color: {{ $hasil->getPeringkatColor($peringkatAL) }}; color:#222">
-                                            {{ $peringkatAL }}
+                                        <span class="badge p-2 px-3 my-2 fs-6" style="background-color: {{ $hasil->getPeringkatColor($peringkatFinal) }}; color:#222">
+                                            {{ $peringkatFinal }}
                                         </span>
                                         @else
                                         <span class="text-muted">-</span>

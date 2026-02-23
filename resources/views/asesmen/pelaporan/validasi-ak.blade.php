@@ -174,19 +174,15 @@
 
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm" role="group">
-                                    {{-- @if($canReport && !$isReported) --}}
+                                    @if($canReport && !$isReported)
                                     <button type="button" class="btn btn-info js-open-pelaporan" title="Upload Pelaporan" data-type="ak" data-assignment-id="{{ $assignment->id }}" data-nomor="{{ $nomor }}">
                                         <i class="bi bi-upload"></i>
                                     </button>
+                                    @endif
 
                                     <a href="{{ route('pelaporan.validasiAk.show', $assignment->id) }}" class="btn btn-outline-primary" title="Lihat Detail">
                                         <i class="bi bi-eye"></i>
                                     </a>
-                                    {{-- @else --}}
-                                    {{-- <a href="{{ route('ak.validasi.asesor', ['idAsesmen' => $asesmen->id, 'jenisAsesmen' => 'ak']) }}" class="btn btn-outline-info" title="Lihat Detail">
-                                    <i class="bi bi-eye"></i>
-                                    </a> --}}
-                                    {{-- @endif --}}
 
                                     {{-- Tombol Download --}}
                                     @php

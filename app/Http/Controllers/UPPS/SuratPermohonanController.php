@@ -3,14 +3,15 @@
 
 namespace App\Http\Controllers\UPPS;
 
-use Illuminate\Http\Request;
-use App\Models\PengajuanDokumen;
-use Illuminate\Support\Facades\DB;
-use App\Models\PengajuanAkreditasi;
-use App\Models\PengingatAkreditasi;
-use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use App\Models\PengajuanAkreditasi;
+use App\Models\PengajuanDokumen;
+use App\Models\PengingatAkreditasi;
+use App\Models\StudyProgram;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class SuratPermohonanController extends Controller
@@ -192,13 +193,13 @@ class SuratPermohonanController extends Controller
             $status = $isDraft
                 ? PengajuanAkreditasi::STATUS_DRAFT
                 : PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM;
-
+            $studyProgram = StudyProgram::findOrFail($validated['id_program_studi']);
             // ✅ Create pengajuan
             $pengajuan = PengajuanAkreditasi::create([
                 'nomor_pengajuan' => PengajuanAkreditasi::generateNomorPengajuan($validated['jenis_akreditasi']),
                 'nomor_permohonan' => $validated['nomor_permohonan'] ?? null,
 
-                'id_program_studi' => $validated['id_program_studi'],
+                'id_program_studi' => $studyProgram->id,
                 'id_user_pengaju' => auth()->id(),
                 'id_de_assigned' => $pengingat?->id_de_pengirim,
                 'tahun_akreditasi' => $validated['tahun_akreditasi'],
@@ -209,6 +210,8 @@ class SuratPermohonanController extends Controller
                 'catatan_pengaju' => $validated['catatan_pengaju'] ?? null,
                 'tanggal_pengingat' => $pengingat?->tanggal_dikirim,
                 'tanggal_surat_permohonan_dikirim' => !$isDraft ? now() : null,
+                'tanggal_kedaluwarsa_awal' => $studyProgram->tanggal_kedaluwarsa,
+                'peringkat_awal' => $studyProgram->peringkat_akreditasi,
             ]);
 
             // ✅ Upload file jika ada

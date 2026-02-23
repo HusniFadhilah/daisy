@@ -14,6 +14,20 @@ $allowed = [
 
 $log = $pengajuan->latestRelevantStatusLog($allowed);
 $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
+
+$allowed = [
+//\App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM,
+//\App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
+//\App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
+//\App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
+//\App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
+\App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
+\App\Models\PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
+\App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
+\App\Models\PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED,
+];
+$log = $pengajuan->latestRelevantStatusLog($allowed);
+$lockBorang = in_array($log?->status_to, $allowed);
 @endphp
 
 <style>
@@ -276,8 +290,12 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
         <div class="card-footer bg-white">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-
-                    @if($lockBorang)
+                    @if($pengajuan->status == \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED)
+                    <div class="alert alert-warning alert-permanent py-2">
+                        <i class="bi bi-info-circle"></i>
+                        Terdapat permintaan revisi LED+Suplemen, LKPS oleh Validator. Mohon cermati poin revisi setiap elemen, kemudian lakukan perbaikan dan simpan perubahan. Lalu lakukan finalisasi & submit dokumen
+                    </div>
+                    @elseif(in_array($pengajuan->status, [\App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,\App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION]))
                     <div class="alert alert-warning alert-permanent mb-0 py-2">
                         <i class="bi bi-hourglass-split"></i>
                         Sedang menunggu Validasi Dokumen
@@ -291,13 +309,22 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
                     <button class="btn btn-secondary mt-2" disabled>
                         <i class="bi bi-check-circle"></i> Finalisasi & Submit Dokumen
                     </button>
-                    @else
-                    @if($pengajuan->status == \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED)
-                    <div class="alert alert-warning alert-permanent py-2">
-                        <i class="bi bi-info-circle"></i>
-                        Terdapat permintaan revisi LED+Suplemen, LKPS oleh Validator. Mohon cermati poin revisi setiap elemen, kemudian lakukan perbaikan dan simpan perubahan. Lalu lakukan finalisasi & submit dokumen
-                    </div>
                     @endif
+
+                    @if($lockBorang)
+                    <div class="alert alert-info alert-permanent mb-4">
+                        <h5 class="mb-1">
+                            <i class="bi bi-eye"></i> Mode Preview Dokumen
+                        </h5>
+                        <p class="mb-0">
+                            Status permohonan saat ini hanya memungkinkan <strong>preview dokumen</strong>.
+                            Upload dokumen akan tersedia ketika status sudah sesuai.
+                        </p>
+                        <div class="small text-muted mt-1">
+                            Status saat ini: {!! $pengajuan->getCustomBadgeLastStatus('draft_borang', 'upps') !!}
+                        </div>
+                    </div>
+                    @else
                     <button class="btn btn-success" id="btnFinalize">
                         <i class="bi bi-check-circle"></i> Finalisasi & Submit Dokumen
                     </button>
@@ -305,7 +332,6 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
                         <i class="bi bi-info-circle"></i> Pastikan semua elemen sudah diisi sebelum finalisasi
                     </small>
                     @endif
-
                 </div>
             </div>
         </div>
@@ -608,7 +634,7 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
                         <div class="col-md-6">
                             <h6 class="alert-heading"><i class="bi bi-info-circle me-2"></i>Petunjuk Pengisian:</h6>
                             <ol class="mb-0 small">
-                                <li>Isi <strong>Kata Pengantar</strong> dan <strong>Ringkasan</strong> di bagian atas</li>
+                                <li>Isi <strong>Kata Pengantar</strong> dan <strong>Ringkasan</strong> untuk bagian halaman depan LED</li>
                                 <li>Isi <strong>deskripsi/narasi</strong> untuk setiap elemen standar (D.1 - R.6)</li>
                                 {{-- <li>Isi <strong>tabel HTML</strong> menggunakan editor (klik pada tabel untuk mengedit)</li> --}}
                                 <li>Klik tombol <strong>Simpan</strong> pada setiap elemen untuk menyimpan perubahan</li>
@@ -621,7 +647,7 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
                                 <li><strong>Lembar Pengesahan:</strong> Upload PDF yang sudah ditandatangani pimpinan</li>
                                 <li><strong>Laporan Evaluasi Diri:</strong> Upload DOCX dengan deskripsi setiap elemen - akan diproses otomatis</li>
                                 <li><strong>LKPS:</strong> Upload Excel dengan sheet terpisah untuk setiap tabel - hanya tersimpan sebagai file</li>
-                                <li><strong>Alternatif:</strong> Download templat, isi offline, lalu upload kembali</li>
+                                <li><strong>Alternatif:</strong> Download templat, isi secara <i>offline</i>, lalu upload kembali</li>
                             </ul>
                         </div>
                     </div>
@@ -647,7 +673,7 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
                         <i class="bi bi-pencil-square"></i> Kata Pengantar (maksimal 500 kata)
                     </label>
 
-                    <button type="button" class="btn btn-sm btn-primary btn-save-field" data-target-field="kata_pengantar" {{ $lockBorang ? 'disabled' : '' }}>
+                    <button type="button" class="btn btn-sm btn-primary btn-save-field" data-target-field="kata_pengantar" data-id-elemen="" {{ $lockBorang ? 'disabled' : '' }}>
                         <i class="bi bi-save"></i> Simpan
                     </button>
                 </div>
@@ -678,7 +704,7 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
             <button class="btn btn-link w-100 text-start collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRingkasan" aria-expanded="false" aria-controls="collapseRingkasan">
                 <i class="bi bi-chevron-right me-2 chevron-icon"></i>
                 <strong><i class="bi bi-file-text"></i> Ringkasan Laporan</strong>
-                <span class="badge bg-info float-end">Front Matter</span>
+                <span class="badge bg-info float-end">Halaman Depan</span>
             </button>
         </div>
         <div id="collapseRingkasan" class="accordion-collapse collapse" aria-labelledby="headingRingkasan">
@@ -688,7 +714,7 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
                         <i class="bi bi-pencil-square"></i> Ringkasan Laporan (maksimal 1000 kata)
                     </label>
 
-                    <button type="button" class="btn btn-sm btn-primary btn-save-field" data-target-field="ringkasan" {{ $lockBorang ? 'disabled' : '' }}>
+                    <button type="button" class="btn btn-sm btn-primary btn-save-field" data-target-field="ringkasan" data-id-elemen="" {{ $lockBorang ? 'disabled' : '' }}>
                         <i class="bi bi-save"></i> Simpan
                     </button>
                 </div>
@@ -790,11 +816,11 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
                                                 <i class="bi bi-pencil-square"></i> Deskripsi/Narasi Elemen (maksimal 1000 kata)
                                             </label>
 
-                                            <button type="button" class="btn btn-sm btn-primary btn-save-field" data-target-field="desc_{{ $elemen->id }}" {{ $lockBorang ? 'disabled' : '' }}>
+                                            <button type="button" class="btn btn-sm btn-primary btn-save-field" data-target-field="desc_{{ $elemen->id }}" data-id-elemen="{{ $elemen->id }}" {{ $lockBorang ? 'disabled' : '' }}>
                                                 <i class="bi bi-save"></i> Simpan
                                             </button>
                                         </div>
-                                        <textarea class="form-control auto-save-field tinymce-editor" name="desc_{{ $elemen->id }}" data-field-id="desc_{{ $elemen->id }}" data-field-type="description" rows="15" placeholder="Tuliskan deskripsi/narasi untuk {{ $elemen->kode_elemen }} di sini (maksimal 1000 kata)...">{{ $existingData["desc_{$elemen->id}"] ?? '' }}</textarea>
+                                        <textarea class="form-control auto-save-field tinymce-editor" name="desc_{{ $elemen->id }}" data-field-id="desc_{{ $elemen->id }}" data-id-elemen="{{ $elemen->id }}" data-field-type="description" rows="15" placeholder="Tuliskan deskripsi/narasi untuk {{ $elemen->kode_elemen }} di sini (maksimal 1000 kata)...">{{ $existingData["desc_{$elemen->id}"] ?? '' }}</textarea>
                                         <small class="text-muted">
                                             <i class="bi bi-info-circle"></i>
                                             <span class="char-count">{{ str_word_count(strip_tags($existingData["desc_{$elemen->id}"] ?? '')) }}</span>/maksimal 1000 kata
@@ -825,7 +851,7 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
                                     @if($dataset->is_required) <span class="text-danger">*</span> @endif
                                     </label>
 
-                                    <button type="button" class="btn btn-sm btn-primary btn-save-field" data-target-field="{{ $dataset->kode }}" {{ $lockBorang ? 'disabled' : '' }}>
+                                    <button type="button" class="btn btn-sm btn-primary btn-save-field" data-target-field="{{ $dataset->kode }}" data-id-elemen="{{ $elemen->id }}" {{ $lockBorang ? 'disabled' : '' }}>
                                         <i class="bi bi-save"></i> Simpan
                                     </button>
                                 </div>
@@ -1103,6 +1129,7 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
                     , automatic_uploads: false
                     , relative_urls: false
                     , setup: function(editor) {
+                        const idElemen = el.dataset.idElemen || el.closest('.elemen-card').dataset.elemenId || null;
                         const updateCounter = () => {
                             const wrapper = el.closest('.mb-3, .mb-4, .dataset-field-wrapper, .card-body');
                             const counterEl = wrapper ? wrapper.querySelector('.char-count') : null;
@@ -1133,6 +1160,7 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
                                     }
                                 }
                             }
+                            editor._idElemen = idElemen;
                             editorInstances[key] = editor;
 
                             editor._imgSnapshot = extractImgSrcs(editor.getContent({
@@ -1170,7 +1198,7 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
                             }
                             saveTimeout = setTimeout(function() {
                                 const value = editor.getContent();
-                                autoSaveField(key, value, statusElement).then(() => {
+                                autoSaveField(key, idElemen, value, statusElement).then(() => {
                                     // update snapshot sesudah autosave berhasil
                                     editor._imgSnapshot = extractImgSrcs(value);
                                 });
@@ -1247,7 +1275,7 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
             });
         }
 
-        async function autoSaveField(fieldId, value, statusElement) {
+        async function autoSaveField(fieldId, idElemen, value, statusElement) {
             if (statusElement) {
                 statusElement.textContent = 'Menyimpan...';
                 statusElement.className = 'status-text text-warning';
@@ -1263,6 +1291,7 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
                     }
                     , body: JSON.stringify({
                         dataset_id: fieldId
+                        , id_elemen: idElemen
                         , value: value
                     })
                 });
@@ -1301,19 +1330,18 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
             if (editorInstances[fieldId]) {
                 const editor = editorInstances[fieldId];
 
-                // 1) ambil snapshot sebelum save (fallback kalau belum ada)
                 const before = editor._imgSnapshot || extractImgSrcs(editor.getContent({
                     format: 'html'
                 }));
-
-                // 2) konten terbaru
                 const html = editor.getContent({
                     format: 'html'
                 });
                 const after = extractImgSrcs(html);
 
+                const idElemen = editor._idElemen || null;
+
                 // 3) save ke server dulu
-                await autoSaveField(fieldId, html, statusElement);
+                await autoSaveField(fieldId, idElemen, html, statusElement);
 
                 // 4) setelah sukses -> hitung removed
                 for (const src of before) {
@@ -1335,7 +1363,8 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
             const field = findFieldById(fieldId);
             if (!field) throw new Error(`Field tidak ditemukan: ${fieldId}`);
 
-            await autoSaveField(fieldId, field.value, statusElement);
+            const idElemen = field.dataset.idElemen || null;
+            await autoSaveField(fieldId, idElemen, field.value, statusElement);
         }
 
         function initializeAutoSave() {
@@ -1367,11 +1396,12 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
 
         async function saveField(field) {
             const fieldId = field.dataset.fieldId;
+            const idElemen = field.dataset.idElemen;
             const value = field.value;
             const wrapper = field.closest('.mb-3, .mb-4, .dataset-field-wrapper, .card-body');
             const statusElement = wrapper ? wrapper.querySelector('.status-text') : null;
 
-            await autoSaveField(fieldId, value, statusElement);
+            await autoSaveField(fieldId, idElemen, value, statusElement);
         }
 
         function updateProgress() {
@@ -1813,7 +1843,7 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
             <p>File: <strong>${file.name}</strong>
             (${formatFileSize(file.size)})</p>
             <p class="text-muted mb-0">
-                Data tabel akan diimpor otomatis dari setiap sheet.
+                Data tabel akan dibaca secara otomatis dari setiap sheet.
             </p>
         `
                 , showCancelButton: true
@@ -2373,7 +2403,7 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
                         hideLoading();
                         await Swal.fire(
                             'Selesai!'
-                            , `Berhasil mengimpor ${data.summary.tables?.parsed} tabel LKPS.`
+                            , `Berhasil memproses data LKPS.`
                             , 'success'
                         );
                         window.location.reload();
@@ -2382,7 +2412,7 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
 
                     if (st === 'failed') {
                         hideLoading();
-                        Swal.fire('Gagal', 'Import LKPS gagal. Silakan coba ulang.', 'error');
+                        Swal.fire('Gagal', 'Proses pembacaan data LKPS gagal. Silakan coba ulang.', 'error');
                         return;
                     }
                 } catch (e) {

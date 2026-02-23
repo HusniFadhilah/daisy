@@ -67,13 +67,7 @@
                     }
 
                     // Badge peringkat (kalau ingin konsisten, bisa pakai helper model)
-                    $peringkat = $hasil->peringkat_akreditasi ?? null;
-                    $peringkatBadgeClass = match($peringkat) {
-                    'Unggul' => 'bg-success',
-                    'Baik Sekali' => 'bg-primary',
-                    'Baik' => 'bg-info',
-                    default => 'bg-secondary'
-                    };
+                    $peringkat = $hasil->peringkat_akreditasi_hasil ?? null;
                     @endphp
 
                     <tr>
@@ -86,10 +80,10 @@
                         <td class="text-center">
                             @if($hasil && $hasil->skor_al)
                             @php
-                            $peringkatAL = $hasil->getPeringkatFromSkorAL($hasil->skor_al);
+                            $peringkatAL = $hasil->getPeringkatFromSkor((float)($hasil->skor_al ?? 0));
                             @endphp
-                            <span class="badge bg-light text-dark fs-6 p-2 px-3">{{ number_format($hasil->skor_al, 2) }}</span>
-                            <span class="badge p-1 px-2 my-2" style="background-color: {{ $hasil->getPeringkatColor($peringkatAL) }}; color:#222">{{ $peringkatAL }}</span>
+                            <span class="badge bg-light text-dark fs-6 p-2 px-3">{{ number_format($hasil->skor_al, 0) }}</span>
+                            {{-- <span class="badge p-1 px-2 my-2" style="background-color: {{ $hasil->getPeringkatColor($peringkatAL) }}; color:#222">{{ $peringkatAL }}</span> --}}
                             @else
                             <span class="text-muted">-</span>
                             @endif
@@ -97,7 +91,7 @@
 
                         <td class="text-center">
                             @if($peringkat)
-                            <span class="badge p-1 px-2 my-2" style="background-color: {{ $hasil->getPeringkatColor($peringkat) }}; color:#222">{{ $peringkat }}</span>
+                            <span class="badge p-1 px-2 my-2" style="background-color: {{ $hasil->getPeringkatColor() }}; color:#222">{{ $peringkat }}</span>
                             @else
                             <span class="text-muted">Belum difinalisasi</span>
                             @endif
@@ -107,49 +101,41 @@
                             <span class="badge bg-{{ $hasilConfig['class'] }}">
                                 <i class="bi bi-{{ $hasilConfig['icon'] }}"></i> {{ $hasilConfig['text'] }}
                             </span>
+                        </td>
 
-                            {{-- @if($hasil && $hasil->skor_final)
-                            <div class="mt-1">
-                                <small class="text-muted">
-                                    <i class="bi bi-calculator"></i> Skor AL: {{ number_format($hasil->skor_final, 2) }}
-                            </small>
+                        <td>
+                            <small><strong>{{ $tanggalLabel }}</strong></small><br>
+                            <small class="text-muted">{{ $tanggalKeterangan }}</small>
+                        </td>
+
+                        <td class="text-center">
+                            <a href="{{ route('de.penyampaian-hasil-akreditasi.show', $pengajuan->id) }}" class="btn btn-sm btn-primary" title="Lihat Detail">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
-        @endif --}}
-        </td>
-
-        <td>
-            <small><strong>{{ $tanggalLabel }}</strong></small><br>
-            <small class="text-muted">{{ $tanggalKeterangan }}</small>
-        </td>
-
-        <td class="text-center">
-            <a href="{{ route('de.penyampaian-hasil-akreditasi.show', $pengajuan->id) }}" class="btn btn-sm btn-primary" title="Lihat Detail">
-                <i class="bi bi-eye"></i>
-            </a>
-        </td>
-        </tr>
-        @endforeach
-        </tbody>
-        </table>
+        @else
+        <div class="text-center py-5">
+            <i class="bi bi-inbox" style="font-size: 3rem; color: #dee2e6;"></i>
+            <p class="text-muted mt-3 mb-0">Tidak ada data penyampaian hasil akreditasi</p>
+        </div>
+        @endif
     </div>
-    @else
-    <div class="text-center py-5">
-        <i class="bi bi-inbox" style="font-size: 3rem; color: #dee2e6;"></i>
-        <p class="text-muted mt-3 mb-0">Tidak ada data penyampaian hasil akreditasi</p>
+
+    @if($pengajuans->hasPages())
+    <div class="card-footer bg-light">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                Menampilkan {{ $pengajuans->firstItem() }} - {{ $pengajuans->lastItem() }} dari {{ $pengajuans->total() }} data
+            </div>
+            <div>
+                {{ $pengajuans->links() }}
+            </div>
+        </div>
     </div>
     @endif
-</div>
-
-@if($pengajuans->hasPages())
-<div class="card-footer bg-light">
-    <div class="d-flex justify-content-between align-items-center">
-        <div>
-            Menampilkan {{ $pengajuans->firstItem() }} - {{ $pengajuans->lastItem() }} dari {{ $pengajuans->total() }} data
-        </div>
-        <div>
-            {{ $pengajuans->links() }}
-        </div>
-    </div>
-</div>
-@endif
 </div>

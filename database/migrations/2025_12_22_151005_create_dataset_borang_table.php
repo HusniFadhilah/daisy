@@ -135,6 +135,7 @@ return new class extends Migration
                 ->constrained('pengajuan_akreditasi')
                 ->onDelete('cascade');
             $table->foreignId('id_degree_level')->nullable()->constrained('degree_levels')->onDelete('cascade');
+            $table->foreignId('id_elemen')->nullable()->constrained('elemen_standar', 'id')->onDelete('cascade');
             $table->foreignId('id_borang_import')
                 ->nullable()
                 ->constrained('borang_imports')
@@ -172,6 +173,7 @@ return new class extends Migration
                 ->nullable()
                 ->constrained('degree_levels')
                 ->onDelete('set null');
+            $table->foreignId('id_elemen')->nullable()->constrained('elemen_standar', 'id')->onDelete('cascade');
             $table->foreignId('id_borang_import')
                 ->constrained('borang_imports')
                 ->onDelete('cascade');

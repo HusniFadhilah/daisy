@@ -52,9 +52,8 @@
 
     <!-- Active Masa Sanggah Alert -->
     @if($stats['aktif'] > 0)
-    <div class="alert alert-warning alert-permanent border-start border-4 border-warning mb-4">
+    <div class="alert alert-warning alert-permanent border-start border-2 border-warning mb-4">
         <div class="d-flex align-items-start">
-            <i class="bi bi-bell-fill fs-1 me-3 text-warning"></i>
             <div class="flex-grow-1">
                 <h5 class="mb-2 fw-bold">
                     <i class="bi bi-exclamation-circle-fill"></i> Masa Sanggah Sedang Berlangsung
@@ -63,7 +62,7 @@
                     Anda memiliki <strong class="text-danger fs-5">{{ $stats['aktif'] }}</strong>
                     masa sanggah yang sedang aktif.
                 </p>
-                <div class="alert alert-light mb-0">
+                <div class="alert alert-light alert-permanent mb-2">
                     <i class="bi bi-info-circle-fill text-info"></i>
                     <strong>Penting:</strong> Jika Anda memiliki keberatan terhadap hasil akreditasi,
                     dapat mengajukan banding selama periode masa sanggah masih berlangsung.

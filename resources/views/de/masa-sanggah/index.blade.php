@@ -1,5 +1,7 @@
 @extends('layouts.template.app')
 
+@section('title', 'Masa Sanggah Akreditasi')
+
 @section('content')
 <div class="container-fluid">
     <!-- Breadcrumb -->

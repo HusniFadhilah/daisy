@@ -23,7 +23,7 @@ class LkpsExportController extends Controller
         $data = BorangDataExcel::query()
             ->where('id_pengajuan', $pengajuanId)
             // ->orderBy('sheet_name')
-            ->orderBy('table_index')
+            ->orderBy('id_elemen')
             ->get()
             ->groupBy('sheet_name');
 
@@ -34,5 +34,10 @@ class LkpsExportController extends Controller
             'data' => $data,
             'activeSheet' => $activeSheet,
         ]);
+    }
+
+    public function test()
+    {
+        return BorangDataExcel::first();
     }
 }

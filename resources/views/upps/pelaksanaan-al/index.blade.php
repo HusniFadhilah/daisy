@@ -69,7 +69,7 @@
 </div>
 
 <!-- Pending Approval Alert -->
-{{-- @if($stats['pending_approval'] > 0)
+@if($stats['pending_approval'] > 0)
 <div class="alert alert-warning alert-permanent border-start border-2 border-warning mb-4">
     <div class="d-flex align-items-start">
         <div class="flex-grow-1">
@@ -78,16 +78,16 @@
             </h5>
             <p class="mb-2">
                 Anda memiliki <strong class="text-danger fs-5">{{ $stats['pending_approval'] }}</strong>
-Laporan Hasil Asesmen Lapangan yang menunggu persetujuan.
-</p>
-<div class="alert alert-light alert-permanent mb-2">
-    <i class="bi bi-info-circle-fill text-info"></i>
-    <strong>Penting:</strong> Mohon segera tinjau dan setujui berita acara untuk melanjutkan proses akreditasi.
+                Laporan Hasil Asesmen Lapangan yang menunggu persetujuan.
+            </p>
+            <div class="alert alert-light alert-permanent mb-2">
+                <i class="bi bi-info-circle-fill text-info"></i>
+                <strong>Penting:</strong> Mohon segera tinjau dan setujui berita acara untuk melanjutkan proses akreditasi.
+            </div>
+        </div>
+    </div>
 </div>
-</div>
-</div>
-</div>
-@endif --}}
+@endif
 
 <!-- Statistics Cards -->
 {{-- <h4>Informasi Pelaksanaan dan Berita Acara AL Keseluruhan</h4>
@@ -129,7 +129,8 @@ Laporan Hasil Asesmen Lapangan yang menunggu persetujuan.
                                 <th width="5%">#</th>
                                 <th width="20%">Permohonan Akreditasi</th>
                                 <th width="25%">Tanggal Pelaksanaan AL</th>
-                                <th width="25%">Status Pelaksanaan AL & Berita Acara</th>
+                                <th width="20%">Status Pelaksanaan AL</th>
+                                <th width="20%">Tanggal AL Selesai</th>
                                 <th width="10%" class="text-center">Aksi</th>
                             </tr>
                         </thead>
@@ -141,15 +142,18 @@ Laporan Hasil Asesmen Lapangan yang menunggu persetujuan.
                                     {!! $pengajuan->getPermohonanAkreditasiSectionFor('upps') !!}
                                 </td>
                                 <td>
-                                    @if($pengajuan->tanggal_pelaksanaan_al)
-                                    <small>{{ $pengajuan->tanggal_pelaksanaan_al->locale('id')->translatedFormat('d M Y') }}</small>
-                                    <br>
-                                    <small class="text-muted">
-                                        {{ $pengajuan->tanggal_pelaksanaan_al->diffForHumans() }}
+                                    <span>Tanggal Mulai AL</span>
+                                    <small>
+                                        : {{ $pengajuan->asesmen->asesmenLapangan->tanggal_mulai
+                                    ? \Carbon\Carbon::parse($pengajuan->asesmen->asesmenLapangan->tanggal_mulai)->locale('id')->translatedFormat('d M Y')
+                                    : '-' }}
                                     </small>
-                                    @else
-                                    <span class="text-muted">-</span>
-                                    @endif
+                                    <br><span>Tanggal Selesai AL</span>
+                                    <small>
+                                        : {{ $pengajuan->asesmen->asesmenLapangan->tanggal_selesai
+                                    ? \Carbon\Carbon::parse($pengajuan->asesmen->asesmenLapangan->tanggal_selesai)->locale('id')->translatedFormat('d M Y')
+                                    : '-' }}
+                                    </small>
                                 </td>
                                 <td>
                                     {!! $pengajuan->getCustomBadgeLastStatus('pelaksanaan_al', 'upps', 'label_short_for') !!}
@@ -166,6 +170,17 @@ Laporan Hasil Asesmen Lapangan yang menunggu persetujuan.
                                         <i class="bi bi-bell"></i> {{ $pendingBA }} BA Pending
                                     </span>
                                     @endif --}}
+                                </td>
+                                <td>
+                                    @if($pengajuan->tanggal_al_selesai)
+                                    <small>{{ $pengajuan->tanggal_al_selesai->locale('id')->translatedFormat('d M Y') }}</small>
+                                    <br>
+                                    <small class="text-muted">
+                                        {{ $pengajuan->tanggal_al_selesai->diffForHumans() }}
+                                    </small>
+                                    @else
+                                    <span class="text-muted">-</span>
+                                    @endif
                                 </td>
                                 <td class="text-center">
                                     <a href="{{ route('upps.pelaksanaan-al.show', $pengajuan->id) }}" class="btn btn-primary btn-sm" title="Lihat Detail">

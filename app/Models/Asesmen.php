@@ -199,7 +199,7 @@ class Asesmen extends Model
             ->where('is_active', true);
     }
 
-    public function LhaAsesor()
+    public function lhaAsesor()
     {
         return $this->hasOne(LhaAsesor::class, 'id_asesmen');
     }

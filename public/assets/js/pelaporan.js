@@ -80,7 +80,7 @@
                 html: `
           <div class="text-start">
             <p>File <b>${up.data?.doc?.original_name || 'laporan'}</b> berhasil diunggah.</p>
-            <p class="mb-0">Jika finalisasi, status Permohonan akreditasi <b>${nomor}</b> menjadi <b>${cfg.finalizeLabel}</b>.</p>
+            <p class="mb-0">Jika finalisasi, status Permohonan akreditasi akan menjadi <b>${cfg.finalizeLabel}</b>.</p>
           </div>
         `,
                 showCancelButton: true,

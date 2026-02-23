@@ -160,10 +160,11 @@ class PengajuanAkreditasiController extends Controller
 
         DB::beginTransaction();
         try {
+            $studyProgram = StudyProgram::findOrFail($validated['id_program_studi']);
             // ✅ Create pengajuan
             $pengajuan = PengajuanAkreditasi::create([
                 'nomor_pengajuan' => PengajuanAkreditasi::generateNomorPengajuan($validated['jenis_akreditasi']),
-                'id_program_studi' => $validated['id_program_studi'],
+                'id_program_studi' => $studyProgram->id,
                 'id_user_pengaju' => auth()->id(),
                 'id_de_assigned' => $pengingat?->id_de_pengirim,
                 'tahun_akreditasi' => $validated['tahun_akreditasi'],
@@ -172,6 +173,8 @@ class PengajuanAkreditasiController extends Controller
                 'catatan_pengaju' => $validated['catatan_pengaju'],
                 'tanggal_pengingat' => $pengingat?->tanggal_dikirim,
                 'tanggal_surat_permohonan_dikirim' => now(),
+                'tanggal_kedaluwarsa_awal' => $studyProgram->tanggal_kedaluwarsa,
+                'peringkat_awal' => $studyProgram->peringkat_akreditasi,
             ]);
 
             // ✅ Upload file (extracted to helper method)
@@ -682,24 +685,11 @@ class PengajuanAkreditasiController extends Controller
         // Calculate detailed progress
         $progressData = $this->calculateBorangProgress($kriterias, $existingData);
 
-        $lockBorang = in_array($pengajuan->status, [
-            \App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM,
-            \App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
-            \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
-            \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
-            \App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
-            \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
-            \App\Models\PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
-            \App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
-            \App\Models\PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED,
-        ]);
-
         return view('asesmen.pengajuan.borang-online', compact(
             'pengajuan',
             'kriterias',
             'existingData',
             'progressData',
-            'lockBorang'
         ));
     }
     /**
@@ -872,6 +862,7 @@ class PengajuanAkreditasiController extends Controller
                 ],
                 [
                     'nilai' => $request->value,
+                    'id_elemen' => $request->id_elemen,
                     'id_borang_import' => $import->id
                 ]
             );
@@ -925,6 +916,7 @@ class PengajuanAkreditasiController extends Controller
                         ],
                         [
                             'nilai' => is_array($value) ? json_encode($value) : $value,
+                            'id_elemen' => $request->id_elemen,
                             'id_borang_import' => $import->id
                         ]
                     );
@@ -1180,7 +1172,8 @@ class PengajuanAkreditasiController extends Controller
                     'dataset_id' => $request->dataset_id
                 ],
                 [
-                    'nilai' => $path // Store file path
+                    'nilai' => $path, // Store file path
+                    'id_elemen' => $request->id_elemen,
                 ]
             );
 

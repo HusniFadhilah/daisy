@@ -114,7 +114,7 @@
                 @php
                 $asesmen = $p->asesmen;
                 $hasil = $asesmen ? $asesmen->hasil : null;
-                $peringkat = $hasil ? $hasil->peringkat_akreditasi : '-';
+                $peringkat = $hasil ? $hasil->peringkat_akreditasi_hasil : '-';
                 $skor = $hasil ? $hasil->skor_final : 0;
                 $badgeColor = $hasil ? $hasil->getPeringkatColor($peringkat) : '#e9ecef';
                 $isSelected = $selectedPengajuan && $selectedPengajuan->id === $p->id;

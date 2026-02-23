@@ -155,13 +155,13 @@ class HasilAkreditasiController extends Controller
         try {
             $asesmen = Asesmen::findOrFail($asesmenId);
             $hasil = HasilAkreditasi::where('id_asesmen', $asesmenId)->firstOrFail();
-
+            $authId = auth()->id();
             // Re-calculate before finalize
-            $this->hasilService->saveHasilAL($asesmen, auth()->id());
+            $this->hasilService->saveHasilAL($asesmen, $authId);
 
             // Finalize
             $hasil->refresh();
-            $this->hasilService->finalizeHasilAL($hasil, auth()->id());
+            $this->hasilService->finalizeHasilAL($hasil, $authId);
 
             DB::commit();
 

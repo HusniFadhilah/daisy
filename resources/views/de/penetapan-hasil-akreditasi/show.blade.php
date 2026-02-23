@@ -2,6 +2,8 @@
 
 @extends('layouts.template.app')
 
+@section('title', 'Detail Penetapan Hasil Akreditasi')
+
 @section('content')
 <div class="container-fluid">
 
@@ -30,10 +32,10 @@
     {{-- Summary Cards --}}
     <div class="row mb-4">
         {{-- Skor AL --}}
-        <div class="col-md-3">
+        <div class="col-lg-6 col-xl-3 my-1">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body text-center">
-                    <h6 class="text-muted mb-2">Skor AL</h6>
+                    <h6 class="text-muted mb-2">Skor Hasil</h6>
                     @if($hasil->skor_al)
                     <h1 class="mb-0 text-dark display-4">{{ number_format($hasil->skor_al, 0) }}</h1>
                     <small class="text-muted">dari 400</small>
@@ -46,17 +48,17 @@
         </div>
 
         {{-- Peringkat --}}
-        <div class="col-md-3">
+        <div class="col-lg-6 col-xl-3 my-1">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body text-center">
                     <h6 class="text-muted mb-2">Status Akreditasi (yang ditetapkan)</h6>
-                    @if($hasil->peringkat_akreditasi)
-                    @php
-                    $peringkatAkreditasi = $hasil->peringkat_akreditasi;
-                    @endphp
-                    <span class="badge p-2 px-3 my-4 fs-5" style="background-color: {{ $hasil->getPeringkatColor($peringkatAkreditasi) }}; color:#222">
-                        {{ $peringkatAkreditasi }}
+                    @if($hasil->peringkat_akreditasi_final)
+                    <span class="badge p-2 px-3 my-3 fs-6" style="background-color: {{ $hasil->getPeringkatColor() }}; color:#222">
+                        {{ $hasil->peringkat_akreditasi_final }}
                     </span>
+                    @if($hasil->statusFinal->siklus_tahun)
+                    <div><small class="text-muted">{{ $hasil->statusFinal->siklus_tahun }} Tahun</small></div>
+                    @endif
                     @else
                     <h3 class="mb-0 text-muted">Belum Ditetapkan</h3>
                     @endif
@@ -65,7 +67,7 @@
         </div>
 
         {{-- Status --}}
-        <div class="col-md-3">
+        <div class="col-lg-6 col-xl-3 my-1">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body text-center">
                     <h6 class="text-muted mb-4">Status Penetapan</h6>
@@ -88,7 +90,7 @@
         </div>
 
         {{-- Total Elemen --}}
-        <div class="col-md-3">
+        <div class="col-lg-6 col-xl-3 my-1">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body text-center">
                     <h6 class="text-muted mb-2">Total Elemen Dinilai</h6>
@@ -111,12 +113,12 @@
                     </h5>
                     <p class="text-muted mb-0">
                         @php
-                        $peringkatAL = $hasil->getPeringkatFromSkorAL($hasil->skor_al);
+                        $peringkatFinal = $hasil->getPeringkatFromSkor($hasil->skor_final);
                         @endphp
-                        Hasil masih dalam status <strong>MENUNGGU PENETAPAN</strong> dengan skor akhir yaitu: {{ number_format($hasil->skor_al, 0) }},
+                        Hasil masih dalam status <strong>MENUNGGU PENETAPAN</strong> dengan skor akhir yaitu: {{ number_format($hasil->skor_final, 0) }},
                         dan masuk ke kategori:
-                        <span class="badge p-2 px-3 my-2" style="background-color: {{ $hasil->getPeringkatColor($peringkatAL) }}; color:#222">
-                            {{ $peringkatAL }}
+                        <span class="badge p-2 px-3 my-2" style="background-color: {{ $hasil->getPeringkatColor($peringkatFinal) }}; color:#222">
+                            {{ $peringkatFinal }}
                         </span>
                         <br>Anda dapat menetapkan hasil akreditasi setelah mengupload Berita Acara Rapat Penetapan Hasil.
                     </p>
@@ -307,134 +309,182 @@
     </div>
     <div class="card-body">
         <div class="row g-2">
-            {{-- 0-250: Tidak Terakreditasi --}}
+            @foreach($rentangSkor as $rentang)
+            @php
+            $makna = $rentang['makna'] ?? null;
+            $isUnggul = str_contains(strtolower($rentang['status'] ?? ''), 'unggul');
+            @endphp
             <div class="col-md-6">
-                <div class="d-flex align-items-center p-3 rounded h-100" style="background-color: #f8d7da;">
-                    <div class="me-3">
-                        <strong class="text-dark">0 - 250</strong>
+                <div class="d-flex align-items-start p-3 rounded h-100 border" style="background-color: {{ $rentang['warna'] ?? 'fff' }}">
+                    <div class="me-3 text-nowrap pt-1">
+                        <strong class="text-dark">
+                            {{ $rentang['skor_min'] }} – {{ $rentang['skor_max'] }}
+                        </strong>
+                        @if(isset($rentang['persen_min']))
+                        <div class="text-muted" style="font-size:.75rem">
+                            {{ $rentang['persen_min'] }}–{{ $rentang['persen_max'] }}%
+                        </div>
+                        @endif
                     </div>
                     <div class="flex-grow-1">
-                        <strong class="text-dark">Tidak Terakreditasi</strong>
-                        <div><small class="text-muted">Ditolak validator dokumen</small></div>
-                    </div>
-                </div>
-            </div>
+                        <strong class="text-dark">{{ $rentang['status'] }}</strong>
+                        @if(isset($rentang['siklus_tahun']))
+                        <span class="badge bg-secondary ms-1" style="font-size:.7rem">
+                            {{ $rentang['siklus_tahun'] }} Tahun
+                        </span>
+                        @endif
 
-            {{-- 251-350: Terakreditasi --}}
-            <div class="col-md-6">
-                <div class="d-flex align-items-center p-3 rounded h-100" style="background-color: #d1ecf1;">
-                    <div class="me-3">
-                        <strong class="text-dark">251 - 350</strong>
-                    </div>
-                    <div class="flex-grow-1">
-                        <strong class="text-dark">Terakreditasi</strong>
-                    </div>
-                </div>
-            </div>
-
-            {{-- 351-360: Terakreditasi Unggul with requirement --}}
-            <div class="col-md-6">
-                <div class="d-flex align-items-center p-3 rounded h-100" style="background-color: #d4edda;">
-                    <div class="me-3">
-                        <strong class="text-dark">351 - 360</strong>
-                    </div>
-                    <div class="flex-grow-1">
-                        <strong class="text-dark">⁠Terakreditasi Unggul with Requirement (2 Tahun)*</strong>
-                        <div><small class="text-muted">*Dengan syarat pelampauan standar</small></div>
+                        @if($makna)
+                        <div class="mt-1">
+                            @if(is_array($makna))
+                            <ul class="mb-0 ps-3" style="font-size:.8rem">
+                                @foreach($makna as $m)
+                                <li class="text-muted">{{ $m }}</li>
+                                @endforeach
+                            </ul>
+                            @else
+                            <small class="text-muted">{{ $makna }}</small>
+                            @endif
+                        </div>
+                        @endif
                     </div>
                 </div>
             </div>
-
-            {{-- 361-400: Terakreditasi Unggul --}}
-            <div class="col-md-6">
-                <div class="d-flex align-items-center p-3 rounded h-100" style="background-color: #c3e6cb;">
-                    <div class="me-3">
-                        <strong class="text-dark">361 - 400</strong>
-                    </div>
-                    <div class="flex-grow-1">
-                        <strong class="text-dark">Terakreditasi Unggul (5 Tahun)</strong>
-                        <div><small class="text-muted">*Dengan syarat pelampauan standar</small></div>
-                    </div>
-                </div>
-            </div>
+            @endforeach
         </div>
 
         <div class="alert alert-light alert-permanent mt-3 mb-0">
             <i class="bi bi-info-circle me-2"></i>
-            <strong>Catatan:</strong> Untuk status akreditasi <strong>Unggul</strong>, selain mencapai skor >= 351,
-            program studi harus memiliki <strong>minimal 1 elemen dengan kategori: Pelampauan Standar</strong>
-            di <strong>setiap kriteria</strong> (D, E, P, I, L, A, R).
+            <strong>Catatan:</strong> Untuk status akreditasi <strong>Unggul</strong>, selain mencapai skor >= {{ $validationSummary['skor_minimum'] }},
+            program studi harus memiliki <strong>minimal 1 elemen dengan kategori: "Melampaui Standar"</strong>
+            di <strong>setiap kriteria</strong> ({{ implode(', ', array_keys($validationSummary['kriteria_status'])) }}),
+            serta memenuhi syarat rasio DTPS dan jabatan fungsional dosen.
         </div>
     </div>
 </div>
 
 {{-- Validasi Peringkat Unggul --}}
-@if($hasil->skor_al >= 361)
-<div class="card mb-4 border-{{ $validationSummary['dapat_unggul'] ? 'success' : 'warning' }}">
-    <div class="card-header bg-{{ $validationSummary['dapat_unggul'] ? 'success' : 'warning' }} text-white">
+@if($validationSummary['skor_memenuhi'])
+@php $syaratP1 = $validationSummary['syarat_p1']; @endphp
+<div class="card mb-4 border-{{ $validationSummary['dapat_unggul'] ? 'secondary' : 'secondary' }}">
+    <div class="card-header bg-{{ $validationSummary['dapat_unggul'] ? 'secondary' : 'secondary' }} text-white">
         <h5 class="mb-0">
             <i class="bi bi-{{ $validationSummary['dapat_unggul'] ? 'shield-check' : 'exclamation-triangle' }}"></i>
             Validasi Syarat Status Akreditasi UNGGUL
         </h5>
     </div>
     <div class="card-body">
-        <div class="row mb-3">
+
+        {{-- Baris syarat: Skor + Pelampauan + Rasio DTPS + Jabatan --}}
+        <div class="row mb-3 g-3">
+
+            {{-- Syarat 1: Skor --}}
             <div class="col-md-6">
-                <div class="d-flex align-items-center p-3 bg-success bg-opacity-10 rounded">
-                    <i class="bi bi-check-circle-fill text-success fs-3 me-3"></i>
+                <div class="d-flex align-items-center p-3 bg-light rounded h-100">
+                    <i class="bi bi-check-circle-fill text-dark fs-3 me-3"></i>
                     <div>
                         <strong>Skor Memenuhi Syarat</strong>
-                        <div class="text-muted">Skor >= 361 ({{ number_format($hasil->skor_al, 2) }})</div>
+                        <div class="text-muted">
+                            Skor ≥ {{ $validationSummary['skor_minimum'] }}
+                            ({{ number_format($validationSummary['skor'], 2) }})
+                        </div>
                     </div>
                 </div>
             </div>
+
+            {{-- Syarat 2: Pelampauan Standar --}}
             <div class="col-md-6">
-                <div class="d-flex align-items-center p-3 bg-{{ $validationSummary['pelampauan_memenuhi'] ? 'success' : 'danger' }} bg-opacity-10 rounded">
-                    <i class="bi bi-{{ $validationSummary['pelampauan_memenuhi'] ? 'check-circle-fill text-success' : 'x-circle-fill text-danger' }} fs-3 me-3"></i>
+                <div class="d-flex align-items-center p-3 bg-{{ $validationSummary['pelampauan_memenuhi'] ? 'light' : 'light' }} rounded h-100">
+                    <i class="bi bi-{{ $validationSummary['pelampauan_memenuhi'] ? 'check-circle-fill text-dark' : 'x-circle-fill text-dark' }} fs-3 me-3"></i>
                     <div>
                         <strong>Pelampauan Standar</strong>
                         <div class="text-muted">
                             @if($validationSummary['pelampauan_memenuhi'])
                             Semua kriteria terpenuhi ✓
                             @else
-                            {{ count($validationSummary['missing_kriteria']) }} kriteria belum memiliki pelampauan
+                            {{ count($validationSummary['missing_kriteria']) }} kriteria belum memiliki elemen "Melampaui Standar"
                             @endif
                         </div>
                     </div>
                 </div>
             </div>
+
+            {{-- Syarat 3: Rasio DTPS:Mahasiswa --}}
+            <div class="col-md-6">
+                <div class="d-flex align-items-center p-3 bg-{{ $syaratP1['rasio']['memenuhi'] ? 'light' : 'light' }} rounded h-100">
+                    <i class="bi bi-{{ $syaratP1['rasio']['memenuhi'] ? 'check-circle-fill text-dark' : 'x-circle-fill text-dark' }} fs-3 me-3"></i>
+                    <div>
+                        <strong>Rasio DTPS : Mahasiswa</strong>
+                        <div class="text-muted">{{ $syaratP1['rasio']['keterangan'] }}</div>
+                        @if(!is_null($syaratP1['rasio']['rasio'] ?? null))
+                        <div class="text-muted mt-1" style="font-size:.8rem">
+                            DTPS: {{ $syaratP1['rasio']['jumlah_dtps'] }} &middot;
+                            Mahasiswa: {{ $syaratP1['rasio']['jumlah_mahasiswa'] ?? '—' }} &middot;
+                            Rumpun: <span class="text-capitalize">{{ $syaratP1['rasio']['rumpun'] }}</span>
+                        </div>
+                        @else
+                        <div class="text-warning mt-1" style="font-size:.8rem">
+                            <i class="bi bi-exclamation-triangle me-1"></i>Data LKPS P.1/E.2 belum diupload
+                        </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            {{-- Syarat 4: Jabatan Lektor --}}
+            <div class="col-md-6">
+                <div class="d-flex align-items-center p-3 bg-{{ $syaratP1['jabatan']['memenuhi'] ? 'light' : 'light' }} rounded h-100">
+                    <i class="bi bi-{{ $syaratP1['jabatan']['memenuhi'] ? 'check-circle-fill text-dark' : 'x-circle-fill text-dark' }} fs-3 me-3"></i>
+                    <div>
+                        <strong>Jabatan Lektor ke Atas ≥ {{ $syaratP1['jabatan']['persen_minimum'] ?? 50 }}%</strong>
+                        <div class="text-muted">{{ $syaratP1['jabatan']['keterangan'] }}</div>
+                        @if(($syaratP1['jabatan']['total_dtps'] ?? 0) > 0)
+                        <div class="text-muted mt-1" style="font-size:.8rem">
+                            {{ $syaratP1['jabatan']['lektor_ke_atas'] }} dari {{ $syaratP1['jabatan']['total_dtps'] }} DTPS
+                            ({{ $syaratP1['jabatan']['persen_lektor'] }}%)
+                        </div>
+                        @else
+                        <div class="text-warning mt-1" style="font-size:.8rem">
+                            <i class="bi bi-exclamation-triangle me-1"></i>Data LKPS P.1 belum diupload
+                        </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
         </div>
 
-        {{-- Detail per Kriteria --}}
+        {{-- Tabel detail per kriteria (pelampauan standar) --}}
         <div class="table-responsive">
             <table class="table table-sm table-bordered mb-0">
                 <thead class="table-light">
                     <tr>
                         <th width="15%">Kriteria</th>
-                        <th class="text-center" width="25%">Status Pelampauan</th>
-                        <th class="text-center" width="20%">Jumlah Elemen Skor 4</th>
+                        <th class="text-center" width="25%">Status Pelampauan Standar</th>
+                        <th class="text-center" width="20%">Jumlah Elemen Pelampauan</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach(\App\Models\HasilAkreditasi::KRITERIA_REQUIRED as $kode)
+                    {{-- ✅ Loop dari array dinamis, bukan konstanta statis --}}
+                    @foreach(array_keys($validationSummary['kriteria_status']) as $kode)
                     @php
-                    $status = $validationSummary['kriteria_status'][$kode] ?? ['has_pelampauan' => false, 'jumlah_elemen_skor_4' => 0];
+                    $status = $validationSummary['kriteria_status'][$kode];
                     @endphp
                     <tr>
                         <td class="text-center"><strong>{{ $kode }}</strong></td>
                         <td class="text-center">
                             @if($status['has_pelampauan'])
-                            <span class="badge bg-success">
+                            <span class="badge bg-light text-dark">
                                 <i class="bi bi-check-circle"></i> Terpenuhi
                             </span>
                             @else
-                            <span class="badge bg-danger">
+                            <span class="badge bg-light text-dark">
                                 <i class="bi bi-x-circle"></i> Belum Terpenuhi
                             </span>
                             @endif
                         </td>
                         <td class="text-center">
-                            <span class="badge bg-info">{{ $status['jumlah_elemen_skor_4'] }}</span>
+                            <span class="badge bg-light text-dark">{{ $status['jumlah_elemen_skor_4'] }}</span>
                         </td>
                     </tr>
                     @endforeach
@@ -442,22 +492,35 @@
             </table>
         </div>
 
-        @if(!$validationSummary['pelampauan_memenuhi'])
-        <div class="alert alert-warning alert-permanent mt-3 mb-0">
-            <strong>⚠️ Perhatian:</strong> Meskipun skor mencapai >= 361, status akreditasi <strong>TIDAK DAPAT</strong> ditetapkan sebagai UNGGUL
-            karena kriteria <strong>{{ implode(', ', $validationSummary['missing_kriteria']) }}</strong>
-            belum memiliki minimal 1 elemen dengan kategori Pelampauan Standar.
-            <br><br>
-            Status akreditasi akan diubah menjadi: <strong class="text-danger">BAIK SEKALI</strong>
+        {{-- Peringatan jika tidak semua syarat terpenuhi --}}
+        @if(!$validationSummary['dapat_unggul'])
+        <div class="alert alert-light alert-permanent mt-3 mb-0">
+            <strong>⚠️ Perhatian:</strong> Meskipun skor mencapai ≥ {{ $validationSummary['skor_minimum'] }},
+            status akreditasi <strong>TIDAK DAPAT</strong> ditetapkan sebagai UNGGUL karena:
+            <ul class="mb-0 mt-2">
+                @if(!$validationSummary['pelampauan_memenuhi'])
+                <li>
+                    Kriteria <strong>{{ implode(', ', $validationSummary['missing_kriteria']) }}</strong>
+                    belum memiliki minimal 1 elemen dengan kategori "Melampaui Standar".
+                </li>
+                @endif
+                @if(!$syaratP1['rasio']['memenuhi'])
+                <li>{{ $syaratP1['rasio']['keterangan'] }}</li>
+                @endif
+                @if(!$syaratP1['jabatan']['memenuhi'])
+                <li>{{ $syaratP1['jabatan']['keterangan'] }}</li>
+                @endif
+            </ul>
         </div>
         @endif
+
     </div>
 </div>
 @endif
 
 {{-- Detail Skor per Kriteria --}}
 <div class="card mb-4">
-    <div class="card-header bg-primary text-white">
+    <div class="card-header bg-secondary text-white">
         <h5 class="mb-0">
             <i class="bi bi-bar-chart-fill"></i>
             Detail Skor per Kriteria
@@ -473,7 +536,7 @@
                         <th class="text-center" width="15%">Jumlah Elemen</th>
                         <th class="text-center" width="15%">Total Bobot</th>
                         <th class="text-center" width="15%">Skor Tertimbang</th>
-                        <th class="text-center" width="10%">Pelampauan</th>
+                        <th class="text-center" width="10%">Pelampauan Standar</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -484,11 +547,11 @@
                         <td class="text-center">{{ $data['elemen_count'] }}</td>
                         <td class="text-center">{{ number_format($data['total_bobot'], 2) }}</td>
                         <td class="text-center">
-                            <strong class="text-primary">{{ number_format($data['total_skor'], 2) }}</strong>
+                            <strong class="text-dark">{{ number_format($data['total_skor'], 2) }}</strong>
                         </td>
                         <td class="text-center">
                             @if($data['has_pelampauan'])
-                            <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                            <i class="bi bi-check-circle-fill text-dark fs-5"></i>
                             @else
                             <i class="bi bi-dash-circle text-muted fs-5"></i>
                             @endif
@@ -506,7 +569,7 @@
                         <th colspan="3" class="text-end">TOTAL:</th>
                         <th class="text-center">{{ number_format($hasil->total_bobot_al ?? 0, 2) }}</th>
                         <th class="text-center">
-                            <strong class="text-primary fs-5">{{ number_format($hasil->skor_al ?? 0, 2) }}</strong>
+                            <strong class="text-dark fs-5">{{ number_format($hasil->skor_al ?? 0, 2) }}</strong>
                         </th>
                         <th></th>
                     </tr>
@@ -530,7 +593,7 @@
             <table class="table table-sm table-hover" id="table-elemen">
                 <thead class="table-light align-middle">
                     <tr>
-                        <th width="5%">Kriteria - Elemen</th>
+                        <th width="5%">Kriteria</th>
                         <th width="30%">Pernyataan Elemen</th>
                         <th class="text-center" width="35%">Kategori</th>
                         <th class="text-center" width="10%">Bobot</th>
@@ -538,34 +601,68 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($elemenList as $elemen)
                     @php
-                    $kategori = $elemen['skor_kategori'] ?? ['label' => '-', 'class' => 'secondary'];
+                    $grouped = collect($elemenList)->groupBy('kode_kriteria');
+                    @endphp
+
+                    @forelse($grouped as $kodeKriteria => $items)
+                    @php $rowspan = $items->count(); @endphp
+
+                    @foreach($items as $index => $elemen)
+                    @php
+                    $kategori = $elemen['skor_kategori'] ?? ['label' => '-', 'color' => '#e9ecef'];
                     @endphp
                     <tr>
-                        <td>
-                            <div class="d-flex flex-column">
-                                <span class="badge bg-secondary mb-1" style="width: fit-content;">{{ $elemen['kode_kriteria'] }}</span>
-                                <code class="text-primary">{{ $elemen['kode_elemen'] }}</code>
+                        {{-- ✅ Rowspan untuk Kriteria --}}
+                        @if($index === 0)
+                        <td rowspan="{{ $rowspan }}" class="align-middle">
+                            <div class="d-flex flex-column align-items-start">
+                                <span class="badge bg-secondary fs-6 py-2 px-3">{{ $kodeKriteria }}</span>
                             </div>
                         </td>
-                        <td>{{ Str::limit($elemen['nama_elemen'], 120) }}</td>
+                        @endif
+
+                        {{-- Elemen --}}
+                        <td>
+                            <code class="text-primary fw-bold">
+                                {{ $elemen['kode_elemen'] }}
+                            </code>
+                            <span>
+                                {{ Str::limit($elemen['nama_elemen'], 120) }}
+                            </span>
+                        </td>
+
+                        {{-- Kategori --}}
                         <td class="text-center">
                             <span class="badge text-wrap" style="width: 15rem; background-color: {{ $kategori['color'] }}; color: #222;">
                                 {{ $kategori['label'] }}
                             </span>
                             <div class="mt-1">
-                                <small class="text-muted">({{ number_format($elemen['skor'], 2) }})</small>
+                                <small class="text-muted">
+                                    ({{ number_format($elemen['skor'], 2) }})
+                                </small>
                             </div>
                         </td>
-                        <td class="text-center">{{ number_format($elemen['bobot'], 2) }}</td>
+
+                        {{-- Bobot --}}
                         <td class="text-center">
-                            <strong>{{ number_format($elemen['skor_tertimbang'], 2) }}</strong>
+                            {{ number_format($elemen['bobot'], 2) }}
+                        </td>
+
+                        {{-- Skor Tertimbang --}}
+                        <td class="text-center">
+                            <strong>
+                                {{ number_format($elemen['skor_tertimbang'], 2) }}
+                            </strong>
                         </td>
                     </tr>
+                    @endforeach
+
                     @empty
                     <tr>
-                        <td colspan="5" class="text-center text-muted py-4">Belum ada data</td>
+                        <td colspan="5" class="text-center text-muted py-4">
+                            Belum ada data
+                        </td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -577,7 +674,7 @@
 {{-- Catatan Validasi --}}
 @if($hasil->catatan_validasi)
 <div class="card mb-4">
-    <div class="card-header bg-info text-white">
+    <div class="card-header bg-secondary text-white">
         <h5 class="mb-0">
             <i class="bi bi-chat-left-text-fill"></i>
             Catatan Validasi
@@ -589,24 +686,4 @@
 </div>
 @endif
 </div>
-
-@push('scripts')
-<script>
-    $(document).ready(function() {
-        $('#table-elemen').DataTable({
-            pageLength: 25
-            , order: [], // ✅ NO SORT - preserve insertion order
-            columnDefs: [{
-                    orderable: false
-                    , targets: '_all'
-                } // Disable sorting on all columns
-            ]
-            , language: {
-                url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/id.json'
-            }
-        });
-    });
-
-</script>
-@endpush
 @endsection

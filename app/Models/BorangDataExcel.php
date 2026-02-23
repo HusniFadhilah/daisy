@@ -11,6 +11,7 @@ class BorangDataExcel extends Model
     protected $fillable = [
         'id_pengajuan',
         'id_degree_level',
+        'id_elemen',
         'id_borang_import',
         'sheet_name',
         'elemen_kode',
@@ -135,6 +136,7 @@ class BorangDataExcel extends Model
             [
                 'id_degree_level' => $this->id_degree_level,
                 'id_borang_import' => $this->id_borang_import,
+                'id_elemen' => $this->id_elemen,
                 'id_dataset_borang' => $this->id_dataset_borang,
                 'nilai' => json_encode([
                     'sheet' => $this->sheet_name,

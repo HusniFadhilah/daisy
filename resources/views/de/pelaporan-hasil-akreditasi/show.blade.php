@@ -35,6 +35,7 @@
     $hasil = $pengajuan->asesmen->hasil ?? null;
 
     $allowed = [
+    \App\Models\PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
     \App\Models\PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN,
     \App\Models\PengajuanAkreditasi::STATUS_SELESAI,
     ];
@@ -61,7 +62,13 @@
         <!-- Main Content -->
         <div class="col-lg-8 mb-4">
             <!-- Status Alert -->
-            @if($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN)
+            @if($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN)
+            <div class="alert alert-light alert-permanent">
+                <i class="bi bi-person-check"></i>
+                <strong>Proses Pelaporan Hasil</strong><br>
+                Mohon melihat dan memverifikasi Sertifikat Akreditasi pada <a href="{{ route('de.pelaporan-hasil-akreditasi.preview-sertifikat', $pengajuan->id) }}" target="_blank">link berikut</a>. <br>Kemudian menyusun Laporan Hasil Akreditasi serta menguploadnya pada bagian bawah ini
+            </div>
+            @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN)
             <div class="alert alert-light alert-permanent">
                 <i class="bi bi-person-check"></i>
                 <strong>Proses Pelaporan Hasil</strong><br>
@@ -79,66 +86,50 @@
             <div class="card mb-4">
                 <div class="card-header bg-secondary text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-file-earmark-text"></i> Laporan Hasil Akreditasi dan Sertifikat Akreditasi
+                        <i class="bi bi-file-earmark-text"></i> Sertifikat Akreditasi dan Laporan Hasil Akreditasi
                     </h5>
                 </div>
                 <div class="card-body">
 
                     {{-- FORM UPLOAD (seperti contoh) --}}
-                    @if($canUpload)
-                    <div class="row mb-4">
-                        <!-- Upload Laporan Hasil -->
-                        <div class="col-md-6 mb-3">
-                            <div class="card h-100">
-                                <div class="card-header bg-primary text-white">
-                                    <h6 class="mb-0"><i class="bi bi-file-text"></i> Upload Laporan Hasil</h6>
-                                </div>
-                                <div class="card-body">
-                                    <form method="POST" action="{{ route('de.pelaporan-hasil-akreditasi.upload-laporan', $pengajuan->id) }}" enctype="multipart/form-data">
-                                        @csrf
-
-                                        <div class="mb-3">
-                                            <input type="file" name="file_laporan" class="form-control form-control-sm" accept=".pdf,.doc,.docx" required>
-                                            <small class="text-muted">PDF, DOC, DOCX (Max: 10MB)</small>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <textarea name="keterangan" class="form-control form-control-sm" rows="2" placeholder="Keterangan..."></textarea>
-                                        </div>
-
-                                        <button type="submit" class="btn btn-primary btn-sm w-100">
-                                            <i class="bi bi-upload"></i> Upload
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
+                    {{-- FORM UPLOAD GABUNGAN --}}
+                    @if($canUpload && (!$hasLaporan && !$hasSertifikat))
+                    <div class="card mb-4">
+                        <div class="card-header bg-secondary text-white">
+                            <h6 class="mb-0"><i class="bi bi-upload"></i> Upload Dokumen (Laporan & Sertifikat)</h6>
                         </div>
+                        <div class="card-body">
+                            <form method="POST" action="{{ route('de.pelaporan-hasil-akreditasi.upload-dokumen', $pengajuan->id) }}" enctype="multipart/form-data">
+                                @csrf
 
-                        <!-- Upload Sertifikat -->
-                        <div class="col-md-6 mb-3">
-                            <div class="card h-100">
-                                <div class="card-header bg-success text-white">
-                                    <h6 class="mb-0"><i class="bi bi-patch-check"></i> Upload Sertifikat</h6>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label small text-muted">File Laporan Hasil</label>
+                                        <input type="file" name="file_laporan" class="form-control form-control-sm" accept=".pdf,.doc,.docx">
+                                        <small class="text-muted">PDF, DOC, DOCX (Max: 10MB)</small>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label small text-muted">File Sertifikat</label>
+                                        <input type="file" name="file_sertifikat" class="form-control form-control-sm" accept=".pdf">
+                                        <small class="text-muted">PDF (Max: 5MB)</small>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label small text-muted">Keterangan (opsional)</label>
+                                        <textarea name="keterangan" class="form-control form-control-sm" rows="2" placeholder="Keterangan..."></textarea>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label small text-muted">Masa berlaku (tahun)</label>
+                                        <input type="number" name="masa_berlaku_tahun" value="{{ $hasil->statusFinal->siklus_tahun }}" class="form-control form-control-sm" placeholder="Masa berlaku (tahun)" min="1" max="10">
+                                    </div>
                                 </div>
-                                <div class="card-body">
-                                    <form method="POST" action="{{ route('de.pelaporan-hasil-akreditasi.upload-sertifikat', $pengajuan->id) }}" enctype="multipart/form-data">
-                                        @csrf
 
-                                        <div class="mb-3">
-                                            <input type="file" name="file_sertifikat" class="form-control form-control-sm" accept=".pdf" required>
-                                            <small class="text-muted">PDF (Max: 5MB)</small>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <input type="number" name="masa_berlaku_tahun" class="form-control form-control-sm" placeholder="Masa berlaku (tahun)" min="1" max="10">
-                                        </div>
-
-                                        <button type="submit" class="btn btn-success btn-sm w-100">
-                                            <i class="bi bi-upload"></i> Upload
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
+                                <button type="submit" class="btn btn-secondary btn-sm w-100">
+                                    <i class="bi bi-upload"></i> Upload Dokumen
+                                </button>
+                            </form>
                         </div>
                     </div>
                     @endif
@@ -146,10 +137,10 @@
                     {{-- LIST DOKUMEN TERUPLOAD --}}
                     @if($hasLaporan || $hasSertifikat)
                     <div class="card border-0">
-                        <div class="card-header bg-white px-0">
+                        <div class="card-header bg-white">
                             <h6 class="mb-0"><i class="bi bi-files"></i> Dokumen Terupload</h6>
                         </div>
-                        <div class="card-body px-0 pt-2">
+                        <div class="card-body px-0 py-0">
                             @if($sertifikat)
                             <div class="d-flex justify-content-between align-items-center p-3 bg-light rounded mb-2">
                                 <div>
@@ -158,7 +149,7 @@
                                     <small class="text-muted">{{ $sertifikat->original_filename }}</small>
                                 </div>
                                 <a href="{{ route('de.pelaporan-hasil-akreditasi.download', [$pengajuan->id, 'sertifikat']) }}" class="btn btn-sm btn-primary">
-                                    <i class="bi bi-download"></i>
+                                    <i class="bi bi-eye"></i>
                                 </a>
                             </div>
                             @endif
@@ -170,7 +161,7 @@
                                     <small class="text-muted">{{ $laporanHasil->original_filename }}</small>
                                 </div>
                                 <a href="{{ route('de.pelaporan-hasil-akreditasi.download', [$pengajuan->id, 'laporan_hasil']) }}" class="btn btn-sm btn-primary">
-                                    <i class="bi bi-download"></i>
+                                    <i class="bi bi-eye"></i>
                                 </a>
                             </div>
                             @endif
@@ -179,12 +170,12 @@
                     @else
                     <div class="text-center py-4">
                         <i class="bi bi-file-earmark-x" style="font-size: 48px; color: #ddd;"></i>
-                        <p class="text-muted mt-2 mb-0">Dokumen hasil & laporan belum tersedia</p>
+                        <p class="text-muted mt-2 mb-0">Laporan hasil akreditasi belum tersedia</p>
                     </div>
                     @endif
 
                     {{-- Tombol Selesaikan Pelaporan (opsional, seperti contoh) --}}
-                    @if($canUpload && ($hasLaporan || $hasSertifikat))
+                    @if($canUpload && ($hasLaporan && $hasSertifikat))
                     <div class="card mt-3">
                         <div class="card-header bg-warning">
                             <h5 class="mb-0"><i class="bi bi-check-circle"></i> Selesaikan Pelaporan</h5>

@@ -3,6 +3,7 @@
 namespace App\Services\BorangImport;
 
 use App\Models\BorangDataExcel;
+use App\Models\ElemenStandar;
 use Illuminate\Support\Facades\Log;
 
 class BorangExcelImportService
@@ -26,29 +27,37 @@ class BorangExcelImportService
 
         try {
             $parsedTables = $this->parser->parse($ws, $sheetName);
+            // Kalau sheet kosong/tidak ada tabel, stop cepat
+            if (empty($parsedTables)) {
+                return $stats;
+            }
+
+            // ✅ 1) ElemenStandar: query SEKALI per sheet (bukan per tabel)
+            $elemenKode = trim($this->resolver->getElemenKode($sheetName));
+            $elemen = ElemenStandar::where('kode_elemen', $elemenKode)->firstOrFail();
+
+            // ✅ 2) DatasetBorang: preload SEKALI (menghindari query per tabel)
+            // (asumsi resolver kamu punya method preload seperti yang aku kasih sebelumnya)
+            $this->resolver->preload([$sheetName]);
 
             foreach ($parsedTables as $parsedTable) {
                 $datasetId = $this->resolver->resolve($sheetName, $parsedTable->tableIndex);
-                $datasetBorang = $this->resolver->findDatasetBorang($sheetName, $parsedTable->tableIndex);
 
-                $nilai = json_encode([
-                    'sheet' => $sheetName,
-                    'table_index' => $parsedTable->tableIndex,
-                    'table_title' => $parsedTable->tableTitle,
-                    'headers' => $parsedTable->headers,
-                    'rows' => $parsedTable->rows,
-                ], JSON_UNESCAPED_UNICODE);
+                // setelah preload, ini harusnya no-query (in-memory)
+                $datasetBorang = $this->resolver->findDatasetBorang($sheetName, $parsedTable->tableIndex);
 
                 BorangDataExcel::updateOrCreate(
                     [
-                        'id_borang_import' => $importId,
-                        'sheet_name'       => $sheetName,
-                        'table_index'      => $parsedTable->tableIndex,
+                        'id_pengajuan' => $pengajuanId,
+                        'sheet_name'   => $sheetName,
+                        'table_index'  => $parsedTable->tableIndex,
                     ],
                     [
+                        'id_borang_import' => $importId,
                         'id_pengajuan'      => $pengajuanId,
                         'id_degree_level'   => $degreeLevelId,
-                        'elemen_kode'       => $this->resolver->getElemenKode($sheetName),
+                        'id_elemen'         => $elemen->id,
+                        'elemen_kode'       => $elemen->kode_elemen,
                         'table_title'       => $parsedTable->tableTitle,
                         'id_dataset_borang' => $datasetBorang?->id,
                         'headers'           => $parsedTable->headers,

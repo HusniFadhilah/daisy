@@ -136,7 +136,8 @@
                     @if($lhaList->count() > 0)
                     <div class="alert alert-info alert-permanent mb-3">
                         <i class="bi bi-info-circle"></i>
-                        Berikut adalah laporan hasil asesmen lapangan yang telah diupload oleh asesor. Mohon lakukan peninjauan dan berikan persetujuan.
+                        Berikut adalah laporan hasil asesmen lapangan yang telah diupload oleh asesor.<br>
+                        {{ $lhaList->first()->status_persetujuan_prodi == 'approved' ? '' : 'Mohon lakukan peninjauan dan berikan persetujuan.' }}
                     </div>
 
                     @foreach($lhaList as $index => $lha)
@@ -381,7 +382,7 @@
                     <ul class="small mb-3 ps-3">
                         <li><span class="badge bg-secondary">Menunggu</span> - Laporan menunggu peninjauan</li>
                         <li><span class="badge bg-success">Disetujui</span> - Laporan telah disetujui</li>
-                        <li><span class="badge bg-warning">Perlu Revisi</span> - Laporan perlu diperbaiki</li>
+                        <li><span class="badge bg-info">Permintaan Revisi</span> - Terdapat permintaan revisi laporan</li>
                     </ul>
 
                     <hr>

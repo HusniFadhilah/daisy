@@ -77,47 +77,6 @@
 </div>
 @endif
 
-<!-- Informasi Permohonan -->
-{{-- <div class="card mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">
-                        <i class="bi bi-info-circle"></i> Informasi Permohonan Akreditasi
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <table class="table table-borderless">
-                        <tr>
-                            <th>Status Akreditasi</th>
-                            <td>
-                                : @php
-                                $badgeClass = match($pengajuan->peringkat_hasil) {
-                                'Unggul' => 'bg-warning text-dark',
-                                'Baik Sekali' => 'bg-success',
-                                'Baik' => 'bg-info',
-                                'Tidak Terakreditasi' => 'bg-danger',
-                                default => 'bg-secondary',
-                                };
-                                @endphp
-                                <span class="badge {{ $badgeClass }} fs-6">
-@if($pengajuan->peringkat_hasil === 'Unggul')
-<i class="bi bi-star-fill"></i>
-@elseif($pengajuan->peringkat_hasil === 'Baik Sekali')
-<i class="bi bi-award-fill"></i>
-@elseif($pengajuan->peringkat_hasil === 'Baik')
-<i class="bi bi-check-circle-fill"></i>
-@endif
-{{ $pengajuan->peringkat_hasil ?? '-' }}
-</span>
-</td>
-</tr>
-<tr>
-    <th>Nilai Akhir</th>
-    <td>: <strong>{{ $pengajuan->nilai_akhir ?? '-' }}</strong></td>
-</tr>
-</table>
-</div>
-</div> --}}
-
 <!-- Detail Masa Sanggah -->
 <div class="card mb-4 border-{{ $isAktif ? 'warning' : 'success' }}">
     <div class="card-header bg-{{ $isAktif ? 'warning' : 'success' }} text-{{ $isAktif ? 'dark' : 'white' }}">

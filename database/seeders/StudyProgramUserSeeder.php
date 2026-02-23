@@ -220,6 +220,7 @@ class StudyProgramUserSeeder extends Seeder
                         'id_degree_level' => $degreeId,
                         'id_category' => $j['category'],
                         'bentuk_pt' => 'Universitas',
+                        'rumpun' => $rumpun['slug'],
 
                         // sementara kosong dulu, diisi setelah loop
                         'peringkat_akreditasi' => null,

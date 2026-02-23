@@ -389,6 +389,7 @@ class PenyimpananArsipAkreditasiController extends Controller
             // Update status to SELESAI (final)
             $pengajuan->update([
                 'status' => PengajuanAkreditasi::STATUS_SELESAI,
+                'is_active' => 0
             ]);
 
             // Log status change

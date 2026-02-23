@@ -30,11 +30,11 @@ class JenjangPenilaian extends Model
     public static function getSkorLabelAttribute($skor, $isFull = False)
     {
         $labels = [
-            0 => ($isFull ? '0 - ' : '') . 'Tidak Memenuhi',
-            1 => ($isFull ? '1 - ' : '') . 'Belum Memenuhi',
+            0 => ($isFull ? '0 - ' : '') . 'Tidak Dapat Dinilai',
+            1 => ($isFull ? '1 - ' : '') . 'Tidak Memenuhi',
             2 => ($isFull ? '2 - ' : '') . 'Lemah',
             3 => ($isFull ? '3 - ' : '') . 'Memenuhi',
-            4 => ($isFull ? '4 - ' : '') . 'Pelampauan Standar',
+            4 => ($isFull ? '4 - ' : '') . 'Melampaui Standar',
         ];
 
         return $labels[$skor] ?? 'N/A';
@@ -63,12 +63,12 @@ class JenjangPenilaian extends Model
     {
         $skorMapping = [
             0 => [
-                'label' => ($isFull ? '0 - ' : '') . 'Tidak Memenuhi',
+                'label' => ($isFull ? '0 - ' : '') . 'Tidak Dapat Dinilai',
                 'color' => '#f5c6cb',
                 'class' => 'danger',
             ],
             1 => [
-                'label' => ($isFull ? '1 - ' : '') . 'Belum Memenuhi',
+                'label' => ($isFull ? '1 - ' : '') . 'Tidak Memenuhi',
                 'color' => '#ffe0b2',
                 'class' => 'warning',
             ],
@@ -83,7 +83,7 @@ class JenjangPenilaian extends Model
                 'class' => 'success',
             ],
             4 => [
-                'label' => ($isFull ? '4 - ' : '') . 'Pelampauan Standar',
+                'label' => ($isFull ? '4 - ' : '') . 'Melampaui Standar',
                 'color' => '#c8e6c9',
                 'class' => 'success',
             ],

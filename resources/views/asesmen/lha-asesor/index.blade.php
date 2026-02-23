@@ -89,12 +89,34 @@
         <!-- Main Content -->
         <div class="col-lg-8 mb-4">
             <!-- Status Alert -->
-            @if($lha->isFinalized())
+            @if($lhaDocument && $lhaDocument->status == 'revision_required')
+            <div class="alert alert-warning alert-permanent">
+                <i class="bi bi-exclamation-triangle"></i>
+                <strong>Terdapat permintaan melakukan revisi</strong>
+                <br>
+                Program studi telah memberikan permintaan untuk melakukan revisi.<br>
+                Mohon memeriksa catatan dan melakukan perbaikan pada dokumen LHA<br>
+                kemudian finalisasi ulang dokumen yang telah diperbaiki.
+            </div>
+            @if($lhaDocument->catatan_prodi)
+            <div class="alert alert-light alert-permanent border mb-3">
+                <strong><i class="bi bi-chat-left-text"></i> Catatan Program Studi:</strong><br>
+                {{ $lhaDocument->catatan_prodi }}
+                @if($lhaDocument->approved_at_prodi)
+                <br><small class="text-muted">
+                    <i class="bi bi-clock"></i> {{ $lhaDocument->approved_at_prodi->locale('id')->translatedFormat('d M Y H:i') }}
+                </small>
+                @endif
+            </div>
+            @endif
+            @endif
+
+            @if($lha->isFinalizedApproved())
             <div class="alert alert-success alert-permanent mb-4">
                 <i class="bi bi-check-circle"></i>
                 <strong>LHA Telah Difinalisasi</strong><br>
                 LHA telah difinalisasi pada {{ $lha->finalized_at->locale('id')->translatedFormat('d M Y H:i') }}.<br>
-                Dokumen telah dikirim ke Program Studi untuk peninjauan.
+                Dokumen telah dikirim ke Program Studi {{ $lha->isFinalizedApproved() ? 'dan telah dilakukan persetujuan' : 'untuk peninjauan.' }}
             </div>
             @else
             <div class="alert alert-info alert-permanent mb-4">
@@ -148,7 +170,7 @@
                         </h6>
                     </div>
                     <div class="card-body">
-                        <textarea name="pendahuluan" class="form-control lha-field" rows="6" placeholder="Tuliskan pendahuluan mengenai pelaksanaan asesmen lapangan..." {{ $lha->isFinalized() ? 'readonly' : '' }} data-field="pendahuluan">{{ old('pendahuluan', $lha->pendahuluan) }}</textarea>
+                        <textarea name="pendahuluan" class="form-control lha-field" rows="6" placeholder="Tuliskan pendahuluan mengenai pelaksanaan asesmen lapangan..." {{ $lha->isFinalizedApproved() ? 'disabled' : '' }} data-field="pendahuluan">{{ old('pendahuluan', $lha->pendahuluan) }}</textarea>
 
                         @if($lha->pendahuluan_updated_by)
                         <div class="editor-info {{ $lha->pendahuluan_updated_by == Auth::id() ? 'me' : '' }}" id="editor-info-pendahuluan">
@@ -174,7 +196,7 @@
                         </h6>
                     </div>
                     <div class="card-body">
-                        <textarea name="proses_al" class="form-control lha-field" rows="8" placeholder="Jelaskan proses pelaksanaan asesmen lapangan secara detail..." {{ $lha->isFinalized() ? 'readonly' : '' }} data-field="proses_al">{{ old('proses_al', $lha->proses_al) }}</textarea>
+                        <textarea name="proses_al" class="form-control lha-field" rows="8" placeholder="Jelaskan proses pelaksanaan asesmen lapangan secara detail..." {{ $lha->isFinalizedApproved() ? 'disabled' : '' }} data-field="proses_al">{{ old('proses_al', $lha->proses_al) }}</textarea>
 
                         @if($lha->proses_al_updated_by)
                         <div class="editor-info {{ $lha->proses_al_updated_by == Auth::id() ? 'me' : '' }}" id="editor-info-proses_al">
@@ -200,7 +222,7 @@
                         </h6>
                     </div>
                     <div class="card-body">
-                        <textarea name="hasil_al" class="form-control lha-field" rows="10" placeholder="Tuliskan hasil dan temuan dari asesmen lapangan..." {{ $lha->isFinalized() ? 'readonly' : '' }} data-field="hasil_al">{{ old('hasil_al', $lha->hasil_al) }}</textarea>
+                        <textarea name="hasil_al" class="form-control lha-field" rows="10" placeholder="Tuliskan hasil dan temuan dari asesmen lapangan..." {{ $lha->isFinalizedApproved() ? 'disabled' : '' }} data-field="hasil_al">{{ old('hasil_al', $lha->hasil_al) }}</textarea>
 
                         @if($lha->hasil_al_updated_by)
                         <div class="editor-info {{ $lha->hasil_al_updated_by == Auth::id() ? 'me' : '' }}" id="editor-info-hasil_al">
@@ -226,7 +248,7 @@
                         </h6>
                     </div>
                     <div class="card-body">
-                        <textarea name="rekomendasi_ps" class="form-control lha-field" rows="8" placeholder="Tuliskan rekomendasi untuk perbaikan dan pengembangan program studi..." {{ $lha->isFinalized() ? 'readonly' : '' }} data-field="rekomendasi_ps">{{ old('rekomendasi_ps', $lha->rekomendasi_ps) }}</textarea>
+                        <textarea name="rekomendasi_ps" class="form-control lha-field" rows="8" placeholder="Tuliskan rekomendasi untuk perbaikan dan pengembangan program studi..." {{ $lha->isFinalizedApproved() ? 'disabled' : '' }} data-field="rekomendasi_ps">{{ old('rekomendasi_ps', $lha->rekomendasi_ps) }}</textarea>
 
                         @if($lha->rekomendasi_ps_updated_by)
                         <div class="editor-info {{ $lha->rekomendasi_ps_updated_by == Auth::id() ? 'me' : '' }}" id="editor-info-rekomendasi_ps">
@@ -252,7 +274,7 @@
                         </h6>
                     </div>
                     <div class="card-body">
-                        <textarea name="rekomendasi_lamdepilar" class="form-control lha-field" rows="6" placeholder="Tuliskan rekomendasi untuk LAMDEPILAR..." {{ $lha->isFinalized() ? 'readonly' : '' }} data-field="rekomendasi_lamdepilar">{{ old('rekomendasi_lamdepilar', $lha->rekomendasi_lamdepilar) }}</textarea>
+                        <textarea name="rekomendasi_lamdepilar" class="form-control lha-field" rows="6" placeholder="Tuliskan rekomendasi untuk LAMDEPILAR..." {{ $lha->isFinalizedApproved() ? 'disabled' : '' }} data-field="rekomendasi_lamdepilar">{{ old('rekomendasi_lamdepilar', $lha->rekomendasi_lamdepilar) }}</textarea>
 
                         @if($lha->rekomendasi_lamdepilar_updated_by)
                         <div class="editor-info {{ $lha->rekomendasi_lamdepilar_updated_by == Auth::id() ? 'me' : '' }}" id="editor-info-rekomendasi_lamdepilar">
@@ -271,7 +293,7 @@
                 </div>
 
                 <!-- Actions -->
-                @if(!$lha->isFinalized())
+                @if(!$lha->isFinalizedApproved())
                 <div class="card border-warning">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
@@ -409,14 +431,14 @@
 
 @push('scripts')
 @php
-$lhaIsFinalized = $lha->isFinalized();
+$lhaIsFinalizedApproved = $lha->isFinalizedApproved();
 @endphp
 <script>
     let autoSaveTimeout;
     const currentUserId = "{{ Auth::id() }}";
 
     $(document).ready(function() {
-        @if(!$lhaIsFinalized)
+        @if(!$lhaIsFinalizedApproved)
         // Auto-save on input
         $('.lha-field').on('input', function() {
             clearTimeout(autoSaveTimeout);

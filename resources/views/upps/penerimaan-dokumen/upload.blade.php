@@ -94,7 +94,7 @@
                     Upload dokumen akan tersedia ketika status sudah sesuai.
                 </p>
                 <div class="small text-muted mt-1">
-                    Status saat ini: <strong>{{ $pengajuan->status_label ?? $pengajuan->status }}</strong>
+                    Status saat ini: {!! $pengajuan->getCustomBadgeLastStatus('draft_borang', 'upps') !!}
                 </div>
             </div>
 

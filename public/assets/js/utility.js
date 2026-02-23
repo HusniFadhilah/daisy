@@ -187,22 +187,22 @@ function textColorByBgJS(hex) {
 
 function getSkorLabel(skor) {
     const labels = {
-        0: '0 - Tidak Memenuhi'
-        , 1: '1 - Belum Memenuhi'
+        0: '0 - Tidak Dapat Dinilai'
+        , 1: '1 - Tidak Memenuhi'
         , 2: '2 - Lemah'
         , 3: '3 - Memenuhi'
-        , 4: '4 - Pelampauan Standar'
+        , 4: '4 - Melampaui Standar'
     };
     return labels[skor] || '-';
 }
 
 function getSkorLabelShort(skor, full = false) {
     const labels = {
-        0: { short: 'Tidak Memenuhi', full: 'Tidak Memenuhi' },
+        0: { short: 'Tidak Dapat Dinilai', full: 'Tidak Dapat Dinilai' },
         1: { short: 'Belum Memenuhi', full: 'Belum Memenuhi' },
         2: { short: 'Lemah', full: 'Lemah' },
         3: { short: 'Memenuhi', full: 'Memenuhi' },
-        4: { short: 'Pelampauan', full: 'Pelampauan Standar' }
+        4: { short: 'Melampaui Standar', full: 'Melampaui Standar' }
     };
 
     if (!labels[skor]) return '-';

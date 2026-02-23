@@ -12,6 +12,7 @@ class BorangData extends Model
     protected $fillable = [
         'id_pengajuan',
         'id_borang_import',
+        'id_elemen',
         'id_dataset_borang',
         'dataset_id',
         'nilai',

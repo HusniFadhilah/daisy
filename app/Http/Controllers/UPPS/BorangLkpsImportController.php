@@ -32,10 +32,10 @@ class BorangLkpsImportController extends Controller
         $filename = 'lkps_' . $pengajuan->nomor_pengajuan . '_' . time()
             . '.' . $file->getClientOriginalExtension();
         $filePath = $file->storeAs('temp/lkps_imports', $filename);
-
+        $idDegreeLevel = $pengajuan->studyProgram->id_degree_level;
         $import = BorangImport::create([
             'id_pengajuan' => $pengajuan->id,
-            'id_degree_level' => $request->id_degree_level,
+            'id_degree_level' => $idDegreeLevel,
             'original_filename' => $file->getClientOriginalName(),
             'stored_path' => $filePath,
             'status' => 'pending',
@@ -60,7 +60,7 @@ class BorangLkpsImportController extends Controller
             $filePath,
             $pengajuan->id,
             Auth::id(),
-            $request->id_degree_level
+            $idDegreeLevel
         );
 
         return response()->json([

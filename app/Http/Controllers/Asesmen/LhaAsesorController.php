@@ -3,17 +3,18 @@
 
 namespace App\Http\Controllers\Asesmen;
 
+use App\Http\Controllers\Controller;
 use App\Models\Asesmen;
-use App\Models\LhaAsesor;
-use Illuminate\Http\Request;
 use App\Models\AsesmenDocument;
 use App\Models\AsesmenUserRole;
+use App\Models\LhaAsesor;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class LhaAsesorController extends Controller
 {
@@ -63,10 +64,13 @@ class LhaAsesorController extends Controller
             ->with('user')
             ->get();
 
+        $lhaDocument = $asesmen->lhaDocuments->first();
+
         return view('asesmen.lha-asesor.index', compact(
             'asesmen',
             'lha',
-            'asesorTeam'
+            'asesorTeam',
+            'lhaDocument'
         ));
     }
 
@@ -100,7 +104,7 @@ class LhaAsesorController extends Controller
         $lha = LhaAsesor::where('id_asesmen', $idAsesmen)->firstOrFail();
 
         // Check if finalized
-        if ($lha->isFinalized()) {
+        if ($lha->isFinalizedApproved()) {
             return response()->json([
                 'success' => false,
                 'message' => 'LHA sudah difinalisasi dan tidak dapat diubah'
@@ -237,8 +241,22 @@ class LhaAsesorController extends Controller
                 ->setPaper('a4', 'portrait');
 
             // Save PDF to storage
-            $filename = 'LHA_' . $asesmen->code . '_' . now()->format('YmdHis') . '.pdf';
-            $path = "asesmen/{$idAsesmen}/lha/{$filename}";
+            $baseDir = "asesmen/document/{$idAsesmen}/lha_asesor";
+
+            // Ambil versi terakhir
+            $latestVersion = (int) AsesmenDocument::where('id_asesmen', $idAsesmen)
+                ->where('type', 'lha_asesor')
+                ->max('version');
+
+            $newVersion = $latestVersion + 1;
+
+            // Generate safe filename
+            $timestamp = now()->format('Ymd_His');
+            $random = Str::random(5);
+
+            $filename = "lha_asesor_{$idAsesmen}_v{$newVersion}_{$timestamp}_{$random}.pdf";
+
+            $path = "{$baseDir}/{$filename}";
 
             Storage::disk('public')->put($path, $pdf->output());
 
@@ -257,7 +275,7 @@ class LhaAsesorController extends Controller
                 'size' => Storage::disk('public')->size($path),
                 'mime' => 'application/pdf',
                 'is_active' => true,
-                'version' => 1,
+                'version' => $newVersion,
                 'uploaded_by' => $user->id,
                 'uploaded_at' => now(),
             ]);

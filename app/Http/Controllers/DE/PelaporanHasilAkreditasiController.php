@@ -3,13 +3,14 @@
 
 namespace App\Http\Controllers\DE;
 
-use App\Models\University;
-use Illuminate\Http\Request;
-use App\Models\PengajuanDokumen;
-use Illuminate\Support\Facades\DB;
-use App\Models\PengajuanAkreditasi;
-use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use App\Models\PengajuanAkreditasi;
+use App\Models\PengajuanDokumen;
+use App\Models\University;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class PelaporanHasilAkreditasiController extends Controller
@@ -145,159 +146,272 @@ class PelaporanHasilAkreditasiController extends Controller
         ])->findOrFail($id);
 
         // Check if hasil sudah ditetapkan
-        // if (!in_array($pengajuan->status, [
-        //     PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
-        //     PengajuanAkreditasi::STATUS_HASIL_DIUMUMKAN,
-        //     PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN,
-        // ])) {
-        //     return redirect()
-        //         ->route('de.pelaporan-hasil-akreditasi')
-        //         ->with('error', 'Hasil akreditasi belum ditetapkan.');
-        // }
+        $allowed = [
+            PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
+            PengajuanAkreditasi::STATUS_HASIL_DIUMUMKAN,
+            PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN,
+        ];
+        $log = $pengajuan->latestRelevantStatusLog($allowed);
+        if (!in_array($log?->status_to, $allowed)) {
+            return redirect()
+                ->route('de.pelaporan-hasil-akreditasi')
+                ->with('error', 'Hasil akreditasi belum ditetapkan.');
+        }
 
         $hasil = $pengajuan->asesmen->hasil ?? null;
-        $peringkat = $hasil->peringkat_akreditasi ?? null;
+        $peringkat = $hasil->peringkat_akreditasi_final ?? null;
         return view('de.pelaporan-hasil-akreditasi.show', compact('pengajuan', 'hasil', 'peringkat'));
     }
 
     /**
      * Upload laporan hasil akreditasi
      */
-    public function uploadLaporan(Request $request, $id)
+    // public function uploadLaporan(Request $request, $id)
+    // {
+    //     $request->validate([
+    //         'file_laporan' => 'required|file|mimes:pdf,doc,docx|max:10240',
+    //         'keterangan' => 'nullable|string|max:1000',
+    //     ]);
+
+    //     $pengajuan = PengajuanAkreditasi::findOrFail($id);
+
+    //     // Validasi status
+    //     if (!in_array($pengajuan->status, [
+    //         PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
+    //         PengajuanAkreditasi::STATUS_HASIL_DIUMUMKAN,
+    //     ])) {
+    //         return back()->with('error', 'Status saat ini tidak sesuai untuk upload laporan hasil.');
+    //     }
+
+    //     DB::beginTransaction();
+    //     try {
+    //         // Upload file
+    //         $file = $request->file('file_laporan');
+    //         $filename = 'laporan_hasil_' . $pengajuan->nomor_pengajuan . '_' . time() . '.' . $file->getClientOriginalExtension();
+    //         $path = $file->storeAs('pengajuan_dokumen/laporan_hasil', $filename, 'public');
+
+    //         // Mark previous laporan as not latest
+    //         PengajuanDokumen::where('id_pengajuan', $id)
+    //             ->where('jenis_dokumen', 'laporan_hasil')
+    //             ->update(['is_latest' => false]);
+
+    //         // Create new dokumen record
+    //         PengajuanDokumen::create([
+    //             'id_pengajuan' => $id,
+    //             'jenis_dokumen' => 'laporan_hasil',
+    //             'nama_file' => $filename,
+    //             'path_file' => $path,
+    //             'original_filename' => $file->getClientOriginalName(),
+    //             'file_size' => $file->getSize(),
+    //             'mime_type' => $file->getMimeType(),
+    //             'uploaded_by' => auth()->id(),
+    //             'keterangan' => $request->keterangan,
+    //             'versi' => PengajuanDokumen::where('id_pengajuan', $id)
+    //                 ->where('jenis_dokumen', 'laporan_hasil')
+    //                 ->max('versi') + 1,
+    //             'is_latest' => true,
+    //         ]);
+
+    //         DB::commit();
+
+    //         return redirect()
+    //             ->route('de.pelaporan-hasil-akreditasi.show', $id)
+    //             ->with('success', 'Laporan hasil akreditasi berhasil diupload.');
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+
+    //         // Delete uploaded file if exists
+    //         if (isset($path) && Storage::disk('public')->exists($path)) {
+    //             Storage::disk('public')->delete($path);
+    //         }
+
+    //         return back()->with('error', 'Gagal upload laporan: ' . $e->getMessage());
+    //     }
+    // }
+
+    // /**
+    //  * Upload sertifikat akreditasi
+    //  */
+    // public function uploadSertifikat(Request $request, $id)
+    // {
+    //     $request->validate([
+    //         'file_sertifikat' => 'required|file|mimes:pdf|max:5120',
+    //         'nomor_sertifikat' => 'nullable|string|max:100',
+    //         'masa_berlaku_tahun' => 'nullable|integer|min:1|max:10',
+    //         'keterangan' => 'nullable|string|max:1000',
+    //     ]);
+
+    //     $pengajuan = PengajuanAkreditasi::findOrFail($id);
+
+    //     // Validasi status
+    //     if (!in_array($pengajuan->status, [
+    //         PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
+    //         PengajuanAkreditasi::STATUS_HASIL_DIUMUMKAN,
+    //     ])) {
+    //         return back()->with('error', 'Status saat ini tidak sesuai untuk upload sertifikat.');
+    //     }
+
+    //     DB::beginTransaction();
+    //     try {
+    //         // Upload file
+    //         $file = $request->file('file_sertifikat');
+    //         $filename = 'sertifikat_' . $pengajuan->nomor_pengajuan . '_' . time() . '.pdf';
+    //         $path = $file->storeAs('pengajuan_dokumen/sertifikat', $filename, 'public');
+
+    //         // Mark previous sertifikat as not latest
+    //         PengajuanDokumen::where('id_pengajuan', $id)
+    //             ->where('jenis_dokumen', 'sertifikat')
+    //             ->update(['is_latest' => false]);
+
+    //         // Create new dokumen record
+    //         PengajuanDokumen::create([
+    //             'id_pengajuan' => $id,
+    //             'jenis_dokumen' => 'sertifikat',
+    //             'nama_file' => $filename,
+    //             'path_file' => $path,
+    //             'original_filename' => $file->getClientOriginalName(),
+    //             'file_size' => $file->getSize(),
+    //             'mime_type' => $file->getMimeType(),
+    //             'uploaded_by' => auth()->id(),
+    //             'keterangan' => $request->keterangan,
+    //             'versi' => PengajuanDokumen::where('id_pengajuan', $id)
+    //                 ->where('jenis_dokumen', 'sertifikat')
+    //                 ->max('versi') + 1,
+    //             'is_latest' => true,
+    //         ]);
+
+    //         // Update pengajuan jika ada info tambahan
+    //         if ($request->filled('masa_berlaku_tahun')) {
+    //             $pengajuan->update([
+    //                 'masa_berlaku_tahun' => $request->masa_berlaku_tahun,
+    //             ]);
+    //         }
+
+    //         DB::commit();
+
+    //         return redirect()
+    //             ->route('de.pelaporan-hasil-akreditasi.show', $id)
+    //             ->with('success', 'Sertifikat akreditasi berhasil diupload.');
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+
+    //         // Delete uploaded file if exists
+    //         if (isset($path) && Storage::disk('public')->exists($path)) {
+    //             Storage::disk('public')->delete($path);
+    //         }
+
+    //         return back()->with('error', 'Gagal upload sertifikat: ' . $e->getMessage());
+    //     }
+    // }
+
+    public function uploadDokumen(Request $request, $id)
     {
+        // validasi "conditional": file boleh salah satu, tapi minimal ada salah satu
         $request->validate([
-            'file_laporan' => 'required|file|mimes:pdf,doc,docx|max:10240',
-            'keterangan' => 'nullable|string|max:1000',
-        ]);
-
-        $pengajuan = PengajuanAkreditasi::findOrFail($id);
-
-        // Validasi status
-        if (!in_array($pengajuan->status, [
-            PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
-            PengajuanAkreditasi::STATUS_HASIL_DIUMUMKAN,
-        ])) {
-            return back()->with('error', 'Status saat ini tidak sesuai untuk upload laporan hasil.');
-        }
-
-        DB::beginTransaction();
-        try {
-            // Upload file
-            $file = $request->file('file_laporan');
-            $filename = 'laporan_hasil_' . $pengajuan->nomor_pengajuan . '_' . time() . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('pengajuan_dokumen/laporan_hasil', $filename, 'public');
-
-            // Mark previous laporan as not latest
-            PengajuanDokumen::where('id_pengajuan', $id)
-                ->where('jenis_dokumen', 'laporan_hasil')
-                ->update(['is_latest' => false]);
-
-            // Create new dokumen record
-            PengajuanDokumen::create([
-                'id_pengajuan' => $id,
-                'jenis_dokumen' => 'laporan_hasil',
-                'nama_file' => $filename,
-                'path_file' => $path,
-                'original_filename' => $file->getClientOriginalName(),
-                'file_size' => $file->getSize(),
-                'mime_type' => $file->getMimeType(),
-                'uploaded_by' => auth()->id(),
-                'keterangan' => $request->keterangan,
-                'versi' => PengajuanDokumen::where('id_pengajuan', $id)
-                    ->where('jenis_dokumen', 'laporan_hasil')
-                    ->max('versi') + 1,
-                'is_latest' => true,
-            ]);
-
-            DB::commit();
-
-            return redirect()
-                ->route('de.pelaporan-hasil-akreditasi.show', $id)
-                ->with('success', 'Laporan hasil akreditasi berhasil diupload.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            // Delete uploaded file if exists
-            if (isset($path) && Storage::disk('public')->exists($path)) {
-                Storage::disk('public')->delete($path);
-            }
-
-            return back()->with('error', 'Gagal upload laporan: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Upload sertifikat akreditasi
-     */
-    public function uploadSertifikat(Request $request, $id)
-    {
-        $request->validate([
-            'file_sertifikat' => 'required|file|mimes:pdf|max:5120',
-            'nomor_sertifikat' => 'nullable|string|max:100',
+            'file_laporan' => 'nullable|file|mimes:pdf,doc,docx|max:10240',
+            'file_sertifikat' => 'nullable|file|mimes:pdf|max:5120',
             'masa_berlaku_tahun' => 'nullable|integer|min:1|max:10',
             'keterangan' => 'nullable|string|max:1000',
         ]);
 
+        if (!$request->hasFile('file_laporan') && !$request->hasFile('file_sertifikat')) {
+            return back()->with('error', 'Minimal upload salah satu: Laporan Hasil atau Sertifikat.');
+        }
+
         $pengajuan = PengajuanAkreditasi::findOrFail($id);
 
-        // Validasi status
+        // Validasi status (sama seperti method upload yang lama)
         if (!in_array($pengajuan->status, [
             PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
             PengajuanAkreditasi::STATUS_HASIL_DIUMUMKAN,
         ])) {
-            return back()->with('error', 'Status saat ini tidak sesuai untuk upload sertifikat.');
+            return back()->with('error', 'Status saat ini tidak sesuai untuk upload dokumen.');
         }
 
         DB::beginTransaction();
+
+        // untuk rollback file kalau error
+        $uploadedPaths = [];
+
         try {
-            // Upload file
-            $file = $request->file('file_sertifikat');
-            $filename = 'sertifikat_' . $pengajuan->nomor_pengajuan . '_' . time() . '.pdf';
-            $path = $file->storeAs('pengajuan_dokumen/sertifikat', $filename, 'public');
+            // === 1) Upload laporan (jika ada) ===
+            if ($request->hasFile('file_laporan')) {
+                $file = $request->file('file_laporan');
+                $filename = 'laporan_hasil_' . $pengajuan->nomor_pengajuan . '_' . time() . '.' . $file->getClientOriginalExtension();
+                $path = $file->storeAs('pengajuan_dokumen/laporan_hasil', $filename, 'public');
+                $uploadedPaths[] = $path;
 
-            // Mark previous sertifikat as not latest
-            PengajuanDokumen::where('id_pengajuan', $id)
-                ->where('jenis_dokumen', 'sertifikat')
-                ->update(['is_latest' => false]);
+                PengajuanDokumen::where('id_pengajuan', $id)
+                    ->where('jenis_dokumen', 'laporan_hasil')
+                    ->update(['is_latest' => false]);
 
-            // Create new dokumen record
-            PengajuanDokumen::create([
-                'id_pengajuan' => $id,
-                'jenis_dokumen' => 'sertifikat',
-                'nama_file' => $filename,
-                'path_file' => $path,
-                'original_filename' => $file->getClientOriginalName(),
-                'file_size' => $file->getSize(),
-                'mime_type' => $file->getMimeType(),
-                'uploaded_by' => auth()->id(),
-                'keterangan' => $request->keterangan,
-                'versi' => PengajuanDokumen::where('id_pengajuan', $id)
-                    ->where('jenis_dokumen', 'sertifikat')
-                    ->max('versi') + 1,
-                'is_latest' => true,
-            ]);
-
-            // Update pengajuan jika ada info tambahan
-            if ($request->filled('masa_berlaku_tahun')) {
-                $pengajuan->update([
-                    'masa_berlaku_tahun' => $request->masa_berlaku_tahun,
+                PengajuanDokumen::create([
+                    'id_pengajuan' => $id,
+                    'jenis_dokumen' => 'laporan_hasil',
+                    'nama_file' => $filename,
+                    'path_file' => $path,
+                    'original_filename' => $file->getClientOriginalName(),
+                    'file_size' => $file->getSize(),
+                    'mime_type' => $file->getMimeType(),
+                    'uploaded_by' => auth()->id(),
+                    'keterangan' => $request->keterangan,
+                    'versi' => (PengajuanDokumen::where('id_pengajuan', $id)
+                        ->where('jenis_dokumen', 'laporan_hasil')
+                        ->max('versi') ?? 0) + 1,
+                    'is_latest' => true,
                 ]);
+            }
+
+            // === 2) Upload sertifikat (jika ada) ===
+            if ($request->hasFile('file_sertifikat')) {
+                $file = $request->file('file_sertifikat');
+                $filename = 'sertifikat_' . $pengajuan->nomor_pengajuan . '_' . time() . '.pdf';
+                $path = $file->storeAs('pengajuan_dokumen/sertifikat', $filename, 'public');
+                $uploadedPaths[] = $path;
+
+                PengajuanDokumen::where('id_pengajuan', $id)
+                    ->where('jenis_dokumen', 'sertifikat')
+                    ->update(['is_latest' => false]);
+
+                PengajuanDokumen::create([
+                    'id_pengajuan' => $id,
+                    'jenis_dokumen' => 'sertifikat',
+                    'nama_file' => $filename,
+                    'path_file' => $path,
+                    'original_filename' => $file->getClientOriginalName(),
+                    'file_size' => $file->getSize(),
+                    'mime_type' => $file->getMimeType(),
+                    'uploaded_by' => auth()->id(),
+                    'keterangan' => $request->keterangan,
+                    'versi' => (PengajuanDokumen::where('id_pengajuan', $id)
+                        ->where('jenis_dokumen', 'sertifikat')
+                        ->max('versi') ?? 0) + 1,
+                    'is_latest' => true,
+                ]);
+
+                if ($request->filled('masa_berlaku_tahun')) {
+                    $pengajuan->update([
+                        'masa_berlaku_tahun' => $request->masa_berlaku_tahun,
+                    ]);
+                }
             }
 
             DB::commit();
 
             return redirect()
                 ->route('de.pelaporan-hasil-akreditasi.show', $id)
-                ->with('success', 'Sertifikat akreditasi berhasil diupload.');
+                ->with('success', 'Dokumen berhasil diupload.');
         } catch (\Exception $e) {
             DB::rollBack();
 
-            // Delete uploaded file if exists
-            if (isset($path) && Storage::disk('public')->exists($path)) {
-                Storage::disk('public')->delete($path);
+            // hapus file yang sudah sempat terupload
+            foreach ($uploadedPaths as $p) {
+                if (Storage::disk('public')->exists($p)) {
+                    Storage::disk('public')->delete($p);
+                }
             }
 
-            return back()->with('error', 'Gagal upload sertifikat: ' . $e->getMessage());
+            return back()->with('error', 'Gagal upload dokumen: ' . $e->getMessage());
         }
     }
 
@@ -331,8 +445,8 @@ class PelaporanHasilAkreditasiController extends Controller
             ->where('is_latest', true)
             ->exists();
 
-        if (!$hasLaporan && !$hasSertifikat) {
-            return back()->with('error', 'Minimal harus upload laporan hasil atau sertifikat sebelum menyelesaikan pelaporan.');
+        if (!$hasLaporan || !$hasSertifikat) {
+            return back()->with('error', 'Wajib upload Laporan Hasil dan Sertifikat sebelum menyelesaikan pelaporan.');
         }
 
         DB::beginTransaction();
@@ -453,19 +567,19 @@ class PelaporanHasilAkreditasiController extends Controller
             ->count('id_pengajuan');
 
         // Distribusi peringkat
-        $peringkatDist = PengajuanAkreditasi::whereIn('status', [
-            PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
-            PengajuanAkreditasi::STATUS_HASIL_DIUMUMKAN,
-            PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN,
-        ])
-            ->select('peringkat_final', DB::raw('count(*) as total'))
-            ->groupBy('peringkat_final')
-            ->pluck('total', 'peringkat_final');
+        // $peringkatDist = PengajuanAkreditasi::whereIn('status', [
+        //     PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
+        //     PengajuanAkreditasi::STATUS_HASIL_DIUMUMKAN,
+        //     PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN,
+        // ])
+        //     ->select('peringkat_final', DB::raw('count(*) as total'))
+        //     ->groupBy('peringkat_final')
+        //     ->pluck('total', 'peringkat_final');
 
-        $stats['unggul'] = $peringkatDist['Unggul'] ?? 0;
-        $stats['baik_sekali'] = $peringkatDist['Baik Sekali'] ?? 0;
-        $stats['baik'] = $peringkatDist['Baik'] ?? 0;
-        $stats['tidak_terakreditasi'] = $peringkatDist['Tidak Terakreditasi'] ?? 0;
+        // $stats['unggul'] = $peringkatDist['Unggul'] ?? 0;
+        // $stats['baik_sekali'] = $peringkatDist['Baik Sekali'] ?? 0;
+        // $stats['baik'] = $peringkatDist['Baik'] ?? 0;
+        // $stats['tidak_terakreditasi'] = $peringkatDist['Tidak Terakreditasi'] ?? 0;
 
         return $stats;
     }
@@ -500,7 +614,7 @@ class PelaporanHasilAkreditasiController extends Controller
             }
 
             // Calculate masa berlaku berdasarkan peringkat
-            $masaBerlaku = $this->calculateMasaBerlaku($hasil->peringkat_akreditasi, $pengajuan->tanggal_penetapan);
+            $masaBerlaku = $this->calculateMasaBerlaku($hasil->peringkat_akreditasi_final, $pengajuan->tanggal_penetapan);
             // Parse detail skor
             $detailSkorAL = $hasil->detail_skor_al ?? [];
             $elemenList = $detailSkorAL['elemen'] ?? [];
@@ -561,21 +675,19 @@ class PelaporanHasilAkreditasiController extends Controller
     /**
      * ✅ Calculate Masa Berlaku Sertifikat
      */
-    private function calculateMasaBerlaku($peringkat, $tanggalPenetapan)
+    private function calculateMasaBerlaku($hasil, $tanggalPenetapan): array
     {
-        $tahunBerlaku = match ($peringkat) {
-            'Unggul' => 5,
-            'Baik Sekali' => 5,
-            'Baik' => 3,
-            default => 2,
-        };
+        $siklus = $hasil?->statusFinal?->siklus_tahun
+            ?? $hasil?->statusAl?->siklus_tahun
+            ?? $hasil?->statusAk?->siklus_tahun
+            ?? 1; // fallback jika relasi null
 
-        $tanggalMulai = \Carbon\Carbon::parse($tanggalPenetapan);
-        $tanggalBerakhir = $tanggalMulai->copy()->addYears($tahunBerlaku);
+        $tanggalMulai    = \Carbon\Carbon::parse($tanggalPenetapan);
+        $tanggalBerakhir = $tanggalMulai->copy()->addYears($siklus);
 
         return [
-            'tahun' => $tahunBerlaku,
-            'tanggal_mulai' => $tanggalMulai,
+            'tahun'            => $siklus,
+            'tanggal_mulai'    => $tanggalMulai,
             'tanggal_berakhir' => $tanggalBerakhir,
         ];
     }
@@ -590,36 +702,28 @@ class PelaporanHasilAkreditasiController extends Controller
                 'studyProgram.university',
                 'studyProgram.degreeLevel',
                 'studyProgram.category',
-                'asesmen.hasil',
+                'asesmen.hasil.statusFinal', // ← eager load untuk calculateMasaBerlaku
+                'asesmen.hasil.statusAl',
+                'asesmen.hasil.statusAk',
             ])->findOrFail($id);
 
-            // Validate: Harus sudah ditetapkan
             if (!$pengajuan->tanggal_penetapan) {
                 return back()->with('error', 'Hasil belum ditetapkan.');
             }
 
-            $asesmen = $pengajuan->asesmen;
-            $hasil = $asesmen->hasil;
-
-            // Generate nomor sertifikat temporary (jika belum ada)
-            // $nomorSertifikat = $pengajuan->nomor_pengajuan ?? '[Akan digenerate saat download]';
-            $nomorSertifikat = $pengajuan->generateNomorSertifikat();
-
-            // Calculate masa berlaku
-            $masaBerlaku = $this->calculateMasaBerlaku($hasil->peringkat_akreditasi, $pengajuan->tanggal_penetapan);
-
-            $detailSkorAL = $hasil->detail_skor_al ?? [];
-            $elemenList = $detailSkorAL['elemen'] ?? [];
+            $hasil       = $pengajuan->asesmen->hasil;
+            $masaBerlaku = $this->calculateMasaBerlaku($hasil, $pengajuan->tanggal_penetapan);
+            $elemenList  = ($hasil->detail_skor_al ?? [])['elemen'] ?? [];
 
             $data = [
-                'pengajuan' => $pengajuan,
-                'hasil' => $hasil,
-                'studyProgram' => $pengajuan->studyProgram,
-                'university' => $pengajuan->studyProgram->university,
-                'nomorSertifikat' => $nomorSertifikat,
+                'pengajuan'        => $pengajuan,
+                'hasil'            => $hasil,
+                'studyProgram'     => $pengajuan->studyProgram,
+                'university'       => $pengajuan->studyProgram->university,
+                'nomorSertifikat'  => $pengajuan->generateNomorSertifikat(),
                 'tanggalPenetapan' => $pengajuan->tanggal_penetapan,
-                'masaBerlaku' => $masaBerlaku,
-                'elemenList' => $elemenList,
+                'masaBerlaku'      => $masaBerlaku,
+                'elemenList'       => $elemenList,
             ];
 
             return view('de.pelaporan-hasil-akreditasi.sertifikat-pdf', $data);

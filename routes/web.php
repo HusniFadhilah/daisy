@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Profile\{PasswordResetController, ProfileController, ProdiDataController, UserEmailController};
 use App\Http\Controllers\Prodi\{DeskEvaluatorController, PengajuanAkreditasiController, PemetaanAkreditasiController, PengajuanBorangController, BorangUploadController, PenerimaanProdiController};
 use App\Http\Controllers\Master\{ElemenStandarController, JenisIndikatorController, IndikatorController, IndikatorPenilaianElemenController, KriteriaController, UniversityController, StudyProgramController};
-use App\Http\Controllers\Asesmen\{AsesmenController, AKController, ALController, ALDocumentController, BorangValidatorController, HasilAkreditasiController, PenawaranController, PelaporanController, ValidasiController};
+use App\Http\Controllers\Asesmen\{AsesmenController, AKController, ALController, ALDocumentController, BorangValidatorController, HasilAkreditasiController, PenawaranController, PelaporanController, ValidasiController, SyaratAkreditasiController};
 use App\Http\Controllers\{AuthController, BobotPenilaianController, DashboardController, PenugasanController, BandingController, PedomanController, DokumenController, PanduanController, BantuanController, SettingsController, ActivityController, TaskController, LaporanController, TinyMceImageController, UserController};
 use App\Http\Controllers\DE\{ValidasiAKController, MasaSanggahController, PelaporanAKController, PelaporanALController, PenugasanAKController, PenugasanALController, PelaksanaanALController, SuratPermohonanController, ValidasiDokumenController, PelaporanBandingController, PelaporanDokumenController, PenerimaanDokumenController, PelaksanaanBandingController, ValidasiPembayaranController, FormulirPembayaranController, PenyampaianTemplateController, PelaporanHasilAkreditasiController, PenerimaanPermohonanController, PenetapanHasilAkreditasiController, PenyampaianHasilAkreditasiController, PenyimpananArsipAkreditasiController, PermohonanBandingController, PaymentSummaryController};
 use App\Http\Controllers\Master\JenjangPenilaianController;
@@ -286,6 +286,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{pengajuan}/borang/lkps/export', [LkpsExportController::class, 'exportFilled'])->name('.borang.lkps.export');
             Route::get('/{pengajuan}/borang/lkps-export', [LkpsExportController::class, 'export']);
             Route::get('/{pengajuan}/borang/lkps-preview', [LkpsExportController::class, 'preview'])->name('.borang.lkps.preview');
+            Route::get('/{pengajuan}/borang/lkps-test', [LkpsExportController::class, 'test'])->name('.borang.lkps.test');
         });
 
         Route::middleware(['role:admin_prodi,admin_univ,super_admin,sekretariat'])->group(function () {
@@ -509,6 +510,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{id}', [PelaporanHasilAkreditasiController::class, 'show'])->name('.show');
             Route::post('/{id}/upload-laporan', [PelaporanHasilAkreditasiController::class, 'uploadLaporan'])->name('.upload-laporan');
             Route::post('/{id}/upload-sertifikat', [PelaporanHasilAkreditasiController::class, 'uploadSertifikat'])->name('.upload-sertifikat');
+            Route::post('/{id}/upload-dokumen', [PelaporanHasilAkreditasiController::class, 'uploadDokumen'])->name('.upload-dokumen');
             Route::post('/{id}/selesaikan', [PelaporanHasilAkreditasiController::class, 'selesaikanPelaporan'])->name('.selesaikan');
             Route::get('/{id}/download/{jenis}', [PelaporanHasilAkreditasiController::class, 'downloadDokumen'])->name('.download');
             Route::get('/{id}/timeline', [PelaporanHasilAkreditasiController::class, 'getTimeline'])->name('.timeline');
@@ -996,6 +998,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/sync-confirmation', [JenjangPenilaianController::class, 'showSyncConfirmation'])->name('sync-confirmation');
             Route::post('/sync-all', [JenjangPenilaianController::class, 'syncAllHasilAkreditasi'])->name('sync-all');
         });
+
+        Route::prefix('admin/syarat-akreditasi')
+            ->name('admin.syarat.')
+            ->group(function () {
+
+                // Daftar semua syarat dikelompokkan per kelompok
+                Route::get('/', [SyaratAkreditasiController::class, 'index'])
+                    ->name('index');
+
+                // Update satu nilai syarat
+                Route::patch('{syarat}', [SyaratAkreditasiController::class, 'update'])
+                    ->name('update');
+
+                // Riwayat perubahan satu syarat
+                Route::get('{syarat}/history', [SyaratAkreditasiController::class, 'history'])
+                    ->name('history');
+
+                // Snapshot config aktif (JSON, untuk debugging)
+                Route::get('config/snapshot', [SyaratAkreditasiController::class, 'configSnapshot'])
+                    ->name('config.snapshot');
+            });
     });
 
     // NOTIFIKASI

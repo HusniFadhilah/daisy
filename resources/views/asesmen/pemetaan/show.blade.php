@@ -73,11 +73,11 @@
         <!-- Pengajuan -->
         <div class="col-md-8">
             @if($activePengajuan)
-            <div class="alert alert-info">
+            <div class="alert alert-info alert-permanent">
                 <i class="bi bi-info-circle"></i>
                 <strong>Ada Permohonan akreditasi aktif:</strong> {{ $activePengajuan->nomor_pengajuan }}
-                (Status: {{ $activePengajuan->status_label }})
-                <a href="{{ route('pengajuan.show', $activePengajuan->id) }}" class="alert-link">Lihat Detail →</a>
+                <br>(Status: {{ $activePengajuan->status_label }})
+                <a href="{{ route('de.pengajuan.show', $activePengajuan->id) }}" class="alert-link">Lihat Detail →</a>
             </div>
             @endif
 
@@ -87,7 +87,7 @@
                 </div>
                 <div class="card-body">
                     @forelse($historyPengajuan as $pengajuan)
-                    <div class="mb-3 pb-3 {{ !$loop->last ? 'border-bottom' : '' }}">
+                    <div class="mb-2 pb-3 {{ !$loop->last ? 'border-bottom' : '' }}">
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
                                 <h6 class="fw-bold mb-1">{{ $pengajuan->nomor_pengajuan }}</h6>
@@ -107,7 +107,7 @@
                                 @endif
                             </small>
                         </div>
-                        <a href="{{ route('pengajuan.show', $pengajuan->id) }}" class="btn btn-sm btn-outline-primary mt-2">
+                        <a href="{{ route('de.pengajuan.show', $pengajuan->id) }}" class="btn btn-sm btn-outline-primary mt-2">
                             <i class="bi bi-eye"></i> Lihat Detail
                         </a>
                     </div>

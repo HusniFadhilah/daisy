@@ -488,7 +488,8 @@ class PemetaanAkreditasiController extends Controller
 
         // Check if ada Permohonan akreditasi yang sedang berjalan
         $activePengajuan = PengajuanAkreditasi::where('id_program_studi', $id)
-            ->whereNotIn('status', ['ditolak', 'lanjut_ke_ak'])
+            ->whereNotIn('status', [PengajuanAkreditasi::STATUS_DITOLAK, PengajuanAkreditasi::STATUS_SELESAI])
+            ->where('is_active', 1)
             ->latest()
             ->first();
 

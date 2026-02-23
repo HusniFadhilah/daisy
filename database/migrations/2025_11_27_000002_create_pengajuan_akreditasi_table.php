@@ -127,10 +127,13 @@ return new class extends Migration
             $table->timestamp('tanggal_pengumuman')->nullable()->comment('Tanggal pengumuman hasil akreditasi');
             $table->timestamp('tanggal_penyimpanan')->nullable()->comment('Tanggal penyimpanan berkas akreditasi');
 
+            $table->datetime('tanggal_kedaluwarsa_awal')->nullable()->comment('Tanggal kedaluwarsa awal prodi sebelum diakreditasi');
+            $table->datetime('tanggal_kedaluwarsa_akhir')->nullable()->comment('Tanggal kedaluwarsa prodi setelah diakreditasi');
+            $table->string('peringkat_awal')->nullable()->comment('Peringkat akreditasi awal prodi sebelum diakreditasi');
             $table->string('peringkat_hasil')->nullable()->comment('Peringkat hasil akreditasi awal yang disampaikan ke prodi');
-            $table->decimal('nilai_akhir', 6, 2)->nullable()->comment('Nilai hasil akreditasi awal (0-400)');
+            $table->decimal('skor_hasil', 6, 2)->nullable()->comment('Nilai hasil akreditasi awal (0-400)');
             $table->string('peringkat_hasil_banding')->nullable()->comment('Peringkat hasil setelah proses banding (jika ada)');
-            $table->decimal('nilai_akhir_banding', 6, 2)->nullable()->comment('Nilai hasil setelah proses banding (jika ada)');
+            $table->decimal('skor_akhir_banding', 6, 2)->nullable()->comment('Nilai hasil setelah proses banding (jika ada)');
             $table->string('peringkat_final')->nullable();
             $table->decimal('skor_final', 6, 2)->nullable();
             $table->integer('masa_berlaku_tahun')->default(null)->nullable();

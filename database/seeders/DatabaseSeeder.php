@@ -3,9 +3,9 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\File;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class DatabaseSeeder extends Seeder
 {
@@ -39,6 +39,8 @@ class DatabaseSeeder extends Seeder
             DatasetSuplemenSeeder::class,
             BorangExampleSeeder::class,
             BobotPenilaianSeeder::class,
+            StatusAkreditasiSeeder::class,
+            SyaratAkreditasiSeeder::class,
         ]);
     }
     /**

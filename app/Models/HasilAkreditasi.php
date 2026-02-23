@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Database\Eloquent\Model;
 
 class HasilAkreditasi extends Model
 {
@@ -15,6 +15,11 @@ class HasilAkreditasi extends Model
         'id_asesmen',
         'id_study_program',
         'id_category',
+        'id_status_ak',
+        'id_status_al',
+        'id_status_hasil',
+        'id_status_banding',
+        'id_status_final',
         'skor_ak',
         'skor_ak_tertimbang',
         'total_bobot_ak',
@@ -29,8 +34,28 @@ class HasilAkreditasi extends Model
         'pelampauan_standar_al',
         'tanggal_finalisasi_al',
         'finalized_al_by',
+        'skor_hasil',
+        'skor_hasil_tertimbang',
+        'total_bobot_hasil',
+        'detail_skor_hasil',
+        'pelampauan_standar_hasil',
+        'tanggal_finalisasi_hasil',
+        'finalized_hasil_by',
+        'skor_banding',
+        'skor_banding_tertimbang',
+        'total_bobot_banding',
+        'detail_skor_banding',
+        'pelampauan_standar_banding',
+        'tanggal_finalisasi_banding',
+        'finalized_banding_by',
         'skor_final',
-        'peringkat_akreditasi',
+        'skor_final_tertimbang',
+        'total_bobot_final',
+        'detail_skor_final',
+        'pelampauan_standar_final',
+        'peringkat_akreditasi_hasil',
+        'peringkat_akreditasi_banding',
+        'peringkat_akreditasi_final',
         'memenuhi_syarat_unggul',
         'catatan_validasi',
         'status',
@@ -39,32 +64,47 @@ class HasilAkreditasi extends Model
     ];
 
     protected $casts = [
-        'detail_skor_ak' => 'array',
-        'detail_skor_al' => 'array',
-        'pelampauan_standar_ak' => 'array',
-        'pelampauan_standar_al' => 'array',
-        'metadata' => 'array',
-        'tanggal_finalisasi_ak' => 'datetime',
-        'tanggal_finalisasi_al' => 'datetime',
-        'skor_ak' => 'decimal:2',
-        'skor_ak_tertimbang' => 'decimal:2',
-        'skor_al' => 'decimal:2',
-        'skor_al_tertimbang' => 'decimal:2',
-        'skor_final' => 'decimal:2',
-        'memenuhi_syarat_unggul' => 'boolean',
+        'detail_skor_ak'           => 'array',
+        'detail_skor_al'           => 'array',
+        'detail_skor_hasil'        => 'array',
+        'detail_skor_banding'      => 'array',
+        'detail_skor_final'        => 'array',
+        'pelampauan_standar_ak'    => 'array',
+        'pelampauan_standar_al'    => 'array',
+        'pelampauan_standar_hasil' => 'array',
+        'pelampauan_standar_banding' => 'array',
+        'pelampauan_standar_final' => 'array',
+        'metadata'                 => 'array',
+        'tanggal_finalisasi_ak'    => 'datetime',
+        'tanggal_finalisasi_al'    => 'datetime',
+        'tanggal_finalisasi_hasil' => 'datetime',
+        'tanggal_finalisasi_banding' => 'datetime',
+        'skor_ak'                  => 'decimal:2',
+        'skor_ak_tertimbang'       => 'decimal:2',
+        'skor_al'                  => 'decimal:2',
+        'skor_al_tertimbang'       => 'decimal:2',
+        'skor_hasil'               => 'decimal:2',
+        'skor_hasil_tertimbang'    => 'decimal:2',
+        'skor_banding'             => 'decimal:2',
+        'skor_banding_tertimbang'  => 'decimal:2',
+        'skor_final'               => 'decimal:2',
+        'skor_final_tertimbang'    => 'decimal:2',
+        'memenuhi_syarat_unggul'   => 'boolean',
     ];
 
-    /**
-     * ✅ Konstanta kriteria yang harus ada pelampauan
-     */
-    public const KRITERIA_REQUIRED = ['D', 'E', 'P', 'I', 'L', 'A', 'R'];
-    public const TIDAK_TERAKREDITASI = 'Tidak Terakreditasi';
-    public const SEMENTARA_2 = 'Terakreditasi Sementara (2 Tahun)';
-    public const TERAKREDITASI_5 = 'Terakreditasi (5 Tahun)';
-    public const UNGGUL_2_SYARAT = 'Terakreditasi Unggul 2 Tahun (dengan Syarat)';
-    public const UNGGUL_5 = 'Terakreditasi Unggul (5 Tahun)';
+    // =========================================================
+    // KONSTANTA FALLBACK
+    // Digunakan hanya jika SyaratAkreditasiRepository tidak tersedia.
+    // Nilai sesungguhnya selalu diambil dari DB via service layer.
+    // =========================================================
 
-    // Relations
+    /** @var string[] Fallback statis — jangan gunakan langsung di logika bisnis */
+    public const KRITERIA_REQUIRED_FALLBACK = ['D', 'E', 'P', 'I', 'L', 'A', 'R'];
+
+    // =========================================================
+    // RELATIONS
+    // =========================================================
+
     public function pengajuan()
     {
         return $this->belongsTo(PengajuanAkreditasi::class, 'id_pengajuan');
@@ -85,6 +125,31 @@ class HasilAkreditasi extends Model
         return $this->belongsTo(StudyProgramCategory::class, 'id_category');
     }
 
+    public function statusAk()
+    {
+        return $this->belongsTo(StatusAkreditasi::class, 'id_status_ak');
+    }
+
+    public function statusAl()
+    {
+        return $this->belongsTo(StatusAkreditasi::class, 'id_status_al');
+    }
+
+    public function statusHasil()
+    {
+        return $this->belongsTo(StatusAkreditasi::class, 'id_status_hasil');
+    }
+
+    public function statusBanding()
+    {
+        return $this->belongsTo(StatusAkreditasi::class, 'id_status_banding');
+    }
+
+    public function statusFinal()
+    {
+        return $this->belongsTo(StatusAkreditasi::class, 'id_status_final');
+    }
+
     public function finalizedAkBy()
     {
         return $this->belongsTo(User::class, 'finalized_ak_by');
@@ -95,51 +160,89 @@ class HasilAkreditasi extends Model
         return $this->belongsTo(User::class, 'finalized_al_by');
     }
 
-    // Helpers
-    public function getPeringkatFromSkor(float $skor): string
+    public function finalizedHasilBy()
     {
-        if ($skor < 200) {
-            return 'Tidak Terakreditasi';
-        }
-
-        if ($skor <= 300) {
-            // return 'Terakreditasi Sementara (2 Tahun)';
-            return 'Terakreditasi';
-        }
-
-        if ($skor <= 350) {
-            return 'Terakreditasi';
-        }
-
-        // 351–360
-        if ($skor <= 360) {
-            return $this->memenuhi_syarat_unggul
-                ? 'Terakreditasi Unggul'
-                : 'Terakreditasi';
-        }
-
-        // 361–400
-        return $this->memenuhi_syarat_unggul
-            ? 'Terakreditasi Unggul'
-            : 'Terakreditasi';
+        return $this->belongsTo(User::class, 'finalized_hasil_by');
     }
 
-    public static function getPeringkatColor($skor): string
+    public function finalizedBandingBy()
     {
-        return match ($skor) {
-            'Tidak Terakreditasi'          => '#f8d7da', // Gray
-            'Terakreditasi Sementara (2 Tahun)' => '#fff3cd', // Yellow
-            'Terakreditasi'                => '#d1ecf1', // Blue
-            'Terakreditasi Unggul 2 Tahun (dengan Syarat)' => '#d4edda', // Green
-            'Terakreditasi Unggul (5 Tahun)' => '#c3e6cb', // Dark Green
-            default                        => '#c3e6cb', // Gray
-        };
+        return $this->belongsTo(User::class, 'finalized_banding_by');
+    }
+
+    public function finalizedPenetapanBy()
+    {
+        return $this->belongsTo(User::class, 'finalized_penetapan_by');
+    }
+    // =========================================================
+    // STATUS HELPERS
+    // =========================================================
+
+    public function isAkFinalized(): bool
+    {
+        return in_array($this->status, [
+            'final_ak',
+            'draft_al',
+            'final_al',
+            'final_combined',
+            'published',
+        ]);
+    }
+
+    public function isPenetapanFinalized(): bool
+    {
+        return in_array($this->status, ['final_penetapan', 'published']);
+    }
+
+    public function isPenetapanDraft(): bool
+    {
+        return $this->status === 'draft_penetapan';
+    }
+
+    public function isAlFinalized(): bool
+    {
+        return in_array($this->status, [
+            'final_al',
+            'final_hasil',
+            'draft_banding',
+            'final_banding',
+            'draft_penetapan',
+            'final_penetapan',
+            'published',
+        ]);
+    }
+
+    public function isHasilFinalized(): bool
+    {
+        return in_array($this->status, [
+            'final_hasil',
+            'draft_banding',
+            'final_banding',
+            'draft_penetapan',
+            'final_penetapan',
+            'published',
+        ]);
+    }
+
+    public function isBandingFinalized(): bool
+    {
+        return in_array($this->status, [
+            'final_banding',
+            'draft_penetapan',
+            'final_penetapan',
+            'published',
+        ]);
+    }
+
+    public function isFinalCombined(): bool
+    {
+        return in_array($this->status, ['final_combined', 'published']);
     }
 
     public static function getStatusHasilAkreditasi($asesmen): string
     {
         $ak = $asesmen->asesmenKecukupan->status ?? null;
-        $al = $asesmen->asesmenLapangan->status ?? null;
+        $al = $asesmen->asesmenLapangan->status  ?? null;
 
         return match (true) {
             $ak === 'completed' && $al === 'completed' => 'final_combined',
@@ -151,37 +254,32 @@ class HasilAkreditasi extends Model
         };
     }
 
-    public function isAkFinalized(): bool
-    {
-        return in_array($this->status, ['final_ak', 'draft_al', 'final_al', 'final_combined', 'published']);
-    }
-
-    public function isAlFinalized(): bool
-    {
-        return in_array($this->status, ['final_al', 'final_combined', 'published']);
-    }
-
-    public function isFinalCombined(): bool
-    {
-        return in_array($this->status, ['final_combined', 'published']);
-    }
+    // =========================================================
+    // SYARAT PELAMPAUAN STANDAR
+    //
+    // Model TIDAK tahu soal SyaratAkreditasiRepository.
+    // Service layer yang bertanggung jawab mengoper array
+    // $kriteriaRequired dinamis dari DB ke method ini.
+    //
+    // Jika $kriteriaRequired tidak dioper (null), fallback ke
+    // konstanta statis KRITERIA_REQUIRED_FALLBACK.
+    // =========================================================
 
     /**
-     * ✅ Check apakah memenuhi syarat Unggul
+     * Cek apakah semua kriteria memiliki minimal 1 elemen Melampaui Standar.
+     *
+     * @param  string[]|null  $kriteriaRequired  Dari SyaratAkreditasiRepository::getKriteriaRequired()
      */
-    public function memenuhi_syarat_unggul_check(): bool
+    public function memenuhi_syarat_pelampauan(?array $kriteriaRequired = null): bool
     {
-        // Harus ada data pelampauan standar AL
+        $kriteria = $kriteriaRequired ?? self::KRITERIA_REQUIRED_FALLBACK;
+
         if (empty($this->pelampauan_standar_al)) {
             return false;
         }
 
-        $pelampauan = $this->pelampauan_standar_al;
-
-        // Check setiap kriteria
-        foreach (self::KRITERIA_REQUIRED as $kriteria) {
-            // Harus ada minimal 1 elemen dengan skor 4
-            if (!isset($pelampauan[$kriteria]) || empty($pelampauan[$kriteria])) {
+        foreach ($kriteria as $kode) {
+            if (empty($this->pelampauan_standar_al[$kode])) {
                 return false;
             }
         }
@@ -190,114 +288,193 @@ class HasilAkreditasi extends Model
     }
 
     /**
-     * ✅ Get missing kriteria untuk Unggul
+     * Daftar kode kriteria yang belum memiliki elemen Melampaui Standar.
+     *
+     * @param  string[]|null  $kriteriaRequired  Dari SyaratAkreditasiRepository::getKriteriaRequired()
+     * @return string[]
      */
-    public function getMissingKriteriaForUnggul(): array
+    public function getMissingKriteriaForUnggul(?array $kriteriaRequired = null): array
     {
+        $kriteria = $kriteriaRequired ?? self::KRITERIA_REQUIRED_FALLBACK;
+
         if (empty($this->pelampauan_standar_al)) {
-            return self::KRITERIA_REQUIRED;
+            return $kriteria;
         }
 
-        $missing = [];
-        $pelampauan = $this->pelampauan_standar_al;
-
-        foreach (self::KRITERIA_REQUIRED as $kriteria) {
-            if (!isset($pelampauan[$kriteria]) || empty($pelampauan[$kriteria])) {
-                $missing[] = $kriteria;
-            }
-        }
-
-        return $missing;
+        return array_values(array_filter(
+            $kriteria,
+            fn($kode) => empty($this->pelampauan_standar_al[$kode])
+        ));
     }
 
     /**
-     * ✅ Get peringkat from skor AL dengan validasi syarat Unggul
+     * @deprecated Gunakan memenuhi_syarat_pelampauan() — dipertahankan untuk backward compatibility.
      */
-    public function getPeringkatFromSkorAL(float $skor): string
+    public function memenuhi_syarat_unggul_check(): bool
     {
-        if ($skor <= 250) {
+        return $this->memenuhi_syarat_pelampauan();
+    }
+
+    // =========================================================
+    // PERINGKAT
+    // =========================================================
+
+    /**
+     * Tentukan peringkat dari skor AL dengan validasi syarat Unggul.
+     *
+     * Parameter $memenuhiPelampauan dan $memenuhiP1 dioper dari service
+     * setelah menjalankan semua pengecekan (termasuk LKPS dan DB config).
+     *
+     * Alur:
+     *   1. Lookup StatusAkreditasi dari tabel berdasarkan skor
+     *   2. Jika status == "Terakreditasi Unggul" → validasi syarat tambahan
+     *   3. Jika syarat tidak terpenuhi → downgrade ke status tertinggi non-Unggul
+     *
+     * @param  float  $skor
+     * @param  bool   $memenuhiPelampauan  Dari memenuhi_syarat_pelampauan()
+     * @param  bool   $memenuhiP1          Dari LkpsDataReaderService::cekSemuaSyaratP1()
+     */
+    public function getPeringkatFromSkorAL(
+        float $skor,
+        bool  $memenuhiPelampauan = false,
+        bool  $memenuhiP1 = false
+    ): string {
+        $status = StatusAkreditasi::where('skor_min', '<=', $skor)
+            ->where('skor_max', '>=', $skor)
+            ->first();
+
+        if (!$status) {
             return 'Tidak Terakreditasi';
         }
 
-        if ($skor <= 300) {
-            return 'Terakreditasi';
+        // Bukan Unggul → langsung kembalikan, tidak perlu cek syarat tambahan
+        if ($status->status !== 'Terakreditasi Unggul') {
+            return $status->status;
         }
 
-        if ($skor <= 350) {
-            return 'Terakreditasi';
+        // Status Unggul — semua syarat harus terpenuhi
+        if ($memenuhiPelampauan && $memenuhiP1) {
+            return $status->status; // "Terakreditasi Unggul"
         }
 
-        // Skor 351–360
-        if ($skor <= 360) {
-            return $this->memenuhi_syarat_unggul
-                ? 'Terakreditasi Unggul'
-                : 'Terakreditasi';
-        }
+        // Salah satu syarat tidak terpenuhi → cari status tertinggi non-Unggul
+        $downgrade = StatusAkreditasi::where('status', '!=', 'Terakreditasi Unggul')
+            ->where('skor_min', '<=', $skor)
+            ->where('skor_max', '>=', $skor)
+            ->orderByDesc('skor_max')
+            ->first();
 
-        // Skor 361–400
-        return $this->memenuhi_syarat_unggul
-            ? 'Terakreditasi Unggul'
-            : 'Terakreditasi';
+        return $downgrade?->status ?? 'Terakreditasi';
     }
 
-    public static function initializeHasil($hasilService, $pengajuan, $authId)
+    /**
+     * Peringkat dari skor mentah tanpa syarat Unggul — untuk tampilan informatif di UI.
+     */
+    public function getPeringkatFromSkor(float $skor): string
+    {
+        $status = StatusAkreditasi::where('skor_min', '<=', $skor)
+            ->where('skor_max', '>=', $skor)
+            ->first();
+
+        return $status?->status ?? 'Tidak Terakreditasi';
+    }
+
+    // =========================================================
+    // TAMPILAN
+    // =========================================================
+    public function getPeringkatColor(): string
+    {
+        return $this->statusFinal?->warna
+            ?? $this->statusAl?->warna
+            ?? $this->statusAk?->warna
+            ?? '#e2e3e5';
+    }
+
+    public function getLabelPeringkatAttribute(): string
+    {
+        $status = $this->statusFinal;
+        if (!$status) return '';
+
+        $tahun = (int)$status->siklus_tahun;
+        return "{$status->status} ({$tahun} Tahun)";
+    }
+
+    // =========================================================
+    // STATIC INITIALIZER
+    // =========================================================
+
+    /**
+     * Buat atau ambil HasilAkreditasi, lalu auto-hitung AK & AL
+     * jika status masih draft_al.
+     *
+     * Dipanggil dari controller setelah AL selesai, sebelum menampilkan
+     * halaman show. Tidak perlu dipanggil lagi bila hasil sudah ada.
+     */
+    public static function initializeHasil($hasilService, $pengajuan, $authId): self
     {
         $asesmen = $pengajuan->asesmen;
-        // ✅ AUTO-CALCULATE: Check if hasil exists, if not create it
-        $hasil = HasilAkreditasi::firstOrCreate(
+
+        $hasil = self::firstOrCreate(
             [
                 'id_pengajuan' => $pengajuan->id,
-                'id_asesmen' => $asesmen->id,
+                'id_asesmen'   => $asesmen->id,
             ],
             [
                 'id_study_program' => $asesmen->id_study_program,
-                'id_category' => $pengajuan->studyProgram->id_category,
-                'status' => 'draft_al',
+                'id_category'      => $pengajuan->studyProgram->id_category,
+                'status'           => 'draft_al',
             ]
         );
 
+        // Pastikan AL sudah ditandai finalized sebelum hitung skor
         $pengajuan->asesmen->asesmenLapangan->update([
-            'status' => 'finalized',
+            'status'       => 'finalized',
             'finalized_at' => now(),
-            'finalized_by' => $authId
+            'finalized_by' => $authId,
         ]);
 
-        // Auto-calculate if not yet calculated or still draft
         if ($hasil->status === 'draft_al') {
             try {
                 DB::beginTransaction();
 
-                // Calculate AK first (if not exists)
+                // Hitung AK jika belum ada
                 if (!$hasil->skor_ak) {
                     $hasilService->saveHasilAK($asesmen, $authId);
                     $hasil->refresh();
                 }
 
-                // Calculate AL
+                // Hitung AL
                 $hasilService->saveHasilAL($asesmen, $authId);
                 $hasil->refresh();
+
+                // Update status pengajuan
                 $statusFrom = $pengajuan->status;
-                $pengajuan->checkUpdateStatusAKAL('al', 'status_hasil_akreditasi_dihitung');
+                $pengajuan->checkUpdateStatusAKAL('al', 'status_hasil_akreditasi_dihitung', [
+                    'peringkat_hasil' => $hasil->peringkat_akreditasi_hasil,
+                    'skor_hasil' => $hasil->skor_al,
+                    // 'catatan_hasil' => 'Memenuhi seluruh indikator'
+                ]);
+
                 $pengajuan->statusLog()->firstOrCreate(
                     [
                         'status_from' => $statusFrom,
                         'status_to'   => PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIHITUNG,
                     ],
                     [
-                        'changed_by'  => $authId,
-                        'keterangan'  => 'Hasil akreditasi telah dihitung secara otomatis.',
-                        'changed_at'  => now(),
+                        'changed_by' => $authId,
+                        'keterangan' => 'Hasil akreditasi telah dihitung secara otomatis.',
+                        'changed_at' => now(),
                     ]
                 );
 
                 DB::commit();
             } catch (\Exception $e) {
                 DB::rollBack();
-                Log::error('Auto-calculate failed', [
+                Log::error('Auto-calculate HasilAkreditasi failed', [
                     'pengajuan_id' => $pengajuan->id,
-                    'error' => $e->getMessage()
+                    'error'        => $e->getMessage(),
+                    'trace'        => $e->getTraceAsString(),
                 ]);
-                Log::error($e->getTraceAsString());
             }
         }
 

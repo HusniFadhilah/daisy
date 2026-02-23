@@ -28,6 +28,8 @@ class ImportBorangDocxJob implements ShouldQueue
     protected $pengajuanId;
     protected $filePath;
     protected $importId;
+    protected array $elemenCacheByKode = [];
+    protected array $datasetTableCacheByElemenId = [];
 
     /**
      * Map: mediaIndex (int) => public URL
@@ -1570,7 +1572,7 @@ class ImportBorangDocxJob implements ShouldQueue
 
     private function saveBorangData($pengajuan, $elemenCode, $deskripsi, $tablesData, $borangImport = null)
     {
-        $elemen = ElemenStandar::where('kode_elemen', $elemenCode)->first();
+        $elemen = $this->getElemenByKodeCached($elemenCode);
         if (!$elemen) {
             Log::warning("[Import] Elemen not found in DB: {$elemenCode}");
             return false;
@@ -1586,6 +1588,7 @@ class ImportBorangDocxJob implements ShouldQueue
             ['id_pengajuan' => $pengajuan->id, 'dataset_id' => $descKey],
             [
                 'nilai'            => $cleanedDeskripsi !== '' ? $cleanedDeskripsi : null,
+                'id_elemen' => $elemen->id,
                 'id_borang_import' => $borangImport?->id,
             ]
         );
@@ -1593,10 +1596,7 @@ class ImportBorangDocxJob implements ShouldQueue
 
         // Tables
         if (!empty($tablesData)) {
-            $datasets = $elemen->datasetBorang()
-                ->where('tipe_field', 'table')
-                ->orderBy('urutan')
-                ->get();
+            $datasets = $this->getTableDatasetsForElemenCached($elemen->id);
 
             foreach ($tablesData as $index => $tableData) {
                 if (!isset($datasets[$index])) continue;
@@ -1609,6 +1609,7 @@ class ImportBorangDocxJob implements ShouldQueue
                     ['id_pengajuan' => $pengajuan->id, 'dataset_id' => $dataset->kode],
                     [
                         'nilai'             => $html,
+                        'id_elemen' => $elemen->id,
                         'is_template'       => $isTemplate,
                         'id_dataset_borang' => $dataset->id,
                         'id_borang_import'  => $borangImport?->id,
@@ -1911,5 +1912,31 @@ class ImportBorangDocxJob implements ShouldQueue
 
         // (opsional) buat ulang folder agar siap dipakai
         Storage::disk('public')->makeDirectory($dir);
+    }
+
+    private function getElemenByKodeCached(string $kode): ?ElemenStandar
+    {
+        if (isset($this->elemenCacheByKode[$kode])) {
+            return $this->elemenCacheByKode[$kode];
+        }
+
+        $elemen = ElemenStandar::where('kode_elemen', $kode)->first();
+        return $this->elemenCacheByKode[$kode] = $elemen;
+    }
+
+    private function getTableDatasetsForElemenCached(int $elemenId)
+    {
+        if (isset($this->datasetTableCacheByElemenId[$elemenId])) {
+            return $this->datasetTableCacheByElemenId[$elemenId];
+        }
+
+        // 1 query per elemenId (bukan per table row)
+        $datasets = \App\Models\DatasetBorang::query()
+            ->where('id_elemen', $elemenId)
+            ->where('tipe_field', 'table')
+            ->orderBy('urutan')
+            ->get();
+
+        return $this->datasetTableCacheByElemenId[$elemenId] = $datasets;
     }
 }

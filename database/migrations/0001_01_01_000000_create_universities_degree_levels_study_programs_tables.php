@@ -64,6 +64,7 @@ return new class extends Migration
                 $table->foreignId('id_category')->nullable()->constrained('study_program_categories')->onDelete('set null');
                 $table->enum('bentuk_pt', ['Universitas', 'Institut', 'Sekolah Tinggi', 'Politeknik', 'Akademi'])->nullable();
                 $table->string('email')->nullable();
+                $table->enum('rumpun', ['desain', 'perencanaan', 'lingkungan', 'arsitektur'])->nullable();
                 $table->string('peringkat_akreditasi')->nullable();
                 $table->date('tanggal_kedaluwarsa')->nullable();
                 $table->enum('status_kedaluwarsa', ['Aktif', 'Kedaluwarsa', 'Belum Terakreditasi'])->default(null)->nullable();

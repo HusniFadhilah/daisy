@@ -126,7 +126,7 @@
                             <label for="file_formulir_pembayaran" class="form-label">
                                 File Formulir & Bukti Pembayaran <span class="text-danger">*</span>
                             </label>
-                            <input type="file" class="form-control @error('file_formulir_pembayaran') is-invalid @enderror" id="file_formulir_pembayaran" name="file_formulir_pembayaran" accept=".pdf,.jpg,.jpeg,.png,.xlsx" required>
+                            <input type="file" class="form-control @error('file_formulir_pembayaran') is-invalid @enderror" id="file_formulir_pembayaran" name="file_formulir_pembayaran" accept=".xlsx" required>
                             @error('file_formulir_pembayaran')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror

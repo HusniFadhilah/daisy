@@ -93,7 +93,7 @@ class PenyampaianHasilAkreditasiController extends Controller
         }
 
         $hasil = $pengajuan->asesmen->hasil ?? null;
-        $peringkat = $hasil->peringkat_akreditasi ?? null;
+        $peringkat = $hasil->peringkat_akreditasi_hasil ?? null;
 
         // ✅ Get detail skor per elemen
         $elemenList = [];

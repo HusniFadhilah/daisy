@@ -22,7 +22,7 @@ return new class extends Migration
             $table->text('rekomendasi_lamdepilar')->nullable();
 
             // Status
-            $table->enum('status', ['draft', 'submitted', 'finalized'])->default('draft');
+            $table->enum('status', ['draft', 'submitted', 'revision_required', 'finalized'])->default('draft');
 
             // Metadata
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();

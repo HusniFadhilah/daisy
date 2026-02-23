@@ -179,8 +179,8 @@ class ValidasiExcelService
                     ->setFillType(Fill::FILL_SOLID)
                     ->getStartColor()->setARGB($this->hexToArgb($bgColor));
 
-                $sheet->setCellValue("{$col1}6", 'Pemenuhan Standar');
-                $sheet->setCellValue("{$col2}6", 'Pelampauan Standar');
+                $sheet->setCellValue("{$col1}6", 'Memenuhi Standar');
+                $sheet->setCellValue("{$col2}6", 'Melampaui Standar');
                 $sheet->getStyle("{$col1}6:{$col2}6")->getFill()
                     ->setFillType(Fill::FILL_SOLID)
                     ->getStartColor()->setARGB($this->hexToArgb($bgColor));

@@ -43,11 +43,8 @@
                             telah <strong>ditetapkan</strong> oleh LAMDEPILAR.
                         </p>
                         @if($pengajuan->peringkat_hasil)
-                        <div class="alert alert-light border border-success mb-0">
-                            <i class="bi bi-star-fill text-warning"></i>
-                            Status Akreditasi:
-                            <strong class="text-success fs-5">{{ $pengajuan->peringkat_hasil }}</strong>
-                        </div>
+                        Status Akreditasi:
+                        <span class="badge p-2 px-3 my-2 fs-6" style="background-color: {{ $hasil->getPeringkatColor($peringkat) }}; color:#222">{{ $peringkat }}</span>
                         @endif
                     </div>
                 </div>
@@ -113,7 +110,7 @@
                             <td>: {{ $pengajuan->tahun_akreditasi }}</td>
                         </tr>
                         <tr>
-                            <th>Status Akreditasi</th>
+                            <th>Status Akreditasi Ditetapkan</th>
                             <td>
                                 : <span class="badge p-2 px-3 my-2 fs-6" style="background-color: {{ $hasil->getPeringkatColor($peringkat) }}; color:#222">
                                     {{ $peringkat }}
@@ -245,13 +242,14 @@
                             </thead>
                             <tbody>
                                 @foreach($groupedByKriteria as $kodeKriteria => $elemens)
+                                @php $rowspan = $elemens->count(); @endphp
                                 @foreach($elemens as $index => $elemen)
                                 @php
                                 $kategori = $elemen['skor_kategori'] ?? ['label' => '-', 'color' => '#e9ecef'];
                                 @endphp
                                 <tr>
                                     @if($index === 0)
-                                    <td class="text-center align-middle fw-bold" rowspan="{{ count($elemens) }}">
+                                    <td class="text-center align-middle fw-bold" rowspan="{{ $rowspan }}">
                                         <span class="badge bg-secondary fs-6 py-2 px-3">{{ $kodeKriteria }}</span>
                                     </td>
                                     @endif

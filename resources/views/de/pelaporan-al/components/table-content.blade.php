@@ -67,9 +67,7 @@
                             {!! $pengajuan->getPermohonanAkreditasiSectionFor('de') !!}
                         </td>
                         <td>
-                            <span class="badge bg-{{ $statusConfig['class'] }}">
-                                <i class="bi bi-{{ $statusConfig['icon'] }}"></i> {{ $statusConfig['text'] }}
-                            </span>
+                            {!! $pengajuan->getCustomBadgeLastStatus('pelaporan_al', 'de', 'label_short_for') !!}
                         </td>
                         <td>
                             @if($validators->count() > 0)

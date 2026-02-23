@@ -154,10 +154,13 @@ class PengajuanAkreditasi extends Model
         'tanggal_pelaporan_hasil',
         'tanggal_penyimpanan',
 
+        'tanggal_kedaluwarsa_awal',
+        'tanggal_kedaluwarsa_akhir',
+        'peringkat_awal',
         'peringkat_hasil',
-        'nilai_akhir',
+        'skor_hasil',
         'peringkat_hasil_banding',
-        'nilai_akhir_banding',
+        'skor_akhir_banding',
         'peringkat_final',
         'skor_final',
         'masa_berlaku_tahun',
@@ -211,6 +214,8 @@ class PengajuanAkreditasi extends Model
         'tanggal_pengumuman' => 'datetime',
         'tanggal_pelaporan_hasil' => 'datetime',
         'tanggal_penyimpanan' => 'datetime',
+        'tanggal_kedaluwarsa_awal' => 'datetime',
+        'tanggal_kedaluwarsa_akhir' => 'datetime',
     ];
 
     public function scopeNonExample($query)
@@ -636,7 +641,7 @@ class PengajuanAkreditasi extends Model
         $this->borangValidation->update(['id_validator_assigned' => $idUser]);
     }
 
-    public function checkUpdateStatusAKAL($jenisAsesmen, $statusToUpdate, $idUser = null)
+    public function checkUpdateStatusAKAL($jenisAsesmen, $statusToUpdate, $additionalData = [])
     {
         if ($statusToUpdate == 'status_asesor_assigned') {
             if ($jenisAsesmen == 'ak') {
@@ -693,19 +698,19 @@ class PengajuanAkreditasi extends Model
         if ($statusToUpdate == 'status_hasil_akreditasi_dihitung') {
             if ($jenisAsesmen == 'al') {
                 if ($this->status == PengajuanAkreditasi::STATUS_AL_DILAPORKAN)
-                    $this->update(['status' => PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIHITUNG, 'tanggal_hasil_akreditasi_dihitung' => now()]);
+                    $this->update(['status' => PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIHITUNG, 'tanggal_hasil_akreditasi_dihitung' => now(), ...$additionalData]);
             }
         }
         if ($statusToUpdate == 'status_hasil_akreditasi_disampaikan') {
             if ($jenisAsesmen == 'al') {
                 if ($this->status == PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIHITUNG)
-                    $this->update(['status' => PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM, 'tanggal_hasil_akreditasi_dikirim' => now()]);
+                    $this->update(['status' => PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM, 'tanggal_hasil_akreditasi_dikirim' => now(), ...$additionalData]);
             }
         }
         if ($statusToUpdate == 'status_masa_sanggah_dimulai') {
             if ($jenisAsesmen == 'al') {
                 if ($this->status == PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM)
-                    $this->update(['status' => PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI, 'tanggal_masa_sanggah_mulai' => now(), 'tanggal_masa_sanggah_selesai' => now()->addMinute(1)]);
+                    $this->update(['status' => PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI, 'tanggal_masa_sanggah_mulai' => now(), ...$additionalData]);
             }
         }
     }
@@ -1169,7 +1174,7 @@ class PengajuanAkreditasi extends Model
         if ($attribute == 'borang_template')
             $statuses = [self::STATUS_TEMPLATE_LED_DIKIRIM, self::STATUS_SURAT_PENERIMAAN_DIKIRIM];
         if ($attribute == 'draft_borang')
-            $statuses = [self::STATUS_DRAFT_BORANG_DIKIRIM, self::STATUS_DRAFT_BORANG_DITERIMA, self::STATUS_BORANG_ONLINE_SELESAI];
+            $statuses = [self::STATUS_DRAFT_BORANG_DIKIRIM, self::STATUS_DRAFT_BORANG_DITERIMA, self::STATUS_BORANG_ONLINE_SELESAI, self::STATUS_BORANG_VALIDATED];
         if ($attribute == 'borang_final')
             $statuses = [self::STATUS_DRAFT_BORANG_DITERIMA, self::STATUS_BORANG_ONLINE_SELESAI, self::STATUS_BORANG_VALIDATION_PENDING, self::STATUS_BORANG_IN_VALIDATION, self::STATUS_BORANG_REVISION_REQUIRED, self::STATUS_BORANG_VALIDATED, self::STATUS_BORANG_FINAL_DITERIMA, self::STATUS_VALIDASI_BORANG_DILAPORKAN];
         if ($attribute == 'validasi_dokumen')
@@ -1332,6 +1337,10 @@ class PengajuanAkreditasi extends Model
                     $bgFromMap(self::STATUS_BORANG_ONLINE_SELESAI, 'bg-primary'),
                     $labelFor(self::STATUS_BORANG_ONLINE_SELESAI) ?? 'Dokumen Diterima'
                 ),
+                self::STATUS_BORANG_VALIDATED =>
+                $audience === 'de'
+                    ? $badge('bg-success', $keyLongShort == 'label_long_for' ? 'Dokumen Diterima' : 'Dokumen Diterima')
+                    : $badge('bg-success', $keyLongShort == 'label_long_for' ? 'Dokumen Diterima' : 'Dokumen Diterima'),
 
                 default =>
                 $audience === 'de'
@@ -1646,7 +1655,7 @@ class PengajuanAkreditasi extends Model
                 ),
 
                 default =>
-                $badge('bg-secondary', '-'),
+                $badge('bg-secondary', 'Menunggu Hasil Ditetapkan'),
             },
 
             /**
@@ -1668,7 +1677,7 @@ class PengajuanAkreditasi extends Model
                 ),
 
                 default =>
-                $badge('bg-secondary', '-'),
+                $badge('bg-light', 'Menunggu Pelaporan Hasil'),
             },
 
             /**
@@ -1712,7 +1721,7 @@ class PengajuanAkreditasi extends Model
      */
     public function getNilaiSaatIniAttribute(): ?float
     {
-        return $this->nilai_akhir_banding ?? $this->nilai_akhir;
+        return $this->skor_akhir_banding ?? $this->skor_hasil;
     }
 
     /**

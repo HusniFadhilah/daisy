@@ -108,7 +108,7 @@
                     @else
                     <div class="text-center py-4">
                         <i class="bi bi-file-earmark-x" style="font-size: 48px; color: #ddd;"></i>
-                        <p class="text-muted mt-2 mb-0">Dokumen hasil & laporan belum tersedia</p>
+                        <p class="text-muted mt-2 mb-0">Sertifikat dan Laporan hasil akreditasi belum tersedia</p>
                     </div>
                     @endif
                 </div>

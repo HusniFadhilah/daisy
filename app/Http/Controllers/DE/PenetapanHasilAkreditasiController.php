@@ -3,24 +3,28 @@
 
 namespace App\Http\Controllers\DE;
 
+use App\Http\Controllers\Controller;
 use App\Models\Asesmen;
-use Illuminate\Http\Request;
 use App\Models\AsesmenDocument;
 use App\Models\HasilAkreditasi;
-use Illuminate\Support\Facades\DB;
 use App\Models\PengajuanAkreditasi;
-use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Storage;
+use App\Repositories\SyaratAkreditasiRepository;
 use App\Services\HasilAkreditasiService;
+use Exception;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class PenetapanHasilAkreditasiController extends Controller
 {
     protected $hasilService;
+    protected $syaratRepo;
 
-    public function __construct(HasilAkreditasiService $hasilService)
+    public function __construct(HasilAkreditasiService $hasilService, SyaratAkreditasiRepository  $syaratRepo)
     {
         $this->hasilService = $hasilService;
+        $this->syaratRepo = $syaratRepo;
     }
 
     /**
@@ -47,7 +51,7 @@ class PenetapanHasilAkreditasiController extends Controller
             'studyProgram.category',
             'asesmen.asesmenLapangan',
             'asesmen.hasil' => function ($q) {
-                $q->select('id', 'id_pengajuan', 'id_asesmen', 'skor_al', 'skor_final', 'peringkat_akreditasi', 'status', 'tanggal_finalisasi_al');
+                // $q->select('id', 'id_pengajuan', 'id_asesmen', 'skor_al', 'skor_final', 'peringkat_akreditasi_final', 'status', 'tanggal_finalisasi_al');
             },
             'statusLog' => function ($q) use ($scopeStatuses) {
                 $q->whereIn('status_to', $scopeStatuses)->orderBy('created_at', 'desc');
@@ -69,7 +73,7 @@ class PenetapanHasilAkreditasiController extends Controller
 
         if ($request->filled('peringkat')) {
             $query->whereHas('asesmen.hasil', function ($q) use ($request) {
-                $q->where('peringkat_akreditasi', $request->peringkat);
+                $q->where('peringkat_akreditasi_final', $request->peringkat);
             });
         }
 
@@ -135,76 +139,89 @@ class PenetapanHasilAkreditasiController extends Controller
      */
     public function show($id)
     {
-        $authId = auth()->id();
-        $pengajuan = PengajuanAkreditasi::with([
-            'studyProgram.university',
-            'studyProgram.degreeLevel',
-            'studyProgram.category',
-            'asesmen.asesmenKecukupan',
-            'asesmen.asesmenLapangan.asesors.user',
-            'asesmen.penilaianElemenAl.elemenStandar.kriteria',
-        ])->findOrFail($id);
+        try {
 
-        $asesmen = $pengajuan->asesmen;
+            $authId = auth()->id();
+            $pengajuan = PengajuanAkreditasi::with([
+                'studyProgram.university',
+                'studyProgram.degreeLevel',
+                'studyProgram.category',
+                'asesmen.asesmenKecukupan',
+                'asesmen.asesmenLapangan.asesors.user',
+                'asesmen.penilaianElemenAl.elemenStandar.kriteria',
+            ])->findOrFail($id);
 
-        // Validation: AL must be finalized
-        if (!$asesmen || !$asesmen->hasil || !$asesmen->hasil->isAlFinalized()) {
-            return back()->with('error', 'Hasil AL belum difinalisasi.');
-        }
+            $asesmen = $pengajuan->asesmen;
 
-        $hasil = $asesmen->hasil;
+            // Validation: AL must be finalized
+            if (!$asesmen || !$asesmen->hasil || !$asesmen->hasil->isAlFinalized()) {
+                return back()->with('error', 'Hasil AL belum difinalisasi.');
+            }
 
-        $hasil->load([
-            'studyProgram',
-            'category',
-            'finalizedAlBy',
-        ]);
+            $hasil = $asesmen->hasil;
 
-        // ✅ Get berita acara penyampaian (read-only)
-        $beritaAcaraPenyampaian = AsesmenDocument::where('id_asesmen', $asesmen->id)
-            ->where('type', AsesmenDocument::TYPE_BERITA_ACARA_PENYAMPAIAN_HASIL)
-            ->where('is_active', true)
-            ->latest()
-            ->first();
-
-        // ✅ Get berita acara penetapan
-        $beritaAcaraPenetapan = AsesmenDocument::where('id_asesmen', $asesmen->id)
-            ->where('type', AsesmenDocument::TYPE_BERITA_ACARA_PENETAPAN_HASIL)
-            ->where('is_active', true)
-            ->latest()
-            ->first();
-
-        $canTetapkan = $beritaAcaraPenetapan !== null;
-
-        // Get validation summary for Unggul
-        $validationSummary = $this->hasilService->getValidationSummary($hasil);
-
-        // Parse detail skor
-        $detailSkorAL = $hasil->detail_skor_al ?? [];
-        $kriteriaList = $detailSkorAL['kriteria'] ?? [];
-        $elemenList = $detailSkorAL['elemen'] ?? [];
-
-        // ✅ Check if already penetapan
-        $sudahDitetapkan = $pengajuan->tanggal_penetapan !== null
-            || in_array($pengajuan->status, [
-                PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
-                PengajuanAkreditasi::STATUS_HASIL_DIUMUMKAN,
-                PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN,
-                PengajuanAkreditasi::STATUS_SELESAI,
+            $hasil->load([
+                'studyProgram',
+                'category',
+                'finalizedAlBy',
             ]);
 
-        return view('de.penetapan-hasil-akreditasi.show', compact(
-            'pengajuan',
-            'asesmen',
-            'hasil',
-            'validationSummary',
-            'kriteriaList',
-            'elemenList',
-            'beritaAcaraPenyampaian',
-            'beritaAcaraPenetapan',
-            'canTetapkan',
-            'sudahDitetapkan'
-        ));
+            // ✅ Get berita acara penyampaian (read-only)
+            $beritaAcaraPenyampaian = AsesmenDocument::where('id_asesmen', $asesmen->id)
+                ->where('type', AsesmenDocument::TYPE_BERITA_ACARA_PENYAMPAIAN_HASIL)
+                ->where('is_active', true)
+                ->latest()
+                ->first();
+
+            // ✅ Get berita acara penetapan
+            $beritaAcaraPenetapan = AsesmenDocument::where('id_asesmen', $asesmen->id)
+                ->where('type', AsesmenDocument::TYPE_BERITA_ACARA_PENETAPAN_HASIL)
+                ->where('is_active', true)
+                ->latest()
+                ->first();
+
+            $canTetapkan = $beritaAcaraPenetapan !== null;
+
+            // Get validation summary for Unggul
+            $validationSummary = $this->hasilService->getValidationSummary($hasil);
+
+            // Parse detail skor
+            $detailSkorAL = $hasil->detail_skor_al ?? [];
+            $kriteriaList = $detailSkorAL['kriteria'] ?? [];
+            $elemenList = $detailSkorAL['elemen'] ?? [];
+
+            // ✅ Check if already penetapan
+            $sudahDitetapkan = $pengajuan->tanggal_penetapan !== null
+                || in_array($pengajuan->status, [
+                    PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
+                    PengajuanAkreditasi::STATUS_HASIL_DIUMUMKAN,
+                    PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN,
+                    PengajuanAkreditasi::STATUS_SELESAI,
+                ]);
+
+            // Siapkan data final (boleh recalculate di sini)
+            if (is_null($hasil->skor_final)) {
+                $this->hasilService->saveHasilPenetapan($hasil, $authId);
+                $hasil->refresh();
+            }
+            $rentangSkor = $this->syaratRepo->getRentangSkor();
+            return view('de.penetapan-hasil-akreditasi.show', compact(
+                'pengajuan',
+                'asesmen',
+                'hasil',
+                'validationSummary',
+                'kriteriaList',
+                'elemenList',
+                'beritaAcaraPenyampaian',
+                'beritaAcaraPenetapan',
+                'canTetapkan',
+                'sudahDitetapkan',
+                'rentangSkor'
+            ));
+        } catch (Exception $e) {
+            Log::error($e);
+            return back()->with('error', 'Gagal menetapkan hasil: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -214,65 +231,46 @@ class PenetapanHasilAkreditasiController extends Controller
     {
         DB::beginTransaction();
         try {
-            $authId = auth()->id();
+            $authId    = auth()->id();
             $pengajuan = PengajuanAkreditasi::findOrFail($id);
-            $asesmen = $pengajuan->asesmen;
+            $asesmen   = $pengajuan->asesmen;
+
+            // Guard: berita acara penetapan wajib ada
+            if (!AsesmenDocument::hasBeritaAcaraPenetapanHasil($asesmen->id)) {
+                throw new \Exception('Berita Acara Penetapan harus diupload terlebih dahulu.');
+            }
 
             $hasil = HasilAkreditasi::where('id_asesmen', $asesmen->id)->firstOrFail();
 
-            // ✅ Validate: Berita Acara must be uploaded
-            if (!AsesmenDocument::where('id_asesmen', $asesmen->id)
-                ->where('type', AsesmenDocument::TYPE_BERITA_ACARA_PENETAPAN_HASIL)
-                ->where('is_active', true)
-                ->exists()) {
-                throw new \Exception('Berita Acara Rapat Penetapan Hasil harus diupload terlebih dahulu.');
-            }
-
-            // Check if already ditetapkan
-            if ($pengajuan->tanggal_penetapan) {
-                throw new \Exception('Hasil telah ditetapkan sebelumnya.');
-            }
-
-            // Check if AL finalized
             if (!$hasil->isAlFinalized()) {
-                throw new \Exception('Hasil AL belum difinalisasi.');
+                throw new \Exception('AL harus difinalisasi sebelum penetapan.');
+            }
+            if ($hasil->isPenetapanFinalized()) {
+                throw new \Exception('Penetapan sudah dikunci sebelumnya.');
             }
 
-            // Update pengajuan
-            $statusFrom = $pengajuan->status;
-            $pengajuan->update([
-                'status' => PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
-                'tanggal_penetapan' => now(),
-                'tanggal_hasil_ditetapkan' => now(), // ✅ Update kolom ini juga
-                'peringkat_final' => $hasil->peringkat_akreditasi,
-                'skor_final' => $hasil->skor_final,
-            ]);
+            // Kunci penetapan resmi
+            $this->hasilService->finalizeHasilPenetapan($hasil, $authId);
+            $hasil->refresh();
 
-            // Create status log
-            $pengajuan->statusLog()->firstOrCreate(
-                [
-                    'status_from' => $statusFrom,
-                    'status_to' => PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
-                ],
-                [
-                    'changed_by' => $authId,
-                    'keterangan' => 'Hasil akreditasi telah ditetapkan.',
-                    'changed_at' => now(),
-                ]
-            );
+            // Update status pengajuan
+            $this->updateStatusPengajuanPenetapan($pengajuan, $hasil, $authId);
 
             DB::commit();
 
             return redirect()
                 ->route('de.penetapan-hasil-akreditasi.show', $id)
-                ->with('success', "Hasil akreditasi berhasil ditetapkan! Status akreditasi: {$hasil->peringkat_akreditasi} (Skor: {$hasil->skor_final})");
+                ->with(
+                    'success',
+                    "Penetapan berhasil dikunci! "
+                        . "Peringkat: {$hasil->peringkat_akreditasi_final} (Skor: {$hasil->skor_final})"
+                );
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Penetapan hasil failed', [
+            Log::error('Tetapkan hasil failed', [
                 'pengajuan_id' => $id,
-                'error' => $e->getMessage()
+                'error'        => $e->getMessage(),
             ]);
-
             return back()->with('error', 'Gagal menetapkan hasil: ' . $e->getMessage());
         }
     }
@@ -311,7 +309,6 @@ class PenetapanHasilAkreditasiController extends Controller
             $pengajuan->update([
                 'status' => $previousStatus,
                 'tanggal_penetapan' => null,
-                'tanggal_hasil_ditetapkan' => null,
             ]);
 
             // Create status log
@@ -332,6 +329,33 @@ class PenetapanHasilAkreditasiController extends Controller
             DB::rollBack();
             return back()->with('error', 'Gagal batalkan penetapan: ' . $e->getMessage());
         }
+    }
+
+    private function updateStatusPengajuanPenetapan(PengajuanAkreditasi $pengajuan, $hasil, int $authId): void
+    {
+        // Step 1: hasil_akreditasi_ditetapkan
+        $siklusTahun = $hasil->statusFinal->siklus_tahun;
+        $tanggalKedaluwarsaAkhir = now()->addYear($siklusTahun);
+        $statusFrom = $pengajuan->status;
+        $pengajuan->update([
+            'status' => PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
+            'tanggal_penetapan' => now(),
+            'tanggal_kedaluwarsa_akhir' => $tanggalKedaluwarsaAkhir, // ✅ Update kolom ini juga
+            'peringkat_final' => $hasil->peringkat_akreditasi,
+            'skor_final' => $hasil->skor_final,
+        ]);
+        $pengajuan->statusLog()->firstOrCreate(
+            [
+                'status_from' => $statusFrom,
+                'status_to'   => PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
+            ],
+            [
+                'changed_by' => $authId,
+                'keterangan' => 'Hasil akreditasi telah ditetapkan secara resmi.',
+                'changed_at' => now(),
+            ]
+        );
+        $pengajuan->studyProgram->update(['status_kedaluwarsa' => 'Aktif', 'tanggal_kedaluwarsa' => $tanggalKedaluwarsaAkhir, 'peringkat_akreditasi_final' => $hasil->peringkat_akreditasi_final]);
     }
 
     /**
@@ -394,7 +418,7 @@ class PenetapanHasilAkreditasiController extends Controller
 
             return redirect()
                 ->route('de.penetapan-hasil-akreditasi.show', $id)
-                ->with('success', 'Berita Acara berhasil diupload!');
+                ->with('success', 'Berita Acara berhasil diupload! Mohon segera lakukan penetapan hasil (dengan klik tombol "Tetapkan Hasil"');
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Upload berita acara penetapan failed', [

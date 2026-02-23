@@ -154,9 +154,11 @@
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm" role="group">
                                     {{-- Tombol Upload --}}
+                                    @if($canReport && !$isReported)
                                     <button type="button" class="btn btn-info js-open-pelaporan" title="Upload Pelaporan" data-type="dokumen" data-assignment-id="{{ $assignment->id }}" data-nomor="{{ $nomor }}">
                                         <i class="bi bi-upload"></i>
                                     </button>
+                                    @endif
 
                                     {{-- Tombol Lihat Detail --}}
                                     <a href="{{ route('pelaporan.borang.show', $assignment->id) }}" class="btn btn-outline-primary" title="Lihat Detail">

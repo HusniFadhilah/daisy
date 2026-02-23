@@ -4,6 +4,7 @@ namespace App\Services\BorangExport;
 
 use App\Models\BorangDataExcel;
 use App\Models\PengajuanAkreditasi;
+use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -45,20 +46,24 @@ class LkpsTemplateExcelExportService
             $templateTables = $this->detectTemplateTables($ws);
 
             foreach ($tablesByIndex as $tableIndex => $record) {
-                if (!isset($templateTables[$tableIndex])) {
-                    // Jika urutan tabel di template tidak match, kamu bisa fallback cari by judul.
-                    // Untuk sekarang: skip.
+                $dbTitle = (string)($record['table_title'] ?? '');
+                $code = $this->extractTableCode($dbTitle);
+
+                if (!$code || !isset($templateTables[$code])) {
+                    // fallback terakhir kalau mau: pakai index
+                    Log::warning("Export skip table: sheet={$sheetName}, idx={$tableIndex}, title={$dbTitle}, code={$code}");
+                    // if (isset($templateTablesByIndex[$tableIndex])) { ... }
                     continue;
                 }
 
-                $meta = $templateTables[$tableIndex];
+                $meta = $templateTables[$code];
                 $rows = $this->filterInputRows($sheetName, $tableIndex, $record['rows'] ?? []);
                 $this->fillTable($ws, $meta, $rows);
             }
         }
 
         // Simpan hasil export ke storage temp
-        $filename = 'LKPS_LAMDEPILAR_' . $pengajuan->nomor_pengajuan . '_' . now()->format('Ymd_His') . '.xlsx';
+        $filename = 'LKPS_LAMDEPILAR_' . $pengajuan->nomor_pengajuan . '_' . now()->format('Ymd') . '.xlsx';
         $path = storage_path('app/temp/exports/' . $filename);
 
         if (!is_dir(dirname($path))) {
@@ -74,15 +79,16 @@ class LkpsTemplateExcelExportService
     {
         $rows = BorangDataExcel::query()
             ->where('id_pengajuan', $pengajuanId)
-            ->whereIn('status_review', ['raw', 'reviewed', 'approved']) // sesuaikan kebijakanmu
+            ->whereIn('status_review', ['raw', 'reviewed', 'approved'])
             ->orderBy('sheet_name')
             ->orderBy('table_index')
-            ->get(['sheet_name', 'table_index', 'rows']);
+            ->get(['sheet_name', 'table_index', 'table_title', 'rows']); // ✅ tambah table_title
 
         $out = [];
         foreach ($rows as $r) {
             $out[$r->sheet_name][(int)$r->table_index] = [
-                'rows' => $r->rows ?? [],
+                'table_title' => $r->table_title, // ✅ simpan juga
+                'rows'        => $r->rows ?? [],
             ];
         }
         return $out;
@@ -104,36 +110,46 @@ class LkpsTemplateExcelExportService
     {
         $maxRow = $ws->getHighestRow();
         $tables = [];
-        $tableIdx = 0;
 
         for ($r = 1; $r <= $maxRow; $r++) {
-            // biasanya judul tabel ada di kolom A
             $v = $ws->getCell("A{$r}")->getValue();
-            if (is_string($v) && preg_match('/^Tabel\s+/i', trim($v))) {
-                $tableIdx++;
+            if ($v === null) continue;
 
-                // cari baris nomor kolom dalam 6 baris setelah title
-                $colNumberRow = $this->findColumnNumberRow($ws, $r + 1, min($r + 10, $maxRow));
+            $title = trim(preg_replace('/\s+/', ' ', (string)$v));
 
-                // fallback kalau tidak ketemu: anggap header 2 baris + 1 baris nomor
-                if ($colNumberRow === null) {
-                    $colNumberRow = min($r + 3, $maxRow);
-                }
+            if (preg_match('/^Tabel\s+/i', $title)) {
+                $code = $this->extractTableCode($title);
+                if (!$code) continue;
+
+                $colNumberRow = $this->findColumnNumberRow($ws, $r + 1, min($r + 10, $maxRow))
+                    ?? min($r + 3, $maxRow);
 
                 $colCount = $this->detectColCountFromNumberRow($ws, $colNumberRow);
+                $dataStartRow = $colNumberRow + 1;
+                $dataEndRow   = $this->findDataEndRow($ws, $dataStartRow, $maxRow);
 
-                $tables[$tableIdx] = [
-                    'titleRow'      => $r,
-                    'colNumberRow'  => $colNumberRow,
-                    'dataStartRow'  => $colNumberRow + 1,
-                    'colCount'      => $colCount,
-                    // baris contoh pertama di template untuk dijadikan sumber style
-                    'sampleRow'     => $colNumberRow + 1,
+                $tables[$code] = [
+                    'title'        => $title,
+                    'titleRow'     => $r,
+                    'colNumberRow' => $colNumberRow,
+                    'dataStartRow' => $colNumberRow + 1,
+                    'dataEndRow'   => $dataEndRow,
+                    'colCount'     => $colCount,
+                    'sampleRow'    => $colNumberRow + 1,
                 ];
             }
         }
 
         return $tables;
+    }
+
+    private function normalizeTitle(string $title): string
+    {
+        $title = strtolower($title);
+        $title = preg_replace('/\s+/', ' ', $title);
+        $title = trim($title);
+
+        return $title;
     }
 
     private function findColumnNumberRow(Worksheet $ws, int $from, int $to): ?int
@@ -212,43 +228,39 @@ class LkpsTemplateExcelExportService
      */
     private function fillTable(Worksheet $ws, array $meta, array $rows): void
     {
-        $startRow = (int)$meta['dataStartRow'];
-        $colCount = (int)$meta['colCount'];
+        $startRow  = (int)$meta['dataStartRow'];
+        $endRow    = (int)$meta['dataEndRow'];
+        $colCount  = (int)$meta['colCount'];
         $sampleRow = (int)$meta['sampleRow'];
 
-        if (empty($rows)) {
-            // Tidak ada data, biarkan template apa adanya
-            return;
-        }
+        if (empty($rows)) return;
 
-        $rowCount = count($rows);
+        $rowCount  = count($rows);
+        $slotCount = max(0, $endRow - $startRow + 1);
 
-        // 1) Pastikan ada cukup row di template.
-        // Asumsi template minimal punya 1 sample row (sampleRow).
-        // Jika data > 1, insert row sebelum baris setelah sampleRow.
-        if ($rowCount > 1) {
-            $insertAt = $sampleRow + 1;
-            $toInsert = $rowCount - 1;
-            $ws->insertNewRowBefore($insertAt, $toInsert);
+        // ✅ insert row hanya jika data melebihi slot yang tersedia
+        if ($rowCount > $slotCount) {
+            $need = $rowCount - $slotCount;
 
-            // Duplicate style dari sampleRow ke row-row baru
+            // sisipkan sebelum baris setelah endRow (artinya sebelum "Jumlah")
+            $insertAt = $endRow + 1;
+            $ws->insertNewRowBefore($insertAt, $need);
+
+            // duplicate style dari sampleRow ke baris baru yang ditambahkan
             $lastColLetter = Coordinate::stringFromColumnIndex($colCount);
             $sourceRange = "A{$sampleRow}:{$lastColLetter}{$sampleRow}";
-            $targetRange = "A{$sampleRow}:{$lastColLetter}" . ($sampleRow + $toInsert);
+            $targetRange = "A{$startRow}:{$lastColLetter}" . ($startRow + $rowCount - 1);
 
             $ws->duplicateStyle($ws->getStyle($sourceRange), $targetRange);
 
-            // Duplicate row height juga (opsional)
-            $h = $ws->getRowDimension($sampleRow)->getRowHeight();
-            for ($r = $sampleRow; $r <= $sampleRow + $toInsert; $r++) {
-                $ws->getRowDimension($r)->setRowHeight($h);
-            }
+            // update endRow karena bertambah
+            $endRow += $need;
         }
 
-        // 2) Tulis nilai
+        // ✅ tulis data ke slot
         for ($i = 0; $i < $rowCount; $i++) {
             $excelRow = $startRow + $i;
-            $rowData = $rows[$i] ?? [];
+            $rowData  = $rows[$i] ?? [];
 
             for ($c = 1; $c <= $colCount; $c++) {
                 $val = $rowData[$c - 1] ?? null;
@@ -259,7 +271,6 @@ class LkpsTemplateExcelExportService
                     continue;
                 }
 
-                // Jika string formula, set sebagai formula
                 if (is_string($val)) {
                     $trim = trim($val);
                     if ($trim !== '' && str_starts_with($trim, '=')) {
@@ -267,12 +278,46 @@ class LkpsTemplateExcelExportService
                     } else {
                         $ws->setCellValueExplicit($coord, $trim, DataType::TYPE_STRING);
                     }
-                    continue;
+                } else {
+                    $ws->setCellValue($coord, $val);
                 }
-
-                // numeric/bool/dll
-                $ws->setCellValue($coord, $val);
             }
         }
+
+        // ✅ bersihkan sisa slot yang tidak terpakai (kalau data lebih sedikit dari slot)
+        for ($r = $startRow + $rowCount; $r <= $endRow; $r++) {
+            for ($c = 1; $c <= $colCount; $c++) {
+                $coord = Coordinate::stringFromColumnIndex($c) . $r;
+                $ws->setCellValue($coord, null);
+            }
+        }
+    }
+
+    private function extractTableCode(string $title): ?string
+    {
+        $title = trim((string)$title);
+
+        // contoh: "Tabel E.2.1 Tabel Mahasiswa Penuh Waktu"
+        if (preg_match('/^Tabel\s+([A-Z]\.\d+(?:\.\d+)*(?:\.[a-z])?)/i', $title, $m)) {
+            return strtolower($m[1]); // "e.2.1"
+        }
+        return null;
+    }
+
+    private function findDataEndRow(Worksheet $ws, int $dataStartRow, int $maxRow): int
+    {
+        // cari baris yang kolom A = "Jumlah" atau "Rekapitulasi" atau "Keterangan" atau mulai tabel berikutnya
+        for ($r = $dataStartRow; $r <= $maxRow; $r++) {
+            $a = $ws->getCell("A{$r}")->getValue();
+            if (!is_string($a)) continue;
+
+            $t = strtolower(trim($a));
+
+            if ($t === 'jumlah' || $t === 'rekapitulasi' || $t === 'keterangan' || str_starts_with($t, 'tabel ')) {
+                return $r - 1; // baris sebelumnya adalah akhir area data
+            }
+        }
+
+        return $maxRow;
     }
 }

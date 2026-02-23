@@ -18,6 +18,7 @@ class StudyProgram extends Model
         'id_category',
         'bentuk_pt',
         'email',
+        'rumpun',
         'peringkat_akreditasi',
         'tanggal_kedaluwarsa',
         'status_kedaluwarsa',

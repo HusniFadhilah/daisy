@@ -120,7 +120,7 @@ class AsesmenDocument extends Model
         return match ($this->status_persetujuan_prodi) {
             'pending' => 'Menunggu Persetujuan',
             'approved' => 'Disetujui',
-            'revision_required' => 'Perlu Revisi',
+            'revision_required' => 'Permintaan Revisi',
             'rejected' => 'Ditolak',
             default => '-',
         };

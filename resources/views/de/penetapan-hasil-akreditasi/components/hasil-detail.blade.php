@@ -43,7 +43,7 @@
                     </div>
                     <div class="flex-grow-1">
                         <strong class="text-dark">⁠Terakreditasi Unggul with Requirement (2 Tahun)*</strong>
-                        <div><small class="text-muted">*Dengan syarat pelampauan standar</small></div>
+                        <div><small class="text-muted">*Dengan syarat "Melampaui Standar"</small></div>
                     </div>
                 </div>
             </div>
@@ -56,7 +56,7 @@
                     </div>
                     <div class="flex-grow-1">
                         <strong class="text-dark">Terakreditasi Unggul (5 Tahun)</strong>
-                        <div><small class="text-muted">*Dengan syarat pelampauan standar</small></div>
+                        <div><small class="text-muted">*Dengan syarat "Melampaui Standar"</small></div>
                     </div>
                 </div>
             </div>
@@ -65,7 +65,7 @@
         <div class="alert alert-light alert-permanent mt-3 mb-0">
             <i class="bi bi-info-circle me-2"></i>
             <strong>Catatan:</strong> Untuk status akreditasi <strong>Unggul</strong>, selain mencapai skor >= 351,
-            program studi harus memiliki <strong>minimal 1 elemen dengan kategori: Pelampauan Standar</strong>
+            program studi harus memiliki <strong>minimal 1 elemen dengan kategori: "Melampaui Standar"</strong>
             di <strong>setiap kriteria</strong> (D, E, P, I, L, A, R).
         </div>
     </div>
@@ -100,7 +100,7 @@
                             @if($validationSummary['pelampauan_memenuhi'])
                             Semua kriteria terpenuhi ✓
                             @else
-                            {{ count($validationSummary['missing_kriteria']) }} kriteria belum memiliki pelampauan
+                            {{ count($validationSummary['missing_kriteria']) }} kriteria belum memiliki kategori "Melampaui Standar"
                             @endif
                         </div>
                     </div>
@@ -114,8 +114,8 @@
                 <thead class="table-light">
                     <tr>
                         <th width="15%">Kriteria</th>
-                        <th class="text-center" width="25%">Status Pelampauan</th>
-                        <th class="text-center" width="20%">Jumlah Elemen Skor 4</th>
+                        <th class="text-center" width="25%">Status Pelampauan Standar</th>
+                        <th class="text-center" width="20%">Jumlah Elemen Melampaui Standar</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -149,7 +149,7 @@
         <div class="alert alert-warning alert-permanent mt-3 mb-0">
             <strong>⚠️ Perhatian:</strong> Meskipun skor mencapai >= 361, status akreditasi <strong>TIDAK DAPAT</strong> ditetapkan sebagai UNGGUL
             karena kriteria <strong>{{ implode(', ', $validationSummary['missing_kriteria']) }}</strong>
-            belum memiliki minimal 1 elemen dengan kategori Pelampauan Standar.
+            belum memiliki minimal 1 elemen dengan kategori "Melampaui Standar".
             <br><br>
             Status akreditasi akan diubah menjadi: <strong class="text-danger">BAIK SEKALI</strong>
         </div>
@@ -176,7 +176,7 @@
                         <th class="text-center" width="15%">Jumlah Elemen</th>
                         <th class="text-center" width="15%">Total Bobot</th>
                         <th class="text-center" width="15%">Skor Tertimbang</th>
-                        <th class="text-center" width="10%">Pelampauan</th>
+                        <th class="text-center" width="10%">Pelampauan Standar</th>
                     </tr>
                 </thead>
                 <tbody>

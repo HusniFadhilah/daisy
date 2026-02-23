@@ -122,8 +122,7 @@
                         <tbody>
                             @foreach($pengajuans as $index => $pengajuan)
                             @php
-                            $peringkatAkhir = $pengajuan->peringkat_hasil_banding ?? $pengajuan->peringkat_hasil;
-                            $nilaiAkhir = $pengajuan->nilai_akhir_banding ?? $pengajuan->nilai_akhir;
+                            $peringkatAkhir = $pengajuan->peringkat_final;
                             $hasil = $pengajuan->asesmen->hasil ?? null;
                             @endphp
                             <tr>
@@ -134,7 +133,7 @@
                                 <td>
                                     @if($hasil && $hasil->skor_final)
                                     @php
-                                    $peringkatFinal = $hasil->getPeringkatFromSkorAL($hasil->skor_final);
+                                    $peringkatFinal = $hasil->getPeringkatFromSkor((float)($hasil->skor_al ?? 0));
                                     @endphp
                                     <span class="badge p-2 px-3 my-2 fs-6" style="background-color: {{ $hasil->getPeringkatColor($peringkatFinal) }}; color:#222">
                                         {{ $peringkatFinal }}

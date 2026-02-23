@@ -144,7 +144,7 @@
                                 <td>
                                     @if($hasil && $hasil->skor_al)
                                     @php
-                                    $peringkatAL = $hasil->getPeringkatFromSkorAL($hasil->skor_al);
+                                    $peringkatAL = $hasil->getPeringkatFromSkor((float)($hasil->skor_al ?? 0));
                                     @endphp
                                     {{-- <span class="badge bg-light text-dark fs-6 p-2 px-3">{{ number_format($hasil->skor_al, 2) }}</span> --}}
                                     <span class="badge p-2 px-3 my-2 fs-6" style="background-color: {{ $hasil->getPeringkatColor($peringkatAL) }}; color:#222">{{ $peringkatAL }}</span>
@@ -152,27 +152,6 @@
                                     <span class="text-muted">-</span>
                                     @endif
                                 </td>
-                                {{-- <td>
-                                    @if($peringkatSaatIni)
-                                    <span class="badge {{ $badgeClass }} peringkat-badge">
-                                <i class="{{ $icon }}"></i>
-                                {{ $peringkatSaatIni }}
-                                </span>
-                                @if($nilaiSaatIni)
-                                <br>
-                                <small class="text-muted">Nilai: <strong>{{ $nilaiSaatIni }}</strong></small>
-                                @endif
-                                @else
-                                <span class="text-muted">-</span>
-                                @endif
-                                </td>
-                                <td>
-                                    @if($pengajuan->nilai_akhir)
-                                    <strong class="text-primary">{{ $pengajuan->nilai_akhir }}</strong>
-                                    @else
-                                    <span class="text-muted">-</span>
-                                    @endif
-                                </td> --}}
                                 <td>
                                     {!! $pengajuan->getCustomBadgeLastStatus('penyampaian_hasil','upps','label_short_for','text-dark') !!}
                                 </td>

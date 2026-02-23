@@ -89,6 +89,11 @@ class LhaAsesor extends Model
         return $this->status === 'finalized';
     }
 
+    public function isFinalizedApproved()
+    {
+        return in_array($this->status, ['finalized', 'approved']);
+    }
+
     public function isDraft()
     {
         return $this->status === 'draft';

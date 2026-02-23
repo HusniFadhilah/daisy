@@ -163,10 +163,11 @@ class PengingatAkreditasiController extends Controller
 
         DB::beginTransaction();
         try {
+            $studyProgram = StudyProgram::findOrFail($pengingat->id_program_studi);
             // Create PengajuanAkreditasi
             $pengajuan = PengajuanAkreditasi::create([
                 'nomor_pengajuan' => PengajuanAkreditasi::generateNomorPengajuan($request->jenis_akreditasi),
-                'id_program_studi' => $pengingat->id_program_studi,
+                'id_program_studi' => $studyProgram->id,
                 'id_user_pengaju' => auth()->id(),
                 'id_de_assigned' => $pengingat->id_de_pengirim,
                 'tahun_akreditasi' => $pengingat->tahun_akreditasi,
@@ -175,6 +176,8 @@ class PengingatAkreditasiController extends Controller
                 'catatan_pengaju' => $request->catatan_pengaju,
                 'tanggal_pengingat' => $pengingat->tanggal_dikirim,
                 'tanggal_surat_permohonan_dikirim' => now(),
+                'tanggal_kedaluwarsa_awal' => $studyProgram->tanggal_kedaluwarsa,
+                'peringkat_awal' => $studyProgram->peringkat_akreditasi,
             ]);
 
             // Upload surat permohonan

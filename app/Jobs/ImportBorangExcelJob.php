@@ -59,6 +59,7 @@ class ImportBorangExcelJob implements ShouldQueue
                 if (in_array($sheetName, self::SKIP_SHEETS)) continue;
 
                 $ws = $spreadsheet->getSheetByName($sheetName);
+                $sheetName = trim($sheetName);
                 $stats = $service->processSheet(
                     $ws,
                     $sheetName,
