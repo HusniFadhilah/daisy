@@ -89,7 +89,7 @@
         <!-- Main Content -->
         <div class="col-lg-8 mb-4">
             <!-- Status Alert -->
-            @if($lhaDocument && $lhaDocument->status == 'revision_required')
+            @if($lhaDocument && $lhaDocument->status_persetujuan_prodi == 'revision_required')
             <div class="alert alert-warning alert-permanent">
                 <i class="bi bi-exclamation-triangle"></i>
                 <strong>Terdapat permintaan melakukan revisi</strong>

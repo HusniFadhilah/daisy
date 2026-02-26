@@ -247,13 +247,15 @@ class BorangValidatorController extends Controller
         // Get progress
         $progress = $validation->getProgressPercentage();
         $isEnvLocal = app()->environment() === 'local';
-
-        $lockBorang = in_array($pengajuan->status, [
+        $allowed = [
             \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
             \App\Models\PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
             \App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
             \App\Models\PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED,
-        ]);
+        ];
+
+        $log = $pengajuan->latestRelevantStatusLog($allowed);
+        $lockBorang = in_array($log?->status_to, $allowed);
 
         // =====================
         // STATUS BANNER (VIEW)

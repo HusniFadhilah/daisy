@@ -54,9 +54,9 @@
 <a href="{{ route('ak.berkas') }}" class="nav-link {{ request()->routeIs('ak*') ? 'active' : '' }}">
     <span class="menu-icon">📝</span>
     <span>Proses AK</span>
-    @if(isset($prosesAK) && $prosesAK > 0)
+    {{-- @if(isset($prosesAK) && $prosesAK > 0)
     <span class="badge bg-warning menu-badge">{{ $prosesAK }}</span>
-    @endif
+    @endif --}}
 </a>
 @endif
 
@@ -69,12 +69,12 @@
 @endif
 
 <!-- Penugasan Banding -->
-@if(Route::has('banding'))
+{{-- @if(Route::has('banding'))
 <a href="{{ route('banding') }}" class="nav-link {{ request()->routeIs('banding') ? 'active' : '' }}">
-    <span class="menu-icon">🤝</span>
-    <span>Penugasan Banding</span>
+<span class="menu-icon">🤝</span>
+<span>Penugasan Banding</span>
 </a>
-@endif
+@endif --}}
 
 <!-- Pedoman AK -->
 @if(Route::has('pedoman'))

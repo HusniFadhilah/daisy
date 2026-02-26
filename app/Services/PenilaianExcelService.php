@@ -1030,7 +1030,7 @@ class PenilaianExcelService
         // ===== DATA PERGURUAN TINGGI (Kiri - Row 7, 9, 11, 13, 15) =====
         $leftData = [
             7  => ['label' => 'Nama Perguruan Tinggi', 'value' => $asesmen->studyProgram->university->name ?? '-'],
-            9  => ['label' => 'Nama Program Study', 'value' => $asesmen->studyProgram->name ?? '-'],
+            9  => ['label' => 'Nama Program Studi', 'value' => $asesmen->studyProgram->name ?? '-'],
             11 => ['label' => 'Jenis Permohonan Akreditasi', 'value' => $asesmen->pengajuan->jenis_akreditasi_label ?? '-'],
             13 => ['label' => 'Kode Panel', 'value' => $asesmen->kode_panel],
             15 => ['label' => 'TS *)', 'value' => now()->year],

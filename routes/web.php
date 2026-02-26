@@ -287,9 +287,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{pengajuan}/borang/lkps-export', [LkpsExportController::class, 'export']);
             Route::get('/{pengajuan}/borang/lkps-preview', [LkpsExportController::class, 'preview'])->name('.borang.lkps.preview');
             Route::get('/{pengajuan}/borang/lkps-test', [LkpsExportController::class, 'test'])->name('.borang.lkps.test');
+            Route::get('/{pengajuan}/borang/lkps-cek-syarat', [LkpsExportController::class, 'cekSyarat'])->name('.borang.lkps.cek-syarat');
         });
 
-        Route::middleware(['role:admin_prodi,admin_univ,super_admin,sekretariat'])->group(function () {
+        Route::middleware(['role:admin_prodi,admin_univ,super_admin,sekretariat,validator,asesor'])->group(function () {
             Route::get('/{id}/borang/download-template', [PengajuanAkreditasiController::class, 'downloadBorangTemplate'])->name('.borang.download-template');
             Route::get('/{id}/borang/export-docx', [PengajuanAkreditasiController::class, 'exportBorangDocx'])->name('.borang.export-docx');
         });

@@ -39,6 +39,7 @@ class SyaratAkreditasi extends Model
     public const KELOMPOK_JABATAN         = 'jabatan';
     public const KELOMPOK_RENTANG_SKOR    = 'rentang_skor';
     public const KELOMPOK_SYARAT_KUALITATIF = 'syarat_kualitatif';
+    public const KELOMPOK_SERTIFIKAT = 'sertifikat';
 
     // ── Kunci ──
     public const KUNCI_SKOR_MIN_UNGGUL       = 'skor_minimum_unggul';
@@ -48,6 +49,7 @@ class SyaratAkreditasi extends Model
     public const KUNCI_RUMPUN_RASIO_KHUSUS   = 'rumpun_rasio_khusus';
     public const KUNCI_JABATAN_LEKTOR        = 'jabatan_lektor_ke_atas';
     public const KUNCI_PERSEN_LEKTOR         = 'persen_minimum_lektor';
+    public const KUNCI_PERSEN_SERTIFIKAT_PROFESI = 'persen_minimum_sertifikat_profesi';
 
     /**
      * Casting nilai ke tipe yang sesuai.
@@ -80,18 +82,30 @@ class SyaratAkreditasi extends Model
     }
 
     // ── Scope ──
+    // Update scope aktif agar bisa filter by degree_level
     public function scopeAktif($query)
     {
         return $query->where('is_active', true)
             ->where(
-                fn($q) => $q
-                    ->whereNull('berlaku_sampai')
+                fn($q) => $q->whereNull('berlaku_sampai')
                     ->orWhere('berlaku_sampai', '>=', now()->toDateString())
             )
             ->where(
-                fn($q) => $q
-                    ->whereNull('berlaku_mulai')
+                fn($q) => $q->whereNull('berlaku_mulai')
                     ->orWhere('berlaku_mulai', '<=', now()->toDateString())
             );
+    }
+
+    public function scopeForDegreeLevel($query, ?int $degreeLevelId)
+    {
+        return $query->where(function ($q) use ($degreeLevelId) {
+            $q->where('id_degree_level', $degreeLevelId)
+                ->orWhereNull('id_degree_level'); // fallback ke syarat global
+        });
+    }
+
+    public function degreeLevel()
+    {
+        return $this->belongsTo(DegreeLevel::class, 'id_degree_level');
     }
 }

@@ -358,7 +358,7 @@ $authUser = Auth::user();
         validator: {
             desc: (roleLabel) => `Anda akan menerima penawaran sebagai <strong>${roleLabel}</strong> untuk melakukan validasi.`
             , info: (_roleLabel, jenis) => {
-                if (jenis === 'dokumen') return 'Setelah menerima, Anda dapat mengakses dokumen borang/LED, memberi catatan, dan mengirim hasil validasi.';
+                if (jenis === 'dokumen') return 'Setelah menerima, Anda dapat mengakses Dokumen LED, memberi catatan, dan mengirim hasil validasi.';
                 if (jenis === 'ak') return 'Setelah menerima, Anda dapat mengakses hasil penilaian kecukupan, memeriksa kelengkapan, dan mengirim hasil validasi.';
                 if (jenis === 'al') return 'Setelah menerima, Anda dapat mengakses dokumen hasil asesmen lapangan, memeriksa kelengkapan, dan mengirim hasil validasi.';
                 return 'Setelah menerima, Anda dapat mengakses dokumen yang perlu ditinjau, memberi catatan, dan mengirim hasil validasi.';

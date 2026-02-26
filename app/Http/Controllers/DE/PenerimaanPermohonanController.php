@@ -83,7 +83,7 @@ class PenerimaanPermohonanController extends Controller
         ])->findOrFail($id);
 
         // Authorization
-        $this->authorize('kirimSuratPenerimaan', $pengajuan);
+        // $this->authorize('kirimSuratPenerimaan', $pengajuan);
 
         return view('de.penerimaan-permohonan.show', compact('pengajuan'));
     }

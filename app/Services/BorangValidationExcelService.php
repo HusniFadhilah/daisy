@@ -215,14 +215,8 @@ class BorangValidationExcelService
         // base: border + bold + align
         $this->styleHeaderBase($sheet, 'B5:J6');
 
-        // 1) Kriteria + Kode Elemen + Elemen Standar => background putih
-        $this->fillRange($sheet, 'B5:F6', 'FFFFFFFF');
-
-        // 2) Indikator header (G:H) => background abu2 muda D0E0E3
-        $this->fillRange($sheet, 'G5:H6', 'FFD0E0E3');
-
-        // 3) Kategori Review & Catatan Review => hijau muda D9EAD3
-        $this->fillRange($sheet, 'I5:J6', 'FFD9EAD3');
+        // Header abu-abu
+        $this->fillRange($sheet, 'B5:J6', 'FFD9D9D9');
 
         // Row heights
         $sheet->getRowDimension(5)->setRowHeight(30);
@@ -240,6 +234,7 @@ class BorangValidationExcelService
         // Data rows
         $row = 7;
         $noKriteria = 1;
+        $noElemenGlobal = 1;
 
         // ✅ Hapus orderBy - tampilkan sesuai urutan di database
         $kriterias = Kriteria::with([
@@ -260,16 +255,25 @@ class BorangValidationExcelService
             }
 
             foreach ($kriteria->elemenStandar as $index => $elemen) {
-                // Kriteria (hanya sekali per grup)
+
                 if ($isFirstElemen) {
                     $sheet->setCellValue("B{$row}", $noKriteria);
+                    $this->setContentFontBlue($sheet, "B{$row}");
+
                     $sheet->setCellValue("C{$row}", $kriteria->nama_kriteria);
+                    $this->setContentFontBlue($sheet, "C{$row}");
                 }
 
                 // ✅ Elemen - menggunakan index + 1
-                $sheet->setCellValue("D{$row}", $index + 1);
+                $sheet->setCellValue("D{$row}", $noElemenGlobal);
+                $this->setContentFontBlue($sheet, "D{$row}");
+                $noElemenGlobal++;
+
                 $sheet->setCellValue("E{$row}", $elemen->kode_elemen);
+                $this->setContentFontBlue($sheet, "E{$row}");
+
                 $sheet->setCellValue("F{$row}", $elemen->pernyataan_elemen);
+                $this->setContentFontBlue($sheet, "F{$row}");
 
                 // Indikator Kualitatif dan Kuantitatif
                 $indikatorKualitatif = $elemen->indikator
@@ -285,7 +289,10 @@ class BorangValidationExcelService
                     ->implode("\n\n");
 
                 $sheet->setCellValue("G{$row}", $indikatorKualitatif ?: 'Tidak ada');
+                $this->setContentFontBlue($sheet, "G{$row}");
+
                 $sheet->setCellValue("H{$row}", $indikatorKuantitatif ?: 'Tidak ada');
+                $this->setContentFontBlue($sheet, "H{$row}");
 
                 // Kategori Review & Catatan
                 $gradeCell = "I{$row}";
@@ -348,11 +355,8 @@ class BorangValidationExcelService
 
         $this->styleHeaderBase($sheet, 'B5:F5');
 
-        // B5:D5 (No, Section, Konten) => abu2 muda
-        $this->fillRange($sheet, 'B5:D5', 'FFD0E0E3');
-
-        // E5:F5 (Kategori Review, Catatan Review) => hijau muda (biar konsisten)
-        $this->fillRange($sheet, 'E5:F5', 'FFD9EAD3');
+        // Header abu-abu
+        $this->fillRange($sheet, 'B5:F5', 'FFD9D9D9');
         $sheet->getRowDimension($row)->setRowHeight(30);
 
         // Petunjuk
@@ -378,8 +382,13 @@ class BorangValidationExcelService
 
         foreach ($suplemenItems as $item) {
             $sheet->setCellValue('B' . $row, $no++);
+            $this->setContentFontBlue($sheet, 'B' . $row);
+
             $sheet->setCellValue('C' . $row, \Illuminate\Support\Str::headline($item->section_key));
+            $this->setContentFontBlue($sheet, 'C' . $row);
+
             $sheet->setCellValue('D' . $row, $item->text_content);
+            $this->setContentFontBlue($sheet, 'D' . $row);
 
             // Kategori Review
             $gradeCell = 'E' . $row;
@@ -453,14 +462,8 @@ class BorangValidationExcelService
         // Style headers
         $this->styleHeaderBase($sheet, 'B5:I6');
 
-        // putih untuk kiri (Kriteria, Kode Elemen, Elemen Standar)
-        $this->fillRange($sheet, 'B5:F6', 'FFFFFFFF');
-
-        // indikator kuantitatif (G)
-        $this->fillRange($sheet, 'G5:G6', 'FFD0E0E3');
-
-        // kategori & catatan (H:I)
-        $this->fillRange($sheet, 'H5:I6', 'FFD9EAD3');
+        // Header abu-abu
+        $this->fillRange($sheet, 'B5:I6', 'FFD9D9D9');
 
         // Row heights
         $sheet->getRowDimension(5)->setRowHeight(30);
@@ -478,6 +481,7 @@ class BorangValidationExcelService
         // Data rows
         $row = 7;
         $noKriteria = 1;
+        $noElemenGlobal = 1;
 
         // ✅ Hapus orderBy
         $kriterias = Kriteria::with([
@@ -516,20 +520,26 @@ class BorangValidationExcelService
                     // Kriteria dan Elemen (hanya sekali per grup indikator)
                     if ($isFirstIndikator) {
                         $sheet->setCellValue("B{$row}", $noKriteria);
+                        $this->setContentFontBlue($sheet, "B{$row}");
+
                         $sheet->setCellValue("C{$row}", $kriteria->nama_kriteria);
+                        $this->setContentFontBlue($sheet, "C{$row}");
 
-                        // ✅ FIX: kolom D = index elemen (mulai 1)
-                        $sheet->setCellValue("D{$row}", $elemenIndex + 1);
+                        // ✅ kolom D global 1..30 per elemen
+                        $sheet->setCellValue("D{$row}", $noElemenGlobal);
+                        $this->setContentFontBlue($sheet, "D{$row}");
+                        $noElemenGlobal++;
 
-                        // ✅ kolom E = kode elemen (E.2, E.3, dst)
                         $sheet->setCellValue("E{$row}", $elemen->kode_elemen);
+                        $this->setContentFontBlue($sheet, "E{$row}");
 
-                        // ✅ kolom F = nama elemen
                         $sheet->setCellValue("F{$row}", $elemen->pernyataan_elemen);
+                        $this->setContentFontBlue($sheet, "F{$row}");
                     }
 
                     // ✅ Indikator Kuantitatif (langsung deskripsi, tanpa kode)
                     $sheet->setCellValue("G{$row}", $indikator->deskripsi_indikator);
+                    $this->setContentFontBlue($sheet, "G{$row}");
 
                     // Kategori Review
                     $gradeCell = "H{$row}";
@@ -632,6 +642,23 @@ class BorangValidationExcelService
         $sheet->getColumnDimension('D')->setVisible(false);
         $sheet->getColumnDimension('E')->setVisible(false);
         $sheet->getColumnDimension('F')->setVisible(false);
+    }
+
+    private function setContentFontBlue($sheet, string $cell): void
+    {
+        $sheet->getStyle($cell)->getFont()->getColor()->setARGB('FF1F4E79');
+    }
+
+    /**
+     * Set font biru hanya kalau value tidak kosong
+     */
+    private function setContentFontBlueIfNotEmpty($sheet, string $cell, $value): void
+    {
+        $v = is_string($value) ? trim($value) : $value;
+        if ($v === null) return;
+        if (is_string($v) && $v === '') return;
+
+        $this->setContentFontBlue($sheet, $cell);
     }
 
     // ========================================

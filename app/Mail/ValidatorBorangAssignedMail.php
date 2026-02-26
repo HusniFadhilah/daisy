@@ -1,5 +1,4 @@
 <?php
-// app/Mail/ValidatorBorangAssignedMail.php
 
 namespace App\Mail;
 
@@ -7,7 +6,6 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use App\Models\AsesmenUserRole;
 use App\Models\PengajuanAkreditasi;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
@@ -18,6 +16,7 @@ class ValidatorBorangAssignedMail extends Mailable implements ShouldQueue
     public $pengajuan;
     public $assignment;
     public $catatanDe;
+    public $acceptUrl;
 
     public $tries = 3;
     public $timeout = 60;
@@ -30,20 +29,17 @@ class ValidatorBorangAssignedMail extends Mailable implements ShouldQueue
             'latestBorangImport'
         ]);
 
-        $this->assignment = $assignment;
-        $this->catatanDe = $catatanDe;
+        $this->assignment   = $assignment;
+        $this->catatanDe    = $catatanDe;
+        $this->acceptUrl    = route('penawaran.berkas.cekPenawaran', [
+            'idAsesmen'     => $assignment->id,
+            'jenisAsesmen'  => 'dokumen',
+        ]);
     }
 
     public function build()
     {
-        $subject = "Penawaran Validasi Dokumen - {$this->pengajuan->nomor_pengajuan}";
-
-        return $this->subject($subject)
-            ->markdown('emails.validator.borang-assigned', [
-                'pengajuan' => $this->pengajuan,
-                'assignment' => $this->assignment,
-                'catatanDe' => $this->catatanDe,
-                'acceptUrl' => route('penawaran.berkas.cekPenawaran', ['idAsesmen' => $this->assignment->id, 'jenisAsesmen' => 'dokumen']),
-            ]);
+        return $this->subject("Penawaran Validasi Dokumen - {$this->pengajuan->nomor_pengajuan}")
+            ->view('emails.validator.borang-assigned');
     }
 }

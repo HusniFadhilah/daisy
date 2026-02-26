@@ -56,6 +56,14 @@ class UserSeeder extends Seeder
                 'roles' => ['asesor'],
             ],
             [
+                'name' => 'Asesor 3',
+                'email' => 'asesor3@daisy.lamdepilar.or.id',
+                'password' => Hash::make('=Secret1234'),
+                'role' => 'user',
+                'role_selected' => 'asesor',
+                'roles' => ['asesor'],
+            ],
+            [
                 'name' => 'Siti Nurhaliza',
                 'email' => 'siti.nurhaliza@daisy.lamdepilar.or.id',
                 'password' => Hash::make('=Secret1234'),

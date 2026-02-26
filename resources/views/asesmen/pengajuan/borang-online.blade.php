@@ -577,20 +577,20 @@ $lockBorang = in_array($log?->status_to, $allowed);
                             <button type="button" class="btn btn-outline-success btn-sm" id="btnUploadExcelLkps" {{ $lockBorang ? 'disabled' : '' }} onclick="triggerUploadKuantitatif()">
                                 <i class="bi bi-cloud-upload"></i> Upload Excel LKPS
                             </button>
-                            <button type="button" class="btn btn-outline-primary btn-sm" id="btnIsianOnlineLkps" {{ $lockBorang ? 'disabled' : '' }}>
-                                <i class="bi bi-pencil-square"></i> Isi Online
-                            </button>
+                            {{-- <button type="button" class="btn btn-outline-primary btn-sm" id="btnIsianOnlineLkps" {{ $lockBorang ? 'disabled' : '' }}>
+                            <i class="bi bi-pencil-square"></i> Isi Online
+                            </button> --}}
                         </div>
 
                         {{-- Download Template Kosong --}}
-                        <a href="{{ route('pengajuan.borang.lkps.download-template', $pengajuan->id) }}" class="btn btn-outline-secondary btn-sm">
-                            <i class="bi bi-download"></i> Download Template LKPS
-                        </a>
+                        {{-- <a href="{{ route('pengajuan.borang.lkps.download-template', $pengajuan->id) }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-download"></i> Download Template LKPS
+                        </a> --}}
 
                         {{-- Export Data Terisi --}}
-                        <a href="{{ route('pengajuan.borang.lkps.export', $pengajuan->id) }}" class="btn btn-outline-success btn-sm">
-                            <i class="bi bi-file-excel"></i> Export LKPS Terisi
-                        </a>
+                        {{-- <a href="{{ route('pengajuan.borang.lkps.export', $pengajuan->id) }}" class="btn btn-outline-success btn-sm">
+                        <i class="bi bi-file-excel"></i> Export LKPS Terisi
+                        </a> --}}
 
                         @if(isset($uploadedFiles['kuantitatif']))
                         <button type="button" class="btn btn-outline-info btn-sm w-100" id="btnLihatDataLkps">
@@ -600,7 +600,7 @@ $lockBorang = in_array($log?->status_to, $allowed);
 
                         <small class="text-muted d-block mt-2">
                             <i class="bi bi-info-circle"></i>
-                            Upload Excel templat resmi, atau isi tabel secara online.
+                            Upload Excel templat yang telah diisi lalu silahkan upload.
                         </small>
                     </div>
                     <input type="file" id="inputKuantitatif" class="d-none" accept=".xlsx,.xls" onchange="handleUploadKuantitatif(event)" {{ $lockBorang ? 'disabled' : '' }}>

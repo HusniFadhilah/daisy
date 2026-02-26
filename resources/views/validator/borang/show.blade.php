@@ -83,7 +83,7 @@
     {{-- Progress Overview --}}
     <div class="row mb-4">
         <div class="col-md-3">
-            <div class="card text-center">
+            <div class="card text-center js-progress-card" role="button" tabindex="0" data-jump-tab="led" style="cursor:pointer;">
                 <div class="card-body">
                     <h6 class="text-muted">LED</h6>
                     <h3 class="mb-0">
@@ -112,7 +112,7 @@
         </div>
 
         <div class="col-md-3">
-            <div class="card text-center">
+            <div class="card text-center js-progress-card" role="button" tabindex="0" data-jump-tab="suplemen" style="cursor:pointer;">
                 <div class="card-body">
                     <h6 class="text-muted">Suplemen</h6>
                     <h3 class="mb-0">
@@ -141,7 +141,7 @@
         </div>
 
         <div class="col-md-3">
-            <div class="card text-center">
+            <div class="card text-center js-progress-card" role="button" tabindex="0" data-jump-tab="lkps" style="cursor:pointer;">
                 <div class="card-body">
                     <h6 class="text-muted">LKPS</h6>
                     <h3 class="mb-0">
@@ -387,403 +387,405 @@
     </div>
 
     {{-- Review Content --}}
-    <div class="row">
-        <div class="col-12">
+    <div id="review-section">
+        <div class="row">
+            <div class="col-12">
 
-            {{-- Global Controls --}}
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div class="btn-group">
-                    <button type="button" class="btn btn-outline-primary btn-sm" id="btnToggleAll">
-                        <i class="bi bi-arrows-expand"></i> Expand All
-                    </button>
-                    <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-outline-danger btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" id="btnResetDropdown">
-                            <i class="bi bi-arrow-counterclockwise"></i> Reset
+                {{-- Global Controls --}}
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-outline-primary btn-sm" id="btnToggleAll">
+                            <i class="bi bi-arrows-expand"></i> Expand All
                         </button>
-                        <ul class="dropdown-menu" id="resetDropdownMenu">
-                            <li>
-                                <button class="dropdown-item" type="button" data-reset-target="active" id="reset-active">
-                                    Reset Tab Aktif
-                                </button>
-                            </li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li>
-                                <button class="dropdown-item" type="button" data-reset-target="led" id="reset-led">
-                                    Reset LED
-                                </button>
-                            </li>
-                            <li>
-                                <button class="dropdown-item" type="button" data-reset-target="suplemen" id="reset-suplemen">
-                                    Reset Suplemen
-                                </button>
-                            </li>
-                            <li>
-                                <button class="dropdown-item" type="button" data-reset-target="lkps" id="reset-lkps">
-                                    Reset LKPS
-                                </button>
-                            </li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li>
-                                <button class="dropdown-item text-danger fw-semibold" type="button" data-reset-target="all" id="reset-all">
-                                    Reset SEMUA (LED + Suplemen + LKPS)
-                                </button>
-                            </li>
-                        </ul>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-outline-danger btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" id="btnResetDropdown">
+                                <i class="bi bi-arrow-counterclockwise"></i> Reset
+                            </button>
+                            <ul class="dropdown-menu" id="resetDropdownMenu">
+                                <li>
+                                    <button class="dropdown-item" type="button" data-reset-target="active" id="reset-active">
+                                        Reset Tab Aktif
+                                    </button>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li>
+                                    <button class="dropdown-item" type="button" data-reset-target="led" id="reset-led">
+                                        Reset LED
+                                    </button>
+                                </li>
+                                <li>
+                                    <button class="dropdown-item" type="button" data-reset-target="suplemen" id="reset-suplemen">
+                                        Reset Suplemen
+                                    </button>
+                                </li>
+                                <li>
+                                    <button class="dropdown-item" type="button" data-reset-target="lkps" id="reset-lkps">
+                                        Reset LKPS
+                                    </button>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li>
+                                    <button class="dropdown-item text-danger fw-semibold" type="button" data-reset-target="all" id="reset-all">
+                                        Reset SEMUA (LED + Suplemen + LKPS)
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+
+                        @if(app()->environment('local'))
+                        <button type="button" class="btn btn-outline-danger btn-sm" id="btnAutoTestReview">
+                            <i class="bi bi-lightning-charge"></i> Auto Test Review
+                        </button>
+                        @endif
                     </div>
 
-                    @if(app()->environment('local'))
-                    <button type="button" class="btn btn-outline-danger btn-sm" id="btnAutoTestReview">
-                        <i class="bi bi-lightning-charge"></i> Auto Test Review
-                    </button>
-                    @endif
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-dark" id="activeTabLabel">Tab: LED</span>
+                        <span class="badge bg-warning text-dark" id="tabReviewedInfo">-</span>
+                    </div>
                 </div>
 
-                <div class="d-flex align-items-center gap-2">
-                    <span class="badge bg-dark" id="activeTabLabel">Tab: LED</span>
-                    <span class="badge bg-warning text-dark" id="tabReviewedInfo">-</span>
-                </div>
-            </div>
+                {{-- Tabs: LED | Suplemen | LKPS --}}
+                <ul class="nav nav-tabs mb-3" id="reviewTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="tab-led" data-bs-toggle="tab" data-bs-target="#pane-led" type="button" role="tab">
+                            <i class="bi bi-file-earmark-text"></i> LED
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="tab-suplemen" data-bs-toggle="tab" data-bs-target="#pane-suplemen" type="button" role="tab">
+                            <i class="bi bi-file-earmark-plus"></i> Suplemen
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="tab-lkps" data-bs-toggle="tab" data-bs-target="#pane-lkps" type="button" role="tab">
+                            <i class="bi bi-table"></i> LKPS (Kuantitatif)
+                        </button>
+                    </li>
+                </ul>
 
-            {{-- Tabs: LED | Suplemen | LKPS --}}
-            <ul class="nav nav-tabs mb-3" id="reviewTabs" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="tab-led" data-bs-toggle="tab" data-bs-target="#pane-led" type="button" role="tab">
-                        <i class="bi bi-file-earmark-text"></i> LED
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="tab-suplemen" data-bs-toggle="tab" data-bs-target="#pane-suplemen" type="button" role="tab">
-                        <i class="bi bi-file-earmark-plus"></i> Suplemen
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="tab-lkps" data-bs-toggle="tab" data-bs-target="#pane-lkps" type="button" role="tab">
-                        <i class="bi bi-table"></i> LKPS (Kuantitatif)
-                    </button>
-                </li>
-            </ul>
+                <div class="tab-content" id="reviewTabContent">
 
-            <div class="tab-content" id="reviewTabContent">
-
-                {{-- =========================
+                    {{-- =========================
            PANE LED
       ========================== --}}
-                <div class="tab-pane fade show active" id="pane-led" role="tabpanel" aria-labelledby="tab-led">
-                    @foreach($kriterias as $kriteria)
-                    <div class="card mb-3">
-                        <div class="card-header bg-primary text-white">
-                            <h5 class="mb-0">{{ $kriteria->kode_kriteria }} - {{ $kriteria->nama_kriteria }}</h5>
-                        </div>
+                    <div class="tab-pane fade show active" id="pane-led" role="tabpanel" aria-labelledby="tab-led">
+                        @foreach($kriterias as $kriteria)
+                        <div class="card mb-3">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">{{ $kriteria->kode_kriteria }} - {{ $kriteria->nama_kriteria }}</h5>
+                            </div>
 
-                        <div class="card-body">
-                            <div class="accordion" id="acc-led-{{ $kriteria->id }}">
-                                @foreach($kriteria->elemenStandar as $elemen)
-                                @php
-                                $reviewData = $validation->review_led ?? [];
-                                $isReviewed = isset($reviewData[$elemen->id]);
-                                $badgeClass = $isReviewed ? 'bg-success' : 'bg-warning text-dark';
-                                $badgeText = $isReviewed ? 'Validasi Lengkap' : 'Validasi Belum Lengkap';
+                            <div class="card-body">
+                                <div class="accordion" id="acc-led-{{ $kriteria->id }}">
+                                    @foreach($kriteria->elemenStandar as $elemen)
+                                    @php
+                                    $reviewData = $validation->review_led ?? [];
+                                    $isReviewed = isset($reviewData[$elemen->id]);
+                                    $badgeClass = $isReviewed ? 'bg-success' : 'bg-warning text-dark';
+                                    $badgeText = $isReviewed ? 'Validasi Lengkap' : 'Validasi Belum Lengkap';
 
-                                $grade = $isReviewed ? ($reviewData[$elemen->id]['grade'] ?? null) : null;
-                                $gradeClass = match($grade) {
-                                'A' => 'bg-success',
-                                'B' => 'bg-warning text-dark',
-                                'C' => 'bg-danger',
-                                default => 'bg-secondary'
-                                };
+                                    $grade = $isReviewed ? ($reviewData[$elemen->id]['grade'] ?? null) : null;
+                                    $gradeClass = match($grade) {
+                                    'A' => 'bg-success',
+                                    'B' => 'bg-warning text-dark',
+                                    'C' => 'bg-danger',
+                                    default => 'bg-secondary'
+                                    };
 
-                                $gradeLabel = match($grade) {
-                                'A' => 'A - Sudah Tepat',
-                                'B' => 'B - Kurang Lengkap',
-                                'C' => 'C - Perlu Diperbaiki',
-                                default => '-'
-                                };
-                                @endphp
+                                    $gradeLabel = match($grade) {
+                                    'A' => 'A - Sudah Tepat',
+                                    'B' => 'B - Kurang Lengkap',
+                                    'C' => 'C - Perlu Diperbaiki',
+                                    default => '-'
+                                    };
+                                    @endphp
 
-                                <div class="accordion-item elemen-accordion-item" data-tab="led" data-elemen-id="{{ $elemen->id }}" data-required-count="1" data-reviewed-count="{{ $isReviewed ? 1 : 0 }}">
-                                    <h2 class="accordion-header" id="h-led-{{ $elemen->id }}">
-                                        <button class="accordion-button collapsed d-flex align-items-center gap-2" type="button" data-bs-toggle="collapse" data-bs-target="#c-led-{{ $elemen->id }}" aria-expanded="false" aria-controls="c-led-{{ $elemen->id }}">
-                                            <span class="badge bg-light text-dark">{{ $elemen->kode_elemen }}</span>
-                                            <span class="flex-grow-1"><strong>{{ $elemen->pernyataan_elemen }}</strong></span>
-                                            <span class="badge {{ $badgeClass }} elemen-status-badge">{{ $badgeText }}</span>
-                                            <span class="badge {{ $gradeClass }} elemen-grade-badge" data-grade="{{ $grade ?? '' }}">
-                                                <small>{{ $gradeLabel }}</small>
-                                            </span>
-                                        </button>
-                                    </h2>
-                                    <div id="c-led-{{ $elemen->id }}" class="accordion-collapse collapse" aria-labelledby="h-led-{{ $elemen->id }}" data-bs-parent="#acc-led-{{ $kriteria->id }}">
-                                        <div class="accordion-body">
-                                            @include('validator.borang.partials.review-item', [
-                                            'category' => 'led',
-                                            'itemId' => $elemen->id,
-                                            'validation' => $validation,
-                                            'assignmentId' => $assignment->id,
-                                            ])
+                                    <div class="accordion-item elemen-accordion-item" data-tab="led" data-elemen-id="{{ $elemen->id }}" data-required-count="1" data-reviewed-count="{{ $isReviewed ? 1 : 0 }}">
+                                        <h2 class="accordion-header" id="h-led-{{ $elemen->id }}">
+                                            <button class="accordion-button collapsed d-flex align-items-center gap-2" type="button" data-bs-toggle="collapse" data-bs-target="#c-led-{{ $elemen->id }}" aria-expanded="false" aria-controls="c-led-{{ $elemen->id }}">
+                                                <span class="badge bg-light text-dark">{{ $elemen->kode_elemen }}</span>
+                                                <span class="flex-grow-1"><strong>{{ $elemen->pernyataan_elemen }}</strong></span>
+                                                <span class="badge {{ $badgeClass }} elemen-status-badge">{{ $badgeText }}</span>
+                                                <span class="badge {{ $gradeClass }} elemen-grade-badge" data-grade="{{ $grade ?? '' }}">
+                                                    <small>{{ $gradeLabel }}</small>
+                                                </span>
+                                            </button>
+                                        </h2>
+                                        <div id="c-led-{{ $elemen->id }}" class="accordion-collapse collapse" aria-labelledby="h-led-{{ $elemen->id }}" data-bs-parent="#acc-led-{{ $kriteria->id }}">
+                                            <div class="accordion-body">
+                                                @include('validator.borang.partials.review-item', [
+                                                'category' => 'led',
+                                                'itemId' => $elemen->id,
+                                                'validation' => $validation,
+                                                'assignmentId' => $assignment->id,
+                                                ])
+                                            </div>
                                         </div>
                                     </div>
+                                    @endforeach
                                 </div>
-                                @endforeach
                             </div>
                         </div>
+                        @endforeach
                     </div>
-                    @endforeach
-                </div>
 
-                {{-- =========================
+                    {{-- =========================
            PANE SUPLEMEN
       ========================== --}}
-                <div class="tab-pane fade" id="pane-suplemen" role="tabpanel" aria-labelledby="tab-suplemen">
+                    <div class="tab-pane fade" id="pane-suplemen" role="tabpanel" aria-labelledby="tab-suplemen">
 
-                    @php
-                    $reviewData = $validation->review_suplemen ?? [];
-                    @endphp
+                        @php
+                        $reviewData = $validation->review_suplemen ?? [];
+                        @endphp
 
-                    @forelse($suplemenGrouped as $sectionKey => $items)
-                    @continue($sectionKey === 'header')
-                    @php
-                    // hitung complete per section
-                    $required = $items->count();
-                    $reviewedCount = 0;
-                    foreach($items as $it){
-                    if(isset($reviewData[$it->id])) $reviewedCount++;
-                    }
-                    $isComplete = ($required === 0) ? true : ($reviewedCount === $required);
-                    $badgeClass = $isComplete ? 'bg-success' : 'bg-warning text-dark';
-                    $badgeText = $isComplete ? 'Validasi Lengkap' : 'Validasi Belum Lengkap';
-                    @endphp
+                        @forelse($suplemenGrouped as $sectionKey => $items)
+                        @continue($sectionKey === 'header')
+                        @php
+                        // hitung complete per section
+                        $required = $items->count();
+                        $reviewedCount = 0;
+                        foreach($items as $it){
+                        if(isset($reviewData[$it->id])) $reviewedCount++;
+                        }
+                        $isComplete = ($required === 0) ? true : ($reviewedCount === $required);
+                        $badgeClass = $isComplete ? 'bg-success' : 'bg-warning text-dark';
+                        $badgeText = $isComplete ? 'Validasi Lengkap' : 'Validasi Belum Lengkap';
+                        @endphp
 
-                    <div class="card mb-3">
-                        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
-                            <div class="fw-bold">
-                                {{ \Illuminate\Support\Str::headline($sectionKey) }}
+                        <div class="card mb-3">
+                            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                                <div class="fw-bold">
+                                    {{ \Illuminate\Support\Str::headline($sectionKey) }}
+                                </div>
+                                <span class="badge {{ $badgeClass }}">{{ $badgeText }}</span>
                             </div>
-                            <span class="badge {{ $badgeClass }}">{{ $badgeText }}</span>
-                        </div>
 
-                        <div class="card-body">
-                            <div class="accordion" id="acc-suplemen-{{ $sectionKey }}">
+                            <div class="card-body">
+                                <div class="accordion" id="acc-suplemen-{{ $sectionKey }}">
 
-                                @foreach($items as $it)
-                                @php
-                                $isReviewedItem = isset($reviewData[$it->id]);
-                                $itemBadgeClass = $isReviewedItem ? 'bg-success' : 'bg-warning text-dark';
-                                $itemBadgeText = $isReviewedItem ? 'Validasi Lengkap' : 'Validasi Belum Lengkap';
-                                $grade = $isReviewedItem ? ($reviewData[$it->id]['grade'] ?? null) : null;
+                                    @foreach($items as $it)
+                                    @php
+                                    $isReviewedItem = isset($reviewData[$it->id]);
+                                    $itemBadgeClass = $isReviewedItem ? 'bg-success' : 'bg-warning text-dark';
+                                    $itemBadgeText = $isReviewedItem ? 'Validasi Lengkap' : 'Validasi Belum Lengkap';
+                                    $grade = $isReviewedItem ? ($reviewData[$it->id]['grade'] ?? null) : null;
 
-                                $gradeClass = match($grade) {
-                                'A' => 'bg-success',
-                                'B' => 'bg-warning text-dark',
-                                'C' => 'bg-danger',
-                                default => 'bg-secondary'
-                                };
+                                    $gradeClass = match($grade) {
+                                    'A' => 'bg-success',
+                                    'B' => 'bg-warning text-dark',
+                                    'C' => 'bg-danger',
+                                    default => 'bg-secondary'
+                                    };
 
-                                $gradeLabel = match($grade) {
-                                'A' => 'A - Sudah Tepat',
-                                'B' => 'B - Kurang Lengkap',
-                                'C' => 'C - Perlu Diperbaiki',
-                                default => '-'
-                                };
-                                @endphp
+                                    $gradeLabel = match($grade) {
+                                    'A' => 'A - Sudah Tepat',
+                                    'B' => 'B - Kurang Lengkap',
+                                    'C' => 'C - Perlu Diperbaiki',
+                                    default => '-'
+                                    };
+                                    @endphp
 
-                                <div class="accordion-item elemen-accordion-item" data-tab="suplemen" data-elemen-id="{{ $it->id }}" data-required-count="1" data-reviewed-count="{{ $isReviewedItem ? 1 : 0 }}">
-                                    <h2 class="accordion-header" id="h-suplemen-ds-{{ $it->id }}">
-                                        <button class="accordion-button collapsed d-flex align-items-center gap-2" type="button" data-bs-toggle="collapse" data-bs-target="#c-suplemen-ds-{{ $it->id }}" aria-expanded="false" aria-controls="c-suplemen-ds-{{ $it->id }}">
-                                            <span class="badge bg-light text-dark">#{{ $it->urutan }}</span>
-                                            <span class="flex-grow-1">
-                                                <strong>{{ $it->text_content }}</strong>
-                                            </span>
-                                            <span class="badge {{ $itemBadgeClass }} elemen-status-badge">{{ $itemBadgeText }}</span>
-                                            <span class="badge {{ $gradeClass }} elemen-grade-badge" data-grade="{{ $grade ?? '' }}">
-                                                <small>{{ $gradeLabel }}</small>
-                                            </span>
-                                        </button>
-                                    </h2>
+                                    <div class="accordion-item elemen-accordion-item" data-tab="suplemen" data-elemen-id="{{ $it->id }}" data-required-count="1" data-reviewed-count="{{ $isReviewedItem ? 1 : 0 }}">
+                                        <h2 class="accordion-header" id="h-suplemen-ds-{{ $it->id }}">
+                                            <button class="accordion-button collapsed d-flex align-items-center gap-2" type="button" data-bs-toggle="collapse" data-bs-target="#c-suplemen-ds-{{ $it->id }}" aria-expanded="false" aria-controls="c-suplemen-ds-{{ $it->id }}">
+                                                <span class="badge bg-light text-dark">#{{ $it->urutan }}</span>
+                                                <span class="flex-grow-1">
+                                                    <strong>{{ $it->text_content }}</strong>
+                                                </span>
+                                                <span class="badge {{ $itemBadgeClass }} elemen-status-badge">{{ $itemBadgeText }}</span>
+                                                <span class="badge {{ $gradeClass }} elemen-grade-badge" data-grade="{{ $grade ?? '' }}">
+                                                    <small>{{ $gradeLabel }}</small>
+                                                </span>
+                                            </button>
+                                        </h2>
 
-                                    <div id="c-suplemen-ds-{{ $it->id }}" class="accordion-collapse collapse" aria-labelledby="h-suplemen-ds-{{ $it->id }}" data-bs-parent="#acc-suplemen-{{ $sectionKey }}">
-                                        <div class="accordion-body">
-                                            @include('validator.borang.partials.review-item', [
-                                            'category' => 'suplemen',
-                                            'itemId' => $it->id, // ✅ dataset_suplemen.id
-                                            'validation' => $validation,
-                                            'assignmentId' => $assignment->id,
-                                            ])
+                                        <div id="c-suplemen-ds-{{ $it->id }}" class="accordion-collapse collapse" aria-labelledby="h-suplemen-ds-{{ $it->id }}" data-bs-parent="#acc-suplemen-{{ $sectionKey }}">
+                                            <div class="accordion-body">
+                                                @include('validator.borang.partials.review-item', [
+                                                'category' => 'suplemen',
+                                                'itemId' => $it->id, // ✅ dataset_suplemen.id
+                                                'validation' => $validation,
+                                                'assignmentId' => $assignment->id,
+                                                ])
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                @endforeach
+                                    @endforeach
 
+                                </div>
                             </div>
                         </div>
+                        @empty
+                        <div class="alert alert-secondary alert-permanent">
+                            Dataset Suplemen untuk jenjang <strong>{{ $pengajuan->studyProgram->degreeLevel->code }}</strong> belum tersedia.
+                        </div>
+                        @endforelse
                     </div>
-                    @empty
-                    <div class="alert alert-secondary alert-permanent">
-                        Dataset Suplemen untuk jenjang <strong>{{ $pengajuan->studyProgram->degreeLevel->code }}</strong> belum tersedia.
-                    </div>
-                    @endforelse
-                </div>
 
-                {{-- =========================
+                    {{-- =========================
            PANE LKPS (Kuantitatif)
       ========================== --}}
-                <div class="tab-pane fade" id="pane-lkps" role="tabpanel" aria-labelledby="tab-lkps">
-                    @foreach($kriterias as $kriteria)
-                    @php
-                    // Filter elemen yang punya indikator kuantitatif
-                    $elemenWithIndikator = $kriteria->elemenStandar->filter(fn($elemen) => $elemen->indikator->count() > 0);
-                    @endphp
+                    <div class="tab-pane fade" id="pane-lkps" role="tabpanel" aria-labelledby="tab-lkps">
+                        @foreach($kriterias as $kriteria)
+                        @php
+                        // Filter elemen yang punya indikator kuantitatif
+                        $elemenWithIndikator = $kriteria->elemenStandar->filter(fn($elemen) => $elemen->indikator->count() > 0);
+                        @endphp
 
-                    @if($elemenWithIndikator->isNotEmpty())
-                    <div class="card mb-3">
-                        <div class="card-header bg-success text-white">
-                            <h5 class="mb-0">{{ $kriteria->kode_kriteria }} - {{ $kriteria->nama_kriteria }}</h5>
-                        </div>
+                        @if($elemenWithIndikator->isNotEmpty())
+                        <div class="card mb-3">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0">{{ $kriteria->kode_kriteria }} - {{ $kriteria->nama_kriteria }}</h5>
+                            </div>
 
-                        <div class="card-body">
-                            <div class="accordion" id="acc-lkps-{{ $kriteria->id }}">
-                                @foreach($elemenWithIndikator as $elemen)
-                                @php
-                                $indikators = $elemen->indikator ?? collect();
-                                $required = $indikators->count();
-                                $reviewData = $validation->review_lkps ?? [];
-                                $reviewedCount = 0;
-                                $countA = $countB = $countC = 0;
-                                $grade = null;
-                                foreach($indikators as $ind){
-                                if(isset($reviewData[$ind->id])) $reviewedCount++;
-                                $g = $reviewData[$ind->id]['grade'] ?? null;
-                                if ($g === 'C') {
-                                $grade = 'C';
-                                break;
-                                }
-                                if ($g === 'B') {
-                                $grade = 'B';
-                                }
-                                if ($g === 'A' && $grade === null) {
-                                $grade = 'A';
-                                }
-                                }
-                                $isComplete = ($required > 0) ? ($reviewedCount === $required) : true;
-                                $badgeClass = $isComplete ? 'bg-success' : 'bg-warning text-dark';
-                                $badgeText = $isComplete ? 'Validasi Lengkap' : 'Validasi Belum Lengkap';
-                                $gradeClass = match($grade) {
-                                'A' => 'bg-success',
-                                'B' => 'bg-warning text-dark',
-                                'C' => 'bg-danger',
-                                default => 'bg-secondary'
-                                };
+                            <div class="card-body">
+                                <div class="accordion" id="acc-lkps-{{ $kriteria->id }}">
+                                    @foreach($elemenWithIndikator as $elemen)
+                                    @php
+                                    $indikators = $elemen->indikator ?? collect();
+                                    $required = $indikators->count();
+                                    $reviewData = $validation->review_lkps ?? [];
+                                    $reviewedCount = 0;
+                                    $countA = $countB = $countC = 0;
+                                    $grade = null;
+                                    foreach($indikators as $ind){
+                                    if(isset($reviewData[$ind->id])) $reviewedCount++;
+                                    $g = $reviewData[$ind->id]['grade'] ?? null;
+                                    if ($g === 'C') {
+                                    $grade = 'C';
+                                    break;
+                                    }
+                                    if ($g === 'B') {
+                                    $grade = 'B';
+                                    }
+                                    if ($g === 'A' && $grade === null) {
+                                    $grade = 'A';
+                                    }
+                                    }
+                                    $isComplete = ($required > 0) ? ($reviewedCount === $required) : true;
+                                    $badgeClass = $isComplete ? 'bg-success' : 'bg-warning text-dark';
+                                    $badgeText = $isComplete ? 'Validasi Lengkap' : 'Validasi Belum Lengkap';
+                                    $gradeClass = match($grade) {
+                                    'A' => 'bg-success',
+                                    'B' => 'bg-warning text-dark',
+                                    'C' => 'bg-danger',
+                                    default => 'bg-secondary'
+                                    };
 
-                                $gradeLabel = match($grade) {
-                                'A' => 'A - Sudah Tepat',
-                                'B' => 'B - Kurang Lengkap',
-                                'C' => 'C - Perlu Diperbaiki',
-                                default => '-'
-                                };
-                                @endphp
+                                    $gradeLabel = match($grade) {
+                                    'A' => 'A - Sudah Tepat',
+                                    'B' => 'B - Kurang Lengkap',
+                                    'C' => 'C - Perlu Diperbaiki',
+                                    default => '-'
+                                    };
+                                    @endphp
 
-                                <div class="accordion-item elemen-accordion-item" data-tab="lkps" data-elemen-id="{{ $elemen->id }}" data-required-count="{{ $required }}" data-reviewed-count="{{ $reviewedCount }}">
-                                    <h2 class="accordion-header" id="h-lkps-{{ $elemen->id }}">
-                                        <button class="accordion-button collapsed d-flex align-items-center gap-2" type="button" data-bs-toggle="collapse" data-bs-target="#c-lkps-{{ $elemen->id }}" aria-expanded="false" aria-controls="c-lkps-{{ $elemen->id }}">
-                                            <span class="badge bg-light text-dark">{{ $elemen->kode_elemen }}</span>
-                                            <span class="flex-grow-1"><strong>{{ $elemen->pernyataan_elemen }}</strong></span>
-                                            <span class="badge {{ $badgeClass }} elemen-status-badge">{{ $badgeText }}</span>
-                                            <span class="badge {{ $gradeClass }} elemen-grade-badge" data-grade="{{ $grade ?? '' }}">
-                                                <small>{{ $gradeLabel }}</small>
-                                            </span>
-                                            <span class="badge bg-dark ms-2 elemen-lkps-counter">{{ $reviewedCount }}/{{ $required }}</span>
-                                        </button>
-                                    </h2>
-                                    <div id="c-lkps-{{ $elemen->id }}" class="accordion-collapse collapse" aria-labelledby="h-lkps-{{ $elemen->id }}" data-bs-parent="#acc-lkps-{{ $kriteria->id }}">
-                                        <div class="accordion-body">
-                                            @foreach($indikators as $indikator)
-                                            <div class="border rounded p-3 mb-3">
-                                                <div class="d-flex justify-content-between align-items-start">
-                                                    <div>
-                                                        <strong>{{ $indikator->kode_indikator }}</strong> - {{ $indikator->deskripsi_indikator }}
+                                    <div class="accordion-item elemen-accordion-item" data-tab="lkps" data-elemen-id="{{ $elemen->id }}" data-required-count="{{ $required }}" data-reviewed-count="{{ $reviewedCount }}">
+                                        <h2 class="accordion-header" id="h-lkps-{{ $elemen->id }}">
+                                            <button class="accordion-button collapsed d-flex align-items-center gap-2" type="button" data-bs-toggle="collapse" data-bs-target="#c-lkps-{{ $elemen->id }}" aria-expanded="false" aria-controls="c-lkps-{{ $elemen->id }}">
+                                                <span class="badge bg-light text-dark">{{ $elemen->kode_elemen }}</span>
+                                                <span class="flex-grow-1"><strong>{{ $elemen->pernyataan_elemen }}</strong></span>
+                                                <span class="badge {{ $badgeClass }} elemen-status-badge">{{ $badgeText }}</span>
+                                                <span class="badge {{ $gradeClass }} elemen-grade-badge" data-grade="{{ $grade ?? '' }}">
+                                                    <small>{{ $gradeLabel }}</small>
+                                                </span>
+                                                <span class="badge bg-dark ms-2 elemen-lkps-counter">{{ $reviewedCount }}/{{ $required }}</span>
+                                            </button>
+                                        </h2>
+                                        <div id="c-lkps-{{ $elemen->id }}" class="accordion-collapse collapse" aria-labelledby="h-lkps-{{ $elemen->id }}" data-bs-parent="#acc-lkps-{{ $kriteria->id }}">
+                                            <div class="accordion-body">
+                                                @foreach($indikators as $indikator)
+                                                <div class="border rounded p-3 mb-3">
+                                                    <div class="d-flex justify-content-between align-items-start">
+                                                        <div>
+                                                            <strong>{{ $indikator->kode_indikator }}</strong> - {{ $indikator->deskripsi_indikator }}
+                                                        </div>
+                                                        <span class="badge bg-light text-dark">ID: {{ $indikator->id }}</span>
                                                     </div>
-                                                    <span class="badge bg-light text-dark">ID: {{ $indikator->id }}</span>
-                                                </div>
 
-                                                <div class="mt-2">
-                                                    @include('validator.borang.partials.review-item', [
-                                                    'category' => 'lkps',
-                                                    'itemId' => $indikator->id,
-                                                    'validation' => $validation,
-                                                    'assignmentId' => $assignment->id,
-                                                    'elemenId' => $elemen->id,
-                                                    ])
+                                                    <div class="mt-2">
+                                                        @include('validator.borang.partials.review-item', [
+                                                        'category' => 'lkps',
+                                                        'itemId' => $indikator->id,
+                                                        'validation' => $validation,
+                                                        'assignmentId' => $assignment->id,
+                                                        'elemenId' => $elemen->id,
+                                                        ])
+                                                    </div>
                                                 </div>
+                                                @endforeach
                                             </div>
-                                            @endforeach
                                         </div>
                                     </div>
+                                    @endforeach
                                 </div>
-                                @endforeach
                             </div>
                         </div>
+                        @endif
+                        @endforeach
                     </div>
-                    @endif
-                    @endforeach
+
                 </div>
 
-            </div>
-
-            {{-- Finalisasi & Kirim (JSON) --}}
-            <div class="card border-success mt-4">
-                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">
-                        <i class="bi bi-send-check"></i> Finalisasi & Kirim
-                    </h5>
-                    <span class="badge bg-light text-dark" id="finalStatusBadge">
-                        {{ $validation->isCompletelyReviewed() ? 'Validasi Lengkap' : 'Validasi Belum Lengkap' }}
-                    </span>
-                </div>
-                <div class="card-body">
-                    <div class="alert alert-info alert-permanent">
-                        <i class="bi bi-info-circle"></i>
-                        Mohon berikan catatan Umum LED, Suplemen, dan LKPS serta catatan keseluruhan Anda sebelum mengirimkan validasi.<br>Lalu jika seluruh validasi sudah lengkap, pilih aksi "Setujui Dokumen" atau "Minta Revisi" dan klik "Submit Final".
-                    </div>
-                    <div class="row">
-                        <div class="col-lg-4 mb-3">
-                            <label class="form-label fw-bold">Catatan Umum LED</label>
-                            <textarea id="catatan_led" class="form-control" rows="3" placeholder="Catatan umum untuk LED...">{{ $validation->catatan_led }}</textarea>
-                        </div>
-                        <div class="col-lg-4 mb-3">
-                            <label class="form-label fw-bold">Catatan Umum Suplemen</label>
-                            <textarea id="catatan_suplemen" class="form-control" rows="3" placeholder="Catatan umum untuk Suplemen...">{{ $validation->catatan_suplemen }}</textarea>
-                        </div>
-                        <div class="col-lg-4 mb-3">
-                            <label class="form-label fw-bold">Catatan Umum LKPS</label>
-                            <textarea id="catatan_lkps" class="form-control" rows="3" placeholder="Catatan umum untuk LKPS...">{{ $validation->catatan_lkps }}</textarea>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Catatan Validator (Keseluruhan)</label>
-                        <textarea id="catatan_validator" class="form-control" rows="4" placeholder="Catatan keseluruhan untuk prodi...">{{ $validation->catatan_validator }}</textarea>
-                    </div>
-
-                    <div class="d-flex gap-2">
-                        {{-- Pilih aksi (tidak submit) --}}
-                        <button type="button" class="btn btn-outline-success" id="btnPickApprove">
-                            <i class="bi bi-check-circle"></i> Pilih Setujui Dokumen
-                        </button>
-
-                        <button type="button" class="btn btn-outline-warning" id="btnPickRevision">
-                            <i class="bi bi-exclamation-triangle"></i> Pilih Minta Revisi
-                        </button>
-
-                        <span class="badge bg-secondary" id="pickedActionBadge">
-                            Aksi belum dipilih
+                {{-- Finalisasi & Kirim (JSON) --}}
+                <div class="card border-success mt-4">
+                    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-send-check"></i> Finalisasi & Kirim
+                        </h5>
+                        <span class="badge bg-light text-dark" id="finalStatusBadge">
+                            {{ $validation->isCompletelyReviewed() ? 'Validasi Lengkap' : 'Validasi Belum Lengkap' }}
                         </span>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info alert-permanent">
+                            <i class="bi bi-info-circle"></i>
+                            Mohon berikan catatan Umum LED, Suplemen, dan LKPS serta catatan keseluruhan Anda sebelum mengirimkan validasi.<br>Lalu jika seluruh validasi sudah lengkap, pilih aksi "Setujui Dokumen" atau "Minta Revisi" dan klik "Submit Final".
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-4 mb-3">
+                                <label class="form-label fw-bold">Catatan Umum LED</label>
+                                <textarea id="catatan_led" class="form-control" rows="3" placeholder="Catatan umum untuk LED...">{{ $validation->catatan_led }}</textarea>
+                            </div>
+                            <div class="col-lg-4 mb-3">
+                                <label class="form-label fw-bold">Catatan Umum Suplemen</label>
+                                <textarea id="catatan_suplemen" class="form-control" rows="3" placeholder="Catatan umum untuk Suplemen...">{{ $validation->catatan_suplemen }}</textarea>
+                            </div>
+                            <div class="col-lg-4 mb-3">
+                                <label class="form-label fw-bold">Catatan Umum LKPS</label>
+                                <textarea id="catatan_lkps" class="form-control" rows="3" placeholder="Catatan umum untuk LKPS...">{{ $validation->catatan_lkps }}</textarea>
+                            </div>
+                        </div>
 
-                        {{-- Tombol submit final --}}
-                        <button type="button" class="btn btn-primary ms-auto" id="btnSubmitFinal" disabled {{ $lockBorang ? 'disabled' : '' }}>
-                            <i class="bi bi-send"></i> Submit Final
-                        </button>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Catatan Validator (Keseluruhan)</label>
+                            <textarea id="catatan_validator" class="form-control" rows="4" placeholder="Catatan keseluruhan untuk prodi...">{{ $validation->catatan_validator }}</textarea>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            {{-- Pilih aksi (tidak submit) --}}
+                            <button type="button" class="btn btn-outline-success" id="btnPickApprove">
+                                <i class="bi bi-check-circle"></i> Pilih Setujui Dokumen
+                            </button>
+
+                            <button type="button" class="btn btn-outline-warning" id="btnPickRevision">
+                                <i class="bi bi-exclamation-triangle"></i> Pilih Minta Revisi
+                            </button>
+
+                            <span class="badge bg-secondary" id="pickedActionBadge">
+                                Aksi belum dipilih
+                            </span>
+
+                            {{-- Tombol submit final --}}
+                            <button type="button" class="btn btn-primary ms-auto" id="btnSubmitFinal" disabled {{ $lockBorang ? 'disabled' : '' }}>
+                                <i class="bi bi-send"></i> Submit Final
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1892,6 +1894,39 @@ $assignmentId = $assignment->id;
         updateTabReviewedInfo();
         updateToggleAllButton();
         updateResetDropdownState();
+    });
+
+    // =============== CLICK PROGRESS OVERVIEW -> SWITCH TAB ===============
+    function showMainTab(tab) {
+        const tabId =
+            tab === 'led' ? 'tab-led' :
+            tab === 'suplemen' ? 'tab-suplemen' :
+            tab === 'lkps' ? 'tab-lkps' : null;
+
+        if (!tabId) return;
+
+        const tabBtn = document.getElementById(tabId);
+        if (tabBtn) bootstrap.Tab.getOrCreateInstance(tabBtn).show();
+
+        let reviewSection = document.getElementById('review-section')
+        if (reviewSection) reviewSection.scrollIntoView({
+            behavior: 'smooth'
+            , block: 'start'
+        });
+    }
+
+    document.querySelectorAll('.js-progress-card').forEach(card => {
+        const tab = card.dataset.jumpTab;
+
+        card.addEventListener('click', () => showMainTab(tab));
+
+        // optional: bisa ditekan enter/space (aksesibilitas)
+        card.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                showMainTab(tab);
+            }
+        });
     });
 
     function pickHighestGrade(grades) {

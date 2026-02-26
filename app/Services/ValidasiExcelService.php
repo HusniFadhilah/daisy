@@ -254,6 +254,7 @@ class ValidasiExcelService
     private function renderDataRows($sheet, Asesmen $asesmen, Collection $asesors): int
     {
         $currentRow = 7;
+        $globalNo = 1;
         $jenisAsesmen = strtolower($this->penilaianName);
         $relationName = $jenisAsesmen == 'al' ? 'penilaianElemenAl' : 'penilaianElemenAk';
 
@@ -286,13 +287,21 @@ class ValidasiExcelService
                 // Kriteria
                 if ($isFirstElemen) {
                     $sheet->setCellValue("B{$row}", $kriteria->kode_kriteria);
+                    $this->setFontBlue($sheet, "B{$row}");
+
                     $sheet->setCellValue("C{$row}", $kriteria->nama_kriteria);
+                    $this->setFontBlue($sheet, "C{$row}");
                 }
 
                 // Elemen
-                $sheet->setCellValue("D{$row}", $index + 1);
+                $sheet->setCellValue("D{$row}", $globalNo);
+                $this->setFontBlue($sheet, "D{$row}");
+                $globalNo++;
                 $sheet->setCellValue("E{$row}", $elemen->kode_elemen);
+                $this->setFontBlue($sheet, "E{$row}");
+
                 $sheet->setCellValue("F{$row}", $elemen->pernyataan_elemen);
+                $this->setFontBlue($sheet, "F{$row}");
 
                 // Penilaian asesors
                 $startCol = 'G';
@@ -436,6 +445,11 @@ class ValidasiExcelService
         $sheet->getStyle($cell)->getFont()
             ->setBold(true)
             ->getColor()->setARGB($this->hexToArgb($style['text']));
+    }
+
+    private function setFontBlue($sheet, string $cell): void
+    {
+        $sheet->getStyle($cell)->getFont()->getColor()->setARGB('FFE0E0E0');
     }
 
     /**

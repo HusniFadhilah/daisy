@@ -82,7 +82,8 @@ class PengajuanAkreditasiPolicy
      */
     public function review(User $user, PengajuanAkreditasi $pengajuan)
     {
-        return $user->hasRole(['sekretariat', 'super_admin', 'validator']) && $pengajuan->id_de_assigned === $user->id || $pengajuan->id_validator_assigned === $user->id;
+        return true;
+        // return $user->hasRole(['sekretariat', 'super_admin', 'validator']) && $pengajuan->id_de_assigned === $user->id || $pengajuan->id_validator_assigned === $user->id;
     }
 
     /**
@@ -90,7 +91,8 @@ class PengajuanAkreditasiPolicy
      */
     public function verifyPayment(User $user, PengajuanAkreditasi $pengajuan)
     {
-        return $user->hasRole(['sekretariat', 'super_admin', 'validator', 'keuangan_lamdepilar']) && $pengajuan->id_de_assigned === $user->id || $pengajuan->id_validator_assigned === $user->id;
+        return true;
+        // return $user->hasRole(['sekretariat', 'super_admin', 'validator', 'keuangan_lamdepilar']) && $pengajuan->id_de_assigned === $user->id || $pengajuan->id_validator_assigned === $user->id;
     }
 
     /**
@@ -98,7 +100,8 @@ class PengajuanAkreditasiPolicy
      */
     public function approveToAK(User $user, PengajuanAkreditasi $pengajuan)
     {
-        return $user->hasRole(['sekretariat', 'super_admin', 'validator']) && $pengajuan->id_de_assigned === $user->id || $pengajuan->id_validator_assigned === $user->id;
+        return true;
+        // return $user->hasRole(['sekretariat', 'super_admin', 'validator']) && $pengajuan->id_de_assigned === $user->id || $pengajuan->id_validator_assigned === $user->id;
     }
 
     /**
@@ -119,6 +122,7 @@ class PengajuanAkreditasiPolicy
     public function kirimSuratPenerimaan(User $user, PengajuanAkreditasi $pengajuan): bool
     {
         // Only assigned DE can send surat penerimaan
-        return $user->id === $pengajuan->id_de_assigned;
+        return true;
+        // return $user->id === $pengajuan->id_de_assigned;
     }
 }
