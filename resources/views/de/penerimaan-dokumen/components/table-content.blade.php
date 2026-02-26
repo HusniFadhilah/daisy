@@ -102,7 +102,7 @@
                                 @endif
 
                                 {{-- Suplemen --}}
-                                @if($pengajuan->jenis_akreditasi == 'menuju_unggul')
+                                {{-- @if($pengajuan->jenis_akreditasi == 'menuju_unggul') --}}
                                 <span>|</span>
                                 @if($suplemenDoc && $suplemenDoc->download_url)
                                 <a href="{{ $suplemenDoc->download_url }}" class="text-success text-decoration-none" target="_blank" title="Download Suplemen">
@@ -111,7 +111,7 @@
                                 @else
                                 <span class="text-danger" title="Suplemen belum diupload">✗ Suplemen</span>
                                 @endif
-                                @endif
+                                {{-- @endif --}}
                             </small>
                         </td>
                         <td>

@@ -34,6 +34,7 @@
             <!-- Status Alert -->
             @php
             $allowed = [
+            \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
             \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
             \App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
             \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,
@@ -44,7 +45,7 @@
             $log = $pengajuan->latestRelevantStatusLog($allowed);
             @endphp
             <!-- Status Alert -->
-            @if(in_array($log?->status_to,[\App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,\App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION]))
+            @if(in_array($log?->status_to,[\App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,\App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,\App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION]))
             <div class="alert alert-info alert-permanent">
                 <i class="bi bi-check-circle"></i>
                 <strong>Dokumen sedang divalidasi</strong><br>
@@ -65,8 +66,8 @@
                 Mohon memeriksa catatan validator dan lakukan perbaikan pada dokumen<br>
                 kemudian upload ulang dokumen yang telah diperbaiki.
                 <div class="mt-2">
-                    <a href="{{ route('upps.penerimaan-dokumen.upload', $pengajuan->id) }}" class="btn btn-warning btn-sm">
-                        <i class="bi bi-arrow-right"></i> Lihat Dokumen & Upload Revisi
+                    <a href="{{ route('pengajuan.borang-online', $pengajuan->id) }}" class="btn btn-warning btn-sm">
+                        <i class="bi bi-arrow-right"></i> Lihat Dokumen & Selesaikan Revisi
                     </a>
                 </div>
             </div>

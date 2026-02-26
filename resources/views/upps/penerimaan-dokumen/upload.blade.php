@@ -53,6 +53,32 @@
         min-width: 200px;
     }
 
+    /* Loading overlay */
+    .loading-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-overlay .loading-text {
+        color: #fff;
+        font-size: 1rem;
+        font-weight: 500;
+    }
+
 </style>
 @endpush
 
@@ -108,58 +134,36 @@
                 <div class="card-body">
                     @php
                     $docCards = [
-                    'led' => [
-                    'label' => 'Laporan Evaluasi Diri (LED)',
-                    'icon' => 'file-word',
-                    'color' => 'info',
-                    ],
-                    'suplemen' => [
-                    'label' => 'Suplemen LED',
-                    'icon' => 'file-earmark-pdf',
-                    'color' => 'warning',
-                    ],
-                    'lkps' => [
-                    'label' => 'Laporan Kinerja Program Studi (LKPS)',
-                    'icon' => 'file-excel',
-                    'color' => 'success',
-                    ],
-                    'pengesahan' => [
-                    'label' => 'Lembar Pengesahan Dokumen',
-                    'icon' => 'file-earmark-pdf',
-                    'color' => 'danger',
-                    ],
+                    'led' => ['label' => 'Laporan Evaluasi Diri (LED)', 'icon' => 'file-word', 'color' => 'info'],
+                    'suplemen' => ['label' => 'Suplemen LED', 'icon' => 'file-earmark-pdf', 'color' => 'warning'],
+                    'lkps' => ['label' => 'Laporan Kinerja Program Studi (LKPS)', 'icon' => 'file-excel', 'color' => 'success'],
+                    'pengesahan' => ['label' => 'Lembar Pengesahan Dokumen', 'icon' => 'file-earmark-pdf', 'color' => 'danger'],
                     ];
                     @endphp
 
                     <div class="row">
                         @foreach($docCards as $key => $cfg)
-                        @continue($key === 'suplemen' && !$needSuplemen)
-
-                        @php $doc = $uploadedDocuments[$key] ?? null; @endphp
-
+                        @php $doc = isset($uploadedDocuments[$key]) ? $uploadedDocuments[$key] : null; @endphp
                         <div class="col-md-6 mb-3">
                             <div class="card {{ $doc ? 'border-success' : 'border-danger' }}">
                                 <div class="card-body d-flex gap-3">
                                     <div>
                                         <i class="bi bi-{{ $cfg['icon'] }} text-{{ $cfg['color'] }}" style="font-size:34px;"></i>
                                     </div>
-
                                     <div class="flex-grow-1">
                                         <div class="fw-bold">{{ $cfg['label'] }}</div>
-
                                         @if($doc)
                                         <small class="text-muted text-wrap mt-1">
-                                            {{ $doc->original_filename ?? '-' }}<br>
+                                            {{ isset($doc->original_filename) ? $doc->original_filename : '-' }}<br>
                                             @if($doc->created_at) {{ $doc->created_at->locale('id')->translatedFormat('d M Y H:i') }}<br> @endif
                                         </small>
-
                                         @if($doc->path_file || $doc->template_link)
                                         <a href="{{ $doc->download_url }}" class="btn btn-sm btn-success mt-2" target="_blank">
                                             <i class="bi bi-eye"></i> Lihat File
                                         </a>
                                         @endif
                                         @else
-                                        <span class="badge bg-danger mt-2">Belum Diupload</span>
+                                        <span class="badge {{ $needSuplemen ? 'bg-danger' : 'bg-secondary' }} mt-2">Belum Diupload</span>
                                         @endif
                                     </div>
                                 </div>
@@ -190,7 +194,14 @@
                 </div>
 
                 <div class="card-body">
-                    <form action="{{ route('upps.penerimaan-dokumen.upload', $pengajuan->id) }}" method="POST" enctype="multipart/form-data" id="formUploadDokumen">
+                    {{--
+                        Form ini TIDAK di-submit biasa.
+                        JS akan:
+                          1. Upload LED  → POST /permohonan-akreditasi/{id}/borang/import-docx  → poll status
+                          2. Upload LKPS → POST /permohonan-akreditasi/{id}/borang/import-lkps  → poll status
+                          3. Upload Suplemen & Pengesahan → POST route upps.penerimaan-dokumen.upload
+                    --}}
+                    <form id="formUploadDokumen" enctype="multipart/form-data">
                         @csrf
 
                         {{-- ===================== LED ===================== --}}
@@ -198,13 +209,16 @@
                             <label class="form-label fw-semibold">
                                 Laporan Evaluasi Diri (LED) <span class="text-danger">*</span>
                             </label>
+                            <small class="d-block text-muted mb-2">
+                                <i class="bi bi-info-circle"></i>
+                                File DOCX akan dibaca otomatis ke elemen penilaian.
+                            </small>
 
                             <div class="upload-area" id="uploadAreaLed">
                                 <i class="bi bi-file-word text-info" style="font-size: 44px;"></i>
                                 <p class="mb-1"><strong>Silahkan upload file LED di sini</strong></p>
-                                <p class="text-muted small mb-2">Format: DOCX/DOC • Maksimal 5MB</p>
-
-                                <input type="file" id="file_led" name="file_led" class="visually-hidden-input" accept=".docx,.doc" required>
+                                <p class="text-muted small mb-2">Format: DOCX/DOC • Maksimal 10MB</p>
+                                <input type="file" id="file_led" name="file_led" class="visually-hidden-input" accept=".docx,.doc">
                                 <button type="button" class="btn btn-outline-info btn-sm" id="btnPickLed">
                                     <i class="bi bi-folder2-open"></i> Pilih File LED
                                 </button>
@@ -229,25 +243,20 @@
                                     </div>
                                 </div>
                             </div>
-
-                            @error('file_led')
-                            <div class="text-danger small mt-1">{{ $message }}</div>
-                            @enderror
                         </div>
 
                         {{-- ===================== SUPLEMEN ===================== --}}
-                        @if($needSuplemen)
                         <div class="mb-4">
                             <label class="form-label fw-semibold">
-                                Suplemen LED <span class="text-danger">*</span>
+                                Suplemen LED
+                                @if($needSuplemen)<span class="text-danger">*</span>@endif
                             </label>
 
                             <div class="upload-area" id="uploadAreaSuplemen">
                                 <i class="bi bi-file-earmark-pdf text-danger" style="font-size: 44px;"></i>
                                 <p class="mb-1"><strong>Silahkan upload file Suplemen di sini</strong></p>
-                                <p class="text-muted small mb-2">Format: PDF • Maksimal 5MB</p>
-
-                                <input type="file" id="file_suplemen" name="file_suplemen" class="visually-hidden-input" accept=".pdf" required>
+                                <p class="text-muted small mb-2">Format: PDF • Maksimal 10MB</p>
+                                <input type="file" id="file_suplemen" name="file_suplemen" class="visually-hidden-input" accept=".pdf">
                                 <button type="button" class="btn btn-outline-success btn-sm" id="btnPickSuplemen">
                                     <i class="bi bi-folder2-open"></i> Pilih File Suplemen
                                 </button>
@@ -272,25 +281,23 @@
                                     </div>
                                 </div>
                             </div>
-
-                            @error('file_suplemen')
-                            <div class="text-danger small mt-1">{{ $message }}</div>
-                            @enderror
                         </div>
-                        @endif
 
                         {{-- ===================== LKPS ===================== --}}
                         <div class="mb-4">
                             <label class="form-label fw-semibold">
                                 Laporan Kinerja Program Studi (LKPS) <span class="text-danger">*</span>
                             </label>
+                            <small class="d-block text-muted mb-2">
+                                <i class="bi bi-info-circle"></i>
+                                File Excel akan dibaca otomatis per sheet/tabel.
+                            </small>
 
                             <div class="upload-area" id="uploadAreaLkps">
                                 <i class="bi bi-file-excel text-success" style="font-size: 44px;"></i>
                                 <p class="mb-1"><strong>Silahkan upload file LKPS di sini</strong></p>
-                                <p class="text-muted small mb-2">Format: XLSX/XLS • Maksimal 5MB</p>
-
-                                <input type="file" id="file_lkps" name="file_lkps" class="visually-hidden-input" accept=".xlsx,.xls" required>
+                                <p class="text-muted small mb-2">Format: XLSX/XLS • Maksimal 10MB</p>
+                                <input type="file" id="file_lkps" name="file_lkps" class="visually-hidden-input" accept=".xlsx,.xls">
                                 <button type="button" class="btn btn-outline-success btn-sm" id="btnPickLkps">
                                     <i class="bi bi-folder2-open"></i> Pilih File LKPS
                                 </button>
@@ -315,10 +322,6 @@
                                     </div>
                                 </div>
                             </div>
-
-                            @error('file_lkps')
-                            <div class="text-danger small mt-1">{{ $message }}</div>
-                            @enderror
                         </div>
 
                         {{-- ===================== LEMBAR PENGESAHAN ===================== --}}
@@ -330,9 +333,8 @@
                             <div class="upload-area" id="uploadAreaPengesahan">
                                 <i class="bi bi-file-earmark-pdf text-danger" style="font-size: 44px;"></i>
                                 <p class="mb-1"><strong>Silahkan upload file Lembar Pengesahan di sini</strong></p>
-                                <p class="text-muted small mb-2">Format: PDF • Maksimal 5MB</p>
-
-                                <input type="file" id="file_pengesahan" name="file_pengesahan" class="visually-hidden-input" accept=".pdf" required>
+                                <p class="text-muted small mb-2">Format: PDF • Maksimal 10MB</p>
+                                <input type="file" id="file_pengesahan" name="file_pengesahan" class="visually-hidden-input" accept=".pdf">
                                 <button type="button" class="btn btn-outline-secondary btn-sm" id="btnPickPengesahan">
                                     <i class="bi bi-folder2-open"></i> Pilih File Pengesahan
                                 </button>
@@ -357,39 +359,33 @@
                                     </div>
                                 </div>
                             </div>
-
-                            @error('file_pengesahan')
-                            <div class="text-danger small mt-1">{{ $message }}</div>
-                            @enderror
                         </div>
 
                         {{-- Catatan --}}
                         <div class="mb-3">
                             <label for="catatan_upload" class="form-label">Catatan Upload (Opsional)</label>
-                            <textarea class="form-control @error('catatan_upload') is-invalid @enderror" id="catatan_upload" name="catatan_upload" rows="3" placeholder="Tambahkan catatan jika diperlukan...">{{ old('catatan_upload') }}</textarea>
-                            @error('catatan_upload')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <textarea class="form-control" id="catatan_upload" name="catatan_upload" rows="3" placeholder="Tambahkan catatan jika diperlukan...">{{ old('catatan_upload') }}</textarea>
                         </div>
 
                         <!-- Important Note -->
                         <div class="alert alert-info alert-permanent">
                             <h6><i class="bi bi-info-circle"></i> Informasi Penting</h6>
                             <ul class="mb-0">
-                                <li>Mohon memastikan dokumen yang diupload, sudah sesuai templat yang diberikan.</li>
-                                <li><strong>LED</strong>: format file DOCX/DOC, <strong>LKPS</strong>: format file XLSX/XLS (maks 10MB per file).</li>
+                                <li>Mohon memastikan dokumen yang diupload sudah sesuai templat yang diberikan.</li>
+                                <li><strong>LED</strong>: format DOCX/DOC — akan <strong>diproses otomatis</strong> ke elemen penilaian.</li>
+                                <li><strong>LKPS</strong>: format XLSX/XLS — akan <strong>diproses otomatis</strong> per sheet/tabel.</li>
                                 @if($needSuplemen)
                                 <li><strong>Suplemen</strong>: PDF (wajib untuk jenis akreditasi <strong>menuju unggul</strong>).</li>
                                 @else
                                 <li><strong>Suplemen</strong>: tidak wajib untuk jenis akreditasi ini.</li>
                                 @endif
-                                <li><strong>Lembar Pengesahan Dokumen</strong>: format file PDF.</li>
+                                <li><strong>Lembar Pengesahan</strong>: format PDF.</li>
                             </ul>
                         </div>
 
                         <!-- Buttons -->
                         <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-success btn-md" id="btnSubmit" disabled>
+                            <button type="button" class="btn btn-success btn-md" id="btnSubmit" disabled>
                                 <i class="bi bi-upload"></i> Upload Dokumen
                             </button>
                             <a href="{{ route('upps.penerimaan-dokumen.show', $pengajuan->id) }}" class="btn btn-secondary btn-md">
@@ -401,6 +397,7 @@
             </div>
             @endif
         </div>
+
         <div class="col-lg-4">
             <!-- Info Permohonan -->
             <div class="card mb-4 border-info">
@@ -410,44 +407,86 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    {{-- <div class="mb-3">
-                        <div class="fw-bold">Nomor Permohonan Akreditasi</div>
-                        <div>{{ $pengajuan->nomor_pengajuan }}</div>
-            </div> --}}
-            <div class="mb-3">
-                <div class="fw-bold">Jenis Dokumen Diperlukan</div>
-                <ul class="mb-0 ps-3">
-                    <li>Laporan Evaluasi Diri (LED)</li>
-                    <li>Suplemen LED</li>
-                    <li>Laporan Kinerja Program Studi (LKPS)</li>
-                    <li>Lembar Pengesahan Dokumen</li>
-                </ul>
+                    <div class="mb-3">
+                        <div class="fw-bold">Jenis Dokumen Diperlukan</div>
+                        <ul class="mb-0 ps-3">
+                            <li>Laporan Evaluasi Diri (LED)</li>
+                            @if($needSuplemen)
+                            <li>Suplemen: PDF (wajib untuk jenis akreditasi menuju unggul).</li>
+                            @else
+                            <li>Suplemen: tidak wajib untuk jenis akreditasi ini.</li>
+                            @endif
+                            <li>Laporan Kinerja Program Studi (LKPS)</li>
+                            <li>Lembar Pengesahan Dokumen</li>
+                        </ul>
+                    </div>
+
+                    <!-- Progress upload realtime -->
+                    <div id="uploadProgressBox" class="d-none mt-3">
+                        <div class="fw-bold mb-2"><i class="bi bi-hourglass-split"></i> Progres Upload</div>
+                        <ul class="list-group list-group-flush small" id="uploadProgressList">
+                            <li class="list-group-item px-0 py-1" id="progLed">
+                                <i class="bi bi-circle text-muted me-1"></i> LED (DOCX)
+                            </li>
+                            <li class="list-group-item px-0 py-1" id="progLkps">
+                                <i class="bi bi-circle text-muted me-1"></i> LKPS (Excel)
+                            </li>
+                            <li class="list-group-item px-0 py-1" id="progSuplemen">
+                                <i class="bi bi-circle text-muted me-1"></i> Suplemen (PDF)
+                            </li>
+                            <li class="list-group-item px-0 py-1" id="progPengesahan">
+                                <i class="bi bi-circle text-muted me-1"></i> Lembar Pengesahan (PDF)
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner-border text-light" role="status" style="width:3rem;height:3rem;">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <div class="loading-text" id="loadingText">Memproses...</div>
 </div>
-</div>
+@endsection
 
 @push('scripts')
+@php
+$pengajuanId = $pengajuan->id;
+@endphp
 <script>
     (function() {
         const NEED_SUPLEMEN = @json($needSuplemen);
+        const PENGAJUAN_ID = @json($pengajuanId);
+        const CSRF = '{{ csrf_token() }}';
 
-        const btnSubmit = document.getElementById('btnSubmit');
-        const form = document.getElementById('formUploadDokumen');
+        // Route untuk upload Suplemen + Pengesahan (biasa, tanpa import)
+        const URL_UPLOAD = '{{ route("upps.penerimaan-dokumen.upload", $pengajuan->id) }}';
 
-        // ===================== helper safe addEventListener =====================
-        function on(el, event, handler) {
-            if (!el) return;
-            el.addEventListener(event, handler);
+        // Route import LED (sama seperti di borang-online)
+        const URL_IMPORT_DOCX = `/permohonan-akreditasi/${PENGAJUAN_ID}/borang/import-docx`;
+        const URL_IMPORT_DOCX_STATUS = (id) => `/permohonan-akreditasi/${PENGAJUAN_ID}/borang/import-status/${id}`;
+
+        // Route import LKPS (sama seperti di borang-online)
+        const URL_IMPORT_LKPS = `/permohonan-akreditasi/${PENGAJUAN_ID}/borang/import-lkps`;
+        const URL_IMPORT_LKPS_STATUS = (id) => `/permohonan-akreditasi/${PENGAJUAN_ID}/borang/import-lkps/${id}/status`;
+
+        // Redirect setelah semua selesai
+        const URL_REDIRECT = '{{ route("upps.penerimaan-dokumen.show", $pengajuan->id) }}';
+
+        // ===================== helpers =====================
+        function on(el, event, fn) {
+            if (el) el.addEventListener(event, fn);
         }
 
-        // ===================== utils =====================
         function formatFileSize(bytes) {
             if (!bytes) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const k = 1024
+                , sizes = ['Bytes', 'KB', 'MB', 'GB'];
             const i = Math.floor(Math.log(bytes) / Math.log(k));
             return (bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i];
         }
@@ -473,292 +512,459 @@
             });
         }
 
-        // ============================================================
-        // LED
-        // ============================================================
-        const uploadAreaLed = document.getElementById('uploadAreaLed');
-        const fileLed = document.getElementById('file_led');
-        const previewLed = document.getElementById('previewLed');
-        const ledName = document.getElementById('ledName');
-        const ledSize = document.getElementById('ledSize');
-
-        const btnPickLed = document.getElementById('btnPickLed');
-        const btnChangeLed = document.getElementById('btnChangeLed');
-        const btnRemoveLed = document.getElementById('btnRemoveLed');
-
-        on(btnPickLed, 'click', () => fileLed.click());
-        on(btnChangeLed, 'click', () => fileLed.click());
-        on(btnRemoveLed, 'click', removeLed);
-
-        on(uploadAreaLed, 'click', (e) => {
-            if (e.target.closest('button')) return;
-            fileLed.click();
-        });
-
-        on(fileLed, 'change', () => handleLed(fileLed.files[0]));
-
-        bindDragDrop(uploadAreaLed, (file) => {
-            if (!file) return;
-            fileLed.files = makeFileList(file);
-            handleLed(file);
-        });
-
-        function handleLed(file) {
-            if (!file) return;
-
-            const name = file.name.toLowerCase();
-            if (!(name.endsWith('.docx') || name.endsWith('.doc'))) {
-                alert('LED harus berformat DOCX/DOC!');
-                removeLed();
-                return;
-            }
-            if (file.size > 10 * 1024 * 1024) {
-                alert('Ukuran file LED maksimal 5MB!');
-                removeLed();
-                return;
-            }
-
-            ledName.textContent = file.name;
-            ledSize.textContent = formatFileSize(file.size);
-
-            previewLed.classList.remove('d-none');
-            previewLed.classList.add('has-file');
-            checkReady();
+        function showLoading(text = 'Memproses...') {
+            document.getElementById('loadingText').textContent = text;
+            document.getElementById('loadingOverlay').classList.add('show');
         }
 
-        function removeLed() {
-            fileLed.value = '';
-            previewLed.classList.add('d-none');
-            previewLed.classList.remove('has-file');
-            ledName.textContent = '-';
-            ledSize.textContent = '-';
-            checkReady();
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('show');
         }
 
-        // ============================================================
-        // SUPLEMEN (optional render)
-        // ============================================================
-        const uploadAreaSuplemen = document.getElementById('uploadAreaSuplemen'); // bisa null
-        const fileSuplemen = document.getElementById('file_suplemen'); // bisa null
-        const previewSuplemen = document.getElementById('previewSuplemen'); // bisa null
-        const suplemenName = document.getElementById('suplemenName'); // bisa null
-        const suplemenSize = document.getElementById('suplemenSize'); // bisa null
+        // Progress item helpers
+        function progPending(id, label) {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = `<i class="bi bi-circle text-muted me-1"></i> ${label}`;
+        }
 
-        const btnPickSuplemen = document.getElementById('btnPickSuplemen'); // bisa null
-        const btnChangeSuplemen = document.getElementById('btnChangeSuplemen'); // bisa null
-        const btnRemoveSuplemen = document.getElementById('btnRemoveSuplemen'); // bisa null
+        function progLoading(id, label) {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> ${label}`;
+        }
 
-        on(btnPickSuplemen, 'click', () => fileSuplemen && fileSuplemen.click());
-        on(btnChangeSuplemen, 'click', () => fileSuplemen && fileSuplemen.click());
-        on(btnRemoveSuplemen, 'click', removeSuplemen);
+        function progDone(id, label) {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = `<i class="bi bi-check-circle-fill text-success me-1"></i> ${label}`;
+        }
 
-        on(uploadAreaSuplemen, 'click', (e) => {
-            if (e.target.closest('button')) return;
-            if (fileSuplemen) fileSuplemen.click();
-        });
+        function progError(id, label) {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = `<i class="bi bi-x-circle-fill text-danger me-1"></i> ${label}`;
+        }
 
-        on(fileSuplemen, 'change', () => handleSuplemen(fileSuplemen.files[0]));
+        // ===================== file widgets =====================
+        function makeWidget(cfg) {
+            const {
+                areaId
+                , inputId
+                , previewId
+                , nameId
+                , sizeId
+                , btnPickId
+                , btnChangeId
+                , btnRemoveId
+                , accept
+                , validate
+                , onReady
+            } = cfg;
 
-        if (uploadAreaSuplemen && fileSuplemen) {
-            bindDragDrop(uploadAreaSuplemen, (file) => {
+            const area = document.getElementById(areaId);
+            const input = document.getElementById(inputId);
+            const preview = document.getElementById(previewId);
+            const nameEl = document.getElementById(nameId);
+            const sizeEl = document.getElementById(sizeId);
+
+            function handle(file) {
                 if (!file) return;
-                fileSuplemen.files = makeFileList(file);
-                handleSuplemen(file);
+                const err = validate(file);
+                if (err) {
+                    alert(err);
+                    remove();
+                    return;
+                }
+
+                if (nameEl) nameEl.textContent = file.name;
+                if (sizeEl) sizeEl.textContent = formatFileSize(file.size);
+                if (preview) {
+                    preview.classList.remove('d-none');
+                    preview.classList.add('has-file');
+                }
+                if (onReady) onReady();
+            }
+
+            function remove() {
+                if (input) input.value = '';
+                if (preview) {
+                    preview.classList.add('d-none');
+                    preview.classList.remove('has-file');
+                }
+                if (nameEl) nameEl.textContent = '-';
+                if (sizeEl) sizeEl.textContent = '-';
+                if (onReady) onReady();
+            }
+
+            on(document.getElementById(btnPickId), 'click', () => input && input.click());
+            on(document.getElementById(btnChangeId), 'click', () => input && input.click());
+            on(document.getElementById(btnRemoveId), 'click', remove);
+
+            on(area, 'click', (e) => {
+                if (e.target.closest('button')) return;
+                if (input) input.click();
             });
+            on(input, 'change', () => handle(input.files[0]));
+
+            bindDragDrop(area, (file) => {
+                if (!file || !input) return;
+                input.files = makeFileList(file);
+                handle(file);
+            });
+
+            return {
+                input
+                , remove
+            };
         }
 
-        function handleSuplemen(file) {
-            if (!fileSuplemen || !previewSuplemen) return;
-
-            if (!file) {
-                checkReady();
-                return;
+        // ===================== build widgets =====================
+        makeWidget({
+            areaId: 'uploadAreaLed'
+            , inputId: 'file_led'
+            , previewId: 'previewLed'
+            , nameId: 'ledName'
+            , sizeId: 'ledSize'
+            , btnPickId: 'btnPickLed'
+            , btnChangeId: 'btnChangeLed'
+            , btnRemoveId: 'btnRemoveLed'
+            , accept: '.docx,.doc'
+            , validate(f) {
+                if (!(f.name.toLowerCase().endsWith('.docx') || f.name.toLowerCase().endsWith('.doc'))) return 'LED harus berformat DOCX/DOC!';
+                if (f.size > 10 * 1024 * 1024) return 'Ukuran file LED maksimal 10MB!';
+                return null;
             }
+            , onReady: checkReady
+        , });
 
-            const name = file.name.toLowerCase();
-            if (!name.endsWith('.pdf')) {
-                alert('Suplemen harus berformat PDF!');
-                removeSuplemen();
-                return;
+        makeWidget({
+            areaId: 'uploadAreaSuplemen'
+            , inputId: 'file_suplemen'
+            , previewId: 'previewSuplemen'
+            , nameId: 'suplemenName'
+            , sizeId: 'suplemenSize'
+            , btnPickId: 'btnPickSuplemen'
+            , btnChangeId: 'btnChangeSuplemen'
+            , btnRemoveId: 'btnRemoveSuplemen'
+            , accept: '.pdf'
+            , validate(f) {
+                if (!f.name.toLowerCase().endsWith('.pdf')) return 'Suplemen harus berformat PDF!';
+                if (f.size > 10 * 1024 * 1024) return 'Ukuran file Suplemen maksimal 10MB!';
+                return null;
             }
-            if (file.size > 10 * 1024 * 1024) {
-                alert('Ukuran file Suplemen maksimal 5MB!');
-                removeSuplemen();
-                return;
+            , onReady: checkReady
+        , });
+
+        makeWidget({
+            areaId: 'uploadAreaLkps'
+            , inputId: 'file_lkps'
+            , previewId: 'previewLkps'
+            , nameId: 'lkpsName'
+            , sizeId: 'lkpsSize'
+            , btnPickId: 'btnPickLkps'
+            , btnChangeId: 'btnChangeLkps'
+            , btnRemoveId: 'btnRemoveLkps'
+            , accept: '.xlsx,.xls'
+            , validate(f) {
+                const n = f.name.toLowerCase();
+                if (!(n.endsWith('.xlsx') || n.endsWith('.xls'))) return 'LKPS harus berformat XLSX/XLS!';
+                if (f.size > 10 * 1024 * 1024) return 'Ukuran file LKPS maksimal 10MB!';
+                return null;
             }
+            , onReady: checkReady
+        , });
 
-            suplemenName.textContent = file.name;
-            suplemenSize.textContent = formatFileSize(file.size);
+        makeWidget({
+            areaId: 'uploadAreaPengesahan'
+            , inputId: 'file_pengesahan'
+            , previewId: 'previewPengesahan'
+            , nameId: 'pengesahanName'
+            , sizeId: 'pengesahanSize'
+            , btnPickId: 'btnPickPengesahan'
+            , btnChangeId: 'btnChangePengesahan'
+            , btnRemoveId: 'btnRemovePengesahan'
+            , accept: '.pdf'
+            , validate(f) {
+                if (!f.name.toLowerCase().endsWith('.pdf')) return 'Lembar Pengesahan harus berformat PDF!';
+                if (f.size > 10 * 1024 * 1024) return 'Ukuran file Pengesahan maksimal 10MB!';
+                return null;
+            }
+            , onReady: checkReady
+        , });
 
-            previewSuplemen.classList.remove('d-none');
-            previewSuplemen.classList.add('has-file');
-            checkReady();
+        // ===================== readiness check =====================
+        function getInput(id) {
+            return document.getElementById(id);
         }
 
-        function removeSuplemen() {
-            if (!fileSuplemen || !previewSuplemen) {
-                checkReady();
-                return;
-            }
-            fileSuplemen.value = '';
-            previewSuplemen.classList.add('d-none');
-            previewSuplemen.classList.remove('has-file');
-            if (suplemenName) suplemenName.textContent = '-';
-            if (suplemenSize) suplemenSize.textContent = '-';
-            checkReady();
-        }
-
-        // ============================================================
-        // LKPS
-        // ============================================================
-        const uploadAreaLkps = document.getElementById('uploadAreaLkps');
-        const fileLkps = document.getElementById('file_lkps');
-        const previewLkps = document.getElementById('previewLkps');
-        const lkpsName = document.getElementById('lkpsName');
-        const lkpsSize = document.getElementById('lkpsSize');
-
-        const btnPickLkps = document.getElementById('btnPickLkps');
-        const btnChangeLkps = document.getElementById('btnChangeLkps');
-        const btnRemoveLkps = document.getElementById('btnRemoveLkps');
-
-        on(btnPickLkps, 'click', () => fileLkps.click());
-        on(btnChangeLkps, 'click', () => fileLkps.click());
-        on(btnRemoveLkps, 'click', removeLkps);
-
-        on(uploadAreaLkps, 'click', (e) => {
-            if (e.target.closest('button')) return;
-            fileLkps.click();
-        });
-
-        on(fileLkps, 'change', () => handleLkps(fileLkps.files[0]));
-
-        bindDragDrop(uploadAreaLkps, (file) => {
-            if (!file) return;
-            fileLkps.files = makeFileList(file);
-            handleLkps(file);
-        });
-
-        function handleLkps(file) {
-            if (!file) return;
-
-            const name = file.name.toLowerCase();
-            if (!(name.endsWith('.xlsx') || name.endsWith('.xls'))) {
-                alert('LKPS harus berformat XLSX/XLS!');
-                removeLkps();
-                return;
-            }
-            if (file.size > 10 * 1024 * 1024) {
-                alert('Ukuran file LKPS maksimal 5MB!');
-                removeLkps();
-                return;
-            }
-
-            lkpsName.textContent = file.name;
-            lkpsSize.textContent = formatFileSize(file.size);
-
-            previewLkps.classList.remove('d-none');
-            previewLkps.classList.add('has-file');
-            checkReady();
-        }
-
-        function removeLkps() {
-            fileLkps.value = '';
-            previewLkps.classList.add('d-none');
-            previewLkps.classList.remove('has-file');
-            lkpsName.textContent = '-';
-            lkpsSize.textContent = '-';
-            checkReady();
-        }
-
-        // ============================================================
-        // PENGESAHAN (PDF) - WAJIB
-        // ============================================================
-        const uploadAreaPengesahan = document.getElementById('uploadAreaPengesahan');
-        const filePengesahan = document.getElementById('file_pengesahan');
-        const previewPengesahan = document.getElementById('previewPengesahan');
-        const pengesahanName = document.getElementById('pengesahanName');
-        const pengesahanSize = document.getElementById('pengesahanSize');
-
-        const btnPickPengesahan = document.getElementById('btnPickPengesahan');
-        const btnChangePengesahan = document.getElementById('btnChangePengesahan');
-        const btnRemovePengesahan = document.getElementById('btnRemovePengesahan');
-
-        on(btnPickPengesahan, 'click', () => filePengesahan.click());
-        on(btnChangePengesahan, 'click', () => filePengesahan.click());
-        on(btnRemovePengesahan, 'click', removePengesahan);
-
-        on(uploadAreaPengesahan, 'click', (e) => {
-            if (e.target.closest('button')) return;
-            filePengesahan.click();
-        });
-
-        on(filePengesahan, 'change', () => handlePengesahan(filePengesahan.files[0]));
-
-        bindDragDrop(uploadAreaPengesahan, (file) => {
-            if (!file) return;
-            filePengesahan.files = makeFileList(file);
-            handlePengesahan(file);
-        });
-
-        function handlePengesahan(file) {
-            if (!file) return;
-
-            const name = file.name.toLowerCase();
-            if (!name.endsWith('.pdf')) {
-                alert('Lembar Pengesahan harus berformat PDF!');
-                removePengesahan();
-                return;
-            }
-            if (file.size > 10 * 1024 * 1024) {
-                alert('Ukuran file Lembar Pengesahan maksimal 5MB!');
-                removePengesahan();
-                return;
-            }
-
-            pengesahanName.textContent = file.name;
-            pengesahanSize.textContent = formatFileSize(file.size);
-
-            previewPengesahan.classList.remove('d-none');
-            previewPengesahan.classList.add('has-file');
-            checkReady();
-        }
-
-        function removePengesahan() {
-            filePengesahan.value = '';
-            previewPengesahan.classList.add('d-none');
-            previewPengesahan.classList.remove('has-file');
-            pengesahanName.textContent = '-';
-            pengesahanSize.textContent = '-';
-            checkReady();
-        }
-
-        // ============================================================
-        // readiness: LED + LKPS + Pengesahan + (Suplemen jika wajib)
-        // ============================================================
         function checkReady() {
-            const okLed = fileLed.files && fileLed.files.length > 0;
-            const okLkps = fileLkps.files && fileLkps.files.length > 0;
-            const okPengesahan = filePengesahan.files && filePengesahan.files.length > 0;
+            var elLed = getInput('file_led');
+            var elLkps = getInput('file_lkps');
+            var elPengesahan = getInput('file_pengesahan');
+            var elSuplemen = getInput('file_suplemen');
 
-            let okSuplemen = true;
-            if (NEED_SUPLEMEN) {
-                okSuplemen = !!(fileSuplemen && fileSuplemen.files && fileSuplemen.files.length > 0);
-            }
+            const okLed = !!(elLed && elLed.files && elLed.files.length);
+            const okLkps = !!(elLkps && elLkps.files && elLkps.files.length);
+            const okPengesahan = !!(elPengesahan && elPengesahan.files && elPengesahan.files.length);
+            const okSuplemen = NEED_SUPLEMEN ? !!(elSuplemen && elSuplemen.files && elSuplemen.files.length) : true;
 
-            btnSubmit.disabled = !(okLed && okLkps && okPengesahan && okSuplemen);
+            document.getElementById('btnSubmit').disabled = !(okLed && okLkps && okPengesahan && okSuplemen);
         }
 
-        // initial check
         checkReady();
 
-        // submit loading state
-        on(form, 'submit', function() {
-            btnSubmit.disabled = true;
-            btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mengupload...';
+        // ===================== polling helpers =====================
+        async function sleep(ms) {
+            return new Promise(r => setTimeout(r, ms));
+        }
+
+        /**
+         * Poll import-docx status.
+         * Returns 'completed' | 'failed' | 'timeout'
+         */
+        async function pollDocxStatus(importId, {
+            maxMs = 120000
+            , interval = 2000
+        } = {}) {
+            const start = Date.now();
+            while (Date.now() - start < maxMs) {
+                await sleep(interval);
+                try {
+                    const res = await fetch(URL_IMPORT_DOCX_STATUS(importId), {
+                        headers: {
+                            Accept: 'application/json'
+                        }
+                    });
+                    const data = await res.json();
+                    if (!data || !data.success) continue;
+
+                    const st = data.status || (data.data && data.data.status) || (data.import && data.import.status);
+                    if (!st) continue;
+
+                    if (st === 'completed') return 'completed';
+                    if (st === 'failed') return 'failed';
+                } catch {
+                    /* retry */
+                }
+            }
+            return 'timeout';
+        }
+
+        /**
+         * Poll import-lkps status.
+         * Returns 'completed' | 'failed' | 'timeout'
+         */
+        async function pollLkpsStatus(importId, {
+            maxMs = 120000
+            , interval = 2000
+        } = {}) {
+            const start = Date.now();
+            while (Date.now() - start < maxMs) {
+                await sleep(interval);
+                try {
+                    const res = await fetch(URL_IMPORT_LKPS_STATUS(importId), {
+                        headers: {
+                            Accept: 'application/json'
+                        }
+                    });
+                    const data = await res.json();
+                    const st = data && data.summary && data.summary.status;
+                    if (!st) continue;
+
+                    if (st === 'completed') return 'completed';
+                    if (st === 'failed') return 'failed';
+                } catch {
+                    /* retry */
+                }
+            }
+            return 'timeout';
+        }
+
+        // ===================== main submit handler =====================
+        on(document.getElementById('btnSubmit'), 'click', async function() {
+            const fileLed = getInput('file_led');
+            const fileLkps = getInput('file_lkps');
+            const fileSuplemen = getInput('file_suplemen');
+            const filePengesahan = getInput('file_pengesahan');
+            const catatanEl = document.getElementById('catatan_upload');
+            const catatan = catatanEl ? catatanEl.value : '';
+
+            // Show progress sidebar
+            document.getElementById('uploadProgressBox').classList.remove('d-none');
+            progPending('progLed', 'LED (DOCX)');
+            progPending('progLkps', 'LKPS (Excel)');
+            progPending('progSuplemen', 'Suplemen (PDF)');
+            progPending('progPengesahan', 'Lembar Pengesahan (PDF)');
+
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mengupload...';
+
+            // ── 1. Upload & import LED ────────────────────────────────────────
+            showLoading('Mengupload LED (DOCX)...');
+            progLoading('progLed', 'LED (DOCX) — Mengupload...');
+
+            let ledOk = false;
+            try {
+                const fd = new FormData();
+                fd.append('_token', CSRF);
+                fd.append('docx_file', fileLed.files[0]);
+
+                const res = await fetch(URL_IMPORT_DOCX, {
+                    method: 'POST'
+                    , headers: {
+                        Accept: 'application/json'
+                    }
+                    , body: fd
+                });
+                const data = await res.json();
+
+                if (!data.success) throw new Error(data.message || 'Upload LED gagal');
+
+                const importId = data.data ? data.data.import_id : null;
+                if (importId) {
+                    showLoading('Memproses LED (DOCX)...');
+                    progLoading('progLed', 'LED (DOCX) — Memproses...');
+
+                    const st = await pollDocxStatus(importId);
+                    if (st === 'completed') {
+                        progDone('progLed', 'LED (DOCX) — Selesai');
+                        ledOk = true;
+                    } else if (st === 'timeout') {
+                        progDone('progLed', 'LED (DOCX) — Masih diproses (timeout)');
+                        ledOk = true; // file sudah diterima, proses lanjut di background
+                    } else {
+                        throw new Error('Proses import LED gagal.');
+                    }
+                } else {
+                    // tanpa importId: langsung selesai
+                    progDone('progLed', 'LED (DOCX) — Selesai');
+                    ledOk = true;
+                }
+            } catch (e) {
+                progError('progLed', `LED — ${e.message}`);
+                hideLoading();
+                if (typeof Swal !== 'undefined') {
+                    await Swal.fire('Gagal Upload LED', e.message, 'error');
+                } else {
+                    alert('Gagal upload LED: ' + e.message);
+                }
+                resetBtn(this);
+                return;
+            }
+
+            // ── 2. Upload & import LKPS ──────────────────────────────────────
+            showLoading('Mengupload LKPS (Excel)...');
+            progLoading('progLkps', 'LKPS (Excel) — Mengupload...');
+
+            let lkpsOk = false;
+            try {
+                const fd = new FormData();
+                fd.append('_token', CSRF);
+                fd.append('file', fileLkps.files[0]);
+
+                const res = await fetch(URL_IMPORT_LKPS, {
+                    method: 'POST'
+                    , headers: {
+                        Accept: 'application/json'
+                    }
+                    , body: fd
+                });
+                const data = await res.json();
+
+                if (!data.success) throw new Error(data.message || 'Upload LKPS gagal');
+
+                const importId = data.borang_import_id;
+                if (importId) {
+                    showLoading('Memproses LKPS (Excel)...');
+                    progLoading('progLkps', 'LKPS (Excel) — Memproses...');
+
+                    const st = await pollLkpsStatus(importId);
+                    if (st === 'completed') {
+                        progDone('progLkps', 'LKPS (Excel) — Selesai');
+                        lkpsOk = true;
+                    } else if (st === 'timeout') {
+                        progDone('progLkps', 'LKPS (Excel) — Masih diproses (timeout)');
+                        lkpsOk = true;
+                    } else {
+                        throw new Error('Proses import LKPS gagal.');
+                    }
+                } else {
+                    progDone('progLkps', 'LKPS (Excel) — Selesai');
+                    lkpsOk = true;
+                }
+            } catch (e) {
+                progError('progLkps', `LKPS — ${e.message}`);
+                hideLoading();
+                if (typeof Swal !== 'undefined') {
+                    await Swal.fire('Gagal Upload LKPS', e.message, 'error');
+                } else {
+                    alert('Gagal upload LKPS: ' + e.message);
+                }
+                resetBtn(this);
+                return;
+            }
+
+            // ── 3. Upload Suplemen + Pengesahan (simpan file biasa) ──────────
+            showLoading('Mengupload Suplemen & Pengesahan...');
+            progLoading('progSuplemen', 'Suplemen (PDF) — Mengupload...');
+            progLoading('progPengesahan', 'Lembar Pengesahan (PDF) — Mengupload...');
+
+            try {
+                const fd = new FormData();
+                fd.append('_token', CSRF);
+                fd.append('_method', 'POST');
+                fd.append('catatan_upload', catatan);
+
+                if (fileSuplemen && fileSuplemen.files && fileSuplemen.files.length) fd.append('file_suplemen', fileSuplemen.files[0]);
+                if (filePengesahan && filePengesahan.files && filePengesahan.files.length) fd.append('file_pengesahan', filePengesahan.files[0]);
+
+                const res = await fetch(URL_UPLOAD, {
+                    method: 'POST'
+                    , headers: {
+                        Accept: 'application/json'
+                    }
+                    , body: fd
+                });
+                const data = await res.json();
+
+                if (!data.success) throw new Error(data.message || 'Upload Suplemen/Pengesahan gagal');
+
+                progDone('progSuplemen', 'Suplemen (PDF) — Selesai');
+                progDone('progPengesahan', 'Lembar Pengesahan (PDF) — Selesai');
+            } catch (e) {
+                console.log(e)
+                progError('progSuplemen', `Suplemen — ${e.message}`);
+                progError('progPengesahan', `Pengesahan — ${e.message}`);
+                hideLoading();
+                if (typeof Swal !== 'undefined') {
+                    await Swal.fire('Gagal Upload', e.message, 'error');
+                } else {
+                    alert('Gagal upload: ' + e.message);
+                }
+                resetBtn(this);
+                return;
+            }
+
+            // ── 4. Selesai — redirect ────────────────────────────────────────
+            hideLoading();
+
+            if (typeof Swal !== 'undefined') {
+                await Swal.fire({
+                    icon: 'success'
+                    , title: 'Upload Selesai!'
+                    , text: 'Semua dokumen berhasil diupload dan diproses. Anda akan diarahkan ke halaman detail.'
+                    , timer: 2500
+                    , showConfirmButton: false
+                , });
+            }
+
+            window.location.href = URL_REDIRECT;
         });
+
+        function resetBtn(btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-upload"></i> Upload Dokumen';
+            checkReady();
+        }
 
     })();
 
 </script>
 @endpush
-@endsection

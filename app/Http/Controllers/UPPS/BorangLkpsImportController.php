@@ -7,10 +7,13 @@ use App\Jobs\ImportBorangExcelJob;
 use App\Models\BorangDataExcel;
 use App\Models\BorangImport;
 use App\Models\PengajuanAkreditasi;
+use App\Models\PengajuanDokumen;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class BorangLkpsImportController extends Controller
 {
@@ -19,55 +22,124 @@ class BorangLkpsImportController extends Controller
     /**
      * Upload & dispatch import job
      */
-    public function import(Request $request, PengajuanAkreditasi $pengajuan): JsonResponse
+    public function import(Request $request, PengajuanAkreditasi $pengajuan, $isAddVersion = false): JsonResponse
     {
-        $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls|max:20480',
-            'id_degree_level' => 'nullable|exists:degree_levels,id',
-        ]);
+        try {
 
-        // $this->authorize('update', $pengajuan);
+            $request->validate([
+                'file' => 'required|file|mimes:xlsx,xls|max:20480',
+                'id_degree_level' => 'nullable|exists:degree_levels,id',
+            ]);
 
-        $file = $request->file('file');
-        $filename = 'lkps_' . $pengajuan->nomor_pengajuan . '_' . time()
-            . '.' . $file->getClientOriginalExtension();
-        $filePath = $file->storeAs('temp/lkps_imports', $filename);
-        $idDegreeLevel = $pengajuan->studyProgram->id_degree_level;
-        $import = BorangImport::create([
-            'id_pengajuan' => $pengajuan->id,
-            'id_degree_level' => $idDegreeLevel,
-            'original_filename' => $file->getClientOriginalName(),
-            'stored_path' => $filePath,
-            'status' => 'pending',
-            'imported_by' => Auth::id(),
-        ]);
+            DB::beginTransaction();
 
-        // Simpan juga sebagai dokumen pengajuan (file referensi)
-        $pengajuan->dokumen()->create([
-            'jenis_dokumen' => 'data_kuantitatif',
-            'original_filename' => $file->getClientOriginalName(),
-            'path_file' => $filePath,
-            'file_size' => $file->getSize(),
-            'mime_type' => $file->getMimeType(),
-            'uploaded_by' => Auth::id(),
-            'versi' => $pengajuan->dokumen()
+            // Ambil dokumen versi terbaru
+            $latestDoc = PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
                 ->where('jenis_dokumen', 'data_kuantitatif')
-                ->count() + 1,
-        ]);
+                ->where('is_latest', true)
+                ->first();
 
-        ImportBorangExcelJob::dispatch(
-            $import->id,
-            $filePath,
-            $pengajuan->id,
-            Auth::id(),
-            $idDegreeLevel
-        );
+            // =========================
+            // Tentukan versi
+            // =========================
+            if ($isAddVersion) {
 
-        return response()->json([
-            'success' => true,
-            'message' => 'File LKPS berhasil diupload. Sedang diproses...',
-            'borang_import_id' => $import->id,
-        ]);
+                $versi = ($latestDoc->versi ?? 0) + 1;
+
+                if ($latestDoc) {
+                    $latestDoc->update(['is_latest' => false]);
+                }
+
+                $dokumenId = null;
+            } else {
+
+                if (!$latestDoc) {
+                    $versi = 1;
+                    $dokumenId = null;
+                } else {
+                    $versi = $latestDoc->versi;
+                    $dokumenId = $latestDoc->id;
+                }
+            }
+
+            // =========================
+            // Simpan file ke disk PUBLIC
+            // =========================
+            $file = $request->file('file');
+
+            $filename = "kuantitatif_v{$versi}_" . time()
+                . '.' . $file->getClientOriginalExtension();
+
+            $filePath = $file->storeAs(
+                "permohonan-akreditasi/{$pengajuan->id}/kuantitatif",
+                $filename,
+                'public'
+            );
+
+            if (!$filePath) {
+                throw new \Exception('Gagal menyimpan file ke storage.');
+            }
+
+            $idDegreeLevel = $pengajuan->studyProgram->id_degree_level;
+
+            // =========================
+            // Simpan record import
+            // =========================
+            $import = BorangImport::create([
+                'id_pengajuan' => $pengajuan->id,
+                'id_degree_level' => $idDegreeLevel,
+                'original_filename' => $file->getClientOriginalName(),
+                'stored_path' => $filePath,
+                'status' => 'pending',
+                'imported_by' => Auth::id(),
+            ]);
+
+            // =========================
+            // Simpan sebagai dokumen pengajuan
+            // =========================
+            $pengajuan->dokumen()->create([
+                'jenis_dokumen' => 'data_kuantitatif',
+                'original_filename' => $file->getClientOriginalName(),
+                'path_file' => $filePath,
+                'file_size' => $file->getSize(),
+                'mime_type' => $file->getMimeType(),
+                'uploaded_by' => Auth::id(),
+                'versi' => $versi,
+                'is_latest' => true,
+            ]);
+
+            DB::commit();
+
+            // =========================
+            // Dispatch Job setelah commit
+            // =========================
+            ImportBorangExcelJob::dispatch(
+                $import->id,
+                $filePath,
+                $pengajuan->id,
+                Auth::id(),
+                $idDegreeLevel
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'File LKPS berhasil diupload. Sedang diproses...',
+                'borang_import_id' => $import->id,
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('Import file gagal', [
+                'pengajuan_id' => $pengajuan->id,
+                'user_id' => Auth::id(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Upload gagal: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**

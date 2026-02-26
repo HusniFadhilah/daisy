@@ -1366,7 +1366,7 @@ class PengajuanAkreditasiController extends Controller
         try {
             $pengajuan = PengajuanAkreditasi::findOrFail($id);
             $degreeLevel = $pengajuan->studyProgram->degreeLevel->code;
-            $fileName = 'TEMPLATE_LAPORAN_EVALUASI_DIRI_' . $degreeLevel . '.docx';
+            $fileName = 'TEMPLAT_LAPORAN_EVALUASI_DIRI_' . $degreeLevel . '.docx';
             $templatePath = storage_path('app/public/templates/' . $fileName);
 
             if (!file_exists($templatePath)) {
@@ -1375,7 +1375,7 @@ class PengajuanAkreditasiController extends Controller
                 ]);
 
                 if (!file_exists($templatePath)) {
-                    throw new \RuntimeException("Template belum berhasil dibuat: {$templatePath}");
+                    throw new \RuntimeException("Templat belum berhasil dibuat: {$templatePath}");
                 }
             }
             return response()->download($templatePath, $fileName);
@@ -1695,10 +1695,13 @@ class PengajuanAkreditasiController extends Controller
 
         // if (!$hasAccess) abort(403);
 
-        dd($dokumen->path_file);
+        if (!Storage::disk('public')->exists($dokumen->path_file)) {
+            if ($dokumen->jenis_dokumen === 'data_kualitatif' && Str::startsWith($dokumen->nama_file, 'kualitatif_')) {
+                return redirect()->route('pengajuan.borang.export-docx', $pengajuan->id);
+            }
+            abort(404, 'File tidak ditemukan.');
+        }
         $absolutePath = storage_path('app/public/' . $dokumen->path_file);
-        abort_unless(is_file($absolutePath), 404, 'File tidak ditemukan');
-
         $filename = $dokumen->original_filename ?: basename($absolutePath);
         $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
 

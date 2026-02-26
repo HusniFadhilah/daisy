@@ -34,7 +34,7 @@ class BorangExcelImportService
 
             // ✅ 1) ElemenStandar: query SEKALI per sheet (bukan per tabel)
             $elemenKode = trim($this->resolver->getElemenKode($sheetName));
-            $elemen = ElemenStandar::where('kode_elemen', $elemenKode)->firstOrFail();
+            $elemen = ElemenStandar::where('kode_elemen', $elemenKode)->first();
 
             // ✅ 2) DatasetBorang: preload SEKALI (menghindari query per tabel)
             // (asumsi resolver kamu punya method preload seperti yang aku kasih sebelumnya)
@@ -56,8 +56,8 @@ class BorangExcelImportService
                         'id_borang_import' => $importId,
                         'id_pengajuan'      => $pengajuanId,
                         'id_degree_level'   => $degreeLevelId,
-                        'id_elemen'         => $elemen->id,
-                        'elemen_kode'       => $elemen->kode_elemen,
+                        'id_elemen'         => $elemen->id ?? null,
+                        'elemen_kode'       => $elemen->kode_elemen ?? $elemenKode,
                         'table_title'       => $parsedTable->tableTitle,
                         'id_dataset_borang' => $datasetBorang?->id,
                         'headers'           => $parsedTable->headers,
@@ -72,6 +72,7 @@ class BorangExcelImportService
         } catch (\Exception $e) {
             $stats['errors'][] = "[{$sheetName}] {$e->getMessage()}";
             Log::error("BorangExcelImportService error on sheet {$sheetName}: " . $e->getMessage());
+            Log::error($e);
         }
 
         return $stats;

@@ -541,7 +541,7 @@ class LkpsDataReaderService
 
             // Fallback: jumlahkan kolom range dari baris-baris data (baris bernomor urut)
             $sum = 0;
-            dd($allRows);
+            // dd($allRows);
             foreach ($allRows as $r) {
                 // Hanya baris data: kolom pertama bernomor integer
                 if (!isset($r[1]) || !is_numeric($r[1])) continue;

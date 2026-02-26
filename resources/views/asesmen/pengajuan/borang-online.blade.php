@@ -15,9 +15,9 @@ $allowed = [
 $log = $pengajuan->latestRelevantStatusLog($allowed);
 $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
 
-$allowed = [
-//\App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM,
-//\App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
+$lockedStatus = [
+\App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM,
+\App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
 //\App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
 //\App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
 //\App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
@@ -26,8 +26,8 @@ $allowed = [
 \App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
 \App\Models\PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED,
 ];
-$log = $pengajuan->latestRelevantStatusLog($allowed);
-$lockBorang = in_array($log?->status_to, $allowed);
+$log = $pengajuan->latestRelevantStatusLog($lockedStatus);
+$lockBorang = in_array($log?->status_to, $lockedStatus) && $pengajuan->status != \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED;
 @endphp
 
 <style>
@@ -289,11 +289,11 @@ $lockBorang = in_array($log?->status_to, $allowed);
 
         <div class="card-footer bg-white">
             <div class="d-flex justify-content-between align-items-center">
-                <div>
+                <div class=" w-100">
                     @if($pengajuan->status == \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED)
                     <div class="alert alert-warning alert-permanent py-2">
                         <i class="bi bi-info-circle"></i>
-                        Terdapat permintaan revisi LED+Suplemen, LKPS oleh Validator. Mohon cermati poin revisi setiap elemen, kemudian lakukan perbaikan dan simpan perubahan. Lalu lakukan finalisasi & submit dokumen
+                        Terdapat permintaan revisi LED+Suplemen, LKPS oleh Validator. <br>Mohon cermati poin revisi setiap elemen, kemudian lakukan perbaikan dan simpan perubahan. <br>Lalu lakukan finalisasi & submit dokumen apabila telah selesai
                     </div>
                     @elseif(in_array($pengajuan->status, [\App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,\App\Models\PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION]))
                     <div class="alert alert-warning alert-permanent mb-0 py-2">
@@ -504,7 +504,7 @@ $lockBorang = in_array($log?->status_to, $allowed);
 
                         <small class="text-muted d-block mt-2">
                             <i class="bi bi-info-circle"></i>
-                            Download templat, isi offline, lalu upload kembali. Atau isi online dan download hasilnya.
+                            Download templat, isi secara <i>offline</i>, lalu upload kembali. Atau isi <i>online</i> pada bagian yang tersedia di bawah ini, dan untuk mengecek Anda dapat mendownload hasilnya.
                         </small>
                     </div>
                 </div>
@@ -573,7 +573,7 @@ $lockBorang = in_array($log?->status_to, $allowed);
                         @endif
 
                         {{-- ✅ Toggle 2 mode --}}
-                        <div class="btn-group w-100 mb-2" role="group">
+                        <div class="btn-group mb-2" role="group">
                             <button type="button" class="btn btn-outline-success btn-sm" id="btnUploadExcelLkps" {{ $lockBorang ? 'disabled' : '' }} onclick="triggerUploadKuantitatif()">
                                 <i class="bi bi-cloud-upload"></i> Upload Excel LKPS
                             </button>

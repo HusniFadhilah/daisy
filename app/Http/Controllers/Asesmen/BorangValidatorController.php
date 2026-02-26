@@ -247,15 +247,15 @@ class BorangValidatorController extends Controller
         // Get progress
         $progress = $validation->getProgressPercentage();
         $isEnvLocal = app()->environment() === 'local';
-        $allowed = [
+        $lockStatuses = [
             \App\Models\PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
             \App\Models\PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
             \App\Models\PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
             \App\Models\PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED,
         ];
 
-        $log = $pengajuan->latestRelevantStatusLog($allowed);
-        $lockBorang = in_array($log?->status_to, $allowed);
+        $log = $pengajuan->latestRelevantStatusLog($lockStatuses);
+        $lockBorang = in_array($log?->status_to, $lockStatuses);
 
         // =====================
         // STATUS BANNER (VIEW)
@@ -287,7 +287,7 @@ class BorangValidatorController extends Controller
                 $statusText  = 'Dokumen telah disetujui. Menunggu sistem memperbarui status pengajuan.';
             } elseif ($validation->final_action === 'revision') {
                 $statusClass = 'warning';
-                $statusText  = 'Revisi telah diminta kepada prodi. Menunggu prodi melakukan perbaikan dokumen.';
+                $statusText  = ($pengajuan->status == PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI ? 'Revisi telah diminta kepada prodi. Prodi telah mengupload ulang dokumen yang telah direvisi. Mohon segera melakukan validasi dokumen kembali' : 'Revisi telah diminta kepada prodi. Menunggu prodi melakukan perbaikan dokumen.');
             }
         }
 

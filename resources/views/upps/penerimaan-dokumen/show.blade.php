@@ -158,7 +158,7 @@
 
                     <div class="row">
                         @foreach($docCards as $key => $cfg)
-                        @continue($key === 'suplemen' && !$needSuplemen)
+                        {{-- @continue($key === 'suplemen' && !$needSuplemen) --}}
 
                         @php $doc = $uploadedDocuments[$key] ?? null; @endphp
 

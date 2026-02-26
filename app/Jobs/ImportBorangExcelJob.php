@@ -40,7 +40,13 @@ class ImportBorangExcelJob implements ShouldQueue
         $import->markAsProcessing();
 
         try {
-            $fullPath = Storage::path($this->filePath);
+            $disk = Storage::disk('public');
+
+            if (!$disk->exists($this->filePath)) {
+                throw new \Exception("File tidak ditemukan di disk public: {$this->filePath}");
+            }
+
+            $fullPath = $disk->path($this->filePath);
             $spreadsheet = IOFactory::load($fullPath);
 
             $service = new BorangExcelImportService(
@@ -96,7 +102,7 @@ class ImportBorangExcelJob implements ShouldQueue
                 'completed_at' => now(),
             ]);
 
-            Storage::delete($this->filePath);
+            // Storage::delete($this->filePath);
         } catch (\Exception $e) {
             DB::rollBack();
             $import->markAsFailed(['Fatal: ' . $e->getMessage()]);

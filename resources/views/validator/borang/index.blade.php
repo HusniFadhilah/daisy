@@ -149,7 +149,7 @@
 
                             <td>
                                 @if($pengajuan)
-                                {!! $pengajuan->getCustomBadgeLastStatus('validasi_dokumen', 'upps', 'label_short_for') !!}
+                                {!! $pengajuan->getCustomBadgeLastStatus('validasi_dokumen', 'validator', 'label_short_for') !!}
                                 @else
                                 <span class="badge bg-secondary">-</span>
                                 @endif

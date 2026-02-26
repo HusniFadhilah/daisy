@@ -239,7 +239,12 @@ class PelaporanBandingController extends Controller
             return back()->with('error', 'File laporan tidak ditemukan.');
         }
 
-        return Storage::disk('public')->download($dokumen->path_file, $dokumen->original_filename);
+        $absolutePath = Storage::disk('public')->path($dokumen->path_file);
+        $filename = $dokumen->original_filename ?? basename($absolutePath);
+
+        return response()->file($absolutePath, [
+            'Content-Disposition' => 'inline; filename="' . $filename . '"'
+        ]);
     }
 
     /**

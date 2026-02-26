@@ -125,7 +125,8 @@ class PenerimaanDokumenController extends Controller
         $uploadedDocuments = $pengajuan->getUploadedDocuments(
             $needSuplemen
                 ? ['led', 'suplemen', 'lkps', 'pengesahan']
-                : ['led', 'lkps', 'pengesahan']
+                // : ['led', 'lkps', 'pengesahan']
+                : ['led', 'suplemen', 'lkps', 'pengesahan']
         );
 
         return view('upps.penerimaan-dokumen.show', compact('pengajuan', 'uploadedDocuments', 'needSuplemen'));
@@ -165,7 +166,8 @@ class PenerimaanDokumenController extends Controller
         $uploadedDocuments = $pengajuan->getUploadedDocuments(
             $needSuplemen
                 ? ['led', 'suplemen', 'lkps', 'pengesahan']
-                : ['led', 'lkps', 'pengesahan']
+                // : ['led', 'lkps', 'pengesahan']
+                : ['led', 'suplemen', 'lkps', 'pengesahan']
         );
 
         return view('upps.penerimaan-dokumen.upload', compact('pengajuan', 'needSuplemen', 'canUploadDokumen', 'uploadedDocuments'));
@@ -173,15 +175,21 @@ class PenerimaanDokumenController extends Controller
 
     public function uploadDokumen(Request $request, $id)
     {
+        // ── Selalu kembalikan JSON agar JS bisa membaca error ─────────────
+        // (LED & LKPS sudah diproses via route import-docx / import-lkps)
+
         DB::beginTransaction();
         try {
             $pengajuan = PengajuanAkreditasi::with('studyProgram')->findOrFail($id);
 
-            // Check access
-            $user = Auth::user();
+            // Cek akses
+            $user           = Auth::user();
             $studyProgramIds = $user->studyPrograms()->pluck('study_programs.id');
             if (!$studyProgramIds->contains($pengajuan->id_program_studi)) {
-                abort(403, 'Anda tidak memiliki akses ke permohonan ini.');
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda tidak memiliki akses ke permohonan ini.',
+                ], 403);
             }
 
             // Validasi status pengajuan
@@ -190,75 +198,58 @@ class PenerimaanDokumenController extends Controller
                 PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,
             ];
             if (!in_array($pengajuan->status, $allowedStatuses, true)) {
-                return back()->with('error', 'Dokumen tidak dapat diupload pada status saat ini.');
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Dokumen tidak dapat diupload pada status saat ini.',
+                ], 422);
             }
 
-            // Need suplemen?
             $needSuplemen = ($pengajuan->jenis_akreditasi === 'menuju_unggul');
 
-            // Validate (after we know $needSuplemen)
+            // ── Validasi: hanya Suplemen + Pengesahan ─────────────────────
+            // LED & LKPS TIDAK divalidasi di sini; sudah ditangani import route.
             $rules = [
-                'file_led'        => 'required|file|mimes:docx,doc|max:10240',
-                'file_lkps'       => 'required|file|mimes:xlsx,xls|max:10240',
                 'file_pengesahan' => 'required|file|mimes:pdf|max:10240',
                 'catatan_upload'  => 'nullable|string|max:500',
             ];
             $messages = [
-                'file_led.required' => 'File LED (DOCX) harus diupload.',
-                'file_led.mimes'    => 'LED harus berformat DOCX/DOC.',
-                'file_led.max'      => 'Ukuran file LED maksimal 10MB.',
-
-                'file_lkps.required' => 'File LKPS (Excel) harus diupload.',
-                'file_lkps.mimes'    => 'LKPS harus berformat XLSX/XLS.',
-                'file_lkps.max'      => 'Ukuran file LKPS maksimal 10MB.',
-
                 'file_pengesahan.required' => 'File Lembar Pengesahan (PDF) harus diupload.',
                 'file_pengesahan.mimes'    => 'Lembar Pengesahan harus berformat PDF.',
                 'file_pengesahan.max'      => 'Ukuran file Lembar Pengesahan maksimal 10MB.',
             ];
 
             if ($needSuplemen) {
-                $rules['file_suplemen'] = 'required|file|mimes:pdf|max:10240';
-                $messages['file_suplemen.required'] = 'File Suplemen (PDF) wajib diupload untuk jenis akreditasi menuju unggul.';
-                $messages['file_suplemen.mimes'] = 'Suplemen harus berformat PDF.';
-                $messages['file_suplemen.max'] = 'Ukuran file Suplemen maksimal 10MB.';
+                $rules['file_suplemen']              = 'required|file|mimes:pdf|max:10240';
+                $messages['file_suplemen.required']  = 'File Suplemen (PDF) wajib diupload untuk jenis akreditasi menuju unggul.';
+                $messages['file_suplemen.mimes']     = 'Suplemen harus berformat PDF.';
+                $messages['file_suplemen.max']       = 'Ukuran file Suplemen maksimal 10MB.';
             } else {
                 $rules['file_suplemen'] = 'nullable|file|mimes:pdf|max:10240';
             }
 
-            $validated = $request->validate($rules, $messages);
+            // Validasi manual agar error dikembalikan sebagai JSON
+            $validator = \Validator::make($request->all(), $rules, $messages);
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $validator->errors()->first(),
+                    'errors'  => $validator->errors(),
+                ], 422);
+            }
 
-            // Store LED
-            $this->storePengajuanDokumen(
-                $pengajuan,
-                $request->file('file_led'),
-                'data_kualitatif',
-                'data-kualitatif',
-                'LED',
-                $validated['catatan_upload'] ?? null
-            );
+            $validated = $validator->validated();
 
-            // Store LKPS
-            $this->storePengajuanDokumen(
-                $pengajuan,
-                $request->file('file_lkps'),
-                'data_kuantitatif',
-                'data-kuantitatif',
-                'LKPS',
-                $validated['catatan_upload'] ?? null
-            );
-
-            // Store Pengesahan
+            // ── Simpan Lembar Pengesahan ───────────────────────────────────
             $this->storePengajuanDokumen(
                 $pengajuan,
                 $request->file('file_pengesahan'),
                 'lembar_pengesahan',
                 'lembar-pengesahan',
                 'PENGESAHAN',
-                $validated['catatan_upload'] ?? null
+                isset($validated['catatan_upload']) ? $validated['catatan_upload'] : null
             );
 
-            // Store Suplemen (if exists / required)
+            // ── Simpan Suplemen (jika ada) ────────────────────────────────
             if ($request->hasFile('file_suplemen')) {
                 $this->storePengajuanDokumen(
                     $pengajuan,
@@ -266,33 +257,31 @@ class PenerimaanDokumenController extends Controller
                     'data_suplemen',
                     'data-suplemen',
                     'SUPLEMEN',
-                    $validated['catatan_upload'] ?? null
+                    isset($validated['catatan_upload']) ? $validated['catatan_upload'] : null
                 );
-            } else {
-                // kalau menuju unggul tapi tidak ada file, harusnya sudah ke-block validation
             }
 
-            // Update status pengajuan
-            $newStatus = PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM;
-
-            $keterangan = 'Dokumen LED (DOCX), LKPS (Excel), dan Lembar Pengesahan (PDF)'
+            // ── Update status pengajuan ───────────────────────────────────
+            $newStatus   = PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM;
+            $keterangan  = 'Dokumen LED (DOCX), LKPS (Excel), dan Lembar Pengesahan (PDF)'
                 . ($needSuplemen ? ' serta Suplemen (PDF)' : '')
                 . ' telah diupload oleh program studi, menunggu diterima oleh LAMDEPILAR';
 
             $pengajuan->updateStatusSafely($newStatus, $keterangan);
-
-            $pengajuan->update([
-                'tanggal_draft_borang' => now(),
-            ]);
+            $pengajuan->update(['tanggal_draft_borang' => now()]);
 
             DB::commit();
 
-            return redirect()
-                ->route('upps.penerimaan-dokumen.show', $id)
-                ->with('success', 'Dokumen berhasil diupload. Menunggu diterima oleh LAMDEPILAR.');
+            return response()->json([
+                'success' => true,
+                'message' => 'Dokumen berhasil diupload. Menunggu diterima oleh LAMDEPILAR.',
+            ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal mengupload dokumen: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengupload dokumen: ' . $e->getMessage(),
+            ], 500);
         }
     }
 
@@ -303,26 +292,32 @@ class PenerimaanDokumenController extends Controller
     {
         $dokumen = PengajuanDokumen::findOrFail($id);
 
-        // Check access
         $user = Auth::user();
         $studyProgramIds = $user->studyPrograms()->pluck('study_programs.id');
 
         $pengajuan = PengajuanAkreditasi::findOrFail($dokumen->id_pengajuan);
 
-        // if (!$studyProgramIds->contains($pengajuan->id_program_studi)) {
-        //     abort(403, 'Anda tidak memiliki akses untuk mengunduh dokumen ini.');
-        // }
+        // Optional access check
+        // abort_unless($studyProgramIds->contains($pengajuan->id_program_studi), 403);
+
         if (!Storage::disk('public')->exists($dokumen->path_file)) {
-            if (($dokumen->jenis_dokumen == 'data_kualitatif' || $dokumen->jenis_dokumen == 'draft_borang') && Str::startsWith($dokumen->nama_file, 'kualitatif_')) {
+            if (
+                ($dokumen->jenis_dokumen == 'data_kualitatif' ||
+                    $dokumen->jenis_dokumen == 'draft_borang') &&
+                Str::startsWith($dokumen->nama_file, 'kualitatif_')
+            ) {
                 return redirect()->route('pengajuan.borang.export-docx', $pengajuan->id);
             }
+
             abort(404, 'File tidak ditemukan.');
         }
 
-        return Storage::disk('public')->download(
-            $dokumen->path_file,
-            $dokumen->original_filename
-        );
+        $absolutePath = Storage::disk('public')->path($dokumen->path_file);
+        $filename = $dokumen->original_filename ?? basename($absolutePath);
+
+        return response()->file($absolutePath, [
+            'Content-Disposition' => 'inline; filename="' . $filename . '"'
+        ]);
     }
 
     /**
