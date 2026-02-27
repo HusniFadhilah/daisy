@@ -545,7 +545,6 @@ class HasilAkreditasiService
         $pelampauan       = $hasil->pelampauan_standar_al ?? [];
         $kriteriaRequired = $this->syaratRepo->getKriteriaRequired();
         $kriteriaStatus   = [];
-
         foreach ($kriteriaRequired as $kode) {
             $hasPelampauan         = !empty($pelampauan[$kode]);
             $kriteriaStatus[$kode] = [

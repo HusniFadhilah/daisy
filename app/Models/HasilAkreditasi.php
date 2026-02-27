@@ -303,48 +303,76 @@ class HasilAkreditasi extends Model
     // =========================================================
 
     /**
-     * Tentukan peringkat dari skor AL dengan validasi syarat Unggul.
-     * $memenuhiP1 mencakup: rasio DTPS, kompetensi dosen, DAN capaian lulusan.
+     * Satu-satunya method untuk menentukan peringkat dari skor.
+     *
+     * Syarat Kunci  : skor masuk range status di DB
+     * Syarat Perlu  : hanya berlaku jika status yang match adalah Unggul
+     *                 → $memenuhiPelampauan && $memenuhiP1 harus true
+     *
+     * Default kedua syarat perlu = false → aman, tidak akan pernah
+     * mengembalikan Unggul kecuali eksplisit dipenuhi.
+     */
+    public function getPeringkatFromSkor(
+        float $skor,
+        bool  $memenuhiPelampauan = false,
+        bool  $memenuhiP1 = false
+    ): string {
+        $allStatus = $this->getAllStatusAkreditasi();
+
+        // Cari status yang range-nya mencakup skor
+        $statusMatch = $allStatus
+            ->filter(fn($s) => (float)$s->skor_min <= $skor && (float)$s->skor_max >= $skor)
+            ->sortByDesc('skor_min')
+            ->first();
+
+        if (!$statusMatch) {
+            return 'Tidak Terakreditasi';
+        }
+
+        // Bukan Unggul → langsung return, syarat perlu tidak relevan
+        if (!$this->isStatusUnggul($statusMatch)) {
+            return $statusMatch->status;
+        }
+
+        // ── Status match = Unggul: cek syarat perlu ──
+        if ($memenuhiPelampauan && $memenuhiP1) {
+            return $statusMatch->status;
+        }
+
+        // ── Downgrade: syarat perlu tidak terpenuhi ──
+        $batasUnggul = $allStatus
+            ->filter(fn($s) => $this->isStatusUnggul($s))
+            ->min('skor_min');
+
+        $downgrade = $allStatus
+            ->filter(fn($s) => !$this->isStatusUnggul($s) && (float)$s->skor_max < (float)$batasUnggul)
+            ->sortByDesc('skor_max')
+            ->first();
+
+        return $downgrade?->status ?? 'Terakreditasi';
+    }
+
+    /**
+     * Alias semantik — untuk keterbacaan di service layer.
+     * Sepenuhnya delegate ke getPeringkatFromSkor.
      */
     public function getPeringkatFromSkorAL(
         float $skor,
         bool  $memenuhiPelampauan = false,
         bool  $memenuhiP1 = false
     ): string {
-        $status = StatusAkreditasi::where('skor_min', '<=', $skor)
-            ->where('skor_max', '>=', $skor)
-            ->first();
-
-        if (!$status) {
-            return 'Tidak Terakreditasi';
-        }
-
-        if ($status->status !== 'Terakreditasi Unggul') {
-            return $status->status;
-        }
-
-        // Status Unggul — semua syarat harus terpenuhi
-        if ($memenuhiPelampauan && $memenuhiP1) {
-            return $status->status;
-        }
-
-        // Downgrade ke status tertinggi non-Unggul
-        $downgrade = StatusAkreditasi::where('status', '!=', 'Terakreditasi Unggul')
-            ->where('skor_min', '<=', $skor)
-            ->where('skor_max', '>=', $skor)
-            ->orderByDesc('skor_max')
-            ->first();
-
-        return $downgrade?->status ?? 'Terakreditasi';
+        return $this->getPeringkatFromSkor($skor, $memenuhiPelampauan, $memenuhiP1);
     }
 
-    public function getPeringkatFromSkor(float $skor): string
+    private function isStatusUnggul(StatusAkreditasi $status): bool
     {
-        $status = StatusAkreditasi::where('skor_min', '<=', $skor)
-            ->where('skor_max', '>=', $skor)
-            ->first();
+        return str_contains(strtolower($status->status), 'unggul');
+    }
 
-        return $status?->status ?? 'Tidak Terakreditasi';
+    private function getAllStatusAkreditasi(): \Illuminate\Support\Collection
+    {
+        static $cache = null;
+        return $cache ??= StatusAkreditasi::all();
     }
 
     // =========================================================

@@ -1043,16 +1043,12 @@ class PengajuanAkreditasiController extends Controller
 
             // 4. Update Permohonan akreditasi status
             $oldStatus = $pengajuan->status;
-            $pengajuan->update([
-                'status' => PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM,
-                'tanggal_draft_borang' => null,
-            ]);
 
             // 5. Log status change
             $this->logStatus(
                 $pengajuan,
                 $oldStatus,
-                PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM,
+                $oldStatus,
                 "Borang direset oleh prodi. Data dihapus: {$deletedData} entries, {$deletedImports} imports."
             );
 

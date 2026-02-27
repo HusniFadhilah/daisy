@@ -28,6 +28,7 @@ $lockedStatus = [
 ];
 $log = $pengajuan->latestRelevantStatusLog($lockedStatus);
 $lockBorang = in_array($log?->status_to, $lockedStatus) && $pengajuan->status != \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED;
+//$lockBorang = false;
 @endphp
 
 <style>
