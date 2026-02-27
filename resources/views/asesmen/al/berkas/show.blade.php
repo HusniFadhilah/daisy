@@ -188,6 +188,21 @@ $isComplete = $progress['percentage'] == 100;
             <div class="row align-items-center my-2">
                 <div class="col-12 mb-md-0">
                     {{-- Status Indicator --}}
+                    @if(!$isEditorAsesor)
+                    <div class="alert alert-warning alert-permanent mb-3">
+                        <div class="d-flex align-items-start">
+                            <i class="bi bi-lock-fill fs-4 me-3 text-warning flex-shrink-0"></i>
+                            <div>
+                                <h6 class="mb-1">Form Penilaian Dinonaktifkan</h6>
+                                <p class="mb-0">
+                                    Penilaian sedang diisi oleh asesor
+                                    <strong>{{ $firstActiveAsesor?->user?->name ?? 'lain' }}</strong>.
+                                    Hanya satu asesor yang dapat mengisi penilaian. Anda hanya dapat melihat.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
                     @if(!$isSubmittedOnly && !$isApproved && $isComplete)
                     <div class="alert alert-warning alert-dismissible alert-permanent mb-3" id="alertSubmitReminder">
                         <div class="d-flex align-items-start">
@@ -963,6 +978,7 @@ $isComplete = $progress['percentage'] == 100;
 
         const checkStatusPekerjaan = @json($isSubmitted);
         const needsRevision = @json($needsRevision);
+        const isEditorAsesor = @json($isEditorAsesor);
         let saveTimeout;
         let isSaving = false;
         const AUTO_SAVE_DELAY = 2000;
@@ -985,6 +1001,44 @@ $isComplete = $progress['percentage'] == 100;
         initializeScrollButton();
         initializeActionButtons();
         updateAllProgress();
+
+        // ============================================
+        // DISABLE EDITING: submitted ATAU bukan editor
+        // ============================================
+        // ============================================
+        // DISABLE EDITING: submitted ATAU bukan editor
+        // ============================================
+        const shouldDisable = (checkStatusPekerjaan && !needsRevision) || !isEditorAsesor;
+
+        if (shouldDisable) {
+            document.querySelectorAll('.form-penilaian').forEach(form => {
+                form.querySelectorAll('select, textarea, button').forEach(el => {
+                    el.disabled = true;
+                });
+
+                // Tambah pesan HANYA jika bukan editor
+                // Guard: jangan tambah duplikat jika sudah ada
+                if (!isEditorAsesor && !form.querySelector('.alert-readonly-asesor')) {
+                    const infoDiv = document.createElement('div');
+                    infoDiv.className = 'alert alert-warning alert-permanent mt-2 alert-readonly-asesor';
+                    infoDiv.innerHTML = '<i class="bi bi-lock"></i> Penilaian sedang diisi oleh asesor lain. Anda hanya dapat melihat.';
+                    form.appendChild(infoDiv);
+                }
+            });
+
+            // Disable tombol import & reset
+            ['btnImport', 'btnResetAll'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.setAttribute('disabled', 'disabled');
+            });
+
+            // Sembunyikan tombol submit jika bukan editor
+            if (!isEditorAsesor) {
+                const btnSubmit = document.getElementById('btnSubmit');
+                let closestDiv = btnSubmit.closest('div')
+                if (btnSubmit && closestDiv) closestDiv.remove();
+            }
+        }
 
         /**
          * ========================================

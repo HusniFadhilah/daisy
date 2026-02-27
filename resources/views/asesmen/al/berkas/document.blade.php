@@ -218,11 +218,10 @@
                 </div>
 
                 @php
-                $hasActiveDocs = $docs->where('is_active', true)->count() > 0;
+                $hasActiveDocs = $docs->where('status_persetujuan_de', 'approved')->count() > 0;
                 @endphp
-
                 {{-- ✅ Finalisasi hanya bisa dilakukan oleh uploader --}}
-                @if($hasActiveDocs && $isUploader)
+                @if(!$hasActiveDocs && $isUploader)
                 <div class="card-footer bg-white d-flex justify-content-end gap-2">
                     <button class="btn btn-success" id="btnFinalize">
                         <i class="bi bi-check-circle"></i> Finalisasi dan Kirim

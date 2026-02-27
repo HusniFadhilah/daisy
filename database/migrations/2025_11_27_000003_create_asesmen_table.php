@@ -158,7 +158,7 @@ return new class extends Migration
             $table->foreignId('id_asesmen')->constrained('asesmens', 'id')->onDelete('cascade');
             $table->foreignId('id_user')->constrained('users', 'id')->onDelete('cascade');
             $table->foreignId('id_role')->constrained('roles', 'id')->onDelete('cascade');
-            $table->enum('jenis_asesmen', ['ak', 'al', 'dokumen'])->default('ak')->comment('Type of asesmen: ak (Asesmen Kecukupan) or al (Asesmen Lapangan)');
+            $table->enum('jenis_asesmen', ['ak', 'al', 'dokumen', 'banding'])->default('ak')->comment('Type of asesmen: ak (Asesmen Kecukupan) or al (Asesmen Lapangan)');
             $table->foreignId('id_asesmen_kecukupan')
                 ->nullable()
                 ->constrained('asesmen_kecukupan')

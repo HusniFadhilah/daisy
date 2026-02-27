@@ -274,17 +274,17 @@ class ALDocumentController extends Controller
 
             $user = Auth::user();
 
-            $docsCount = AsesmenDocument::where('id_asesmen', $idAsesmen)
+            $docs = AsesmenDocument::where('id_asesmen', $idAsesmen)
                 ->where('type', 'berita_acara_al')
-                ->where('is_active', true)
-                ->count();
+                ->where('is_active', true);
 
-            if ($docsCount === 0) {
+            if ($docs->count() === 0) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Tidak ada dokumen berita acara yang diupload. Silakan upload dokumen terlebih dahulu.'
                 ], 422);
             }
+            $docs->first()->update(['status_persetujuan_de' => 'approved']);
 
             $asesmen = Asesmen::findOrFail($idAsesmen);
 

@@ -125,11 +125,51 @@ class ALController extends Controller
         $jenjangs = JenjangPenilaian::all();
         // Calculate progress
         $progress = $this->calculateProgressBulk([$asesmen->id], $user->id)[$asesmen->id];
+        // ✅ Ambil semua asesor TIM dulu, SEBELUM updateStatusAL
+        $asesorTeam = AsesmenUserRole::where('id_asesmen', $idAsesmen)
+            ->where('jenis_asesmen', 'al')
+            ->whereHas('role', fn($q) => $q->where('name', 'asesor'))
+            ->with('user')
+            ->get();
+
+        // ✅ Tentukan siapa editor SEBELUM status diubah
+        $firstActiveAsesor = $asesorTeam
+            ->where('status_pekerjaan', '!=', 'not_started')
+            ->sortBy('started_at')
+            ->first();
+
+        $isEditorAsesor = !$firstActiveAsesor || $firstActiveAsesor->id_user == $user->id;
+
+        $otherAsesorsProgress = [];
+        foreach ($asesorTeam as $member) {
+            if ($member->id_user == $user->id) continue;
+            $otherAsesorsProgress[$member->id_user] = [
+                'user'             => $member->user,
+                'status_pekerjaan' => $member->status_pekerjaan,
+                'progress'         => $this->calculateProgressBulk([$idAsesmen], $member->id_user)[$idAsesmen],
+                'started_at'       => $member->started_at,
+            ];
+        }
         $isFinalized = in_array($asesmen->asesmenLapangan->status, ['completed', 'finalized']);
         $isInProgress = $asesmen->asesmenLapangan->isInProgress();
         $uploadedFiles = $asesmen->pengajuan ? $asesmen->pengajuan->getUploadedDocuments() : null;
 
-        return view('asesmen.al.berkas.show', compact('asesmen', 'kriterias', 'progress', 'jenjangs', 'step', 'needsRevisions', 'isFinalized', 'assignment', 'uploadedFiles', 'isInProgress'));
+        return view('asesmen.al.berkas.show', compact(
+            'asesmen',
+            'kriterias',
+            'progress',
+            'jenjangs',
+            'step',
+            'needsRevisions',
+            'isFinalized',
+            'assignment',
+            'uploadedFiles',
+            'isInProgress',
+            'asesorTeam',
+            'isEditorAsesor',
+            'firstActiveAsesor',
+            'otherAsesorsProgress'
+        ));
     }
 
     private function updateStatusAL($assignment)

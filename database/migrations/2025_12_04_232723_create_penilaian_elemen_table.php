@@ -72,6 +72,26 @@ return new class extends Migration
             $table->index('status');
         });
 
+        Schema::create('penilaian_elemen_banding', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('id_asesmen')->constrained('asesmens', 'id')->onDelete('cascade');
+            $table->foreignId('id_surveillance')->constrained('users', 'id')->onDelete('cascade');
+            $table->foreignId('id_elemen')->constrained('elemen_standar', 'id')->onDelete('cascade');
+            $table->integer('skor')->nullable()->comment('0=Not Met, 1=Not Met, 2=Weakness, 3=Met');
+            $table->text('komentar')->nullable()->comment('Deskripsi/justifikasi penilaian surveillance');
+            $table->enum('status', ['draft', 'submitted', 'approved'])->default('draft');
+
+            $table->boolean('is_locked')->comment('0-false,1-true')->default(0);
+            $table->timestamps();
+
+            // Unique constraint: satu user hanya bisa nilai 1 elemen 1x per asesmen
+            $table->unique(['id_asesmen', 'id_surveillance', 'id_elemen'], 'unique_penilaian');
+
+            // Index untuk query cepat
+            $table->index(['id_asesmen', 'id_surveillance']);
+            $table->index('status');
+        });
+
         Schema::create('penilaian_import_logs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('id_asesmen')->constrained('asesmens', 'id')->onDelete('cascade');
