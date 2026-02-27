@@ -1,152 +1,91 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-        }
+@extends('emails.template')
 
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
+@php
+$title = $isVerified ? 'Pembayaran Diverifikasi' : 'Bukti Pembayaran Perlu Upload Ulang';
+$preheader = $isVerified
+? 'Pembayaran Anda telah diverifikasi. Silakan upload Borang Final.'
+: 'Bukti Pembayaran Anda perlu diupload ulang. Silakan lakukan upload ulang bukti pembayaran.';
+$headerTitle = $isVerified ? 'Pembayaran Diverifikasi' : 'Bukti Pembayaran Perlu Upload Ulang';
+@endphp
 
-        .header {
-            background: {
-                    {
-                    $isVerified ? '#28a745': '#dc3545'
-                }
-            }
+@section('content')
+<p style="margin-top:0;">Yth. Tim <strong>{{ $pengajuan->studyProgram->name }}</strong>,</p>
 
-            ;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            border-radius: 5px 5px 0 0;
-        }
+@if($isVerified)
+<p>Pembayaran akreditasi Anda telah <strong>DIVERIFIKASI</strong> oleh LAMDEPILAR.</p>
 
-        .content {
-            background: #f8f9fa;
-            padding: 30px;
-            border: 1px solid #dee2e6;
-        }
+{{-- INFO BOX --}}
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f9fa;border-left:4px solid #28a745;margin:20px 0;">
+    <tr>
+        <td style="padding:15px;font-size:14px;line-height:1.8;">
+            <strong>Nomor Pengajuan</strong> : {{ $pengajuan->nomor_pengajuan }}<br>
+            <strong>Invoice</strong> : {{ $pengajuan->pembayaran->nomor_invoice }}<br>
+            <strong>Jumlah Pembayaran</strong> : Rp {{ number_format($pengajuan->pembayaran->jumlah_pembayaran, 0, ',', '.') }}<br>
+            <strong>Status</strong> : <span style="color:#28a745;">VERIFIED</span>
+        </td>
+    </tr>
+</table>
 
-        .info-box {
-            background: white;
-            padding: 15px;
-            margin: 20px 0;
+{{-- LANGKAH SELANJUTNYA --}}
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#d1ecf1;border-left:4px solid #0dcaf0;margin:20px 0;">
+    <tr>
+        <td style="padding:15px;font-size:14px;line-height:1.8;">
+            <strong>Langkah Selanjutnya:</strong><br>
+            &bull; Login ke sistem<br>
+            &bull; Buka detail Permohonan Akreditasi Anda<br>
+            &bull; Upload <strong>Borang Final</strong> yang telah lengkap<br>
+            &bull; <strong>PENTING:</strong> Pastikan tidak ada revisi data kuantitatif/kualitatif
+        </td>
+    </tr>
+</table>
 
-            border-left: 4px solid {
-                    {
-                    $isVerified ? '#28a745': '#dc3545'
-                }
-            }
+{{-- PERINGATAN --}}
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#fff3cd;border-left:4px solid #ffc107;margin:20px 0;">
+    <tr>
+        <td style="padding:15px;font-size:14px;">
+            <strong>Catatan Penting:</strong><br>
+            Borang final yang diupload harus sudah final dan tidak boleh ada perubahan data setelah ini.
+            Pastikan semua data telah sesuai sebelum upload!
+        </td>
+    </tr>
+</table>
 
-            ;
-        }
+@else
+<p>Pembayaran akreditasi Anda <strong>Perlu Mengupload Ulang</strong> oleh LAMDEPILAR.</p>
 
-        .button {
-            display: inline-block;
-            padding: 12px 30px;
-            background: #0d6efd;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-top: 20px;
-        }
+{{-- INFO BOX --}}
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f9fa;border-left:4px solid #dc3545;margin:20px 0;">
+    <tr>
+        <td style="padding:15px;font-size:14px;line-height:1.8;">
+            <strong>Nomor Pengajuan</strong> : {{ $pengajuan->nomor_pengajuan }}<br>
+            <strong>Invoice</strong> : {{ $pengajuan->pembayaran->nomor_invoice }}<br>
+            <strong>Status</strong> : <span style="color:#dc3545;">Permintaan Upload Ulang</span>
+        </td>
+    </tr>
+</table>
 
-        .footer {
-            text-align: center;
-            padding: 20px;
-            color: #6c757d;
-            font-size: 12px;
-        }
+{{-- ALASAN PENOLAKAN --}}
+@if($pengajuan->pembayaran->alasan_penolakan)
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f8d7da;border-left:4px solid #dc3545;margin:20px 0;">
+    <tr>
+        <td style="padding:15px;font-size:14px;">
+            <strong>Catatan LAMDEPILAR:</strong><br>
+            {{ $pengajuan->pembayaran->alasan_penolakan }}
+        </td>
+    </tr>
+</table>
+@endif
 
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h2>
-                @if($isVerified)
-                ✅ Pembayaran Diverifikasi
-                @else
-                ❌ Pembayaran Ditolak
-                @endif
-            </h2>
-        </div>
-
-        <div class="content">
-            <p>Yth. Tim {{ $pengajuan->studyProgram->name }},</p>
-
-            @if($isVerified)
-            <p>Pembayaran akreditasi Anda telah <strong>DIVERIFIKASI</strong> oleh LAMDEPILAR.</p>
-
-            <div class="info-box">
-                <p><strong>Nomor Permohonan:</strong> {{ $pengajuan->nomor_pengajuan }}</p>
-                <p><strong>Invoice:</strong> {{ $pengajuan->pembayaran->nomor_invoice }}</p>
-                <p><strong>Jumlah Pembayaran:</strong> Rp {{ number_format($pengajuan->pembayaran->jumlah_pembayaran, 0, ',', '.') }}</p>
-                <p><strong>Status:</strong> <span style="color: #28a745;">VERIFIED</span></p>
-            </div>
-
-            <div style="background: #d1ecf1; padding: 15px; border-left: 4px solid #0dcaf0; margin: 20px 0;">
-                <p><strong>Langkah Selanjutnya:</strong></p>
-                <ol>
-                    <li>Login ke sistem</li>
-                    <li>Buka detail Permohonan akreditasi Anda</li>
-                    <li>Upload <strong>Borang Final</strong> yang telah lengkap</li>
-                    <li><strong>PENTING:</strong> Pastikan tidak ada revisi data kuantitatif/kualitatif</li>
-                </ol>
-            </div>
-
-            <div style="background: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin: 20px 0;">
-                <p><strong>⚠️ Catatan Penting:</strong></p>
-                <p>Borang final yang diupload harus sudah final dan tidak boleh ada perubahan data setelah ini. Pastikan semua data telah sesuai sebelum upload!</p>
-            </div>
-
-            @else
-            <p>Pembayaran akreditasi Anda <strong>DITOLAK</strong> oleh LAMDEPILAR.</p>
-
-            <div class="info-box">
-                <p><strong>Nomor Permohonan:</strong> {{ $pengajuan->nomor_pengajuan }}</p>
-                <p><strong>Invoice:</strong> {{ $pengajuan->pembayaran->nomor_invoice }}</p>
-                <p><strong>Status:</strong> <span style="color: #dc3545;">DITOLAK</span></p>
-            </div>
-
-            @if($pengajuan->pembayaran->alasan_penolakan)
-            <div style="background: #f8d7da; padding: 15px; border-left: 4px solid #dc3545; margin: 20px 0;">
-                <p><strong>Alasan Penolakan:</strong></p>
-                <p>{{ $pengajuan->pembayaran->alasan_penolakan }}</p>
-            </div>
-            @endif
-
-            <div style="background: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin: 20px 0;">
-                <p><strong>Langkah Selanjutnya:</strong></p>
-                <ol>
-                    <li>Periksa alasan penolakan di atas</li>
-                    <li>Lakukan pembayaran ulang dengan benar</li>
-                    <li>Upload bukti pembayaran yang valid</li>
-                </ol>
-            </div>
-            @endif
-
-            <center>
-                <a href="{{ route('pengajuan.show', $pengajuan->id) }}" class="button">
-                    Lihat Detail Pengajuan
-                </a>
-            </center>
-
-            <p style="margin-top: 30px;">Hormat kami,<br><strong>LAMDEPILAR</strong></p>
-        </div>
-
-        <div class="footer">
-            <p>Email ini dikirim secara otomatis. Mohon tidak membalas email ini.</p>
-            <p>&copy; {{ date('Y') }} Daisy - DEPILAR Accreditation Information System</p>
-        </div>
-    </div>
-</body>
-</html>
+{{-- LANGKAH SELANJUTNYA --}}
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#fff3cd;border-left:4px solid #ffc107;margin:20px 0;">
+    <tr>
+        <td style="padding:15px;font-size:14px;line-height:1.8;">
+            <strong>Langkah Selanjutnya:</strong><br>
+            &bull; Periksa catatan LAMDEPILAR di atas<br>
+            &bull; Lakukan pembayaran ulang dengan benar<br>
+            &bull; Upload bukti pembayaran yang valid
+        </td>
+    </tr>
+</table>
+@endif
+@endsection

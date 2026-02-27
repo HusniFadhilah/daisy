@@ -75,7 +75,7 @@ class PenawaranController extends Controller
             }
 
             return redirect()->route($route, $param)
-                ->with('info', 'Penawaran telah diterima. Silakan lanjutkan penilaian.');
+                ->with('info', 'Penawaran telah diterima. Silakan lanjutkan ' . ($assignment->jenis_asesmen === 'dokumen' ? 'penilaian' : 'validasi'));
         }
 
         // ✅ If rejected, show with info
@@ -149,7 +149,7 @@ class PenawaranController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Penawaran berhasil diterima. Anda dapat mulai melakukan penilaian.',
+                'message' => 'Penawaran berhasil diterima. Anda dapat mulai melakukan ' . ($assignment->jenis_asesmen === 'dokumen' ? 'penilaian' : 'validasi'),
             ]);
         } catch (\Exception $e) {
             Log::error($e);

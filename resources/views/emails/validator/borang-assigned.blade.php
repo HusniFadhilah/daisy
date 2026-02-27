@@ -1,47 +1,66 @@
-@component('mail::message')
-# Penawaran Validasi Dokumen - {{ $pengajuan->nomor_pengajuan ?? '-' }}
+@extends('emails.template')
 
-Yth. **{{ optional($assignment->user)->name ?? 'Validator' }}**,
+@php
+$title = 'Penawaran Validasi Dokumen';
+$preheader = 'Anda ditunjuk sebagai Validator Dokumen untuk ' . $pengajuan->nomor_pengajuan;
+$headerTitle = 'Penawaran Validasi Dokumen';
+@endphp
 
-Anda telah ditunjuk untuk **memvalidasi borang** pada Permohonan akreditasi berikut:
+@section('content')
+<p style="margin-top:0;">Yth. <strong>{{ $assignment->user->name }}</strong>,</p>
 
-@component('mail::panel')
-**{{ optional($pengajuan)->studyProgram->name ?? '-' }}**
-Nomor Permohonan Akreditasi: **{{ $pengajuan->nomor_pengajuan ?? '-' }}**
+<p>Anda telah ditunjuk sebagai <strong>Validator Dokumen</strong> untuk pengajuan berikut:</p>
 
-@if($assignment->urutan_asesor)
-Urutan: **Asesor {{ $assignment->urutan_asesor }}**
-@endif
-@endcomponent
-
-## Detail Pengajuan
-
-- **Program Studi:** {{ optional($pengajuan->studyProgram)->name ?? '-' }}
-- **Universitas:** {{ optional($pengajuan->studyProgram->university)->name ?? '-' }}
-- **Borang Terakhir:** {{ optional($pengajuan->latestBorangImport)->file_name ?? '-' }}
-
-## Langkah Selanjutnya
-
-Silakan gunakan akun **{{ optional($assignment->user)->email ?? '-' }}** untuk meninjau dan menanggapi penawaran ini melalui tombol di bawah:
-
-@component('mail::button', ['url' => $acceptUrl ?? '#', 'color' => 'success'])
-Lihat Detail & Respond
-@endcomponent
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f9fa;border-left:4px solid #0d6efd;margin:20px 0;">
+    <tr>
+        <td style="padding:15px;font-size:14px;line-height:1.8;">
+            <strong>Nomor Pengajuan</strong> : {{ $pengajuan->nomor_pengajuan }}<br>
+            <strong>Program Studi</strong> : {{ $pengajuan->studyProgram->name ?? '-' }}<br>
+            <strong>Jenjang</strong> : {{ $pengajuan->studyProgram->degreeLevel->name ?? '-' }}<br>
+            <strong>Perguruan Tinggi</strong> : {{ $pengajuan->studyProgram->university->name ?? '-' }}
+        </td>
+    </tr>
+</table>
 
 @if($catatanDe)
-**Catatan DE:**
-{{ $catatanDe }}
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#fff8e1;border-left:4px solid #ffc107;margin:20px 0;">
+    <tr>
+        <td style="padding:15px;font-size:14px;">
+            <strong>Catatan LAMDEPILAR:</strong><br>
+            {{ $catatanDe }}
+        </td>
+    </tr>
+</table>
 @endif
 
----
+<p>Silakan gunakan akun <strong>{{ $assignment->user->email }}</strong> untuk <strong>menerima atau menolak</strong> penawaran ini:</p>
 
-**Catatan Penting:**
-- Harap berikan respons dalam waktu 3x24 jam
-- Jika menolak, mohon berikan alasan yang jelas
-- Setelah menerima, Anda dapat langsung memulai validasi
+<table width="100%" cellpadding="0" cellspacing="0" style="margin:30px 0;">
+    <tr>
+        <td align="center">
+            <a href="{{ $acceptUrl }}" style="
+                    background:#932136;
+                    color:#ffffff;
+                    text-decoration:none;
+                    padding:12px 32px;
+                    border-radius:6px;
+                    font-size:14px;
+                    display:inline-block;
+                ">
+                Lihat Detail & Respon
+            </a>
+        </td>
+    </tr>
+</table>
 
-Terima kasih atas perhatian dan kerjasamanya.
-
-Hormat Kami,<br>
-Sekretariat LAMDEPILAR
-@endcomponent
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f9fa;border-left:4px solid #6c757d;margin:20px 0;">
+    <tr>
+        <td style="padding:15px;font-size:13px;color:#495057;line-height:1.8;">
+            <strong>Catatan Penting:</strong><br>
+            &bull; Harap berikan respons segera mungkin<br>
+            &bull; Jika menolak, mohon berikan alasan yang jelas<br>
+            &bull; Setelah menerima, Anda dapat langsung memulai proses validasi
+        </td>
+    </tr>
+</table>
+@endsection

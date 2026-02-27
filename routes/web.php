@@ -1,14 +1,15 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Profile\{PasswordResetController, ProfileController, ProdiDataController, UserEmailController};
-use App\Http\Controllers\Prodi\{DeskEvaluatorController, PengajuanAkreditasiController, PemetaanAkreditasiController, PengajuanBorangController, BorangUploadController, PenerimaanProdiController};
-use App\Http\Controllers\Master\{ElemenStandarController, JenisIndikatorController, IndikatorController, IndikatorPenilaianElemenController, KriteriaController, UniversityController, StudyProgramController};
-use App\Http\Controllers\Asesmen\{AsesmenController, AKController, ALController, ALDocumentController, BorangValidatorController, HasilAkreditasiController, PenawaranController, PelaporanController, ValidasiController, SyaratAkreditasiController};
 use App\Http\Controllers\{AuthController, BobotPenilaianController, DashboardController, PenugasanController, BandingController, PedomanController, DokumenController, PanduanController, BantuanController, SettingsController, ActivityController, TaskController, LaporanController, TinyMceImageController, UserController};
+use App\Http\Controllers\Asesmen\{AsesmenController, AKController, ALController, ALDocumentController, BorangValidatorController, HasilAkreditasiController, PenawaranController, PelaporanController, ValidasiController, SyaratAkreditasiController};
+use App\Http\Controllers\Test\Asesmen\EmailPreviewController;
 use App\Http\Controllers\DE\{ValidasiAKController, MasaSanggahController, PelaporanAKController, PelaporanALController, PenugasanAKController, PenugasanALController, PelaksanaanALController, SuratPermohonanController, ValidasiDokumenController, PelaporanBandingController, PelaporanDokumenController, PenerimaanDokumenController, PelaksanaanBandingController, ValidasiPembayaranController, FormulirPembayaranController, PenyampaianTemplateController, PelaporanHasilAkreditasiController, PenerimaanPermohonanController, PenetapanHasilAkreditasiController, PenyampaianHasilAkreditasiController, PenyimpananArsipAkreditasiController, PermohonanBandingController, PaymentSummaryController};
+use App\Http\Controllers\Master\{ElemenStandarController, JenisIndikatorController, IndikatorController, IndikatorPenilaianElemenController, KriteriaController, UniversityController, StudyProgramController};
 use App\Http\Controllers\Master\JenjangPenilaianController;
+use App\Http\Controllers\Prodi\{DeskEvaluatorController, PengajuanAkreditasiController, PemetaanAkreditasiController, PengajuanBorangController, BorangUploadController, PenerimaanProdiController};
+use App\Http\Controllers\Profile\{PasswordResetController, ProfileController, ProdiDataController, UserEmailController};
 use App\Http\Controllers\UPPS\{BorangLkpsImportController, BorangLkpsOnlineController, BorangLkpsExportController, LkpsExportController};
+use Illuminate\Support\Facades\Route;
 
 
 // Dashboard (awal)
@@ -1039,6 +1040,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 });
 
+// ─── Email Preview (hanya development) ───────────────────────────────────────
+Route::prefix('preview/email')
+    ->name('email.preview.')
+    ->middleware(['auth'])
+    ->controller(EmailPreviewController::class)
+    ->group(function () {
+        Route::get('/penawaran-borang/{assignment}',      'penawaranBorang')->name('penawaran.borang');
+        Route::get('/penawaran-accepted/{assignment}',    'penawaranAccepted')->name('penawaran.accepted');
+        Route::get('/penawaran-rejected/{assignment}',    'penawaranRejected')->name('penawaran.rejected');
+        Route::get('/pengingat-akreditasi/{studyProgram}', 'pengingatAkreditasi')->name('pengingat.akreditasi');
+        Route::get('/pembayaran-verified/{pengajuan}', function (\App\Models\PengajuanAkreditasi $pengajuan) {
+            return new \App\Mail\PembayaranVerified($pengajuan, true);
+        })->name('pembayaran.verified');
+
+        Route::get('/pembayaran-rejected/{pengajuan}', function (\App\Models\PengajuanAkreditasi $pengajuan) {
+            return new \App\Mail\PembayaranVerified($pengajuan, false);
+        })->name('pembayaran.rejected');
+    });
 // Route::get('/preview/email/penawaran/{assignment}', function (\App\Models\AsesmenUserRole $assignment) {
 //     return new \App\Mail\PenawaranAsesmenMail($assignment);
 // })->name('email.preview.penawaran');

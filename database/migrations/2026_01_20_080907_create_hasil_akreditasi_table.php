@@ -46,20 +46,18 @@ return new class extends Migration
 
             // NULL = berlaku global (semua jenjang)
             // NOT NULL = berlaku untuk degree level tertentu
-            $table->foreignId('id_degree_level')
-                ->nullable()
-                ->constrained('degree_levels')
-                ->onDelete('cascade');
+            // Foreign key ke degree_levels
+            $table->foreignId('id_degree_level')->nullable()->constrained('degree_levels')->onDelete('set null');
 
             $table->enum('kelompok', [
-                'skor',              // threshold skor minimum unggul
-                'pelampauan',        // kriteria wajib ada elemen melampaui standar
-                'rasio_dtps',        // rasio DTPS:Mahasiswa per rumpun
-                'jabatan',           // syarat jabatan fungsional dosen
-                'sertifikat',        // syarat sertifikat profesi/kompetensi
-                'lulusan',           // syarat capaian lulusan
-                'rentang_skor',      // tabel rentang skor → status akreditasi
-                'syarat_kualitatif', // syarat kualitatif lainnya
+                'skor',
+                'pelampauan',
+                'rasio_dtps',
+                'jabatan',
+                'sertifikat',
+                'lulusan',
+                'rentang_skor',
+                'syarat_kualitatif',
             ])->index();
 
             $table->string('kunci', 100)
@@ -86,39 +84,15 @@ return new class extends Migration
 
             $table->boolean('is_active')->default(true)->index();
 
-            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
-            $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
+            $table->foreignId('updated_by')->nullable()->constrained('users')->onDelete('set null');
 
             $table->timestamps();
             $table->softDeletes();
 
             $table->index(['kelompok', 'is_active']);
             $table->index(['id_degree_level', 'kelompok', 'kunci']);
-
-            // ──────────────────────────────────────────────────────────────
-            // PENTING: unique constraint dengan kolom nullable (id_degree_level)
-            //
-            // MySQL: NULL != NULL dalam unique index, sehingga bisa ada
-            // banyak baris global (NULL) dengan kombinasi kelompok+kunci+versi
-            // yang sama — ini BUG.
-            //
-            // Solusi: gunakan generated column untuk menggantikan NULL dengan
-            // sentinel value '0', lalu buat unique atas generated column tsb.
-            // ──────────────────────────────────────────────────────────────
         });
-
-        // Generated column: ganti NULL dengan 0 agar unique constraint berfungsi
-        DB::statement("
-            ALTER TABLE syarat_akreditasi
-            ADD COLUMN degree_level_id_norm BIGINT UNSIGNED
-                GENERATED ALWAYS AS (COALESCE(id_degree_level, 0)) STORED
-        ");
-
-        DB::statement("
-            ALTER TABLE syarat_akreditasi
-            ADD UNIQUE KEY unique_syarat_kelompok_kunci_versi_degree
-                (kelompok, kunci, versi, degree_level_id_norm)
-        ");
 
         // ── 3. syarat_akreditasi_logs ────────────────────────
         Schema::create('syarat_akreditasi_logs', function (Blueprint $table) {

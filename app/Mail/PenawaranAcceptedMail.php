@@ -16,34 +16,24 @@ class PenawaranAcceptedMail extends Mailable
     public $user;
     public $role;
     public $adminEmail;
+    public $dashboardUrl;
 
-    /**
-     * Create a new message instance.
-     */
     public function __construct(AsesmenUserRole $assignment, $adminEmail = null)
     {
-        $this->assignment = $assignment;
-        $this->asesmen = $assignment->asesmen;
-        $this->user = $assignment->user;
-        $this->role = $assignment->role;
-        $this->adminEmail = $adminEmail ?? config('mail.admin_email', 'admin@lamdepilar.or.id');
+        $this->assignment   = $assignment;
+        $this->asesmen      = $assignment->asesmen;
+        $this->user         = $assignment->user;
+        $this->role         = $assignment->role;
+        $this->adminEmail   = $adminEmail ?? config('mail.admin_email', 'admin@lamdepilar.or.id');
+        $this->dashboardUrl = route('ak.berkas.show', $assignment->asesmen->id);
     }
 
-    /**
-     * Build the message.
-     */
     public function build()
     {
         $jenisAsesmen = strtoupper($this->assignment->jenis_asesmen);
 
-        return $this->subject("✅ Penawaran Diterima - {$this->user->name} - {$jenisAsesmen}")
-            ->markdown('emails.asesmen.penawaran-accepted', [
-                'assignment' => $this->assignment,
-                'asesmen' => $this->asesmen,
-                'user' => $this->user,
-                'role' => $this->role,
-                'jenisAsesmen' => $jenisAsesmen,
-                'dashboardUrl' => route('ak.berkas.show', $this->asesmen->id),
-            ]);
+        return $this->subject("Penawaran Diterima - {$this->user->name} - {$jenisAsesmen}")
+            ->view('emails.asesmen.penawaran-accepted')
+            ->with(['jenisAsesmen' => $jenisAsesmen]);
     }
 }

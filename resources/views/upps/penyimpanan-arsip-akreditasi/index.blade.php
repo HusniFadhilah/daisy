@@ -113,7 +113,7 @@
                             <tr>
                                 <th width="5%">#</th>
                                 <th width="25%">Permohonan Akreditasi</th>
-                                <th width="20%">Status Akreditasii</th>
+                                <th width="20%">Status Akreditasi</th>
                                 <th width="20%">Status Penyimpanan Arsip</th>
                                 <th width="20%">Tanggal Penyimpanan Arsip</th>
                                 <th width="10%" class="text-center">Aksi</th>

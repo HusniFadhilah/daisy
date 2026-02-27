@@ -413,17 +413,20 @@
                     </div>
                 </div>
 
-                {{-- Syarat 4: Jabatan Lektor --}}
+                {{-- Syarat 4: Jabatan --}}
                 <div class="col-md-6">
-                    <div class="d-flex align-items-center p-3 bg-{{ $syaratP1['jabatan']['memenuhi'] ? 'light' : 'light' }} rounded h-100">
+                    <div class="d-flex align-items-center p-3 bg-light rounded h-100">
                         <i class="bi bi-{{ $syaratP1['jabatan']['memenuhi'] ? 'check-circle-fill text-dark' : 'x-circle-fill text-dark' }} fs-3 me-3"></i>
                         <div>
-                            <strong>Jabatan Lektor ke Atas ≥ {{ $syaratP1['jabatan']['persen_minimum'] ?? 50 }}%</strong>
+                            <strong>{{ $syaratP1['jabatan']['label_jabatan'] ?? 'Jabatan Valid' }} ≥ {{ $syaratP1['jabatan']['persen_minimum'] ?? 50 }}%</strong>
                             <div class="text-muted">{{ $syaratP1['jabatan']['keterangan'] }}</div>
                             @if(($syaratP1['jabatan']['total_dtps'] ?? 0) > 0)
                             <div class="text-muted mt-1" style="font-size:.8rem">
-                                {{ $syaratP1['jabatan']['lektor_ke_atas'] }} dari {{ $syaratP1['jabatan']['total_dtps'] }} DTPS
-                                ({{ $syaratP1['jabatan']['persen_lektor'] }}%)
+                                {{ $syaratP1['jabatan']['jumlah_valid'] }} dari {{ $syaratP1['jabatan']['total_dtps'] }} DTPS
+                                ({{ $syaratP1['jabatan']['persen_valid'] }}%)
+                                @if($syaratP1['jabatan']['filter_dtps_aktif'] ?? false)
+                                &middot; <span class="text-success">Filter P.1.3 aktif</span>
+                                @endif
                             </div>
                             @else
                             <div class="text-warning mt-1" style="font-size:.8rem">

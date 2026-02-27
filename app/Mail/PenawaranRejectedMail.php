@@ -16,34 +16,24 @@ class PenawaranRejectedMail extends Mailable
     public $user;
     public $role;
     public $adminEmail;
+    public $reassignUrl;
 
-    /**
-     * Create a new message instance.
-     */
     public function __construct(AsesmenUserRole $assignment, $adminEmail = null)
     {
-        $this->assignment = $assignment;
-        $this->asesmen = $assignment->asesmen;
-        $this->user = $assignment->user;
-        $this->role = $assignment->role;
-        $this->adminEmail = $adminEmail ?? config('mail.admin_email', 'admin@lamdepilar.or.id');
+        $this->assignment   = $assignment;
+        $this->asesmen      = $assignment->asesmen;
+        $this->user         = $assignment->user;
+        $this->role         = $assignment->role;
+        $this->adminEmail   = $adminEmail ?? config('mail.admin_email', 'admin@lamdepilar.or.id');
+        $this->reassignUrl  = route('asesmen.show', $assignment->asesmen->id);
     }
 
-    /**
-     * Build the message.
-     */
     public function build()
     {
         $jenisAsesmen = strtoupper($this->assignment->jenis_asesmen);
 
-        return $this->subject("❌ Penawaran Ditolak - {$this->user->name} - {$jenisAsesmen}")
-            ->markdown('emails.asesmen.penawaran-rejected', [
-                'assignment' => $this->assignment,
-                'asesmen' => $this->asesmen,
-                'user' => $this->user,
-                'role' => $this->role,
-                'jenisAsesmen' => $jenisAsesmen,
-                'reassignUrl' => route('asesmen.show', $this->asesmen->id),
-            ]);
+        return $this->subject("Penawaran Ditolak - {$this->user->name} - {$jenisAsesmen}")
+            ->view('emails.asesmen.penawaran-rejected')
+            ->with(['jenisAsesmen' => $jenisAsesmen]);
     }
 }

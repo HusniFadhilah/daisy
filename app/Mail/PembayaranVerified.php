@@ -24,7 +24,7 @@ class PembayaranVerified extends Mailable
     {
         $subject = $this->isVerified
             ? 'Pembayaran Diverifikasi - Upload Borang Final'
-            : 'Pembayaran Ditolak - Silakan Upload Ulang';
+            : 'Pembayaran Belum Terverifikasi - Silakan Upload Ulang';
 
         return $this->subject($subject)
             ->view('emails.pengajuan.pembayaran-verified');

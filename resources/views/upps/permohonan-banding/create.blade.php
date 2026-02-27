@@ -235,7 +235,7 @@
                             </div>
 
                             <!-- Persyaratan Info -->
-                            <div class="alert alert-light border">
+                            {{-- <div class="alert alert-light border">
                                 <h6 class="fw-bold mb-2">
                                     <i class="bi bi-clipboard-check"></i> Persyaratan Dokumen
                                 </h6>
@@ -248,68 +248,68 @@
                                 </ul>
                                 <hr>
                                 <a href="{{ route('upps.permohonan-banding.download-template-surat') }}" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-download"></i> Download Templat Surat
-                                </a>
-                            </div>
-                        </div>
-
-                        <!-- Action Buttons -->
-                        <div class="d-flex justify-content-between align-items-center">
-                            <a href="{{ route('upps.permohonan-banding') }}" class="btn btn-secondary">
-                                <i class="bi bi-arrow-left"></i> Kembali
+                            <i class="bi bi-download"></i> Download Templat Surat
                             </a>
-                            <button type="submit" class="btn btn-primary" id="btnSubmit">
-                                <i class="bi bi-send"></i> Kirim Permohonan Banding
-                            </button>
-                        </div>
+                        </div> --}}
                     </div>
-                </div>
-            </div>
 
-            <!-- Sidebar -->
-            <div class="col-lg-4">
-                <!-- Info Card -->
-                <div class="card border-0 shadow-sm mb-3">
-                    <div class="card-header bg-white border-bottom">
-                        <h6 class="mb-0">
-                            <i class="bi bi-info-circle text-info"></i> Informasi
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        <h6 class="fw-bold">Masa Sanggah:</h6>
-                        <p class="small text-muted mb-3">
-                            Permohonan banding hanya dapat diajukan selama masa sanggah yang telah ditentukan.
-                        </p>
-
-                        <h6 class="fw-bold">Proses Banding:</h6>
-                        <ol class="small mb-0 ps-3">
-                            <li>Pengajuan banding diterima</li>
-                            <li>Verifikasi kelengkapan dokumen</li>
-                            <li>Penugasan asesor banding</li>
-                            <li>Pelaksanaan asesmen banding</li>
-                            <li>Penetapan hasil akhir</li>
-                        </ol>
-                    </div>
-                </div>
-
-                <!-- Warning Card -->
-                <div class="card border-warning border-start border-4">
-                    <div class="card-body">
-                        <h6 class="fw-bold text-warning">
-                            <i class="bi bi-exclamation-triangle"></i> Perhatian
-                        </h6>
-                        <ul class="mb-0 ps-3 small">
-                            <li class="mb-2">Pastikan data yang diisi sudah benar</li>
-                            <li class="mb-2">File PDF maksimal 5MB</li>
-                            <li class="mb-2">Permohonan yang sudah dikirim tidak dapat dibatalkan</li>
-                            <li>Hasil banding bersifat final dan tidak dapat diganggu gugat</li>
-                        </ul>
+                    <!-- Action Buttons -->
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{{ route('upps.permohonan-banding') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Kembali
+                        </a>
+                        <button type="submit" class="btn btn-primary" id="btnSubmit">
+                            <i class="bi bi-send"></i> Kirim Permohonan Banding
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
-    </form>
-    @endif
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Info Card -->
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-white border-bottom">
+                    <h6 class="mb-0">
+                        <i class="bi bi-info-circle text-info"></i> Informasi
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <h6 class="fw-bold">Masa Sanggah:</h6>
+                    <p class="small text-muted mb-3">
+                        Permohonan banding hanya dapat diajukan selama masa sanggah yang telah ditentukan.
+                    </p>
+
+                    <h6 class="fw-bold">Proses Banding:</h6>
+                    <ol class="small mb-0 ps-3">
+                        <li>Pengajuan banding diterima</li>
+                        <li>Verifikasi kelengkapan dokumen</li>
+                        <li>Penugasan asesor banding</li>
+                        <li>Pelaksanaan asesmen banding</li>
+                        <li>Penetapan hasil akhir</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Warning Card -->
+            <div class="card border-warning border-start border-4">
+                <div class="card-body">
+                    <h6 class="fw-bold text-warning">
+                        <i class="bi bi-exclamation-triangle"></i> Perhatian
+                    </h6>
+                    <ul class="mb-0 ps-3 small">
+                        <li class="mb-2">Pastikan data yang diisi sudah benar</li>
+                        <li class="mb-2">File PDF maksimal 5MB</li>
+                        <li class="mb-2">Permohonan yang sudah dikirim tidak dapat dibatalkan</li>
+                        <li>Hasil banding bersifat final dan tidak dapat diganggu gugat</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+</div>
+</form>
+@endif
 </div>
 @endsection
 
