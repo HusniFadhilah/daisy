@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
 class PenerimaanDokumenController extends Controller
@@ -228,7 +229,7 @@ class PenerimaanDokumenController extends Controller
             }
 
             // Validasi manual agar error dikembalikan sebagai JSON
-            $validator = \Validator::make($request->all(), $rules, $messages);
+            $validator = Validator::make($request->all(), $rules, $messages);
             if ($validator->fails()) {
                 return response()->json([
                     'success' => false,
@@ -290,33 +291,53 @@ class PenerimaanDokumenController extends Controller
      */
     public function download($id)
     {
-        $dokumen = PengajuanDokumen::findOrFail($id);
+        // return 'a';
+        $dokumen = PengajuanDokumen::with('pengajuan')->findOrFail($id);
+        $authUser = Auth::user();
+        $pengajuan = $dokumen->pengajuan;
 
-        $user = Auth::user();
-        $studyProgramIds = $user->studyPrograms()->pluck('study_programs.id');
+        $userStudyProgramIds = $authUser->studyPrograms()->pluck('study_programs.id')->toArray();
+        $hasAccess = in_array($pengajuan->id_program_studi, $userStudyProgramIds)
+            || $pengajuan->id_de_assigned === $authUser->id
+            || $pengajuan->id_validator_assigned === $authUser->id
+            || $authUser->role === 'admin';
 
-        $pengajuan = PengajuanAkreditasi::findOrFail($dokumen->id_pengajuan);
-
-        // Optional access check
-        // abort_unless($studyProgramIds->contains($pengajuan->id_program_studi), 403);
+        // if (!$hasAccess) abort(403);
 
         if (!Storage::disk('public')->exists($dokumen->path_file)) {
-            if (
-                ($dokumen->jenis_dokumen == 'data_kualitatif' ||
-                    $dokumen->jenis_dokumen == 'draft_borang') &&
-                Str::startsWith($dokumen->nama_file, 'kualitatif_')
-            ) {
+            if ($dokumen->jenis_dokumen === 'data_kualitatif' && Str::startsWith($dokumen->nama_file, 'kualitatif_')) {
                 return redirect()->route('pengajuan.borang.export-docx', $pengajuan->id);
             }
-
             abort(404, 'File tidak ditemukan.');
         }
+        $absolutePath = storage_path('app/public/' . $dokumen->path_file);
+        $filename = $dokumen->original_filename ?: basename($absolutePath);
+        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
 
-        $absolutePath = Storage::disk('public')->path($dokumen->path_file);
-        $filename = $dokumen->original_filename ?? basename($absolutePath);
+        // MIME TYPE MAP
+        $mime = match ($ext) {
+            'pdf'  => 'application/pdf',
+            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'xls'  => 'application/vnd.ms-excel',
+            default => mime_content_type($absolutePath) ?: 'application/octet-stream',
+        };
 
-        return response()->file($absolutePath, [
-            'Content-Disposition' => 'inline; filename="' . $filename . '"'
+        // PDF inline, lainnya download
+        $disposition = ($ext === 'pdf') ? 'inline' : 'attachment';
+
+        return response()->stream(function () use ($absolutePath) {
+            $stream = fopen($absolutePath, 'rb');
+            fpassthru($stream);
+            fclose($stream);
+        }, 200, [
+            'Content-Type'        => $mime,
+            'Content-Disposition' => $disposition . '; filename="' . addslashes($filename) . '"',
+            'Content-Length'      => filesize($absolutePath),
+            'Accept-Ranges'       => 'bytes',
+            'Cache-Control'       => 'private, max-age=0, must-revalidate',
+            'Pragma'              => 'public',
+            'X-Content-Type-Options' => 'nosniff',
         ]);
     }
 

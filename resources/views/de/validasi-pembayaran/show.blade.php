@@ -103,9 +103,15 @@
                         <tr>
                             <th>Jumlah Pembayaran</th>
                             <td>
-                                <strong class="text-success fs-5">
-                                    Rp {{ number_format($pembayaran->jumlah_pembayaran, 0, ',', '.') }}
-                                </strong>
+                                <div class="d-flex align-items-center gap-2 sensitive-wrapper">
+                                    <strong class="text-success fs-5 sensitive-value" data-value="{{ $pembayaran->jumlah_pembayaran }}" data-type="currency" data-hidden="true">
+                                        Rp ••••••••
+                                    </strong>
+
+                                    <button type="button" class="btn btn-sm btn-light toggle-sensitive" title="Tampilkan/Sembunyikan">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         <tr>
@@ -252,6 +258,8 @@
 
 @push('scripts')
 <script>
+    document.addEventListener('DOMContentLoaded', initSensitiveToggle);
+
     function toggleFields(action) {
         const alasanField = document.getElementById('alasanPenolakanField');
 

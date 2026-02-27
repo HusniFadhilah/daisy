@@ -47,9 +47,15 @@
                             </div>
                         </td>
                         <td>
-                            <strong class="text-success">
-                                Rp {{ number_format($pembayaran->jumlah_pembayaran, 0, ',', '.') }}
-                            </strong>
+                            <div class="d-flex align-items-center gap-2">
+                                <strong class="text-success sensitive-value" data-value="{{ $pembayaran->jumlah_pembayaran }}" data-type="currency">
+                                    Rp ••••••••
+                                </strong>
+
+                                <button type="button" class="btn btn-sm btn-light toggle-sensitive" title="Tampilkan/Sembunyikan">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
                         </td>
                         <td>
                             @if($pembayaran->tanggal_jatuh_tempo)
@@ -116,3 +122,10 @@
     </div>
     @endif
 </div>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', initSensitiveToggle);
+
+</script>
+@endpush

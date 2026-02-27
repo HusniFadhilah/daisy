@@ -326,3 +326,44 @@ document.querySelectorAll('.form-delete').forEach(form => {
         });
     });
 });
+
+function initSensitiveToggle() {
+
+    document.addEventListener('click', function (e) {
+
+        const button = e.target.closest('.toggle-sensitive');
+        if (!button) return;
+
+        const container = button.closest('td');
+        const valueEl = container.querySelector('.sensitive-value');
+        const icon = button.querySelector('i');
+
+        const originalValue = valueEl.dataset.value;
+        const type = valueEl.dataset.type || 'text';
+        const isHidden = valueEl.dataset.hidden !== 'false';
+
+        if (isHidden) {
+
+            let formattedValue = originalValue;
+
+            if (type === 'currency') {
+                formattedValue = "Rp " +
+                    new Intl.NumberFormat('id-ID').format(originalValue);
+            }
+
+            valueEl.textContent = formattedValue;
+            valueEl.dataset.hidden = 'false';
+
+            icon.classList.remove('bi-eye');
+            icon.classList.add('bi-eye-slash');
+
+        } else {
+
+            valueEl.textContent = '••••••••';
+            valueEl.dataset.hidden = 'true';
+
+            icon.classList.remove('bi-eye-slash');
+            icon.classList.add('bi-eye');
+        }
+    });
+}
