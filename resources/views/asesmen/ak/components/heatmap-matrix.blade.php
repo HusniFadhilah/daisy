@@ -61,14 +61,14 @@
                         {{-- Kolom 1: Pemenuhan Standar --}}
                         <th class="matrix-header-kriteria sticky-header">
                             <div class="kriteria-label">
-                                <span class="fw-bold">Memenuhi Standar</span>
+                                <span class="fw-bold">{{ \App\Models\JenjangPenilaian::PEMENUHAN_STANDAR }}</span>
                             </div>
                         </th>
 
                         {{-- Kolom 2: Pelampauan Standar --}}
                         <th class="matrix-header-kriteria sticky-header">
                             <div class="kriteria-label">
-                                <span class="fw-bold">Melampaui Standar</span>
+                                <span class="fw-bold">{{ \App\Models\JenjangPenilaian::PELAMPAUAN_STANDAR }}</span>
                             </div>
                         </th>
                     </tr>

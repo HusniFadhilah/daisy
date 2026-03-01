@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\Models\JenjangPenilaian;
 use App\Models\StatusAkreditasi;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -149,7 +150,7 @@ class AkreditasiHelper
 
         if ($validationSummary['skor_memenuhi'] && !$validationSummary['pelampauan_memenuhi']) {
             $messages[] = "⚠️ Skor {$skor} mencapai syarat Unggul (≥ {$skorMin}), "
-                . "namun belum memenuhi syarat Melampaui Standar.";
+                . "namun belum memenuhi syarat " . JenjangPenilaian::LABEL_SYARAT_UNGGUL_MELAMPAUI . ".";
             $messages[] = "📋 Kriteria yang belum terpenuhi: "
                 . implode(', ', $validationSummary['missing_kriteria']);
         }

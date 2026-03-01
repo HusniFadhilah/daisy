@@ -359,7 +359,7 @@
                             <ul class="mb-0 ps-3 text-muted">
                                 <li>
                                     Minimal <strong>1 elemen</strong> berkategori
-                                    <em>"Melampaui Standar"</em> di <strong>setiap</strong> kriteria:
+                                    <em>"{{ \App\Models\JenjangPenilaian::LABEL_SYARAT_UNGGUL_MELAMPAUI }}"</em> di <strong>setiap</strong> kriteria:
                                     <span class="fw-semibold">
                                         {{ implode(', ', array_keys($validationSummary['kriteria_status'])) }}
                                     </span>
@@ -520,7 +520,7 @@
                             <th width="12%">Kriteria</th>
                             {{-- <th>Nama Kriteria</th> --}}
                             <th class="text-center" width="22%">Status Pelampauan</th>
-                            <th class="text-center" width="18%">Jumlah Elemen Melampaui Standar</th>
+                            <th class="text-center" width="18%">Jumlah Elemen {{ \App\Models\JenjangPenilaian::LABEL_SYARAT_UNGGUL_MELAMPAUI }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -557,7 +557,7 @@
 
             {{-- Ringkasan akhir --}}
             @if(!$validationSummary['dapat_unggul'])
-            <div class="alert alert-light border-start border-warning border-3 alert-permanent mt-3 mb-0">
+            <div class="alert alert-light border-start border-dark border-2 alert-permanent mt-3 mb-0">
                 <strong>⚠️ Perhatian:</strong>
                 Meskipun skor ≥ {{ $validationSummary['skor_minimum'] }},
                 status <strong>UNGGUL tidak dapat ditetapkan</strong> karena syarat berikut belum terpenuhi:
@@ -588,7 +588,7 @@
                     <li>
                         <span class="badge bg-light text-dark border me-1">Syarat Perlu</span>
                         Kriteria <strong>{{ implode(', ', $validationSummary['missing_kriteria']) }}</strong>
-                        belum memiliki minimal 1 elemen "Melampaui Standar".
+                        belum memiliki minimal 1 elemen {{ \App\Models\JenjangPenilaian::LABEL_SYARAT_UNGGUL_MELAMPAUI }}.
                     </li>
                     @endif
 
@@ -794,7 +794,7 @@
                         <label class="form-label">Masa sanggah berakhir pada</label>
                         @php
                         $minEnd = now()->addMinute()->format('Y-m-d\TH:i'); // minimal 1 menit dari server
-                        $defaultEnd = now()->addDays(7)->format('Y-m-d\TH:i'); // default 7 hari
+                        $defaultEnd = now()->addMinute(3)->format('Y-m-d\TH:i'); // default 7 hari
                         @endphp
                         <input type="datetime-local" name="tanggal_masa_sanggah_selesai" class="form-control" min="{{ $minEnd }}" value="{{ old('tanggal_masa_sanggah_selesai', $defaultEnd) }}" required>
 

@@ -2,9 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Models\JenjangPenilaian;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class JenjangPenilaianSeeder extends Seeder
 {
@@ -14,11 +15,11 @@ class JenjangPenilaianSeeder extends Seeder
     public function run(): void
     {
         $jenjangPenilaian = [
-            ['name' => 'Tidak Dapat Dinilai', 'skor' => 0, 'color' => '#f5c6cb'],
-            ['name' => 'Tidak Memenuhi', 'skor' => 1, 'color' => '#ffe0b2'],
-            ['name' => 'Lemah', 'skor' => 2, 'color' => '#fff9c4'],
-            ['name' => 'Memenuhi', 'skor' => 3, 'color' => '#dcedc8'],
-            ['name' => 'Melampaui Standar', 'skor' => 4, 'color' => '#c8e6c9'],
+            ['name' => JenjangPenilaian::LABEL_SKOR_0, 'skor' => 0, 'color' => JenjangPenilaian::COLOR_SKOR_0],
+            ['name' => JenjangPenilaian::LABEL_SKOR_1, 'skor' => 1, 'color' => JenjangPenilaian::COLOR_SKOR_1],
+            ['name' => JenjangPenilaian::LABEL_SKOR_2, 'skor' => 2, 'color' => JenjangPenilaian::COLOR_SKOR_2],
+            ['name' => JenjangPenilaian::LABEL_SKOR_3, 'skor' => 3, 'color' => JenjangPenilaian::COLOR_SKOR_3],
+            ['name' => JenjangPenilaian::LABEL_SKOR_4, 'skor' => 4, 'color' => JenjangPenilaian::COLOR_SKOR_4],
         ];
 
         $timestamp = Carbon::now();

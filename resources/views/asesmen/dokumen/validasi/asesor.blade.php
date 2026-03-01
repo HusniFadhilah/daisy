@@ -397,7 +397,7 @@
                         <div class="mb-2">
                             <small class="text-muted">Kategori:</small>
                             <div>
-                                <span class="badge ${getSkorBadgeClass(skor)}">
+                                <span class="badge text-dark" style="background:${getSkorColorJS(skor)}">
                                     ${getSkorLabel(skor)}
                                 </span>
                             </div>
@@ -954,7 +954,7 @@
             , html: `
                 <div class="text-start">
                     <div class="mb-2">
-                        <span class="badge ${getSkorBadgeClass(skor)}">${skorLabel}</span>
+                        <span class="badge text-dark" style="background:${getSkorColorJS(skor)}">${skorLabel}</span>
                     </div>
                     <div class="alert alert-light alert-permanent">
                         <strong>Justifikasi:</strong>
@@ -1049,7 +1049,8 @@
 
         const skorBadge = document.getElementById('badgeSkorFinal');
         skorBadge.textContent = validasi.skor_final || '-';
-        skorBadge.className = `badge ${getSkorBadgeClass(validasi.skor_final)}`;
+        skorBadge.className = `badge text-dark`;
+        skorBadge.style.backgroundColor = getSkorBadgeClass(validasi.skor_final)
 
         const detailValidasiValidator = document.getElementById('detailValidasiValidator');
         if (detailValidasiValidator) {
@@ -1073,10 +1074,10 @@
 
             htmlPenilaian += `
                 <div class="col-md-12 col-lg-6 mb-3">
-                    <div class="card asesor-penilaian-card asesor-${index + 1}" style="border-left-color: ${color};">
+                    <div class="card asesor-penilaian-card asesor-${index + 1} border-left-secondary">
                         <div class="card-body">
                             <div class="d-flex align-items-center mb-2">
-                                <div class="avatar-circle-detail me-2" style="background: ${color};">
+                                <div class="avatar-circle-detail me-2 bg-secondary">
                                     ${pen.asesor.name.substring(0, 2).toUpperCase()}
                                 </div>
                                 <div>
@@ -1088,7 +1089,7 @@
                             <div class="mb-2">
                                 <small class="text-muted">Kategori:</small>
                                 <div>
-                                    <span class="badge ${getSkorBadgeClass(pen.skor)}">
+                                    <span class="badge text-dark" style="background:${getSkorColorJS(pen.skor)}">
                                         ${getSkorLabel(pen.skor)}
                                     </span>
                                 </div>

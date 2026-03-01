@@ -64,7 +64,7 @@
                                 <i class="bi bi-x-circle-fill text-danger fs-3 me-3"></i>
                                 @endif
                                 <div>
-                                    <h6 class="mb-0">Melampaui Standar (Skor 4)</h6>
+                                    <h6 class="mb-0">{{ \App\Models\JenjangPenilaian::LABEL_SYARAT_UNGGUL_MELAMPAUI }} (Skor 4)</h6>
                                     <small class="text-muted">
                                         Minimal 1 per kriteria (D, E, P, I, L, A, R)
                                     </small>
@@ -129,7 +129,7 @@
                         <strong>Perhatian:</strong>
                         Meskipun skor mencapai {{ number_format($hasil->skor_al, 2) }} (>= 361),
                         Status akreditasi akan diturunkan menjadi <strong>Baik Sekali</strong> karena
-                        kriteria berikut belum memiliki kategori "Melampaui Standar":
+                        kriteria berikut belum memiliki kategori "{{ \App\Models\JenjangPenilaian::LABEL_SYARAT_UNGGUL_MELAMPAUI }}":
                         <strong>{{ implode(', ', $validationSummary['missing_kriteria']) }}</strong>
                     </div>
                     @endif

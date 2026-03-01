@@ -1,7 +1,7 @@
 <div class="modal fade" id="modalDetailValidasi" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
         <div class="modal-content">
-            <div class="modal-header bg-info text-white">
+            <div class="modal-header bg-secondary text-white">
                 <h5 class="modal-title">
                     <i class="bi bi-eye"></i> Detail Hasil Validasi
                 </h5>
@@ -42,7 +42,7 @@
 
                     {{-- Hasil Validasi --}}
                     <div class="card mb-3">
-                        <div class="card-header bg-success text-white">
+                        <div class="card-header bg-secondary text-white">
                             <h6 class="mb-0">
                                 <i class="bi bi-check-circle"></i> Hasil Validasi
                             </h6>
@@ -107,22 +107,6 @@
     .asesor-penilaian-card {
         border-left: 4px solid;
         margin-bottom: 15px;
-    }
-
-    .asesor-penilaian-card.asesor-1 {
-        border-color: #2196f3;
-    }
-
-    .asesor-penilaian-card.asesor-2 {
-        border-color: #ff9800;
-    }
-
-    .asesor-penilaian-card.asesor-3 {
-        border-color: #4caf50;
-    }
-
-    .asesor-penilaian-card.asesor-4 {
-        border-color: #9c27b0;
     }
 
     .avatar-circle-detail {

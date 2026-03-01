@@ -43,7 +43,7 @@
                     </div>
                     <div class="flex-grow-1">
                         <strong class="text-dark">⁠Terakreditasi Unggul with Requirement (2 Tahun)*</strong>
-                        <div><small class="text-muted">*Dengan syarat "Melampaui Standar"</small></div>
+                        <div><small class="text-muted">*Dengan syarat "{{ \App\Models\JenjangPenilaian::LABEL_SYARAT_UNGGUL_MELAMPAUI }}"</small></div>
                     </div>
                 </div>
             </div>
@@ -56,7 +56,7 @@
                     </div>
                     <div class="flex-grow-1">
                         <strong class="text-dark">Terakreditasi Unggul (5 Tahun)</strong>
-                        <div><small class="text-muted">*Dengan syarat "Melampaui Standar"</small></div>
+                        <div><small class="text-muted">*Dengan syarat "{{ \App\Models\JenjangPenilaian::LABEL_SYARAT_UNGGUL_MELAMPAUI }}"</small></div>
                     </div>
                 </div>
             </div>
@@ -65,7 +65,7 @@
         <div class="alert alert-light alert-permanent mt-3 mb-0">
             <i class="bi bi-info-circle me-2"></i>
             <strong>Catatan:</strong> Untuk status akreditasi <strong>Unggul</strong>, selain mencapai skor >= 351,
-            program studi harus memiliki <strong>minimal 1 elemen dengan kategori: "Melampaui Standar"</strong>
+            program studi harus memiliki <strong>minimal 1 elemen dengan kategori: "{{ \App\Models\JenjangPenilaian::LABEL_SYARAT_UNGGUL_MELAMPAUI }}"</strong>
             di <strong>setiap kriteria</strong> (D, E, P, I, L, A, R).
         </div>
     </div>
@@ -100,7 +100,7 @@
                             @if($validationSummary['pelampauan_memenuhi'])
                             Semua kriteria terpenuhi ✓
                             @else
-                            {{ count($validationSummary['missing_kriteria']) }} kriteria belum memiliki kategori "Melampaui Standar"
+                            {{ count($validationSummary['missing_kriteria']) }} kriteria belum memiliki kategori "{{ \App\Models\JenjangPenilaian::LABEL_SYARAT_UNGGUL_MELAMPAUI }}"
                             @endif
                         </div>
                     </div>
@@ -115,7 +115,7 @@
                     <tr>
                         <th width="15%">Kriteria</th>
                         <th class="text-center" width="25%">Status Pelampauan Standar</th>
-                        <th class="text-center" width="20%">Jumlah Elemen Melampaui Standar</th>
+                        <th class="text-center" width="20%">Jumlah Elemen {{ \App\Models\JenjangPenilaian::LABEL_SYARAT_UNGGUL_MELAMPAUI }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -149,7 +149,7 @@
         <div class="alert alert-warning alert-permanent mt-3 mb-0">
             <strong>⚠️ Perhatian:</strong> Meskipun skor mencapai >= 361, status akreditasi <strong>TIDAK DAPAT</strong> ditetapkan sebagai UNGGUL
             karena kriteria <strong>{{ implode(', ', $validationSummary['missing_kriteria']) }}</strong>
-            belum memiliki minimal 1 elemen dengan kategori "Melampaui Standar".
+            belum memiliki minimal 1 elemen dengan kategori "{{ \App\Models\JenjangPenilaian::LABEL_SYARAT_UNGGUL_MELAMPAUI }}".
             <br><br>
             Status akreditasi akan diubah menjadi: <strong class="text-danger">BAIK SEKALI</strong>
         </div>

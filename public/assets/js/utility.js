@@ -164,15 +164,23 @@ function showToast(type, message) {
  * ============================================
  */
 function getSkorColorJS(skor) {
-    const colors = {
-        0: '#f5c6cb', // Red
-        1: '#ffe0b2', // Orange
-        2: '#fff9c4', // Yellow
-        3: '#dcedc8', // Light Green
-        4: '#c8e6c9', // Dark Green
-    };
+    return window.SkorJenjang?.[skor]?.color || '#e0e0e0';
+}
 
-    return colors[skor] || '#e0e0e0';
+function getSkorLabel(skor) {
+    return window.SkorJenjang?.[skor]?.label || '-';
+}
+
+function getSkorLabelShort(skor, full = false) {
+    const label = window.SkorJenjang?.[skor]?.label;
+    if (!label) return '-';
+
+    if (!full) {
+        // hapus angka di depan jika ada
+        return label.replace(/^\d+\s-\s/, '');
+    }
+
+    return label;
 }
 
 function textColorByBgJS(hex) {
@@ -183,41 +191,6 @@ function textColorByBgJS(hex) {
     //     parseInt(hex.substr(4, 2), 16) * 0.114) > 186
     //     ? '#000'
     //     : '#fff';
-}
-
-function getSkorLabel(skor) {
-    const labels = {
-        0: '0 - Tidak Dapat Dinilai'
-        , 1: '1 - Tidak Memenuhi'
-        , 2: '2 - Lemah'
-        , 3: '3 - Memenuhi'
-        , 4: '4 - Melampaui Standar'
-    };
-    return labels[skor] || '-';
-}
-
-function getSkorLabelShort(skor, full = false) {
-    const labels = {
-        0: { short: 'Tidak Dapat Dinilai', full: 'Tidak Dapat Dinilai' },
-        1: { short: 'Belum Memenuhi', full: 'Belum Memenuhi' },
-        2: { short: 'Lemah', full: 'Lemah' },
-        3: { short: 'Memenuhi', full: 'Memenuhi' },
-        4: { short: 'Melampaui Standar', full: 'Melampaui Standar' }
-    };
-
-    if (!labels[skor]) return '-';
-    return full ? labels[skor].full : labels[skor].short;
-}
-
-function getSkorBadgeClass(skor) {
-    const classes = {
-        0: 'bg-danger'
-        , 1: 'bg-warning'
-        , 2: 'bg-warning'
-        , 3: 'bg-success'
-        , 4: 'bg-success'
-    };
-    return classes[skor] || 'bg-secondary';
 }
 
 function getSkorButtonClass(skor) {

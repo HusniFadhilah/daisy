@@ -480,7 +480,7 @@
                         <div class="mb-2">
                             <small class="text-muted">Kategori:</small>
                             <div>
-                                <span class="badge ${getSkorBadgeClass(skor)}">
+                                <span class="badge text-dark" style="background:${getSkorColorJS(skor)}">
                                     ${getSkorLabel(skor)}
                                 </span>
                             </div>
@@ -1073,7 +1073,7 @@
             , html: `
                 <div class="text-start">
                     <div class="mb-2">
-                        <span class="badge ${getSkorBadgeClass(skor)}">${skorLabel}</span>
+                        <span class="badge text-dark" style="background:${getSkorColorJS(skor)}">${skorLabel}</span>
                     </div>
                     <div class="alert alert-light alert-permanent">
                         <strong>Justifikasi:</strong>
@@ -1159,10 +1159,10 @@
         // Validasi info
         const statusBadge =
             validasi.status_validasi === 'validated' ?
-            '<span class="badge bg-success">✅ Disetujui</span>' :
+            '<span class="badge bg-light text-dark">✅ Disetujui</span>' :
             validasi.status_validasi === 'validated_diff' ?
-            '<span class="badge bg-info text-dark">ℹ️ Disetujui (Berbeda)</span>' :
-            '<span class="badge bg-warning text-dark">⚠️ Perlu Revisi</span>';
+            '<span class="badge bg-light text-dark">ℹ️ Disetujui (Berbeda)</span>' :
+            '<span class="badge bg-light text-dark">⚠️ Perlu Revisi</span>';
 
         const detailValidasiStatus = document.getElementById('detailValidasiStatus');
         if (detailValidasiStatus) {
@@ -1175,9 +1175,9 @@
             });
             const skorBadge = document.getElementById('badgeSkorFinal');
             if (skorBadge) {
-                skorBadge.textContent = validasi.skor_final || '-';
-                skorBadge.className = `badge ${getSkorBadgeClass(validasi.skor_final)}`;
-
+                skorBadge.textContent = getSkorLabel(validasi.skor_final) || '-';
+                skorBadge.className = `badge text-dark`;
+                skorBadge.style.backgroundColor = getSkorColorJS(validasi.skor_final);
             }
         } else {
             document.querySelectorAll('.detailValidasiSkor').forEach(e => {
@@ -1207,10 +1207,10 @@
 
             htmlPenilaian += `
                 <div class="col-md-12 col-lg-6 mb-3">
-                    <div class="card asesor-penilaian-card asesor-${index + 1}" style="border-left-color: ${color};">
+                    <div class="card asesor-penilaian-card asesor-${index + 1} border-left-secondary">
                         <div class="card-body">
                             <div class="d-flex align-items-center mb-2">
-                                <div class="avatar-circle-detail me-2" style="background: ${color};">
+                                <div class="avatar-circle-detail me-2 bg-secondary">
                                     ${pen.asesor.name.substring(0, 2).toUpperCase()}
                                 </div>
                                 <div>
@@ -1222,7 +1222,7 @@
                             <div class="mb-2">
                                 <small class="text-muted">Kategori:</small>
                                 <div>
-                                    <span class="badge ${getSkorBadgeClass(pen.skor)}">
+                                    <span class="badge text-dark" style="background:${getSkorColorJS(pen.skor)}">
                                         ${getSkorLabel(pen.skor)}
                                     </span>
                                 </div>

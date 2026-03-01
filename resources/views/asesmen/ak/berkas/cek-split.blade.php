@@ -878,7 +878,7 @@
             , html: `
                 <div class="text-start">
                     <div class="mb-2">
-                        <span class="badge ${getSkorBadgeClass(skor)}">${skorLabel}</span>
+                        <span class="badge text-dark" style="background:${getSkorColorJS(skor)}">${skorLabel}</span>
                     </div>
                     <div class="alert alert-light alert-permanent">
                         <strong>Justifikasi:</strong>

@@ -3,18 +3,19 @@
 namespace App\Services;
 
 use App\Models\Asesmen;
-use App\Models\Kriteria;
-use Illuminate\Support\Str;
 use App\Models\ElemenStandar;
+use App\Models\JenjangPenilaian;
+use App\Models\Kriteria;
 use Illuminate\Support\Collection;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-use PhpOffice\PhpSpreadsheet\Style\Border;
+use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
-use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
 use PhpOffice\PhpSpreadsheet\Shared\Drawing as SharedDrawing;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class ValidasiExcelService
 {
@@ -179,8 +180,8 @@ class ValidasiExcelService
                     ->setFillType(Fill::FILL_SOLID)
                     ->getStartColor()->setARGB($this->hexToArgb($bgColor));
 
-                $sheet->setCellValue("{$col1}6", 'Memenuhi Standar');
-                $sheet->setCellValue("{$col2}6", 'Melampaui Standar');
+                $sheet->setCellValue("{$col1}6", JenjangPenilaian::PEMENUHAN_STANDAR);
+                $sheet->setCellValue("{$col2}6", JenjangPenilaian::PELAMPAUAN_STANDAR);
                 $sheet->getStyle("{$col1}6:{$col2}6")->getFill()
                     ->setFillType(Fill::FILL_SOLID)
                     ->getStartColor()->setARGB($this->hexToArgb($bgColor));

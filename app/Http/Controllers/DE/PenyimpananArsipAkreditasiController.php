@@ -405,7 +405,7 @@ class PenyimpananArsipAkreditasiController extends Controller
 
             return redirect()
                 ->route('de.penyimpanan-arsip-akreditasi.show', $id)
-                ->with('success', 'Proses akreditasi berhasil diselesaikan! 🎉');
+                ->with('success', 'Proses akreditasi berhasil diselesaikan!');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Gagal menyelesaikan proses: ' . $e->getMessage());

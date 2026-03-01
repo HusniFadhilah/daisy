@@ -145,6 +145,11 @@ class PenilaianExcelService
         $sheet->getPageMargins()->setHeader(0);
         $sheet->getPageMargins()->setFooter(0);
 
+        // Freeze hanya baris 1–7 untuk sheet Penilaian AK
+        if ($sheet->getTitle() === 'Penilaian ' . ucfirst($this->penilaianFullName)) {
+            $sheet->freezePane('A7'); // freeze baris 1–6
+        }
+
         // // 🔒 LOCK semua cells dulu
         // $sheet->getStyle($sheet->calculateWorksheetDimension())
         //     ->getProtection()
@@ -276,6 +281,11 @@ class PenilaianExcelService
         $sheet->getPageMargins()->setBottom(0);
         $sheet->getPageMargins()->setHeader(0);
         $sheet->getPageMargins()->setFooter(0);
+
+        // Freeze hanya baris 1–7 untuk sheet Penilaian AK
+        if ($sheet->getTitle() === 'Penilaian ' . ucfirst($this->penilaianFullName)) {
+            $sheet->freezePane('A7'); // freeze baris 1–6
+        }
     }
 
     private function renderPenilaianJenisRowsDbAll($sheet, Asesmen $asesmen, $penilaianName, $asesors, bool $forceDbForAllAsesors): int
@@ -472,6 +482,11 @@ class PenilaianExcelService
         $sheet->getPageMargins()->setFooter(0);
 
         $this->buildPenilaianJenisSheet($spreadsheet, $asesmen, $penilaianName, $isTemplateOnly, $userId); // ✅ Pass userId
+
+        if ($sheet->getTitle() === 'Kertas Kerja ' . $penilaianName . ' Asesor') {
+            // Freeze kolom A-H dan baris 1-7
+            $sheet->freezePane('I8');
+        }
 
         // // 🔐 AKTIFKAN SHEET PROTECTION untuk Sheet Kertas Kerja
         // $sheet->getProtection()->setSheet(true);
@@ -804,11 +819,18 @@ class PenilaianExcelService
         $sheet->mergeCells('H6:H7');
 
         // Subheader penilaian row 6
-        $sheet->setCellValue('I6', 'Tidak Dapat Dinilai');
-        $sheet->setCellValue('J6', 'Tidak Memenuhi');
-        $sheet->setCellValue('K6', 'Lemah');
-        $sheet->setCellValue('L6', 'Memenuhi');
-        $sheet->setCellValue('M6', 'Melampaui Standar');
+        $jenjangPenilaian = JenjangPenilaian::all(); // ambil semua data
+
+        $startColumn = 'I'; // mulai dari kolom I
+        $row = 6;
+
+        foreach ($jenjangPenilaian as $index => $item) {
+            $column = Coordinate::stringFromColumnIndex(
+                Coordinate::columnIndexFromString($startColumn) + $index
+            );
+
+            $sheet->setCellValue($column . $row, $item->name);
+        }
 
         // Skor row 7
         $sheet->setCellValue('I7', '0');
@@ -1395,6 +1417,11 @@ class PenilaianExcelService
         $sheet->getPageMargins()->setHeader(0);
         $sheet->getPageMargins()->setFooter(0);
 
+        // Freeze hanya baris 1–7 untuk sheet Penilaian AK
+        if ($sheet->getTitle() === 'Penilaian ' . ucfirst($this->penilaianFullName)) {
+            $sheet->freezePane('A7'); // freeze baris 1–6
+        }
+
         // // 🔒 LOCK semua cells dulu
         // $sheet->getStyle($sheet->calculateWorksheetDimension())
         //     ->getProtection()
@@ -1476,8 +1503,8 @@ class PenilaianExcelService
                 $asesorName = $asesor->user->name ?? "Asesor " . ($index + 1);
                 $sheet->setCellValue("{$col1}5", "Penilaian Asesor ({$asesorName})");
 
-                $sheet->setCellValue("{$col1}6", 'Memenuhi Standar');
-                $sheet->setCellValue("{$col2}6", 'Melampaui Standar');
+                $sheet->setCellValue("{$col1}6", JenjangPenilaian::PEMENUHAN_STANDAR);
+                $sheet->setCellValue("{$col2}6", JenjangPenilaian::PELAMPAUAN_STANDAR);
             }
         } else {
             // ===== WITHDATA MODE: 1 kolom per asesor =====

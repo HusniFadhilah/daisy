@@ -138,7 +138,8 @@ class ALController extends Controller
             ->sortBy('started_at')
             ->first();
 
-        $isEditorAsesor = !$firstActiveAsesor || $firstActiveAsesor->id_user == $user->id;
+        // $isEditorAsesor = !$firstActiveAsesor || $firstActiveAsesor->id_user == $user->id;
+        $isEditorAsesor = true;
 
         $otherAsesorsProgress = [];
         foreach ($asesorTeam as $member) {
@@ -1137,7 +1138,8 @@ class ALController extends Controller
         $isUploader = $firstUpload && $firstUpload->id_asesor == $currentUserId;
 
         // ✅ User bisa upload jika: belum ada upload ATAU dia adalah uploader pertama
-        $canUpload = !$firstUpload || $isUploader;
+        // $canUpload = !$firstUpload || $isUploader;
+        $canUpload = true;
 
         // ✅ Get team asesor AL
         $asesorTeam = AsesmenUserRole::where('id_asesmen', $idAsesmen)

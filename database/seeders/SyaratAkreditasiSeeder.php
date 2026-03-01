@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\DegreeLevel;
+use App\Models\JenjangPenilaian;
 use App\Models\StatusAkreditasi;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -43,9 +44,9 @@ class SyaratAkreditasiSeeder extends Seeder
                 'kunci'      => 'kriteria_required',
                 'nilai'      => json_encode(['D', 'E', 'P', 'I', 'L', 'A', 'R']),
                 'tipe'       => 'array',
-                'label'      => 'Kriteria Wajib Melampaui Standar',
+                'label'      => 'Kriteria Wajib ' . JenjangPenilaian::LABEL_SYARAT_UNGGUL_MELAMPAUI,
                 'keterangan' => 'Kode kriteria yang masing-masing harus memiliki minimal 1 '
-                    . 'elemen dengan rata-rata skor ≥ 4 (Melampaui Standar) '
+                    . 'elemen dengan rata-rata skor ≥ 4 (' . JenjangPenilaian::LABEL_SYARAT_UNGGUL_MELAMPAUI . ') '
                     . 'agar syarat Unggul terpenuhi.',
             ],
             [
@@ -84,15 +85,15 @@ class SyaratAkreditasiSeeder extends Seeder
         //    Lektor ke atas (Lektor, LK, GB) ≥ 50%
         // ============================================================
         $this->seedJabatan(
-            codes       : array_merge($diploma, $sarjana),
-            degrees     : $degrees,
+            codes: array_merge($diploma, $sarjana),
+            degrees: $degrees,
             jabatanValid: ['lektor', 'lektor kepala', 'guru besar', 'professor'],
-            label       : 'Jabatan Valid — Lektor ke Atas (Diploma & Sarjana)',
-            keterangan  : 'Diploma & Sarjana: Lektor, Lektor Kepala, Guru Besar dihitung sebagai Lektor ke atas.',
-            persen      : 50.0,
-            labelPersen : 'Persentase Minimum DTPS Jabatan Lektor ke Atas — Diploma & Sarjana (%)',
-            versi       : $versi,
-            now         : $now,
+            label: 'Jabatan Valid — Lektor ke Atas (Diploma & Sarjana)',
+            keterangan: 'Diploma & Sarjana: Lektor, Lektor Kepala, Guru Besar dihitung sebagai Lektor ke atas.',
+            persen: 50.0,
+            labelPersen: 'Persentase Minimum DTPS Jabatan Lektor ke Atas — Diploma & Sarjana (%)',
+            versi: $versi,
+            now: $now,
         );
 
         // ============================================================
@@ -100,15 +101,15 @@ class SyaratAkreditasiSeeder extends Seeder
         //    Lektor Kepala ke atas (LK, GB) ≥ 50%
         // ============================================================
         $this->seedJabatan(
-            codes       : $magister,
-            degrees     : $degrees,
+            codes: $magister,
+            degrees: $degrees,
             jabatanValid: ['lektor kepala', 'guru besar', 'professor'],
-            label       : 'Jabatan Valid — Lektor Kepala ke Atas (Magister)',
-            keterangan  : 'Magister: hanya Lektor Kepala dan Guru Besar yang dihitung.',
-            persen      : 50.0,
-            labelPersen : 'Persentase Minimum DTPS Jabatan LK ke Atas — Magister (%)',
-            versi       : $versi,
-            now         : $now,
+            label: 'Jabatan Valid — Lektor Kepala ke Atas (Magister)',
+            keterangan: 'Magister: hanya Lektor Kepala dan Guru Besar yang dihitung.',
+            persen: 50.0,
+            labelPersen: 'Persentase Minimum DTPS Jabatan LK ke Atas — Magister (%)',
+            versi: $versi,
+            now: $now,
         );
 
         // ============================================================
@@ -116,15 +117,15 @@ class SyaratAkreditasiSeeder extends Seeder
         //    LK dan GB ≥ 50%
         // ============================================================
         $this->seedJabatan(
-            codes       : $doktor,
-            degrees     : $degrees,
+            codes: $doktor,
+            degrees: $degrees,
             jabatanValid: ['lektor kepala', 'guru besar', 'professor'],
-            label       : 'Jabatan Valid — LK dan GB (Doktor)',
-            keterangan  : 'Doktor: minimal 50% DTPS harus Lektor Kepala atau Guru Besar.',
-            persen      : 50.0,
-            labelPersen : 'Persentase Minimum DTPS Jabatan LK dan GB — Doktor (%)',
-            versi       : $versi,
-            now         : $now,
+            label: 'Jabatan Valid — LK dan GB (Doktor)',
+            keterangan: 'Doktor: minimal 50% DTPS harus Lektor Kepala atau Guru Besar.',
+            persen: 50.0,
+            labelPersen: 'Persentase Minimum DTPS Jabatan LK dan GB — Doktor (%)',
+            versi: $versi,
+            now: $now,
         );
 
         // ============================================================
@@ -152,55 +153,55 @@ class SyaratAkreditasiSeeder extends Seeder
 
         // Diploma & Sarjana — karya inovasi industri/masyarakat (semua skala, kolom Karya)
         $this->seedLulusan(
-            codes      : array_merge($diploma, $sarjana),
-            degrees    : $degrees,
-            persen     : 10.0,
-            tipe       : 'inovasi_industri',
-            label      : 'Capaian Lulusan — Karya Inovasi Industri/Masyarakat (Diploma & Sarjana)',
-            keterangan : '10% lulusan memiliki karya inovasi yang dipakai industri atau masyarakat. '
+            codes: array_merge($diploma, $sarjana),
+            degrees: $degrees,
+            persen: 10.0,
+            tipe: 'inovasi_industri',
+            label: 'Capaian Lulusan — Karya Inovasi Industri/Masyarakat (Diploma & Sarjana)',
+            keterangan: '10% lulusan memiliki karya inovasi yang dipakai industri atau masyarakat. '
                 . 'Dibaca dari R.3.1.c + R.3.1.e sub-tabel .5 (rekapitulasi semua skala), kolom Karya/Inovasi.',
-            versi      : $versi,
-            now        : $now,
+            versi: $versi,
+            now: $now,
         );
 
         // Magister — publikasi SINTA atau karya inovatif setara (skala nasional, kolom Publikasi)
         $this->seedLulusan(
-            codes      : $magister,
-            degrees    : $degrees,
-            persen     : 10.0,
-            tipe       : 'publikasi_sinta',
-            label      : 'Capaian Lulusan — Publikasi SINTA atau Karya Inovatif (Magister)',
-            keterangan : '10% lulusan memiliki publikasi terakreditasi nasional SINTA atau karya inovatif yang setara. '
+            codes: $magister,
+            degrees: $degrees,
+            persen: 10.0,
+            tipe: 'publikasi_sinta',
+            label: 'Capaian Lulusan — Publikasi SINTA atau Karya Inovatif (Magister)',
+            keterangan: '10% lulusan memiliki publikasi terakreditasi nasional SINTA atau karya inovatif yang setara. '
                 . 'Dibaca dari R.3.1.c + R.3.1.e sub-tabel .2 (skala nasional), kolom Publikasi Ilmiah.',
-            versi      : $versi,
-            now        : $now,
+            versi: $versi,
+            now: $now,
         );
 
         // Doktor — publikasi internasional bereputasi (skala internasional, kolom Publikasi)
         $this->seedLulusan(
-            codes      : $doktor,
-            degrees    : $degrees,
-            persen     : 5.0,
-            tipe       : 'publikasi_internasional',
-            label      : 'Capaian Lulusan — Publikasi Internasional Bereputasi (Doktor)',
-            keterangan : '5% lulusan memiliki publikasi internasional bereputasi atau karya inovatif yang setara. '
+            codes: $doktor,
+            degrees: $degrees,
+            persen: 5.0,
+            tipe: 'publikasi_internasional',
+            label: 'Capaian Lulusan — Publikasi Internasional Bereputasi (Doktor)',
+            keterangan: '5% lulusan memiliki publikasi internasional bereputasi atau karya inovatif yang setara. '
                 . 'Dibaca dari R.3.1.c + R.3.1.e sub-tabel .1 (skala internasional), kolom Publikasi Ilmiah.',
-            versi      : $versi,
-            now        : $now,
+            versi: $versi,
+            now: $now,
         );
 
         // Profesi — karya inovasi validasi profesi / ujian kompetensi (semua skala, kolom Karya)
         $this->seedLulusan(
-            codes      : $profesi,
-            degrees    : $degrees,
-            persen     : 10.0,
-            tipe       : 'inovasi_profesi',
-            label      : 'Capaian Lulusan — Inovasi Validasi Profesi atau Ujian Kompetensi (Profesi)',
-            keterangan : '10% lulusan memiliki karya inovasi yang divalidasi oleh organisasi profesi '
+            codes: $profesi,
+            degrees: $degrees,
+            persen: 10.0,
+            tipe: 'inovasi_profesi',
+            label: 'Capaian Lulusan — Inovasi Validasi Profesi atau Ujian Kompetensi (Profesi)',
+            keterangan: '10% lulusan memiliki karya inovasi yang divalidasi oleh organisasi profesi '
                 . 'atau lulus ujian kompetensi. '
                 . 'Dibaca dari R.3.1.c + R.3.1.e sub-tabel .5 (rekapitulasi semua skala), kolom Karya/Inovasi.',
-            versi      : $versi,
-            now        : $now,
+            versi: $versi,
+            now: $now,
         );
     }
 

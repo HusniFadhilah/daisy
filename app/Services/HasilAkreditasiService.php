@@ -6,6 +6,7 @@ use App\Models\Asesmen;
 use App\Models\BobotPenilaian;
 use App\Models\HasilAkreditasi;
 use App\Models\JenjangPenilaian;
+use App\Models\Kriteria;
 use App\Models\PengajuanAkreditasi;
 use App\Models\PenilaianElemenAk;
 use App\Models\PenilaianElemenAl;
@@ -46,7 +47,6 @@ class HasilAkreditasiService
             if ($scores->isEmpty()) {
                 $scores = $group->pluck('skor')->filter()->values();
             }
-
             return [
                 'elemen'        => $group->first()->elemenStandar,
                 'avg_skor'      => $scores->isNotEmpty() ? round($scores->avg(), 2) : 0,
@@ -79,7 +79,6 @@ class HasilAkreditasiService
 
         $elemenScores = $penilaians->groupBy('id_elemen')->map(function ($group) {
             $scores = $group->pluck('skor')->filter()->values();
-
             return [
                 'elemen'        => $group->first()->elemenStandar,
                 'avg_skor'      => $scores->isNotEmpty() ? round($scores->avg(), 2) : 0,
@@ -96,51 +95,40 @@ class HasilAkreditasiService
     // =========================================================
 
     /**
-     * Evaluasi semua syarat Unggul dengan konfigurasi dinamis dari DB:
+     * Evaluasi semua syarat Unggul:
+     *   Syarat Kunci : skor >= minimum + rasio DTPS + jabatan/sertifikasi + capaian lulusan
+     *   Syarat Perlu : semua kriteria ada elemen ".JenjangPenilaian::LABEL_SYARAT_UNGGUL_MELAMPAUI." (skor >= 4)
      *
-     *   1. Skor >= skor_minimum_unggul
-     *   2. Semua kriteria_required ada elemen dengan skor rata >= 4
-     *   3. Rasio DTPS:Mahasiswa sesuai batas rumpun
-     *   4. Kompetensi dosen (jabatan atau sertifikat, per degree level)
-     *   5. Capaian lulusan (tipe dan persentase, per degree level)
-     *
-     * PENTING: $skorAl dioper eksplisit — JANGAN baca dari $hasil->skor_final
+     * PENTING: $skorAl dioper eksplisit — jangan baca dari $hasil->skor_final
      * karena saat finalizeHasilAL() dipanggil, skor_final belum tersimpan.
      */
     public function cekSyaratUnggul(HasilAkreditasi $hasil, float $skorAl): array
     {
         $degreeLevelId = $hasil->studyProgram->id_degree_level;
+        $config        = $this->syaratRepo->getAllConfig($degreeLevelId);
+        $pengajuanId   = $hasil->id_pengajuan;
+        $rumpun        = $hasil->studyProgram->rumpun ?? 'arsitektur';
 
-        // ── 1 query ke DB, di-cache per degree level ──
-        $config = $this->syaratRepo->getAllConfig($degreeLevelId);
-
-        $pengajuanId = $hasil->id_pengajuan;
-        $rumpun      = $hasil->studyProgram->rumpun ?? 'arsitektur';
-
-        // 1. Skor
+        // ── Syarat Kunci 1: Skor ──
         $skorMin      = $config['skor_minimum'];
         $skorMemenuhi = $skorAl >= $skorMin;
 
-        // 2. Pelampauan standar per kriteria
+        // ── Syarat Perlu: Pelampauan standar per kriteria ──
         $kriteriaRequired   = $config['kriteria_required'];
         $missingKriteria    = $hasil->getMissingKriteriaForUnggul($kriteriaRequired);
         $pelampauanMemenuhi = empty($missingKriteria);
 
-        // 3, 4, 5. Semua syarat dari LKPS (rasio + kompetensi dosen + capaian lulusan)
-        $syaratLkps = $this->lkpsReader->cekSemuaSyarat($pengajuanId, $rumpun, $degreeLevelId);
+        // ── Syarat Kunci 2,3,4: LKPS (rasio + jabatan + lulusan) ──
+        $syaratLkps   = $this->lkpsReader->cekSemuaSyarat($pengajuanId, $rumpun, $degreeLevelId);
         $lkpsMemenuhi = $syaratLkps['semua_memenuhi'];
 
-        // ── Keterangan ──
-        $keterangan = [];
-
+        $keterangan   = [];
         $keterangan[] = $skorMemenuhi
             ? "☑ Skor {$skorAl} memenuhi syarat minimum Unggul (≥ {$skorMin})."
             : "☒ Skor {$skorAl} belum memenuhi syarat minimum Unggul (< {$skorMin}).";
-
         $keterangan[] = $pelampauanMemenuhi
-            ? "☑ Semua kriteria (" . implode(', ', $kriteriaRequired) . ") memiliki elemen Melampaui Standar."
-            : "☒ Kriteria belum ada elemen Melampaui Standar: " . implode(', ', $missingKriteria) . ".";
-
+            ? "☑ Semua kriteria (" . implode(', ', $kriteriaRequired) . ") memiliki elemen " . JenjangPenilaian::LABEL_SYARAT_UNGGUL_MELAMPAUI . "."
+            : "☒ Kriteria belum ada elemen " . JenjangPenilaian::LABEL_SYARAT_UNGGUL_MELAMPAUI . ": " . implode(', ', $missingKriteria) . ".";
         $keterangan[] = $syaratLkps['rasio']['keterangan'];
         $keterangan[] = $syaratLkps['jabatan']['keterangan'];
         $keterangan[] = $syaratLkps['lulusan']['keterangan'];
@@ -167,13 +155,16 @@ class HasilAkreditasiService
         try {
             $calc = $this->calculateAK($asesmen);
 
+            // AK: tidak ada syarat Unggul → bySkor aman dipakai
+            $idStatusAk = StatusAkreditasi::bySkor((int)$calc['skor_total'])->value('id');
+
             $hasil = HasilAkreditasi::updateOrCreate(
                 [
                     'id_pengajuan' => $asesmen->id_pengajuan,
                     'id_asesmen'   => $asesmen->id,
                 ],
                 [
-                    'id_status_ak'          => StatusAkreditasi::bySkor((int)$calc['skor_total'])->value('id'),
+                    'id_status_ak'          => $idStatusAk,
                     'id_study_program'      => $asesmen->id_study_program,
                     'id_category'           => $asesmen->studyProgram->id_category,
                     'status'                => HasilAkreditasi::getStatusHasilAkreditasi($asesmen),
@@ -197,10 +188,7 @@ class HasilAkreditasiService
             return $hasil;
         } catch (\Throwable $e) {
             DB::rollBack();
-            Log::error('saveHasilAK failed', [
-                'asesmen_id' => $asesmen->id,
-                'error'      => $e->getMessage(),
-            ]);
+            Log::error('saveHasilAK failed', ['asesmen_id' => $asesmen->id, 'error' => $e->getMessage()]);
             throw $e;
         }
     }
@@ -231,6 +219,13 @@ class HasilAkreditasiService
     // SAVE AL
     // =========================================================
 
+    /**
+     * Simpan hasil kalkulasi AL sebagai DRAFT.
+     *
+     * id_status_al/hasil TIDAK boleh menunjuk ke Unggul di tahap ini
+     * karena syarat perlu (pelampauan + LKPS) belum divalidasi.
+     * Peringkat efektif baru ditetapkan saat finalizeHasilAL().
+     */
     public function saveHasilAL(Asesmen $asesmen, ?int $userId = null): HasilAkreditasi
     {
         DB::beginTransaction();
@@ -253,22 +248,27 @@ class HasilAkreditasiService
                 ],
             ];
 
-            $idStatusAL = StatusAkreditasi::bySkor((int)$calc['skor_total'])->value('id');
+            // ── Gunakan status non-Unggul sebagai placeholder draft ──
+            // Syarat perlu baru bisa dicek saat finalize, bukan di sini.
+            $idStatusDraft = $this->resolveStatusIdForDraft((int)$calc['skor_total']);
 
             $hasil->update([
-                'id_status_al'          => $idStatusAL,
-                'skor_al'               => $calc['skor_total'],
-                'skor_al_tertimbang'    => $calc['skor_tertimbang'],
-                'total_bobot_al'        => $calc['total_bobot'],
-                'pelampauan_standar_al' => $calc['pelampauan_standar'],
-                'detail_skor_al'        => $detailSkorAL,
+                'id_status_al'             => $idStatusDraft,
+                'skor_al'                  => $calc['skor_total'],
+                'skor_al_tertimbang'       => $calc['skor_tertimbang'],
+                'total_bobot_al'           => $calc['total_bobot'],
+                'pelampauan_standar_al'    => $calc['pelampauan_standar'],
+                'detail_skor_al'           => $detailSkorAL,
 
-                'id_status_hasil'          => $idStatusAL,
+                'id_status_hasil'          => $idStatusDraft,
                 'skor_hasil'               => $calc['skor_total'],
                 'skor_hasil_tertimbang'    => $calc['skor_tertimbang'],
                 'total_bobot_hasil'        => $calc['total_bobot'],
                 'pelampauan_standar_hasil' => $calc['pelampauan_standar'],
                 'detail_skor_hasil'        => $detailSkorAL,
+
+                // Dikosongkan — diisi saat finalizeHasilAL() dengan validasi penuh
+                'peringkat_akreditasi_hasil' => null,
 
                 'status' => 'draft_al',
             ]);
@@ -277,10 +277,7 @@ class HasilAkreditasiService
             return $hasil->fresh();
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('saveHasilAL failed', [
-                'asesmen_id' => $asesmen->id,
-                'error'      => $e->getMessage(),
-            ]);
+            Log::error('saveHasilAL failed', ['asesmen_id' => $asesmen->id, 'error' => $e->getMessage()]);
             throw $e;
         }
     }
@@ -290,8 +287,8 @@ class HasilAkreditasiService
     // =========================================================
 
     /**
-     * Finalisasi AL: kunci skor AL dan simpan hasil cek syarat Unggul.
-     * skor_final BELUM diset di sini — itu dilakukan di saveHasilPenetapan().
+     * Finalisasi AL: validasi semua syarat Unggul, tetapkan peringkat efektif,
+     * dan kunci skor AL. skor_final belum diset — itu di saveHasilPenetapan().
      */
     public function finalizeHasilAL(HasilAkreditasi $hasil, ?int $userId = null): HasilAkreditasi
     {
@@ -315,11 +312,11 @@ class HasilAkreditasiService
             $memenuhiLkps       = $syarat['p1_memenuhi'];
             $semuaMemenuhi      = $syarat['memenuhi'];
 
-            $peringkat = $hasil->getPeringkatFromSkorAL(
-                $skorALFinal,
-                $memenuhiPelampauan,
-                $memenuhiLkps
-            );
+            // Peringkat efektif — sudah mempertimbangkan syarat kunci + syarat perlu
+            $peringkat   = $hasil->getPeringkatFromSkor($skorALFinal, $memenuhiPelampauan, $memenuhiLkps);
+
+            // id_status_al diupdate ke status yang sesuai peringkat efektif
+            $idStatusAL  = $this->resolveStatusIdByPeringkat($peringkat);
 
             $catatan = $syarat['keterangan'];
 
@@ -328,23 +325,21 @@ class HasilAkreditasiService
                 $catatan[] = "⚠️ Peringkat diturunkan menjadi: {$peringkat}.";
 
                 if (!$memenuhiPelampauan && !empty($syarat['missing_kriteria'])) {
-                    $catatan[] = "⚠️ Kriteria tanpa elemen Melampaui Standar: "
+                    $catatan[] = "⚠️ Kriteria tanpa elemen " . JenjangPenilaian::LABEL_SYARAT_UNGGUL_MELAMPAUI . ": "
                         . implode(', ', $syarat['missing_kriteria']) . ".";
                 }
-
                 if (!$memenuhiLkps) {
-                    $syaratP1 = $syarat['syarat_p1'];
-
-                    if (!$syaratP1['rasio']['memenuhi']) {
+                    $p1 = $syarat['syarat_p1'];
+                    if (!$p1['rasio']['memenuhi']) {
                         $catatan[] = "⚠️ Rasio DTPS:Mahasiswa melebihi batas yang diizinkan.";
                     }
-                    if (!$syaratP1['jabatan']['memenuhi']) {
-                        $catatan[] = "⚠️ Kompetensi dosen (jabatan/sertifikat) belum mencapai "
-                            . ($syaratP1['jabatan']['persen_minimum'] ?? 50) . "%.";
+                    if (!$p1['jabatan']['memenuhi']) {
+                        $catatan[] = "⚠️ Kompetensi dosen belum mencapai "
+                            . ($p1['jabatan']['persen_minimum'] ?? 50) . "%.";
                     }
-                    if (!$syaratP1['lulusan']['memenuhi']) {
+                    if (!$p1['lulusan']['memenuhi']) {
                         $catatan[] = "⚠️ Capaian lulusan belum mencapai "
-                            . ($syaratP1['lulusan']['persen_minimum'] ?? 10) . "%.";
+                            . ($p1['lulusan']['persen_minimum'] ?? 10) . "%.";
                     }
                 }
             } elseif ($semuaMemenuhi) {
@@ -352,16 +347,21 @@ class HasilAkreditasiService
             }
 
             $hasil->update([
-                'status'                    => 'final_hasil',
-                'tanggal_finalisasi_al'     => now(),
-                'finalized_al_by'           => $authId,
-                'tanggal_finalisasi_hasil'  => now(),
-                'finalized_hasil_by'        => $authId,
-                'skor_hasil'                => round($skorALFinal, 2),
+                'status'                     => 'final_hasil',
+                'tanggal_finalisasi_al'      => now(),
+                'finalized_al_by'            => $authId,
+                'tanggal_finalisasi_hasil'   => now(),
+                'finalized_hasil_by'         => $authId,
+
+                // Konsisten: id_status dan string peringkat menunjuk ke entitas yang sama
+                'id_status_al'               => $idStatusAL,
+                'id_status_hasil'            => $idStatusAL,
+                'skor_hasil'                 => round($skorALFinal, 2),
                 'peringkat_akreditasi_hasil' => $peringkat,
-                'memenuhi_syarat_unggul'    => $semuaMemenuhi,
-                'catatan_validasi'          => implode("\n", $catatan),
-                'metadata'                  => array_merge(
+                'memenuhi_syarat_unggul'     => $semuaMemenuhi,
+                'catatan_validasi'           => implode("\n", $catatan),
+
+                'metadata' => array_merge(
                     (array)($hasil->metadata ?? []),
                     [
                         'syarat_unggul_check_al' => [
@@ -397,26 +397,23 @@ class HasilAkreditasiService
     {
         DB::beginTransaction();
         try {
-            if (!$hasil->isAlFinalized()) {
-                throw new \Exception('AL harus difinalisasi sebelum penetapan.');
-            }
-            if ($hasil->isPenetapanFinalized()) {
-                throw new \Exception('Penetapan sudah dikunci, tidak bisa dihitung ulang.');
-            }
+            // if (!$hasil->isAlFinalized()) {
+            //     throw new \Exception('AL harus difinalisasi sebelum penetapan.');
+            // }
+            // if ($hasil->isPenetapanFinalized()) {
+            //     throw new \Exception('Penetapan sudah dikunci, tidak bisa dihitung ulang.');
+            // }
 
-            $skorFinal = (float)$hasil->skor_al;
-
+            $skorFinal          = (float)$hasil->skor_al;
             $syarat             = $this->cekSyaratUnggul($hasil, $skorFinal);
             $memenuhiPelampauan = $syarat['pelampauan_memenuhi'];
             $memenuhiLkps       = $syarat['p1_memenuhi'];
 
-            $peringkat = $hasil->getPeringkatFromSkorAL(
-                $skorFinal,
-                $memenuhiPelampauan,
-                $memenuhiLkps
-            );
+            // Peringkat efektif — konsisten dengan finalizeHasilAL
+            $peringkat     = $hasil->getPeringkatFromSkor($skorFinal, $memenuhiPelampauan, $memenuhiLkps);
 
-            $statusFinalId = StatusAkreditasi::bySkor((int)$skorFinal)->value('id');
+            // id_status_final konsisten dengan peringkat efektif, bukan raw bySkor
+            $idStatusFinal = $this->resolveStatusIdByPeringkat($peringkat);
 
             $hasil->update([
                 'status'                     => 'draft_penetapan',
@@ -425,7 +422,7 @@ class HasilAkreditasiService
                 'total_bobot_final'          => $hasil->total_bobot_al,
                 'detail_skor_final'          => $hasil->detail_skor_al,
                 'pelampauan_standar_final'   => $hasil->pelampauan_standar_al,
-                'id_status_final'            => $statusFinalId,
+                'id_status_final'            => $idStatusFinal,
                 'peringkat_akreditasi_final' => $peringkat,
                 'memenuhi_syarat_unggul'     => $syarat['memenuhi'],
             ]);
@@ -442,27 +439,29 @@ class HasilAkreditasiService
     {
         DB::beginTransaction();
         try {
-            if (!$hasil->isAlFinalized()) {
-                throw new \Exception('AL harus difinalisasi sebelum penetapan.');
-            }
-            if ($hasil->isPenetapanFinalized()) {
-                throw new \Exception('Penetapan sudah dikunci sebelumnya.');
-            }
-            if (is_null($hasil->skor_final)) {
-                throw new \Exception('Skor final belum disiapkan. Panggil saveHasilPenetapan() terlebih dahulu.');
-            }
+            // if (!$hasil->isAlFinalized()) {
+            //     throw new \Exception('AL harus difinalisasi sebelum penetapan.');
+            // }
+            // if ($hasil->isPenetapanFinalized()) {
+            //     throw new \Exception('Penetapan sudah dikunci sebelumnya.');
+            // }
+            // if (is_null($hasil->skor_final)) {
+            //     throw new \Exception('Skor final belum disiapkan. Panggil saveHasilPenetapan() terlebih dahulu.');
+            // }
 
-            $authId = $userId ?? auth()->id();
-
+            $authId  = $userId ?? auth()->id();
             $syarat  = $this->cekSyaratUnggul($hasil, (float)$hasil->skor_final);
             $catatan = $syarat['keterangan'];
 
             if (!$syarat['memenuhi'] && (float)$hasil->skor_final >= $syarat['skor_minimum']) {
-                $catatan[] = "⚠️ Peringkat diturunkan dari potensi Unggul menjadi: {$hasil->peringkat_akreditasi_final}.";
-
-                if (!$syarat['syarat_p1']['lulusan']['memenuhi']) {
-                    $catatan[] = "⚠️ Capaian lulusan belum mencapai "
-                        . ($syarat['syarat_p1']['lulusan']['persen_minimum'] ?? 10) . "%.";
+                $catatan[] = "⚠️ Peringkat diturunkan menjadi: {$hasil->peringkat_akreditasi_final}.";
+                $p1 = $syarat['syarat_p1'];
+                if (!$p1['rasio']['memenuhi'])   $catatan[] = "⚠️ " . $p1['rasio']['keterangan'];
+                if (!$p1['jabatan']['memenuhi'])  $catatan[] = "⚠️ " . $p1['jabatan']['keterangan'];
+                if (!$p1['lulusan']['memenuhi'])  $catatan[] = "⚠️ " . $p1['lulusan']['keterangan'];
+                if (!$syarat['pelampauan_memenuhi'] && !empty($syarat['missing_kriteria'])) {
+                    $catatan[] = "⚠️ Kriteria tanpa elemen " . JenjangPenilaian::LABEL_SYARAT_UNGGUL_MELAMPAUI . ": "
+                        . implode(', ', $syarat['missing_kriteria']) . ".";
                 }
             } elseif ($syarat['memenuhi']) {
                 $catatan[] = "☑ Semua syarat Terakreditasi Unggul terpenuhi.";
@@ -539,18 +538,24 @@ class HasilAkreditasiService
 
     public function getValidationSummary(HasilAkreditasi $hasil): array
     {
-        $skor = (float)($hasil->skor_final ?? $hasil->skor_al ?? 0);
-
+        $skor             = (float)($hasil->skor_final ?? $hasil->skor_al ?? 0);
         $syarat           = $this->cekSyaratUnggul($hasil, $skor);
         $pelampauan       = $hasil->pelampauan_standar_al ?? [];
         $kriteriaRequired = $this->syaratRepo->getKriteriaRequired();
-        $kriteriaStatus   = [];
+
+        // Ambil nama kriteria sekaligus untuk ditampilkan di tabel
+        $kriteriaNames = Kriteria::whereIn('kode_kriteria', $kriteriaRequired)
+            ->pluck('nama_kriteria', 'kode_kriteria')
+            ->toArray();
+
+        $kriteriaStatus = [];
         foreach ($kriteriaRequired as $kode) {
             $hasPelampauan         = !empty($pelampauan[$kode]);
             $kriteriaStatus[$kode] = [
                 'has_pelampauan'       => $hasPelampauan,
                 'jumlah_elemen_skor_4' => $hasPelampauan ? count($pelampauan[$kode]) : 0,
                 'elemen_list'          => $hasPelampauan ? $pelampauan[$kode] : [],
+                'nama_kriteria'        => $kriteriaNames[$kode] ?? $kode,
             ];
         }
 
@@ -566,6 +571,77 @@ class HasilAkreditasiService
             'syarat_p1'           => $syarat['syarat_p1'],
             'keterangan'          => $syarat['keterangan'],
         ];
+    }
+
+    // =========================================================
+    // PRIVATE HELPERS
+    // =========================================================
+
+    /**
+     * Untuk DRAFT: kembalikan id status non-Unggul tertinggi jika skor
+     * masuk range Unggul. Unggul belum bisa ditetapkan sebelum syarat perlu divalidasi.
+     */
+    private function resolveStatusIdForDraft(int $skor): ?int
+    {
+        $all = $this->getAllStatusAkreditasi();
+
+        $match = $all
+            ->filter(fn($s) => $s->skor_min <= $skor && $s->skor_max >= $skor)
+            ->sortByDesc('skor_min')
+            ->first();
+
+        if (!$match) {
+            return null;
+        }
+
+        // Bukan Unggul → aman dipakai langsung
+        if (!$this->isStatusUnggul($match)) {
+            return $match->id;
+        }
+
+        // Unggul → ambil non-Unggul tertinggi sebagai placeholder
+        return $this->getStatusNonUnggulTertinggi()?->id ?? $match->id;
+    }
+
+    /**
+     * Setelah peringkat efektif diketahui (post-validasi syarat perlu),
+     * cari id status yang string-nya match persis dengan peringkat tersebut.
+     * Ini menjamin id_status_* dan peringkat_akreditasi_* selalu konsisten.
+     */
+    private function resolveStatusIdByPeringkat(string $peringkat): ?int
+    {
+        return $this->getAllStatusAkreditasi()
+            ->firstWhere('status', $peringkat)
+            ?->id;
+    }
+
+    /**
+     * Status non-Unggul dengan skor_max tertinggi (tepat di bawah ambang Unggul).
+     */
+    private function getStatusNonUnggulTertinggi(): ?StatusAkreditasi
+    {
+        $all         = $this->getAllStatusAkreditasi();
+        $batasUnggul = $all->filter(fn($s) => $this->isStatusUnggul($s))->min('skor_min');
+
+        return $all
+            ->filter(fn($s) => !$this->isStatusUnggul($s) && $s->skor_max < $batasUnggul)
+            ->sortByDesc('skor_max')
+            ->first();
+    }
+
+    private function isStatusUnggul(StatusAkreditasi $status): bool
+    {
+        return str_contains(strtolower($status->status), 'unggul');
+    }
+
+    /**
+     * Cache semua StatusAkreditasi dalam satu request untuk menghindari
+     * query berulang di resolveStatusIdForDraft, resolveStatusIdByPeringkat, dll.
+     */
+    private function getAllStatusAkreditasi(): Collection
+    {
+        static $cache = null;
+        return $cache ??= StatusAkreditasi::all();
     }
 
     // =========================================================
@@ -593,11 +669,7 @@ class HasilAkreditasiService
             ];
         }
 
-        $elemenIds = $elemenScores
-            ->pluck('elemen.id')
-            ->filter()
-            ->unique()
-            ->values();
+        $elemenIds = $elemenScores->pluck('elemen.id')->filter()->unique()->values();
 
         $bobotMap = BobotPenilaian::query()
             ->whereIn('id_elemen', $elemenIds)
@@ -610,7 +682,6 @@ class HasilAkreditasiService
             $elemen   = $data['elemen'];
             $kriteria = $elemen->kriteria;
             $avgSkor  = (float)$data['avg_skor'];
-
             $bobotRow = $bobotMap->get($elemen->id);
 
             if (!$bobotRow) {

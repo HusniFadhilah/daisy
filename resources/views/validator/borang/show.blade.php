@@ -98,7 +98,7 @@
                 <div class="card-footer bg-white border-0">
                     <div class="progress-grade-footer small">
                         <span class="legend-badge">
-                            <span class="legend-dot bg-primary"></span> A (Sudah Tepat): <strong id="led-a">0</strong>
+                            <span class="legend-dot bg-success"></span> A (Sudah Tepat): <strong id="led-a">0</strong>
                         </span>
                         <span class="legend-badge">
                             <span class="legend-dot bg-warning"></span> B (Kurang Lengkap): <strong id="led-b">0</strong>
@@ -127,7 +127,7 @@
                 <div class="card-footer bg-white border-0">
                     <div class="progress-grade-footer small">
                         <span class="legend-badge">
-                            <span class="legend-dot bg-primary"></span> A (Sudah Tepat): <strong id="suplemen-a">0</strong>
+                            <span class="legend-dot bg-success"></span> A (Sudah Tepat): <strong id="suplemen-a">0</strong>
                         </span>
                         <span class="legend-badge">
                             <span class="legend-dot bg-warning"></span> B (Kurang Lengkap): <strong id="suplemen-b">0</strong>
@@ -149,14 +149,14 @@
                         <span id="count-lkps-total">{{ $validation->total_indikator_lkps }}</span>
                     </h3>
                     <div class="progress mt-2">
-                        <div class="progress-bar bg-success" id="bar-lkps" style="width: {{ $progress['lkps_percentage'] }}%"></div>
+                        <div class="progress-bar bg-primary" id="bar-lkps" style="width: {{ $progress['lkps_percentage'] }}%"></div>
                     </div>
                     <small><span id="percent-lkps">{{ $progress['lkps_percentage'] }}</span>%</small>
                 </div>
                 <div class="card-footer bg-white border-0">
                     <div class="progress-grade-footer small">
                         <span class="legend-badge">
-                            <span class="legend-dot bg-primary"></span> A (Sudah Tepat): <strong id="lkps-a">0</strong>
+                            <span class="legend-dot bg-success"></span> A (Sudah Tepat): <strong id="lkps-a">0</strong>
                         </span>
                         <span class="legend-badge">
                             <span class="legend-dot bg-warning"></span> B (Kurang Lengkap): <strong id="lkps-b">0</strong>
@@ -175,7 +175,7 @@
                     <h6 class="text-muted">Total Progress</h6>
                     <h3 class="mb-0"><span id="percent-total">{{ $progress['percentage'] }}</span>%</h3>
                     <div class="progress mt-2">
-                        <div class="progress-bar bg-warning" id="bar-total" style="width: {{ $progress['percentage'] }}%"></div>
+                        <div class="progress-bar bg-success" id="bar-total" style="width: {{ $progress['percentage'] }}%"></div>
                     </div>
                     <small>
                         <span id="count-total-reviewed">{{ $progress['reviewed'] }}</span> /
@@ -292,6 +292,12 @@
         </div>
     </div>
 
+    <div class="alert alert-info alert-permanent">
+        <i class="bi bi-info-circle"></i>
+        Mohon berikan kategori validasi dan catatan pada masing-masing elemen yang ada di tab LED, Suplemen, dan LKPS berikut ini<br>
+        <strong>Tips:</strong> Anda juga dapat melakukan validasi melalui Excel dengan mendownload templat, isi validasi, lalu upload kembali ke sistem.
+    </div>
+
     {{-- Excel Import/Export --}}
     <div class="card mb-4 border-primary">
         {{-- Header (clickable) --}}
@@ -309,12 +315,6 @@
         {{-- Body (collapsed by default) --}}
         <div id="collapseExcelValidasi" class="collapse">
             <div class="card-body">
-                <div class="alert alert-info alert-permanent mb-3">
-                    <i class="bi bi-info-circle"></i>
-                    <strong>Tips:</strong> Anda dapat melakukan validasi melalui Excel untuk mempermudah proses.
-                    Download templat, isi validasi, lalu upload kembali ke sistem.
-                </div>
-
                 <div class="row g-3">
                     {{-- Download Section --}}
                     <div class="col-lg-6">
@@ -558,7 +558,7 @@
                         @endphp
 
                         <div class="card mb-3">
-                            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                                 <div class="fw-bold">
                                     {{ \Illuminate\Support\Str::headline($sectionKey) }}
                                 </div>
@@ -639,7 +639,7 @@
 
                         @if($elemenWithIndikator->isNotEmpty())
                         <div class="card mb-3">
-                            <div class="card-header bg-success text-white">
+                            <div class="card-header bg-primary text-white">
                                 <h5 class="mb-0">{{ $kriteria->kode_kriteria }} - {{ $kriteria->nama_kriteria }}</h5>
                             </div>
 
