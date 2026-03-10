@@ -60,7 +60,7 @@
     </nav>
 
     <!-- Page Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h4 class="mb-1"><i class="bi bi-file-earmark-text"></i> Penerimaan Dokumen</h4>
             <p class="text-muted mb-0">Monitor penerimaan dokumen</p>
@@ -254,7 +254,7 @@
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('Gagal memuat data.');
+            Swal.fire('Perhatian', 'Gagal memuat data.', 'error');
         } finally {
             loadingOverlay.classList.add('d-none');
         }

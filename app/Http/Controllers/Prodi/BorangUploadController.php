@@ -83,7 +83,7 @@ class BorangUploadController extends Controller
             PengajuanStatusLog::create([
                 'id_pengajuan' => $pengajuan->id,
                 'status_from' => $pengajuan->status,
-                'status_to' => PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
+                'status_to' => PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM,
                 'changed_by' => $userId,
                 'changed_at' => now(),
                 'keterangan' => ($isAddVersion ? 'Upload versi baru' : 'Update tanpa versi') .
@@ -233,28 +233,11 @@ class BorangUploadController extends Controller
         try {
             $pengajuan = PengajuanAkreditasi::findOrFail($id);
 
-            $dokumen = PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
+            $pengajuanDokumen = PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
                 ->where('id', $dokumenId)
                 ->firstOrFail();
 
-            if (!$dokumen->path_file) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Dokumen tidak berbasis file (path_file kosong).',
-                ], 400);
-            }
-
-            if (!Storage::disk('public')->exists($dokumen->path_file)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'File tidak ditemukan',
-                ], 404);
-            }
-
-            return Storage::disk('public')->download(
-                $dokumen->path_file,
-                $dokumen->original_filename ?? $dokumen->nama_file
-            );
+            return $pengajuanDokumen->downloadDokumen();
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

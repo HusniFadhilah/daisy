@@ -518,7 +518,7 @@ class HasilAkreditasiController extends Controller
         try {
             $pengajuan = PengajuanAkreditasi::findOrFail($id);
 
-            if ($pengajuan->status !== PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN) {
+            if ($pengajuan->status !== PengajuanAkreditasi::STATUS_ASESOR_AK_BANDING_ASSIGNED) {
                 throw new \Exception('Banding belum dilaksanakan.');
             }
 
@@ -544,7 +544,7 @@ class HasilAkreditasiController extends Controller
 
             // Update status
             $pengajuan->updateStatusSafely(
-                PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
+                PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN,
                 "Hasil banding: {$request->hasil_banding}"
             );
 
@@ -583,7 +583,7 @@ class HasilAkreditasiController extends Controller
                 $pengajuan->status === PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI &&
                 now()->gt($pengajuan->tanggal_masa_sanggah_selesai)
             ) || (
-                $pengajuan->status === PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN
+                $pengajuan->status === PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN
             );
 
             if (!$canProceed) {

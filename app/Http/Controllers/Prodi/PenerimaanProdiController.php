@@ -50,8 +50,7 @@ class PenerimaanProdiController extends Controller
     }
 
     /**
-     * Show detail penerimaan
-permohonan akreditasi      */
+     * Show detail penerimaan permohonan akreditasi      */
     public function show($id)
     {
         $pengajuan = PengajuanAkreditasi::with([
@@ -73,8 +72,7 @@ permohonan akreditasi      */
     }
 
     /**
-     * Download penerimaan
-permohonan akreditasi      */
+     * Download penerimaan permohonan akreditasi      */
     public function download($id)
     {
         $pengajuan = PengajuanAkreditasi::findOrFail($id);
@@ -84,19 +82,11 @@ permohonan akreditasi      */
             abort(403, 'Anda tidak memiliki akses untuk mengunduh dokumen ini.');
         }
 
-        $dokumen = PengajuanDokumen::where('id_pengajuan', $id)
+        $pengajuanDokumen = PengajuanDokumen::where('id_pengajuan', $id)
             ->where('jenis_dokumen', 'surat_penerimaan_de')
             ->where('is_latest', true)
             ->firstOrFail();
-
-        if (!Storage::disk('public')->exists($dokumen->path_file)) {
-            abort(404, 'File tidak ditemukan.');
-        }
-
-        return Storage::disk('public')->download(
-            $dokumen->path_file,
-            $dokumen->original_filename
-        );
+        return $pengajuanDokumen->downloadDokumen();
     }
 
     /**

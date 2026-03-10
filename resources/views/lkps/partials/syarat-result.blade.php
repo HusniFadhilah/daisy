@@ -30,7 +30,7 @@ $tipeJabatan = ($jabatan['tipe'] ?? '') === 'sertifikat_profesi'
 <div class="row g-2 mb-2">
 
     {{-- Rasio DTPS --}}
-    <div class="col-md-6 col-xl-4">
+    <div class="col-md-6 col-xl-6">
         <div class="syarat-item {{ $rasio['memenuhi'] ? 'memenuhi' : 'tidak' }} p-3 bg-light rounded h-100">
             <div class="d-flex justify-content-between align-items-start">
                 <div class="flex-grow-1">
@@ -53,13 +53,9 @@ $tipeJabatan = ($jabatan['tipe'] ?? '') === 'sertifikat_profesi'
                 </div>
                 <div class="ms-2 flex-shrink-0">
                     @if($rasio['memenuhi'])
-                    <span class="badge bg-success">
-                        <i class="bi bi-check-lg"></i> Memenuhi
-                    </span>
+                    <span class="badge bg-success"><i class="bi bi-check-lg"></i> Memenuhi</span>
                     @else
-                    <span class="badge bg-danger">
-                        <i class="bi bi-x-lg"></i> Belum
-                    </span>
+                    <span class="badge bg-danger"><i class="bi bi-x-lg"></i> Belum</span>
                     @endif
                 </div>
             </div>
@@ -67,7 +63,7 @@ $tipeJabatan = ($jabatan['tipe'] ?? '') === 'sertifikat_profesi'
     </div>
 
     {{-- Kompetensi Dosen --}}
-    <div class="col-md-6 col-xl-4">
+    <div class="col-md-6 col-xl-6">
         <div class="syarat-item {{ $jabatan['memenuhi'] ? 'memenuhi' : 'tidak' }} p-3 bg-light rounded h-100">
             <div class="d-flex justify-content-between align-items-start">
                 <div class="flex-grow-1">
@@ -102,7 +98,7 @@ $tipeJabatan = ($jabatan['tipe'] ?? '') === 'sertifikat_profesi'
     </div>
 
     {{-- Capaian Lulusan --}}
-    <div class="col-md-6 col-xl-4">
+    <div class="col-md-12 col-xl-12">
         <div class="syarat-item {{ ($lulusan['memenuhi'] ?? false) ? 'memenuhi' : 'tidak' }} p-3 bg-light rounded h-100">
             <div class="d-flex justify-content-between align-items-start">
                 <div class="flex-grow-1">
@@ -110,11 +106,46 @@ $tipeJabatan = ($jabatan['tipe'] ?? '') === 'sertifikat_profesi'
                     <div class="text-muted mt-1" style="font-size:.85rem">
                         {{ $lulusan['keterangan'] ?? '-' }}
                     </div>
+
                     @if(($lulusan['jumlah_mahasiswa'] ?? 0) > 0)
-                    <div class="text-muted mt-1" style="font-size:.78rem">
-                        {{ $lulusan['jumlah_luaran'] ?? 0 }} dari {{ $lulusan['jumlah_mahasiswa'] }} mhs
-                        ({{ number_format($lulusan['persen'] ?? 0, 1) }}%)
-                        &middot; Tipe: <em>{{ $lulusan['tipe_capaian'] ?? '-' }}</em>
+                    @php
+                    $jmhTa = $lulusan['jumlah_mahasiswa'];
+                    $jmhTerlibat = $lulusan['jumlah_mahasiswa_terlibat'] ?? 0;
+                    $jmhKarya = $lulusan['jumlah_penelitian'] ?? 0;
+                    $ratioTerlibat = $lulusan['ratio_mahasiswa_terlibat'] ?? ($lulusan['persen'] ?? 0);
+                    $ratioPenelitian = $lulusan['ratio_jumlah_penelitian_mahasiswa'] ?? 0;
+                    $minPersen = $lulusan['persen_minimum'] ?? 10;
+                    @endphp
+
+                    {{-- Ratio utama: mahasiswa terlibat (dipakai untuk syarat) --}}
+                    <div class="mt-2" style="font-size:.78rem">
+                        <div class="d-flex align-items-center gap-1 mb-1">
+                            <span class="text-muted">Mahasiswa terlibat:</span>
+                            <strong>{{ $jmhTerlibat }}</strong>
+                            <span class="text-muted">/ {{ $jmhTa }} mhs TA</span>
+                            <span class="badge {{ $lulusan['memenuhi'] ?? false ? 'bg-success' : 'bg-danger' }}">
+                                {{ number_format($ratioTerlibat, 1) }}%
+                            </span>
+                            <span class="text-muted">≥ {{ $minPersen }}%?
+                                {{ ($lulusan['memenuhi'] ?? false) ? '✓' : '✗' }}
+                            </span>
+                        </div>
+
+                        {{-- Ratio informatif: jumlah karya/penelitian --}}
+                        <div class="d-flex align-items-center gap-1 text-muted">
+                            <span>Jumlah karya:</span>
+                            <strong class="text-dark">{{ $jmhKarya }}</strong>
+                            <span>/ {{ $jmhTa }} mhs TA</span>
+                            <span class="badge bg-light text-muted border">
+                                {{ number_format($ratioPenelitian, 1) }}%
+                            </span>
+                            <span class="fst-italic">(informatif)</span>
+                        </div>
+                    </div>
+
+                    {{-- Tipe capaian --}}
+                    <div class="text-muted mt-1" style="font-size:.75rem">
+                        Tipe: <em>{{ $lulusan['tipe_capaian'] ?? '-' }}</em>
                     </div>
 
                     {{-- Detail per sheet --}}
@@ -125,17 +156,24 @@ $tipeJabatan = ($jabatan['tipe'] ?? '') === 'sertifikat_profesi'
                     @endphp
                     @if(!empty($dc) || !empty($dd) || !empty($dm))
                     <div class="mt-1 d-flex gap-2 flex-wrap" style="font-size:.75rem">
-                        <span class="text-muted">
-                            R.3.1.c: {{ $dc['jumlah_luaran'] ?? 0 }}/{{ $dc['jumlah_mahasiswa'] ?? 0 }}
+                        <span class="text-muted" title="R.3.1.c — Kolaborasi DTPS+Mahasiswa">
+                            R.3.1.c:
+                            {{ $dc['jumlah_mahasiswa_terlibat'] ?? $dc['jumlah_luaran'] ?? 0 }}
+                            mhs / {{ $dc['jumlah_penelitian'] ?? 0 }} karya
                         </span>
-                        <span class="text-muted">
-                            R.3.1.d: {{ $dd['jumlah_luaran'] ?? 0 }}/{{ $dd['jumlah_mahasiswa'] ?? 0 }}
+                        <span class="text-muted" title="R.3.1.d">
+                            R.3.1.d:
+                            {{ $dd['jumlah_mahasiswa_terlibat'] ?? $dd['jumlah_luaran'] ?? 0 }}
+                            mhs / {{ $dd['jumlah_penelitian'] ?? 0 }} karya
                         </span>
-                        <span class="text-muted">
-                            R.3.1.e: {{ $dm['jumlah_luaran'] ?? 0 }}/{{ $dm['jumlah_mahasiswa'] ?? 0 }}
+                        <span class="text-muted" title="R.3.1.e — Mahasiswa Mandiri">
+                            R.3.1.e:
+                            {{ $dm['jumlah_mahasiswa_terlibat'] ?? $dm['jumlah_luaran'] ?? 0 }}
+                            mhs / {{ $dm['jumlah_penelitian'] ?? 0 }} karya
                         </span>
                     </div>
                     @endif
+
                     @else
                     <div class="text-warning mt-1" style="font-size:.78rem">
                         <i class="bi bi-exclamation-triangle me-1"></i>

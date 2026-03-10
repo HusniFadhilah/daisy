@@ -65,7 +65,6 @@ class EnsurePenawaranAcceptedMiddleware
             if (!$idAsesmen) {
                 abort(403, 'Parameter asesmen tidak ditemukan.');
             }
-
             // Find assignment by asesmen ID
             $assignment = AsesmenUserRole::where('id_asesmen', $idAsesmen)
                 ->where('jenis_asesmen', $jenisAsesmen)

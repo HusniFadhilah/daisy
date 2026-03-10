@@ -3,7 +3,7 @@
 @section('content')
 <div class="container-fluid">
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h1 class="h3 mb-0 text-gray-800">Bobot Penilaian</h1>
             <p class="text-muted">Kelola bobot penilaian untuk setiap elemen standar berdasarkan kategori program studi</p>
@@ -263,8 +263,8 @@
         });
     });
 
-    function deleteRecord(id) {
-        if (confirm('Yakin ingin menghapus bobot ini?')) {
+    async function deleteRecord(id) {
+        if (await swalConfirmSubmit('warning', 'Yakin ingin menghapus bobot ini?')) {
             $.ajax({
                 url: '/bobot-penilaian/' + id
                 , type: 'DELETE'
@@ -273,10 +273,10 @@
                 }
                 , success: function(response) {
                     $('#bobotTable').DataTable().ajax.reload();
-                    alert('Data berhasil dihapus');
+                    Swal.fire('Berhasil', 'Data berhasil dihapus', 'success');
                 }
                 , error: function(xhr) {
-                    alert('Gagal menghapus data');
+                    Swal.fire('Perhatian', 'Gagal menghapus data', 'error');
                 }
             });
         }
@@ -293,7 +293,7 @@
                 $('#bobotTable').DataTable().ajax.reload();
             }
             , error: function(xhr) {
-                alert('Gagal mengubah status');
+                Swal.fire('Perhatian', 'Gagal mengubah status', 'error');
             }
         });
     }
@@ -328,7 +328,7 @@
         const categoryId = $('[name="id_category"]').val();
 
         if (!asesmenId || !categoryId) {
-            alert('Pilih asesmen dan kategori terlebih dahulu');
+            Swal.fire('Perhatian', 'Pilih asesmen dan kategori terlebih dahulu', 'warning');
             return;
         }
 
@@ -432,7 +432,7 @@
                     errorMsg = xhr.responseText;
                 }
                 $('#hasilContent').html(`<div class="alert alert-danger">${errorMsg}</div>`);
-                alert('Gagal menghitung bobot: ' + errorMsg);
+                Swal.fire('Perhatian', 'Gagal menghitung bobot: ' + errorMsg, 'error');
             }
         });
     });

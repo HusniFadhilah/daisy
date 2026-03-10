@@ -250,19 +250,12 @@ class PenyampaianTemplateController extends Controller
             abort(404, 'Jenis dokumen tidak valid.');
         }
 
-        $dokumen = PengajuanDokumen::where('id_pengajuan', $id)
+        $pengajuanDokumen = PengajuanDokumen::where('id_pengajuan', $id)
             ->where('jenis_dokumen', $jenisDokumen)
             ->where('is_latest', true)
             ->firstOrFail();
 
-        if (!Storage::disk('public')->exists($dokumen->path_file)) {
-            abort(404, 'File tidak ditemukan.');
-        }
-
-        return Storage::disk('public')->download(
-            $dokumen->path_file,
-            $dokumen->original_filename
-        );
+        return $pengajuanDokumen->downloadDokumen();
     }
 
     /**

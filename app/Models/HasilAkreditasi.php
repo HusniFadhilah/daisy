@@ -18,7 +18,8 @@ class HasilAkreditasi extends Model
         'id_status_ak',
         'id_status_al',
         'id_status_hasil',
-        'id_status_banding',
+        'id_status_ak_banding',
+        'id_status_al_banding',
         'id_status_final',
         'skor_ak',
         'skor_ak_tertimbang',
@@ -41,13 +42,20 @@ class HasilAkreditasi extends Model
         'pelampauan_standar_hasil',
         'tanggal_finalisasi_hasil',
         'finalized_hasil_by',
-        'skor_banding',
-        'skor_banding_tertimbang',
-        'total_bobot_banding',
-        'detail_skor_banding',
-        'pelampauan_standar_banding',
-        'tanggal_finalisasi_banding',
-        'finalized_banding_by',
+        'skor_ak_banding',
+        'skor_ak_banding_tertimbang',
+        'total_bobot_ak_banding',
+        'detail_skor_ak_banding',
+        'pelampauan_standar_ak_banding',
+        'tanggal_finalisasi_ak_banding',
+        'finalized_ak_banding_by',
+        'skor_al_banding',
+        'skor_al_banding_tertimbang',
+        'total_bobot_al_banding',
+        'detail_skor_al_banding',
+        'pelampauan_standar_al_banding',
+        'tanggal_finalisasi_al_banding',
+        'finalized_al_banding_by',
         'skor_final',
         'skor_final_tertimbang',
         'total_bobot_final',
@@ -69,28 +77,33 @@ class HasilAkreditasi extends Model
     protected $casts = [
         'detail_skor_ak'             => 'array',
         'detail_skor_al'             => 'array',
+        'detail_skor_ak_banding'             => 'array',
+        'detail_skor_al_banding'             => 'array',
         'detail_skor_hasil'          => 'array',
-        'detail_skor_banding'        => 'array',
         'detail_skor_final'          => 'array',
         'pelampauan_standar_ak'      => 'array',
         'pelampauan_standar_al'      => 'array',
+        'pelampauan_standar_ak_banding'      => 'array',
+        'pelampauan_standar_al_banding'      => 'array',
         'pelampauan_standar_hasil'   => 'array',
-        'pelampauan_standar_banding' => 'array',
         'pelampauan_standar_final'   => 'array',
         'metadata'                   => 'array',
         'tanggal_finalisasi_ak'      => 'datetime',
         'tanggal_finalisasi_al'      => 'datetime',
+        'tanggal_finalisasi_ak_banding'      => 'datetime',
+        'tanggal_finalisasi_al_banding'      => 'datetime',
         'tanggal_finalisasi_hasil'   => 'datetime',
-        'tanggal_finalisasi_banding' => 'datetime',
         'tanggal_finalisasi_penetapan' => 'datetime', // ← tambah
         'skor_ak'                    => 'decimal:2',
         'skor_ak_tertimbang'         => 'decimal:2',
         'skor_al'                    => 'decimal:2',
         'skor_al_tertimbang'         => 'decimal:2',
+        'skor_ak_banding'                    => 'decimal:2',
+        'skor_ak_banding_tertimbang'         => 'decimal:2',
+        'skor_al_banding'                    => 'decimal:2',
+        'skor_al_banding_tertimbang'         => 'decimal:2',
         'skor_hasil'                 => 'decimal:2',
         'skor_hasil_tertimbang'      => 'decimal:2',
-        'skor_banding'               => 'decimal:2',
-        'skor_banding_tertimbang'    => 'decimal:2',
         'skor_final'                 => 'decimal:2',
         'skor_final_tertimbang'      => 'decimal:2',
         'memenuhi_syarat_unggul'     => 'boolean',
@@ -137,9 +150,14 @@ class HasilAkreditasi extends Model
         return $this->belongsTo(StatusAkreditasi::class, 'id_status_hasil');
     }
 
-    public function statusBanding()
+    public function statusAkBanding()
     {
-        return $this->belongsTo(StatusAkreditasi::class, 'id_status_banding');
+        return $this->belongsTo(StatusAkreditasi::class, 'id_status_ak_banding');
+    }
+
+    public function statusAlBanding()
+    {
+        return $this->belongsTo(StatusAkreditasi::class, 'id_status_al_banding');
     }
 
     public function statusFinal()
@@ -162,9 +180,14 @@ class HasilAkreditasi extends Model
         return $this->belongsTo(User::class, 'finalized_hasil_by');
     }
 
-    public function finalizedBandingBy()
+    public function finalizedAkBandingBy()
     {
-        return $this->belongsTo(User::class, 'finalized_banding_by');
+        return $this->belongsTo(User::class, 'finalized_ak_banding_by');
+    }
+
+    public function finalizedAlBandingBy()
+    {
+        return $this->belongsTo(User::class, 'finalized_al_banding_by');
     }
 
     public function finalizedPenetapanBy()
@@ -183,9 +206,10 @@ class HasilAkreditasi extends Model
             'draft_al',
             'final_al',
             'final_hasil',
-            'final_combined',
-            'draft_banding',
-            'final_banding',
+            'draft_ak_banding',
+            'final_ak_banding',
+            'draft_al_banding',
+            'final_al_banding',
             'draft_penetapan',
             'final_penetapan',
             'published',
@@ -197,8 +221,10 @@ class HasilAkreditasi extends Model
         return in_array($this->status, [
             'final_al',
             'final_hasil',
-            'draft_banding',
-            'final_banding',
+            'draft_ak_banding',
+            'final_ak_banding',
+            'draft_al_banding',
+            'final_al_banding',
             'draft_penetapan',
             'final_penetapan',
             'published',
@@ -209,8 +235,37 @@ class HasilAkreditasi extends Model
     {
         return in_array($this->status, [
             'final_hasil',
-            'draft_banding',
-            'final_banding',
+            'draft_ak_banding',
+            'final_ak_banding',
+            'draft_al_banding',
+            'final_al_banding',
+            'draft_penetapan',
+            'final_penetapan',
+            'published',
+        ]);
+    }
+
+    public function isAkBandingFinalized(): bool
+    {
+        return in_array($this->status, [
+            'final_ak_banding',
+            'draft_al_banding',
+            'final_al_banding',
+            'draft_penetapan',
+            'final_penetapan',
+            'published',
+        ]);
+    }
+
+    public function isAlBandingFinalized(): bool
+    {
+        return in_array($this->status, [
+            'final_al',
+            'final_hasil',
+            'draft_ak_banding',
+            'final_ak_banding',
+            'draft_al_banding',
+            'final_al_banding',
             'draft_penetapan',
             'final_penetapan',
             'published',
@@ -237,22 +292,22 @@ class HasilAkreditasi extends Model
         return in_array($this->status, ['final_penetapan', 'published']);
     }
 
-    public function isFinalCombined(): bool
-    {
-        return in_array($this->status, ['final_combined', 'published']);
-    }
-
     public static function getStatusHasilAkreditasi($asesmen): string
     {
         $ak = $asesmen->asesmenKecukupan->status ?? null;
         $al = $asesmen->asesmenLapangan->status  ?? null;
+        $akBanding = $asesmen->asesmenKecukupanBanding->status ?? null;
+        $alBanding = $asesmen->asesmenLapanganBanding->status  ?? null;
 
         return match (true) {
-            $ak === 'completed' && $al === 'completed' => 'final_combined',
             $al === 'completed'                        => 'final_al',
             $ak === 'completed'                        => 'final_ak',
             $al === 'active'                           => 'draft_al',
             $ak === 'active'                           => 'draft_ak',
+            $alBanding === 'completed'                 => 'final_al_banding',
+            $akBanding === 'completed'                 => 'final_ak_banding',
+            $alBanding === 'active'                    => 'draft_al_banding',
+            $akBanding === 'active'                    => 'draft_ak_banding',
             default                                    => 'draft',
         };
     }
@@ -382,6 +437,7 @@ class HasilAkreditasi extends Model
     public function getPeringkatColor(): string
     {
         return $this->statusFinal?->warna
+            ?? $this->statusBanding?->warna
             ?? $this->statusAl?->warna
             ?? $this->statusAk?->warna
             ?? '#e2e3e5';
@@ -464,5 +520,69 @@ class HasilAkreditasi extends Model
         }
 
         return $hasil;
+    }
+
+    public static function initializeBanding($hasilService, $pengajuan, $authId): self
+    {
+        $asesmen = $pengajuan->asesmen;
+        $hasil = $asesmen->hasil;
+        $pengajuan->asesmen->asesmenLapanganBanding->update([
+            'status'       => 'finalized',
+            'finalized_at' => now(),
+            'finalized_by' => $authId,
+        ]);
+
+        if ($hasil->status === 'draft_al_banding') {
+            try {
+                DB::beginTransaction();
+
+                $hasilService->saveHasilAlBanding($asesmen, $authId);
+                $hasil->refresh();
+
+                $statusFrom = $pengajuan->status;
+                $pengajuan->update([
+                    'peringkat_banding' => $hasil->peringkat_akreditasi_banding,
+                    'skor_banding'      => $hasil->skor_banding,
+                ]);
+
+                $pengajuan->statusLog()->firstOrCreate(
+                    [
+                        'status_from' => $statusFrom,
+                        'status_to'   => PengajuanAkreditasi::STATUS_HASIL_BANDING_DIHITUNG,
+                    ],
+                    [
+                        'changed_by' => $authId,
+                        'keterangan' => 'Hasil banding telah dihitung secara otomatis.',
+                        'changed_at' => now(),
+                    ]
+                );
+
+                DB::commit();
+            } catch (\Exception $e) {
+                DB::rollBack();
+                Log::error('Auto-calculate HasilBanding failed', [
+                    'pengajuan_id' => $pengajuan->id,
+                    'error'        => $e->getMessage(),
+                    'trace'        => $e->getTraceAsString(),
+                ]);
+            }
+        }
+
+        return $hasil;
+    }
+
+    public function getKriteriaOrderedList()
+    {
+        $detailSkorAL = $this->detail_skor_al ?? [];
+        $kriteriaList = $detailSkorAL['kriteria'] ?? [];
+        $elemenList   = $detailSkorAL['elemen']   ?? [];
+        $kriteriaOrdered = [];
+        foreach ($elemenList as $elemen) {
+            $kode = $elemen['kode_kriteria'];
+            if (!isset($kriteriaOrdered[$kode]) && isset($kriteriaList[$kode])) {
+                $kriteriaOrdered[$kode] = $kriteriaList[$kode];
+            }
+        }
+        return $kriteriaOrdered;
     }
 }

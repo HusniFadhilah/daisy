@@ -16,8 +16,8 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
         <h2 class="accordion-header" id="headingValidation">
             <button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#collapseValidation" aria-expanded="false" aria-controls="collapseValidation">
 
-                <div class="d-flex justify-content-between align-items-center w-100 me-3">
-                    <div>
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-center w-100 me-3">
+                    <div class="my-2">
                         <i class="bi bi-clipboard-check"></i>
                         <strong>Hasil Validasi Dokumen</strong>
                     </div>
@@ -69,7 +69,7 @@ $isShowHasilValidasiBorang = in_array($log?->status_to,$allowed);
                     </div>
 
                     <div class="mb-2">
-                        <small class="text-muted">Total Progress</small>
+                        <small class="text-muted">Total Progres</small>
                         <div class="progress">
                             <div class="progress-bar" id="valTotalBar" style="width:0%"></div>
                         </div>

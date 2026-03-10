@@ -79,7 +79,7 @@
                                 <!-- Nama + Email -->
                                 <div>
                                     <h6 class="mb-0 text-truncate">{{ $asesor->user->name }}</h6>
-                                    <span class="badge bg-light text-dark d-block text-break">
+                                    <span class="badge bg-light text-dark d-block text-break text-wrap">
                                         {{ $asesor->user->email }}
                                     </span>
                                 </div>
@@ -88,7 +88,7 @@
                             <!-- Progress -->
                             <div class="mt-3">
                                 <div class="d-flex justify-content-between">
-                                    <span>Progress Penilaian:</span>
+                                    <span>Progres Penilaian:</span>
                                     <strong>{{ $progress['completed'] }}/{{ $progress['total'] }}</strong>
                                 </div>
                                 <div class="progress mt-2" style="height: 20px;">
@@ -133,7 +133,7 @@
 
                 <div class="d-flex align-items-center">
                     <span class="text-muted me-3">
-                        Progress Validasi:
+                        Progres Validasi:
                         <strong>{{ $validatedCount }}/{{ $totalElemen }}</strong>
                     </span>
                     <div class="progress" style="height: 20px; width: 200px;">

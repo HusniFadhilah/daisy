@@ -158,7 +158,7 @@ $isComplete = $progress['percentage'] == 100;
                 <div class="row align-items-center">
                     <div class="col-md-9">
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h5 class="mb-0">Progress Penilaian</h5>
+                            <h5 class="mb-0">Progres Penilaian</h5>
                             <span class="badge bg-primary fs-6" id="progressPercentage">
                                 {{ $progress['percentage'] }}%
                             </span>
@@ -188,7 +188,21 @@ $isComplete = $progress['percentage'] == 100;
             <div class="row align-items-center my-2">
                 <div class="col-12 mb-md-0">
                     {{-- Status Indicator --}}
-                    @if(!$isEditorAsesor)
+                    <div class="alert alert-success alert-permanent mb-3 border-start border-2 border-success">
+                        <div class="d-flex align-items-start">
+                            <i class="bi bi-shield-check fs-4 me-3 text-success flex-shrink-0 mt-1"></i>
+                            <div>
+                                <h6 class="mb-1">
+                                    <i class="bi bi-person-check-fill"></i> Anda Asesor Pengupload pada Penilaian AL Ini
+                                </h6>
+                                <p class="mb-0 small text-muted">
+                                    Anda adalah asesor pertama yang membuka halaman ini.
+                                    Asesor lain dalam tim tidak dapat mengakses halaman penilaian ini.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    {{-- @if(!$isEditorAsesor)
                     <div class="alert alert-warning alert-permanent mb-3">
                         <div class="d-flex align-items-start">
                             <i class="bi bi-lock-fill fs-4 me-3 text-warning flex-shrink-0"></i>
@@ -197,629 +211,629 @@ $isComplete = $progress['percentage'] == 100;
                                 <p class="mb-0">
                                     Penilaian sedang diisi oleh asesor
                                     <strong>{{ $firstActiveAsesor?->user?->name ?? 'lain' }}</strong>.
-                                    Hanya satu asesor yang dapat mengisi penilaian. Anda hanya dapat melihat.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                    @endif
-                    @if(!$isSubmittedOnly && !$isApproved && $isComplete)
-                    <div class="alert alert-warning alert-dismissible alert-permanent mb-3" id="alertSubmitReminder">
-                        <div class="d-flex align-items-start">
-                            <div class="flex-shrink-0">
-                                <i class="bi bi-exclamation-triangle-fill fs-3 me-3"></i>
-                            </div>
-                            <div class="flex-grow-1">
-                                <h5 class="alert-heading mb-2">
-                                    <i class="bi bi-check-circle"></i> Penilaian Telah Lengkap!
-                                </h5>
-                                <p class="mb-2">
-                                    Anda telah menyelesaikan <strong>semua {{ $progress['total'] }} elemen penilaian</strong>.
-                                    Mohon segera lakukan <strong>Finalisasi dan Kirim</strong> agar penilaian Anda dapat divalidasi oleh LAMDEPILAR.
-                                </p>
-                                <hr>
-                                <div class="mb-0">
-                                    <small class="text-muted">
-                                        <i class="bi bi-info-circle"></i> Penilaian belum akan tersimpan secara permanen sampai di-submit
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                    @endif
-
-                    @if(!$isSubmittedOnly && !$isApproved && !$isComplete && $progress['percentage'] > 0)
-                    <div class="alert alert-info alert-dismissible alert-permanent mb-3">
-                        <i class="bi bi-info-circle me-2"></i>
-                        <strong>Progress Penilaian:</strong>
-                        Anda telah menilai {{ $progress['completed'] }} dari {{ $progress['total'] }} elemen
-                        (<strong>{{ $progress['percentage'] }}%</strong>).
-                        Selesaikan <strong>{{ $progress['remaining'] }} elemen</strong> lagi untuk dapat melakukan finalisasi.
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                    @endif
-
-                    @if($isSubmittedOnly && !$isApproved)
-                    <div class="alert alert-info alert-permanent alert-dismissible mb-3">
-                        <i class="bi bi-info-circle me-2"></i>
-                        <strong>Telah Di-Submit!</strong> Penilaian Anda sedang menunggu validasi dari LAMDEPILAR.
-                        @if(app()->environment('local'))
-                        <button type="button" class="btn btn-sm btn-outline-secondary ms-2 mt-2" id="btnUnsubmit">
-                            <i class="bi bi-arrow-counterclockwise"></i> Batalkan Submit
-                        </button>
-                        @endif
-                    </div>
-                    @endif
-
-                    @if($isApproved)
-                    <div class="alert alert-success alert-permanent alert-dismissible mb-3">
-                        <i class="bi bi-check-circle me-2"></i>
-                        <strong>Penilaian Disetujui!</strong> Penilaian Anda pada tahap Asesmen Lapangan (AL) telah divalidasi dan disetujui oleh LAMDEPILAR. Silahkan unduh file Hasil penilaian lengkap di <a href="{{ route('al.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'personal']) }}" class="alert-link">link ini</a>. Tanda tangani, lalu upload ulang di step ke-2 (Hasil dan berita acara Asesmen Lapangan) di halaman <a href="{{ route('al.berkas.documents.page', ['id' => $asesmen->id]) }}" class="alert-link">berikut ini</a>.
-                    </div>
-                    @endif
-
-                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3">
-
-                        <!-- Finalisasi -->
-                        <div>
-                            @if(!$isSubmittedOnly && !$isApproved)
-                            <button class="btn btn-success w-md-100 w-md-auto" id="btnSubmit">
-                                <i class="bi bi-check-circle"></i> Finalisasi dan Kirim
-                            </button>
-
-                            <small class="d-block text-muted mt-1">
-                                <i class="bi bi-info-circle"></i>
-                                Pastikan semua elemen telah dinilai sebelum mengirim
-                            </small>
-
-                            @elseif($isSubmittedOnly)
-                            <button class="btn btn-secondary w-100 w-md-auto" disabled>
-                                <i class="bi bi-clock-history"></i> Menunggu Validasi
-                            </button>
-
-                            @else
-                            <button class="btn btn-success w-100 w-md-auto" disabled>
-                                <i class="bi bi-check-all"></i> Penilaian Disetujui
-                            </button>
-                            @endif
-                        </div>
-
-                        <!-- Excel Buttons -->
-                        <div class="btn-group flex-wrap w-md-100 w-md-auto">
-
-                            <!-- Download -->
-                            <button class="btn btn-primary dropdown-toggle flex-grow-1 flex-md-grow-0" data-bs-toggle="dropdown">
-                                <i class="bi bi-download"></i> Download Excel
-                            </button>
-
-                            <ul class="dropdown-menu">
-                                <li class="dropdown-header">
-                                    <i class="bi bi-file-earmark-excel"></i> Pilih Jenis Excel
-                                </li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-
-                                <!-- Download Templat -->
-                                <li>
-                                    <a class="dropdown-item" href="{{ route('al.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'template']) }}" id="btnDownloadTemplate">
-                                        <i class="bi bi-file-earmark-text text-info"></i> Download Templat
-                                        <small class="d-block text-muted">Format Excel sebagai templat</small>
-                                    </a>
-                                </li>
-
-                                <!-- Hasil Penilaian - Lengkap -->
-                                {{-- <li>
-                                    <a class="dropdown-item btnDownloadData" data-mode="full" href="{{ route('al.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'full']) }}">
-                                <i class="bi bi-file-earmark-spreadsheet text-primary"></i> Hasil Penilaian Lengkap
-                                <small class="d-block text-muted">Menu + Kertas Kerja + Semua Asesor</small>
-                                </a>
-                                </li> --}}
-
-                                <!-- Hasil Penilaian - Personal -->
-                                <li>
-                                    <a class="dropdown-item btnDownloadData" data-mode="personal" href="{{ route('al.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'personal']) }}">
-                                        <i class="bi bi-person-check text-success"></i> Hasil Penilaian Anda
-                                        <small class="d-block text-muted">Hanya Sheet Penilaian Anda</small>
-                                    </a>
-                                </li>
-                            </ul>
-
-                            <!-- Upload -->
-                            <button class="btn btn-outline-primary" id="btnImport" {{ $isSubmittedOnly || $isApproved ? 'disabled' : '' }}>
-                                <i class="bi bi-upload"></i> Upload Excel
-                            </button>
-
-                            <!-- History -->
-                            <button class="btn btn-outline-secondary" id="btnImportHistory">
-                                <i class="bi bi-clock-history"></i>
-                            </button>
-
-                            <!-- Reset -->
-                            <button class="btn btn-outline-danger" id="btnResetAll" {{ $isSubmittedOnly || $isApproved ? 'disabled' : '' }}>
-                                <i class="bi bi-trash"></i> Reset All
-                            </button>
-
-                        </div>
-                    </div>
-
-
-                    {{-- Progress Summary --}}
-                    <div class="mt-3 p-3 bg-light rounded">
-                        <div class="row text-center">
-                            <div class="col-md-3">
-                                <h3 class="mb-0" id="summaryTotal"><b>{{ $progress['total'] }}</b></h3>
-                                <small class="text-muted">Total Elemen</small>
-                            </div>
-                            <div class="col-md-3">
-                                <h3 class="mb-0 text-success" id="summaryCompleted"><b>{{ $progress['completed'] }}</b></h3>
-                                <small class="text-muted">Telah Dinilai</small>
-                            </div>
-                            <div class="col-md-3">
-                                <h3 class="mb-0 text-warning" id="summaryRemaining"><b>{{ $progress['remaining'] }}</b></h3>
-                                <small class="text-muted">Belum Dinilai</small>
-                            </div>
-                            <div class="col-md-3">
-                                <h3 class="mb-0 text-primary" id="summaryPercentage"><b>{{ $progress['percentage'] }}%</b></h3>
-                                <small class="text-muted">Progress</small>
-                            </div>
-                        </div>
-                    </div>
+                    Hanya satu asesor yang dapat mengisi penilaian. Anda hanya dapat melihat.
+                    </p>
                 </div>
             </div>
         </div>
-    </div>
-
-    @if(isset($asesmen->pengajuan))
-    @include('asesmen.ak.components.documents')
-    @endif
-    <!-- ========== HEATMAP MATRIX (ENHANCED) ========== -->
-    @include('asesmen.al.components.heatmap-matrix')
-
-    <div class="card mb-4 shadow-sm">
-        <div class="card-header bg-white border-bottom py-2">
-            <div class="d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">
-                    <i class="bi bi-card-checklist"></i> Elemen Penilaian
-                </h5>
-                <div class="btn-action-group justify-content-md-end">
-                    <button id="toggleAllAccordion" class="btn btn-outline-primary btn-sm" data-expanded="false">
-                        <i class="bi bi-arrows-expand"></i>
-                        Expand All
-                    </button>
+        @endif --}}
+        @if(!$isSubmittedOnly && !$isApproved && $isComplete)
+        <div class="alert alert-warning alert-dismissible alert-permanent mb-3" id="alertSubmitReminder">
+            <div class="d-flex align-items-start">
+                <div class="flex-shrink-0">
+                    <i class="bi bi-exclamation-triangle-fill fs-3 me-3"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <h5 class="alert-heading mb-2">
+                        <i class="bi bi-check-circle"></i> Penilaian Telah Lengkap!
+                    </h5>
+                    <p class="mb-2">
+                        Anda telah menyelesaikan <strong>semua {{ $progress['total'] }} elemen penilaian</strong>.
+                        Mohon segera lakukan <strong>Finalisasi dan Kirim</strong> agar penilaian Anda dapat divalidasi oleh LAMDEPILAR.
+                    </p>
+                    <hr>
+                    <div class="mb-0">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle"></i> Penilaian belum akan tersimpan secara permanen sampai difinalisasi dan dikirim
+                        </small>
+                    </div>
                 </div>
             </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
-        <div class="card-body pb-2">
-            <!-- Alert Info -->
-            <div class="alert alert-info alert-dismissible alert-permanent fade show" role="alert">
-                <i class="bi bi-info-circle me-2"></i>
-                <strong>Petunjuk:</strong>
-                <ol class="mb-0 mt-2">
-                    <li>Gunakan <strong>tombol Finalisasi & Kirim</strong> untuk submit penilaian, <strong>tombol Download Excel</strong> untuk mengunduh templat atau hasil penilaian dalam format excel, serta <strong>tombol Upload Excel</strong> untuk mengupload penilaian excel serta menyimpannya ke sistem</li>
-                    <li>Klik <strong>Expand/Collapse All</strong> untuk membuka/menutup semua form elemen penilaian</li>
-                    <li>Klik <strong>sel di matriks visualisasi penilaian</strong> untuk langsung membuka elemen penilaian dan menilai elemen tersebut</li>
-                    <li>Pilih kategori penilaian:
-                        @foreach ($jenjangs as $jenjang)
-                        <span class="badge text-wrap text-break" style="background:{{ $jenjang->color }}; color: {{ \App\Models\JenjangPenilaian::textColorByBg($jenjang->color) }}">
-                            {{ $jenjang->skor }} - {{ $jenjang->name }}
-                        </span>
-                        @endforeach
+        @endif
+
+        @if(!$isSubmittedOnly && !$isApproved && !$isComplete && $progress['percentage'] > 0)
+        <div class="alert alert-info alert-dismissible alert-permanent mb-3">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>Progres Penilaian:</strong>
+            Anda telah menilai {{ $progress['completed'] }} dari {{ $progress['total'] }} elemen
+            (<strong>{{ $progress['percentage'] }}%</strong>).
+            Selesaikan <strong>{{ $progress['remaining'] }} elemen</strong> lagi untuk dapat melakukan finalisasi.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        @endif
+
+        @if($isSubmittedOnly && !$isApproved)
+        <div class="alert alert-info alert-permanent alert-dismissible mb-3">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>Telah Di-Submit!</strong> Penilaian Anda sedang menunggu validasi dari LAMDEPILAR.
+            @if(app()->environment('local'))
+            <button type="button" class="btn btn-sm btn-outline-secondary ms-2 mt-2" id="btnUnsubmit">
+                <i class="bi bi-arrow-counterclockwise"></i> Batalkan Submit
+            </button>
+            @endif
+        </div>
+        @endif
+
+        @if($isApproved)
+        <div class="alert alert-success alert-permanent alert-dismissible mb-3">
+            <i class="bi bi-check-circle me-2"></i>
+            <strong>Penilaian Difinalisasi!</strong> Penilaian Anda pada tahap Asesmen Lapangan (AL) telah difinalisasi. Silahkan unduh file Hasil penilaian lengkap di <a href="{{ route('al.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'personal']) }}" class="alert-link">link ini</a>. Tanda tangani, lalu upload ulang di step ke-2 (Hasil dan berita acara Asesmen Lapangan) di halaman <a href="{{ route('al.berkas.documents.page', ['id' => $asesmen->id]) }}" class="alert-link">berikut ini</a>.
+        </div>
+        @endif
+
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3">
+
+            <!-- Finalisasi -->
+            <div>
+                @if(!$isSubmittedOnly && !$isApproved)
+                <button class="btn btn-success w-md-100 w-md-auto" id="btnSubmit">
+                    <i class="bi bi-check-circle"></i> Finalisasi dan Kirim
+                </button>
+
+                <small class="d-block text-muted mt-1">
+                    <i class="bi bi-info-circle"></i>
+                    Pastikan semua elemen telah dinilai sebelum mengirim
+                </small>
+
+                @elseif($isSubmittedOnly)
+                <button class="btn btn-secondary w-100 w-md-auto" disabled>
+                    <i class="bi bi-clock-history"></i> Menunggu Validasi
+                </button>
+
+                @else
+                <button class="btn btn-success w-100 w-md-auto" disabled>
+                    <i class="bi bi-check-all"></i> Penilaian Difinalisasi
+                </button>
+                @endif
+            </div>
+
+            <!-- Excel Buttons -->
+            <div class="btn-group flex-wrap w-md-100 w-md-auto">
+
+                <!-- Download -->
+                <button class="btn btn-primary dropdown-toggle flex-grow-1 flex-md-grow-0" data-bs-toggle="dropdown">
+                    <i class="bi bi-download"></i> Download Excel
+                </button>
+
+                <ul class="dropdown-menu">
+                    <li class="dropdown-header">
+                        <i class="bi bi-file-earmark-excel"></i> Pilih Jenis Excel
                     </li>
-                    <li>Penilaian akan <strong>otomatis tersimpan</strong> setelah Anda mengisi kategori penilaian dan komentar/justifikasi penilaian</li>
-                </ol>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+
+                    <!-- Download Templat -->
+                    <li>
+                        <a class="dropdown-item" href="{{ route('al.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'template']) }}" id="btnDownloadTemplate">
+                            <i class="bi bi-file-earmark-text text-info"></i> Download Templat
+                            <small class="d-block text-muted">Format Excel sebagai templat</small>
+                        </a>
+                    </li>
+
+                    <!-- Hasil Penilaian - Lengkap -->
+                    {{-- <li>
+                                    <a class="dropdown-item btnDownloadData" data-mode="full" href="{{ route('al.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'full']) }}">
+                    <i class="bi bi-file-earmark-spreadsheet text-primary"></i> Hasil Penilaian Lengkap
+                    <small class="d-block text-muted">Menu + Kertas Kerja + Semua Asesor</small>
+                    </a>
+                    </li> --}}
+
+                    <!-- Hasil Penilaian - Personal -->
+                    <li>
+                        <a class="dropdown-item btnDownloadData" data-mode="personal" href="{{ route('al.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'personal']) }}">
+                            <i class="bi bi-person-check text-success"></i> Hasil Penilaian Anda
+                            <small class="d-block text-muted">Hanya Sheet Penilaian Anda</small>
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Upload -->
+                <button class="btn btn-outline-primary" id="btnImport" {{ $isSubmittedOnly || $isApproved ? 'disabled' : '' }}>
+                    <i class="bi bi-upload"></i> Upload Excel
+                </button>
+
+                <!-- History -->
+                <button class="btn btn-outline-secondary" id="btnImportHistory">
+                    <i class="bi bi-clock-history"></i>
+                </button>
+
+                <!-- Reset -->
+                <button class="btn btn-outline-danger" id="btnResetAll" {{ $isSubmittedOnly || $isApproved ? 'disabled' : '' }}>
+                    <i class="bi bi-trash"></i> Reset All
+                </button>
+
+            </div>
+        </div>
+
+
+        {{-- Progress Summary --}}
+        <div class="mt-3 p-3 bg-light rounded">
+            <div class="row text-center">
+                <div class="col-md-3">
+                    <h3 class="mb-0" id="summaryTotal"><b>{{ $progress['total'] }}</b></h3>
+                    <small class="text-muted">Total Elemen</small>
+                </div>
+                <div class="col-md-3">
+                    <h3 class="mb-0 text-success" id="summaryCompleted"><b>{{ $progress['completed'] }}</b></h3>
+                    <small class="text-muted">Telah Dinilai</small>
+                </div>
+                <div class="col-md-3">
+                    <h3 class="mb-0 text-warning" id="summaryRemaining"><b>{{ $progress['remaining'] }}</b></h3>
+                    <small class="text-muted">Belum Dinilai</small>
+                </div>
+                <div class="col-md-3">
+                    <h3 class="mb-0 text-primary" id="summaryPercentage"><b>{{ $progress['percentage'] }}%</b></h3>
+                    <small class="text-muted">Progress</small>
+                </div>
             </div>
         </div>
     </div>
+</div>
+</div>
+</div>
 
-    <!-- Accordion per Kriteria & Pernyataan Standar -->
-    <div class="accordion" id="accordionKriteria">
-        @foreach($kriterias as $kriteriaIndex => $kriteria)
-        <div class="card mb-3 kriteria-card">
-            <!-- Kriteria Header -->
-            <div class="card-header kriteria-header" id="heading-kriteria-{{ $kriteria->id }}">
-                <div class="d-flex justify-content-between align-items-center">
-                    <button class="btn btn-link kriteria-btn collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-kriteria-{{ $kriteria->id }}" aria-expanded="false" aria-controls="collapse-kriteria-{{ $kriteria->id }}">
-                        <i class="bi bi-chevron-right me-2 chevron-icon"></i>
-                        <strong>{{ $kriteria->kode_kriteria }}:</strong> {{ $kriteria->nama_kriteria }}
+@if(isset($asesmen->pengajuan))
+@include('asesmen.components.documents')
+@endif
+<!-- ========== HEATMAP MATRIX (ENHANCED) ========== -->
+@include('asesmen.al.components.heatmap-matrix')
+
+<div class="card mb-4 shadow-sm">
+    <div class="card-header bg-white border-bottom py-2">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="bi bi-card-checklist"></i> Elemen Penilaian
+            </h5>
+            <div class="btn-action-group justify-content-md-end">
+                <button id="toggleAllAccordion" class="btn btn-outline-primary btn-sm" data-expanded="false">
+                    <i class="bi bi-arrows-expand"></i>
+                    Expand All
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="card-body pb-2">
+        <!-- Alert Info -->
+        <div class="alert alert-info alert-dismissible alert-permanent fade show" role="alert">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>Petunjuk:</strong>
+            <ol class="mb-0 mt-2">
+                <li>Gunakan <strong>tombol Finalisasi & Kirim</strong> untuk submit penilaian, <strong>tombol Download Excel</strong> untuk mengunduh templat atau hasil penilaian dalam format excel, serta <strong>tombol Upload Excel</strong> untuk mengupload penilaian excel serta menyimpannya ke sistem</li>
+                <li>Klik <strong>Expand/Collapse All</strong> untuk membuka/menutup semua form elemen penilaian</li>
+                <li>Klik <strong>sel di matriks visualisasi penilaian</strong> untuk langsung membuka elemen penilaian dan menilai elemen tersebut</li>
+                <li>Pilih kategori penilaian:
+                    @foreach ($jenjangs as $jenjang)
+                    <span class="badge text-wrap text-break" style="background:{{ $jenjang->color }}; color: {{ \App\Models\JenjangPenilaian::textColorByBg($jenjang->color) }}">
+                        {{ $jenjang->skor }} - {{ $jenjang->name }}
+                    </span>
+                    @endforeach
+                </li>
+                <li>Penilaian akan <strong>otomatis tersimpan</strong> setelah Anda mengisi kategori penilaian dan komentar/justifikasi penilaian</li>
+            </ol>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+
+<!-- Accordion per Kriteria & Pernyataan Standar -->
+<div class="accordion" id="accordionKriteria">
+    @foreach($kriterias as $kriteriaIndex => $kriteria)
+    <div class="card mb-3 kriteria-card">
+        <!-- Kriteria Header -->
+        <div class="card-header kriteria-header" id="heading-kriteria-{{ $kriteria->id }}">
+            <div class="d-flex justify-content-between align-items-center">
+                <button class="btn btn-link kriteria-btn collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-kriteria-{{ $kriteria->id }}" aria-expanded="false" aria-controls="collapse-kriteria-{{ $kriteria->id }}">
+                    <i class="bi bi-chevron-right me-2 chevron-icon"></i>
+                    <strong>{{ $kriteria->kode_kriteria }}:</strong> {{ $kriteria->nama_kriteria }}
+                </button>
+                <div class="d-flex gap-2 align-items-center">
+                    <span class="badge bg-secondary kriteria-progress" data-kriteria-id="{{ $kriteria->id }}">
+                        0 / {{ $kriteria->elemenStandar->count() }}
+                    </span>
+                    <button type="button" class="btn btn-sm btn-light" onclick="toggleKriteriaAccordion({{ $kriteria->id }})" title="Expand/Collapse Semua Pernyataan Standar">
+                        <i class="bi bi-arrows-expand"></i>
                     </button>
-                    <div class="d-flex gap-2 align-items-center">
-                        <span class="badge bg-secondary kriteria-progress" data-kriteria-id="{{ $kriteria->id }}">
-                            0 / {{ $kriteria->elemenStandar->count() }}
-                        </span>
-                        <button type="button" class="btn btn-sm btn-light" onclick="toggleKriteriaAccordion({{ $kriteria->id }})" title="Expand/Collapse Semua Pernyataan Standar">
-                            <i class="bi bi-arrows-expand"></i>
-                        </button>
-                    </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Kriteria Body -->
-            <div id="collapse-kriteria-{{ $kriteria->id }}" class="accordion-collapse collapse kriteria-collapse" aria-labelledby="heading-kriteria-{{ $kriteria->id }}" data-bs-parent="#accordionKriteria">
-                <div class="card-body">
-                    @if($kriteria->keterangan)
-                    <div class="alert alert-light alert-permanent alert-dismissible mb-3">
-                        <i class="bi bi-info-circle me-2"></i>
-                        {{ $kriteria->keterangan }}
-                    </div>
-                    @endif
+        <!-- Kriteria Body -->
+        <div id="collapse-kriteria-{{ $kriteria->id }}" class="accordion-collapse collapse kriteria-collapse" aria-labelledby="heading-kriteria-{{ $kriteria->id }}" data-bs-parent="#accordionKriteria">
+            <div class="card-body">
+                @if($kriteria->keterangan)
+                <div class="alert alert-light alert-permanent alert-dismissible mb-3">
+                    <i class="bi bi-info-circle me-2"></i>
+                    {{ $kriteria->keterangan }}
+                </div>
+                @endif
 
-                    <!-- Nested Accordion per Pernyataan Standar (Elemen) -->
-                    <div class="accordion accordion-elemen" id="accordionElemen-{{ $kriteria->id }}">
-                        @foreach($kriteria->elemenStandar as $elemenIndex => $elemen)
-                        @php
-                        // Get penilaian for this elemen (not indikator!)
-                        $penilaianElemenAl = $elemen->penilaianElemenAl->first(); // Assuming relation exists
-                        $hasPenilaian = $penilaianElemenAl && $penilaianElemenAl->skor !== null;
-                        $needsRevisionElemen = $penilaianElemenAl && $penilaianElemenAl->status_validasi === 'revision_required';
-                        $totalIndikator = $elemen->indikator->count();
+                <!-- Nested Accordion per Pernyataan Standar (Elemen) -->
+                <div class="accordion accordion-elemen" id="accordionElemen-{{ $kriteria->id }}">
+                    @foreach($kriteria->elemenStandar as $elemenIndex => $elemen)
+                    @php
+                    // Get penilaian for this elemen (not indikator!)
+                    $penilaianElemenAl = $elemen->penilaianElemenAl->first(); // Assuming relation exists
+                    $hasPenilaian = $penilaianElemenAl && $penilaianElemenAl->skor !== null;
+                    $needsRevisionElemen = $penilaianElemenAl && $penilaianElemenAl->status_validasi === 'revision_required';
+                    $totalIndikator = $elemen->indikator->count();
 
-                        // Count jenis indikator
-                        $kuantitatif = $elemen->indikator ? $elemen->indikator->filter(function($ind) {
-                        return $ind->jenisIndikator &&
-                        stripos($ind->jenisIndikator->nama_jenis, 'kuantitatif') !== false;
-                        })->count() : 0;
+                    // Count jenis indikator
+                    $kuantitatif = $elemen->indikator ? $elemen->indikator->filter(function($ind) {
+                    return $ind->jenisIndikator &&
+                    stripos($ind->jenisIndikator->nama_jenis, 'kuantitatif') !== false;
+                    })->count() : 0;
 
-                        $kualitatif = $elemen->indikator ? $elemen->indikator->filter(function($ind) {
-                        return $ind->jenisIndikator &&
-                        stripos($ind->jenisIndikator->nama_jenis, 'kualitatif') !== false;
-                        })->count() : 0;
-                        @endphp
+                    $kualitatif = $elemen->indikator ? $elemen->indikator->filter(function($ind) {
+                    return $ind->jenisIndikator &&
+                    stripos($ind->jenisIndikator->nama_jenis, 'kualitatif') !== false;
+                    })->count() : 0;
+                    @endphp
 
-                        <div class="card mb-3 elemen-card @if($hasPenilaian) has-penilaian @endif" data-elemen-id="{{ $elemen->id }}">
-                            <!-- Pernyataan Standar Header -->
-                            <div class="card-header elemen-header" id="heading-elemen-{{ $elemen->id }}">
-                                <div class="d-md-flex justify-content-between align-items-center">
-                                    <button class="btn btn-link elemen-btn collapsed d-flex flex-column flex-md-row align-items-start align-items-md-center w-100 gap-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-elemen-{{ $elemen->id }}" aria-expanded="false" aria-controls="collapse-elemen-{{ $elemen->id }}">
+                    <div class="card mb-3 elemen-card @if($hasPenilaian) has-penilaian @endif" data-elemen-id="{{ $elemen->id }}">
+                        <!-- Pernyataan Standar Header -->
+                        <div class="card-header elemen-header" id="heading-elemen-{{ $elemen->id }}">
+                            <div class="d-md-flex justify-content-between align-items-center">
+                                <button class="btn btn-link elemen-btn collapsed d-flex flex-column flex-md-row align-items-start align-items-md-center w-100 gap-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-elemen-{{ $elemen->id }}" aria-expanded="false" aria-controls="collapse-elemen-{{ $elemen->id }}">
 
-                                        <i class="bi bi-chevron-right me-2 chevron-icon"></i>
+                                    <i class="bi bi-chevron-right me-2 chevron-icon"></i>
 
-                                        <!-- kiri -->
-                                        <div class="d-flex align-items-center gap-2">
-                                            <span class="badge bg-primary">{{ $elemen->kode_elemen }}</span>
-                                            <strong class="pernyataan-text">
-                                                {{ $elemen->pernyataan_elemen }}
-                                            </strong>
-                                        </div>
+                                    <!-- kiri -->
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge bg-primary">{{ $elemen->kode_elemen }}</span>
+                                        <strong class="pernyataan-text">
+                                            {{ $elemen->pernyataan_elemen }}
+                                        </strong>
+                                    </div>
 
-                                        <!-- kanan: indikator + status -->
-                                        <div class="ms-auto d-flex align-items-center gap-2">
-                                            <span class="badge bg-info">{{ $totalIndikator }} Indikator</span>
+                                    <!-- kanan: indikator + status -->
+                                    <div class="ms-auto d-flex align-items-center gap-2">
+                                        <span class="badge bg-info">{{ $totalIndikator }} Indikator</span>
 
-                                            @if($hasPenilaian)
-                                            <span class="badge bg-success status-badge">
-                                                <i class="bi bi-check-circle"></i> Telah Dinilai
-                                            </span>
-                                            @else
-                                            <span class="badge bg-warning text-dark status-badge">
-                                                <i class="bi bi-clock"></i> Belum Dinilai
-                                            </span>
-                                            @endif
-                                        </div>
-
-                                    </button>
-                                </div>
-                            </div>
-                            <!-- Pernyataan Standar Body -->
-                            <div id="collapse-elemen-{{ $elemen->id }}" class="accordion-collapse collapse elemen-collapse" aria-labelledby="heading-elemen-{{ $elemen->id }}" data-bs-parent="#accordionElemen-{{ $kriteria->id }}">
-                                <div class="card-body">
-                                    {{-- @if($elemen->pernyataan)
-                                    <div class="alert alert-light alert-permanent mb-4">
-                                        <i class="bi bi-lightbulb me-2"></i>
-                                        <strong>Keterangan:</strong> {{ $elemen->pernyataan[0]->pernyataan }}
-                                </div>
-                                @endif --}}
-
-                                <!-- DAFTAR INDIKATOR (INFORMASI SAJA) -->
-                                <div class="indikator-list-info mb-3">
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <h6 class="mb-0">
-                                            <i class="bi bi-list-check me-2"></i>
-                                            <strong>Daftar Indikator sebagai Panduan Penilaian</strong>
-                                        </h6>
-                                        @if($kuantitatif > 0 || $kualitatif > 0)
-                                        <div>
-                                            @if($kuantitatif > 0)
-                                            <span class="badge bg-success">
-                                                <i class="bi bi-graph-up"></i> {{ $kuantitatif }} Kuantitatif
-                                            </span>
-                                            @endif
-                                            @if($kualitatif > 0)
-                                            <span class="badge bg-info">
-                                                <i class="bi bi-chat-quote"></i> {{ $kualitatif }} Kualitatif
-                                            </span>
-                                            @endif
-                                        </div>
+                                        @if($hasPenilaian)
+                                        <span class="badge bg-success status-badge">
+                                            <i class="bi bi-check-circle"></i> Telah Dinilai
+                                        </span>
+                                        @else
+                                        <span class="badge bg-warning text-dark status-badge">
+                                            <i class="bi bi-clock"></i> Belum Dinilai
+                                        </span>
                                         @endif
                                     </div>
 
-                                    @if($totalIndikator > 0)
-                                    <div class="alert alert-info alert-permanent alert-dismissible">
-                                        <i class="bi bi-info-circle me-2"></i>
-                                        <small>
-                                            <strong>Catatan:</strong> Indikator di bawah ini adalah panduan untuk menilai pernyataan standar di atas.
-                                            Pertimbangkan seluruh indikator dalam memberikan penilaian dan justifikasi.
-                                        </small>
-                                    </div>
-                                    @else
-                                    <div class="alert alert-secondary alert-permanent alert-dismissible">
-                                        <i class="bi bi-info-circle me-2"></i>
-                                        <small>
-                                            Belum ada indikator yang terdapat di elemen penilaian
-                                        </small>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Pernyataan Standar Body -->
+                        <div id="collapse-elemen-{{ $elemen->id }}" class="accordion-collapse collapse elemen-collapse" aria-labelledby="heading-elemen-{{ $elemen->id }}" data-bs-parent="#accordionElemen-{{ $kriteria->id }}">
+                            <div class="card-body">
+                                {{-- @if($elemen->pernyataan)
+                                    <div class="alert alert-light alert-permanent mb-4">
+                                        <i class="bi bi-lightbulb me-2"></i>
+                                        <strong>Keterangan:</strong> {{ $elemen->pernyataan[0]->pernyataan }}
+                            </div>
+                            @endif --}}
+
+                            <!-- DAFTAR INDIKATOR (INFORMASI SAJA) -->
+                            <div class="indikator-list-info mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="mb-0">
+                                        <i class="bi bi-list-check me-2"></i>
+                                        <strong>Daftar Indikator sebagai Panduan Penilaian</strong>
+                                    </h6>
+                                    @if($kuantitatif > 0 || $kualitatif > 0)
+                                    <div>
+                                        @if($kuantitatif > 0)
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-graph-up"></i> {{ $kuantitatif }} Kuantitatif
+                                        </span>
+                                        @endif
+                                        @if($kualitatif > 0)
+                                        <span class="badge bg-info">
+                                            <i class="bi bi-chat-quote"></i> {{ $kualitatif }} Kualitatif
+                                        </span>
+                                        @endif
                                     </div>
                                     @endif
-
-                                    <!-- List Indikator -->
-                                    <div class="list-group">
-                                        @foreach($elemen->indikator as $indikatorIndex => $indikator)
-                                        @php
-                                        $jenisIndikator = $indikator->jenisIndikator;
-                                        $isKuantitatif = $jenisIndikator && stripos($jenisIndikator->nama_jenis, 'kuantitatif') !== false;
-                                        $isKualitatif = $jenisIndikator && stripos($jenisIndikator->nama_jenis, 'kualitatif') !== false;
-                                        @endphp
-
-                                        <div class="list-group-item">
-                                            <div class="d-flex align-items-start">
-                                                <div class="me-3 flex-shrink-0">
-                                                    <span class="badge bg-secondary" style="font-size: 14px; padding: 8px 12px;">
-                                                        {{ $indikatorIndex + 1 }}
-                                                    </span>
-                                                </div>
-                                                <div class="flex-grow-1">
-                                                    <div class="mb-2">
-                                                        <span class="badge bg-primary me-2">
-                                                            {{ $indikator->kode_indikator }}
-                                                        </span>
-
-                                                        @if($isKuantitatif)
-                                                        <span class="badge bg-success" title="Indikator Kuantitatif">
-                                                            <i class="bi bi-graph-up"></i> Kuantitatif
-                                                        </span>
-                                                        @elseif($isKualitatif)
-                                                        <span class="badge bg-info" title="Indikator Kualitatif">
-                                                            <i class="bi bi-chat-quote"></i> Kualitatif
-                                                        </span>
-                                                        @else
-                                                        <span class="badge bg-secondary">
-                                                            {{ $jenisIndikator->nama_jenis ?? 'N/A' }}
-                                                        </span>
-                                                        @endif
-                                                    </div>
-
-                                                    <p class="mb-0" style="line-height: 1.6;">
-                                                        {{-- {{ nl2br(e(str_replace("\r\n", "\n",$indikator->deskripsi_indikator))) }} --}}
-                                                        {!! nl2br(e(str_replace("\r\n", "\n",$indikator->deskripsi_indikator))) !!}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        @endforeach
-                                    </div>
                                 </div>
 
-                                @if($elemen->indikatorPenilaian && $elemen->indikatorPenilaian->count() > 0)
-                                @php
-                                // Group berdasarkan jenjang
-                                $grouped = $elemen->indikatorPenilaian->groupBy('id_jenjang_penilaian');
-
-                                // Ambil daftar jenjang (urut berdasarkan skor)
-                                $jenjangList = $grouped
-                                ->map(function ($items) {
-                                return $items->first()->jenjangPenilaian; // object jenjang
-                                })
-                                ->sortBy('skor')
-                                ->values();
-                                @endphp
-
-                                <div class="panduan-penilaian-wrapper mb-4">
-                                    <div class="card border-info">
-                                        <div class="card-header bg-success bg-opacity-10 d-flex flex-column flex-md-row align-items-start align-items-md-center gap-2">
-                                            <h6 class="mb-0">
-                                                <i class="bi bi-table me-2"></i>
-                                                <strong>📊 Panduan Penilaian per Kategori</strong>
-                                            </h6>
-
-                                            {{-- optional: collapse --}}
-                                            <button class="btn btn-sm btn-outline-dark ms-md-auto align-self-md-center" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePanduanTable{{ $elemen->id }}" aria-expanded="false" aria-controls="collapsePanduanTable{{ $elemen->id }}">
-                                                <i class="bi bi-chevron-down"></i> Tampilkan
-                                            </button>
-                                        </div>
-
-                                        <div id="collapsePanduanTable{{ $elemen->id }}" class="collapse">
-                                            <div class="card-body p-0">
-                                                <div class="table-responsive">
-                                                    <table class="table table-bordered align-top text-start mb-0 panduan-table-auto">
-                                                        <thead class="table-success text-center">
-                                                            <tr>
-                                                                @foreach($jenjangList as $jenjang)
-                                                                <th>{{ $jenjang->name }}</th>
-                                                                @endforeach
-                                                            </tr>
-
-                                                            <tr>
-                                                                @foreach($jenjangList as $jenjang)
-                                                                <th class="text-center">
-                                                                    <span class="badge" style="background: {{ $jenjang->color }}; color: {{ \App\Models\JenjangPenilaian::textColorByBg($jenjang->color) }}">
-                                                                        {{ $jenjang->skor }}
-                                                                    </span>
-                                                                </th>
-                                                                @endforeach
-                                                            </tr>
-                                                        </thead>
-
-                                                        <tbody>
-                                                            {{-- Baris 3: Isi indikator per jenjang (menyamping) --}}
-                                                            <tr>
-                                                                @foreach($jenjangList as $jenjang)
-                                                                @php
-                                                                $items = $grouped->get($jenjang->id, collect());
-                                                                @endphp
-
-                                                                <td>
-                                                                    @forelse($items as $item)
-                                                                    <div class="mb-2">
-                                                                        {!! nl2br(e(str_replace("\r\n", "\n", $item->deskripsi_penilaian))) !!}
-                                                                        @if($item->keterangan)
-                                                                        <div class="alert alert-secondary alert-permanent mt-2 mb-0 p-2">
-                                                                            <small>
-                                                                                <i class="bi bi-lightbulb"></i>
-                                                                                <strong>Catatan:</strong> {{ $item->keterangan }}
-                                                                            </small>
-                                                                        </div>
-                                                                        @endif
-                                                                    </div>
-                                                                    @empty
-                                                                    <em class="text-muted">Belum ada indikator pada jenjang ini.</em>
-                                                                    @endforelse
-                                                                </td>
-                                                                @endforeach
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                @if($totalIndikator > 0)
+                                <div class="alert alert-info alert-permanent alert-dismissible">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    <small>
+                                        <strong>Catatan:</strong> Indikator di bawah ini adalah panduan untuk menilai pernyataan standar di atas.
+                                        Pertimbangkan seluruh indikator dalam memberikan penilaian dan justifikasi.
+                                    </small>
+                                </div>
+                                @else
+                                <div class="alert alert-secondary alert-permanent alert-dismissible">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    <small>
+                                        Belum ada indikator yang terdapat di elemen penilaian
+                                    </small>
                                 </div>
                                 @endif
 
-                                <!-- FORM PENILAIAN (PER ELEMEN) -->
-                                <div class="penilaian-form-wrapper mb-4">
-                                    <div class="card border-{{ $needsRevisionElemen ? 'warning' : ($hasPenilaian ? 'success' : 'warning') }}">
-                                        <div class="card-header bg-{{ $needsRevisionElemen ? 'warning' : ($hasPenilaian ? 'success' : 'warning') }} bg-opacity-10">
-                                            <h6 class="mb-0">
-                                                <i class="bi bi-clipboard-check me-2"></i>
-                                                <strong>Penilaian Elemen</strong>
+                                <!-- List Indikator -->
+                                <div class="list-group">
+                                    @foreach($elemen->indikator as $indikatorIndex => $indikator)
+                                    @php
+                                    $jenisIndikator = $indikator->jenisIndikator;
+                                    $isKuantitatif = $jenisIndikator && stripos($jenisIndikator->nama_jenis, 'kuantitatif') !== false;
+                                    $isKualitatif = $jenisIndikator && stripos($jenisIndikator->nama_jenis, 'kualitatif') !== false;
+                                    @endphp
 
-                                                @if($needsRevisionElemen)
-                                                <span class="badge bg-warning text-dark float-end">
-                                                    <i class="bi bi-exclamation-triangle"></i> Perlu Revisi
+                                    <div class="list-group-item">
+                                        <div class="d-flex align-items-start">
+                                            <div class="me-3 flex-shrink-0">
+                                                <span class="badge bg-secondary" style="font-size: 14px; padding: 8px 12px;">
+                                                    {{ $indikatorIndex + 1 }}
                                                 </span>
-                                                @endif
-                                            </h6>
-                                        </div>
-                                        <div class="card-body">
-                                            {{-- Alert Revisi --}}
-                                            @if($needsRevisionElemen)
-                                            @php
-                                            $preferensiSkor = $penilaianElemenAl->preferensi_skor;
-                                            @endphp
-                                            <div class="alert alert-warning alert-permanent alert-dismissible mb-3">
-                                                <div class="row">
-                                                    <div class="col-md-8">
-                                                        <h6 class="alert-heading">
-                                                            <i class="bi bi-chat-left-quote"></i> Catatan Validator:
-                                                        </h6>
-                                                        <p class="mb-2"><strong>"{{ $penilaianElemenAl->catatan_validator }}"</strong></p>
-                                                    </div>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <div class="mb-2">
+                                                    <span class="badge bg-primary me-2">
+                                                        {{ $indikator->kode_indikator }}
+                                                    </span>
 
-                                                    {{-- ✅ SKOR FINAL VALIDATOR --}}
-                                                    @if($preferensiSkor)
-                                                    <div class="col-md-4">
-                                                        <div class="card border-primary bg-light">
-                                                            <div class="card-body p-3 text-center">
-                                                                <small class="text-muted d-block mb-2">
-                                                                    <i class="bi bi-star-fill"></i> Preferensi Kategori oleh Validator:
-                                                                </small>
-                                                                <div class="skor-validator-display mb-2">
-                                                                    <span class="badge" style="font-size: 1.5rem; padding: 0.75rem 1.25rem; background: {{ \App\Models\JenjangPenilaian::getSkorColor($preferensiSkor) }}">
-                                                                        <strong>{{ $preferensiSkor }}</strong>
-                                                                    </span>
-                                                                </div>
-
-                                                                <small class="text-muted">{{ \App\Models\JenjangPenilaian::getSkorLabelAttribute($preferensiSkor) }}</small>
-                                                                {{-- Quick Action Button --}}
-                                                                <button type="button" class="btn btn-sm btn-primary w-100 mt-2 btn-use-validator-score" data-skor="{{ $preferensiSkor }}" data-elemen-id="{{ $elemen->id }}" title="Gunakan kategori penilaian yang direkomendasikan validator">
-                                                                    <i class="bi bi-lightning-charge"></i> Gunakan Kategori Ini
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
+                                                    @if($isKuantitatif)
+                                                    <span class="badge bg-success" title="Indikator Kuantitatif">
+                                                        <i class="bi bi-graph-up"></i> Kuantitatif
+                                                    </span>
+                                                    @elseif($isKualitatif)
+                                                    <span class="badge bg-info" title="Indikator Kualitatif">
+                                                        <i class="bi bi-chat-quote"></i> Kualitatif
+                                                    </span>
+                                                    @else
+                                                    <span class="badge bg-secondary">
+                                                        {{ $jenisIndikator->nama_jenis ?? 'N/A' }}
+                                                    </span>
                                                     @endif
                                                 </div>
 
-                                                <hr>
+                                                <p class="mb-0" style="line-height: 1.6;">
+                                                    {{-- {{ nl2br(e(str_replace("\r\n", "\n",$indikator->deskripsi_indikator))) }} --}}
+                                                    {!! nl2br(e(str_replace("\r\n", "\n",$indikator->deskripsi_indikator))) !!}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </div>
 
-                                                <div class="row mt-3">
-                                                    <div class="col-md-6">
-                                                        <small class="text-muted">
-                                                            <i class="bi bi-person"></i> <strong>Validator:</strong> {{ $penilaianElemenAl->validator->name ?? 'N/A' }}
-                                                        </small>
+                            @if($elemen->indikatorPenilaian && $elemen->indikatorPenilaian->count() > 0)
+                            @php
+                            // Group berdasarkan jenjang
+                            $grouped = $elemen->indikatorPenilaian->groupBy('id_jenjang_penilaian');
+
+                            // Ambil daftar jenjang (urut berdasarkan skor)
+                            $jenjangList = $grouped
+                            ->map(function ($items) {
+                            return $items->first()->jenjangPenilaian; // object jenjang
+                            })
+                            ->sortBy('skor')
+                            ->values();
+                            @endphp
+
+                            <div class="panduan-penilaian-wrapper mb-4">
+                                <div class="card border-info">
+                                    <div class="card-header bg-success bg-opacity-10 d-flex flex-column flex-md-row align-items-start align-items-md-center gap-2">
+                                        <h6 class="mb-0">
+                                            <i class="bi bi-table me-2"></i>
+                                            <strong>📊 Panduan Penilaian per Kategori</strong>
+                                        </h6>
+
+                                        {{-- optional: collapse --}}
+                                        <button class="btn btn-sm btn-outline-dark ms-md-auto align-self-md-center" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePanduanTable{{ $elemen->id }}" aria-expanded="false" aria-controls="collapsePanduanTable{{ $elemen->id }}">
+                                            <i class="bi bi-chevron-down"></i> Tampilkan
+                                        </button>
+                                    </div>
+
+                                    <div id="collapsePanduanTable{{ $elemen->id }}" class="collapse">
+                                        <div class="card-body p-0">
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered align-top text-start mb-0 panduan-table-auto">
+                                                    <thead class="table-success text-center">
+                                                        <tr>
+                                                            @foreach($jenjangList as $jenjang)
+                                                            <th>{{ $jenjang->name }}</th>
+                                                            @endforeach
+                                                        </tr>
+
+                                                        <tr>
+                                                            @foreach($jenjangList as $jenjang)
+                                                            <th class="text-center">
+                                                                <span class="badge" style="background: {{ $jenjang->color }}; color: {{ \App\Models\JenjangPenilaian::textColorByBg($jenjang->color) }}">
+                                                                    {{ $jenjang->skor }}
+                                                                </span>
+                                                            </th>
+                                                            @endforeach
+                                                        </tr>
+                                                    </thead>
+
+                                                    <tbody>
+                                                        {{-- Baris 3: Isi indikator per jenjang (menyamping) --}}
+                                                        <tr>
+                                                            @foreach($jenjangList as $jenjang)
+                                                            @php
+                                                            $items = $grouped->get($jenjang->id, collect());
+                                                            @endphp
+
+                                                            <td>
+                                                                @forelse($items as $item)
+                                                                <div class="mb-2">
+                                                                    {!! nl2br(e(str_replace("\r\n", "\n", $item->deskripsi_penilaian))) !!}
+                                                                    @if($item->keterangan)
+                                                                    <div class="alert alert-secondary alert-permanent mt-2 mb-0 p-2">
+                                                                        <small>
+                                                                            <i class="bi bi-lightbulb"></i>
+                                                                            <strong>Catatan:</strong> {{ $item->keterangan }}
+                                                                        </small>
+                                                                    </div>
+                                                                    @endif
+                                                                </div>
+                                                                @empty
+                                                                <em class="text-muted">Belum ada indikator pada jenjang ini.</em>
+                                                                @endforelse
+                                                            </td>
+                                                            @endforeach
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+
+                            <!-- FORM PENILAIAN (PER ELEMEN) -->
+                            <div class="penilaian-form-wrapper mb-4">
+                                <div class="card border-{{ $needsRevisionElemen ? 'warning' : ($hasPenilaian ? 'success' : 'warning') }}">
+                                    <div class="card-header bg-{{ $needsRevisionElemen ? 'warning' : ($hasPenilaian ? 'success' : 'warning') }} bg-opacity-10">
+                                        <h6 class="mb-0">
+                                            <i class="bi bi-clipboard-check me-2"></i>
+                                            <strong>Penilaian Elemen</strong>
+
+                                            @if($needsRevisionElemen)
+                                            <span class="badge bg-warning text-dark float-end">
+                                                <i class="bi bi-exclamation-triangle"></i> Perlu Revisi
+                                            </span>
+                                            @endif
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        {{-- Alert Revisi --}}
+                                        @if($needsRevisionElemen)
+                                        @php
+                                        $preferensiSkor = $penilaianElemenAl->preferensi_skor;
+                                        @endphp
+                                        <div class="alert alert-warning alert-permanent alert-dismissible mb-3">
+                                            <div class="row">
+                                                <div class="col-md-8">
+                                                    <h6 class="alert-heading">
+                                                        <i class="bi bi-chat-left-quote"></i> Catatan Validator:
+                                                    </h6>
+                                                    <p class="mb-2"><strong>"{{ $penilaianElemenAl->catatan_validator }}"</strong></p>
+                                                </div>
+
+                                                {{-- ✅ SKOR FINAL VALIDATOR --}}
+                                                @if($preferensiSkor)
+                                                <div class="col-md-4">
+                                                    <div class="card border-primary bg-light">
+                                                        <div class="card-body p-3 text-center">
+                                                            <small class="text-muted d-block mb-2">
+                                                                <i class="bi bi-star-fill"></i> Preferensi Kategori oleh Validator:
+                                                            </small>
+                                                            <div class="skor-validator-display mb-2">
+                                                                <span class="badge" style="font-size: 1.5rem; padding: 0.75rem 1.25rem; background: {{ \App\Models\JenjangPenilaian::getSkorColor($preferensiSkor) }}">
+                                                                    <strong>{{ $preferensiSkor }}</strong>
+                                                                </span>
+                                                            </div>
+
+                                                            <small class="text-muted">{{ \App\Models\JenjangPenilaian::getSkorLabelAttribute($preferensiSkor) }}</small>
+                                                            {{-- Quick Action Button --}}
+                                                            <button type="button" class="btn btn-sm btn-primary w-100 mt-2 btn-use-validator-score" data-skor="{{ $preferensiSkor }}" data-elemen-id="{{ $elemen->id }}" title="Gunakan kategori penilaian yang direkomendasikan validator">
+                                                                <i class="bi bi-lightning-charge"></i> Gunakan Kategori Ini
+                                                            </button>
+                                                        </div>
                                                     </div>
-                                                    <div class="col-md-6 text-end">
-                                                        <small class="text-muted">
-                                                            <i class="bi bi-clock"></i> <strong>Tanggal:</strong> {{ \App\Libraries\Date::tglWaktu($penilaianElemenAl->validated_at) }}
-                                                        </small>
-                                                    </div>
+                                                </div>
+                                                @endif
+                                            </div>
+
+                                            <hr>
+
+                                            <div class="row mt-3">
+                                                <div class="col-md-6">
+                                                    <small class="text-muted">
+                                                        <i class="bi bi-person"></i> <strong>Validator:</strong> {{ $penilaianElemenAl->validator->name ?? 'N/A' }}
+                                                    </small>
+                                                </div>
+                                                <div class="col-md-6 text-end">
+                                                    <small class="text-muted">
+                                                        <i class="bi bi-clock"></i> <strong>Tanggal:</strong> {{ \App\Libraries\Date::tglWaktu($penilaianElemenAl->validated_at) }}
+                                                    </small>
                                                 </div>
                                             </div>
-                                            @endif
-                                            <form class="form-penilaian" data-elemen-id="{{ $elemen->id }}">
-                                                <div class="row mb-3">
-                                                    <div class="col-md-12 mb-3">
-                                                        <label class="form-label fw-semibold">
-                                                            <i class="bi bi-star me-1"></i> Pilih Kategori Penilaian
-                                                        </label>
-                                                        <select class="form-select skor-select" name="skor" required>
-                                                            <option value="">-- Pilih Kategori --</option>
-                                                            @foreach ($jenjangs as $jenjang)
-                                                            <option value="{{ $jenjang->skor }}" @if($hasPenilaian && $penilaianElemenAl->skor == $jenjang->skor) selected @endif style="background:{{ $jenjang->color }}; color:{{ \App\Models\JenjangPenilaian::textColorByBg($jenjang->color) }}">
-                                                                {{ $jenjang->skor }} - {{ $jenjang->name }}
-                                                            </option>
-                                                            @endforeach
-                                                        </select>
-                                                    </div>
-                                                    <div class="col-md-12 komentar-section">
-                                                        <label class="form-label fw-semibold">
-                                                            <i class="bi bi-chat-left-text me-1"></i> Komentar/Justifikasi Penilaian
-                                                        </label>
-                                                        <textarea class="form-control komentar-textarea" name="komentar" rows="15" placeholder="Berikan justifikasi dan analisis penilaian berdasarkan seluruh indikator di bawah ini..." required>{{ $hasPenilaian ? $penilaianElemenAl->komentar : '' }}</textarea>
-                                                        <small class="text-muted">
-                                                            <i class="bi bi-info-circle me-1"></i>
-                                                            <span class="char-count">{{ $hasPenilaian ? strlen($penilaianElemenAl->komentar) : 0 }}</span> karakter
-                                                        </small>
-                                                    </div>
-                                                </div>
-
-                                                <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-2">
-                                                    <div class="save-status text-muted small d-flex align-items-center flex-wrap">
-                                                        <i class="bi bi-cloud-check me-2"></i>
-                                                        <span class="status-text">
-                                                            @if($hasPenilaian)
-                                                            Tersimpan pada {{ \App\Libraries\Date::tglWaktu($penilaianElemenAl->updated_at) }}
-                                                            @else
-                                                            Belum ada penilaian
-                                                            @endif
-                                                        </span>
-                                                    </div>
-                                                    <div class="btn-group ms-md-auto">
-                                                        <button type="button" class="btn btn-sm btn-outline-secondary btn-reset">
-                                                            <i class="bi bi-arrow-counterclockwise"></i> Reset
-                                                        </button>
-                                                        <button type="submit" class="btn btn-sm btn-primary btn-save">
-                                                            <i class="bi bi-cloud-upload"></i> Simpan
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </form>
                                         </div>
+                                        @endif
+                                        <form class="form-penilaian" data-elemen-id="{{ $elemen->id }}">
+                                            <div class="row mb-3">
+                                                <div class="col-md-12 mb-3">
+                                                    <label class="form-label fw-semibold">
+                                                        <i class="bi bi-star me-1"></i> Pilih Kategori Penilaian
+                                                    </label>
+                                                    <select class="form-select skor-select" name="skor" required>
+                                                        <option value="">-- Pilih Kategori --</option>
+                                                        @foreach ($jenjangs as $jenjang)
+                                                        <option value="{{ $jenjang->skor }}" @if($hasPenilaian && $penilaianElemenAl->skor == $jenjang->skor) selected @endif style="background:{{ $jenjang->color }}; color:{{ \App\Models\JenjangPenilaian::textColorByBg($jenjang->color) }}">
+                                                            {{ $jenjang->skor }} - {{ $jenjang->name }}
+                                                        </option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-12 komentar-section">
+                                                    <label class="form-label fw-semibold">
+                                                        <i class="bi bi-chat-left-text me-1"></i> Komentar/Justifikasi Penilaian
+                                                    </label>
+                                                    <textarea class="form-control komentar-textarea" name="komentar" rows="15" placeholder="Berikan justifikasi dan analisis penilaian berdasarkan seluruh indikator di bawah ini..." required>{{ $hasPenilaian ? $penilaianElemenAl->komentar : '' }}</textarea>
+                                                    <small class="text-muted">
+                                                        <i class="bi bi-info-circle me-1"></i>
+                                                        <span class="char-count">{{ $hasPenilaian ? strlen($penilaianElemenAl->komentar) : 0 }}</span> karakter
+                                                    </small>
+                                                </div>
+                                            </div>
+
+                                            <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-2">
+                                                <div class="save-status text-muted small d-flex align-items-center flex-wrap">
+                                                    <i class="bi bi-cloud-check me-2"></i>
+                                                    <span class="status-text">
+                                                        @if($hasPenilaian)
+                                                        Tersimpan pada {{ \App\Libraries\Date::tglWaktu($penilaianElemenAl->updated_at) }}
+                                                        @else
+                                                        Belum ada penilaian
+                                                        @endif
+                                                    </span>
+                                                </div>
+                                                <div class="btn-group ms-md-auto">
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary btn-reset">
+                                                        <i class="bi bi-arrow-counterclockwise"></i> Reset
+                                                    </button>
+                                                    <button type="submit" class="btn btn-sm btn-primary btn-save">
+                                                        <i class="bi bi-cloud-upload"></i> Simpan
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </form>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    @endforeach
                 </div>
+                @endforeach
             </div>
         </div>
     </div>
-    @endforeach
-    @elseif($step === 2)
-    @include('asesmen.al.components.berita-acara')
-    @endif
+</div>
+@endforeach
+@elseif($step === 2)
+@include('asesmen.al.components.berita-acara')
+@endif
 </div>
 
 <!-- Floating Action Button -->
@@ -888,7 +902,7 @@ $isComplete = $progress['percentage'] == 100;
                     {{-- Progress Bar (hidden initially) --}}
                     <div id="importProgress" class="d-none">
                         <div class="mb-2">
-                            <strong>Progress Upload:</strong>
+                            <strong>Progres <i>Upload</i>:</strong>
                             <span id="progressText">0%</span>
                         </div>
                         <div class="progress" style="height: 25px;">
@@ -1167,15 +1181,16 @@ $isComplete = $progress['percentage'] == 100;
                 , title: 'Konfirmasi Submit Penilaian'
                 , html: `
                 <div class="text-start">
-                    <p><strong>Anda akan mengirim penilaian untuk validasi.</strong></p>
+                    <p><strong>Anda akan mengirim penilaian.</strong></p>
                     <p>Setelah di-submit:</p>
                     <ul>
-                        <li>Penilaian akan dikirim ke validator</li>
-                        <li>Anda tidak bisa edit penilaian</li>
-                        <li>Validator akan memvalidasi penilaian Anda</li>
-                        <li>Jika perlu revisi, Anda akan diminta memperbaiki</li>
+                        <li>Penilaian akan tersimpan sebagai final</li>
+                        <li>Anda tidak dapat mengedit penilaian lagi</li>
                     </ul>
-                    <p class="text-primary"><i class="bi bi-info-circle"></i> Total: <strong>${total} elemen</strong> telah dinilai</p>
+                    <p class="text-primary">
+                        <i class="bi bi-info-circle"></i>
+                        Total: <strong>${total} elemen</strong> telah dinilai
+                    </p>
                 </div>
             `
                 , showCancelButton: true
@@ -2690,6 +2705,46 @@ $isComplete = $progress['percentage'] == 100;
             anyOpen ? bsCollapse.hide() : bsCollapse.show();
         });
     }
+
+    (function() {
+        // Hanya muncul saat pertama kali membuka (sebelumnya status = not_started)
+        if (!@json($isFirstVisitForMe)) return;
+
+        Swal.fire({
+            icon: 'info'
+            , title: '<i class="bi bi-person-check-fill text-success"></i> Anda Pemegang Hak Penilaian'
+            , html: `
+            <div class="text-start">
+                <p>
+                    Anda adalah <strong>asesor pertama</strong> yang membuka halaman
+                    penilaian AL ini, sehingga hak mengisi penilaian diberikan kepada Anda.
+                </p>
+                <div class="alert alert-success mb-3" style="border-left:4px solid #198754;">
+                    <i class="bi bi-shield-check me-2"></i>
+                    <strong>Hanya Anda yang dapat:</strong>
+                    <ul class="mb-0 mt-1 small">
+                        <li>Membuka halaman penilaian AL ini</li>
+                        <li>Mengisi form penilaian elemen</li>
+                        <li>Mengupload file Excel penilaian</li>
+                        <li>Memfinalisasi dan mengirim penilaian</li>
+                    </ul>
+                </div>
+                <div class="alert alert-warning mb-0" style="border-left:4px solid #ffc107;">
+                    <i class="bi bi-people me-2"></i>
+                    <strong>Asesor Lain dalam Tim</strong><br>
+                    <small>
+                        Jika asesor lain mencoba membuka halaman penilaian AL ini,
+                        mereka akan <strong>dialihkan kembali</strong> dan tidak dapat mengisi penilaian.
+                    </small>
+                </div>
+            </div>
+        `
+            , confirmButtonText: '<i class="bi bi-pencil-square"></i> Mengerti, Mulai Penilaian'
+            , confirmButtonColor: '#198754'
+            , allowOutsideClick: false
+            , width: '560px'
+        , });
+    })();
 
 </script>
 @endpush

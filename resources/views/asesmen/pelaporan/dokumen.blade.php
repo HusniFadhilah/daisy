@@ -134,7 +134,7 @@
                                 </span>
                                 @else
                                 <span class="badge bg-secondary">
-                                    <i class="bi bi-info-circle"></i> Belum Bisa
+                                    <i class="bi bi-info-circle"></i> Belum Bisa Melaporkan
                                 </span>
                                 @endif
                             </td>

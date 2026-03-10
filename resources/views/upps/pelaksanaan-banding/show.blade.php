@@ -6,7 +6,8 @@
 
 @section('content')
 <div class="container-fluid py-3">
-    <!-- Breadcrumb -->
+
+    {{-- Breadcrumb --}}
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
@@ -15,12 +16,10 @@
         </ol>
     </nav>
 
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    {{-- Header --}}
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
-            <h5 class="mb-1">
-                <i class="bi bi-play-circle"></i> Detail Pelaksanaan Banding
-            </h5>
+            <h5 class="mb-1"><i class="bi bi-play-circle"></i> Detail Pelaksanaan Banding</h5>
             <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
         <a href="{{ route('upps.pelaksanaan-banding') }}" class="btn btn-secondary">
@@ -29,91 +28,199 @@
     </div>
 
     <div class="row">
-        <!-- Main Content -->
+
+        {{-- ═══════════════ KOLOM KIRI ═══════════════ --}}
         <div class="col-lg-8 mb-4">
             <!-- Status Alert -->
             @php
             $allowed = [
-            \App\Models\PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
             \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
-            ]; // ini contoh, bisa dinamis dari config/db/request
-
+            \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AK_BANDING_ASSIGNED,
+            \App\Models\PengajuanAkreditasi::STATUS_AK_BANDING_IN_PROGRESS,
+            \App\Models\PengajuanAkreditasi::STATUS_AK_BANDING_ON_VALIDATION,
+            \App\Models\PengajuanAkreditasi::STATUS_AK_BANDING_SELESAI,
+            \App\Models\PengajuanAkreditasi::STATUS_AK_BANDING_DILAPORKAN,
+            \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AL_BANDING_ASSIGNED,
+            \App\Models\PengajuanAkreditasi::STATUS_AL_BANDING_IN_PROGRESS,
+            \App\Models\PengajuanAkreditasi::STATUS_AL_BANDING_SELESAI,
+            \App\Models\PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN,
+            ];
             $log = $pengajuan->latestRelevantStatusLog($allowed);
             @endphp
             <!-- Status Alert -->
-            @if($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN)
-            <div class="alert alert-success alert-permanent">
-                <i class="bi bi-person-check"></i>
-                <strong>Proses Pelaksanaan Banding</strong><br>
-                Program Studi yang akan melakukan banding dapat mengajukan permohonan. Klik tombol berikut untuk mengajukan permohonan
-            </div>
-            @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN)
-            <div class="alert alert-success alert-permanent">
-                <i class="bi bi-person-check"></i>
-                <strong>Proses Pelaksanaan Banding</strong><br>
-                Permohonan akreditasi program studi memasuki pelaksanaan banding
+            @if($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN)
+            <div class="alert alert-light alert-permanent border border-dark mb-3">
+                <i class="bi bi-info-circle"></i>
+                Proses pelaksanaan banding sedang berlangsung. Hasil akan dilaporkan setelah selesai.
             </div>
             @endif
-
-            <!-- Informasi Permohonan -->
-            <div class="card mb-4">
-                <div class="card-header bg-primary text-white">
+            {{-- ── BLOK 1: PEMBAYARAN BANDING (selalu tampil pertama) ── --}}
+            <div class="card mb-4 {{ $pembayaranLunas ? 'border-secondary' : 'border-secondary border-2' }}">
+                <div class="card-header {{ $pembayaranLunas ? 'bg-secondary' : 'bg-secondary' }} text-{{ $pembayaranLunas ? 'white' : 'white' }}">
                     <h5 class="mb-0">
-                        <i class="bi bi-info-circle"></i> Informasi Permohonan Akreditasi
+                        <i class="bi bi-credit-card"></i>
+                        Pembayaran Banding
                     </h5>
                 </div>
                 <div class="card-body">
-                    <table class="table table-borderless">
+
+                    @if(!$pembayaranBanding)
+                    {{-- Invoice belum dibuat oleh DE --}}
+                    <div class="text-center py-4">
+                        <i class="bi bi-hourglass-split text-secondary" style="font-size: 48px;"></i>
+                        <h5 class="mt-3 text-muted">Menunggu Invoice dari LAMDEPILAR</h5>
+                        <p class="text-muted mb-0">
+                            Invoice pembayaran banding akan dibuat oleh LAMDEPILAR setelah
+                            permohonan banding diterima dan diverifikasi.
+                        </p>
+                    </div>
+
+                    @else
+                    {{-- Action berdasarkan status --}}
+                    @if(in_array($pembayaranBanding->status_pembayaran, ['menunggu_pembayaran', 'upload_ulang']))
+                    <div class="d-grid">
+                        <a href="{{ route('upps.pelaksanaan-banding.upload-pembayaran', $pengajuan->id) }}" class="btn btn-warning">
+                            <i class="bi bi-upload"></i>
+                            {{ $formulirBanding ? 'Upload Ulang Formulir & Bukti Pembayaran' : 'Upload Formulir & Bukti Pembayaran' }}
+                        </a>
+                    </div>
+                    @elseif($pembayaranBanding->status_pembayaran === 'menunggu_verifikasi')
+                    <div class="alert alert-info alert-permanent mb-0">
+                        <i class="bi bi-clock-history"></i>
+                        Formulir & bukti pembayaran sedang divalidasi oleh LAMDEPILAR.
+                        Harap menunggu konfirmasi.
+                    </div>
+                    @elseif($pembayaranLunas)
+                    <div class="alert alert-light border-2 border-secondary alert-permanent mb-0">
+                        <i class="bi bi-check-circle-fill"></i>
+                        Pembayaran banding telah tervalidasi. Proses pelaksanaan banding dapat dilanjutkan.
+                    </div>
+                    @endif
+
+                    {{-- Invoice sudah ada --}}
+                    <table class="table table-borderless mb-3 mt-2">
                         <tr>
-                            <th width="30%">Nomor Permohonan</th>
-                            <td>: {{ $pengajuan->nomor_pengajuan }}</td>
+                            <th style="width:40%">Nomor Invoice</th>
+                            <td>: <strong>{{ $pembayaranBanding->nomor_invoice }}</strong></td>
                         </tr>
                         <tr>
-                            <th>Program Studi</th>
-                            <td>: {{ $pengajuan->studyProgram->full_name }}</td>
+                            <th>Nominal</th>
+                            <td>
+                                : <strong class="text-dark fs-5">
+                                    Rp {{ number_format($pembayaranBanding->jumlah_pembayaran, 0, ',', '.') }}
+                                </strong>
+                            </td>
                         </tr>
                         <tr>
-                            <th>Universitas</th>
-                            <td>: {{ $pengajuan->studyProgram->university->name }}</td>
+                            <th>Jatuh Tempo</th>
+                            <td>
+                                :
+                                {{ $pembayaranBanding->tanggal_jatuh_tempo?->locale('id')->translatedFormat('d M Y') ?? '-' }}
+                                @if($pembayaranBanding->tanggal_jatuh_tempo
+                                && $pembayaranBanding->tanggal_jatuh_tempo < now() && !$pembayaranLunas) <span class="badge bg-danger ms-1">Terlambat</span>
+                                    @endif
+                            </td>
                         </tr>
                         <tr>
-                            <th>Jenis Permohonan</th>
-                            <td>: {{ $pengajuan->jenis_akreditasi_label }}</td>
+                            <th>Tanggal Pembayaran</th>
+                            <td>: {{ $pembayaranBanding->tanggal_pembayaran
+                                ? $pembayaranBanding->tanggal_pembayaran->locale('id')->translatedFormat('d M Y H:i')
+                                : '-' }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Status Pembayaran</th>
+                            <td>:
+                                @php
+                                $cfg = [
+                                'menunggu_pembayaran' => ['light', 'hourglass-split', 'Perlu Melakukan Pembayaran'],
+                                'menunggu_verifikasi' => ['light', 'clock-history', 'Menunggu Validasi'],
+                                'upload_ulang' => ['light', 'arrow-repeat', 'Diminta Upload Ulang'],
+                                'terverifikasi' => ['light', 'check-circle', 'Tervalidasi'],
+                                'ditolak' => ['danger', 'x-circle', 'Ditolak'],
+                                ][$pembayaranBanding->status_pembayaran]
+                                ?? ['light', 'question-circle', $pembayaranBanding->status_pembayaran];
+                                @endphp
+                                <span class="badge bg-{{ $cfg[0] }} text-dark">
+                                    <i class="bi bi-{{ $cfg[1] }}"></i> {{ $cfg[2] }}
+                                </span>
+                            </td>
                         </tr>
                     </table>
+
+                    {{-- Catatan dari keuangan --}}
+                    @if($pembayaranBanding->catatan_verifikasi)
+                    <div class="alert alert-light alert-permanent border-start border-dark border-2 mt-2 mb-3">
+                        <small class="text-muted d-block fw-bold">
+                            <i class="bi bi-chat-left-quote"></i> Catatan dari LAMDEPILAR:
+                        </small>
+                        {{ $pembayaranBanding->catatan_verifikasi }}
+                    </div>
+                    @endif
+
+                    {{-- Formulir yang sudah diupload --}}
+                    @if($formulirBanding)
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center rounded gap-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-file-earmark-spreadsheet text-success me-3" style="font-size: 32px;"></i>
+                            <div>
+                                <strong>{{ $formulirBanding->original_filename }}</strong><br>
+                                <small class="text-muted">
+                                    {{ number_format($formulirBanding->file_size / 1024, 2) }} KB &bull;
+                                    Diupload: {{ $formulirBanding->created_at->locale('id')->translatedFormat('d M Y H:i') }}
+                                </small>
+                            </div>
+                        </div>
+                        <a href="{{ route('upps.pelaksanaan-banding.download-formulir', $pengajuan->id) }}" class="btn btn-sm btn-outline-success">
+                            <i class="bi bi-eye"></i> Lihat
+                        </a>
+                    </div>
+                    @endif
+
+                    @endif {{-- end if $pembayaranBanding --}}
                 </div>
             </div>
 
-            <!-- Hasil Akreditasi Awal -->
-            <div class="card mb-4 border-warning">
-                <div class="card-header bg-warning text-dark">
+            {{-- ═══ PAYMENT GATE — Konten di bawah hanya tampil jika lunas ═══ --}}
+            @if(!$pembayaranBanding || !$pembayaranLunas)
+
+            {{-- Blok terkunci --}}
+            <div class="card border-secondary opacity-75">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-lock-fill text-secondary" style="font-size: 56px;"></i>
+                    <h5 class="mt-3 text-muted">Detail Pelaksanaan Banding</h5>
+                    <p class="text-muted mb-0">
+                        @if(!$pembayaranBanding)
+                        Detail pelaksanaan banding akan tersedia setelah invoice dibuat oleh LAMDEPILAR
+                        dan pembayaran telah tervalidasi.
+                        @else
+                        Detail pelaksanaan banding akan tersedia setelah pembayaran banding
+                        dinyatakan <strong>Tervalidasi</strong>.
+                        @endif
+                    </p>
+                </div>
+            </div>
+
+            @else
+            {{-- ═══ KONTEN PELAKSANAAN — tampil hanya jika lunas ═══ --}}
+
+            {{-- Hasil Akreditasi Awal --}}
+            <div class="card mb-4 border-secondary">
+                <div class="card-header bg-secondary text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-megaphone"></i> Hasil Akreditasi Awal (Sebelum Banding)
+                        <i class="bi bi-clipboard-data"></i> Hasil Akreditasi Awal (Sebelum Banding)
                     </h5>
                 </div>
                 <div class="card-body">
+                    @php
+                    $hasil = $pengajuan->asesmen?->hasil;
+                    @endphp
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Status Akreditasi</label>
+                            <label class="text-muted small">Peringkat Akreditasi</label>
                             <p class="mb-0">
                                 @if($pengajuan->peringkat_hasil)
-                                @php
-                                $badgeClass = match($pengajuan->peringkat_hasil) {
-                                'Unggul' => 'bg-warning text-dark',
-                                'Baik Sekali' => 'bg-success',
-                                'Baik' => 'bg-info',
-                                'Tidak Terakreditasi' => 'bg-danger',
-                                default => 'bg-secondary',
-                                };
-                                @endphp
-                                <span class="badge {{ $badgeClass }} fs-6">
-                                    @if($pengajuan->peringkat_hasil === 'Unggul')
-                                    <i class="bi bi-star-fill"></i>
-                                    @elseif($pengajuan->peringkat_hasil === 'Baik Sekali')
-                                    <i class="bi bi-award-fill"></i>
-                                    @elseif($pengajuan->peringkat_hasil === 'Baik')
-                                    <i class="bi bi-check-circle-fill"></i>
-                                    @endif
+                                <span class="badge text-dark fs-6" style="background-color: {{ $hasil->getPeringkatColor($pengajuan->peringkat_hasil) }};">
                                     {{ $pengajuan->peringkat_hasil }}
                                 </span>
                                 @else
@@ -122,16 +229,6 @@
                             </p>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="text-muted small">Nilai Akhir</label>
-                            <p class="mb-0">
-                                @if($pengajuan->nilai_akhir)
-                                <strong class="fs-5 text-primary">{{ $pengajuan->nilai_akhir }}</strong>
-                                @else
-                                <span class="text-muted">-</span>
-                                @endif
-                            </p>
-                        </div>
-                        <div class="col-12">
                             <label class="text-muted small">Tanggal Hasil Disampaikan</label>
                             <p class="mb-0">
                                 {{ $pengajuan->tanggal_hasil_akreditasi_dikirim
@@ -143,280 +240,137 @@
                 </div>
             </div>
 
-            <!-- Detail Pelaksanaan Banding -->
-            <div class="card mb-4 border-info">
-                <div class="card-header bg-info text-white">
+            {{-- Detail Pelaksanaan --}}
+            <div class="card mb-4 border-primary">
+                <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">
                         <i class="bi bi-play-circle"></i> Detail Pelaksanaan Banding
                     </h5>
                 </div>
                 <div class="card-body">
-                    <table class="table table-borderless">
+                    <table class="table table-borderless mb-0">
                         <tr>
-                            <th width="30%">Tanggal Pengajuan Banding</th>
-                            <td>
-                                : {{ $pengajuan->tanggal_permohonan_banding
-                                    ? $pengajuan->tanggal_permohonan_banding->locale('id')->translatedFormat('d M Y H:i')
-                                    : '-' }}
+                            <th width="35%">Tanggal Banding Diajukan</th>
+                            <td>: {{ $pengajuan->tanggal_permohonan_banding
+                                ? $pengajuan->tanggal_permohonan_banding->locale('id')->translatedFormat('d M Y H:i')
+                                : '-' }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Tanggal Penerimaan Banding</th>
+                            <td>: {{ $pengajuan->tanggal_penerimaan_banding
+                                ? $pengajuan->tanggal_penerimaan_banding->locale('id')->translatedFormat('d M Y H:i')
+                                : '-' }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Tanggal Penugasan Banding</th>
+                            <td>: {{ $pengajuan->tanggal_penugasan_banding
+                                ? $pengajuan->tanggal_penugasan_banding->locale('id')->translatedFormat('d M Y H:i')
+                                : '-' }}
                             </td>
                         </tr>
                         <tr>
                             <th>Tanggal Pelaksanaan</th>
-                            <td>
-                                : {{ $pengajuan->tanggal_pelaksanaan_banding
-                                    ? $pengajuan->tanggal_pelaksanaan_banding->locale('id')->translatedFormat('d M Y H:i')
-                                    : '-' }}
+                            <td>: {{ $pengajuan->tanggal_pelaksanaan_banding
+                                ? $pengajuan->tanggal_pelaksanaan_banding->locale('id')->translatedFormat('d M Y H:i')
+                                : '-' }}
                             </td>
                         </tr>
                         <tr>
                             <th>Status Pelaksanaan</th>
-                            <td>
-                                : <span class="badge {{ $pengajuan->status_badge_class }}">
-                                    {{ $pengajuan->status_label }}
-                                </span>
+                            <td>:
+                                {!! $pengajuan->getCustomBadgeLastStatus('pelaksanaan_banding','upps','label_long_for','text-dark') !!}
                             </td>
                         </tr>
-
-                        @if($pengajuan->tanggal_permohonan_banding && $pengajuan->tanggal_pelaksanaan_banding)
-                        <tr>
-                            <th>Durasi Tunggu</th>
-                            <td>
-                                : {{ $pengajuan->tanggal_permohonan_banding->diffInDays($pengajuan->tanggal_pelaksanaan_banding) }} hari
-                                <small class="text-muted">(dari pengajuan hingga pelaksanaan)</small>
-                            </td>
-                        </tr>
-                        @endif
-
-                        @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN && $pengajuan->tanggal_pelaksanaan_banding)
-                        <tr>
-                            <th>Durasi Pelaksanaan</th>
-                            <td>
-                                : {{ $pengajuan->tanggal_pelaksanaan_banding->diffInDays(now()) }} hari
-                                <small class="text-muted">(hingga saat ini)</small>
-                            </td>
-                        </tr>
-                        @endif
                     </table>
-
-                    @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN)
-                    <hr>
-                    <div class="alert alert-light border border-info mb-0">
-                        <i class="bi bi-info-circle-fill text-info"></i>
-                        <strong>Informasi:</strong> Proses pelaksanaan banding sedang berlangsung.
-                        Hasil akan dilaporkan setelah proses pelaksanaan selesai.
-                    </div>
-                    @endif
                 </div>
             </div>
+            @endif {{-- end payment gate --}}
 
-            <!-- Dokumen Banding -->
-            <div class="card">
-                <div class="card-header bg-success text-white">
-                    <h5 class="mb-0">
-                        <i class="bi bi-file-earmark-text"></i> Dokumen Banding
-                    </h5>
-                </div>
-                <div class="card-body">
-                    @php
-                    $dokumenBanding = $pengajuan->dokumen
-                    ->where('jenis_dokumen', 'dokumen_banding')
-                    ->where('is_latest', true);
-                    @endphp
-
-                    @if($dokumenBanding->count() > 0)
-                    @foreach($dokumenBanding as $dokumen)
-                    <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded mb-2">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-file-earmark-pdf text-danger me-3" style="font-size: 48px;"></i>
-                            <div>
-                                <strong>{{ $dokumen->original_filename }}</strong>
-                                <br>
-                                <small class="text-muted">
-                                    {{ number_format($dokumen->file_size / 1024, 2) }} KB •
-                                    Diupload: {{ $dokumen->created_at->locale('id')->translatedFormat('d M Y H:i') }}
-                                </small>
-                                <br>
-                                <span class="badge bg-success">Dokumen Banding</span>
-                            </div>
-                        </div>
-                        <div>
-                            <a href="{{ route('upps.penerimaan-dokumen.dokumen.download', $dokumen->id) }}" class="btn btn-success btn-md">
-                                <i class="bi bi-file-earmark-pdf"></i> Lihat File
-                            </a>
-                        </div>
-                    </div>
-                    @endforeach
-                    @else
-                    <div class="text-center py-4">
-                        <i class="bi bi-file-earmark-x" style="font-size: 48px; color: #ddd;"></i>
-                        <p class="text-muted mt-2 mb-0">Dokumen banding belum tersedia</p>
-                    </div>
-                    @endif
-                </div>
-            </div>
         </div>
 
-        <!-- Sidebar -->
+        {{-- ═══════════════ SIDEBAR ═══════════════ --}}
         <div class="col-lg-4">
-            <!-- Progress Steps -->
-            <div class="card mb-4 border-info">
-                <div class="card-header bg-info text-white">
-                    <h6 class="mb-0">
-                        <i class="bi bi-diagram-3"></i> Progress Pelaksanaan
-                    </h6>
+
+            {{-- Progress Steps --}}
+            <div class="card mb-4 border-secondary">
+                <div class="card-header bg-secondary text-white">
+                    <h6 class="mb-0"><i class="bi bi-diagram-3"></i> Progres Banding</h6>
                 </div>
                 <div class="card-body">
                     @php
                     $steps = [
                     [
-                    'status' => 'completed',
+                    'done' => true,
                     'label' => 'Banding Diajukan',
                     'date' => $pengajuan->tanggal_permohonan_banding,
                     'icon' => 'check-circle-fill',
-                    'color' => 'success'
+                    'color' => 'dark',
                     ],
                     [
-                    'status' => $pengajuan->tanggal_pelaksanaan_banding ? 'completed' : ($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN ? 'current' : 'pending'),
+                    'done' => (bool) $pengajuan->tanggal_penerimaan_banding,
+                    'label' => 'Banding Diterima',
+                    'date' => $pengajuan->tanggal_penerimaan_banding,
+                    'icon' => $pengajuan->tanggal_penerimaan_banding ? 'check-circle-fill' : 'circle',
+                    'color' => $pengajuan->tanggal_penerimaan_banding ? 'dark' : 'secondary',
+                    ],
+                    [
+                    'done' => $pembayaranLunas,
+                    'label' => 'Pembayaran Tervalidasi',
+                    'date' => $pembayaranLunas ? ($pembayaranBanding->tanggal_pembayaran ?? null) : null,
+                    'icon' => $pembayaranLunas ? 'check-circle-fill' : 'credit-card',
+                    'color' => $pembayaranLunas ? 'dark' : ($pembayaranBanding ? 'dark' : 'secondary'),
+                    ],
+                    [
+                    'done' => (bool) $pengajuan->tanggal_penugasan_banding,
+                    'label' => 'Asesor Banding Ditugaskan',
+                    'date' => $pengajuan->tanggal_penugasan_banding,
+                    'icon' => $pengajuan->tanggal_penugasan_banding ? 'check-circle-fill' : 'circle',
+                    'color' => $pengajuan->tanggal_penugasan_banding ? 'dark' : 'secondary',
+                    ],
+                    [
+                    'done' => (bool) $pengajuan->tanggal_pelaksanaan_banding,
                     'label' => 'Pelaksanaan Banding',
                     'date' => $pengajuan->tanggal_pelaksanaan_banding,
-                    'icon' => $pengajuan->tanggal_pelaksanaan_banding ? 'check-circle-fill' : 'hourglass-split',
-                    'color' => $pengajuan->tanggal_pelaksanaan_banding ? 'success' : ($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN ? 'warning' : 'secondary')
+                    'icon' => $pengajuan->tanggal_pelaksanaan_banding ? 'check-circle-fill' : 'circle',
+                    'color' => $pengajuan->tanggal_pelaksanaan_banding ? 'dark' : 'secondary',
                     ],
                     [
-                    'status' => 'pending',
-                    'label' => 'Pelaporan Hasil',
-                    'date' => null,
-                    'icon' => 'circle',
-                    'color' => 'secondary'
+                    'done' => $pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN,
+                    'label' => 'Pelaporan Banding',
+                    'date' => $pengajuan->tanggal_pelaporan_banding ?? null,
+                    'icon' => $pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN
+                    ? 'check-circle-fill' : 'circle',
+                    'color' => $pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN
+                    ? 'dark' : 'secondary',
                     ],
                     ];
                     @endphp
 
-                    <div class="progress-steps">
-                        @foreach($steps as $index => $step)
-                        <div class="step-item mb-3">
-                            <div class="d-flex align-items-start">
-                                <div class="flex-shrink-0">
-                                    <div class="rounded-circle bg-{{ $step['color'] }} text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                                        <i class="bi bi-{{ $step['icon'] }}"></i>
-                                    </div>
-                                </div>
-                                <div class="flex-grow-1 ms-3">
-                                    <strong class="{{ $step['status'] === 'completed' ? 'text-success' : ($step['status'] === 'current' ? 'text-warning' : 'text-muted') }}">
-                                        {{ $step['label'] }}
-                                    </strong>
-                                    @if($step['date'])
-                                    <br>
-                                    <small class="text-muted">
-                                        {{ $step['date']->locale('id')->translatedFormat('d M Y H:i') }}
-                                    </small>
-                                    @endif
-                                    @if($step['status'] === 'current')
-                                    <br>
-                                    <small class="text-warning">
-                                        <i class="bi bi-arrow-right"></i> Sedang berlangsung
-                                    </small>
-                                    @endif
-                                </div>
-                            </div>
-                            @if($index < count($steps) - 1) <div class="ms-3 ps-2 border-start border-2 {{ $step['status'] === 'completed' ? 'border-success' : 'border-secondary' }}" style="height: 20px; margin-left: 20px;">
-                        </div>
-                        @endif
-                    </div>
-                    @endforeach
-                </div>
-            </div>
-        </div>
-
-        <!-- Timeline -->
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">
-                    <i class="bi bi-clock-history"></i> Riwayat Status
-                </h5>
-            </div>
-            <div class="card-body" style="max-height: 600px; overflow-y: auto;">
-                @php
-                $filterStatuses = [
-                \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
-                \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
-                \App\Models\PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
-                \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
-                ];
-
-                $logs = $pengajuan->statusLog
-                ->whereIn('status_to', $filterStatuses)
-                ->sortBy('changed_at');
-                @endphp
-
-                @if($logs->count() > 0)
-                <div class="timeline">
-                    @foreach($logs as $log)
-                    <div class="timeline-item mb-3">
-                        <div class="d-flex">
-                            <div class="flex-shrink-0">
-                                @php
-                                $iconColor = match($log->status_to) {
-                                \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN
-                                => 'text-success',
-                                \App\Models\PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN
-                                => 'text-warning',
-                                default => 'text-info',
-                                };
-                                @endphp
-                                <i class="bi bi-circle-fill {{ $iconColor }}" style="font-size: 8px;"></i>
-                            </div>
-                            <div class="flex-grow-1 ms-3">
-                                <strong>
-                                    {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label'] ?? $log->status_to }}
-                                </strong>
-                                <br>
-                                <small class="text-muted">{{ $log->created_at->locale('id')->translatedFormat('d M Y H:i') }}</small>
-
-                                @if($log->keterangan)
-                                <br>
-                                <small class="text-muted fst-italic">{{ $log->keterangan }}</small>
-                                @endif
+                    @foreach($steps as $i => $step)
+                    <div class="d-flex align-items-start {{ $i < count($steps)-1 ? 'mb-3' : '' }}">
+                        <div class="flex-shrink-0">
+                            <div class="rounded-circle bg-{{ $step['color'] }} text-white d-flex align-items-center justify-content-center" style="width:36px;height:36px;font-size:14px;">
+                                <i class="bi bi-{{ $step['icon'] }}"></i>
                             </div>
                         </div>
+                        <div class="flex-grow-1 ms-3">
+                            <strong class="text-{{ $step['done'] ? 'dark' : 'muted' }} small">
+                                {{ $step['label'] }}
+                            </strong>
+                            @if($step['date'])
+                            <br>
+                            <small class="text-muted">
+                                {{ $step['date']->locale('id')->translatedFormat('d M Y: H i s') }}
+                            </small>
+                            @endif
+                        </div>
                     </div>
-                    @endforeach
+                    @if($i < count($steps) - 1) <div class="ms-4 ps-1 border-start border-2 border-{{ $step['done'] ? 'success' : 'secondary' }}" style="height:16px;margin-left:18px!important;">
                 </div>
-                @else
-                <p class="text-muted text-center mb-0">Belum ada riwayat</p>
                 @endif
-            </div>
-        </div>
-
-        <!-- Info Card -->
-        <div class="card mt-4 border-info">
-            <div class="card-header bg-info text-white">
-                <h6 class="mb-0">
-                    <i class="bi bi-info-circle"></i> Informasi Pelaksanaan
-                </h6>
-            </div>
-            <div class="card-body">
-                <p class="small mb-2">
-                    <strong>Proses Pelaksanaan Banding:</strong>
-                </p>
-                <ol class="small mb-3 ps-3 text-muted">
-                    <li>Permohonan banding diajukan (selesai)</li>
-                    <li>LAMDEPILAR meninjau dokumen banding</li>
-                    <li>Pelaksanaan banding dilakukan</li>
-                    <li>Hasil banding dilaporkan</li>
-                    <li>Penetapan hasil akhir akreditasi</li>
-                </ol>
-
-                <hr>
-
-                <p class="small text-muted mb-0">
-                    <i class="bi bi-exclamation-circle"></i>
-                    @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN)
-                    Menunggu proses pelaksanaan banding dari LAMDEPILAR. Harap pantau status secara berkala.
-                    @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN)
-                    Pelaksanaan banding sedang berlangsung. Hasil akan dilaporkan setelah proses selesai.
-                    @endif
-                </p>
+                @endforeach
             </div>
         </div>
     </div>

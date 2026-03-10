@@ -20,7 +20,7 @@
 }
 
 body {
-    font-family: 'Montserrat', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Montserrat', sans-serif;
     background: var(--light);
     min-height: 100vh;
 }
@@ -97,6 +97,19 @@ h5 {
     padding: .2rem .45rem;
     font-size: .75rem;
     border-radius: .5rem;
+}
+
+.btn-max-width-300 {
+    max-width: 300px;
+    width: 100%;
+}
+
+.btn-width-270 {
+    width: 270px;
+}
+
+.btn-width-180 {
+    width: 180px;
 }
 
 .btn-primary {
@@ -552,6 +565,14 @@ h5 {
     color: var(--primary);
     border-left-color: var(--primary);
     font-weight: 600;
+}
+
+.sub-submenu {
+    padding-left: 20px;
+}
+
+.sub-submenu .nav-link {
+    color: #5a6b7b;
 }
 
 /* Main Content */

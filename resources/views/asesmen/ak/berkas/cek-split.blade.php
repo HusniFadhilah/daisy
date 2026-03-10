@@ -1,3 +1,4 @@
+{{-- resources\views\asesmen\ak\berkas\cek-split.blade.php --}}
 @extends('layouts.template.app')
 
 @section('title', 'Cek Split Penilaian - ' . $asesmen->name)
@@ -47,7 +48,7 @@
                             <div class="d-flex flex-wrap gap-2">
                                 <div class="legend-item">
                                     <span class="legend-box" style="background: #9e9e9e;"></span>
-                                    <span class="legend-text">Belum Dinilai</span>
+                                    <span class="legend-text">Belum Ada Data</span>
                                 </div>
                                 @foreach ($jenjangs as $jenjang)
                                 <div class="legend-item">
@@ -295,11 +296,6 @@
         width: fit-content;
     }
 
-</style>
-@endpush
-
-@push('styles')
-<style>
     /* Comparison Matrix Styles */
     .comparison-matrix-table {
         width: max-content;
@@ -491,6 +487,28 @@
         display: inline-block;
     }
 
+    /* Baris elemen bisa diklik */
+    .comparison-row {
+        cursor: default;
+    }
+
+    .comparison-row.is-split-row {
+        cursor: pointer;
+    }
+
+    .comparison-row.is-split-row:hover td {
+        background-color: #fff3e0 !important;
+    }
+
+    .comparison-row.is-split-row .col-ket-split .btn-goto-elemen {
+        display: inline-flex;
+    }
+
+    .btn-goto-elemen {
+        display: none;
+        /* hanya tampil jika is-split-row */
+    }
+
 </style>
 @endpush
 
@@ -569,11 +587,11 @@
         let keterangan = '';
         if (isSplit) {
             const penilaianTexts = validSkors.map(item => {
-                const label = getSkorLabelShort(item.skor, true);
+                const label = getSkorLabelShort(item.skor, false);
                 return `Asesor ${item.urutan} memberikan penilaian ${label}`;
             });
 
-            keterangan = penilaianTexts.join('. Sementara ') + '.';
+            keterangan = penilaianTexts.join('.<br>Sementara ') + '.';
         }
 
         return {
@@ -760,7 +778,15 @@
 
                 // ===== Keterangan Split =====
                 const ketSplitHtml = isSplit && splitInfo.keterangan ?
-                    `<span>${splitInfo.keterangan}</span>` :
+                    `<div class="d-flex flex-column gap-1">
+                        <span>${splitInfo.keterangan}</span>
+                        <a href="/ak/berkas/${idAsesmen}#elemen-${elemen.id}"
+                            target="_blank"
+                            class="btn btn-sm btn-outline-dark btn-goto-elemen"
+                            onclick="event.stopPropagation()">
+                            <i class="bi bi-box-arrow-up-right me-1"></i>Buka di Penilaian
+                        </a>
+                    </div>` :
                     '<span class="text-muted fst-italic">Tidak terjadi split</span>';
 
                 bodyHtml += `
@@ -774,6 +800,7 @@
         });
 
         document.querySelector('#comparisonMatrix tbody').innerHTML = bodyHtml;
+        attachRowClickHandlers();
 
         // Update statistics with split count
         document.getElementById('compStatAgreed').textContent = totalNoSplit;
@@ -782,6 +809,35 @@
         // Setup buttons
         setupToggleIndikatorButton();
         setupHighlightSplitButton();
+    }
+
+    /**
+     * Pasang event delegation untuk klik baris elemen split
+     * Navigasi ke show berkas dengan hash #elemen-{id}
+     */
+    function attachRowClickHandlers() {
+        const tbody = document.querySelector('#comparisonMatrix tbody');
+        if (!tbody) return;
+
+        // Tandai baris yg split agar cursor pointer
+        tbody.querySelectorAll('.comparison-row[data-is-split="true"]')
+            .forEach(row => row.classList.add('is-split-row'));
+
+        // Event delegation — hanya baris split yg clickable
+        tbody.addEventListener('click', function(e) {
+            const row = e.target.closest('.comparison-row.is-split-row');
+            if (!row) return;
+
+            // Jangan trigger jika klik tombol / link di dalam baris
+            if (e.target.closest('a, button')) return;
+
+            const elemenId = row.dataset.elemenId;
+            if (!elemenId) return;
+
+            // Buka halaman show berkas dengan hash ke elemen
+            const url = `/ak/berkas/${idAsesmen}#elemen-${elemenId}`;
+            window.open(url, '_blank');
+        });
     }
 
     /**

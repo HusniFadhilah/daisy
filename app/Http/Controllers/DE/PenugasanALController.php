@@ -158,7 +158,7 @@ class PenugasanALController extends Controller
             }
         ])->findOrFail($id);
 
-        // Get progress penilaian AL
+        // Get progres penilaian AL
         $totalElemens = DB::table('elemen_standar')->count();
 
         // Progress asesor AL

@@ -149,4 +149,12 @@ class BorangDataExcel extends Model
             ]
         );
     }
+
+    public static function isLkpsDataComplete(PengajuanAkreditasi $pengajuan): bool
+    {
+        // sesuaikan dengan struktur tabel Anda
+        $total = BorangDataExcel::where('id_pengajuan', $pengajuan->id)->count();
+
+        return $total > 0;
+    }
 }

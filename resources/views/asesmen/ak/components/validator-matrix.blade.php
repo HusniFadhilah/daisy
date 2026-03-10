@@ -1,3 +1,4 @@
+{{-- resources\views\asesmen\ak\components\validator-matrix.blade.php --}}
 @php
 $viewMode = request('view') === 'split' ? 'split' : 'merged'; // split | merged
 @endphp
@@ -73,7 +74,7 @@ $viewMode = request('view') === 'split' ? 'split' : 'merged'; // split | merged
                     <div class="d-flex flex-wrap gap-2">
                         <div class="legend-item">
                             <span class="legend-box" style="background: #9e9e9e;"></span>
-                            <span class="legend-text">Belum Dinilai</span>
+                            <span class="legend-text">Belum Ada Data</span>
                         </div>
                         @foreach ($jenjangs as $jenjang)
                         <div class="legend-item">

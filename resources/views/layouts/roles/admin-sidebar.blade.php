@@ -157,7 +157,7 @@ request()->routeIs('de.permohonan-banding*')
         @endforeach
 
         <!-- Banding -->
-        <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'banding-submenu')">
+        <a href="#" class="nav-link {{ request()->routeIs('de.*banding*') ? 'active' : '' }}" onclick="toggleSubmenu(event, 'banding-submenu')">
             <span class="menu-icon">
                 <i class="bi bi-arrow-repeat"></i>
             </span>
@@ -166,17 +166,54 @@ request()->routeIs('de.permohonan-banding*')
 
         <ul class="submenu nav flex-column" id="banding-submenu">
             <li>
-                <a href="{{ route('de.permohonan-banding') }}" class="nav-link">
+                <a href="{{ route('de.permohonan-banding') }}" class="nav-link {{ request()->routeIs('de.permohonan-banding*') ? 'active' : '' }}">
                     17.a Permohonan Banding
                 </a>
             </li>
+            {{-- <li>
+                <a href="{{ route('de.penugasan-banding') }}" class="nav-link">
+            17.b Pelaksanaan Banding
+            </a>
+            </li> --}}
+            <!-- Pelaksanaan Banding -->
             <li>
-                <a href="{{ route('de.pelaksanaan-banding') }}" class="nav-link">
+                <a href="#" class="nav-link {{ request()->routeIs('de.banding.penugasan-ak-banding*') || request()->routeIs('de.banding.validasi-ak-banding*') || request()->routeIs('de.banding.pelaporan-ak-banding*') || request()->routeIs('de.banding.penugasan-al-banding*') || request()->routeIs('de.banding.pelaksanaan-al-banding*') ? 'active' : '' }}" onclick="toggleSubmenu(event, 'pelaksanaan-banding-submenu')">
                     17.b Pelaksanaan Banding
                 </a>
+                <ul class="submenu sub-submenu nav flex-column" id="pelaksanaan-banding-submenu">
+                    <li>
+                        <a href="{{ route('de.banding.penugasan-ak-banding') }}" class="nav-link {{ request()->routeIs('de.banding.penugasan-ak-banding*') ? 'active' : '' }}">
+                            Penugasan Asesor AK Banding
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ route('de.banding.validasi-ak-banding') }}" class="nav-link {{ request()->routeIs('de.banding.validasi-ak-banding*') ? 'active' : '' }}">
+                            Validasi AK Banding
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ route('de.banding.pelaporan-ak-banding') }}" class="nav-link {{ request()->routeIs('de.banding.pelaporan-ak-banding*') ? 'active' : '' }}">
+                            Pelaporan AK Banding
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ route('de.banding.penugasan-al-banding') }}" class="nav-link {{ request()->routeIs('de.banding.penugasan-al-banding*') ? 'active' : '' }}">
+                            Penugasan Asesor AL Banding
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ route('de.banding.pelaksanaan-al-banding') }}" class="nav-link {{ request()->routeIs('de.banding.pelaksanaan-al-banding*') ? 'active' : '' }}">
+                            Pelaksanaan AL & Berita Acara Banding
+                        </a>
+                    </li>
+                </ul>
             </li>
             <li>
-                <a href="{{ route('de.pelaporan-banding') }}" class="nav-link">
+                <a href="{{ route('de.banding.pelaporan-al-banding') }}" class="nav-link {{ request()->routeIs('de.banding.pelaporan-al-banding*') ? 'active' : '' }}">
                     17.c Pelaporan Banding
                 </a>
             </li>
@@ -199,10 +236,10 @@ request()->routeIs('de.permohonan-banding*')
 
 @if(in_array($authUser->role_selected,['super_admin']))
 <!-- Penugasan Banding -->
-<a href="{{ route('banding') }}" class="nav-link {{ request()->routeIs('banding') ? 'active' : '' }}">
-    <span class="menu-icon">🤝</span>
-    <span>Penugasan Banding</span>
-</a>
+{{-- <a href="{{ route('banding') }}" class="nav-link {{ request()->routeIs('banding') ? 'active' : '' }}">
+<span class="menu-icon">🤝</span>
+<span>Penugasan Banding</span>
+</a> --}}
 <a href="#" class="nav-link {{ request()->routeIs('users*') ? 'active' : '' }}" onclick="toggleSubmenu(event, 'pengajuan-submenu')">
     <span class="menu-icon">📋</span>
     <span>Master Data</span>

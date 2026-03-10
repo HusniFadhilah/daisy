@@ -5,72 +5,114 @@ namespace App\Http\Controllers\Keuangan;
 use App\Http\Controllers\Controller;
 use App\Models\PengajuanAkreditasi;
 use App\Models\PengajuanDokumen;
+use App\Models\PengajuanPembayaran;
 use App\Models\University;
 use App\Models\DegreeLevel;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class FormulirPembayaranController extends Controller
 {
-    /**
-     * Display list of formulir pembayaran yang sudah diupload prodi
-     */
+    private const JENIS_FORMULIR = [
+        'formulir_pembayaran',
+        'formulir_pembayaran_banding',
+    ];
+
     public function index(Request $request)
     {
-        $q = (string) $request->get('q');
-        $university_id = $request->get('university_id');
+        $q               = (string) $request->get('q');
+        $university_id   = $request->get('university_id');
         $degree_level_id = $request->get('degree_level_id');
-        $status = $request->get('status');
+        $status          = $request->get('status');
+        $jenis           = $request->get('jenis'); // 'akreditasi' | 'banding' | ''
 
-        // Query pengajuan yang sudah upload formulir pembayaran
         $pengajuanQuery = PengajuanAkreditasi::with([
             'studyProgram.university',
             'studyProgram.degreeLevel',
-            'pembayaran',
             'pengaju',
-            'dokumen' => function ($q) {
-                $q->where('jenis_dokumen', 'formulir_pembayaran')
-                    ->where('is_latest', true);
-            }
+            // ✅ Load SEMUA invoice (HasMany) — filter per jenis di blade
+            //    Lebih aman daripada HasOne latestOfMany yang bisa null
+            'semuaPembayaran',
+            // Load formulir terbaru kedua jenis
+            'dokumen' => fn($q) => $q
+                ->whereIn('jenis_dokumen', self::JENIS_FORMULIR)
+                ->where('is_latest', true)
+                ->orderByDesc('created_at'),
         ])
-            ->whereHas('dokumen', function ($q) {
-                $q->where('jenis_dokumen', 'formulir_pembayaran')
-                    ->where('is_latest', true);
-            })
-            ->whereHas('pembayaran'); // Harus sudah ada pembayaran
+            ->whereHas(
+                'dokumen',
+                fn($q) =>
+                $q->whereIn('jenis_dokumen', self::JENIS_FORMULIR)
+                    ->where('is_latest', true)
+            )
+            ->where(
+                fn($w) =>
+                $w->whereHas('pembayaran')
+                    ->orWhereHas('pembayaranBanding')
+            );
 
-        // Filter by search
+        // Filter jenis
+        if (!empty($jenis)) {
+            if ($jenis === 'akreditasi') {
+                $pengajuanQuery
+                    ->whereHas(
+                        'dokumen',
+                        fn($q) =>
+                        $q->where('jenis_dokumen', 'formulir_pembayaran')->where('is_latest', true)
+                    )
+                    ->whereHas('pembayaran');
+            } elseif ($jenis === 'banding') {
+                $pengajuanQuery
+                    ->whereHas(
+                        'dokumen',
+                        fn($q) =>
+                        $q->where('jenis_dokumen', 'formulir_pembayaran_banding')->where('is_latest', true)
+                    )
+                    ->whereHas('pembayaranBanding');
+            }
+        }
+
+        // Filter status — cek di semua invoice
+        if (!empty($status)) {
+            $pengajuanQuery->whereHas(
+                'semuaPembayaran',
+                fn($p) =>
+                $p->where('status_pembayaran', $status)
+            );
+        }
+
+        // Filter universitas
+        if (!empty($university_id)) {
+            $pengajuanQuery->whereHas(
+                'studyProgram',
+                fn($sp) =>
+                $sp->where('id_university', $university_id)
+            );
+        }
+
+        // Filter jenjang
+        if (!empty($degree_level_id)) {
+            $pengajuanQuery->whereHas(
+                'studyProgram',
+                fn($sp) =>
+                $sp->where('id_degree_level', $degree_level_id)
+            );
+        }
+
+        // Pencarian
         if (!empty($q)) {
             $pengajuanQuery->where(function ($w) use ($q) {
                 $w->where('nomor_pengajuan', 'like', "%{$q}%")
                     ->orWhere('judul', 'like', "%{$q}%")
-                    ->orWhereHas('studyProgram', function ($sp) use ($q) {
-                        $sp->where('name', 'like', "%{$q}%");
-                    })
-                    ->orWhereHas('pembayaran', function ($p) use ($q) {
-                        $p->where('nomor_invoice', 'like', "%{$q}%");
-                    });
-            });
-        }
-
-        // Filter by university
-        if (!empty($university_id)) {
-            $pengajuanQuery->whereHas('studyProgram', function ($sp) use ($university_id) {
-                $sp->where('id_university', $university_id);
-            });
-        }
-
-        // Filter by degree level
-        if (!empty($degree_level_id)) {
-            $pengajuanQuery->whereHas('studyProgram', function ($sp) use ($degree_level_id) {
-                $sp->where('id_degree_level', $degree_level_id);
-            });
-        }
-
-        // Filter by status pembayaran
-        if (!empty($status)) {
-            $pengajuanQuery->whereHas('pembayaran', function ($p) use ($status) {
-                $p->where('status_pembayaran', $status);
+                    ->orWhereHas(
+                        'studyProgram',
+                        fn($sp) =>
+                        $sp->where('name', 'like', "%{$q}%")
+                    )
+                    ->orWhereHas(
+                        'semuaPembayaran',
+                        fn($p) =>
+                        $p->where('nomor_invoice', 'like', "%{$q}%")
+                    );
             });
         }
 
@@ -79,95 +121,88 @@ class FormulirPembayaranController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        // Get filter data
         $universities = University::nonExample()->orderBy('name')->get();
         $degreeLevels = DegreeLevel::orderBy('code')->get();
-
-        // Statistics
-        $stats = [
-            'total' => PengajuanAkreditasi::whereHas('dokumen', function ($q) {
-                $q->where('jenis_dokumen', 'formulir_pembayaran')
-                    ->where('is_latest', true);
-            })->count(),
-
-            'today' => PengajuanAkreditasi::whereHas('dokumen', function ($q) {
-                $q->where('jenis_dokumen', 'formulir_pembayaran')
-                    ->where('is_latest', true)
-                    ->whereDate('created_at', today());
-            })->count(),
-
-            'menunggu_verifikasi' => PengajuanAkreditasi::whereHas('pembayaran', function ($p) {
-                $p->where('status_pembayaran', 'menunggu_verifikasi');
-            })->count(),
-
-            'terverifikasi' => PengajuanAkreditasi::whereHas('pembayaran', function ($p) {
-                $p->where('status_pembayaran', 'terverifikasi');
-            })->count(),
-        ];
+        $stats        = $this->calculateStatistics();
 
         return view('keuangan.formulir.index', compact(
             'pengajuan',
             'q',
+            'jenis',
             'universities',
             'degreeLevels',
             'university_id',
             'degree_level_id',
             'status',
-            'stats'
+            'stats',
         ));
     }
 
-    /**
-     * Show detail formulir pembayaran
-     */
     public function show($id)
     {
         $pengajuan = PengajuanAkreditasi::with([
             'studyProgram.university',
             'studyProgram.degreeLevel',
-            'pembayaran.verifier',
             'pengaju',
-            'dokumen' => function ($q) {
-                $q->where('is_latest', true)
-                    ->orderBy('created_at', 'desc');
-            },
+            // ✅ Load semua invoice sekaligus
+            'semuaPembayaran.verifier',
+            // Load semua versi dokumen formulir untuk riwayat
+            'dokumen' => fn($q) => $q
+                ->whereIn('jenis_dokumen', self::JENIS_FORMULIR)
+                ->orderByDesc('created_at'),
         ])->findOrFail($id);
 
-        // Get all dokumen pembayaran (formulir & bukti)
-        $dokumenPembayaran = $pengajuan->dokumen->filter(function ($dok) {
-            return in_array($dok->jenis_dokumen, ['formulir_pembayaran', 'bukti_pembayaran']);
-        });
+        // Pisah per jenis — dari relasi semuaPembayaran
+        $pmbAkreditasi = $pengajuan->semuaPembayaran
+            ->firstWhere('jenis_pembayaran', 'akreditasi');
+        $pmbBanding    = $pengajuan->semuaPembayaran
+            ->firstWhere('jenis_pembayaran', 'banding');
 
-        // Separate formulir and bukti
-        $formulirPembayaran = $dokumenPembayaran->where('jenis_dokumen', 'formulir_pembayaran')->first();
-        $buktiPembayaran = $pengajuan->pembayaran ? $pengajuan->pembayaran->bukti_path : null;
+        // Dokumen terbaru per jenis
+        $formulirAkreditasi = $pengajuan->dokumen
+            ->where('jenis_dokumen', 'formulir_pembayaran')
+            ->firstWhere('is_latest', true);
+
+        $formulirBanding = $pengajuan->dokumen
+            ->where('jenis_dokumen', 'formulir_pembayaran_banding')
+            ->firstWhere('is_latest', true);
+
+        $riwayatDokumen = $pengajuan->dokumen->sortByDesc('created_at');
+
+        // Inject ke $pengajuan agar blade bisa akses via $pengajuan->pembayaran
+        // (opsional — blade show sudah pakai $pmbAkreditasi/$pmbBanding langsung)
 
         return view('keuangan.formulir.show', compact(
             'pengajuan',
-            'dokumenPembayaran',
-            'formulirPembayaran',
-            'buktiPembayaran'
+            'formulirAkreditasi',
+            'formulirBanding',
+            'pmbAkreditasi',
+            'pmbBanding',
+            'riwayatDokumen',
         ));
     }
 
-    /**
-     * Download formulir pembayaran
-     */
     public function download($id, $dokumenId)
     {
-        $pengajuan = PengajuanAkreditasi::findOrFail($id);
         $dokumen = PengajuanDokumen::where('id', $dokumenId)
             ->where('id_pengajuan', $id)
-            ->where('jenis_dokumen', 'formulir_pembayaran')
+            ->whereIn('jenis_dokumen', self::JENIS_FORMULIR)
             ->firstOrFail();
 
-        if (!Storage::disk('public')->exists($dokumen->file_path)) {
-            abort(404, 'File tidak ditemukan');
-        }
+        return $dokumen->downloadDokumen();
+    }
 
-        return Storage::disk('public')->download(
-            $dokumen->file_path,
-            $dokumen->original_filename
-        );
+    private function calculateStatistics(): array
+    {
+        $base       = PengajuanDokumen::whereIn('jenis_dokumen', self::JENIS_FORMULIR)->where('is_latest', true);
+        $akreditasi = PengajuanDokumen::where('jenis_dokumen', 'formulir_pembayaran')->where('is_latest', true);
+        $banding    = PengajuanDokumen::where('jenis_dokumen', 'formulir_pembayaran_banding')->where('is_latest', true);
+
+        return [
+            'total'      => (clone $base)->count(),
+            'today'      => (clone $base)->whereDate('created_at', today())->count(),
+            'akreditasi' => (clone $akreditasi)->count(),
+            'banding'    => (clone $banding)->count(),
+        ];
     }
 }

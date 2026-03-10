@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\BorangDataExcel;
 use App\Models\DegreeLevel;
 use App\Repositories\SyaratAkreditasiRepository;
+use Illuminate\Support\Facades\Log;
 
 class LkpsDataReaderService
 {
@@ -29,6 +30,11 @@ class LkpsDataReaderService
     private const E2_COL_MAHASISWA_AKTIF = 8; // Kolom I — Jumlah Mahasiswa Aktif
 
     // R.3.1.c / R.3.1.e — Luaran Mahasiswa
+    // Tambah konstanta — kolom D = jumlah item penelitian/karya
+    private const R3_COL_JUMLAH_PENELITIAN = 3; // Kolom D — Jumlah Penelitian/Karya
+    // Kolom E = jumlah mahasiswa terlibat → sudah tercakup di kolomLuaran (6/7)
+    // tapi perlu kolom tetangga, tambah:
+    private const R3_COL_MAHASISWA_TERLIBAT = 4; // Kolom E — Jumlah Mahasiswa Terlibat
     private const R3_COL_PUBLIKASI_ILMIAH = 6; // Kolom G — Publikasi Ilmiah
     private const R3_COL_KARYA_INOVASI    = 7; // Kolom H — Karya/Inovasi Karya
 
@@ -381,16 +387,18 @@ class LkpsDataReaderService
         $kolomLuaran = $config['kolom'];
         $sheets      = $config['sheets'];
 
-        $totalLuaran     = 0;
-        $jumlahMahasiswa = 0;
-        $detailPerSheet  = [];
+        $totalLuaran             = 0;
+        $totalPenelitian         = 0;
+        $totalMahasiswaTerlibat  = 0;
+        $jumlahMahasiswa         = 0;
+        $detailPerSheet          = [];
 
         foreach ($sheets as $sheetName) {
-            $data = $this->parseR3Sheet($pengajuanId, $sheetName, $skalaIndex, $kolomLuaran);
-            $totalLuaran += $data['jumlah_luaran'];
+            $data        = $this->parseR3Sheet($pengajuanId, $sheetName, $skalaIndex, $kolomLuaran);
+            $totalLuaran            += $data['jumlah_luaran'];
+            $totalPenelitian        += $data['jumlah_penelitian'] ?? 0;
+            $totalMahasiswaTerlibat += $data['jumlah_mahasiswa_terlibat'] ?? 0;
 
-            // Denominator diambil dari sheet pertama yang punya data
-            // (jumlah mahasiswa TA sama di semua sheet untuk pengajuan yang sama)
             if ($jumlahMahasiswa === 0 && $data['jumlah_mahasiswa'] > 0) {
                 $jumlahMahasiswa = $data['jumlah_mahasiswa'];
             }
@@ -402,17 +410,28 @@ class LkpsDataReaderService
             return $this->emptyLulusanResult($tipeCapaian);
         }
 
-        $persen = round(($totalLuaran / $jumlahMahasiswa) * 100, 2);
-        // dd($detailPerSheet);
+        // ── Dua ratio ──
+        // ratio_jumlah_penelitian_mahasiswa : jumlah item karya/penelitian per mahasiswa TA
+        // ratio_mahasiswa_terlibat          : jumlah mahasiswa terlibat per mahasiswa TA ← dipakai untuk syarat
+        $ratioPenelitian        = round(($totalPenelitian / $jumlahMahasiswa) * 100, 2);
+        $ratioMahasiswaTerlibat = round(($totalMahasiswaTerlibat / $jumlahMahasiswa) * 100, 2);
+
+        // persen (backward compat) = ratio_mahasiswa_terlibat karena ini yang relevan untuk syarat
+        $persen = $ratioMahasiswaTerlibat;
+
         return [
-            'jumlah_luaran'     => $totalLuaran,
-            'jumlah_mahasiswa'  => $jumlahMahasiswa,
-            'persen'            => $persen,
-            'tipe_capaian'      => $tipeCapaian,
-            'skala_index'       => $skalaIndex,
-            'detail_kolaborasi' => $detailPerSheet['R.3.1.c'] ?? ['jumlah_luaran' => 0, 'jumlah_mahasiswa' => 0, 'ratio' => 0.0],
-            'detail_mandiri'    => $detailPerSheet['R.3.1.e'] ?? ['jumlah_luaran' => 0, 'jumlah_mahasiswa' => 0, 'ratio' => 0.0],
-            'detail_per_sheet'  => $detailPerSheet, // ← lengkap untuk debugging/tampilan
+            'jumlah_luaran'                     => $totalLuaran,
+            'jumlah_penelitian'                 => $totalPenelitian,
+            'jumlah_mahasiswa_terlibat'         => $totalMahasiswaTerlibat,
+            'jumlah_mahasiswa'                  => $jumlahMahasiswa,
+            'persen'                            => $persen, // = ratio_mahasiswa_terlibat
+            'ratio_jumlah_penelitian_mahasiswa' => $ratioPenelitian,
+            'ratio_mahasiswa_terlibat'          => $ratioMahasiswaTerlibat,
+            'tipe_capaian'                      => $tipeCapaian,
+            'skala_index'                       => $skalaIndex,
+            'detail_kolaborasi'                 => $detailPerSheet['R.3.1.c'] ?? $this->emptySubTabelResult(),
+            'detail_mandiri'                    => $detailPerSheet['R.3.1.e'] ?? $this->emptySubTabelResult(),
+            'detail_per_sheet'                  => $detailPerSheet,
         ];
     }
 
@@ -422,36 +441,43 @@ class LkpsDataReaderService
      * @param  int     $skalaIndex  1–4 = skala spesifik, 5 = rekapitulasi
      * @param  int     $kolomLuaran Indeks kolom luaran yang dihitung
      */
-    private function parseR3Sheet(
-        int    $pengajuanId,
-        string $sheetName,
-        int    $skalaIndex,
-        int    $kolomLuaran
-    ): array {
+    private function parseR3Sheet(int $pengajuanId, string $sheetName, int $skalaIndex, int $kolomLuaran): array
+    {
         $record = BorangDataExcel::where('id_pengajuan', $pengajuanId)
             ->where('sheet_name', $sheetName)
             ->where('table_index', 1)
             ->first();
 
-        $empty = ['jumlah_luaran' => 0, 'jumlah_mahasiswa' => 0, 'ratio' => 0.0];
+        $empty = $this->emptySubTabelResult();
         if (!$record || empty($record->rows)) return $empty;
 
-        // Skala 5 = rekapitulasi: jumlahkan skala 1–4 secara eksplisit
         if ($skalaIndex === 5) {
-            $totalLuaran     = 0;
-            $maxMahasiswa    = 0;
+            $totalLuaran             = 0;
+            $totalPenelitian         = 0;
+            $totalMahasiswaTerlibat  = 0;
+            $maxMahasiswaTa          = 0;
 
             for ($s = 1; $s <= 4; $s++) {
                 $sub = $this->parseR3SubTabel($record->rows, $s, $kolomLuaran);
-                $totalLuaran  += $sub['jumlah_luaran'];
-                $maxMahasiswa  = max($maxMahasiswa, $sub['jumlah_mahasiswa']);
+                $totalLuaran            += $sub['jumlah_luaran'];
+                $totalPenelitian        += $sub['jumlah_penelitian'];
+                $totalMahasiswaTerlibat += $sub['jumlah_mahasiswa_terlibat'];
+                $maxMahasiswaTa          = max($maxMahasiswaTa, $sub['jumlah_mahasiswa']);
             }
 
             return [
-                'jumlah_luaran'    => $totalLuaran,
-                'jumlah_mahasiswa' => $maxMahasiswa,
-                'ratio'            => $maxMahasiswa > 0
-                    ? round($totalLuaran / $maxMahasiswa, 4)
+                'jumlah_luaran'                      => $totalLuaran,
+                'jumlah_mahasiswa'                   => $maxMahasiswaTa,
+                'ratio'                              => $maxMahasiswaTa > 0
+                    ? round($totalLuaran / $maxMahasiswaTa, 4)
+                    : 0.0,
+                'jumlah_penelitian'                  => $totalPenelitian,
+                'jumlah_mahasiswa_terlibat'          => $totalMahasiswaTerlibat,
+                'ratio_jumlah_penelitian_mahasiswa'  => $maxMahasiswaTa > 0
+                    ? round($totalPenelitian / $maxMahasiswaTa, 4)
+                    : 0.0,
+                'ratio_mahasiswa_terlibat'           => $maxMahasiswaTa > 0
+                    ? round($totalMahasiswaTerlibat / $maxMahasiswaTa, 4)
                     : 0.0,
             ];
         }
@@ -485,22 +511,64 @@ class LkpsDataReaderService
                 $mahasiswaRowCount++;
 
                 if ($mahasiswaRowCount === $n) {
-                    $jumlahMahasiswa = (int)($row[3] ?? 0);
+                    $jumlahMahasiswaTa = (int)($row[3] ?? 0);
 
-                    // Resolve formula jika ada (=SUM(...))
+                    if ($lastJumlahRow === null) {
+                        return $this->emptySubTabelResult();
+                    }
+
+                    // ── Ratio 1: jumlah penelitian/karya per mahasiswa TA ──
+                    // Kolom D di baris "Jumlah Penelitian..." = count item penelitian
+                    $rawJumlahPenelitian = $lastJumlahRow[self::R3_COL_JUMLAH_PENELITIAN] ?? 0;
+                    $jumlahPenelitian    = (int)$this->resolveFormulaOrValueFromRows(
+                        $rawJumlahPenelitian,
+                        $lastJumlahRow,
+                        $rows,
+                        self::R3_COL_JUMLAH_PENELITIAN
+                    );
+
+                    // ── Ratio 2: mahasiswa terlibat per mahasiswa TA ──
+                    // kolomLuaran (G/H) → publikasi/karya inovasi di sheet lain
+                    // Kolom E khusus untuk mahasiswa terlibat di tabel R.3.1.e
+                    $rawMahasiswaTerlibat = $lastJumlahRow[self::R3_COL_MAHASISWA_TERLIBAT] ?? 0;
+
+                    // Jika kolom E kosong, fallback ke kolomLuaran (backward compat)
+                    if (!is_numeric($rawMahasiswaTerlibat) || (int)$rawMahasiswaTerlibat === 0) {
+                        $rawMahasiswaTerlibat = $lastJumlahRow[$kolomLuaran] ?? 0;
+                    }
+
+                    $jumlahMahasiswaTerlibat = (int)$this->resolveFormulaOrValueFromRows(
+                        $rawMahasiswaTerlibat,
+                        $lastJumlahRow,
+                        $rows,
+                        self::R3_COL_MAHASISWA_TERLIBAT
+                    );
+
+                    // ── jumlah_luaran tetap dari kolomLuaran untuk backward compat ──
                     $rawLuaran    = $lastJumlahRow[$kolomLuaran] ?? 0;
                     $jumlahLuaran = (int)$this->resolveFormulaOrValueFromRows(
                         $rawLuaran,
-                        $lastJumlahRow ?? [],
+                        $lastJumlahRow,
                         $rows,
                         $kolomLuaran
                     );
 
                     return [
+                        // Backward compat — dipakai oleh getDataCapaianLulusan()
                         'jumlah_luaran'    => $jumlahLuaran,
-                        'jumlah_mahasiswa' => $jumlahMahasiswa,
-                        'ratio'            => $jumlahMahasiswa > 0
-                            ? round($jumlahLuaran / $jumlahMahasiswa, 4)
+                        'jumlah_mahasiswa' => $jumlahMahasiswaTa,
+                        'ratio'            => $jumlahMahasiswaTa > 0
+                            ? round($jumlahLuaran / $jumlahMahasiswaTa, 4)
+                            : 0.0,
+
+                        // Dua ratio baru sesuai kolom D dan E
+                        'jumlah_penelitian'              => $jumlahPenelitian,
+                        'jumlah_mahasiswa_terlibat'      => $jumlahMahasiswaTerlibat,
+                        'ratio_jumlah_penelitian_mahasiswa' => $jumlahMahasiswaTa > 0
+                            ? round($jumlahPenelitian / $jumlahMahasiswaTa, 4)
+                            : 0.0,
+                        'ratio_mahasiswa_terlibat'       => $jumlahMahasiswaTa > 0
+                            ? round($jumlahMahasiswaTerlibat / $jumlahMahasiswaTa, 4)
                             : 0.0,
                     ];
                 }
@@ -509,7 +577,20 @@ class LkpsDataReaderService
             }
         }
 
-        return ['jumlah_luaran' => 0, 'jumlah_mahasiswa' => 0, 'ratio' => 0.0];
+        return $this->emptySubTabelResult();
+    }
+
+    private function emptySubTabelResult(): array
+    {
+        return [
+            'jumlah_luaran'                      => 0,
+            'jumlah_mahasiswa'                   => 0,
+            'ratio'                              => 0.0,
+            'jumlah_penelitian'                  => 0,
+            'jumlah_mahasiswa_terlibat'          => 0,
+            'ratio_jumlah_penelitian_mahasiswa'  => 0.0,
+            'ratio_mahasiswa_terlibat'           => 0.0,
+        ];
     }
 
     private function resolveFormulaOrValueFromRows(
@@ -699,27 +780,33 @@ class LkpsDataReaderService
             );
         }
 
-        $memenuhi = $data['persen'] >= $minPersen;
+        // ── Syarat dinilai dari ratio_mahasiswa_terlibat ──
+        $ratioTerlibat = $data['ratio_mahasiswa_terlibat'];
+        $memenuhi      = $ratioTerlibat >= $minPersen;
 
         return [
-            'memenuhi'         => $memenuhi,
-            'tipe'             => 'lulusan',
-            'tipe_capaian'     => $tipeCapaian,
-            'persen'           => $data['persen'],
-            'persen_minimum'   => $minPersen,
-            'jumlah_luaran'    => $data['jumlah_luaran'],
-            'jumlah_mahasiswa' => $data['jumlah_mahasiswa'],
-            'label_capaian'    => $labelCapaian,
-            'detail'           => [
+            'memenuhi'                          => $memenuhi,
+            'tipe'                              => 'lulusan',
+            'tipe_capaian'                      => $tipeCapaian,
+            'persen'                            => $ratioTerlibat, // untuk backward compat di blade lama
+            'persen_minimum'                    => $minPersen,
+            'jumlah_luaran'                     => $data['jumlah_luaran'],
+            'jumlah_penelitian'                 => $data['jumlah_penelitian'],
+            'jumlah_mahasiswa_terlibat'         => $data['jumlah_mahasiswa_terlibat'],
+            'jumlah_mahasiswa'                  => $data['jumlah_mahasiswa'],
+            'ratio_jumlah_penelitian_mahasiswa' => $data['ratio_jumlah_penelitian_mahasiswa'],
+            'ratio_mahasiswa_terlibat'          => $ratioTerlibat,
+            'label_capaian'                     => $labelCapaian,
+            'detail'                            => [
                 'kolaborasi' => $data['detail_kolaborasi'],
                 'mandiri'    => $data['detail_mandiri'],
             ],
-            'detail_per_sheet' => $data['detail_per_sheet'] ?? [], // ← tambah ini
-            'keterangan'       => $memenuhi
-                ? "☑ {$data['jumlah_luaran']} dari {$data['jumlah_mahasiswa']} mahasiswa "
-                . "({$data['persen']}%) {$labelCapaian}. Syarat ≥ {$minPersen}%."
-                : "☒ Hanya {$data['jumlah_luaran']} dari {$data['jumlah_mahasiswa']} mahasiswa "
-                . "({$data['persen']}%) {$labelCapaian}. Syarat ≥ {$minPersen}%.",
+            'detail_per_sheet'                  => $data['detail_per_sheet'] ?? [],
+            'keterangan'                        => $memenuhi
+                ? "☑ {$data['jumlah_mahasiswa_terlibat']} dari {$data['jumlah_mahasiswa']} mahasiswa "
+                . "({$ratioTerlibat}%) terlibat {$labelCapaian}. Syarat ≥ {$minPersen}%."
+                : "☒ Hanya {$data['jumlah_mahasiswa_terlibat']} dari {$data['jumlah_mahasiswa']} mahasiswa "
+                . "({$ratioTerlibat}%) terlibat {$labelCapaian}. Syarat ≥ {$minPersen}%.",
         ];
     }
 
@@ -820,14 +907,18 @@ class LkpsDataReaderService
     private function emptyLulusanResult(string $tipeCapaian): array
     {
         return [
-            'jumlah_luaran'     => 0,
-            'jumlah_mahasiswa'  => 0,
-            'persen'            => 0.0,
-            'tipe_capaian'      => $tipeCapaian,
-            'skala_index'       => 0,
-            'detail_kolaborasi' => ['jumlah_luaran' => 0, 'jumlah_mahasiswa' => 0, 'ratio' => 0.0],
-            'detail_mandiri'    => ['jumlah_luaran' => 0, 'jumlah_mahasiswa' => 0, 'ratio' => 0.0],
-            'detail_per_sheet'  => [],
+            'jumlah_luaran'                     => 0,
+            'jumlah_penelitian'                 => 0,
+            'jumlah_mahasiswa_terlibat'         => 0,
+            'jumlah_mahasiswa'                  => 0,
+            'persen'                            => 0.0,
+            'ratio_jumlah_penelitian_mahasiswa' => 0.0,
+            'ratio_mahasiswa_terlibat'          => 0.0,
+            'tipe_capaian'                      => $tipeCapaian,
+            'skala_index'                       => 0,
+            'detail_kolaborasi'                 => $this->emptySubTabelResult(),
+            'detail_mandiri'                    => $this->emptySubTabelResult(),
+            'detail_per_sheet'                  => [],
         ];
     }
 

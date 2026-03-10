@@ -1,3 +1,4 @@
+{{-- resources\views\asesmen\ak\components\heatmap-matrix.blade.php --}}
 <!-- Heatmap Matrix Component - Enhanced with Merged Cells -->
 <div class="card mb-4 shadow-sm">
     <div class="card-header bg-white border-bottom">
@@ -32,7 +33,7 @@
             <div class="d-flex flex-wrap gap-3">
                 <div class="legend-item">
                     <span class="legend-box" style="background: #9e9e9e;"></span>
-                    <span class="legend-text">Belum Dinilai</span>
+                    <span class="legend-text">Belum Ada Data</span>
                 </div>
                 @foreach ($jenjangs as $jenjang)
                 <div class="legend-item">

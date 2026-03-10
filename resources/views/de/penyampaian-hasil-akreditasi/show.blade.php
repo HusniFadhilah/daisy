@@ -16,7 +16,7 @@
     </nav>
 
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h5 class="mb-1">
                 <i class="bi bi-clipboard-data"></i> Detail Penyampaian Hasil
@@ -120,9 +120,9 @@
                 </div>
                 <div class="col-md-4 text-end">
                     <div class="btn-group">
-                        <form action="{{ route('de.penyampaian-hasil-akreditasi.calculate', $pengajuan->id) }}" method="POST" class="d-inline">
+                        <form id="form-hitung-ulang" action="{{ route('de.penyampaian-hasil-akreditasi.calculate', $pengajuan->id) }}" method="POST" class="d-inline">
                             @csrf
-                            <button type="submit" class="btn btn-outline-primary" onclick="return confirm('Hitung ulang hasil akreditasi?')">
+                            <button type="button" class="btn btn-outline-primary tombol-konfirmasi" data-id-form="form-hitung-ulang" data-message="hitung ulang hasil akreditasi">
                                 <i class="bi bi-arrow-repeat"></i> Hitung Ulang
                             </button>
                         </form>
@@ -215,7 +215,7 @@
             </h5>
         </div>
         <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
                 <div>
                     <h6 class="mb-1">{{ $beritaAcara->title }}</h6>
                     <p class="text-muted mb-2">
@@ -238,10 +238,10 @@
                     <a href="{{ route('de.penyampaian-hasil-akreditasi.download-berita-acara', $pengajuan->id) }}" class="btn btn-outline-dark" target="_blank">
                         <i class="bi bi-eye"></i> Lihat File
                     </a>
-                    <form action="{{ route('de.penyampaian-hasil-akreditasi.delete-berita-acara', $pengajuan->id) }}" method="POST" class="d-inline">
+                    <form id="form-hapus-berita-finalisasi" action="{{ route('de.penyampaian-hasil-akreditasi.delete-berita-acara', $pengajuan->id) }}" method="POST" class="d-inline">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Hapus berita acara ini? Anda harus upload ulang untuk finalisasi.')">
+                        <button type="button" class="btn btn-outline-danger tombol-hapus" data-id-form="form-hapus-berita-finalisasi" data-text="berita acara">
                             <i class="bi bi-trash"></i> Hapus
                         </button>
                     </form>
@@ -261,7 +261,7 @@
             </h5>
         </div>
         <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
                 <div>
                     <h6 class="mb-1">{{ $beritaAcara->title }}</h6>
                     <p class="text-muted mb-2">
@@ -343,6 +343,7 @@
                             <strong class="d-block mb-1">
                                 <i class="bi bi-key me-1"></i> Syarat Kunci
                             </strong>
+                            <a href="{{ route('pengajuan.borang.lkps.preview',$pengajuan->id) }}">Lihat Detail LKPS</a>
                             <ul class="mb-0 ps-3 text-muted">
                                 <li>Skor ≥ {{ $validationSummary['skor_minimum'] }}</li>
                                 <li>Rasio DTPS : Mahasiswa sesuai batas rumpun</li>
@@ -436,7 +437,7 @@
                         <i class="bi bi-{{ $syaratP1['jabatan']['memenuhi'] ? 'check-circle-fill text-dark' : 'x-circle-fill text-danger' }} fs-4 me-3 mt-1 flex-shrink-0"></i>
                         <div>
                             <strong>
-                                {{ $syaratP1['jabatan']['label_jabatan'] ?? 'Jabatan Valid' }}
+                                {{ ucfirst($syaratP1['jabatan']['label_jabatan'] ?? 'Jabatan Valid') }}
                                 ≥ {{ $syaratP1['jabatan']['persen_minimum'] ?? 50 }}%
                             </strong>
                             <div class="text-muted" style="font-size:.85rem">
@@ -472,11 +473,33 @@
                                 {{ $syaratP1['lulusan']['keterangan'] }}
                             </div>
                             @if(($syaratP1['lulusan']['jumlah_mahasiswa'] ?? 0) > 0)
+                            @php
+                            $lulusan = $syaratP1['lulusan'];
+                            @endphp
+                            {{-- Ratio utama: mahasiswa terlibat (dipakai untuk syarat) --}}
                             <div class="text-muted mt-1" style="font-size:.78rem">
-                                {{ $syaratP1['lulusan']['jumlah_luaran'] ?? 0 }}
-                                dari {{ $syaratP1['lulusan']['jumlah_mahasiswa'] }} mahasiswa
-                                ({{ number_format($syaratP1['lulusan']['persen'] ?? 0, 1) }}%)
-                                &middot; Tipe: <em>{{ $syaratP1['lulusan']['tipe_capaian'] ?? '-' }}</em>
+                                <strong>Mahasiswa terlibat:</strong>
+                                {{ $lulusan['jumlah_mahasiswa_terlibat'] }}
+                                dari {{ $lulusan['jumlah_mahasiswa'] }} mahasiswa TA
+                                &nbsp;
+                                <span class="badge {{ $lulusan['memenuhi'] ? 'bg-secondary' : 'bg-light text-danger border' }}">
+                                    {{ number_format($lulusan['ratio_mahasiswa_terlibat'], 1) }}%
+                                </span>
+                                &nbsp;≥ {{ $lulusan['persen_minimum'] }}% ?
+                                {{ $lulusan['memenuhi'] ? '✓' : '✗' }}
+                            </div>
+                            {{-- Ratio informatif: jumlah item penelitian/karya --}}
+                            <div class="text-muted mt-1" style="font-size:.78rem">
+                                <strong>Jumlah karya/penelitian:</strong>
+                                {{ $lulusan['jumlah_penelitian'] }}
+                                dari {{ $lulusan['jumlah_mahasiswa'] }} mahasiswa TA
+                                &nbsp;
+                                <span class="badge bg-light text-muted border">
+                                    {{ number_format($lulusan['ratio_jumlah_penelitian_mahasiswa'], 1) }}%
+                                </span>
+                            </div>
+                            <div class="text-muted mt-1" style="font-size:.78rem">
+                                Tipe: <em>{{ $lulusan['tipe_capaian'] ?? '-' }}</em>
                             </div>
                             @else
                             <div class="text-warning mt-1" style="font-size:.78rem">
@@ -773,11 +796,109 @@
         </div>
     </div>
     @endif
+
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8 mb-4">
+            <!-- Informasi Hasil Akreditasi -->
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle"></i> Informasi Penyampaian Hasil Akreditasi
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th>Program Studi</th>
+                            <td>: {{ $pengajuan->studyProgram->name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Universitas</th>
+                            <td>: {{ $pengajuan->studyProgram->university->name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Jenis Permohonan Akreditasi</th>
+                            <td>: {{ $pengajuan->jenis_akreditasi_label }}</td>
+                        </tr>
+                        <tr>
+                            <th>Tanggal Hasil Disampaikan</th>
+                            <td>
+                                : {{ $pengajuan->tanggal_hasil_akreditasi_dikirim
+                                    ? $pengajuan->tanggal_hasil_akreditasi_dikirim->locale('id')->translatedFormat('d M Y H:i')
+                                    : '-' }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Status Penyampaian Hasil Akreditasi</th>
+                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('penyampaian_hasil', 'de','label_long_for','text-dark') !!}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Ringkasan Hasil -->
+
+            <!-- Timeline -->
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history"></i> Riwayat Status
+                    </h5>
+                </div>
+                <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                    @php
+                    $filterStatuses = [
+                    \App\Models\PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
+                    \App\Models\PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM,
+                    ];
+
+                    $logs = $pengajuan->statusLog
+                    ->whereIn('status_to', $filterStatuses)
+                    ->sortBy('created_at')
+                    ->unique('status_to')
+                    ->values();
+                    @endphp
+
+                    @if($logs->count() > 0)
+                    <div class="timeline">
+                        @foreach($logs as $log)
+                        <div class="timeline-item mb-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-circle-fill text-success" style="font-size: 8px;"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <strong>
+                                        {{ \App\Models\PengajuanAkreditasi::statusMap()[$log->status_to]['label'] ?? $log->status_to }}
+                                    </strong>
+                                    <br>
+                                    <small class="text-muted">{{ $log->created_at->locale('id')->translatedFormat('d M Y H:i') }}</small>
+
+                                    {{-- @if($log->keterangan)
+                                    <br>
+                                    <small class="text-muted fst-italic">{{ $log->keterangan }}</small>
+                                    @endif --}}
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                    @else
+                    <p class="text-muted text-center mb-0">Belum ada riwayat</p>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {{-- Modal --}}
 <div class="modal fade" id="modalFinalize" tabindex="-1" aria-labelledby="modalFinalizeLabel" aria-hidden="true">
     <div class="modal-dialog">
-        <form action="{{ route('de.penyampaian-hasil-akreditasi.finalize', $pengajuan->id) }}" method="POST">
+        <form id="form-finalize-hasil-akreditasi" action="" method="POST">
             @csrf
             <div class="modal-content">
                 <div class="modal-header">
@@ -794,7 +915,8 @@
                         <label class="form-label">Masa sanggah berakhir pada</label>
                         @php
                         $minEnd = now()->addMinute()->format('Y-m-d\TH:i'); // minimal 1 menit dari server
-                        $defaultEnd = now()->addMinute(3)->format('Y-m-d\TH:i'); // default 7 hari
+                        //$defaultEnd = now()->addMinute(3)->format('Y-m-d\TH:i'); // default 7 hari
+                        $defaultEnd = now()->addDays(7)->format('Y-m-d\TH:i'); // default 7 hari
                         @endphp
                         <input type="datetime-local" name="tanggal_masa_sanggah_selesai" class="form-control" min="{{ $minEnd }}" value="{{ old('tanggal_masa_sanggah_selesai', $defaultEnd) }}" required>
 
@@ -810,7 +932,7 @@
 
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-outline-success" onclick="return confirm('Finalisasi hasil akreditasi? Tindakan ini tidak dapat dibatalkan!')">
+                    <button type="button" class="btn btn-outline-success tombol-konfirmasi-hasil-akreditasi" data-id-form="form-finalize-hasil-akreditasi" data-message="Finalisasi hasil akreditasi? Tindakan ini tidak dapat dibatalkan" data-href="{{ route('de.penyampaian-hasil-akreditasi.finalize', $pengajuan->id) }}">
                         <i class="bi bi-lock"></i> Finalisasi
                     </button>
                 </div>
@@ -824,6 +946,12 @@
 $errorHasTanggalMasaSanggahSelesai = $errors->has('tanggal_masa_sanggah_selesai');
 @endphp
 <script>
+    alertConfirm({
+        selector: '.tombol-konfirmasi-hasil-akreditasi'
+        , formId: 'form-finalize-hasil-akreditasi'
+        , isMessage: true
+        , isDataHref: true
+    });
     document.addEventListener('DOMContentLoaded', function() {
         // Kalau ada error untuk field dalam modal, buka modal otomatis
         @if($errorHasTanggalMasaSanggahSelesai)

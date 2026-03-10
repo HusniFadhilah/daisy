@@ -32,7 +32,13 @@ class ImportPenilaianExcelJob implements ShouldQueue
     public function __construct($modelPenilaianElemen, $filePath, $idAsesmen, $userId, $importLogId)
     {
         $this->modelPenilaianElemen    = $modelPenilaianElemen;
-        $this->penilaianName = $modelPenilaianElemen == \App\Models\PenilaianElemenAl::class ? 'AL' : 'AK';
+        $map = [
+            \App\Models\PenilaianElemenAl::class => 'AL',
+            \App\Models\PenilaianElemenAk::class => 'AK',
+            \App\Models\PenilaianElemenAlBanding::class => 'AL Banding',
+            \App\Models\PenilaianElemenAkBanding::class => 'AK Banding',
+        ];
+        $this->penilaianName = $map[$modelPenilaianElemen] ?? null;
         $this->filePath    = $filePath;
         $this->idAsesmen   = $idAsesmen;
         $this->userId      = $userId;
@@ -56,16 +62,77 @@ class ImportPenilaianExcelJob implements ShouldQueue
 
             $fullPath    = Storage::path($this->filePath);
             $spreadsheet = IOFactory::load($fullPath);
-            $worksheet   = $spreadsheet->getSheetByName('Kertas Kerja ' . $this->penilaianName . ' Asesor');
+
+            $allowedSheets = [
+                'Kertas Kerja AK Asesor',
+                'Kertas Kerja AL Asesor',
+                'Kertas Kerja Asesor AL',
+                'Kertas Kerja Asesor AK',
+                'Kertas Kerja Asesor AK Banding',
+                'Kertas Kerja Asesor AL Banding',
+                'Kertas Kerja AK Banding Asesor',
+                'Kertas Kerja AL Banding Asesor',
+            ];
+
+            // kandidat nama sheet berdasarkan jenis penilaian saat ini
+            $possibleTargets = array_values(array_intersect([
+                'Kertas Kerja ' . $this->penilaianName . ' Asesor',
+                'Kertas Kerja Asesor ' . $this->penilaianName,
+            ], $allowedSheets));
+
+            // semua nama sheet yang ada di file
+            $existingSheetNames = array_map(
+                fn($sheet) => trim($sheet->getTitle()),
+                $spreadsheet->getAllSheets()
+            );
+
+            // cari sheet pertama yang cocok
+            $foundSheetName = null;
+            foreach ($possibleTargets as $candidate) {
+                foreach ($existingSheetNames as $existing) {
+                    if (strcasecmp(trim($candidate), trim($existing)) === 0) {
+                        $foundSheetName = $existing;
+                        break 2;
+                    }
+                }
+            }
+
+            // fallback: kalau nama target tidak ketemu, cari sheet mana pun yang termasuk whitelist
+            if ($foundSheetName === null) {
+                foreach ($existingSheetNames as $existing) {
+                    foreach ($allowedSheets as $allowed) {
+                        if (strcasecmp(trim($allowed), trim($existing)) === 0) {
+                            $foundSheetName = $existing;
+                            break 2;
+                        }
+                    }
+                }
+            }
+
+            if ($foundSheetName === null) {
+                Log::error(
+                    'Tidak ditemukan sheet yang valid. Kandidat: ' . implode(', ', $possibleTargets) .
+                        '. Sheet tersedia: ' . implode(', ', $existingSheetNames)
+                );
+
+                throw new \Exception(
+                    'Sheet valid tidak ditemukan. ' .
+                        'Kandidat yang dicari: ' . implode(', ', $possibleTargets) . '. ' .
+                        'Sheet tersedia di file: ' . implode(', ', $existingSheetNames)
+                );
+            }
+
+            $worksheet = $spreadsheet->getSheetByName($foundSheetName);
 
             if (!$worksheet) {
-                throw new \Exception('Sheet "Kertas Kerja ' . $this->penilaianName . ' Asesor" tidak ditemukan');
+                throw new \Exception('Sheet "' . $foundSheetName . '" gagal dibuka.');
             }
 
             $totalRows    = 0;
             $importedRows = 0;
             $failedRows   = 0;
             $errors       = [];
+            $errorsMessage       = [];
 
             $highestRow = $worksheet->getHighestRow();
 
@@ -123,6 +190,7 @@ class ImportPenilaianExcelJob implements ShouldQueue
                     }
 
                     if ($kodeElemen === '') {
+                        $errorsMessage[] = "Row {$row}: Kode elemen tidak ditemukan (baris templat: {$templateRow})";
                         $errors[] = "Row {$row}: Kode elemen tidak ditemukan (baris templat: {$templateRow})";
                         $failedRows++;
                         Log::error("Row {$row}: Kode elemen kosong");
@@ -135,6 +203,7 @@ class ImportPenilaianExcelJob implements ShouldQueue
                     $elemen = ElemenStandar::where('kode_elemen', $kodeElemen)->first();
 
                     if (!$elemen) {
+                        $errorsMessage[] = "Row {$row}: Elemen dengan kode '{$kodeElemen}' tidak ditemukan di database";
                         $errors[] = "Row {$row}: Elemen dengan kode '{$kodeElemen}' tidak ditemukan di database";
                         $failedRows++;
                         // Log::error("Row {$row}: Elemen '{$kodeElemen}' not found in DB");
@@ -161,6 +230,7 @@ class ImportPenilaianExcelJob implements ShouldQueue
 
                 } catch (\Exception $e) {
                     $errors[] = "Row {$row}: " . $e->getMessage();
+                    $errorsMessage[] = "Terjadi kegagalan membaca baris ke-{$row}";
                     $failedRows++;
                     Log::error("Error importing row {$row}: " . $e->getMessage());
                 }
@@ -174,6 +244,7 @@ class ImportPenilaianExcelJob implements ShouldQueue
                 'imported_rows' => $importedRows,
                 'failed_rows'   => $failedRows,
                 'errors'        => $errors,
+                'errors_message'        => $errorsMessage,
                 'completed_at'  => now(),
             ]);
 
@@ -186,6 +257,7 @@ class ImportPenilaianExcelJob implements ShouldQueue
 
             $importLog->update([
                 'status'       => 'failed',
+                'errors_message' => 'Terjadi kegagalan, silahkan coba lagi atau hubungi administrator',
                 'errors'       => ['General error: ' . $e->getMessage()],
                 'completed_at' => now(),
             ]);
@@ -280,6 +352,7 @@ class ImportPenilaianExcelJob implements ShouldQueue
         if ($importLog) {
             $importLog->update([
                 'status'       => 'failed',
+                'errors_message' => 'Terjadi kegagalan, silahkan coba lagi atau hubungi administrator',
                 'errors'       => [
                     'Job failed: ' . $exception->getMessage(),
                     'File: ' . $exception->getFile(),

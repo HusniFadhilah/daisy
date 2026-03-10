@@ -123,8 +123,8 @@
         });
     });
 
-    function deleteRecord(id) {
-        if (confirm('Apakah Anda yakin ingin menghapus program studi ini?')) {
+    async function deleteRecord(id) {
+        if (await swalConfirmSubmit('warning', 'Apakah Anda yakin ingin menghapus program studi ini?')) {
             var form = document.getElementById('deleteForm');
             form.action = '/study-programs/' + id;
             form.submit();

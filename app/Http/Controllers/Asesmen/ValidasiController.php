@@ -482,7 +482,7 @@ class ValidasiController extends Controller
             'type' => 'primary',
             'icon' => 'bi-clipboard-check',
             'title' => 'Validasi sedang berjalan.',
-            'message' => "Progress validasi: {$validatedCount}/{$totalElemen} elemen. Mohon lanjutkan validasi elemen yang belum divalidasi.",
+            'message' => "Progres validasi: {$validatedCount}/{$totalElemen} elemen. Mohon lanjutkan validasi elemen yang belum divalidasi.",
         ];
     }
 

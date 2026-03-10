@@ -40,6 +40,16 @@ class ElemenStandar extends Model
         return $this->hasMany(PenilaianElemenAl::class, 'id_elemen');
     }
 
+    public function penilaianElemenAkBanding()
+    {
+        return $this->hasMany(PenilaianElemenAkBanding::class, 'id_elemen');
+    }
+
+    public function penilaianElemenAlBanding()
+    {
+        return $this->hasMany(PenilaianElemenAlBanding::class, 'id_elemen');
+    }
+
     public function indikatorPenilaian()
     {
         return $this->hasMany(IndikatorPenilaianElemen::class, 'id_elemen')->with('jenjangPenilaian')

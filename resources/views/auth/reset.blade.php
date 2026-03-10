@@ -243,14 +243,14 @@
 
         if (password !== confirmPassword) {
             e.preventDefault();
-            alert('Password dan konfirmasi password tidak cocok!');
+            Swal.fire('Perhatian', 'Password dan konfirmasi password tidak cocok!', 'error');
             return false;
         }
 
         // Check minimum requirements
         if (password.length < 8) {
             e.preventDefault();
-            alert('Password harus minimal 8 karakter!');
+            Swal.fire('Perhatian', 'Password harus minimal 8 karakter!', 'error');
             return false;
         }
 

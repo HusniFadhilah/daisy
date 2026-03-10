@@ -90,7 +90,7 @@ $authUser = Auth::user();
                             <div class="d-flex justify-content-between align-items-start mb-3">
                                 <div class="flex-grow-1">
                                     <h5 class="card-title mb-1 text-primary">{{ $penawaran->asesmen->getName(false) }}</h5>
-                                    <span class="badge bg-primary">{{ $penawaran->role->alias.' '.$penawaran->jenis_asesmen_label }}</span>
+                                    <span class="badge bg-primary">{{ $penawaran->jenis_asesmen_role_label }}</span>
                                 </div>
                                 <span class="badge bg-warning status-badge ps-2">
                                     <i class="bi bi-clock-history"></i> Pending
@@ -212,7 +212,7 @@ $authUser = Auth::user();
                             @endif
                         </td>
                         <td>
-                            <span class="badge bg-primary">{{ $assignment->role->alias.' '.$assignment->jenis_asesmen_label }}</span>
+                            <span class="badge bg-primary">{{ $assignment->jenis_asesmen_role_label }}</span>
                         </td>
                         <td>
                             @if($assignment->status_penawaran === 'accepted')
@@ -237,9 +237,13 @@ $authUser = Auth::user();
                         </td>
                         <td>
                             @if($assignment->status_penawaran === 'accepted')
-                            @if($authUser->role_selected == 'asesor')
+                            @if(in_array($authUser->role_selected, ['asesor','asesor_banding']))
                             @if (in_array($jenisAsesmen,['ak','al']))
                             <a href="{{ route($jenisAsesmen.'.berkas.upload-excel',$assignment->id_asesmen) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-arrow-right"></i> Penilaian
+                            </a>
+                            @elseif (in_array($jenisAsesmen,['ak_banding', 'al_banding']))
+                            <a href="{{ route($jenisAsesmen.'.berkas.show',$assignment->id_asesmen) }}" class="btn btn-sm btn-outline-primary">
                                 <i class="bi bi-arrow-right"></i> Penilaian
                             </a>
                             @endif
@@ -365,13 +369,14 @@ $authUser = Auth::user();
             }
         },
 
-        surveillance: {
-            desc: (roleLabel) => `Anda akan menerima penawaran sebagai <strong>${roleLabel}</strong> untuk melakukan pemantauan (surveillance).`
+        asesor_banding: {
+            desc: (roleLabel) => `Anda akan menerima penawaran sebagai <strong>${roleLabel}</strong> untuk melakukan pemantauan (asesor_banding).`
             , info: (_roleLabel, jenis) => {
-                if (jenis === 'dokumen') return 'Setelah menerima, Anda dapat mengakses dokumen pemantauan, mencatat temuan, dan menyusun laporan surveillance.';
-                if (jenis === 'ak') return 'Setelah menerima, Anda dapat mengakses instrumen pemantauan, mencatat temuan, dan menyusun laporan surveillance.';
-                if (jenis === 'al') return 'Setelah menerima, Anda dapat mengakses dokumen pemantauan lapangan, mencatat temuan, dan menyusun laporan surveillance.';
-                return 'Setelah menerima, Anda dapat mengakses instrumen pemantauan, mencatat temuan, dan menyusun laporan surveillance.';
+                if (jenis === 'dokumen') return 'Setelah menerima, Anda dapat mengakses dokumen pemantauan, mencatat temuan, dan menyusun laporan asesor_banding.';
+                if (jenis === 'ak') return 'Setelah menerima, Anda dapat mengakses instrumen pemantauan, mencatat temuan, dan menyusun laporan asesor_banding.';
+                if (jenis === 'al') return 'Setelah menerima, Anda dapat mengakses dokumen pemantauan lapangan, mencatat temuan, dan menyusun laporan asesor_banding.';
+                if (jenis === 'banding') return 'Setelah menerima, Anda dapat mengakses instrumen pemantauan, mencatat temuan, dan menyusun Laporan Surveilance Penanganan Banding.';
+                return 'Setelah menerima, Anda dapat mengakses instrumen pemantauan, mencatat temuan, dan menyusun laporan.';
             }
         },
 
@@ -386,14 +391,14 @@ $authUser = Auth::user();
         const s = (roleStr || '').toString().toLowerCase();
         if (s.includes('asesor')) return 'asesor';
         if (s.includes('validator')) return 'validator';
-        if (s.includes('surveillance') || s.includes('surveilans')) return 'surveillance';
+        if (s.includes('asesor_banding') || s.includes('surveilans')) return 'asesor_banding';
         return 'default';
     }
 
     // helper: normalisasi jenis asesmen
     function normalizeJenisKey(jenisStr) {
         const s = (jenisStr || '').toString().toLowerCase();
-        if (['dokumen', 'ak', 'al'].includes(s)) return s;
+        if (['dokumen', 'ak', 'al', 'ak_banding', 'al_banding'].includes(s)) return s;
         return null;
     }
 

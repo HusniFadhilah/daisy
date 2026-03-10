@@ -83,7 +83,7 @@
             <tr>
                 <td>Email</td>
                 <td>:</td>
-                <td>{{ $validator->user->email }}</td>
+                <td class="text-wrap">{{ $validator->user->email }}</td>
             </tr>
             <tr>
                 <td>Jabatan</td>

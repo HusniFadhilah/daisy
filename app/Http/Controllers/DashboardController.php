@@ -29,6 +29,8 @@ class DashboardController extends Controller
                 return $this->dashboardSekretariat();
             case 'asesor':
                 return $this->dashboardAsesor();
+            case 'asesor_banding':
+                return $this->dashboardAsesor(true);
             case 'validator':
                 return $this->dashboardValidator();
             case 'verifikator':
@@ -174,15 +176,15 @@ class DashboardController extends Controller
     /**
      * ✅ Dashboard Asesor
      */
-    private function dashboardAsesor()
+    private function dashboardAsesor($isBanding = false)
     {
         $user = Auth::user();
 
         // 1. Penawaran Menunggu untuk user ini
         $penawaranMenunggu = AsesmenUserRole::nonExample()->where('id_user', $user->id)
             ->where('status_penawaran', 'pending')
-            ->whereHas('role', function ($q) {
-                $q->where('name', 'asesor');
+            ->whereHas('role', function ($q) use ($isBanding) {
+                $q->where('name', $isBanding ? 'asesor_banding' : 'asesor');
             })
             ->count();
 
@@ -190,16 +192,16 @@ class DashboardController extends Controller
         $penugasanAktif = AsesmenUserRole::nonExample()->where('id_user', $user->id)
             ->where('status_penawaran', 'accepted')
             ->whereIn('status_pekerjaan', ['not_started', 'in_progress', 'submitted'])
-            ->whereHas('role', function ($q) {
-                $q->where('name', 'asesor');
+            ->whereHas('role', function ($q) use ($isBanding) {
+                $q->where('name', $isBanding ? 'asesor_banding' : 'asesor');
             })
             ->count();
 
         // 3. Penugasan Selesai (approved)
         $penugasanSelesai = AsesmenUserRole::nonExample()->where('id_user', $user->id)
             ->where('status_pekerjaan', 'approved')
-            ->whereHas('role', function ($q) {
-                $q->where('name', 'asesor');
+            ->whereHas('role', function ($q) use ($isBanding) {
+                $q->where('name', $isBanding ? 'asesor_banding' : 'asesor');
             })
             ->count();
 

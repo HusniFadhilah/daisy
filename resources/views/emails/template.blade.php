@@ -6,7 +6,7 @@
     <title>{{ $title ?? 'Notifikasi' }}</title>
 </head>
 
-<body style="margin:0;padding:0;background:#f1f3f5;font-family:Arial,Helvetica,sans-serif;color:#333;">
+<body style="margin:0;padding:0;background:#f1f3f5;font-family:Montserrat,Helvetica,sans-serif;color:#333;">
 
     {{-- Preheader (hidden) --}}
     <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">

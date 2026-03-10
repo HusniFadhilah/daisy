@@ -1,316 +1,348 @@
 <?php
-// app/Http/Controllers/DE/PelaksanaanBandingController.php
 
 namespace App\Http\Controllers\DE;
 
-use App\Http\Controllers\Controller;
+use App\Models\Asesmen;
+use App\Models\AsesmenUserRole;
 use App\Models\PengajuanAkreditasi;
-use App\Models\HasilAkreditasi;
-use App\Models\University;
+use App\Models\PengajuanDokumen;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class PelaksanaanBandingController extends Controller
 {
-    /**
-     * Display list of pengajuan with banding
-     */
+    private const JENIS_ASESMEN = 'banding';
+
+    private function phaseStatuses(): array
+    {
+        return [
+            PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
+            PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN,
+        ];
+    }
+
+    // ============================================================
+    // INDEX
+    // ============================================================
+
     public function index(Request $request)
     {
         $query = PengajuanAkreditasi::with([
             'studyProgram.university',
             'studyProgram.degreeLevel',
-            'studyProgram.category',
-            'pengaju',
-            'asesmen.hasil',
-            'statusLog' => function ($q) {
-                $q->whereIn('status_to', [
-                    PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
-                    PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
-                    PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
-                    PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
-                    PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
-                ])->orderBy('changed_at', 'desc');
-            },
+            'asesmen.asesmenBanding',
+            'asesmen.asesmenUserRoles' => fn($q) =>
+            $q->where('jenis_asesmen', self::JENIS_ASESMEN)->with(['user', 'role_selected']),
+            'statusLog',
         ])
-            // ✅ Filter: hanya yang pernah masuk fase banding
-            ->whereExists(function ($q) {
-                $q->select(DB::raw(1))
-                    ->from('pengajuan_status_log as l')
-                    ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
-                    ->whereIn('l.status_to', [
-                        PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
-                        PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
-                        PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
-                    ]);
-            });
+            ->whereHas('statusLog', fn($q) => $q->whereIn('status_to', $this->phaseStatuses()));
 
-        // Filter by status
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        // Filter by university
         if ($request->filled('university_id')) {
-            $query->whereHas('studyProgram', function ($q) use ($request) {
-                $q->where('id_university', $request->university_id);
-            });
+            $query->whereHas(
+                'studyProgram',
+                fn($q) =>
+                $q->where('id_university', $request->university_id)
+            );
         }
 
-        // Filter by tahun
-        if ($request->filled('tahun')) {
-            $query->where('tahun_akreditasi', $request->tahun);
+        if ($request->filled('status_pelaksanaan')) {
+            $query->whereHas(
+                'statusLog',
+                fn($q) =>
+                $q->where('status_to', $request->status_pelaksanaan)
+            );
         }
 
-        // Filter by hasil banding
-        if ($request->filled('hasil_banding')) {
-            $query->where('hasil_banding', $request->hasil_banding);
-        }
-
-        // Search
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('nomor_pengajuan', 'like', "%{$search}%")
-                    ->orWhereHas('studyProgram', function ($sq) use ($search) {
-                        $sq->where('name', 'like', "%{$search}%");
-                    });
+                    ->orWhereHas(
+                        'studyProgram',
+                        fn($sq) =>
+                        $sq->where('name', 'like', "%{$search}%")
+                    );
             });
         }
 
-        // Sort
-        $sortBy = $request->get('sort_by', 'tanggal_pelaksanaan_banding');
-        $sortOrder = $request->get('sort_order', 'desc');
+        $pengajuans   = $query->orderByDesc('updated_at')->paginate(20);
+        $stats        = $this->calculateStatistics();
+        $universities = \App\Models\University::nonExample()->orderBy('name')->get();
 
-        if ($sortBy === 'tanggal_pelaksanaan_banding') {
-            $query->orderByRaw('COALESCE(tanggal_pelaksanaan_banding, created_at) ' . $sortOrder);
-        } else {
-            $query->orderBy($sortBy, $sortOrder);
+        if ($request->ajax() || $request->wantsJson()) {
+            $html = view('de.pelaksanaan-banding.components.table-content', compact('pengajuans'))->render();
+            return response()->json(['success' => true, 'html' => $html, 'total' => $pengajuans->total()]);
         }
 
-        $pengajuans = $query->paginate(20);
-
-        // Calculate statistics
-        $stats = $this->calculateStatistics();
-
-        // Get filter data
-        $universities = University::nonExample()->orderBy('name')->get();
-        $tahunList = PengajuanAkreditasi::whereNotNull('tanggal_pelaksanaan_banding')
-            ->distinct()
-            ->pluck('tahun_akreditasi')
-            ->filter()
-            ->sort()
-            ->values();
-
-        return view('de.pelaksanaan-banding.index', compact(
-            'pengajuans',
-            'stats',
-            'universities',
-            'tahunList'
-        ));
+        return view('de.pelaksanaan-banding.index', compact('pengajuans', 'stats', 'universities'));
     }
 
-    /**
-     * Show detail pengajuan banding
-     */
+    // ============================================================
+    // SHOW
+    // ============================================================
+
     public function show($id)
     {
         $pengajuan = PengajuanAkreditasi::with([
             'studyProgram.university',
             'studyProgram.degreeLevel',
-            'studyProgram.category',
-            'pengaju',
-            'asesmen.hasil',
-            'asesmen.asesmenKecukupan.validators',
-            'asesmen.asesmenLapangan.validators',
-            'dokumen' => function ($q) {
-                $q->whereIn('jenis_dokumen', ['laporan_ak', 'laporan_al', 'lainnya'])
-                    ->where('is_latest', true);
-            },
-            'statusLog',
+            'asesmen.asesmenBanding',
+            'asesmen.asesmenUserRoles' => fn($q) =>
+            $q->where('jenis_asesmen', self::JENIS_ASESMEN)->with(['user', 'role_selected']),
+            'dokumen',
+            'statusLog' => fn($q) => $q->orderByDesc('changed_at')->with('changedBy'),
         ])->findOrFail($id);
 
-        // Check if banding exists
-        if (!$pengajuan->tanggal_pelaksanaan_banding) {
-            return redirect()
-                ->route('de.pelaksanaan-banding')
-                ->with('error', 'Pengajuan ini belum mengajukan banding.');
-        }
+        // Dokumen pelaksanaan
+        $suratTugasBanding = $pengajuan->dokumen
+            ->where('jenis_dokumen', 'surat_tugas_asesor_banding')
+            ->where('is_latest', true)->first();
 
-        return view('de.pelaksanaan-banding.show', compact('pengajuan'));
+        $beritaAcaraBanding = $pengajuan->dokumen
+            ->where('jenis_dokumen', 'berita_acara_banding')
+            ->where('is_latest', true)->first();
+
+        $laporanBanding = $pengajuan->dokumen
+            ->where('jenis_dokumen', 'laporan_banding')
+            ->where('is_latest', true)->first();
+
+        $asesors = $pengajuan->asesmen
+            ? $pengajuan->asesmen->asesmenUserRoles->where('jenis_asesmen', self::JENIS_ASESMEN)
+            : collect();
+
+        return view('de.pelaksanaan-banding.show', compact(
+            'pengajuan',
+            'suratTugasBanding',
+            'beritaAcaraBanding',
+            'laporanBanding',
+            'asesors',
+        ));
     }
 
-    /**
-     * Mulai pelaksanaan banding
-     */
-    public function mulaiPelaksanaan(Request $request, $id)
-    {
-        $pengajuan = PengajuanAkreditasi::findOrFail($id);
+    // ============================================================
+    // START PELAKSANAAN: banding_ditugaskan → banding_dilaksanakan
+    // ============================================================
 
-        // Validasi status
-        if ($pengajuan->status !== PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN) {
-            return back()->with('error', 'Status saat ini tidak sesuai untuk memulai pelaksanaan banding.');
-        }
+    public function startPelaksanaan(Request $request, $id)
+    {
+        $request->validate(['catatan' => 'nullable|string|max:500']);
 
         DB::beginTransaction();
         try {
-            // Update status
-            $pengajuan->update([
-                'status' => PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
-                'tanggal_pelaksanaan_banding' => now(),
-            ]);
+            $pengajuan = PengajuanAkreditasi::findOrFail($id);
 
-            // Log status change
+            if ($pengajuan->status !== PengajuanAkreditasi::STATUS_ASESOR_AK_BANDING_ASSIGNED) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Status harus banding_ditugaskan untuk memulai pelaksanaan.',
+                ], 422);
+            }
+
+            // Pastikan minimal 1 asesor sudah accepted
+            $hasAccepted = AsesmenUserRole::where('id_asesmen', $pengajuan->asesmen->id)
+                ->where('jenis_asesmen', self::JENIS_ASESMEN)
+                ->where('status_penawaran', 'accepted')
+                ->exists();
+
+            if (!$hasAccepted) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Belum ada asesor banding yang menyetujui penawaran.',
+                ], 422);
+            }
+
+            $statusFrom = $pengajuan->status;
+            $pengajuan->update(['status' => PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN]);
             $pengajuan->statusLog()->create([
-                'status_from' => PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
-                'status_to' => PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
-                'changed_by' => auth()->id(),
-                'changed_at' => now(),
-                'keterangan' => $request->keterangan ?? 'Memulai pelaksanaan banding',
+                'status_from' => $statusFrom,
+                'status_to'   => PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
+                'changed_by'  => Auth::id(),
+                'keterangan'  => 'Pelaksanaan banding dimulai.'
+                    . ($request->catatan ? ' Catatan: ' . $request->catatan : ''),
+                'changed_at'  => now(),
             ]);
 
             DB::commit();
-
-            return redirect()
-                ->route('de.pelaksanaan-banding.show', $id)
-                ->with('success', 'Pelaksanaan banding dimulai.');
-        } catch (\Exception $e) {
+            return response()->json(['success' => true, 'message' => 'Pelaksanaan banding berhasil dimulai.']);
+        } catch (\Throwable $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal memulai pelaksanaan banding: ' . $e->getMessage());
+            Log::error('startPelaksanaanBanding failed', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => 'Gagal: ' . $e->getMessage()], 500);
         }
     }
 
-    /**
-     * Selesaikan pelaksanaan banding dan tentukan hasilnya
-     */
-    public function selesaikanPelaksanaan(Request $request, $id)
+    // ============================================================
+    // UPLOAD DOKUMEN PELAKSANAAN
+    // Mendukung: berita_acara_banding, laporan_banding
+    // ============================================================
+
+    public function uploadDokumen(Request $request, $id, $jenisDokumen)
     {
-        $request->validate([
-            'hasil_banding' => 'required|in:diterima,ditolak',
-            'peringkat_final' => 'required_if:hasil_banding,diterima|nullable|string',
-            'skor_final' => 'required_if:hasil_banding,diterima|nullable|numeric|min:0|max:400',
-            'catatan_hasil' => 'nullable|string|max:2000',
-        ]);
+        $validJenis = ['berita_acara_banding', 'laporan_banding'];
+        abort_unless(in_array($jenisDokumen, $validJenis), 400, 'Jenis dokumen tidak valid.');
 
-        $pengajuan = PengajuanAkreditasi::findOrFail($id);
-
-        // Validasi status
-        if ($pengajuan->status !== PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN) {
-            return back()->with('error', 'Status saat ini tidak sesuai untuk menyelesaikan pelaksanaan banding.');
-        }
+        $request->validate(['file' => 'required|file|mimes:pdf|max:10240']);
 
         DB::beginTransaction();
         try {
-            // Update hasil banding di pengajuan
-            $updateData = [
-                'hasil_banding' => $request->hasil_banding,
-                'catatan_hasil' => $request->catatan_hasil,
+            $pengajuan = PengajuanAkreditasi::findOrFail($id);
+
+            // Non-aktifkan dokumen lama
+            $pengajuan->dokumen()
+                ->where('jenis_dokumen', $jenisDokumen)
+                ->update(['is_latest' => false]);
+
+            $versi        = ($pengajuan->dokumen()->where('jenis_dokumen', $jenisDokumen)->max('versi') ?? 0) + 1;
+            $file         = $request->file('file');
+            $originalName = $file->getClientOriginalName();
+            $sanitized    = preg_replace('/[^a-zA-Z0-9._-]/', '_', $originalName);
+            $filename     = time() . '_' . strtoupper($jenisDokumen) . '_' . $sanitized;
+            $folder       = 'dokumen/' . str_replace('_', '-', $jenisDokumen);
+            $path         = $file->storeAs($folder, $filename, 'public');
+
+            $labels = [
+                'berita_acara_banding' => 'Berita Acara Banding',
+                'laporan_banding'      => 'Laporan Banding',
             ];
 
-            // Jika banding diterima, update peringkat dan skor final
-            if ($request->hasil_banding === 'diterima') {
-                $updateData['peringkat_final'] = $request->peringkat_final;
-                $updateData['skor_final'] = $request->skor_final;
-
-                // Update di HasilAkreditasi juga
-                if ($pengajuan->asesmen && $pengajuan->asesmen->hasil) {
-                    $pengajuan->asesmen->hasil->update([
-                        'skor_final' => $request->skor_final,
-                        'peringkat_akreditasi_banding' => $request->peringkat_final,
-                        'catatan_perhitungan' => 'Hasil banding diterima. ' . ($request->catatan_hasil ?? ''),
-                    ]);
-                }
-            }
-
-            $pengajuan->update($updateData);
-
-            // Status tetap di BANDING_DILAKSANAKAN, belum pindah ke BANDING_DILAPORKAN
-            // Nanti pindah setelah membuat laporan di step 17
-
-            // Log
-            $pengajuan->statusLog()->create([
-                'status_from' => PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
-                'status_to' => PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
-                'changed_by' => auth()->id(),
-                'changed_at' => now(),
-                'keterangan' => 'Hasil banding: ' . $request->hasil_banding . '. ' . ($request->catatan_hasil ?? ''),
+            $pengajuan->dokumen()->create([
+                'jenis_dokumen'     => $jenisDokumen,
+                'nama_file'         => $filename,
+                'path_file'         => $path,
+                'original_filename' => $originalName,
+                'file_size'         => $file->getSize(),
+                'mime_type'         => $file->getMimeType(),
+                'uploaded_by'       => Auth::id(),
+                'keterangan'        => "{$labels[$jenisDokumen]} — {$pengajuan->nomor_pengajuan}",
+                'is_latest'         => true,
+                'versi'             => $versi,
             ]);
 
             DB::commit();
-
-            return redirect()
-                ->route('de.pelaksanaan-banding.show', $id)
-                ->with('success', 'Hasil pelaksanaan banding berhasil disimpan.');
-        } catch (\Exception $e) {
+            return response()->json([
+                'success' => true,
+                'message' => "{$labels[$jenisDokumen]} berhasil diupload.",
+                'data'    => ['versi' => $versi, 'filename' => $originalName],
+            ]);
+        } catch (\Throwable $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal menyimpan hasil banding: ' . $e->getMessage());
+            Log::error('uploadDokumenBanding failed', ['jenis' => $jenisDokumen, 'error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => 'Gagal upload: ' . $e->getMessage()], 500);
         }
     }
 
-    /**
-     * Calculate statistics
-     */
-    private function calculateStatistics(): array
+    // ============================================================
+    // DOWNLOAD DOKUMEN
+    // ============================================================
+
+    public function downloadDokumen($id, $jenisDokumen)
     {
-        // Ambil semua status log untuk fase banding
-        $logs = DB::table('pengajuan_status_log')
-            ->select('id_pengajuan', 'status_to')
-            ->whereIn('status_to', [
-                PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
-                PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
-                PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
-            ])
-            ->get();
+        $validJenis = ['surat_tugas_asesor_banding', 'berita_acara_banding', 'laporan_banding'];
+        abort_unless(in_array($jenisDokumen, $validJenis), 400, 'Jenis dokumen tidak valid.');
 
-        $stats = [
-            'total' => 0,
-            'diajukan' => 0,
-            'sedang_dilaksanakan' => 0,
-            'selesai' => 0,
-            'diterima' => 0,
-            'ditolak' => 0,
-        ];
+        $pengajuan = PengajuanAkreditasi::findOrFail($id);
+        $dokumen   = $pengajuan->dokumen()
+            ->where('jenis_dokumen', $jenisDokumen)
+            ->where('is_latest', true)
+            ->firstOrFail();
 
-        // Kelompokkan log berdasarkan id_pengajuan
-        $logsByPengajuan = $logs->groupBy('id_pengajuan');
+        if ($dokumen->template_link) return redirect($dokumen->template_link);
 
-        foreach ($logsByPengajuan as $pengajuanId => $pengajuanLogs) {
-            $statuses = $pengajuanLogs->pluck('status_to')->unique()->toArray();
-
-            // Total: pernah ada status banding
-            $stats['total']++;
-
-            // Diajukan: ada BANDING_DIAJUKAN, tapi belum DILAKSANAKAN
-            if (
-                in_array(PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN, $statuses) &&
-                !in_array(PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN, $statuses)
-            ) {
-                $stats['diajukan']++;
-            }
-
-            // Sedang dilaksanakan: ada BANDING_DILAKSANAKAN, tapi belum DILAPORKAN
-            if (
-                in_array(PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN, $statuses) &&
-                !in_array(PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN, $statuses)
-            ) {
-                $stats['sedang_dilaksanakan']++;
-            }
-
-            // Selesai: sudah DILAPORKAN
-            if (in_array(PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN, $statuses)) {
-                $stats['selesai']++;
-            }
+        if ($dokumen->path_file && Storage::disk('public')->exists($dokumen->path_file)) {
+            return Storage::disk('public')->download($dokumen->path_file, $dokumen->original_filename);
         }
 
-        // Hitung hasil banding (diterima/ditolak) dari tabel pengajuan
-        $hasilBanding = PengajuanAkreditasi::whereNotNull('hasil_banding')
-            ->select('hasil_banding', DB::raw('count(*) as total'))
-            ->groupBy('hasil_banding')
-            ->pluck('total', 'hasil_banding');
+        abort(404, 'File tidak ditemukan.');
+    }
 
-        $stats['diterima'] = $hasilBanding['diterima'] ?? 0;
-        $stats['ditolak'] = $hasilBanding['ditolak'] ?? 0;
+    // ============================================================
+    // SUBMIT LAPORAN: banding_dilaksanakan → banding_dilaporkan
+    // ============================================================
 
-        return $stats;
+    public function submitLaporan(Request $request, $id)
+    {
+        $request->validate(['catatan' => 'nullable|string|max:1000']);
+
+        DB::beginTransaction();
+        try {
+            $pengajuan = PengajuanAkreditasi::with('dokumen')->findOrFail($id);
+
+            if ($pengajuan->status !== PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Status harus banding_dilaksanakan untuk submit laporan.',
+                ], 422);
+            }
+
+            // Pastikan laporan sudah diupload
+            $laporanAda = $pengajuan->dokumen()
+                ->where('jenis_dokumen', 'laporan_banding')
+                ->where('is_latest', true)
+                ->exists();
+
+            if (!$laporanAda) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Upload laporan banding terlebih dahulu sebelum submit.',
+                ], 422);
+            }
+
+            $statusFrom = $pengajuan->status;
+            $pengajuan->update(['status' => PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN]);
+            $pengajuan->statusLog()->create([
+                'status_from' => $statusFrom,
+                'status_to'   => PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN,
+                'changed_by'  => Auth::id(),
+                'keterangan'  => 'Laporan banding disubmit.'
+                    . ($request->catatan ? ' Catatan: ' . $request->catatan : ''),
+                'changed_at'  => now(),
+            ]);
+
+            DB::commit();
+            return response()->json(['success' => true, 'message' => 'Laporan banding berhasil disubmit. Status diperbarui ke Dilaporkan.']);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('submitLaporanBanding failed', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => 'Gagal: ' . $e->getMessage()], 500);
+        }
+    }
+
+    // ============================================================
+    // PRIVATE HELPERS
+    // ============================================================
+
+    private function calculateStatistics(): array
+    {
+        $base = PengajuanAkreditasi::whereHas(
+            'statusLog',
+            fn($q) =>
+            $q->whereIn('status_to', $this->phaseStatuses())
+        );
+
+        return [
+            'total' => (clone $base)->count(),
+
+            'ditugaskan' => (clone $base)->whereHas(
+                'statusLog',
+                fn($q) =>
+                $q->where('status_to', PengajuanAkreditasi::STATUS_ASESOR_AK_BANDING_ASSIGNED)
+            )->count(),
+
+            'dilaksanakan' => (clone $base)->whereHas(
+                'statusLog',
+                fn($q) =>
+                $q->where('status_to', PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN)
+            )->count(),
+
+            'dilaporkan' => (clone $base)->whereHas(
+                'statusLog',
+                fn($q) =>
+                $q->where('status_to', PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN)
+            )->count(),
+        ];
     }
 }

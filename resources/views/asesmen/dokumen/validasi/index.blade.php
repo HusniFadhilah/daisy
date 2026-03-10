@@ -207,7 +207,7 @@
                             </div>
                             <div>
                                 <div class="fw-semibold">{{ $asesor->user->name }}</div>
-                                <small class="text-muted">{{ $asesor->user->email }}</small>
+                                <small class="text-muted text-wrap">{{ $asesor->user->email }}</small>
                                 <div class="mt-1">
                                     <span class="badge bg-{{ $asesor->jenis_asesmen === 'ak' ? 'primary' : 'info' }}">
                                         {{ strtoupper($asesor->jenis_asesmen) }}
@@ -224,7 +224,7 @@
                         <strong>{{ \App\Libraries\Date::tglWaktu($asesor->submitted_at) }}</strong>
                     </div>
                     <div class="col-md-8 col-lg-5 mt-2">
-                        <small class="text-muted d-block mb-1">Progress Validasi:</small>
+                        <small class="text-muted d-block mb-1">Progres Validasi:</small>
                         <div class="progress" style="height: 24px;">
                             <div class="progress-bar bg-{{ $progress['percentage'] == 100 ? 'success' : ($progress['percentage'] > 0 ? 'warning' : 'secondary') }}" role="progressbar" style="width: {{ $progress['percentage'] }}%">
                                 {{ $progress['percentage'] }}%
@@ -265,7 +265,7 @@
                             </div>
                             <div class="min-width-0 w-100">
                                 <div class="fw-semibold">{{ $asesor->user->name }}</div>
-                                <small class="text-muted d-block text-break">{{ $asesor->user->email }}</small>
+                                <small class="text-muted d-block text-break text-wrap">{{ $asesor->user->email }}</small>
                                 <div class="mt-1">
                                     <span class="badge bg-{{ $asesor->jenis_asesmen === 'ak' ? 'primary' : 'info' }}">
                                         {{ strtoupper($asesor->jenis_asesmen) }}
@@ -370,7 +370,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <strong>{{ $asesor->user->name }}</strong>
-                            <br><small class="text-muted d-block text-break">{{ $asesor->user->email }}</small>
+                            <br><small class="text-muted d-block text-break text-wrap">{{ $asesor->user->email }}</small>
                         </div>
                         <span class="badge bg-warning">Perlu Validasi</span>
                     </div>

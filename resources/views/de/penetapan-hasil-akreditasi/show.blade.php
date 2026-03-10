@@ -17,7 +17,7 @@
     </nav>
 
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h5 class="mb-1">
                 <i class="bi bi-award"></i> Detail Penetapan Hasil Akreditasi
@@ -124,9 +124,9 @@
                     </p>
                 </div>
                 <div class="col-md-4 text-end">
-                    <form action="{{ route('de.penetapan-hasil-akreditasi.tetapkan', $pengajuan->id) }}" method="POST" class="d-inline">
+                    <form id="form-tetapkan-hasil" action="" method="POST" class="d-inline">
                         @csrf
-                        <button type="submit" class="btn btn-success {{ !$canTetapkan ? 'disabled' : '' }}" {{ !$canTetapkan ? 'disabled' : '' }} onclick="return confirm('Tetapkan hasil akreditasi? Tindakan ini tidak dapat dibatalkan!')" @if(!$canTetapkan) title="Upload Berita Acara terlebih dahulu" @endif>
+                        <button type="button" class="btn btn-success tombol-konfirmasi-tetapkan-hasil {{ !$canTetapkan ? 'disabled' : '' }}" {{ !$canTetapkan ? 'disabled' : '' }} data-id-form="form-tetapkan-hasil" data-message="Tetapkan hasil akreditasi" data-href="{{ route('de.penetapan-hasil-akreditasi.tetapkan', $pengajuan->id) }}" @if(!$canTetapkan) title="Upload Berita Acara terlebih dahulu" @endif>
                             <i class="bi bi-lock"></i> Tetapkan Hasil
                         </button>
                     </form>
@@ -254,13 +254,14 @@
                 <a href="{{ route('de.penetapan-hasil-akreditasi.download-berita-acara', $pengajuan->id) }}" class="btn btn-outline-dark" target="_blank">
                     <i class="bi bi-eye"></i> Lihat File
                 </a>
-                <form action="{{ route('de.penetapan-hasil-akreditasi.delete-berita-acara', $pengajuan->id) }}" method="POST" class="d-inline">
+                <form id="form-hapus-berita-penetapan" action="{{ route('de.penetapan-hasil-akreditasi.delete-berita-acara', $pengajuan->id) }}" method="POST" class="d-inline">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Hapus berita acara ini? Anda harus upload ulang untuk penetapan.')">
+                    <button type="button" class="btn btn-outline-danger tombol-hapus" data-id-form="form-hapus-berita-penetapan" data-text="berita acara">
                         <i class="bi bi-trash"></i> Hapus
                     </button>
                 </form>
+
             </div>
         </div>
     </div>
@@ -690,3 +691,16 @@
 @endif
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    alertConfirm({
+        selector: '.tombol-konfirmasi-tetapkan-hasil'
+        , formId: 'form-tetapkan-hasil'
+        , isMessage: true
+        , isDataHref: true
+    });
+
+</script>
+
+@endpush

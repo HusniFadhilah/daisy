@@ -42,6 +42,26 @@ const PelaporanModule = (() => {
 - Berita Acara yang menyatakan AL telah dilaksanakan dan disepakati
 - Rekomendasi Penetapan Hasil Akreditasi`,
         },
+        ak_banding: {
+            title: 'Pelaporan Validasi Asesmen Kecukupan Banding',
+            label: 'Laporan Penilaian Kecukupan LED Program Studi (LHK)',
+            description: `Dokumen yang sudah digabungkan, yang diperlukan isinya adalah:
+- Penunjukan tugas Asesor Banding untuk melaksanakan Penilaian LED
+- Proses penilaian LED oleh Asesor Banding
+- Validasi Penilaian Kecukupan Asesor Banding oleh Validator
+- Penyampaian Informasi Kepada DE untuk dilakukan tahap Asesmen Lapangan`,
+        },
+        al_banding: {
+            title: 'Rekap AL dan Pelaporan AL Banding',
+            label: 'Laporan Hasil Asesmen Lapangan Banding',
+            description: `Dokumen yang sudah digabungkan, yang diperlukan isinya adalah:
+- Penunjukan tugas Asesor untuk melaksanakan Penilaian LED
+- Proses penilaian LED oleh Asesor
+- Validasi Penilaian Kecukupan Asesor Oleh Validator
+- Penyampaian Informasi Kepada DE tentang pelaksanaan AL Banding
+- Berita Acara yang menyatakan AL Bandingtelah dilaksanakan dan disepakati
+- Rekomendasi Penetapan Hasil Akreditasi`,
+        },
     };
 
     /**
@@ -402,6 +422,8 @@ const PelaporanModule = (() => {
             dokumen: `/pelaporan/${assignmentId}/dokumen/upload`,
             ak: `/pelaporan/${assignmentId}/validasi-ak/upload`,
             al: `/pelaporan/${assignmentId}/al/upload`,
+            ak_banding: `/pelaporan/banding/${assignmentId}/validasi-ak-banding/upload`,
+            al_banding: `/pelaporan/banding/${assignmentId}/al-banding/upload`,
         };
         return routes[type] || '';
     }
@@ -414,6 +436,8 @@ const PelaporanModule = (() => {
             dokumen: `/pelaporan/${assignmentId}/dokumen/finalize`,
             ak: `/pelaporan/${assignmentId}/validasi-ak/finalize`,
             al: `/pelaporan/${assignmentId}/al/finalize`,
+            ak_banding: `/pelaporan/banding/${assignmentId}/validasi-ak-banding/finalize`,
+            al_banding: `/pelaporan/banding/${assignmentId}/al-banding/finalize`,
         };
         return routes[type] || '';
     }

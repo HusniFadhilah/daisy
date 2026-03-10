@@ -5,7 +5,7 @@
 
 @section('content')
 <div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h4 class="mb-1">Konfigurasi Syarat Akreditasi</h4>
             <p class="text-muted small mb-0">

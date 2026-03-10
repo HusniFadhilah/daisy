@@ -71,10 +71,10 @@
                                             <a href="{{ route('universities.edit', $university->id) }}" class="btn btn-sm btn-warning text-white" title="Edit">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
-                                            <form action="{{ route('universities.destroy', $university->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus universitas ini?')">
+                                            <form id="form-universitas" action="{{ route('universities.destroy', $university->id) }}" method="POST" class="d-inline">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-danger" title="Hapus">
+                                                <button type="button" class="btn btn-sm btn-danger tombol-hapus" data-id-form="form-universitas" data-text="universitas" title="Hapus">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                             </form>
@@ -172,10 +172,10 @@
                                             <a href="{{ route('study-programs.edit', $program->id) }}" class="btn btn-sm btn-warning text-white" title="Edit">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
-                                            <form action="{{ route('study-programs.destroy', $program->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus program studi ini?')">
+                                            <form id="form-program-studi" action="{{ route('study-programs.destroy', $program->id) }}" method="POST" class="d-inline">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-danger" title="Hapus">
+                                                <button type="button" class="btn btn-sm btn-danger tombol-hapus" data-id-form="form-program-studi" data-text="program studi" title="Hapus">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                             </form>

@@ -37,7 +37,7 @@
                         <td>
                             <strong>{{ $assignment->user->name }}</strong>
                             <br>
-                            <small class="text-muted">{{ $assignment->user->email }}</small>
+                            <small class="text-muted text-wrap">{{ $assignment->user->email }}</small>
 
                             <br>
                             <small>Status Penawaran:</small>

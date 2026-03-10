@@ -364,14 +364,14 @@
 
         // Submit button behavior
         if (btnSubmit) {
-            btnSubmit.addEventListener('click', function(e) {
+            btnSubmit.addEventListener('click', asyncfunction(e) {
                 // File required jika belum ada file sebelumnya
                 if (!existingFile && fileInput) {
                     fileInput.setAttribute('required', 'required');
 
                     if (!fileInput.files || !fileInput.files.length) {
                         e.preventDefault();
-                        alert('File surat permohonan wajib diupload untuk mengirim permohonan!');
+                        Swal.fire('Perhatian', 'File surat permohonan wajib diupload untuk mengirim permohonan!', 'warning');
                         fileInput.focus();
                         return false;
                     }
@@ -381,7 +381,7 @@
                 if (labelOptional) labelOptional.style.display = 'none';
                 if (draftInfo) draftInfo.style.display = 'none';
 
-                if (!confirm('Apakah Anda yakin akan mengirim permohonan ini?')) {
+                if (!(await swalConfirmSubmit('warning', 'Apakah Anda yakin akan mengirim permohonan ini?'))) {
                     e.preventDefault();
                     return false;
                 }

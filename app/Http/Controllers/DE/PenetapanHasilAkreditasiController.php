@@ -36,9 +36,8 @@ class PenetapanHasilAkreditasiController extends Controller
             PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
             PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
             PengajuanAkreditasi::STATUS_BANDING_DITERIMA,
-            PengajuanAkreditasi::STATUS_BANDING_DITUGASKAN,
             PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
-            PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
+            PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN,
             PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
             PengajuanAkreditasi::STATUS_HASIL_DIUMUMKAN,
             PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN,
@@ -303,7 +302,7 @@ class PenetapanHasilAkreditasiController extends Controller
 
             // Revert to previous status (MASA_SANGGAH_SELESAI or BANDING_DILAPORKAN)
             $previousStatus = $pengajuan->hasBanding()
-                ? PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN
+                ? PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN
                 : PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI;
 
             $pengajuan->update([

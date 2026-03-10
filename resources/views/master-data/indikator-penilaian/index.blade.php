@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h2>Indikator Penilaian Elemen</h2>
             <p class="text-muted">Kelola indikator penilaian untuk setiap elemen standar</p>
@@ -57,10 +57,10 @@
                                             <a href="{{ route('indikator-penilaian.edit', $indikator->id) }}" class="btn btn-sm btn-warning text-white" title="Edit">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
-                                            <form action="{{ route('indikator-penilaian.destroy', $indikator->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus indikator ini?')">
+                                            <form id="form-indikator" action="{{ route('indikator-penilaian.destroy', $indikator->id) }}" method="POST" class="d-inline">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-danger" title="Hapus">
+                                                <button type="button" class="btn btn-sm btn-danger tombol-hapus" data-id-form="form-indikator" data-text="indikator" title="Hapus">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                             </form>

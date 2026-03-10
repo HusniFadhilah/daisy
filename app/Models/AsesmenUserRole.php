@@ -14,6 +14,8 @@ class AsesmenUserRole extends Model
         'jenis_asesmen',
         'id_asesmen_kecukupan',
         'id_asesmen_lapangan',
+        'id_asesmen_kecukupan_banding',
+        'id_asesmen_lapangan_banding',
         'urutan_asesor',
         'status_penawaran',
         'responded_at',
@@ -205,6 +207,16 @@ class AsesmenUserRole extends Model
         return $this->belongsTo(AsesmenLapangan::class, 'id_asesmen_lapangan');
     }
 
+    public function asesmenKecukupanBanding()
+    {
+        return $this->belongsTo(AsesmenKecukupanBanding::class, 'id_asesmen_kecukupan_banding');
+    }
+
+    public function asesmenLapanganBanding()
+    {
+        return $this->belongsTo(AsesmenLapanganBanding::class, 'id_asesmen_lapangan_banding');
+    }
+
     public function approver()
     {
         return $this->belongsTo(User::class, 'approved_by');
@@ -215,6 +227,13 @@ class AsesmenUserRole extends Model
     {
         return $query->whereHas('role', function ($q) {
             $q->where('name', 'asesor');
+        });
+    }
+
+    public function scopeAsesorBandingOnly($query)
+    {
+        return $query->whereHas('role', function ($q) {
+            $q->where('name', 'asesor_banding');
         });
     }
 
@@ -233,6 +252,16 @@ class AsesmenUserRole extends Model
     public function scopeForAL($query)
     {
         return $query->where('jenis_asesmen', 'al');
+    }
+
+    public function scopeForAKBanding($query)
+    {
+        return $query->where('jenis_asesmen', 'ak_banding');
+    }
+
+    public function scopeForALBanding($query)
+    {
+        return $query->where('jenis_asesmen', 'al_banding');
     }
 
     public function scopeAccepted($query)
@@ -302,7 +331,19 @@ class AsesmenUserRole extends Model
 
     public function getJenisAsesmenLabelAttribute(): string
     {
-        return $this->jenis_asesmen == 'dokumen' ? ucfirst($this->jenis_asesmen) : strtoupper($this->jenis_asesmen);
+        if (in_array($this->jenis_asesmen, ['ak_banding', 'al_banding'])) {
+            return Asesmen::formatJenisAsesmen($this->jenis_asesmen);
+        }
+        return $this->jenis_asesmen == 'dokumen' ? Asesmen::formatJenisAsesmen($this->jenis_asesmen) : strtoupper($this->jenis_asesmen);
+    }
+
+    public function getJenisAsesmenRoleLabelAttribute(): string
+    {
+        $roleAlias = $this->role->alias;
+        if (in_array($this->jenis_asesmen, ['ak_banding', 'al_banding'])) {
+            $roleAlias = str_replace('Banding', '', $roleAlias);
+        }
+        return $roleAlias . ' ' . $this->jenis_asesmen_label;
     }
 
     public function getStatusLabelAttribute(): string
@@ -323,6 +364,24 @@ class AsesmenUserRole extends Model
     public function getStatusIndicatorAttribute(): string
     {
         return $this->status_meta['indicator'];
+    }
+
+    private function getRoutePenawaranAttribute()
+    {
+        if ($this->jenis_asesmen === 'dokumen') {
+            $route = 'validator.borang.show';
+        } elseif ($this->jenis_asesmen === 'ak') {
+            $route = 'ak.berkas.show';
+        } elseif ($this->jenis_asesmen === 'al') {
+            $route = 'al.berkas.show';
+        } elseif ($this->jenis_asesmen === 'ak_banding') {
+            $route = 'ak_banding.berkas.show';
+        } elseif ($this->jenis_asesmen === 'al_banding') {
+            $route = 'al_banding.berkas.show';
+        } else {
+            $route = 'dashboard';
+        }
+        return $route;
     }
 
     public static function getStatusInfo($assignment): array

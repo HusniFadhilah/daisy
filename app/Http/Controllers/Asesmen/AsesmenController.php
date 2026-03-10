@@ -739,7 +739,7 @@ class AsesmenController extends Controller
                 if ($currentCount <= $minRequired) {
                     return response()->json([
                         'success' => false,
-                        'message' => "Tidak bisa menghapus {$role->alias} karena akan melanggar persyaratan minimum ({$minRequired} {$role->alias} untuk " . strtoupper($jenisAsesmen) . "). Assign pengganti terlebih dahulu.",
+                        'message' => "Tidak bisa menghapus {$role->alias} karena akan melanggar persyaratan minimum ({$minRequired} {$role->alias} untuk " . strtoupper($jenisAsesmen) . "). Tugaskan pengganti terlebih dahulu.",
                         'validation_error' => true
                     ], 422);
                 }

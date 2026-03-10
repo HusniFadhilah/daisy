@@ -160,8 +160,8 @@
 
 @push('scripts')
 <script>
-    function konfirmasiPenerimaan(id) {
-        if (confirm('Konfirmasi bahwa dokumen telah diterima lengkap?')) {
+    async function konfirmasiPenerimaan(id) {
+        if (await swalConfirmSubmit('warning', 'Konfirmasi bahwa dokumen telah diterima lengkap?')) {
             const form = document.createElement('form');
             form.method = 'POST';
             form.action = `/de/penerimaan-dokumen/${id}/konfirmasi`;

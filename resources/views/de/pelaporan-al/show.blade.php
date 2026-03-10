@@ -14,7 +14,7 @@
     </nav>
 
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h5 class="mb-1">
                 <i class="bi bi-journal-text"></i> Detail Pelaporan AL
@@ -182,7 +182,7 @@
                                 <div class="flex-grow-1 ms-3">
                                     <strong>{{ $validator->user->name }}</strong>
                                     <br>
-                                    <small class="text-muted">{{ $validator->user->email }}</small>
+                                    <small class="text-muted text-wrap">{{ $validator->user->email }}</small>
                                     <br>
                                     <span class="badge bg-success mt-1">{{ $validator->role_selected->alias }}</span>
                                 </div>

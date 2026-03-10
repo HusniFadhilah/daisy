@@ -5,278 +5,264 @@ namespace App\Http\Controllers\Keuangan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\PengajuanAkreditasi;
+use App\Models\PengajuanPembayaran;
 use Illuminate\Support\Facades\Log;
-
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class ValidasiPembayaranController extends Controller
 {
-    /**
-     * List pembayaran yang perlu divalidasi (status menunggu_verifikasi).
-     * Filter utama: pengajuan.status = MENUNGGU_VERIFIKASI_PEMBAYARAN + pembayaran.status_pembayaran = menunggu_verifikasi
-     */
+    // ============================================================
+    // INDEX — sumber data: PengajuanPembayaran (semua jenis)
+    // ============================================================
+
     public function index(Request $request)
     {
-        $q = (string) $request->get('q');
-        $university_id = $request->get('university_id');
+        $q               = (string) $request->get('q');
+        $university_id   = $request->get('university_id');
         $degree_level_id = $request->get('degree_level_id');
-        $status = $request->get('status');
+        $status          = $request->get('status');
 
-        // Query pengajuan yang sudah upload formulir pembayaran
-        $pengajuanQuery = PengajuanAkreditasi::with([
-            'studyProgram.university',
-            'studyProgram.degreeLevel',
-            'pembayaran',
-            'pengaju',
-            'dokumen' => function ($q) {
-                $q->where('jenis_dokumen', 'formulir_pembayaran')
-                    ->where('is_latest', true);
-            }
-        ])
-            ->whereHas('dokumen', function ($q) {
-                $q->where('jenis_dokumen', 'formulir_pembayaran')
-                    ->where('is_latest', true);
-            })
-            ->whereHas('pembayaran'); // Harus sudah ada pembayaran
+        $query = PengajuanPembayaran::with([
+            'pengajuan.studyProgram.university',
+            'pengajuan.studyProgram.degreeLevel',
+            'pengajuan.pengaju',
+            'verifier',
+        ]);
 
-        // Filter by search
+        // Pencarian
         if (!empty($q)) {
-            $pengajuanQuery->where(function ($w) use ($q) {
-                $w->where('nomor_pengajuan', 'like', "%{$q}%")
-                    ->orWhere('judul', 'like', "%{$q}%")
-                    ->orWhereHas('studyProgram', function ($sp) use ($q) {
-                        $sp->where('name', 'like', "%{$q}%");
-                    })
-                    ->orWhereHas('pembayaran', function ($p) use ($q) {
-                        $p->where('nomor_invoice', 'like', "%{$q}%");
-                    });
+            $query->where(function ($w) use ($q) {
+                $w->where('nomor_invoice', 'like', "%{$q}%")
+                    ->orWhereHas(
+                        'pengajuan',
+                        fn($p) =>
+                        $p->where('nomor_pengajuan', 'like', "%{$q}%")
+                            ->orWhere('judul', 'like', "%{$q}%")
+                    )
+                    ->orWhereHas(
+                        'pengajuan.studyProgram',
+                        fn($sp) =>
+                        $sp->where('name', 'like', "%{$q}%")
+                    );
             });
         }
 
-        // Filter by university
+        // Filter universitas
         if (!empty($university_id)) {
-            $pengajuanQuery->whereHas('studyProgram', function ($sp) use ($university_id) {
-                $sp->where('id_university', $university_id);
-            });
+            $query->whereHas(
+                'pengajuan.studyProgram',
+                fn($sp) =>
+                $sp->where('id_university', $university_id)
+            );
         }
 
-        // Filter by degree level
+        // Filter jenjang
         if (!empty($degree_level_id)) {
-            $pengajuanQuery->whereHas('studyProgram', function ($sp) use ($degree_level_id) {
-                $sp->where('id_degree_level', $degree_level_id);
-            });
+            $query->whereHas(
+                'pengajuan.studyProgram',
+                fn($sp) =>
+                $sp->where('id_degree_level', $degree_level_id)
+            );
         }
 
-        // Filter by status pembayaran
+        // Filter status pembayaran
         if (!empty($status)) {
-            $pengajuanQuery->whereHas('pembayaran', function ($p) use ($status) {
-                $p->where('status_pembayaran', $status);
-            });
+            $query->where('status_pembayaran', $status);
         }
 
-        $pengajuan = $pengajuanQuery
+        // $pembayarans — nama baru sesuai sumber data
+        $pembayarans = $query
             ->orderByDesc('updated_at')
             ->paginate(20)
             ->withQueryString();
 
-        // Statistics
-        $stats = [
-            'total' => PengajuanAkreditasi::whereHas('dokumen', function ($q) {
-                $q->where('jenis_dokumen', 'formulir_pembayaran')
-                    ->where('is_latest', true);
-            })->count(),
-
-            'today' => PengajuanAkreditasi::whereHas('dokumen', function ($q) {
-                $q->where('jenis_dokumen', 'formulir_pembayaran')
-                    ->where('is_latest', true)
-                    ->whereDate('created_at', today());
-            })->count(),
-
-            'menunggu_verifikasi' => PengajuanAkreditasi::whereHas('pembayaran', function ($p) {
-                $p->where('status_pembayaran', 'menunggu_verifikasi');
-            })->count(),
-
-            'terverifikasi' => PengajuanAkreditasi::whereHas('pembayaran', function ($p) {
-                $p->where('status_pembayaran', 'terverifikasi');
-            })->count(),
-        ];
+        $stats = $this->calculateStatistics();
 
         return view('keuangan.pembayaran.index', compact(
-            'pengajuan',
+            'pembayarans',
             'q',
             'university_id',
             'degree_level_id',
             'status',
-            'stats'
+            'stats',
         ));
     }
 
-    /**
-     * Detail satu pengajuan: tampilkan info invoice + bukti pembayaran.
-     */
+    // ============================================================
+    // SHOW — $id adalah PengajuanPembayaran.id
+    // ============================================================
+
     public function show($id)
     {
-        $pengajuan = PengajuanAkreditasi::with([
-            'studyProgram.university',
-            'studyProgram.degreeLevel',
-            'pembayaran.verifier',
-            'pengaju',
+        $pembayaran = PengajuanPembayaran::with([
+            'pengajuan.studyProgram.university',
+            'pengajuan.studyProgram.degreeLevel',
+            'pengajuan.pengaju',
+            'verifier',
         ])->findOrFail($id);
 
-        if (!$pengajuan->pembayaran) {
-            abort(404, 'Data pembayaran belum tersedia.');
-        }
+        $pengajuan = $pembayaran->pengajuan;
 
-        $path = $pengajuan->pembayaran->bukti_path;
-        $url  = $path ? Storage::disk('public')->url($path) : null;
+        $path = $pembayaran->bukti_path;
         $ext  = $path ? strtolower(pathinfo($path, PATHINFO_EXTENSION)) : null;
+        $url  = $path ? Storage::disk('public')->url($path) : null;
 
-        return view('keuangan.pembayaran.show', compact('pengajuan', 'path', 'url', 'ext'));
+        return view('keuangan.pembayaran.show', compact(
+            'pengajuan',
+            'pembayaran',
+            'path',
+            'ext',
+            'url',
+        ));
     }
 
-    /**
-     * Download bukti pembayaran (pdf/jpg/png).
-     * Disarankan pakai signed route kalau butuh proteksi tambahan.
-     */
+    // ============================================================
+    // DOWNLOAD BUKTI — $id adalah PengajuanPembayaran.id
+    // ============================================================
+
     public function downloadBukti($id)
     {
-        $pengajuan = PengajuanAkreditasi::with('pembayaran')->findOrFail($id);
-
-        if (!$pengajuan->pembayaran) {
-            abort(404, 'Data pembayaran tidak ditemukan.');
-        }
-
-        // ✅ Samakan nama field ini dengan kolom di tabel pengajuan_pembayaran Anda
-        // Jika kolom Anda "bukti_pembayaran_path", ganti di sini dan di blade show.
-        $path = $pengajuan->pembayaran->bukti_path;
+        $pembayaran = PengajuanPembayaran::findOrFail($id);
+        $path       = $pembayaran->bukti_path;
 
         if (empty($path)) {
             abort(404, 'File bukti pembayaran belum diupload.');
         }
 
         if (!Storage::disk('public')->exists($path)) {
-            abort(404, 'File bukti pembayaran tidak ditemukan di storage.');
+            abort(404, 'File tidak ditemukan di storage.');
         }
 
         return Storage::disk('public')->download($path);
     }
 
-    /**
-     * Verifikasi / Tolak pembayaran.
-     * Input:
-     * - status: verified | ditolak
-     * - catatan_verifikasi (required)
-     */
+    // ============================================================
+    // VERIFY — $id adalah PengajuanPembayaran.id
+    // ============================================================
+
     public function verify(Request $request, $id)
     {
         try {
-            // ✅ Validasi input
             $request->validate([
-                'status_pembayaran'   => 'required|in:menunggu_verifikasi,terverifikasi,upload_ulang,ditolak',
-                'catatan_verifikasi'  => 'required|string|min:5|max:2000',
-                // 'alasan_penolakan'    => 'required_if:status_pembayaran,ditolak|nullable|string|max:2000',
+                'status_pembayaran'  => 'required|in:terverifikasi,upload_ulang,ditolak',
+                'catatan_verifikasi' => 'required|string|min:5|max:2000',
             ]);
 
-            // ✅ Ambil Permohonan akreditasi + pembayaran
-            $pengajuan = PengajuanAkreditasi::with('pembayaran')->findOrFail($id);
+            $pembayaran = PengajuanPembayaran::with('pengajuan')->findOrFail($id);
 
-            if (!$pengajuan->pembayaran) {
-                return back()->with('error', 'Pembayaran tidak ditemukan.');
-            }
-
-            if ($pengajuan->pembayaran->status_pembayaran !== 'menunggu_verifikasi') {
+            if ($pembayaran->status_pembayaran !== 'menunggu_verifikasi') {
                 return back()->with('error', 'Pembayaran tidak dalam status "Menunggu Validasi".');
             }
 
-            $statusInput = $request->input('status_pembayaran');
-            $messages = [
-                'terverifikasi' => 'Pembayaran divalidasi oleh Keuangan.',
-                'upload_ulang'  => 'Keuangan meminta upload ulang bukti pembayaran.',
-            ];
+            $statusInput     = $request->input('status_pembayaran');
+            $jenisPembayaran = $pembayaran->jenis_pembayaran; // 'akreditasi' | 'banding'
+            $pengajuan       = $pembayaran->pengajuan;
 
-            $message = $messages[$statusInput] ?? 'Status pembayaran tidak diketahui.';
+            DB::transaction(function () use ($request, $pengajuan, $pembayaran, $statusInput, $jenisPembayaran) {
 
-            // 🔐 Transaction
-            DB::transaction(function () use ($request, $pengajuan, $statusInput, $message) {
-                $pembayaran = $pengajuan->pembayaran;
-
-                $pembayaran->status_pembayaran   = $statusInput;
+                // Update record invoice
+                $pembayaran->status_pembayaran  = $statusInput;
                 $pembayaran->catatan_verifikasi = $request->catatan_verifikasi;
-                // $pembayaran->alasan_penolakan   = $statusInput === 'ditolak'? $request->alasan_penolakan: null;
+                $pembayaran->verified_by        = auth()->id();
 
-                $pembayaran->verified_by = auth()->id();
-
-                if (array_key_exists('tanggal_verifikasi', $pembayaran->getAttributes())) {
+                if (in_array('tanggal_verifikasi', $pembayaran->getFillable())) {
                     $pembayaran->tanggal_verifikasi = now();
                 }
 
                 $pembayaran->save();
 
-                // 🔁 Update status pengajuan
-                $oldStatus = $pengajuan->status;
+                // Update status PengajuanAkreditasi
+                $oldStatus  = $pengajuan->status;
+                $newStatus  = $oldStatus;
+                $keterangan = '';
 
-                if ($statusInput === 'terverifikasi') {
-                    $pengajuan->status = PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI;
+                if ($jenisPembayaran === 'akreditasi') {
+                    if ($statusInput === 'terverifikasi') {
+                        $newStatus  = PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI;
+                        $keterangan = 'Pembayaran akreditasi divalidasi oleh Keuangan.';
 
-                    if (array_key_exists('tanggal_pembayaran', $pengajuan->getAttributes())) {
-                        $pengajuan->tanggal_pembayaran = now();
+                        if (in_array('tanggal_pembayaran', $pengajuan->getFillable())) {
+                            $pengajuan->tanggal_pembayaran = now();
+                        }
+                    } elseif ($statusInput === 'upload_ulang') {
+                        $newStatus  = PengajuanAkreditasi::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN;
+                        $keterangan = 'Keuangan meminta upload ulang bukti pembayaran akreditasi.';
+                    } elseif ($statusInput === 'ditolak') {
+                        $newStatus  = PengajuanAkreditasi::STATUS_MENUNGGU_PEMBAYARAN;
+                        $keterangan = 'Pembayaran akreditasi ditolak oleh Keuangan.';
+                    }
+                } elseif ($jenisPembayaran === 'banding') {
+                    if ($statusInput === 'terverifikasi') {
+                        $newStatus  = PengajuanAkreditasi::STATUS_PEMBAYARAN_BANDING_DIVERIFIKASI;
+                        $keterangan = 'Pembayaran banding divalidasi oleh Keuangan.';
+                    } elseif ($statusInput === 'upload_ulang') {
+                        $newStatus  = PengajuanAkreditasi::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN_BANDING;
+                        $keterangan = 'Keuangan meminta upload ulang bukti pembayaran banding.';
+                    } elseif ($statusInput === 'ditolak') {
+                        $newStatus  = PengajuanAkreditasi::STATUS_MENUNGGU_PEMBAYARAN_BANDING;
+                        $keterangan = 'Pembayaran banding ditolak oleh Keuangan.';
                     }
                 }
 
-                if ($statusInput === 'upload_ulang') {
-                    $pengajuan->status = PengajuanAkreditasi::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN;
+                if ($newStatus !== $oldStatus) {
+                    $pengajuan->status = $newStatus;
+                    $pengajuan->save();
                 }
 
-                if ($statusInput === 'ditolak') {
-                    $pengajuan->status = PengajuanAkreditasi::STATUS_MENUNGGU_PEMBAYARAN;
-                }
-
-                $pengajuan->save();
-
-                // 📝 Log status (jika ada)
-                if (method_exists($this, 'logStatus')) {
-                    $this->logStatus(
-                        $pengajuan,
-                        $oldStatus,
-                        $pengajuan->status,
-                        $message
-                    );
-                }
+                $pengajuan->statusLog()->create([
+                    'status_from' => $oldStatus,
+                    'status_to'   => $newStatus,
+                    'changed_by'  => auth()->id(),
+                    'changed_at'  => now(),
+                    'keterangan'  => $keterangan,
+                ]);
             });
 
-            // ✅ Redirect sukses
+            $pesan = [
+                'terverifikasi' => 'Pembayaran berhasil divalidasi.',
+                'upload_ulang'  => 'Berhasil meminta upload ulang ke PS/UPPS.',
+                'ditolak'       => 'Pembayaran ditolak.',
+            ][$statusInput] ?? 'Status pembayaran diperbarui.';
+
             return redirect()
                 ->route('keuangan.pembayaran.index')
-                ->with(
-                    'success',
-                    $message
-                );
+                ->with('success', $pesan);
         } catch (\Throwable $e) {
-
-            // ❌ Log error lengkap
             Log::error('Gagal validasi pembayaran', [
-                'pengajuan_id' => $id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
+                'pembayaran_id' => $id,
+                'error'         => $e->getMessage(),
+                'trace'         => $e->getTraceAsString(),
             ]);
 
-            return back()->with(
-                'error',
-                'Terjadi kesalahan saat memproses validasi. Silakan coba lagi.'
-            );
+            return back()->with('error', 'Terjadi kesalahan saat memproses validasi. Silakan coba lagi.');
         }
     }
 
-    private function logStatus($pengajuan, $oldStatus, $newStatus, $keterangan = null)
+    // ============================================================
+    // PRIVATE HELPERS
+    // ============================================================
+
+    private function calculateStatistics(): array
     {
-        $pengajuan->statusLog()->create([
-            'status_from' => $oldStatus ?? 'new',
-            'status_to' => $newStatus,
-            'changed_by' => Auth::id(),
-            'keterangan' => $keterangan,
-            'changed_at' => now(),
-        ]);
+        $row = PengajuanPembayaran::selectRaw("
+            COUNT(*) AS total,
+            SUM(CASE WHEN status_pembayaran = 'menunggu_verifikasi' THEN 1 ELSE 0 END) AS menunggu_verifikasi,
+            SUM(CASE WHEN status_pembayaran = 'terverifikasi'       THEN 1 ELSE 0 END) AS terverifikasi,
+            SUM(CASE WHEN status_pembayaran = 'upload_ulang'        THEN 1 ELSE 0 END) AS upload_ulang,
+            SUM(CASE WHEN status_pembayaran = 'ditolak'             THEN 1 ELSE 0 END) AS ditolak
+        ")->first();
+
+        return [
+            'total'               => (int) ($row->total               ?? 0),
+            'today'               => PengajuanPembayaran::where('status_pembayaran', 'menunggu_verifikasi')
+                ->whereDate('updated_at', today())
+                ->count(),
+            'menunggu_verifikasi' => (int) ($row->menunggu_verifikasi ?? 0),
+            'terverifikasi'       => (int) ($row->terverifikasi       ?? 0),
+            'upload_ulang'        => (int) ($row->upload_ulang        ?? 0),
+            'ditolak'             => (int) ($row->ditolak             ?? 0),
+        ];
     }
 }

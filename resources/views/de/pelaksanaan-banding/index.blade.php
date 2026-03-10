@@ -1,45 +1,9 @@
 {{-- resources/views/de/pelaksanaan-banding/index.blade.php --}}
 @extends('layouts.template.app')
-
 @section('title', 'Pelaksanaan Banding')
-
-@push('styles')
-<style>
-    .table-hover tbody tr {
-        transition: all 0.2s ease;
-    }
-
-    .table-hover tbody tr:hover {
-        background-color: #f8f9fa;
-        transform: scale(1.01);
-    }
-
-    .action-btn {
-        transition: all 0.3s ease;
-    }
-
-    .action-btn:hover {
-        transform: scale(1.05);
-    }
-
-    .filter-card {
-        background: linear-gradient(135deg, #932136 0%, #870820 100%);
-        color: white;
-    }
-
-    .badge-banding {
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 600;
-    }
-
-</style>
-@endpush
-
 @section('content')
 <div class="container-fluid py-3">
-    <!-- Breadcrumb -->
+
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
@@ -47,312 +11,112 @@
         </ol>
     </nav>
 
-    <!-- Page Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
-            <h4 class="mb-1"><i class="bi bi-arrow-repeat"></i> Pelaksanaan Banding</h4>
-            <p class="text-muted mb-0">Kelola pelaksanaan banding hasil akreditasi program studi</p>
+            <h4 class="mb-1"><i class="bi bi-clipboard-check"></i> Pelaksanaan Banding</h4>
+            <p class="text-muted mb-0">Monitor dan kelola pelaksanaan asesmen banding</p>
         </div>
     </div>
 
-    <!-- Statistics Cards -->
+    {{-- Stats --}}
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 mb-4">
         <div class="col mb-3">
-            <x-stat-card title="Total Banding" :value="$stats['total']" description="Total pengajuan banding yang masuk" icon="file-earmark-break" gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)" />
+            <x-stat-card title="Total" :value="$stats['total']" description="Memasuki fase pelaksanaan" icon="clipboard-check" gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)" />
         </div>
-
         <div class="col mb-3">
-            <x-stat-card title="Banding Diajukan" :value="$stats['diajukan']" description="Menunggu untuk dilaksanakan" icon="hourglass-split" gradient="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" />
+            <x-stat-card title="Ditugaskan" :value="$stats['ditugaskan']" description="Menunggu konfirmasi asesor" icon="person-badge" gradient="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" />
         </div>
-
         <div class="col mb-3">
-            <x-stat-card title="Sedang Dilaksanakan" :value="$stats['sedang_dilaksanakan']" description="Proses banding sedang berlangsung" icon="arrow-repeat" gradient="linear-gradient(135deg, #fa709a 0%, #fee140 100%)" />
+            <x-stat-card title="Dilaksanakan" :value="$stats['dilaksanakan']" description="Banding sedang berjalan" icon="hourglass-split" gradient="linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" />
         </div>
-
         <div class="col mb-3">
-            <x-stat-card title="Banding Selesai" :value="$stats['selesai']" description="Banding telah selesai dan dilaporkan" icon="check-circle" gradient="linear-gradient(135deg, #11998e 0%, #38ef7d 100%)" />
+            <x-stat-card title="Dilaporkan" :value="$stats['dilaporkan']" description="Laporan telah disubmit" icon="check-circle" gradient="linear-gradient(135deg, #11998e 0%, #38ef7d 100%)" />
         </div>
     </div>
 
-    <!-- Filters & Content -->
-    <div class="row">
-        <!-- Filters Sidebar -->
-        <div class="col-lg-3 mb-4">
-            <div class="card filter-card">
-                <div class="card-header border-0">
-                    <h5 class="mb-0">
-                        <i class="bi bi-funnel"></i> Filter & Pencarian
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <form method="GET" action="{{ route('de.pelaksanaan-banding') }}">
-                        <!-- Search -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Cari Pengajuan</label>
-                            <input type="text" name="search" class="form-control" placeholder="Nomor/Nama prodi..." value="{{ request('search') }}">
-                        </div>
-
-                        <!-- Status Filter -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Status</label>
-                            <select name="status" class="form-select">
-                                <option value="">Semua Status</option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN ? 'selected' : '' }}>
-                                    Banding Diajukan
-                                </option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN ? 'selected' : '' }}>
-                                    Sedang Dilaksanakan
-                                </option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN ? 'selected' : '' }}>
-                                    Sudah Dilaporkan
-                                </option>
-                            </select>
-                        </div>
-
-                        <!-- Hasil Banding Filter -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Hasil Banding</label>
-                            <select name="hasil_banding" class="form-select">
-                                <option value="">Semua Hasil</option>
-                                <option value="diterima" {{ request('hasil_banding') == 'diterima' ? 'selected' : '' }}>
-                                    Diterima
-                                </option>
-                                <option value="ditolak" {{ request('hasil_banding') == 'ditolak' ? 'selected' : '' }}>
-                                    Ditolak
-                                </option>
-                            </select>
-                        </div>
-
-                        <!-- University -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Universitas</label>
-                            <select name="university_id" class="form-select">
-                                <option value="">Semua Universitas</option>
-                                @foreach($universities as $univ)
-                                <option value="{{ $univ->id }}" {{ request('university_id') == $univ->id ? 'selected' : '' }}>
-                                    {{ $univ->name }}
-                                </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <!-- Tahun -->
-                        <div class="mb-3">
-                            <label class="form-label text-white">Tahun Akreditasi</label>
-                            <select name="tahun" class="form-select">
-                                <option value="">Semua Tahun</option>
-                                @foreach($tahunList as $tahun)
-                                <option value="{{ $tahun }}" {{ request('tahun') == $tahun ? 'selected' : '' }}>
-                                    {{ $tahun }}
-                                </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <!-- Buttons -->
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-light">
-                                <i class="bi bi-search"></i> Terapkan Filter
-                            </button>
-                            <a href="{{ route('de.pelaksanaan-banding') }}" class="btn btn-outline-light">
-                                <i class="bi bi-x-circle"></i> Reset
-                            </a>
-                        </div>
-                    </form>
+    {{-- Table --}}
+    <div class="position-relative">
+        <div id="tableLoading" class="position-absolute top-0 start-0 w-100 h-100 d-none" style="background: rgba(255,255,255,0.9); z-index: 1000;">
+            <div class="d-flex justify-content-center align-items-center h-100" style="min-height:300px;">
+                <div class="text-center">
+                    <div class="spinner-border text-primary" style="width:3rem;height:3rem;"></div>
+                    <p class="mt-3 text-muted">Memuat data...</p>
                 </div>
             </div>
         </div>
-
-        <!-- Main Content -->
-        <div class="col-lg-9">
-            <div class="card">
-                <div class="card-header bg-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Daftar Pengajuan Banding</h5>
-                        <div>
-                            <span class="text-muted">Total: <strong>{{ $pengajuans->total() }}</strong></span>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body p-0">
-                    @if($pengajuans->count() > 0)
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th width="5%">#</th>
-                                    <th width="15%">Permohonan Akreditasi</th>
-                                    <th width="20%">Program Studi</th>
-                                    <th width="12%">Hasil Awal</th>
-                                    <th width="13%">Tanggal Banding</th>
-                                    <th width="10%">Status</th>
-                                    <th width="10%">Hasil Banding</th>
-                                    <th width="15%" class="text-center">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($pengajuans as $index => $pengajuan)
-                                <tr>
-                                    <td>{{ $pengajuans->firstItem() + $index }}</td>
-                                    <td>
-                                        <p>{{ $pengajuan->judul }}</p>
-                                        <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
-                                        <br>
-                                        <small class="text-muted">
-                                            Dibuat pada: {{ $pengajuan->created_at->locale('id')->translatedFormat('d M Y') }}
-                                        </small>
-                                    </td>
-                                    <td>
-                                        <div>
-                                            <strong>{{ $pengajuan->studyProgram->name }}</strong>
-                                            <br>
-                                            <small class="text-muted">
-                                                {{ $pengajuan->studyProgram->university->name ?? '-' }}
-                                            </small>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        @if($pengajuan->asesmen && $pengajuan->asesmen->hasil)
-                                        @php
-                                        $hasil = $pengajuan->asesmen->hasil;
-                                        $peringkat = $hasil->peringkat_akreditasi ?? '-';
-                                        $skor = $hasil->skor_final ?? 0;
-
-                                        $badgeClass = match($peringkat) {
-                                        'Unggul' => 'bg-success',
-                                        'Baik Sekali' => 'bg-primary',
-                                        'Baik' => 'bg-info',
-                                        default => 'bg-secondary'
-                                        };
-                                        @endphp
-                                        <span class="badge {{ $badgeClass }}">{{ $peringkat }}</span>
-                                        <br>
-                                        <small class="text-muted">Skor: {{ number_format($skor, 2) }}</small>
-                                        @else
-                                        <span class="text-muted">-</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if($pengajuan->tanggal_pelaksanaan_banding)
-                                        <small>{{ $pengajuan->tanggal_pelaksanaan_banding->locale('id')->translatedFormat('d M Y') }}</small>
-                                        @else
-                                        <span class="text-muted">-</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @php
-                                        $statusBadge = match($pengajuan->status) {
-                                        \App\Models\PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN =>
-                                        '<span class="badge badge-banding bg-warning text-dark">Diajukan</span>',
-                                        \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN =>
-                                        '<span class="badge badge-banding bg-info">Sedang Dilaksanakan</span>',
-                                        \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN =>
-                                        '<span class="badge badge-banding bg-success">Selesai</span>',
-                                        default =>
-                                        '<span class="badge badge-banding bg-secondary">-</span>'
-                                        };
-                                        @endphp
-                                        {!! $statusBadge !!}
-                                    </td>
-                                    <td>
-                                        @if($pengajuan->hasil_banding)
-                                        @if($pengajuan->hasil_banding === 'diterima')
-                                        <span class="badge badge-banding bg-success">
-                                            <i class="bi bi-check-circle"></i> Diterima
-                                        </span>
-                                        @else
-                                        <span class="badge badge-banding bg-danger">
-                                            <i class="bi bi-x-circle"></i> Ditolak
-                                        </span>
-                                        @endif
-                                        @else
-                                        <span class="text-muted">Belum ada</span>
-                                        @endif
-                                    </td>
-                                    <td class="text-center">
-                                        <div class="btn-group btn-group-sm" role="group">
-                                            <a href="{{ route('de.pelaksanaan-banding.show', $pengajuan->id) }}" class="btn btn-info action-btn" title="Detail">
-                                                <i class="bi bi-eye"></i>
-                                            </a>
-
-                                            @if($pengajuan->status == \App\Models\PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN)
-                                            <button type="button" class="btn btn-primary action-btn" title="Mulai Pelaksanaan" onclick="mulaiPelaksanaan({{ $pengajuan->id }}, '{{ $pengajuan->nomor_pengajuan }}')">
-                                                <i class="bi bi-play-circle"></i>
-                                            </button>
-                                            @endif
-                                        </div>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Pagination -->
-                    <div class="card-footer bg-white">
-                        {{ $pengajuans->links() }}
-                    </div>
-                    @else
-                    <div class="text-center py-5">
-                        <i class="bi bi-inbox" style="font-size: 64px; color: #ddd;"></i>
-                        <p class="text-muted mt-3">Tidak ada pengajuan banding</p>
-                    </div>
-                    @endif
-                </div>
-            </div>
+        <div id="tableContainer">
+            @include('de.pelaksanaan-banding.components.table-content', ['pengajuans' => $pengajuans])
         </div>
     </div>
-</div>
 
-<!-- Modal Mulai Pelaksanaan -->
-<div class="modal fade" id="modalMulaiPelaksanaan" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <form id="formMulaiPelaksanaan" method="POST">
-                @csrf
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title">
-                        <i class="bi bi-play-circle"></i> Mulai Pelaksanaan Banding
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Anda akan memulai pelaksanaan banding untuk:</p>
-                    <div class="alert alert-info">
-                        <strong id="nomorPengajuan"></strong>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Keterangan (Opsional)</label>
-                        <textarea name="keterangan" class="form-control" rows="3" placeholder="Catatan pelaksanaan banding..."></textarea>
-                    </div>
-                    <p class="text-muted small mb-0">
-                        <i class="bi bi-info-circle"></i>
-                        Status akan berubah menjadi "Banding Dilaksanakan".
-                    </p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-play-circle"></i> Mulai Pelaksanaan
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
 </div>
-@endsection
-
 @push('scripts')
 <script>
-    function mulaiPelaksanaan(id, nomorPengajuan) {
-        const modal = new bootstrap.Modal(document.getElementById('modalMulaiPelaksanaan'));
-        const form = document.getElementById('formMulaiPelaksanaan');
-
-        form.action = `{{ route('de.pelaksanaan-banding') }}/${id}/mulai-pelaksanaan`;
-        document.getElementById('nomorPengajuan').textContent = nomorPengajuan;
-
-        modal.show();
+    async function applyFilters() {
+        const searchEl = document.getElementById('searchInput');
+        const univEl = document.getElementById('universityFilter');
+        const statusEl = document.getElementById('statusFilter');
+        const params = {
+            search: searchEl ? searchEl.value : ''
+            , university_id: univEl ? univEl.value : ''
+            , status_pelaksanaan: statusEl ? statusEl.value : ''
+        , };
+        await loadTable(params);
     }
+
+    function resetFilters() {
+        ['searchInput', 'universityFilter', 'statusFilter'].forEach(function(id) {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+        loadTable({});
+    }
+
+    async function loadTable(params) {
+        if (params === undefined) params = {};
+        const loading = document.getElementById('tableLoading');
+        const container = document.getElementById('tableContainer');
+        try {
+            loading.classList.remove('d-none');
+            const qs = new URLSearchParams(params).toString();
+            const response = await fetch(`{{ route('de.pelaksanaan-banding') }}?${qs}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                    , 'Accept': 'application/json'
+                }
+            , });
+            const data = await response.json();
+            if (data.success) {
+                container.innerHTML = data.html;
+                const newUrl = new URL(window.location);
+                Object.keys(params).forEach(k => params[k] ?
+                    newUrl.searchParams.set(k, params[k]) :
+                    newUrl.searchParams.delete(k)
+                );
+                window.history.pushState({}, '', newUrl);
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            loading.classList.add('d-none');
+        }
+    }
+
+    let searchTimeout;
+    const searchEl = document.getElementById('searchInput');
+    if (searchEl) {
+        searchEl.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(function() {
+                applyFilters();
+            }, 500);
+        });
+    }
+    ['universityFilter', 'statusFilter'].forEach(function(id) {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('change', applyFilters);
+    });
 
 </script>
 @endpush
+@endsection

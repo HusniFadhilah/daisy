@@ -3,17 +3,18 @@
 
 namespace App\Http\Controllers\DE;
 
-use App\Models\University;
-use Illuminate\Http\Request;
-use App\Models\PengajuanDokumen;
-use Illuminate\Support\Facades\DB;
-use App\Models\PengajuanAkreditasi;
-use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\KirimSuratPenerimaanRequest;
+use App\Models\PengajuanAkreditasi;
+use App\Models\PengajuanDokumen;
+use App\Models\University;
 use App\Notifications\SuratPenerimaanDikirimNotification;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class PenerimaanPermohonanController extends Controller
 {
@@ -105,7 +106,7 @@ class PenerimaanPermohonanController extends Controller
             // Store file
             $filename = $this->generateFilename($pengajuan, $file);
             $path = $file->storeAs(
-                "pengajuan/{$pengajuan->id}/surat_penerimaan",
+                "permohonan-akreditasi/{$pengajuan->id}/surat_penerimaan",
                 $filename,
                 'public'
             );
@@ -166,19 +167,11 @@ class PenerimaanPermohonanController extends Controller
      */
     public function download($id)
     {
-        $dokumen = PengajuanDokumen::where('id_pengajuan', $id)
+        $pengajuanDokumen = PengajuanDokumen::where('id_pengajuan', $id)
             ->where('jenis_dokumen', 'surat_penerimaan_de')
             ->where('is_latest', true)
             ->firstOrFail();
-
-        if (!Storage::disk('public')->exists($dokumen->path_file)) {
-            abort(404, 'File tidak ditemukan.');
-        }
-
-        return Storage::disk('public')->download(
-            $dokumen->path_file,
-            $dokumen->original_filename
-        );
+        return $pengajuanDokumen->downloadDokumen();
     }
 
     /**
@@ -312,7 +305,7 @@ class PenerimaanPermohonanController extends Controller
     {
         return sprintf(
             'surat_penerimaan_%s_%s.%s',
-            $pengajuan->nomor_pengajuan,
+            Str::slug($pengajuan->nomor_pengajuan),
             time(),
             $file->getClientOriginalExtension()
         );

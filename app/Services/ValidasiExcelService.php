@@ -19,7 +19,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class ValidasiExcelService
 {
-    protected $penilaianName, $penilaianFullName, $mode;
+    protected $penilaianName, $penilaianFullName, $mode, $jenisAsesmen;
 
     /**
      * @param string $jenisAsesmen 'ak' atau 'al'
@@ -27,8 +27,16 @@ class ValidasiExcelService
      */
     public function __construct($jenisAsesmen = 'ak', $mode = 'split')
     {
-        $this->penilaianName = strtoupper($jenisAsesmen);
-        $this->penilaianFullName = $this->penilaianName == 'AL' ? 'Asesmen Lapangan' : 'Asesmen Kecukupan';
+        $this->jenisAsesmen = $jenisAsesmen;
+        $this->penilaianName = Asesmen::formatJenisAsesmen($jenisAsesmen);
+        $map = [
+            'ak' => 'Asesmen Kecukupan',
+            'ak_banding' => 'Asesmen Kecukupan Banding',
+            'al' => 'Asesmen Lapangan',
+            'al_banding' => 'Asesmen Lapangan Banding',
+        ];
+
+        $this->penilaianFullName = $map[$jenisAsesmen] ?? null;
         $this->mode = $mode; // 'split' atau 'merged'
     }
 
@@ -51,7 +59,8 @@ class ValidasiExcelService
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle('Validasi Penilaian ' . strtoupper($jenisAsesmen));
+        $penilaianName = Asesmen::formatJenisAsesmen($jenisAsesmen);
+        $sheet->setTitle('Validasi Penilaian ' . $penilaianName);
         self::addLogoAndZoom($sheet, 60);
 
         // Set column widths
@@ -88,11 +97,11 @@ class ValidasiExcelService
         $modeText = $mode === 'merged' ? 'Merged' : 'Split';
         $tempPath = $service->saveSpreadsheet(
             $spreadsheet,
-            'Validasi_Penilaian_' . strtoupper($jenisAsesmen) . '_Lengkap_',
+            'Validasi_Penilaian_' . Str::slug($penilaianName) . '_Lengkap_',
             Str::slug($asesmen->code) . '_' . date('Ymd')
         );
 
-        $filename = 'Validasi_Penilaian_' . strtoupper($jenisAsesmen) . '_Lengkap_' . Str::slug($asesmen->code) . '_' . date('Ymd') . '.xlsx';
+        $filename = 'Validasi_Penilaian_' . Str::slug($penilaianName) . '_Lengkap_' . Str::slug($asesmen->code) . '_' . date('Ymd') . '.xlsx';
 
         return [$tempPath, $filename];
     }
@@ -229,9 +238,9 @@ class ValidasiExcelService
         $sheet->getStyle($headerRange)->getBorders()->getAllBorders()
             ->setBorderStyle(Border::BORDER_THIN);
 
-        $sheet->getStyle('B5:F6')->getFill()
+        $sheet->getStyle("B5:{$lastCol}6")->getFill()
             ->setFillType(Fill::FILL_SOLID)
-            ->getStartColor()->setARGB('FFFFFFFF');
+            ->getStartColor()->setARGB('FFD9D9D9');
 
         $sheet->getRowDimension(5)->setRowHeight(30);
         $sheet->getRowDimension(6)->setRowHeight(30);
@@ -256,8 +265,14 @@ class ValidasiExcelService
     {
         $currentRow = 7;
         $globalNo = 1;
-        $jenisAsesmen = strtolower($this->penilaianName);
-        $relationName = $jenisAsesmen == 'al' ? 'penilaianElemenAl' : 'penilaianElemenAk';
+        $jenisAsesmen = $this->jenisAsesmen;
+        $map = [
+            'ak' => 'penilaianElemenAk',
+            'ak_banding' => 'penilaianElemenAkBanding',
+            'al' => 'penilaianElemenAl',
+            'al_banding' => 'penilaianElemenAlBanding',
+        ];
+        $relationName = $map[$jenisAsesmen] ?? null;
 
         // Load kriteria with penilaian data
         $kriterias = Kriteria::with([
@@ -450,7 +465,7 @@ class ValidasiExcelService
 
     private function setFontBlue($sheet, string $cell): void
     {
-        $sheet->getStyle($cell)->getFont()->getColor()->setARGB('FFE0E0E0');
+        $sheet->getStyle($cell)->getFont()->getColor()->setARGB('FF1F4E79');
     }
 
     /**
@@ -468,7 +483,7 @@ class ValidasiExcelService
 
         // Kalau belum semua asesor memberi skor
         if (count($skors) < $asesorCount) {
-            return 'Belum Semua Asesor Menilai';
+            return 'Belum Semua Asesor Banding Menilai';
         }
 
         $freq = array_count_values($skors);
@@ -476,12 +491,12 @@ class ValidasiExcelService
 
         // semua sama
         if ($uniqueCount === 1) {
-            return 'Masing-masing asesor telah memiliki pandangan yang sama';
+            return 'Masing-masing asesor banding telah memiliki pandangan yang sama';
         }
 
         // semua berbeda
         if ($uniqueCount === $asesorCount) {
-            return 'Setiap Asesor memiliki pandangan yang berbeda';
+            return 'Setiap Asesor banding memiliki pandangan yang berbeda';
         }
 
         // ada mayoritas, hitung berapa asesor yang "beda dari mayoritas"
@@ -489,15 +504,15 @@ class ValidasiExcelService
         $diffCount = $asesorCount - $maxFreq;
 
         if ($diffCount === 1) {
-            return '1 Asesor memiliki pandangan yang berbeda';
+            return '1 Asesor banding memiliki pandangan yang berbeda';
         }
 
         if ($diffCount === 2) {
-            return '2 Asesor memiliki pandangan yang berbeda';
+            return '2 Asesor banding memiliki pandangan yang berbeda';
         }
 
         // fallback kalau asesornya lebih banyak
-        return "{$diffCount} Asesor memiliki pandangan yang berbeda";
+        return "{$diffCount} Asesor banding memiliki pandangan yang berbeda";
     }
 
     /**

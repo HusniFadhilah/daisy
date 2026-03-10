@@ -27,7 +27,7 @@ $lockedStatus = [
 \App\Models\PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED,
 ];
 $log = $pengajuan->latestRelevantStatusLog($lockedStatus);
-$lockBorang = in_array($log?->status_to, $lockedStatus) && $pengajuan->status != \App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED;
+$lockBorang = in_array($log?->status_to, $lockedStatus) && !in_array($pengajuan->status,[\App\Models\PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,\App\Models\PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI]);
 //$lockBorang = false;
 @endphp
 
@@ -80,6 +80,24 @@ $lockBorang = in_array($log?->status_to, $lockedStatus) && $pengajuan->status !=
 
     .elemen-card:not(.has-data) {
         border-left-color: #ffc107;
+    }
+
+    .upload-card {
+        position: relative;
+    }
+
+    .upload-remove-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        z-index: 2;
     }
 
     .save-status {
@@ -144,7 +162,6 @@ $lockBorang = in_array($log?->status_to, $lockedStatus) && $pengajuan->status !=
         color: white;
         border-radius: 15px;
         padding: 1.5rem;
-        margin-bottom: 1.5rem;
     }
 
     .progress-stats {
@@ -189,8 +206,7 @@ $lockBorang = in_array($log?->status_to, $lockedStatus) && $pengajuan->status !=
 
     .upload-card.has-file {
         border-color: #28a745;
-        border-style: solid;
-        background: #f0fff4;
+        border-style: dashed;
     }
 
     .upload-icon {
@@ -226,8 +242,8 @@ $lockBorang = in_array($log?->status_to, $lockedStatus) && $pengajuan->status !=
     {{-- Header Card --}}
     <div class="card mb-4">
         <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div>
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-3">
+                <div class="mb-2">
                     <h3 class="mb-1">Laporan Evaluasi Diri</h3>
                     <p class="text-muted mb-0">
                         Prodi {{ $pengajuan->studyProgram->name }}
@@ -242,7 +258,7 @@ $lockBorang = in_array($log?->status_to, $lockedStatus) && $pengajuan->status !=
             <div class="progress-card">
                 <div class="row align-items-center">
                     <div class="col-md-8">
-                        <h5 class="mb-3">Progress Pengisian Elemen</h5>
+                        <h5 class="mb-3">Progres Pengisian Elemen</h5>
 
                         @php
                         $elemenPercentage = $progressData['elemen_percentage'];
@@ -315,10 +331,10 @@ $lockBorang = in_array($log?->status_to, $lockedStatus) && $pengajuan->status !=
                     @if($lockBorang)
                     <div class="alert alert-info alert-permanent mb-4">
                         <h5 class="mb-1">
-                            <i class="bi bi-eye"></i> Mode Preview Dokumen
+                            <i class="bi bi-eye"></i> Mode <i>Preview</i> Dokumen
                         </h5>
                         <p class="mb-0">
-                            Status permohonan saat ini hanya memungkinkan <strong>preview dokumen</strong>.
+                            Status permohonan saat ini hanya memungkinkan <strong><i>preview</i> dokumen</strong>.
                             Upload dokumen akan tersedia ketika status sudah sesuai.
                         </p>
                         <div class="small text-muted mt-1">
@@ -326,7 +342,17 @@ $lockBorang = in_array($log?->status_to, $lockedStatus) && $pengajuan->status !=
                         </div>
                     </div>
                     @else
-                    <button class="btn btn-success" id="btnFinalize">
+                    @php
+                    $allReady = $readiness['all_complete'] ?? false;
+                    @endphp
+
+                    @if($allReady && !$lockBorang)
+                    <div class="alert alert-info alert-permanent mb-3">
+                        <i class="bi bi-info-circle"></i>
+                        Mohon segera lakukan <strong>Finalisasi dan Submit Dokumen</strong>, agar dokumen Anda dapat divalidasi.
+                    </div>
+                    @endif
+                    <button class="btn btn-success" id="btnFinalize" {{ $allReady && !$lockBorang ? '' : 'disabled' }}>
                         <i class="bi bi-check-circle"></i> Finalisasi & Submit Dokumen
                     </button>
                     <small class="d-block text-muted mt-1">
@@ -345,8 +371,8 @@ $lockBorang = in_array($log?->status_to, $lockedStatus) && $pengajuan->status !=
             <h2 class="accordion-header" id="headingValidation">
                 <button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#collapseValidation" aria-expanded="false" aria-controls="collapseValidation">
 
-                    <div class="d-flex justify-content-between align-items-center w-100 me-3">
-                        <div>
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center w-100 me-3">
+                        <div class="my-2">
                             <i class="bi bi-clipboard-check"></i>
                             <strong>Hasil Validasi Dokumen</strong>
                         </div>
@@ -398,7 +424,7 @@ $lockBorang = in_array($log?->status_to, $lockedStatus) && $pengajuan->status !=
                         </div>
 
                         <div class="mb-2">
-                            <small class="text-muted">Total Progress</small>
+                            <small class="text-muted">Total Progres</small>
                             <div class="progress">
                                 <div class="progress-bar" id="valTotalBar" style="width:0%"></div>
                             </div>
@@ -472,32 +498,47 @@ $lockBorang = in_array($log?->status_to, $lockedStatus) && $pengajuan->status !=
             {{-- 2. Laporan Evaluasi Diri (Data Kualitatif) --}}
             <div class="row g-0 align-items-stretch">
                 <div class="col-lg-8">
-                    <div class="upload-card h-100 {{ isset($uploadedFiles['kualitatif']) && $uploadedFiles['kualitatif'] ? 'has-file' : '' }}">
+                    @php
+                    $ledHasFile = isset($uploadedFiles['kualitatif']) && $uploadedFiles['kualitatif'];
+                    $ledReady = $readiness['led'] ?? false;
+                    $ledSource = $readiness['led_source'] ?? null;
+                    @endphp
+
+                    <div class="upload-card h-100  {{ !$lockBorang ? 'clickable' : '' }} {{ $ledReady ? 'has-file' : '' }}">
+                        @if(isset($uploadedFiles['kualitatif']) && $uploadedFiles['kualitatif'])
+                        <button type="button" class="btn btn-sm btn-outline-danger upload-remove-btn" title="Batalkan upload LED" onclick="cancelUploadedFile('kualitatif')" {{ $lockBorang ? 'disabled' : '' }}>
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                        @endif
                         <div class="upload-icon">
-                            <i class="bi {{ isset($uploadedFiles['kualitatif']) && $uploadedFiles['kualitatif'] ? 'bi-file-earmark-check' : 'bi-file-word' }}"></i>
+                            <i class="bi {{ $ledReady ? 'bi-file-earmark-check' : 'bi-file-word' }}"></i>
                         </div>
+
                         <h6 class="fw-bold">Laporan Evaluasi Diri (LED)</h6>
 
-                        @if(isset($uploadedFiles['kualitatif']) && $uploadedFiles['kualitatif'])
+                        @if($ledHasFile)
                         <p class="text-success mb-2">
                             <i class="bi bi-check-circle"></i> {{ $uploadedFiles['kualitatif']->original_filename }}
                         </p>
-                        <small class="text-muted d-block mb-3">{{ $uploadedFiles['kualitatif']->created_at->diffForHumans() }}</small>
+                        <small class="text-muted d-block mb-3">Sumber: Upload DOCX</small>
+                        @elseif($ledSource === 'online')
+                        <p class="text-success mb-2">
+                            <i class="bi bi-check-circle"></i> LED sudah lengkap dari isian online
+                        </p>
+                        <small class="text-muted d-block mb-3">Sumber: Sistem</small>
                         @else
-                        <p class="text-muted small mb-3">File DOCX berisi deskripsi/narasi</p>
+                        <p class="text-muted small mb-3">File DOCX berisi deskripsi/narasi atau isi langsung secara <i>online</i></p>
                         @endif
+
                         <div class="action-buttons">
-                            {{-- Download Templat --}}
                             <a href="{{ route('pengajuan.borang.download-template', $pengajuan->id) }}" class="btn btn-outline-primary btn-sm my-1">
                                 <i class="bi bi-download"></i> Download Templat DOCX
                             </a>
 
-                            {{-- Import DOCX --}}
                             <button type="button" class="btn btn-primary btn-sm my-1" id="btnImportDocx" {{ $lockBorang ? 'disabled' : '' }}>
                                 <i class="bi bi-file-earmark-arrow-up"></i> Upload dari DOCX
                             </button>
 
-                            {{-- Export DOCX --}}
                             <a href="{{ route('pengajuan.borang.export-docx', $pengajuan->id) }}" class="btn btn-success btn-sm my-1">
                                 <i class="bi bi-file-earmark-arrow-down"></i> Download ke DOCX
                             </a>
@@ -510,7 +551,13 @@ $lockBorang = in_array($log?->status_to, $lockedStatus) && $pengajuan->status !=
                     </div>
                 </div>
                 <div class="col-lg-4">
-                    <div class="upload-card h-100 {{ !$lockBorang ? 'clickable' : '' }} {{ isset($uploadedFiles['suplemen']) && $uploadedFiles['suplemen'] ? 'has-file' : '' }}" @if(!$lockBorang) onclick="triggerUploadSuplemen()" @endif style="{{ $lockBorang ? 'opacity:.65; pointer-events:none;' : '' }}">
+                    <div class="upload-card h-100 {{ !$lockBorang ? 'clickable' : '' }} {{ isset($uploadedFiles['suplemen']) && $uploadedFiles['suplemen'] ? 'has-file' : '' }}">
+                        @if(isset($uploadedFiles['suplemen']) && $uploadedFiles['suplemen'])
+                        <button type="button" class="btn btn-sm btn-outline-danger upload-remove-btn" title="Batalkan upload Suplemen" onclick="cancelUploadedFile('suplemen')" {{ $lockBorang ? 'disabled' : '' }}>
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                        @endif
+
                         <div class="upload-icon">
                             <i class="bi {{ isset($uploadedFiles['suplemen']) && $uploadedFiles['suplemen'] ? 'bi-file-earmark-check' : 'bi-file-earmark-pdf' }}"></i>
                         </div>
@@ -519,10 +566,10 @@ $lockBorang = in_array($log?->status_to, $lockedStatus) && $pengajuan->status !=
                         <p class="text-success mb-2">
                             <i class="bi bi-check-circle"></i> {{ $uploadedFiles['suplemen']->original_filename }}
                         </p>
-                        <small class="text-muted">{{ $uploadedFiles['suplemen']->created_at->diffForHumans() }}</small>
+                        <small class="text-muted">Diupload pada: {{ $uploadedFiles['suplemen']->created_at->diffForHumans() }}</small>
                         @else
                         <p class="text-muted small mb-2">PDF sesuai templat</p>
-                        <button type="button" class="btn btn-outline-primary btn-sm">
+                        <button type="button" class="btn btn-outline-primary btn-sm" {{ $lockBorang ? 'disabled' : '' }} onclick="triggerUploadSuplemen()">
                             <i class="bi bi-upload"></i> Upload PDF
                         </button>
                         @endif
@@ -534,7 +581,12 @@ $lockBorang = in_array($log?->status_to, $lockedStatus) && $pengajuan->status !=
             <div class="row g-0 align-items-stretch">
                 {{-- 1. Lembar Pengesahan --}}
                 <div class="col-md-6">
-                    <div class="upload-card h-100 {{ !$lockBorang ? 'clickable' : '' }} {{ isset($uploadedFiles['pengesahan']) && $uploadedFiles['pengesahan'] ? 'has-file' : '' }}" @if(!$lockBorang) onclick="triggerUploadPengesahan()" @endif style="{{ $lockBorang ? 'opacity:.65; pointer-events:none;' : '' }}">
+                    <div class="upload-card h-100 {{ !$lockBorang ? 'clickable' : '' }} {{ isset($uploadedFiles['pengesahan']) && $uploadedFiles['pengesahan'] ? 'has-file' : '' }}">
+                        @if(isset($uploadedFiles['pengesahan']) && $uploadedFiles['pengesahan'])
+                        <button type="button" class="btn btn-sm btn-outline-danger upload-remove-btn" title="Batalkan upload Lembar Pengesahan" onclick="cancelUploadedFile('pengesahan')" {{ $lockBorang ? 'disabled' : '' }}>
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                        @endif
                         <div class="upload-icon">
                             <i class="bi {{ isset($uploadedFiles['pengesahan']) && $uploadedFiles['pengesahan'] ? 'bi-file-earmark-check' : 'bi-file-earmark-pdf' }}"></i>
                         </div>
@@ -543,10 +595,10 @@ $lockBorang = in_array($log?->status_to, $lockedStatus) && $pengajuan->status !=
                         <p class="text-success mb-2">
                             <i class="bi bi-check-circle"></i> {{ $uploadedFiles['pengesahan']->original_filename }}
                         </p>
-                        <small class="text-muted">{{ $uploadedFiles['pengesahan']->created_at->diffForHumans() }}</small>
+                        <small class="text-muted">Diupload pada: {{ $uploadedFiles['pengesahan']->created_at->diffForHumans() }}</small>
                         @else
                         <p class="text-muted small mb-2">PDF yang sudah ditandatangani dan distempel</p>
-                        <button type="button" class="btn btn-outline-primary btn-sm">
+                        <button type="button" class="btn btn-outline-primary btn-sm" {{ $lockBorang ? 'disabled' : '' }} onclick="triggerUploadPengesahan()">
                             <i class="bi bi-upload"></i> Upload PDF
                         </button>
                         @endif
@@ -555,7 +607,12 @@ $lockBorang = in_array($log?->status_to, $lockedStatus) && $pengajuan->status !=
                 </div>
                 {{-- 3. LKPS (Data Kuantitatif) --}}
                 <div class="col-md-6">
-                    <div class="upload-card h-100">
+                    <div class="upload-card h-100 {{ !$lockBorang ? 'clickable' : '' }} {{ isset($uploadedFiles['kuantitatif']) && $uploadedFiles['kuantitatif'] ? 'has-file' : '' }}">
+                        @if(isset($uploadedFiles['kuantitatif']) && $uploadedFiles['kuantitatif'])
+                        <button type="button" class="btn btn-sm btn-outline-danger upload-remove-btn" title="Batalkan upload LKPS" onclick="cancelUploadedFile('kuantitatif')" {{ $lockBorang ? 'disabled' : '' }}>
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                        @endif
                         <div class="upload-icon">
                             <i class="bi bi-file-excel {{ isset($uploadedFiles['kuantitatif']) ? 'text-success' : '' }}"></i>
                         </div>
@@ -593,11 +650,11 @@ $lockBorang = in_array($log?->status_to, $lockedStatus) && $pengajuan->status !=
                         <i class="bi bi-file-excel"></i> Export LKPS Terisi
                         </a> --}}
 
-                        @if(isset($uploadedFiles['kuantitatif']))
+                        {{-- @if(isset($uploadedFiles['kuantitatif']))
                         <button type="button" class="btn btn-outline-info btn-sm w-100" id="btnLihatDataLkps">
                             <i class="bi bi-table"></i> Lihat Data Terimpor
                         </button>
-                        @endif
+                        @endif --}}
 
                         <small class="text-muted d-block mt-2">
                             <i class="bi bi-info-circle"></i>
@@ -1067,6 +1124,7 @@ $lockBorang = in_array($log?->status_to, $lockedStatus) && $pengajuan->status !=
         const showHasilValidasiBorang = @json($isShowHasilValidasiBorang);
 
         let saveTimeout, progressTimeout;
+        const needSuplemen = @json($needSuplemen);
         const AUTO_SAVE_DELAY = 2000;
         const AUTOSAVE_ENABLED = false;
         const editorInstances = {};
@@ -1708,7 +1766,7 @@ $lockBorang = in_array($log?->status_to, $lockedStatus) && $pengajuan->status !=
 
           <ul style="margin:0 0 10px 18px; padding:0">
             <li>Pastikan seluruh <strong>elemen</strong> sudah berstatus <strong>Lengkap</strong>.</li>
-            <li>Pastikan file <strong>Lembar Pengesahan</strong>, <strong>Suplemen (PDF)</strong>, dan <strong>LKPS (Excel)</strong> sudah diupload.</li>
+            <li>Pastikan file <strong>Lembar Pengesahan</strong>, ${needSuplemen ? '<strong>Suplemen (PDF)</strong>, ' : ''}<strong>LKPS (Excel)</strong> sudah diupload.</li>
             <li>Setelah submit, data akan dianggap <strong>final</strong> dan proses akan dilanjutkan ke tahap berikutnya (Validasi Dokumen).</li>
           </ul>
 
@@ -1906,7 +1964,7 @@ $lockBorang = in_array($log?->status_to, $lockedStatus) && $pengajuan->status !=
                 hideLoading();
 
                 if (data.success) {
-                    Swal.fire('Success', 'File berhasil diupload!', 'success');
+                    Swal.fire('Berhasil', 'File berhasil diupload!', 'success');
                     setTimeout(() => window.location.reload(), 1500);
                 } else {
                     throw new Error(data.message || 'Upload gagal');
@@ -1955,7 +2013,7 @@ $lockBorang = in_array($log?->status_to, $lockedStatus) && $pengajuan->status !=
                             await Swal.fire('Diproses', 'File sudah diterima. Sedang diproses...', 'info');
                             pollImport(importId);
                         } else {
-                            Swal.fire('Success', 'File berhasil diupload!', 'success');
+                            Swal.fire('Berhasil', 'File berhasil diupload!', 'success');
                             setTimeout(() => window.location.reload(), 1500);
                         }
                     }
@@ -2100,7 +2158,7 @@ $lockBorang = in_array($log?->status_to, $lockedStatus) && $pengajuan->status !=
                     elBadge.textContent = 'Disubmit (Telah Disetujui)';
                 } else if (v.final_action === 'revision') {
                     elBadge.className = 'badge bg-warning text-dark';
-                    elBadge.textContent = 'Disubmit (Perlu Revisi)';
+                    elBadge.textContent = 'Disubmit (Lihat Detail Revisi)';
                 } else {
                     elBadge.className = 'badge bg-secondary';
                     elBadge.textContent = 'Status';
@@ -2550,6 +2608,61 @@ $lockBorang = in_array($log?->status_to, $lockedStatus) && $pengajuan->status !=
                 '<div class="text-danger p-3">Gagal memuat data.</div>';
         };
 
+        window.cancelUploadedFile = async function(type) {
+            if (LOCK_BORANG) return;
+
+            const labels = {
+                kualitatif: 'LED'
+                , suplemen: 'Suplemen LED'
+                , pengesahan: 'Lembar Pengesahan'
+                , kuantitatif: 'LKPS'
+            };
+
+            const textMap = {
+                kualitatif: 'File LED dan data yang telah disimpan akan dihapus.'
+                , suplemen: 'File suplemen akan dihapus.'
+                , pengesahan: 'File lembar pengesahan akan dihapus.'
+                , kuantitatif: 'File LKPS dan data yang telah disimpan akan dihapus.'
+            };
+
+            const result = await Swal.fire({
+                icon: 'warning'
+                , title: `Batalkan upload ${labels[type]}?`
+                , text: textMap[type]
+                , showCancelButton: true
+                , confirmButtonText: 'Ya, hapus'
+                , cancelButtonText: 'Batal'
+                , confirmButtonColor: '#dc3545'
+            });
+
+            if (!result.isConfirmed) return;
+
+            showLoading();
+
+            try {
+                const response = await fetch(`/permohonan-akreditasi/${pengajuanId}/borang-online/uploaded-file/${type}`, {
+                    method: 'DELETE'
+                    , headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        , 'Accept': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                hideLoading();
+
+                if (!data.success) {
+                    throw new Error(data.message || 'Gagal menghapus file');
+                }
+
+                await Swal.fire('Berhasil', data.message, 'success');
+                window.location.reload();
+            } catch (error) {
+                hideLoading();
+                Swal.fire('Error', error.message, 'error');
+            }
+        };
+
         // ✅ Helper badge
         function reviewBadgeClass(status) {
             return {
@@ -2599,7 +2712,7 @@ $lockBorang = in_array($log?->status_to, $lockedStatus) && $pengajuan->status !=
 
                 statusEl.innerHTML = total > 0 ?
                     `<span class="badge bg-success">
-                   <i class="bi bi-check-circle"></i> ${total} tabel terimpor
+                   <i class="bi bi-check-circle"></i> ${total} data tersimpan
                </span>` :
                     `<span class="badge bg-warning text-dark">
                    <i class="bi bi-exclamation-circle"></i> Belum diproses

@@ -74,7 +74,7 @@
     </nav>
 
     <!-- Page Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h4 class="mb-1">
                 <i class="bi bi-file-earmark-diff"></i> Pelaporan Validasi Dokumen
@@ -238,7 +238,7 @@
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('Gagal memuat data. Silakan refresh halaman.');
+            Swal.fire('Perhatian', 'Gagal memuat data. Silakan refresh halaman.', 'error');
         } finally {
             loadingOverlay.classList.add('d-none');
         }

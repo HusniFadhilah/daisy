@@ -14,7 +14,7 @@
     </nav>
 
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h5 class="mb-1">
                 <i class="bi bi-patch-check"></i> Detail Validasi AK
@@ -50,13 +50,13 @@
             <div class="alert alert-info alert-permanent">
                 <i class="bi bi-clock-history"></i>
                 <strong>Proses AK Berlangsung</strong><br>
-                Asesor dan Validator sedang ditugaskan untuk melakukan penilaian dan validasi AK. <br>Mohon pantau progress penilaian secara berkala
+                Asesor dan Validator sedang ditugaskan untuk melakukan penilaian dan validasi AK. <br>Mohon pantau progres penilaian secara berkala
             </div>
             @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_AK_IN_PROGRESS)
             <div class="alert alert-info alert-permanent">
                 <i class="bi bi-clock-history"></i>
                 <strong>Proses Penilaian AK Berlangsung</strong><br>
-                Asesor sedang melakukan penilaian kecukupan dokumen. Mohon pantau progress penilaian secara berkala
+                Asesor sedang melakukan penilaian kecukupan dokumen. Mohon pantau progres penilaian secara berkala
             </div>
             @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_AK_ON_VALIDATION)
             <div class="alert alert-warning alert-permanent">
@@ -76,7 +76,7 @@
             <div class="card mb-4">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">
-                        <i class="bi bi-people"></i> Progress Per Asesor & Validator
+                        <i class="bi bi-people"></i> Progres Per Asesor & Validator
                     </h5>
                 </div>
                 <div class="card-body p-0">
@@ -224,7 +224,7 @@
                     @endphp
                     <div class="mb-3">
                         <div class="d-flex justify-content-between mb-1">
-                            <span>Progress Validasi</span>
+                            <span>Progres Validasi</span>
                             <strong>{{ $progressPct }}%</strong>
                         </div>
                         <div class="progress" style="height: 25px;">

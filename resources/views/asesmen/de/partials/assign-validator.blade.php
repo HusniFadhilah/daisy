@@ -32,7 +32,7 @@
                         {{ substr($currentValidator->user->name, 0, 1) }}
                     </div>
                     <h6 class="fw-bold">{{ $currentValidator->user->name }}</h6>
-                    <small class="text-muted">{{ $currentValidator->user->email }}</small>
+                    <small class="text-muted text-wrap">{{ $currentValidator->user->email }}</small>
                 </div>
             </div>
 
@@ -89,7 +89,7 @@
                     @elseif($currentValidator->status_penawaran === 'accepted')
                     @if($currentValidator->borangValidation)
                     <a href="{{ route('validator.borang.show', $currentValidator->id) }}" class="btn btn-primary btn-sm" target="_blank">
-                        <i class="bi bi-eye"></i> Lihat Progress Validasi
+                        <i class="bi bi-eye"></i> Lihat Progres Validasi
                     </a>
                     @endif
                     @endif

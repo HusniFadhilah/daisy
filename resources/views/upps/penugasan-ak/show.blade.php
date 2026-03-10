@@ -16,7 +16,7 @@
     </nav>
 
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h5 class="mb-1">
                 <i class="bi bi-person-check"></i> Detail Penugasan Asesor AK
@@ -121,10 +121,10 @@
                             <br>
 
                             @if($asesor->user->email)
-                            <small class="text-muted">{{ $asesor->user->email }}</small><br>
+                            <small class="text-muted text-wrap">{{ $asesor->user->email }}</small><br>
                             @endif
                             @if($asesor->user->phone)
-                            <small class="text-muted">{{ $asesor->user->phone }}</small><br>
+                            <small class="text-muted text-wrap">{{ $asesor->user->phone }}</small><br>
                             @endif
                         </li>
                         @endforeach

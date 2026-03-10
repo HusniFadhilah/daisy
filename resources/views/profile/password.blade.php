@@ -372,13 +372,13 @@
 
         if (password !== confirmation) {
             e.preventDefault();
-            alert('Password baru dan konfirmasi password tidak cocok!');
+            Swal.fire('Perhatian', 'Password baru dan konfirmasi password tidak cocok!', 'warning');
             return false;
         }
 
         if (password.length < 6) {
             e.preventDefault();
-            alert('Password baru harus minimal 6 karakter!');
+            Swal.fire('Perhatian', 'Password baru harus minimal 6 karakter!', 'warning');
             return false;
         }
 

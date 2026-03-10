@@ -146,8 +146,8 @@ final class PengajuanStatus
                 ],
                 'label_long_for' => [
                     'de'   => 'Menunggu Pembayaran dari PS',
-                    'upps' => 'Menunggu Pembayaran (silakan lakukan pembayaran)',
-                    'prodi' => 'Menunggu Pembayaran (silakan lakukan pembayaran)',
+                    'upps' => 'Menunggu Pembayaran',
+                    'prodi' => 'Menunggu Pembayaran',
                 ],
                 'bg' => 'bg-warning',
                 'icon' => 'bi-hourglass-split',
@@ -161,25 +161,25 @@ final class PengajuanStatus
                     'prodi' => 'Bukti Pembayaran Terkirim',
                 ],
                 'label_long_for' => [
-                    'de'   => 'Bukti Pembayaran Diterima (menunggu verifikasi)',
-                    'upps' => 'Bukti Pembayaran Terkirim (menunggu verifikasi)',
-                    'prodi' => 'Bukti Pembayaran Terkirim (menunggu verifikasi)',
+                    'de'   => 'Bukti Pembayaran Diterima',
+                    'upps' => 'Bukti Pembayaran Terkirim',
+                    'prodi' => 'Bukti Pembayaran Terkirim',
                 ],
                 'bg' => 'bg-info',
                 'icon' => 'bi-credit-card',
             ],
 
             PengajuanAkreditasi::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN => [
-                'label' => 'Menunggu Verifikasi Pembayaran',
+                'label' => 'Menunggu Validasi Pembayaran',
                 'label_short_for' => [
-                    'de'   => 'Menunggu Verifikasi',
-                    'upps' => 'Menunggu Verifikasi',
-                    'prodi' => 'Menunggu Verifikasi',
+                    'de'   => 'Menunggu Validasi',
+                    'upps' => 'Menunggu Validasi',
+                    'prodi' => 'Menunggu Validasi',
                 ],
                 'label_long_for' => [
-                    'de'   => 'Menunggu Verifikasi Pembayaran (oleh Keuangan/DE)',
-                    'upps' => 'Menunggu Verifikasi Pembayaran (oleh Keuangan/DE)',
-                    'prodi' => 'Menunggu Verifikasi Pembayaran (oleh Keuangan/DE)',
+                    'de'   => 'Menunggu Validasi Pembayaran',
+                    'upps' => 'Menunggu Validasi Pembayaran',
+                    'prodi' => 'Menunggu Validasi Pembayaran',
                 ],
                 'bg' => 'bg-warning',
                 'icon' => 'bi-shield-exclamation',
@@ -188,14 +188,14 @@ final class PengajuanStatus
             PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI => [
                 'label' => 'Validasi Pembayaran Selesai',
                 'label_short_for' => [
-                    'de'   => 'Pembayaran Terverifikasi',
-                    'upps' => 'Pembayaran Terverifikasi',
-                    'prodi' => 'Pembayaran Terverifikasi',
+                    'de'   => 'Pembayaran Tervalidasi',
+                    'upps' => 'Pembayaran Tervalidasi',
+                    'prodi' => 'Pembayaran Tervalidasi',
                 ],
                 'label_long_for' => [
-                    'de'   => 'Pembayaran Terverifikasi',
-                    'upps' => 'Pembayaran Terverifikasi',
-                    'prodi' => 'Pembayaran Terverifikasi',
+                    'de'   => 'Pembayaran Tervalidasi',
+                    'upps' => 'Pembayaran Tervalidasi',
+                    'prodi' => 'Pembayaran Tervalidasi',
                 ],
                 'bg' => 'bg-success',
                 'icon' => 'bi-check-circle',
@@ -566,17 +566,97 @@ final class PengajuanStatus
             PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN => [
                 'label' => 'Banding Diajukan',
                 'label_short_for' => [
-                    'de'   => 'Banding Masuk',
+                    'de'   => 'Banding Diajukan',
                     'upps' => 'Banding Diajukan',
                     'prodi' => 'Banding Diajukan',
                 ],
                 'label_long_for' => [
-                    'de'   => 'Banding Diajukan (menunggu diproses)',
-                    'upps' => 'Banding Telah Diajukan',
-                    'prodi' => 'Banding Telah Diajukan',
+                    'de'   => 'Permohonan Banding Diajukan',
+                    'upps' => 'Permohonan Banding Telah Diajukan',
+                    'prodi' => 'Permohonan Banding Telah Diajukan',
+                ],
+                'bg' => 'bg-light',
+                'icon' => 'bi-file-earmark-break',
+            ],
+
+            PengajuanAkreditasi::STATUS_BANDING_DITERIMA => [
+                'label' => 'Banding Diterima',
+                'label_short_for' => [
+                    'de'   => 'Banding Diterima',
+                    'upps' => 'Banding Diterima',
+                    'prodi' => 'Banding Diterima',
+                ],
+                'label_long_for' => [
+                    'de'   => 'Permohonan Banding Diterima',
+                    'upps' => 'Permohonan Banding Telah Diterima',
+                    'prodi' => 'Permohonan Banding Telah Diterima',
+                ],
+                'bg' => 'bg-light',
+                'icon' => 'bi-file-earmark-break',
+            ],
+
+            PengajuanAkreditasi::STATUS_MENUNGGU_PEMBAYARAN_BANDING => [
+                'label' => 'Menunggu Pembayaran Banding',
+                'label_short_for' => [
+                    'de'   => 'Menunggu Pembayaran',
+                    'upps' => 'Menunggu Pembayaran',
+                    'prodi' => 'Menunggu Pembayaran',
+                ],
+                'label_long_for' => [
+                    'de'   => 'Menunggu Pembayaran Banding dari PS',
+                    'upps' => 'Menunggu Pembayaran Banding',
+                    'prodi' => 'Menunggu Pembayaran Banding',
                 ],
                 'bg' => 'bg-warning',
-                'icon' => 'bi-file-earmark-break',
+                'icon' => 'bi-hourglass-split',
+            ],
+
+            PengajuanAkreditasi::STATUS_PEMBAYARAN_BANDING_DITERIMA => [
+                'label' => 'Pembayaran Banding Diterima',
+                'label_short_for' => [
+                    'de'   => 'Bukti Pembayaran Masuk',
+                    'upps' => 'Bukti Pembayaran Terkirim',
+                    'prodi' => 'Bukti Pembayaran Terkirim',
+                ],
+                'label_long_for' => [
+                    'de'   => 'Bukti Pembayaran Banding Diterima',
+                    'upps' => 'Bukti Pembayaran Banding Terkirim',
+                    'prodi' => 'Bukti Pembayaran Banding Terkirim',
+                ],
+                'bg' => 'bg-info',
+                'icon' => 'bi-credit-card',
+            ],
+
+            PengajuanAkreditasi::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN_BANDING => [
+                'label' => 'Menunggu Validasi Pembayaran Banding',
+                'label_short_for' => [
+                    'de'   => 'Menunggu Validasi',
+                    'upps' => 'Menunggu Validasi',
+                    'prodi' => 'Menunggu Validasi',
+                ],
+                'label_long_for' => [
+                    'de'   => 'Menunggu Validasi Pembayaran Banding',
+                    'upps' => 'Menunggu Validasi Pembayaran Banding',
+                    'prodi' => 'Menunggu Validasi Pembayaran Banding',
+                ],
+                'bg' => 'bg-warning',
+                'icon' => 'bi-shield-exclamation',
+            ],
+
+            PengajuanAkreditasi::STATUS_PEMBAYARAN_BANDING_DIVERIFIKASI => [
+                'label' => 'Validasi Pembayaran Banding Selesai',
+                'label_short_for' => [
+                    'de'   => 'Pembayaran Tervalidasi',
+                    'upps' => 'Pembayaran Tervalidasi',
+                    'prodi' => 'Pembayaran Tervalidasi',
+                ],
+                'label_long_for' => [
+                    'de'   => 'Pembayaran Banding Tervalidasi',
+                    'upps' => 'Pembayaran Banding Tervalidasi',
+                    'prodi' => 'Pembayaran Banding Tervalidasi',
+                ],
+                'bg' => 'bg-light',
+                'icon' => 'bi-check-circle',
             ],
 
             PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN => [
@@ -591,11 +671,155 @@ final class PengajuanStatus
                     'upps' => 'Pelaksanaan Banding Sedang Berlangsung',
                     'prodi' => 'Pelaksanaan Banding Sedang Berlangsung',
                 ],
-                'bg' => 'bg-danger',
+                'bg' => 'bg-info',
                 'icon' => 'bi-arrow-repeat',
             ],
 
-            PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN => [
+            PengajuanAkreditasi::STATUS_ASESOR_AK_BANDING_ASSIGNED => [
+                'label' => 'Penugasan Asesor AK Banding',
+                'label_short_for' => [
+                    'de'   => 'Asesor AK Banding Ditugaskan',
+                    'upps' => 'Asesor AK Banding Ditugaskan',
+                    'prodi' => 'Asesor AK Banding Ditugaskan',
+                ],
+                'label_long_for' => [
+                    'de'   => 'Asesor AK Banding Telah Ditugaskan',
+                    'upps' => 'Asesor AK Banding Telah Ditugaskan',
+                    'prodi' => 'Asesor AK Banding Telah Ditugaskan',
+                ],
+                'bg' => 'bg-light',
+                'icon' => 'bi-person-check',
+            ],
+
+            PengajuanAkreditasi::STATUS_AK_BANDING_IN_PROGRESS => [
+                'label' => 'Penugasan Asesor AK Banding Berlangsung',
+                'label_short_for' => [
+                    'de'   => 'Sedang Berlangsung',
+                    'upps' => 'Sedang Berlangsung',
+                    'prodi' => 'Sedang Berlangsung',
+                ],
+                'label_long_for' => [
+                    'de'   => 'Proses AK Banding Berlangsung',
+                    'upps' => 'Proses AK Banding Berlangsung',
+                    'prodi' => 'Proses AK Banding Berlangsung',
+                ],
+                'bg' => 'bg-info',
+                'icon' => 'bi-clipboard-data',
+            ],
+
+            PengajuanAkreditasi::STATUS_AK_BANDING_ON_VALIDATION => [
+                'label' => 'Validasi AK Banding Berlangsung',
+                'label_short_for' => [
+                    'de'   => 'Validasi AK Banding',
+                    'upps' => 'Validasi AK Banding',
+                    'prodi' => 'Validasi AK Banding',
+                ],
+                'label_long_for' => [
+                    'de'   => 'Validasi AK Banding Sedang Berlangsung',
+                    'upps' => 'Validasi AK Banding Sedang Berlangsung',
+                    'prodi' => 'Validasi AK Banding Sedang Berlangsung',
+                ],
+                'bg' => 'bg-warning',
+                'icon' => 'bi-clipboard2-check',
+            ],
+
+            PengajuanAkreditasi::STATUS_AK_BANDING_SELESAI => [
+                'label' => 'Validasi AK Banding Selesai',
+                'label_short_for' => [
+                    'de'   => 'Validasi AK Banding Selesai',
+                    'upps' => 'Validasi AK Banding Selesai',
+                    'prodi' => 'Validasi AK Banding Selesai',
+                ],
+                'label_long_for' => [
+                    'de'   => 'Validasi AK Banding Selesai',
+                    'upps' => 'Validasi AK Banding Selesai',
+                    'prodi' => 'Validasi AK Banding Selesai',
+                ],
+                'bg' => 'bg-success',
+                'icon' => 'bi-clipboard-check',
+            ],
+
+            PengajuanAkreditasi::STATUS_AK_BANDING_DILAPORKAN => [
+                'label' => 'Pelaporan AK Banding Selesai',
+                'label_short_for' => [
+                    'de'   => 'Pelaporan AK Banding Selesai',
+                    'upps' => 'Pelaporan AK Banding Selesai',
+                    'prodi' => 'Pelaporan AK Banding Selesai',
+                ],
+                'label_long_for' => [
+                    'de'   => 'Pelaporan AK Banding Selesai',
+                    'upps' => 'Pelaporan AK Banding Selesai',
+                    'prodi' => 'Pelaporan AK Banding Selesai',
+                ],
+                'bg' => 'bg-success',
+                'icon' => 'bi-file-earmark-medical',
+            ],
+
+            PengajuanAkreditasi::STATUS_ASESOR_AL_BANDING_ASSIGNED => [
+                'label' => 'Penugasan Asesor AL Banding',
+                'label_short_for' => [
+                    'de'   => 'Asesor AL Banding Ditugaskan',
+                    'upps' => 'Asesor AL Banding Ditugaskan',
+                    'prodi' => 'Asesor AL Banding Ditugaskan',
+                ],
+                'label_long_for' => [
+                    'de'   => 'Asesor AL Banding Telah Ditugaskan',
+                    'upps' => 'Asesor AL Banding Telah Ditugaskan',
+                    'prodi' => 'Asesor AL Banding Telah Ditugaskan',
+                ],
+                'bg' => 'bg-primary',
+                'icon' => 'bi-person-badge',
+            ],
+
+            PengajuanAkreditasi::STATUS_AL_BANDING_IN_PROGRESS => [
+                'label' => 'Pelaksanaan AL Banding Berlangsung',
+                'label_short_for' => [
+                    'de'   => 'AL Banding Berlangsung',
+                    'upps' => 'AL Banding Berlangsung',
+                    'prodi' => 'AL Banding Berlangsung',
+                ],
+                'label_long_for' => [
+                    'de'   => 'Pelaksanaan AL Banding Sedang Berlangsung',
+                    'upps' => 'Pelaksanaan AL Banding Sedang Berlangsung',
+                    'prodi' => 'Pelaksanaan AL Banding Sedang Berlangsung',
+                ],
+                'bg' => 'bg-info',
+                'icon' => 'bi-building',
+            ],
+
+            PengajuanAkreditasi::STATUS_AL_BANDING_SELESAI => [
+                'label' => 'Pelaksanaan AL Banding dan Penyampaian Berita Acara Selesai',
+                'label_short_for' => [
+                    'de'   => 'AL Banding Selesai',
+                    'upps' => 'AL Banding Selesai',
+                    'prodi' => 'AL Banding Selesai',
+                ],
+                'label_long_for' => [
+                    'de'   => 'Pelaksanaan AL Banding & Berita Acara Selesai',
+                    'upps' => 'Pelaksanaan AL Banding & Berita Acara Selesai',
+                    'prodi' => 'Pelaksanaan AL Banding & Berita Acara Selesai',
+                ],
+                'bg' => 'bg-success',
+                'icon' => 'bi-building-check',
+            ],
+
+            PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN => [
+                'label' => 'Pelaporan AL Banding Selesai',
+                'label_short_for' => [
+                    'de'   => 'Laporan AL Banding Selesai',
+                    'upps' => 'Laporan AL Banding Selesai',
+                    'prodi' => 'Laporan AL Banding Selesai',
+                ],
+                'label_long_for' => [
+                    'de'   => 'Pelaporan AL Banding Selesai',
+                    'upps' => 'Pelaporan AL Banding Selesai',
+                    'prodi' => 'Pelaporan AL Banding Selesai',
+                ],
+                'bg' => 'bg-success',
+                'icon' => 'bi-clipboard-data',
+            ],
+
+            PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN => [
                 'label' => 'Pelaporan Banding',
                 'label_short_for' => [
                     'de'   => 'Laporan Banding Selesai',
@@ -705,22 +929,6 @@ final class PengajuanStatus
                 ],
                 'bg' => 'bg-danger',
                 'icon' => 'bi-x-octagon',
-            ],
-
-            PengajuanAkreditasi::STATUS_REMINDER_PENGIRIMAN_BORANG => [
-                'label' => 'Reminder Pengiriman Dokumen',
-                'label_short_for' => [
-                    'de'   => 'Reminder Terkirim',
-                    'upps' => 'Reminder Diterima',
-                    'prodi' => 'Reminder Diterima',
-                ],
-                'label_long_for' => [
-                    'de'   => 'Reminder Pengiriman Dokumen Terkirim',
-                    'upps' => 'Reminder Pengiriman Dokumen Diterima dari LAMDEPILAR',
-                    'prodi' => 'Reminder Pengiriman Dokumen Diterima dari LAMDEPILAR',
-                ],
-                'bg' => 'bg-warning',
-                'icon' => 'bi-x-envelope-paper',
             ],
         ];
     }

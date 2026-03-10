@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h2 class="mb-1">Kelola Pengguna</h2>
             <p class="text-muted mb-0">Manajemen data pengguna sistem</p>
@@ -110,7 +110,7 @@
                 , error: function(xhr, error, thrown) {
                     console.error('DataTables Error:', error, thrown);
                     console.error('Response:', xhr.responseText);
-                    alert('Error loading data. Check console for details.');
+                    Swal.fire('Error', 'Error loading data. Check console for details.', 'error');
                 }
             }
             , columns: [{
@@ -159,8 +159,8 @@
         });
     });
 
-    function deleteRecord(id) {
-        if (confirm('Yakin ingin menghapus pengguna ini?')) {
+    async function deleteRecord(id) {
+        if (await swalConfirmSubmit('warning', 'Yakin ingin menghapus pengguna ini?')) {
             $.ajax({
                 url: '{{ url('
                 users ') }}/' + id
@@ -170,10 +170,10 @@
                 }
                 , success: function(result) {
                     $('#users-table').DataTable().ajax.reload();
-                    alert('Pengguna berhasil dihapus');
+                    Swal.fire('Berhasil', 'Pengguna berhasil dihapus', 'success');
                 }
                 , error: function(xhr) {
-                    alert('Error: ' + xhr.responseJSON.message);
+                    Swal.fire('Perhatian', 'Error: ' + xhr.responseJSON.message, 'error');
                 }
             });
         }

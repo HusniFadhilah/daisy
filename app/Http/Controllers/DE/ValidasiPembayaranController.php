@@ -24,7 +24,7 @@ class ValidasiPembayaranController extends Controller
             'pengajuan.studyProgram.university',
             'pengajuan.studyProgram.degreeLevel',
             'verifier'
-        ]);
+        ])->where('jenis_pembayaran', 'akreditasi');
 
         // Filter by status pembayaran
         if ($request->filled('status_pembayaran')) {
@@ -247,7 +247,7 @@ class ValidasiPembayaranController extends Controller
      */
     private function calculateStatistics(): array
     {
-        $row = PengajuanPembayaran::query()
+        $row = PengajuanPembayaran::where('jenis_pembayaran', 'akreditasi')
             ->selectRaw('
             COUNT(*) as total,
             SUM(CASE WHEN status_pembayaran = ? THEN 1 ELSE 0 END) as menunggu_pembayaran,

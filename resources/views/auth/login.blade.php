@@ -97,7 +97,7 @@
                 </div>
 
                 <!-- Remember & Forgot -->
-                <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
                     <div class="form-check">
                         <input type="checkbox" class="form-check-input" id="remember" name="remember" {{ old('remember') ? 'checked' : '' }}>
                         <label class="form-check-label" for="remember">
@@ -177,7 +177,7 @@
     // Social Login (placeholder)
     function socialLogin(provider) {
         // Implement social login logic
-        alert('Social login dengan ' + provider + ' akan segera tersedia!');
+        Swal.fire('Perhatian', 'Social login dengan ' + provider + ' akan segera tersedia!', 'warning');
     }
 
     // Auto-dismiss alerts after 5 seconds

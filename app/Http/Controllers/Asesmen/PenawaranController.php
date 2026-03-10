@@ -2,15 +2,18 @@
 
 namespace App\Http\Controllers\Asesmen;
 
-use App\Models\Asesmen;
 use App\Helpers\RouteHelper;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Asesmen\Banding\AKBandingController;
+use App\Http\Controllers\Controller;
+use App\Jobs\SendPenawaranResponseEmail;
+use App\Models\Asesmen;
 use App\Models\AsesmenUserRole;
+use App\Models\Role;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
-use App\Jobs\SendPenawaranResponseEmail;
+use Illuminate\Support\Str;
 
 class PenawaranController extends Controller
 {
@@ -63,19 +66,10 @@ class PenawaranController extends Controller
 
         // ✅ If already accepted, redirect ke berkas
         if ($assignment->status_penawaran === 'accepted') {
-            if ($assignment->jenis_asesmen === 'dokumen') {
-                $route = 'validator.borang.show';
-                $param = $assignment->id;
-            } elseif ($assignment->jenis_asesmen === 'ak') {
-                $route = 'ak.berkas.show';
-                $param = $asesmen->id;
-            } else {
-                $route = 'al.berkas.show';
-                $param = $asesmen->id;
-            }
-
+            $route = $assignment->route_penawaran;
+            $param = $asesmen->id;
             return redirect()->route($route, $param)
-                ->with('info', 'Penawaran telah diterima. Silakan lanjutkan ' . ($assignment->jenis_asesmen === 'dokumen' ? 'penilaian' : 'validasi'));
+                ->with('info', 'Penawaran telah diterima. Silakan lanjutkan ' . ($assignment->jenis_asesmen === 'dokumen' ? 'validasi' : 'penilaian'));
         }
 
         // ✅ If rejected, show with info
@@ -106,7 +100,14 @@ class PenawaranController extends Controller
         }
 
         // status: pending / rejected → tampilkan halaman "detail penawaran"
-        return view('asesmen.' . $jenisAsesmen . '.penawaran.detail', compact('asesmen', 'penawaran'));
+        if (in_array($jenisAsesmen, ['ak_banding', 'al_banding'])) {
+            return view('asesmen.banding.' . Str::slug($jenisAsesmen) . '.penawaran.detail', compact('asesmen', 'penawaran'));
+        }
+        if (in_array($jenisAsesmen, ['ak', 'al'])) {
+            return view('asesmen.' . $jenisAsesmen . '.penawaran.detail', compact('asesmen', 'penawaran'));
+        } else {
+            return redirect()->route('dashboard')->with('error', 'Jenis asesmen tidak dikenal.');
+        }
     }
 
     /**
@@ -138,6 +139,21 @@ class PenawaranController extends Controller
                 $pengajuan->setValidatorAssigned($user->id);
             }
 
+            if ($assignment->jenis_asesmen === 'ak_banding' && $assignment->id_role === Role::ID_ROLE_ASESOR_BANDING) {
+                try {
+                    (new AKBandingController)->doInitFromAK($assignment);
+                } catch (\Exception $e) {
+                    Log::info('doInitFromAK skipped after accept: ' . $e);
+                }
+            }
+            // if ($assignment->jenis_asesmen === 'al_banding' && $assignment->id_role === Role::ID_ROLE_ASESOR_BANDING) {
+            //     try {
+            //         (new ALBandingController)->doInitFromAL($assignment);
+            //     } catch (\Exception $e) {
+            //         Log::info('doInitFromAL skipped after accept: ' . $e);
+            //     }
+            // }
+
             try {
                 SendPenawaranResponseEmail::dispatch($assignment, 'accepted');
             } catch (\Exception $e) {
@@ -149,7 +165,7 @@ class PenawaranController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Penawaran berhasil diterima. Anda dapat mulai melakukan ' . ($assignment->jenis_asesmen === 'dokumen' ? 'penilaian' : 'validasi'),
+                'message' => 'Penawaran berhasil diterima. Anda dapat mulai melakukan ' . ($assignment->jenis_asesmen === 'dokumen' ? 'validasi' : 'penilaian'),
             ]);
         } catch (\Exception $e) {
             Log::error($e);

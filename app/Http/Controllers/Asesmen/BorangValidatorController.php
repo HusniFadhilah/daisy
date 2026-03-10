@@ -498,7 +498,7 @@ class BorangValidatorController extends Controller
                     'status_from' => $statusFrom,
                     'status_to' => PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
                     'changed_by' => $user->id,
-                    'keterangan' => 'LED divalidasi dan disetujui oleh validator ' . $user->name,
+                    'keterangan' => 'Dokumen akreditasi divalidasi dan disetujui oleh validator ' . $user->name,
                     'changed_at' => now(),
                 ]);
 
@@ -638,7 +638,7 @@ class BorangValidatorController extends Controller
                     'status_from' => $statusFrom,
                     'status_to' => PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,
                     'changed_by' => $user->id,
-                    'keterangan' => 'Validator ' . $user->name . ' meminta revisi LED - ' . count($revisionPoints) . ' poin revisi',
+                    'keterangan' => 'Validator ' . $user->name . ' meminta revisi dokumen akreditasi - ' . count($revisionPoints) . ' poin revisi',
                     'changed_at' => now(),
                 ]);
 
@@ -909,7 +909,7 @@ class BorangValidatorController extends Controller
                     'status' => PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
                 ]);
 
-                $message = 'Penawaran diterima. Silakan mulai review LED.';
+                $message = 'Penawaran diterima. Silakan mulai validasi dokumen.';
             } else {
                 $assignment->update([
                     'status_penawaran' => 'rejected',

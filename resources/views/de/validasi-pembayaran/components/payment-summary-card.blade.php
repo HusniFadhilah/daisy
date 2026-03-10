@@ -288,12 +288,12 @@
                 if (result.requires_password) {
                     showPasswordModal();
                 } else {
-                    alert(result.message || 'Gagal memuat data');
+                    Swal.fire('Perhatian', result.message || 'Gagal memuat data', 'error');
                 }
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('Terjadi kesalahan saat memuat data');
+            Swal.fire('Perhatian', 'Terjadi kesalahan saat memuat data', 'error');
         }
     }
 
@@ -397,7 +397,7 @@
     }
 
     async function lockSummary() {
-        if (!confirm('Apakah Anda yakin ingin mengunci kembali ringkasan pembayaran?')) {
+        if (!(await swalConfirmSubmit('warning', 'Apakah Anda yakin ingin mengunci kembali ringkasan pembayaran?'))) {
             return;
         }
 

@@ -32,7 +32,7 @@
         color: #932136;
     }
 
-    .progress-wrapper {
+    .upload-progress-wrapper {
         display: none;
     }
 
@@ -81,7 +81,7 @@
     {{-- Header --}}
     <div class="card mb-4">
         <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
                 <div>
                     <h4 class="mb-1">
                         <i class="bi bi-upload"></i> Upload Penilaian AK
@@ -98,7 +98,7 @@
                 <div class="row align-items-center">
                     <div class="col-md-9">
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h5 class="mb-0">Progress Penilaian</h5>
+                            <h5 class="mb-0">Progres Penilaian</h5>
                             <span class="badge bg-primary fs-6" id="progressPercentage">
                                 {{ $progress['percentage'] }}%
                             </span>
@@ -107,7 +107,7 @@
                             <div class="progress-bar bg-gradient bg-success" role="progressbar" id="progressBarPenilaian" style="width: {{ $progress['percentage'] }}%" aria-valuenow="{{ $progress['percentage'] }}" aria-valuemin="0" aria-valuemax="100">
                             </div>
                         </div>
-                        <small class="text-muted mt-1 d-block">
+                        <small class="text-white mt-1 d-block">
                             <span id="progressCompleted">{{ $progress['completed'] }}</span> dari
                             <span id="progressTotal">{{ $progress['total'] }}</span> elemen penilaian selesai dinilai
                         </small>
@@ -116,7 +116,7 @@
                         <div class="stat-circle">
                             <div class="circle-content">
                                 <h2 class="mb-0" id="progressCount">{{ $progress['completed'] }}/{{ $progress['total'] }}</h2>
-                                <small class="text-muted">Elemen Penilaian</small>
+                                <small class="text-white">Elemen Penilaian</small>
                             </div>
                         </div>
                     </div>
@@ -169,7 +169,7 @@
                                     <i class="bi bi-check-circle"></i> Penilaian Telah Lengkap!
                                 </h5>
                                 <p class="mb-2">
-                                    Anda telah menyelesaikan <strong>semua {{ $progress['total'] }} elemen penilaian</strong>.
+                                    Anda telah menyelesaikan <strong>semua {{ $progress['total'] }} elemen penilaian</strong>.<br>
                                     Anda dapat melakukan cek split penilaian antar asesor di tombol berikut <a class="btn btn-info btn-sm" href="{{ route('ak.berkas.cek-split', $asesmen->id) }}" target="_blank">
                                         <i class="bi bi-search"></i> Cek Split Penilaian
                                     </a>
@@ -311,9 +311,9 @@
                         </div>
 
                         {{-- Progress Bar --}}
-                        <div class="progress-wrapper mt-4" id="progressWrapper">
+                        <div class="upload-progress-wrapper mt-4" id="progressWrapper">
                             <div class="mb-2">
-                                <strong>Progress Upload:</strong>
+                                <strong>Progres <i>Upload</i>:</strong>
                                 <span id="progressText" class="float-end">0%</span>
                             </div>
                             <div class="progress" style="height: 25px;">
@@ -601,38 +601,187 @@
             if (el.progressText) el.progressText.textContent = percentage + '%';
         }
 
-        function showResult(log) {
-            if (log.status === 'completed') {
-                Swal.fire({
-                    icon: 'success'
-                    , title: 'Proses Selesai!'
-                    , html: '<div class="text-center"><p>File telah berhasil diupload dan diproses</p></div>'
-                    , timer: 3000
-                    , timerProgressBar: true
-                }).then(() => window.location.reload());
+        async function showResult(log) {
+            if (log.status !== 'completed') {
+                // ── Error tetap sama seperti sebelumnya ────────────────
+                let errHtml = '';
+                if (Array.isArray(log.errors)) {
+                    errHtml = `<div class="text-start">
+              <p class="mb-2">Proses pembacaan data gagal karena:</p>
+              <ul style="text-align:left; padding-left:18px;">
+                ${log.errors.map(e => `<li>${appendChildHtml(e)}</li>`).join('')}
+              </ul>
+              <p class="mt-2">Mohon lakukan pengecekan template excel dan coba upload ulang.</p>
+            </div>`;
+                } else {
+                    errHtml = `<p>${log.errors || 'Terjadi kesalahan saat memproses file'}</p>`;
+                }
+                await Swal.fire({
+                    icon: 'error'
+                    , title: 'Proses Upload Gagal'
+                    , html: errHtml
+                    , confirmButtonText: 'OK'
+                , });
+                window.location.reload();
                 return;
             }
 
-            // ✅ Format errors
-            let errHtml = '';
-            if (Array.isArray(log.errors)) {
-                errHtml = `<div class="text-start">
-      <p class="mb-2">Import gagal karena:</p>
-      <ul style="text-align:left; padding-left:18px;">
-        ${log.errors.map(e => `<li>${escapeHtml(e)}</li>`).join('')}
-      </ul>
-      <p class="mt-2">Mohon lakukan pengecekan template excel dan coba upload ulang.</p>
-    </div>`;
-            } else {
-                errHtml = `<p>${log.errors || 'Terjadi kesalahan saat memproses file'}</p>`;
+            // ── Upload berhasil → cek split dulu ──────────────────────
+            Swal.fire({
+                icon: 'info'
+                , title: 'Mengecek Split Penilaian…'
+                , html: 'Mohon tunggu sebentar.'
+                , allowOutsideClick: false
+                , showConfirmButton: false
+                , didOpen: () => Swal.showLoading()
+            , });
+
+            try {
+                const splitRes = await fetch(`/ak/berkas/${idAsesmen}/check-split-result`, {
+                    headers: {
+                        'Accept': 'application/json'
+                        , 'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    , }
+                , });
+                const splitData = await splitRes.json();
+
+                if (!splitData.success) throw new Error(splitData.message);
+
+                // ── Kondisi 1: Belum ada asesor lain yang mengisi ─────
+                if (!splitData.otherHasFilled) {
+                    await Swal.fire({
+                        icon: 'success'
+                        , title: 'Upload Berhasil!'
+                        , html: `
+                    <p>File berhasil diproses.</p>
+                    <div class="alert alert-info text-start mt-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Asesor lain belum mengisi penilaian.<br>
+                        Anda dapat melakukan cek split penilaian antar asesor di tombol berikut:
+                        <br><br>
+                        <a href="/ak/berkas/${idAsesmen}/cek-split" target="_blank"
+                           class="btn btn-info btn-sm">
+                            <i class="bi bi-search"></i> Cek Split Penilaian
+                        </a>
+                    </div>
+                `
+                        , confirmButtonText: 'OK'
+                        , confirmButtonColor: '#28a745'
+                    , });
+                    window.location.reload();
+                    return;
+                }
+
+                // ── Kondisi 2: Ada asesor lain → tampilkan split ──────
+                if (splitData.splitCount === 0) {
+                    await Swal.fire({
+                        icon: 'success'
+                        , title: 'Upload Berhasil — Tidak Ada Split!'
+                        , html: `
+                    <p>File berhasil diproses.</p>
+                    <div class="alert alert-success text-start mt-3">
+                        <i class="bi bi-check-circle me-2"></i>
+                        <strong>Tidak ada split penilaian</strong> dengan asesor lain.
+                        Semua elemen memiliki selisih penilaian ≤ 1.
+                    </div>
+                `
+                        , confirmButtonText: 'OK'
+                        , confirmButtonColor: '#28a745'
+                    , });
+                    window.location.reload();
+                    return;
+                }
+
+                // ── Ada split → bangun tabel notifikasi ───────────────
+                const showBerkasBase = `/ak/berkas/${idAsesmen}`;
+                const splitRows = splitData.splitItems.map(item => {
+                    const skorBadges = item.skors.map(s => {
+                        let skor = s.skor;
+                        let nama = s.nama;
+                        return `
+                        <div class="mb-2">
+                            <span class="badge bg-light text-dark">${nama}</span>
+                            <span class="badge text-dark" style="background-color: ${getSkorColorJS(skor)};">${getSkorLabelShort(skor)}</span>
+                        </div>`
+                    }).join(' ');
+                    return `
+                <tr style="cursor:pointer;"
+                    onclick="window.open('${showBerkasBase}#elemen-${item.elemenId}', '_blank')"
+                    title="Klik untuk melihat di halaman penilaian">
+                    <td class="text-center"><span class="badge bg-primary">${item.kodeKriteria}</span></td>
+                    <td><strong class="me-2">${item.kodeElemen}</strong> <small>${item.pernyataan}</small></td>
+                    <td>${skorBadges}</td>
+                    <td class="text-center">
+                        <span class="badge bg-danger">Selisih ${item.selisih}</span>
+                    </td>
+                    <td class="text-center">
+                        <a href="${showBerkasBase}#elemen-${item.elemenId}" target="_blank"
+                           class="btn btn-sm btn-warning"
+                           onclick="event.stopPropagation()">
+                            <i class="bi bi-eye"></i> Lihat
+                        </a>
+                    </td>
+                </tr>
+            `;
+                }).join('');
+
+                await Swal.fire({
+                    icon: 'warning'
+                    , title: `Upload Berhasil — Ditemukan ${splitData.splitCount} Split!`
+                    , html: `
+                <div class="text-start">
+                    <p>File berhasil diproses, namun ditemukan
+                    <strong>${splitData.splitCount} elemen</strong> dengan selisih penilaian
+                    antar asesor <strong>&gt; 1</strong>.</p>
+
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Klik baris elemen untuk membuka halaman penilaian dan melihat detail.
+                    </div>
+
+                    <div style="max-height:300px; overflow-y:auto;">
+                        <table class="table table-sm table-hover table-bordered align-middle"
+                               style="font-size:13px;">
+                            <thead class="table-dark text-center">
+                                <tr>
+                                    <th width="10%">Kriteria</th>
+                                    <th width="20%">Elemen</th>
+                                    <th width="40%">Kategori Penilaian</th>
+                                    <th width="15%">Selisih</th>
+                                    <th width="15%">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>${splitRows}</tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-3">
+                        <a href="/ak/berkas/${idAsesmen}/cek-split" target="_blank"
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-people"></i> Buka Halaman Cek Split Lengkap
+                        </a>
+                    </div>
+                </div>
+            `
+                    , width: '900px'
+                    , confirmButtonText: 'Mengerti, Lanjutkan'
+                    , confirmButtonColor: '#ff9800'
+                    , allowOutsideClick: false
+                , });
+
+            } catch (err) {
+                console.error('Split check error:', err);
+                // Jika cek split gagal, tetap lanjut reload tanpa blokir
+                await Swal.fire({
+                    icon: 'success'
+                    , title: 'Upload Berhasil!'
+                    , text: 'File berhasil diproses.'
+                    , timer: 2000
+                    , showConfirmButton: false
+                , });
             }
 
-            Swal.fire({
-                icon: 'error'
-                , title: 'Proses Upload Gagal'
-                , html: errHtml
-                , confirmButtonText: 'OK'
-            }).then(() => window.location.reload());
+            window.location.reload();
         }
 
         function formatFileSize(bytes) {

@@ -73,7 +73,7 @@
     </nav>
 
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h5 class="mb-1">
                 <i class="bi bi-file-earmark-text"></i> Pengisian Laporan Hasil Asesmen Lapangan (LHA)
@@ -145,7 +145,7 @@
             <div class="card mb-4">
                 <div class="card-body">
                     <h6 class="mb-3">
-                        <i class="bi bi-graph-up"></i> Progress Pengisian LHA
+                        <i class="bi bi-graph-up"></i> Progres Pengisian LHA
                     </h6>
                     <div class="progress progress-bar-custom">
                         <div class="progress-bar bg-success" role="progressbar" id="progressBar" style="width: {{ $lha->getCompletionPercentage() }}%">
@@ -546,7 +546,7 @@ $lhaIsFinalizedApproved = $lha->isFinalizedApproved();
         window.open('{{ route("al.berkas.lha-asesor.preview", $asesmen->id) }}', '_blank');
     }
 
-    function finalizeLHA() {
+    async function finalizeLHA() {
         // Calculate completion
         let filled = 0;
         const total = 5;
@@ -558,11 +558,15 @@ $lhaIsFinalizedApproved = $lha->isFinalizedApproved();
         });
 
         if (filled < total) {
-            alert('Harap lengkapi semua bagian LHA sebelum finalisasi.\n\nBagian yang telah diisi: ' + filled + ' dari ' + total);
+            Swal.fire({
+                title: 'Perhatian'
+                , html: 'Harap lengkapi semua bagian LHA sebelum finalisasi.<br><br>Bagian yang telah diisi: ' + filled + ' dari ' + total
+                , icon: 'warning'
+            });
             return;
         }
 
-        if (!confirm('Apakah Anda yakin ingin finalisasi LHA?\n\nSetelah difinalisasi:\n- LHA akan di-generate menjadi PDF\n- Dokumen akan dikirim ke Program Studi\n- LHA tidak dapat diubah lagi')) {
+        if (!(await swalConfirmSubmit('warning', `Apakah Anda yakin ingin finalisasi LHA?<br><br>Setelah difinalisasi:<ul style="text-align: left; margin-left: 1.2rem;"><li>LHA akan di-generate menjadi PDF</li><li>Dokumen akan dikirim ke Program Studi</li><li>LHA tidak dapat diubah lagi</li></ul>`))) {
             return;
         }
 
@@ -578,10 +582,10 @@ $lhaIsFinalizedApproved = $lha->isFinalizedApproved();
             }
             , success: function(response) {
                 if (response.success) {
-                    alert(response.message);
+                    Swal.fire('Berhasil', response.message, 'success');
                     window.location.reload();
                 } else {
-                    alert(response.message || 'Gagal finalisasi');
+                    Swal.fire('Perhatian', response.message || 'Gagal finalisasi', 'error');
                     $('#btnFinalize').prop('disabled', false).html('<i class="bi bi-check-circle"></i> Finalisasi LHA');
                 }
             }
@@ -589,7 +593,7 @@ $lhaIsFinalizedApproved = $lha->isFinalizedApproved();
                 const errorMsg = xhr.responseJSON && xhr.responseJSON.message ?
                     xhr.responseJSON.message :
                     'Terjadi kesalahan';
-                alert('Gagal finalisasi LHA: ' + errorMsg);
+                Swal.fire('Perhatian', 'Gagal finalisasi LHA: ' + errorMsg, 'error');
                 $('#btnFinalize').prop('disabled', false).html('<i class="bi bi-check-circle"></i> Finalisasi LHA');
             }
         });

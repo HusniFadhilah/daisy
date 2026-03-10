@@ -16,7 +16,7 @@
     </nav>
 
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h5 class="mb-1">
                 <i class="bi bi-building"></i> Detail Penugasan Asesor AL
@@ -125,7 +125,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center rounded gap-3">
                         <div class="d-flex align-items-center">
                             <i class="bi bi-file-earmark-pdf text-danger me-3" style="font-size: 48px;"></i>
                             <div>
@@ -187,7 +187,7 @@
                             <br>
 
                             @if($asesor->user->email)
-                            <small class="text-muted">{{ $asesor->user->email }}</small><br>
+                            <small class="text-muted text-wrap">{{ $asesor->user->email }}</small><br>
                             @endif
                             @if($asesor->user->phone)
                             <small class="text-muted">{{ $asesor->user->phone }}</small><br>

@@ -27,6 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
             'role' => \App\Http\Middleware\CheckRoleMiddleware::class,
             'penawaran.accepted' => \App\Http\Middleware\EnsurePenawaranAcceptedMiddleware::class,
+            'al.first.opener' => \App\Http\Middleware\CheckAlFirstOpenerMiddleware::class,
             'under.dev' => \App\Http\Middleware\UnderDevelopmentMiddleware::class,
             'sync.roles' => \App\Http\Middleware\SyncUserRolesMiddleware::class,
             'verify.payment.password' => \App\Http\Middleware\VerifyPaymentPassword::class,

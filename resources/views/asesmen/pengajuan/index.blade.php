@@ -5,7 +5,7 @@
 @section('content')
 <div class="container-fluid py-3">
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h2><i class="bi bi-file-earmark-text"></i> Permohonan Akreditasi</h2>
             <p class="text-muted mb-0">Kelola permohonan akreditasi program studi</p>

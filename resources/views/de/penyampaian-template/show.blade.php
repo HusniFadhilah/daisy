@@ -16,7 +16,7 @@
     </nav>
 
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h5 class="mb-1">
                 <i class="bi bi-file-earmark"></i> Detail Pengiriman Formulir dan Templat Dokumen
@@ -133,8 +133,8 @@
                                 @endif
                             </label>
 
-                            <input type="file" name="file_template_led" id="template_dokumen" class="form-control @error('file_template_led') is-invalid @enderror" accept=".rar,.zip,.pdf,.doc,.docx,.xls,.xlsx" {{ !$templateLed ? 'required' : '' }}>
-                            <small>Format file yang diizinkan: RAR/ZIP/PDF/DOCX/XLSX</small>
+                            <input type="file" name="file_template_led" id="template_dokumen" class="form-control @error('file_template_led') is-invalid @enderror" accept=".rar,.zip" {{ !$templateLed ? 'required' : '' }}>
+                            <small>Format file yang diizinkan: RAR/ZIP</small>
                             @error('file_template_led')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -203,7 +203,7 @@
                 </div>
                 <div class="card-body">
                     @if($templateLed)
-                    <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded mb-3">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center rounded gap-3">
                         <div class="d-flex align-items-center">
                             @if($templateLed->template_link)
                             <i class="bi bi-link-45deg me-3 text-primary" style="font-size: 48px;"></i>
@@ -246,7 +246,7 @@
                     @endif
 
                     @if($formulirPembayaran)
-                    <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center rounded gap-3">
                         <div class="d-flex align-items-center">
                             @if($formulirPembayaran->template_link)
                             <i class="bi bi-link-45deg me-3 text-primary" style="font-size: 48px;"></i>
@@ -403,8 +403,8 @@
         };
 
         // ✅ Function to mark notification as read
-        window.markAsRead = function(notificationId) {
-            if (confirm('Tandai notifikasi ini sebagai sudah dibaca?')) {
+        window.markAsRead = async function(notificationId) {
+            if (await swalConfirmSubmit('warning', 'Tandai notifikasi ini sebagai sudah dibaca?')) {
                 fetch(`/de/notifications/${notificationId}/mark-as-read`, {
                         method: 'POST'
                         , headers: {

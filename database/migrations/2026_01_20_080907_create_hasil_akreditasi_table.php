@@ -183,14 +183,38 @@ return new class extends Migration
                 ->nullable()->constrained('users')->nullOnDelete();
 
             // ── Banding ──
-            $table->decimal('skor_banding', 8, 2)->nullable();
-            $table->decimal('skor_banding_tertimbang', 8, 2)->nullable();
-            $table->decimal('total_bobot_banding', 8, 2)->nullable();
-            $table->json('detail_skor_banding')->nullable();
-            $table->json('pelampauan_standar_banding')->nullable();
-            $table->timestamp('tanggal_finalisasi_banding')->nullable();
-            $table->foreignId('finalized_banding_by')
+            // ── AK (Asesmen Kecukupan) Banding ──
+            $table->decimal('skor_ak_banding', 8, 2)->nullable();
+            $table->decimal('skor_ak_banding_tertimbang', 8, 2)->nullable();
+            $table->decimal('total_bobot_ak_banding', 8, 2)->nullable();
+            $table->json('detail_skor_ak_banding')->nullable()
+                ->comment('Array detail skor per kriteria + elemen + metadata');
+            $table->json('pelampauan_standar_ak_banding')->nullable()
+                ->comment('Elemen skor ≥ 4 per kode kriteria — AK Banding');
+            $table->timestamp('tanggal_finalisasi_ak_banding')->nullable();
+            $table->foreignId('finalized_ak_banding_by')
                 ->nullable()->constrained('users')->nullOnDelete();
+
+            // ── AL (Asesmen Lapangan) Banding ──
+            $table->decimal('skor_al_banding', 8, 2)->nullable();
+            $table->decimal('skor_al_banding_tertimbang', 8, 2)->nullable();
+            $table->decimal('total_bobot_al_banding', 8, 2)->nullable();
+            $table->json('detail_skor_al_banding')->nullable()
+                ->comment('Array detail skor per kriteria + elemen + metadata');
+            $table->json('pelampauan_standar_al_banding')->nullable()
+                ->comment('Elemen skor ≥ 4 per kode kriteria — AL Banding');
+            $table->timestamp('tanggal_finalisasi_al_banding')->nullable();
+            $table->foreignId('finalized_al_banding_by')
+                ->nullable()->constrained('users')->nullOnDelete();
+
+            // $table->decimal('skor_banding', 8, 2)->nullable();
+            // $table->decimal('skor_banding_tertimbang', 8, 2)->nullable();
+            // $table->decimal('total_bobot_banding', 8, 2)->nullable();
+            // $table->json('detail_skor_banding')->nullable();
+            // $table->json('pelampauan_standar_banding')->nullable();
+            // $table->timestamp('tanggal_finalisasi_banding')->nullable();
+            // $table->foreignId('finalized_banding_by')
+            //     ->nullable()->constrained('users')->nullOnDelete();
 
             // ── Final / Penetapan ──
             $table->decimal('skor_final', 8, 2)->nullable()
@@ -222,10 +246,13 @@ return new class extends Migration
                 'final_ak',        // AK difinalisasi, menunggu AL
                 'draft_al',        // AL sedang dihitung
                 'final_al',        // AL difinalisasi (jarang dipakai langsung)
-                'final_combined',  // AK + AL keduanya selesai bersamaan
                 'final_hasil',     // Hasil difinalisasi & disampaikan ke PS
-                'draft_banding',   // Banding sedang diproses
-                'final_banding',   // Banding difinalisasi
+                'draft_ak_banding', // AK Banding sedang dihitung
+                'final_ak_banding', // AK Banding difinalisasi, menunggu AL Banding
+                'draft_al_banding', // AL Banding sedang dihitung
+                'final_al_banding', // AL Banding difinalisasi (jarang dipakai langsung)
+                // 'draft_banding',   // Banding sedang diproses
+                // 'final_banding',   // Banding difinalisasi
                 'draft_penetapan', // Sedang disiapkan untuk penetapan
                 'final_penetapan', // Penetapan dikunci
                 'published',       // Dipublikasikan ke PS

@@ -595,12 +595,12 @@
             const maxSize = 2 * 1024 * 1024; // 2MB
 
             if (!validTypes.includes(file.type)) {
-                alert('Format file tidak valid. Gunakan JPG, PNG, atau GIF.');
+                Swal.fire('Perhatian', 'Format file tidak valid. Gunakan JPG, PNG, atau GIF.', 'warning');
                 return;
             }
 
             if (file.size > maxSize) {
-                alert('Ukuran file terlalu besar. Maksimal 2MB.');
+                Swal.fire('Perhatian', 'Ukuran file terlalu besar. Maksimal 2MB.', 'warning');
                 return;
             }
 
@@ -671,7 +671,7 @@
 
         if (name.length < 3) {
             e.preventDefault();
-            alert('Nama harus minimal 3 karakter.');
+            Swal.fire('Perhatian', 'Nama harus minimal 3 karakter.', 'warning');
             return false;
         }
     });
@@ -864,7 +864,7 @@
                 }
 
                 if (action === 'delete') {
-                    if (!confirm('Hapus email ini?')) return;
+                    if (!(await swalConfirmSubmit('warning', 'Hapus email ini?'))) return;
 
                     setButtonLoading(btn, true, 'Menghapus');
 

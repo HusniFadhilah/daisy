@@ -16,7 +16,7 @@
     </nav>
 
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h5 class="mb-1">
                 <i class="bi bi-clipboard-data"></i> Detail Penyampaian Hasil
@@ -217,7 +217,7 @@
             </h5>
         </div>
         <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
                 <div>
                     <h6 class="mb-1">{{ $beritaAcara->title }}</h6>
                     <p class="text-muted mb-2">
@@ -263,7 +263,7 @@
             </h5>
         </div>
         <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
                 <div>
                     <h6 class="mb-1">{{ $beritaAcara->title }}</h6>
                     <p class="text-muted mb-2">

@@ -130,7 +130,7 @@
     function resendEmail() {
         const email = document.getElementById('email').value;
         if (!email) {
-            alert('Silakan masukkan email terlebih dahulu!');
+            Swal.fire('Perhatian', 'Silakan masukkan email terlebih dahulu!', 'warning');
             return;
         }
         // Submit form

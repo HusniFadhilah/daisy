@@ -2,28 +2,30 @@
 
 namespace App\Http\Controllers\Prodi;
 
-use App\Models\Kriteria;
-use Illuminate\Support\Str;
-use App\Models\BorangImport;
-use App\Models\StudyProgram;
-use Illuminate\Http\Request;
-use App\Models\PengajuanDokumen;
-use App\Jobs\ImportBorangDocxJob;
-use App\Models\PengajuanStatusLog;
-use Illuminate\Support\Facades\DB;
-use App\Models\PengajuanAkreditasi;
-use App\Models\PengajuanPembayaran;
-use App\Models\PengingatAkreditasi;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\URL;
 use App\Http\Controllers\Controller;
-use App\Services\BorangMergeService;
-use Illuminate\Support\Facades\Auth;
+use App\Jobs\ImportBorangDocxJob;
+use App\Models\BorangData;
+use App\Models\BorangDataExcel;
+use App\Models\BorangImport;
+use App\Models\Kriteria;
+use App\Models\PengajuanAkreditasi;
+use App\Models\PengajuanDokumen;
+use App\Models\PengajuanPembayaran;
+use App\Models\PengajuanStatusLog;
+use App\Models\PengingatAkreditasi;
+use App\Models\StudyProgram;
 use App\Services\BorangExportService;
+use App\Services\BorangMergeService;
 use App\Services\BorangParserService;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 
 class PengajuanAkreditasiController extends Controller
 {
@@ -351,9 +353,9 @@ class PengajuanAkreditasiController extends Controller
 
             // Update Permohonan akreditasi status (only if not already draft_borang_diterima)
             $oldStatus = $pengajuan->status;
-            if ($pengajuan->status !== PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA) {
+            if ($pengajuan->status !== PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM) {
                 $pengajuan->update([
-                    'status' => PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
+                    'status' => PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM,
                     'tanggal_draft_borang' => now(),
                 ]);
 
@@ -361,7 +363,7 @@ class PengajuanAkreditasiController extends Controller
                 $this->logStatus(
                     $pengajuan,
                     $oldStatus,
-                    PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
+                    PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM,
                     'Draft LED diupload (versi ' . $newVersion . ')'
                 );
             } else {
@@ -439,40 +441,47 @@ class PengajuanAkreditasiController extends Controller
      */
     public function submitBorangOnline(Request $request, $id)
     {
-        $request->validate([
-            'keterangan' => 'nullable|string|max:1000',
-        ]);
-
+        $request->validate(['keterangan' => 'nullable|string|max:1000']);
         try {
             $authId = auth()->id();
             $pengajuan = PengajuanAkreditasi::findOrFail($id);
             $this->authorize('update', $pengajuan);
+            $needSuplemen = $pengajuan->need_suplemen ?? true;
 
-            // Get import
-            $import = $this->getOrCreateBorangImport($pengajuan);
+            $ledFile = PengajuanDokumen::where('id_pengajuan', $pengajuan->id)->where('jenis_dokumen', 'data_kualitatif')->where('is_latest', true)->exists();
+            $suplemenFile = PengajuanDokumen::where('id_pengajuan', $pengajuan->id)->where('jenis_dokumen', 'data_suplemen')->where('is_latest', true)->exists();
+            $pengesahanFile = PengajuanDokumen::where('id_pengajuan', $pengajuan->id)->where('jenis_dokumen', 'lembar_pengesahan')->where('is_latest', true)->exists();
+            $lkpsFile = PengajuanDokumen::where('id_pengajuan', $pengajuan->id)->where('jenis_dokumen', 'data_kuantitatif')->where('is_latest', true)->exists();
+
+            $borangDataCount = BorangData::where('id_pengajuan', $pengajuan->id)->count();
+            $lkpsData = BorangDataExcel::where('id_pengajuan', $pengajuan->id)->exists();
+
+            $ledReady = $ledFile || $borangDataCount > 0;
+            $lkpsReady = $lkpsFile || $lkpsData;
+            $suplemenReady = $needSuplemen ? $suplemenFile : true;
+            $pengesahanReady = $pengesahanFile;
+
+            if (!($ledReady && $lkpsReady && $suplemenReady && $pengesahanReady)) {
+                $missing = [];
+                if (!$ledReady) $missing[] = 'LED';
+                if (!$lkpsReady) $missing[] = 'LKPS';
+                if (!$pengesahanReady) $missing[] = 'Lembar Pengesahan';
+                if (!$suplemenReady) $missing[] = 'Suplemen LED';
+                return response()->json(['success' => false, 'message' => 'Dokumen belum lengkap: ' . implode(', ', $missing)], 422);
+            }
 
             DB::beginTransaction();
 
-            // Update import status
-            $import->update([
-                'status' => 'completed',
-                'imported_at' => now(),
-            ]);
+            $import = $this->getOrCreateBorangImport($pengajuan);
+            $import->update(['status' => 'completed', 'imported_at' => now()]);
 
-            // Update Permohonan akreditasi status
             $oldStatus = $pengajuan->status;
             $pengajuan->update([
                 'status' => PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
-                'tanggal_draft_borang' => now(),
+                'tanggal_draft_borang' => now()
             ]);
 
-            // Log status change
-            $this->logStatus(
-                $pengajuan,
-                $oldStatus,
-                PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
-                'Laporan Evaluasi Diri online difinalisasi dan di-submit'
-            );
+            $this->logStatus($pengajuan, $oldStatus, PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI, 'Laporan Evaluasi Diri online difinalisasi dan disubmit');
 
             DB::commit();
 
@@ -481,22 +490,13 @@ class PengajuanAkreditasiController extends Controller
                 'message' => 'Laporan Evaluasi Diri, Suplemen, dan LKPS berhasil disubmit!',
                 'data' => [
                     'status' => $pengajuan->status,
-                    'submitted_at' => now()->locale('id')->translatedFormat('d M Y H:i'),
+                    'submitted_at' => now()->locale('id')->translatedFormat('d M Y H:i')
                 ]
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-
-            Log::error('Submit borang online failed', [
-                'pengajuan_id' => $id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Gagal submit borang: ' . $e->getMessage()
-            ], 500);
+            Log::error('Submit borang online failed', ['pengajuan_id' => $id, 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return response()->json(['success' => false, 'message' => 'Gagal submit borang: ' . $e->getMessage()], 500);
         }
     }
 
@@ -513,7 +513,7 @@ class PengajuanAkreditasiController extends Controller
             // Hanya boleh unsubmit kalau masih di tahap submit borang (belum validasi berjalan)
             $allowed = [
                 PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
-                PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
+                PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM,
             ];
 
             if (!in_array($pengajuan->status, $allowed, true)) {
@@ -548,7 +548,7 @@ class PengajuanAkreditasiController extends Controller
 
             $pengajuan->update([
                 // Balik ke tahap sebelum submit
-                'status' => PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
+                'status' => PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM,
 
                 // Pilih salah satu:
                 // 1) null-kan supaya dianggap belum submit
@@ -565,7 +565,7 @@ class PengajuanAkreditasiController extends Controller
             $this->logStatus(
                 $pengajuan,
                 $oldStatus,
-                PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
+                PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM,
                 $msg
             );
 
@@ -667,7 +667,6 @@ class PengajuanAkreditasiController extends Controller
         $pengajuan = PengajuanAkreditasi::with(['studyProgram'])->findOrFail($id);
         $this->authorize('update', $pengajuan);
 
-        // Load kriteria with all relations
         $kriterias = Kriteria::with([
             'elemenStandar' => function ($q) {
                 $q->orderBy('kode_elemen');
@@ -679,18 +678,169 @@ class PengajuanAkreditasiController extends Controller
             }
         ])->get();
 
-        // Get existing data
         $existingData = $this->getExistingBorangData($pengajuan);
-
-        // Calculate detailed progress
         $progressData = $this->calculateBorangProgress($kriterias, $existingData);
+
+        $uploadedFiles = [
+            'kualitatif' => PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
+                ->where('jenis_dokumen', 'data_kualitatif')
+                ->where('is_latest', true)
+                ->latest('id')
+                ->first(),
+
+            'suplemen' => PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
+                ->where('jenis_dokumen', 'data_suplemen')
+                ->where('is_latest', true)
+                ->latest('id')
+                ->first(),
+
+            'pengesahan' => PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
+                ->where('jenis_dokumen', 'lembar_pengesahan')
+                ->where('is_latest', true)
+                ->latest('id')
+                ->first(),
+
+            'kuantitatif' => PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
+                ->where('jenis_dokumen', 'data_kuantitatif')
+                ->where('is_latest', true)
+                ->latest('id')
+                ->first(),
+        ];
+
+        $hasLedFile = (bool) $uploadedFiles['kualitatif'];
+        $hasSuplemenFile = (bool) $uploadedFiles['suplemen'];
+        $hasPengesahanFile = (bool) $uploadedFiles['pengesahan'];
+        $hasLkpsFile = (bool) $uploadedFiles['kuantitatif'];
+
+        $isLedOnlineComplete = (int) ($progressData['completed_elemen'] ?? 0) === (int) ($progressData['total_elemen'] ?? 0)
+            && !empty(trim(strip_tags($existingData['kata_pengantar'] ?? '')))
+            && !empty(trim(strip_tags($existingData['ringkasan'] ?? '')));
+
+        $isLkpsDataComplete = BorangDataExcel::isLkpsDataComplete($pengajuan);
+
+        $needSuplemen = $pengajuan->need_suplemen ?? true;
+
+        $readiness = [
+            'led' => $hasLedFile || $isLedOnlineComplete,
+            'led_source' => $hasLedFile ? 'file' : ($isLedOnlineComplete ? 'online' : null),
+            'suplemen' => !$needSuplemen ? true : $hasSuplemenFile,
+            'pengesahan' => $hasPengesahanFile,
+            'lkps' => $hasLkpsFile || $isLkpsDataComplete,
+            'lkps_source' => $hasLkpsFile ? 'file' : ($isLkpsDataComplete ? 'data' : null),
+        ];
+
+        $readiness['all_complete'] =
+            $readiness['led'] &&
+            $readiness['suplemen'] &&
+            $readiness['pengesahan'] &&
+            $readiness['lkps'];
 
         return view('asesmen.pengajuan.borang-online', compact(
             'pengajuan',
             'kriterias',
             'existingData',
             'progressData',
+            'uploadedFiles',
+            'readiness',
+            'needSuplemen'
         ));
+    }
+
+    public function deleteUploadedFile(Request $request, $id, $type)
+    {
+        DB::beginTransaction();
+
+        try {
+            $pengajuan = PengajuanAkreditasi::findOrFail($id);
+            $this->authorize('update', $pengajuan);
+
+            if (in_array($pengajuan->status, [
+                PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM,
+                PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
+                PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
+                PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
+                PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
+                PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
+                PengajuanAkreditasi::STATUS_VALIDASI_BORANG_DILAPORKAN,
+                PengajuanAkreditasi::STATUS_PENGAJUAN_COMPLETED,
+            ])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Dokumen tidak dapat dibatalkan pada status saat ini.',
+                ], 403);
+            }
+
+            $map = [
+                'kualitatif' => ['data_kualitatif'],
+                'suplemen' => ['data_suplemen'],
+                'pengesahan' => ['lembar_pengesahan'],
+                'kuantitatif' => ['data_kuantitatif'],
+                'led' => ['data_kualitatif', 'draft_borang'],
+                'lkps' => ['data_kuantitatif'],
+            ];
+
+            if (!isset($map[$type])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tipe file tidak valid.',
+                ], 422);
+            }
+
+            $jenisDokumen = $map[$type];
+
+            $doc = PengajuanDokumen::where('id_pengajuan', $pengajuan->id)
+                ->whereIn('jenis_dokumen', $jenisDokumen)
+                ->where('is_latest', true)
+                ->latest('id')
+                ->first();
+
+            if (!$doc) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'File tidak ditemukan.',
+                ], 404);
+            }
+
+            if ($doc->path_file && Storage::disk('public')->exists($doc->path_file)) {
+                Storage::disk('public')->delete($doc->path_file);
+            }
+
+            if (in_array($type, ['led', 'draft_borang', 'kualitatif', 'data_kualitatif'])) {
+                // hapus hasil import borang / data narasi
+                BorangImport::where('id_pengajuan', $pengajuan->id)->where('id_dokumen', $doc->id)->delete();
+                BorangData::where('id_pengajuan', $pengajuan->id)->delete();
+            }
+
+            if (in_array($type, ['lkps', 'kuantitatif', 'data_kuantitatif'])) {
+                BorangImport::where('id_pengajuan', $pengajuan->id)->where('id_dokumen', $doc->id)->delete();
+                BorangDataExcel::where('id_pengajuan', $pengajuan->id)->delete();
+            }
+
+            $doc->delete();
+
+            PengajuanStatusLog::create([
+                'id_pengajuan' => $pengajuan->id,
+                'status_from'  => $pengajuan->status,
+                'status_to'    => $pengajuan->status,
+                'changed_by'   => auth()->id(),
+                'changed_at'   => now(),
+                'keterangan'   => "Batalkan upload dokumen {$type}",
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Upload berhasil dibatalkan.',
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error($e);
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
     /**
      * ✅ Calculate comprehensive borang progress
@@ -997,7 +1147,7 @@ class PengajuanAkreditasiController extends Controller
             // ✅ UPDATED: Remove review_kesiapan statuses
             $allowedStatuses = [
                 PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM,
-                PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
+                PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM,
                 PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
                 PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,
             ];
@@ -1103,7 +1253,7 @@ class PengajuanAkreditasiController extends Controller
             // ✅ UPDATED: Remove review_kesiapan statuses
             $allowedStatuses = [
                 PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM,
-                PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
+                PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM,
                 PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
                 PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,
             ];
@@ -1273,6 +1423,7 @@ class PengajuanAkreditasiController extends Controller
             // Catat import borang (pending)
             $import = BorangImport::create([
                 'id_pengajuan'      => $pengajuan->id,
+                'id_dokumen'      => $dokumen->id,
                 'original_filename' => $file->getClientOriginalName(),
                 'stored_path'       => $path,
                 'status'            => 'pending',
@@ -1287,7 +1438,7 @@ class PengajuanAkreditasiController extends Controller
             PengajuanStatusLog::create([
                 'id_pengajuan' => $pengajuan->id,
                 'status_from'  => $pengajuan->status,
-                'status_to'    => PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
+                'status_to'    => PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM,
                 'changed_by'   => $user->id,
                 'changed_at'   => now(),
                 'keterangan'   => ($isAddVersion ? 'Upload versi baru' : 'Re-upload') .
@@ -1647,85 +1798,19 @@ class PengajuanAkreditasiController extends Controller
         }
     }
 
-    /**
-     * Download dokumen
-     */
-    // public function downloadDokumen($id)
-    // {
-    //     $dokumen = PengajuanDokumen::with('pengajuan')->findOrFail($id);
-    //     $authUser = Auth::user();
-    //     $pengajuan = $dokumen->pengajuan;
-
-    //     $userStudyProgramIds = $authUser->studyPrograms()->pluck('study_programs.id')->toArray();
-    //     $hasAccess = in_array($pengajuan->id_program_studi, $userStudyProgramIds)
-    //         || $pengajuan->id_de_assigned === $authUser->id || $pengajuan->id_validator_assigned === $authUser->id
-    //         || $authUser->role === 'admin';
-
-    //     // if (!$hasAccess) {
-    //     //     abort(403, 'Anda tidak memiliki akses untuk mengunduh dokumen ini.');
-    //     // }
-    //     // return $dokumen->path_file;
-    //     if (!Storage::disk('public')->exists($dokumen->path_file)) {
-    //         if ($dokumen->jenis_dokumen === 'data_kualitatif' && Str::startsWith($dokumen->nama_file, 'kualitatif_')) {
-    //             return redirect()->route('pengajuan.borang.export-docx', $pengajuan->id);
-    //         }
-    //         abort(404, 'File tidak ditemukan.');
-    //     }
-
-    //     $filePath = Storage::disk('public')->path($dokumen->path_file);
-    //     return response()->download($filePath, $dokumen->original_filename);
-    // }
-
     public function downloadDokumen($id)
     {
-        // return 'a';
-        $dokumen = PengajuanDokumen::with('pengajuan')->findOrFail($id);
-        $authUser = Auth::user();
-        $pengajuan = $dokumen->pengajuan;
-
-        $userStudyProgramIds = $authUser->studyPrograms()->pluck('study_programs.id')->toArray();
-        $hasAccess = in_array($pengajuan->id_program_studi, $userStudyProgramIds)
-            || $pengajuan->id_de_assigned === $authUser->id
-            || $pengajuan->id_validator_assigned === $authUser->id
-            || $authUser->role === 'admin';
-
-        // if (!$hasAccess) abort(403);
-
-        if (!Storage::disk('public')->exists($dokumen->path_file)) {
-            if ($dokumen->jenis_dokumen === 'data_kualitatif' && Str::startsWith($dokumen->nama_file, 'kualitatif_')) {
+        $pengajuanDokumen = PengajuanDokumen::with('pengajuan')->findOrFail($id);
+        return $pengajuanDokumen->downloadDokumen(function ($dokumen, $pengajuan) {
+            if (
+                $dokumen->jenis_dokumen === 'data_kualitatif' &&
+                Str::startsWith($dokumen->nama_file, 'kualitatif_')
+            ) {
                 return redirect()->route('pengajuan.borang.export-docx', $pengajuan->id);
             }
+
             abort(404, 'File tidak ditemukan.');
-        }
-        $absolutePath = storage_path('app/public/' . $dokumen->path_file);
-        $filename = $dokumen->original_filename ?: basename($absolutePath);
-        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-
-        // MIME TYPE MAP
-        $mime = match ($ext) {
-            'pdf'  => 'application/pdf',
-            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'xls'  => 'application/vnd.ms-excel',
-            default => mime_content_type($absolutePath) ?: 'application/octet-stream',
-        };
-
-        // PDF inline, lainnya download
-        $disposition = ($ext === 'pdf') ? 'inline' : 'attachment';
-
-        return response()->stream(function () use ($absolutePath) {
-            $stream = fopen($absolutePath, 'rb');
-            fpassthru($stream);
-            fclose($stream);
-        }, 200, [
-            'Content-Type'        => $mime,
-            'Content-Disposition' => $disposition . '; filename="' . addslashes($filename) . '"',
-            'Content-Length'      => filesize($absolutePath),
-            'Accept-Ranges'       => 'bytes',
-            'Cache-Control'       => 'private, max-age=0, must-revalidate',
-            'Pragma'              => 'public',
-            'X-Content-Type-Options' => 'nosniff',
-        ]);
+        });
     }
 
     /**

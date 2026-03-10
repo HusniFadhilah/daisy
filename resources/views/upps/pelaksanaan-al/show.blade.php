@@ -16,7 +16,7 @@
     </nav>
 
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h5 class="mb-1">
                 <i class="bi bi-geo-alt"></i> Detail Pelaksanaan AL & Berita Acara
@@ -84,7 +84,7 @@
                     @foreach($beritaAcaraList as $index => $beritaAcara)
                     <div class="card mb-3 border">
                         <div class="card-body">
-                            <div class="d-flex align-items-start">
+                            <div class="d-flex flex-column flex-md-row align-items-start gap-3">
                                 <i class="bi bi-file-earmark-pdf text-danger me-3" style="font-size: 40px;"></i>
                                 <div class="flex-grow-1">
                                     <h6 class="mb-1">
@@ -95,10 +95,11 @@
                                     </small>
                                 </div>
                                 <div>
-                                    <div class="btn-group-vertical" role="group">
+                                    <div class="btn-group-vertical w-100 w-md-auto">
                                         <a href="{{ route('al.berkas.documents.preview', ['id' => $pengajuan->asesmen->id, 'docId' => $beritaAcara->id]) }}" class="btn btn-outline-success" target="_blank">
                                             <i class="bi bi-file-earmark-pdf"></i> Lihat File
                                         </a>
+
                                         <a href="{{ route('al.berkas.documents.download', ['id' => $pengajuan->asesmen->id, 'docId' => $beritaAcara->id]) }}" class="btn btn-outline-primary">
                                             <i class="bi bi-download"></i> Download
                                         </a>
@@ -119,7 +120,7 @@
 
             <!-- Laporan Hasil Asesmen (LHA) - Dengan Approval -->
             <div class="card mb-4">
-                <div class="card-header bg-info text-white">
+                <div class="card-header bg-secondary text-white">
                     <h5 class="mb-0">
                         <i class="bi bi-file-earmark-check"></i> Laporan Hasil Asesmen Lapangan (LHA)
                     </h5>
@@ -148,7 +149,7 @@
                     }}">
                         <div class="card-body">
                             <!-- Header -->
-                            <div class="d-flex align-items-start mb-3">
+                            <div class="d-flex flex-column flex-md-row align-items-start mb-3 gap-3">
                                 <i class="bi bi-file-earmark-pdf text-danger me-3" style="font-size: 40px;"></i>
                                 <div class="flex-grow-1">
                                     <h6 class="mb-1">
@@ -163,7 +164,7 @@
                                     </span>
                                 </div>
                                 <div>
-                                    <a href="{{ route('al.berkas.documents.preview', ['id' => $pengajuan->asesmen->id, 'docId' => $lha->id]) }}" class="btn btn-success" target="_blank">
+                                    <a href="{{ route('al.berkas.documents.preview', ['id' => $pengajuan->asesmen->id, 'docId' => $lha->id]) }}" class="btn btn-success w-100 w-md-auto" target="_blank">
                                         <i class="bi bi-file-earmark-pdf"></i> Lihat File
                                     </a>
                                 </div>
@@ -194,7 +195,7 @@
                                     </h6>
 
                                     <!-- Action Selection -->
-                                    <div class="row mb-3">
+                                    <div class="row row-cols-1 row-cols-md-2 mb-3">
                                         <div class="col-md-6 mb-2">
                                             <div class="form-check action-radio p-3 border rounded">
                                                 <input class="form-check-input action-input" type="radio" name="action" id="approve{{ $lha->id }}" value="approve" data-form-id="{{ $lha->id }}" required>
@@ -229,8 +230,8 @@
                                     </div>
 
                                     <!-- Submit Button -->
-                                    <div class="d-flex gap-2 justify-content-end">
-                                        <button type="submit" class="btn btn-primary btn-md">
+                                    <div class="d-flex flex-column flex-md-row gap-2 justify-content-md-end">
+                                        <button type="submit" class="btn btn-primary w-100 w-md-auto">
                                             <i class="bi bi-send"></i> Kirim Persetujuan
                                         </button>
                                     </div>
@@ -257,38 +258,40 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <table class="table table-borderless">
-                        @if($pengajuan->asesmen?->asesmenLapangan)
-                        <tr>
-                            <th>Tanggal Mulai AL</th>
-                            <td>
-                                : {{ $pengajuan->asesmen->asesmenLapangan->tanggal_mulai
+                    <div class="table-responsive">
+                        <table class="table table-borderless">
+                            @if($pengajuan->asesmen?->asesmenLapangan)
+                            <tr>
+                                <th style="width:40%">Tanggal Mulai AL</th>
+                                <td>
+                                    : {{ $pengajuan->asesmen->asesmenLapangan->tanggal_mulai
                                     ? \Carbon\Carbon::parse($pengajuan->asesmen->asesmenLapangan->tanggal_mulai)->locale('id')->translatedFormat('d M Y')
                                     : '-' }}
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Tanggal Selesai AL</th>
-                            <td>
-                                : {{ $pengajuan->asesmen->asesmenLapangan->tanggal_selesai
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Tanggal Selesai AL</th>
+                                <td>
+                                    : {{ $pengajuan->asesmen->asesmenLapangan->tanggal_selesai
                                     ? \Carbon\Carbon::parse($pengajuan->asesmen->asesmenLapangan->tanggal_selesai)->locale('id')->translatedFormat('d M Y')
                                     : '-' }}
-                            </td>
-                        </tr>
-                        @if($pengajuan->asesmen->asesmenLapangan->lokasi_visitasi)
-                        <tr>
-                            <th>Lokasi Visitasi</th>
-                            <td>: <i class="bi bi-geo-alt-fill text-danger"></i>
-                                {{ $pengajuan->asesmen->asesmenLapangan->lokasi_visitasi }}
-                            </td>
-                        </tr>
-                        @endif
-                        @endif
-                        <tr>
-                            <th>Status Pelaksanaan AL & Berita Acara</th>
-                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('pelaksanaan_al', 'upps', 'label_long_for') !!}</td>
-                        </tr>
-                    </table>
+                                </td>
+                            </tr>
+                            @if($pengajuan->asesmen->asesmenLapangan->lokasi_visitasi)
+                            <tr>
+                                <th>Lokasi Visitasi</th>
+                                <td>: <i class="bi bi-geo-alt-fill text-danger"></i>
+                                    {{ $pengajuan->asesmen->asesmenLapangan->lokasi_visitasi }}
+                                </td>
+                            </tr>
+                            @endif
+                            @endif
+                            <tr>
+                                <th>Status Pelaksanaan AL & Berita Acara</th>
+                                <td>: {!! $pengajuan->getCustomBadgeLastStatus('pelaksanaan_al', 'upps', 'label_long_for') !!}</td>
+                            </tr>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -431,7 +434,7 @@
         });
 
         // Handle form submit
-        $('.approval-form').on('submit', function(e) {
+        $('.approval-form').on('submit', async function(e) {
             e.preventDefault();
 
             const form = $(this);
@@ -440,12 +443,12 @@
 
             // Validation
             if (!action) {
-                alert('Silakan pilih tindakan terlebih dahulu (Setujui atau Minta Revisi)');
+                Swal.fire('Perhatian', 'Silakan pilih tindakan terlebih dahulu (Setujui atau Minta Revisi)', 'warning');
                 return false;
             }
 
             if (action === 'revision' && catatan === catatanTemplates.revision.trim()) {
-                alert('Harap lengkapi catatan revisi dengan penjelasan yang spesifik');
+                Swal.fire('Perhatian', 'Harap lengkapi catatan revisi dengan penjelasan yang spesifik', 'warning');
                 form.find('textarea[name="catatan_prodi"]').focus();
                 return false;
             }
@@ -453,12 +456,12 @@
             // Confirmation
             let confirmMsg = '';
             if (action === 'approve') {
-                confirmMsg = 'Apakah Anda yakin ingin menyetujui laporan hasil asesmen ini?\n\nSetelah disetujui, asesor akan mendapat notifikasi dan status akan berubah.';
+                confirmMsg = `Apakah Anda yakin ingin menyetujui laporan hasil asesmen ini?<br><br>Setelah disetujui, asesor akan mendapat notifikasi dan status akan berubah.`;
             } else if (action === 'revision') {
-                confirmMsg = 'Apakah Anda yakin ingin meminta revisi?\n\nAsesor akan diminta melakukan perbaikan sesuai catatan yang Anda berikan.';
+                confirmMsg = `Apakah Anda yakin ingin meminta revisi?<br><br>Asesor akan diminta melakukan perbaikan sesuai catatan yang Anda berikan.`;
             }
 
-            if (!confirm(confirmMsg)) {
+            if (!(await swalConfirmSubmit('warning', confirmMsg))) {
                 return false;
             }
 

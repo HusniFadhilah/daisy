@@ -16,13 +16,14 @@
     </nav>
 
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h5 class="mb-1">
                 <i class="bi bi-envelope-check"></i> Detail Penerimaan Permohonan Akreditasi
             </h5>
             <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
         </div>
+
         <a href="{{ route('upps.penerimaan-permohonan') }}" class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i> Kembali
         </a>
@@ -64,6 +65,7 @@
                         <i class="bi bi-file-pdf"></i> Surat Penerimaan dari LAMDEPILAR
                     </h5>
                 </div>
+
                 <div class="card-body">
                     @php
                     $dokumen = $pengajuan->dokumen
@@ -73,28 +75,33 @@
                     @endphp
 
                     @if($dokumen)
-                    <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center rounded gap-3">
+
                         <div class="d-flex align-items-center">
-                            <i class="bi bi-file-earmark-pdf text-danger me-3" style="font-size: 48px;"></i>
+                            <i class="bi bi-file-earmark-pdf text-danger me-3" style="font-size: 40px;"></i>
+
                             <div>
-                                <strong>{{ $dokumen->original_filename }}</strong>
-                                <br>
+                                <strong class="d-block text-break">{{ $dokumen->original_filename }}</strong>
                                 <small class="text-muted">
                                     {{ number_format($dokumen->file_size / 1024, 2) }} KB •
                                     Diupload: {{ $dokumen->created_at->locale('id')->translatedFormat('d M Y H:i') }}
                                 </small>
                             </div>
                         </div>
+
                         <div>
-                            <a href="{{ route('upps.penerimaan-permohonan.download', $pengajuan->id) }}" class="btn btn-success btn-md">
+                            <a href="{{ route('upps.penerimaan-permohonan.download', $pengajuan->id) }}" class="btn btn-success w-100 w-md-auto">
                                 <i class="bi bi-file-earmark-pdf"></i> Download
                             </a>
                         </div>
+
                     </div>
                     @else
                     <div class="text-center py-4">
                         <i class="bi bi-file-earmark-x" style="font-size: 48px; color: #ddd;"></i>
-                        <p class="text-muted mt-2 mb-0">Surat penerimaan belum dikirim oleh LAMDEPILAR</p>
+                        <p class="text-muted mt-2 mb-0">
+                            Surat penerimaan belum dikirim oleh LAMDEPILAR
+                        </p>
                     </div>
                     @endif
                 </div>
@@ -109,7 +116,10 @@
                     <table class="table table-borderless">
                         <tr>
                             <th style="width:45%">Tanggal Penerimaan Permohonan</th>
-                            <td>: {{ \App\Libraries\Date::tglIndo($pengajuan->tanggal_surat_penerimaan_dikirim) }}</td>
+                            <td>: {{ $pengajuan->tanggal_surat_penerimaan_dikirim
+                                    ? $pengajuan->tanggal_surat_penerimaan_dikirim->locale('id')->translatedFormat('d M Y H:i')
+                                    : '-' }}
+                            </td>
                         </tr>
                         <tr>
                             <th>Status Penerimaan Permohonan</th>

@@ -40,7 +40,7 @@
     </nav>
 
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h5 class="mb-1">
                 <i class="bi bi-archive"></i> Detail Penyimpanan Arsip Akreditasi
@@ -81,7 +81,7 @@
             @if($pengajuan->status != \App\Models\PengajuanAkreditasi::STATUS_SELESAI)
             @if(!$beritaAcara)
             {{-- Form Upload --}}
-            <div class="card border-start border-warning border-4 shadow-sm mb-4">
+            <div class="card border-start border-warning border-2 shadow-sm mb-4">
                 <div class="card-body">
                     <div class="d-flex align-items-start mb-3">
                         <div class="flex-shrink-0">
@@ -132,7 +132,7 @@
             </div>
             @else
             {{-- Display Uploaded File --}}
-            <div class="card border-start border-success border-4 shadow-sm mb-4">
+            <div class="card border-start border-success border-2 shadow-sm mb-4">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start">
                         <div class="d-flex align-items-start flex-grow-1">
@@ -167,10 +167,10 @@
                                 <i class="bi bi-eye"></i> Lihat
                             </a>
                             @if($pengajuan->status == \App\Models\PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN)
-                            <form action="{{ route('de.penyimpanan-arsip-akreditasi.delete-berita-acara', $pengajuan->id) }}" method="POST" class="d-inline">
+                            <form id="form-hapus-berita-acara" action="{{ route('de.penyimpanan-arsip-akreditasi.delete-berita-acara', $pengajuan->id) }}" method="POST" class="d-inline">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Hapus berita acara ini? Anda harus upload ulang untuk menyimpan arsip.')">
+                                <button type="button" class="btn btn-outline-danger btn-sm tombol-hapus" data-id-form="form-hapus-berita-acara" data-text="berita acara">
                                     <i class="bi bi-trash"></i> Hapus
                                 </button>
                             </form>
@@ -183,7 +183,7 @@
             @else
             {{-- Read-only after selesai --}}
             @if($beritaAcara)
-            <div class="card border-start border-info border-4 shadow-sm mb-4">
+            <div class="card border-start border-info border-2 shadow-sm mb-4">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start">
                         <div class="d-flex align-items-start flex-grow-1">
@@ -215,7 +215,7 @@
             <!-- Actions -->
             @if($pengajuan->status == \App\Models\PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN)
             @if(empty($missingCritical))
-            <div class="card mb-4 border-start border-info border-4">
+            <div class="card mb-4 border-start border-info border-2">
                 <div class="card-header bg-white border-bottom">
                     <h5 class="mb-0"><i class="bi bi-archive"></i> Simpan Arsip</h5>
                 </div>
@@ -246,7 +246,7 @@
             </div>
             @endif
             @elseif($pengajuan->status == \App\Models\PengajuanAkreditasi::STATUS_ARSIP_DISIMPAN)
-            <div class="card mb-4 border-start border-success border-4">
+            <div class="card mb-4 border-start border-success border-2">
                 <div class="card-header bg-white border-bottom">
                     <h5 class="mb-0"><i class="bi bi-check-circle"></i> Selesaikan Proses</h5>
                 </div>

@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <h2>Detail Pengguna</h2>
         <div>
             <a href="{{ route('users.edit', $user->id) }}" class="btn btn-warning">
@@ -69,10 +69,10 @@
             @if($user->id !== auth()->id())
             <hr>
             <div class="d-flex justify-content-end">
-                <form action="{{ route('users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus pengguna ini?')">
+                <form id="form-hapus-user" action="{{ route('users.destroy', $user->id) }}" method="POST" class="d-inline">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn btn-danger">
+                    <button type="button" class="btn btn-danger tombol-hapus" data-id-form="form-hapus-user" data-text="pengguna">
                         <i class="fas fa-trash"></i> Hapus Pengguna
                     </button>
                 </form>

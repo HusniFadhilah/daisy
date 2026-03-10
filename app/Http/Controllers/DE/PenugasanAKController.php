@@ -148,7 +148,7 @@ class PenugasanAKController extends Controller
             }
         ])->findOrFail($id);
 
-        // Get progress penilaian
+        // Get progres penilaian
         $totalElemens = DB::table('elemen_standar')->count();
 
         // Progress asesor AK

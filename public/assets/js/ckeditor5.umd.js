@@ -661,7 +661,7 @@
 	exports.NoOperation = bl;
 	exports.Notification = zv;
 	exports.ObservableMixin = Dt;
-	exports.Observer = Jo;
+	exports.Validator = Jo;
 	exports.OperationFactory = kl;
 	exports.OutdentCodeBlockCommand = Wx;
 	exports.PageBreak = t$;

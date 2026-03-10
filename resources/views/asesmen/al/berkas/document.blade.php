@@ -17,7 +17,7 @@
 
     <div class="card mb-4">
         <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
                 <div>
                     <h4 class="mb-1">
                         <i class="bi bi-file-earmark-pdf"></i> Upload Berita Acara AL
@@ -352,12 +352,12 @@
 
             for (var i = 0; i < files.length; i++) {
                 if (files[i].type !== 'application/pdf') {
-                    alert('Semua file harus PDF');
+                    Swal.fire('Perhatian', 'Semua file harus PDF', 'warning');
                     resetFile();
                     return;
                 }
                 if (files[i].size > 20 * 1024 * 1024) {
-                    alert('Ukuran file maksimal 20MB per file');
+                    Swal.fire('Perhatian', 'Ukuran file maksimal 20MB per file', 'warning');
                     resetFile();
                     return;
                 }
@@ -434,17 +434,17 @@
                     })
                     .then(function(data) {
                         if (data.success) {
-                            alert(data.message || 'File berhasil diupload!');
+                            Swal.fire('Berhasil', data.message || 'File berhasil diupload!', 'success');
                             window.location.reload();
                         } else {
-                            alert(data.message || 'Gagal upload file');
+                            Swal.fire('Perhatian', data.message || 'Gagal upload file', 'error');
                             btnUploadSubmit.disabled = false;
                             btnUploadSubmit.innerHTML = '<i class="bi bi-upload"></i> Upload';
                         }
                     })
                     .catch(function(error) {
                         console.error('Upload error:', error);
-                        alert('Terjadi kesalahan saat upload file');
+                        Swal.fire('Perhatian', 'Terjadi kesalahan saat upload file', 'error');
                         btnUploadSubmit.disabled = false;
                         btnUploadSubmit.innerHTML = '<i class="bi bi-upload"></i> Upload';
                     });
@@ -453,11 +453,11 @@
 
         // DELETE DOCUMENT HANDLER
         document.querySelectorAll('.btn-delete-doc').forEach(function(btn) {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', async function() {
                 var docName = this.getAttribute('data-doc-name');
                 var deleteUrl = this.getAttribute('data-url');
 
-                if (!confirm('Apakah Anda yakin ingin menghapus dokumen "' + docName + '"?')) {
+                if (!(await swalConfirmSubmit('warning', 'Apakah Anda yakin ingin menghapus dokumen "' + docName + '"?'))) {
                     return;
                 }
 
@@ -477,16 +477,16 @@
                     })
                     .then(function(data) {
                         if (data.success) {
-                            alert(data.message || 'Dokumen berhasil dihapus');
+                            Swal.fire('Berhasil', data.message || 'Dokumen berhasil dihapus', 'success');
                             window.location.reload();
                         } else {
-                            alert(data.message || 'Gagal menghapus dokumen');
+                            Swal.fire('Perhatian', data.message || 'Gagal menghapus dokumen', 'error');
                             window.location.reload();
                         }
                     })
                     .catch(function(error) {
                         console.error('Delete error:', error);
-                        alert('Terjadi kesalahan saat menghapus dokumen');
+                        Swal.fire('Perhatian', 'Terjadi kesalahan saat menghapus dokumen', 'error');
                         window.location.reload();
                     });
             });
@@ -495,8 +495,8 @@
         // FINALIZE BUTTON
         var btnFinalize = document.getElementById('btnFinalize');
         if (btnFinalize) {
-            btnFinalize.addEventListener('click', function() {
-                if (!confirm('Apakah Anda yakin ingin finalisasi berita acara?\n\nSetelah difinalisasi, dokumen akan dikirim dan tidak dapat diubah lagi.')) {
+            btnFinalize.addEventListener('click', async function() {
+                if (!(await swalConfirmSubmit('warning', 'Apakah Anda yakin ingin finalisasi berita acara?\n\nSetelah difinalisasi, dokumen akan dikirim dan tidak dapat diubah lagi.'))) {
                     return;
                 }
 
@@ -516,17 +516,17 @@
                     })
                     .then(function(data) {
                         if (data.success) {
-                            alert(data.message || 'Berita acara berhasil difinalisasi!');
+                            Swal.fire('Berhasil', data.message || 'Berita acara berhasil difinalisasi!', 'success');
                             window.location.href = "{{ route('al.berkas') }}";
                         } else {
-                            alert(data.message || 'Gagal finalisasi');
+                            Swal.fire('Perhatian', data.message || 'Gagal finalisasi', 'error');
                             btnFinalize.disabled = false;
                             btnFinalize.innerHTML = '<i class="bi bi-check-circle"></i> Finalisasi dan Kirim';
                         }
                     })
                     .catch(function(error) {
                         console.error('Finalize error:', error);
-                        alert('Terjadi kesalahan saat finalisasi');
+                        Swal.fire('Perhatian', 'Terjadi kesalahan saat finalisasi', 'error');
                         btnFinalize.disabled = false;
                         btnFinalize.innerHTML = '<i class="bi bi-check-circle"></i> Finalisasi dan Kirim';
                     });

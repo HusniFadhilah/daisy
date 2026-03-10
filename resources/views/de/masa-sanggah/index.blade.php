@@ -12,7 +12,7 @@
         </ol>
     </nav>
     <!-- Page Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h4 class="mb-1">
                 <i class="bi bi-hourglass-split"></i> Masa Sanggah
@@ -62,7 +62,7 @@
                                     <th width="20%">Permohonan Akreditasi</th>
                                     <th>Tanggal Penyampaian Hasil</th>
                                     <th width="20%">Periode Masa Sanggah</th>
-                                    <th width="20%">Status</th>
+                                    <th width="20%">Status Masa Sanggah</th>
                                     <th width="10%" class="text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -92,7 +92,7 @@
                                             <strong>Selesai:</strong> {{ $pengajuan->tanggal_masa_sanggah_selesai->locale('id')->translatedFormat('d M Y') }}
                                         </small>
                                     </td>
-                                    <td>
+                                    <td style="min-width: 150px;">
                                         {!! $pengajuan->getCustomBadgeLastStatus('masa_sanggah','de','label_short_for','text-dark') !!}
                                         {{-- @if($isAktif)
                                         <span class="badge bg-warning text-dark">

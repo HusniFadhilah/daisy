@@ -17,22 +17,26 @@ class PenawaranAcceptedMail extends Mailable
     public $role;
     public $adminEmail;
     public $dashboardUrl;
+    public $jenisAsesmen;
 
     public function __construct(AsesmenUserRole $assignment, $adminEmail = null)
     {
         $this->assignment   = $assignment;
+        $this->jenisAsesmen = $this->assignment->jenis_asesmen;
+        $route = $this->assignment->route_penawaran;
         $this->asesmen      = $assignment->asesmen;
         $this->user         = $assignment->user;
         $this->role         = $assignment->role;
         $this->adminEmail   = $adminEmail ?? config('mail.admin_email', 'admin@lamdepilar.or.id');
-        $this->dashboardUrl = route('ak.berkas.show', $assignment->asesmen->id);
+        $this->dashboardUrl = route($route, $assignment->asesmen->id);
     }
 
     public function build()
     {
-        $jenisAsesmen = strtoupper($this->assignment->jenis_asesmen);
+        $jenisAsesmen = $this->jenisAsesmen;
+        $jenisAsesmen = $jenisAsesmen != 'dokumen' ? strtoupper($jenisAsesmen) : $jenisAsesmen;
 
-        return $this->subject("Penawaran Diterima - {$this->user->name} - {$jenisAsesmen}")
+        return $this->subject("Penawaran {$this->role->alias} {$jenisAsesmen} Diterima")
             ->view('emails.asesmen.penawaran-accepted')
             ->with(['jenisAsesmen' => $jenisAsesmen]);
     }

@@ -217,7 +217,7 @@
                 @foreach($item['asesors'] as $asesor)
                 <div class="p-2 mb-2 border rounded" style="background:#fff9e6;border-color:#ffc107;">
                     <strong>{{ $asesor->user->name }}</strong>
-                    <br><small class="text-muted d-block text-break">{{ $asesor->user->email }}</small>
+                    <br><small class="text-muted d-block text-break text-wrap">{{ $asesor->user->email }}</small>
                 </div>
                 @endforeach
                 <hr>

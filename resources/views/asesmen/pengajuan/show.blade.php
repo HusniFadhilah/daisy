@@ -353,7 +353,7 @@
             \App\Models\PengajuanAkreditasi::STATUS_AL_SELESAI,
             \App\Models\PengajuanAkreditasi::STATUS_AL_DILAPORKAN
             ]))
-            <div class="alert alert-info alert-permanent border-start border-4 border-primary mb-4">
+            <div class="alert alert-info alert-permanent border-start border-2 border-primary mb-4">
                 <div class="d-flex align-items-start">
                     <i class="bi bi-info-circle-fill fs-4 me-3 text-primary"></i>
 
@@ -920,7 +920,7 @@
                 fileInput.files = e.dataTransfer.files;
                 handleFileSelect(file);
             } else {
-                alert('Hanya file DOCX yang diperbolehkan!');
+                Swal.fire('Perhatian', 'Hanya file DOCX yang diperbolehkan!', 'warning');
             }
         });
     }
@@ -930,12 +930,12 @@
 
         // Validate file
         if (!file.name.endsWith('.docx')) {
-            alert('Hanya file DOCX yang diperbolehkan!');
+            Swal.fire('Perhatian', 'Hanya file DOCX yang diperbolehkan!', 'warning');
             return;
         }
 
         if (file.size > 10 * 1024 * 1024) {
-            alert('Ukuran file maksimal 10 MB!');
+            Swal.fire('Perhatian', 'Ukuran file maksimal 10 MB!', 'warning');
             return;
         }
 
@@ -970,7 +970,7 @@
         e.preventDefault();
 
         if (!fileInput.files[0]) {
-            alert('Pilih file terlebih dahulu!');
+            Swal.fire('Perhatian', 'Pilih file terlebih dahulu!', 'warning');
             return;
         }
 
@@ -990,16 +990,16 @@
             const data = await response.json();
 
             if (data.success || response.ok) {
-                alert('✅ Draft LED berhasil diupload!');
+                Swal.fire('Berhasil', 'Draft LED berhasil diupload!', 'success');
                 window.location.reload();
             } else {
-                alert('❌ Upload gagal: ' + (data.message || 'Terjadi kesalahan'));
+                Swal.fire('Perhatian', 'Upload gagal: ' + (data.message || 'Terjadi kesalahan'), 'error');
                 btnUploadBorang.disabled = false;
                 btnUploadBorang.innerHTML = '<i class="bi bi-upload"></i> Upload Draft LED';
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('❌ Terjadi kesalahans: ' + error.message);
+            Swal.fire('Perhatian', 'Terjadi kesalahan: ' + error.message, 'error');
             btnUploadBorang.disabled = false;
             btnUploadBorang.innerHTML = '<i class="bi bi-upload"></i> Upload Draft LED';
         }

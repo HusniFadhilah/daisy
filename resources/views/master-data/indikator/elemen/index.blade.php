@@ -217,8 +217,8 @@
         });
     });
 
-    function deleteRecord(id) {
-        if (confirm('Yakin ingin menghapus elemen standar ini?')) {
+    async function deleteRecord(id) {
+        if (await swalConfirmSubmit('warning', 'Yakin ingin menghapus elemen standar ini?')) {
             $.ajax({
                 url: '/elemen-standar/' + id
                 , type: 'DELETE'
@@ -227,10 +227,10 @@
                 }
                 , success: function(response) {
                     $('#elemenStandarTable').DataTable().ajax.reload();
-                    alert('Data berhasil dihapus');
+                    Swal.fire('Berhasil', 'Data berhasil dihapus', 'success');
                 }
                 , error: function(xhr) {
-                    alert('Gagal menghapus data');
+                    Swal.fire('Perhatian', 'Gagal menghapus data', 'error');
                 }
             });
         }

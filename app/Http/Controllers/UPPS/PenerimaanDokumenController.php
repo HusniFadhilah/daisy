@@ -291,54 +291,17 @@ class PenerimaanDokumenController extends Controller
      */
     public function download($id)
     {
-        // return 'a';
-        $dokumen = PengajuanDokumen::with('pengajuan')->findOrFail($id);
-        $authUser = Auth::user();
-        $pengajuan = $dokumen->pengajuan;
-
-        $userStudyProgramIds = $authUser->studyPrograms()->pluck('study_programs.id')->toArray();
-        $hasAccess = in_array($pengajuan->id_program_studi, $userStudyProgramIds)
-            || $pengajuan->id_de_assigned === $authUser->id
-            || $pengajuan->id_validator_assigned === $authUser->id
-            || $authUser->role === 'admin';
-
-        // if (!$hasAccess) abort(403);
-
-        if (!Storage::disk('public')->exists($dokumen->path_file)) {
-            if ($dokumen->jenis_dokumen === 'data_kualitatif' && Str::startsWith($dokumen->nama_file, 'kualitatif_')) {
+        $pengajuanDokumen = PengajuanDokumen::with('pengajuan')->findOrFail($id);
+        return $pengajuanDokumen->downloadDokumen(function ($dokumen, $pengajuan) {
+            if (
+                $dokumen->jenis_dokumen === 'data_kualitatif' &&
+                Str::startsWith($dokumen->nama_file, 'kualitatif_')
+            ) {
                 return redirect()->route('pengajuan.borang.export-docx', $pengajuan->id);
             }
+
             abort(404, 'File tidak ditemukan.');
-        }
-        $absolutePath = storage_path('app/public/' . $dokumen->path_file);
-        $filename = $dokumen->original_filename ?: basename($absolutePath);
-        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-
-        // MIME TYPE MAP
-        $mime = match ($ext) {
-            'pdf'  => 'application/pdf',
-            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'xls'  => 'application/vnd.ms-excel',
-            default => mime_content_type($absolutePath) ?: 'application/octet-stream',
-        };
-
-        // PDF inline, lainnya download
-        $disposition = ($ext === 'pdf') ? 'inline' : 'attachment';
-
-        return response()->stream(function () use ($absolutePath) {
-            $stream = fopen($absolutePath, 'rb');
-            fpassthru($stream);
-            fclose($stream);
-        }, 200, [
-            'Content-Type'        => $mime,
-            'Content-Disposition' => $disposition . '; filename="' . addslashes($filename) . '"',
-            'Content-Length'      => filesize($absolutePath),
-            'Accept-Ranges'       => 'bytes',
-            'Cache-Control'       => 'private, max-age=0, must-revalidate',
-            'Pragma'              => 'public',
-            'X-Content-Type-Options' => 'nosniff',
-        ]);
+        });
     }
 
     /**

@@ -89,7 +89,7 @@
     {{-- Header Actions --}}
     <div class="card mb-4 no-print">
         <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
                 <div>
                     <h4 class="mb-1">Preview Laporan Evaluasi Diri</h4>
                     <p class="text-muted mb-0">
@@ -316,7 +316,8 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Export PDF (could use jsPDF or similar library)
-        document.getElementById('btnExportPDF') ? .addEventListener('click', function() {
+        const btnExportPDF = document.getElementById('btnExportPDF')
+        if (btnExportPDF) btnExportPDF.addEventListener('click', function() {
             Swal.fire({
                 icon: 'info'
                 , title: 'Export PDF'

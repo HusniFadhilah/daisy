@@ -1,3 +1,5 @@
+{{-- resources\views\keuangan\pembayaran\index.blade.php --}}
+
 @extends('layouts.template.app')
 
 @section('title', 'Validasi Pembayaran')
@@ -5,12 +7,12 @@
 @section('content')
 <div class="container-fluid py-3">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
-            <h2 class="mb-1">
+            <h3 class="mb-1">
                 <i class="bi bi-credit-card"></i>
                 Validasi Pembayaran
-            </h2>
+            </h3>
             <p class="text-muted mb-0">
                 Daftar pembayaran yang menunggu validasi
             </p>
@@ -59,7 +61,6 @@
                 <i class="bi bi-list-check"></i>
                 Daftar Validasi Pembayaran (Klik Detail untuk melakukan validasi)
             </h5>
-            {{-- <span class="badge bg-warning text-dark">Menunggu Validasi</span> --}}
         </div>
 
         <div class="card-body p-0">
@@ -77,38 +78,45 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($pengajuan as $item)
-                        @php $pembayaran = $item->pembayaran; @endphp
+                        {{-- ✅ Iterasi $pembayarans (PengajuanPembayaran) --}}
+                        @forelse($pembayarans as $item)
                         <tr>
                             <td class="text-center">
-                                {{ $loop->iteration + ($pengajuan->currentPage() - 1) * $pengajuan->perPage() }}
+                                {{ $loop->iteration + ($pembayarans->currentPage() - 1) * $pembayarans->perPage() }}
                             </td>
 
                             <td>
-                                {!! $item->getPermohonanAkreditasiSectionFor('de') !!}
-                            </td>
-
-                            <td><strong>{{ optional($pembayaran)->nomor_invoice ?? '-' }}</strong></td>
-
-                            <td>
-                                Rp {{ number_format(optional($pembayaran)->jumlah_pembayaran ?? 0, 0, ',', '.') }}
+                                {{-- Data prodi diakses via relasi pengajuan --}}
+                                {!! $item->pengajuan->getPermohonanAkreditasiSectionFor('de') !!}
                             </td>
 
                             <td>
-                                @if(optional($pembayaran)->tanggal_pembayaran)
-                                {{ \App\Libraries\Date::tglwaktu($pembayaran->tanggal_pembayaran) }}
+                                <strong>{{ $item->nomor_invoice ?? '-' }}</strong>
+                                @if($item->jenis_pembayaran === 'banding')
+                                <br><span class="badge bg-info">Banding</span>
+                                @endif
+                            </td>
+
+                            <td>
+                                Rp {{ number_format($item->jumlah_pembayaran ?? 0, 0, ',', '.') }}
+                            </td>
+
+                            <td>
+                                @if($item->tanggal_pembayaran)
+                                {{ \App\Libraries\Date::tglwaktu($item->tanggal_pembayaran) }}
                                 @else
                                 -
                                 @endif
                             </td>
 
                             <td class="text-center">
-                                <span class="badge bg-{{ $pembayaran->status_pembayaran_badge }}">
-                                    {{ $pembayaran->status_pembayaran_label }}
+                                <span class="badge bg-{{ $item->status_pembayaran_badge }}">
+                                    {{ $item->status_pembayaran_label }}
                                 </span>
                             </td>
 
                             <td class="text-center">
+                                {{-- ✅ Route sekarang pakai $item->id (PengajuanPembayaran.id) --}}
                                 <a href="{{ route('keuangan.pembayaran.show', $item->id) }}" class="btn btn-sm btn-primary">
                                     <i class="bi bi-eye"></i> Detail
                                 </a>
@@ -116,7 +124,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="9" class="text-center py-4">
+                            <td colspan="7" class="text-center py-4">
                                 <i class="bi bi-inbox fs-2 text-muted"></i>
                                 <p class="mb-0 text-muted mt-2">
                                     Tidak ada pembayaran yang menunggu validasi.
@@ -129,9 +137,9 @@
             </div>
         </div>
 
-        @if($pengajuan->hasPages())
+        @if($pembayarans->hasPages())
         <div class="card-footer">
-            {{ $pengajuan->links() }}
+            {{ $pembayarans->links() }}
         </div>
         @endif
     </div>

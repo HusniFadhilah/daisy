@@ -175,23 +175,84 @@ final class AllowedStatus
 
             P::STATUS_MASA_SANGGAH_SELESAI => [
                 P::STATUS_HASIL_DITETAPKAN,
-                P::STATUS_BANDING_DIAJUKAN,
             ],
 
             // Banding lengkap
             P::STATUS_BANDING_DIAJUKAN => [
                 P::STATUS_BANDING_DITERIMA,
             ],
+
+            // =========================
+            // Pembayaran Banding
+            // =========================
             P::STATUS_BANDING_DITERIMA => [
-                P::STATUS_BANDING_DITUGASKAN,
+                P::STATUS_MENUNGGU_PEMBAYARAN_BANDING,
             ],
-            P::STATUS_BANDING_DITUGASKAN => [
+            P::STATUS_MENUNGGU_PEMBAYARAN_BANDING => [
+                P::STATUS_PEMBAYARAN_BANDING_DITERIMA,
+                P::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN_BANDING,
+            ],
+
+            P::STATUS_PEMBAYARAN_BANDING_DITERIMA => [
+                P::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN_BANDING,
+            ],
+
+            P::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN_BANDING => [
+                P::STATUS_PEMBAYARAN_BANDING_DIVERIFIKASI,
+                P::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN_BANDING,
+                P::STATUS_MENUNGGU_PEMBAYARAN_BANDING,
+            ],
+
+            // =========================
+            // AK -> AL
+            // =========================
+            P::STATUS_PEMBAYARAN_BANDING_DIVERIFIKASI => [
                 P::STATUS_BANDING_DILAKSANAKAN,
             ],
             P::STATUS_BANDING_DILAKSANAKAN => [
-                P::STATUS_BANDING_DILAPORKAN,
+                P::STATUS_ASESOR_AK_BANDING_ASSIGNED,
             ],
-            P::STATUS_BANDING_DILAPORKAN => [
+
+            P::STATUS_ASESOR_AK_BANDING_ASSIGNED => [
+                P::STATUS_AK_BANDING_IN_PROGRESS,
+            ],
+
+            P::STATUS_AK_BANDING_IN_PROGRESS => [
+                P::STATUS_AK_BANDING_ON_VALIDATION,
+            ],
+
+            P::STATUS_AK_BANDING_ON_VALIDATION => [
+                P::STATUS_AK_BANDING_SELESAI,
+            ],
+
+            P::STATUS_AK_BANDING_SELESAI => [
+                P::STATUS_AK_BANDING_DILAPORKAN,
+            ],
+
+            P::STATUS_AK_BANDING_DILAPORKAN => [
+                P::STATUS_ASESOR_AL_BANDING_ASSIGNED,
+            ],
+
+            P::STATUS_ASESOR_AL_BANDING_ASSIGNED => [
+                P::STATUS_AL_BANDING_IN_PROGRESS,
+            ],
+
+            P::STATUS_AL_BANDING_IN_PROGRESS => [
+                P::STATUS_AL_BANDING_SELESAI,
+            ],
+
+            P::STATUS_AL_BANDING_SELESAI => [
+                P::STATUS_AL_BANDING_DILAPORKAN,
+            ],
+
+            // =========================
+            // Hasil, Sanggah, Banding
+            // =========================
+            P::STATUS_AL_BANDING_DILAPORKAN => [
+                P::STATUS_HASIL_BANDING_DIHITUNG,
+            ],
+
+            P::STATUS_HASIL_BANDING_DIHITUNG => [
                 P::STATUS_HASIL_DITETAPKAN,
             ],
 
@@ -327,33 +388,77 @@ final class AllowedStatus
             'permohonan_banding' => [
                 P::STATUS_BANDING_DIAJUKAN,
                 P::STATUS_BANDING_DITERIMA,
-                P::STATUS_BANDING_DITUGASKAN,
+                P::STATUS_MENUNGGU_PEMBAYARAN_BANDING,
+                P::STATUS_PEMBAYARAN_BANDING_DITERIMA,
+                P::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN_BANDING,
+                P::STATUS_PEMBAYARAN_BANDING_DIVERIFIKASI,
             ],
 
             // STEP 17: Pelaksanaan banding (aksi lapangan)
             'pelaksanaan_banding' => [
+                P::STATUS_PEMBAYARAN_BANDING_DIVERIFIKASI,
                 P::STATUS_BANDING_DILAKSANAKAN,
+                P::STATUS_ASESOR_AK_BANDING_ASSIGNED,
+                P::STATUS_AK_BANDING_IN_PROGRESS,
+                P::STATUS_AK_BANDING_ON_VALIDATION,
+                P::STATUS_AK_BANDING_SELESAI,
+                P::STATUS_AK_BANDING_DILAPORKAN,
+                P::STATUS_ASESOR_AL_BANDING_ASSIGNED,
+                P::STATUS_AL_BANDING_IN_PROGRESS,
+                P::STATUS_AL_BANDING_SELESAI,
+                P::STATUS_AL_BANDING_DILAPORKAN,
             ],
 
-            // STEP 18: Pelaporan banding
+            'penugasan_asesor_ak_banding' => [
+                P::STATUS_BANDING_DILAKSANAKAN,
+                P::STATUS_ASESOR_AK_BANDING_ASSIGNED,
+            ],
+
+            'validasi_ak_banding' => [
+                P::STATUS_AK_BANDING_IN_PROGRESS,
+                P::STATUS_AK_BANDING_ON_VALIDATION,
+                P::STATUS_AK_BANDING_SELESAI,
+            ],
+
+            'pelaporan_ak_banding' => [
+                P::STATUS_AK_BANDING_SELESAI,
+                P::STATUS_AK_BANDING_DILAPORKAN,
+            ],
+
+            'penugasan_asesor_al_banding' => [
+                P::STATUS_AK_BANDING_DILAPORKAN,
+                P::STATUS_ASESOR_AL_BANDING_ASSIGNED,
+            ],
+
+            'pelaksanaan_al_banding' => [
+                P::STATUS_AL_BANDING_IN_PROGRESS,
+                P::STATUS_AL_BANDING_SELESAI,
+            ],
+
+            'pelaporan_al_banding' => [
+                P::STATUS_AL_BANDING_SELESAI,
+                P::STATUS_AL_BANDING_DILAPORKAN,
+            ],
+
             'pelaporan_banding' => [
-                P::STATUS_BANDING_DILAPORKAN,
+                P::STATUS_AL_BANDING_SELESAI,
+                P::STATUS_AL_BANDING_DILAPORKAN,
             ],
 
-            // STEP 19: Penetapan hasil
+            // STEP 18: Penetapan hasil
             // (kalau di UI kamu Step 19 itu penetapan, Step 20 pelaporan/umumkan)
             'penetapan_hasil' => [
                 P::STATUS_HASIL_DITETAPKAN,
             ],
 
-            // STEP 20: Pelaporan hasil (dan/atau pengumuman)
+            // STEP 19: Pelaporan hasil (dan/atau pengumuman)
             // kamu sudah punya HASIL_DIUMUMKAN dan HASIL_DILAPORKAN
             'pelaporan_hasil' => [
                 P::STATUS_HASIL_DIUMUMKAN,
                 P::STATUS_HASIL_DILAPORKAN,
             ],
 
-            // STEP 21: Penyimpanan arsip (dan selesai)
+            // STEP 20: Penyimpanan arsip (dan selesai)
             'penyimpanan_arsip' => [
                 P::STATUS_ARSIP_DISIMPAN,
                 // P::STATUS_SELESAI,
@@ -373,10 +478,10 @@ final class AllowedStatus
             'masa_sanggah'        => 16,
             'permohonan_banding'  => 17,
             'pelaksanaan_banding' => 17,
-            'pelaporan_banding'   => 18,
-            'penetapan_hasil'     => 19,
-            'pelaporan_hasil'     => 20,
-            'penyimpanan_arsip'   => 21,
+            'pelaporan_banding'   => 17,
+            'penetapan_hasil'     => 18,
+            'pelaporan_hasil'     => 19,
+            'penyimpanan_arsip'   => 20,
             default => null,
         };
     }
@@ -404,6 +509,12 @@ final class AllowedStatus
             'masa_sanggah',
             'permohonan_banding',
             'pelaksanaan_banding',
+            'penugasan_asesor_ak_banding',
+            'validasi_ak_banding',
+            'pelaporan_ak_banding',
+            'penugasan_asesor_al_banding',
+            'pelaksanaan_al_banding',
+            'pelaporan_al_banding',
             'pelaporan_banding',
             'penetapan_hasil',
             'pelaporan_hasil',
@@ -429,36 +540,73 @@ final class AllowedStatus
                 P::STATUS_MASA_SANGGAH_SELESAI,
             ],
 
-            // Step 17 (permohonan/admin banding)
+            // Step 17
             'permohonan_banding' => [
-                P::STATUS_MASA_SANGGAH_DIMULAI,
                 P::STATUS_BANDING_DIAJUKAN,
                 P::STATUS_BANDING_DITERIMA,
-                P::STATUS_BANDING_DITUGASKAN,
+                P::STATUS_MENUNGGU_PEMBAYARAN_BANDING,
+                P::STATUS_PEMBAYARAN_BANDING_DITERIMA,
+                P::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN_BANDING,
+                P::STATUS_PEMBAYARAN_BANDING_DIVERIFIKASI,
             ],
 
-            // Step 17 (pelaksanaan)
             'pelaksanaan_banding' => [
+                P::STATUS_PEMBAYARAN_BANDING_DIVERIFIKASI,
                 P::STATUS_BANDING_DILAKSANAKAN,
+                P::STATUS_ASESOR_AK_BANDING_ASSIGNED,
+                P::STATUS_AK_BANDING_IN_PROGRESS,
+                P::STATUS_AK_BANDING_ON_VALIDATION,
+                P::STATUS_AK_BANDING_SELESAI,
+                P::STATUS_AK_BANDING_DILAPORKAN,
+                P::STATUS_ASESOR_AL_BANDING_ASSIGNED,
+                P::STATUS_AL_BANDING_IN_PROGRESS,
+                P::STATUS_AL_BANDING_SELESAI,
+                P::STATUS_AL_BANDING_DILAPORKAN,
+            ],
+
+            'penugasan_asesor_ak_banding' => [
+                P::STATUS_BANDING_DILAKSANAKAN,
+                P::STATUS_ASESOR_AK_BANDING_ASSIGNED
+            ],
+            'validasi_ak_banding' => [
+                P::STATUS_AK_BANDING_IN_PROGRESS,
+                P::STATUS_AK_BANDING_ON_VALIDATION,
+                P::STATUS_AK_BANDING_SELESAI
+            ],
+            'pelaporan_ak_banding' => [
+                P::STATUS_AK_BANDING_SELESAI,
+                P::STATUS_AK_BANDING_DILAPORKAN,
+            ],
+            'penugasan_asesor_al_banding' => [
+                P::STATUS_AK_BANDING_DILAPORKAN,
+                P::STATUS_ASESOR_AL_BANDING_ASSIGNED,
+            ],
+            'pelaksanaan_al_banding' => [
+                P::STATUS_AL_BANDING_IN_PROGRESS,
+                P::STATUS_AL_BANDING_SELESAI,
+            ],
+            'pelaporan_al_banding' => [
+                P::STATUS_AL_BANDING_SELESAI,
+                P::STATUS_AL_BANDING_DILAPORKAN,
+            ],
+
+            'pelaporan_banding' => [
+                P::STATUS_AL_BANDING_SELESAI,
+                P::STATUS_AL_BANDING_DILAPORKAN,
             ],
 
             // Step 18
-            'pelaporan_banding' => [
-                P::STATUS_BANDING_DILAPORKAN,
-            ],
-
-            // Step 19
             'penetapan_hasil' => [
                 P::STATUS_HASIL_DITETAPKAN,
             ],
 
-            // Step 20
+            // Step 19
             'pelaporan_hasil' => [
                 P::STATUS_HASIL_DIUMUMKAN,
                 P::STATUS_HASIL_DILAPORKAN,
             ],
 
-            // Step 21
+            // Step 20
             'penyimpanan_arsip' => [
                 P::STATUS_ARSIP_DISIMPAN,
                 // P::STATUS_SELESAI,

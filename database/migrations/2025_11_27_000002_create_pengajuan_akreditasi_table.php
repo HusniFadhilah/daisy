@@ -68,9 +68,21 @@ return new class extends Migration
                 'masa_sanggah_selesai',
                 'banding_diajukan',
                 'banding_diterima',
-                'banding_ditugaskan',
+                'menunggu_pembayaran_banding',
+                'pembayaran_banding_diterima',
+                'menunggu_verifikasi_pembayaran_banding',
+                'pembayaran_banding_diverifikasi',
                 'banding_dilaksanakan',
-                'banding_dilaporkan',
+                'asesor_ak_banding_assigned',
+                'ak_banding_in_progress',
+                'ak_banding_on_validation',
+                'ak_banding_selesai',
+                'ak_banding_dilaporkan',
+                'asesor_al_banding_assigned',
+                'al_banding_in_progress',
+                'al_banding_selesai',
+                'al_banding_dilaporkan',
+                'hasil_banding_dihitung',
                 'hasil_ditetapkan',
                 'hasil_dilaporkan',
                 'hasil_diumumkan',
@@ -96,9 +108,9 @@ return new class extends Migration
             $table->timestamp('tanggal_borang_final')->nullable();
             $table->timestamp('tanggal_validasi_borang_selesai')->nullable()->comment('Tanggal validator approve/request revision LED');
             $table->timestamp('tanggal_pelaporan_validasi_borang')->nullable();
-            $table->timestamp('tanggal_lanjut_ak')->nullable();
 
             // AK Timeline
+            $table->timestamp('tanggal_lanjut_ak')->nullable();
             $table->timestamp('tanggal_penugasan_asesor_ak')->nullable();
             $table->timestamp('tanggal_ak_mulai')->nullable()->comment('Tanggal mulai proses AK/Penilaian Dokumen');
             $table->timestamp('tanggal_validasi_ak')->nullable()->comment('Tanggal mulai validasi hasil AK');
@@ -112,16 +124,29 @@ return new class extends Migration
             $table->timestamp('tanggal_al_selesai')->nullable()->comment('Tanggal selesai validasi hasil AL');
             $table->timestamp('tanggal_pelaporan_al')->nullable();
 
-            // Final Timeline
+            // Hasil Timeline
             $table->timestamp('tanggal_hasil_akreditasi_dihitung')->nullable()->comment('Tanggal hasil akreditasi dihitung');
             $table->timestamp('tanggal_hasil_akreditasi_dikirim')->nullable()->comment('Tanggal penyampaian hasil akreditasi');
             $table->timestamp('tanggal_masa_sanggah_mulai')->nullable();
             $table->timestamp('tanggal_masa_sanggah_selesai')->nullable();
             $table->timestamp('tanggal_permohonan_banding')->nullable()->comment('Tanggal pengajuan banding (optional)');
             $table->timestamp('tanggal_penerimaan_banding')->nullable()->comment('Tanggal penerimaan banding (optional)');
-            $table->timestamp('tanggal_penugasan_banding')->nullable()->comment('Tanggal penugasan banding (optional)');
+
+            // AK Banding Timeline
             $table->timestamp('tanggal_pelaksanaan_banding')->nullable();
-            $table->timestamp('tanggal_pelaporan_banding')->nullable();
+            $table->timestamp('tanggal_penugasan_asesor_ak_banding')->nullable();
+            $table->timestamp('tanggal_ak_banding_mulai')->nullable()->comment('Tanggal mulai proses AK Banding');
+            $table->timestamp('tanggal_validasi_ak_banding')->nullable()->comment('Tanggal mulai validasi hasil AK Banding');
+            $table->timestamp('tanggal_ak_banding_selesai')->nullable()->comment('Tanggal selesai validasi hasil AK Banding');
+            $table->timestamp('tanggal_pelaporan_ak_banding')->nullable()->comment('Tanggal selesai pelaporan hasil AK Banding');
+
+            // AL Banding Timeline
+            $table->timestamp('tanggal_penugasan_asesor_al_banding')->nullable();
+            $table->timestamp('tanggal_pelaksanaan_al_banding')->nullable();
+            $table->timestamp('tanggal_al_banding_mulai')->nullable()->comment('Tanggal mulai proses AL/Asesmen Lapangan Banding');
+            $table->timestamp('tanggal_al_banding_selesai')->nullable()->comment('Tanggal selesai validasi hasil AL Banding');
+            $table->timestamp('tanggal_pelaporan_al_banding')->nullable();
+            $table->timestamp('tanggal_hasil_banding_dihitung')->nullable()->comment('Tanggal hasil banding dihitung');
             $table->timestamp('tanggal_penetapan')->nullable()->comment('Tanggal penetapan hasil akreditasi');
             $table->timestamp('tanggal_pelaporan_hasil')->nullable();
             $table->timestamp('tanggal_pengumuman')->nullable()->comment('Tanggal pengumuman hasil akreditasi');
@@ -181,7 +206,9 @@ return new class extends Migration
 
             $table->enum('jenis_dokumen', [
                 'surat_permohonan',
+                'surat_permohonan_banding',
                 'surat_penerimaan_de',
+                'surat_penerimaan_banding_de',
                 'surat_tugas',
                 'surat_tugas_validator',
                 'surat_tugas_validator_dokumen',
@@ -189,10 +216,16 @@ return new class extends Migration
                 'surat_tugas_validator_ak',
                 'surat_tugas_asesor_al',
                 'surat_tugas_validator_al',
+                'surat_tugas_asesor_ak_banding',
+                'surat_tugas_validator_ak_banding',
+                'surat_tugas_asesor_al_banding',
+                'surat_tugas_validator_al_banding',
                 'surat_tugas_validator_rekap',
+                'surat_tugas_validator_rekap_banding',
                 'borang_template',
                 'template_formulir_pembayaran',
                 'formulir_pembayaran',
+                'formulir_pembayaran_banding',
                 'draft_borang',
                 'borang_final',
                 'bukti_pembayaran',
@@ -234,6 +267,10 @@ return new class extends Migration
             $table->foreignId('id_pengajuan')
                 ->constrained('pengajuan_akreditasi')
                 ->cascadeOnDelete();
+
+            $table->enum('jenis_pembayaran', ['akreditasi', 'banding'])
+                ->default('akreditasi')
+                ->comment('akreditasi = pembayaran akreditasi biasa, banding = pembayaran proses banding');
 
             // Informasi pembayaran
             $table->string('nomor_invoice')->unique();

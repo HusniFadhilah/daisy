@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class PengajuanDokumen extends Model
@@ -32,6 +33,7 @@ class PengajuanDokumen extends Model
 
     public const JENIS_DOKUMEN_ALIAS = [
         'surat_permohonan'             => 'File Permohonan Akreditasi',
+        'surat_permohonan_banding'     => 'File Permohonan Banding',
         'surat_penerimaan_de'          => 'File Penerimaan Permohonan Akreditasi',
         'surat_tugas'                  => 'Surat Tugas',
         'surat_tugas_validator'        => 'Surat Tugas Validator',
@@ -41,9 +43,16 @@ class PengajuanDokumen extends Model
         'surat_tugas_asesor_al'        => 'Surat Tugas Asesor AL',
         'surat_tugas_validator_al'     => 'Surat Tugas Validator AL',
         'surat_tugas_validator_rekap'  => 'Surat Tugas Validator Rekap',
+        'surat_tugas_asesor_ak_banding'     => 'Surat Tugas Asesor Banding',
+        'surat_tugas_validator_ak_banding'     => 'Surat Tugas Validator AK Banding',
+        'surat_tugas_asesor_al_banding'     => 'Surat Tugas Asesor Banding',
+        'surat_tugas_validator_al_banding'     => 'Surat Tugas Validator AL Banding',
+        'surat_tugas_validator_rekap_banding'  => 'Surat Tugas Validator Rekap Banding',
+        'surat_tugas_asesor_banding'     => 'Surat Tugas Asesor Banding',
         'borang_template'              => 'Templat Dokumen',
         'template_formulir_pembayaran' => 'Templat Formulir Pembayaran',
         'formulir_pembayaran'          => 'Formulir Pembayaran Terisi',
+        'formulir_pembayaran_banding'  => 'Formulir Pembayaran Banding Terisi',
         'draft_borang'                 => 'Draft Dokumen',
         'borang_final'                 => 'Dokumen Final',
         'bukti_pembayaran'             => 'Bukti Pembayaran',
@@ -172,5 +181,56 @@ class PengajuanDokumen extends Model
     {
         return $query->where('jenis_dokumen', 'surat_penerimaan_de')
             ->where('is_latest', true);
+    }
+
+    public function downloadDokumen($additionalFunction = null)
+    {
+        $dokumen = $this;
+        $authUser = Auth::user();
+        $pengajuan = $dokumen->pengajuan;
+
+        $userStudyProgramIds = $authUser->studyPrograms()->pluck('study_programs.id')->toArray();
+        $hasAccess = in_array($pengajuan->id_program_studi, $userStudyProgramIds)
+            || $pengajuan->id_de_assigned === $authUser->id
+            || $pengajuan->id_validator_assigned === $authUser->id
+            || $authUser->role === 'admin';
+
+        // if (!$hasAccess) abort(403);
+
+        if (!Storage::disk('public')->exists($dokumen->path_file)) {
+            // Jalankan additionalFunction jika ada
+            if ($additionalFunction && is_callable($additionalFunction)) {
+                return $additionalFunction($dokumen, $pengajuan);
+            }
+            abort(404, 'File tidak ditemukan.');
+        }
+
+        $absolutePath = storage_path('app/public/' . $dokumen->path_file);
+        $filename = $dokumen->original_filename ?: basename($absolutePath);
+        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+
+        $mime = match ($ext) {
+            'pdf'  => 'application/pdf',
+            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'xls'  => 'application/vnd.ms-excel',
+            default => mime_content_type($absolutePath) ?: 'application/octet-stream',
+        };
+
+        $disposition = ($ext === 'pdf') ? 'inline' : 'attachment';
+
+        return response()->stream(function () use ($absolutePath) {
+            $stream = fopen($absolutePath, 'rb');
+            fpassthru($stream);
+            fclose($stream);
+        }, 200, [
+            'Content-Type'        => $mime,
+            'Content-Disposition' => $disposition . '; filename="' . addslashes($filename) . '"',
+            'Content-Length'      => filesize($absolutePath),
+            'Accept-Ranges'       => 'bytes',
+            'Cache-Control'       => 'private, max-age=0, must-revalidate',
+            'Pragma'              => 'public',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
     }
 }

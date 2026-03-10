@@ -460,9 +460,9 @@
                         sebelum menyetujui Permohonan akreditasi ini ke tahap AK.
                     </div>
 
-                    <form action="{{ route('de.pengajuan.approve-ak', $pengajuan->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menyetujui Permohonan akreditasi ini untuk lanjut ke tahap AK?')">
+                    <form id="form-setujui-ak" action="" method="POST" class="d-inline">
                         @csrf
-                        <button type="submit" class="btn btn-success btn-md">
+                        <button type="button" class="btn btn-success btn-md tombol-konfirmasi-setujui-ak" data-id-form="form-setujui-ak" data-message="Setujui Permohonan akreditasi" data-href="{{ route('de.pengajuan.approve-ak', $pengajuan->id) }}">
                             <i class="bi bi-check-circle"></i> Setujui & Lanjutkan ke Tahap AK
                         </button>
                     </form>
@@ -598,7 +598,7 @@
             \App\Models\PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
             \App\Models\PengajuanAkreditasi::STATUS_AL_SELESAI,
             ]))
-            <div class="alert alert-info alert-permanent border-start border-4 border-primary mb-4">
+            <div class="alert alert-info alert-permanent border-start border-2 border-primary mb-4">
                 <div class="d-flex align-items-start">
                     <i class="bi bi-info-circle-fill fs-4 me-3 text-primary"></i>
 
@@ -756,7 +756,7 @@
                                 @if($currentValidator->borangValidation)
                                 <a href="{{ route('validator.borang.show', $currentValidator->id) }}" class="btn btn-primary btn-sm mt-3" target="_blank">
                                     <i class="bi bi-eye"></i>
-                                    Lihat Progress Validasi
+                                    Lihat Progres Validasi
                                 </a>
                                 @endif
                                 @endif
@@ -919,195 +919,162 @@
                 </div>
             </div>
 
-            <!-- Review History -->
-            {{-- @if($pengajuan->reviewKesiapan->count() > 0)
+
+            <!-- Dokumen -->
             <div class="card mb-4">
                 <div class="card-header bg-light">
                     <h5 class="mb-0">
-                        <i class="bi bi-clipboard-check"></i> Riwayat Review Kesiapan
+                        <i class="bi bi-folder"></i> Dokumen
                     </h5>
                 </div>
                 <div class="card-body">
-                    @foreach($pengajuan->reviewKesiapan->sortByDesc('tanggal_review') as $review)
-                    <div class="mb-3 pb-3 {{ !$loop->last ? 'border-bottom' : '' }}">
-            <div class="d-flex justify-content-between align-items-start mb-2">
-                <div>
-                    <span class="badge {{ $review->hasil_review === 'siap' ? 'bg-success' : 'bg-danger' }} me-2">
-                        {{ $review->hasil_review === 'siap' ? 'SIAP' : 'BELUM SIAP' }}
-                    </span>
-                    <small class="text-muted">Versi {{ $review->versi_review }}</small>
-                </div>
-                <small class="text-muted">
-                    {{ $review->tanggal_review->locale('id')->translatedFormat('d M Y H:i') }}
-                </small>
-            </div>
-            <p class="mb-2"><strong>Reviewer:</strong> {{ $review->reviewer->name }}</p>
-            <p class="mb-2"><strong>Catatan:</strong></p>
-            <p class="text-muted mb-2">{{ $review->catatan_review }}</p>
-
-            @if($review->checklist_kesiapan && count($review->checklist_kesiapan) > 0)
-            <p class="mb-1"><strong>Checklist:</strong></p>
-            <ul class="mb-0">
-                @foreach($review->checklist_kesiapan as $item)
-                <li>{{ $item }}</li>
-                @endforeach
-            </ul>
-            @endif
-        </div>
-        @endforeach
-    </div>
-</div>
-@endif --}}
-
-<!-- Dokumen -->
-<div class="card mb-4">
-    <div class="card-header bg-light">
-        <h5 class="mb-0">
-            <i class="bi bi-folder"></i> Dokumen
-        </h5>
-    </div>
-    <div class="card-body">
-        @forelse($pengajuan->dokumen->groupBy('jenis_dokumen_alias') as $jenis => $docs)
-        <div class="mb-3">
-            <h6 class="fw-bold text-primary">
-                {{ str_replace('_', ' ', ucwords($jenis)) }}
-            </h6>
-            <div class="table-responsive">
-                <table class="table table-sm table-hover">
-                    <thead>
-                        <tr>
-                            <th>Nama File</th>
-                            <th>Versi</th>
-                            <th>Upload Oleh</th>
-                            <th>Tanggal</th>
-                            <th>Ukuran</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($docs as $doc)
-                        <tr>
-                            <td>
-                                {{ $doc->original_filename }}
-                                @if($doc->is_latest)
-                                <span class="badge bg-success">Latest</span>
-                                @endif
-                            </td>
-                            <td>v{{ $doc->versi }}</td>
-                            <td>{{ $doc->uploader->name }}</td>
-                            <td>{{ $doc->created_at->locale('id')->translatedFormat('d/m/Y H:i') }}</td>
-                            <td>
-                                <a href="{{ $doc->download_url }}" class="btn btn-sm btn-primary">
-                                    <i class="bi bi-download"></i>
-                                </a>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        @empty
-        <p class="text-muted mb-0">Belum ada dokumen</p>
-        @endforelse
-    </div>
-</div>
-</div>
-
-<!-- Sidebar -->
-<div class="col-md-12 col-lg-4">
-    <!-- Timeline -->
-    <div class="card mb-4">
-        <div class="card-header bg-light">
-            <h5 class="mb-0">
-                <i class="bi bi-clock-history"></i> Timeline Pelaksanaan Akreditasi
-            </h5>
-        </div>
-        <div class="card-body">
-            <div class="timeline">
-                @foreach($pengajuan->timelineItems() as $step => $item)
-                @php
-                $isDone = $item['state'] === 'done';
-                $isCurrent = $item['state'] === 'current';
-                $itemColor = $item['color']; // success|warning|secondary
-
-                $iconColor = $isDone ? 'text-success' : ($isCurrent ? 'text-' . $itemColor : 'text-muted');
-                @endphp
-
-                <div class="d-flex mb-3">
-                    <div class="me-3">
-                        @if($isDone)
-                        <i class="bi bi-check-circle-fill {{ $iconColor }}" style="font-size:1.2rem;"></i>
-                        @elseif($isCurrent)
-                        <i class="bi bi-hourglass-split {{ $iconColor }}" style="font-size:1.2rem;"></i>
-                        @else
-                        <i class="bi bi-circle {{ $iconColor }}"></i>
-                        @endif
-                    </div>
-
-                    <div class="flex-grow-1">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <strong class="{{ ($isDone || $isCurrent) ? 'text-'.$itemColor : 'text-muted' }}">
-                                <i class="{{ $item['icon'] }} me-1"></i>
-                                {{ $item['label'] }}
-                            </strong>
-
-                            @if($item['date'])
-                            <span class="badge bg-{{ $itemColor }}">
-                                {{ $item['date']->locale('id')->translatedFormat('d M Y') }}
-                            </span>
-                            @endif
+                    @forelse($pengajuan->dokumen->groupBy('jenis_dokumen_alias') as $jenis => $docs)
+                    <div class="mb-3">
+                        <h6 class="fw-bold text-primary">
+                            {{ str_replace('_', ' ', ucwords($jenis)) }}
+                        </h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Nama File</th>
+                                        <th>Versi</th>
+                                        <th>Upload Oleh</th>
+                                        <th>Tanggal</th>
+                                        <th>Ukuran</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($docs as $doc)
+                                    <tr>
+                                        <td>
+                                            {{ $doc->original_filename }}
+                                            @if($doc->is_latest)
+                                            <span class="badge bg-success">Latest</span>
+                                            @endif
+                                        </td>
+                                        <td>v{{ $doc->versi }}</td>
+                                        <td>{{ $doc->uploader->name }}</td>
+                                        <td>{{ $doc->created_at->locale('id')->translatedFormat('d/m/Y H:i') }}</td>
+                                        <td>
+                                            <a href="{{ $doc->download_url }}" class="btn btn-sm btn-primary">
+                                                <i class="bi bi-download"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
+                    </div>
+                    @empty
+                    <p class="text-muted mb-0">Belum ada dokumen</p>
+                    @endforelse
+                </div>
+            </div>
+        </div>
 
-                        @if($item['date'])
-                        <small class="text-muted">
-                            <i class="bi bi-clock"></i> {{ $item['date']->format('H:i') }} WIB
-                        </small>
-                        @endif
+        <!-- Sidebar -->
+        <div class="col-md-12 col-lg-4">
+            <!-- Timeline -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history"></i> Timeline Pelaksanaan Akreditasi
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        @foreach($pengajuan->timelineItems() as $step => $item)
+                        @php
+                        $isDone = $item['state'] === 'done';
+                        $isCurrent = $item['state'] === 'current';
+                        $itemColor = $item['color']; // success|warning|secondary
+
+                        $iconColor = $isDone ? 'text-success' : ($isCurrent ? 'text-' . $itemColor : 'text-muted');
+                        @endphp
+
+                        <div class="d-flex mb-3">
+                            <div class="me-3">
+                                @if($isDone)
+                                <i class="bi bi-check-circle-fill {{ $iconColor }}" style="font-size:1.2rem;"></i>
+                                @elseif($isCurrent)
+                                <i class="bi bi-hourglass-split {{ $iconColor }}" style="font-size:1.2rem;"></i>
+                                @else
+                                <i class="bi bi-circle {{ $iconColor }}"></i>
+                                @endif
+                            </div>
+
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <strong class="{{ ($isDone || $isCurrent) ? 'text-'.$itemColor : 'text-muted' }}">
+                                        <i class="{{ $item['icon'] }} me-1"></i>
+                                        {{ $item['label'] }}
+                                    </strong>
+
+                                    @if($item['date'])
+                                    <span class="badge bg-{{ $itemColor }}">
+                                        {{ $item['date']->locale('id')->translatedFormat('d M Y') }}
+                                    </span>
+                                    @endif
+                                </div>
+
+                                @if($item['date'])
+                                <small class="text-muted">
+                                    <i class="bi bi-clock"></i> {{ $item['date']->format('H:i') }} WIB
+                                </small>
+                                @endif
+                            </div>
+                        </div>
+                        @endforeach
                     </div>
                 </div>
-                @endforeach
             </div>
-        </div>
-    </div>
 
-    <!-- Log Aktivitas -->
-    <div class="card">
-        <div class="card-header bg-light">
-            <h5 class="mb-0">
-                <i class="bi bi-list-check"></i> Log Aktivitas
-            </h5>
-        </div>
-        <div class="card-body" style="max-height: 400px; overflow-y: auto;">
-            @forelse($pengajuan->statusLog->sortByDesc('changed_at') as $log)
-            <div class="mb-3 pb-3 {{ !$loop->last ? 'border-bottom' : '' }}">
-                <div class="d-flex justify-content-between">
-                    <small class="text-muted">
-                        {{ $log->changed_at->locale('id')->translatedFormat('d/m/Y H:i') }}
-                    </small>
+            <!-- Log Aktivitas -->
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list-check"></i> Log Aktivitas
+                    </h5>
                 </div>
-                <p class="mb-1 small">
-                    <span class="badge bg-secondary">{{ str_replace('_', ' ', $log->status_from_label) }}</span>
-                    <i class="bi bi-arrow-right"></i>
-                    <span class="badge bg-primary">{{ str_replace('_', ' ', $log->status_to_label) }}</span>
-                </p>
-                @if($log->keterangan)
-                <small class="text-muted">{{ $log->keterangan }}</small>
-                @endif
-                <br>
-                <small class="text-muted">Oleh: {{ $log->changedBy->name }}</small>
+                <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                    @forelse($pengajuan->statusLog->sortByDesc('changed_at') as $log)
+                    <div class="mb-3 pb-3 {{ !$loop->last ? 'border-bottom' : '' }}">
+                        <div class="d-flex justify-content-between">
+                            <small class="text-muted">
+                                {{ $log->changed_at->locale('id')->translatedFormat('d/m/Y H:i') }}
+                            </small>
+                        </div>
+                        <p class="mb-1 small">
+                            <span class="badge bg-secondary">{{ str_replace('_', ' ', $log->status_from_label) }}</span>
+                            <i class="bi bi-arrow-right"></i>
+                            <span class="badge bg-primary">{{ str_replace('_', ' ', $log->status_to_label) }}</span>
+                        </p>
+                        @if($log->keterangan)
+                        <small class="text-muted">{{ $log->keterangan }}</small>
+                        @endif
+                        <br>
+                        <small class="text-muted">Oleh: {{ $log->changedBy->name }}</small>
+                    </div>
+                    @empty
+                    <p class="text-muted small mb-0">Belum ada aktivitas</p>
+                    @endforelse
+                </div>
             </div>
-            @empty
-            <p class="text-muted small mb-0">Belum ada aktivitas</p>
-            @endforelse
         </div>
     </div>
-</div>
-</div>
 </div>
 
 @push('scripts')
 <script>
+    alertConfirm({
+        selector: '.tombol-konfirmasi-setujui-ak'
+        , formId: 'form-setujui-ak'
+        , isMessage: true,isDataHref:true
+    });
+
     // Show/hide pembayaran field based on hasil review
     hasilReview = document.getElementById('hasilReview')
     if (hasilReview) hasilReview.addEventListener('change', function() {
@@ -1177,8 +1144,8 @@
         }
     }
 
-    function reParseBorang(pengajuanId, dokumenId) {
-        if (confirm('Apakah Anda yakin ingin memproses ulang dokumen ini? Data pemrosesan sebelumnya akan ditimpa.')) {
+    async function reParseBorang(pengajuanId, dokumenId) {
+        if (await swalConfirmSubmit('warning', 'Apakah Anda yakin ingin memproses ulang dokumen ini? Data pemrosesan sebelumnya akan ditimpa.')) {
             parseBorang(pengajuanId, dokumenId);
         }
     }
@@ -1230,7 +1197,7 @@
             const link = document.getElementById('template_link').value;
             if (!link) {
                 e.preventDefault();
-                alert('Mohon masukkan URL templat!');
+                Swal.fire('Perhatian', 'Mohon masukkan URL templat!', 'warning');
                 return false;
             }
 
@@ -1239,21 +1206,21 @@
                 new URL(link);
             } catch (error) {
                 e.preventDefault();
-                alert('Format URL tidak valid!');
+                Swal.fire('Perhatian', 'Format URL tidak valid!', 'warning');
                 return false;
             }
         } else {
             const file = document.getElementById('borang_template').files[0];
             if (!file) {
                 e.preventDefault();
-                alert('Mohon pilih file templat!');
+                Swal.fire('Perhatian', 'Mohon pilih file templat!', 'warning');
                 return false;
             }
 
             // Validate file size (10 MB)
             if (file.size > 10 * 1024 * 1024) {
                 e.preventDefault();
-                alert('Ukuran file terlalu besar! Maksimal 10 MB.');
+                Swal.fire('Perhatian', 'Ukuran file terlalu besar! Maksimal 10 MB.', 'warning');
                 return false;
             }
         }
@@ -1300,7 +1267,7 @@
 
             if (!metode) {
                 e.preventDefault();
-                alert('Mohon pilih metode pengiriman formulir pembayaran!');
+                Swal.fire('Perhatian', 'Mohon pilih metode pengiriman formulir pembayaran!', 'warning');
                 return false;
             }
 
@@ -1310,7 +1277,7 @@
 
                 if (!link) {
                     e.preventDefault();
-                    alert('Mohon masukkan URL formulir pembayaran!');
+                    Swal.fire('Perhatian', 'Mohon masukkan URL formulir pembayaran!', 'warning');
                     return false;
                 }
 
@@ -1318,7 +1285,7 @@
                     new URL(link);
                 } catch (err) {
                     e.preventDefault();
-                    alert('Format URL tidak valid!');
+                    Swal.fire('Perhatian', 'Format URL tidak valid!', 'warning');
                     return false;
                 }
             } else {
@@ -1331,13 +1298,13 @@
 
                 if (!file) {
                     e.preventDefault();
-                    alert('Mohon pilih file formulir pembayaran!');
+                    Swal.fire('Perhatian', 'Mohon pilih file formulir pembayaran!', 'warning');
                     return false;
                 }
 
                 if (file.size > 10 * 1024 * 1024) {
                     e.preventDefault();
-                    alert('Ukuran file terlalu besar! Maksimal 10 MB.');
+                    Swal.fire('Perhatian', 'Ukuran file terlalu besar! Maksimal 10 MB.', 'warning');
                     return false;
                 }
             }

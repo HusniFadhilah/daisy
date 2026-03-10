@@ -66,7 +66,7 @@
                         <td>
                             {!! $pengajuan->getPermohonanAkreditasiSectionFor('de') !!}
                         </td>
-                        <td>
+                        <td style="min-width: 120px;">
                             {!! $pengajuan->getCustomBadgeLastStatus('pelaporan_al', 'de', 'label_short_for') !!}
                         </td>
                         <td>

@@ -11,6 +11,16 @@
     --light: #f5f7fa;
 }
 
+body {
+    font-family: 'Montserrat', sans-serif;
+    background:
+        radial-gradient(circle at top left, rgba(91, 141, 239, 0.20), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(155, 140, 255, 0.20), transparent 28%),
+        linear-gradient(135deg, #eef8f5 0%, #f7fbff 45%, #fff9f1 100%);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
 /* Auth Layout */
 .auth-wrapper {
     min-height: 100vh;

@@ -14,7 +14,7 @@
     </nav>
 
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h5 class="mb-1">
                 <i class="bi bi-file-earmark-diff"></i> Detail Pelaporan Validasi Dokumen
@@ -62,7 +62,7 @@
                 </div>
                 <div class="card-body">
                     @if($laporanValidasi)
-                    <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center rounded gap-3">
                         <div class="d-flex align-items-center">
                             <i class="bi bi-file-earmark-pdf text-danger me-3" style="font-size: 32px;"></i>
                             <div>
@@ -145,7 +145,7 @@
                         </tr>
                         <tr>
                             <th>Email</th>
-                            <td>: {{ $validatorAssignment->user->email }}</td>
+                            <td class="text-wrap">: {{ $validatorAssignment->user->email }}</td>
                         </tr>
                         <tr>
                             <th>Status Penawaran</th>

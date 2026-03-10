@@ -1,3 +1,4 @@
+{{-- resources\views\de\surat-permohonan\index.blade.php --}}
 @extends('layouts.template.app')
 
 @section('title', 'Permohonan Akreditasi dari Program Studi')
@@ -49,7 +50,7 @@
     </nav>
 
     <!-- Page Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h4 class="mb-1"><i class="bi bi-envelope-paper"></i> Permohonan Akreditasi</h4>
             <p class="text-muted mb-0">Kelola permohonan Akreditasi</p>

@@ -309,8 +309,8 @@
         });
     });
 
-    function deleteRecord(id) {
-        if (confirm('Yakin ingin menghapus indikator ini?')) {
+    async function deleteRecord(id) {
+        if (await swalConfirmSubmit('warning', 'Yakin ingin menghapus indikator ini?')) {
             $.ajax({
                 url: '/indikator/' + id
                 , type: 'DELETE'
@@ -319,10 +319,11 @@
                 }
                 , success: function(response) {
                     $('#indikatorTable').DataTable().ajax.reload();
-                    alert('Data berhasil dihapus');
+                    Swal.fire('Berhasil', 'Data berhasil dihapus', 'success');
                 }
                 , error: function(xhr) {
-                    alert('Gagal menghapus data');
+                    console.log(xhr)
+                    Swal.fire('Perhatian', 'Gagal menghapus data', 'error');
                 }
             });
         }

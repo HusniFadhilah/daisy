@@ -26,7 +26,7 @@
 @section('content')
 <div class="container-fluid py-3">
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h2><i class="bi bi-clipboard-data"></i> Kelola Asesmen</h2>
             <p class="text-muted mb-0">Atur asesmen akreditasi dan tugaskan asesor</p>
@@ -178,8 +178,8 @@
     });
 
     // Confirm delete
-    function confirmDelete(id, name) {
-        if (confirm(`Apakah Anda yakin ingin menghapus asesmen "${name}"?\n\nPerhatian: Asesmen yang sudah ada penilaian tidak bisa dihapus.`)) {
+    async function confirmDelete(id, name) {
+        if (await swalConfirmSubmit('warning', `Apakah Anda yakin ingin menghapus asesmen "${name}"?\n\nPerhatian: Asesmen yang sudah ada penilaian tidak bisa dihapus.`)) {
             const form = document.getElementById('deleteForm');
             form.action = `/asesmen/${id}`;
             form.submit();

@@ -373,7 +373,7 @@
 
         // Mobile menu toggle
         function toggleMobileMenu() {
-            alert('Mobile menu akan ditampilkan dengan dropdown');
+            Swal.fire('Info', 'Mobile menu akan ditampilkan dengan dropdown', 'info');
         }
 
         // Smooth scroll for anchor links
@@ -391,21 +391,21 @@
         });
 
         // Scroll reveal animation
-        const observerOptions = {
+        const validatorOptions = {
             threshold: 0.1
             , rootMargin: '0px 0px -50px 0px'
         };
 
-        const observer = new IntersectionObserver(function(entries) {
+        const validator = new IntersectionValidator(function(entries) {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('active');
                 }
             });
-        }, observerOptions);
+        }, validatorOptions);
 
         document.querySelectorAll('.scroll-reveal').forEach(element => {
-            observer.observe(element);
+            validator.observe(element);
         });
 
         // Prevent navbar overlap on page load with hash

@@ -69,12 +69,4 @@ class PenilaianElemenAk extends Model
     {
         return $this->belongsTo(ElemenStandar::class, 'id_elemen');
     }
-
-    /**
-     * PenilaianElemen has one Validasi
-     */
-    public function validasi()
-    {
-        return $this->hasOne(ValidasiPenilaian::class, 'id_penilaian');
-    }
 }

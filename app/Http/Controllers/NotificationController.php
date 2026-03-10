@@ -3,6 +3,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Notification;
 use Illuminate\Http\Request;
 
 class NotificationController extends Controller
@@ -34,5 +35,23 @@ class NotificationController extends Controller
         auth()->user()->unreadNotifications->markAsRead();
 
         return back()->with('success', 'All notifications marked as read');
+    }
+
+    public function markAsRead($id)
+    {
+        $notification = Notification::findOrFail($id);
+
+        // Cegah user membaca notifikasi milik orang lain
+        if ($notification->notifiable_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $notification->update([
+            'read_at' => now()
+        ]);
+
+        return response()->json([
+            'success' => true
+        ]);
     }
 }

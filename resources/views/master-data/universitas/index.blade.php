@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <h2>Kelola Universitas</h2>
         <a href="{{ route('universities.create') }}" class="btn btn-primary">
             <i class="fas fa-plus"></i> Tambah Universitas
@@ -45,10 +45,10 @@
                                     <a href="{{ route('universities.edit', $university->id) }}" class="btn btn-sm btn-warning text-white" title="Edit">
                                         <i class="bi bi-pencil"></i>
                                     </a>
-                                    <form action="{{ route('universities.destroy', $university->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus universitas ini?')">
+                                    <form id="form-universitas" action="{{ route('universities.destroy', $university->id) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger" title="Hapus">
+                                        <button type="button" class="btn btn-sm btn-danger tombol-hapus" data-id-form="form-universitas" data-text="universitas" title="Hapus">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>

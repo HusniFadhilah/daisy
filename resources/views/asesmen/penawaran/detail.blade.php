@@ -11,7 +11,7 @@
                 <div class="card-body">
                     <div class="d-flex align-items-center mb-3">
                         <div class="bg-primary bg-opacity-10 p-3 rounded-3 me-3">
-                            <i class="bi bi-envelope-check fs-3 text-primary"></i>
+                            <i class="bi bi-envelope-check fs-3 text-white"></i>
                         </div>
                         <div>
                             <h4 class="mb-0">Detail Penawaran Asesmen</h4>
@@ -187,8 +187,13 @@
                 const route = '{{ $assignment->jenis_asesmen }}' === 'dokumen' ?
                     "{{ route('validator.borang.show', $assignment->id) }}" :
                     ('{{ $assignment->jenis_asesmen }}' === 'ak' ?
-                        "{{ route('ak.berkas.show', $asesmen->id) }}" :
-                        "{{ route('al.berkas.show', $asesmen->id) }}");
+                        "{{ route('ak.berkas.show', $asesmen->id) }}" : ('{{ $assignment->jenis_asesmen }}' === 'al' ?
+                            "{{ route('al.berkas.show', $asesmen->id) }}" :
+                            ('{{ $assignment->jenis_asesmen }}' === 'ak_banding' ?
+                                "{{ route('ak_banding.berkas.show', $asesmen->id) }}" :
+                                ('{{ $assignment->jenis_asesmen }}' === 'al_banding' ?
+                                    "{{ route('al_banding.berkas.show', $asesmen->id) }}" :
+                                    "{{ route('dashboard') }}"))));
                 window.location.href = route;
             } else {
                 throw new Error(data.message);

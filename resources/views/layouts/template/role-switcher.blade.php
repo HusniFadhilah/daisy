@@ -84,7 +84,7 @@
             }
         } catch (error) {
             console.error('Error switching role:', error);
-            alert('Gagal mengubah role: ' + error.message);
+            Swal.fire('Perhatian', 'Gagal mengubah role: ' + error.message, 'error');
         }
     }
 

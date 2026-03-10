@@ -31,7 +31,7 @@ class PelaporanBandingController extends Controller
             'statusLog' => function ($q) {
                 $q->whereIn('status_to', [
                     PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
-                    PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
+                    PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN,
                 ])->orderBy('changed_at', 'desc');
             },
         ])
@@ -44,7 +44,7 @@ class PelaporanBandingController extends Controller
                     ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
                     ->whereIn('l.status_to', [
                         PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
-                        PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
+                        PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN,
                     ]);
             });
 
@@ -195,14 +195,14 @@ class PelaporanBandingController extends Controller
 
             // Update status ke BANDING_DILAPORKAN
             $pengajuan->update([
-                'status' => PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
+                'status' => PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN,
                 'tanggal_pelaporan_banding' => now(),
             ]);
 
             // Log status change
             $pengajuan->statusLog()->create([
                 'status_from' => PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
-                'status_to' => PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
+                'status_to' => PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN,
                 'changed_by' => auth()->id(),
                 'changed_at' => now(),
                 'keterangan' => 'Laporan banding diupload. ' . ($request->keterangan ?? ''),
@@ -230,21 +230,8 @@ class PelaporanBandingController extends Controller
      */
     public function downloadLaporan($id)
     {
-        $dokumen = PengajuanDokumen::where('id_pengajuan', $id)
-            ->where('jenis_dokumen', 'laporan_banding')
-            ->where('is_latest', true)
-            ->firstOrFail();
-
-        if (!Storage::disk('public')->exists($dokumen->path_file)) {
-            return back()->with('error', 'File laporan tidak ditemukan.');
-        }
-
-        $absolutePath = Storage::disk('public')->path($dokumen->path_file);
-        $filename = $dokumen->original_filename ?? basename($absolutePath);
-
-        return response()->file($absolutePath, [
-            'Content-Disposition' => 'inline; filename="' . $filename . '"'
-        ]);
+        $pengajuanDokumen = PengajuanDokumen::with('pengajuan')->findOrFail($id);
+        return $pengajuanDokumen->downloadDokumen();
     }
 
     /**
@@ -259,7 +246,7 @@ class PelaporanBandingController extends Controller
                     PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
                     PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
                     PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
-                    PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
+                    PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN,
                 ])
                     ->orderBy('changed_at', 'asc');
             }
@@ -302,7 +289,7 @@ class PelaporanBandingController extends Controller
             ->count();
 
         // Sudah dilaporkan: status = BANDING_DILAPORKAN
-        $stats['sudah_dilaporkan'] = PengajuanAkreditasi::where('status', PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN)
+        $stats['sudah_dilaporkan'] = PengajuanAkreditasi::where('status', PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN)
             ->count();
 
         // Hasil banding

@@ -193,7 +193,7 @@ class PelaksanaanALController extends Controller
             }
         ])->findOrFail($id);
 
-        // Get progress penilaian AL dari asesor
+        // Get progres penilaian AL dari asesor
         $totalElemens = DB::table('elemen_standar')->count();
 
         // Progress per asesor

@@ -1,6 +1,6 @@
 <!-- Penawaran Asesmen -->
 <a href="{{ route('penawaran') }}" class="nav-link {{ request()->routeIs('penawaran*') ? 'active' : '' }}">
-    <span class="menu-icon">📨</span>
+    <span class="menu-icon"><i class="bi bi-send-check"></i></span>
     <span>Penawaran Asesmen</span>
     @if(isset($penawaranBaru) && $penawaranBaru > 0)
     <span class="badge bg-danger menu-badge">{{ $penawaranBaru }}</span>
@@ -52,7 +52,7 @@
 <!-- Proses AK -->
 @if(Route::has('ak.berkas'))
 <a href="{{ route('ak.berkas') }}" class="nav-link {{ request()->routeIs('ak*') ? 'active' : '' }}">
-    <span class="menu-icon">📝</span>
+    <span class="menu-icon"><i class="bi bi-patch-check"></i></span>
     <span>Proses AK</span>
     {{-- @if(isset($prosesAK) && $prosesAK > 0)
     <span class="badge bg-warning menu-badge">{{ $prosesAK }}</span>
@@ -63,7 +63,7 @@
 <!-- Proses AL -->
 @if(Route::has('al.berkas'))
 <a href="{{ route('al.berkas') }}" class="nav-link {{ request()->routeIs('al*') ? 'active' : '' }}">
-    <span class="menu-icon">🏢</span>
+    <span class="menu-icon"><i class="bi bi-building"></i></span>
     <span>Proses AL</span>
 </a>
 @endif
@@ -79,11 +79,11 @@
 <!-- Pedoman AK -->
 @if(Route::has('pedoman'))
 <a href="{{ route('pedoman') }}" class="nav-link {{ request()->routeIs('pedoman') ? 'active' : '' }}">
-    <span class="menu-icon">❓</span>
+    <span class="menu-icon"><i class="bi bi-question-circle"></i></span>
     <span>Pedoman AK</span>
 </a>
 <a href="{{ route('pedoman') }}" class="nav-link {{ request()->routeIs('pedoman') ? 'active' : '' }}">
-    <span class="menu-icon">❓</span>
+    <span class="menu-icon"><i class="bi bi-question-diamond"></i></span>
     <span>Pedoman AL</span>
 </a>
 @endif
@@ -91,7 +91,7 @@
 <!-- Dokumen Adm. AL -->
 @if(Route::has('dokumen.panduan') || Route::has('dokumen.instrumen'))
 <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'dokumen-submenu')">
-    <span class="menu-icon">📁</span>
+    <span class="menu-icon"><i class="bi bi-journal-text"></i></span>
     <span>Dokumen Adm. AL</span>
 </a>
 <ul class="submenu nav flex-column" id="dokumen-submenu">

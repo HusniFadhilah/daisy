@@ -480,22 +480,17 @@ class PenyampaianTemplateController extends Controller
      */
     public function download($id, $jenis = 'borang_template')
     {
-        $dokumen = PengajuanDokumen::where('id_pengajuan', $id)
+        $pengajuanDokumen = PengajuanDokumen::where('id_pengajuan', $id)
             ->where('jenis_dokumen', $jenis)
             ->where('is_latest', true)
             ->firstOrFail();
 
         // Jika link
-        if ($dokumen->template_link) {
-            return redirect($dokumen->template_link);
+        if ($pengajuanDokumen->template_link) {
+            return redirect($pengajuanDokumen->template_link);
         }
 
-        // Jika file upload
-        if (!Storage::disk('public')->exists($dokumen->path_file)) {
-            return back()->with('error', 'File tidak ditemukan.');
-        }
-
-        return Storage::disk('public')->download($dokumen->path_file, $dokumen->original_filename);
+        return $pengajuanDokumen->downloadDokumen();
     }
 
     /**

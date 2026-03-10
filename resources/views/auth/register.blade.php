@@ -252,7 +252,7 @@
 
         if (password !== confirmPassword) {
             e.preventDefault();
-            alert('Password dan konfirmasi password tidak cocok!');
+            Swal.fire('Perhatian', 'Password dan konfirmasi password tidak cocok!', 'warning');
             return false;
         }
 
@@ -263,7 +263,7 @@
 
     // Social Register (placeholder)
     function socialRegister(provider) {
-        alert('Pendaftaran dengan ' + provider + ' akan segera tersedia!');
+        Swal.fire('Perhatian', 'Pendaftaran dengan ' + provider + ' akan segera tersedia!', 'warning');
     }
 
     // Auto-dismiss alerts

@@ -97,31 +97,8 @@ class PenerimaanPermohonanController extends Controller
      */
     public function download($id)
     {
-        $pengajuan = PengajuanAkreditasi::findOrFail($id);
-
-        // Check access
-        $user = Auth::user();
-        $studyProgramIds = $user->studyPrograms()->pluck('study_programs.id');
-
-        if (!$studyProgramIds->contains($pengajuan->id_program_studi)) {
-            abort(403, 'Anda tidak memiliki akses untuk mengunduh dokumen ini.');
-        }
-
-        $dokumen = PengajuanDokumen::where('id_pengajuan', $id)
-            ->where('jenis_dokumen', 'surat_penerimaan_de')
-            ->where('is_latest', true)
-            ->firstOrFail();
-
-        if (!Storage::disk('public')->exists($dokumen->path_file)) {
-            abort(404, 'File tidak ditemukan.');
-        }
-
-        $absolutePath = Storage::disk('public')->path($dokumen->path_file);
-        $filename = $dokumen->original_filename ?? basename($absolutePath);
-
-        return response()->file($absolutePath, [
-            'Content-Disposition' => 'inline; filename="' . $filename . '"'
-        ]);
+        $pengajuanDokumen = PengajuanDokumen::with('pengajuan')->findOrFail($id);
+        return $pengajuanDokumen->downloadDokumen();
     }
 
     /**

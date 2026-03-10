@@ -1,3 +1,4 @@
+{{-- resources\views\de\penugasan-ak\show.blade.php --}}
 @extends('layouts.template.app')
 
 @section('title', 'Detail Penugasan AK')
@@ -14,7 +15,7 @@
     </nav>
 
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h5 class="mb-1">
                 <i class="bi bi-person-check"></i> Detail Penugasan AK
@@ -571,7 +572,7 @@
                     </tr>
                     <tr>
                         <th>Email</th>
-                        <td>: {{ $validatorDokumen->user->email }}</td>
+                        <td class="text-wrap">: {{ $validatorDokumen->user->email }}</td>
                     </tr>
                     <tr>
                         <th>Status</th>
@@ -636,11 +637,11 @@
     function showMarkReadyModal(pengajuanId) {
         currentPengajuanId = pengajuanId;
         const today = new Date();
-        const nextMonth = new Date(today);
-        nextMonth.setMonth(nextMonth.getMonth() + 1);
+        const nextTime = new Date(today);
+        nextTime.setDate(nextTime.getDate() + 7);
 
         document.getElementById('tanggalMulaiAK').value = today.toISOString().split('T')[0];
-        document.getElementById('tanggalSelesaiAK').value = nextMonth.toISOString().split('T')[0];
+        document.getElementById('tanggalSelesaiAK').value = nextTime.toISOString().split('T')[0];
         document.getElementById('catatanAK').value = '';
 
         const modal = new bootstrap.Modal(document.getElementById('modalMarkReadyAK'));

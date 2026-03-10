@@ -157,7 +157,7 @@ request()->routeIs('upps.permohonan-banding*')
         @endforeach
 
         <!-- Banding -->
-        <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'banding-submenu')">
+        <a href="#" class="nav-link {{ request()->routeIs('upps.permohonan-banding*') || request()->routeIs('upps.pelaksanaan-banding*') || request()->routeIs('upps.pelaporan-banding*') ? 'active' : '' }}" onclick="toggleSubmenu(event, 'banding-submenu')">
             <span class="menu-icon">
                 <i class="bi bi-arrow-repeat"></i>
             </span>
@@ -166,17 +166,17 @@ request()->routeIs('upps.permohonan-banding*')
 
         <ul class="submenu nav flex-column" id="banding-submenu">
             <li>
-                <a href="{{ route('upps.permohonan-banding') }}" class="nav-link">
+                <a href="{{ route('upps.permohonan-banding') }}" class="nav-link {{ request()->routeIs('upps.permohonan-banding*') ? 'active' : '' }}">
                     17.a Permohonan Banding
                 </a>
             </li>
             <li>
-                <a href="{{ route('upps.pelaksanaan-banding') }}" class="nav-link">
+                <a href="{{ route('upps.pelaksanaan-banding') }}" class="nav-link {{ request()->routeIs('upps.pelaksanaan-banding*') ? 'active' : '' }}">
                     17.b Pelaksanaan Banding
                 </a>
             </li>
             <li>
-                <a href="{{ route('upps.pelaporan-banding') }}" class="nav-link">
+                <a href="{{ route('upps.pelaporan-banding') }}" class="nav-link {{ request()->routeIs('upps.pelaporan-banding*') ? 'active' : '' }}">
                     17.c Pelaporan Banding
                 </a>
             </li>
@@ -186,12 +186,16 @@ request()->routeIs('upps.permohonan-banding*')
         @foreach ($menus as $menu)
         @if ($menu['no'] >= 18)
         <li class="nav-item">
-            <a href="{{ route($menu['route']) }}" class="nav-link {{ request()->routeIs($menu['match']) ? 'active' : '' }}">
-                <span class="menu-icon">
-                    <i class="bi {{ $menu['icon'] }}"></i>
-                </span>
-                <span>{{ $menu['no'] }}. {{ $menu['label'] }}</span>
-            </a>
+            @if ($menu['no'] == 6)
+            <a href="{{ route($menu['route']) }}" class="nav-link {{ request()->routeIs($menu['match']) || request()->routeIs('pengajuan.borang-online*') ? 'active' : '' }}">
+                @else
+                <a href="{{ route($menu['route']) }}" class="nav-link {{ request()->routeIs($menu['match']) ? 'active' : '' }}">
+                    @endif
+                    <span class="menu-icon">
+                        <i class="bi {{ $menu['icon'] }}"></i>
+                    </span>
+                    <span>{{ $menu['no'] }}. {{ $menu['label'] }}</span>
+                </a>
         </li>
         @endif
         @endforeach

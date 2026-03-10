@@ -13,7 +13,7 @@
     </nav>
 
     <!-- Page Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h4 class="mb-1">
                 <i class="bi bi-patch-check"></i> Validasi AK
@@ -132,7 +132,7 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Terjadi kesalahan saat memuat data');
+                Swal.fire('Perhatian', 'Terjadi kesalahan saat memuat data', 'error');
             })
             .finally(() => {
                 document.getElementById('loadingOverlay').classList.add('d-none');

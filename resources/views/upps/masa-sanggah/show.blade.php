@@ -16,7 +16,7 @@
     </nav>
 
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h5 class="mb-1">
                 <i class="bi bi-clock-history"></i> Detail Masa Sanggah
@@ -43,7 +43,7 @@
         <div class="col-lg-8 mb-4">
             <!-- Status Alert -->
             @if($isAktif)
-            <div class="alert alert-warning alert-permanent border-start border-4 border-warning">
+            <div class="alert alert-warning alert-permanent border-start border-2 border-warning">
                 <div class="d-flex align-items-start">
                     <i class="bi bi-clock-history fs-1 me-3 text-warning"></i>
                     <div class="flex-grow-1">
@@ -135,7 +135,7 @@
     <small class="text-muted">hari tersisa</small>
 </div>
 <div class="col-md-6">
-    <p class="small mb-2"><strong>Progress Waktu:</strong></p>
+    <p class="small mb-2"><strong>Progres Waktu:</strong></p>
     @php
     $elapsed = $pengajuan->tanggal_masa_sanggah_mulai->diffInDays($now);
     $progress = $totalDurasi > 0 ? ($elapsed / $totalDurasi) * 100 : 0;
@@ -252,7 +252,7 @@
         \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
         \App\Models\PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
         \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
-        \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
+        \App\Models\PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN,
         ];
 
         $logs = $pengajuan->statusLog
@@ -272,7 +272,7 @@
                         $iconColor = match($log->status_to) {
                         \App\Models\PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM,
                         \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
-                        \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN
+                        \App\Models\PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN
                         => 'text-success',
                         \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
                         \App\Models\PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,

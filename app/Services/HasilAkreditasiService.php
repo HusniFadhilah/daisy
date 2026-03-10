@@ -397,12 +397,12 @@ class HasilAkreditasiService
     {
         DB::beginTransaction();
         try {
-            // if (!$hasil->isAlFinalized()) {
-            //     throw new \Exception('AL harus difinalisasi sebelum penetapan.');
-            // }
-            // if ($hasil->isPenetapanFinalized()) {
-            //     throw new \Exception('Penetapan sudah dikunci, tidak bisa dihitung ulang.');
-            // }
+            if (!$hasil->isAlFinalized()) {
+                throw new \Exception('AL harus difinalisasi sebelum penetapan.');
+            }
+            if ($hasil->isPenetapanFinalized()) {
+                throw new \Exception('Penetapan sudah dikunci, tidak bisa dihitung ulang.');
+            }
 
             $skorFinal          = (float)$hasil->skor_al;
             $syarat             = $this->cekSyaratUnggul($hasil, $skorFinal);
@@ -439,15 +439,15 @@ class HasilAkreditasiService
     {
         DB::beginTransaction();
         try {
-            // if (!$hasil->isAlFinalized()) {
-            //     throw new \Exception('AL harus difinalisasi sebelum penetapan.');
-            // }
-            // if ($hasil->isPenetapanFinalized()) {
-            //     throw new \Exception('Penetapan sudah dikunci sebelumnya.');
-            // }
-            // if (is_null($hasil->skor_final)) {
-            //     throw new \Exception('Skor final belum disiapkan. Panggil saveHasilPenetapan() terlebih dahulu.');
-            // }
+            if (!$hasil->isAlFinalized()) {
+                throw new \Exception('AL harus difinalisasi sebelum penetapan.');
+            }
+            if ($hasil->isPenetapanFinalized()) {
+                throw new \Exception('Penetapan sudah dikunci sebelumnya.');
+            }
+            if (is_null($hasil->skor_final)) {
+                throw new \Exception('Skor final belum disiapkan. Panggil saveHasilPenetapan() terlebih dahulu.');
+            }
 
             $authId  = $userId ?? auth()->id();
             $syarat  = $this->cekSyaratUnggul($hasil, (float)$hasil->skor_final);

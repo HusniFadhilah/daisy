@@ -1,3 +1,4 @@
+{{-- resources\views\asesmen\ak\components\modal-detail-validasi.blade.php --}}
 <div class="modal fade" id="modalDetailValidasi" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
         <div class="modal-content">

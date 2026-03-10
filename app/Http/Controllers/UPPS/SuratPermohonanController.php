@@ -504,19 +504,12 @@ class SuratPermohonanController extends Controller
             abort(403, 'Anda tidak memiliki akses untuk mengunduh dokumen ini.');
         }
 
-        $dokumen = PengajuanDokumen::where('id_pengajuan', $id)
+        $pengajuanDokumen = PengajuanDokumen::where('id_pengajuan', $id)
             ->where('jenis_dokumen', 'surat_permohonan')
             ->where('is_latest', true)
             ->firstOrFail();
 
-        if (!Storage::disk('public')->exists($dokumen->path_file)) {
-            abort(404, 'File tidak ditemukan.');
-        }
-
-        return Storage::disk('public')->response(
-            $dokumen->path_file,
-            $dokumen->original_filename
-        );
+        return $pengajuanDokumen->downloadDokumen();
     }
 
     /**

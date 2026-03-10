@@ -31,61 +31,111 @@ class ALController extends Controller
     {
         $user = Auth::user();
 
-        // Get asesmens where user is assigned
         $asesmens = Asesmen::whereHas('userRoles', function ($query) use ($user) {
-            $query->where('id_user', $user->id)->where('jenis_asesmen', 'al')->where('id_role', 3);
+            $query->where('id_user', $user->id)
+                ->where('jenis_asesmen', 'al')
+                ->where('id_role', Role::ID_ROLE_ASESOR);
         })
             ->with([
+                // Role user ini sendiri
                 'userRoles' => function ($query) use ($user) {
                     $query->where('id_user', $user->id)
                         ->where('jenis_asesmen', 'al')
-                        ->where('id_role', 3)
+                        ->where('id_role', Role::ID_ROLE_ASESOR)
                         ->with('role');
+                },
+                // Semua asesor AL (untuk cek first opener & status tim)
+                'allAsesorRolesAl' => function ($query) {
+                    $query->where('jenis_asesmen', 'al')
+                        ->whereHas('role', fn($q) => $q->where('name', 'asesor'))
+                        ->with('user')
+                        ->orderBy('updated_at');
                 },
                 'studyProgram.university',
                 'studyProgram.degreeLevel',
                 'pengajuan.dokumen' => function ($q) {
-                    // ✅ Load dokumen akreditasi
                     $q->whereIn('jenis_dokumen', [
                         'surat_tugas_asesor_al',
                         'data_kualitatif',
                         'draft_borang',
-                        'borang_final',  // LED
-                        'data_suplemen',                                      // ✅ Suplemen (fixed)
+                        'borang_final',
+                        'data_suplemen',
                         'data_kuantitatif',
-                        'kuantitatif'                    // LKPS
-                    ])
-                        ->where('is_latest', true)
-                        ->orderBy('created_at', 'desc');
-                }
+                        'kuantitatif',
+                    ])->where('is_latest', true)->orderBy('created_at', 'desc');
+                },
+                // Dokumen asesmen untuk status berita acara, LHA, ringkasan
+                // LHA dimuat tanpa filter is_active agar bisa baca status revisi / persetujuan
+                'documents' => function ($q) {
+                    $q->whereIn('type', [
+                        'berita_acara_al',
+                        'hasil_akreditasi_confidential',
+                    ])->where('is_active', true);
+                },
+                // LHA diload terpisah agar bisa baca semua field status-nya
+                'lhaDocuments' => function ($q) {
+                    $q->where('type', 'lha_asesor')
+                        ->where('is_active', true)
+                        ->latest('updated_at');
+                },
             ])
             ->latest()
             ->paginate(10);
 
-        // Calculate progress
         $progressAll = $this->calculateProgressBulk(
             $asesmens->pluck('id')->toArray(),
             $user->id
         );
 
-        // Map ke masing-masing asesmen
         foreach ($asesmens as $asesmen) {
             $asesmen->progress = $progressAll[$asesmen->id] ?? [
                 'total' => 0,
                 'completed' => 0,
                 'remaining' => 0,
-                'percentage' => 0
+                'percentage' => 0,
             ];
 
             $assignment = $asesmen->userRoles->first();
             $asesmen->statusInfo = AsesmenUserRole::getStatusInfo($assignment);
+
+            // ── First opener (dari relasi allAsesorRolesAl) ─────────────────
+            $asesmen->firstOpenerRole = $asesmen->allAsesorRolesAl
+                ->where('status_pekerjaan', '!=', 'not_started')
+                ->first(); // sudah di-orderBy updated_at → yang terlama = first opener
+
+            // ── Status penilaian — hanya dari first opener ───────────────────
+            // Karena hanya satu asesor (first opener) yang mengisi penilaian,
+            // status cukup dilihat dari status_pekerjaan milik first opener saja.
+            $asesmen->penilaian_status = match ($asesmen->firstOpenerRole?->status_pekerjaan) {
+                'submitted', 'approved', 'validated' => 'selesai',
+                'in_progress', 'revision_required'   => 'on_progress',
+                default                              => 'belum', // not_started atau belum ada opener
+            };
+
+            // ── Status dokumen ───────────────────────────────────────────────
+            $docs = $asesmen->documents;
+
+            $asesmen->has_berita_acara = $docs->where('type', 'berita_acara_al')->isNotEmpty();
+            $asesmen->has_ringkasan    = $docs->where('type', 'hasil_akreditasi_confidential')->isNotEmpty();
+
+            // ── Status LHA ───────────────────────────────────────────────────
+            // status_persetujuan_prodi: enum('pending','approved','revision_required','rejected')
+            // default = 'pending', tidak ada field is_finalized
+            // → null hanya jika belum ada dokumen sama sekali
+            // → 'pending'           = sudah diupload/difinalisasi, menunggu persetujuan prodi → info
+            // → 'revision_required' = prodi minta revisi → kuning
+            // → 'approved'          = disetujui prodi → hijau
+            // → 'rejected'          = ditolak prodi → merah
+            $lha = $asesmen->lhaDocuments->first();
+            $asesmen->lha_status = is_null($lha)
+                ? null
+                : $lha->status_persetujuan_prodi; // langsung pakai nilai enum-nya
         }
 
         $statusPekerjaan = AsesmenUserRole::STATUS_PEKERJAAN;
 
         return view('asesmen.al.berkas.index', compact('asesmens', 'statusPekerjaan'));
     }
-
 
     /**
      * Show detail asesmen with accordion per elemen
@@ -95,51 +145,75 @@ class ALController extends Controller
         $user = Auth::user();
         $step = (int) request('step', 1);
         $step = in_array($step, [1, 2]) ? $step : 1;
-        // Check if user has access to this asesmen
+
         $assignment = AsesmenUserRole::where('id_asesmen', $idAsesmen)
             ->where('id_user', $user->id)
             ->where('jenis_asesmen', 'al')
             ->firstOrFail();
+
         if ($assignment->role->name != $user->role_selected) {
-            abort(403, 'Mohon maaf role Anda sebagai ' . ($user->role_selected) . ' tidak diizinkan membuka halaman ini. Silahkan pindah ke role lain');
+            abort(403, 'Mohon maaf role Anda sebagai ' . $user->role_selected . ' tidak diizinkan membuka halaman ini.');
         }
 
-        $this->updateStatusAL($assignment);
-        $asesmen = $assignment->asesmen;
+        // ── [BARU] Cek apakah ada asesor LAIN yang sudah lebih dulu membuka ──
+        $firstStartedByOther = AsesmenUserRole::where('id_asesmen', $idAsesmen)
+            ->where('jenis_asesmen', 'al')
+            ->whereHas('role', fn($q) => $q->where('name', 'asesor'))
+            ->where('id_user', '!=', $user->id)
+            ->where('status_pekerjaan', '!=', 'not_started')
+            ->with('user')
+            ->orderBy('updated_at')
+            ->first();
 
-        // Get all kriteria with elemen and indikator
+        $iAmAlreadyStarted = $assignment->status_pekerjaan !== 'not_started';
+
+        // ── [BARU] HARD GATE: blok masuk jika orang lain sudah duluan ──────
+        // Pengecualian: jika saya sendiri sudah pernah masuk sebelumnya ($iAmAlreadyStarted),
+        // berarti saya memang bukan first opener tapi sudah terlanjur masuk — tetap blok.
+        if ($firstStartedByOther && !$iAmAlreadyStarted) {
+            // Saya belum pernah masuk, tapi orang lain sudah → blok sepenuhnya
+            return redirect()->route('al.berkas')
+                ->with('error_first_opener', [
+                    'nama'      => $firstStartedByOther->user?->name ?? 'Asesor lain',
+                    'asesmen'   => $assignment->asesmen->getName(false) ?? 'asesmen ini',
+                ]);
+        }
+
+        // ── Tangkap "apakah ini kunjungan pertama saya" SEBELUM update status ─
+        $isFirstVisitForMe = !$iAmAlreadyStarted; // true hanya sekali
+
+        // ── Update status (not_started → in_progress) ───────────────────────
+        $this->updateStatusAL($assignment);
+
+        $asesmen   = $assignment->asesmen;
+        $isFirstOpener   = is_null($firstStartedByOther); // pastikan true karena lolos gate
+        $firstOpenerUser = null; // kita sendiri yang pertama
+
+        // ── Sisa logika sama seperti sebelumnya ─────────────────────────────
         $kriterias = Kriteria::with([
             'elemenStandar',
             'elemenStandar.indikator.jenisIndikator',
             'elemenStandar.indikatorPenilaian.jenjangPenilaian',
             'elemenStandar.penilaianElemenAl' => function ($query) use ($asesmen, $user) {
-                $query->where('id_asesmen', $asesmen->id)
-                    ->where('id_asesor', $user->id);
+                $query->where('id_asesmen', $asesmen->id)->where('id_asesor', $user->id);
             }
         ])->get();
 
         $needsRevisions = PenilaianElemenAl::where('id_asesmen', $asesmen->id)
-            ->where('id_asesor', $user->id)
-            ->with('elemen.kriteria')
-            ->get();
-        $jenjangs = JenjangPenilaian::all();
-        // Calculate progress
-        $progress = $this->calculateProgressBulk([$asesmen->id], $user->id)[$asesmen->id];
-        // ✅ Ambil semua asesor TIM dulu, SEBELUM updateStatusAL
+            ->where('id_asesor', $user->id)->with('elemen.kriteria')->get();
+
+        $jenjangs  = JenjangPenilaian::all();
+        $progress  = $this->calculateProgressBulk([$asesmen->id], $user->id)[$asesmen->id];
+
         $asesorTeam = AsesmenUserRole::where('id_asesmen', $idAsesmen)
             ->where('jenis_asesmen', 'al')
             ->whereHas('role', fn($q) => $q->where('name', 'asesor'))
-            ->with('user')
-            ->get();
+            ->with('user')->get();
 
-        // ✅ Tentukan siapa editor SEBELUM status diubah
+        $isEditorAsesor  = true; // yang masuk ke sini PASTI first opener
         $firstActiveAsesor = $asesorTeam
             ->where('status_pekerjaan', '!=', 'not_started')
-            ->sortBy('started_at')
-            ->first();
-
-        // $isEditorAsesor = !$firstActiveAsesor || $firstActiveAsesor->id_user == $user->id;
-        $isEditorAsesor = true;
+            ->sortBy('updated_at')->first();
 
         $otherAsesorsProgress = [];
         foreach ($asesorTeam as $member) {
@@ -148,12 +222,13 @@ class ALController extends Controller
                 'user'             => $member->user,
                 'status_pekerjaan' => $member->status_pekerjaan,
                 'progress'         => $this->calculateProgressBulk([$idAsesmen], $member->id_user)[$idAsesmen],
-                'started_at'       => $member->started_at,
+                'started_at'       => $member->updated_at,
             ];
         }
-        $isFinalized = in_array($asesmen->asesmenLapangan->status, ['completed', 'finalized']);
-        $isInProgress = $asesmen->asesmenLapangan->isInProgress();
-        $uploadedFiles = $asesmen->pengajuan ? $asesmen->pengajuan->getUploadedDocuments() : null;
+
+        $isFinalized   = in_array($asesmen->asesmenLapangan->status, ['completed', 'finalized']);
+        $isInProgress  = $asesmen->asesmenLapangan->isInProgress();
+        $uploadedFiles = $asesmen->pengajuan?->getUploadedDocuments();
 
         return view('asesmen.al.berkas.show', compact(
             'asesmen',
@@ -169,7 +244,10 @@ class ALController extends Controller
             'asesorTeam',
             'isEditorAsesor',
             'firstActiveAsesor',
-            'otherAsesorsProgress'
+            'otherAsesorsProgress',
+            'isFirstVisitForMe',   // [BARU]
+            'isFirstOpener',       // [BARU] selalu true di sini
+            'firstOpenerUser'      // [BARU] selalu null di sini
         ));
     }
 
@@ -654,7 +732,7 @@ class ALController extends Controller
             $useColor = $request->query('color', 'false') === 'true';
 
             // Validate mode
-            if (!in_array($mode, ['template', 'full', 'personal'])) {
+            if (!in_array($mode, ['template', 'full', 'personal', 'personal_al'])) {
                 return redirect()->back()->with('error', 'Mode download tidak valid');
             }
 
@@ -675,53 +753,6 @@ class ALController extends Controller
         }
     }
 
-    // /**
-    //  * Import penilaian dari Excel (using Queue)
-    //  */
-    // public function importExcel(Request $request, $idAsesmen)
-    // {
-    //     $request->validate([
-    //         'file' => 'required|file|mimes:xlsx,xls|max:10240', // 10MB max
-    //     ]);
-
-    //     try {
-    //         $user = Auth::user();
-
-    //         // Verify access
-    //         $asesmen = Asesmen::whereHas('userRoles', function ($query) use ($user) {
-    //             $query->where('id_user', $user->id);
-    //         })->findOrFail($idAsesmen);
-
-    //         // Store file temporarily
-    //         $file = $request->file('file');
-    //         $filename = 'import_' . $asesmen->code . '_' . time() . '.' . $file->getClientOriginalExtension();
-    //         $filePath = $file->storeAs('temp/imports', $filename);
-
-    //         // Create import log
-    //         $importLog = PenilaianImportLog::create([
-    //             'id_asesmen' => $asesmen->id,
-    //             'id_asesor' => $user->id,
-    //             'filename' => $file->getClientOriginalName(),
-    //             'status' => 'queued',
-    //         ]);
-
-    //         // Dispatch job
-    //         ImportPenilaianExcelJob::dispatch(PenilaianElemenAl::class, $filePath, $asesmen->id, $user->id, $importLog->id);
-
-    //         return response()->json([
-    //             'success' => true,
-    //             'message' => 'File berhasil diupload. Proses input data penilaian sedang diproses di background.',
-    //             'import_log_id' => $importLog->id,
-    //         ]);
-    //     } catch (\Exception $e) {
-    //         Log::error($e);
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Gagal upload excel penilaian: ' . $e->getMessage(),
-    //         ], 500);
-    //     }
-    // }
-
     /**
      * Check import status (AJAX)
      */
@@ -741,6 +772,7 @@ class ALController extends Controller
                     'imported_rows' => $importLog->imported_rows,
                     'failed_rows' => $importLog->failed_rows,
                     'errors' => $importLog->errors,
+                    'errors_message'        => $importLog->errors_message,
                     'success_rate' => $importLog->success_rate,
                     'started_at' => $importLog->started_at?->locale('id')->translatedFormat('d M Y H:i:s'),
                     'completed_at' => $importLog->completed_at?->locale('id')->translatedFormat('d M Y H:i:s'),
@@ -1105,51 +1137,60 @@ class ALController extends Controller
     {
         $user = Auth::user();
 
-        // Check if user has access to this asesmen
         $assignment = AsesmenUserRole::where('id_asesmen', $idAsesmen)
             ->where('id_user', $user->id)
             ->where('jenis_asesmen', 'al')
             ->firstOrFail();
 
         if ($assignment->role->name != $user->role_selected) {
-            abort(403, 'Mohon maaf role Anda sebagai ' . ($user->role_selected) . ' tidak diizinkan membuka halaman ini.');
+            abort(403, 'Mohon maaf role Anda sebagai ' . $user->role_selected . ' tidak diizinkan membuka halaman ini.');
         }
 
-        $this->updateStatusAL($assignment);
-        $asesmen = $assignment->asesmen;
-
-        // ✅ Calculate progress untuk AL
-        $progress = $this->calculateProgressBulk([$asesmen->id], $user->id)[$asesmen->id];
-
-        $statusPekerjaan = $assignment->status_pekerjaan ?? 'not_started';
-        $isSubmittedOnly = $statusPekerjaan === 'submitted';
-        $isApproved = $statusPekerjaan === 'approved';
-        $isComplete = $progress['percentage'] == 100;
-
-        // ✅ CEK UPLOADER PERTAMA (from import log)
-        $firstUpload = PenilaianImportLog::where('id_asesmen', $idAsesmen)
-            ->where('status', 'completed') // Hanya yang berhasil
-            ->with('asesor')
-            ->orderBy('created_at', 'asc')
+        // ── [BARU] Hard gate: cek asesor lain yang sudah duluan ─────────────
+        $firstStartedByOther = AsesmenUserRole::where('id_asesmen', $idAsesmen)
+            ->where('jenis_asesmen', 'al')
+            ->whereHas('role', fn($q) => $q->where('name', 'asesor'))
+            ->where('id_user', '!=', $user->id)
+            ->where('status_pekerjaan', '!=', 'not_started')
+            ->with('user')
+            ->orderBy('updated_at')
             ->first();
 
-        // ✅ Cek apakah user saat ini adalah uploader pertama
-        $currentUserId = Auth::id();
-        $isUploader = $firstUpload && $firstUpload->id_asesor == $currentUserId;
+        $iAmAlreadyStarted = $assignment->status_pekerjaan !== 'not_started';
 
-        // ✅ User bisa upload jika: belum ada upload ATAU dia adalah uploader pertama
-        // $canUpload = !$firstUpload || $isUploader;
-        $canUpload = true;
+        if ($firstStartedByOther && !$iAmAlreadyStarted) {
+            return redirect()->route('al.berkas')
+                ->with('error_first_opener', [
+                    'nama'    => $firstStartedByOther->user?->name ?? 'Asesor lain',
+                    'asesmen' => $assignment->asesmen->getName(false) ?? 'asesmen ini',
+                ]);
+        }
 
-        // ✅ Get team asesor AL
+        $isFirstVisitForMe = !$iAmAlreadyStarted;
+        $isFirstOpener     = true;
+        $firstOpenerUser   = null;
+
+        $this->updateStatusAL($assignment);
+
+        $asesmen = $assignment->asesmen;
+        $progress = $this->calculateProgressBulk([$asesmen->id], $user->id)[$asesmen->id];
+
+        $statusPekerjaan = $assignment->fresh()->status_pekerjaan ?? 'not_started';
+        $isSubmittedOnly = $statusPekerjaan === 'submitted';
+        $isApproved      = $statusPekerjaan === 'approved';
+        $isComplete      = $progress['percentage'] == 100;
+        $canUpload       = true; // lolos gate = pasti first opener
+
+        $firstUpload = PenilaianImportLog::where('id_asesmen', $idAsesmen)
+            ->where('status', 'completed')->with('asesor')
+            ->orderBy('created_at', 'asc')->first();
+
+        $isUploader = $firstUpload && $firstUpload->id_asesor == Auth::id();
+
         $asesorTeam = AsesmenUserRole::where('id_asesmen', $idAsesmen)
             ->where('jenis_asesmen', 'al')
-            ->whereHas('role', function ($q) {
-                $q->where('name', 'asesor');
-            })
-            ->with('user')
-            ->orderBy('urutan_asesor')
-            ->get();
+            ->whereHas('role', fn($q) => $q->where('name', 'asesor'))
+            ->with('user')->orderBy('urutan_asesor')->get();
 
         return view('asesmen.al.berkas.upload-excel', compact(
             'asesmen',
@@ -1159,10 +1200,13 @@ class ALController extends Controller
             'isSubmittedOnly',
             'isApproved',
             'isComplete',
-            'firstUpload',      // ✅ Tambahkan
-            'canUpload',        // ✅ Tambahkan
-            'isUploader',       // ✅ Tambahkan
-            'asesorTeam'        // ✅ Tambahkan
+            'firstUpload',
+            'canUpload',
+            'isUploader',
+            'asesorTeam',
+            'isFirstVisitForMe',  // [BARU]
+            'isFirstOpener',      // [BARU]
+            'firstOpenerUser'     // [BARU]
         ));
     }
 
@@ -1226,5 +1270,15 @@ class ALController extends Controller
                 'message' => 'Gagal upload excel penilaian: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function confirmOpener(Request $request, $idAsesmen)
+    {
+        $continueUrl = $request->input('continue_url');
+        $sessionKey  = "al_opener_confirmed_{$idAsesmen}";
+
+        $request->session()->put($sessionKey, true);
+
+        return redirect($continueUrl);
     }
 }

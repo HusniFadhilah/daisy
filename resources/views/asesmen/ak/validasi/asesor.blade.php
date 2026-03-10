@@ -93,7 +93,7 @@
                                     {{-- Progress --}}
                                     <div>
                                         <div class="d-flex justify-content-between">
-                                            <span>Progress Penilaian:</span>
+                                            <span>Progres Penilaian:</span>
                                             <strong>{{ $progress['completed'] }}/{{ $progress['total'] }}</strong>
                                         </div>
                                         <div class="progress mt-2" style="height: 20px;">
@@ -160,7 +160,7 @@
 
                 <div class="d-flex align-items-center">
                     <span class="text-muted me-3">
-                        Progress Validasi:
+                        Progres Validasi:
                         <strong>{{ $validatedCount }}/{{ $totalElemen }}</strong>
                     </span>
                     <div class="progress" style="height: 20px; width: 200px;">
@@ -185,7 +185,7 @@
         </div>
         <div class="card-body">
             <div class="row g-3">
-                {{-- @if (app()->environment('local')) --}}
+                @if (app()->environment('local'))
                 <div class="col-md-6">
                     <button type="button" class="btn btn-outline-success w-100" id="btnValidateAllAgreed" {{ $isApproved ? 'disabled' : '' }}>
                         <i class="bi bi-check-circle"></i>
@@ -193,7 +193,7 @@
                         <small>Otomatis approve nilai yang sama dari semua asesor</small>
                     </button>
                 </div>
-                {{-- @endif --}}
+                @endif
                 <div class="col-md-6">
                     <button type="button" class="btn btn-outline-warning w-100" id="btnReviewDifferences">
                         <i class="bi bi-exclamation-triangle"></i>
@@ -462,11 +462,11 @@
 
             htmlAsesors += `
             <div class="col-md-12 col-lg-6 mb-3">
-                <div class="card asesor-card border-2" style="border-left: 4px solid ${color};" data-asesor-id="${asesor.id}">
-                    <div class="card-header asesor-card-header" style="background: ${color};">
+                <div class="card asesor-card border-2" data-asesor-id="${asesor.id}">
+                    <div class="card-header asesor-card-header bg-secondary">
                         <div class="d-flex align-items-center justify-content-between">
                             <div class="d-flex align-items-center">
-                                <div class="avatar-circle-modal me-2" style="background: white; color: ${color};">
+                                <div class="avatar-circle-modal me-2 text-dark bg-white">
                                     ${asesor.name.substring(0, 2).toUpperCase()}
                                 </div>
                                 <div class="text-white">
@@ -916,7 +916,15 @@
                 Swal.fire({
                     icon: 'warning'
                     , title: 'Status Validasi Diperlukan'
-                    , text: 'Silakan pilih setujui menjadi kategori final, atau minta revisi terlebih dahulu'
+                    , text: 'Silakan pilih status validasi (setujui penilaian, atau minta revisi) terlebih dahulu'
+                });
+                return;
+            }
+            if (!catatanValidator) {
+                Swal.fire({
+                    icon: 'warning'
+                    , title: 'Catatan Diperlukan'
+                    , text: 'Silakan berikan catatan validasi'
                 });
                 return;
             }

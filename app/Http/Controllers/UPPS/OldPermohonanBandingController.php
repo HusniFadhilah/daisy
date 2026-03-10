@@ -26,7 +26,7 @@ class OldPermohonanBandingController extends Controller
                 PengajuanAkreditasi::STATUS_MASA_SANGGAH,
                 PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
                 PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
-                PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
+                PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN,
             ])->orderBy('changed_at', 'desc'),
         ])->whereIn('id_program_studi', $studyProgramIds)
             ->whereNotNull('tanggal_banding')->whereExists(function ($q) {
@@ -36,7 +36,7 @@ class OldPermohonanBandingController extends Controller
                     ->whereIn('l.status_to', [
                         PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
                         PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
-                        PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
+                        PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN,
                     ]);
             });
 
@@ -141,7 +141,7 @@ class OldPermohonanBandingController extends Controller
 
         // Banding selesai
         $selesai = PengajuanAkreditasi::whereIn('id_program_studi', $studyProgramIds)
-            ->where('status', PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN)
+            ->where('status', PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN)
             ->count();
 
         return [

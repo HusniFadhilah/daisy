@@ -3,12 +3,14 @@
 
 namespace App\Models;
 
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Database\Eloquent\Model;
 use App\Domain\Akreditasi\AllowedStatus;
 use App\Domain\Akreditasi\PengajuanStatus;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class PengajuanAkreditasi extends Model
 {
@@ -81,9 +83,26 @@ class PengajuanAkreditasi extends Model
     public const STATUS_MASA_SANGGAH_SELESAI = 'masa_sanggah_selesai';
     public const STATUS_BANDING_DIAJUKAN = 'banding_diajukan';
     public const STATUS_BANDING_DITERIMA = 'banding_diterima';
-    public const STATUS_BANDING_DITUGASKAN = 'banding_ditugaskan';
+
+    // Step 17
+    public const STATUS_MENUNGGU_PEMBAYARAN_BANDING = 'menunggu_pembayaran_banding';
+    public const STATUS_PEMBAYARAN_BANDING_DITERIMA = 'pembayaran_banding_diterima'; // tdk terpakai
+    public const STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN_BANDING = 'menunggu_verifikasi_pembayaran_banding';
+    public const STATUS_PEMBAYARAN_BANDING_DIVERIFIKASI = 'pembayaran_banding_diverifikasi';
     public const STATUS_BANDING_DILAKSANAKAN = 'banding_dilaksanakan';
-    public const STATUS_BANDING_DILAPORKAN = 'banding_dilaporkan';
+    public const STATUS_ASESOR_AK_BANDING_ASSIGNED = 'asesor_ak_banding_assigned';
+    public const STATUS_AK_BANDING_IN_PROGRESS = 'ak_banding_in_progress';
+    public const STATUS_AK_BANDING_ON_VALIDATION = 'ak_banding_on_validation';
+    public const STATUS_AK_BANDING_SELESAI = 'ak_banding_selesai';
+    public const STATUS_AK_BANDING_DILAPORKAN = 'ak_banding_dilaporkan';
+
+    public const STATUS_ASESOR_AL_BANDING_ASSIGNED = 'asesor_al_banding_assigned';
+    public const STATUS_AL_BANDING_IN_PROGRESS = 'al_banding_in_progress';
+    public const STATUS_AL_BANDING_SELESAI = 'al_banding_selesai';
+    public const STATUS_AL_BANDING_DILAPORKAN = 'al_banding_dilaporkan';
+    public const STATUS_HASIL_BANDING_DIHITUNG = 'hasil_banding_dihitung';
+
+    // Step 18
     public const STATUS_HASIL_DITETAPKAN = 'hasil_ditetapkan';
     public const STATUS_HASIL_DILAPORKAN = 'hasil_dilaporkan';
     public const STATUS_HASIL_DIUMUMKAN = 'hasil_diumumkan';
@@ -92,9 +111,6 @@ class PengajuanAkreditasi extends Model
 
     // Special
     public const STATUS_DITOLAK = 'ditolak';
-
-    // Other
-    public const STATUS_REMINDER_PENGIRIMAN_BORANG = 'reminder_pengiriman_borang';
 
     // ============================================
     // FILLABLE
@@ -126,10 +142,10 @@ class PengajuanAkreditasi extends Model
         'tanggal_pembayaran',
         'tanggal_draft_borang',
         'tanggal_borang_final',
-        'tanggal_lanjut_ak',
         'tanggal_validasi_borang_assigned',
         'tanggal_validasi_borang_selesai',
         'tanggal_pelaporan_validasi_borang',
+        'tanggal_lanjut_ak',
         'tanggal_penugasan_asesor_ak',
         'tanggal_validasi_ak',
         'tanggal_ak_mulai',
@@ -146,9 +162,19 @@ class PengajuanAkreditasi extends Model
         'tanggal_masa_sanggah_selesai',
         'tanggal_permohonan_banding',
         'tanggal_penerimaan_banding',
-        'tanggal_penugasan_banding',
+
         'tanggal_pelaksanaan_banding',
-        'tanggal_pelaporan_banding',
+        'tanggal_penugasan_asesor_ak_banding',
+        'tanggal_validasi_ak_banding',
+        'tanggal_ak_banding_mulai',
+        'tanggal_ak_banding_selesai',
+        'tanggal_pelaporan_ak_banding',
+        'tanggal_penugasan_asesor_al_banding',
+        'tanggal_pelaksanaan_al_banding',
+        'tanggal_al_banding_mulai',
+        'tanggal_al_banding_selesai',
+        'tanggal_pelaporan_al_banding',
+        'tanggal_hasil_banding_dihitung',
         'tanggal_penetapan',
         'tanggal_pengumuman',
         'tanggal_pelaporan_hasil',
@@ -187,10 +213,10 @@ class PengajuanAkreditasi extends Model
         'tanggal_pembayaran' => 'datetime',
         'tanggal_draft_borang' => 'datetime',
         'tanggal_borang_final' => 'datetime',
-        'tanggal_lanjut_ak' => 'datetime',
         'tanggal_validasi_borang_assigned' => 'datetime',
         'tanggal_validasi_borang_selesai' => 'datetime',
         'tanggal_pelaporan_validasi_borang' => 'datetime',
+        'tanggal_lanjut_ak' => 'datetime',
         'tanggal_penugasan_asesor_ak' => 'datetime',
         'tanggal_ak_mulai' => 'datetime',
         'tanggal_validasi_ak' => 'datetime',
@@ -207,9 +233,22 @@ class PengajuanAkreditasi extends Model
         'tanggal_masa_sanggah_selesai' => 'datetime',
         'tanggal_permohonan_banding' => 'datetime',
         'tanggal_penerimaan_banding' => 'datetime',
-        'tanggal_penugasan_banding' => 'datetime',
-        'tanggal_pelaksanaan_banding' => 'datetime',
-        'tanggal_pelaporan_banding' => 'datetime',
+
+        'tanggal_penugasan_asesor_ak_banding' => 'datetime',
+        'tanggal_ak_banding_mulai' => 'datetime',
+        'tanggal_validasi_ak_banding' => 'datetime',
+        'tanggal_ak_banding_selesai' => 'datetime',
+        'tanggal_pelaporan_ak_banding' => 'datetime',
+        'tanggal_penugasan_asesor_al_banding' => 'datetime',
+        'tanggal_pelaksanaan_al_banding' => 'datetime',
+        'tanggal_al_banding_mulai' => 'datetime',
+        'tanggal_al_banding_selesai' => 'datetime',
+        'tanggal_pelaporan_al_banding' => 'datetime',
+        'tanggal_hasil_banding_dihitung' => 'datetime',
+        // 'tanggal_penugasan_banding' => 'datetime',
+        // 'tanggal_pelaksanaan_banding' => 'datetime',
+        // 'tanggal_banding_selesai' => 'datetime',
+        // 'tanggal_pelaporan_banding' => 'datetime',
         'tanggal_penetapan' => 'datetime',
         'tanggal_pengumuman' => 'datetime',
         'tanggal_pelaporan_hasil' => 'datetime',
@@ -367,11 +406,6 @@ class PengajuanAkreditasi extends Model
         return $this->hasMany(PengajuanDokumen::class, 'id_pengajuan');
     }
 
-    // public function pembayaran()
-    // {
-    //     return $this->hasOne(PembayaranAkreditasi::class, 'id_pengajuan');
-    // }
-
     public function borangData()
     {
         return $this->hasMany(BorangData::class, 'id_pengajuan');
@@ -474,16 +508,76 @@ class PengajuanAkreditasi extends Model
         return $this->hasMany(BorangImport::class, 'id_pengajuan');
     }
 
-    public function pembayaran()
+    /** Semua invoice (akreditasi + banding) — dipakai untuk filter di blade */
+    public function semuaPembayaran(): HasMany
     {
-        return $this->hasOne(PengajuanPembayaran::class, 'id_pengajuan', 'id');
+        return $this->hasMany(PengajuanPembayaran::class, 'id_pengajuan');
     }
 
-    public function formulirPembayaran()
+    /** Invoice akreditasi biasa */
+    public function pembayaran(): HasOne
+    {
+        return $this->hasOne(PengajuanPembayaran::class, 'id_pengajuan')
+            ->where('jenis_pembayaran', 'akreditasi')
+            ->latestOfMany();
+    }
+
+    /** Invoice banding */
+    public function pembayaranBanding(): HasOne
+    {
+        return $this->hasOne(PengajuanPembayaran::class, 'id_pengajuan')
+            ->where('jenis_pembayaran', 'banding')
+            ->latestOfMany();
+    }
+
+    /**
+     * Formulir pembayaran akreditasi biasa (diupload UPPS/PS).
+     * Jenis dokumen: 'formulir_pembayaran'
+     */
+    public function formulirPembayaran(): HasOne
     {
         return $this->hasOne(PengajuanDokumen::class, 'id_pengajuan')
             ->where('jenis_dokumen', 'formulir_pembayaran')
-            ->where('is_latest', true);
+            ->where('is_latest', true)
+            ->latestOfMany('created_at');
+    }
+
+    /**
+     * Formulir pembayaran banding (diupload UPPS/PS setelah invoice banding dikirim).
+     * Jenis dokumen: 'formulir_pembayaran_banding'
+     */
+    public function formulirPembayaranBanding(): HasOne
+    {
+        return $this->hasOne(PengajuanDokumen::class, 'id_pengajuan')
+            ->where('jenis_dokumen', 'formulir_pembayaran_banding')
+            ->where('is_latest', true)
+            ->latestOfMany('created_at');
+    }
+
+    /**
+     * Template formulir pembayaran yang dikirim DE ke UPPS/PS.
+     * Jenis dokumen: 'template_formulir_pembayaran'
+     */
+    public function templateFormulirPembayaran(): HasOne
+    {
+        return $this->hasOne(PengajuanDokumen::class, 'id_pengajuan')
+            ->where('jenis_dokumen', 'template_formulir_pembayaran')
+            ->where('is_latest', true)
+            ->latestOfMany('created_at');
+    }
+
+    // ── Helper untuk cek apakah sudah bayar ─────────────────────
+
+    /** Apakah pembayaran akreditasi sudah lunas */
+    public function getPembayaranLunasAttribute(): bool
+    {
+        return $this->pembayaran?->status_pembayaran === 'terverifikasi';
+    }
+
+    /** Apakah pembayaran banding sudah lunas */
+    public function getPembayaranBandingLunasAttribute(): bool
+    {
+        return $this->pembayaranBanding?->status_pembayaran === 'terverifikasi';
     }
 
     public function latestBorangImport()
@@ -658,6 +752,20 @@ class PengajuanAkreditasi extends Model
                         'tanggal_penugasan_asesor_al' => now()
                     ]);
             }
+            if ($jenisAsesmen == 'ak_banding') {
+                if ($this->status == PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN)
+                    $this->update([
+                        'status' => PengajuanAkreditasi::STATUS_ASESOR_AK_BANDING_ASSIGNED,
+                        'tanggal_penugasan_asesor_ak_banding' => now(),
+                    ]);
+            }
+            if ($jenisAsesmen == 'al_banding') {
+                if ($this->status == PengajuanAkreditasi::STATUS_AK_BANDING_DILAPORKAN)
+                    $this->update([
+                        'status' => PengajuanAkreditasi::STATUS_ASESOR_AL_BANDING_ASSIGNED,
+                        'tanggal_penugasan_asesor_al_banding' => now()
+                    ]);
+            }
         }
         if ($statusToUpdate == 'status_asesor_in_progress') {
             if ($jenisAsesmen == 'ak') {
@@ -668,11 +776,23 @@ class PengajuanAkreditasi extends Model
                 if ($this->status == PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED)
                     $this->update(['status' => PengajuanAkreditasi::STATUS_AL_IN_PROGRESS, 'tanggal_al_mulai' => now()]);
             }
+            if ($jenisAsesmen == 'ak_banding') {
+                if ($this->status == PengajuanAkreditasi::STATUS_ASESOR_AK_BANDING_ASSIGNED)
+                    $this->update(['status' => PengajuanAkreditasi::STATUS_AK_BANDING_IN_PROGRESS, 'tanggal_ak_banding_mulai' => now()]);
+            }
+            if ($jenisAsesmen == 'al_banding') {
+                if ($this->status == PengajuanAkreditasi::STATUS_ASESOR_AL_BANDING_ASSIGNED)
+                    $this->update(['status' => PengajuanAkreditasi::STATUS_AL_BANDING_IN_PROGRESS, 'tanggal_al_banding_mulai' => now()]);
+            }
         }
         if ($statusToUpdate == 'status_asesor_on_validation') {
             if ($jenisAsesmen == 'ak') {
                 if ($this->status == PengajuanAkreditasi::STATUS_AK_IN_PROGRESS)
                     $this->update(['status' => PengajuanAkreditasi::STATUS_AK_ON_VALIDATION, 'tanggal_validasi_ak' => now()]);
+            }
+            if ($jenisAsesmen == 'ak_banding') {
+                if ($this->status == PengajuanAkreditasi::STATUS_AK_BANDING_IN_PROGRESS)
+                    $this->update(['status' => PengajuanAkreditasi::STATUS_AK_BANDING_ON_VALIDATION, 'tanggal_validasi_ak_banding' => now()]);
             }
         }
         if ($statusToUpdate == 'status_asesor_selesai') {
@@ -684,6 +804,14 @@ class PengajuanAkreditasi extends Model
                 if ($this->status == PengajuanAkreditasi::STATUS_AL_IN_PROGRESS)
                     $this->update(['status' => PengajuanAkreditasi::STATUS_AL_SELESAI, 'tanggal_al_selesai' => now()]);
             }
+            if ($jenisAsesmen == 'ak_banding') {
+                if ($this->status == PengajuanAkreditasi::STATUS_AK_BANDING_ON_VALIDATION)
+                    $this->update(['status' => PengajuanAkreditasi::STATUS_AK_BANDING_SELESAI, 'tanggal_ak_banding_selesai' => now()]);
+            }
+            if ($jenisAsesmen == 'al_banding') {
+                if ($this->status == PengajuanAkreditasi::STATUS_AL_BANDING_IN_PROGRESS)
+                    $this->update(['status' => PengajuanAkreditasi::STATUS_AL_BANDING_SELESAI, 'tanggal_al_banding_selesai' => now()]);
+            }
         }
         if ($statusToUpdate == 'status_asesor_dilaporkan') {
             if ($jenisAsesmen == 'ak') {
@@ -694,11 +822,25 @@ class PengajuanAkreditasi extends Model
                 if ($this->status == PengajuanAkreditasi::STATUS_AL_SELESAI)
                     $this->update(['status' => PengajuanAkreditasi::STATUS_AL_DILAPORKAN, 'tanggal_pelaporan_al' => now()]);
             }
+            if ($jenisAsesmen == 'ak_banding') {
+                if ($this->status == PengajuanAkreditasi::STATUS_AK_BANDING_SELESAI)
+                    $this->update(['status' => PengajuanAkreditasi::STATUS_AK_BANDING_DILAPORKAN, 'tanggal_pelaporan_ak_banding' => now()]);
+            }
+            if ($jenisAsesmen == 'al_banding') {
+                if ($this->status == PengajuanAkreditasi::STATUS_AL_BANDING_SELESAI)
+                    $this->update(['status' => PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN, 'tanggal_pelaporan_al_banding' => now()]);
+            }
         }
         if ($statusToUpdate == 'status_hasil_akreditasi_dihitung') {
             if ($jenisAsesmen == 'al') {
                 if ($this->status == PengajuanAkreditasi::STATUS_AL_DILAPORKAN)
                     $this->update(['status' => PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIHITUNG, 'tanggal_hasil_akreditasi_dihitung' => now(), ...$additionalData]);
+            }
+        }
+        if ($statusToUpdate == 'status_hasil_banding_dihitung') {
+            if ($jenisAsesmen == 'al_banding') {
+                if ($this->status == PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN)
+                    $this->update(['status' => PengajuanAkreditasi::STATUS_HASIL_BANDING_DIHITUNG, 'tanggal_hasil_banding_dihitung' => now(), ...$additionalData]);
             }
         }
         if ($statusToUpdate == 'status_hasil_akreditasi_disampaikan') {
@@ -722,7 +864,9 @@ class PengajuanAkreditasi extends Model
                 && is_null($this->tanggal_pelaporan_ak),
 
             'al' => $this->status === self::STATUS_AL_SELESAI
-                && is_null($this->tanggal_pelaporan_al),
+                && is_null($this->tanggal_pelaporan_al) && $this->asesmen->lhaDocuments
+                ->whereIn('status_persetujuan_prodi', ['pending', 'revision_required'])
+                ->count() == 0,
 
             'dokumen' => in_array($this->status, [
                 self::STATUS_BORANG_VALIDATED,
@@ -730,6 +874,11 @@ class PengajuanAkreditasi extends Model
             ], true)
                 && is_null($this->tanggal_pelaporan_validasi_borang),
 
+            'ak_banding' => $this->status === self::STATUS_AK_BANDING_SELESAI
+                && is_null($this->tanggal_pelaporan_ak_banding),
+
+            'al_banding' => $this->status === self::STATUS_AL_BANDING_SELESAI
+                && is_null($this->tanggal_pelaporan_al_banding),
             default => false,
         };
     }
@@ -739,6 +888,8 @@ class PengajuanAkreditasi extends Model
         if ($jenis === 'dokumen' && $this->tanggal_pelaporan_validasi_borang) return 'Pelaporan Validasi Dokumen telah Dibuat';
         if ($jenis === 'ak' && $this->tanggal_pelaporan_ak) return 'Pelaporan AK telah Dibuat';
         if ($jenis === 'al' && $this->tanggal_pelaporan_al) return 'Pelaporan AL telah Dibuat';
+        if ($jenis === 'ak_banding' && $this->tanggal_pelaporan_ak_banding) return 'Pelaporan AK Banding telah Dibuat';
+        if ($jenis === 'al_banding' && $this->tanggal_pelaporan_al_banding) return 'Pelaporan AL Banding telah Dibuat';
         return null;
     }
 
@@ -763,6 +914,16 @@ class PengajuanAkreditasi extends Model
     public function getStatusLabelProdi($keyLongShort = 'label_long_for'): string
     {
         return self::statusMap()[$this->status][$keyLongShort]['prodi'] ?? ucwords(str_replace('_', ' ', $this->status));
+    }
+
+    public function getStatusLabelAsesor($keyLongShort = 'label_long_for'): string
+    {
+        return self::statusMap()[$this->status][$keyLongShort]['asesor'] ?? ucwords(str_replace('_', ' ', $this->status));
+    }
+
+    public function getStatusLabelValidator($keyLongShort = 'label_long_for'): string
+    {
+        return self::statusMap()[$this->status][$keyLongShort]['validator'] ?? ucwords(str_replace('_', ' ', $this->status));
     }
 
     public function getJenisAkreditasiLabelAttribute(): string
@@ -871,11 +1032,12 @@ class PengajuanAkreditasi extends Model
             14 => ['date' => $this->tanggal_pelaporan_al, 'label' => 'Pelaporan AL', 'icon' => 'bi-clipboard-data'],
             15 => ['date' => $this->tanggal_hasil_akreditasi_dikirim, 'label' => 'Penyampaian hasil akreditasi', 'icon' => 'bi-envelope-paper'],
             16 => ['date' => $this->tanggal_masa_sanggah_mulai, 'label' => 'Masa sanggah', 'icon' => 'bi-clock-history'],
-            17 => ['date' => $this->tanggal_pelaksanaan_banding, 'label' => 'Pelaksanaan banding', 'icon' => 'bi-arrow-repeat'],
-            18 => ['date' => $this->tanggal_pelaporan_banding, 'label' => 'Pelaporan banding', 'icon' => 'bi-file-earmark-ruled'],
-            19 => ['date' => $this->tanggal_penetapan, 'label' => 'Penetapan hasil akreditasi', 'icon' => 'bi-award'],
-            20 => ['date' => $this->tanggal_pelaporan_hasil, 'label' => 'Pelaporan hasil akreditasi', 'icon' => 'bi-megaphone'],
-            21 => ['date' => $this->tanggal_penyimpanan, 'label' => 'Penyimpanan Arsip Akreditasi', 'icon' => 'bi-archive'],
+            17 => ['date' => ($this->tanggal_permohonan_banding ?? $this->tanggal_penerimaan_banding), 'label' => 'Permohonan banding', 'icon' => 'bi-arrow-repeat'],
+            18 => ['date' => ($this->tanggal_penugasan_asesor_ak_banding ?? $this->tanggal_validasi_ak_banding ?? $this->tanggal_pelaporan_ak_banding ?? $this->tanggal_penugasan_asesor_al_banding ?? $this->tanggal_pelaksanaan_al_banding), 'label' => 'Pelaksanaan banding', 'icon' => 'bi-arrow-repeat'],
+            19 => ['date' => $this->tanggal_pelaporan_al_banding, 'label' => 'Pelaporan banding', 'icon' => 'bi-file-earmark-ruled'],
+            20 => ['date' => $this->tanggal_penetapan, 'label' => 'Penetapan hasil akreditasi', 'icon' => 'bi-award'],
+            21 => ['date' => $this->tanggal_pelaporan_hasil, 'label' => 'Pelaporan hasil akreditasi', 'icon' => 'bi-megaphone'],
+            22 => ['date' => $this->tanggal_penyimpanan, 'label' => 'Penyimpanan Arsip Akreditasi', 'icon' => 'bi-archive'],
         ];
 
         $meta = $this->currentTimelineMeta();
@@ -1006,24 +1168,30 @@ class PengajuanAkreditasi extends Model
             ],
 
             17 => [
-                'warning' => [self::STATUS_BANDING_DIAJUKAN, self::STATUS_BANDING_DITERIMA, self::STATUS_BANDING_DITUGASKAN],
-                'success' => [self::STATUS_BANDING_DILAKSANAKAN],
+                'warning' => [self::STATUS_BANDING_DIAJUKAN, self::STATUS_BANDING_DITERIMA, self::STATUS_MENUNGGU_PEMBAYARAN_BANDING, self::STATUS_PEMBAYARAN_BANDING_DITERIMA, self::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN_BANDING],
+                'success' => [self::STATUS_PEMBAYARAN_BANDING_DIVERIFIKASI]
             ],
 
             18 => [
-                'success' => [self::STATUS_BANDING_DILAPORKAN],
+                'warning' => [self::STATUS_PEMBAYARAN_BANDING_DIVERIFIKASI],
+                'info' => [self::STATUS_ASESOR_AK_BANDING_ASSIGNED, self::STATUS_AK_BANDING_IN_PROGRESS, self::STATUS_AK_BANDING_ON_VALIDATION, self::STATUS_AK_BANDING_SELESAI, self::STATUS_AK_BANDING_DILAPORKAN, self::STATUS_ASESOR_AL_BANDING_ASSIGNED, self::STATUS_AL_BANDING_IN_PROGRESS, self::STATUS_AL_BANDING_SELESAI],
+                'success' => [self::STATUS_AL_BANDING_DILAPORKAN],
             ],
 
             19 => [
+                'success' => [self::STATUS_AL_BANDING_DILAPORKAN, self::STATUS_HASIL_BANDING_DIHITUNG],
+            ],
+
+            20 => [
                 'warning' => [self::STATUS_HASIL_DITETAPKAN],
                 'success' => [self::STATUS_HASIL_DIUMUMKAN],
             ],
 
-            20 => [
+            21 => [
                 'success' => [self::STATUS_HASIL_DILAPORKAN],
             ],
 
-            21 => [
+            22 => [
                 'success' => [self::STATUS_ARSIP_DISIMPAN, self::STATUS_SELESAI],
             ],
         ];
@@ -1588,6 +1756,10 @@ class PengajuanAkreditasi extends Model
              * ===========================================
              */
             'permohonan_banding' => match ($status) {
+                self::STATUS_MASA_SANGGAH_DIMULAI =>
+                $audience === 'de'
+                    ? $badge('bg-light', $keyLongShort == 'label_long_for' ? 'Tidak Ada Permohonan Banding' : 'Tidak Ada Banding')
+                    : $badge('bg-light', $keyLongShort == 'label_long_for' ? 'Tidak Ada Permohonan Banding' : 'Tidak Ada Banding'),
                 self::STATUS_BANDING_DIAJUKAN =>
                 $badge(
                     $bgFromMap(self::STATUS_BANDING_DIAJUKAN, 'bg-warning'),
@@ -1600,10 +1772,40 @@ class PengajuanAkreditasi extends Model
                     $labelFor(self::STATUS_BANDING_DITERIMA) ?? 'Banding Diterima'
                 ),
 
-                self::STATUS_BANDING_DITUGASKAN =>
+                self::STATUS_MENUNGGU_PEMBAYARAN_BANDING =>
                 $badge(
-                    $bgFromMap(self::STATUS_BANDING_DITUGASKAN, 'bg-info'),
-                    $labelFor(self::STATUS_BANDING_DITUGASKAN) ?? 'Banding Ditugaskan'
+                    $bgFromMap(self::STATUS_MENUNGGU_PEMBAYARAN_BANDING, 'bg-info'),
+                    $labelFor(self::STATUS_MENUNGGU_PEMBAYARAN_BANDING) ?? 'Menunggu Pembayaran Banding'
+                ),
+
+                self::STATUS_PEMBAYARAN_BANDING_DITERIMA =>
+                $badge(
+                    $bgFromMap(self::STATUS_PEMBAYARAN_BANDING_DITERIMA, 'bg-info'),
+                    $labelFor(self::STATUS_PEMBAYARAN_BANDING_DITERIMA) ?? 'Menunggu Pembayaran Banding'
+                ),
+
+                self::STATUS_PEMBAYARAN_BANDING_DITERIMA =>
+                $badge(
+                    $bgFromMap(self::STATUS_PEMBAYARAN_BANDING_DITERIMA, 'bg-info'),
+                    $labelFor(self::STATUS_PEMBAYARAN_BANDING_DITERIMA) ?? 'Pembayaran Banding Diterima'
+                ),
+
+                self::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN_BANDING =>
+                $badge(
+                    $bgFromMap(self::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN_BANDING, 'bg-info'),
+                    $labelFor(self::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN_BANDING) ?? 'Menunggu Validasi Pembayaran Banding'
+                ),
+
+                self::STATUS_PEMBAYARAN_BANDING_DIVERIFIKASI =>
+                $badge(
+                    $bgFromMap(self::STATUS_PEMBAYARAN_BANDING_DIVERIFIKASI, 'bg-info'),
+                    $labelFor(self::STATUS_PEMBAYARAN_BANDING_DIVERIFIKASI) ?? 'Pembayaran Banding Divalidasi'
+                ),
+
+                self::STATUS_ASESOR_AK_BANDING_ASSIGNED =>
+                $badge(
+                    $bgFromMap(self::STATUS_ASESOR_AK_BANDING_ASSIGNED, 'bg-success'),
+                    $labelFor(self::STATUS_ASESOR_AK_BANDING_ASSIGNED) ?? 'Asesor AK Banding Ditugaskan'
                 ),
 
                 default =>
@@ -1616,14 +1818,120 @@ class PengajuanAkreditasi extends Model
              * ===========================================
              */
             'pelaksanaan_banding' => match ($status) {
-                self::STATUS_BANDING_DILAKSANAKAN =>
+                self::STATUS_PEMBAYARAN_BANDING_DIVERIFIKASI =>
+                $audience === 'de'
+                    ? $badge('bg-light', $keyLongShort == 'label_long_for' ? 'Menunggu Pelaksanaan Banding' : 'Menunggu Pelaksanaan')
+                    : $badge('bg-light', $keyLongShort == 'label_long_for' ? 'Menunggu Pelaksanaan Banding' : 'Menunggu Pelaksanaan'),
+                self::STATUS_ASESOR_AK_BANDING_ASSIGNED =>
                 $badge(
-                    $bgFromMap(self::STATUS_BANDING_DILAKSANAKAN, 'bg-warning'),
-                    $labelFor(self::STATUS_BANDING_DILAKSANAKAN) ?? 'Banding Dilaksanakan'
+                    $bgFromMap(self::STATUS_ASESOR_AK_BANDING_ASSIGNED, 'bg-info'),
+                    $labelFor(self::STATUS_ASESOR_AK_BANDING_ASSIGNED) ?? 'Pelaksanaan Banding Berlangsung'
                 ),
-
+                self::STATUS_AK_BANDING_IN_PROGRESS =>
+                $badge(
+                    $bgFromMap(self::STATUS_AK_BANDING_IN_PROGRESS, 'bg-info'),
+                    $labelFor(self::STATUS_AK_BANDING_IN_PROGRESS) ?? 'Pelaksanaan Banding Berlangsung'
+                ),
+                self::STATUS_AK_BANDING_ON_VALIDATION =>
+                $badge(
+                    $bgFromMap(self::STATUS_AK_BANDING_ON_VALIDATION, 'bg-info'),
+                    $labelFor(self::STATUS_AK_BANDING_ON_VALIDATION) ?? 'Pelaksanaan Banding Berlangsung'
+                ),
+                self::STATUS_AK_BANDING_SELESAI =>
+                $badge(
+                    $bgFromMap(self::STATUS_AK_BANDING_SELESAI, 'bg-info'),
+                    $labelFor(self::STATUS_AK_BANDING_SELESAI) ?? 'Pelaksanaan Banding Berlangsung'
+                ),
+                self::STATUS_AK_BANDING_DILAPORKAN =>
+                $badge(
+                    $bgFromMap(self::STATUS_AK_BANDING_DILAPORKAN, 'bg-info'),
+                    $labelFor(self::STATUS_AK_BANDING_DILAPORKAN) ?? 'Pelaksanaan Banding Berlangsung'
+                ),
+                self::STATUS_ASESOR_AL_BANDING_ASSIGNED =>
+                $badge(
+                    $bgFromMap(self::STATUS_ASESOR_AL_BANDING_ASSIGNED, 'bg-info'),
+                    $labelFor(self::STATUS_ASESOR_AL_BANDING_ASSIGNED) ?? 'Pelaksanaan Banding Berlangsung'
+                ),
+                self::STATUS_AL_BANDING_IN_PROGRESS =>
+                $badge(
+                    $bgFromMap(self::STATUS_AL_BANDING_IN_PROGRESS, 'bg-info'),
+                    $labelFor(self::STATUS_AL_BANDING_IN_PROGRESS) ?? 'Pelaksanaan Banding Berlangsung'
+                ),
+                self::STATUS_AL_BANDING_SELESAI =>
+                $badge(
+                    $bgFromMap(self::STATUS_AL_BANDING_SELESAI, 'bg-info'),
+                    $labelFor(self::STATUS_AL_BANDING_SELESAI) ?? 'Pelaksanaan Banding Berlangsung'
+                ),
+                self::STATUS_AL_BANDING_DILAPORKAN =>
+                $badge(
+                    $bgFromMap(self::STATUS_AL_BANDING_DILAPORKAN, 'bg-success'),
+                    $labelFor(self::STATUS_AL_BANDING_DILAPORKAN) ?? 'Pelaksanaan Banding Selesai'
+                ),
                 default =>
-                $badge('bg-secondary', '-'),
+                $badge('bg-light', 'Menunggu Pelaksanaan Banding'),
+            },
+
+            'penugasan_asesor_ak_banding' => match ($status) {
+                self::STATUS_PEMBAYARAN_BANDING_DIVERIFIKASI =>
+                $audience === 'de'
+                    ? $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Penugasan Banding' : 'Menunggu Penugasan')
+                    : $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Penugasan Banding' : 'Menunggu Penugasan'),
+                self::STATUS_ASESOR_AK_BANDING_ASSIGNED =>
+                $badge('bg-success', $labelFor(self::STATUS_ASESOR_AK_BANDING_ASSIGNED) ?? '-'),
+
+                default => $audience === 'de'
+                    ? $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Penugasan Asesor AK Banding' : 'Menunggu Penugasan')
+                    : $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Penugasan Asesor AK Banding' : 'Menunggu Penugasan'),
+            },
+            'validasi_ak_banding' => match ($status) {
+                self::STATUS_AK_BANDING_IN_PROGRESS =>
+                $badge('bg-warning', $labelFor(self::STATUS_AK_BANDING_IN_PROGRESS) ?? '-'),
+                self::STATUS_AK_BANDING_ON_VALIDATION =>
+                $badge('bg-info', $labelFor(self::STATUS_AK_BANDING_ON_VALIDATION) ?? '-'),
+                self::STATUS_AK_BANDING_SELESAI =>
+                $badge('bg-success', $labelFor(self::STATUS_AK_BANDING_SELESAI) ?? '-'),
+
+                default => $audience === 'de'
+                    ? $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Validasi AK Banding' : 'Menunggu Validasi')
+                    : $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Validasi AK Banding' : 'Menunggu Validasi'),
+            },
+            'pelaporan_ak_banding' => match ($status) {
+                self::STATUS_AK_BANDING_SELESAI =>
+                $badge('bg-info', $labelFor(self::STATUS_AK_BANDING_SELESAI) ?? '-'),
+                self::STATUS_AK_BANDING_DILAPORKAN =>
+                $badge('bg-success', $labelFor(self::STATUS_AK_BANDING_DILAPORKAN) ?? '-'),
+
+                default => $audience === 'de'
+                    ? $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Pelaporan AK Banding' : 'Menunggu Pelaporan')
+                    : $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Pelaporan AK Banding' : 'Menunggu Pelaporan'),
+            },
+            'penugasan_asesor_al_banding' => match ($status) {
+                self::STATUS_AK_BANDING_DILAPORKAN =>
+                $audience === 'de'
+                    ? $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Sedang Proses Penugasan' : 'Sedang Proses Penugasan')
+                    : $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Sedang Proses Penugasan' : 'Sedang Proses Penugasan'),
+
+                self::STATUS_ASESOR_AL_BANDING_ASSIGNED =>
+                $badge('bg-success', $labelFor(self::STATUS_ASESOR_AL_BANDING_ASSIGNED) ?? '-'),
+
+                default => $audience === 'de'
+                    ? $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Penugasan Asesor AL' : 'Menunggu Penugasan')
+                    : $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Penugasan Asesor AL' : 'Menunggu Penugasan'),
+            },
+            'pelaksanaan_al_banding' => match ($status) {
+                self::STATUS_ASESOR_AL_BANDING_ASSIGNED =>
+                $audience === 'de'
+                    ? $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Proses Pelaksanaan AL Banding Berlangsung' : 'Proses Pelaksanaan AL')
+                    : $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Proses Pelaksanaan AL Banding Berlangsung' : 'Proses Pelaksanaan AL'),
+
+                self::STATUS_AL_BANDING_IN_PROGRESS =>
+                $badge('bg-success', $labelFor(self::STATUS_AL_BANDING_IN_PROGRESS) ?? '-'),
+                self::STATUS_AL_BANDING_SELESAI =>
+                $badge('bg-success', $labelFor(self::STATUS_AL_BANDING_SELESAI) ?? '-'),
+
+                default => $audience === 'de'
+                    ? $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Pelaksanaan AL Banding' : 'Menunggu Pelaksanaan')
+                    : $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Pelaksanaan AL Banding' : 'Menunggu Pelaksanaan'),
             },
 
             /**
@@ -1631,11 +1939,28 @@ class PengajuanAkreditasi extends Model
              * 18) Pelaporan Banding
              * ===========================================
              */
+            'pelaporan_al_banding' => match ($status) {
+                self::STATUS_AL_BANDING_SELESAI =>
+                $badge('bg-info', $labelFor(self::STATUS_AL_BANDING_SELESAI) ?? '-'),
+                self::STATUS_AL_BANDING_DILAPORKAN =>
+                $badge('bg-success', $labelFor(self::STATUS_AL_BANDING_DILAPORKAN) ?? '-'),
+
+                default => $audience === 'de'
+                    ? $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Pelaporan AL Banding' : 'Menunggu Pelaporan')
+                    : $badge('bg-warning', $keyLongShort == 'label_long_for' ? 'Menunggu Pelaporan AL Banding' : 'Menunggu Pelaporan'),
+            },
+
             'pelaporan_banding' => match ($status) {
-                self::STATUS_BANDING_DILAPORKAN =>
+                self::STATUS_AL_BANDING_SELESAI =>
                 $badge(
-                    $bgFromMap(self::STATUS_BANDING_DILAPORKAN, 'bg-success'),
-                    $labelFor(self::STATUS_BANDING_DILAPORKAN) ?? 'Pelaporan Banding Telah Dibuat'
+                    $bgFromMap(self::STATUS_AL_BANDING_SELESAI, 'bg-success'),
+                    $labelFor(self::STATUS_AL_BANDING_SELESAI) ?? 'Pelaporan Banding Sedang Diproses'
+                ),
+
+                self::STATUS_AL_BANDING_DILAPORKAN =>
+                $badge(
+                    $bgFromMap(self::STATUS_AL_BANDING_DILAPORKAN, 'bg-success'),
+                    $labelFor(self::STATUS_AL_BANDING_DILAPORKAN) ?? 'Pelaporan Banding Telah Dibuat'
                 ),
 
                 default =>
@@ -1734,43 +2059,5 @@ class PengajuanAkreditasi extends Model
         }
 
         return $this->peringkat_hasil !== $this->peringkat_hasil_banding;
-    }
-
-    /**
-     * ✅ Get badge class untuk peringkat
-     */
-    public function getPeringkatBadgeClass(?string $peringkat = null): string
-    {
-        $peringkat = $peringkat ?? $this->peringkat_saat_ini;
-
-        return match ($peringkat) {
-            'Unggul', 'Terakreditasi Unggul (5 Tahun)', 'Terakreditasi Unggul 2 Tahun (dengan Syarat)'
-            => 'bg-warning text-dark',
-            'Baik Sekali', 'Terakreditasi (5 Tahun)'
-            => 'bg-success',
-            'Baik', 'Terakreditasi Sementara (2 Tahun)'
-            => 'bg-info',
-            'Tidak Terakreditasi'
-            => 'bg-danger',
-            default => 'bg-secondary',
-        };
-    }
-
-    /**
-     * ✅ Get icon untuk peringkat
-     */
-    public function getPeringkatIcon(?string $peringkat = null): string
-    {
-        $peringkat = $peringkat ?? $this->peringkat_saat_ini;
-
-        return match ($peringkat) {
-            'Unggul', 'Terakreditasi Unggul (5 Tahun)', 'Terakreditasi Unggul 2 Tahun (dengan Syarat)'
-            => 'bi-star-fill',
-            'Baik Sekali', 'Terakreditasi (5 Tahun)'
-            => 'bi-award-fill',
-            'Baik', 'Terakreditasi Sementara (2 Tahun)'
-            => 'bi-check-circle-fill',
-            default => 'bi-question-circle',
-        };
     }
 }

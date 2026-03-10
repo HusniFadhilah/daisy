@@ -54,7 +54,7 @@
     </nav>
 
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h5 class="mb-1">
                 <i class="bi bi-send-check"></i> Kirim Penerimaan Permohonan Akreditasi
@@ -89,7 +89,7 @@
                     </div>
 
                     <div class="file-preview">
-                        <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center rounded gap-3">
                             <div class="d-flex align-items-center">
                                 <i class="bi bi-file-pdf text-danger me-3" style="font-size: 48px;"></i>
                                 <div>
@@ -344,14 +344,14 @@
 
         // Validate file type
         if (file.type !== 'application/pdf') {
-            alert('File harus berformat PDF!');
+            Swal.fire('Perhatian', 'File harus berformat PDF!', 'warning');
             fileInput.value = '';
             return;
         }
 
         // Validate file size (5MB)
         if (file.size > 5 * 1024 * 1024) {
-            alert('Ukuran file maksimal 5MB!');
+            Swal.fire('Perhatian', 'Ukuran file maksimal 5MB!', 'warning');
             fileInput.value = '';
             return;
         }

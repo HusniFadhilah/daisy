@@ -114,7 +114,7 @@
     <!-- Header -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
                 <div>
                     <h4 class="mb-1">
                         <i class="bi bi-file-earmark-text"></i> Detail Penerimaan Dokumen
@@ -148,21 +148,21 @@
     @endphp
     <!-- Status Alert -->
     @if($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI)
-    <div class="alert alert-info alert-permanent">
+    <div class="alert alert-info alert-permanent mb-0">
         <i class="bi bi-hourglass-split"></i>
         <strong>Menunggu Penerimaan Dokumen</strong>
         <br>
         Program studi sedang dalam proses mengirim dokumen
     </div>
     @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM)
-    <div class="alert alert-info alert-permanent">
+    <div class="alert alert-info alert-permanent mb-0">
         <i class="bi bi-send"></i>
         <strong>Dokumen telah dikirim</strong>
         <br>
         Mohon download file yang telah diupload oleh program studi sebagai berikut
     </div>
     @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA)
-    <div class="alert alert-success alert-permanent">
+    <div class="alert alert-success alert-permanent mb-0">
         <i class="bi bi-check-circle"></i>
         <strong>Dokumen telah diterima</strong>
         <br>
@@ -171,7 +171,7 @@
         {{-- Diterima pada {{ $pengajuan->tanggal_draft_borang?->locale('id')->translatedFormat('d M Y H:i') ?? '-' }} --}}
     </div>
     @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI)
-    <div class="alert alert-success alert-permanent">
+    <div class="alert alert-success alert-permanent mb-0">
         <i class="bi bi-ui-checks"></i>
         <strong>Dokumen telah dikirim</strong>
         <br>
@@ -211,8 +211,8 @@
                                 <div class="avatar-circle mx-auto mb-2" style="width: 80px; height: 80px; font-size: 2rem;">
                                     {{ substr($currentValidator->user->name, 0, 1) }}
                                 </div>
-                                <h6 class="fw-bold">{{ $currentValidator->user->name }}</h6>
-                                <small class="text-muted">{{ $currentValidator->user->email }}</small>
+                                <h6 class="fw-bold text-wrap">{{ $currentValidator->user->name }}</h6>
+                                <small class="text-muted text-wrap">{{ $currentValidator->user->email }}</small>
                             </div>
                         </div>
 
@@ -298,7 +298,7 @@
                                 @if($currentValidator->borangValidation)
                                 <a href="{{ route('validator.borang.show', $currentValidator->id) }}" class="btn btn-primary btn-sm" target="_blank">
                                     <i class="bi bi-eye"></i>
-                                    Lihat Progress Validasi
+                                    Lihat Progres Validasi
                                 </a>
                                 @endif
                                 @endif

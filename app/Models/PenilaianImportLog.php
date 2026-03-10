@@ -18,12 +18,14 @@ class PenilaianImportLog extends Model
         'imported_rows',
         'failed_rows',
         'errors',
+        'errors_message',
         'started_at',
         'completed_at',
     ];
 
     protected $casts = [
         'errors' => 'array',
+        'errors_message' => 'array',
         'started_at' => 'datetime',
         'completed_at' => 'datetime',
     ];

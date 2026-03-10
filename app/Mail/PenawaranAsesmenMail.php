@@ -30,9 +30,10 @@ class PenawaranAsesmenMail extends Mailable
     public function build()
     {
         $jenisAsesmen = strtoupper($this->assignment->jenis_asesmen);
+        $pengajuan = $this->assignment->pengajuan;
 
-        return $this->subject("Penawaran {$this->role->alias} - {$jenisAsesmen} - {$this->asesmen->name}")
+        return $this->subject("Penawaran {$this->role->alias} {$jenisAsesmen} - {$this->asesmen->name}")
             ->view('emails.asesmen.penawaran-assignment')
-            ->with(['jenisAsesmen' => $jenisAsesmen]);
+            ->with(['jenisAsesmen' => $jenisAsesmen, 'pengajuan' => $pengajuan]);
     }
 }

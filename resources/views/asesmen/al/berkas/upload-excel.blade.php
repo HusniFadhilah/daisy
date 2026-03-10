@@ -68,7 +68,7 @@
     {{-- Header --}}
     <div class="card mb-4">
         <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
                 <div>
                     <h4 class="mb-1">
                         <i class="bi bi-upload"></i> Upload Penilaian AL
@@ -81,61 +81,27 @@
             </div>
 
             {{-- ✅ ALERT: Info Uploader --}}
-            @if($firstUpload)
-            <div class="mt-3">
-                @if($isUploader)
-                <div class="alert alert-success alert-permanent">
-                    <div class="d-flex align-items-start">
-                        <div class="flex-shrink-0">
-                            <i class="bi bi-check-circle fs-4 me-3"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <h6 class="mb-2">
-                                <i class="bi bi-person-check"></i> Anda adalah Asesor yang Mengupload Excel
-                            </h6>
-                            <p class="mb-0">
-                                Anda dapat mengupload file Excel baru untuk memperbarui data penilaian.
-                            </p>
-                            <small class="text-muted">
-                                <i class="bi bi-clock"></i> Pertama kali diupload: {{ $firstUpload->created_at->locale('id')->translatedFormat('d M Y, H:i') }}
-                            </small>
-                        </div>
+            <div class="alert alert-success alert-permanent mt-3 border-start border-2 border-success">
+                <div class="d-flex align-items-start">
+                    <i class="bi bi-shield-check fs-4 me-3 text-success flex-shrink-0 mt-1"></i>
+                    <div>
+                        <h6 class="mb-1">
+                            <i class="bi bi-person-check-fill"></i> Anda Asesor Pengupload pada Penilaian AL Ini
+                        </h6>
+                        <p class="mb-0 small text-muted">
+                            Anda adalah asesor pertama yang membuka halaman ini.
+                            Asesor lain dalam tim tidak dapat mengakses halaman penilaian ini.
+                        </p>
                     </div>
                 </div>
-                @else
-                <div class="alert alert-info alert-permanent">
-                    <div class="d-flex align-items-start">
-                        <div class="flex-shrink-0">
-                            <i class="bi bi-info-circle fs-4 me-3"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <h6 class="mb-2">
-                                <i class="bi bi-file-earmark-check"></i> Excel Telah Diupload
-                            </h6>
-                            <p class="mb-1">
-                                File Excel telah diupload oleh asesor: <strong>{{ $firstUpload->asesor->name ?? 'Asesor' }}</strong>
-                            </p>
-                            <small class="text-muted">
-                                <i class="bi bi-clock"></i> Diupload pada: {{ $firstUpload->created_at->locale('id')->translatedFormat('d M Y, H:i') }}
-                            </small>
-                            <hr class="my-2">
-                            <p class="mb-0 small text-muted">
-                                <i class="bi bi-lock"></i> Hanya asesor yang pertama kali mengupload yang dapat mengupload file baru.
-                                Anda dapat melihat hasil penilaian di halaman detail.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                @endif
             </div>
-            @endif
 
             {{-- ✅ Progress Section --}}
             <div class="progress-wrapper mt-4">
                 <div class="row align-items-center">
                     <div class="col-md-9">
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h5 class="mb-0">Progress Penilaian</h5>
+                            <h5 class="mb-0">Progres Penilaian</h5>
                             <span class="badge bg-primary fs-6" id="progressPercentage">
                                 {{ $progress['percentage'] }}%
                             </span>
@@ -191,7 +157,7 @@
                     @if(!$isSubmittedOnly && !$isApproved && !$isComplete && $progress['percentage'] > 0)
                     <div class="alert alert-info alert-dismissible alert-permanent mb-3">
                         <i class="bi bi-info-circle me-2"></i>
-                        <strong>Progress Penilaian:</strong>
+                        <strong>Progres Penilaian:</strong>
                         Anda telah menilai {{ $progress['completed'] }} dari {{ $progress['total'] }} elemen
                         (<strong>{{ $progress['percentage'] }}%</strong>).
                         Selesaikan <strong>{{ $progress['remaining'] }} elemen</strong> lagi untuk dapat melakukan finalisasi.
@@ -203,11 +169,11 @@
                     @if($isSubmittedOnly || $isApproved)
                     <div class="alert alert-success alert-permanent alert-dismissible mb-3">
                         <i class="bi bi-check-circle me-2"></i>
-                        <strong>Penilaian Telah Di-Submit!</strong>
+                        <strong>Penilaian Telah Difinalisasi!</strong>
                         Penilaian Anda telah berhasil dikirim dan disimpan.
                         @if($assignment->submitted_at)
                         <div class="mt-2 small text-muted">
-                            <i class="bi bi-clock"></i> Di-submit pada: {{ \App\Libraries\Date::tglWaktu($assignment->submitted_at) }}
+                            <i class="bi bi-clock"></i> Difinalisasi pada: {{ \App\Libraries\Date::tglWaktu($assignment->submitted_at) }}
                         </div>
                         @endif
                     </div>
@@ -226,7 +192,7 @@
                             </small>
                             @else
                             <button class="btn btn-success w-100 w-md-auto" disabled>
-                                <i class="bi bi-check-all"></i> Penilaian Telah Di-Submit
+                                <i class="bi bi-check-all"></i> Penilaian Telah Difinalisasi
                             </button>
                             @endif
                         </div>
@@ -298,7 +264,7 @@
                                 <i class="bi bi-cloud-arrow-up file-icon"></i>
                                 <h5 class="mt-3">
                                     @if($isSubmittedOnly || $isApproved)
-                                    Upload Dinonaktifkan (Sudah Di-Submit)
+                                    Upload Dinonaktifkan (Sudah Difinalisasi)
                                     @elseif(!$canUpload)
                                     Upload Dinonaktifkan (Sudah Diupload Asesor Lain)
                                     @else
@@ -325,7 +291,7 @@
                         {{-- Progress Bar --}}
                         <div class="progress-wrapper mt-4" id="progressWrapper">
                             <div class="mb-2">
-                                <strong>Progress Upload:</strong>
+                                <strong>Progres <i>Upload</i>:</strong>
                                 <span id="progressText" class="float-end">0%</span>
                             </div>
                             <div class="progress" style="height: 25px;">
@@ -666,7 +632,7 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
             let errHtml = '';
             if (Array.isArray(log.errors)) {
                 errHtml = `<div class="text-start">
-      <p class="mb-2">Import gagal karena:</p>
+      <p class="mb-2">Proses pembacaan data gagal karena:</p>
       <ul style="text-align:left; padding-left:18px;">
         ${log.errors.map(e => `<li>${escapeHtml(e)}</li>`).join('')}
       </ul>
@@ -774,6 +740,46 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
             }
         }
     });
+
+    (function() {
+        // Hanya muncul saat pertama kali membuka (sebelumnya status = not_started)
+        if (!@json($isFirstVisitForMe)) return;
+
+        Swal.fire({
+            icon: 'info'
+            , title: '<i class="bi bi-person-check-fill text-success"></i> Anda Pemegang Hak Penilaian'
+            , html: `
+            <div class="text-start">
+                <p>
+                    Anda adalah <strong>asesor pertama</strong> yang membuka halaman
+                    penilaian AL ini, sehingga hak mengisi penilaian diberikan kepada Anda.
+                </p>
+                <div class="alert alert-success mb-3" style="border-left:4px solid #198754;">
+                    <i class="bi bi-shield-check me-2"></i>
+                    <strong>Hanya Anda yang dapat:</strong>
+                    <ul class="mb-0 mt-1 small">
+                        <li>Membuka halaman penilaian AL ini</li>
+                        <li>Mengisi form penilaian elemen</li>
+                        <li>Mengupload file Excel penilaian</li>
+                        <li>Memfinalisasi dan mengirim penilaian</li>
+                    </ul>
+                </div>
+                <div class="alert alert-warning mb-0" style="border-left:4px solid #ffc107;">
+                    <i class="bi bi-people me-2"></i>
+                    <strong>Asesor Lain dalam Tim</strong><br>
+                    <small>
+                        Jika asesor lain mencoba membuka halaman penilaian AL ini,
+                        mereka akan <strong>dialihkan kembali</strong> dan tidak dapat mengisi penilaian.
+                    </small>
+                </div>
+            </div>
+        `
+            , confirmButtonText: '<i class="bi bi-pencil-square"></i> Mengerti, Mulai Penilaian'
+            , confirmButtonColor: '#198754'
+            , allowOutsideClick: false
+            , width: '560px'
+        , });
+    })();
 
 </script>
 @endpush

@@ -10,10 +10,12 @@ class PengajuanPembayaran extends Model
     protected $table = 'pengajuan_pembayaran';
 
     public const BIAYA_AKREDITASI = 59500000;
+    public const BIAYA_BANDING    = 30000000; // 30 juta
 
     protected $fillable = [
         'id_pengajuan',
         'nomor_invoice',
+        'jenis_pembayaran',
         'jumlah_pembayaran',
         'tanggal_jatuh_tempo',
         'tanggal_pembayaran',

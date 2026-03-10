@@ -48,7 +48,7 @@
     </nav>
 
     <!-- Page Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h4 class="mb-1"><i class="bi bi-file-earmark-ruled"></i> Pelaporan Banding</h4>
             <p class="text-muted mb-0">Kelola pelaporan hasil pelaksanaan banding akreditasi</p>
@@ -150,7 +150,7 @@
                                 <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN ? 'selected' : '' }}>
                                     Belum Dilaporkan
                                 </option>
-                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN ? 'selected' : '' }}>
+                                <option value="{{ \App\Models\PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN }}" {{ request('status') == \App\Models\PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN ? 'selected' : '' }}>
                                     Sudah Dilaporkan
                                 </option>
                             </select>
@@ -277,7 +277,7 @@
                                         @endif
                                     </td>
                                     <td>
-                                        @if($pengajuan->status == \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN)
+                                        @if($pengajuan->status == \App\Models\PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN)
                                         <span class="badge badge-laporan bg-success">
                                             <i class="bi bi-check-circle"></i> Sudah Dilaporkan
                                         </span>

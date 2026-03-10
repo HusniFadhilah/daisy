@@ -1,0 +1,524 @@
+/* ===== Page 3 wrapper (hidden on screen by default) ===== */
+.page-3-wrapper {
+    display: none;
+}
+
+/* ===== Page 3 section header ===== */
+.page-3-header {
+    text-align: center;
+    padding: 0.7vh 0 0.5vh 0;
+    margin-bottom: 1vh;
+    border-bottom: 0.2vh solid #932136;
+}
+
+@media (min-width: 768px) {
+    .page-3-header {
+        padding: 2vmin 0 1.3vmin 0;
+        border-bottom-width: 0.25vmin;
+        margin-bottom: 2vmin;
+    }
+}
+
+.page-3-title {
+    font-size: 2vh;
+    font-weight: 700;
+    color: #932136;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.3vh;
+}
+
+@media (min-width: 768px) {
+    .page-3-title {
+        font-size: 2.5vmin;
+        letter-spacing: 1.5px;
+        margin-bottom: 0.5vmin;
+    }
+}
+
+.page-3-subtitle {
+    font-size: 1.1vh;
+    color: #555;
+    margin-top: 0.2vh;
+}
+
+@media (min-width: 768px) {
+    .page-3-subtitle {
+        font-size: 1.55vmin;
+        margin-top: 0.4vmin;
+    }
+}
+
+/* ===== Kondisi Prodi ===== */
+.kondisi-section {
+    margin-bottom: 1.4vh;
+}
+
+@media (min-width: 768px) {
+    .kondisi-section {
+        margin-bottom: 2vmin;
+    }
+}
+
+.section-label {
+    display: flex;
+    align-items: center;
+    gap: 0.6vh;
+    font-size: 1.1vh;
+    font-weight: 700;
+    color: #932136;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.8vh;
+}
+
+@media (min-width: 768px) {
+    .section-label {
+        font-size: 1.6vmin;
+        gap: 0.8vmin;
+        margin-bottom: 1.2vmin;
+    }
+}
+
+.section-label::before {
+    content: '';
+    display: inline-block;
+    width: 0.4vh;
+    height: 1.6vh;
+    background: #932136;
+    border-radius: 1px;
+    flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+    .section-label::before {
+        width: 0.5vmin;
+        height: 2.2vmin;
+    }
+}
+
+/* grid kartu kondisi prodi */
+.kondisi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.7vh;
+}
+
+@media (min-width: 768px) {
+    .kondisi-grid {
+        gap: 1vmin;
+    }
+}
+
+/* fallback: 2 kolom di layar sempit/portrait */
+@media (max-width: 600px) {
+    .kondisi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.kondisi-card {
+    background: #fbfcff;
+    border: 0.15vh solid #dee2e6;
+    border-radius: 0.6vh;
+    padding: 0.8vh 0.9vh;
+    text-align: center;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+    position: relative;
+    overflow: hidden;
+}
+
+@media (min-width: 768px) {
+    .kondisi-card {
+        border-width: 0.18vmin;
+        border-radius: 0.8vmin;
+        padding: 1.1vmin 1.2vmin;
+    }
+}
+
+.kondisi-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 0.35vh;
+    background: #932136;
+    border-radius: 0.6vh 0.6vh 0 0;
+}
+
+@media (min-width: 768px) {
+    .kondisi-card::before {
+        height: 0.45vmin;
+    }
+}
+
+.kondisi-card .card-icon {
+    font-size: 1.6vh;
+    margin-bottom: 0.3vh;
+    color: #932136;
+    line-height: 1;
+}
+
+@media (min-width: 768px) {
+    .kondisi-card .card-icon {
+        font-size: 2.4vmin;
+        margin-bottom: 0.5vmin;
+    }
+}
+
+.kondisi-card .card-value {
+    font-size: 1.8vh;
+    font-weight: 800;
+    color: #111;
+    line-height: 1.1;
+}
+
+@media (min-width: 768px) {
+    .kondisi-card .card-value {
+        font-size: 2.6vmin;
+    }
+}
+
+.kondisi-card .card-label {
+    font-size: 0.82vh;
+    color: #555;
+    margin-top: 0.2vh;
+    line-height: 1.3;
+}
+
+@media (min-width: 768px) {
+    .kondisi-card .card-label {
+        font-size: 1.18vmin;
+        margin-top: 0.3vmin;
+    }
+}
+
+/* Deskripsi narasi kondisi prodi */
+.kondisi-narasi {
+    margin-top: 0.8vh;
+    background: #f8f9fa;
+    border-left: 0.35vh solid #932136;
+    border-radius: 0 0.5vh 0.5vh 0;
+    padding: 0.9vh 1vh;
+    font-size: 1vh;
+    color: #333;
+    line-height: 1.65;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+}
+
+@media (min-width: 768px) {
+    .kondisi-narasi {
+        margin-top: 1.2vmin;
+        border-left-width: 0.45vmin;
+        border-radius: 0 0.7vmin 0.7vmin 0;
+        padding: 1.2vmin 1.4vmin;
+        font-size: 1.45vmin;
+    }
+}
+
+/* ===== Temuan Section ===== */
+.temuan-section {
+    flex: 1;
+}
+
+.temuan-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8vh;
+}
+
+@media (min-width: 768px) {
+    .temuan-grid {
+        gap: 1.2vmin;
+    }
+}
+
+/* kolom keunggulan */
+.temuan-col {
+    border-radius: 0.6vh;
+    overflow: hidden;
+    border: 0.15vh solid;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+}
+
+@media (min-width: 768px) {
+    .temuan-col {
+        border-radius: 0.9vmin;
+        border-width: 0.2vmin;
+    }
+}
+
+.temuan-col.col-unggul {
+    border-color: #2e7d32;
+}
+
+.temuan-col.col-lemah {
+    border-color: #c62828;
+}
+
+.temuan-col-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5vh;
+    padding: 0.6vh 0.9vh;
+    font-size: 1vh;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+}
+
+@media (min-width: 768px) {
+    .temuan-col-header {
+        gap: 0.7vmin;
+        padding: 0.9vmin 1.2vmin;
+        font-size: 1.4vmin;
+        letter-spacing: 0.6px;
+    }
+}
+
+.col-unggul .temuan-col-header {
+    background: #2e7d32;
+    color: #fff;
+}
+
+.col-lemah .temuan-col-header {
+    background: #c62828;
+    color: #fff;
+}
+
+.temuan-col-header .col-icon {
+    font-size: 1.2vh;
+    flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+    .temuan-col-header .col-icon {
+        font-size: 1.8vmin;
+    }
+}
+
+/* daftar temuan */
+.temuan-list {
+    padding: 0.6vh 0;
+    background: #fff;
+}
+
+@media (min-width: 768px) {
+    .temuan-list {
+        padding: 0.8vmin 0;
+    }
+}
+
+.temuan-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5vh;
+    padding: 0.55vh 0.9vh;
+    font-size: 0.92vh;
+    color: #222;
+    line-height: 1.55;
+    border-bottom: 0.08vh solid #f0f0f0;
+    transition: background 0.15s;
+}
+
+@media (min-width: 768px) {
+    .temuan-item {
+        gap: 0.7vmin;
+        padding: 0.75vmin 1.2vmin;
+        font-size: 1.3vmin;
+        border-bottom-width: 0.1vmin;
+    }
+}
+
+.temuan-item:last-child {
+    border-bottom: none;
+}
+
+.temuan-item .item-bullet {
+    flex-shrink: 0;
+    margin-top: 0.25vh;
+    width: 1.1vh;
+    height: 1.1vh;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7vh;
+    color: #fff;
+    font-weight: 700;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+}
+
+@media (min-width: 768px) {
+    .temuan-item .item-bullet {
+        margin-top: 0.3vmin;
+        width: 1.5vmin;
+        height: 1.5vmin;
+        font-size: 0.9vmin;
+    }
+}
+
+.col-unggul .item-bullet {
+    background: #2e7d32;
+}
+
+.col-lemah .item-bullet {
+    background: #c62828;
+}
+
+.temuan-item .item-tag {
+    display: inline-block;
+    font-size: 0.72vh;
+    font-weight: 600;
+    padding: 0.1vh 0.45vh;
+    border-radius: 0.25vh;
+    margin-bottom: 0.15vh;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+}
+
+@media (min-width: 768px) {
+    .temuan-item .item-tag {
+        font-size: 1vmin;
+        padding: 0.15vmin 0.6vmin;
+        border-radius: 0.3vmin;
+        margin-bottom: 0.2vmin;
+    }
+}
+
+.col-unggul .item-tag {
+    background: #e8f5e9;
+    color: #1b5e20;
+}
+
+.col-lemah .item-tag {
+    background: #ffebee;
+    color: #b71c1c;
+}
+
+.temuan-item .item-text {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+/* Skor akhir di footer area halaman 3 */
+.skor-bar-wrapper {
+    margin-top: 1vh;
+    background: #f8f9fa;
+    border: 0.15vh solid #dee2e6;
+    border-radius: 0.6vh;
+    padding: 0.8vh 1.1vh;
+    display: flex;
+    align-items: center;
+    gap: 1.2vh;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+}
+
+@media (min-width: 768px) {
+    .skor-bar-wrapper {
+        margin-top: 1.4vmin;
+        border-width: 0.18vmin;
+        border-radius: 0.9vmin;
+        padding: 1.1vmin 1.6vmin;
+        gap: 1.8vmin;
+    }
+}
+
+.skor-label {
+    font-size: 0.95vh;
+    font-weight: 600;
+    color: #333;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+    .skor-label {
+        font-size: 1.4vmin;
+    }
+}
+
+.skor-bar-outer {
+    flex: 1;
+    height: 1.2vh;
+    background: #dee2e6;
+    border-radius: 999px;
+    overflow: hidden;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+}
+
+@media (min-width: 768px) {
+    .skor-bar-outer {
+        height: 1.6vmin;
+    }
+}
+
+.skor-bar-inner {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #932136 0%, #c0392b 100%);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+}
+
+.skor-value {
+    font-size: 1.4vh;
+    font-weight: 800;
+    color: #932136;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+    .skor-value {
+        font-size: 2vmin;
+    }
+}
+
+.skor-peringkat {
+    font-size: 0.88vh;
+    font-weight: 600;
+    padding: 0.25vh 0.7vh;
+    border-radius: 0.3vh;
+    flex-shrink: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+}
+
+@media (min-width: 768px) {
+    .skor-peringkat {
+        font-size: 1.25vmin;
+        padding: 0.35vmin 0.9vmin;
+        border-radius: 0.4vmin;
+    }
+}
+
+/* print: show page 3 */
+@media print {
+    .page-3-wrapper {
+        display: block !important;
+        position: static !important;
+        page-break-before: always !important;
+        break-before: page !important;
+    }
+}

@@ -30,7 +30,7 @@ return new class extends Migration
             $table->string('position')->nullable(); // Untuk jabatan seperti Kaprodi
             $table->string('avatar')->nullable();
             $table->enum('role', ['admin', 'user'])->default('user');
-            $table->enum('role_selected', ['super_admin', 'sekretariat', 'asesor', 'validator', 'verifikator', 'admin_univ', 'admin_prodi', 'keuangan_lamdepilar', 'surveillance', 'default'])->default('default');
+            $table->enum('role_selected', ['super_admin', 'sekretariat', 'asesor', 'validator', 'verifikator', 'admin_univ', 'admin_prodi', 'keuangan_lamdepilar', 'asesor_banding', 'default'])->default('default');
             $table->json('roles')->nullable();
             $table->boolean('is_multiple_role')->default(false);
             $table->timestamp('last_role_switch')->nullable();

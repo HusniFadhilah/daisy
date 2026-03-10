@@ -83,21 +83,9 @@ class BorangLkpsImportController extends Controller
             $idDegreeLevel = $pengajuan->studyProgram->id_degree_level;
 
             // =========================
-            // Simpan record import
-            // =========================
-            $import = BorangImport::create([
-                'id_pengajuan' => $pengajuan->id,
-                'id_degree_level' => $idDegreeLevel,
-                'original_filename' => $file->getClientOriginalName(),
-                'stored_path' => $filePath,
-                'status' => 'pending',
-                'imported_by' => Auth::id(),
-            ]);
-
-            // =========================
             // Simpan sebagai dokumen pengajuan
             // =========================
-            $pengajuan->dokumen()->create([
+            $pengajuanDokumen = $pengajuan->dokumen()->create([
                 'jenis_dokumen' => 'data_kuantitatif',
                 'original_filename' => $file->getClientOriginalName(),
                 'path_file' => $filePath,
@@ -106,6 +94,19 @@ class BorangLkpsImportController extends Controller
                 'uploaded_by' => Auth::id(),
                 'versi' => $versi,
                 'is_latest' => true,
+            ]);
+
+            // =========================
+            // Simpan record import
+            // =========================
+            $import = BorangImport::create([
+                'id_pengajuan' => $pengajuan->id,
+                'id_dokumen' => $pengajuanDokumen->id,
+                'id_degree_level' => $idDegreeLevel,
+                'original_filename' => $file->getClientOriginalName(),
+                'stored_path' => $filePath,
+                'status' => 'pending',
+                'imported_by' => Auth::id(),
             ]);
 
             DB::commit();

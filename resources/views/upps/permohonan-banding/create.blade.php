@@ -85,7 +85,7 @@
     @if($selectedProdiId)
 
     {{-- Info Prodi yang Dipilih --}}
-    <div class="alert alert-light alert-permanent border-start border-primary border-4 mb-4">
+    <div class="alert alert-light alert-permanent border-start border-primary border-2 mb-4">
         <div class="d-flex justify-content-between align-items-center">
             <div>
                 <h6 class="mb-1">
@@ -99,12 +99,12 @@
         </div>
     </div>
 
-    {{-- Step 1: Pilih Pengajuan Akreditasi --}}
+    {{-- Step 1: Pilih Permohonan Akreditasi --}}
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-header bg-white border-bottom">
             <h5 class="mb-0">
                 <span class="badge bg-primary me-2">1</span>
-                Pilih Pengajuan Akreditasi yang Akan Dibanding
+                Pilih Permohonan Akreditasi yang Akan Diajukan banding
             </h5>
         </div>
         <div class="card-body">
@@ -120,7 +120,7 @@
                 $isSelected = $selectedPengajuan && $selectedPengajuan->id === $p->id;
                 $tanggalHasil = $p->tanggal_hasil_akreditasi_dikirim ? $p->tanggal_hasil_akreditasi_dikirim->locale('id')->translatedFormat('d M Y') : '-';
                 @endphp
-                <div class="col-md-6 mb-3">
+                <div class="col-md-12 mb-3">
                     <div class="card pengajuan-card h-100 {{ $isSelected ? 'selected' : '' }}" onclick="selectPengajuan({{ $p->id }})" data-pengajuan-id="{{ $p->id }}">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start mb-2">
@@ -153,7 +153,7 @@
                             </div>
                             <hr>
                             <button type="button" class="btn btn-outline-success btn-sm w-100" onclick="selectPengajuan({{ $p->id }})">
-                                <i class="bi bi-arrow-right"></i> Pilih Pengajuan Ini
+                                <i class="bi bi-arrow-right"></i> Pilih Permohonan Akreditasi Ini
                             </button>
                         </div>
                     </div>
@@ -164,10 +164,10 @@
             <div class="text-center py-5">
                 <i class="bi bi-inbox fs-1 text-muted"></i>
                 <p class="text-muted mb-2 mt-3">
-                    Tidak ada pengajuan akreditasi yang dapat dibanding untuk program studi ini.
+                    Tidak ada permohonan akreditasi yang dapat diajukan banding untuk program studi ini.
                 </p>
                 <small class="text-muted">
-                    Hanya pengajuan yang sudah disampaikan hasilnya dan dalam masa sanggah yang dapat dibanding.
+                    Hanya permohonan akreditasi yang sudah disampaikan hasilnya dan dalam masa sanggah yang dapat diajukan banding.
                 </small>
                 <hr class="my-4">
                 <a href="{{ route('upps.permohonan-banding.create') }}" class="btn btn-secondary">
@@ -207,7 +207,7 @@
                                 <textarea name="alasan_banding" class="form-control @error('alasan_banding') is-invalid @enderror" rows="8" required placeholder="Jelaskan alasan atau keberatan Anda terhadap hasil akreditasi yang diberikan...">{{ old('alasan_banding') }}</textarea>
                                 <small class="text-muted">
                                     <i class="bi bi-info-circle"></i>
-                                    Jelaskan secara detail alasan pengajuan banding (minimal 100 karakter)
+                                    Jelaskan secara detail alasan pengajuan banding
                                 </small>
                                 @error('alasan_banding')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -233,83 +233,66 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
+                        </div>
 
-                            <!-- Persyaratan Info -->
-                            {{-- <div class="alert alert-light border">
-                                <h6 class="fw-bold mb-2">
-                                    <i class="bi bi-clipboard-check"></i> Persyaratan Dokumen
-                                </h6>
-                                <ul class="mb-0 ps-3">
-                                    <li>Surat Permohonan Banding resmi dalam format PDF</li>
-                                    <li>Menggunakan kop surat program studi/universitas</li>
-                                    <li>Ditandatangani oleh pejabat berwenang (Ketua Program Studi/Dekan)</li>
-                                    <li>Mencantumkan alasan banding secara jelas</li>
-                                    <li>Dapat menggunakan templat yang disediakan</li>
-                                </ul>
-                                <hr>
-                                <a href="{{ route('upps.permohonan-banding.download-template-surat') }}" class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-download"></i> Download Templat Surat
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{{ route('upps.permohonan-banding') }}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Kembali
                             </a>
-                        </div> --}}
+                            <button type="submit" class="btn btn-primary" id="btnSubmit">
+                                <i class="bi bi-send"></i> Kirim Permohonan Banding
+                            </button>
+                        </div>
                     </div>
+                </div>
+            </div>
 
-                    <!-- Action Buttons -->
-                    <div class="d-flex justify-content-between align-items-center">
-                        <a href="{{ route('upps.permohonan-banding') }}" class="btn btn-secondary">
-                            <i class="bi bi-arrow-left"></i> Kembali
-                        </a>
-                        <button type="submit" class="btn btn-primary" id="btnSubmit">
-                            <i class="bi bi-send"></i> Kirim Permohonan Banding
-                        </button>
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Info Card -->
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-white border-bottom">
+                        <h6 class="mb-0">
+                            <i class="bi bi-info-circle text-info"></i> Informasi
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <h6 class="fw-bold">Masa Sanggah:</h6>
+                        <p class="small text-muted mb-3">
+                            Permohonan banding hanya dapat diajukan selama masa sanggah yang telah ditentukan.
+                        </p>
+
+                        <h6 class="fw-bold">Proses Banding:</h6>
+                        <ol class="small mb-0 ps-3">
+                            <li>Pengajuan banding diterima</li>
+                            <li>Verifikasi kelengkapan dokumen</li>
+                            <li>Penugasan asesor banding</li>
+                            <li>Pelaksanaan banding</li>
+                            <li>Pelaporan banding</li>
+                            <li>Penetapan hasil akhir</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <!-- Warning Card -->
+                <div class="card border-warning border-start border-2">
+                    <div class="card-body">
+                        <h6 class="fw-bold text-warning">
+                            <i class="bi bi-exclamation-triangle"></i> Perhatian
+                        </h6>
+                        <ul class="mb-0 ps-3 small">
+                            <li class="mb-2">Pastikan data yang diisi sudah benar</li>
+                            <li class="mb-2">File PDF maksimal 5MB</li>
+                            <li class="mb-2">Permohonan yang sudah dikirim tidak dapat dibatalkan</li>
+                            <li>Hasil banding bersifat final dan tidak dapat diganggu gugat</li>
+                        </ul>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- Sidebar -->
-        <div class="col-lg-4">
-            <!-- Info Card -->
-            <div class="card border-0 shadow-sm mb-3">
-                <div class="card-header bg-white border-bottom">
-                    <h6 class="mb-0">
-                        <i class="bi bi-info-circle text-info"></i> Informasi
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <h6 class="fw-bold">Masa Sanggah:</h6>
-                    <p class="small text-muted mb-3">
-                        Permohonan banding hanya dapat diajukan selama masa sanggah yang telah ditentukan.
-                    </p>
-
-                    <h6 class="fw-bold">Proses Banding:</h6>
-                    <ol class="small mb-0 ps-3">
-                        <li>Pengajuan banding diterima</li>
-                        <li>Verifikasi kelengkapan dokumen</li>
-                        <li>Penugasan asesor banding</li>
-                        <li>Pelaksanaan asesmen banding</li>
-                        <li>Penetapan hasil akhir</li>
-                    </ol>
-                </div>
-            </div>
-
-            <!-- Warning Card -->
-            <div class="card border-warning border-start border-4">
-                <div class="card-body">
-                    <h6 class="fw-bold text-warning">
-                        <i class="bi bi-exclamation-triangle"></i> Perhatian
-                    </h6>
-                    <ul class="mb-0 ps-3 small">
-                        <li class="mb-2">Pastikan data yang diisi sudah benar</li>
-                        <li class="mb-2">File PDF maksimal 5MB</li>
-                        <li class="mb-2">Permohonan yang sudah dikirim tidak dapat dibatalkan</li>
-                        <li>Hasil banding bersifat final dan tidak dapat diganggu gugat</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-</div>
-</form>
-@endif
+    </form>
+    @endif
 </div>
 @endsection
 
@@ -376,27 +359,38 @@
         });
     }
 
-    // ✅ Form submit confirmation
+    const formBanding = document.getElementById('formBanding');
     const btnSubmit = document.getElementById('btnSubmit');
+
     if (btnSubmit) {
-        btnSubmit.addEventListener('click', function(e) {
+        // ✅ Konfirmasi tetap di click — sebelum submit
+        btnSubmit.addEventListener('click', async function(e) {
             const pengajuanId = document.getElementById('id_pengajuan').value;
+
             if (!pengajuanId) {
                 e.preventDefault();
-                alert('Pilih pengajuan akreditasi terlebih dahulu!');
-                document.querySelector('.pengajuan-card').scrollIntoView({
+                Swal.fire('Perhatian', 'Pilih permohonan akreditasi terlebih dahulu!', 'warning');
+                const pengajuanCard = document.querySelector('.pengajuan-card')
+                if (pengajuanCard) pengajuanCard.scrollIntoView({
                     behavior: 'smooth'
                 });
-                return false;
+                return;
             }
 
-            if (!confirm('Apakah Anda yakin akan mengajukan permohonan banding ini? Tindakan ini tidak dapat dibatalkan.')) {
+            if (!(await swalConfirmSubmit('warning', 'Apakah Anda yakin akan mengajukan permohonan banding ini? Tindakan ini tidak dapat dibatalkan.'))) {
                 e.preventDefault();
-                return false;
             }
+            // ✅ Jangan disable di sini — biarkan form submit dulu
+        });
+    }
 
-            this.disabled = true;
-            this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mengirim...';
+    if (formBanding) {
+        // ✅ Disable HANYA setelah form benar-benar submit
+        formBanding.addEventListener('submit', function() {
+            if (btnSubmit) {
+                btnSubmit.disabled = true;
+                btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mengirim...';
+            }
         });
     }
 

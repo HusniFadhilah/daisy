@@ -1,40 +1,41 @@
 @extends('emails.template')
+
 @php
-$title = 'Penawaran Validasi Dokumen';
-$preheader = 'Anda ditunjuk sebagai Validator Borang untuk ' . $pengajuan->nomor_pengajuan;
-$headerTitle = 'Penawaran Validasi Dokumen';
+$isValidasi = $assignment->jenis_asesmen === 'dokumen';
+$labelTugas = $isValidasi ? 'validasi' : 'penilaian';
+$menuTugas = $isValidasi ? 'Validasi Dokumen' : 'Berkas Penilaian';
+$deskripsi = $isValidasi
+? 'Lakukan validasi sesuai dokumen yang telah dikirim prodi'
+: 'Lakukan penilaian sesuai elemen standar';
+
+$title = 'Penawaran ' . $role->alias;
+$preheader = 'Anda ditunjuk sebagai ' . $role->alias . ' untuk ' . $asesmen->name;
+$headerTitle = 'Penawaran ' . $role->alias;
 @endphp
 
 @section('content')
-<p style="margin-top:0;">Yth. <strong>{{ $assignment->user->name }}</strong>,</p>
+<p style="margin-top:0;">Yth. <strong>{{ $user->name }}</strong>,</p>
 
-<p>Anda telah ditunjuk sebagai <strong>Validator Borang</strong> untuk pengajuan berikut:</p>
+<p>Anda telah ditunjuk sebagai <strong>{{ $role->alias }}</strong> untuk asesmen berikut:</p>
 
 {{-- INFO BOX --}}
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f9fa;border-left:4px solid #0d6efd;margin:20px 0;">
     <tr>
         <td style="padding:15px;font-size:14px;line-height:1.8;">
-            <strong>Nomor Pengajuan</strong> : {{ $pengajuan->nomor_pengajuan }}<br>
-            <strong>Program Studi</strong> : {{ $pengajuan->studyProgram->name ?? '-' }}<br>
-            <strong>Jenjang</strong> : {{ $pengajuan->studyProgram->degreeLevel->name ?? '-' }}<br>
-            <strong>Perguruan Tinggi</strong> : {{ $pengajuan->studyProgram->university->name ?? '-' }}
+            <strong>Asesmen</strong> : {{ $asesmen->name }}<br>
+            <strong>Jenis</strong> : {{ $jenisAsesmen }}<br>
+            <strong>Role</strong> : {{ $role->alias }}
+            @if($assignment->urutan_asesor)
+            <br><strong>Urutan</strong> : Asesor {{ $assignment->urutan_asesor }}
+            @endif
         </td>
     </tr>
 </table>
 
-@if($catatanDe)
-{{-- CATATAN DE --}}
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#fff8e1;border-left:4px solid #ffc107;margin:20px 0;">
-    <tr>
-        <td style="padding:15px;font-size:14px;">
-            <strong>Catatan DE:</strong><br>
-            {{ $catatanDe }}
-        </td>
-    </tr>
-</table>
-@endif
-
-<p>Silakan gunakan akun <strong>{{ $assignment->user->email }}</strong> untuk <strong>menerima atau menolak</strong> penawaran ini melalui tombol berikut:</p>
+<p>
+    Silakan gunakan akun <strong>{{ $user->email }}</strong> untuk
+    <strong>menerima atau menolak</strong> penawaran ini melalui tombol berikut:
+</p>
 
 {{-- BUTTON --}}
 <table width="100%" cellpadding="0" cellspacing="0" style="margin:30px 0;">
@@ -49,13 +50,13 @@ $headerTitle = 'Penawaran Validasi Dokumen';
                     font-size:14px;
                     display:inline-block;
                 ">
-                Lihat Detail & Respond
+                Lihat Detail & Respon
             </a>
         </td>
     </tr>
 </table>
 
-{{-- CATATAN PENTING --}}
+{{-- CATATAN --}}
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f9fa;border-left:4px solid #6c757d;margin:20px 0;">
     <tr>
         <td style="padding:15px;font-size:13px;color:#495057;line-height:1.8;">

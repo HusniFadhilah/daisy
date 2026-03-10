@@ -26,7 +26,7 @@ class ValidasiPembayaranController extends Controller
             'pengajuan.studyProgram.university',
             'pengajuan.studyProgram.degreeLevel',
             'verifier',
-        ])
+        ])->where('jenis_pembayaran', 'akreditasi')
             ->whereHas('pengajuan', function ($q) use ($studyProgramIds) {
                 $q->whereIn('id_program_studi', $studyProgramIds);
             });
@@ -156,7 +156,7 @@ class ValidasiPembayaranController extends Controller
             $file = $request->file('file_formulir_pembayaran');
             $fileName = 'formulir_pembayaran_' . time() . '.' . $file->getClientOriginalExtension();
             $filePath = $file->storeAs(
-                'pengajuan/' . $pembayaran->id_pengajuan . '/formulir-pembayaran',
+                'permohonan-akreditasi/' . $pembayaran->id_pengajuan . '/formulir-pembayaran',
                 $fileName,
                 'public'
             );
@@ -210,26 +210,19 @@ class ValidasiPembayaranController extends Controller
      */
     public function download($id)
     {
-        $dokumen = PengajuanDokumen::findOrFail($id);
+        $pengajuanDokumen = PengajuanDokumen::findOrFail($id);
 
         // Check access
         $user = Auth::user();
         $studyProgramIds = $user->studyPrograms()->pluck('study_programs.id');
 
-        $pengajuan = PengajuanAkreditasi::findOrFail($dokumen->id_pengajuan);
+        $pengajuan = $pengajuanDokumen->pengajuan;
 
         if (!$studyProgramIds->contains($pengajuan->id_program_studi)) {
             abort(403, 'Anda tidak memiliki akses untuk mengunduh dokumen ini.');
         }
 
-        if (!Storage::disk('public')->exists($dokumen->path_file)) {
-            abort(404, 'File tidak ditemukan.');
-        }
-
-        return Storage::disk('public')->download(
-            $dokumen->path_file,
-            $dokumen->original_filename
-        );
+        return $pengajuanDokumen->downloadDokumen();
     }
 
     /**

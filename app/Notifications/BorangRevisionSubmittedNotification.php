@@ -34,9 +34,9 @@ class BorangRevisionSubmittedNotification extends Notification implements Should
         $revisionNumber = $latestRevision ? $latestRevision->revision_number : 1;
 
         return (new MailMessage)
-            ->subject('Revisi Borang Diterima - ' . $this->pengajuan->nomor_pengajuan)
+            ->subject('Revisi Dokumen Diterima - ' . $this->pengajuan->nomor_pengajuan)
             ->greeting('Halo ' . $notifiable->name . ',')
-            ->line("Prodi telah submit revisi borang {$this->pengajuan->studyProgram->name}.")
+            ->line("Prodi telah submit revisi dokumen {$this->pengajuan->studyProgram->name}.")
             ->line("**Revisi ke:** #{$revisionNumber}")
             ->line("**Tanggal Submit:** {$latestRevision->revised_at->locale('id')->translatedFormat('d M Y H:i')}")
             ->line('')
@@ -44,7 +44,7 @@ class BorangRevisionSubmittedNotification extends Notification implements Should
             ->line($latestRevision->revision_notes ?? 'Revisi sesuai catatan validator.')
             ->line('')
             ->action('Review Revisi', route('validator.borang.show', $this->validation->assignment->id))
-            ->line('Silakan review kembali revisi yang telah dilakukan.')
+            ->line('Silakan mereview kembali revisi yang telah dilakukan.')
             ->salutation('Salam, ' . config('app.name'));
     }
 
@@ -54,7 +54,7 @@ class BorangRevisionSubmittedNotification extends Notification implements Should
 
         return [
             'type' => 'borang_revision_submitted',
-            'title' => 'Revisi Borang Diterima',
+            'title' => 'Revisi dokumen Diterima',
             'message' => "Prodi telah submit revisi #{$latestRevision->revision_number} untuk borang {$this->pengajuan->nomor_pengajuan}",
             'pengajuan_id' => $this->pengajuan->id,
             'pengajuan_nomor' => $this->pengajuan->nomor_pengajuan,

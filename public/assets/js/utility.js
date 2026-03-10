@@ -158,6 +158,91 @@ function showToast(type, message) {
     });
 }
 
+async function swalConfirmSubmit(icon = 'question', message = 'Apakah Anda yakin?', showCancelButton = true) {
+    // Ganti \n jadi <br> agar baris baru terlihat di SweetAlert HTML
+    const htmlMessage = message.replace(/\n/g, '<br>');
+    const res = await Swal.fire({
+        icon: icon,
+        html: htmlMessage,
+        showCancelButton: showCancelButton
+    });
+    return res.isConfirmed;
+}
+
+// Fungsi dasar SweetAlert
+function triggerSweetalert(title, text, icon = 'info') {
+    Swal.fire({ title, text, icon });
+}
+
+// Fungsi submit form dengan SweetAlert
+function submitFormSwal(form, message, href, isForceDelete = false, hrefPermanent = '', confirmButtonText = 'Ya, lanjutkan', denyButtonText = 'Ya, hapus permanen') {
+    if (!form) return; // aman jika form tidak ada
+
+    Swal.fire({
+        title: 'Konfirmasi',
+        text: message,
+        icon: 'warning',
+        showCancelButton: true,
+        showDenyButton: isForceDelete,
+        denyButtonText: denyButtonText,
+        confirmButtonColor: '#3085d6',
+        denyButtonColor: '#e74c3c',
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: confirmButtonText
+    }).then(result => {
+        if (result.isConfirmed) {
+            form.action = href;
+            form.submit();
+        } else if (result.isDenied && isForceDelete) {
+            form.action = hrefPermanent;
+            form.submit();
+        }
+    });
+}
+
+function confirmDelete(href = "", text = "") {
+    let form = document.getElementById('delete-form');
+    submitFormSwal(form, `Data ${text} ${customMessages.alerts.delete_text}`, href);
+};
+
+function confirmDeletePermanent(href = "", text = "", href_permanent = "") {
+    let form = document.getElementById('delete-form');
+    submitFormSwal(form, `Data ${text} ${customMessages.alerts.delete_text}`, href, true, href_permanent);
+};
+
+// Pasang event listener untuk tombol
+function alertConfirm(options) {
+    const { selector, formId = null, isMessage = false, isDataHref = false, isPermanent = false } = options;
+    const buttons = document.querySelectorAll(selector);
+    if (!buttons.length) return;
+    buttons.forEach(button => {
+        button.addEventListener('click', e => {
+            e.preventDefault();
+
+            const form = formId ? document.getElementById(formId) : document.getElementById(button.dataset.idForm);
+            if (!form) return;
+
+            const message = isMessage
+                ? button.dataset.message
+                : `Data ${button.dataset.text || ''} akan dihapus.`;
+
+            const href = isDataHref ? button.dataset.href : button.getAttribute('href');
+            const hrefPermanent = isPermanent ? button.dataset.hrefpermanent : '';
+
+            submitFormSwal(form, message, href, isPermanent, hrefPermanent);
+        });
+    });
+}
+
+// Contoh penggunaan untuk semua tombol
+alertConfirm({ selector: '.tombol-konfirmasi', formId: 'confirm-form', isMessage: true });
+alertConfirm({ selector: '.tombol-bulk-konfirmasi', formId: 'bulkconfirm-form', isMessage: true });
+alertConfirm({ selector: '.tombol-bulk-konfirmasi-custom', isMessage: true });
+alertConfirm({ selector: '.tombol-hapus', formId: 'delete-form' });
+alertConfirm({ selector: '.tombol-permanent', formId: 'delete-form', isMessage: true });
+alertConfirm({ selector: '.tombol-hapus-permanent', formId: 'delete-form', isPermanent: true });
+alertConfirm({ selector: '.tombol-hapus-multiple', formId: 'bulkdestroy-form', isDataHref: true });
+alertConfirm({ selector: '.tombol-hapus-multiple-permanent', formId: 'bulkdestroy-form', isDataHref: true, isPermanent: true });
 /**
  * ============================================
  * GET COLOR FOR SCORE (JavaScript version)
@@ -339,4 +424,19 @@ function initSensitiveToggle() {
             icon.classList.add('bi-eye');
         }
     });
+}
+
+function escapeHtml(str) {
+    return String(str || '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+}
+
+function appendChildHtml(str) {
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
 }

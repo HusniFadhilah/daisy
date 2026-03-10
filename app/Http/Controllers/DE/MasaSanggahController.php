@@ -58,7 +58,7 @@ class MasaSanggahController extends Controller
                 $query->whereIn('status', [
                     PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
                     PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
-                    PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
+                    PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN,
                 ]);
             }
         }
@@ -98,7 +98,7 @@ class MasaSanggahController extends Controller
             'ada_banding' => PengajuanAkreditasi::whereIn('status', [
                 PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
                 PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
-                PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
+                PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN,
             ])->count(),
         ];
 

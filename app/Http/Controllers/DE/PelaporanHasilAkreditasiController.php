@@ -484,16 +484,12 @@ class PelaporanHasilAkreditasiController extends Controller
      */
     public function downloadDokumen($id, $jenisdokumen)
     {
-        $dokumen = PengajuanDokumen::where('id_pengajuan', $id)
+        $pengajuanDokumen = PengajuanDokumen::where('id_pengajuan', $id)
             ->where('jenis_dokumen', $jenisdokumen)
             ->where('is_latest', true)
             ->firstOrFail();
 
-        if (!Storage::disk('public')->exists($dokumen->path_file)) {
-            return back()->with('error', 'File tidak ditemukan.');
-        }
-
-        return Storage::disk('public')->download($dokumen->path_file, $dokumen->original_filename);
+        return $pengajuanDokumen->downloadDokumen();
     }
 
     /**
@@ -715,6 +711,35 @@ class PelaporanHasilAkreditasiController extends Controller
             $masaBerlaku = $this->calculateMasaBerlaku($hasil, $pengajuan->tanggal_penetapan);
             $elemenList  = ($hasil->detail_skor_al ?? [])['elemen'] ?? [];
 
+            $resume = [
+                'mahasiswa_aktif'       => 248,
+                'dosen_tetap'           => 12,
+                'rasio_dosen_mahasiswa' => '1 : 21',
+                'tahun_berdiri'         => 2004,
+                'jumlah_lulusan'        => 1.340,
+                'rata_ipk'              => '3.52',
+                'masa_studi'            => '8.4',
+                'serapan_kerja'         => 87,
+                'narasi_kondisi'        => 'Program studi telah beroperasi selama 20 tahun dengan
+        rekam jejak akademik yang konsisten. Kualitas lulusan diakui secara nasional
+        melalui berbagai penghargaan di bidang desain arsitektur.',
+
+                'keunggulan' => [
+                    ['kriteria' => 'K1 – Visi & Misi',   'temuan' => 'Visi misi selaras dengan RIP universitas dan diperbarui secara berkala melalui proses partisipatif.'],
+                    ['kriteria' => 'K4 – Penelitian',     'temuan' => 'Jumlah publikasi Scopus meningkat 40% dalam dua tahun terakhir dengan keterlibatan mahasiswa S1.'],
+                    ['kriteria' => 'K6 – Lulusan',        'temuan' => 'Tingkat serapan kerja ≤ 6 bulan mencapai 87%, melampaui rata-rata nasional bidang arsitektur.'],
+                    ['kriteria' => 'K3 – Kurikulum',      'temuan' => 'Kurikulum OBE telah diimplementasikan penuh dengan asesmen berbasis capaian pembelajaran yang terukur.'],
+                    ['kriteria' => 'K5 – PKM',            'temuan' => 'Dosen aktif dalam kegiatan pengabdian dengan mitra industri skala nasional dan internasional.'],
+                ],
+
+                'ketidakunggulan' => [
+                    ['kriteria' => 'K2 – Tata Kelola',   'temuan' => 'Sistem penjaminan mutu internal belum sepenuhnya terdokumentasi; SOP belum konsisten dijalankan.'],
+                    ['kriteria' => 'K7 – Sarana',        'temuan' => 'Laboratorium komputer desain membutuhkan pembaruan perangkat keras yang signifikan.'],
+                    ['kriteria' => 'K3 – Kurikulum',     'temuan' => 'Integrasi mata kuliah interdisiplin dengan prodi lain masih sangat terbatas.'],
+                    ['kriteria' => 'K8 – Keuangan',      'temuan' => 'Proporsi pendanaan penelitian dari sumber eksternal masih di bawah 30% dari total anggaran riset.'],
+                ],
+            ];
+
             $data = [
                 'pengajuan'        => $pengajuan,
                 'hasil'            => $hasil,
@@ -724,6 +749,7 @@ class PelaporanHasilAkreditasiController extends Controller
                 'tanggalPenetapan' => $pengajuan->tanggal_penetapan,
                 'masaBerlaku'      => $masaBerlaku,
                 'elemenList'       => $elemenList,
+                'resume'            => $resume
             ];
 
             return view('de.pelaporan-hasil-akreditasi.sertifikat-pdf', $data);

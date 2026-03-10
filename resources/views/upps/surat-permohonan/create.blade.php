@@ -418,7 +418,7 @@
         // Submit button
         // ===============================
         if (btnSubmit) {
-            btnSubmit.addEventListener('click', function() {
+            btnSubmit.addEventListener('click', async function() {
                 if (isDraftInput) isDraftInput.value = '0';
 
                 // kirim: file wajib
@@ -430,12 +430,12 @@
 
                 // cek file sebelum confirm
                 if (fileInput && (!fileInput.files || !fileInput.files.length)) {
-                    alert('File surat permohonan wajib diupload untuk mengirim permohonan!');
+                    Swal.fire('Perhatian', 'File surat permohonan wajib diupload untuk mengirim permohonan!', 'warning');
                     fileInput.focus();
                     return;
                 }
 
-                if (!confirm('Apakah Anda yakin data yang diisi sudah benar dan siap untuk dikirim?')) {
+                if (!(await swalConfirmSubmit('warning', 'Apakah Anda yakin data yang diisi sudah benar dan siap untuk dikirim?'))) {
                     return;
                 }
 

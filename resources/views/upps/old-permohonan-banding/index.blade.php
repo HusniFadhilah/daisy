@@ -33,7 +33,7 @@
     </nav>
 
     <!-- Page Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h4 class="mb-1">
                 <i class="bi bi-arrow-repeat"></i> Permohonan Banding Hasil Akreditasi
@@ -44,7 +44,7 @@
 
     <!-- Info Alert -->
     @if($stats['dalam_proses'] > 0)
-    <div class="alert alert-info alert-permanent border-start border-4 border-info mb-4">
+    <div class="alert alert-info alert-permanent border-start border-2 border-info mb-4">
         <div class="d-flex align-items-start">
             <i class="bi bi-info-circle-fill fs-1 me-3 text-info"></i>
             <div class="flex-grow-1">

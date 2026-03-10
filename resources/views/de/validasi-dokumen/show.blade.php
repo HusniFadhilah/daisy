@@ -7,7 +7,7 @@
     <!-- Header -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
                 <div>
                     <h4 class="mb-1">
                         <i class="bi bi-clipboard-check"></i> Detail Validasi Dokumen
@@ -67,7 +67,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
-                    <h6 class="mb-3">Progress Validasi</h6>
+                    <h6 class="mb-3">Progres Validasi</h6>
                     <div class="row">
                         <div class="col-md-4">
                             <label class="text-muted small">LED</label>
@@ -96,7 +96,7 @@
                     </div>
                     <div class="text-center mt-3">
                         <span class="badge bg-{{ $progress['percentage'] >= 100 ? 'success' : 'warning' }}">
-                            Total Progress: {{ $progress['percentage'] }}%
+                            Total Progres: {{ $progress['percentage'] }}%
                         </span>
                     </div>
                 </div>
@@ -114,56 +114,58 @@
                     <h5 class="mb-0">Informasi Validasi Dokumen</h5>
                 </div>
                 <div class="card-body">
-                    <table class="table table-bordered">
-                        <tr>
-                            <th width="30%">Validator</th>
-                            <td>
-                                <strong>{{ $assignment->user->name }}</strong>
-                                <br>
-                                <small class="text-muted">{{ $assignment->user->email }}</small>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Program Studi</th>
-                            <td>
-                                <strong>{{ $pengajuan->studyProgram->name }}</strong>
-                                <br>
-                                <small class="text-muted">
-                                    {{ $pengajuan->studyProgram->university->name }}
-                                </small>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Tanggal Penugasan Validator</th>
-                            <td>
-                                : {{ $pengajuan->tanggal_validasi_borang_assigned
+                    <div class="table-responsive">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th width="35%">Validator</th>
+                                <td>
+                                    <strong>{{ $assignment->user->name }}</strong>
+                                    <br>
+                                    <small class="text-muted text-wrap">{{ $assignment->user->email }}</small>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Program Studi</th>
+                                <td>
+                                    <strong>{{ $pengajuan->studyProgram->name }}</strong>
+                                    <br>
+                                    <small class="text-muted">
+                                        {{ $pengajuan->studyProgram->university->name }}
+                                    </small>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Tanggal Penugasan Validator</th>
+                                <td>
+                                    : {{ $pengajuan->tanggal_validasi_borang_assigned
                                     ? $pengajuan->tanggal_validasi_borang_assigned->locale('id')->translatedFormat('d M Y H:i')
                                     : '-' }}
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Tanggal Validasi Selesai</th>
-                            <td>
-                                : {{ $pengajuan->tanggal_validasi_borang_selesai
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Tanggal Validasi Selesai</th>
+                                <td>
+                                    : {{ $pengajuan->tanggal_validasi_borang_selesai
                                     ? $pengajuan->tanggal_validasi_borang_selesai->locale('id')->translatedFormat('d M Y H:i')
                                     : '-' }}
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Status Validasi Dokumen</th>
-                            <td>
-                                {!! $pengajuan->getCustomBadgeLastStatus('validasi_dokumen','de','label_long_for') !!}
-                            </td>
-                        </tr>
-                    </table>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Status Validasi Dokumen</th>
+                                <td>
+                                    {!! $pengajuan->getCustomBadgeLastStatus('validasi_dokumen','de','label_long_for') !!}
+                                </td>
+                            </tr>
+                        </table>
 
-                    @if($assignment->status_penawaran === 'accepted')
-                    <div class="mt-3">
-                        <a href="{{ route('validator.borang.show', $assignment->id) }}" class="btn btn-primary" target="_blank">
-                            <i class="bi bi-clipboard-check"></i> Lihat Detail Validasi
-                        </a>
+                        @if($assignment->status_penawaran === 'accepted')
+                        <div class="mt-3">
+                            <a href="{{ route('validator.borang.show', $assignment->id) }}" class="btn btn-primary" target="_blank">
+                                <i class="bi bi-clipboard-check"></i> Lihat Detail Validasi
+                            </a>
+                        </div>
+                        @endif
                     </div>
-                    @endif
                 </div>
             </div>
 
@@ -210,7 +212,7 @@
                         </div>
 
                         <div class="mb-2">
-                            <small class="text-muted">Total Progress</small>
+                            <small class="text-muted">Total Progres</small>
                             <div class="progress">
                                 <div class="progress-bar" id="valTotalBar" style="width:0%"></div>
                             </div>

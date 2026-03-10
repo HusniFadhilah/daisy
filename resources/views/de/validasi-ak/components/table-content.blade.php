@@ -15,7 +15,7 @@
                         <th width="20%">Permohonan Akreditasi</th>
                         <th width="15%">Validator</th>
                         <th width="15%">Status Validasi</th>
-                        <th width="15%">Progress Validasi</th>
+                        <th width="15%">Progres Validasi</th>
                         <th width="15%">Tanggal Validasi AK</th>
                         <th width="10%" class="text-center">Aksi</th>
                     </tr>
@@ -77,7 +77,7 @@
                     ],
                     };
 
-                    // ===== Progress validasi =====
+                    // ===== Progres validasi =====
                     // (disarankan: $totalElements dipindah ke luar loop)
                     $totalElements = $totalElements ?? \DB::table('elemen_standar')->count();
 

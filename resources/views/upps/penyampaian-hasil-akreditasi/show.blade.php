@@ -16,7 +16,7 @@
     </nav>
 
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h5 class="mb-1">
                 <i class="bi bi-clipboard-data"></i> Detail Penyampaian Hasil Akreditasi
@@ -62,9 +62,9 @@
             @if($beritaAcara)
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start">
                         <div class="d-flex align-items-start flex-grow-1">
-                            <div class="flex-grow-1 ms-2">
+                            <div class="flex-grow-1">
                                 <h5 class="mb-1">Berita Acara Rapat Penyampaian Hasil</h5>
                                 <p class="text-muted mb-2">
                                     <i class="bi bi-file-pdf text-danger"></i>
@@ -76,7 +76,7 @@
                             </div>
                         </div>
                         <div>
-                            <a href="{{ route('upps.penyampaian-hasil-akreditasi.download-berita-acara', $pengajuan->id) }}" class="btn btn-outline-primary" target="_blank">
+                            <a href="{{ route('upps.penyampaian-hasil-akreditasi.download-berita-acara', $pengajuan->id) }}" class="btn btn-outline-primary mt-3" target="_blank">
                                 <i class="bi bi-eye"></i> Lihat File
                             </a>
                         </div>

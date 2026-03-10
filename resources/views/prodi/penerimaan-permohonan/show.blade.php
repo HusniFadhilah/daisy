@@ -16,7 +16,7 @@
     </nav>
 
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h5 class="mb-1">
                 <i class="bi bi-envelope-check"></i> Detail Penerimaan Permohonan Akreditasi
@@ -93,7 +93,7 @@
                         <small>Tersedia pada: {{ $dokumenPenerimaan->created_at->locale('id')->translatedFormat('d M Y H:i') }}</small>
                     </div>
 
-                    <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded mb-3">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center rounded gap-3">
                         <div class="d-flex align-items-center">
                             <i class="bi bi-file-earmark-pdf text-danger me-3" style="font-size: 48px;"></i>
                             <div>
@@ -129,7 +129,7 @@
                     <div class="card">
                         <div class="card-header bg-light">
                             <h6 class="mb-0">
-                                <i class="bi bi-file-pdf"></i> Preview Dokumen
+                                <i class="bi bi-file-pdf"></i> <i>Preview</i> Dokumen
                             </h6>
                         </div>
                         <div class="card-body p-0">
@@ -179,7 +179,7 @@
             <div class="card mb-4">
                 <div class="card-header bg-secondary text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-list-check"></i> Progress Workflow
+                        <i class="bi bi-list-check"></i> Progres <i>Workflow</i>
                     </h5>
                 </div>
                 <div class="card-body">

@@ -1,3 +1,4 @@
+{{-- resources\views\de\penugasan-ak\components\table-content.blade.php --}}
 <div class="card">
     <div class="card-header bg-light d-flex justify-content-between align-items-center">
         <h6 class="mb-0">

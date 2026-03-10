@@ -1064,7 +1064,32 @@
             font-weight: 400;
         }
 
+        .lha-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2vh;
+        }
+
+        .lha-bab-title {
+            font-size: 1.8vh;
+            font-weight: 700;
+            color: #932136;
+            border-left: 0.35vh solid #932136;
+            padding-left: 0.8vh;
+            margin-bottom: 0.4vh;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .lha-bab-content {
+            font-size: 1.5vh;
+            line-height: 1.65;
+            color: #222;
+            text-align: justify;
+        }
+
     </style>
+    <link rel="stylesheet" href="{{ asset('assets/css/sertifikat/page3.css') }}">
 </head>
 <body>
     {{-- ===== HALAMAN 1: SERTIFIKAT AKREDITASI ===== --}}
@@ -1190,8 +1215,18 @@
 
     {{-- Navigation buttons --}}
     <div class="page-nav">
-        <button id="prevBtn" onclick="showPage(1)" disabled>Halaman 1</button>
-        <button id="nextBtn" onclick="showPage(2)">Halaman 2</button>
+        <button id="prevBtn" onclick="showPage(currentPage - 1)" disabled>◀ Sebelumnya</button>
+        <span id="pageInfo" style="
+        padding: 10px 16px;
+        background: rgba(255,255,255,0.9);
+        border-radius: 6px;
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 600;
+        font-size: 13px;
+        color: #333;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    ">1 / 3</span>
+        <button id="nextBtn" onclick="showPage(currentPage + 1)">Berikutnya ▶</button>
     </div>
 
     {{-- ===== PAGE BREAK ===== --}}
@@ -1357,28 +1392,121 @@
         </div>
     </div>
 
+    {{-- ===== HALAMAN 3: RESUME ASESMEN AKREDITASI ===== --}}
+    <div class="certificate-wrapper page-3-wrapper">
+        <div class="certificate-container">
+            <div class="certificate-frame">
+                <div class="certificate-inner">
+                    <div class="watermark-logo"></div>
+
+                    {{-- ===== HEADER (sama dengan halaman 1 & 2) ===== --}}
+                    <div class="header">
+                        <div class="header-col header-left">
+                            <div class="logo-wrap">
+                                <img src="https://daisy.sp3stab.id/assets/images/logo.png" alt="Logo LAMDEPILAR">
+                            </div>
+                        </div>
+                        <div class="header-col header-mid">
+                            <div class="inst-name">
+                                Lembaga Akreditasi Mandiri Desain Perencanaan Lingkungan Arsitektur
+                                (LAMDEPILAR)
+                            </div>
+                            <div class="inst-sub">
+                                Lampiran Sertifikat Akreditasi Program Studi
+                            </div>
+                        </div>
+                        <div class="header-col header-right">
+                            <div><strong>Nomor</strong></div>
+                            <div>{{ $nomorSertifikat }}</div>
+                            <div style="margin-top:3px;"><strong>Tanggal</strong></div>
+                            <div>{{ \App\Libraries\Date::tglIndo($tanggalPenetapan) }}</div>
+                        </div>
+                    </div>
+
+                    {{-- ===== JUDUL HALAMAN 3 ===== --}}
+                    <div class="page-3-header">
+                        <div class="page-3-title">Resume Asesmen Akreditasi</div>
+                        <div class="page-3-subtitle">
+                            {{ $studyProgram->name }} — {{ $university->name }}
+                        </div>
+                    </div>
+
+                    {{-- ===== BAGIAN 1: KONDISI PRODI ===== --}}
+                    <div class="lha-section">
+
+                        <div class="lha-bab">
+                            <div class="lha-bab-title">I. PENDAHULUAN</div>
+                            <div class="lha-bab-content">
+                                Program Studi Sarjana LAMDEPILAR diselenggarakan berdasarkan landasan hukum yang sah dan terdokumentasi dengan baik. Legalitas pendirian program studi didukung oleh surat keputusan pendirian dari kementerian yang berwenang, serta tercatat secara konsisten dalam pangkalan data pendidikan tinggi (PDDIKTI). Apabila terdapat perubahan nomenklatur atau penyesuaian kelembagaan, program studi memiliki dokumen kesinambungan yang dapat ditelusuri dan dipertanggungjawabkan.
+                            </div>
+                        </div>
+
+                        <div class="lha-bab">
+                            <div class="lha-bab-title">II. PROSES ASESMEN LAPANGAN</div>
+                            <div class="lha-bab-content">
+                                Program studi juga memiliki pedoman pengelolaan akademik dan non-akademik yang mendukung prinsip Good University Governance, termasuk akuntabilitas, transparansi, dan responsibilitas. Pelaporan akademik dan kelembagaan dilakukan secara tertib melalui sistem informasi yang terintegrasi dengan PDDIKTI. Secara umum, legalitas dan tata pamong telah berjalan efektif, meskipun penguatan dokumentasi evaluasi tata pamong secara periodik masih dapat ditingkatkan.
+                            </div>
+                        </div>
+
+                        <div class="lha-bab">
+                            <div class="lha-bab-title">III. HASIL ASESMEN LAPANGAN</div>
+                            <div class="lha-bab-content">
+                                Program studi juga memiliki pedoman pengelolaan akademik dan non-akademik yang mendukung prinsip Good University Governance, termasuk akuntabilitas, transparansi, dan responsibilitas. Pelaporan akademik dan kelembagaan dilakukan secara tertib melalui sistem informasi yang terintegrasi dengan PDDIKTI. Secara umum, legalitas dan tata pamong telah berjalan efektif, meskipun penguatan dokumentasi evaluasi tata pamong secara periodik masih dapat ditingkatkan.
+                            </div>
+                        </div>
+
+                        <div class="lha-bab">
+                            <div class="lha-bab-title">IV. REKOMENDASI UNTUK PROGRAM STUDI</div>
+                            <div class="lha-bab-content">
+                                Program studi juga memiliki pedoman pengelolaan akademik dan non-akademik yang mendukung prinsip Good University Governance, termasuk akuntabilitas, transparansi, dan responsibilitas. Pelaporan akademik dan kelembagaan dilakukan secara tertib melalui sistem informasi yang terintegrasi dengan PDDIKTI. Secara umum, legalitas dan tata pamong telah berjalan efektif, meskipun penguatan dokumentasi evaluasi tata pamong secara periodik masih dapat ditingkatkan.
+                            </div>
+                        </div>
+
+                        <div class="lha-bab">
+                            <div class="lha-bab-title">V. REKOMENDASI UNTUK LAMDEPILAR</div>
+                            <div class="lha-bab-content">
+                                Program studi juga memiliki pedoman pengelolaan akademik dan non-akademik yang mendukung prinsip Good University Governance, termasuk akuntabilitas, transparansi, dan responsibilitas. Pelaporan akademik dan kelembagaan dilakukan secara tertib melalui sistem informasi yang terintegrasi dengan PDDIKTI. Secara umum, legalitas dan tata pamong telah berjalan efektif, meskipun penguatan dokumentasi evaluasi tata pamong secara periodik masih dapat ditingkatkan.
+                            </div>
+                        </div>
+
+                    </div>{{-- /lha-section --}}
+                    {{-- /temuan-section --}}
+
+                    {{-- ===== FOOTER ===== --}}
+                    <div class="footer">
+                        Dokumen ini merupakan lampiran dari Sertifikat Akreditasi Nomor: {{ $nomorSertifikat }}<br>
+                        Resume asesmen disusun berdasarkan hasil visitasi dan evaluasi asesor LAMDEPILAR.
+                    </div>
+
+                </div>{{-- /certificate-inner --}}
+            </div>{{-- /certificate-frame --}}
+        </div>{{-- /certificate-container --}}
+    </div>{{-- /page-3-wrapper --}}
+
     <script>
         let currentPage = 1;
 
         function showPage(pageNum) {
             const page1 = document.querySelector('.page-1-wrapper');
             const page2 = document.querySelector('.page-2-wrapper');
+            const page3 = document.querySelector('.page-3-wrapper');
             const prevBtn = document.getElementById('prevBtn');
             const nextBtn = document.getElementById('nextBtn');
+            const pageInfo = document.getElementById('pageInfo');
 
-            if (pageNum === 1) {
-                page1.style.display = 'flex';
-                page2.style.display = 'none';
-                prevBtn.disabled = true;
-                nextBtn.disabled = false;
-                currentPage = 1;
-            } else if (pageNum === 2) {
-                page1.style.display = 'none';
-                page2.style.display = 'flex';
-                prevBtn.disabled = false;
-                nextBtn.disabled = true;
-                currentPage = 2;
-            }
+            // Sembunyikan semua
+            [page1, page2, page3].forEach(p => {
+                if (p) p.style.display = 'none';
+            });
+
+            // Tampilkan halaman yang diminta
+            const pages = [page1, page2, page3];
+            if (pages[pageNum - 1]) pages[pageNum - 1].style.display = 'flex';
+
+            currentPage = pageNum;
+            prevBtn.disabled = pageNum === 1;
+            nextBtn.disabled = pageNum === 3;
+            if (pageInfo) pageInfo.textContent = `${pageNum} / 3`;
         }
 
         // Initialize - show page 1

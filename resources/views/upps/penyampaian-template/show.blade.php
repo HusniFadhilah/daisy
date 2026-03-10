@@ -16,7 +16,7 @@
     </nav>
 
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h5 class="mb-1">
                 <i class="bi bi-file-earmark"></i> Detail Formulir dan Templat Dokumen
@@ -99,7 +99,7 @@
                 </div>
                 <div class="card-body">
                     @if($formulirPembayaran)
-                    <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center rounded gap-3">
                         <div class="d-flex align-items-center">
                             <i class="bi bi-file-earmark text-danger me-3" style="font-size: 48px;"></i>
                             <div>
@@ -146,7 +146,7 @@
                 </div>
                 <div class="card-body">
                     @if($templateLed)
-                    <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center rounded gap-3">
                         <div class="d-flex align-items-center">
                             <i class="bi bi-file-earmark-pdf text-danger me-3" style="font-size: 48px;"></i>
                             <div>
@@ -180,7 +180,7 @@
             @endphp
 
             @if($hasAnyTemplate)
-            <div class="alert alert-info alert-permanent d-flex justify-content-between align-items-start gap-3">
+            <div class="alert alert-info alert-permanent d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
                 <div>
                     <h6 class="mb-1">
                         <i class="bi bi-info-circle"></i> Informasi Pengiriman Ulang Dokumen
@@ -189,7 +189,6 @@
                         Apabila Program Studi Anda membutuhkan <strong>pengiriman ulang</strong> formulir pembayaran atau templat dokumen, silakan klik tombol <strong>Pengiriman Ulang</strong> untuk mengajukan permintaan pengiriman ulang formulir dan templat dokumen ke LAMDEPILAR.
                     </div>
                 </div>
-
                 <div class="text-nowrap">
                     <a href="{{ route('upps.penyampaian-template.request.form', [$pengajuan->id]) }}" class="btn btn-warning btn-sm">
                         <i class="bi bi-arrow-repeat"></i> Pengiriman Ulang

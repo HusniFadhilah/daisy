@@ -5,7 +5,7 @@
 @section('content')
 <div class="container-fluid py-3">
     {{-- Header --}}
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h4>
                 <i class="bi bi-person-check"></i>
@@ -109,7 +109,7 @@
             <div class="col-md-6">
                 <strong>Validator:</strong>
                 <p class="mb-1">{{ $currentAssignment->user->name }}</p>
-                <p class="mb-1"><small>{{ $currentAssignment->user->email }}</small></p>
+                <p class="mb-1 text-wrap"><small>{{ $currentAssignment->user->email }}</small></p>
             </div>
             <div class="col-md-6">
                 <strong>Status Penawaran:</strong>
@@ -138,10 +138,10 @@
             </div>
 
             <div class="d-flex gap-2">
-                <form action="{{ route('de.penerimaan-dokumen.cancel-validator', $currentAssignment->id) }}" method="POST" class="d-inline">
+                <form id="form-batalkan-validator" action="{{ route('de.penerimaan-dokumen.cancel-validator', $currentAssignment->id) }}" method="POST" class="d-inline">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Batalkan penugasan validator ini? Email penawaran akan dibatalkan.')">
+                    <button type="button" class="btn btn-danger btn-sm tombol-hapus" data-id-form="form-batalkan-validator" data-text="penugasan validator">
                         <i class="bi bi-x-circle"></i> Batalkan Penugasan
                     </button>
                 </form>
@@ -178,7 +178,7 @@
 
             <div class="mt-2">
                 <a href="{{ route('validator.borang.show', $currentAssignment->id) }}" class="btn btn-info btn-sm" target="_blank">
-                    <i class="bi bi-eye"></i> Lihat Progress Validasi
+                    <i class="bi bi-eye"></i> Lihat Progres Validasi
                 </a>
             </div>
             @endif
@@ -233,7 +233,7 @@
                     <label class="form-label fw-bold">
                         Upload Surat Tugas Validator <span class="text-danger">*</span>
                     </label>
-                    <input type="file" name="file_surat_tugas" id="file_surat_tugas" class="form-control" accept=".pdf">
+                    <input type="file" name="file_surat_tugas" id="file_surat_tugas" class="form-control" accept=".pdf" required>
                     <small class="text-muted">
                         Format: PDF | Maksimal: 5MB |
                     </small>

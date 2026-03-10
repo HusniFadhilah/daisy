@@ -64,6 +64,14 @@ class UserSeeder extends Seeder
                 'roles' => ['asesor'],
             ],
             [
+                'name' => 'Asesor 4',
+                'email' => 'asesor4@daisy.lamdepilar.or.id',
+                'password' => Hash::make('=Secret1234'),
+                'role' => 'user',
+                'role_selected' => 'asesor',
+                'roles' => ['asesor'],
+            ],
+            [
                 'name' => 'Siti Nurhaliza',
                 'email' => 'siti.nurhaliza@daisy.lamdepilar.or.id',
                 'password' => Hash::make('=Secret1234'),
@@ -256,12 +264,28 @@ class UserSeeder extends Seeder
                 'must_change_password' => true
             ],
             [
-                'name' => 'Surveillance',
-                'email' => 'surveillance@daisy.lamdepilar.or.id',
+                'name' => 'Asesor Banding 1',
+                'email' => 'asesorbanding1@daisy.lamdepilar.or.id',
                 'password' => Hash::make('=Secret1234'),
                 'role' => 'user',
-                'role_selected' => 'surveillance',
-                'roles' => ['surveillance'],
+                'role_selected' => 'asesor_banding',
+                'roles' => ['asesor_banding'],
+            ],
+            [
+                'name' => 'Asesor Banding 2',
+                'email' => 'asesorbanding2@daisy.lamdepilar.or.id',
+                'password' => Hash::make('=Secret1234'),
+                'role' => 'user',
+                'role_selected' => 'asesor_banding',
+                'roles' => ['asesor_banding'],
+            ],
+            [
+                'name' => 'Asesor Banding 3',
+                'email' => 'asesorbanding3@daisy.lamdepilar.or.id',
+                'password' => Hash::make('=Secret1234'),
+                'role' => 'user',
+                'role_selected' => 'asesor_banding',
+                'roles' => ['asesor_banding'],
             ],
             [
                 'name' => 'Default User',
@@ -277,7 +301,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('=Secret1234'),
                 'role' => 'admin',
                 'role_selected' => 'super_admin',
-                'roles' => ['super_admin', 'sekretariat', 'asesor', 'validator', 'verifikator', 'admin_univ', 'admin_prodi', 'keuangan_lamdepilar', 'default'],
+                'roles' => ["super_admin", "sekretariat", "asesor", "asesor_banding", "validator", "validator", "verifikator", "admin_univ", "admin_prodi", "keuangan_lamdepilar", "default"],
             ],
         ];
 

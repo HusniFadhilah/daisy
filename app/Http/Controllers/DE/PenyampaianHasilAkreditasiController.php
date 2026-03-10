@@ -128,7 +128,7 @@ class PenyampaianHasilAkreditasiController extends Controller
         $validationSummary = $this->hasilService->getValidationSummary($hasil);
 
         $detailSkorAL = $hasil->detail_skor_al ?? [];
-        $kriteriaList = $detailSkorAL['kriteria'] ?? [];
+        $kriteriaList = $hasil->getKriteriaOrderedList();
         $elemenList   = $detailSkorAL['elemen']   ?? [];
         // Untuk kartu keterangan batasan skor — dari syarat_akreditasi kelompok rentang_skor
         $rentangSkor = $this->syaratRepo->getRentangSkor();

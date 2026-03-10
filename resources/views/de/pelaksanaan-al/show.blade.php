@@ -14,7 +14,7 @@
     </nav>
 
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h5 class="mb-1">
                 <i class="bi bi-geo-alt"></i> Detail Pelaksanaan AL
@@ -44,7 +44,7 @@
             <div class="alert alert-info alert-permanent">
                 <i class="bi bi-clock-history"></i>
                 <strong>Asesmen Lapangan Berlangsung</strong><br>
-                Proses asesmen lapangan sedang berlangsung. Pantau progress penilaian asesor secara berkala
+                Proses asesmen lapangan sedang berlangsung. Pantau progres penilaian asesor secara berkala
             </div>
             @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_AL_SELESAI)
             <div class="alert alert-success alert-permanent">
@@ -77,7 +77,7 @@
                                 <tr>
                                     <th>Nama Asesor</th>
                                     <th>Status</th>
-                                    <th>Progress Penilaian</th>
+                                    <th>Progres Penilaian</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -132,7 +132,7 @@
 
 <!-- Validator untuk Pelaporan -->
 <div class="card mb-4">
-    <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+    <div class="card-header bg-warning text-dark d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
         <h5 class="mb-0">
             <i class="bi bi-person-check"></i> Validator untuk Rekap & Pelaporan
         </h5>
@@ -232,7 +232,7 @@
         @foreach($beritaAcaraList as $index => $beritaAcara)
         <div class="card mb-3 border">
             <div class="card-body">
-                <div class="d-flex align-items-start">
+                <div class="d-flex flex-column flex-md-row align-items-start mb-2 gap-3">
                     <i class="bi bi-file-earmark-pdf text-danger me-3" style="font-size: 40px;"></i>
                     <div class="flex-grow-1">
                         <h6 class="mb-1">
@@ -297,7 +297,7 @@
                         ($lha->status_persetujuan_prodi === 'revision_required' ? 'warning' : 'secondary'))
                     }}">
             <div class="card-body">
-                <div class="d-flex align-items-start mb-2">
+                <div class="d-flex flex-column flex-md-row align-items-start mb-2 gap-3">
                     <i class="bi bi-file-earmark-pdf text-danger me-3" style="font-size: 40px;"></i>
                     <div class="flex-grow-1">
                         <h6 class="mb-1">

@@ -59,7 +59,7 @@
 @section('content')
 <div class="container-fluid py-3">
     {{-- Header --}}
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h3>
                 <i class="bi bi-clipboard-check"></i>
@@ -172,7 +172,7 @@
         <div class="col-md-3">
             <div class="card text-center">
                 <div class="card-body">
-                    <h6 class="text-muted">Total Progress</h6>
+                    <h6 class="text-muted">Total Progres</h6>
                     <h3 class="mb-0"><span id="percent-total">{{ $progress['percentage'] }}</span>%</h3>
                     <div class="progress mt-2">
                         <div class="progress-bar bg-success" id="bar-total" style="width: {{ $progress['percentage'] }}%"></div>
@@ -914,7 +914,7 @@ $assignmentId = $assignment->id;
             formUpload.addEventListener('submit', function(e) {
                 if (!fileInput.files.length) {
                     e.preventDefault();
-                    alert('Pilih file Excel terlebih dahulu');
+                    Swal.fire('Perhatian', 'Pilih file Excel terlebih dahulu', 'warning');
                     return;
                 }
 
@@ -923,7 +923,7 @@ $assignmentId = $assignment->id;
 
                 if (file.size > maxSize) {
                     e.preventDefault();
-                    alert('Ukuran file terlalu besar (maksimal 10MB)');
+                    Swal.fire('Perhatian', 'Ukuran file terlalu besar (maksimal 10MB)', 'warning');
                     return;
                 }
 
@@ -991,7 +991,7 @@ $assignmentId = $assignment->id;
                 if (data.redirect) window.location.href = data.redirect;
             } catch (err) {
                 console.error(err);
-                alert('Terjadi error saat submit');
+                Swal.fire('Error', 'Terjadi error saat submit', 'error');
             }
         }
 
@@ -1306,7 +1306,7 @@ $assignmentId = $assignment->id;
             // guard: kalau kosong, jangan jalan
             const hasItem = (category === 'all') ? hasAnyReviewItem() : hasReviewItemInTab(category);
             if (!hasItem) {
-                alert('Tidak ada item untuk di-reset pada pilihan ini.');
+                Swal.fire('Perhatian', 'Tidak ada item untuk di-reset pada pilihan ini.', 'warning');
                 return;
             }
 
@@ -1334,7 +1334,7 @@ $assignmentId = $assignment->id;
 
                 const data = await res.json();
                 if (!res.ok || !data.success) {
-                    alert(data.message || 'Gagal reset');
+                    Swal.fire('Perhatian', data.message || 'Gagal reset', 'error');
                     return;
                 }
 
@@ -1358,10 +1358,10 @@ $assignmentId = $assignment->id;
                 updateToggleAllButton();
                 updateResetDropdownState();
 
-                alert(data.message || `Reset ${label} berhasil`);
+                Swal.fire('Berhasil', data.message || `Reset ${label} berhasil`, 'success');
             } catch (err) {
                 console.error(err);
-                alert('Terjadi error saat reset');
+                Swal.fire('Error', 'Terjadi error saat reset', 'error');
             }
         }
 
@@ -1584,7 +1584,7 @@ $assignmentId = $assignment->id;
 
         async function runAutoTestReview() {
             if (isEnvLocal !== true || izinkanTestLocal !== true) {
-                alert('Auto Test hanya boleh dijalankan di ENV local dan izinkanTestLocal=true');
+                Swal.fire('Perhatian', 'Auto Test tidak diizinkan dalam mode production', 'warning');
                 return;
             }
 
@@ -1695,7 +1695,7 @@ $assignmentId = $assignment->id;
             await refreshStats();
             await loadMonitoringTable();
 
-            alert(`Auto Test Review selesai. LED: A${stats.led.A}/B${stats.led.B}/C${stats.led.C}, Suplemen: A${stats.suplemen.A}/B${stats.suplemen.B}/C${stats.suplemen.C}, LKPS: A${stats.lkps.A}/B${stats.lkps.B}/C${stats.lkps.C}`);
+            Swal.fire('Berhasil', `Auto Test Review selesai. LED: A${stats.led.A}/B${stats.led.B}/C${stats.led.C}, Suplemen: A${stats.suplemen.A}/B${stats.suplemen.B}/C${stats.suplemen.C}, LKPS: A${stats.lkps.A}/B${stats.lkps.B}/C${stats.lkps.C}`, 'success');
         }
 
         if (btnAutoTestReview) {

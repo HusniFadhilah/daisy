@@ -1,54 +1,73 @@
 <?php
-// app/Http/Controllers/UPPS/PelaksanaanBandingController.php
 
 namespace App\Http\Controllers\UPPS;
 
 use App\Http\Controllers\Controller;
 use App\Models\PengajuanAkreditasi;
+use App\Models\PengajuanDokumen;
+use App\Models\PengajuanPembayaran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class PelaksanaanBandingController extends Controller
 {
-    /**
-     * Display list of pelaksanaan banding
-     */
+    // ============================================================
+    // STATUS yang muncul di halaman pelaksanaan banding
+    // Dimulai dari banding_diterima karena invoice dibuat DE saat ini
+    // ============================================================
+    private const STATUS_PELAKSANAAN = [
+        // PengajuanAkreditasi::STATUS_MENUNGGU_PEMBAYARAN_BANDING,
+        // PengajuanAkreditasi::STATUS_PEMBAYARAN_BANDING_DITERIMA,
+        // PengajuanAkreditasi::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN_BANDING,
+        PengajuanAkreditasi::STATUS_PEMBAYARAN_BANDING_DIVERIFIKASI,
+        PengajuanAkreditasi::STATUS_ASESOR_AK_BANDING_ASSIGNED,
+        PengajuanAkreditasi::STATUS_AK_BANDING_IN_PROGRESS,
+        PengajuanAkreditasi::STATUS_AK_BANDING_ON_VALIDATION,
+        PengajuanAkreditasi::STATUS_AK_BANDING_SELESAI,
+        PengajuanAkreditasi::STATUS_AK_BANDING_DILAPORKAN,
+        PengajuanAkreditasi::STATUS_ASESOR_AL_BANDING_ASSIGNED,
+        PengajuanAkreditasi::STATUS_AL_BANDING_IN_PROGRESS,
+        PengajuanAkreditasi::STATUS_AL_BANDING_SELESAI,
+        PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN,
+    ];
+
+    // ============================================================
+    // INDEX
+    // ============================================================
+
     public function index(Request $request)
     {
-        $user = Auth::user();
+        $user            = Auth::user();
         $studyProgramIds = $user->studyPrograms()->pluck('study_programs.id');
 
         $query = PengajuanAkreditasi::with([
             'studyProgram.university',
             'studyProgram.degreeLevel',
-            'statusLog' => fn($q) => $q->whereIn('status_to', [
-                PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
-                PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
-            ])->orderBy('changed_at', 'desc'),
-        ])->whereIn('id_program_studi', $studyProgramIds)
-            ->whereNotNull('tanggal_pelaksanaan_banding')->whereExists(function ($q) {
+            // ✅ Load invoice banding saja
+            'pembayaranBanding',
+            'statusLog' => fn($q) => $q
+                ->whereIn('status_to', self::STATUS_PELAKSANAAN)
+                ->orderBy('changed_at', 'desc'),
+        ])
+            ->whereIn('id_program_studi', $studyProgramIds)->whereExists(function ($q) {
                 $q->select(DB::raw(1))
                     ->from('pengajuan_status_log as l')
                     ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
-                    ->whereIn('l.status_to', [
-                        PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
-                        PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
-                    ]);
+                    ->whereIn('l.status_to', self::STATUS_PELAKSANAAN);
             });
 
-        // Apply filters
         $this->applyFilters($query, $request);
 
         $pengajuans = $query
-            ->orderBy($request->get('sort_by', 'tanggal_pelaksanaan_banding'), $request->get('sort_order', 'desc'))
+            ->orderBy('updated_at', 'desc')
             ->paginate(20)
             ->appends($request->query());
 
-        // Statistics
         $stats = $this->calculateStatistics($studyProgramIds);
 
-        // Get tahun list
         $tahunList = PengajuanAkreditasi::whereIn('id_program_studi', $studyProgramIds)
             ->distinct()
             ->pluck('tahun_akreditasi')
@@ -62,90 +81,267 @@ class PelaksanaanBandingController extends Controller
         ));
     }
 
-    /**
-     * Show detail pelaksanaan banding
-     */
+    // ============================================================
+    // SHOW — dengan payment gate
+    // ============================================================
+
     public function show($id)
     {
         $pengajuan = PengajuanAkreditasi::with([
             'studyProgram.university',
             'studyProgram.degreeLevel',
             'pengaju',
-            'dokumen' => fn($q) => $q->whereIn('jenis_dokumen', [
-                'sertifikat',
-                'sk_akreditasi',
-                'dokumen_banding',
-            ])->orderBy('created_at', 'desc'),
-            'statusLog' => fn($q) => $q->orderBy('changed_at', 'desc'),
+            'asesmen.hasil',
+            // Semua dokumen banding (surat permohonan + formulir pembayaran)
+            'dokumen' => fn($q) => $q
+                ->whereIn('jenis_dokumen', [
+                    'surat_permohonan_banding',
+                    'formulir_pembayaran_banding',
+                    'dokumen_banding',
+                ])
+                ->where('is_latest', true)
+                ->orderBy('created_at', 'desc'),
+            'pembayaranBanding',
+            'statusLog' => fn($q) => $q
+                ->orderBy('changed_at', 'asc'),
         ])->findOrFail($id);
 
-        // Check access
-        $user = Auth::user();
-        $studyProgramIds = $user->studyPrograms()->pluck('study_programs.id');
-
+        // ✅ Cek akses UPPS
+        $studyProgramIds = Auth::user()->studyPrograms()->pluck('study_programs.id');
         if (!$studyProgramIds->contains($pengajuan->id_program_studi)) {
             abort(403, 'Anda tidak memiliki akses ke permohonan ini.');
         }
 
-        return view('upps.pelaksanaan-banding.show', compact('pengajuan'));
+        $pembayaranBanding     = $pengajuan->pembayaranBanding;
+        $formulirBanding       = $pengajuan->dokumen->firstWhere('jenis_dokumen', 'formulir_pembayaran_banding');
+        $pembayaranLunas       = $pembayaranBanding && $pembayaranBanding->status_pembayaran === 'terverifikasi';
+
+        return view('upps.pelaksanaan-banding.show', compact(
+            'pengajuan',
+            'pembayaranBanding',
+            'formulirBanding',
+            'pembayaranLunas'
+        ));
+    }
+
+    // ============================================================
+    // UPLOAD FORMULIR PEMBAYARAN BANDING
+    // ============================================================
+
+    /**
+     * Form upload formulir & bukti pembayaran banding
+     */
+    public function showUploadForm($id)
+    {
+        $pengajuan = PengajuanAkreditasi::with([
+            'studyProgram.university',
+            'studyProgram.degreeLevel',
+            'pembayaranBanding',
+        ])->findOrFail($id);
+
+        // Cek akses
+        $studyProgramIds = Auth::user()->studyPrograms()->pluck('study_programs.id');
+        if (!$studyProgramIds->contains($pengajuan->id_program_studi)) {
+            abort(403);
+        }
+
+        $pembayaranBanding = $pengajuan->pembayaranBanding;
+
+        // Harus ada invoice dulu dari DE
+        if (!$pembayaranBanding) {
+            return redirect()
+                ->route('upps.pelaksanaan-banding.show', $id)
+                ->with('error', 'Invoice pembayaran banding belum dibuat oleh LAMDEPILAR.');
+        }
+
+        // Hanya bisa upload jika status menunggu_pembayaran atau upload_ulang
+        if (!in_array($pembayaranBanding->status_pembayaran, ['menunggu_pembayaran', 'upload_ulang'])) {
+            return redirect()
+                ->route('upps.pelaksanaan-banding.show', $id)
+                ->with('error', 'Pembayaran tidak dapat diupload pada status saat ini.');
+        }
+
+        return view('upps.pelaksanaan-banding.upload-pembayaran', compact(
+            'pengajuan',
+            'pembayaranBanding'
+        ));
     }
 
     /**
-     * Apply filters to query
+     * Proses upload formulir & bukti pembayaran banding
      */
-    private function applyFilters($query, Request $request)
+    public function uploadPembayaran(Request $request, $id)
+    {
+        $request->validate([
+            'file_formulir_pembayaran' => 'required|file|mimes:xlsx|max:5120',
+            'tanggal_pembayaran'       => 'required|date_format:Y-m-d\TH:i',
+            'catatan_pembayaran'       => 'nullable|string|max:500',
+        ], [
+            'file_formulir_pembayaran.required' => 'File formulir & bukti pembayaran banding wajib diupload.',
+            'file_formulir_pembayaran.mimes'    => 'File harus berformat XLSX.',
+            'file_formulir_pembayaran.max'      => 'Ukuran file maksimal 5 MB.',
+            'tanggal_pembayaran.required'       => 'Tanggal pembayaran wajib diisi.',
+        ]);
+
+        $studyProgramIds = Auth::user()->studyPrograms()->pluck('study_programs.id');
+
+        DB::beginTransaction();
+        try {
+            $pengajuan = PengajuanAkreditasi::with('pembayaranBanding')->findOrFail($id);
+
+            if (!$studyProgramIds->contains($pengajuan->id_program_studi)) {
+                abort(403);
+            }
+
+            $pembayaranBanding = $pengajuan->pembayaranBanding;
+
+            if (!$pembayaranBanding) {
+                throw new \Exception('Invoice banding belum tersedia.');
+            }
+
+            if (!in_array($pembayaranBanding->status_pembayaran, ['menunggu_pembayaran', 'upload_ulang'])) {
+                throw new \Exception('Status pembayaran tidak memperbolehkan upload saat ini.');
+            }
+
+            $file     = $request->file('file_formulir_pembayaran');
+            $filename = 'formulir_pembayaran_banding_' . time() . '.' . $file->getClientOriginalExtension();
+            $path     = $file->storeAs(
+                "pengajuan/{$pengajuan->id}/formulir-pembayaran-banding",
+                $filename,
+                'public'
+            );
+
+            // ✅ Non-aktifkan dokumen lama
+            $pengajuan->dokumen()
+                ->where('jenis_dokumen', 'formulir_pembayaran_banding')
+                ->where('is_latest', true)
+                ->update(['is_latest' => false]);
+
+            // ✅ Simpan dokumen baru
+            PengajuanDokumen::create([
+                'id_pengajuan'      => $pengajuan->id,
+                'jenis_dokumen'     => 'formulir_pembayaran_banding',
+                'path_file'         => $path,
+                'nama_file'         => $filename,
+                'original_filename' => $file->getClientOriginalName(),
+                'file_size'         => $file->getSize(),
+                'mime_type'         => $file->getMimeType(),
+                'uploaded_by'       => auth()->id(),
+                'is_latest'         => true,
+                'versi'             => $pengajuan->dokumen()
+                    ->where('jenis_dokumen', 'formulir_pembayaran_banding')
+                    ->max('versi') + 1,
+            ]);
+
+            // ✅ Update invoice banding
+            $pembayaranBanding->update([
+                'bukti_path'         => $path,
+                'status_pembayaran'  => 'menunggu_verifikasi',
+                'tanggal_pembayaran' => $request->tanggal_pembayaran,
+                'catatan_pembayaran' => $request->catatan_pembayaran,
+            ]);
+
+            $pembayaranBanding->pengajuan->updateStatusSafely(
+                PengajuanAkreditasi::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN_BANDING,
+                'Formulir & bukti pembayaran banding telah diupload, menunggu validasi bagian keuangan'
+            );
+
+            DB::commit();
+
+            return redirect()
+                ->route('upps.pelaksanaan-banding.show', $id)
+                ->with('success', 'Formulir & bukti pembayaran banding berhasil diupload. Menunggu validasi dari LAMDEPILAR.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('uploadPembayaranBanding gagal', [
+                'pengajuan_id' => $id,
+                'error'        => $e->getMessage(),
+            ]);
+
+            if (isset($path) && Storage::disk('public')->exists($path)) {
+                Storage::disk('public')->delete($path);
+            }
+
+            return back()
+                ->withInput()
+                ->with('error', 'Gagal mengupload: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Download formulir pembayaran banding yang sudah diupload UPPS
+     */
+    public function downloadFormulir($id)
+    {
+        $pengajuan = PengajuanAkreditasi::findOrFail($id);
+
+        $studyProgramIds = Auth::user()->studyPrograms()->pluck('study_programs.id');
+        if (!$studyProgramIds->contains($pengajuan->id_program_studi)) {
+            abort(403);
+        }
+
+        $dokumen = PengajuanDokumen::where('id_pengajuan', $id)
+            ->where('jenis_dokumen', 'formulir_pembayaran_banding')
+            ->where('is_latest', true)
+            ->firstOrFail();
+
+        if (!Storage::disk('public')->exists($dokumen->path_file)) {
+            abort(404, 'File tidak ditemukan.');
+        }
+
+        return Storage::disk('public')->download($dokumen->path_file, $dokumen->original_filename);
+    }
+
+    // ============================================================
+    // PRIVATE HELPERS
+    // ============================================================
+
+    private function applyFilters($query, Request $request): void
     {
         $query->when(
             $request->filled('tahun'),
             fn($q) => $q->where('tahun_akreditasi', $request->tahun)
         );
 
+        $query->when(
+            $request->filled('status'),
+            fn($q) => $q->where('status', $request->status)
+        );
+
         $query->when($request->filled('search'), function ($q) use ($request) {
             $search = $request->search;
             $q->where(function ($sq) use ($search) {
                 $sq->where('nomor_pengajuan', 'like', "%{$search}%")
-                    ->orWhereHas(
-                        'studyProgram',
-                        fn($ssq) =>
-                        $ssq->where('name', 'like', "%{$search}%")
-                    );
+                    ->orWhereHas('studyProgram', fn($ssq) =>
+                    $ssq->where('name', 'like', "%{$search}%"));
             });
-        });
-
-        // Filter by status
-        $query->when($request->filled('status'), function ($q) use ($request) {
-            $q->where('status', $request->status);
         });
     }
 
-    /**
-     * Calculate statistics
-     */
     private function calculateStatistics($studyProgramIds): array
     {
-        // Total banding dalam pelaksanaan
-        $total = PengajuanAkreditasi::whereIn('id_program_studi', $studyProgramIds)
-            ->whereNotNull('tanggal_pelaksanaan_banding')
-            ->whereIn('status', [
-                PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
-                PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
-            ])
-            ->count();
-
-        // Menunggu pelaksanaan
-        $menunggu = PengajuanAkreditasi::whereIn('id_program_studi', $studyProgramIds)
-            ->where('status', PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN)
-            ->count();
-
-        // Sedang dilaksanakan
-        $sedangBerlangsung = PengajuanAkreditasi::whereIn('id_program_studi', $studyProgramIds)
-            ->where('status', PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN)
-            ->count();
+        $base = PengajuanAkreditasi::whereIn('id_program_studi', $studyProgramIds);
 
         return [
-            'total' => $total,
-            'menunggu' => $menunggu,
-            'sedang_berlangsung' => $sedangBerlangsung,
+            'total' => (clone $base)
+                ->whereIn('status', self::STATUS_PELAKSANAAN)
+                ->count(),
+
+            // Menunggu bayar: ada invoice tapi belum verifikasi
+            'menunggu_bayar' => (clone $base)
+                ->whereIn('status', self::STATUS_PELAKSANAAN)
+                ->whereHas('pembayaranBanding', fn($q) =>
+                $q->whereIn('status_pembayaran', ['menunggu_pembayaran', 'menunggu_verifikasi', 'upload_ulang']))
+                ->count(),
+
+            // Sedang berlangsung: bayar lunas, pelaksanaan berjalan
+            'sedang_berlangsung' => (clone $base)
+                ->where('status', PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN)
+                ->count(),
+
+            'selesai' => (clone $base)
+                ->where('status', PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN)
+                ->count(),
         ];
     }
 }

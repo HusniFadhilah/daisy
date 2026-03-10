@@ -16,7 +16,7 @@
     </nav>
 
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h5 class="mb-1">
                 <i class="bi bi-file-earmark-ruled"></i> Detail Pelaporan Hasil Banding
@@ -32,8 +32,8 @@
         <!-- Main Content -->
         <div class="col-lg-8 mb-4">
             <!-- Status Alert -->
-            @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN)
-            <div class="alert alert-success alert-permanent border-start border-4 border-success">
+            @if($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN)
+            <div class="alert alert-success alert-permanent border-start border-2 border-success">
                 <div class="d-flex align-items-start">
                     <i class="bi bi-check-circle-fill fs-1 me-3 text-success"></i>
                     <div class="flex-grow-1">
@@ -49,7 +49,7 @@
                 </div>
             </div>
             @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN)
-            <div class="alert alert-info alert-permanent border-start border-4 border-info">
+            <div class="alert alert-info alert-permanent border-start border-2 border-info">
                 <div class="d-flex align-items-start">
                     <i class="bi bi-award-fill fs-1 me-3 text-info"></i>
                     <div class="flex-grow-1">
@@ -64,7 +64,7 @@
                 </div>
             </div>
             @elseif($pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_SELESAI)
-            <div class="alert alert-success alert-permanent border-start border-4 border-success">
+            <div class="alert alert-success alert-permanent border-start border-2 border-success">
                 <div class="d-flex align-items-start">
                     <i class="bi bi-patch-check-fill fs-1 me-3 text-success"></i>
                     <div class="flex-grow-1">
@@ -378,7 +378,7 @@
                     @php
                     $filterStatuses = [
                     \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
-                    \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
+                    \App\Models\PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN,
                     ];
 
                     $logs = $pengajuan->statusLog
@@ -396,7 +396,7 @@
                                 <div class="flex-shrink-0">
                                     @php
                                     $iconColor = match($log->status_to) {
-                                    \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAPORKAN,
+                                    \App\Models\PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN,
                                     => 'text-success',
                                     \App\Models\PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN
                                     => 'text-warning',

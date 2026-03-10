@@ -20,7 +20,7 @@ $authUser = auth()->user();
     @include('admin.admin-dashboard')
     @endif
 
-    @if(in_array($authUser->role_selected,['asesor']))
+    @if(in_array($authUser->role_selected,['asesor','asesor_banding']))
     @include('admin.asesor-dashboard')
     @endif
 

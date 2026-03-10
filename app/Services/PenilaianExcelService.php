@@ -33,7 +33,7 @@ class PenilaianExcelService
         $this->penilaianName = $modelPenilaianElemen == \App\Models\PenilaianElemenAl::class ? 'AL' : 'AK';
         $this->penilaianFullName = $this->penilaianName == 'AL' ? 'Asesmen Lapangan' : 'Asesmen Kecukupan';
         $this->asesorName = Auth::user()->name ?? 'Asesor LAMDEPILAR';
-        $this->mode = $mode; // 'full', 'template', 'personal', 'split'
+        $this->mode = $mode; // 'full', 'template', 'personal', 'personal_al', 'split'
         $this->useColorFormatting = $useColorFormatting;
     }
     /**
@@ -53,7 +53,7 @@ class PenilaianExcelService
      */
     public function generateWithData(Asesmen $asesmen, $userId): string
     {
-        if ($this->mode === 'personal') {
+        if ($this->mode === 'personal' || $this->mode === 'personal_al') {
             return $this->generatePersonalAssessment($asesmen, $userId);
         }
 
@@ -67,7 +67,11 @@ class PenilaianExcelService
 
         $spreadsheet->setActiveSheetIndex(1);
 
-        return $this->saveSpreadsheet($spreadsheet, 'Penilaian_' . $this->penilaianName . '_Lengkap_', Str::slug($asesmen->code) . '_' . Str::slug($this->asesorName));
+        return $this->saveSpreadsheet(
+            $spreadsheet,
+            'Penilaian_' . $this->penilaianName . '_Lengkap_',
+            Str::slug($asesmen->code) . '_' . Str::slug($this->asesorName)
+        );
     }
 
     /**
@@ -83,7 +87,7 @@ class PenilaianExcelService
         $spreadsheet = new Spreadsheet();
         $penilaianName = strtoupper($this->penilaianName);
 
-        // Ambil asesor sendiri
+        // Ambil asesor login untuk keperluan tampilan / validasi personal
         $jenisAsesmen = strtolower($this->penilaianName);
         $asesor = \App\Models\AsesmenUserRole::where('id_asesmen', $asesmen->id)
             ->where('jenis_asesmen', $jenisAsesmen)
@@ -98,6 +102,20 @@ class PenilaianExcelService
             throw new \Exception('Asesor tidak ditemukan untuk asesmen ini');
         }
 
+        // default = personal biasa pakai user login
+        $sourceUserId = $userId;
+
+        // special mode: personal_al => data diambil dari first penilai
+        if ($this->mode === 'personal_al') {
+            $firstAsesorUserId = $this->getFirstAsesorUserId($asesmen);
+
+            if (!$firstAsesorUserId) {
+                throw new \Exception('Asesor pertama tidak ditemukan untuk asesmen ini');
+            }
+
+            $sourceUserId = $firstAsesorUserId;
+        }
+
         // Buat sheet Penilaian Personal
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Penilaian ' . ucfirst($this->penilaianFullName));
@@ -110,13 +128,13 @@ class PenilaianExcelService
         $sheet->getColumnDimension('D')->setWidth(6);
         $sheet->getColumnDimension('E')->setWidth(6);
         $sheet->getColumnDimension('F')->setWidth(25);
-        $sheet->getColumnDimension('G')->setWidth(80); // Kolom penilaian
+        $sheet->getColumnDimension('G')->setWidth(80);
 
         // Build headers personal
         $this->buildPersonalHeaders($sheet, $asesmen, $asesor);
 
         // Build data rows personal
-        $lastRow = $this->renderPersonalRows($sheet, $asesmen, $userId, $asesor);
+        $lastRow = $this->renderPersonalRows($sheet, $asesmen, $sourceUserId, $asesor);
 
         // ✅ Signature section
         $signatureStartRow = null;
@@ -125,19 +143,16 @@ class PenilaianExcelService
             [$lastRow, $signatureStartRow] = $this->buildSignatureSection($sheet, $asesmen, $asesors, $lastRow);
         }
 
-        // Print area
-        $printAreaLastCol = 'H'; // G + 1
+        $printAreaLastCol = 'H';
         $printAreaLastRow = $lastRow + 1;
         $sheet->getPageSetup()->setPrintArea("A1:{$printAreaLastCol}{$printAreaLastRow}");
         $sheet->getColumnDimension($printAreaLastCol)->setWidth(5);
 
-        // ✅ Page setup - PORTRAIT untuk personal
         $sheet->getPageSetup()->setOrientation(PageSetup::ORIENTATION_PORTRAIT);
         $sheet->getPageSetup()->setPaperSize(PageSetup::PAPERSIZE_A4);
         $sheet->getPageSetup()->setFitToWidth(1);
         $sheet->getPageSetup()->setFitToHeight(0);
 
-        // Margins
         $sheet->getPageMargins()->setTop(0);
         $sheet->getPageMargins()->setRight(0);
         $sheet->getPageMargins()->setLeft(0);
@@ -145,9 +160,8 @@ class PenilaianExcelService
         $sheet->getPageMargins()->setHeader(0);
         $sheet->getPageMargins()->setFooter(0);
 
-        // Freeze hanya baris 1–7 untuk sheet Penilaian AK
         if ($sheet->getTitle() === 'Penilaian ' . ucfirst($this->penilaianFullName)) {
-            $sheet->freezePane('A7'); // freeze baris 1–6
+            $sheet->freezePane('A7');
         }
 
         // // 🔒 LOCK semua cells dulu
@@ -2264,6 +2278,22 @@ class PenilaianExcelService
 
         $asesors = $asesorsQuery->get();
         return $asesors;
+    }
+
+    private function getFirstAsesorUserId(Asesmen $asesmen): ?int
+    {
+        $jenisAsesmen = strtolower($this->penilaianName);
+
+        $firstAsesor = \App\Models\AsesmenUserRole::where('id_asesmen', $asesmen->id)
+            ->where('jenis_asesmen', $jenisAsesmen)
+            ->whereHas('role', function ($q) {
+                $q->where('name', 'asesor');
+            })
+            ->with('user')
+            ->orderBy('urutan_asesor')
+            ->first();
+
+        return $firstAsesor?->id_user;
     }
 
     /**

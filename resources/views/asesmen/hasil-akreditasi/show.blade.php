@@ -6,7 +6,7 @@
 
 @section('content')
 <div class="container-fluid py-3">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h2>
                 <i class="bi bi-calculator"></i> Hasil Akreditasi
@@ -203,9 +203,9 @@
                             </button>
                         </form>
 
-                        <form action="{{ route('hasil-akreditasi.finalize-ak', $asesmen->id) }}" method="POST" onsubmit="return confirm('Finalisasi hasil AK? Setelah final tidak bisa diubah.')">
+                        <form id="form-finalisasi-ak" action="{{ route('hasil-akreditasi.finalize-ak', $asesmen->id) }}" method="POST" class="d-inline">
                             @csrf
-                            <button type="submit" class="btn btn-success btn-sm">
+                            <button type="button" class="btn btn-success btn-sm tombol-konfirmasi" data-id-form="form-finalisasi-ak" data-message="Finalisasi hasil AK">
                                 <i class="bi bi-lock"></i> Finalisasi AK
                             </button>
                         </form>
@@ -288,9 +288,9 @@
                             </button>
                         </form>
 
-                        <form action="{{ route('hasil-akreditasi.finalize-al', $asesmen->id) }}" method="POST" onsubmit="return confirm('Finalisasi hasil AL? Skor final akan dihitung.')">
+                        <form id="form-finalisasi-al" action="{{ route('hasil-akreditasi.finalize-al', $asesmen->id) }}" method="POST" class="d-inline">
                             @csrf
-                            <button type="submit" class="btn btn-success btn-sm">
+                            <button type="button" class="btn btn-success btn-sm tombol-konfirmasi" data-id-form="form-finalisasi-al" data-message="Finalisasi hasil AL">
                                 <i class="bi bi-lock"></i> Finalisasi AL
                             </button>
                         </form>
@@ -369,9 +369,9 @@
                         <div class="col-md-4">
                             <div class="d-grid gap-2">
                                 @if($hasil->status !== 'published')
-                                <form action="{{ route('hasil-akreditasi.publish', $asesmen->id) }}" method="POST" onsubmit="return confirm('Publish hasil ke prodi? Status tidak bisa diubah setelah publish.')">
+                                <form id="form-publish-hasil-prodi" action="{{ route('hasil-akreditasi.publish', $asesmen->id) }}" method="POST" class="d-inline">
                                     @csrf
-                                    <button type="submit" class="btn btn-success btn-sm">
+                                    <button type="button" class="btn btn-success btn-sm tombol-konfirmasi" data-id-form="form-publish-hasil-prodi" data-message="Publish hasil ke prodi">
                                         <i class="bi bi-send"></i> Publish Hasil ke Prodi
                                     </button>
                                 </form>

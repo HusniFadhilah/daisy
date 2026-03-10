@@ -34,9 +34,9 @@ class BorangRevisionRequestedNotification extends Notification implements Should
         $totalPoints = count($revisionPoints);
 
         return (new MailMessage)
-            ->subject('Borang Perlu Revisi - ' . $this->pengajuan->nomor_pengajuan)
+            ->subject('Dokumen Perlu Revisi - ' . $this->pengajuan->nomor_pengajuan)
             ->greeting('Halo ' . $notifiable->name . ',')
-            ->line("Borang LED untuk {$this->pengajuan->studyProgram->name} perlu direvisi.")
+            ->line("Dokumen LED untuk {$this->pengajuan->studyProgram->name} perlu direvisi.")
             ->line("**Validator:** {$this->validation->assignment->user->name}")
             ->line("**Total Poin Revisi:** {$totalPoints} bagian")
             ->line('')
@@ -54,8 +54,8 @@ class BorangRevisionRequestedNotification extends Notification implements Should
 
         return [
             'type' => 'borang_revision_requested',
-            'title' => 'Borang Perlu Revisi',
-            'message' => "Borang {$this->pengajuan->nomor_pengajuan} perlu direvisi (" . count($revisionPoints) . " bagian)",
+            'title' => 'Dokumen Perlu Revisi',
+            'message' => "Dokumen {$this->pengajuan->nomor_pengajuan} perlu direvisi (" . count($revisionPoints) . " bagian)",
             'pengajuan_id' => $this->pengajuan->id,
             'pengajuan_nomor' => $this->pengajuan->nomor_pengajuan,
             'validation_id' => $this->validation->id,

@@ -74,7 +74,7 @@ async function fetchValidationSummary(url) {
             elBadge.textContent = 'Disubmit (Telah Disetujui)';
         } else if (v.final_action === 'revision') {
             elBadge.className = 'badge bg-warning text-dark';
-            elBadge.textContent = 'Disubmit (Perlu Revisi)';
+            elBadge.textContent = 'Disubmit (Lihat Detail Revisi)';
         } else {
             elBadge.className = 'badge bg-secondary';
             elBadge.textContent = 'Status';
@@ -348,12 +348,3 @@ window.openElemen = function (elemenId) {
         openElemenCollapse();
     }
 };
-
-function escapeHtml(str) {
-    return String(str || '')
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;');
-}

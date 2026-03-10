@@ -6,7 +6,7 @@
 <div class="container-fluid py-3">
     <div class="row">
         <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
                 <div>
                     <h4 class="mb-1">
                         <i class="bi bi-credit-card"></i> Detail Pembayaran
@@ -61,7 +61,7 @@
                 </div>
                 <div class="card-body">
                     @forelse($dokumenPembayaran as $dokumen)
-                    <div class="d-flex justify-content-between align-items-center p-3 mb-2 border rounded">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center rounded gap-3">
                         <div>
                             <i class="bi {{ $dokumen->file_icon_class }} me-2"></i>
                             <strong>{{ $dokumen->jenis_dokumen_alias }}</strong>

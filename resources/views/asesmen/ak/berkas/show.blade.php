@@ -1,3 +1,4 @@
+{{-- resources\views\asesmen\ak\berkas\show.blade.php --}}
 @extends('layouts.template.app')
 
 @section('title', 'Penilaian AK - ' . $asesmen->name)
@@ -7,6 +8,25 @@
     .highlight-revision {
         animation: pulseRevision 1s ease-in-out 3;
         border: 2px solid #ff9800 !important;
+    }
+
+    /* Highlight dari URL hash */
+    .elemen-anchor-highlight {
+        animation: anchorPulse 1.5s ease-in-out 2;
+        outline: 3px solid #ff9800 !important;
+        outline-offset: 3px;
+    }
+
+    @keyframes anchorPulse {
+
+        0%,
+        100% {
+            box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.4);
+        }
+
+        50% {
+            box-shadow: 0 0 0 8px rgba(255, 152, 0, 0);
+        }
     }
 
     @keyframes pulseRevision {
@@ -105,7 +125,7 @@
                 <div class="row align-items-center">
                     <div class="col-md-9">
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h5 class="mb-0">Progress Penilaian</h5>
+                            <h5 class="mb-0">Progres Penilaian</h5>
                             <span class="badge bg-primary fs-6" id="progressPercentage">
                                 {{ $progress['percentage'] }}%
                             </span>
@@ -173,7 +193,7 @@
                                     <i class="bi bi-check-circle"></i> Penilaian Telah Lengkap!
                                 </h5>
                                 <p class="mb-2">
-                                    Anda telah menyelesaikan <strong>semua {{ $progress['total'] }} elemen penilaian</strong>.
+                                    Anda telah menyelesaikan <strong>semua {{ $progress['total'] }} elemen penilaian</strong>.<br>
                                     Anda dapat melakukan cek split penilaian antar asesor di tombol berikut <a class="btn btn-info btn-sm" href="{{ route('ak.berkas.cek-split', $asesmen->id) }}" target="_blank">
                                         <i class="bi bi-search"></i> Cek Split Penilaian
                                     </a>
@@ -182,7 +202,7 @@
                                 <hr>
                                 <div class="mb-0">
                                     <small class="text-muted">
-                                        <i class="bi bi-info-circle"></i> Penilaian belum akan tersimpan secara permanen sampai di-submit
+                                        <i class="bi bi-info-circle"></i> Penilaian belum akan tersimpan secara permanen sampai difinalisasi dan dikirim
                                     </small>
                                 </div>
                             </div>
@@ -194,7 +214,7 @@
                     @if(!$isSubmittedOnly && !$isApproved && !$isComplete && $progress['percentage'] > 0)
                     <div class="alert alert-info alert-dismissible alert-permanent mb-3">
                         <i class="bi bi-info-circle me-2"></i>
-                        <strong>Progress Penilaian:</strong>
+                        <strong>Progres Penilaian:</strong>
                         Anda telah menilai {{ $progress['completed'] }} dari {{ $progress['total'] }} elemen
                         (<strong>{{ $progress['percentage'] }}%</strong>).
                         Selesaikan <strong>{{ $progress['remaining'] }} elemen</strong> lagi untuk dapat melakukan finalisasi.
@@ -206,11 +226,19 @@
                     <div class="alert alert-info alert-permanent alert-dismissible mb-3">
                         <i class="bi bi-info-circle me-2"></i>
                         <strong>Telah Di-Submit!</strong> Penilaian Anda sedang menunggu validasi.
-                        @if(app()->environment('local'))
+
+                        @if($canUnsubmit)
+                        {{-- Hanya muncul jika status masih ak_in_progress (belum masuk validasi) --}}
                         <button type="button" class="btn btn-sm btn-outline-secondary ms-2" id="btnUnsubmit">
                             <i class="bi bi-arrow-counterclockwise"></i> Batalkan Submit
                         </button>
+                        @else
+                        {{-- Sedang divalidasi → tunjukkan info saja, tombol disembunyikan --}}
+                        <span class="badge bg-warning text-dark ms-2">
+                            <i class="bi bi-shield-check"></i> Sedang Divalidasi — Tidak Dapat Dibatalkan
+                        </span>
                         @endif
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                     @endif
 
@@ -425,7 +453,7 @@
     @endif
 
     @if(isset($asesmen->pengajuan))
-    @include('asesmen.ak.components.documents')
+    @include('asesmen.components.documents')
     @endif
     <!-- ========== HEATMAP MATRIX (ENHANCED) ========== -->
     @include('asesmen.ak.components.heatmap-matrix')
@@ -523,7 +551,7 @@
                         $isIndikatorPenilaianExists = $elemen->indikatorPenilaian && count($elemen->indikatorPenilaian) > 0;
                         @endphp
 
-                        <div class="card mb-3 elemen-card @if($hasPenilaian) has-penilaian @endif" data-elemen-id="{{ $elemen->id }}">
+                        <div class="card mb-3 elemen-card @if($hasPenilaian) has-penilaian @endif @if($needsRevisionElemen) needs-revision @endif" data-elemen-id="{{ $elemen->id }}" id="elemen-{{ $elemen->id }}">
                             <!-- Pernyataan Standar Header -->
                             <div class="card-header elemen-header" id="heading-elemen-{{ $elemen->id }}">
                                 <div class="d-md-flex justify-content-between align-items-center">
@@ -954,7 +982,7 @@
                     {{-- Progress Bar (hidden initially) --}}
                     <div id="importProgress" class="d-none">
                         <div class="mb-2">
-                            <strong>Progress Upload:</strong>
+                            <strong>Progres <i>Upload</i>:</strong>
                             <span id="progressText">0%</span>
                         </div>
                         <div class="progress" style="height: 25px;">
@@ -1065,6 +1093,7 @@
         initializeCharCounters();
         initializeFormHandlers();
         initializeScrollButton();
+        handleUrlHashScroll();
         initializeActionButtons();
         updateAllProgress();
 
@@ -1214,9 +1243,7 @@
                 , width: '600px'
             });
 
-            if (!confirmed.isConfirmed) {
-                return;
-            }
+            if (!confirmed.isConfirmed) return;
 
             showLoading();
 
@@ -1227,50 +1254,178 @@
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                         , 'Accept': 'application/json'
                         , 'Content-Type': 'application/json'
-                    }
-                });
+                    , }
+                , });
 
                 const data = await response.json();
-
                 hideLoading();
 
-                if (data.success) {
+                if (!data.success) throw new Error(data.message || 'Gagal submit penilaian');
+
+                // ── Submit berhasil → cek split ───────────────────────────
+                Swal.fire({
+                    icon: 'info'
+                    , title: 'Mengecek Split Penilaian…'
+                    , html: 'Mohon tunggu sebentar.'
+                    , allowOutsideClick: false
+                    , showConfirmButton: false
+                    , didOpen: () => Swal.showLoading()
+                , });
+
+                let splitData = {
+                    success: false
+                };
+                try {
+                    const splitRes = await fetch(`/ak/berkas/${idAsesmen}/check-split-result`, {
+                        headers: {
+                            'Accept': 'application/json'
+                            , 'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        , }
+                    , });
+                    splitData = await splitRes.json();
+                } catch (splitErr) {
+                    console.warn('Split check error (non-blocking):', splitErr);
+                }
+
+                // ── Kondisi: Asesor lain belum mengisi ────────────────────
+                if (!splitData.success || !splitData.otherHasFilled) {
                     await Swal.fire({
                         icon: 'success'
                         , title: 'Submit Berhasil!'
                         , html: `
-                        <div class="text-center">
-                            <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
-                            <p class="mt-3">${data.message}</p>
-                            <div class="alert alert-info alert-permanent mt-3">
-                                <small>
-                                    <i class="bi bi-clock"></i> Di-submit pada: ${data.submitted_at}
-                                </small>
-                            </div>
-                        </div>
-                    `
-                        , showConfirmButton: true
+                <div class="text-center">
+                    <i class="bi bi-check-circle-fill text-success" style="font-size:4rem;"></i>
+                    <p class="mt-3">${data.message}</p>
+                    <div class="alert alert-info text-start mt-3">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Asesor lain belum mengisi penilaian.<br>
+                        Anda dapat melakukan cek split setelah semua asesor selesai di tombol:
+                        <br><br>
+                        <a href="/ak/berkas/${idAsesmen}/cek-split" target="_blank"
+                           class="btn btn-info btn-sm">
+                            <i class="bi bi-search"></i> Cek Split Penilaian
+                        </a>
+                    </div>
+                </div>
+            `
                         , confirmButtonText: 'OK'
                         , confirmButtonColor: '#28a745'
-                    });
-
-                    // Reload to update UI
+                    , });
                     window.location.reload();
-
-                } else {
-                    throw new Error(data.message || 'Gagal submit penilaian');
+                    return;
                 }
+
+                // ── Kondisi: Tidak ada split ──────────────────────────────
+                if (splitData.splitCount === 0) {
+                    await Swal.fire({
+                        icon: 'success'
+                        , title: 'Submit Berhasil — Tidak Ada Split!'
+                        , html: `
+                <div class="text-center">
+                    <i class="bi bi-check-circle-fill text-success" style="font-size:4rem;"></i>
+                    <p class="mt-3">${data.message}</p>
+                    <div class="alert alert-success text-start mt-3">
+                        <i class="bi bi-check-circle me-2"></i>
+                        <strong>Tidak ada split penilaian</strong> dengan asesor lain.
+                        Semua elemen tidak memiliki selisih penilaian yang signifikan antar asesor.
+                    </div>
+                </div>
+            `
+                        , confirmButtonText: 'OK'
+                        , confirmButtonColor: '#28a745'
+                    , });
+                    window.location.reload();
+                    return;
+                }
+
+                // ── Kondisi: Ada split → tampilkan tabel ─────────────────
+                const showBerkasBase = `/ak/berkas/${idAsesmen}`;
+                const splitRows = splitData.splitItems.map(item => {
+                    const skorBadges = item.skors.map(s => {
+                        let skor = s.skor;
+                        let nama = s.nama;
+                        return `
+                        <div class="mb-2">
+                            <span class="badge bg-light text-dark">${nama}</span>
+                            <span class="badge text-dark" style="background-color: ${getSkorColorJS(skor)};">${getSkorLabelShort(skor)}</span>
+                        </div>`
+                    }).join(' ');
+                    return `
+            <tr style="cursor:pointer;"
+                onclick="window.open('${showBerkasBase}#elemen-${item.elemenId}', '_self')"
+                title="Klik untuk scroll ke elemen penilaian">
+                <td class="text-center"><span class="badge bg-primary">${item.kodeKriteria}</span></td>
+                <td><strong class="me-2">${item.kodeElemen}</strong> <small>${item.pernyataan}</small></td>
+                <td>${skorBadges}</td>
+                <td class="text-center">
+                    <span class="badge bg-danger">Selisih ${item.selisih}</span>
+                </td>
+                <td class="text-center">
+                    <a href="${showBerkasBase}#elemen-${item.elemenId}" target="_blank"
+                        class="btn btn-sm btn-warning"
+                        onclick="event.stopPropagation()">
+                        <i class="bi bi-eye"></i> Lihat
+                    </a>
+                </td>
+            </tr>
+        `;
+                }).join('');
+
+                await Swal.fire({
+                    icon: 'warning'
+                    , title: `Submit Berhasil — ${splitData.splitCount} Elemen Split!`
+                    , html: `
+            <div class="text-start">
+                <p>Penilaian berhasil di-submit, namun ditemukan
+                <strong>${splitData.splitCount} elemen</strong> dengan selisih penilaian
+                antar asesor <strong>&gt; 1</strong>.</p>
+
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Klik baris elemen di bawah untuk langsung scroll ke penilaiannya.
+                </div>
+
+                <div style="max-height:280px; overflow-y:auto;">
+                    <table class="table table-sm table-hover table-bordered align-middle"
+                           style="font-size:13px;">
+                        <thead class="table-dark text-center">
+                            <tr>
+                                <th width="10%">Kriteria</th>
+                                <th width="20%">Elemen</th>
+                                <th width="40%">Kategori Penilaian</th>
+                                <th width="15%">Selisih</th>
+                                <th width="15%">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>${splitRows}</tbody>
+                    </table>
+                </div>
+
+                <div class="mt-3">
+                    <a href="/ak/berkas/${idAsesmen}/cek-split" target="_blank"
+                       class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-people"></i> Buka Halaman Cek Split Lengkap
+                    </a>
+                </div>
+            </div>
+        `
+                    , width: '850px'
+                    , confirmButtonText: 'Mengerti'
+                    , confirmButtonColor: '#ff9800'
+                    , allowOutsideClick: false
+                , });
+
+                window.location.reload();
 
             } catch (error) {
                 hideLoading();
                 console.error('Submit error:', error);
-
                 Swal.fire({
                     icon: 'error'
                     , title: 'Gagal Submit'
                     , text: error.message
                     , confirmButtonColor: '#d33'
-                });
+                , });
             }
         }
 
@@ -1663,8 +1818,8 @@
                 });
 
                 // Reset form
-                btnReset.addEventListener('click', function() {
-                    if (confirm('Apakah Anda yakin ingin mereset penilaian ini?')) {
+                btnReset.addEventListener('click', async function() {
+                    if (await swalConfirmSubmit('warning', 'Apakah Anda yakin ingin mereset penilaian ini?')) {
                         form.reset();
                         updateCharCount(komentarTextarea);
                         updateSaveStatus(form, 'Belum ada penilaian', 'text-muted');
@@ -2069,6 +2224,49 @@
                     });
                 });
             }
+        }
+
+        /**
+         * Jika URL punya hash #elemen-{id}, buka accordion dan scroll.
+         * Dipanggil sekali saat halaman load.
+         */
+        function handleUrlHashScroll() {
+            const hash = window.location.hash; // contoh: #elemen-42
+            if (!hash || !hash.startsWith('#elemen-')) return;
+
+            const elemenId = hash.replace('#elemen-', '');
+            const elemenCard = document.getElementById(`elemen-${elemenId}`);
+            if (!elemenCard) return;
+
+            // 1. Buka accordion kriteria induk
+            const kriteriaCollapse = elemenCard.closest('.kriteria-collapse');
+            if (kriteriaCollapse) {
+                bootstrap.Collapse.getOrCreateInstance(kriteriaCollapse, {
+                    toggle: false
+                }).show();
+            }
+
+            // 2. Tunggu kriteria terbuka → buka accordion elemen
+            setTimeout(() => {
+                const elemenCollapse = document.getElementById(`collapse-elemen-${elemenId}`);
+                if (elemenCollapse) {
+                    bootstrap.Collapse.getOrCreateInstance(elemenCollapse, {
+                        toggle: false
+                    }).show();
+                }
+
+                // 3. Scroll + highlight
+                setTimeout(() => {
+                    elemenCard.scrollIntoView({
+                        behavior: 'smooth'
+                        , block: 'center'
+                    });
+                    elemenCard.classList.add('elemen-anchor-highlight');
+                    setTimeout(() => {
+                        elemenCard.classList.remove('elemen-anchor-highlight');
+                    }, 4000);
+                }, 400);
+            }, 350);
         }
 
         /**

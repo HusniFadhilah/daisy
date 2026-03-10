@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Asesmen extends Model
 {
@@ -83,6 +84,21 @@ class Asesmen extends Model
         return $this->hasOne(AsesmenLapangan::class, 'id_asesmen');
     }
 
+    public function asesmenBanding(): HasOne
+    {
+        return $this->hasOne(AsesmenBanding::class, 'id_asesmen');
+    }
+
+    public function asesmenKecukupanBanding()
+    {
+        return $this->hasOne(AsesmenKecukupanBanding::class, 'id_asesmen');
+    }
+
+    public function asesmenLapanganBanding()
+    {
+        return $this->hasOne(AsesmenLapanganBanding::class, 'id_asesmen');
+    }
+
     public function penilaianElemenAk()
     {
         return $this->hasMany(PenilaianElemenAk::class, 'id_asesmen');
@@ -91,6 +107,21 @@ class Asesmen extends Model
     public function penilaianElemenAl()
     {
         return $this->hasMany(PenilaianElemenAl::class, 'id_asesmen');
+    }
+
+    public function penilaianElemenAkBanding()
+    {
+        return $this->hasMany(PenilaianElemenAkBanding::class, 'id_asesmen');
+    }
+
+    public function penilaianElemenAlBanding()
+    {
+        return $this->hasMany(PenilaianElemenAlBanding::class, 'id_asesmen');
+    }
+
+    public function penilaianElemenBanding()
+    {
+        return $this->hasMany(PenilaianElemenBanding::class, 'id_asesmen');
     }
 
     /**
@@ -113,6 +144,30 @@ class Asesmen extends Model
             ->whereHas('role', function ($query) {
                 $query->where('name', 'asesor');
             })->where('jenis_asesmen', 'al');
+    }
+
+    public function asesorBanding()
+    {
+        return $this->hasMany(AsesmenUserRole::class, 'id_asesmen')
+            ->whereHas('role', function ($query) {
+                $query->where('name', 'asesor_banding');
+            })->where('jenis_asesmen', 'banding');
+    }
+
+    public function asesorAKBanding()
+    {
+        return $this->hasMany(AsesmenUserRole::class, 'id_asesmen')
+            ->whereHas('role', function ($query) {
+                $query->where('name', 'asesor_banding');
+            })->where('jenis_asesmen', 'ak_banding');
+    }
+
+    public function asesorALBanding()
+    {
+        return $this->hasMany(AsesmenUserRole::class, 'id_asesmen')
+            ->whereHas('role', function ($query) {
+                $query->where('name', 'asesor_banding');
+            })->where('jenis_asesmen', 'al_banding');
     }
 
     /**
@@ -164,6 +219,34 @@ class Asesmen extends Model
             ->withTimestamps();
     }
 
+    public function allAsesorRolesAl($isBanding = false)
+    {
+        return $this->hasMany(AsesmenUserRole::class, 'id_asesmen')
+            ->where('jenis_asesmen', $isBanding ? 'al_banding' : 'al')
+            ->whereHas('role', fn($q) => $q->where('name', $isBanding ? 'asesor_banding' : 'asesor'));
+    }
+
+    public function allAsesorsAk($isBanding = false)
+    {
+        return $this->hasMany(AsesmenUserRole::class, 'id_asesmen')
+            ->where('jenis_asesmen', $isBanding ? 'ak_banding' : 'ak')
+            ->whereHas('role', fn($q) => $q->where('name', $isBanding ? 'asesor_banding' : 'asesor'));
+    }
+
+    public function allAsesorRolesAlBanding($isBanding = true)
+    {
+        return $this->hasMany(AsesmenUserRole::class, 'id_asesmen')
+            ->where('jenis_asesmen', $isBanding ? 'al_banding' : 'al')
+            ->whereHas('role', fn($q) => $q->where('name', $isBanding ? 'asesor_banding' : 'asesor'));
+    }
+
+    public function allAsesorsAkBanding($isBanding = true)
+    {
+        return $this->hasMany(AsesmenUserRole::class, 'id_asesmen')
+            ->where('jenis_asesmen', $isBanding ? 'ak_banding' : 'ak')
+            ->whereHas('role', fn($q) => $q->where('name', $isBanding ? 'asesor_banding' : 'asesor'));
+    }
+
     public function documents()
     {
         return $this->hasMany(AsesmenDocument::class, 'id_asesmen');
@@ -192,6 +275,15 @@ class Asesmen extends Model
             ->orderBy('id');
     }
 
+    public function beritaAcaraBanding()
+    {
+        return $this->documents()
+            ->where('type', 'berita_acara_banding')
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('id');
+    }
+
     public function lhaDocuments()
     {
         return $this->hasMany(AsesmenDocument::class, 'id_asesmen')
@@ -202,6 +294,14 @@ class Asesmen extends Model
     public function lhaAsesor()
     {
         return $this->hasOne(LhaAsesor::class, 'id_asesmen');
+    }
+
+    public static function formatJenisAsesmen($text)
+    {
+        $words = explode('_', $text);
+        return collect($words)->map(function ($word, $index) {
+            return $index === 0 ? strtoupper($word) : ucfirst($word);
+        })->implode(' ');
     }
 
     public function getName($isFull = true)

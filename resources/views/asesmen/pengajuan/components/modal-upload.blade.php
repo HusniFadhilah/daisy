@@ -311,7 +311,7 @@ $latestImport = $pengajuan->latestBorangImport;
                     {{-- Upload Progress (hidden initially) --}}
                     <div id="uploadProgress" class="d-none">
                         <div class="mb-2">
-                            <strong>Progress Upload:</strong>
+                            <strong>Progres <i>Upload</i>:</strong>
                             <span id="uploadProgressText">0%</span>
                         </div>
                         <div class="progress" style="height: 25px;">
@@ -533,7 +533,7 @@ $latestImport = $pengajuan->latestBorangImport;
                 fileInputModal.files = e.dataTransfer.files;
                 handleFileSelectModal(file);
             } else {
-                alert('Hanya file DOCX yang diperbolehkan!');
+                Swal.fire('Perhatian', 'Hanya file DOCX yang diperbolehkan!', 'warning');
             }
         });
     }
@@ -542,12 +542,12 @@ $latestImport = $pengajuan->latestBorangImport;
         if (!file) return;
 
         if (!file.name.endsWith('.docx')) {
-            alert('Hanya file DOCX yang diperbolehkan!');
+            Swal.fire('Perhatian', 'Hanya file DOCX yang diperbolehkan!', 'warning');
             return;
         }
 
         if (file.size > 10 * 1024 * 1024) {
-            alert('Ukuran file maksimal 10 MB!');
+            Swal.fire('Perhatian', 'Ukuran file maksimal 10 MB!', 'warning');
             return;
         }
 
@@ -573,12 +573,12 @@ $latestImport = $pengajuan->latestBorangImport;
         const keterangan = formData.get('keterangan');
 
         if (!keterangan || keterangan.trim() === '') {
-            alert('Alasan upload ulang harus diisi!');
+            Swal.fire('Perhatian', 'Alasan upload ulang harus diisi!', 'warning');
             return;
         }
 
         if (!fileInputModal.files[0]) {
-            alert('Pilih file terlebih dahulu!');
+            Swal.fire('Perhatian', 'Pilih file terlebih dahulu!', 'warning');
             return;
         }
 
@@ -608,7 +608,7 @@ $latestImport = $pengajuan->latestBorangImport;
 
             if (response.ok && data.success) {
                 modalUploadUlang.hide();
-                alert('✅ ' + data.message);
+                Swal.fire('Berhasil', data.message, 'success');
                 setTimeout(() => window.location.reload(), 500);
             } else {
                 throw new Error(data.message || 'Upload gagal');
@@ -616,7 +616,7 @@ $latestImport = $pengajuan->latestBorangImport;
 
         } catch (error) {
             console.error('Upload error:', error);
-            alert('❌ ' + (error.message || 'Terjadi kesalahan saat upload'));
+            Swal.fire('Perhatian', '❌ ' + (error.message || 'Terjadi kesalahan saat upload'), 'error');
             btnSubmitUlang.disabled = false;
             btnSubmitUlang.innerHTML = '<i class="bi bi-upload"></i> Upload Versi Baru';
         }

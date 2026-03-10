@@ -184,8 +184,8 @@
         }
 
         // Clear data
-        function clearData() {
-            if (confirm('Yakin ingin menghapus semua data?')) {
+        async function clearData() {
+            if (await swalConfirmSubmit('warning', 'Yakin ingin menghapus semua data?')) {
                 spreadsheet.setData(sampleData);
                 localStorage.removeItem('spreadsheetData');
                 updateStatus('✓ Data dikembalikan ke sample data');
