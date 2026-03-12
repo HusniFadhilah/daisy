@@ -139,7 +139,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::prefix('al')->name('al.')->group(function () {
         Route::get('/berkas', [ALController::class, 'berkas'])->name('berkas');
-        Route::middleware('al.first.opener')->group(function () {
+        Route::middleware('al.first.opener:al')->group(function () {
             Route::middleware('penawaran.accepted:al')->group(function () {
                 Route::get('/berkas/{idAsesmen}', [ALController::class, 'showBerkas'])->name('berkas.show');
                 Route::post('/berkas/{idAsesmen}/nilai', [ALController::class, 'simpanNilai'])->name('berkas.nilai');
@@ -163,7 +163,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/berkas/{idAsesmen}/reset-all', [ALController::class, 'resetAllPenilaian'])
             ->name('berkas.reset-all');
         Route::get('/berkas/{asesmen}/comparison-data', [ALController::class, 'getComparisonData'])->name('berkas.comparison-data');
-        Route::get('/berkas/{id}/laporan-pdf', [ALController::class, 'exportLaporanPdf'])->name('berkas.laporanPdf');
         Route::get('/berkas/{idAsesmen}/upload-berita-acara', [\App\Http\Controllers\Asesmen\ALController::class, 'uploadBeritaAcaraPage'])->name('berkas.upload-berita-acara');
         Route::post('/berkas/{idAsesmen}/confirm-opener', [\App\Http\Controllers\Asesmen\ALController::class, 'confirmOpener'])->name('berkas.confirm-opener');
 
@@ -241,8 +240,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::prefix('al-banding')->name('al_banding.')->group(function () {
-        Route::get('/berkas', [ALController::class, 'berkas'])->name('berkas');
-        Route::middleware('al.first.opener')->group(function () {
+        Route::get('/berkas', [ALBandingController::class, 'berkas'])->name('berkas');
+        Route::middleware('al.first.opener:al_banding')->group(function () {
             Route::middleware('penawaran.accepted:al_banding')->group(function () {
                 Route::get('/berkas/{idAsesmen}', [ALBandingController::class, 'showBerkas'])->name('berkas.show');
                 Route::post('/berkas/{idAsesmen}/nilai', [ALBandingController::class, 'simpanNilai'])->name('berkas.nilai');
@@ -266,7 +265,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/berkas/{idAsesmen}/reset-all', [ALBandingController::class, 'resetAllPenilaian'])
             ->name('berkas.reset-all');
         Route::get('/berkas/{asesmen}/comparison-data', [ALBandingController::class, 'getComparisonData'])->name('berkas.comparison-data');
-        Route::get('/berkas/{id}/laporan-pdf', [ALBandingController::class, 'exportLaporanPdf'])->name('berkas.laporanPdf');
         Route::get('/berkas/{idAsesmen}/upload-berita-acara', [\App\Http\Controllers\Asesmen\Banding\ALBandingController::class, 'uploadBeritaAcaraPage'])->name('berkas.upload-berita-acara');
         Route::post('/berkas/{idAsesmen}/confirm-opener', [\App\Http\Controllers\Asesmen\Banding\ALBandingController::class, 'confirmOpener'])->name('berkas.confirm-opener');
 
@@ -285,11 +283,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
 
         Route::prefix('berkas/{idAsesmen}/lha-asesor')->name('berkas.lha-asesor.')->group(function () {
-            Route::get('/', [\App\Http\Controllers\Asesmen\LhaAsesorController::class, 'index'])->name('page');
-            Route::post('/save', [\App\Http\Controllers\Asesmen\LhaAsesorController::class, 'save'])->name('save');
-            Route::get('/preview', [\App\Http\Controllers\Asesmen\LhaAsesorController::class, 'preview'])->name('preview');
-            Route::post('/finalize', [\App\Http\Controllers\Asesmen\LhaAsesorController::class, 'finalize'])->name('finalize');
-            Route::get('/download', [\App\Http\Controllers\Asesmen\LhaAsesorController::class, 'download'])->name('download');
+            Route::get('/', [\App\Http\Controllers\Asesmen\Banding\LhaAsesorBandingController::class, 'index'])->name('page');
+            Route::post('/save', [\App\Http\Controllers\Asesmen\Banding\LhaAsesorBandingController::class, 'save'])->name('save');
+            Route::get('/preview', [\App\Http\Controllers\Asesmen\Banding\LhaAsesorBandingController::class, 'preview'])->name('preview');
+            Route::post('/finalize', [\App\Http\Controllers\Asesmen\Banding\LhaAsesorBandingController::class, 'finalize'])->name('finalize');
+            Route::get('/download', [\App\Http\Controllers\Asesmen\Banding\LhaAsesorBandingController::class, 'download'])->name('download');
         });
         Route::get('/berkas/{idAsesmen}/ringkasan-asesor', [\App\Http\Controllers\Asesmen\RingkasanAsesorController::class, 'page'])->name('berkas.ringkasan-asesor.page');
         Route::post('/berkas/{idAsesmen}/ringkasan-asesor/upload/{type}', [\App\Http\Controllers\Asesmen\RingkasanAsesorController::class, 'upload'])->name('berkas.ringkasan-asesor.upload');
@@ -440,7 +438,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{pengajuan}/borang/lkps-cek-syarat', [LkpsExportController::class, 'cekSyarat'])->name('.borang.lkps.cek-syarat');
         });
 
-        Route::middleware(['role:admin_prodi,admin_univ,super_admin,sekretariat,validator,asesor'])->group(function () {
+        Route::middleware(['role:admin_prodi,admin_univ,super_admin,sekretariat,validator,asesor,asesor_banding'])->group(function () {
             Route::get('/{id}/borang/download-template', [PengajuanAkreditasiController::class, 'downloadBorangTemplate'])->name('.borang.download-template');
             Route::get('/{id}/borang/export-docx', [PengajuanAkreditasiController::class, 'exportBorangDocx'])->name('.borang.export-docx');
         });

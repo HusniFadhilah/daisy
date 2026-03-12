@@ -246,7 +246,7 @@ class PengajuanAkreditasi extends Model
         'tanggal_pelaporan_al_banding' => 'datetime',
         'tanggal_hasil_banding_dihitung' => 'datetime',
         // 'tanggal_penugasan_banding' => 'datetime',
-        // 'tanggal_pelaksanaan_banding' => 'datetime',
+        'tanggal_pelaksanaan_banding' => 'datetime',
         // 'tanggal_banding_selesai' => 'datetime',
         // 'tanggal_pelaporan_banding' => 'datetime',
         'tanggal_penetapan' => 'datetime',

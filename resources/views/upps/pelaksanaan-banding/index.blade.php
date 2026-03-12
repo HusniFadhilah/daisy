@@ -142,7 +142,7 @@
                                 @endif
                             </td>
                             <td>
-                                {!! $pengajuan->getCustomBadgeLastStatus('pelaksanaan_banding','upps','label_short_for','text-dark') !!}
+                                {!! $pengajuan->getCustomBadgeLastStatus('pelaksanaan_banding','upps','label_short_for') !!}
                             </td>
                             <td class="text-center">
                                 <a href="{{ route('upps.pelaksanaan-banding.show', $pengajuan->id) }}" class="btn btn-sm btn-primary" title="Lihat Detail">

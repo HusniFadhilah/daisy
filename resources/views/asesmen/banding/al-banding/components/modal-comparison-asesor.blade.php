@@ -1,10 +1,10 @@
-{{-- Modal: Comparison Asesor --}}
+{{-- Modal: Comparison Asesor Banding --}}
 <div class="modal fade" id="modalComparisonAsesor" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-fullscreen">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title">
-                    <i class="bi bi-people"></i> Perbandingan Penilaian Antar Asesor
+                    <i class="bi bi-people"></i> Perbandingan Penilaian Antar Asesor Banding
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -365,7 +365,7 @@
                         <div class="avatar-circle-comp mb-1" style="background: linear-gradient(135deg, #932136, #870820);">
                             ${asesor.user.name.substring(0, 2).toUpperCase()}
                         </div>
-                        <div class="fw-bold text-dark">Asesor ${asesor.urutan_asesor}</div>
+                        <div class="fw-bold text-dark">Asesor Banding ${asesor.urutan_asesor}</div>
                         <small class="text-muted">${asesor.user.name}</small>
                     </div>
                 </th>
@@ -540,7 +540,7 @@
                         Swal.fire({
                             icon: 'info'
                             , title: 'Tidak Ada Perbedaan'
-                            , text: 'Semua penilaian asesor sudah sama.'
+                            , text: 'Semua penilaian asesor banding sudah sama.'
                             , timer: 2000
                         });
                     }

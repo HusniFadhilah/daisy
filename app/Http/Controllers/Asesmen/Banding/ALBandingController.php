@@ -2,25 +2,26 @@
 
 namespace App\Http\Controllers\Asesmen\Banding;
 
-use App\Models\Role;
+use App\Http\Controllers\Controller;
+use App\Jobs\ImportPenilaianExcelJob;
 use App\Models\Asesmen;
-use App\Models\Kriteria;
-use App\Models\Indikator;
-use Illuminate\Http\Request;
-use App\Models\ElemenStandar;
-use setasign\Fpdi\Tcpdf\Fpdi;
 use App\Models\AsesmenDocument;
 use App\Models\AsesmenUserRole;
+use App\Models\ElemenStandar;
+use App\Models\Indikator;
 use App\Models\JenjangPenilaian;
+use App\Models\Kriteria;
+use App\Models\PengajuanAkreditasi;
+use App\Models\PenilaianElemenAl;
 use App\Models\PenilaianElemenAlBanding;
 use App\Models\PenilaianImportLog;
-use Illuminate\Support\Facades\DB;
-use App\Models\PengajuanAkreditasi;
-use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
-use App\Jobs\ImportPenilaianExcelJob;
+use App\Models\Role;
 use App\Services\PenilaianExcelService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use setasign\Fpdi\Tcpdf\Fpdi;
 
 class ALBandingController extends Controller
 {
@@ -31,54 +32,103 @@ class ALBandingController extends Controller
     {
         $user = Auth::user();
 
-        // Get asesmens where user is assigned
         $asesmens = Asesmen::whereHas('userRoles', function ($query) use ($user) {
-            $query->where('id_user', $user->id)->where('jenis_asesmen', 'al_banding')->where('id_role', Role::ID_ROLE_ASESOR_BANDING);
+            $query->where('id_user', $user->id)
+                ->where('jenis_asesmen', 'al_banding')
+                ->where('id_role', Role::ID_ROLE_ASESOR_BANDING);
         })
             ->with([
+                // Role user ini sendiri
                 'userRoles' => function ($query) use ($user) {
                     $query->where('id_user', $user->id)
                         ->where('jenis_asesmen', 'al_banding')
                         ->where('id_role', Role::ID_ROLE_ASESOR_BANDING)
                         ->with('role');
                 },
+                // Semua asesor AL (untuk cek first opener & status tim)
+                'allAsesorRolesAlBanding' => function ($query) {
+                    $query->where('jenis_asesmen', 'al_banding')
+                        ->whereHas('role', fn($q) => $q->where('name', 'asesor_banding'))
+                        ->with('user')
+                        ->orderBy('updated_at');
+                },
                 'studyProgram.university',
                 'studyProgram.degreeLevel',
                 'pengajuan.dokumen' => function ($q) {
-                    // ✅ Load dokumen akreditasi
                     $q->whereIn('jenis_dokumen', [
                         'surat_tugas_asesor_al_banding',
                         'data_kualitatif',
                         'draft_borang',
-                        'borang_final',  // LED
-                        'data_suplemen',                                      // ✅ Suplemen (fixed)
+                        'borang_final',
+                        'data_suplemen',
                         'data_kuantitatif',
-                        'kuantitatif'                    // LKPS
-                    ])
-                        ->where('is_latest', true)
-                        ->orderBy('created_at', 'desc');
-                }
+                        'kuantitatif',
+                    ])->where('is_latest', true)->orderBy('created_at', 'desc');
+                },
+                // Dokumen asesmen untuk status berita acara, LHA, ringkasan
+                // LHA dimuat tanpa filter is_active agar bisa baca status revisi / persetujuan
+                'documents' => function ($q) {
+                    $q->whereIn('type', [
+                        'berita_acara_al_banding',
+                    ])->where('is_active', true);
+                },
+                // LHA diload terpisah agar bisa baca semua field status-nya
+                'lhaDocumentsBanding' => function ($q) {
+                    $q->where('type', 'lha_asesor_banding')
+                        ->where('is_active', true)
+                        ->latest('updated_at');
+                },
             ])
             ->latest()
             ->paginate(10);
 
-        // Calculate progress
         $progressAll = $this->calculateProgressBulk(
             $asesmens->pluck('id')->toArray(),
             $user->id
         );
 
-        // Map ke masing-masing asesmen
         foreach ($asesmens as $asesmen) {
             $asesmen->progress = $progressAll[$asesmen->id] ?? [
                 'total' => 0,
                 'completed' => 0,
                 'remaining' => 0,
-                'percentage' => 0
+                'percentage' => 0,
             ];
 
             $assignment = $asesmen->userRoles->first();
             $asesmen->statusInfo = AsesmenUserRole::getStatusInfo($assignment);
+
+            // ── First opener (dari relasi allAsesorRolesAlBanding) ─────────────────
+            $asesmen->firstOpenerRole = $asesmen->allAsesorRolesAlBanding
+                ->where('status_pekerjaan', '!=', 'not_started')
+                ->first(); // sudah di-orderBy updated_at → yang terlama = first opener
+
+            // ── Status penilaian — hanya dari first opener ───────────────────
+            // Karena hanya satu asesor (first opener) yang mengisi penilaian,
+            // status cukup dilihat dari status_pekerjaan milik first opener saja.
+            $asesmen->penilaian_status = match ($asesmen->firstOpenerRole?->status_pekerjaan) {
+                'submitted', 'approved', 'validated' => 'selesai',
+                'in_progress', 'revision_required'   => 'on_progress',
+                default                              => 'belum', // not_started atau belum ada opener
+            };
+
+            // ── Status dokumen ───────────────────────────────────────────────
+            $docs = $asesmen->documents;
+
+            $asesmen->has_berita_acara = $docs->where('type', 'berita_acara_al_banding')->isNotEmpty();
+
+            // ── Status LHA ───────────────────────────────────────────────────
+            // status_persetujuan_prodi: enum('pending','approved','revision_required','rejected')
+            // default = 'pending', tidak ada field is_finalized
+            // → null hanya jika belum ada dokumen sama sekali
+            // → 'pending'           = sudah diupload/difinalisasi, menunggu persetujuan prodi → info
+            // → 'revision_required' = prodi minta revisi → kuning
+            // → 'approved'          = disetujui prodi → hijau
+            // → 'rejected'          = ditolak prodi → merah
+            $lha = $asesmen->lhaDocumentsBanding->first();
+            $asesmen->lha_status = is_null($lha)
+                ? null
+                : $lha->status_persetujuan_prodi; // langsung pakai nilai enum-nya
         }
 
         $statusPekerjaan = AsesmenUserRole::STATUS_PEKERJAAN;
@@ -95,17 +145,68 @@ class ALBandingController extends Controller
         $user = Auth::user();
         $step = (int) request('step', 1);
         $step = in_array($step, [1, 2]) ? $step : 1;
-        // Check if user has access to this asesmen
+
+        // Check access
         $assignment = AsesmenUserRole::where('id_asesmen', $idAsesmen)
             ->where('id_user', $user->id)
             ->where('jenis_asesmen', 'al_banding')
+            ->where('id_role', Role::ID_ROLE_ASESOR_BANDING)
+            ->with('role', 'asesmen.pengajuan', 'asesmen.asesmenLapanganBanding')
             ->firstOrFail();
+
         if ($assignment->role->name != $user->role_selected) {
-            abort(403, 'Mohon maaf role Anda sebagai ' . ($user->role_selected) . ' tidak diizinkan membuka halaman ini. Silahkan pindah ke role lain');
+            abort(
+                403,
+                'Mohon maaf role Anda sebagai ' . $user->role_selected .
+                    ' tidak diizinkan membuka halaman ini. Silahkan pindah ke role lain'
+            );
         }
 
-        $this->updateStatusAL($assignment);
+        // Ambil semua asesor tim SEBELUM update status,
+        // supaya first opener/editor terbaca dari kondisi awal
+        $asesorTeam = AsesmenUserRole::where('id_asesmen', $idAsesmen)
+            ->where('jenis_asesmen', 'al_banding')
+            ->where('id_role', Role::ID_ROLE_ASESOR_BANDING)
+            ->with('user')
+            ->orderBy('urutan_asesor')
+            ->get();
+
+        $firstActiveAsesor = $asesorTeam
+            ->where('status_pekerjaan', '!=', 'not_started')
+            ->sortBy(fn($item) => $item->started_at ?? $item->updated_at ?? $item->created_at)
+            ->first();
+
+        $iAmAlreadyStarted = $assignment->status_pekerjaan !== 'not_started';
+        $isFirstVisitForMe = !$iAmAlreadyStarted;
+
+        // Karena halaman ini sudah lewat middleware confirm opener,
+        // maka yang boleh masuk pertama kali adalah opener yang sah
+        $isFirstOpener   = !$firstActiveAsesor || $firstActiveAsesor->id_user == $user->id;
+        $firstOpenerUser = $firstActiveAsesor?->user;
+
+        // Update status setelah first opener dihitung
+        $this->updateStatusALBanding($assignment);
+        $assignment->refresh();
+
         $asesmen = $assignment->asesmen;
+
+        // Re-query firstActiveAsesor setelah update, untuk ditampilkan ke view bila perlu
+        $asesorTeam = AsesmenUserRole::where('id_asesmen', $idAsesmen)
+            ->where('jenis_asesmen', 'al_banding')
+            ->where('id_role', Role::ID_ROLE_ASESOR_BANDING)
+            ->with('user')
+            ->orderBy('urutan_asesor')
+            ->get();
+
+        $firstActiveAsesor = $asesorTeam
+            ->where('status_pekerjaan', '!=', 'not_started')
+            ->sortBy(fn($item) => $item->started_at ?? $item->updated_at ?? $item->created_at)
+            ->first();
+
+        // Editor asesor = first opener
+        $isEditorAsesor = $firstActiveAsesor
+            ? $firstActiveAsesor->id_user == $user->id
+            : true;
 
         // Get all kriteria with elemen and indikator
         $kriterias = Kriteria::with([
@@ -115,35 +216,25 @@ class ALBandingController extends Controller
             'elemenStandar.penilaianElemenAlBanding' => function ($query) use ($asesmen, $user) {
                 $query->where('id_asesmen', $asesmen->id)
                     ->where('id_asesor', $user->id);
-            }
+            },
         ])->get();
 
         $needsRevisions = PenilaianElemenAlBanding::where('id_asesmen', $asesmen->id)
             ->where('id_asesor', $user->id)
             ->with('elemen.kriteria')
             ->get();
+
         $jenjangs = JenjangPenilaian::all();
+
         // Calculate progress
         $progress = $this->calculateProgressBulk([$asesmen->id], $user->id)[$asesmen->id];
-        // ✅ Ambil semua asesor TIM dulu, SEBELUM updateStatusAL
-        $asesorTeam = AsesmenUserRole::where('id_asesmen', $idAsesmen)
-            ->where('jenis_asesmen', 'al_banding')
-            ->whereHas('role', fn($q) => $q->where('name', 'asesor'))
-            ->with('user')
-            ->get();
-
-        // ✅ Tentukan siapa editor SEBELUM status diubah
-        $firstActiveAsesor = $asesorTeam
-            ->where('status_pekerjaan', '!=', 'not_started')
-            ->sortBy('started_at')
-            ->first();
-
-        // $isEditorAsesor = !$firstActiveAsesor || $firstActiveAsesor->id_user == $user->id;
-        $isEditorAsesor = true;
 
         $otherAsesorsProgress = [];
         foreach ($asesorTeam as $member) {
-            if ($member->id_user == $user->id) continue;
+            if ($member->id_user == $user->id) {
+                continue;
+            }
+
             $otherAsesorsProgress[$member->id_user] = [
                 'user'             => $member->user,
                 'status_pekerjaan' => $member->status_pekerjaan,
@@ -151,8 +242,9 @@ class ALBandingController extends Controller
                 'started_at'       => $member->started_at,
             ];
         }
-        $isFinalized = in_array($asesmen->asesmenLapanganBanding->status, ['completed', 'finalized']);
-        $isInProgress = $asesmen->asesmenLapanganBanding->isInProgress();
+
+        $isFinalized = in_array($asesmen->asesmenLapanganBanding?->status, ['completed', 'finalized']);
+        $isInProgress = $asesmen->asesmenLapanganBanding?->isInProgress() ?? false;
         $uploadedFiles = $asesmen->pengajuan ? $asesmen->pengajuan->getUploadedDocuments() : null;
 
         return view('asesmen.banding.al-banding.berkas.show', compact(
@@ -169,11 +261,14 @@ class ALBandingController extends Controller
             'asesorTeam',
             'isEditorAsesor',
             'firstActiveAsesor',
-            'otherAsesorsProgress'
+            'otherAsesorsProgress',
+            'isFirstVisitForMe',
+            'isFirstOpener',
+            'firstOpenerUser'
         ));
     }
 
-    private function updateStatusAL($assignment)
+    private function updateStatusALBanding($assignment)
     {
         // ✅ AUTO-UPDATE STATUS: not_started → in_progress
         if ($assignment->status_pekerjaan === 'not_started') {
@@ -262,6 +357,72 @@ class ALBandingController extends Controller
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Hitung status tim untuk AL Banding.
+     * Tidak ada split — hanya cek progres asesor lain.
+     *
+     * Keys:
+     *   otherFilled   : bool  — ada asesor lain yang sudah mengisi
+     *   otherProgress : array — [id_user => ['nama', 'percentage', 'status_pekerjaan']]
+     *   allFilled     : bool  — semua asesor sudah mengisi semua elemen
+     *   allDone       : bool  — semua asesor sudah approved
+     */
+    private function calculateTeamStatus(
+        Asesmen $asesmen,
+        \Illuminate\Support\Collection $penilaianForAsesmen,
+        int $currentUserId,
+        int $totalElemen
+    ): array {
+        $asesors = $asesmen->allAsesorRolesAlBanding;
+
+        if ($asesors->isEmpty()) {
+            return [
+                'otherFilled'   => false,
+                'otherProgress' => [],
+                'allFilled'     => false,
+                'allDone'       => false,
+            ];
+        }
+
+        $byAsesor      = $penilaianForAsesmen->groupBy('id_asesor');
+        $countByAsesor = $byAsesor->map(fn($items) => $items->count());
+
+        $otherFilled   = false;
+        $otherProgress = [];
+
+        foreach ($asesors as $asesor) {
+            if ($asesor->id_user === $currentUserId) continue;
+
+            $completed  = $countByAsesor->get($asesor->id_user, 0);
+            $percentage = $totalElemen ? round($completed / $totalElemen * 100, 1) : 0;
+
+            if ($completed > 0) $otherFilled = true;
+
+            $otherProgress[$asesor->id_user] = [
+                'nama'             => $asesor->user->name ?? '-',
+                'completed'        => $completed,
+                'percentage'       => $percentage,
+                'status_pekerjaan' => $asesor->status_pekerjaan,
+            ];
+        }
+
+        $aSesorIds = $asesors->pluck('id_user')->toArray();
+
+        $allFilled = collect($aSesorIds)
+            ->every(fn($id) => $countByAsesor->get($id, 0) >= $totalElemen);
+
+        $allDone = $asesors->every(
+            fn($role) => in_array($role->status_pekerjaan, ['submitted', 'approved', 'validated'])
+        );
+
+        return [
+            'otherFilled'   => $otherFilled,
+            'otherProgress' => $otherProgress,
+            'allFilled'     => $allFilled,
+            'allDone'       => $allDone,
+        ];
     }
 
     /**
@@ -675,53 +836,6 @@ class ALBandingController extends Controller
         }
     }
 
-    // /**
-    //  * Import penilaian dari Excel (using Queue)
-    //  */
-    // public function importExcel(Request $request, $idAsesmen)
-    // {
-    //     $request->validate([
-    //         'file' => 'required|file|mimes:xlsx,xls|max:10240', // 10MB max
-    //     ]);
-
-    //     try {
-    //         $user = Auth::user();
-
-    //         // Verify access
-    //         $asesmen = Asesmen::whereHas('userRoles', function ($query) use ($user) {
-    //             $query->where('id_user', $user->id);
-    //         })->findOrFail($idAsesmen);
-
-    //         // Store file temporarily
-    //         $file = $request->file('file');
-    //         $filename = 'import_' . $asesmen->code . '_' . time() . '.' . $file->getClientOriginalExtension();
-    //         $filePath = $file->storeAs('temp/imports', $filename);
-
-    //         // Create import log
-    //         $importLog = PenilaianImportLog::create([
-    //             'id_asesmen' => $asesmen->id,
-    //             'id_asesor' => $user->id,
-    //             'filename' => $file->getClientOriginalName(),
-    //             'status' => 'queued',
-    //         ]);
-
-    //         // Dispatch job
-    //         ImportPenilaianExcelJob::dispatch(PenilaianElemenAlBanding::class, $filePath, $asesmen->id, $user->id, $importLog->id);
-
-    //         return response()->json([
-    //             'success' => true,
-    //             'message' => 'File berhasil diupload. Proses input data penilaian sedang diproses di background.',
-    //             'import_log_id' => $importLog->id,
-    //         ]);
-    //     } catch (\Exception $e) {
-    //         Log::error($e);
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Gagal upload excel penilaian: ' . $e->getMessage(),
-    //         ], 500);
-    //     }
-    // }
-
     /**
      * Check import status (AJAX)
      */
@@ -794,7 +908,7 @@ class ALBandingController extends Controller
             $asesors = AsesmenUserRole::where('id_asesmen', $idAsesmen)
                 ->where('jenis_asesmen', 'al_banding')
                 ->whereHas('role', function ($q) {
-                    $q->where('name', 'asesor');
+                    $q->where('name', 'asesor_banding');
                 })
                 ->with('user')
                 ->orderBy('urutan_asesor')
@@ -866,239 +980,6 @@ class ALBandingController extends Controller
             ], 500);
         }
     }
-
-    public function exportLaporanPdf($idAsesmen)
-    {
-        $user = Auth::user();
-
-        // akses minimal sama seperti showBerkas
-        $assignment = AsesmenUserRole::where('id_asesmen', $idAsesmen)
-            ->where('id_user', $user->id)
-            ->where('jenis_asesmen', 'al_banding')
-            ->where('status_penawaran', 'accepted')
-            ->firstOrFail();
-
-        // muat data asesmen + prodi + univ
-        $asesmen = Asesmen::with(['studyProgram.university', 'studyProgram.degreeLevel'])->findOrFail($idAsesmen);
-
-        // ambil daftar asesor AL accepted (untuk cover)
-        $asesors = AsesmenUserRole::where('id_asesmen', $idAsesmen)
-            ->where('jenis_asesmen', 'al_banding')
-            ->where('status_penawaran', 'accepted')
-            ->whereHas('role', fn($q) => $q->where('name', 'asesor'))
-            ->with('user')
-            ->orderBy('urutan_asesor')
-            ->get();
-
-        // ambil elemen + kriteria + penilaian user ini
-        $rows = ElemenStandar::with('kriteria')
-            ->orderBy('id_kriteria')
-            ->orderBy('kode_elemen')
-            ->get()
-            ->map(function ($elemen) use ($idAsesmen, $user) {
-                $p = PenilaianElemenAlBanding::where('id_asesmen', $idAsesmen)
-                    ->where('id_asesor', $user->id)
-                    ->where('id_elemen', $elemen->id)
-                    ->first();
-
-                $skor = $p?->skor;
-                $skorLabel = $skor === null ? '-' : JenjangPenilaian::getSkorLabelAttribute($skor, true);
-
-                return [
-                    'kriteria' => $elemen->kriteria?->kode_kriteria . ' - ' . $elemen->kriteria?->nama_kriteria,
-                    'kode_elemen' => $elemen->kode_elemen,
-                    'pernyataan' => $elemen->pernyataan_elemen,
-                    'skor' => $skorLabel,
-                    'komentar' => $p?->komentar ?? '',
-                ];
-            });
-
-        // =========================
-        // 1) Generate PDF Utama
-        // =========================
-        $tmpDir = storage_path('app/temp');
-        if (!is_dir($tmpDir)) mkdir($tmpDir, 0775, true);
-
-        $mainPdfPath = $tmpDir . '/laporan_al_main_' . $asesmen->code . '_' . $user->id . '.pdf';
-
-        $pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8');
-        $pdf->setPrintHeader(false);
-        $pdf->setPrintFooter(false);
-        $pdf->SetMargins(15, 15, 15);
-        $pdf->SetAutoPageBreak(true, 15);
-
-        // ========== COVER ==========
-        $pdf->AddPage();
-
-        $univName = $asesmen->studyProgram?->university?->name ?? '-';
-        $prodiName = $asesmen->studyProgram?->full_name ?? $asesmen->studyProgram?->name ?? '-';
-        $level = $asesmen->studyProgram?->degreeLevel?->name ?? $asesmen->studyProgram?->degreeLevel?->code ?? '-';
-
-        $periode = '-';
-        if ($asesmen->tanggal_mulai && $asesmen->tanggal_selesai) {
-            $periode = $asesmen->tanggal_mulai->locale('id')->translatedFormat('d M Y') . ' s/d ' . $asesmen->tanggal_selesai->locale('id')->translatedFormat('d M Y');
-        }
-
-        $asesorLines = '';
-        foreach ($asesors as $i => $a) {
-            $asesorLines .= ($i + 1) . '. ' . ($a->user?->name ?? '-') . "<br>";
-        }
-        if ($asesorLines === '') $asesorLines = '-';
-
-        // desain cover yang “rapi”
-        $coverHtml = '
-    <div style="text-align:center;">
-        <div style="font-size:16px; font-weight:bold;">LAPORAN HASIL ASESMENT LAPANGAN</div>
-        <div style="font-size:12px; margin-top:4px;">(AL)</div>
-        <div style="margin-top:12px; font-size:11px;">Kode Asesmen: <b>' . e($asesmen->code) . '</b></div>
-        <hr style="margin-top:10px;">
-    </div>
-
-    <table cellpadding="6" cellspacing="0" style="width:100%; font-size:11px;">
-        <tr>
-            <td style="width:30%;"><b>Perguruan Tinggi</b></td>
-            <td style="width:70%;">' . e($univName) . '</td>
-        </tr>
-        <tr>
-            <td><b>Program Studi</b></td>
-            <td>' . e($prodiName) . '</td>
-        </tr>
-        <tr>
-            <td><b>Jenjang</b></td>
-            <td>' . e($level) . '</td>
-        </tr>
-        <tr>
-            <td><b>Panel / Kode Panel</b></td>
-            <td>' . e($asesmen->kode_panel ?? '-') . '</td>
-        </tr>
-        <tr>
-            <td><b>Periode Asesmen</b></td>
-            <td>' . e($periode) . '</td>
-        </tr>
-        <tr>
-            <td valign="top"><b>Tim Asesor</b></td>
-            <td>' . $asesorLines . '</td>
-        </tr>
-    </table>
-
-    <div style="margin-top:18px; font-size:10px; color:#555;">
-        Dokumen ini dihasilkan oleh sistem dan merupakan bagian dari proses asesmen lapangan.
-    </div>
-
-    <div style="position: absolute; bottom: 35px; left: 15px; right: 15px; font-size:11px;">
-        <table style="width:100%;" cellpadding="6">
-            <tr>
-                <td style="width:50%; text-align:left;">
-                    <b>Dibuat pada:</b><br>' . now()->locale('id')->translatedFormat('d M Y H:i') . '
-                </td>
-                <td style="width:50%; text-align:right;">
-                    <b>Asesor penyusun:</b><br>' . e($user->name) . '
-                </td>
-            </tr>
-        </table>
-    </div>
-    ';
-
-        $pdf->writeHTML($coverHtml, true, false, true, false, '');
-
-        // ========== HALAMAN PENILAIAN ==========
-        $pdf->AddPage();
-
-        $pdf->writeHTML('<h3 style="margin:0;">Rekap Penilaian Elemen (AL)</h3>
-    <div style="font-size:10px; color:#555; margin-top:2px;">Asesor: <b>' . e($user->name) . '</b></div>
-    <hr>', true, false, true, false, '');
-
-        // tabel penilaian (basic, aman di TCPDF)
-        $table = '<table border="1" cellpadding="4" cellspacing="0" style="width:100%; font-size:9px;">
-        <thead>
-            <tr style="font-weight:bold; background-color:#f2f2f2;">
-                <th style="width:18%;">Kriteria</th>
-                <th style="width:10%;">Kode</th>
-                <th style="width:42%;">Pernyataan Elemen</th>
-                <th style="width:12%;">Skor</th>
-                <th style="width:18%;">Komentar</th>
-            </tr>
-        </thead>
-        <tbody>';
-
-        foreach ($rows as $r) {
-            $table .= '<tr>
-            <td>' . e($r['kriteria']) . '</td>
-            <td>' . e($r['kode_elemen']) . '</td>
-            <td>' . e($r['pernyataan']) . '</td>
-            <td>' . e($r['skor']) . '</td>
-            <td>' . e($r['komentar']) . '</td>
-        </tr>';
-        }
-
-        $table .= '</tbody></table>';
-
-        $pdf->writeHTML($table, true, false, true, false, '');
-
-        $pdf->Output($mainPdfPath, 'F');
-
-        // =========================
-        // 2) Ambil berita acara (multi-file) aktif
-        // =========================
-        $beritaAcaraDocs = AsesmenDocument::where('id_asesmen', $idAsesmen)
-            ->where('type', 'berita_acara_al_banding')
-            ->where('is_active', true)
-            ->orderBy('sort_order')
-            ->orderBy('id')
-            ->get();
-
-        // =========================
-        // 3) MERGE: main + berita acara via FPDI
-        // =========================
-        $merger = new Fpdi('P', 'mm', 'A4', true, 'UTF-8');
-        $merger->setPrintHeader(false);
-        $merger->setPrintFooter(false);
-        $merger->SetAutoPageBreak(true, 15);
-
-        $sources = [];
-
-        $sources[] = $mainPdfPath;
-
-        foreach ($beritaAcaraDocs as $doc) {
-            $abs = storage_path('app/' . $doc->stored_path);
-            if (is_file($abs)) $sources[] = $abs;
-        }
-
-        foreach ($sources as $src) {
-            $pageCount = $merger->setSourceFile($src);
-            for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
-                $tplId = $merger->importPage($pageNo);
-                $size = $merger->getTemplateSize($tplId);
-                $merger->AddPage($size['orientation'], [$size['width'], $size['height']]);
-                $merger->useTemplate($tplId);
-            }
-        }
-
-        $filename = 'Laporan_Asesmen_Lapangan_' . $asesmen->code . '.pdf';
-
-        // output stream download
-        return response($merger->Output($filename, 'S'), 200, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-        ]);
-    }
-
-    /**
-     * Append/merge all pages of an existing PDF to the end of current FPDI(TCPDF) document.
-     */
-    private function appendPdf(Fpdi $pdf, string $filePath): void
-    {
-        $pageCount = $pdf->setSourceFile($filePath);
-        for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
-            $tplId = $pdf->importPage($pageNo);
-            $size = $pdf->getTemplateSize($tplId);
-
-            $orientation = ($size['width'] > $size['height']) ? 'L' : 'P';
-            $pdf->AddPage($orientation, [$size['width'], $size['height']]);
-            $pdf->useTemplate($tplId);
-        }
-    }
-
     /**
      * Halaman Upload Excel Penilaian Manual
      */
@@ -1116,7 +997,7 @@ class ALBandingController extends Controller
             abort(403, 'Mohon maaf role Anda sebagai ' . ($user->role_selected) . ' tidak diizinkan membuka halaman ini.');
         }
 
-        $this->updateStatusAL($assignment);
+        $this->updateStatusALBanding($assignment);
         $asesmen = $assignment->asesmen;
 
         // ✅ Calculate progress untuk AL
@@ -1146,7 +1027,7 @@ class ALBandingController extends Controller
         $asesorTeam = AsesmenUserRole::where('id_asesmen', $idAsesmen)
             ->where('jenis_asesmen', 'al_banding')
             ->whereHas('role', function ($q) {
-                $q->where('name', 'asesor');
+                $q->where('name', 'asesor_banding');
             })
             ->with('user')
             ->orderBy('urutan_asesor')
@@ -1165,6 +1046,156 @@ class ALBandingController extends Controller
             'isUploader',       // ✅ Tambahkan
             'asesorTeam'        // ✅ Tambahkan
         ));
+    }
+
+    /**
+     * HTTP endpoint: inisialisasi penilaian AL banding dari AL
+     */
+    public function initFromAL($idAsesmen)
+    {
+        $user = Auth::user();
+
+        $assignmentBanding = AsesmenUserRole::where('id_asesmen', $idAsesmen)
+            ->where('id_user', $user->id)
+            ->where('jenis_asesmen', 'al_banding')
+            ->where('id_role', Role::ID_ROLE_ASESOR_BANDING)
+            ->first();
+
+        if (!$assignmentBanding) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki akses ke asesmen banding ini',
+            ], 403);
+        }
+
+        $editorAssignment = $this->resolveEditorAsesor($idAsesmen);
+        if (!$editorAssignment || $editorAssignment->id_user !== $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Hanya asesor editor/uploader yang dapat menginisialisasi penilaian dari AL.',
+            ], 403);
+        }
+
+        if (in_array($assignmentBanding->status_pekerjaan, ['submitted', 'approved', 'validated'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tidak dapat menginisialisasi karena penilaian banding sudah di-submit atau disetujui.',
+            ], 422);
+        }
+
+        try {
+            $result = $this->doInitFromAL($assignmentBanding);
+
+            return response()->json([
+                'success'     => true,
+                'message'     => "Berhasil menginisialisasi {$result['initialized']} penilaian dari data AL."
+                    . ($result['skipped'] > 0 ? " {$result['skipped']} elemen dilewati karena sudah memiliki penilaian." : ''),
+                'initialized' => $result['initialized'],
+                'skipped'     => $result['skipped'],
+                'source'      => $result['source'],
+                'progress'    => $this->calculateProgressBulk([$assignmentBanding->id_asesmen], $user->id)[$assignmentBanding->id_asesmen],
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Init from AL (HTTP) failed: ' . $e->getMessage(), [
+                'id_asesmen' => $idAsesmen,
+                'id_user'    => $user->id,
+                'trace'      => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal inisialisasi: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Inti logika inisialisasi penilaian AL banding dari AL.
+     * Karena AL banding hanya diisi satu asesor (editor/uploader),
+     * maka sumber diambil dari satu asesor AL yang memang punya data penilaian.
+     *
+     * @param AsesmenUserRole $assignmentBanding
+     * @return array ['initialized', 'skipped', 'source']
+     * @throws \Throwable
+     */
+    public function doInitFromAL(AsesmenUserRole $assignmentBanding): array
+    {
+        $idAsesmen       = $assignmentBanding->id_asesmen;
+        $idAsesorBanding = $assignmentBanding->id_user;
+
+        try {
+            // Cari asesor AL sumber yang benar-benar punya data
+            $assignmentALSumber = AsesmenUserRole::where('id_asesmen', $idAsesmen)
+                ->where('jenis_asesmen', 'al')
+                ->where('id_role', Role::ID_ROLE_ASESOR)
+                ->where('status_penawaran', 'accepted')
+                ->with('user')
+                ->orderBy('urutan_asesor')
+                ->get()
+                ->first(function ($assignmentAL) use ($idAsesmen) {
+                    return PenilaianElemenAl::where('id_asesmen', $idAsesmen)
+                        ->where('id_asesor', $assignmentAL->id_user)
+                        ->whereNotNull('skor')
+                        ->exists();
+                });
+
+            if (!$assignmentALSumber) {
+                throw new \Exception('Tidak ditemukan asesor AL sumber yang memiliki data penilaian.');
+            }
+
+            $penilaianALSumber = PenilaianElemenAl::where('id_asesmen', $idAsesmen)
+                ->where('id_asesor', $assignmentALSumber->id_user)
+                ->get();
+
+            if ($penilaianALSumber->isEmpty()) {
+                throw new \Exception(
+                    "Asesor AL sumber ({$assignmentALSumber->user->name}) belum memiliki data penilaian."
+                );
+            }
+
+            $initialized = 0;
+            $skipped     = 0;
+
+            foreach ($penilaianALSumber as $src) {
+                $exists = PenilaianElemenAlBanding::where('id_asesmen', $idAsesmen)
+                    ->where('id_asesor', $idAsesorBanding)
+                    ->where('id_elemen', $src->id_elemen)
+                    ->whereNotNull('skor')
+                    ->exists();
+
+                if ($exists) {
+                    $skipped++;
+                    continue;
+                }
+
+                PenilaianElemenAlBanding::updateOrCreate(
+                    [
+                        'id_asesmen' => $idAsesmen,
+                        'id_asesor'  => $idAsesorBanding,
+                        'id_elemen'  => $src->id_elemen,
+                    ],
+                    [
+                        'skor'     => $src->skor,
+                        'komentar' => $src->komentar,
+                        'status'   => 'draft',
+                    ]
+                );
+
+                $initialized++;
+            }
+
+            return [
+                'initialized' => $initialized,
+                'skipped'     => $skipped,
+                'source'      => [
+                    'id_asesor'     => $assignmentALSumber->id_user,
+                    'urutan_asesor' => $assignmentALSumber->urutan_asesor,
+                    'nama_asesor'   => $assignmentALSumber->user->name ?? '-',
+                ],
+            ];
+        } catch (\Throwable $e) {
+            throw $e;
+        }
     }
 
     /**
@@ -1226,6 +1257,56 @@ class ALBandingController extends Controller
                 'success' => false,
                 'message' => 'Gagal upload excel penilaian: ' . $e->getMessage(),
             ], 500);
+        }
+    }
+
+    public function confirmOpener(Request $request, $idAsesmen)
+    {
+        $user        = Auth::user();
+        $continueUrl = $request->input('continue_url');
+        $sessionKey  = "al_banding_opener_confirmed_{$idAsesmen}";
+
+        $assignment = AsesmenUserRole::where('id_asesmen', $idAsesmen)
+            ->where('id_user', $user->id)
+            ->where('jenis_asesmen', 'al_banding')
+            ->where('id_role', Role::ID_ROLE_ASESOR_BANDING)
+            ->firstOrFail();
+
+        $request->session()->put($sessionKey, true);
+
+        DB::beginTransaction();
+
+        try {
+            if ($assignment->status_pekerjaan === 'not_started') {
+                $assignment->update([
+                    'status_pekerjaan' => 'in_progress',
+                    'started_at'       => now(),
+                ]);
+            }
+
+            $hasAnyPenilaian = PenilaianElemenAlBanding::where('id_asesmen', $idAsesmen)
+                ->where('id_asesor', $user->id)
+                ->whereNotNull('skor')
+                ->exists();
+
+            if (!$hasAnyPenilaian) {
+                $this->doInitFromAL($assignment->fresh());
+            }
+
+            DB::commit();
+
+            return redirect($continueUrl);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            Log::error('Confirm opener AL Banding gagal', [
+                'id_asesmen' => $idAsesmen,
+                'id_user'    => $user->id,
+                'message'    => $e->getMessage(),
+            ]);
+
+            return redirect()->route('al-banding.berkas')
+                ->with('error', 'Gagal mengonfirmasi opener: ' . $e->getMessage());
         }
     }
 }

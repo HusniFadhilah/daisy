@@ -10,7 +10,7 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('al.berkas') }}">Berkas AL</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('al_banding.berkas') }}">Berkas AL Banding</a></li>
             <li class="breadcrumb-item active">Ringkasan Hasil Akreditasi</li>
         </ol>
     </nav>
@@ -24,7 +24,7 @@
                     </h4>
                     <p class="text-muted mb-0">{{ $asesmen->getName(false) }}</p>
                 </div>
-                <a href="{{ route('al.berkas') }}" class="btn btn-outline-secondary">
+                <a href="{{ route('al_banding.berkas') }}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left"></i> Kembali
                 </a>
             </div>
@@ -63,14 +63,14 @@
                             <i class="bi bi-file-earmark-check"></i> Ringkasan Telah Diupload
                         </h6>
                         <p class="mb-1">
-                            Ringkasan hasil akreditasi telah diupload oleh asesor: <strong>{{ $firstUpload->uploader->name ?? 'Asesor' }}</strong>
+                            Ringkasan hasil akreditasi telah diupload oleh asesor banding: <strong>{{ $firstUpload->uploader->name ?? 'Asesor' }}</strong>
                         </p>
                         <small class="text-muted">
                             <i class="bi bi-clock"></i> Diupload pada: {{ $firstUpload->uploaded_at->locale('id')->translatedFormat('d M Y, H:i') }}
                         </small>
                         <hr class="my-2">
                         <p class="mb-0 small text-muted">
-                            <i class="bi bi-lock"></i> Hanya asesor yang pertama kali mengupload yang dapat mengedit atau menambah dokumen.
+                            <i class="bi bi-lock"></i> Hanya asesor banding yang pertama kali mengupload yang dapat mengedit atau menambah dokumen.
                             Anda dapat melihat dan mengunduh dokumen yang telah diupload.
                         </p>
                     </div>
@@ -96,7 +96,7 @@
                     </h5>
                     <small class="d-block opacity-75 mt-1">
                         Hanya untuk pihak internal. Berisi temuan khusus/indikasi ketidaksesuaian yang disengaja oleh PS
-                        (laporan confidential dari asesor ke komite akreditasi LAMDEPILAR).
+                        (laporan confidential dari asesor banding ke komite akreditasi LAMDEPILAR).
                     </small>
                 </div>
                 <div class="card-body">
@@ -104,7 +104,7 @@
                     <div class="alert alert-warning alert-permanent">
                         <i class="bi bi-lock"></i>
                         <strong>Upload Dinonaktifkan</strong><br>
-                        Ringkasan sudah diupload oleh asesor lain. Hanya asesor yang pertama mengupload yang dapat menambah atau mengedit dokumen.
+                        Ringkasan sudah diupload oleh asesor banding lain. Hanya asesor banding yang pertama mengupload yang dapat menambah atau mengedit dokumen.
                     </div>
                     @else
                     <form id="formUploadConf">
@@ -176,13 +176,13 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="btn-group btn-group-sm" role="group">
-                                            <a class="btn btn-outline-primary" href="{{ route('al.berkas.ringkasan-asesor.download', ['idAsesmen' => $asesmen->id, 'docId' => $doc->id]) }}" title="Download">
+                                            <a class="btn btn-outline-primary" href="{{ route('al_banding.berkas.ringkasan-asesor.download', ['idAsesmen' => $asesmen->id, 'docId' => $doc->id]) }}" title="Download">
                                                 <i class="bi bi-download"></i>
                                             </a>
 
                                             {{-- ✅ Tombol hapus hanya muncul jika user adalah uploader --}}
                                             @if($isUploader && $doc->uploaded_by == Auth::id())
-                                            <button type="button" class="btn btn-outline-danger js-delete-doc" data-doc-id="{{ $doc->id }}" data-doc-name="{{ $doc->title }}" data-url="{{ route('al.berkas.ringkasan-asesor.delete', ['idAsesmen' => $asesmen->id, 'docId' => $doc->id]) }}" title="Hapus">
+                                            <button type="button" class="btn btn-outline-danger js-delete-doc" data-doc-id="{{ $doc->id }}" data-doc-name="{{ $doc->title }}" data-url="{{ route('al_banding.berkas.ringkasan-asesor.delete', ['idAsesmen' => $asesmen->id, 'docId' => $doc->id]) }}" title="Hapus">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                             @endif
@@ -219,13 +219,13 @@
                         </h6>
                         <ul class="mb-0 small ps-3">
                             <li class="mb-2">
-                                <strong>Hanya satu asesor</strong> yang dapat mengupload ringkasan
+                                <strong>Hanya satu asesor banding</strong> yang dapat mengupload ringkasan
                             </li>
                             <li class="mb-2">
-                                Asesor yang <strong>pertama kali mengupload</strong> memiliki akses penuh untuk mengedit dan menghapus dokumen
+                                Asesor banding yang <strong>pertama kali mengupload</strong> memiliki akses penuh untuk mengedit dan menghapus dokumen
                             </li>
                             <li>
-                                Asesor lain dapat <strong>melihat dan mengunduh</strong> dokumen, tetapi tidak dapat mengedit
+                                Asesor banding lain dapat <strong>melihat dan mengunduh</strong> dokumen, tetapi tidak dapat mengedit
                             </li>
                         </ul>
                     </div>
@@ -243,7 +243,7 @@
             <div class="card mt-3">
                 <div class="card-header bg-success text-white">
                     <h6 class="mb-0">
-                        <i class="bi bi-people"></i> Tim Asesor AL
+                        <i class="bi bi-people"></i> Tim Asesor AL Banding
                     </h6>
                 </div>
                 <div class="card-body">
@@ -418,7 +418,7 @@
             , removeId: 'btnRemoveConf'
             , submitId: 'btnSubmitConf'
             , formId: 'formUploadConf'
-            , uploadUrl: "{{ route('al.berkas.ringkasan-asesor.upload', ['idAsesmen' => $asesmen->id, 'type' => 'hasil_akreditasi_confidential']) }}"
+            , uploadUrl: "{{ route('al_banding.berkas.ringkasan-asesor.upload', ['idAsesmen' => $asesmen->id, 'type' => 'hasil_akreditasi_confidential']) }}"
         });
 
         // DELETE DOCUMENT HANDLER

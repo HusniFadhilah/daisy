@@ -291,6 +291,13 @@ class Asesmen extends Model
             ->where('is_active', true);
     }
 
+    public function lhaDocumentsBanding()
+    {
+        return $this->hasMany(AsesmenDocument::class, 'id_asesmen')
+            ->where('type', 'lha_asesor_banding')
+            ->where('is_active', true);
+    }
+
     public function lhaAsesor()
     {
         return $this->hasOne(LhaAsesor::class, 'id_asesmen');

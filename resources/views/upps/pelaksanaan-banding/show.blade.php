@@ -280,7 +280,7 @@
                         <tr>
                             <th>Status Pelaksanaan</th>
                             <td>:
-                                {!! $pengajuan->getCustomBadgeLastStatus('pelaksanaan_banding','upps','label_long_for','text-dark') !!}
+                                {!! $pengajuan->getCustomBadgeLastStatus('pelaksanaan_banding','upps','label_long_for') !!}
                             </td>
                         </tr>
                     </table>
@@ -323,11 +323,11 @@
                     'color' => $pembayaranLunas ? 'dark' : ($pembayaranBanding ? 'dark' : 'secondary'),
                     ],
                     [
-                    'done' => (bool) $pengajuan->tanggal_penugasan_banding,
+                    'done' => (bool) $pengajuan->tanggal_penugasan_asesor_ak_banding,
                     'label' => 'Asesor Banding Ditugaskan',
-                    'date' => $pengajuan->tanggal_penugasan_banding,
-                    'icon' => $pengajuan->tanggal_penugasan_banding ? 'check-circle-fill' : 'circle',
-                    'color' => $pengajuan->tanggal_penugasan_banding ? 'dark' : 'secondary',
+                    'date' => $pengajuan->tanggal_penugasan_asesor_ak_banding,
+                    'icon' => $pengajuan->tanggal_penugasan_asesor_ak_banding ? 'check-circle-fill' : 'circle',
+                    'color' => $pengajuan->tanggal_penugasan_asesor_ak_banding ? 'dark' : 'secondary',
                     ],
                     [
                     'done' => (bool) $pengajuan->tanggal_pelaksanaan_banding,

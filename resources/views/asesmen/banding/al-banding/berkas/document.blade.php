@@ -1,7 +1,7 @@
 {{-- resources/views/asesmen/al/berkas/document.blade.php --}}
 @extends('layouts.template.app')
 
-@section('title', 'Upload Berita Acara AL - ' . $asesmen->name)
+@section('title', 'Upload Berita Acara AL Banding - ' . $asesmen->name)
 
 @section('content')
 <div class="container-fluid py-3">
@@ -10,7 +10,7 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('al_banding.berkas') }}">Berkas AL</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('al_banding.berkas') }}">Berkas AL Banding</a></li>
             <li class="breadcrumb-item active">Upload Berita Acara</li>
         </ol>
     </nav>
@@ -20,7 +20,7 @@
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
                 <div>
                     <h4 class="mb-1">
-                        <i class="bi bi-file-earmark-pdf"></i> Upload Berita Acara AL
+                        <i class="bi bi-file-earmark-pdf"></i> Upload Berita Acara AL Banding
                     </h4>
                     <p class="text-muted mb-0">{{ $asesmen->getName(false) }}</p>
                 </div>
@@ -41,7 +41,7 @@
                     </div>
                     <div class="flex-grow-1">
                         <h6 class="mb-2">
-                            <i class="bi bi-person-check"></i> Anda adalah Asesor yang Mengupload Berita Acara
+                            <i class="bi bi-person-check"></i> Anda adalah Asesor Banding yang Mengupload Berita Acara
                         </h6>
                         <p class="mb-0">
                             Anda dapat menambah, mengedit, atau menghapus file berita acara sampai proses finalisasi dilakukan.
@@ -63,14 +63,14 @@
                             <i class="bi bi-file-earmark-check"></i> Berita Acara Telah Diupload
                         </h6>
                         <p class="mb-1">
-                            Berita acara telah diupload oleh asesor: <strong>{{ $firstUpload->uploader->name ?? 'Asesor' }}</strong>
+                            Berita acara telah diupload oleh asesor banding: <strong>{{ $firstUpload->uploader->name ?? 'Asesor Banding' }}</strong>
                         </p>
                         <small class="text-muted">
                             <i class="bi bi-clock"></i> Diupload pada: {{ $firstUpload->uploaded_at->locale('id')->translatedFormat('d M Y, H:i') }}
                         </small>
                         <hr class="my-2">
                         <p class="mb-0 small text-muted">
-                            <i class="bi bi-lock"></i> Hanya asesor yang pertama kali mengupload yang dapat mengedit atau menambah dokumen.
+                            <i class="bi bi-lock"></i> Hanya asesor banding yang pertama kali mengupload yang dapat mengedit atau menambah dokumen.
                             Anda dapat melihat dan mengunduh dokumen yang telah diupload.
                         </p>
                     </div>
@@ -110,7 +110,7 @@
                     <div class="alert alert-warning alert-permanent">
                         <i class="bi bi-lock"></i>
                         <strong>Upload Dinonaktifkan</strong><br>
-                        Berita acara sudah diupload oleh asesor lain. Hanya asesor yang pertama mengupload yang dapat menambah atau mengedit dokumen.
+                        Berita acara sudah diupload oleh asesor banding lain. Hanya asesor banding yang pertama mengupload yang dapat menambah atau mengedit dokumen.
                     </div>
                     @else
                     <form method="POST" action="{{ route('al_banding.berkas.documents.upload', ['id' => $asesmen->id]) }}" enctype="multipart/form-data" id="uploadForm">
@@ -245,13 +245,13 @@
                         </h6>
                         <ul class="mb-0 small ps-3">
                             <li class="mb-2">
-                                <strong>Hanya satu asesor</strong> yang dapat mengupload berita acara
+                                <strong>Hanya satu asesor banding</strong> yang dapat mengupload berita acara
                             </li>
                             <li class="mb-2">
-                                Asesor yang <strong>pertama kali mengupload</strong> memiliki akses penuh untuk mengedit dan menghapus dokumen
+                                Asesor banding yang <strong>pertama kali mengupload</strong> memiliki akses penuh untuk mengedit dan menghapus dokumen
                             </li>
                             <li>
-                                Asesor lain dapat <strong>melihat dan mengunduh</strong> dokumen, tetapi tidak dapat mengedit
+                                Asesor banding lain dapat <strong>melihat dan mengunduh</strong> dokumen, tetapi tidak dapat mengedit
                             </li>
                         </ul>
                     </div>
@@ -276,9 +276,9 @@
             {{-- ✅ Info Asesor Team --}}
             @php
             $asesorTeam = \App\Models\AsesmenUserRole::where('id_asesmen', $asesmen->id)
-            ->where('jenis_asesmen', 'al')
+            ->where('jenis_asesmen', 'al_banding')
             ->whereHas('role', function ($q) {
-            $q->where('name', 'asesor');
+            $q->where('name', 'asesor_banding');
             })
             ->with('user')
             ->get();
@@ -288,7 +288,7 @@
             <div class="card mt-3">
                 <div class="card-header bg-info text-white">
                     <h6 class="mb-0">
-                        <i class="bi bi-people"></i> Tim Asesor AL
+                        <i class="bi bi-people"></i> Tim Asesor AL Banding
                     </h6>
                 </div>
                 <div class="card-body">

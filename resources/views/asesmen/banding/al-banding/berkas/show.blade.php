@@ -195,9 +195,9 @@ $isComplete = $progress['percentage'] == 100;
                             <div>
                                 <h6 class="mb-1">Form Penilaian Dinonaktifkan</h6>
                                 <p class="mb-0">
-                                    Penilaian sedang diisi oleh asesor
+                                    Penilaian sedang diisi oleh asesor banding
                                     <strong>{{ $firstActiveAsesor?->user?->name ?? 'lain' }}</strong>.
-                                    Hanya satu asesor yang dapat mengisi penilaian. Anda hanya dapat melihat.
+                                    Hanya satu asesor banding yang dapat mengisi penilaian. Anda hanya dapat melihat.
                                 </p>
                             </div>
                         </div>
@@ -313,7 +313,7 @@ $isComplete = $progress['percentage'] == 100;
                                 {{-- <li>
                                     <a class="dropdown-item btnDownloadData" data-mode="full" href="{{ route('al.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'full']) }}">
                                 <i class="bi bi-file-earmark-spreadsheet text-primary"></i> Hasil Penilaian Lengkap
-                                <small class="d-block text-muted">Menu + Kertas Kerja + Semua Asesor</small>
+                                <small class="d-block text-muted">Menu + Kertas Kerja + Semua Asesor Banding</small>
                                 </a>
                                 </li> --}}
 
@@ -1021,7 +1021,7 @@ $isComplete = $progress['percentage'] == 100;
                 if (!isEditorAsesor && !form.querySelector('.alert-readonly-asesor')) {
                     const infoDiv = document.createElement('div');
                     infoDiv.className = 'alert alert-warning alert-permanent mt-2 alert-readonly-asesor';
-                    infoDiv.innerHTML = '<i class="bi bi-lock"></i> Penilaian sedang diisi oleh asesor lain. Anda hanya dapat melihat.';
+                    infoDiv.innerHTML = '<i class="bi bi-lock"></i> Penilaian sedang diisi oleh asesor banding lain. Anda hanya dapat melihat.';
                     form.appendChild(infoDiv);
                 }
             });

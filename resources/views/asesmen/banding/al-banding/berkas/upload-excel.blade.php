@@ -91,7 +91,7 @@
                         </div>
                         <div class="flex-grow-1">
                             <h6 class="mb-2">
-                                <i class="bi bi-person-check"></i> Anda adalah Asesor yang Mengupload Excel
+                                <i class="bi bi-person-check"></i> Anda adalah Asesor Banding yang Mengupload Excel
                             </h6>
                             <p class="mb-0">
                                 Anda dapat mengupload file Excel baru untuk memperbarui data penilaian.
@@ -113,14 +113,14 @@
                                 <i class="bi bi-file-earmark-check"></i> Excel Telah Diupload
                             </h6>
                             <p class="mb-1">
-                                File Excel telah diupload oleh asesor: <strong>{{ $firstUpload->asesor->name ?? 'Asesor' }}</strong>
+                                File Excel telah diupload oleh asesor banding: <strong>{{ $firstUpload->asesor->name ?? 'Asesor Banding' }}</strong>
                             </p>
                             <small class="text-muted">
                                 <i class="bi bi-clock"></i> Diupload pada: {{ $firstUpload->created_at->locale('id')->translatedFormat('d M Y, H:i') }}
                             </small>
                             <hr class="my-2">
                             <p class="mb-0 small text-muted">
-                                <i class="bi bi-lock"></i> Hanya asesor yang pertama kali mengupload yang dapat mengupload file baru.
+                                <i class="bi bi-lock"></i> Hanya asesor banding yang pertama kali mengupload yang dapat mengupload file baru.
                                 Anda dapat melihat hasil penilaian di halaman detail.
                             </p>
                         </div>
@@ -283,7 +283,7 @@
                     <div class="alert alert-warning alert-permanent">
                         <i class="bi bi-lock"></i>
                         <strong>Upload Dinonaktifkan</strong><br>
-                        File Excel sudah diupload oleh asesor lain. Hanya asesor yang pertama mengupload yang dapat mengupload file baru.
+                        File Excel sudah diupload oleh asesor banding lain. Hanya asesor banding yang pertama mengupload yang dapat mengupload file baru.
                     </div>
                     @endif
 
@@ -300,9 +300,9 @@
                                     @if($isSubmittedOnly || $isApproved)
                                     Upload Dinonaktifkan (Sudah Di-Submit)
                                     @elseif(!$canUpload)
-                                    Upload Dinonaktifkan (Sudah Diupload Asesor Lain)
+                                    Upload Dinonaktifkan (Sudah Diupload Asesor Banding Lain)
                                     @else
-                                    Silahkan Upload File Excel Penilaian AL di Sini
+                                    Silahkan Upload File Excel Penilaian AL banding di Sini
                                     @endif
                                 </h5>
                                 <p class="text-muted mb-0">
@@ -371,7 +371,7 @@
 
                     <div class="mb-4 text-center">
                         <a href="{{ route('al.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'template']) }}" class="btn btn-md btn-outline-primary">
-                            <i class="bi bi-download"></i> Download Templat Penilaian AL
+                            <i class="bi bi-download"></i> Download Templat Penilaian AL Banding
                         </a>
                     </div>
                 </div>
@@ -382,7 +382,7 @@
             <div class="card">
                 <div class="card-header bg-primary text-white">
                     <h6 class="mb-0">
-                        <i class="bi bi-people"></i> Tim Asesor AL
+                        <i class="bi bi-people"></i> Tim Asesor AL Banding
                     </h6>
                 </div>
                 <div class="card-body">

@@ -260,7 +260,7 @@ $authUser = Auth::user();
                         </td>
                         <td>
                             @if($item->status_penawaran === 'accepted')
-                            @if($authUser->role_selected == 'asesor')
+                            @if($authUser->role_selected == 'asesor_banding')
                             <a href="{{ route($jenisAsesmen.'.berkas.show',$item->id_asesmen) }}" class="btn btn-sm btn-outline-primary">
                                 <i class="bi bi-arrow-right"></i> Lihat Penilaian
                             </a>

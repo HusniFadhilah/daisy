@@ -25,15 +25,44 @@ use PhpOffice\PhpSpreadsheet\Shared\Drawing as SharedDrawing;
 
 class PenilaianExcelService
 {
-    protected $modelPenilaianElemen, $penilaianName, $penilaianFullName, $asesorName, $mode, $useColorFormatting;
-
+    protected $modelPenilaianElemen, $penilaianName, $penilaianFullName, $asesorName, $mode, $useColorFormatting, $jenisAsesmen, $relationName;
+    protected $config = [
+        \App\Models\PenilaianElemenAl::class => [
+            'jenis' => 'al',
+            'name' => 'AL',
+            'relation' => 'penilaianElemenAl',
+            'full_name' => 'Asesmen Lapangan',
+        ],
+        \App\Models\PenilaianElemenAk::class => [
+            'jenis' => 'ak',
+            'name' => 'AK',
+            'relation' => 'penilaianElemenAk',
+            'full_name' => 'Asesmen Kecukupan',
+        ],
+        \App\Models\PenilaianElemenAlBanding::class => [
+            'jenis' => 'al_banding',
+            'name' => 'AL Banding',
+            'relation' => 'penilaianElemenAlBanding',
+            'full_name' => 'Asesmen Lapangan Banding',
+        ],
+        \App\Models\PenilaianElemenAkBanding::class => [
+            'jenis' => 'ak_banding',
+            'name' => 'AK Banding',
+            'relation' => 'penilaianElemenAkBanding',
+            'full_name' => 'Asesmen Kecukupan Banding',
+        ],
+    ];
     public function __construct($modelPenilaianElemen, $mode = 'full', $useColorFormatting = true)
     {
         $this->modelPenilaianElemen = $modelPenilaianElemen;
-        $this->penilaianName = $modelPenilaianElemen == \App\Models\PenilaianElemenAl::class ? 'AL' : 'AK';
-        $this->penilaianFullName = $this->penilaianName == 'AL' ? 'Asesmen Lapangan' : 'Asesmen Kecukupan';
+        $data = $this->config[$modelPenilaianElemen] ?? null;
+        $this->jenisAsesmen = $data['jenis'] ?? null;
+        $this->penilaianName = $data['name'] ?? null;
+        $this->relationName = $data['relation'] ?? null;
+        $this->penilaianFullName = $data['full_name'] ?? null;
+
         $this->asesorName = Auth::user()->name ?? 'Asesor LAMDEPILAR';
-        $this->mode = $mode; // 'full', 'template', 'personal', 'personal_al', 'split'
+        $this->mode = $mode;
         $this->useColorFormatting = $useColorFormatting;
     }
     /**
@@ -53,7 +82,7 @@ class PenilaianExcelService
      */
     public function generateWithData(Asesmen $asesmen, $userId): string
     {
-        if ($this->mode === 'personal' || $this->mode === 'personal_al') {
+        if ($this->mode === 'personal' || $this->mode === 'personal_al' || $this->mode === 'personal_al_banding') {
             return $this->generatePersonalAssessment($asesmen, $userId);
         }
 
@@ -85,15 +114,14 @@ class PenilaianExcelService
     public function generatePersonalAssessment(Asesmen $asesmen, $userId): string
     {
         $spreadsheet = new Spreadsheet();
-        $penilaianName = strtoupper($this->penilaianName);
 
         // Ambil asesor login untuk keperluan tampilan / validasi personal
-        $jenisAsesmen = strtolower($this->penilaianName);
+        $jenisAsesmen = $this->jenisAsesmen;
         $asesor = \App\Models\AsesmenUserRole::where('id_asesmen', $asesmen->id)
             ->where('jenis_asesmen', $jenisAsesmen)
             ->where('id_user', $userId)
-            ->whereHas('role', function ($q) {
-                $q->where('name', 'asesor');
+            ->whereHas('role', function ($q) use ($jenisAsesmen) {
+                $q->where('name', in_array($jenisAsesmen, ['al_banding', 'ak_banding']) ? 'asesor_banding' : 'asesor');
             })
             ->with('user')
             ->first();
@@ -106,7 +134,7 @@ class PenilaianExcelService
         $sourceUserId = $userId;
 
         // special mode: personal_al => data diambil dari first penilai
-        if ($this->mode === 'personal_al') {
+        if ($this->mode === 'personal_al' || $this->mode === 'personal_al_banding') {
             $firstAsesorUserId = $this->getFirstAsesorUserId($asesmen);
 
             if (!$firstAsesorUserId) {
@@ -305,9 +333,7 @@ class PenilaianExcelService
     private function renderPenilaianJenisRowsDbAll($sheet, Asesmen $asesmen, $penilaianName, $asesors, bool $forceDbForAllAsesors): int
     {
         $currentRow = 7;
-
-        $jenisAsesmen  = strtolower($this->penilaianName); // ak
-        $relationName  = $jenisAsesmen == 'al' ? 'penilaianElemenAl' : 'penilaianElemenAk';
+        $relationName  = $this->relationName;
 
         $kriterias = Kriteria::with([
             'elemenStandar' => function ($q) {
@@ -458,7 +484,7 @@ class PenilaianExcelService
         // Sheet 1 → Kertas Kerja
         $penilaianName = strtoupper($this->penilaianName);
         $sheet = $spreadsheet->createSheet();
-        $sheet->setTitle('Kertas Kerja ' . $penilaianName . ' Asesor');
+        $sheet->setTitle('Kertas Kerja Asesor ' . $penilaianName);
         $spreadsheet->setActiveSheetIndex(1);
         self::addLogoAndZoom($sheet, 60);
 
@@ -497,7 +523,7 @@ class PenilaianExcelService
 
         $this->buildPenilaianJenisSheet($spreadsheet, $asesmen, $penilaianName, $isTemplateOnly, $userId); // ✅ Pass userId
 
-        if ($sheet->getTitle() === 'Kertas Kerja ' . $penilaianName . ' Asesor') {
+        if ($sheet->getTitle() === 'Kertas Kerja Asesor ' . $penilaianName) {
             // Freeze kolom A-H dan baris 1-7
             $sheet->freezePane('I8');
         }
@@ -1328,7 +1354,7 @@ class PenilaianExcelService
         }
 
         // Load data penilaian dari database (untuk asesor lainnya)
-        $relationName = $this->penilaianName == 'AL' ? 'penilaianElemenAl' : 'penilaianElemenAk';
+        $relationName  = $this->relationName;
         $kriterias = null;
 
         // Hanya load data jika bukan template (untuk asesor lainnya)
@@ -1588,8 +1614,7 @@ class PenilaianExcelService
         $currentRow = 7;
         $penilaianAsesorRow = $currentRow + 2;
 
-        $jenisAsesmen = strtolower($this->penilaianName);
-        $relationName = $jenisAsesmen == 'al' ? 'penilaianElemenAl' : 'penilaianElemenAk';
+        $relationName  = $this->relationName;
 
         // Load kriteria dengan relasi penilaian jika withData mode
         if (!$isTemplateOnly && $kriterias === null) {
@@ -1650,16 +1675,16 @@ class PenilaianExcelService
 
                             // Formula Pemenuhan Standar (kolom I-L)
                             $formulaPemenuhan = "=IFERROR(CONCATENATE(" .
-                                "IFERROR(INDEX('Kertas Kerja {$penilaianName} Asesor'!\$I:\$I,MATCH(E{$templateRow},'Kertas Kerja {$penilaianName} Asesor'!\$E:\$E,0)+{$asesorRowOffset}),\"\")," .
-                                "IFERROR(INDEX('Kertas Kerja {$penilaianName} Asesor'!\$J:\$J,MATCH(E{$templateRow},'Kertas Kerja {$penilaianName} Asesor'!\$E:\$E,0)+{$asesorRowOffset}),\"\")," .
-                                "IFERROR(INDEX('Kertas Kerja {$penilaianName} Asesor'!\$K:\$K,MATCH(E{$templateRow},'Kertas Kerja {$penilaianName} Asesor'!\$E:\$E,0)+{$asesorRowOffset}),\"\")," .
-                                "IFERROR(INDEX('Kertas Kerja {$penilaianName} Asesor'!\$L:\$L,MATCH(E{$templateRow},'Kertas Kerja {$penilaianName} Asesor'!\$E:\$E,0)+{$asesorRowOffset}),\"\")" .
+                                "IFERROR(INDEX('Kertas Kerja Asesor {$penilaianName}'!\$I:\$I,MATCH(E{$templateRow},'Kertas Kerja Asesor {$penilaianName}'!\$E:\$E,0)+{$asesorRowOffset}),\"\")," .
+                                "IFERROR(INDEX('Kertas Kerja Asesor {$penilaianName}'!\$J:\$J,MATCH(E{$templateRow},'Kertas Kerja Asesor {$penilaianName}'!\$E:\$E,0)+{$asesorRowOffset}),\"\")," .
+                                "IFERROR(INDEX('Kertas Kerja Asesor {$penilaianName}'!\$K:\$K,MATCH(E{$templateRow},'Kertas Kerja Asesor {$penilaianName}'!\$E:\$E,0)+{$asesorRowOffset}),\"\")," .
+                                "IFERROR(INDEX('Kertas Kerja Asesor {$penilaianName}'!\$L:\$L,MATCH(E{$templateRow},'Kertas Kerja Asesor {$penilaianName}'!\$E:\$E,0)+{$asesorRowOffset}),\"\")" .
                                 "),\"\")";
                             $sheet->setCellValue("{$col1}{$templateRow}", $formulaPemenuhan);
 
                             // Formula Pelampauan Standar (kolom M)
                             $rowAsesor = $penilaianAsesorRow;
-                            $formulaPelampauan = "=IF('Kertas Kerja {$penilaianName} Asesor'!M{$rowAsesor}=\"\", \"\", 'Kertas Kerja {$penilaianName} Asesor'!M{$rowAsesor})";
+                            $formulaPelampauan = "=IF('Kertas Kerja Asesor {$penilaianName}'!M{$rowAsesor}=\"\", \"\", 'Kertas Kerja Asesor {$penilaianName}'!M{$rowAsesor})";
                             $sheet->setCellValue("{$col2}{$templateRow}", $formulaPelampauan);
                         }
                     }
@@ -1675,11 +1700,11 @@ class PenilaianExcelService
                             $asesorRowOffset = 1;
 
                             $formulaPenilaian = "=IFERROR(CONCATENATE(" .
-                                "IFERROR(INDEX('Kertas Kerja {$penilaianName} Asesor'!\$I:\$I,MATCH(E{$templateRow},'Kertas Kerja {$penilaianName} Asesor'!\$E:\$E,0)+{$asesorRowOffset}),\"\")," .
-                                "IFERROR(INDEX('Kertas Kerja {$penilaianName} Asesor'!\$J:\$J,MATCH(E{$templateRow},'Kertas Kerja {$penilaianName} Asesor'!\$E:\$E,0)+{$asesorRowOffset}),\"\")," .
-                                "IFERROR(INDEX('Kertas Kerja {$penilaianName} Asesor'!\$K:\$K,MATCH(E{$templateRow},'Kertas Kerja {$penilaianName} Asesor'!\$E:\$E,0)+{$asesorRowOffset}),\"\")," .
-                                "IFERROR(INDEX('Kertas Kerja {$penilaianName} Asesor'!\$L:\$L,MATCH(E{$templateRow},'Kertas Kerja {$penilaianName} Asesor'!\$E:\$E,0)+{$asesorRowOffset}),\"\")," .
-                                "IFERROR(INDEX('Kertas Kerja {$penilaianName} Asesor'!\$M:\$M,MATCH(E{$templateRow},'Kertas Kerja {$penilaianName} Asesor'!\$E:\$E,0)+{$asesorRowOffset}),\"\")" .
+                                "IFERROR(INDEX('Kertas Kerja Asesor {$penilaianName}'!\$I:\$I,MATCH(E{$templateRow},'Kertas Kerja Asesor {$penilaianName}'!\$E:\$E,0)+{$asesorRowOffset}),\"\")," .
+                                "IFERROR(INDEX('Kertas Kerja Asesor {$penilaianName}'!\$J:\$J,MATCH(E{$templateRow},'Kertas Kerja Asesor {$penilaianName}'!\$E:\$E,0)+{$asesorRowOffset}),\"\")," .
+                                "IFERROR(INDEX('Kertas Kerja Asesor {$penilaianName}'!\$K:\$K,MATCH(E{$templateRow},'Kertas Kerja Asesor {$penilaianName}'!\$E:\$E,0)+{$asesorRowOffset}),\"\")," .
+                                "IFERROR(INDEX('Kertas Kerja Asesor {$penilaianName}'!\$L:\$L,MATCH(E{$templateRow},'Kertas Kerja Asesor {$penilaianName}'!\$E:\$E,0)+{$asesorRowOffset}),\"\")," .
+                                "IFERROR(INDEX('Kertas Kerja Asesor {$penilaianName}'!\$M:\$M,MATCH(E{$templateRow},'Kertas Kerja Asesor {$penilaianName}'!\$E:\$E,0)+{$asesorRowOffset}),\"\")" .
                                 "),\"\")";
                             $sheet->setCellValue("{$col}{$templateRow}", $formulaPenilaian);
                         }
@@ -1776,25 +1801,25 @@ class PenilaianExcelService
             // Pemenuhan Standar (Kolom G) - Skor 0-3
             $condL = new Conditional();
             $condL->setConditionType(Conditional::CONDITION_EXPRESSION);
-            $condL->addCondition("=LEN(INDEX('Kertas Kerja {$penilaianName} Asesor'!\$L:\$L,MATCH(\$E{$startRow},'Kertas Kerja {$penilaianName} Asesor'!\$E:\$E,0)+{$asesorRowOffset}))>0");
+            $condL->addCondition("=LEN(INDEX('Kertas Kerja Asesor {$penilaianName}'!\$L:\$L,MATCH(\$E{$startRow},'Kertas Kerja Asesor {$penilaianName}'!\$E:\$E,0)+{$asesorRowOffset}))>0");
             $condL->getStyle()->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFdcedc8');
             // $condL->getStyle()->getFont()->setBold(true)->getColor()->setARGB('FF1F4E79');
 
             $condK = new Conditional();
             $condK->setConditionType(Conditional::CONDITION_EXPRESSION);
-            $condK->addCondition("=LEN(INDEX('Kertas Kerja {$penilaianName} Asesor'!\$K:\$K,MATCH(\$E{$startRow},'Kertas Kerja {$penilaianName} Asesor'!\$E:\$E,0)+{$asesorRowOffset}))>0");
+            $condK->addCondition("=LEN(INDEX('Kertas Kerja Asesor {$penilaianName}'!\$K:\$K,MATCH(\$E{$startRow},'Kertas Kerja Asesor {$penilaianName}'!\$E:\$E,0)+{$asesorRowOffset}))>0");
             $condK->getStyle()->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFfff9c4');
             // $condK->getStyle()->getFont()->setBold(true)->getColor()->setARGB('FF1F4E79');
 
             $condJ = new Conditional();
             $condJ->setConditionType(Conditional::CONDITION_EXPRESSION);
-            $condJ->addCondition("=LEN(INDEX('Kertas Kerja {$penilaianName} Asesor'!\$J:\$J,MATCH(\$E{$startRow},'Kertas Kerja {$penilaianName} Asesor'!\$E:\$E,0)+{$asesorRowOffset}))>0");
+            $condJ->addCondition("=LEN(INDEX('Kertas Kerja Asesor {$penilaianName}'!\$J:\$J,MATCH(\$E{$startRow},'Kertas Kerja Asesor {$penilaianName}'!\$E:\$E,0)+{$asesorRowOffset}))>0");
             $condJ->getStyle()->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFffe0b2');
             // $condJ->getStyle()->getFont()->setBold(true)->getColor()->setARGB('FF1F4E79');
 
             $condI = new Conditional();
             $condI->setConditionType(Conditional::CONDITION_EXPRESSION);
-            $condI->addCondition("=LEN(INDEX('Kertas Kerja {$penilaianName} Asesor'!\$I:\$I,MATCH(\$E{$startRow},'Kertas Kerja {$penilaianName} Asesor'!\$E:\$E,0)+{$asesorRowOffset}))>0");
+            $condI->addCondition("=LEN(INDEX('Kertas Kerja Asesor {$penilaianName}'!\$I:\$I,MATCH(\$E{$startRow},'Kertas Kerja Asesor {$penilaianName}'!\$E:\$E,0)+{$asesorRowOffset}))>0");
             $condI->getStyle()->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFf5c6cb');
             // $condI->getStyle()->getFont()->setBold(true)->getColor()->setARGB('FFFFFFFF');
 
@@ -1804,7 +1829,7 @@ class PenilaianExcelService
             // Pelampauan Standar (Kolom H) - Skor 4
             $condM = new Conditional();
             $condM->setConditionType(Conditional::CONDITION_EXPRESSION);
-            $condM->addCondition("=LEN(INDEX('Kertas Kerja {$penilaianName} Asesor'!\$M:\$M,MATCH(\$E{$startRow},'Kertas Kerja {$penilaianName} Asesor'!\$E:\$E,0)+{$asesorRowOffset}))>0");
+            $condM->addCondition("=LEN(INDEX('Kertas Kerja Asesor {$penilaianName}'!\$M:\$M,MATCH(\$E{$startRow},'Kertas Kerja Asesor {$penilaianName}'!\$E:\$E,0)+{$asesorRowOffset}))>0");
             $condM->getStyle()->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFc8e6c9');
             // $condM->getStyle()->getFont()->setBold(true)->getColor()->setARGB('FFFFFFFF');
 
@@ -1817,31 +1842,31 @@ class PenilaianExcelService
             // Skor 4 - Dark Green (prioritas tertinggi)
             $condM = new Conditional();
             $condM->setConditionType(Conditional::CONDITION_EXPRESSION);
-            $condM->addCondition("=LEN(INDEX('Kertas Kerja {$penilaianName} Asesor'!\$M:\$M,MATCH(\$E{$startRow},'Kertas Kerja {$penilaianName} Asesor'!\$E:\$E,0)+{$asesorRowOffset}))>0");
+            $condM->addCondition("=LEN(INDEX('Kertas Kerja Asesor {$penilaianName}'!\$M:\$M,MATCH(\$E{$startRow},'Kertas Kerja Asesor {$penilaianName}'!\$E:\$E,0)+{$asesorRowOffset}))>0");
             $condM->getStyle()->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFc8e6c9');
 
             // Skor 3 - Light Green
             $condL = new Conditional();
             $condL->setConditionType(Conditional::CONDITION_EXPRESSION);
-            $condL->addCondition("=LEN(INDEX('Kertas Kerja {$penilaianName} Asesor'!\$L:\$L,MATCH(\$E{$startRow},'Kertas Kerja {$penilaianName} Asesor'!\$E:\$E,0)+{$asesorRowOffset}))>0");
+            $condL->addCondition("=LEN(INDEX('Kertas Kerja Asesor {$penilaianName}'!\$L:\$L,MATCH(\$E{$startRow},'Kertas Kerja Asesor {$penilaianName}'!\$E:\$E,0)+{$asesorRowOffset}))>0");
             $condL->getStyle()->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFdcedc8');
 
             // Skor 2 - Yellow
             $condK = new Conditional();
             $condK->setConditionType(Conditional::CONDITION_EXPRESSION);
-            $condK->addCondition("=LEN(INDEX('Kertas Kerja {$penilaianName} Asesor'!\$K:\$K,MATCH(\$E{$startRow},'Kertas Kerja {$penilaianName} Asesor'!\$E:\$E,0)+{$asesorRowOffset}))>0");
+            $condK->addCondition("=LEN(INDEX('Kertas Kerja Asesor {$penilaianName}'!\$K:\$K,MATCH(\$E{$startRow},'Kertas Kerja Asesor {$penilaianName}'!\$E:\$E,0)+{$asesorRowOffset}))>0");
             $condK->getStyle()->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFfff9c4');
 
             // Skor 1 - Orange
             $condJ = new Conditional();
             $condJ->setConditionType(Conditional::CONDITION_EXPRESSION);
-            $condJ->addCondition("=LEN(INDEX('Kertas Kerja {$penilaianName} Asesor'!\$J:\$J,MATCH(\$E{$startRow},'Kertas Kerja {$penilaianName} Asesor'!\$E:\$E,0)+{$asesorRowOffset}))>0");
+            $condJ->addCondition("=LEN(INDEX('Kertas Kerja Asesor {$penilaianName}'!\$J:\$J,MATCH(\$E{$startRow},'Kertas Kerja Asesor {$penilaianName}'!\$E:\$E,0)+{$asesorRowOffset}))>0");
             $condJ->getStyle()->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFffe0b2');
 
             // Skor 0 - Red
             $condI = new Conditional();
             $condI->setConditionType(Conditional::CONDITION_EXPRESSION);
-            $condI->addCondition("=LEN(INDEX('Kertas Kerja {$penilaianName} Asesor'!\$I:\$I,MATCH(\$E{$startRow},'Kertas Kerja {$penilaianName} Asesor'!\$E:\$E,0)+{$asesorRowOffset}))>0");
+            $condI->addCondition("=LEN(INDEX('Kertas Kerja Asesor {$penilaianName}'!\$I:\$I,MATCH(\$E{$startRow},'Kertas Kerja Asesor {$penilaianName}'!\$E:\$E,0)+{$asesorRowOffset}))>0");
             $condI->getStyle()->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFf5c6cb');
 
             // Apply semua conditional dengan urutan prioritas M -> L -> K -> J -> I
@@ -1921,8 +1946,7 @@ class PenilaianExcelService
     private function renderPersonalRows($sheet, Asesmen $asesmen, int $userId, $asesor): int
     {
         $currentRow = 7;
-        $jenisAsesmen = strtolower($this->penilaianName);
-        $relationName = $jenisAsesmen == 'al' ? 'penilaianElemenAl' : 'penilaianElemenAk';
+        $relationName  = $this->relationName;
 
         // Load kriteria dengan penilaian
         $kriterias = Kriteria::with([
@@ -2265,8 +2289,8 @@ class PenilaianExcelService
         $jenisAsesmen = strtolower($this->penilaianName);
         $asesorsQuery = \App\Models\AsesmenUserRole::where('id_asesmen', $asesmen->id)
             ->where('jenis_asesmen', $jenisAsesmen)
-            ->whereHas('role', function ($q) {
-                $q->where('name', 'asesor');
+            ->whereHas('role', function ($q) use ($jenisAsesmen) {
+                $q->where('name', in_array($jenisAsesmen, ['al_banding', 'ak_banding']) ? 'asesor_banding' : 'asesor');
             })
             ->with('user')
             ->orderBy('urutan_asesor');
@@ -2286,8 +2310,8 @@ class PenilaianExcelService
 
         $firstAsesor = \App\Models\AsesmenUserRole::where('id_asesmen', $asesmen->id)
             ->where('jenis_asesmen', $jenisAsesmen)
-            ->whereHas('role', function ($q) {
-                $q->where('name', 'asesor');
+            ->whereHas('role', function ($q) use ($jenisAsesmen) {
+                $q->where('name', in_array($jenisAsesmen, ['al_banding', 'ak_banding']) ? 'asesor_banding' : 'asesor');
             })
             ->with('user')
             ->orderBy('urutan_asesor')

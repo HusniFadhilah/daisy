@@ -146,13 +146,6 @@ class PenawaranController extends Controller
                     Log::info('doInitFromAK skipped after accept: ' . $e);
                 }
             }
-            // if ($assignment->jenis_asesmen === 'al_banding' && $assignment->id_role === Role::ID_ROLE_ASESOR_BANDING) {
-            //     try {
-            //         (new ALBandingController)->doInitFromAL($assignment);
-            //     } catch (\Exception $e) {
-            //         Log::info('doInitFromAL skipped after accept: ' . $e);
-            //     }
-            // }
 
             try {
                 SendPenawaranResponseEmail::dispatch($assignment, 'accepted');

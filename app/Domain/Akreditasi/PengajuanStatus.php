@@ -463,7 +463,7 @@ final class PengajuanStatus
                     'upps' => 'Asesor AL Telah Ditugaskan',
                     'prodi' => 'Asesor AL Telah Ditugaskan',
                 ],
-                'bg' => 'bg-primary',
+                'bg' => 'bg-success',
                 'icon' => 'bi-person-badge',
             ],
 
@@ -767,7 +767,7 @@ final class PengajuanStatus
                     'upps' => 'Asesor AL Banding Telah Ditugaskan',
                     'prodi' => 'Asesor AL Banding Telah Ditugaskan',
                 ],
-                'bg' => 'bg-primary',
+                'bg' => 'bg-success',
                 'icon' => 'bi-person-badge',
             ],
 

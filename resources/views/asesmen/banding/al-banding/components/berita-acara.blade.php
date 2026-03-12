@@ -1,19 +1,19 @@
 @if(!$isFinalized)
 <div class="alert alert-info alert-permanent alert-dismissible mb-3">
     <i class="bi bi-info-circle me-2"></i>
-    Silahkan finalisasi Hasil dan Berita Acara Asesmen Lapangan (AL) setelah Anda mengupload file Hasil dan Berita Acara Asesmen Lapangan (AL) (PDF). Dengan mengklik tombol "Finalisasi Berita Acara" di bawah ini
+    Silahkan finalisasi Hasil dan Berita Acara Asesmen Lapangan (AL) Banding setelah Anda mengupload file Hasil dan Berita Acara Asesmen Lapangan (AL) (PDF). Dengan mengklik tombol "Finalisasi Berita Acara" di bawah ini
 </div>
 @else
 <div class="alert alert-success alert-permanent alert-dismissible mb-3">
     <i class="bi bi-check-circle me-2"></i>
-    Hasil dan Berita Acara Asesmen Lapangan (AL) telah difinalisasi. Terima kasih atas partisipasi Anda dalam menjadi Asesor di Asesmen ini.
+    Hasil dan Berita Acara Asesmen Lapangan (AL) Banding telah difinalisasi. Terima kasih atas partisipasi Anda dalam menjadi Asesor di Asesmen ini.
 </div>
 @endif
 
 <div class="card shadow-sm">
     <div class="card-header bg-white d-flex justify-content-between align-items-center">
         <h5 class="mb-0">
-            <i class="bi bi-folder2-open"></i> Hasil dan Berita Acara Asesmen Lapangan (AL)
+            <i class="bi bi-folder2-open"></i> Hasil dan Berita Acara Asesmen Lapangan (AL) Banding
         </h5>
         @if(!$isFinalized)
         <button type="button" class="btn btn-primary btn-sm" onclick="handleFinalize(event)">

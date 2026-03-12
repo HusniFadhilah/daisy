@@ -7,7 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Asesmen;
 use App\Models\AsesmenDocument;
 use App\Models\AsesmenUserRole;
-use App\Models\LhaAsesor;
+use App\Models\LhaAsesorBanding;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -41,7 +41,7 @@ class LhaAsesorBandingController extends Controller
         }
 
         // ✅ Get atau create 1 LHS untuk asesmen ini (tanpa id_user)
-        $lha = LhaAsesor::with([
+        $lha = LhaAsesorBanding::with([
             'pendahuluanEditor',
             'prosesAlEditor',
             'hasilAlEditor',
@@ -66,7 +66,7 @@ class LhaAsesorBandingController extends Controller
 
         $lhaDocument = $asesmen->lhaDocuments->first();
 
-        return view('asesmen.banding.lha-asesor-banding.index', compact(
+        return view('asesmen.banding.lha-asesor.index', compact(
             'asesmen',
             'lha',
             'asesorTeam',
@@ -101,7 +101,7 @@ class LhaAsesorBandingController extends Controller
         }
 
         // ✅ Update data dengan tracking per field
-        $lha = LhaAsesor::where('id_asesmen', $idAsesmen)->firstOrFail();
+        $lha = LhaAsesorBanding::where('id_asesmen', $idAsesmen)->firstOrFail();
 
         // Check if finalized
         if ($lha->isFinalizedApproved()) {
@@ -180,7 +180,7 @@ class LhaAsesorBandingController extends Controller
             'asesmenLapanganBanding',
         ])->findOrFail($idAsesmen);
 
-        $lha = LhaAsesor::where('id_asesmen', $idAsesmen)->firstOrFail();
+        $lha = LhaAsesorBanding::where('id_asesmen', $idAsesmen)->firstOrFail();
 
         // Check access
         $user = Auth::user();
@@ -193,7 +193,7 @@ class LhaAsesorBandingController extends Controller
             abort(403, 'Anda tidak memiliki akses.');
         }
 
-        $pdf = Pdf::loadView('asesmen.banding.lha-asesor-banding.pdf', compact('asesmen', 'lha'))
+        $pdf = Pdf::loadView('asesmen.banding.lha-asesor.pdf', compact('asesmen', 'lha'))
             ->setPaper('a4', 'portrait');
 
         return $pdf->stream('LHS-Preview.pdf');
@@ -217,7 +217,7 @@ class LhaAsesorBandingController extends Controller
             return response()->json(['success' => false, 'message' => 'Akses ditolak'], 403);
         }
 
-        $lha = LhaAsesor::where('id_asesmen', $idAsesmen)->firstOrFail();
+        $lha = LhaAsesorBanding::where('id_asesmen', $idAsesmen)->firstOrFail();
 
         // ✅ Validate completion
         if ($lha->getCompletionPercentage() < 100) {
@@ -237,7 +237,7 @@ class LhaAsesorBandingController extends Controller
             ]);
 
             // Generate PDF
-            $pdf = Pdf::loadView('asesmen.banding.lha-asesor-banding.pdf', compact('asesmen', 'lha'))
+            $pdf = Pdf::loadView('asesmen.banding.lha-asesor.pdf', compact('asesmen', 'lha'))
                 ->setPaper('a4', 'portrait');
 
             // Save PDF to storage

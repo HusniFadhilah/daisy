@@ -6,14 +6,20 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\AsesmenUserRole;
+use App\Models\Role;
 
 class CheckAlFirstOpenerMiddleware
 {
     /**
-     * Session key pattern: al_opener_confirmed_{idAsesmen}
-     * Di-set setelah user klik "Lanjutkan" di halaman peringatan.
+     * Pakai parameter:
+     * - al
+     * - al_banding
+     *
+     * Contoh:
+     *   ->middleware('al.first.opener:al')
+     *   ->middleware('al.first.opener:al_banding')
      */
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next, string $jenisAsesmen = 'al')
     {
         $user      = Auth::user();
         $idAsesmen = $request->route('idAsesmen') ?? $request->route('id');
@@ -22,7 +28,26 @@ class CheckAlFirstOpenerMiddleware
             return $next($request);
         }
 
-        $sessionKey = "al_opener_confirmed_{$idAsesmen}";
+        // Mapping konfigurasi per jenis asesmen
+        $config = match ($jenisAsesmen) {
+            'al_banding' => [
+                'session_key'   => "al_banding_opener_confirmed_{$idAsesmen}",
+                'role_id'       => Role::ID_ROLE_ASESOR_BANDING,
+                'role_name'     => 'asesor_banding',
+                'confirm_route' => 'al-banding.berkas.confirm-opener',
+                'warning_view'  => 'asesmen.banding.al-banding.components.first-opener-warning',
+            ],
+            'al' => [
+                'session_key'   => "al_opener_confirmed_{$idAsesmen}",
+                'role_id'       => Role::ID_ROLE_ASESOR,
+                'role_name'     => 'asesor',
+                'confirm_route' => 'al.berkas.confirm-opener',
+                'warning_view'  => 'asesmen.al.components.first-opener-warning',
+            ],
+            default => abort(500, "Jenis asesmen first opener tidak dikenali: {$jenisAsesmen}"),
+        };
+
+        $sessionKey = $config['session_key'];
 
         // Sudah pernah klik "Lanjutkan" → lewat langsung
         if ($request->session()->has($sessionKey)) {
@@ -32,37 +57,36 @@ class CheckAlFirstOpenerMiddleware
         // Ambil assignment user ini
         $assignment = AsesmenUserRole::where('id_asesmen', $idAsesmen)
             ->where('id_user', $user->id)
-            ->where('jenis_asesmen', 'al')
-            ->whereHas('role', fn($q) => $q->where('name', 'asesor'))
+            ->where('jenis_asesmen', $jenisAsesmen)
+            ->where('id_role', $config['role_id'])
             ->first();
 
         if (!$assignment) {
             return $next($request);
         }
 
-        // Sudah pernah masuk sebelumnya (status bukan not_started) → lewat langsung
+        // Sudah pernah mulai sebelumnya → lewat langsung
         if ($assignment->status_pekerjaan !== 'not_started') {
             return $next($request);
         }
 
-        // ── Ini kunjungan pertama user ini ──────────────────────────────────
         // Cek apakah ada asesor lain yang sudah lebih dulu membuka
         $firstStartedByOther = AsesmenUserRole::where('id_asesmen', $idAsesmen)
-            ->where('jenis_asesmen', 'al')
-            ->whereHas('role', fn($q) => $q->where('name', 'asesor'))
+            ->where('jenis_asesmen', $jenisAsesmen)
+            ->where('id_role', $config['role_id'])
             ->where('id_user', '!=', $user->id)
             ->where('status_pekerjaan', '!=', 'not_started')
             ->with('user')
             ->orderBy('updated_at')
             ->first();
 
-        // Tampilkan halaman peringatan sebelum masuk
-        return response()->view('asesmen.al.components.first-opener-warning', [
-            'idAsesmen'          => $idAsesmen,
-            'isFirstOpener'      => is_null($firstStartedByOther),
-            'firstOpenerUser'    => $firstStartedByOther?->user,
-            'continueUrl'        => $request->fullUrl(), // URL asli yang dituju
-            'confirmRoute'       => route('al.berkas.confirm-opener', ['idAsesmen' => $idAsesmen]),
+        return response()->view($config['warning_view'], [
+            'idAsesmen'       => $idAsesmen,
+            'isFirstOpener'   => is_null($firstStartedByOther),
+            'firstOpenerUser' => $firstStartedByOther?->user,
+            'continueUrl'     => $request->fullUrl(),
+            'confirmRoute'    => route($config['confirm_route'], ['idAsesmen' => $idAsesmen]),
+            'jenisAsesmen'    => $jenisAsesmen,
         ]);
     }
 }
