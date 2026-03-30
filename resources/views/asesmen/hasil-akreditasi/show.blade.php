@@ -359,7 +359,7 @@
                             <span class="badge bg-success">
                                 <i class="bi bi-star-fill"></i> Memenuhi Syarat Unggul
                             </span>
-                            @elseif($hasil->skor_final >= 361 && !$hasil->memenuhi_syarat_unggul)
+                            @elseif($hasil->skor_final >= 361 && !$hasil->al_memenuhi_syarat_unggul)
                             <span class="badge bg-warning">
                                 <i class="bi bi-exclamation-triangle"></i> Diturunkan dari Unggul
                             </span>

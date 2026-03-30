@@ -256,8 +256,19 @@ return new class extends Migration
             $table->string('peringkat_akreditasi_final', 60)->nullable();
 
             // ── Syarat Unggul ──
-            $table->boolean('memenuhi_syarat_unggul')->default(false)
+            $table->boolean('ak_memenuhi_syarat_unggul')->default(false)
+                ->comment('True jika semua syarat Unggul terpenuhi saat ak');
+            $table->boolean('al_memenuhi_syarat_unggul')->default(false)
+                ->comment('True jika semua syarat Unggul terpenuhi saat al');
+            $table->boolean('hasil_memenuhi_syarat_unggul')->default(false)
+                ->comment('True jika semua syarat Unggul terpenuhi saat penyampaian hasil');
+            $table->boolean('al_banding_memenuhi_syarat_unggul')->default(false)
+                ->comment('True jika semua syarat Unggul terpenuhi saat al banding');
+            $table->boolean('ak_banding_memenuhi_syarat_unggul')->default(false)
+                ->comment('True jika semua syarat Unggul terpenuhi saat ak banding');
+            $table->boolean('final_memenuhi_syarat_unggul')->default(false)
                 ->comment('True jika semua syarat Unggul terpenuhi saat finalisasi');
+
             $table->text('catatan_validasi')->nullable()
                 ->comment('Keterangan lengkap hasil cek syarat Unggul');
 
@@ -274,7 +285,12 @@ return new class extends Migration
             $table->index('peringkat_akreditasi_hasil');
             $table->index('peringkat_akreditasi_banding');
             $table->index('peringkat_akreditasi_final');
-            $table->index('memenuhi_syarat_unggul');
+            $table->index('al_memenuhi_syarat_unggul');
+            $table->index('ak_memenuhi_syarat_unggul');
+            $table->index('hasil_memenuhi_syarat_unggul');
+            $table->index('al_banding_memenuhi_syarat_unggul');
+            $table->index('ak_banding_memenuhi_syarat_unggul');
+            $table->index('final_memenuhi_syarat_unggul');
         });
     }
 

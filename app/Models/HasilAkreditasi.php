@@ -64,7 +64,12 @@ class HasilAkreditasi extends Model
         'peringkat_akreditasi_hasil',
         'peringkat_akreditasi_banding',
         'peringkat_akreditasi_final',
-        'memenuhi_syarat_unggul',
+        'ak_memenuhi_syarat_unggul',
+        'al_memenuhi_syarat_unggul',
+        'hasil_memenuhi_syarat_unggul',
+        'ak_banding_memenuhi_syarat_unggul',
+        'al_banding_memenuhi_syarat_unggul',
+        'final_memenuhi_syarat_unggul',
         'catatan_validasi',
         'catatan_penetapan',         // ← tambah
         'resume_asesmen',
@@ -108,7 +113,12 @@ class HasilAkreditasi extends Model
         'skor_hasil_tertimbang'      => 'decimal:2',
         'skor_final'                 => 'decimal:2',
         'skor_final_tertimbang'      => 'decimal:2',
-        'memenuhi_syarat_unggul'     => 'boolean',
+        'ak_memenuhi_syarat_unggul'     => 'boolean',
+        'al_memenuhi_syarat_unggul'     => 'boolean',
+        'hasil_memenuhi_syarat_unggul'     => 'boolean',
+        'ak_banding_memenuhi_syarat_unggul'     => 'boolean',
+        'al_banding_memenuhi_syarat_unggul'     => 'boolean',
+        'final_memenuhi_syarat_unggul'     => 'boolean',
     ];
 
     public const KRITERIA_REQUIRED_FALLBACK = ['D', 'E', 'P', 'I', 'L', 'A', 'R'];
@@ -335,17 +345,30 @@ class HasilAkreditasi extends Model
         return true;
     }
 
-    public function getMissingKriteriaForUnggul(?array $kriteriaRequired = null): array
+    public static function getPelampauanStandarCol($hasil, $type)
+    {
+        $pelampauanStandarCol = match ($type) {
+            'al' => $hasil->pelampauan_standar_al,
+            'ak' => $hasil->pelampauan_standar_ak,
+            'al_banding' => $hasil->pelampauan_standar_al_banding,
+            'ak_banding' => $hasil->pelampauan_standar_ak_banding,
+            'hasil' => $hasil->pelampauan_standar_hasil,
+            'final' => $hasil->pelampauan_standar_final,
+            default => null, // optional, in case $type is unexpected
+        };
+        return $pelampauanStandarCol;
+    }
+
+    public function getMissingKriteriaForUnggul(?array $kriteriaRequired = null, $type = 'al'): array
     {
         $kriteria = $kriteriaRequired ?? self::KRITERIA_REQUIRED_FALLBACK;
-
-        if (empty($this->pelampauan_standar_al)) {
+        $pelampauanStandarCol = self::getPelampauanStandarCol($this, $type);
+        if (empty($pelampauanStandarCol)) {
             return $kriteria;
         }
-
         return array_values(array_filter(
             $kriteria,
-            fn($kode) => empty($this->pelampauan_standar_al[$kode])
+            fn($kode) => empty($pelampauanStandarCol[$kode])
         ));
     }
 
@@ -358,25 +381,20 @@ class HasilAkreditasi extends Model
     // =========================================================
     // PERINGKAT
     // =========================================================
-
     /**
-     * Satu-satunya method untuk menentukan peringkat dari skor.
+     * Tentukan peringkat dari skor.
      *
-     * Syarat Kunci  : skor masuk range status di DB
-     * Syarat Perlu  : hanya berlaku jika status yang match adalah Unggul
-     *                 → $memenuhiPelampauan && $memenuhiP1 harus true
+     * Untuk status Unggul, syarat perlu dicek dari $this->memenuhi_syarat_unggul.
+     * Sebelum memanggil method ini, service WAJIB set:
+     *   $hasil->memenuhi_syarat_unggul = $semuaMemenuhi;
      *
-     * Default kedua syarat perlu = false → aman, tidak akan pernah
-     * mengembalikan Unggul kecuali eksplisit dipenuhi.
+     * Jika belum pernah diset (default false di DB), tidak akan pernah
+     * mengembalikan Unggul — ini behaviour yang aman.
      */
-    public function getPeringkatFromSkor(
-        float $skor,
-        bool  $memenuhiPelampauan = false,
-        bool  $memenuhiP1 = false
-    ): string {
+    public function getPeringkatFromSkor(float $skor): string
+    {
         $allStatus = $this->getAllStatusAkreditasi();
 
-        // Cari status yang range-nya mencakup skor
         $statusMatch = $allStatus
             ->filter(fn($s) => (float)$s->skor_min <= $skor && (float)$s->skor_max >= $skor)
             ->sortByDesc('skor_min')
@@ -386,39 +404,37 @@ class HasilAkreditasi extends Model
             return 'Tidak Terakreditasi';
         }
 
-        // Bukan Unggul → langsung return, syarat perlu tidak relevan
+        // Bukan Unggul → langsung return, tidak perlu cek syarat
         if (!$this->isStatusUnggul($statusMatch)) {
             return $statusMatch->status;
         }
 
-        // ── Status match = Unggul: cek syarat perlu ──
-        if ($memenuhiPelampauan && $memenuhiP1) {
-            return $statusMatch->status;
+        // ── Status match = Unggul ──
+        // Baca dari atribut model (diset service sebelum memanggil method ini,
+        // atau sudah tersimpan di DB dari finalisasi sebelumnya)
+        if ($this->al_memenuhi_syarat_unggul) {
+            return $statusMatch->status; // "Terakreditasi Unggul"
         }
 
-        // ── Downgrade: syarat perlu tidak terpenuhi ──
+        // Syarat tidak terpenuhi → downgrade ke non-Unggul tertinggi
         $batasUnggul = $allStatus
             ->filter(fn($s) => $this->isStatusUnggul($s))
             ->min('skor_min');
 
         $downgrade = $allStatus
-            ->filter(fn($s) => !$this->isStatusUnggul($s) && (float)$s->skor_max < (float)$batasUnggul)
+            ->filter(fn($s) => !$this->isStatusUnggul($s)
+                && (float)$s->skor_max < (float)$batasUnggul)
             ->sortByDesc('skor_max')
             ->first();
-
         return $downgrade?->status ?? 'Terakreditasi';
     }
 
     /**
-     * Alias semantik — untuk keterbacaan di service layer.
-     * Sepenuhnya delegate ke getPeringkatFromSkor.
+     * Alias semantik — sepenuhnya delegate ke getPeringkatFromSkor().
      */
-    public function getPeringkatFromSkorAL(
-        float $skor,
-        bool  $memenuhiPelampauan = false,
-        bool  $memenuhiP1 = false
-    ): string {
-        return $this->getPeringkatFromSkor($skor, $memenuhiPelampauan, $memenuhiP1);
+    public function getPeringkatFromSkorAL(float $skor): string
+    {
+        return $this->getPeringkatFromSkor($skor);
     }
 
     private function isStatusUnggul(StatusAkreditasi $status): bool

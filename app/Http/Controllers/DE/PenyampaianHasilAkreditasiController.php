@@ -125,7 +125,7 @@ class PenyampaianHasilAkreditasiController extends Controller
             ->first();
 
         $canFinalize       = $beritaAcara !== null && !$hasil->isAlFinalized();
-        $validationSummary = $this->hasilService->getValidationSummary($hasil);
+        $validationSummary = $this->hasilService->getValidationSummary($hasil, 'hasil');
 
         $detailSkorAL = $hasil->detail_skor_al ?? [];
         $kriteriaList = $hasil->getKriteriaOrderedList();

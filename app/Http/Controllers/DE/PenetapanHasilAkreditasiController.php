@@ -197,7 +197,7 @@ class PenetapanHasilAkreditasiController extends Controller
             $canTetapkan = $beritaAcaraPenetapan !== null;
 
             // Get validation summary for Unggul
-            $validationSummary = $this->hasilService->getValidationSummary($hasil);
+            $validationSummary = $this->hasilService->getValidationSummary($hasil, 'final');
 
             // Parse detail skor
             $detailSkorAL = $hasil->detail_skor_al ?? [];

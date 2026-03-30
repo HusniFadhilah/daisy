@@ -2,7 +2,7 @@
 
 @extends('layouts.template.app')
 
-@section('title', 'Pelaporan Hasil Banding')
+@section('title', 'Pelaporan Hasil Surveillance Banding')
 
 @push('styles')
 <style>
@@ -28,7 +28,7 @@
     <nav aria-label="breadcrumb" class="mb-3">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-            <li class="breadcrumb-item active">Pelaporan Hasil Banding</li>
+            <li class="breadcrumb-item active">Pelaporan Surveillance Banding</li>
         </ol>
     </nav>
 
@@ -36,32 +36,35 @@
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h4 class="mb-1">
-                <i class="bi bi-file-earmark-ruled"></i> Pelaporan Hasil Banding
+                <i class="bi bi-journal-text"></i> Pelaporan Surveillance Banding
             </h4>
-            <p class="text-muted mb-0">Monitor pelaporan hasil pelaksanaan banding</p>
+            <p class="text-muted mb-0">Monitor pelaporan Surveillance Banding</p>
         </div>
     </div>
+
+    {{-- <div class="alert alert-info alert-permanent">
+        <i class="bi bi-bell-fill"></i>
+        <strong>Proses Pelaporan Banding</strong><br>
+        Prodi ... dengan surat permohonan nomor .... telah dilaksanakan pelaporan Banding oleh Asesor.<br>
+        Program Studi dipersilahkan untuk menunggu<br>
+    </div> --}}
 
     <div class="alert alert-info alert-permanent">
         <i class="bi bi-bell-fill"></i>
-        <strong>Proses Pelaporan Banding</strong><br>
-        Pelaporan pelaksanaan banding untuk permohonan Prodi ... dengan surat permohonan nomor .... dapat dilihat pada link berikut.<br>
+        <strong>Pelaporan Banding</strong><br>
+        Pelaporan Banding pada permohonan akreditasi program studi tersedia pada daftar berikut
     </div>
 
     <!-- Statistics Cards -->
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 mb-4">
+    {{-- <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 mb-4">
         <div class="col mb-3">
-            <x-stat-card title="Total Pelaporan Banding" :value="$stats['total']" description="Hasil dilaporkan" icon="file-earmark-ruled" iconBg="primary-subtle" />
+            <x-stat-card title="Total Berita Acara AL" :value="$stats['total']" description="Disetujui program studi" icon="file-earmark-check" iconBg="success-subtle" />
         </div>
 
         <div class="col mb-3">
-            <x-stat-card title="Hasil Ditetapkan" :value="$stats['hasil_ditetapkan']" description="Hasil final ditetapkan" icon="award" iconBg="success-subtle" />
+            <x-stat-card title="Pelaporan Banding" :value="$stats['pelaporan_al_banding']" description="Hasil telah dilaporkan" icon="send-check" iconBg="info-subtle" />
         </div>
-
-        <div class="col mb-3">
-            <x-stat-card title="Proses Selesai" :value="$stats['selesai']" description="Akreditasi selesai" icon="check-circle" iconBg="info-subtle" />
-        </div>
-    </div>
+    </div> --}}
 
     <!-- Filters & Content -->
     <div class="row">
@@ -85,10 +88,9 @@
                             <thead class="table-light">
                                 <tr>
                                     <th width="5%">#</th>
-                                    <th width="25%">Permohonan Akreditasi</th>
-                                    <th width="25%">Program Studi</th>
-                                    <th width="15%">Tanggal Pelaporan</th>
-                                    <th width="20%">Status</th>
+                                    <th width="20%">Permohonan Akreditasi</th>
+                                    <th width="25%">Status Pelaporan Banding</th>
+                                    <th width="25%">Tanggal Pelaporan Banding</th>
                                     <th width="10%" class="text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -97,33 +99,21 @@
                                 <tr>
                                     <td>{{ $pengajuans->firstItem() + $index }}</td>
                                     <td>
-                                        <p class="mb-1"><strong>{{ $pengajuan->judul }}</strong></p>
-                                        <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
+                                        {!! $pengajuan->getPermohonanAkreditasiSectionFor('upps') !!}
+                                    </td>
+                                    <td>
+                                        {!! $pengajuan->getCustomBadgeLastStatus('pelaporan_al_banding', 'upps', 'label_short_for') !!}
+                                    </td>
+                                    <td>
+                                        @if($pengajuan->tanggal_pelaporan_al_banding)
+                                        <small>{{ $pengajuan->tanggal_pelaporan_al_banding->locale('id')->translatedFormat('d M Y') }}</small>
                                         <br>
                                         <small class="text-muted">
-                                            Dibuat: {{ $pengajuan->created_at->locale('id')->translatedFormat('d M Y') }}
+                                            {{ $pengajuan->tanggal_pelaporan_al_banding->diffForHumans() }}
                                         </small>
-                                    </td>
-                                    <td>
-                                        <strong>{{ $pengajuan->studyProgram->name }}</strong>
-                                        <br>
-                                        <small class="text-muted">
-                                            {{ $pengajuan->studyProgram->degreeLevel->name ?? '-' }}
-                                        </small>
-                                        <br>
-                                        <small>{{ $pengajuan->studyProgram->university->name ?? '-' }}</small>
-                                    </td>
-                                    <td>
-                                        <small>
-                                            {{ $pengajuan->tanggal_pelaporan_banding
-                                                        ? $pengajuan->tanggal_pelaporan_banding->locale('id')->translatedFormat('d M Y H:i')
-                                                        : '-' }}
-                                        </small>
-                                    </td>
-                                    <td>
-                                        <span class="badge {{ $pengajuan->status_badge_class }}">
-                                            {{ $pengajuan->status_label }}
-                                        </span>
+                                        @else
+                                        <span class="text-muted">-</span>
+                                        @endif
                                     </td>
                                     <td class="text-center">
                                         <a href="{{ route('upps.pelaporan-banding.show', $pengajuan->id) }}" class="btn btn-info btn-sm" title="Lihat Detail">
@@ -147,7 +137,7 @@
                             @if(request()->filled('search') || request()->filled('status'))
                             Tidak ada data yang sesuai dengan filter
                             @else
-                            Belum ada pelaporan hasil banding
+                            Belum ada hasil surveillance banding yang dilaporkan
                             @endif
                         </p>
                         @if(request()->filled('search') || request()->filled('status'))
