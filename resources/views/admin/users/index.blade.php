@@ -105,8 +105,7 @@
             processing: true
             , serverSide: true
             , ajax: {
-                url: '{{ route('
-                users.index ') }}'
+                url: "{{ route('users.index') }}"
                 , error: function(xhr, error, thrown) {
                     console.error('DataTables Error:', error, thrown);
                     console.error('Response:', xhr.responseText);
@@ -162,8 +161,7 @@
     async function deleteRecord(id) {
         if (await swalConfirmSubmit('warning', 'Yakin ingin menghapus pengguna ini?')) {
             $.ajax({
-                url: '{{ url('
-                users ') }}/' + id
+                url: "{{ url('users') }}/" + id
                 , type: 'DELETE'
                 , data: {
                     _token: '{{ csrf_token() }}'

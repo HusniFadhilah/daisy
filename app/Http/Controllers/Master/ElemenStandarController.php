@@ -34,7 +34,7 @@ class ElemenStandarController extends Controller
         }
 
         $kriteria = \App\Models\Kriteria::all();
-        return view('indikator.elemen.index', compact('kriteria'));
+        return view('master-data.indikator.elemen.index', compact('kriteria'));
     }
 
     /**
@@ -43,7 +43,7 @@ class ElemenStandarController extends Controller
     public function create()
     {
         $kriteria = \App\Models\Kriteria::all();
-        return view('indikator.elemen.create', compact('kriteria'));
+        return view('master-data.indikator.elemen.create', compact('kriteria'));
     }
 
     /**
@@ -74,7 +74,7 @@ class ElemenStandarController extends Controller
             return redirect()->route('elemen-standar.index')->with('error', 'Elemen Standar tidak ditemukan');
         }
 
-        return view('indikator.elemen.show', compact('elemenStandar'));
+        return view('master-data.indikator.elemen.show', compact('elemenStandar'));
     }
 
     /**
@@ -89,7 +89,7 @@ class ElemenStandarController extends Controller
         }
 
         $kriteria = \App\Models\Kriteria::all();
-        return view('indikator.elemen.edit', compact('elemenStandar', 'kriteria'));
+        return view('master-data.indikator.elemen.edit', compact('elemenStandar', 'kriteria'));
     }
 
     /**

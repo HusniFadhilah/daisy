@@ -235,16 +235,6 @@ request()->routeIs('de.permohonan-banding*')
 </ul>
 
 @if(in_array($authUser->role_selected,['super_admin']))
-<!-- Penugasan Banding -->
-{{-- <a href="{{ route('banding') }}" class="nav-link {{ request()->routeIs('banding') ? 'active' : '' }}">
-<span class="menu-icon">🤝</span>
-<span>Penugasan Banding</span>
-</a> --}}
-<a href="#" class="nav-link {{ request()->routeIs('users*') ? 'active' : '' }}" onclick="toggleSubmenu(event, 'pengajuan-submenu')">
-    <span class="menu-icon">📋</span>
-    <span>Master Data</span>
-    {{-- <span class="badge bg-success menu-badge">{{ $penugasanAktif ?? 1 }}</span> --}}
-</a>
 <!-- Pedoman AK -->
 <a href="{{ route('pedoman') }}" class="nav-link {{ request()->routeIs('pedoman') ? 'active' : '' }}">
     <span class="menu-icon">❓</span>
