@@ -154,6 +154,8 @@ return new class extends Migration
 
             $table->datetime('tanggal_kedaluwarsa_awal')->nullable()->comment('Tanggal kedaluwarsa awal prodi sebelum diakreditasi');
             $table->datetime('tanggal_kedaluwarsa_akhir')->nullable()->comment('Tanggal kedaluwarsa prodi setelah diakreditasi');
+            $table->datetime('tanggal_sertifikat')->nullable()->comment('Tanggal sertifikat dikeluarkan');
+            $table->string('nomor_sertifikat')->nullable();
             $table->string('peringkat_awal')->nullable()->comment('Peringkat akreditasi awal prodi sebelum diakreditasi');
             $table->string('peringkat_hasil')->nullable()->comment('Peringkat hasil akreditasi awal yang disampaikan ke prodi');
             $table->decimal('skor_hasil', 6, 2)->nullable()->comment('Nilai hasil akreditasi awal (0-400)');

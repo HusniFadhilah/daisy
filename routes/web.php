@@ -721,6 +721,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('/{id}/timeline', [PelaporanHasilAkreditasiController::class, 'getTimeline'])->name('.timeline');
             Route::get('/{id}/preview-sertifikat', [PelaporanHasilAkreditasiController::class, 'previewSertifikat'])->name('.preview-sertifikat');
             Route::get('/{id}/generate-sertifikat', [PelaporanHasilAkreditasiController::class, 'generateSertifikat'])->name('.generate-sertifikat');
+            Route::post('/{id}/resume', [PelaporanHasilAkreditasiController::class, 'saveResume'])->name('.save-resume');
         });
         Route::prefix('penyimpanan-arsip-akreditasi')->name('.penyimpanan-arsip-akreditasi')->group(function () {
             Route::get('/', [PenyimpananArsipAkreditasiController::class, 'index']);

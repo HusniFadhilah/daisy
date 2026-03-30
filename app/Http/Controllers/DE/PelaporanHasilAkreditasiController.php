@@ -134,7 +134,7 @@ class PelaporanHasilAkreditasiController extends Controller
                     'laporan_banding',
                     'laporan_hasil',
                     'sertifikat',
-                    'lainnya'
+                    'lainnya',
                 ])
                     ->where('is_latest', true)
                     ->orderBy('created_at', 'desc');
@@ -142,12 +142,12 @@ class PelaporanHasilAkreditasiController extends Controller
             'statusLog',
         ])->findOrFail($id);
 
-        // Check if hasil sudah ditetapkan
         $allowed = [
             PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
             PengajuanAkreditasi::STATUS_HASIL_DIUMUMKAN,
             PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN,
         ];
+
         $log = $pengajuan->latestRelevantStatusLog($allowed);
         if (!in_array($log?->status_to, $allowed)) {
             return redirect()
@@ -155,149 +155,179 @@ class PelaporanHasilAkreditasiController extends Controller
                 ->with('error', 'Hasil akreditasi belum ditetapkan.');
         }
 
-        $hasil = $pengajuan->asesmen->hasil ?? null;
+        $hasil    = $pengajuan->asesmen->hasil ?? null;
         $peringkat = $hasil->peringkat_akreditasi_final ?? null;
-        return view('de.pelaporan-hasil-akreditasi.show', compact('pengajuan', 'hasil', 'peringkat'));
+
+        // Pass resume ke view — dipakai untuk prefill editor
+        $resume = $hasil
+            ? $hasil->getResumeAsesmenOrDefault()
+            : \App\Models\HasilAkreditasi::resumeAsesmenSkeleton();
+
+        return view(
+            'de.pelaporan-hasil-akreditasi.show',
+            compact('pengajuan', 'hasil', 'peringkat', 'resume')
+        );
     }
 
-    /**
-     * Upload laporan hasil akreditasi
-     */
-    // public function uploadLaporan(Request $request, $id)
+    // public function uploadDokumen(Request $request, $id)
     // {
+    //     // ── Karakter limit (mirror dari model) ───────────────
+    //     $charLimits = \App\Models\HasilAkreditasi::resumeBabCharLimits();
+
     //     $request->validate([
-    //         'file_laporan' => 'required|file|mimes:pdf,doc,docx|max:10240',
-    //         'keterangan' => 'nullable|string|max:1000',
-    //     ]);
-
-    //     $pengajuan = PengajuanAkreditasi::findOrFail($id);
-
-    //     // Validasi status
-    //     if (!in_array($pengajuan->status, [
-    //         PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
-    //         PengajuanAkreditasi::STATUS_HASIL_DIUMUMKAN,
-    //     ])) {
-    //         return back()->with('error', 'Status saat ini tidak sesuai untuk upload laporan hasil.');
-    //     }
-
-    //     DB::beginTransaction();
-    //     try {
-    //         // Upload file
-    //         $file = $request->file('file_laporan');
-    //         $filename = 'laporan_hasil_' . $pengajuan->nomor_pengajuan . '_' . time() . '.' . $file->getClientOriginalExtension();
-    //         $path = $file->storeAs('pengajuan_dokumen/laporan_hasil', $filename, 'public');
-
-    //         // Mark previous laporan as not latest
-    //         PengajuanDokumen::where('id_pengajuan', $id)
-    //             ->where('jenis_dokumen', 'laporan_hasil')
-    //             ->update(['is_latest' => false]);
-
-    //         // Create new dokumen record
-    //         PengajuanDokumen::create([
-    //             'id_pengajuan' => $id,
-    //             'jenis_dokumen' => 'laporan_hasil',
-    //             'nama_file' => $filename,
-    //             'path_file' => $path,
-    //             'original_filename' => $file->getClientOriginalName(),
-    //             'file_size' => $file->getSize(),
-    //             'mime_type' => $file->getMimeType(),
-    //             'uploaded_by' => auth()->id(),
-    //             'keterangan' => $request->keterangan,
-    //             'versi' => PengajuanDokumen::where('id_pengajuan', $id)
-    //                 ->where('jenis_dokumen', 'laporan_hasil')
-    //                 ->max('versi') + 1,
-    //             'is_latest' => true,
-    //         ]);
-
-    //         DB::commit();
-
-    //         return redirect()
-    //             ->route('de.pelaporan-hasil-akreditasi.show', $id)
-    //             ->with('success', 'Laporan hasil akreditasi berhasil diupload.');
-    //     } catch (\Exception $e) {
-    //         DB::rollBack();
-
-    //         // Delete uploaded file if exists
-    //         if (isset($path) && Storage::disk('public')->exists($path)) {
-    //             Storage::disk('public')->delete($path);
-    //         }
-
-    //         return back()->with('error', 'Gagal upload laporan: ' . $e->getMessage());
-    //     }
-    // }
-
-    // /**
-    //  * Upload sertifikat akreditasi
-    //  */
-    // public function uploadSertifikat(Request $request, $id)
-    // {
-    //     $request->validate([
-    //         'file_sertifikat' => 'required|file|mimes:pdf|max:5120',
-    //         'nomor_sertifikat' => 'nullable|string|max:100',
+    //         // File
+    //         'file_laporan'       => 'nullable|file|mimes:pdf,doc,docx|max:10240',
+    //         'file_sertifikat'    => 'nullable|file|mimes:pdf|max:5120',
     //         'masa_berlaku_tahun' => 'nullable|integer|min:1|max:10',
-    //         'keterangan' => 'nullable|string|max:1000',
+    //         'keterangan'         => 'nullable|string|max:1000',
+
+    //         // Resume BAB — value adalah HTML dari TinyMCE
+    //         'resume.bab.pendahuluan'            => [
+    //             'nullable',
+    //             'string',
+    //             // Validasi panjang plain-text (strip tag) di custom rule
+    //             new \App\Rules\MaxPlainTextLength($charLimits['pendahuluan']),
+    //         ],
+    //         'resume.bab.proses_asesmen'         => [
+    //             'nullable',
+    //             'string',
+    //             new \App\Rules\MaxPlainTextLength($charLimits['proses_asesmen']),
+    //         ],
+    //         'resume.bab.hasil_asesmen'          => [
+    //             'nullable',
+    //             'string',
+    //             new \App\Rules\MaxPlainTextLength($charLimits['hasil_asesmen']),
+    //         ],
+    //         'resume.bab.rekomendasi_prodi'      => [
+    //             'nullable',
+    //             'string',
+    //             new \App\Rules\MaxPlainTextLength($charLimits['rekomendasi_prodi']),
+    //         ],
+    //         'resume.bab.rekomendasi_lamdepilar' => [
+    //             'nullable',
+    //             'string',
+    //             new \App\Rules\MaxPlainTextLength($charLimits['rekomendasi_lamdepilar']),
+    //         ],
+    //     ], [
+    //         // Pesan error custom
+    //         'resume.bab.pendahuluan.max_plain_text'            => "BAB I melebihi batas {$charLimits['pendahuluan']} karakter.",
+    //         'resume.bab.proses_asesmen.max_plain_text'         => "BAB II melebihi batas {$charLimits['proses_asesmen']} karakter.",
+    //         'resume.bab.hasil_asesmen.max_plain_text'          => "BAB III melebihi batas {$charLimits['hasil_asesmen']} karakter.",
+    //         'resume.bab.rekomendasi_prodi.max_plain_text'      => "BAB IV melebihi batas {$charLimits['rekomendasi_prodi']} karakter.",
+    //         'resume.bab.rekomendasi_lamdepilar.max_plain_text' => "BAB V melebihi batas {$charLimits['rekomendasi_lamdepilar']} karakter.",
     //     ]);
+
+    //     if (!$request->hasFile('file_laporan') && !$request->hasFile('file_sertifikat')) {
+    //         return back()->with('error', 'Minimal upload salah satu: Laporan Hasil atau Sertifikat.');
+    //     }
 
     //     $pengajuan = PengajuanAkreditasi::findOrFail($id);
 
-    //     // Validasi status
     //     if (!in_array($pengajuan->status, [
     //         PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
     //         PengajuanAkreditasi::STATUS_HASIL_DIUMUMKAN,
     //     ])) {
-    //         return back()->with('error', 'Status saat ini tidak sesuai untuk upload sertifikat.');
+    //         return back()->with('error', 'Status saat ini tidak sesuai untuk upload dokumen.');
     //     }
+
+    //     $uploadedPaths = [];
 
     //     DB::beginTransaction();
     //     try {
-    //         // Upload file
-    //         $file = $request->file('file_sertifikat');
-    //         $filename = 'sertifikat_' . $pengajuan->nomor_pengajuan . '_' . time() . '.pdf';
-    //         $path = $file->storeAs('pengajuan_dokumen/sertifikat', $filename, 'public');
+    //         // ── Upload laporan ────────────────────────────────
+    //         if ($request->hasFile('file_laporan')) {
+    //             $file     = $request->file('file_laporan');
+    //             $filename = 'laporan_hasil_' . $pengajuan->nomor_pengajuan . '_' . time()
+    //                 . '.' . $file->getClientOriginalExtension();
+    //             $path     = $file->storeAs('pengajuan_dokumen/laporan_hasil', $filename, 'public');
+    //             $uploadedPaths[] = $path;
 
-    //         // Mark previous sertifikat as not latest
-    //         PengajuanDokumen::where('id_pengajuan', $id)
-    //             ->where('jenis_dokumen', 'sertifikat')
-    //             ->update(['is_latest' => false]);
+    //             PengajuanDokumen::where('id_pengajuan', $id)
+    //                 ->where('jenis_dokumen', 'laporan_hasil')
+    //                 ->update(['is_latest' => false]);
 
-    //         // Create new dokumen record
-    //         PengajuanDokumen::create([
-    //             'id_pengajuan' => $id,
-    //             'jenis_dokumen' => 'sertifikat',
-    //             'nama_file' => $filename,
-    //             'path_file' => $path,
-    //             'original_filename' => $file->getClientOriginalName(),
-    //             'file_size' => $file->getSize(),
-    //             'mime_type' => $file->getMimeType(),
-    //             'uploaded_by' => auth()->id(),
-    //             'keterangan' => $request->keterangan,
-    //             'versi' => PengajuanDokumen::where('id_pengajuan', $id)
-    //                 ->where('jenis_dokumen', 'sertifikat')
-    //                 ->max('versi') + 1,
-    //             'is_latest' => true,
-    //         ]);
-
-    //         // Update pengajuan jika ada info tambahan
-    //         if ($request->filled('masa_berlaku_tahun')) {
-    //             $pengajuan->update([
-    //                 'masa_berlaku_tahun' => $request->masa_berlaku_tahun,
+    //             PengajuanDokumen::create([
+    //                 'id_pengajuan'      => $id,
+    //                 'jenis_dokumen'     => 'laporan_hasil',
+    //                 'nama_file'         => $filename,
+    //                 'path_file'         => $path,
+    //                 'original_filename' => $file->getClientOriginalName(),
+    //                 'file_size'         => $file->getSize(),
+    //                 'mime_type'         => $file->getMimeType(),
+    //                 'uploaded_by'       => auth()->id(),
+    //                 'keterangan'        => $request->keterangan,
+    //                 'versi'             => (PengajuanDokumen::where('id_pengajuan', $id)
+    //                     ->where('jenis_dokumen', 'laporan_hasil')
+    //                     ->max('versi') ?? 0) + 1,
+    //                 'is_latest'         => true,
     //             ]);
     //         }
 
+    //         // ── Upload sertifikat ─────────────────────────────
+    //         if ($request->hasFile('file_sertifikat')) {
+    //             $file     = $request->file('file_sertifikat');
+    //             $filename = 'sertifikat_' . $pengajuan->nomor_pengajuan . '_' . time() . '.pdf';
+    //             $path     = $file->storeAs('pengajuan_dokumen/sertifikat', $filename, 'public');
+    //             $uploadedPaths[] = $path;
+
+    //             PengajuanDokumen::where('id_pengajuan', $id)
+    //                 ->where('jenis_dokumen', 'sertifikat')
+    //                 ->update(['is_latest' => false]);
+
+    //             PengajuanDokumen::create([
+    //                 'id_pengajuan'      => $id,
+    //                 'jenis_dokumen'     => 'sertifikat',
+    //                 'nama_file'         => $filename,
+    //                 'path_file'         => $path,
+    //                 'original_filename' => $file->getClientOriginalName(),
+    //                 'file_size'         => $file->getSize(),
+    //                 'mime_type'         => $file->getMimeType(),
+    //                 'uploaded_by'       => auth()->id(),
+    //                 'keterangan'        => $request->keterangan,
+    //                 'versi'             => (PengajuanDokumen::where('id_pengajuan', $id)
+    //                     ->where('jenis_dokumen', 'sertifikat')
+    //                     ->max('versi') ?? 0) + 1,
+    //                 'is_latest'         => true,
+    //             ]);
+
+    //             if ($request->filled('masa_berlaku_tahun')) {
+    //                 $pengajuan->update(['masa_berlaku_tahun' => $request->masa_berlaku_tahun]);
+    //             }
+    //         }
+
+    //         // ── Simpan Resume Asesmen ─────────────────────────
+    //         $resumeInput = $request->input('resume', []);
+
+    //         if (!empty($resumeInput['bab'])) {
+    //             $hasil = $pengajuan->asesmen?->hasil;
+
+    //             if ($hasil) {
+    //                 // Sanitasi HTML: izinkan tag terbatas saja
+    //                 $allowedTags = '<p><br><strong><em><u><ol><ul><li><h3><h4><blockquote>';
+    //                 $bab = [];
+    //                 foreach ($resumeInput['bab'] as $key => $html) {
+    //                     // strip_tags lalu re-encode agar aman disimpan
+    //                     $bab[$key] = !empty($html) ? strip_tags($html, $allowedTags) : null;
+    //                 }
+    //                 $resumeInput['bab'] = $bab;
+
+    //                 $hasil->saveResumeAsesmen($resumeInput, auth()->id());
+    //             }
+    //         }
+
     //         DB::commit();
 
     //         return redirect()
     //             ->route('de.pelaporan-hasil-akreditasi.show', $id)
-    //             ->with('success', 'Sertifikat akreditasi berhasil diupload.');
+    //             ->with('success', 'Dokumen dan resume asesmen berhasil disimpan.');
     //     } catch (\Exception $e) {
     //         DB::rollBack();
-
-    //         // Delete uploaded file if exists
-    //         if (isset($path) && Storage::disk('public')->exists($path)) {
-    //             Storage::disk('public')->delete($path);
+    //         foreach ($uploadedPaths as $p) {
+    //             if (Storage::disk('public')->exists($p)) {
+    //                 Storage::disk('public')->delete($p);
+    //             }
     //         }
-
-    //         return back()->with('error', 'Gagal upload sertifikat: ' . $e->getMessage());
+    //         return back()->withInput()->with('error', 'Gagal menyimpan: ' . $e->getMessage());
     //     }
     // }
 
@@ -386,11 +416,11 @@ class PelaporanHasilAkreditasiController extends Controller
                     'is_latest' => true,
                 ]);
 
-                if ($request->filled('masa_berlaku_tahun')) {
-                    $pengajuan->update([
-                        'masa_berlaku_tahun' => $request->masa_berlaku_tahun,
-                    ]);
-                }
+                $pengajuan->update([
+                    'masa_berlaku_tahun' => $request->masa_berlaku_tahun,
+                    'nomor_sertifikat' => $request->nomor_sertifikat,
+                    'tanggal_sertifikat' => $request->tanggal_sertifikat,
+                ]);
             }
 
             DB::commit();
@@ -410,6 +440,111 @@ class PelaporanHasilAkreditasiController extends Controller
 
             return back()->with('error', 'Gagal upload dokumen: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * AJAX — simpan / update resume_asesmen.
+     * Dipanggil sebelum upload file dokumen.
+     */
+    public function saveResume(Request $request, int $id): \Illuminate\Http\JsonResponse
+    {
+        $charLimit = \App\Models\HasilAkreditasi::resumeBabCharLimit();
+
+        $request->validate([
+            // BAB
+            'bab'           => 'required|array|min:1|max:20',
+            'bab.*.title'   => 'required|string|max:120',
+            'bab.*.content' => [
+                'nullable',
+                'string',
+                new \App\Rules\MaxPlainTextLength($charLimit)
+            ],
+            // Meta sertifikat
+            'meta.masa_berlaku_tahun' => 'nullable|integer|min:1|max:10',
+            'meta.nomor_sertifikat'   => 'nullable|string|max:100',
+            'meta.tanggal_sertifikat' => 'nullable|date',
+            'meta.keterangan'         => 'nullable|string|max:1000',
+        ], [
+            'bab.required'          => 'Minimal harus ada 1 BAB.',
+            'bab.*.title.required'  => 'Judul BAB tidak boleh kosong.',
+            'bab.*.title.max'       => 'Judul BAB maksimal 120 karakter.',
+        ]);
+
+        $pengajuan = PengajuanAkreditasi::findOrFail($id);
+
+        $allowed = [
+            PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
+            PengajuanAkreditasi::STATUS_HASIL_DIUMUMKAN,
+        ];
+
+        if (!in_array($pengajuan->status, $allowed)) {
+            return response()->json([
+                'ok'      => false,
+                'message' => 'Status tidak mengizinkan perubahan resume.',
+            ], 422);
+        }
+
+        $hasil = $pengajuan->asesmen ? $pengajuan->asesmen->hasil : null;
+
+        if (!$hasil) {
+            return response()->json([
+                'ok'      => false,
+                'message' => 'Data hasil akreditasi tidak ditemukan.',
+            ], 404);
+        }
+
+        DB::beginTransaction();
+        try {
+            // ── Sanitasi & simpan BAB ─────────────────────────
+            $allowedTags = '<p><br><strong><em><u><ol><ul><li><h3><h4><blockquote>';
+            $bab = [];
+            foreach ($request->input('bab', []) as $item) {
+                $title   = trim($item['title'] ?? '');
+                $content = isset($item['content']) ? $item['content'] : '';
+                $bab[] = [
+                    'title'   => $title,
+                    'content' => !empty($content) ? strip_tags($content, $allowedTags) : null,
+                ];
+            }
+            $hasil->saveResumeAsesmen(['bab' => $bab], auth()->id());
+
+            // ── Simpan field meta ke pengajuan ────────────────
+            $meta       = $request->input('meta', []);
+            $updateData = [];
+
+            if (isset($meta['masa_berlaku_tahun']) && $meta['masa_berlaku_tahun'] !== '') {
+                $updateData['masa_berlaku_tahun'] = (int) $meta['masa_berlaku_tahun'];
+            }
+            if (isset($meta['nomor_sertifikat']) && $meta['nomor_sertifikat'] !== '') {
+                $updateData['nomor_sertifikat'] = $meta['nomor_sertifikat'];
+            }
+            if (isset($meta['tanggal_sertifikat']) && $meta['tanggal_sertifikat'] !== '') {
+                $updateData['tanggal_penetapan'] = $meta['tanggal_sertifikat'];
+            }
+            if (isset($meta['keterangan']) && $meta['keterangan'] !== '') {
+                $updateData['keterangan_pelaporan'] = $meta['keterangan'];
+            }
+
+            if (!empty($updateData)) {
+                $pengajuan->update($updateData);
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'ok'      => false,
+                'message' => 'Gagal menyimpan: ' . $e->getMessage(),
+            ], 500);
+        }
+
+        return response()->json([
+            'ok'         => true,
+            'message'    => 'Resume asesmen berhasil disimpan.',
+            'saved_at'   => now()->locale('id')->translatedFormat('d M Y, H:i'),
+            'bab_count'  => count($bab),
+            'has_resume' => $hasil->fresh()->hasResumeAsesmen(),
+        ]);
     }
 
     /**
@@ -607,7 +742,8 @@ class PelaporanHasilAkreditasiController extends Controller
             }
 
             // Calculate masa berlaku berdasarkan peringkat
-            $masaBerlaku = $this->calculateMasaBerlaku($hasil->peringkat_akreditasi_final, $pengajuan->tanggal_penetapan);
+            $tanggalPenetapan = $pengajuan->tanggal_sertifikat ?? $pengajuan->tanggal_penetapan;
+            $masaBerlaku = $this->calculateMasaBerlaku($hasil, $tanggalPenetapan, $pengajuan->masa_berlaku_tahun);
             // Parse detail skor
             $detailSkorAL = $hasil->detail_skor_al ?? [];
             $elemenList = $detailSkorAL['elemen'] ?? [];
@@ -668,9 +804,9 @@ class PelaporanHasilAkreditasiController extends Controller
     /**
      * ✅ Calculate Masa Berlaku Sertifikat
      */
-    private function calculateMasaBerlaku($hasil, $tanggalPenetapan): array
+    private function calculateMasaBerlaku($hasil, $tanggalPenetapan, $masaBerlakuTahun = null): array
     {
-        $siklus = $hasil?->statusFinal?->siklus_tahun
+        $siklus = $masaBerlakuTahun ?? $hasil?->statusFinal?->siklus_tahun
             ?? $hasil?->statusAl?->siklus_tahun
             ?? $hasil?->statusAk?->siklus_tahun
             ?? 1; // fallback jika relasi null
@@ -688,6 +824,7 @@ class PelaporanHasilAkreditasiController extends Controller
     /**
      * ✅ Preview Sertifikat (HTML)
      */
+    // ── 3. previewSertifikat() ───────────────────────────────
     public function previewSertifikat($id)
     {
         try {
@@ -695,7 +832,7 @@ class PelaporanHasilAkreditasiController extends Controller
                 'studyProgram.university',
                 'studyProgram.degreeLevel',
                 'studyProgram.category',
-                'asesmen.hasil.statusFinal', // ← eager load untuk calculateMasaBerlaku
+                'asesmen.hasil.statusFinal',
                 'asesmen.hasil.statusAl',
                 'asesmen.hasil.statusAk',
             ])->findOrFail($id);
@@ -705,50 +842,32 @@ class PelaporanHasilAkreditasiController extends Controller
             }
 
             $hasil       = $pengajuan->asesmen->hasil;
-            $masaBerlaku = $this->calculateMasaBerlaku($hasil, $pengajuan->tanggal_penetapan);
+            $tanggalPenetapan = $pengajuan->tanggal_sertifikat ?? $pengajuan->tanggal_penetapan;
+            $masaBerlaku = $this->calculateMasaBerlaku($hasil, $tanggalPenetapan, $pengajuan->masa_berlaku_tahun);
             $elemenList  = ($hasil->detail_skor_al ?? [])['elemen'] ?? [];
 
-            $resume = [
-                'mahasiswa_aktif'       => 248,
-                'dosen_tetap'           => 12,
-                'rasio_dosen_mahasiswa' => '1 : 21',
-                'tahun_berdiri'         => 2004,
-                'jumlah_lulusan'        => 1.340,
-                'rata_ipk'              => '3.52',
-                'masa_studi'            => '8.4',
-                'serapan_kerja'         => 87,
-                'narasi_kondisi'        => 'Program studi telah beroperasi selama 20 tahun dengan
-        rekam jejak akademik yang konsisten. Kualitas lulusan diakui secara nasional
-        melalui berbagai penghargaan di bidang desain arsitektur.',
+            // Ambil resume dari DB; normalisasi ke struktur array bab
+            $resumeRaw = $hasil
+                ? $hasil->getResumeAsesmenOrDefault()
+                : \App\Models\HasilAkreditasi::resumeAsesmenSkeleton();
 
-                'keunggulan' => [
-                    ['kriteria' => 'K1 – Visi & Misi',   'temuan' => 'Visi misi selaras dengan RIP universitas dan diperbarui secara berkala melalui proses partisipatif.'],
-                    ['kriteria' => 'K4 – Penelitian',     'temuan' => 'Jumlah publikasi Scopus meningkat 40% dalam dua tahun terakhir dengan keterlibatan mahasiswa S1.'],
-                    ['kriteria' => 'K6 – Lulusan',        'temuan' => 'Tingkat serapan kerja ≤ 6 bulan mencapai 87%, melampaui rata-rata nasional bidang arsitektur.'],
-                    ['kriteria' => 'K3 – Kurikulum',      'temuan' => 'Kurikulum OBE telah diimplementasikan penuh dengan asesmen berbasis capaian pembelajaran yang terukur.'],
-                    ['kriteria' => 'K5 – PKM',            'temuan' => 'Dosen aktif dalam kegiatan pengabdian dengan mitra industri skala nasional dan internasional.'],
-                ],
-
-                'ketidakunggulan' => [
-                    ['kriteria' => 'K2 – Tata Kelola',   'temuan' => 'Sistem penjaminan mutu internal belum sepenuhnya terdokumentasi; SOP belum konsisten dijalankan.'],
-                    ['kriteria' => 'K7 – Sarana',        'temuan' => 'Laboratorium komputer desain membutuhkan pembaruan perangkat keras yang signifikan.'],
-                    ['kriteria' => 'K3 – Kurikulum',     'temuan' => 'Integrasi mata kuliah interdisiplin dengan prodi lain masih sangat terbatas.'],
-                    ['kriteria' => 'K8 – Keuangan',      'temuan' => 'Proporsi pendanaan penelitian dari sumber eksternal masih di bawah 30% dari total anggaran riset.'],
-                ],
-            ];
+            // Pastikan key 'bab' selalu array
+            $resume = $resumeRaw;
+            if (!isset($resume['bab']) || !is_array($resume['bab'])) {
+                $resume['bab'] = [];
+            }
 
             $data = [
                 'pengajuan'        => $pengajuan,
                 'hasil'            => $hasil,
                 'studyProgram'     => $pengajuan->studyProgram,
                 'university'       => $pengajuan->studyProgram->university,
-                'nomorSertifikat'  => $pengajuan->generateNomorSertifikat(),
-                'tanggalPenetapan' => $pengajuan->tanggal_penetapan,
+                'nomorSertifikat'  => $pengajuan->nomor_sertifikat ?? $pengajuan->generateNomorSertifikat(),
+                'tanggalPenetapan' => $tanggalPenetapan,
                 'masaBerlaku'      => $masaBerlaku,
                 'elemenList'       => $elemenList,
-                'resume'            => $resume
+                'resume'           => $resume,
             ];
-
             return view('de.pelaporan-hasil-akreditasi.sertifikat-pdf', $data);
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal preview sertifikat: ' . $e->getMessage());

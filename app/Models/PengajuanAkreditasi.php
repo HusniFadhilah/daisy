@@ -182,6 +182,8 @@ class PengajuanAkreditasi extends Model
 
         'tanggal_kedaluwarsa_awal',
         'tanggal_kedaluwarsa_akhir',
+        'tanggal_sertifikat',
+        'nomor_sertifikat',
         'peringkat_awal',
         'peringkat_hasil',
         'skor_hasil',
@@ -255,6 +257,7 @@ class PengajuanAkreditasi extends Model
         'tanggal_penyimpanan' => 'datetime',
         'tanggal_kedaluwarsa_awal' => 'datetime',
         'tanggal_kedaluwarsa_akhir' => 'datetime',
+        'tanggal_sertifikat' => 'datetime',
     ];
 
     public function scopeNonExample($query)
@@ -2059,5 +2062,239 @@ class PengajuanAkreditasi extends Model
         }
 
         return $this->peringkat_hasil !== $this->peringkat_hasil_banding;
+    }
+
+    public static function getDocumentChecklist($pengajuan): array
+    {
+        // Dokumen dari pengajuan (PengajuanDokumen)
+        $dokumens = $pengajuan->dokumen->keyBy('jenis_dokumen');
+
+        // Dokumen dari asesmen (AsesmenDocument)
+        $asesmen = $pengajuan->asesmen ?? null;
+
+        $asesmenTypes = [
+            'laporan_validasi_borang',
+            'laporan_validasi_ak',
+            'berita_acara_al',
+            'lha_asesor',
+            'laporan_al',
+            'berita_acara_penyampaian_hasil', // sesuai yang kamu tulis (kalau typo -> perbaiki ke "hasil")
+            'berita_acara_penetapan_hasil',
+            'berita_acara_penyimpanan_arsip',
+            'berita_acara_al_banding',
+            'laporan_validasi_ak_banding',
+            'lha_asesor_banding',
+            'laporan_al_banding',
+        ];
+
+        $asesmenDokumens = collect();
+
+        if ($asesmen) {
+            $asesmenDokumens = AsesmenDocument::query()
+                ->where('id_asesmen', $asesmen->id)
+                ->whereIn('type', $asesmenTypes)
+                ->get()
+                ->keyBy('type');
+        }
+
+        return [
+            // =========================
+            // Dokumen Pengajuan (lama)
+            // =========================
+            'sertifikat' => [
+                'label' => 'Sertifikat Akreditasi',
+                'critical' => true,
+                'exists' => $dokumens->has('sertifikat'),
+                'dokumen' => $dokumens->get('sertifikat'),
+                'source' => 'pengajuan',
+            ],
+            'surat_permohonan' => [
+                'label' => PengajuanDokumen::JENIS_DOKUMEN_ALIAS['surat_permohonan'] ?? 'Surat Permohonan Akreditasi',
+                'critical' => true,
+                'exists' => $dokumens->has('surat_permohonan'),
+                'dokumen' => $dokumens->get('surat_permohonan'),
+                'source' => 'pengajuan',
+            ],
+            'surat_penerimaan' => [
+                'label' => PengajuanDokumen::JENIS_DOKUMEN_ALIAS['surat_penerimaan_de'] ?? 'Surat Penerimaan Akreditasi',
+                'critical' => true,
+                'exists' => $dokumens->has('surat_penerimaan_de'),
+                'dokumen' => $dokumens->get('surat_penerimaan_de'),
+                'source' => 'pengajuan',
+            ],
+            'formulir_pembayaran' => [
+                'label' => PengajuanDokumen::JENIS_DOKUMEN_ALIAS['formulir_pembayaran'] ?? 'Bukti Pembayaran',
+                'critical' => true,
+                'exists' => $dokumens->has('formulir_pembayaran'),
+                'dokumen' => $dokumens->get('formulir_pembayaran'),
+                'source' => 'pengajuan',
+            ],
+            'data_kualitatif' => [
+                'label' => PengajuanDokumen::JENIS_DOKUMEN_ALIAS['data_kualitatif'] ?? 'Laporan Evaluasi Diri (LED)',
+                'critical' => true,
+                'exists' => $dokumens->has('data_kualitatif'),
+                'dokumen' => $dokumens->get('data_kualitatif'),
+                'source' => 'pengajuan',
+            ],
+            'data_kuantitatif' => [
+                'label' => PengajuanDokumen::JENIS_DOKUMEN_ALIAS['data_kuantitatif'] ?? 'Laporan Kinerja Program Studi (LKPS)',
+                'critical' => true,
+                'exists' => $dokumens->has('data_kuantitatif'),
+                'dokumen' => $dokumens->get('data_kuantitatif'),
+                'source' => 'pengajuan',
+            ],
+            'data_suplemen' => [
+                'label' => PengajuanDokumen::JENIS_DOKUMEN_ALIAS['data_suplemen'] ?? 'Suplemen Laporan Evaluasi Diri',
+                'critical' => true,
+                'exists' => $dokumens->has('data_suplemen'),
+                'dokumen' => $dokumens->get('data_suplemen'),
+                'source' => 'pengajuan',
+            ],
+            'lembar_pengesahan' => [
+                'label' => PengajuanDokumen::JENIS_DOKUMEN_ALIAS['lembar_pengesahan'] ?? 'Lembar Pengesahan Dokumen',
+                'critical' => true,
+                'exists' => $dokumens->has('lembar_pengesahan'),
+                'dokumen' => $dokumens->get('lembar_pengesahan'),
+                'source' => 'pengajuan',
+            ],
+            'surat_tugas_validator_dokumen' => [
+                'label' => 'Surat Tugas Validator',
+                'critical' => true,
+                'exists' => $dokumens->has('surat_tugas_validator_dokumen'),
+                'dokumen' => $dokumens->get('surat_tugas_validator_dokumen'),
+                'source' => 'pengajuan',
+            ],
+            'surat_tugas_asesor_ak' => [
+                'label' => PengajuanDokumen::JENIS_DOKUMEN_ALIAS['surat_tugas_asesor_ak'] ?? 'Surat Tugas Asesor AK',
+                'critical' => true,
+                'exists' => $dokumens->has('surat_tugas_asesor_ak'),
+                'dokumen' => $dokumens->get('surat_tugas_asesor_ak'),
+                'source' => 'pengajuan',
+            ],
+            'surat_tugas_asesor_al' => [
+                'label' => PengajuanDokumen::JENIS_DOKUMEN_ALIAS['surat_tugas_asesor_al'] ?? 'Surat Tugas Asesor AL',
+                'critical' => true,
+                'exists' => $dokumens->has('surat_tugas_asesor_al'),
+                'dokumen' => $dokumens->get('surat_tugas_asesor_al'),
+                'source' => 'pengajuan',
+            ],
+            'laporan_hasil' => [
+                'label' => 'Laporan Hasil Akreditasi',
+                'critical' => true,
+                'exists' => $dokumens->has('laporan_hasil'),
+                'dokumen' => $dokumens->get('laporan_hasil'),
+                'source' => 'pengajuan',
+            ],
+
+            // =========================
+            // Dokumen Asesmen (baru)
+            // =========================
+            'asesmen_laporan_validasi_borang' => [
+                'label' => 'Laporan Kesiapan LED Program Studi (LKLED)',
+                'critical' => false,
+                'exists' => $asesmenDokumens->has('laporan_validasi_borang'),
+                'dokumen' => $asesmenDokumens->get('laporan_validasi_borang'),
+                'source' => 'asesmen',
+            ],
+            'asesmen_laporan_validasi_ak' => [
+                'label' => 'Laporan Penilaian Kecukupan LED Program Studi (LHK)',
+                'critical' => false,
+                'exists' => $asesmenDokumens->has('laporan_validasi_ak'),
+                'dokumen' => $asesmenDokumens->get('laporan_validasi_ak'),
+                'source' => 'asesmen',
+            ],
+            'asesmen_berita_acara_al' => [
+                'label' => 'Berita Acara AL',
+                'critical' => false,
+                'exists' => $asesmenDokumens->has('berita_acara_al'),
+                'dokumen' => $asesmenDokumens->get('berita_acara_al'),
+                'source' => 'asesmen',
+            ],
+            'asesmen_lha_asesor' => [
+                'label' => 'Laporan Hasil Asesmen Lapangan',
+                'critical' => false,
+                'exists' => $asesmenDokumens->has('lha_asesor'),
+                'dokumen' => $asesmenDokumens->get('lha_asesor'),
+                'source' => 'asesmen',
+            ],
+            'asesmen_laporan_al' => [
+                'label' => 'Laporan Rekap Asesmen Lapangan',
+                'critical' => false,
+                'exists' => $asesmenDokumens->has('laporan_al'),
+                'dokumen' => $asesmenDokumens->get('laporan_al'),
+                'source' => 'asesmen',
+            ],
+            'asesmen_berita_acara_penyampaian_hasil' => [
+                'label' => 'Berita Acara Penyampaian Hasil Akreditasi',
+                'critical' => false,
+                'exists' => $asesmenDokumens->has('berita_acara_penyampaian_hasil'),
+                'dokumen' => $asesmenDokumens->get('berita_acara_penyampaian_hasil'),
+                'source' => 'asesmen',
+            ],
+            'asesmen_berita_acara_penetapan_hasil' => [
+                'label' => 'Berita Acara Penetapan Hasil Akreditasi',
+                'critical' => false,
+                'exists' => $asesmenDokumens->has('berita_acara_penetapan_hasil'),
+                'dokumen' => $asesmenDokumens->get('berita_acara_penetapan_hasil'),
+                'source' => 'asesmen',
+            ],
+            'asesmen_berita_acara_penyimpanan_arsip' => [
+                'label' => 'Berita Acara Penyimpanan Arsip Akreditasi',
+                'critical' => false,
+                'exists' => $asesmenDokumens->has('berita_acara_penyimpanan_arsip'),
+                'dokumen' => $asesmenDokumens->get('berita_acara_penyimpanan_arsip'),
+                'source' => 'asesmen',
+            ],
+
+
+            // =====================
+            // DOKUMEN BANDING
+            // =====================
+            // 'banding' => [
+            'surat_permohonan_banding' => [
+                'label' => 'Surat Permohonan Banding',
+                'critical' => false,
+                'exists' => $dokumens->has('surat_permohonan_banding'),
+                'dokumen' => $dokumens->get('surat_permohonan_banding'),
+                'source' => 'pengajuan',
+            ],
+            'surat_penerimaan_banding_de' => [
+                'label' => 'Surat Penerimaan Permohonan Banding',
+                'critical' => false,
+                'exists' => $dokumens->has('surat_penerimaan_banding_de'),
+                'dokumen' => $dokumens->get('surat_penerimaan_banding_de'),
+                'source' => 'pengajuan',
+            ],
+            'formulir_pembayaran_banding' => [
+                'label' => 'Formulir Pembayaran Banding',
+                'critical' => false,
+                'exists' => $dokumens->has('formulir_pembayaran_banding'),
+                'dokumen' => $dokumens->get('formulir_pembayaran_banding'),
+                'source' => 'pengajuan',
+            ],
+            // Dokumen asesmen banding
+            'asesmen_berita_acara_al_banding' => [
+                'label' => 'Berita Acara AL Banding',
+                'critical' => false,
+                'exists' => $asesmenDokumens->has('berita_acara_al_banding'),
+                'dokumen' => $asesmenDokumens->get('berita_acara_al_banding'),
+                'source' => 'asesmen',
+            ],
+            'asesmen_lha_asesor_banding' => [
+                'label' => 'Laporan Hasil Surveillance Penanganan Banding',
+                'critical' => false,
+                'exists' => $asesmenDokumens->has('lha_asesor_banding'),
+                'dokumen' => $asesmenDokumens->get('lha_asesor_banding'),
+                'source' => 'asesmen',
+            ],
+            'asesmen_laporan_al_banding' => [
+                'label' => 'Laporan Rekap AL Banding',
+                'critical' => false,
+                'exists' => $asesmenDokumens->has('laporan_al_banding'),
+                'dokumen' => $asesmenDokumens->get('laporan_al_banding'),
+                'source' => 'asesmen',
+            ],
+            // ],
+        ];
     }
 }

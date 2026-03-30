@@ -244,62 +244,6 @@
                 </div>
             </div>
 
-            <!-- Actions -->
-            @if($pengajuan->status == \App\Models\PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN)
-            @if(empty($missingCritical))
-            <div class="card mb-4 border-start border-info border-2">
-                <div class="card-header bg-white border-bottom">
-                    <h5 class="mb-0"><i class="bi bi-archive"></i> Simpan Arsip</h5>
-                </div>
-                <div class="card-body">
-                    <form method="POST" action="{{ route('upps.penyimpanan-arsip-akreditasi.simpan', $pengajuan->id) }}">
-                        @csrf
-                        <div class="alert alert-light alert-permanent border">
-                            <i class="bi bi-info-circle"></i>
-                            Arsip akan disimpan dan dapat dilanjutkan ke penyelesaian proses.
-                        </div>
-                        <div class="mb-3">
-                            <textarea name="catatan_penyimpanan" class="form-control" rows="3" placeholder="Catatan penyimpanan (opsional)..."></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary btn-md w-100 {{ !$canSaveArsip ? 'disabled' : '' }}" {{ !$canSaveArsip ? 'disabled' : '' }}>
-                            <i class="bi bi-archive"></i> Simpan Arsip
-                        </button>
-
-                        @if(!$canSaveArsip)
-                        <div class="mt-2 text-center">
-                            <small class="text-danger">
-                                <i class="bi bi-exclamation-circle"></i>
-                                Upload Berita Acara untuk menyimpan arsip
-                            </small>
-                        </div>
-                        @endif
-                    </form>
-                </div>
-            </div>
-            @endif
-            @elseif($pengajuan->status == \App\Models\PengajuanAkreditasi::STATUS_ARSIP_DISIMPAN)
-            <div class="card mb-4 border-start border-success border-2">
-                <div class="card-header bg-white border-bottom">
-                    <h5 class="mb-0"><i class="bi bi-check-circle"></i> Selesaikan Proses</h5>
-                </div>
-                <div class="card-body">
-                    <form method="POST" action="{{ route('upps.penyimpanan-arsip-akreditasi.selesaikan', $pengajuan->id) }}">
-                        @csrf
-                        <div class="alert alert-light alert-permanent border border-warning">
-                            <i class="bi bi-info-circle"></i>
-                            <strong>Langkah Final!</strong> Setelah diselesaikan, proses akreditasi akan ditandai sebagai selesai.
-                        </div>
-                        <div class="mb-3">
-                            <textarea name="catatan_penyelesaian" class="form-control" rows="3" placeholder="Catatan penyelesaian (opsional)..."></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-success btn-md w-100">
-                            <i class="bi bi-check-circle-fill"></i> Selesaikan Proses Akreditasi
-                        </button>
-                    </form>
-                </div>
-            </div>
-            @endif
-
             <div class="card">
                 <div class="card-header bg-secondary text-white">
                     <h5 class="mb-0">

@@ -67,6 +67,7 @@ class HasilAkreditasi extends Model
         'memenuhi_syarat_unggul',
         'catatan_validasi',
         'catatan_penetapan',         // ← tambah
+        'resume_asesmen',
         'tanggal_finalisasi_penetapan', // ← tambah
         'finalized_penetapan_by',    // ← tambah
         'status',
@@ -88,6 +89,7 @@ class HasilAkreditasi extends Model
         'pelampauan_standar_hasil'   => 'array',
         'pelampauan_standar_final'   => 'array',
         'metadata'                   => 'array',
+        'resume_asesmen' => 'array',
         'tanggal_finalisasi_ak'      => 'datetime',
         'tanggal_finalisasi_al'      => 'datetime',
         'tanggal_finalisasi_ak_banding'      => 'datetime',
@@ -593,5 +595,129 @@ class HasilAkreditasi extends Model
             }
         }
         return $kriteriaOrdered;
+    }
+
+    // =========================================================
+    // RESUME ASESMEN  ▶ TAMBAH SELURUH BLOK INI
+    // =========================================================
+
+    /**
+     * Struktur default / skeleton resume_asesmen.
+     * Gunakan ini sebagai panduan validasi atau inisialisasi.
+     */
+    /**
+     * Struktur skeleton resume_asesmen (5 BAB naratif).
+     * Value adalah HTML string dari TinyMCE.
+     */
+    public static function resumeAsesmenSkeleton(): array
+    {
+        return [
+            'bab' => [
+                ['title' => 'I. Pendahuluan',                    'content' => null],
+                ['title' => 'II. Proses Asesmen Lapangan',       'content' => null],
+                ['title' => 'III. Hasil Asesmen Lapangan',       'content' => null],
+                ['title' => 'IV. Rekomendasi untuk Program Studi', 'content' => null],
+                ['title' => 'V. Rekomendasi untuk LAMDEPILAR',   'content' => null],
+            ],
+            'diisi_oleh' => null,
+            'diisi_pada' => null,
+        ];
+    }
+
+    /**
+     * Contoh teks default tiap BAB (dipakai sebagai placeholder/prefill).
+     */
+    public static function resumeBabDefaults(): array
+    {
+        return [
+            'pendahuluan' =>
+            '<p></p>',
+
+            'proses_asesmen' =>
+            '<p></p>',
+
+            'hasil_asesmen' =>
+            '<p></p>',
+
+            'rekomendasi_prodi' =>
+            '<p></p>',
+
+            'rekomendasi_lamdepilar' =>
+            '<p></p>',
+        ];
+    }
+
+    /**
+     * Batas maksimum karakter (plain-text, tanpa tag HTML) tiap BAB.
+     */
+    public static function resumeBabCharLimits(): array
+    {
+        return [
+            'pendahuluan'            => 1200,
+            'proses_asesmen'         => 1500,
+            'hasil_asesmen'          => 2000,
+            'rekomendasi_prodi'      => 1500,
+            'rekomendasi_lamdepilar' => 1000,
+        ];
+    }
+
+    /**
+     * Batas karakter plain-text per BAB (berlaku untuk semua BAB, termasuk yang ditambah user).
+     */
+    public static function resumeBabCharLimit(): int
+    {
+        return 2000;
+    }
+
+    /**
+     * Simpan/update resume_asesmen.
+     * Untuk bab: REPLACE penuh (bukan merge) karena urutan & jumlah bab bisa berubah.
+     *
+     * @param  array    $data     ['bab' => [...], ...]
+     * @param  int|null $userId
+     */
+    public function saveResumeAsesmen(array $data, ?int $userId = null): static
+    {
+        $existing = $this->resume_asesmen ?? [];
+
+        // Bab: replace penuh agar urutan & penghapusan tercermin
+        $merged = array_merge($existing, $data);
+
+        // Audit trail
+        $merged['diisi_oleh'] = ($userId !== null) ? $userId : (isset($existing['diisi_oleh']) ? $existing['diisi_oleh'] : null);
+        $merged['diisi_pada'] = now()->toIso8601String();
+
+        $this->update(['resume_asesmen' => $merged]);
+
+        return $this;
+    }
+
+    /**
+     * Ambil resume dengan fallback ke skeleton.
+     */
+    public function getResumeAsesmenOrDefault(): array
+    {
+        return $this->resume_asesmen ?? static::resumeAsesmenSkeleton();
+    }
+
+    /**
+     * Cek apakah resume sudah pernah diisi
+     * (minimal ada 1 BAB dengan content tidak kosong).
+     */
+    public function hasResumeAsesmen(): bool
+    {
+        $r = $this->resume_asesmen;
+        if (empty($r) || empty($r['bab'])) {
+            return false;
+        }
+
+        foreach ($r['bab'] as $bab) {
+            $content = isset($bab['content']) ? $bab['content'] : '';
+            if (!empty(trim(strip_tags((string) $content)))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

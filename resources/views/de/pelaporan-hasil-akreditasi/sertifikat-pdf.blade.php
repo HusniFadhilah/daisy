@@ -170,7 +170,7 @@
         .watermark-logo {
             position: absolute;
             inset: 0;
-            background-image: url('https://daisy.sp3stab.id/assets/images/logo-square.png');
+            background-image: url("{{ asset('assets/images/logo-square.png') }}");
             background-repeat: no-repeat;
             background-position: center;
             background-size: 45vh auto;
@@ -1103,7 +1103,7 @@
                     <div class="header">
                         <div class="header-col header-left">
                             <div class="logo-wrap">
-                                <img src="https://daisy.sp3stab.id/assets/images/logo.png" alt="Logo LAMDEPILAR">
+                                <img src="{{ asset('assets/images/logo.png') }}" alt="Logo LAMDEPILAR">
                             </div>
                         </div>
 
@@ -1243,7 +1243,7 @@
                     <div class="header">
                         <div class="header-col header-left">
                             <div class="logo-wrap">
-                                <img src="https://daisy.sp3stab.id/assets/images/logo.png" alt="Logo LAMDEPILAR">
+                                <img src="{{ asset('assets/images/logo.png') }}" alt="Logo LAMDEPILAR">
                             </div>
                         </div>
 
@@ -1403,7 +1403,7 @@
                     <div class="header">
                         <div class="header-col header-left">
                             <div class="logo-wrap">
-                                <img src="https://daisy.sp3stab.id/assets/images/logo.png" alt="Logo LAMDEPILAR">
+                                <img src="{{ asset('assets/images/logo.png') }}" alt="Logo LAMDEPILAR">
                             </div>
                         </div>
                         <div class="header-col header-mid">
@@ -1431,43 +1431,41 @@
                         </div>
                     </div>
 
-                    {{-- ===== BAGIAN 1: KONDISI PRODI ===== --}}
+                    @php
+                    // $resume di-pass dari controller (previewSertifikat / generateSertifikat)
+                    // Struktur: ['bab' => [['title'=>'...','content'=>'...'], ...], ...]
+                    $resumeBabList = isset($resume['bab']) && is_array($resume['bab'])
+                    ? $resume['bab']
+                    : [];
+                    @endphp
+
+                    {{-- ===== BAGIAN UTAMA HALAMAN 3 ===== --}}
                     <div class="lha-section">
 
+                        @forelse($resumeBabList as $bab)
+                        @php
+                        $babTitle = isset($bab['title']) ? strtoupper($bab['title']) : '';
+                        $babContent = isset($bab['content']) ? $bab['content'] : '';
+                        @endphp
+
                         <div class="lha-bab">
-                            <div class="lha-bab-title">I. PENDAHULUAN</div>
+                            <div class="lha-bab-title">{{ $babTitle }}</div>
                             <div class="lha-bab-content">
-                                Program Studi Sarjana LAMDEPILAR diselenggarakan berdasarkan landasan hukum yang sah dan terdokumentasi dengan baik. Legalitas pendirian program studi didukung oleh surat keputusan pendirian dari kementerian yang berwenang, serta tercatat secara konsisten dalam pangkalan data pendidikan tinggi (PDDIKTI). Apabila terdapat perubahan nomenklatur atau penyesuaian kelembagaan, program studi memiliki dokumen kesinambungan yang dapat ditelusuri dan dipertanggungjawabkan.
+                                @if(!empty(trim(strip_tags($babContent))))
+                                {!! $babContent !!}
+                                @else
+                                <span style="color:#aaa;font-style:italic;">— belum diisi —</span>
+                                @endif
                             </div>
                         </div>
 
+                        @empty
                         <div class="lha-bab">
-                            <div class="lha-bab-title">II. PROSES ASESMEN LAPANGAN</div>
-                            <div class="lha-bab-content">
-                                Program studi juga memiliki pedoman pengelolaan akademik dan non-akademik yang mendukung prinsip Good University Governance, termasuk akuntabilitas, transparansi, dan responsibilitas. Pelaporan akademik dan kelembagaan dilakukan secara tertib melalui sistem informasi yang terintegrasi dengan PDDIKTI. Secara umum, legalitas dan tata pamong telah berjalan efektif, meskipun penguatan dokumentasi evaluasi tata pamong secara periodik masih dapat ditingkatkan.
+                            <div class="lha-bab-content" style="color:#aaa;font-style:italic;text-align:center;padding:2vh 0;">
+                                Resume asesmen belum diisi.
                             </div>
                         </div>
-
-                        <div class="lha-bab">
-                            <div class="lha-bab-title">III. HASIL ASESMEN LAPANGAN</div>
-                            <div class="lha-bab-content">
-                                Program studi juga memiliki pedoman pengelolaan akademik dan non-akademik yang mendukung prinsip Good University Governance, termasuk akuntabilitas, transparansi, dan responsibilitas. Pelaporan akademik dan kelembagaan dilakukan secara tertib melalui sistem informasi yang terintegrasi dengan PDDIKTI. Secara umum, legalitas dan tata pamong telah berjalan efektif, meskipun penguatan dokumentasi evaluasi tata pamong secara periodik masih dapat ditingkatkan.
-                            </div>
-                        </div>
-
-                        <div class="lha-bab">
-                            <div class="lha-bab-title">IV. REKOMENDASI UNTUK PROGRAM STUDI</div>
-                            <div class="lha-bab-content">
-                                Program studi juga memiliki pedoman pengelolaan akademik dan non-akademik yang mendukung prinsip Good University Governance, termasuk akuntabilitas, transparansi, dan responsibilitas. Pelaporan akademik dan kelembagaan dilakukan secara tertib melalui sistem informasi yang terintegrasi dengan PDDIKTI. Secara umum, legalitas dan tata pamong telah berjalan efektif, meskipun penguatan dokumentasi evaluasi tata pamong secara periodik masih dapat ditingkatkan.
-                            </div>
-                        </div>
-
-                        <div class="lha-bab">
-                            <div class="lha-bab-title">V. REKOMENDASI UNTUK LAMDEPILAR</div>
-                            <div class="lha-bab-content">
-                                Program studi juga memiliki pedoman pengelolaan akademik dan non-akademik yang mendukung prinsip Good University Governance, termasuk akuntabilitas, transparansi, dan responsibilitas. Pelaporan akademik dan kelembagaan dilakukan secara tertib melalui sistem informasi yang terintegrasi dengan PDDIKTI. Secara umum, legalitas dan tata pamong telah berjalan efektif, meskipun penguatan dokumentasi evaluasi tata pamong secara periodik masih dapat ditingkatkan.
-                            </div>
-                        </div>
+                        @endforelse
 
                     </div>{{-- /lha-section --}}
                     {{-- /temuan-section --}}
