@@ -26,7 +26,7 @@ class IndikatorPenilaianElemenController extends Controller
         // Group by elemen standar
         $groupedIndikators = $indikators->groupBy('id_elemen');
 
-        return view('indikator-penilaian.index', compact('indikators', 'elemenStandars', 'jenjangPenilaians', 'groupedIndikators'));
+        return view('master-data.indikator-penilaian.index', compact('indikators', 'elemenStandars', 'jenjangPenilaians', 'groupedIndikators'));
     }
 
     /**
@@ -37,7 +37,7 @@ class IndikatorPenilaianElemenController extends Controller
         $elemenStandars = ElemenStandar::with('kriteria')->orderBy('kode_elemen')->get();
         $jenjangPenilaians = JenjangPenilaian::orderBy('skor')->get();
 
-        return view('indikator-penilaian.create', compact('elemenStandars', 'jenjangPenilaians'));
+        return view('master-data.indikator-penilaian.create', compact('elemenStandars', 'jenjangPenilaians'));
     }
 
     /**
@@ -80,7 +80,7 @@ class IndikatorPenilaianElemenController extends Controller
             ]);
         }
 
-        return view('indikator-penilaian.show', compact('indikator'));
+        return view('master-data.indikator-penilaian.show', compact('indikator'));
     }
 
     /**
@@ -92,7 +92,7 @@ class IndikatorPenilaianElemenController extends Controller
         $elemenStandars = ElemenStandar::with('kriteria')->orderBy('kode_elemen')->get();
         $jenjangPenilaians = JenjangPenilaian::orderBy('skor')->get();
 
-        return view('indikator-penilaian.edit', compact('indikatorPenilaian', 'elemenStandars', 'jenjangPenilaians'));
+        return view('master-data.indikator-penilaian.edit', compact('indikatorPenilaian', 'elemenStandars', 'jenjangPenilaians'));
     }
 
     /**

@@ -8,10 +8,10 @@
         <h2>Detail Pengguna</h2>
         <div>
             <a href="{{ route('users.edit', $user->id) }}" class="btn btn-warning">
-                <i class="fas fa-edit"></i> Edit
+                <i class="bi bi-pencil"></i> Edit
             </a>
             <a href="{{ route('users.index') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Kembali
+                <i class="bi bi-arrow-left"></i> Kembali
             </a>
         </div>
     </div>
@@ -73,7 +73,7 @@
                     @csrf
                     @method('DELETE')
                     <button type="button" class="btn btn-danger tombol-hapus" data-id-form="form-hapus-user" data-text="pengguna">
-                        <i class="fas fa-trash"></i> Hapus Pengguna
+                        <i class="bi bi-trash"></i> Hapus Pengguna
                     </button>
                 </form>
             </div>

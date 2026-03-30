@@ -55,7 +55,7 @@ class UniversityController extends Controller
                 'data' => $universities
             ]);
         }
-        return view('universitas.index', compact('universities'));
+        return view('master-data.universitas.index', compact('universities'));
     }
 
     /**
@@ -63,7 +63,7 @@ class UniversityController extends Controller
      */
     public function create()
     {
-        return view('universitas.create');
+        return view('master-data.universitas.create');
     }
 
     /**
@@ -115,7 +115,7 @@ class UniversityController extends Controller
             ]);
         }
 
-        return view('universitas.show', compact('university'));
+        return view('master-data.universitas.show', compact('university'));
     }
 
     /**
@@ -123,7 +123,7 @@ class UniversityController extends Controller
      */
     public function edit(University $university)
     {
-        return view('universitas.edit', compact('university'));
+        return view('master-data.universitas.edit', compact('university'));
     }
 
     /**

@@ -87,10 +87,10 @@
 
             <div class="mt-3">
                 <a href="{{ route('study-programs.edit', $studyProgram->id) }}" class="btn btn-warning">
-                    <i class="fas fa-edit"></i> Edit Program Studi
+                    <i class="bi bi-pencil"></i> Edit Program Studi
                 </a>
                 <a href="{{ route('master-data.index', ['tab' => 'study-programs']) }}" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Kembali
+                    <i class="bi bi-arrow-left"></i> Kembali
                 </a>
             </div>
         </div>

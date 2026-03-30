@@ -333,7 +333,7 @@
             <div class="modal-body text-center p-5">
                 <div class="mb-4">
                     <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
-                        <i class="fas fa-key fa-3x text-warning"></i>
+                        <i class="bi bi-key-fill text-warning" style="font-size: 3rem;"></i>
                     </div>
                 </div>
                 <h4 class="fw-bold mb-3">Ganti Password?</h4>
@@ -343,17 +343,17 @@
                 </p>
                 <div class="d-grid gap-2">
                     <a href="{{ route('change.password.first') }}" class="btn btn-primary btn-sm">
-                        <i class="fas fa-check-circle me-2"></i>Ya, Ganti Sekarang
+                        <i class="bi bi-check-circle me-2"></i>Ya, Ganti Sekarang
                     </a>
                     <form action="{{ route('change.password.skip') }}" method="POST" class="d-inline">
                         @csrf
                         <button type="submit" class="btn btn-outline-secondary btn-sm w-100">
-                            <i class="fas fa-times-circle me-2"></i>Tidak, Nanti Saja
+                            <i class="bi bi-x-circle me-2"></i>Tidak, Nanti Saja
                         </button>
                     </form>
                 </div>
                 <p class="text-muted small mt-3 mb-0">
-                    <i class="fas fa-info-circle me-1"></i>Anda dapat mengganti password kapan saja dari menu profil
+                    <i class="bi bi-info-circle me-1"></i>Anda dapat mengganti password kapan saja dari menu profil
                 </p>
             </div>
         </div>

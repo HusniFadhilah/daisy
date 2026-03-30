@@ -10,18 +10,18 @@
             <p class="text-muted mb-0">Manajemen data pengguna sistem</p>
         </div>
         <div class="d-flex gap-2">
-            <a href="{{ route('users.create') }}" class="btn btn-primary btn-sm shadow-sm">
-                <i class="fas fa-user-plus me-2"></i> Tambah Pengguna
+            <a href="{{ route('users.create') }}" class="btn btn-primary shadow-sm">
+                <i class="bi bi-person-plus"></i> Tambah Pengguna
             </a>
             <div class="btn-group shadow-sm" role="group">
                 <a href="{{ route('users.export') }}" class="btn btn-success" title="Export ke Excel">
-                    <i class="fas fa-file-excel me-1"></i> Export
+                    <i class="bi bi-file-earmark-excel"></i> Export
                 </a>
                 <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#importModal" title="Import dari Excel">
-                    <i class="fas fa-file-upload me-1"></i> Import
+                    <i class="bi bi-upload"></i> Import
                 </button>
                 <a href="{{ route('users.template') }}" class="btn btn-outline-secondary" title="Download Templat Excel">
-                    <i class="fas fa-download me-1"></i> Templat
+                    <i class="bi bi-download"></i> Templat
                 </a>
             </div>
         </div>
@@ -64,7 +64,7 @@
                             <div class="form-text">
                                 Format: .xlsx, .xls, atau .csv (maksimal 2MB)<br>
                                 <a href="{{ route('users.template') }}" class="text-primary">
-                                    <i class="fas fa-download"></i> Download templat untuk melihat format yang benar
+                                    <i class="bi bi-download"></i> Download templat untuk melihat format yang benar
                                 </a>
                             </div>
                         </div>
@@ -82,7 +82,7 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
                         <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-upload"></i> Upload & Import
+                            <i class="bi bi-upload"></i> Upload & Import
                         </button>
                     </div>
                 </form>

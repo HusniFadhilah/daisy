@@ -31,7 +31,7 @@
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h4>Daftar Universitas</h4>
                 <a href="{{ route('universities.create') }}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Tambah Universitas
+                    <i class="bi bi-plus"></i> Tambah Universitas
                 </a>
             </div>
 
@@ -99,7 +99,7 @@
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h4>Daftar Program Studi</h4>
                 <a href="{{ route('study-programs.create') }}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Tambah Program Studi
+                    <i class="bi bi-plus"></i> Tambah Program Studi
                 </a>
             </div>
 

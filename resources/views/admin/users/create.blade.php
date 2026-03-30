@@ -7,7 +7,7 @@
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <h2>Tambah Pengguna</h2>
         <a href="{{ route('users.index') }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Kembali
+            <i class="bi bi-arrow-left"></i> Kembali
         </a>
     </div>
 

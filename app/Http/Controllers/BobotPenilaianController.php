@@ -52,13 +52,13 @@ class BobotPenilaianController extends Controller
                 ->addColumn('action', function ($row) {
                     $editBtn = '<a href="' . route('bobot-penilaian.edit', $row->id) . '" class="btn btn-sm btn-warning">Edit</a>';
                     $deleteBtn = '<button onclick="deleteRecord(' . $row->id . ')" class="btn btn-sm btn-danger">Delete</button>';
-                    
+
                     if ($row->is_active) {
                         $toggleBtn = '<button onclick="toggleActive(' . $row->id . ')" class="btn btn-sm btn-secondary">Nonaktifkan</button>';
                     } else {
                         $toggleBtn = '<button onclick="toggleActive(' . $row->id . ')" class="btn btn-sm btn-success">Aktifkan</button>';
                     }
-                    
+
                     return $editBtn . ' ' . $toggleBtn . ' ' . $deleteBtn;
                 })
                 ->rawColumns(['status', 'action'])
@@ -75,7 +75,7 @@ class BobotPenilaianController extends Controller
         $categories = StudyProgramCategory::all();
         $asesmens = Asesmen::all();
 
-        return view('bobot-penilaian.index', compact('bobots', 'elemens', 'categories', 'asesmens'));
+        return view('master-data.bobot-penilaian.index', compact('bobots', 'elemens', 'categories', 'asesmens'));
     }
 
     /**
@@ -85,8 +85,8 @@ class BobotPenilaianController extends Controller
     {
         $elemens = ElemenStandar::with('kriteria')->orderBy('kode_elemen')->get();
         $categories = StudyProgramCategory::all();
-        
-        return view('bobot-penilaian.create', compact('elemens', 'categories'));
+
+        return view('master-data.bobot-penilaian.create', compact('elemens', 'categories'));
     }
 
     /**
@@ -124,16 +124,16 @@ class BobotPenilaianController extends Controller
     public function edit($id)
     {
         $bobot = $this->bobotService->find($id);
-        
+
         if (!$bobot) {
             return redirect()->route('bobot-penilaian.index')
                 ->with('error', 'Bobot penilaian tidak ditemukan');
         }
-        
+
         $elemens = ElemenStandar::with('kriteria')->orderBy('kode_elemen')->get();
         $categories = StudyProgramCategory::all();
-        
-        return view('bobot-penilaian.edit', compact('bobot', 'elemens', 'categories'));
+
+        return view('master-data.bobot-penilaian.edit', compact('bobot', 'elemens', 'categories'));
     }
 
     /**
@@ -207,7 +207,7 @@ class BobotPenilaianController extends Controller
                 return response()->json($hasil);
             }
 
-            return view('bobot-penilaian.hasil', compact('hasil', 'asesmenId', 'categoryId'));
+            return view('master-data.bobot-penilaian.hasil', compact('hasil', 'asesmenId', 'categoryId'));
         } catch (\Exception $e) {
             Log::error($e);
             if ($request->wantsJson() || $request->is('api/*')) {
@@ -229,7 +229,7 @@ class BobotPenilaianController extends Controller
     {
         try {
             $bobot = $this->bobotService->find($id);
-            
+
             if (!$bobot) {
                 return response()->json([
                     'success' => false,

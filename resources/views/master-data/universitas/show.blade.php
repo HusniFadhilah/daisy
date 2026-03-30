@@ -23,7 +23,7 @@
                     <img src="{{ asset('storage/' . $university->logo_path) }}" alt="{{ $university->name }}" class="img-fluid mb-3" style="max-height: 200px;">
                     @else
                     <div class="bg-light rounded p-4 mb-3">
-                        <i class="fas fa-university fa-5x text-muted"></i>
+                        <i class="bi bi-bank text-muted" style="font-size: 5rem;"></i>
                     </div>
                     @endif
                     <h4>{{ $university->name }}</h4>
@@ -65,10 +65,10 @@
 
             <div class="mt-3">
                 <a href="{{ route('universities.edit', $university->id) }}" class="btn btn-warning w-100 mb-2">
-                    <i class="fas fa-edit"></i> Edit Universitas
+                    <i class="bi bi-pencil"></i> Edit Universitas
                 </a>
                 <a href="{{ route('master-data.index', ['tab' => 'universities']) }}" class="btn btn-secondary w-100">
-                    <i class="fas fa-arrow-left"></i> Kembali
+                    <i class="bi bi-arrow-left"></i> Kembali
                 </a>
             </div>
         </div>
@@ -139,7 +139,7 @@
                     </div>
                     @else
                     <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i> Belum ada program studi terdaftar
+                        <i class="bi bi-info-circle"></i> Belum ada program studi terdaftar
                     </div>
                     @endif
                 </div>

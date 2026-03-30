@@ -7,7 +7,7 @@
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <h2>Kelola Universitas</h2>
         <a href="{{ route('universities.create') }}" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Tambah Universitas
+            <i class="bi bi-plus"></i> Tambah Universitas
         </a>
     </div>
 

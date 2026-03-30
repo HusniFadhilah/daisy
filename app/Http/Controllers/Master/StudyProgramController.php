@@ -61,7 +61,7 @@ class StudyProgramController extends Controller
                 ->make(true);
         }
 
-        return view('prodi.index');
+        return view('master-data.prodi.index');
     }
 
     /**
@@ -71,7 +71,7 @@ class StudyProgramController extends Controller
     {
         $universities = University::all();
         $degreeLevels = DegreeLevel::all();
-        return view('prodi.create', compact('universities', 'degreeLevels'));
+        return view('master-data.prodi.create', compact('universities', 'degreeLevels'));
     }
 
     /**
@@ -127,7 +127,7 @@ class StudyProgramController extends Controller
             ]);
         }
 
-        return view('prodi.show', compact('studyProgram'));
+        return view('master-data.prodi.show', compact('studyProgram'));
     }
 
     /**
@@ -137,7 +137,7 @@ class StudyProgramController extends Controller
     {
         $universities = University::all();
         $degreeLevels = DegreeLevel::all();
-        return view('prodi.edit', compact('studyProgram', 'universities', 'degreeLevels'));
+        return view('master-data.prodi.edit', compact('studyProgram', 'universities', 'degreeLevels'));
     }
 
     /**

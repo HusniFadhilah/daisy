@@ -10,7 +10,7 @@
             <p class="text-muted">Kelola indikator penilaian untuk setiap elemen standar</p>
         </div>
         <a href="{{ route('indikator-penilaian.create') }}" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Tambah Indikator
+            <i class="bi bi-plus"></i> Tambah Indikator
         </a>
     </div>
 
@@ -76,7 +76,7 @@
                         <i class="bi bi-inbox" style="font-size: 2rem;"></i>
                         <p class="mt-2">Belum ada indikator untuk elemen ini</p>
                         <a href="{{ route('indikator-penilaian.create') }}?elemen={{ $elemen->id }}" class="btn btn-sm btn-primary">
-                            <i class="fas fa-plus"></i> Tambah Indikator
+                            <i class="bi bi-plus"></i> Tambah Indikator
                         </a>
                     </div>
                     @endif

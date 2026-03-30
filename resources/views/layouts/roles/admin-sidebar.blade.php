@@ -237,13 +237,13 @@ request()->routeIs('de.permohonan-banding*')
 @if(in_array($authUser->role_selected,['super_admin']))
 <!-- Pedoman AK -->
 <a href="{{ route('pedoman') }}" class="nav-link {{ request()->routeIs('pedoman') ? 'active' : '' }}">
-    <span class="menu-icon">❓</span>
+    <span class="menu-icon"><i class="bi bi-question-circle"></i></span>
     <span>Pedoman AK</span>
 </a>
 
 <!-- Dokumen Adm. AL -->
 <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'dokumen-submenu')">
-    <span class="menu-icon">📁</span>
+    <span class="menu-icon"><i class="bi bi-folder"></i></span>
     <span>Dokumen Adm. AL</span>
 </a>
 <ul class="submenu nav flex-column" id="dokumen-submenu">
@@ -272,7 +272,7 @@ request()->routeIs('de.permohonan-banding*')
 
 @if(in_array($authUser->role_selected,['super_admin']))
 <a href="#" class="nav-link {{ request()->routeIs('users*') ? 'active' : '' }}" onclick="toggleSubmenu(event, 'pengajuan-submenu')">
-    <span class="menu-icon">📋</span>
+    <span class="menu-icon"><i class="bi bi-clipboard-data"></i></span>
     <span>Master Data</span>
     {{-- <span class="badge bg-success menu-badge">{{ $penugasanAktif ?? 1 }}</span> --}}
 </a>
@@ -280,19 +280,19 @@ request()->routeIs('de.permohonan-banding*')
     <li>
         <!-- Manajemen Pengguna -->
         <a href="{{ route('users.index') }}" class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
-            <span class="menu-icon">👥</span>
+            <span class="menu-icon"><i class="bi bi-people"></i></span>
             <span>Kelola Pengguna</span>
         </a>
     </li>
     <li>
         <!-- Manajemen Indikator -->
         <a href="#" class="nav-link {{ request()->routeIs('kriteria.*') || request()->routeIs('elemen-standar.*') || request()->routeIs('indikator.*') ? 'active' : '' }}" onclick="toggleSubmenu(event, 'indikator-submenu')">
-            <span class="menu-icon">📋</span>
+            <span class="menu-icon"><i class="bi bi-list-check"></i></span>
             <span>Manajemen Indikator</span>
         </a>
     </li>
     <li>
-        <ul class="submenu nav flex-column" id="indikator-submenu">
+        <ul class="submenu sub-submenu nav flex-column" id="indikator-submenu">
             <li>
                 <a href="{{ route('kriteria.index') }}" class="nav-link {{ request()->routeIs('kriteria.*') ? 'active' : '' }}">
                     Kriteria
@@ -314,18 +314,18 @@ request()->routeIs('de.permohonan-banding*')
     <li>
         <!-- Univ & Prodi -->
         <a href="{{ route('master-data.index') }}" class="nav-link {{ request()->routeIs('master-data.*') || request()->routeIs('universities.*') || request()->routeIs('study-programs.*') ? 'active' : '' }}">
-            <span class="menu-icon">🏫</span>
+            <span class="menu-icon"><i class="bi bi-building"></i></span>
             <span>Univ & Prodi</span>
         </a>
 
         <!-- Indikator Penilaian -->
         <a href="{{ route('indikator-penilaian.index') }}" class="nav-link {{ request()->routeIs('indikator-penilaian.*') ? 'active' : '' }}">
-            <span class="menu-icon">📊</span>
+            <span class="menu-icon"><i class="bi bi-bar-chart"></i></span>
             <span>Indikator Penilaian</span>
         </a>
         <!-- Bobot Penilaian -->
         <a href="{{ route('bobot-penilaian.index') }}" class="nav-link {{ request()->routeIs('bobot-penilaian.*') ? 'active' : '' }}">
-            <span class="menu-icon">⚖️</span>
+            <span class="menu-icon"><i class="bi bi-vr"></i></span>
             <span>Bobot Penilaian</span>
         </a>
     </li>

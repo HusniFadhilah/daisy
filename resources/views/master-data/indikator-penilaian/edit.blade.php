@@ -69,10 +69,10 @@
 
                 <div class="d-flex gap-2">
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Update
+                        <i class="bi bi-save"></i> Update
                     </button>
                     <a href="{{ route('indikator-penilaian.index') }}" class="btn btn-secondary">
-                        <i class="fas fa-times"></i> Batal
+                        <i class="bi bi-x"></i> Batal
                     </a>
                 </div>
             </form>
