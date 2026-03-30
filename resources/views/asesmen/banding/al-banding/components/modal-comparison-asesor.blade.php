@@ -290,7 +290,7 @@
         document.getElementById('comparisonContainer').style.display = 'none';
 
         try {
-            const response = await fetch(`/al/berkas/${idAsesmen}/comparison-data`, {
+            const response = await fetch(`/al-banding/berkas/${idAsesmen}/comparison-data`, {
                 headers: {
                     'Accept': 'application/json'
                     , 'X-CSRF-TOKEN': '{{ csrf_token() }}'

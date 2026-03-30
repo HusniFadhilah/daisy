@@ -17,6 +17,10 @@ class PelaporanALController extends Controller
      */
     public function index(Request $request)
     {
+        $statusLogs = [
+            PengajuanAkreditasi::STATUS_AL_SELESAI,
+            PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
+        ];
         $user = Auth::user();
         $studyProgramIds = $user->studyPrograms()->pluck('study_programs.id');
 
@@ -29,18 +33,12 @@ class PelaporanALController extends Controller
                     ->where('is_active', true)
                     ->latest();
             },
-            'statusLog' => fn($q) => $q->whereIn('status_to', [
-                PengajuanAkreditasi::STATUS_AL_SELESAI,
-                PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
-            ])->orderBy('changed_at', 'desc'),
-        ])->whereIn('id_program_studi', $studyProgramIds)->whereExists(function ($q) {
+            'statusLog' => fn($q) => $q->whereIn('status_to', $statusLogs)->orderBy('changed_at', 'desc'),
+        ])->whereIn('id_program_studi', $studyProgramIds)->whereExists(function ($q) use ($statusLogs) {
             $q->select(DB::raw(1))
                 ->from('pengajuan_status_log as l')
                 ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
-                ->whereIn('l.status_to', [
-                    PengajuanAkreditasi::STATUS_AL_SELESAI,
-                    PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
-                ]);
+                ->whereIn('l.status_to', $statusLogs);
         });
 
         // Apply filters

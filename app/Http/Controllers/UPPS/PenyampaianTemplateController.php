@@ -21,6 +21,10 @@ class PenyampaianTemplateController extends Controller
      */
     public function index(Request $request)
     {
+        $statusLogs = [
+            PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM,
+            PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM,
+        ];
         $user = Auth::user();
         $studyProgramIds = $user->studyPrograms()->pluck('study_programs.id');
 
@@ -32,18 +36,12 @@ class PenyampaianTemplateController extends Controller
                 'borang_template',
                 'template_formulir_pembayaran'
             ])->where('is_latest', true),
-            'statusLog' => fn($q) => $q->whereIn('status_to', [
-                PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM,
-                PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM,
-            ])->orderBy('changed_at', 'desc'),
-        ])->whereIn('id_program_studi', $studyProgramIds)->whereExists(function ($q) {
+            'statusLog' => fn($q) => $q->whereIn('status_to', $statusLogs)->orderBy('changed_at', 'desc'),
+        ])->whereIn('id_program_studi', $studyProgramIds)->whereExists(function ($q) use ($statusLogs) {
             $q->select(DB::raw(1))
                 ->from('pengajuan_status_log as l')
                 ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
-                ->whereIn('l.status_to', [
-                    PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM,
-                    PengajuanAkreditasi::STATUS_TEMPLATE_LED_DIKIRIM,
-                ]);
+                ->whereIn('l.status_to', $statusLogs);
         });
 
         // Apply filters

@@ -247,10 +247,10 @@
                         </small>
                     </div>
                     <div class="btn-group-vertical" role="group">
-                        <a href="{{ route('al-banding.berkas.documents.preview', ['id' => $pengajuan->asesmen->id, 'docId' => $beritaAcaraBanding->id]) }}" class="btn btn-success mb-2" target="_blank">
+                        <a href="{{ route('al_banding.berkas.documents.preview', ['id' => $pengajuan->asesmen->id, 'docId' => $beritaAcaraBanding->id]) }}" class="btn btn-success mb-2" target="_blank">
                             <i class="bi bi-eye"></i> Lihat File
                         </a>
-                        <a href="{{ route('al-banding.berkas.documents.download', ['id' => $pengajuan->asesmen->id, 'docId' => $beritaAcaraBanding->id]) }}" class="btn btn-outline-primary">
+                        <a href="{{ route('al_banding.berkas.documents.download', ['id' => $pengajuan->asesmen->id, 'docId' => $beritaAcaraBanding->id]) }}" class="btn btn-outline-primary">
                             <i class="bi bi-download"></i> Download
                         </a>
                     </div>
@@ -272,7 +272,7 @@
 <div class="card mb-4">
     <div class="card-header bg-info text-white">
         <h5 class="mb-0">
-            <i class="bi bi-file-earmark-check"></i> Laporan Hasil Asesmen Lapangan (LHA) Banding
+            <i class="bi bi-file-earmark-check"></i> Laporan Hasil Surveillance Banding
         </h5>
     </div>
     <div class="card-body">
@@ -315,7 +315,7 @@
                             {{ $lha->status_prodi_label ?? 'Menunggu Peninjauan' }}
                         </span>
                     </div>
-                    <a href="{{ route('al-banding.berkas.documents.preview', ['id' => $pengajuan->asesmen->id, 'docId' => $lha->id]) }}" class="btn btn-success" target="_blank">
+                    <a href="{{ route('al_banding.berkas.documents.preview', ['id' => $pengajuan->asesmen->id, 'docId' => $lha->id]) }}" class="btn btn-success" target="_blank">
                         <i class="bi bi-eye"></i> Lihat File
                     </a>
                 </div>
@@ -338,8 +338,8 @@
         @else
         <div class="text-center py-5">
             <i class="bi bi-file-earmark-x" style="font-size: 64px; color: #dee2e6;"></i>
-            <p class="text-muted mt-3 mb-0">Belum ada laporan hasil asesmen yang diupload</p>
-            <small class="text-muted">LHA akan diupload oleh asesor banding setelah visitasi selesai</small>
+            <p class="text-muted mt-3 mb-0">Belum ada laporan hasil surveillance yang diupload</p>
+            <small class="text-muted">Laporan surveillance akan diupload oleh asesor banding setelah proses AL banding selesai</small>
         </div>
         @endif
     </div>

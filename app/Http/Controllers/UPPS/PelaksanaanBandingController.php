@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\UPPS;
 
 use App\Http\Controllers\Controller;
+use App\Models\AsesmenDocument;
 use App\Models\PengajuanAkreditasi;
 use App\Models\PengajuanDokumen;
 use App\Models\PengajuanPembayaran;
@@ -19,9 +20,9 @@ class PelaksanaanBandingController extends Controller
     // Dimulai dari banding_diterima karena invoice dibuat DE saat ini
     // ============================================================
     private const STATUS_PELAKSANAAN = [
-        // PengajuanAkreditasi::STATUS_MENUNGGU_PEMBAYARAN_BANDING,
-        // PengajuanAkreditasi::STATUS_PEMBAYARAN_BANDING_DITERIMA,
-        // PengajuanAkreditasi::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN_BANDING,
+        PengajuanAkreditasi::STATUS_MENUNGGU_PEMBAYARAN_BANDING,
+        PengajuanAkreditasi::STATUS_PEMBAYARAN_BANDING_DITERIMA,
+        PengajuanAkreditasi::STATUS_MENUNGGU_VERIFIKASI_PEMBAYARAN_BANDING,
         PengajuanAkreditasi::STATUS_PEMBAYARAN_BANDING_DIVERIFIKASI,
         PengajuanAkreditasi::STATUS_ASESOR_AK_BANDING_ASSIGNED,
         PengajuanAkreditasi::STATUS_AK_BANDING_IN_PROGRESS,
@@ -321,7 +322,13 @@ class PelaksanaanBandingController extends Controller
     private function calculateStatistics($studyProgramIds): array
     {
         $base = PengajuanAkreditasi::whereIn('id_program_studi', $studyProgramIds);
-
+        $pendingApproval = AsesmenDocument::whereHas('asesmen.pengajuan', function ($q) use ($studyProgramIds) {
+            $q->whereIn('id_program_studi', $studyProgramIds);
+        })
+            ->where('type', 'lha_asesor_banding')
+            ->where('is_active', true)
+            ->whereIn('status_persetujuan_prodi', ['pending', 'revision_required'])
+            ->count();
         return [
             'total' => (clone $base)
                 ->whereIn('status', self::STATUS_PELAKSANAAN)
@@ -342,6 +349,123 @@ class PelaksanaanBandingController extends Controller
             'selesai' => (clone $base)
                 ->where('status', PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN)
                 ->count(),
+
+            'pending_approval' => $pendingApproval
+
         ];
+    }
+
+    /**
+     * Process approval for LHA (Laporan Hasil Asesmen)
+     */
+    public function processLHABandingApproval(Request $request, $id, $docId)
+    {
+        $request->validate([
+            'action' => 'required|in:approve,revision',
+            'catatan_prodi' => 'nullable|string|max:2000',
+        ], [
+            'action.required' => 'Silakan pilih tindakan yang akan diambil',
+            'action.in' => 'Tindakan tidak valid',
+        ]);
+
+        $pengajuan = PengajuanAkreditasi::with('asesmen')->findOrFail($id);
+
+        // Check access
+        $user = Auth::user();
+        $authId = $user->id;
+        $studyProgramIds = $user->studyPrograms()->pluck('study_programs.id');
+
+        if (!$studyProgramIds->contains($pengajuan->id_program_studi)) {
+            abort(403, 'Anda tidak memiliki akses ke permohonan ini.');
+        }
+
+        // Get LHA document
+        $lha = AsesmenDocument::where('id', $docId)
+            ->where('id_asesmen', $pengajuan->asesmen->id)
+            ->where('type', 'lha_asesor_banding')
+            ->firstOrFail();
+
+        // Check if already in final status
+        if ($lha->isFinalStatus()) {
+            return back()->with('error', 'Laporan hasil surveillance banding ini sudah dalam status final.');
+        }
+
+        DB::beginTransaction();
+        try {
+            // Map action to status
+            $statusMap = [
+                'approve' => 'approved',
+                'revision' => 'revision_required',
+            ];
+
+            $newStatus = $statusMap[$request->action];
+
+            // Update LHA document
+            $lha->update([
+                'status_persetujuan_prodi' => $newStatus,
+                'approved_by_prodi' => $authId,
+                'approved_at_prodi' => now(),
+                'catatan_prodi' => $request->catatan_prodi,
+            ]);
+
+            // Create log message
+            $logMessages = [
+                'approved' => 'Laporan Hasil Surveillance Banding "' . $lha->title . '" disetujui oleh Program Studi',
+                'revision_required' => 'Laporan Hasil Surveillance Banding "' . $lha->title . '" memerlukan revisi',
+            ];
+
+            $this->approveLHA($pengajuan, $authId, $logMessages, $newStatus);
+
+            DB::commit();
+
+            // Success messages
+            $messages = [
+                'approved' => 'Laporan hasil surveillance banding berhasil disetujui.',
+                'revision_required' => 'Permintaan revisi laporan berhasil dikirim ke asesor banding.',
+            ];
+
+            return redirect()
+                ->route('upps.pelaksanaan-banding.show', $pengajuan->id)
+                ->with('success', $messages[$newStatus]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Error processing LHA Banding approval: " . $e->getMessage(), [
+                'lha_id' => $docId,
+                'user_id' => auth()->id(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return back()
+                ->with('error', 'Gagal memproses persetujuan Laporan Hasil Surveillance Banding');
+        }
+    }
+
+    private function approveLHA($pengajuan, $authId, $logMessages, $newStatus)
+    {
+        $lhaAsesor = $pengajuan->asesmen->lhaAsesorBanding;
+        $lhaDocument = $pengajuan->asesmen->lhaDocumentsBanding->first();
+        if ($lhaAsesor) {
+            $lhaAsesor->update([
+                'status' => $newStatus == 'approved' ? 'finalized' : ($newStatus == 'revision_required' ? 'revision_required' : 'draft')
+            ]);
+        }
+        if ($lhaDocument) {
+            $lhaDocument->update([
+                'status_persetujuan_prodi' => $newStatus,
+                'approved_by_prodi' => $newStatus == 'approved' ? $authId : null,
+                'approved_at_prodi' => $newStatus == 'approved' ? now() : null,
+            ]);
+        }
+
+        if ($pengajuan && $newStatus == 'approved')
+            $pengajuan->checkUpdateStatusAKAL('al_banding', 'status_asesor_selesai');
+
+        $pengajuan->statusLog()->create([
+            'status_from' => PengajuanAkreditasi::STATUS_AL_BANDING_IN_PROGRESS,
+            'status_to' => $pengajuan->status,
+            'changed_by' => $authId,
+            'changed_at' => now(),
+            'keterangan' => $logMessages[$newStatus],
+        ]);   //
     }
 }

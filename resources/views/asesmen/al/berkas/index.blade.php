@@ -150,7 +150,7 @@
                         && $hasBeritaAcara
                         && $lhaStatus === 'approved';
                         @endphp
-                        <tr class="{{ $blockMe ? 'table-secondary' : '' }}">
+                        <tr>
                             <td class="text-center">{{ $asesmens->firstItem() + $index }}</td>
 
                             {{-- Program Studi --}}
@@ -257,9 +257,9 @@
                                         <i class="bi {{ $hasRingkasan ? 'bi-check-circle-fill text-success' : 'bi-dash-circle text-secondary' }}"></i>
                                         <span class="{{ $hasRingkasan ? '' : 'text-muted fst-italic' }}">
                                             Ringkasan Hasil Akreditasi
-                                            @if(!$hasRingkasan)
+                                            {{-- @if(!$hasRingkasan)
                                             <span class="badge bg-light text-secondary border ms-1" style="font-size:0.65rem;">opsional</span>
-                                            @endif
+                                            @endif --}}
                                         </span>
                                     </div>
 

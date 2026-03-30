@@ -57,7 +57,7 @@
                             <div class="d-flex justify-content-between align-items-start mb-3">
                                 <div class="flex-grow-1">
                                     <h5 class="card-title mb-1 text-primary">{{ $asesmen->getName(false) }}</h5>
-                                    <span class="badge bg-primary">{{ $penawaran->role->alias.' '.ucfirst($penawaran->jenis_asesmen) }}</span>
+                                    <span class="badge bg-primary">{{ $penawaran->jenis_asesmen_role_label }}</span>
                                 </div>
 
                                 <span class="badge status-badge
@@ -128,7 +128,7 @@
                             <div class="alert alert-success alert-permanent mb-0">
                                 <i class="bi bi-check-circle me-1"></i>
                                 Anda sudah menerima penawaran ini.
-                                <a href="{{ route('al.berkas.show', $asesmen->id) }}" class="alert-link">
+                                <a href="{{ route('al_banding.berkas.show', $asesmen->id) }}" class="alert-link">
                                     Buka Penilaian
                                 </a>
                             </div>
@@ -140,8 +140,8 @@
                             @endif
                         </div>
                         <div class="card-footer">
-                            <a href="{{ route('al.berkas') }}" class="btn btn-link">
-                                <i class="bi bi-arrow-left"></i> Kembali ke Daftar Berkas
+                            <a href="{{ route('al_banding.berkas') }}" class="btn btn-link">
+                                <i class="bi bi-arrow-left"></i> Kembali ke Daftar Penilaian
                             </a>
                         </div>
                     </div>

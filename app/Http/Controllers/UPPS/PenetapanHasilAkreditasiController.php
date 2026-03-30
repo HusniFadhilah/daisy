@@ -2,39 +2,41 @@
 
 namespace App\Http\Controllers\UPPS;
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use App\Models\AsesmenDocument;
 use App\Models\PengajuanAkreditasi;
-use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class PenetapanHasilAkreditasiController extends Controller
 {
     public function index(Request $request)
     {
+        $statusLogs = [
+            PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
+            PengajuanAkreditasi::STATUS_HASIL_DIUMUMKAN,
+            PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN,
+            PengajuanAkreditasi::STATUS_SELESAI,
+        ];
         $user = Auth::user();
         $studyProgramIds = $user->studyPrograms()->pluck('study_programs.id');
 
         $query = PengajuanAkreditasi::with([
             'studyProgram.university',
             'studyProgram.degreeLevel',
-            'statusLog' => fn($q) => $q->whereIn('status_to', [
-                PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
-                PengajuanAkreditasi::STATUS_HASIL_DIUMUMKAN,
-                PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN,
-                PengajuanAkreditasi::STATUS_SELESAI,
-            ])->orderBy('changed_at', 'desc'),
+            'statusLog' => fn($q) => $q->whereIn('status_to', $statusLogs)->orderBy('changed_at', 'desc'),
         ])
             ->whereIn('id_program_studi', $studyProgramIds)
             // tetap sama (persis seperti Penyampaian), kalau kamu punya field khusus penetapan silakan ganti:
             ->whereNotNull('tanggal_hasil_akreditasi_dikirim')
-            ->whereIn('status', [
-                PengajuanAkreditasi::STATUS_HASIL_DITETAPKAN,
-                PengajuanAkreditasi::STATUS_HASIL_DIUMUMKAN,
-                PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN,
-                PengajuanAkreditasi::STATUS_SELESAI,
-            ]);
+            ->whereExists(function ($q) use ($statusLogs) {
+                $q->select(DB::raw(1))
+                    ->from('pengajuan_status_log as l')
+                    ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
+                    ->whereIn('l.status_to', $statusLogs);
+            });
 
         $this->applyFilters($query, $request);
 

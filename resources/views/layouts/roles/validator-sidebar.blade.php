@@ -55,12 +55,12 @@
         </a>
     </li>
     <li>
-        <a href="{{ route('pelaporan.banding.indexValidasiAK') }}" class="nav-link {{ request()->routeIs('pelaporan.banding.indexValidasiAK*') ? 'active' : '' }}">
+        <a href="{{ route('pelaporan.banding.indexValidasiAK') }}" class="nav-link {{ request()->routeIs('pelaporan.banding.indexValidasiAK*') || request()->routeIs('pelaporan.banding.validasiAk*') ? 'active' : '' }}">
             Pelaporan AK Banding
         </a>
     </li>
     <li>
-        <a href="{{ route('pelaporan.banding.indexAL') }}" class="nav-link {{ request()->routeIs('pelaporan.banding.indexAL*') ? 'active' : '' }}">
+        <a href="{{ route('pelaporan.banding.indexAL') }}" class="nav-link {{ request()->routeIs('pelaporan.banding.indexAL*') || request()->routeIs('pelaporan.banding.al*') ? 'active' : '' }}">
             Pelaporan AL Banding
         </a>
     </li>

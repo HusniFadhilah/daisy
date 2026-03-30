@@ -16,21 +16,27 @@ class MasaSanggahController extends Controller
      */
     public function index(Request $request)
     {
+        $statusLogs = [
+            PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM,
+            PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
+            PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
+            PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
+        ];
         $user = Auth::user();
         $studyProgramIds = $user->studyPrograms()->pluck('study_programs.id');
 
         $query = PengajuanAkreditasi::with([
             'studyProgram.university',
             'studyProgram.degreeLevel',
-            'statusLog' => fn($q) => $q->whereIn('status_to', [
-                PengajuanAkreditasi::STATUS_HASIL_AKREDITASI_DIKIRIM,
-                PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,
-                PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI,
-                PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
-            ])->orderBy('created_at', 'desc'),
+            'statusLog' => fn($q) => $q->whereIn('status_to', $statusLogs)->orderBy('created_at', 'desc'),
         ])
             ->whereIn('id_program_studi', $studyProgramIds)
-            ->whereNotNull('tanggal_masa_sanggah_mulai');
+            ->whereNotNull('tanggal_masa_sanggah_mulai')->whereExists(function ($q) use ($statusLogs) {
+                $q->select(DB::raw(1))
+                    ->from('pengajuan_status_log as l')
+                    ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
+                    ->whereIn('l.status_to', $statusLogs);
+            });
         // ->whereNotNull('tanggal_masa_sanggah_selesai');
         // dd($query->get());
         // Apply filters

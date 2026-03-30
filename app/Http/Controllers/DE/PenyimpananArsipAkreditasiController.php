@@ -21,6 +21,11 @@ class PenyimpananArsipAkreditasiController extends Controller
      */
     public function index(Request $request)
     {
+        $statusLogs = [
+            PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN,
+            PengajuanAkreditasi::STATUS_ARSIP_DISIMPAN,
+            PengajuanAkreditasi::STATUS_SELESAI,
+        ];
         $query = PengajuanAkreditasi::with([
             'studyProgram.university',
             'studyProgram.degreeLevel',
@@ -30,20 +35,15 @@ class PenyimpananArsipAkreditasiController extends Controller
             'dokumen' => function ($q) {
                 $q->where('is_latest', true);
             },
-            'statusLog' => function ($q) {
-                $q->whereIn('status_to', [
-                    PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN,
-                    PengajuanAkreditasi::STATUS_ARSIP_DISIMPAN,
-                    PengajuanAkreditasi::STATUS_SELESAI,
-                ])->orderBy('changed_at', 'desc');
+            'statusLog' => function ($q) use ($statusLogs) {
+                $q->whereIn('status_to', $statusLogs)->orderBy('changed_at', 'desc');
             },
-        ])
-            // ✅ Filter: yang sudah dilaporkan atau lebih lanjut
-            ->whereIn('status', [
-                PengajuanAkreditasi::STATUS_HASIL_DILAPORKAN,
-                PengajuanAkreditasi::STATUS_ARSIP_DISIMPAN,
-                PengajuanAkreditasi::STATUS_SELESAI,
-            ]);
+        ])->whereExists(function ($q) use ($statusLogs) {
+            $q->select(DB::raw(1))
+                ->from('pengajuan_status_log as l')
+                ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
+                ->whereIn('l.status_to', $statusLogs);
+        });
 
         // Filter by status
         if ($request->filled('status')) {

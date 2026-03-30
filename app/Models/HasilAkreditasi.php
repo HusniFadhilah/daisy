@@ -260,8 +260,8 @@ class HasilAkreditasi extends Model
     public function isAlBandingFinalized(): bool
     {
         return in_array($this->status, [
-            'final_al',
-            'final_hasil',
+            // 'final_al',
+            // 'final_hasil',
             'draft_ak_banding',
             'final_ak_banding',
             'draft_al_banding',
@@ -525,24 +525,33 @@ class HasilAkreditasi extends Model
     public static function initializeBanding($hasilService, $pengajuan, $authId): self
     {
         $asesmen = $pengajuan->asesmen;
-        $hasil = $asesmen->hasil;
-        $pengajuan->asesmen->asesmenLapanganBanding->update([
+        $hasil   = $asesmen->hasil;
+
+        $asesmen->asesmenLapanganBanding->update([
             'status'       => 'finalized',
             'finalized_at' => now(),
             'finalized_by' => $authId,
         ]);
 
-        if ($hasil->status === 'draft_al_banding') {
+        if (in_array($hasil->status, ['draft_al_banding', 'final_hasil'])) {
             try {
                 DB::beginTransaction();
 
-                $hasilService->saveHasilAlBanding($asesmen, $authId);
+                // 1. simpan hasil AL banding ke kolom *_banding
+                $hasil = $hasilService->saveHasilALBanding($asesmen, $authId);
+
+                // 2. finalisasi hasil AL banding
+                $hasil = $hasilService->finalizeHasilALBanding($hasil, $authId);
+
+                // 3. buat draft penetapan dari sumber AL banding
+                $hasil = $hasilService->saveHasilPenetapan($hasil, $authId, true);
+
                 $hasil->refresh();
 
                 $statusFrom = $pengajuan->status;
                 $pengajuan->update([
                     'peringkat_banding' => $hasil->peringkat_akreditasi_banding,
-                    'skor_banding'      => $hasil->skor_banding,
+                    'skor_banding'      => $hasil->skor_al_banding,
                 ]);
 
                 $pengajuan->statusLog()->firstOrCreate(
@@ -568,7 +577,7 @@ class HasilAkreditasi extends Model
             }
         }
 
-        return $hasil;
+        return $asesmen->hasil->fresh();
     }
 
     public function getKriteriaOrderedList()

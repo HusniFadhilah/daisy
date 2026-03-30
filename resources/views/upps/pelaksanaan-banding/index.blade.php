@@ -32,8 +32,15 @@
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h4 class="mb-1"><i class="bi bi-play-circle"></i> Pelaksanaan Banding</h4>
-            <p class="text-muted mb-0">Monitor proses dan pembayaran pelaksanaan banding</p>
+            <p class="text-muted mb-0">Monitor pembayaran dan proses pelaksanaan banding</p>
         </div>
+    </div>
+
+    <div class="alert alert-info alert-permanent">
+        <i class="bi bi-bell-fill"></i>
+        <strong>Proses Pelaksanaan Banding</strong><br>
+        Pelaksanaan Banding pada permohonan akreditasi program studi tersedia pada daftar berikut<br>
+        Program studi dimohon memeriksa Laporan Hasil Surveillance Banding dan selanjutnya melakukan persetujuan
     </div>
 
     {{-- Alert banding sedang berlangsung --}}
@@ -64,6 +71,27 @@
                     banding yang menunggu pembayaran atau validasi pembayaran.
                     Segera lakukan pembayaran agar proses banding dapat dilanjutkan.
                 </p>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    <!-- Pending Approval Alert -->
+    @if($stats['pending_approval'] > 0)
+    <div class="alert alert-warning alert-permanent border-start border-2 border-warning mb-4">
+        <div class="d-flex align-items-start">
+            <div class="flex-grow-1">
+                <h5 class="mb-2 fw-bold">
+                    <i class="bi bi-exclamation-circle-fill"></i> Laporan Hasil Surveillance Banding Menunggu Persetujuan
+                </h5>
+                <p class="mb-2">
+                    Anda memiliki <strong class="text-danger fs-5">{{ $stats['pending_approval'] }}</strong>
+                    Laporan Hasil Surveillance Banding yang menunggu persetujuan.
+                </p>
+                <div class="alert alert-light alert-permanent mb-2">
+                    <i class="bi bi-info-circle-fill text-info"></i>
+                    <strong>Penting:</strong> Mohon segera tinjau dan setujui laporan tersebut untuk melanjutkan proses akreditasi.
+                </div>
             </div>
         </div>
     </div>
@@ -143,6 +171,24 @@
                             </td>
                             <td>
                                 {!! $pengajuan->getCustomBadgeLastStatus('pelaksanaan_banding','upps','label_short_for') !!}
+
+                                @php
+                                $pendingLHA = $pengajuan->asesmen->lhaDocumentsBanding
+                                ->whereIn('status_persetujuan_prodi', ['pending', 'revision_required'])
+                                ->first();
+                                @endphp
+
+                                @if($pendingLHA)
+                                <br>
+                                <span class="badge bg-warning text-dark mt-1">
+                                    <i class="bi bi-bell"></i>
+                                    {{ match($pendingLHA->status_persetujuan_prodi) {
+                                                'pending' => 'Laporan Banding Menunggu Persetujuan',
+                                                'revision_required' => 'Permintaan Revisi Laporan Diproses',
+                                                default => '-'
+                                            } }}
+                                </span>
+                                @endif
                             </td>
                             <td class="text-center">
                                 <a href="{{ route('upps.pelaksanaan-banding.show', $pengajuan->id) }}" class="btn btn-sm btn-primary" title="Lihat Detail">

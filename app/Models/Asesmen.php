@@ -275,6 +275,15 @@ class Asesmen extends Model
             ->orderBy('id');
     }
 
+    public function beritaAcaraALBanding()
+    {
+        return $this->documents()
+            ->where('type', 'berita_acara_al_banding')
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('id');
+    }
+
     public function beritaAcaraBanding()
     {
         return $this->documents()
@@ -303,11 +312,16 @@ class Asesmen extends Model
         return $this->hasOne(LhaAsesor::class, 'id_asesmen');
     }
 
+    public function lhaAsesorBanding()
+    {
+        return $this->hasOne(LhaAsesorBanding::class, 'id_asesmen');
+    }
+
     public static function formatJenisAsesmen($text)
     {
         $words = explode('_', $text);
-        return collect($words)->map(function ($word, $index) {
-            return $index === 0 ? strtoupper($word) : ucfirst($word);
+        return collect($words)->map(function ($word, $index) use ($text) {
+            return $index === 0 && $text != 'dokumen' ? strtoupper($word) : ucfirst($word);
         })->implode(' ');
     }
 

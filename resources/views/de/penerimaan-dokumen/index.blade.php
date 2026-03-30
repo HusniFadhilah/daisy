@@ -74,7 +74,7 @@
         </div>
 
         <div class="col mb-3">
-            <x-stat-card title="Dokumen Lengkap" :value="$stats['total_dokumen_lengkap']" description="Dokumen siap divalidasi" icon="check-circle" gradient="linear-gradient(135deg, #11998e 0%, #38ef7d 100%)" />
+            <x-stat-card title="Dokumen Lengkap" :value="$stats['total_dokumen_lengkap']" description="Dokumen siap divalidasi (perlu menugaskan validator)" icon="check-circle" gradient="linear-gradient(135deg, #11998e 0%, #38ef7d 100%)" />
         </div>
     </div>
 

@@ -3,6 +3,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Asesmen;
 use App\Models\AsesmenUserRole;
 use Closure;
 use Illuminate\Http\Request;
@@ -22,7 +23,19 @@ class EnsurePenawaranAcceptedMiddleware
     public function handle(Request $request, Closure $next, $jenisAsesmen = 'ak')
     {
         // Skip if route is penawaran.* (avoid redirect loop)
-        if ($request->routeIs('penawaran.*')) {
+        $routes = [
+            'penawaran.*',
+            'al_banding.berkas.lha-asesor.download',
+            'al_banding.berkas.lha-asesor.preview',
+            'al_banding.berkas.documents.download',
+            'al_banding.berkas.documents.preview',
+            'al.berkas.lha-asesor.download',
+            'al.berkas.lha-asesor.preview',
+            'al.berkas.documents.download',
+            'al.berkas.documents.preview',
+        ];
+
+        if (collect($routes)->contains(fn($route) => $request->routeIs($route))) {
             return $next($request);
         }
 
@@ -65,14 +78,16 @@ class EnsurePenawaranAcceptedMiddleware
             if (!$idAsesmen) {
                 abort(403, 'Parameter asesmen tidak ditemukan.');
             }
+            if ($idAsesmen instanceof Asesmen) {
+                $idAsesmen = $idAsesmen->id;
+            }
             // Find assignment by asesmen ID
             $assignment = AsesmenUserRole::where('id_asesmen', $idAsesmen)
                 ->where('jenis_asesmen', $jenisAsesmen)
                 ->where('id_user', $user->id)
                 ->first();
-
             if (!$assignment) {
-                abort(403, "Anda tidak memiliki penawaran untuk asesmen " . strtoupper($jenisAsesmen) . " ini.");
+                abort(403, "Anda tidak memiliki penawaran untuk asesmen " . Asesmen::formatJenisAsesmen($jenisAsesmen) . " ini.");
             }
         }
 
@@ -97,11 +112,10 @@ class EnsurePenawaranAcceptedMiddleware
             } else {
                 // For AK/AL, use existing cek penawaran route
                 return redirect()
-                    ->route('penawaran.berkas.cekPenawaran', ['idAsesmen' => $assignment->id_asesmen, 'jenisAsesmen' => 'dokumen'])
+                    ->route('penawaran.berkas.cekPenawaran', ['idAsesmen' => $assignment->id_asesmen, 'jenisAsesmen' => $jenisAsesmen])
                     ->with('warning', 'Silakan respon penawaran asesmen ini terlebih dahulu.');
             }
         }
-
         // ========================================
         // PASS: Assignment to Controller
         // ========================================

@@ -142,23 +142,22 @@ class AKController extends Controller
             ->where('status_validasi', 'revision_required')
             ->with('elemen.kriteria')
             ->get();
+
         $countNeedsRevisions = $needsRevisions->count();
         $jenjangs            = JenjangPenilaian::all();
         $pluckColorSkor      = $jenjangs->pluck('color', 'skor');
         $progress            = $this->calculateProgressBulk([$asesmen->id], $user->id)[$asesmen->id];
         $uploadedFiles       = $asesmen->pengajuan ? $asesmen->pengajuan->getUploadedDocuments() : null;
 
-        $statusPekerjaan  = $assignment->status_pekerjaan ?? 'not_started';
-        $isSubmittedOnly  = $statusPekerjaan === 'submitted';
-        $isSubmitted      = in_array($statusPekerjaan, ['submitted', 'approved', 'validated']);
-        $isApproved       = $statusPekerjaan === 'approved';
-        $needsRevision    = $statusPekerjaan === 'revision_required';
+        $statusPekerjaan     = $assignment->status_pekerjaan ?? 'not_started';
+        $isSubmittedOnly     = $statusPekerjaan === 'submitted';
+        $isSubmitted         = in_array($statusPekerjaan, ['submitted', 'approved', 'validated']);
+        $isApproved          = $statusPekerjaan === 'approved';
+        $needsRevision       = $statusPekerjaan === 'revision_required';
         $hasRevisionRequests = $countNeedsRevisions > 0;
-        $isComplete       = $progress['percentage'] == 100;
+        $isComplete          = $progress['percentage'] == 100;
 
-        // ── TAMBAHAN: apakah boleh batalkan submit? ───────────────
-        // Hanya boleh jika pengajuan masih di status ak_in_progress
-        // (belum masuk ak_on_validation).
+        // ── Apakah boleh batalkan submit? ─────────────────────────────
         $canUnsubmit = false;
         if ($isSubmittedOnly) {
             $pengajuan = $asesmen->pengajuan;
@@ -167,15 +166,17 @@ class AKController extends Controller
                     PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
                     PengajuanAkreditasi::STATUS_AK_ON_VALIDATION,
                 ]);
-
-                // Bisa unsubmit hanya jika log terakhir yang relevan = ak_in_progress
                 $canUnsubmit = $latestLog &&
                     $latestLog->status_to === PengajuanAkreditasi::STATUS_AK_IN_PROGRESS;
             } else {
-                // Jika tidak ada pengajuan (kasus edge), izinkan saja
                 $canUnsubmit = true;
             }
         }
+
+        // ── Split readiness (reusable via computeSplitResult) ─────────
+        $split     = $this->computeSplitResult($asesmen->id, $user->id);
+        $hasSplit  = $split['splitCount'] > 0;
+        $canSubmit = $split['allComplete'] && !$hasSplit;
 
         return view('asesmen.ak.berkas.show', compact(
             'asesmen',
@@ -194,7 +195,10 @@ class AKController extends Controller
             'needsRevision',
             'hasRevisionRequests',
             'isComplete',
-            'canUnsubmit'
+            'canUnsubmit',
+            'split',
+            'hasSplit',
+            'canSubmit',
         ));
     }
 
@@ -482,6 +486,23 @@ class AKController extends Controller
                 ], 422);
             }
 
+            // ── TAMBAHAN: Cek semua asesor sudah selesai ──────────────
+            $splitReadiness = $this->checkAllAsesorsComplete($idAsesmen, $user->id);
+            if (!$splitReadiness['allComplete']) {
+                $belumSelesai = collect($splitReadiness['asesors'])
+                    ->where('is_done', false)
+                    ->where('is_me', false)
+                    ->map(fn($a) => $a['name'] . " ({$a['completed']}/{$a['total']} elemen)")
+                    ->implode(', ');
+
+                return response()->json([
+                    'success'        => false,
+                    'message'        => 'Finalisasi belum dapat dilakukan. Asesor lain belum menyelesaikan penilaian: ' . $belumSelesai,
+                    'error_type'     => 'other_asesor_not_complete',
+                    'split_readiness' => $splitReadiness['asesors'],
+                ], 422);
+            }
+
             DB::beginTransaction();
 
             // Update all penilaian status to submitted
@@ -545,7 +566,7 @@ class AKController extends Controller
                         'success' => false,
                         'message' => 'Penilaian sedang dalam proses validasi dan tidak dapat dibatalkan. '
                             . 'Hubungi validator jika ada kesalahan.',
-                        'reason'  => 'ak_on_validation',
+                        'reason'  => PengajuanAkreditasi::STATUS_AK_ON_VALIDATION,
                     ], 422);
                 }
             }
@@ -979,93 +1000,131 @@ class AKController extends Controller
         try {
             $user = Auth::user();
 
-            // Pastikan user punya akses
-            $myRole = AsesmenUserRole::where('id_asesmen', $idAsesmen)
+            AsesmenUserRole::where('id_asesmen', $idAsesmen)
                 ->where('id_user', $user->id)
                 ->where('jenis_asesmen', 'ak')
                 ->firstOrFail();
 
-            // Semua asesor AK untuk asesmen ini
-            $asesors = AsesmenUserRole::where('id_asesmen', $idAsesmen)
-                ->where('jenis_asesmen', 'ak')
-                ->whereHas('role', fn($q) => $q->where('name', 'asesor'))
-                ->with('user')
-                ->orderBy('urutan_asesor')
-                ->get();
+            $result = $this->computeSplitResult($idAsesmen, $user->id);
 
-            // Cek apakah ada asesor LAIN yang sudah mengisi minimal 1 penilaian
-            $otherAsesors = $asesors->where('id_user', '!=', $user->id);
-            $otherHasFilled = PenilaianElemenAk::where('id_asesmen', $idAsesmen)
-                ->whereIn('id_asesor', $otherAsesors->pluck('id_user'))
-                ->whereNotNull('skor')
-                ->exists();
-
-            if (!$otherHasFilled) {
-                return response()->json([
-                    'success'       => true,
-                    'otherHasFilled' => false,
-                    'splitCount'    => 0,
-                    'splitItems'    => [],
-                ]);
-            }
-
-            // Hitung split per elemen
-            $kriterias = Kriteria::with([
-                'elemenStandar',
-                'elemenStandar.penilaianElemenAk' => fn($q) =>
-                $q->where('id_asesmen', $idAsesmen)
-                    ->whereIn('id_asesor', $asesors->pluck('id_user'))
-                    ->whereNotNull('skor'),
-            ])->get();
-
-            $splitItems = [];
-
-            foreach ($kriterias as $kriteria) {
-                foreach ($kriteria->elemenStandar as $elemen) {
-                    $penilaians = $elemen->penilaianElemenAk;
-
-                    // Hanya hitung jika minimal ada 2 asesor yang sudah mengisi
-                    if ($penilaians->count() < 2) continue;
-
-                    $skors    = $penilaians->pluck('skor')->map(fn($s) => (int) $s)->toArray();
-                    $selisih  = max($skors) - min($skors);
-
-                    if ($selisih > 1) {
-                        $skorDetail = $asesors->map(function ($asesor) use ($penilaians) {
-                            $p = $penilaians->firstWhere('id_asesor', $asesor->id_user);
-                            return [
-                                'urutan'   => $asesor->urutan_asesor,
-                                'nama'     => $asesor->user->name,
-                                'skor'     => $p ? (int) $p->skor : null,
-                                'is_me'    => $asesor->id_user === $p?->id_asesor,
-                            ];
-                        })->filter(fn($d) => $d['skor'] !== null)->values();
-
-                        $splitItems[] = [
-                            'elemenId'    => $elemen->id,
-                            'kodeElemen'  => $elemen->kode_elemen,
-                            'pernyataan'  => Str::limit($elemen->pernyataan_elemen, 80),
-                            'kodeKriteria' => $kriteria->kode_kriteria,
-                            'selisih'     => $selisih,
-                            'skors'       => $skorDetail,
-                        ];
-                    }
-                }
-            }
-
-            return response()->json([
-                'success'        => true,
-                'otherHasFilled' => true,
-                'splitCount'     => count($splitItems),
-                'splitItems'     => $splitItems,
-            ]);
+            return response()->json(['success' => true, ...$result]);
         } catch (\Exception $e) {
             Log::error($e);
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ], 500);
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
+    }
+
+    /**
+     * Hitung data split untuk satu asesmen.
+     * Reusable — dipanggil dari checkSplitResult(), submitPenilaian(),
+     * showBerkas(), dan uploadExcelPage().
+     *
+     * Return:
+     *   otherHasFilled : bool
+     *   allComplete    : bool   — semua asesor sudah mengisi SEMUA elemen
+     *   splitCount     : int
+     *   splitItems     : array
+     *   asesors        : Collection  — data lengkap asesor + progress
+     */
+    private function computeSplitResult(int $idAsesmen, int $currentUserId): array
+    {
+        $totalElemen = ElemenStandar::count();
+
+        $asesors = AsesmenUserRole::where('id_asesmen', $idAsesmen)
+            ->where('jenis_asesmen', 'ak')
+            ->whereHas('role', fn($q) => $q->where('name', 'asesor'))
+            ->with('user')
+            ->orderBy('urutan_asesor')
+            ->get();
+
+        // ── Progress per asesor ───────────────────────────────
+        $countMap = PenilaianElemenAk::where('id_asesmen', $idAsesmen)
+            ->whereIn('id_asesor', $asesors->pluck('id_user'))
+            ->whereNotNull('skor')
+            ->selectRaw('id_asesor, COUNT(*) as completed')
+            ->groupBy('id_asesor')
+            ->pluck('completed', 'id_asesor');
+
+        $asesorsProgress = $asesors->map(fn($role) => [
+            'id_user'    => $role->id_user,
+            'name'       => $role->user->name ?? 'N/A',
+            'completed'  => (int) $countMap->get($role->id_user, 0),
+            'total'      => $totalElemen,
+            'percentage' => $totalElemen
+                ? round($countMap->get($role->id_user, 0) / $totalElemen * 100, 1)
+                : 0,
+            'is_done'    => (int) $countMap->get($role->id_user, 0) >= $totalElemen,
+            'is_me'      => $role->id_user === $currentUserId,
+        ]);
+
+        $otherAsesors   = $asesors->where('id_user', '!=', $currentUserId);
+        $otherHasFilled = PenilaianElemenAk::where('id_asesmen', $idAsesmen)
+            ->whereIn('id_asesor', $otherAsesors->pluck('id_user'))
+            ->whereNotNull('skor')
+            ->exists();
+
+        $allComplete = $asesorsProgress->every(fn($a) => $a['is_done']);
+
+        if (!$otherHasFilled) {
+            return [
+                'otherHasFilled' => false,
+                'allComplete'    => false,
+                'splitCount'     => 0,
+                'splitItems'     => [],
+                'asesors'        => $asesorsProgress,
+            ];
+        }
+
+        // ── Hitung split ─────────────────────────────────────
+        $kriterias = Kriteria::with([
+            'elemenStandar',
+            'elemenStandar.penilaianElemenAk' => fn($q) =>
+            $q->where('id_asesmen', $idAsesmen)
+                ->whereIn('id_asesor', $asesors->pluck('id_user'))
+                ->whereNotNull('skor'),
+        ])->get();
+
+        $splitItems = [];
+
+        foreach ($kriterias as $kriteria) {
+            foreach ($kriteria->elemenStandar as $elemen) {
+                $penilaians = $elemen->penilaianElemenAk;
+
+                if ($penilaians->count() < 2) continue;
+
+                $skors   = $penilaians->pluck('skor')->map(fn($s) => (int) $s)->toArray();
+                $selisih = max($skors) - min($skors);
+
+                if ($selisih > 1) {
+                    $skorDetail = $asesors->map(function ($asesor) use ($penilaians, $currentUserId) {
+                        $p = $penilaians->firstWhere('id_asesor', $asesor->id_user);
+                        return [
+                            'urutan' => $asesor->urutan_asesor,
+                            'nama'   => $asesor->user->name,
+                            'skor'   => $p ? (int) $p->skor : null,
+                            'is_me'  => $asesor->id_user === $currentUserId,
+                        ];
+                    })->filter(fn($d) => $d['skor'] !== null)->values();
+
+                    $splitItems[] = [
+                        'elemenId'     => $elemen->id,
+                        'kodeElemen'   => $elemen->kode_elemen,
+                        'pernyataan'   => Str::limit($elemen->pernyataan_elemen, 80),
+                        'kodeKriteria' => $kriteria->kode_kriteria,
+                        'selisih'      => $selisih,
+                        'skors'        => $skorDetail,
+                    ];
+                }
+            }
+        }
+
+        return [
+            'otherHasFilled' => true,
+            'allComplete'    => $allComplete,
+            'splitCount'     => count($splitItems),
+            'splitItems'     => $splitItems,
+            'asesors'        => $asesorsProgress,
+        ];
     }
 
     /**
@@ -1075,7 +1134,6 @@ class AKController extends Controller
     {
         $user = Auth::user();
 
-        // Check if user has access to this asesmen
         $assignment = AsesmenUserRole::where('id_asesmen', $idAsesmen)
             ->where('id_user', $user->id)
             ->where('jenis_asesmen', 'ak')
@@ -1088,7 +1146,6 @@ class AKController extends Controller
         $this->updateStatusAK($assignment);
         $asesmen = $assignment->asesmen;
 
-        // ✅ Get revision requests
         $needsRevisions = PenilaianElemenAk::where('id_asesmen', $asesmen->id)
             ->where('id_asesor', $user->id)
             ->where('status_validasi', 'revision_required')
@@ -1096,17 +1153,20 @@ class AKController extends Controller
             ->get();
 
         $countNeedsRevisions = $needsRevisions->count();
+        $progress            = $this->calculateProgressBulk([$asesmen->id], $user->id)[$asesmen->id];
 
-        // ✅ Calculate progress
-        $progress = $this->calculateProgressBulk([$asesmen->id], $user->id)[$asesmen->id];
-
-        $statusPekerjaan = $assignment->status_pekerjaan ?? 'not_started';
-        $isSubmittedOnly = $statusPekerjaan === 'submitted';
-        $isSubmitted = isset($assignment) && in_array($statusPekerjaan, ['submitted', 'approved', 'validated']);
-        $isApproved = $statusPekerjaan === 'approved';
-        $needsRevision = $statusPekerjaan === 'revision_required';
+        $statusPekerjaan     = $assignment->status_pekerjaan ?? 'not_started';
+        $isSubmittedOnly     = $statusPekerjaan === 'submitted';
+        $isSubmitted         = in_array($statusPekerjaan, ['submitted', 'approved', 'validated']);
+        $isApproved          = $statusPekerjaan === 'approved';
+        $needsRevision       = $statusPekerjaan === 'revision_required';
         $hasRevisionRequests = $countNeedsRevisions > 0;
-        $isComplete = $progress['percentage'] == 100;
+        $isComplete          = $progress['percentage'] == 100;
+
+        // ── Split readiness (reusable via computeSplitResult) ─────────
+        $split     = $this->computeSplitResult($asesmen->id, $user->id);
+        $hasSplit  = $split['splitCount'] > 0;
+        $canSubmit = $split['allComplete'] && !$hasSplit;
 
         return view('asesmen.ak.berkas.upload-excel', compact(
             'asesmen',
@@ -1120,7 +1180,10 @@ class AKController extends Controller
             'isApproved',
             'needsRevision',
             'hasRevisionRequests',
-            'isComplete'
+            'isComplete',
+            'split',
+            'hasSplit',
+            'canSubmit',
         ));
     }
 
@@ -1254,6 +1317,70 @@ class AKController extends Controller
             'totalElemen'  => $totalElemen,
             'allFilled'    => $allFilled,
             'allDone'      => $allFinalized,
+        ];
+    }
+
+    /**
+     * Cek apakah semua asesor AK pada suatu asesmen sudah mengisi semua elemen.
+     *
+     * Return array:
+     *   allComplete   : bool  — semua asesor sudah 100%
+     *   otherComplete : bool  — semua asesor *lain* sudah 100%
+     *   asesors       : array — [{ id_user, name, completed, total, percentage, is_done, is_me }]
+     */
+    private function checkAllAsesorsComplete(int $idAsesmen, int $currentUserId): array
+    {
+        $totalElemen = ElemenStandar::count();
+
+        $asesors = AsesmenUserRole::where('id_asesmen', $idAsesmen)
+            ->where('jenis_asesmen', 'ak')
+            ->whereHas('role', fn($q) => $q->where('name', 'asesor'))
+            ->with('user')
+            ->orderBy('urutan_asesor')
+            ->get();
+
+        if ($asesors->isEmpty() || $totalElemen === 0) {
+            return ['allComplete' => false, 'otherComplete' => false, 'asesors' => []];
+        }
+
+        $countMap = PenilaianElemenAk::where('id_asesmen', $idAsesmen)
+            ->whereIn('id_asesor', $asesors->pluck('id_user'))
+            ->whereNotNull('skor')
+            ->selectRaw('id_asesor, COUNT(*) as completed')
+            ->groupBy('id_asesor')
+            ->pluck('completed', 'id_asesor');
+
+        $result        = [];
+        $allComplete   = true;
+        $otherComplete = true;
+
+        foreach ($asesors as $role) {
+            $completed  = (int) ($countMap->get($role->id_user, 0));
+            $percentage = round($completed / $totalElemen * 100, 1);
+            $done       = $completed >= $totalElemen;
+
+            $result[] = [
+                'id_user'    => $role->id_user,
+                'name'       => $role->user->name ?? 'N/A',
+                'completed'  => $completed,
+                'total'      => $totalElemen,
+                'percentage' => $percentage,
+                'is_done'    => $done,
+                'is_me'      => $role->id_user === $currentUserId,
+            ];
+
+            if (!$done) {
+                $allComplete = false;
+                if ($role->id_user !== $currentUserId) {
+                    $otherComplete = false;
+                }
+            }
+        }
+
+        return [
+            'allComplete'   => $allComplete,
+            'otherComplete' => $otherComplete,
+            'asesors'       => $result,
         ];
     }
 

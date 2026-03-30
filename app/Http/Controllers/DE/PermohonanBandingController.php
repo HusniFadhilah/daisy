@@ -22,6 +22,10 @@ class PermohonanBandingController extends Controller
 
     public function index(Request $request)
     {
+        $statusLogs = [
+            PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
+            PengajuanAkreditasi::STATUS_BANDING_DITERIMA,
+        ];
         $query = PengajuanAkreditasi::with([
             'studyProgram:id,name,full_name,id_university,id_degree_level',
             'studyProgram.university:id,name',
@@ -32,21 +36,15 @@ class PermohonanBandingController extends Controller
                 ->where('jenis_dokumen', 'surat_penerimaan_banding_de')
                 ->where('is_latest', true),
             'statusLog' => fn($q) => $q
-                ->whereIn('status_to', [
-                    PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
-                    PengajuanAkreditasi::STATUS_BANDING_DITERIMA,
-                ])
+                ->whereIn('status_to', $statusLogs)
                 ->orderBy('changed_at', 'desc'),
         ])
             // ✅ Basis list: pernah ada log STATUS_BANDING_DIAJUKAN
-            ->whereExists(function ($q) {
+            ->whereExists(function ($q) use ($statusLogs) {
                 $q->select(DB::raw(1))
                     ->from('pengajuan_status_log as l')
                     ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
-                    ->whereIn('l.status_to', [
-                        PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
-                        PengajuanAkreditasi::STATUS_BANDING_DITERIMA,
-                    ]);
+                    ->whereIn('l.status_to', $statusLogs);
             });
 
         $this->applyFilters($query, $request);

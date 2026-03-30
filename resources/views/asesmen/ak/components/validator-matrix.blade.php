@@ -138,7 +138,7 @@ $viewMode = request('view') === 'split' ? 'split' : 'merged'; // split | merged
                         <th class="vm-header sticky-header text-center vm-asesor-header" data-asesor="{{ $asesor->urutan_asesor }}" colspan="{{ $viewMode === 'merged' ? 1 : 2 }}" style="background: #932136; z-index: 30;">
                             <div class="d-flex flex-column align-items-center">
                                 <div class="d-flex flex-column align-items-center">
-                                    <div class="fw-bold text-white">Penilaian AK Asesor {{ $asesor->urutan_asesor }}</div>
+                                    <div class="fw-bold text-white">Penilaian AK Asesor Banding {{ $asesor->urutan_asesor }}</div>
                                     <small class="text-white">{{ $asesor->user->name }}</small>
                                 </div>
                             </div>

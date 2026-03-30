@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Asesmen;
+namespace App\Http\Controllers\Asesmen\Banding;
 
 use App\Models\Asesmen;
 use Illuminate\Http\Request;
 use App\Models\AsesmenDocument;
-use App\Models\AsesmenLapangan;
+use App\Models\AsesmenLapanganBanding;
 use App\Models\AsesmenUserRole;
 use Illuminate\Support\Facades\DB;
 use App\Models\PengajuanAkreditasi;
@@ -14,7 +14,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
-class ALDocumentController extends Controller
+class ALBandingDocumentController extends Controller
 {
     public function page($idAsesmen)
     {
@@ -23,13 +23,13 @@ class ALDocumentController extends Controller
         $asesmen = \App\Models\Asesmen::with(['studyProgram.university'])->findOrFail($idAsesmen);
 
         $docs = \App\Models\AsesmenDocument::where('id_asesmen', $idAsesmen)
-            ->where('type', 'berita_acara_al')
+            ->where('type', 'berita_acara_al_banding')
             ->orderBy('sort_order')->orderBy('id')
             ->get();
 
         // ✅ Cek apakah sudah ada yang upload
         $firstUpload = \App\Models\AsesmenDocument::where('id_asesmen', $idAsesmen)
-            ->where('type', 'berita_acara_al')
+            ->where('type', 'berita_acara_al_banding')
             ->with('uploader')
             ->orderBy('uploaded_at', 'asc')
             ->first();
@@ -41,7 +41,7 @@ class ALDocumentController extends Controller
         // ✅ User bisa upload jika: belum ada upload ATAU dia adalah uploader pertama
         $canUpload = !$firstUpload || $isUploader;
 
-        return view('asesmen.al.berkas.document', compact(
+        return view('asesmen.banding.al-banding.berkas.document', compact(
             'asesmen',
             'docs',
             'firstUpload',
@@ -56,7 +56,7 @@ class ALDocumentController extends Controller
         $this->assertAccessOrFail((int)$idAsesmen);
 
         $docs = AsesmenDocument::where('id_asesmen', $idAsesmen)
-            ->where('type', 'berita_acara_al')
+            ->where('type', 'berita_acara_al_banding')
             ->with(['uploader'])
             ->orderBy('sort_order')
             ->orderBy('id')
@@ -73,8 +73,8 @@ class ALDocumentController extends Controller
                     'size_formatted' => number_format($doc->size / 1024, 2) . ' KB',
                     'uploaded_at' => $doc->uploaded_at ? $doc->uploaded_at->locale('id')->translatedFormat('d M Y, H:i') : '-',
                     'uploader_name' => $doc->uploader ? $doc->uploader->name : '-',
-                    'download_url' => route('al.berkas.documents.download', ['id' => $idAsesmen, 'docId' => $doc->id]),
-                    'delete_url' => route('al.berkas.documents.delete', [$idAsesmen, $doc->id]),
+                    'download_url' => route('al_banding.berkas.documents.download', ['id' => $idAsesmen, 'docId' => $doc->id]),
+                    'delete_url' => route('al_banding.berkas.documents.delete', [$idAsesmen, $doc->id]),
                 ];
             })
         ]);
@@ -86,7 +86,7 @@ class ALDocumentController extends Controller
 
         $ok = AsesmenUserRole::where('id_asesmen', $idAsesmen)
             ->where('id_user', $user->id)
-            ->where('jenis_asesmen', 'al')
+            ->where('jenis_asesmen', 'al_banding')
             ->exists();
 
         abort_if(!$ok, 403, 'Unauthorized');
@@ -97,7 +97,7 @@ class ALDocumentController extends Controller
         $this->assertAccessOrFail((int)$idAsesmen);
 
         $docs = AsesmenDocument::where('id_asesmen', $idAsesmen)
-            ->where('type', 'berita_acara_al')
+            ->where('type', 'berita_acara_al_banding')
             ->orderBy('sort_order')
             ->orderBy('id')
             ->get();
@@ -112,7 +112,7 @@ class ALDocumentController extends Controller
 
             // ✅ CEK: Apakah sudah ada yang upload sebelumnya
             $existingDoc = AsesmenDocument::where('id_asesmen', $idAsesmen)
-                ->where('type', 'berita_acara_al')
+                ->where('type', 'berita_acara_al_banding')
                 ->first();
 
             $currentUserId = Auth::id();
@@ -121,7 +121,7 @@ class ALDocumentController extends Controller
             if ($existingDoc && $existingDoc->uploaded_by != $currentUserId) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Berita acara sudah diupload oleh asesor lain. Hanya asesor yang pertama mengupload yang dapat mengedit dokumen.',
+                    'message' => 'Berita acara sudah diupload oleh asesor banding lain. Hanya asesor banding yang pertama mengupload yang dapat mengedit dokumen.',
                 ], 403);
             }
 
@@ -134,7 +134,7 @@ class ALDocumentController extends Controller
 
             $baseDir = "asesmen/document/{$idAsesmen}";
             $maxSort = (int) AsesmenDocument::where('id_asesmen', $idAsesmen)
-                ->where('type', 'berita_acara_al')
+                ->where('type', 'berita_acara_al_banding')
                 ->max('sort_order');
 
             $created = [];
@@ -143,14 +143,14 @@ class ALDocumentController extends Controller
 
                 $tanggal = now()->locale('id')->isoFormat('DD MMM YYYY');
                 $waktu = now()->format('H.i.s');
-                $filename = "Hasil dan Berita Acara Asesmen Lapangan_{$idAsesmen}_{$tanggal}_{$waktu}.pdf";
+                $filename = "Hasil dan Berita Acara Asesmen Lapangan Banding_{$idAsesmen}_{$tanggal}_{$waktu}.pdf";
 
                 $storedPath = $file->storeAs($baseDir, $filename, 'public');
 
                 $created[] = AsesmenDocument::create([
                     'id_asesmen' => $idAsesmen,
-                    'title' => 'Hasil dan Berita Acara Asesmen Lapangan',
-                    'type' => 'berita_acara_al',
+                    'title' => 'Hasil dan Berita Acara Asesmen Lapangan Banding',
+                    'type' => 'berita_acara_al_banding',
                     'original_name' => $file->getClientOriginalName(),
                     'path' => $storedPath,
                     'size' => $file->getSize() ?? 0,
@@ -164,14 +164,14 @@ class ALDocumentController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Hasil dan Berita Acara Asesmen Lapangan (AL) berhasil diupload',
+                'message' => 'Hasil dan Berita Acara Asesmen Lapangan (AL) Banding berhasil diupload',
                 'data' => $created,
             ]);
         } catch (\Exception $e) {
             Log::error('Upload AL Document Error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Hasil dan Berita Acara Asesmen Lapangan (AL) gagal diupload: ' . $e->getMessage(),
+                'message' => 'Hasil dan Berita Acara Asesmen Lapangan (AL) Banding gagal diupload: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -252,7 +252,7 @@ class ALDocumentController extends Controller
         if ($doc->uploaded_by != $currentUserId) {
             return response()->json([
                 'success' => false,
-                'message' => 'Anda tidak memiliki akses untuk menghapus dokumen ini. Hanya asesor yang mengupload yang dapat menghapus.',
+                'message' => 'Anda tidak memiliki akses untuk menghapus dokumen ini. Hanya asesor banding yang mengupload yang dapat menghapus.',
             ], 403);
         }
 
@@ -275,7 +275,7 @@ class ALDocumentController extends Controller
             $user = Auth::user();
 
             $docs = AsesmenDocument::where('id_asesmen', $idAsesmen)
-                ->where('type', 'berita_acara_al')
+                ->where('type', 'berita_acara_al_banding')
                 ->where('is_active', true);
 
             if ($docs->count() === 0) {
@@ -289,7 +289,7 @@ class ALDocumentController extends Controller
             $asesmen = Asesmen::findOrFail($idAsesmen);
 
             AsesmenUserRole::where('id_asesmen', $idAsesmen)
-                ->where('jenis_asesmen', 'al')
+                ->where('jenis_asesmen', 'al_banding')
                 ->update([
                     'status_pekerjaan' => 'approved',
                     'approved_at' => now(),
@@ -300,7 +300,7 @@ class ALDocumentController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Berita Acara berhasil difinalisasi. Status Asesmen Lapangan telah diperbarui.'
+                'message' => 'Berita Acara berhasil difinalisasi. Status Asesmen Lapangan Banding telah diperbarui.'
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -326,10 +326,10 @@ class ALDocumentController extends Controller
                 'status' => 'active'
             ]);
 
-            $asesmenLapangan = AsesmenLapangan::where('id_asesmen', $idAsesmen)->first();
+            $asesmenLapanganBanding = AsesmenLapanganBanding::where('id_asesmen', $idAsesmen)->first();
 
-            if ($asesmenLapangan) {
-                $asesmenLapangan->update([
+            if ($asesmenLapanganBanding) {
+                $asesmenLapanganBanding->update([
                     'status' => 'active',
                     'finalized_at' => null,
                     'finalized_by' => null,
@@ -337,7 +337,7 @@ class ALDocumentController extends Controller
             }
 
             AsesmenUserRole::where('id_asesmen', $idAsesmen)
-                ->where('jenis_asesmen', 'al')
+                ->where('jenis_asesmen', 'al_banding')
                 ->update([
                     'status_pekerjaan' => 'submitted',
                     'approved_at' => null,
@@ -347,8 +347,8 @@ class ALDocumentController extends Controller
             if ($asesmen->id_pengajuan) {
                 PengajuanAkreditasi::where('id', $asesmen->id_pengajuan)
                     ->update([
-                        'tanggal_al_selesai' => null,
-                        'status' => 'al_in_progress'
+                        'tanggal_al_banding_selesai' => null,
+                        'status' => 'al_banding_in_progress'
                     ]);
             }
 

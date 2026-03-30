@@ -101,6 +101,9 @@
                 <a href="{{ route('de.validasi-pembayaran-banding.show', $pengajuan->pembayaranBanding->id) }}" class="alert-link ms-2">
                     Lihat Status Pembayaran →
                 </a>
+                @if($pengajuan->pembayaranBanding->status_pembayaran === 'terverifikasi')
+                <br>Pembayaran telah tervalidasi dan dapat dilanjutkan ke penugasan asesor banding.
+                @endif
             </div>
             @endif
 

@@ -34,7 +34,7 @@ class CheckAlFirstOpenerMiddleware
                 'session_key'   => "al_banding_opener_confirmed_{$idAsesmen}",
                 'role_id'       => Role::ID_ROLE_ASESOR_BANDING,
                 'role_name'     => 'asesor_banding',
-                'confirm_route' => 'al-banding.berkas.confirm-opener',
+                'confirm_route' => 'al_banding.berkas.confirm-opener',
                 'warning_view'  => 'asesmen.banding.al-banding.components.first-opener-warning',
             ],
             'al' => [

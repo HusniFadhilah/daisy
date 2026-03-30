@@ -43,7 +43,7 @@
             \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AL_BANDING_ASSIGNED,
             \App\Models\PengajuanAkreditasi::STATUS_AL_BANDING_IN_PROGRESS,
             \App\Models\PengajuanAkreditasi::STATUS_AL_BANDING_SELESAI,
-            \App\Models\PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN,
+            //\App\Models\PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN,
             ];
             $log = $pengajuan->latestRelevantStatusLog($allowed);
             @endphp
@@ -53,8 +53,51 @@
                 <i class="bi bi-info-circle"></i>
                 Proses pelaksanaan banding sedang berlangsung. Hasil akan dilaporkan setelah selesai.
             </div>
+            @elseif(in_array($log?->status_to,[\App\Models\PengajuanAkreditasi::STATUS_ASESOR_AK_BANDING_ASSIGNED,\App\Models\PengajuanAkreditasi::STATUS_AK_BANDING_IN_PROGRESS]))
+            <div class="alert alert-light alert-permanent border border-dark mb-3">
+                <i class="bi bi-person-check"></i>
+                <strong>Penugasan Asesor AK</strong><br>
+                Sekretariat telah menugaskan asesor untuk melakukan penilaian AK Banding
+            </div>
+            @elseif(in_array($log?->status_to,[\App\Models\PengajuanAkreditasi::STATUS_AK_BANDING_ON_VALIDATION,\App\Models\PengajuanAkreditasi::STATUS_AK_BANDING_SELESAI]))
+            <div class="alert alert-light alert-permanent border border-dark mb-3">
+                <i class="bi bi-person-check"></i>
+                <strong>Proses Validasi AK Banding</strong><br>
+                Permohonan akreditasi program studi memasuki tahap validasi penilaian AK Banding dan Sekretariat telah menugaskan validator Banding
+            </div>
+            @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_AK_BANDING_DILAPORKAN)
+            <div class="alert alert-success alert-permanent">
+                <i class="bi bi-person-check"></i>
+                <strong>Proses Pelaporan AK Banding</strong><br>
+                Permohonan akreditasi program studi memasuki tahap pelaporan AK Banding
+            </div>
+            @elseif(in_array($log?->status_to,[\App\Models\PengajuanAkreditasi::STATUS_ASESOR_AL_BANDING_ASSIGNED]))
+            <div class="alert alert-light alert-permanent border border-dark mb-3">
+                <i class="bi bi-person-check"></i>
+                <strong>Penugasan Asesor AL</strong><br>
+                Sekretariat telah menugaskan asesor untuk melakukan penilaian AL Banding
+            </div>
+            @elseif(in_array($log?->status_to,[\App\Models\PengajuanAkreditasi::STATUS_AL_BANDING_IN_PROGRESS]))
+            <div class="alert alert-light alert-permanent border border-dark mb-3">
+                <i class="bi bi-person-check"></i>
+                <strong>Proses Pelaksanaan AL Banding</strong><br>
+                Berita acara pelaksanaan AL Banding program studi dapat diunduh pada link berikut
+                Mohon program studi dapat melakukan tanggapan laporan hasil AL Banding dengan melakukan persetujuan atau memberikan tambahan permintaan revisi yang diperlukan
+            </div>
+            @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_AL_BANDING_SELESAI)
+            <div class="alert alert-success alert-permanent">
+                <i class="bi bi-person-check"></i>
+                <strong>Asesmen Lapangan Banding Selesai</strong><br>
+                Asesmen lapangan banding telah selesai dilaksanakan
+            </div>
             @endif
+
+            @if(in_array($log?->status_to,[\App\Models\PengajuanAkreditasi::STATUS_AL_BANDING_IN_PROGRESS,\App\Models\PengajuanAkreditasi::STATUS_AL_BANDING_SELESAI]))
+            @include('upps.pelaksanaan-banding.persetujuan-laporan-surveillance')
+            @endif
+
             {{-- ── BLOK 1: PEMBAYARAN BANDING (selalu tampil pertama) ── --}}
+            @if(!in_array($log?->status_to,$allowed))
             <div class="card mb-4 {{ $pembayaranLunas ? 'border-secondary' : 'border-secondary border-2' }}">
                 <div class="card-header {{ $pembayaranLunas ? 'bg-secondary' : 'bg-secondary' }} text-{{ $pembayaranLunas ? 'white' : 'white' }}">
                     <h5 class="mb-0">
@@ -180,6 +223,7 @@
                     @endif {{-- end if $pembayaranBanding --}}
                 </div>
             </div>
+            @endif
 
             {{-- ═══ PAYMENT GATE — Konten di bawah hanya tampil jika lunas ═══ --}}
             @if(!$pembayaranBanding || !$pembayaranLunas)
@@ -265,8 +309,8 @@
                         </tr>
                         <tr>
                             <th>Tanggal Penugasan Banding</th>
-                            <td>: {{ $pengajuan->tanggal_penugasan_banding
-                                ? $pengajuan->tanggal_penugasan_banding->locale('id')->translatedFormat('d M Y H:i')
+                            <td>: {{ $pengajuan->tanggal_penugasan_asesor_ak_banding
+                                ? $pengajuan->tanggal_penugasan_asesor_ak_banding->locale('id')->translatedFormat('d M Y H:i')
                                 : '-' }}
                             </td>
                         </tr>
@@ -336,15 +380,15 @@
                     'icon' => $pengajuan->tanggal_pelaksanaan_banding ? 'check-circle-fill' : 'circle',
                     'color' => $pengajuan->tanggal_pelaksanaan_banding ? 'dark' : 'secondary',
                     ],
-                    [
-                    'done' => $pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN,
-                    'label' => 'Pelaporan Banding',
-                    'date' => $pengajuan->tanggal_pelaporan_banding ?? null,
-                    'icon' => $pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN
-                    ? 'check-circle-fill' : 'circle',
-                    'color' => $pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN
-                    ? 'dark' : 'secondary',
-                    ],
+                    //[
+                    //'done' => $pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN,
+                    //'label' => 'Pelaporan Banding',
+                    //'date' => $pengajuan->tanggal_pelaporan_banding ?? null,
+                    //'icon' => $pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN
+                    //? 'check-circle-fill' : 'circle',
+                    //'color' => $pengajuan->status === \App\Models\PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN
+                    //? 'dark' : 'secondary',
+                    //],
                     ];
                     @endphp
 

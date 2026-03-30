@@ -99,7 +99,7 @@ class PenilaianExcelService
         return $this->saveSpreadsheet(
             $spreadsheet,
             'Penilaian_' . $this->penilaianName . '_Lengkap_',
-            Str::slug($asesmen->code) . '_' . Str::slug($this->asesorName)
+            Str::slug($asesmen->id) . '_' . substr(Str::slug($this->asesorName), 0, 10)
         );
     }
 
@@ -146,7 +146,7 @@ class PenilaianExcelService
 
         // Buat sheet Penilaian Personal
         $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle('Penilaian ' . ucfirst($this->penilaianFullName));
+        $sheet->setTitle('Penilaian ' . ucfirst($this->penilaianName));
         self::addLogoAndZoom($sheet, 70, 'B2', null, 35);
 
         // Set column widths - hanya sampai kolom G
@@ -166,7 +166,7 @@ class PenilaianExcelService
 
         // ✅ Signature section
         $signatureStartRow = null;
-        if (strtolower($this->penilaianName) == 'al') {
+        if (in_array($this->jenisAsesmen, ['al', 'al_banding'])) {
             $asesors = $this->getAsesors($asesmen, false);
             [$lastRow, $signatureStartRow] = $this->buildSignatureSection($sheet, $asesmen, $asesors, $lastRow);
         }
@@ -188,7 +188,7 @@ class PenilaianExcelService
         $sheet->getPageMargins()->setHeader(0);
         $sheet->getPageMargins()->setFooter(0);
 
-        if ($sheet->getTitle() === 'Penilaian ' . ucfirst($this->penilaianFullName)) {
+        if ($sheet->getTitle() === 'Penilaian ' . ucfirst($this->penilaianName)) {
             $sheet->freezePane('A7');
         }
 
@@ -225,14 +225,14 @@ class PenilaianExcelService
         return $this->saveSpreadsheet(
             $spreadsheet,
             'Penilaian_' . $this->penilaianName . '_',
-            Str::slug($asesmen->code) . '_' . Str::slug($this->asesorName)
+            Str::slug($asesmen->id) . '_' . substr(Str::slug($this->asesorName), 0, 10)
         );
     }
 
     public function generateSplitPenilaianAkOnly(Asesmen $asesmen, $userId): string
     {
         // ⚠️ sesuai request: hanya untuk AK
-        if (strtoupper($this->penilaianName) !== 'AK') {
+        if (in_array($this->jenisAsesmen, ['al', 'al_banding'])) {
             throw new \Exception("Mode split hanya untuk Asesmen Kecukupan (AK).");
         }
 
@@ -240,7 +240,7 @@ class PenilaianExcelService
 
         // sheet aktif = satu-satunya sheet
         $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle('Penilaian ' . ucfirst($this->penilaianFullName));
+        $sheet->setTitle('Penilaian ' . ucfirst($this->penilaianName));
         self::addLogoAndZoom($sheet, 60);
 
         // Build sheet Penilaian AK seperti full-withData, tapi DB untuk semua asesor
@@ -255,7 +255,7 @@ class PenilaianExcelService
         return $this->saveSpreadsheet(
             $spreadsheet,
             'Penilaian_' . $this->penilaianName . '_Split_',
-            Str::slug($asesmen->code) . '_' . Str::slug($this->asesorName)
+            Str::slug($asesmen->id) . '_' . substr(Str::slug($this->asesorName), 0, 10)
         );
     }
 
@@ -325,7 +325,7 @@ class PenilaianExcelService
         $sheet->getPageMargins()->setFooter(0);
 
         // Freeze hanya baris 1–7 untuk sheet Penilaian AK
-        if ($sheet->getTitle() === 'Penilaian ' . ucfirst($this->penilaianFullName)) {
+        if ($sheet->getTitle() === 'Penilaian ' . ucfirst($this->penilaianName)) {
             $sheet->freezePane('A7'); // freeze baris 1–6
         }
     }
@@ -482,7 +482,7 @@ class PenilaianExcelService
         $this->buildMenuSheet($spreadsheet, $asesmen);
 
         // Sheet 1 → Kertas Kerja
-        $penilaianName = strtoupper($this->penilaianName);
+        $penilaianName = $this->penilaianName;
         $sheet = $spreadsheet->createSheet();
         $sheet->setTitle('Kertas Kerja Asesor ' . $penilaianName);
         $spreadsheet->setActiveSheetIndex(1);
@@ -1002,9 +1002,9 @@ class PenilaianExcelService
         // BARU pasang logo supaya hitung px-nya pakai ukuran final
         self::addLogoAndZoom($sheet, 80, 'B1', 'D2');
         $this->setTanggalCetak($sheet, 'AA1:AE1');
-        // ===== ROW 1: AKREDITASI PERGURUAN TINGGI (Orange) =====
+        // ===== ROW 1: AKREDITASI PROGRAM STUDI (Orange) =====
         $sheet->mergeCells('E1:Y1');
-        $sheet->setCellValue('E1', 'AKREDITASI PERGURUAN TINGGI');
+        $sheet->setCellValue('E1', 'AKREDITASI PROGRAM STUDI');
         $sheet->getStyle('E1')->applyFromArray([
             'font' => [
                 'bold' => true,
@@ -1056,7 +1056,7 @@ class PenilaianExcelService
             ],
         ]);
         $sheet->mergeCells('D4:Y4');
-        $sheet->setCellValue('D4', 'PERGURUAN TINGGI AKADEMIK');
+        $sheet->setCellValue('D4', '');
         $sheet->getStyle('D4')->applyFromArray([
             'font' => [
                 'bold' => true,
@@ -1372,7 +1372,7 @@ class PenilaianExcelService
 
         // Buat sheet baru
         $sheet = $spreadsheet->createSheet();
-        $sheet->setTitle('Penilaian ' . ucfirst($this->penilaianFullName));
+        $sheet->setTitle('Penilaian ' . ucfirst($this->penilaianName));
         self::addLogoAndZoom($sheet, 60);
 
         // Set column widths - fixed columns dulu
@@ -1412,7 +1412,7 @@ class PenilaianExcelService
 
         // Signature section (khusus AL)
         $signatureStartRow = null;
-        if (strtolower($this->penilaianName) == 'al' && !$isTemplateOnly) {
+        if (in_array($this->jenisAsesmen, ['al', 'al_banding']) && !$isTemplateOnly) {
             [$lastRow, $signatureStartRow] = $this->buildSignatureSection($sheet, $asesmen, $asesors, $lastRow);
         }
 
@@ -1458,7 +1458,7 @@ class PenilaianExcelService
         $sheet->getPageMargins()->setFooter(0);
 
         // Freeze hanya baris 1–7 untuk sheet Penilaian AK
-        if ($sheet->getTitle() === 'Penilaian ' . ucfirst($this->penilaianFullName)) {
+        if ($sheet->getTitle() === 'Penilaian ' . ucfirst($this->penilaianName)) {
             $sheet->freezePane('A7'); // freeze baris 1–6
         }
 
@@ -2286,7 +2286,7 @@ class PenilaianExcelService
     private function getAsesors($asesmen, $isTemplateOnly)
     {
         // Ambil semua asesor untuk asesmen ini
-        $jenisAsesmen = strtolower($this->penilaianName);
+        $jenisAsesmen = strtolower($this->jenisAsesmen);
         $asesorsQuery = \App\Models\AsesmenUserRole::where('id_asesmen', $asesmen->id)
             ->where('jenis_asesmen', $jenisAsesmen)
             ->whereHas('role', function ($q) use ($jenisAsesmen) {
@@ -2306,7 +2306,7 @@ class PenilaianExcelService
 
     private function getFirstAsesorUserId(Asesmen $asesmen): ?int
     {
-        $jenisAsesmen = strtolower($this->penilaianName);
+        $jenisAsesmen = strtolower($this->jenisAsesmen);
 
         $firstAsesor = \App\Models\AsesmenUserRole::where('id_asesmen', $asesmen->id)
             ->where('jenis_asesmen', $jenisAsesmen)

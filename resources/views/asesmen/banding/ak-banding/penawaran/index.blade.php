@@ -257,11 +257,11 @@ $authUser = Auth::user();
                         <td>
                             @if($item->status_penawaran === 'accepted')
                             @if($authUser->role_selected == 'asesor')
-                            <a href="{{ route('ak.berkas.show',$item->id_asesmen) }}" class="btn btn-sm btn-outline-primary">
+                            <a href="{{ route('ak_banding.berkas.show',$item->id_asesmen) }}" class="btn btn-sm btn-outline-primary">
                                 <i class="bi bi-arrow-right"></i> Lihat Penilaian
                             </a>
                             @elseif($authUser->role_selected == 'validator')
-                            <a href="{{ route('ak.validasi.asesor',['idAsesmen'=>$item->id_asesmen,'asesor1Id'=>$idAsesors[0],'asesor2Id'=>$idAsesors[1]]) }}" class="btn btn-sm btn-outline-primary">
+                            <a href="{{ route('ak_banding.validasi.asesor',['idAsesmen'=>$item->id_asesmen,'asesor1Id'=>$idAsesors[0],'asesor2Id'=>$idAsesors[1]]) }}" class="btn btn-sm btn-outline-primary">
                                 <i class="bi bi-arrow-right"></i> Lihat Penilaian
                             </a>
                             @endif

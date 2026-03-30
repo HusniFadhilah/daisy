@@ -1668,7 +1668,7 @@ $isComplete = $progress['percentage'] == 100;
                             updateCharCount(komentarTextarea);
                             updateSaveStatus(form, 'Belum ada penilaian', 'text-muted');
 
-                            const card = form.closest('.indikator-card');
+                            const card = form.closest('.elemen-card');
                             card.classList.remove('has-penilaian');
 
                             const badge = card.querySelector('.badge.bg-success');
@@ -1804,7 +1804,7 @@ $isComplete = $progress['percentage'] == 100;
                     });
                     updateSaveStatus(form, `Tersimpan pada ${timeStr}`, 'text-success');
 
-                    const card = form.closest('.indikator-card');
+                    const card = form.closest('.elemen-card');
                     if (card) {
                         card.classList.add('has-penilaian');
 
@@ -2719,7 +2719,7 @@ $isComplete = $progress['percentage'] == 100;
                     Anda adalah <strong>asesor pertama</strong> yang membuka halaman
                     penilaian AL ini, sehingga hak mengisi penilaian diberikan kepada Anda.
                 </p>
-                <div class="alert alert-success mb-3" style="border-left:4px solid #198754;">
+                <div class="alert alert-success alert-permanent mb-3" style="border-left:4px solid #198754;">
                     <i class="bi bi-shield-check me-2"></i>
                     <strong>Hanya Anda yang dapat:</strong>
                     <ul class="mb-0 mt-1 small">
@@ -2729,7 +2729,7 @@ $isComplete = $progress['percentage'] == 100;
                         <li>Memfinalisasi dan mengirim penilaian</li>
                     </ul>
                 </div>
-                <div class="alert alert-warning mb-0" style="border-left:4px solid #ffc107;">
+                <div class="alert alert-warning alert-permanent mb-0" style="border-left:4px solid #ffc107;">
                     <i class="bi bi-people me-2"></i>
                     <strong>Asesor Lain dalam Tim</strong><br>
                     <small>

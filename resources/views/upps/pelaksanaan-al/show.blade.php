@@ -36,7 +36,7 @@
             $allowed = [
             \App\Models\PengajuanAkreditasi::STATUS_ASESOR_AL_ASSIGNED,
             \App\Models\PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
-            \App\Models\PengajuanAkreditasi::STATUS_AK_SELESAI,
+            \App\Models\PengajuanAkreditasi::STATUS_AL_SELESAI,
             ]; // ini contoh, bisa dinamis dari config/db/request
 
             $log = $pengajuan->latestRelevantStatusLog($allowed);
@@ -48,18 +48,18 @@
                 <strong>Proses Pelaksanaan AL</strong><br>
                 Permohonan akreditasi program studi memasuki tahap pelaksanaan AL
             </div>
-            @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_AL_IN_PROGRESS)
-            <div class="alert alert-success alert-permanent">
-                <i class="bi bi-person-check"></i>
-                <strong>Proses Pelaksanaan AL</strong><br>
-                Permohonan akreditasi program studi memasuki tahap pelaksanaan AL
-            </div>
-            @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_AK_SELESAI)
-            <div class="alert alert-success alert-permanent">
+            @elseif(in_array($log?->status_to,[\App\Models\PengajuanAkreditasi::STATUS_AL_IN_PROGRESS]))
+            <div class="alert alert-info alert-permanent border border-dark mb-3">
                 <i class="bi bi-person-check"></i>
                 <strong>Proses Pelaksanaan AL</strong><br>
                 Berita acara pelaksanaan AL program studi dapat diunduh pada link berikut
-                Mohon program studi dapat melakukan tanggapan laporan hasil AL dengan melakukan persetujuan atau memberikan tambahan substansi yang diperlukan
+                Mohon program studi dapat melakukan tanggapan laporan hasil AL dengan melakukan persetujuan atau memberikan tambahan permintaan revisi yang diperlukan
+            </div>
+            @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_AL_SELESAI)
+            <div class="alert alert-success alert-permanent">
+                <i class="bi bi-person-check"></i>
+                <strong>Asesmen Lapangan Selesai</strong><br>
+                Asesmen lapangan telah selesai dilaksanakan
             </div>
             @endif
 
@@ -164,7 +164,7 @@
                                     </span>
                                 </div>
                                 <div>
-                                    <a href="{{ route('al.berkas.documents.preview', ['id' => $pengajuan->asesmen->id, 'docId' => $lha->id]) }}" class="btn btn-success w-100 w-md-auto" target="_blank">
+                                    <a href="{{ route('al.berkas.documents.preview', ['id' => $pengajuan->asesmen->id, 'docId' => $lha->id]) }}" class="btn btn-outline-success w-100 w-md-auto" target="_blank">
                                         <i class="bi bi-file-earmark-pdf"></i> Lihat File
                                     </a>
                                 </div>

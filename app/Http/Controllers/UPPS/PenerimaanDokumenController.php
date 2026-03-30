@@ -23,6 +23,17 @@ class PenerimaanDokumenController extends Controller
      */
     public function index(Request $request)
     {
+        $statusLogs = [
+            PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI,
+            PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM,
+            PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
+            PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
+            // PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
+            // PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
+            // PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,
+            // PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
+            // PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
+        ];
         $user = Auth::user();
         $studyProgramIds = $user->studyPrograms()->pluck('study_programs.id');
 
@@ -39,32 +50,12 @@ class PenerimaanDokumenController extends Controller
                 'borang_final'
             ])
                 ->where('is_latest', true),
-            'statusLog' => fn($q) => $q->whereIn('status_to', [
-                PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI,
-                PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM,
-                PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
-                PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
-                // PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
-                // PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
-                // PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,
-                // PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
-                // PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
-            ])->orderBy('changed_at', 'desc'),
-        ])->whereIn('id_program_studi', $studyProgramIds)->whereExists(function ($q) {
+            'statusLog' => fn($q) => $q->whereIn('status_to', $statusLogs)->orderBy('changed_at', 'desc'),
+        ])->whereIn('id_program_studi', $studyProgramIds)->whereExists(function ($q) use ($statusLogs) {
             $q->select(DB::raw(1))
                 ->from('pengajuan_status_log as l')
                 ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
-                ->whereIn('l.status_to', [
-                    PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI,
-                    PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM,
-                    PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA,
-                    PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI,
-                    // PengajuanAkreditasi::STATUS_BORANG_VALIDATION_PENDING,
-                    // PengajuanAkreditasi::STATUS_BORANG_IN_VALIDATION,
-                    // PengajuanAkreditasi::STATUS_BORANG_REVISION_REQUIRED,
-                    // PengajuanAkreditasi::STATUS_BORANG_VALIDATED,
-                    // PengajuanAkreditasi::STATUS_BORANG_FINAL_DITERIMA,
-                ]);
+                ->whereIn('l.status_to', $statusLogs);
         });
 
         // Apply filters

@@ -143,10 +143,31 @@ return new class extends Migration
                 ->nullable()->constrained('status_akreditasi')->nullOnDelete();
             $table->foreignId('id_status_hasil')
                 ->nullable()->constrained('status_akreditasi')->nullOnDelete();
-            $table->foreignId('id_status_banding')
+            $table->foreignId('id_status_ak_banding')
+                ->nullable()->constrained('status_akreditasi')->nullOnDelete();
+            $table->foreignId('id_status_al_banding')
                 ->nullable()->constrained('status_akreditasi')->nullOnDelete();
             $table->foreignId('id_status_final')
                 ->nullable()->constrained('status_akreditasi')->nullOnDelete();
+
+            // ── Status workflow ──
+            $table->enum('status', [
+                'draft',           // awal, belum ada perhitungan
+                'draft_ak',        // AK sedang dihitung
+                'final_ak',        // AK difinalisasi, menunggu AL
+                'draft_al',        // AL sedang dihitung
+                'final_al',        // AL difinalisasi (jarang dipakai langsung)
+                'final_hasil',     // Hasil difinalisasi & disampaikan ke PS
+                'draft_ak_banding', // AK Banding sedang dihitung
+                'final_ak_banding', // AK Banding difinalisasi, menunggu AL Banding
+                'draft_al_banding', // AL Banding sedang dihitung
+                'final_al_banding', // AL Banding difinalisasi (jarang dipakai langsung)
+                // 'draft_banding',   // Banding sedang diproses
+                // 'final_banding',   // Banding difinalisasi
+                'draft_penetapan', // Sedang disiapkan untuk penetapan
+                'final_penetapan', // Penetapan dikunci
+                'published',       // Dipublikasikan ke PS
+            ])->default('draft');
 
             // ── AK (Asesmen Kecukupan) ──
             $table->decimal('skor_ak', 8, 2)->nullable();
@@ -238,25 +259,6 @@ return new class extends Migration
                 ->comment('True jika semua syarat Unggul terpenuhi saat finalisasi');
             $table->text('catatan_validasi')->nullable()
                 ->comment('Keterangan lengkap hasil cek syarat Unggul');
-
-            // ── Status workflow ──
-            $table->enum('status', [
-                'draft',           // awal, belum ada perhitungan
-                'draft_ak',        // AK sedang dihitung
-                'final_ak',        // AK difinalisasi, menunggu AL
-                'draft_al',        // AL sedang dihitung
-                'final_al',        // AL difinalisasi (jarang dipakai langsung)
-                'final_hasil',     // Hasil difinalisasi & disampaikan ke PS
-                'draft_ak_banding', // AK Banding sedang dihitung
-                'final_ak_banding', // AK Banding difinalisasi, menunggu AL Banding
-                'draft_al_banding', // AL Banding sedang dihitung
-                'final_al_banding', // AL Banding difinalisasi (jarang dipakai langsung)
-                // 'draft_banding',   // Banding sedang diproses
-                // 'final_banding',   // Banding difinalisasi
-                'draft_penetapan', // Sedang disiapkan untuk penetapan
-                'final_penetapan', // Penetapan dikunci
-                'published',       // Dipublikasikan ke PS
-            ])->default('draft');
 
             $table->text('catatan_perhitungan')->nullable();
             $table->json('metadata')->nullable()

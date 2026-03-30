@@ -17,7 +17,6 @@ class PermohonanBandingController extends Controller
     // STATUS YANG RELEVAN UNTUK BANDING (tampil di list UPPS)
     // ============================================================
     private const STATUS_LIST_UPPS = [
-        PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI,   // belum banding, bisa ajukan
         PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
         PengajuanAkreditasi::STATUS_BANDING_DITERIMA,
         PengajuanAkreditasi::STATUS_MENUNGGU_PEMBAYARAN_BANDING,
@@ -93,74 +92,31 @@ class PermohonanBandingController extends Controller
         $user            = Auth::user();
         $studyProgramIds = $user->studyPrograms()->pluck('study_programs.id');
 
+        // Hanya prodi yang eligible
+        $eligibleProdiIds = PengajuanAkreditasi::whereIn('id_program_studi', $studyProgramIds)
+            ->where('status', PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI)
+            ->whereNotNull('tanggal_hasil_akreditasi_dikirim')
+            ->whereDoesntHave('statusLog', fn($q) => $q
+                ->where('status_to', PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN))
+            ->pluck('id_program_studi')
+            ->unique();
+
         $prodis = $user->studyPrograms()
             ->with(['university', 'degreeLevel'])
+            ->whereIn('study_programs.id', $eligibleProdiIds)
             ->get();
 
-        // Resolve prodi yang dipilih
-        $selectedProdiId = $request->get('prodi_id');
-        $selectedProdi   = null;
-
-        if ($selectedProdiId && $studyProgramIds->contains($selectedProdiId)) {
-            $selectedProdi = $prodis->firstWhere('id', $selectedProdiId);
-        } elseif ($prodis->count() === 1) {
-            $selectedProdi   = $prodis->first();
-            $selectedProdiId = $selectedProdi->id;
-        }
-
-        // ✅ Pengajuan yang bisa diajukan banding:
-        //    - status = masa_sanggah_dimulai (satu-satunya window)
-        //    - belum pernah punya status_log banding_diajukan
-        //    - sudah ada tanggal_hasil_akreditasi_dikirim
-        $pengajuansAvailable = collect();
-        if ($selectedProdiId) {
-            $pengajuansAvailable = PengajuanAkreditasi::with([
-                'asesmen.hasil',
-                'studyProgram',
-            ])
-                ->where('id_program_studi', $selectedProdiId)
-                ->where('status', PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI)
-                ->whereNotNull('tanggal_hasil_akreditasi_dikirim')
-                // ✅ Pastikan belum pernah mengajukan banding sebelumnya
-                ->whereDoesntHave('statusLog', fn($q) => $q
-                    ->where('status_to', PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN))
-                ->latest()
-                ->get();
-        }
-
-        // Auto-select pengajuan dari URL param
-        $selectedPengajuanId = $request->get('pengajuan_id');
-        $selectedPengajuan   = null;
-
-        if ($selectedPengajuanId) {
-            $selectedPengajuan = $pengajuansAvailable->firstWhere('id', $selectedPengajuanId);
-        }
-
-        return view('upps.permohonan-banding.create', compact(
-            'prodis',
-            'selectedProdi',
-            'selectedProdiId',
-            'pengajuansAvailable',
-            'selectedPengajuan'
-        ));
+        return view('upps.permohonan-banding.create', compact('prodis'));
     }
 
-    // ============================================================
-    // STORE
-    // ============================================================
-
-    /**
-     * Simpan permohonan banding dari UPPS
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'id_pengajuan'          => 'required|exists:pengajuan_akreditasi,id',
+            'id_program_studi'      => 'required|exists:study_programs,id',
             'alasan_banding'        => 'required|string|max:5000',
             'file_surat_permohonan' => 'required|file|mimes:pdf|max:5120',
         ], [
-            'id_pengajuan.required'          => 'Pengajuan akreditasi harus dipilih.',
-            'id_pengajuan.exists'            => 'Pengajuan akreditasi tidak valid.',
+            'id_program_studi.required'      => 'Program studi harus dipilih.',
             'alasan_banding.required'        => 'Alasan banding wajib diisi.',
             'file_surat_permohonan.required' => 'Surat permohonan banding wajib diupload.',
             'file_surat_permohonan.mimes'    => 'File harus berformat PDF.',
@@ -170,49 +126,52 @@ class PermohonanBandingController extends Controller
         $user            = Auth::user();
         $studyProgramIds = $user->studyPrograms()->pluck('study_programs.id');
 
+        // Pastikan user punya akses ke prodi ini
+        if (!$studyProgramIds->contains($validated['id_program_studi'])) {
+            abort(403, 'Anda tidak memiliki akses ke program studi ini.');
+        }
+
+        // Resolve id_pengajuan dari prodi yang disubmit
+        $pengajuan = PengajuanAkreditasi::where('id_program_studi', $validated['id_program_studi'])
+            ->where('status', PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI)
+            ->whereNotNull('tanggal_hasil_akreditasi_dikirim')
+            ->whereDoesntHave('statusLog', fn($q) => $q
+                ->where('status_to', PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN))
+            ->latest()
+            ->first();
+
+        if (!$pengajuan) {
+            return back()
+                ->withInput()
+                ->with('error', 'Program studi ini tidak memiliki pengajuan akreditasi yang dapat diajukan banding.');
+        }
+
         DB::beginTransaction();
         try {
-            $pengajuan = PengajuanAkreditasi::findOrFail($validated['id_pengajuan']);
-
-            // ✅ Pastikan UPPS punya akses ke prodi ini
-            if (!$studyProgramIds->contains($pengajuan->id_program_studi)) {
-                throw new \Exception('Anda tidak memiliki akses ke pengajuan ini.');
-            }
-
-            // ✅ Validasi: hanya boleh dari status masa_sanggah_dimulai
-            //    STATUS_MASA_SANGGAH_SELESAI tidak boleh — masa sanggah sudah tutup
+            // Validasi status
             if ($pengajuan->status !== PengajuanAkreditasi::STATUS_MASA_SANGGAH_DIMULAI) {
-                throw new \Exception(
-                    $pengajuan->status === PengajuanAkreditasi::STATUS_MASA_SANGGAH_SELESAI
-                        ? 'Masa sanggah sudah berakhir. Permohonan banding tidak dapat diajukan.'
-                        : 'Status pengajuan saat ini tidak memperbolehkan pengajuan banding.'
-                );
+                throw new \Exception('Status pengajuan saat ini tidak memperbolehkan pengajuan banding.');
             }
 
-            // ✅ Cek via status log — bukan via dokumen
-            //    (dokumen bisa saja belum ada meski sudah pernah diajukan karena bug)
+            // Cek via status log
             $sudahDiajukan = $pengajuan->statusLog()
                 ->where('status_to', PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN)
                 ->exists();
 
             if ($sudahDiajukan) {
-                throw new \Exception('Permohonan banding untuk pengajuan ini sudah pernah diajukan sebelumnya.');
+                throw new \Exception('Permohonan banding untuk pengajuan ini sudah pernah diajukan.');
             }
 
-            // ✅ Simpan status lama sebelum update
             $statusFrom = $pengajuan->status;
 
-            // ✅ Update pengajuan
             $pengajuan->update([
                 'status'                     => PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
                 'tanggal_permohonan_banding' => now(),
                 'alasan_banding'             => $validated['alasan_banding'],
             ]);
 
-            // ✅ Upload surat permohonan banding
             $this->uploadSuratBanding($pengajuan, $request->file('file_surat_permohonan'));
 
-            // ✅ Log status change
             $pengajuan->statusLog()->create([
                 'status_from' => $statusFrom,
                 'status_to'   => PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
@@ -230,7 +189,7 @@ class PermohonanBandingController extends Controller
             DB::rollBack();
             Log::error('store permohonan banding gagal', [
                 'user_id'      => auth()->id(),
-                'pengajuan_id' => $validated['id_pengajuan'] ?? null,
+                'pengajuan_id' => $pengajuan?->id,
                 'error'        => $e->getMessage(),
             ]);
 

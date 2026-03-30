@@ -1,4 +1,4 @@
-{{-- resources/views/asesmen/al/berkas/document.blade.php --}}
+{{-- resources/views/asesmen/al-banding/berkas/document.blade.php --}}
 @extends('layouts.template.app')
 
 @section('title', 'Upload Berita Acara AL Banding - ' . $asesmen->name)
@@ -434,7 +434,7 @@
                     })
                     .then(function(data) {
                         if (data.success) {
-                            alert(data.message || 'File berhasil diupload!');
+                            Swal.fire('Berhasil', data.message || 'File berhasil diupload!', 'success');
                             window.location.reload();
                         } else {
                             Swal.fire('Perhatian', data.message || 'Gagal upload file', 'error');
@@ -477,10 +477,10 @@
                     })
                     .then(function(data) {
                         if (data.success) {
-                            alert(data.message || 'Dokumen berhasil dihapus');
+                            Swal.fire('Berhasil', data.message || 'Dokumen berhasil dihapus', 'success');
                             window.location.reload();
                         } else {
-                            alert(data.message || 'Gagal menghapus dokumen');
+                            Swal.fire('Perhatian', data.message || 'Gagal menghapus dokumen', 'error');
                             window.location.reload();
                         }
                     })
@@ -516,10 +516,10 @@
                     })
                     .then(function(data) {
                         if (data.success) {
-                            alert(data.message || 'Berita acara berhasil difinalisasi!');
+                            Swal.fire('Berhasil', data.message || 'Berita acara berhasil difinalisasi!', 'success');
                             window.location.href = "{{ route('al_banding.berkas') }}";
                         } else {
-                            alert(data.message || 'Gagal finalisasi');
+                            Swal.fire('Perhatian', data.message || 'Gagal finalisasi', 'error');
                             btnFinalize.disabled = false;
                             btnFinalize.innerHTML = '<i class="bi bi-check-circle"></i> Finalisasi dan Kirim';
                         }

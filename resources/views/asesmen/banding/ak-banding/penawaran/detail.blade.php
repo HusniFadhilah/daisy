@@ -128,7 +128,7 @@
                             <div class="alert alert-success alert-permanent mb-0">
                                 <i class="bi bi-check-circle me-1"></i>
                                 Anda telah menerima penawaran ini.
-                                <a href="{{ route('ak.berkas.show', $asesmen->id) }}" class="alert-link">
+                                <a href="{{ route('ak_banding.berkas.show', $asesmen->id) }}" class="alert-link">
                                     Buka Penilaian
                                 </a>
                             </div>
@@ -140,8 +140,8 @@
                             @endif
                         </div>
                         <div class="card-footer">
-                            <a href="{{ route('ak.berkas') }}" class="btn btn-link">
-                                <i class="bi bi-arrow-left"></i> Kembali ke Daftar Berkas
+                            <a href="{{ route('ak_banding.berkas') }}" class="btn btn-link">
+                                <i class="bi bi-arrow-left"></i> Kembali ke Daftar Penilaian
                             </a>
                         </div>
                     </div>

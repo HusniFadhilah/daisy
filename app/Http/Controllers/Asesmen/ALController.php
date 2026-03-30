@@ -857,7 +857,7 @@ class ALController extends Controller
 
                     $skors = [];
                     foreach ($asesors as $asesor) {
-                        $penilaian = $elemen->penilaianElemenAk
+                        $penilaian = $elemen->penilaianElemenAl
                             ->where('id_asesor', $asesor->id_user)
                             ->first();
 
@@ -914,7 +914,7 @@ class ALController extends Controller
             abort(403, 'Mohon maaf role Anda sebagai ' . $user->role_selected . ' tidak diizinkan membuka halaman ini.');
         }
 
-        // ── [BARU] Hard gate: cek asesor lain yang sudah duluan ─────────────
+        // ── Cek asesor lain yang sudah duluan — SAMA PERSIS dengan showBerkas ──
         $firstStartedByOther = AsesmenUserRole::where('id_asesmen', $idAsesmen)
             ->where('jenis_asesmen', 'al')
             ->whereHas('role', fn($q) => $q->where('name', 'asesor'))
@@ -935,7 +935,7 @@ class ALController extends Controller
         }
 
         $isFirstVisitForMe = !$iAmAlreadyStarted;
-        $isFirstOpener     = true;
+        $isFirstOpener     = is_null($firstStartedByOther);
         $firstOpenerUser   = null;
 
         $this->updateStatusAL($assignment);
@@ -947,18 +947,20 @@ class ALController extends Controller
         $isSubmittedOnly = $statusPekerjaan === 'submitted';
         $isApproved      = $statusPekerjaan === 'approved';
         $isComplete      = $progress['percentage'] == 100;
-        $canUpload       = true; // lolos gate = pasti first opener
 
-        $firstUpload = PenilaianImportLog::where('id_asesmen', $idAsesmen)
-            ->where('status', 'completed')->with('asesor')
-            ->orderBy('created_at', 'asc')->first();
-
-        $isUploader = $firstUpload && $firstUpload->id_asesor == Auth::id();
-
+        // ── Asesor team — SAMA dengan showBerkas ────────────────────────────
         $asesorTeam = AsesmenUserRole::where('id_asesmen', $idAsesmen)
             ->where('jenis_asesmen', 'al')
             ->whereHas('role', fn($q) => $q->where('name', 'asesor'))
-            ->with('user')->orderBy('urutan_asesor')->get();
+            ->with('user')
+            ->orderBy('urutan_asesor')
+            ->get();
+
+        $isEditorAsesor = true; // lolos gate = pasti first opener
+        $firstActiveAsesor = $asesorTeam
+            ->where('status_pekerjaan', '!=', 'not_started')
+            ->sortBy('updated_at')
+            ->first();
 
         return view('asesmen.al.berkas.upload-excel', compact(
             'asesmen',
@@ -968,13 +970,12 @@ class ALController extends Controller
             'isSubmittedOnly',
             'isApproved',
             'isComplete',
-            'firstUpload',
-            'canUpload',
-            'isUploader',
             'asesorTeam',
-            'isFirstVisitForMe',  // [BARU]
-            'isFirstOpener',      // [BARU]
-            'firstOpenerUser'     // [BARU]
+            'isEditorAsesor',
+            'firstActiveAsesor',
+            'isFirstVisitForMe',
+            'isFirstOpener',
+            'firstOpenerUser',
         ));
     }
 

@@ -72,7 +72,7 @@
             @endif
 
             <!-- Form Penugasan -->
-            @if(!$requirementsStatus['met'])
+            {{-- @if(!$requirementsStatus['met']) --}}
             <div class="card mb-4">
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">
@@ -163,7 +163,7 @@
                     </form>
                 </div>
             </div>
-            @endif
+            {{-- @endif --}}
 
             <!-- Daftar Penugasan -->
             <div class="card">

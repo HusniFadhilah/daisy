@@ -571,12 +571,12 @@ class PenugasanAKController extends Controller
 
                 $minRequired = $role->name === 'asesor' ? 2 : 1;
 
-                if ($currentCount <= $minRequired) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => "Tidak bisa menghapus {$role->alias} karena akan melanggar persyaratan minimum ({$minRequired} {$role->alias} untuk AK)."
-                    ], 422);
-                }
+                // if ($currentCount <= $minRequired) {
+                //     return response()->json([
+                //         'success' => false,
+                //         'message' => "Tidak bisa menghapus {$role->alias} karena akan melanggar persyaratan minimum ({$minRequired} {$role->alias} untuk AK)."
+                //     ], 422);
+                // }
             }
 
             $userName = $assignment->user->name;

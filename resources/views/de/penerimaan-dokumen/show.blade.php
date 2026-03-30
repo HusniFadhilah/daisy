@@ -148,21 +148,21 @@
     @endphp
     <!-- Status Alert -->
     @if($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_PEMBAYARAN_DIVERIFIKASI)
-    <div class="alert alert-info alert-permanent mb-0">
+    <div class="alert alert-info alert-permanent mb-4">
         <i class="bi bi-hourglass-split"></i>
         <strong>Menunggu Penerimaan Dokumen</strong>
         <br>
         Program studi sedang dalam proses mengirim dokumen
     </div>
     @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DIKIRIM)
-    <div class="alert alert-info alert-permanent mb-0">
+    <div class="alert alert-info alert-permanent mb-4">
         <i class="bi bi-send"></i>
         <strong>Dokumen telah dikirim</strong>
         <br>
         Mohon download file yang telah diupload oleh program studi sebagai berikut
     </div>
     @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_DRAFT_BORANG_DITERIMA)
-    <div class="alert alert-success alert-permanent mb-0">
+    <div class="alert alert-success alert-permanent mb-4">
         <i class="bi bi-check-circle"></i>
         <strong>Dokumen telah diterima</strong>
         <br>
@@ -171,7 +171,7 @@
         {{-- Diterima pada {{ $pengajuan->tanggal_draft_borang?->locale('id')->translatedFormat('d M Y H:i') ?? '-' }} --}}
     </div>
     @elseif($log?->status_to === \App\Models\PengajuanAkreditasi::STATUS_BORANG_ONLINE_SELESAI)
-    <div class="alert alert-success alert-permanent mb-0">
+    <div class="alert alert-success alert-permanent mb-4">
         <i class="bi bi-ui-checks"></i>
         <strong>Dokumen telah dikirim</strong>
         <br>
@@ -181,11 +181,11 @@
     @endif
 
     {{-- ROW 2: Validator / Tugaskan Validator --}}
-    <div class="row mb-4">
+    <div class="row">
         <div class="col-md-12">
             @if($canAssignValidator)
 
-            <div class="card border-primary">
+            <div class="card border-primary mb-4">
                 <div class="card-header bg-primary text-white">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">

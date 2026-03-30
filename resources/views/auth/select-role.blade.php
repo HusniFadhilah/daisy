@@ -22,10 +22,12 @@ $descriptions = [
 'super_admin' => 'Akses penuh ke seluruh sistem',
 'sekretariat' => 'LAMDEPILAR - Review dan evaluasi asesmen akreditasi',
 'asesor' => 'Melakukan penilaian dokumen akreditasi',
-'validator' => 'Validasi hasil penilaian asesor',
-'verifikator' => 'Verifikasi dokumen dan data',
+'asesor_banding' => 'Melakukan penilaian surveillance banding',
+'validator' => 'Melakukan validasi hasil penilaian asesor',
+'verifikator' => 'Melakukan verifikasi dokumen dan data',
 'admin_univ' => 'Unit Pengelola Perguruan Tinggi',
 'admin_prodi' => 'Unit Pengelola Program Studi',
+'keuangan_lamdepilar' => 'Melakukan validasi pembayaran akreditasi',
 'default' => 'Pengguna umum',
 ];
 return $descriptions[$roleName] ?? 'User role';

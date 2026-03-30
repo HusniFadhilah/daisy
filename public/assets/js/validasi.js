@@ -59,7 +59,7 @@ const PelaporanModule = (() => {
 - Proses penilaian LED oleh Asesor
 - Validasi Penilaian Kecukupan Asesor Oleh Validator
 - Penyampaian Informasi Kepada DE tentang pelaksanaan AL Banding
-- Berita Acara yang menyatakan AL Bandingtelah dilaksanakan dan disepakati
+- Berita Acara yang menyatakan AL Banding telah dilaksanakan dan disepakati
 - Rekomendasi Penetapan Hasil Akreditasi`,
         },
     };

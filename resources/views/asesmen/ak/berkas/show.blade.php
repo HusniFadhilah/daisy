@@ -193,10 +193,10 @@
                                     <i class="bi bi-check-circle"></i> Penilaian Telah Lengkap!
                                 </h5>
                                 <p class="mb-2">
-                                    Anda telah menyelesaikan <strong>semua {{ $progress['total'] }} elemen penilaian</strong>.<br>
-                                    Anda dapat melakukan cek split penilaian antar asesor di tombol berikut <a class="btn btn-info btn-sm" href="{{ route('ak.berkas.cek-split', $asesmen->id) }}" target="_blank">
-                                        <i class="bi bi-search"></i> Cek Split Penilaian
-                                    </a>
+                                    Anda telah menyelesaikan <strong>semua {{ $progress['total'] }} elemen penilaian</strong>.
+                                    {{-- <br>Anda dapat melakukan cek split penilaian antar asesor di tombol berikut <a class="btn btn-info btn-sm" href="{{ route('ak.berkas.cek-split', $asesmen->id) }}" target="_blank">
+                                    <i class="bi bi-search"></i> Cek Split Penilaian
+                                    </a> --}}
                                     <br>Mohon segera lakukan <strong>Finalisasi dan Kirim</strong> setelah melakukan cek split, agar penilaian Anda dapat divalidasi.
                                 </p>
                                 <hr>
@@ -212,12 +212,14 @@
                     @endif
 
                     @if(!$isSubmittedOnly && !$isApproved && !$isComplete && $progress['percentage'] > 0)
-                    <div class="alert alert-info alert-dismissible alert-permanent mb-3">
+                    <div id="progressInfoAlert" class="alert alert-info alert-dismissible alert-permanent mb-3 {{ (!$isSubmittedOnly && !$isApproved && !$isComplete && $progress['percentage'] > 0) ? '' : 'd-none' }}">
                         <i class="bi bi-info-circle me-2"></i>
                         <strong>Progres Penilaian:</strong>
-                        Anda telah menilai {{ $progress['completed'] }} dari {{ $progress['total'] }} elemen
-                        (<strong>{{ $progress['percentage'] }}%</strong>).
-                        Selesaikan <strong>{{ $progress['remaining'] }} elemen</strong> lagi untuk dapat melakukan finalisasi.
+                        Anda telah menilai <strong id="progressAlertCompleted">{{ $progress['completed'] }}</strong> dari
+                        <strong id="progressAlertTotal">{{ $progress['total'] }}</strong> elemen
+                        (<strong id="progressAlertPercentage">{{ $progress['percentage'] }}%</strong>).
+                        Selesaikan <strong id="progressAlertRemaining">{{ $progress['remaining'] }}</strong> elemen lagi
+                        untuk dapat melakukan finalisasi.
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                     @endif
@@ -250,91 +252,8 @@
                     </div>
                     @endif
 
-                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3">
-
-                        <!-- Finalisasi -->
-                        <div>
-                            @if(!$isSubmittedOnly && !$isApproved)
-                            <button class="btn btn-success w-md-100 w-md-auto" id="btnSubmit" {{ $hasRevisionRequests ? 'disabled' : '' }}>
-                                <i class="bi bi-check-circle"></i> Finalisasi dan Kirim
-                            </button>
-
-                            <small class="d-block text-muted mt-1">
-                                <i class="bi bi-info-circle"></i>
-                                Pastikan semua elemen telah dinilai sebelum mengirim
-                            </small>
-
-                            @elseif($isSubmittedOnly)
-                            <button class="btn btn-secondary w-100 w-md-auto" disabled>
-                                <i class="bi bi-clock-history"></i> Menunggu Validasi
-                            </button>
-
-                            @else
-                            <button class="btn btn-success w-100 w-md-auto" disabled>
-                                <i class="bi bi-check-all"></i> Penilaian Disetujui
-                            </button>
-                            @endif
-                        </div>
-
-                        <!-- Excel Buttons -->
-                        <div class="btn-group flex-wrap w-md-100 w-md-auto">
-
-                            <!-- Download -->
-                            <button class="btn btn-primary dropdown-toggle flex-grow-1 flex-md-grow-0" data-bs-toggle="dropdown">
-                                <i class="bi bi-download"></i> Download Excel
-                            </button>
-
-                            <ul class="dropdown-menu">
-                                <li class="dropdown-header">
-                                    <i class="bi bi-file-earmark-excel"></i> Pilih Jenis Excel
-                                </li>
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
-
-                                <!-- Download Templat -->
-                                <li>
-                                    <a class="dropdown-item" href="{{ route('ak.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'template']) }}" id="btnDownloadTemplate">
-                                        <i class="bi bi-file-earmark-text text-info"></i> Download Templat
-                                        <small class="d-block text-muted">Format Excel sebagai templat</small>
-                                    </a>
-                                </li>
-
-                                <!-- Hasil Penilaian - Lengkap -->
-                                <li>
-                                    <a class="dropdown-item btnDownloadData" data-mode="full" href="{{ route('ak.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'full']) }}">
-                                        <i class="bi bi-file-earmark-spreadsheet text-primary"></i> Hasil Penilaian Lengkap
-                                        <small class="d-block text-muted">Menu + Kertas Kerja + Semua Asesor</small>
-                                    </a>
-                                </li>
-
-                                <!-- Hasil Penilaian - Personal -->
-                                <li>
-                                    <a class="dropdown-item btnDownloadData" data-mode="personal" href="{{ route('ak.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'personal']) }}">
-                                        <i class="bi bi-person-check text-success"></i> Hasil Penilaian Anda
-                                        <small class="d-block text-muted">Hanya Sheet Penilaian Anda</small>
-                                    </a>
-                                </li>
-                            </ul>
-
-                            <!-- Upload -->
-                            <button class="btn btn-outline-primary" id="btnImport" {{ ($isSubmittedOnly || $isApproved || $hasRevisionRequests) ? 'disabled' : '' }} title="{{ $hasRevisionRequests ? 'Selesaikan revisi terlebih dahulu' : '' }}">
-                                <i class="bi bi-upload"></i> Upload Excel
-                            </button>
-
-                            <!-- History -->
-                            <button class="btn btn-outline-secondary" id="btnImportHistory">
-                                <i class="bi bi-clock-history"></i>
-                            </button>
-
-                            <!-- Reset -->
-                            <button class="btn btn-outline-danger" id="btnResetAll" {{ $isSubmittedOnly || $isApproved ? 'disabled' : '' }}>
-                                <i class="bi bi-trash"></i> Reset All
-                            </button>
-
-                        </div>
-                    </div>
-
+                    <!-- Finalisasi -->
+                    @include('asesmen.ak.components.finalisasi-button')
 
                     {{-- Progress Summary --}}
                     <div class="mt-3 p-3 bg-light rounded">
@@ -507,8 +426,15 @@
                         <strong>{{ $kriteria->kode_kriteria }}:</strong> {{ $kriteria->nama_kriteria }}
                     </button>
                     <div class="d-flex gap-2 align-items-center">
-                        <span class="badge bg-secondary kriteria-progress" data-kriteria-id="{{ $kriteria->id }}">
-                            0 / {{ $kriteria->elemenStandar->count() }}
+                        @php
+                        $kriteriaCompleted = $kriteria->elemenStandar->filter(
+                        fn($e) => $e->penilaianElemenAk->isNotEmpty()
+                        && $e->penilaianElemenAk->first()->skor !== null
+                        )->count();
+                        $kriteriaTotal = $kriteria->elemenStandar->count();
+                        @endphp
+                        <span class="badge {{ $kriteriaCompleted === $kriteriaTotal && $kriteriaTotal > 0 ? 'bg-success' : ($kriteriaCompleted > 0 ? 'bg-warning' : 'bg-secondary') }} kriteria-progress" data-kriteria-id="{{ $kriteria->id }}">
+                            {{ $kriteriaCompleted }} / {{ $kriteriaTotal }}
                         </span>
                         <button type="button" class="btn btn-sm btn-light" onclick="toggleKriteriaAccordion({{ $kriteria->id }})" title="Expand/Collapse Semua Pernyataan Standar">
                             <i class="bi bi-arrows-expand"></i>
@@ -1088,7 +1014,15 @@
         const loadingOverlay = createLoadingOverlay();
         const toggleBtn = document.getElementById('toggleAllAccordion');
         const importModal = document.getElementById('importModal');
-
+        // ── State untuk update tombol Finalisasi secara dinamis ──────
+        const submitState = {
+            isComplete: @json($isComplete)
+            , hasRevisionRequests: @json($hasRevisionRequests)
+            , allComplete: @json($split['allComplete'])
+            , hasSplit: @json($hasSplit)
+        , };
+        const initialProgress = @json($progress);
+        updateProgressInfoAlert(initialProgress);
         // Initialize
         initializeCharCounters();
         initializeFormHandlers();
@@ -1096,6 +1030,7 @@
         handleUrlHashScroll();
         initializeActionButtons();
         updateAllProgress();
+        syncSummaryFromDOM();
 
         /**
          * ========================================
@@ -1497,28 +1432,26 @@
             const elemenCard = document.querySelector(`.elemen-card[data-elemen-id="${idElemen}"]`);
             if (!elemenCard) return;
 
-            // Tambah/hapus class has-penilaian
             if (hasPenilaian) {
                 elemenCard.classList.add('has-penilaian');
             } else {
                 elemenCard.classList.remove('has-penilaian');
             }
 
-            // Update badge status
             const badge = elemenCard.querySelector('.status-badge');
-            if (!badge) return;
-
-            if (hasPenilaian) {
-                badge.classList.remove('bg-warning', 'text-dark');
-                badge.classList.add('bg-success');
-                badge.innerHTML = '<i class="bi bi-check-circle"></i> Telah Dinilai';
-            } else {
-                badge.classList.remove('bg-success');
-                badge.classList.add('bg-warning', 'text-dark');
-                badge.innerHTML = '<i class="bi bi-clock"></i> Belum Dinilai';
+            if (badge) {
+                if (hasPenilaian) {
+                    badge.classList.remove('bg-warning', 'text-dark');
+                    badge.classList.add('bg-success');
+                    badge.innerHTML = '<i class="bi bi-check-circle"></i> Telah Dinilai';
+                } else {
+                    badge.classList.remove('bg-success');
+                    badge.classList.add('bg-warning', 'text-dark');
+                    badge.innerHTML = '<i class="bi bi-clock"></i> Belum Dinilai';
+                }
             }
 
-            // Sekalian update progress kriteria
+            // yang tetap boleh dari DOM hanya progress per-kriteria
             updateAllProgress();
         }
 
@@ -1824,7 +1757,7 @@
                         updateCharCount(komentarTextarea);
                         updateSaveStatus(form, 'Belum ada penilaian', 'text-muted');
 
-                        const card = form.closest('.indikator-card');
+                        const card = form.closest('.elemen-card');
                         card.classList.remove('has-penilaian');
 
                         const badge = card.querySelector('.badge.bg-success');
@@ -1883,6 +1816,7 @@
                     if (data.progress) {
                         updateProgressPenilaian(data.progress);
                     }
+                    if (submitState.isComplete) window.refreshSplitStatus();
                     // ✅ Update revision count
                     if (data.needs_revision_count !== undefined) {
                         updateRevisionCount(data.needs_revision_count);
@@ -2010,19 +1944,11 @@
                     });
                     updateSaveStatus(form, `Tersimpan pada ${timeStr}`, 'text-success');
 
-                    const card = form.closest('.indikator-card');
-                    if (card) {
-                        card.classList.add('has-penilaian');
-
-                        const badge = card.querySelector('.badge.bg-warning');
-                        if (badge) {
-                            badge.className = 'badge bg-success';
-                            badge.innerHTML = '<i class="bi bi-check-circle"></i> Telah Dinilai';
-                        }
-                    }
+                    setElemenStatus(idElemen, true);
                     if (data.progress) {
                         updateProgressPenilaian(data.progress);
                     }
+                    if (submitState.isComplete) window.refreshSplitStatus();
                     // ✅ Update revision count
                     if (data.needs_revision_count !== undefined) {
                         updateRevisionCount(data.needs_revision_count);
@@ -2035,7 +1961,6 @@
                     if (typeof window.updateMatrixCell === 'function') {
                         window.updateMatrixCell(idElemen, skor);
                     }
-                    if (typeof window.updateMatrixStats === 'function') updateMatrixStats();
                 } else {
                     throw new Error(data.message || 'Gagal menyimpan penilaian');
                 }
@@ -2121,88 +2046,124 @@
                     revisionSummary.style.display = count === 0 ? 'none' : 'block';
                 }
             }
+            submitState.hasRevisionRequests = count > 0;
+            updateFinalisasiButtonState();
         }
 
         function updateProgressPenilaian(progress) {
-            const progressBar = document.getElementById('progressBarPenilaian');
-            const progressPercentage = document.getElementById('progressPercentage');
-            const progressCompleted = document.getElementById('progressCompleted');
-            const progressTotal = document.getElementById('progressTotal');
-            const progressCount = document.getElementById('progressCount');
+            if (!progress) return;
 
+            // Progress bar atas
+            const progressBar = document.getElementById('progressBarPenilaian');
             if (progressBar) {
                 progressBar.style.width = progress.percentage + '%';
                 progressBar.setAttribute('aria-valuenow', progress.percentage);
             }
 
-            if (progressPercentage) {
-                progressPercentage.textContent = progress.percentage + '%';
+            const elPct = document.getElementById('progressPercentage');
+            const elComp = document.getElementById('progressCompleted');
+            const elTotal = document.getElementById('progressTotal');
+            const elCount = document.getElementById('progressCount');
+
+            if (elPct) elPct.textContent = progress.percentage + '%';
+            if (elComp) elComp.textContent = progress.completed;
+            if (elTotal) elTotal.textContent = progress.total;
+            if (elCount) elCount.textContent = `${progress.completed}/${progress.total}`;
+
+            // Summary
+            const sTotal = document.getElementById('summaryTotal');
+            const sCompleted = document.getElementById('summaryCompleted');
+            const sRemaining = document.getElementById('summaryRemaining');
+            const sPercentage = document.getElementById('summaryPercentage');
+
+            if (sTotal) sTotal.innerHTML = `<b>${progress.total}</b>`;
+            if (sCompleted) sCompleted.innerHTML = `<b>${progress.completed}</b>`;
+            if (sRemaining) sRemaining.innerHTML = `<b>${progress.remaining}</b>`;
+            if (sPercentage) sPercentage.innerHTML = `<b>${progress.percentage}%</b>`;
+
+            // Alert info progress
+            updateProgressInfoAlert(progress);
+
+            // Alert submit reminder
+            const alertReminder = document.getElementById('alertSubmitReminder');
+            if (alertReminder) {
+                alertReminder.style.display = progress.percentage === 100 ? 'block' : 'none';
             }
 
-            if (progressCompleted) {
-                progressCompleted.textContent = progress.completed;
-            }
+            submitState.isComplete = progress.percentage == 100;
+            updateFinalisasiButtonState();
 
-            if (progressTotal) {
-                progressTotal.textContent = progress.total;
+            if (submitState.isComplete) {
+                window.refreshSplitStatus();
             }
-
-            if (progressCount) {
-                progressCount.textContent = progress.completed + '/' + progress.total;
-            }
-            // Update summary stats
-            const summaryTotal = document.getElementById('summaryTotal');
-            const summaryCompleted = document.getElementById('summaryCompleted');
-            const summaryRemaining = document.getElementById('summaryRemaining');
-            const summaryPercentage = document.getElementById('summaryPercentage');
-
-            if (summaryTotal) summaryTotal.innerHTML = '<b>' + progress.total + '</b>';
-            if (summaryCompleted) summaryCompleted.innerHTML = '<b>' + progress.completed + '</b>';
-            if (summaryRemaining) summaryRemaining.innerHTML = '<b>' + progress.remaining + '</b>';
-            if (summaryPercentage) summaryPercentage.innerHTML = '<b>' + progress.percentage + '%</b>';
-            const alertSubmitReminder = document.getElementById('alertSubmitReminder');
-            if (alertSubmitReminder) {
-                if (progress.percentage === 100) {
-                    alertSubmitReminder.style.display = 'block';
-                } else {
-                    alertSubmitReminder.style.display = 'none';
-                }
-            }
-            updateAllProgress();
         }
 
         function updateAllProgress() {
             document.querySelectorAll('.kriteria-progress').forEach(badge => {
-                const kriteriaCard = badge.closest('.kriteria-card');
-                const totalIndikators = kriteriaCard.querySelectorAll('.elemen-card').length;
-                const completedIndikators = kriteriaCard.querySelectorAll('.elemen-card.has-penilaian').length;
-
-                badge.textContent = `${completedIndikators} / ${totalIndikators}`;
-
-                if (completedIndikators === totalIndikators && totalIndikators > 0) {
-                    badge.className = 'badge bg-success kriteria-progress';
-                } else if (completedIndikators > 0) {
-                    badge.className = 'badge bg-warning kriteria-progress';
-                } else {
-                    badge.className = 'badge bg-secondary kriteria-progress';
-                }
+                const card = badge.closest('.kriteria-card');
+                if (!card) return;
+                const total = card.querySelectorAll('.elemen-card').length;
+                const completed = card.querySelectorAll('.elemen-card.has-penilaian').length;
+                badge.textContent = `${completed} / ${total}`;
+                badge.className = `badge kriteria-progress ${
+            completed === total && total > 0 ? 'bg-success'
+            : completed > 0 ? 'bg-warning' : 'bg-secondary'
+        }`;
             });
+        }
 
-            document.querySelectorAll('.elemen-progress').forEach(badge => {
-                const elemenCard = badge.closest('.elemen-card');
-                const totalIndikators = elemenCard.querySelectorAll('.indikator-card').length;
-                const completedIndikators = elemenCard.querySelectorAll('.indikator-card.has-penilaian').length;
+        /**
+         * Sync semua counter (summary + progress bar atas) dari DOM.
+         * Sumber kebenaran: class .has-penilaian yang di-set
+         * server-side (saat load) dan dinamis (saat save).
+         */
+        function syncSummaryFromDOM() {
+            const allCards = document.querySelectorAll('.elemen-card');
+            const completedCards = document.querySelectorAll('.elemen-card.has-penilaian');
+            const total = allCards.length;
+            const completed = completedCards.length;
+            const remaining = total - completed;
+            const percentage = total > 0 ? Math.round(completed / total * 100) : 0;
 
-                badge.textContent = `${completedIndikators} / ${totalIndikators}`;
+            // ── Progress bar atas ─────────────────────────────────────
+            const progressBar = document.getElementById('progressBarPenilaian');
+            if (progressBar) {
+                progressBar.style.width = percentage + '%';
+                progressBar.setAttribute('aria-valuenow', percentage);
+            }
+            const elPct = document.getElementById('progressPercentage');
+            const elComp = document.getElementById('progressCompleted');
+            const elTotal = document.getElementById('progressTotal');
+            const elCount = document.getElementById('progressCount');
+            if (elPct) elPct.textContent = percentage + '%';
+            if (elComp) elComp.textContent = completed;
+            if (elTotal) elTotal.textContent = total;
+            if (elCount) elCount.textContent = completed + '/' + total;
 
-                if (completedIndikators === totalIndikators && totalIndikators > 0) {
-                    badge.className = 'badge bg-success elemen-progress';
-                } else if (completedIndikators > 0) {
-                    badge.className = 'badge bg-warning elemen-progress';
-                } else {
-                    badge.className = 'badge bg-info elemen-progress';
-                }
-            });
+            // ── Summary card ──────────────────────────────────────────
+            const s = {
+                total: document.getElementById('summaryTotal')
+                , completed: document.getElementById('summaryCompleted')
+                , remaining: document.getElementById('summaryRemaining')
+                , percentage: document.getElementById('summaryPercentage')
+            , };
+            if (s.total) s.total.innerHTML = `<b>${total}</b>`;
+            if (s.completed) s.completed.innerHTML = `<b>${completed}</b>`;
+            if (s.remaining) s.remaining.innerHTML = `<b>${remaining}</b>`;
+            if (s.percentage) s.percentage.innerHTML = `<b>${percentage}%</b>`;
+
+            // ── Alert reminder submit ─────────────────────────────────
+            const alertReminder = document.getElementById('alertSubmitReminder');
+            if (alertReminder) {
+                alertReminder.style.display = (percentage === 100) ? 'block' : 'none';
+            }
+
+            return {
+                total
+                , completed
+                , remaining
+                , percentage
+            };
         }
 
         function initializeScrollButton() {
@@ -2230,15 +2191,11 @@
          * Jika URL punya hash #elemen-{id}, buka accordion dan scroll.
          * Dipanggil sekali saat halaman load.
          */
-        function handleUrlHashScroll() {
-            const hash = window.location.hash; // contoh: #elemen-42
-            if (!hash || !hash.startsWith('#elemen-')) return;
-
-            const elemenId = hash.replace('#elemen-', '');
+        function openAndScrollToElemen(elemenId) {
             const elemenCard = document.getElementById(`elemen-${elemenId}`);
             if (!elemenCard) return;
 
-            // 1. Buka accordion kriteria induk
+            // buka accordion kriteria induk
             const kriteriaCollapse = elemenCard.closest('.kriteria-collapse');
             if (kriteriaCollapse) {
                 bootstrap.Collapse.getOrCreateInstance(kriteriaCollapse, {
@@ -2246,7 +2203,7 @@
                 }).show();
             }
 
-            // 2. Tunggu kriteria terbuka → buka accordion elemen
+            // tunggu kriteria terbuka, lalu buka elemen
             setTimeout(() => {
                 const elemenCollapse = document.getElementById(`collapse-elemen-${elemenId}`);
                 if (elemenCollapse) {
@@ -2255,12 +2212,13 @@
                     }).show();
                 }
 
-                // 3. Scroll + highlight
+                // tunggu elemen terbuka, lalu scroll
                 setTimeout(() => {
                     elemenCard.scrollIntoView({
                         behavior: 'smooth'
                         , block: 'center'
                     });
+
                     elemenCard.classList.add('elemen-anchor-highlight');
                     setTimeout(() => {
                         elemenCard.classList.remove('elemen-anchor-highlight');
@@ -2268,6 +2226,34 @@
                 }, 400);
             }, 350);
         }
+
+        function handleUrlHashScroll() {
+            const hash = window.location.hash;
+            if (!hash || !hash.startsWith('#elemen-')) return;
+
+            const elemenId = hash.replace('#elemen-', '');
+            openAndScrollToElemen(elemenId);
+        }
+
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('a[href^="#elemen-"]');
+            if (!link) return;
+
+            e.preventDefault();
+
+            const hash = link.getAttribute('href');
+            const elemenId = hash.replace('#elemen-', '');
+
+            // update hash di URL
+            history.pushState(null, null, hash);
+
+            // jalankan scroll custom
+            openAndScrollToElemen(elemenId);
+        });
+
+        window.addEventListener('hashchange', function() {
+            handleUrlHashScroll();
+        });
 
         /**
          * ============================================
@@ -2908,193 +2894,192 @@
                 });
             }
         }
-    });
 
-    /**
-     * ============================================
-     * HANDLE REVISI - AUTO OPEN ACCORDION
-     * ============================================
-     */
-    document.querySelectorAll('.btn-buka-revisi').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const elemenId = this.dataset.elemenId;
-            const kriteriaId = this.dataset.kriteriaId;
+        /**
+         * ============================================
+         * HANDLE REVISI - AUTO OPEN ACCORDION
+         * ============================================
+         */
+        document.querySelectorAll('.btn-buka-revisi').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const elemenId = this.dataset.elemenId;
+                const kriteriaId = this.dataset.kriteriaId;
 
-            // 1. Buka accordion kriteria
-            const kriteriaCollapse = document.querySelector(`#collapse-kriteria-${kriteriaId}`);
-            if (kriteriaCollapse) {
-                const kriteriaInstance = bootstrap.Collapse.getOrCreateInstance(kriteriaCollapse, {
-                    toggle: false
-                });
-                kriteriaInstance.show();
-            }
-
-            // 2. Tunggu kriteria terbuka, lalu buka elemen
-            setTimeout(() => {
-                const elemenCollapse = document.querySelector(`#collapse-elemen-${elemenId}`);
-                if (elemenCollapse) {
-                    const elemenInstance = bootstrap.Collapse.getOrCreateInstance(elemenCollapse, {
+                // 1. Buka accordion kriteria
+                const kriteriaCollapse = document.querySelector(`#collapse-kriteria-${kriteriaId}`);
+                if (kriteriaCollapse) {
+                    const kriteriaInstance = bootstrap.Collapse.getOrCreateInstance(kriteriaCollapse, {
                         toggle: false
                     });
-                    elemenInstance.show();
-
-                    // 3. Scroll ke elemen
-                    setTimeout(() => {
-                        const elemenCard = document.querySelector(`.elemen-card[data-elemen-id="${elemenId}"]`);
-                        if (elemenCard) {
-                            elemenCard.scrollIntoView({
-                                behavior: 'smooth'
-                                , block: 'center'
-                            });
-
-                            // 4. Highlight element
-                            elemenCard.classList.add('highlight-revision');
-                            setTimeout(() => {
-                                elemenCard.classList.remove('highlight-revision');
-                            }, 3000);
-
-                            // 5. Focus ke textarea komentar
-                            const textarea = elemenCard.querySelector('.komentar-textarea');
-                            if (textarea) {
-                                textarea.focus();
-                            }
-                        }
-                    }, 500);
+                    kriteriaInstance.show();
                 }
-            }, 500);
+
+                // 2. Tunggu kriteria terbuka, lalu buka elemen
+                setTimeout(() => {
+                    const elemenCollapse = document.querySelector(`#collapse-elemen-${elemenId}`);
+                    if (elemenCollapse) {
+                        const elemenInstance = bootstrap.Collapse.getOrCreateInstance(elemenCollapse, {
+                            toggle: false
+                        });
+                        elemenInstance.show();
+
+                        // 3. Scroll ke elemen
+                        setTimeout(() => {
+                            const elemenCard = document.querySelector(`.elemen-card[data-elemen-id="${elemenId}"]`);
+                            if (elemenCard) {
+                                elemenCard.scrollIntoView({
+                                    behavior: 'smooth'
+                                    , block: 'center'
+                                });
+
+                                // 4. Highlight element
+                                elemenCard.classList.add('highlight-revision');
+                                setTimeout(() => {
+                                    elemenCard.classList.remove('highlight-revision');
+                                }, 3000);
+
+                                // 5. Focus ke textarea komentar
+                                const textarea = elemenCard.querySelector('.komentar-textarea');
+                                if (textarea) {
+                                    textarea.focus();
+                                }
+                            }
+                        }, 500);
+                    }
+                }, 500);
+            });
         });
-    });
 
-    /**
-     * ============================================
-     * HANDLE "GUNAKAN SKOR INI" BUTTON
-     * ============================================
-     */
-    document.querySelectorAll('.btn-use-validator-score').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const skor = this.dataset.skor;
-            const elemenId = this.dataset.elemenId;
+        /**
+         * ============================================
+         * HANDLE "GUNAKAN SKOR INI" BUTTON
+         * ============================================
+         */
+        document.querySelectorAll('.btn-use-validator-score').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const skor = this.dataset.skor;
+                const elemenId = this.dataset.elemenId;
 
-            // Find form for this elemen
-            const form = document.querySelector(`.form-penilaian[data-elemen-id="${elemenId}"]`);
-            if (!form) return;
+                // Find form for this elemen
+                const form = document.querySelector(`.form-penilaian[data-elemen-id="${elemenId}"]`);
+                if (!form) return;
 
-            const skorSelect = form.querySelector('.skor-select');
-            if (!skorSelect) return;
+                const skorSelect = form.querySelector('.skor-select');
+                if (!skorSelect) return;
 
-            // Set value
-            skorSelect.value = skor;
+                // Set value
+                skorSelect.value = skor;
 
-            // Trigger change event for auto-save
-            skorSelect.dispatchEvent(new Event('input', {
-                bubbles: true
-            }));
+                // Trigger change event for auto-save
+                skorSelect.dispatchEvent(new Event('input', {
+                    bubbles: true
+                }));
 
-            // Visual feedback
-            this.innerHTML = '<i class="bi bi-check-circle"></i> Skor Diterapkan!';
-            this.classList.remove('btn-primary');
-            this.classList.add('btn-success');
+                // Visual feedback
+                this.innerHTML = '<i class="bi bi-check-circle"></i> Skor Diterapkan!';
+                this.classList.remove('btn-primary');
+                this.classList.add('btn-success');
 
-            // Scroll to komentar textarea
-            const komentarTextarea = form.querySelector('.komentar-textarea');
-            if (komentarTextarea) {
-                komentarTextarea.focus();
-                komentarTextarea.scrollIntoView({
-                    behavior: 'smooth'
-                    , block: 'center'
+                // Scroll to komentar textarea
+                const komentarTextarea = form.querySelector('.komentar-textarea');
+                if (komentarTextarea) {
+                    komentarTextarea.focus();
+                    komentarTextarea.scrollIntoView({
+                        behavior: 'smooth'
+                        , block: 'center'
+                    });
+                }
+
+                // Show toast
+                Swal.fire({
+                    toast: true
+                    , position: 'top-end'
+                    , icon: 'success'
+                    , title: `Kategori ${skor} diterapkan!`
+                    , text: 'Silakan perbarui komentar/justifikasi Anda'
+                    , showConfirmButton: false
+                    , timer: 3000
+                    , timerProgressBar: true
                 });
+
+                // Reset button after 3 seconds
+                setTimeout(() => {
+                    this.innerHTML = '<i class="bi bi-lightning-charge"></i> Gunakan Kategori Ini';
+                    this.classList.remove('btn-success');
+                    this.classList.add('btn-primary');
+                }, 3000);
+            });
+        });
+
+        function togglePanduanAccordion(elemenId) {
+            const accordion = document.getElementById(`accordionPanduan${elemenId}`);
+            const items = accordion.querySelectorAll('.accordion-collapse');
+            const anyOpen = Array.from(items).some(item => item.classList.contains('show'));
+
+            items.forEach(item => {
+                const bsCollapse = bootstrap.Collapse.getOrCreateInstance(item, {
+                    toggle: false
+                });
+                anyOpen ? bsCollapse.hide() : bsCollapse.show();
+            });
+        }
+
+        /**
+         * ✅ NEW: Clear Revision UI After Successful Save
+         */
+        function clearRevisionUI(idElemen) {
+            const elemenCard = document.querySelector(`.elemen-card[data-elemen-id="${idElemen}"]`);
+            if (!elemenCard) return;
+
+            // 1. Remove "Perlu Revisi" badge
+            const revisionBadge = elemenCard.querySelector('.badge.bg-warning.text-dark.float-end');
+            if (revisionBadge && revisionBadge.textContent.includes('Perlu Revisi')) {
+                revisionBadge.remove();
             }
 
-            // Show toast
-            Swal.fire({
-                toast: true
-                , position: 'top-end'
-                , icon: 'success'
-                , title: `Kategori ${skor} diterapkan!`
-                , text: 'Silakan perbarui komentar/justifikasi Anda'
-                , showConfirmButton: false
-                , timer: 3000
-                , timerProgressBar: true
-            });
+            // 2. Remove revision alert (catatan validator)
+            const revisionAlert = elemenCard.querySelector('.alert.alert-warning.alert-permanent');
+            if (revisionAlert) {
+                // Fade out animation
+                revisionAlert.style.transition = 'opacity 0.3s ease-out';
+                revisionAlert.style.opacity = '0';
 
-            // Reset button after 3 seconds
-            setTimeout(() => {
-                this.innerHTML = '<i class="bi bi-lightning-charge"></i> Gunakan Kategori Ini';
-                this.classList.remove('btn-success');
-                this.classList.add('btn-primary');
-            }, 3000);
-        });
-    });
-
-    function togglePanduanAccordion(elemenId) {
-        const accordion = document.getElementById(`accordionPanduan${elemenId}`);
-        const items = accordion.querySelectorAll('.accordion-collapse');
-        const anyOpen = Array.from(items).some(item => item.classList.contains('show'));
-
-        items.forEach(item => {
-            const bsCollapse = bootstrap.Collapse.getOrCreateInstance(item, {
-                toggle: false
-            });
-            anyOpen ? bsCollapse.hide() : bsCollapse.show();
-        });
-    }
-
-    /**
-     * ✅ NEW: Clear Revision UI After Successful Save
-     */
-    function clearRevisionUI(idElemen) {
-        const elemenCard = document.querySelector(`.elemen-card[data-elemen-id="${idElemen}"]`);
-        if (!elemenCard) return;
-
-        // 1. Remove "Perlu Revisi" badge
-        const revisionBadge = elemenCard.querySelector('.badge.bg-warning.text-dark.float-end');
-        if (revisionBadge && revisionBadge.textContent.includes('Perlu Revisi')) {
-            revisionBadge.remove();
-        }
-
-        // 2. Remove revision alert (catatan validator)
-        const revisionAlert = elemenCard.querySelector('.alert.alert-warning.alert-permanent');
-        if (revisionAlert) {
-            // Fade out animation
-            revisionAlert.style.transition = 'opacity 0.3s ease-out';
-            revisionAlert.style.opacity = '0';
-
-            setTimeout(() => {
-                revisionAlert.remove();
-            }, 300);
-        }
-
-        // 3. Change card border from warning to success
-        const penilaianCard = elemenCard.querySelector('.penilaian-form-wrapper .card');
-        if (penilaianCard) {
-            penilaianCard.classList.remove('border-warning');
-            penilaianCard.classList.add('border-success');
-
-            // Change card header background
-            const cardHeader = penilaianCard.querySelector('.card-header');
-            if (cardHeader) {
-                cardHeader.classList.remove('bg-warning');
-                cardHeader.classList.add('bg-success');
+                setTimeout(() => {
+                    revisionAlert.remove();
+                }, 300);
             }
+
+            // 3. Change card border from warning to success
+            const penilaianCard = elemenCard.querySelector('.penilaian-form-wrapper .card');
+            if (penilaianCard) {
+                penilaianCard.classList.remove('border-warning');
+                penilaianCard.classList.add('border-success');
+
+                // Change card header background
+                const cardHeader = penilaianCard.querySelector('.card-header');
+                if (cardHeader) {
+                    cardHeader.classList.remove('bg-warning');
+                    cardHeader.classList.add('bg-success');
+                }
+            }
+
+            // 4. Show success indicator
+            showSuccessIndicator(elemenCard);
         }
 
-        // 4. Show success indicator
-        showSuccessIndicator(elemenCard);
-    }
+        /**
+         * ✅ NEW: Show warning for validated penilaian
+         */
+        function showValidatedWarning(data, form, idElemen) {
+            // Show inline warning in form
+            const existingWarning = form.querySelector('.validated-warning');
+            if (existingWarning) {
+                existingWarning.remove();
+            }
 
-    /**
-     * ✅ NEW: Show warning for validated penilaian
-     */
-    function showValidatedWarning(data, form, idElemen) {
-        // Show inline warning in form
-        const existingWarning = form.querySelector('.validated-warning');
-        if (existingWarning) {
-            existingWarning.remove();
-        }
-
-        const warningDiv = document.createElement('div');
-        warningDiv.className = 'alert alert-warning alert-permanent validated-warning mt-3';
-        warningDiv.innerHTML = `
+            const warningDiv = document.createElement('div');
+            warningDiv.className = 'alert alert-warning alert-permanent validated-warning mt-3';
+            warningDiv.innerHTML = `
         <i class="bi bi-lock-fill me-2"></i>
         <strong>Penilaian Terkunci</strong><br>
         <small>
@@ -3102,45 +3087,231 @@
         </small>
     `;
 
-        form.appendChild(warningDiv);
+            form.appendChild(warningDiv);
 
-        // Disable inputs
-        form.querySelectorAll('select, textarea, button[type="submit"]').forEach(el => {
-            el.disabled = true;
-        });
+            // Disable inputs
+            form.querySelectorAll('select, textarea, button[type="submit"]').forEach(el => {
+                el.disabled = true;
+            });
 
-        // Scroll to warning
-        warningDiv.scrollIntoView({
-            behavior: 'smooth'
-            , block: 'center'
-        });
-    }
+            // Scroll to warning
+            warningDiv.scrollIntoView({
+                behavior: 'smooth'
+                , block: 'center'
+            });
+        }
 
-    /**
-     * Show temporary success indicator after revision
-     */
-    function showSuccessIndicator(elemenCard) {
-        const successBadge = document.createElement('div');
-        successBadge.className = 'alert alert-success alert-dismissible alert-permanent fade show mt-2';
-        successBadge.innerHTML = `
+        /**
+         * Show temporary success indicator after revision
+         */
+        function showSuccessIndicator(elemenCard) {
+            const successBadge = document.createElement('div');
+            successBadge.className = 'alert alert-success alert-dismissible alert-permanent fade show mt-2';
+            successBadge.innerHTML = `
         <i class="bi bi-check-circle-fill me-2"></i>
         <strong>Revisi Berhasil Disimpan!</strong>
         Penilaian Anda menunggu validasi ulang dari validator.
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
 
-        const formWrapper = elemenCard.querySelector('.penilaian-form-wrapper .card-body');
-        if (formWrapper) {
-            // Insert at the beginning of card-body
-            formWrapper.insertBefore(successBadge, formWrapper.firstChild);
+            const formWrapper = elemenCard.querySelector('.penilaian-form-wrapper .card-body');
+            if (formWrapper) {
+                // Insert at the beginning of card-body
+                formWrapper.insertBefore(successBadge, formWrapper.firstChild);
 
-            // Auto dismiss after 5 seconds
-            setTimeout(() => {
-                const alert = bootstrap.Alert.getOrCreateInstance(successBadge);
-                alert.close();
-            }, 5000);
+                // Auto dismiss after 5 seconds
+                setTimeout(() => {
+                    const alert = bootstrap.Alert.getOrCreateInstance(successBadge);
+                    alert.close();
+                }, 5000);
+            }
         }
-    }
+
+        function computeSubmitBlockReason() {
+            if (!submitState.isComplete) return 'incomplete';
+            if (submitState.hasRevisionRequests) return 'has_revision';
+            if (!submitState.allComplete) return 'other_not_done';
+            if (submitState.hasSplit) return 'has_split';
+            return 'none';
+        }
+
+        function updateFinalisasiButtonState() {
+            const btn = document.getElementById('btnSubmit');
+            if (!btn) return;
+            btn.disabled = computeSubmitBlockReason() !== 'none';
+        }
+
+        // ── Render split info ke #split-info-container via AJAX ──────
+        window.refreshSplitStatus = async function() {
+            try {
+                const res = await fetch(`/ak/berkas/${idAsesmen}/check-split-result`, {
+                    headers: {
+                        'Accept': 'application/json'
+                        , 'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    , }
+                });
+                const data = await res.json();
+                if (!data.success) return;
+
+                submitState.allComplete = data.allComplete ? data.allComplete : false;
+                submitState.hasSplit = (data.splitCount ? data.splitCount : 0) > 0;
+
+                updateFinalisasiButtonState();
+
+                const container = document.getElementById('split-info-container');
+                if (container) container.innerHTML = buildSplitInfoHTML(data);
+
+            } catch (e) {
+                console.error('refreshSplitStatus error:', e);
+            }
+        };
+
+        function buildSplitInfoHTML(data) {
+            const reason = computeSubmitBlockReason();
+            const cekSplitUrl = `/ak/berkas/${idAsesmen}/cek-split`;
+            const berkasUrl = `/ak/berkas/${idAsesmen}`;
+
+            const labels = {
+                incomplete: 'Mohon selesaikan semua elemen penilaian terlebih dahulu'
+                , has_revision: 'Mohon selesaikan semua permintaan revisi terlebih dahulu'
+                , other_not_done: 'Mohon menunggu asesor lain menyelesaikan penilaian'
+                , has_split: 'Mohon selesaikan diskusi split penilaian dengan asesor lain terlebih dahulu'
+                , none: 'Semua asesor selesai &amp; tidak ada split — siap finalisasi'
+            , };
+
+            let html = `<small class="d-block text-muted mt-1">
+        <i class="bi bi-info-circle"></i> ${labels[reason] ?? ''}
+    </small>`;
+
+            // ── Status asesor lain ─────────────────────────────────
+            if (reason === 'other_not_done' && Array.isArray(data.asesors)) {
+                html += `<div class="mt-2 p-2 bg-light rounded border">
+            <small class="text-muted d-block mb-2 fw-semibold">
+                <i class="bi bi-people me-1"></i> Status Pengisian Asesor:
+            </small>`;
+
+                data.asesors.forEach(a => {
+                    html += `<div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge ${a.is_me ? 'bg-primary' : 'bg-secondary'}"
+                      style="min-width:90px;">${a.is_me ? 'Anda' : a.name}</span>`;
+
+                    if (a.is_done) {
+                        html += `<span class="badge bg-success">
+                    <i class="bi bi-check-circle"></i> Selesai</span>`;
+                    } else {
+                        html += `<div class="progress flex-grow-1" style="height:16px;max-width:180px;">
+                    <div class="progress-bar bg-warning text-dark"
+                         style="width:${a.percentage}%;font-size:11px;">
+                        ${a.percentage}%
+                    </div>
+                </div>
+                <small class="text-muted">${a.completed}/${a.total}</small>`;
+                    }
+                    html += `</div>`;
+                });
+                html += `</div>`;
+            }
+
+            // ── Alert + tabel split ────────────────────────────────
+            if (reason === 'has_split' && Array.isArray(data.splitItems) && data.splitItems.length > 0) {
+                html += `
+        <div class="alert alert-warning alert-permanent mt-2 mb-0 py-2 px-3">
+            <div class="d-flex align-items-center justify-content-between gap-2">
+                <div>
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                    <strong>${data.splitCount} elemen masih split</strong>
+                    <small class="d-block text-danger">
+                        Selesaikan perbedaan penilaian sebelum finalisasi.
+                    </small>
+                </div>
+                <a href="${cekSplitUrl}" class="btn btn-sm btn-outline-dark" target="_blank">
+                    <i class="bi bi-arrow-right-circle"></i> Cek Split Lengkap
+                </a>
+            </div>
+        </div>
+        <div class="mt-2 table-responsive" style="max-height:160px;">
+            <table class="table table-sm table-bordered mb-0 bg-white" style="font-size:12px;">
+                <thead class="table-dark text-center">
+                    <tr>
+                        <th width="10%">Kriteria</th>
+                        <th width="30%">Elemen</th>
+                        <th width="30%">Kategori</th>
+                        <th width="10%">Selisih</th>
+                        <th width="20%">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+                data.splitItems.forEach(item => {
+                    const skorBadges = item.skors.map(s =>
+                        `<div class="mb-1">
+                    <span class="badge bg-light text-dark">${s.nama}</span>
+                    <span class="badge text-dark"
+                          style="background:${getSkorColorJS(s.skor)};">
+                        ${getSkorLabelShort(s.skor)}
+                    </span>
+                </div>`
+                    ).join('');
+
+                    // Di halaman show → anchor; di halaman lain → full URL
+                    const href = window.location.pathname.includes('/berkas/' + idAsesmen) && !window.location.pathname.includes('/upload') ?
+                        `#elemen-${item.elemenId}` :
+                        `${berkasUrl}#elemen-${item.elemenId}`;
+
+                    html += `<tr>
+                <td class="text-center">
+                    <span class="badge bg-primary">${item.kodeKriteria}</span>
+                </td>
+                <td>
+                    <strong>${item.kodeElemen}</strong>
+                    <small class="d-block text-muted">${item.pernyataan}</small>
+                </td>
+                <td>${skorBadges}</td>
+                <td class="text-center">
+                    <span class="badge bg-warning text-dark">${item.selisih}</span>
+                </td>
+                <td class="text-center">
+                    <a href="${href}" class="btn btn-sm btn-outline-dark">
+                        <i class="bi bi-arrow-right-circle"></i>
+                    </a>
+                </td>
+            </tr>`;
+                });
+
+                html += `</tbody></table></div>`;
+            }
+
+            return html;
+        }
+
+        function updateProgressInfoAlert(progress) {
+            const alertEl = document.getElementById('progressInfoAlert');
+            if (!alertEl || !progress) return;
+
+            const completedEl = document.getElementById('progressAlertCompleted');
+            const totalEl = document.getElementById('progressAlertTotal');
+            const percentageEl = document.getElementById('progressAlertPercentage');
+            const remainingEl = document.getElementById('progressAlertRemaining');
+
+            if (completedEl) completedEl.textContent = progress.completed;
+            if (totalEl) totalEl.textContent = progress.total;
+            if (percentageEl) percentageEl.textContent = `${progress.percentage}%`;
+            if (remainingEl) remainingEl.textContent = progress.remaining;
+
+            // tampil hanya kalau:
+            // - belum complete
+            // - progress > 0
+            // - tidak submitted only
+            // - tidak approved
+            const shouldShow = !checkStatusPekerjaan &&
+                !@json($isApproved) &&
+                progress.percentage > 0 &&
+                progress.percentage < 100;
+
+            alertEl.classList.toggle('d-none', !shouldShow);
+        }
+
+    });
 
 </script>
 @endpush

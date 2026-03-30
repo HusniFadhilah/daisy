@@ -56,7 +56,7 @@ class PelaporanBandingController extends Controller
                 'relation' => 'asesmenLapanganBanding',
                 'finalize_keterangan' => 'Pelaporan AL banding difinalisasi oleh',
                 'update_method' => 'al_banding',
-                'initialize_hasil' => true,
+                'initialize_banding' => true,
             ],
         ];
 
@@ -249,8 +249,8 @@ class PelaporanBandingController extends Controller
                 $assignment->update(['status_pekerjaan' => 'submitted', 'submitted_at' => now()]);
 
                 // Initialize hasil akreditasi
-                if (isset($config['initialize_hasil']) && $config['initialize_hasil'] && $pengajuan) {
-                    HasilAkreditasi::initializeHasil($this->hasilService, $pengajuan, $user->id);
+                if (isset($config['initialize_banding']) && $config['initialize_banding'] && $pengajuan) {
+                    HasilAkreditasi::initializeBanding($this->hasilService, $pengajuan, $user->id);
                 }
             }
 

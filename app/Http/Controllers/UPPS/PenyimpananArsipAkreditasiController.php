@@ -18,23 +18,26 @@ class PenyimpananArsipAkreditasiController extends Controller
      */
     public function index(Request $request)
     {
+        $statusLogs = [
+            PengajuanAkreditasi::STATUS_ARSIP_DISIMPAN,
+            PengajuanAkreditasi::STATUS_SELESAI,
+        ];
         $user = Auth::user();
         $studyProgramIds = $user->studyPrograms()->pluck('study_programs.id');
 
         $query = PengajuanAkreditasi::with([
             'studyProgram.university',
             'studyProgram.degreeLevel',
-            'statusLog' => fn($q) => $q->whereIn('status_to', [
-                PengajuanAkreditasi::STATUS_ARSIP_DISIMPAN,
-                PengajuanAkreditasi::STATUS_SELESAI,
-            ])->orderBy('changed_at', 'desc'),
+            'statusLog' => fn($q) => $q->whereIn('status_to', $statusLogs)->orderBy('changed_at', 'desc'),
         ])
             ->whereIn('id_program_studi', $studyProgramIds)
             ->whereNotNull('tanggal_penyimpanan')
-            ->whereIn('status', [
-                PengajuanAkreditasi::STATUS_ARSIP_DISIMPAN,
-                PengajuanAkreditasi::STATUS_SELESAI,
-            ]);
+            ->whereExists(function ($q) use ($statusLogs) {
+                $q->select(DB::raw(1))
+                    ->from('pengajuan_status_log as l')
+                    ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
+                    ->whereIn('l.status_to', $statusLogs);
+            });
 
         // Apply filters
         $this->applyFilters($query, $request);

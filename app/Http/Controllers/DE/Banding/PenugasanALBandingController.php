@@ -211,7 +211,7 @@ class PenugasanALBandingController extends Controller
             'id_user' => 'required|exists:users,id',
             'tanggal_mulai' => 'required|date',
             'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
-            'lokasi_visitasi' => 'required|string|max:500',
+            'lokasi' => 'required|string|max:500',
             'file_surat_tugas' => 'nullable|file|mimes:pdf|max:5120', // ✅ Optional surat tugas
         ]);
 
@@ -243,7 +243,7 @@ class PenugasanALBandingController extends Controller
                     'code' => 'AL-Banding-' . $asesmen->code,
                     'tanggal_mulai' => $request->tanggal_mulai,
                     'tanggal_selesai' => $request->tanggal_selesai,
-                    'lokasi_visitasi' => $request->lokasi_visitasi,
+                    'lokasi' => $request->lokasi,
                     'status' => 'active',
                 ]
             );
@@ -253,7 +253,7 @@ class PenugasanALBandingController extends Controller
                 $asesmenLapanganBanding->update([
                     'tanggal_mulai' => $request->tanggal_mulai,
                     'tanggal_selesai' => $request->tanggal_selesai,
-                    'lokasi_visitasi' => $request->lokasi_visitasi,
+                    'lokasi' => $request->lokasi,
                 ]);
             }
 
@@ -448,7 +448,7 @@ class PenugasanALBandingController extends Controller
         $request->validate([
             'tanggal_mulai' => 'required|date',
             'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
-            'lokasi_visitasi' => 'required|string|max:500',
+            'lokasi' => 'required|string|max:500',
         ]);
 
         DB::beginTransaction();
@@ -466,7 +466,7 @@ class PenugasanALBandingController extends Controller
             $pengajuan->asesmen->asesmenLapanganBanding->update([
                 'tanggal_mulai' => $request->tanggal_mulai,
                 'tanggal_selesai' => $request->tanggal_selesai,
-                'lokasi_visitasi' => $request->lokasi_visitasi,
+                'lokasi' => $request->lokasi,
             ]);
 
             DB::commit();
@@ -550,6 +550,7 @@ class PenugasanALBandingController extends Controller
 
         $asesorCount = AsesmenUserRole::where('id_asesmen', $pengajuan->asesmen->id)
             ->where('jenis_asesmen', 'al_banding')
+            ->where('id_role', Role::ID_ROLE_ASESOR_BANDING)
             ->whereIn('status_penawaran', ['pending', 'accepted'])
             ->count();
 

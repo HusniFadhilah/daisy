@@ -133,7 +133,7 @@
                         </tr>
                         <tr>
                             <th>Status Pelaporan Validasi AK Banding</th>
-                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('pelaporan_ak','validator') !!}</td>
+                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('pelaporan_ak','de', 'label_long_for') !!}</td>
                         </tr>
                         @endif
                         <tr>

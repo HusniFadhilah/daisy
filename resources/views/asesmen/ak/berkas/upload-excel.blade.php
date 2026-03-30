@@ -169,10 +169,10 @@
                                     <i class="bi bi-check-circle"></i> Penilaian Telah Lengkap!
                                 </h5>
                                 <p class="mb-2">
-                                    Anda telah menyelesaikan <strong>semua {{ $progress['total'] }} elemen penilaian</strong>.<br>
-                                    Anda dapat melakukan cek split penilaian antar asesor di tombol berikut <a class="btn btn-info btn-sm" href="{{ route('ak.berkas.cek-split', $asesmen->id) }}" target="_blank">
-                                        <i class="bi bi-search"></i> Cek Split Penilaian
-                                    </a>
+                                    Anda telah menyelesaikan <strong>semua {{ $progress['total'] }} elemen penilaian</strong>.
+                                    {{-- <br>Anda dapat melakukan cek split penilaian antar asesor di tombol berikut <a class="btn btn-info btn-sm" href="{{ route('ak.berkas.cek-split', $asesmen->id) }}" target="_blank">
+                                    <i class="bi bi-search"></i> Cek Split Penilaian
+                                    </a> --}}
                                     <br>Mohon segera lakukan <strong>Finalisasi dan Kirim</strong> setelah melakukan cek split, agar penilaian Anda dapat divalidasi.
                                 </p>
                             </div>
@@ -197,37 +197,8 @@
                     </div>
                     @endif
 
-                    {{-- ✅ Action Buttons --}}
-                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3">
-
-                        {{-- Finalisasi Button --}}
-                        <div>
-                            @if(!$isSubmittedOnly && !$isApproved)
-                            <button class="btn btn-success w-md-100 w-md-auto" id="btnSubmit" {{ $hasRevisionRequests ? 'disabled' : '' }}>
-                                <i class="bi bi-check-circle"></i> Finalisasi dan Kirim
-                            </button>
-                            <small class="d-block text-muted mt-1">
-                                <i class="bi bi-info-circle"></i>
-                                Pastikan semua elemen telah dinilai sebelum mengirim
-                            </small>
-                            @elseif($isSubmittedOnly)
-                            <button class="btn btn-secondary w-100 w-md-auto" disabled>
-                                <i class="bi bi-clock-history"></i> Menunggu Validasi
-                            </button>
-                            @else
-                            <button class="btn btn-success w-100 w-md-auto" disabled>
-                                <i class="bi bi-check-all"></i> Penilaian Disetujui
-                            </button>
-                            @endif
-                        </div>
-
-                        {{-- Link to Detail View --}}
-                        <div>
-                            <a href="{{ route('ak.berkas.show', $asesmen->id) }}" class="btn btn-outline-primary">
-                                <i class="bi bi-eye"></i> Lihat Detail Penilaian
-                            </a>
-                        </div>
-                    </div>
+                    <!-- Finalisasi -->
+                    @include('asesmen.ak.components.finalisasi-button')
 
                     {{-- ✅ Progress Summary --}}
                     <div class="mt-3 p-3 bg-light rounded">

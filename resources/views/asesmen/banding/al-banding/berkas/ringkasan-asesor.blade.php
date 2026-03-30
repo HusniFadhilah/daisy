@@ -1,4 +1,4 @@
-{{-- resources/views/asesmen/al/berkas/ringkasan-asesor.blade.php --}}
+{{-- resources/views/asesmen/al-banding/berkas/ringkasan-asesor.blade.php --}}
 @extends('layouts.template.app')
 
 @section('title', 'Upload Ringkasan Hasil Akreditasi - ' . $asesmen->name)

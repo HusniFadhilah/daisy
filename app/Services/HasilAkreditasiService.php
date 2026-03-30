@@ -9,7 +9,9 @@ use App\Models\JenjangPenilaian;
 use App\Models\Kriteria;
 use App\Models\PengajuanAkreditasi;
 use App\Models\PenilaianElemenAk;
+use App\Models\PenilaianElemenAkBanding;
 use App\Models\PenilaianElemenAl;
+use App\Models\PenilaianElemenAlBanding;
 use App\Models\StatusAkreditasi;
 use App\Repositories\SyaratAkreditasiRepository;
 use Illuminate\Support\Collection;
@@ -27,19 +29,24 @@ class HasilAkreditasiService
     // CALCULATE AK
     // =========================================================
 
-    public function calculateAK(Asesmen $asesmen): array
+    public function calculateAK(Asesmen $asesmen, $isBanding = false): array
     {
         if (!$asesmen->studyProgram->id_category) {
             throw new \Exception('Program studi belum memiliki kategori.');
         }
-
-        $penilaians = PenilaianElemenAk::where('id_asesmen', $asesmen->id)
-            ->whereIn('status', ['approved', 'submitted'])
-            ->with(['elemenStandar.kriteria'])
-            ->get();
+        if ($isBanding)
+            $penilaians = PenilaianElemenAkBanding::where('id_asesmen', $asesmen->id)
+                ->whereIn('status', ['approved', 'submitted'])
+                ->with(['elemenStandar.kriteria'])
+                ->get();
+        else
+            $penilaians = PenilaianElemenAk::where('id_asesmen', $asesmen->id)
+                ->whereIn('status', ['approved', 'submitted'])
+                ->with(['elemenStandar.kriteria'])
+                ->get();
 
         if ($penilaians->isEmpty()) {
-            throw new \Exception('Belum ada penilaian AK yang di-approve.');
+            throw new \Exception('Belum ada penilaian AK ' . ($isBanding ? 'banding' : '') . ' yang di-approve.');
         }
 
         $elemenScores = $penilaians->groupBy('id_elemen')->map(function ($group) {
@@ -62,19 +69,25 @@ class HasilAkreditasiService
     // CALCULATE AL
     // =========================================================
 
-    public function calculateAL(Asesmen $asesmen): array
+    public function calculateAL(Asesmen $asesmen, $isBanding = false): array
     {
         if (!$asesmen->studyProgram->id_category) {
             throw new \Exception('Program studi belum memiliki kategori.');
         }
 
-        $penilaians = PenilaianElemenAl::where('id_asesmen', $asesmen->id)
-            ->whereIn('status', ['approved', 'submitted'])
-            ->with(['elemenStandar.kriteria'])
-            ->get();
+        if ($isBanding)
+            $penilaians = PenilaianElemenAlBanding::where('id_asesmen', $asesmen->id)
+                ->whereIn('status', ['approved', 'submitted'])
+                ->with(['elemenStandar.kriteria'])
+                ->get();
+        else
+            $penilaians = PenilaianElemenAl::where('id_asesmen', $asesmen->id)
+                ->whereIn('status', ['approved', 'submitted'])
+                ->with(['elemenStandar.kriteria'])
+                ->get();
 
         if ($penilaians->isEmpty()) {
-            throw new \Exception('Belum ada penilaian AL yang di-approve.');
+            throw new \Exception('Belum ada penilaian AL ' . ($isBanding ? 'banding' : '') . ' yang di-approve.');
         }
 
         $elemenScores = $penilaians->groupBy('id_elemen')->map(function ($group) {
@@ -389,42 +402,150 @@ class HasilAkreditasiService
         }
     }
 
+    public function saveHasilALBanding(Asesmen $asesmen, ?int $userId = null): HasilAkreditasi
+    {
+        DB::beginTransaction();
+        try {
+            $hasil = HasilAkreditasi::where('id_asesmen', $asesmen->id)->firstOrFail();
+
+            if (!$hasil->isAkBandingFinalized() && !$hasil->isAkFinalized()) {
+                throw new \Exception('AK banding harus difinalisasi terlebih dahulu.');
+            }
+
+            $calc = $this->calculateAL($asesmen, true);
+
+            $detailSkorALBanding = [
+                'kriteria' => $calc['detail_kriteria'],
+                'elemen'   => $calc['detail_elemen'],
+                'metadata' => [
+                    'jumlah_elemen' => $calc['jumlah_elemen'],
+                    'calculated_at' => now()->toISOString(),
+                    'calculated_by' => $userId ?? auth()->id(),
+                    'source'        => 'al_banding',
+                ],
+            ];
+
+            $idStatusDraft = $this->resolveStatusIdForDraft((int)$calc['skor_total']);
+
+            $hasil->update([
+                'id_status_al_banding'             => $idStatusDraft,
+                'skor_al_banding'                  => $calc['skor_total'],
+                'skor_al_banding_tertimbang'       => $calc['skor_tertimbang'],
+                'total_bobot_al_banding'           => $calc['total_bobot'],
+                'pelampauan_standar_al_banding'    => $calc['pelampauan_standar'],
+                'detail_skor_al_banding'           => $detailSkorALBanding,
+                'peringkat_akreditasi_banding'     => null,
+                'status'                           => 'draft_al_banding',
+            ]);
+
+            DB::commit();
+            return $hasil->fresh();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('saveHasilALBanding failed', [
+                'asesmen_id' => $asesmen->id,
+                'error'      => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+    }
+
+    public function finalizeHasilALBanding(HasilAkreditasi $hasil, ?int $userId = null): HasilAkreditasi
+    {
+        DB::beginTransaction();
+        try {
+            if (is_null($hasil->skor_al_banding)) {
+                throw new \Exception('Skor AL banding belum dihitung.');
+            }
+
+            $skorALBanding = (float) $hasil->skor_al_banding;
+            $syarat        = $this->cekSyaratUnggul($hasil, $skorALBanding);
+
+            $peringkat  = $hasil->getPeringkatFromSkor(
+                $skorALBanding,
+                $syarat['pelampauan_memenuhi'],
+                $syarat['p1_memenuhi']
+            );
+
+            $idStatus = $this->resolveStatusIdByPeringkat($peringkat);
+
+            $hasil->update([
+                'id_status_al_banding'          => $idStatus,
+                'peringkat_akreditasi_banding'  => $peringkat,
+                'tanggal_finalisasi_al_banding' => now(),
+                'finalized_al_banding_by'       => $userId ?? auth()->id(),
+                'status'                        => 'final_al_banding',
+            ]);
+
+            DB::commit();
+            return $hasil->fresh();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
     // =========================================================
     // SAVE & FINALIZE PENETAPAN
     // =========================================================
 
-    public function saveHasilPenetapan(HasilAkreditasi $hasil, ?int $userId = null): HasilAkreditasi
+    public function saveHasilPenetapan(HasilAkreditasi $hasil, ?int $userId = null, $isForBanding = false): HasilAkreditasi
     {
         DB::beginTransaction();
         try {
-            if (!$hasil->isAlFinalized()) {
+            $pakaiBanding = !is_null($hasil->skor_al_banding) && $hasil->isAlBandingFinalized();
+
+            if (!$pakaiBanding && !$hasil->isAlFinalized()) {
                 throw new \Exception('AL harus difinalisasi sebelum penetapan.');
             }
+
+            if ($pakaiBanding && !$hasil->isAlBandingFinalized()) {
+                throw new \Exception('AL banding harus difinalisasi sebelum penetapan.');
+            }
+
             if ($hasil->isPenetapanFinalized()) {
                 throw new \Exception('Penetapan sudah dikunci, tidak bisa dihitung ulang.');
             }
 
-            $skorFinal          = (float)$hasil->skor_al;
+            $skorFinal = $pakaiBanding
+                ? (float) $hasil->skor_al_banding
+                : (float) $hasil->skor_al;
+
+            $totalBobotFinal = $pakaiBanding
+                ? $hasil->total_bobot_al_banding
+                : $hasil->total_bobot_al;
+
+            $detailSkorFinal = $pakaiBanding
+                ? $hasil->detail_skor_al_banding
+                : $hasil->detail_skor_al;
+
+            $pelampauanFinal = $pakaiBanding
+                ? $hasil->pelampauan_standar_al_banding
+                : $hasil->pelampauan_standar_al;
+
             $syarat             = $this->cekSyaratUnggul($hasil, $skorFinal);
             $memenuhiPelampauan = $syarat['pelampauan_memenuhi'];
             $memenuhiLkps       = $syarat['p1_memenuhi'];
 
-            // Peringkat efektif — konsisten dengan finalizeHasilAL
             $peringkat     = $hasil->getPeringkatFromSkor($skorFinal, $memenuhiPelampauan, $memenuhiLkps);
-
-            // id_status_final konsisten dengan peringkat efektif, bukan raw bySkor
             $idStatusFinal = $this->resolveStatusIdByPeringkat($peringkat);
 
             $hasil->update([
                 'status'                     => 'draft_penetapan',
                 'skor_final'                 => round($skorFinal, 2),
                 'skor_final_tertimbang'      => round($skorFinal, 2),
-                'total_bobot_final'          => $hasil->total_bobot_al,
-                'detail_skor_final'          => $hasil->detail_skor_al,
-                'pelampauan_standar_final'   => $hasil->pelampauan_standar_al,
+                'total_bobot_final'          => $totalBobotFinal,
+                'detail_skor_final'          => $detailSkorFinal,
+                'pelampauan_standar_final'   => $pelampauanFinal,
                 'id_status_final'            => $idStatusFinal,
                 'peringkat_akreditasi_final' => $peringkat,
                 'memenuhi_syarat_unggul'     => $syarat['memenuhi'],
+                'metadata'                   => array_merge(
+                    (array) ($hasil->metadata ?? []),
+                    [
+                        'sumber_penetapan' => $pakaiBanding ? 'al_banding' : 'al',
+                    ]
+                ),
             ]);
 
             DB::commit();
@@ -439,7 +560,12 @@ class HasilAkreditasiService
     {
         DB::beginTransaction();
         try {
-            if (!$hasil->isAlFinalized()) {
+            $pakaiBanding = (($hasil->metadata['sumber_penetapan'] ?? null) === 'al_banding');
+
+            if ($pakaiBanding && !$hasil->isAlBandingFinalized()) {
+                throw new \Exception('AL banding harus difinalisasi sebelum penetapan.');
+            }
+            if (!$pakaiBanding && !$hasil->isAlFinalized()) {
                 throw new \Exception('AL harus difinalisasi sebelum penetapan.');
             }
             if ($hasil->isPenetapanFinalized()) {

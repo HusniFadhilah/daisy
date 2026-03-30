@@ -116,7 +116,7 @@
                 <i class="bi bi-check-circle"></i>
                 <strong>Laporan Surveillance Telah Difinalisasi</strong><br>
                 Laporan Surveillance telah difinalisasi pada {{ $lha->finalized_at->locale('id')->translatedFormat('d M Y H:i') }}.<br>
-                Dokumen telah dikirim ke Program Studi {{ $lha->isFinalizedApproved() ? 'dan telah dilakukan persetujuan' : 'untuk peninjauan.' }}
+                Dokumen telah dikirim ke Program Studi {{ $lhaDocument->approved_at_prodi ? 'dan telah dilakukan persetujuan' : 'untuk peninjauan.' }}
             </div>
             @else
             <div class="alert alert-info alert-permanent mb-4">

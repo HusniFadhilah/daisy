@@ -278,7 +278,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="4" class="text-center py-5">
+                            <td colspan="5" class="text-center py-5">
                                 <i class="bi bi-inbox fs-1 text-muted"></i>
                                 <h5 class="mt-3 text-muted">Belum Ada Asesmen</h5>
                                 <a href="{{ route('dashboard') }}" class="btn btn-primary mt-2">

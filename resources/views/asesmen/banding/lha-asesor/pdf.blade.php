@@ -6,10 +6,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laporan Surveilance Penanganan Banding</title>
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('assets/favicon/apple-touch-icon.png') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('assets/favicon/favicon-32x32.png') }}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('assets/favicon/favicon-16x16.png') }}">
-    <link rel="manifest" href="{{ asset('assets/favicon/site.webmanifest') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ public_path('assets/favicon/apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ public_path('assets/favicon/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ public_path('assets/favicon/favicon-16x16.png') }}">
+    <link rel="manifest" href="{{ public_path('assets/favicon/site.webmanifest') }}">
     <style>
         @page {
             margin: 1.5cm 2cm 2cm 2cm;
@@ -234,10 +234,10 @@
             <td>Nomor Permohonan Akreditasi</td>
             <td>: {{ $asesmen->pengajuan->nomor_permohonan ?? '-' }}</td>
         </tr>
-        @if($asesmen->asesmenLapangan && $asesmen->asesmenLapangan->scheduled_date)
+        @if($asesmen->asesmenLapanganBanding && $asesmen->asesmenLapanganBanding->scheduled_date)
         <tr>
             <td>Tanggal Pelaksanaan AL</td>
-            <td>: {{ $asesmen->asesmenLapangan->scheduled_date->locale('id')->isoFormat('D MMMM Y') }}</td>
+            <td>: {{ $asesmen->asesmenLapanganBanding->scheduled_date->locale('id')->isoFormat('D MMMM Y') }}</td>
         </tr>
         @endif
     </table>
@@ -285,7 +285,7 @@
         </div>
         <ol class="footer-team-list">
             @php
-            $asesorList = $asesmen->asesorAL()
+            $asesorList = $asesmen->asesorALBanding()
             ->where('status_penawaran', 'accepted')
             ->with('user')
             ->get();

@@ -2,7 +2,7 @@
 
 @extends('layouts.template.app')
 
-@section('title', 'Pelaporan AL')
+@section('title', 'Pelaporan AL Banding')
 
 @push('styles')
 <style>
@@ -65,9 +65,9 @@
         <div class="welcome-content">
             <h2>
                 <i class="bi bi-building-check text-white"></i>
-                Pelaporan AL
+                Pelaporan AL Banding
             </h2>
-            <p class="mb-0">Kelola pelaporan hasil Asesmen Lapangan (AL) Program Studi</p>
+            <p class="mb-0">Kelola pelaporan hasil Asesmen Lapangan Banding Program Studi</p>
         </div>
     </div>
 
@@ -79,14 +79,14 @@
                     <i class="bi bi-house-door"></i> Dashboard
                 </a>
             </li>
-            <li class="breadcrumb-item active">Pelaporan AL</li>
+            <li class="breadcrumb-item active">Pelaporan AL Banding</li>
         </ol>
     </nav>
 
     <div class="alert alert-info alert-permanent">
         <i class="bi bi-bell-fill"></i>
-        <strong>Pelaporan AL</strong><br>
-        Pelaporan AL dapat dilihat pada daftar berikut<br>
+        <strong>Pelaporan AL Banding</strong><br>
+        Pelaporan AL Banding dapat dilihat pada daftar berikut<br>
     </div>
 
     @if($assignments->count() > 0)
@@ -96,7 +96,7 @@
         <div class="card-header bg-white">
             <div class="d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">
-                    <i class="bi bi-list-check"></i> Daftar Pelaporan AL
+                    <i class="bi bi-list-check"></i> Daftar Pelaporan AL Banding
                 </h5>
                 <small class="text-muted">Total: {{ $assignments->count() }}</small>
             </div>
@@ -109,8 +109,8 @@
                         <tr>
                             <th width="5%">#</th>
                             <th width="20%">Permohonan Akreditasi</th>
-                            <th width="20%">Status Pelaporan AL</th>
-                            <th width="20%">Tanggal Pelaporan AL</th>
+                            <th width="20%">Status Pelaporan AL Banding</th>
+                            <th width="20%">Tanggal Pelaporan AL Banding</th>
                             <th width="10%" class="text-center">Aksi</th>
                         </tr>
                     </thead>
@@ -136,14 +136,14 @@
 
                         $canReport = false;
                         if ($pengajuan) {
-                        $canReport = $pengajuan->canBeReported('al');
+                        $canReport = $pengajuan->canBeReported('al_banding');
                         }
 
                         $isReported = false;
                         $reportedAt = null;
-                        if ($pengajuan && !empty($pengajuan->tanggal_pelaporan_al)) {
+                        if ($pengajuan && !empty($pengajuan->tanggal_pelaporan_al_banding)) {
                         $isReported = true;
-                        $reportedAt = $pengajuan->tanggal_pelaporan_al;
+                        $reportedAt = $pengajuan->tanggal_pelaporan_al_banding;
                         }
 
                         $statusClass = 'in_progress';
@@ -198,20 +198,20 @@
                                     </button>
                                     @endif
 
-                                    <a href="{{ route('pelaporan.al.show', $assignment->id) }}" class="btn btn-outline-primary" title="Lihat Detail">
+                                    <a href="{{ route('pelaporan.banding.al.show', $assignment->id) }}" class="btn btn-outline-primary" title="Lihat Detail">
                                         <i class="bi bi-eye"></i>
                                     </a>
 
                                     {{-- Tombol Download --}}
                                     @php
                                     $hasDocument = $assignment->asesmen->documents()
-                                    ->where('type', 'laporan_al')
+                                    ->where('type', 'laporan_al_banding')
                                     ->where('is_active', true)
                                     ->exists();
                                     @endphp
 
                                     @if($hasDocument)
-                                    <a href="{{ route('pelaporan.al.download', $assignment->id) }}" class="btn btn-success" title="Download Laporan">
+                                    <a href="{{ route('pelaporan.banding.al.download', $assignment->id) }}" class="btn btn-success" title="Download Laporan">
                                         <i class="bi bi-download"></i>
                                     </a>
                                     @endif
@@ -253,7 +253,7 @@
     <div class="card">
         <div class="card-body text-center py-5">
             <i class="bi bi-building-x" style="font-size: 64px; opacity: 0.3; color: #198754;"></i>
-            <h5 class="mt-3 mb-2">Tidak Ada Pelaporan AL</h5>
+            <h5 class="mt-3 mb-2">Tidak Ada Pelaporan AL Banding</h5>
             <p class="text-muted mb-4">
                 Anda belum memiliki penugasan pelaporan AL saat ini.<br>
                 Pelaporan akan muncul setelah proses AL selesai.
@@ -352,13 +352,13 @@
 
 <script>
     window.PELAPORAN_CFG = {
-        al: {
-            title: 'Pelaporan AL'
+        al_banding: {
+            title: 'Pelaporan AL Banding'
             , label: 'Laporan Hasil Asesmen Lapangan'
-            , upload: @json(route('pelaporan.al.upload', ['assignment' => '__ID__']))
-            , finalize: @json(route('pelaporan.al.finalize', ['assignment' => '__ID__']))
+            , upload: @json(route('pelaporan.banding.al.upload', ['assignment' => '__ID__']))
+            , finalize: @json(route('pelaporan.banding.al.finalize', ['assignment' => '__ID__']))
             , fileLabel: 'Laporan Hasil Asesmen Lapangan'
-            , finalizeLabel: 'Pelaporan AL Telah Selesai'
+            , finalizeLabel: 'Pelaporan AL Banding Telah Selesai'
             , additionalDescription: `Dokumen yang sudah digabungkan, yang diperlukan isinya adalah:
             • Penunjukan tugas Asesor untuk melaksanakan Penilaian LED
             • Proses penilaian LED oleh Asesor

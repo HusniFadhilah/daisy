@@ -36,8 +36,8 @@
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body text-center">
                     <h6 class="text-muted mb-2">Skor Hasil</h6>
-                    @if($hasil->skor_al)
-                    <h1 class="mb-0 text-dark display-4">{{ number_format($hasil->skor_al, 0) }}</h1>
+                    @if($hasil->skor_final)
+                    <h1 class="mb-0 text-dark display-4">{{ number_format($hasil->skor_final, 0) }}</h1>
                     <small class="text-muted">dari 400</small>
                     @else
                     <h2 class="mb-0 text-muted">-</h2>
@@ -573,7 +573,7 @@
                         <th colspan="3" class="text-end">TOTAL:</th>
                         <th class="text-center">{{ number_format($hasil->total_bobot_al ?? 0, 2) }}</th>
                         <th class="text-center">
-                            <strong class="text-dark fs-5">{{ number_format($hasil->skor_al ?? 0, 2) }}</strong>
+                            <strong class="text-dark fs-5">{{ number_format($hasil->skor_final ?? 0, 2) }}</strong>
                         </th>
                         <th></th>
                     </tr>

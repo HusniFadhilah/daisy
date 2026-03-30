@@ -348,32 +348,32 @@
          */
         window.updateMatrixCell = function(elemenId, skor) {
             try {
-                skor = parseInt(skor);
+                skor = parseInt(skor, 10);
                 if (isNaN(skor)) return;
 
-                // ambil semua cell untuk elemen ini (pemenuhan + pelampauan)
                 const cells = document.querySelectorAll(`.matrix-cell[data-elemen-id="${elemenId}"]`);
                 if (!cells.length) return;
 
                 cells.forEach(cell => {
-                    const colType = cell.dataset.col; // 'pemenuhan' / 'pelampauan'
+                    const colType = cell.dataset.col;
 
-                    // logika: skor 4 → isi hanya pelampauan, skor 0–3 → isi hanya pemenuhan
                     const shouldFill =
                         (skor === 4 && colType === 'pelampauan') ||
                         (skor !== 4 && colType === 'pemenuhan');
 
                     cell.classList.toggle('has-score', shouldFill);
                     cell.dataset.skor = shouldFill ? skor : '';
-                    cell.style.backgroundColor = shouldFill ? getSkorColorJS(skor) : '#e0e0e0';
+                    cell.style.backgroundColor = shouldFill ?
+                        getSkorColorJS(skor) :
+                        '#e0e0e0';
 
-                    // animasi kecil
                     cell.classList.add('updating');
                     setTimeout(() => cell.classList.remove('updating'), 500);
                 });
 
-                // update statistik ringkasan
-                updateMatrixStats();
+                // JANGAN update summary utama dari heatmap
+                // updateMatrixStats();
+
             } catch (error) {
                 console.error('Error updating matrix cell:', error);
             }

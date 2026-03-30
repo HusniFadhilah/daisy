@@ -1820,8 +1820,8 @@ class PengajuanAkreditasi extends Model
             'pelaksanaan_banding' => match ($status) {
                 self::STATUS_PEMBAYARAN_BANDING_DIVERIFIKASI =>
                 $audience === 'de'
-                    ? $badge('bg-light', $keyLongShort == 'label_long_for' ? 'Menunggu Pelaksanaan Banding' : 'Menunggu Pelaksanaan')
-                    : $badge('bg-light', $keyLongShort == 'label_long_for' ? 'Menunggu Pelaksanaan Banding' : 'Menunggu Pelaksanaan'),
+                    ? $badge('bg-secondary', $keyLongShort == 'label_long_for' ? 'Menunggu Pelaksanaan Banding' : 'Menunggu Pelaksanaan')
+                    : $badge('bg-secondary', $keyLongShort == 'label_long_for' ? 'Menunggu Pelaksanaan Banding' : 'Menunggu Pelaksanaan'),
                 self::STATUS_ASESOR_AK_BANDING_ASSIGNED =>
                 $badge(
                     $bgFromMap(self::STATUS_ASESOR_AK_BANDING_ASSIGNED, 'bg-info'),
@@ -1868,7 +1868,7 @@ class PengajuanAkreditasi extends Model
                     $labelFor(self::STATUS_AL_BANDING_DILAPORKAN) ?? 'Pelaksanaan Banding Selesai'
                 ),
                 default =>
-                $badge('bg-light', 'Menunggu Pelaksanaan Banding'),
+                $badge('bg-secondary', 'Menunggu Pelaksanaan Banding'),
             },
 
             'penugasan_asesor_ak_banding' => match ($status) {

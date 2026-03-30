@@ -8,6 +8,7 @@ use App\Models\Asesmen;
 use App\Models\AsesmenDocument;
 use App\Models\AsesmenUserRole;
 use App\Models\LhaAsesorBanding;
+use App\Models\PenilaianElemenAlBanding;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -54,7 +55,6 @@ class LhaAsesorBandingController extends Controller
                 'status' => 'draft',
             ]
         );
-
         // ✅ Get team asesor
         $asesorTeam = AsesmenUserRole::where('id_asesmen', $idAsesmen)
             ->where('jenis_asesmen', 'al_banding')
@@ -63,8 +63,12 @@ class LhaAsesorBandingController extends Controller
             })
             ->with('user')
             ->get();
+        $statusPekerjaan = $asesorTeam->pluck('status_pekerjaan');
+        if (!$statusPekerjaan->contains('approved')) {
+            return redirect()->back()->with('warning', 'Masih terdapat penilaian AL banding yang belum difinalisasi. Mohon lakukan finalisasi terlebih dahulu');
+        }
 
-        $lhaDocument = $asesmen->lhaDocuments->first();
+        $lhaDocument = $asesmen->lhaDocumentsBanding->first();
 
         return view('asesmen.banding.lha-asesor.index', compact(
             'asesmen',

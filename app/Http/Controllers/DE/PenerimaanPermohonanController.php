@@ -25,6 +25,10 @@ class PenerimaanPermohonanController extends Controller
      */
     public function index(Request $request)
     {
+        $statusLogs = [
+            PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
+            PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM,
+        ];
         $query = PengajuanAkreditasi::with([
             'studyProgram:id,name,full_name,id_university,id_degree_level',
             'studyProgram.university:id,name',
@@ -32,20 +36,14 @@ class PenerimaanPermohonanController extends Controller
             'pengaju:id,name,email',
             'dokumen' => fn($q) => $q->where('jenis_dokumen', 'surat_penerimaan_de')
                 ->where('is_latest', true),
-            'statusLog' => function ($q) {
-                $q->whereIn('status_to', [
-                    PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
-                    PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM,
-                ])->orderBy('changed_at', 'desc');
+            'statusLog' => function ($q) use ($statusLogs) {
+                $q->whereIn('status_to', $statusLogs)->orderBy('changed_at', 'desc');
             },
-        ])->whereExists(function ($q) {
+        ])->whereExists(function ($q) use ($statusLogs) {
             $q->select(DB::raw(1))
                 ->from('pengajuan_status_log as l')
                 ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
-                ->whereIn('l.status_to', [
-                    PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
-                    PengajuanAkreditasi::STATUS_SURAT_PENERIMAAN_DIKIRIM,
-                ]);
+                ->whereIn('l.status_to', $statusLogs);
         });
 
         // Apply filters

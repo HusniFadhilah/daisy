@@ -2,7 +2,7 @@
 
 @extends('layouts.template.app')
 
-@section('title', 'Detail Pelaporan AL')
+@section('title', 'Detail Pelaporan AL Banding')
 
 @section('content')
 <div class="container-fluid py-3">
@@ -13,7 +13,7 @@
                 <a href="{{ route('dashboard') }}">Dashboard</a>
             </li>
             <li class="breadcrumb-item">
-                <a href="{{ route('banding.pelaporan.indexAL') }}">Pelaporan AL</a>
+                <a href="{{ route('pelaporan.banding.indexAL') }}">Pelaporan AL Banding</a>
             </li>
             <li class="breadcrumb-item active">Detail</li>
         </ol>
@@ -23,7 +23,7 @@
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
         <div>
             <h5 class="mb-1">
-                <i class="bi bi-geo-alt"></i> Detail Pelaporan Asesmen Lapangan (AL)
+                <i class="bi bi-geo-alt"></i> Detail Pelaporan Asesmen Lapangan Banding
             </h5>
             @if($pengajuan)
             <small class="text-muted">{{ $pengajuan->nomor_pengajuan }}</small>
@@ -31,7 +31,7 @@
             <small class="text-muted">{{ $assignment->asesmen->code }}</small>
             @endif
         </div>
-        <a href="{{ route('banding.pelaporan.indexAL') }}" class="btn btn-secondary">
+        <a href="{{ route('pelaporan.banding.indexAL') }}" class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i> Kembali
         </a>
     </div>
@@ -41,28 +41,28 @@
         <div class="col-lg-8 mb-4">
             <!-- Status Alert -->
             @php
-            $isReported = $pengajuan && !empty($pengajuan->tanggal_pelaporan_al);
-            $canReport = $pengajuan && $pengajuan->canBeReported('al');
+            $isReported = $pengajuan && !empty($pengajuan->tanggal_pelaporan_al_banding);
+            $canReport = $pengajuan && $pengajuan->canBeReported('al_banding');
             @endphp
 
             @if($isReported)
             <div class="alert alert-success alert-permanent mb-4">
                 <i class="bi bi-check-circle"></i>
-                <strong>Pelaporan AL telah selesai</strong>
+                <strong>Pelaporan AL Banding telah selesai</strong>
                 <br>
-                Dilaporkan pada {{ $pengajuan->tanggal_pelaporan_al->locale('id')->translatedFormat('d M Y H:i') }}
+                Dilaporkan pada {{ $pengajuan->tanggal_pelaporan_al_banding->locale('id')->translatedFormat('d M Y H:i') }}
             </div>
             @elseif($canReport)
             <div class="alert alert-warning alert-permanent mb-4">
                 <i class="bi bi-hourglass-split"></i>
-                <strong>Menunggu Pelaporan AL</strong>
+                <strong>Menunggu Pelaporan AL Banding</strong>
                 <br>
-                Silakan upload dan finalisasi laporan asesmen lapangan
+                Silakan upload dan finalisasi laporan asesmen lapangan banding
             </div>
             @else
             <div class="alert alert-info alert-permanent mb-4">
                 <i class="bi bi-arrow-repeat"></i>
-                <strong>Proses Asesmen Lapangan Sedang Berlangsung</strong>
+                <strong>Proses Asesmen Lapangan Banding Sedang Berlangsung</strong>
                 <br>
                 Pelaporan dapat dilakukan setelah asesmen selesai
             </div>
@@ -72,13 +72,13 @@
             <div class="card">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-file-pdf"></i> Laporan Hasil Asesmen Lapangan
+                        <i class="bi bi-file-pdf"></i> Laporan Hasil Asesmen Lapangan Banding
                     </h5>
                 </div>
                 <div class="card-body">
                     @php
                     $dokumen = $assignment->asesmen->documents()
-                    ->where('type', 'laporan_al')
+                    ->where('type', 'laporan_al_banding')
                     ->where('is_active', true)
                     ->latest('id')
                     ->first();
@@ -104,7 +104,7 @@
                             </div>
                         </div>
                         <div>
-                            <a href="{{ robanding.ute('pelaporan.al.download', $assignment->id) }}" class="btn btn-success btn-md">
+                            <a href="{{ route('pelaporan.banding.al.download', $assignment->id) }}" class="btn btn-success btn-md">
                                 <i class="bi bi-eye"></i> Lihat File
                             </a>
                         </div>
@@ -119,7 +119,7 @@
                     @else
                     <div class="text-center py-4">
                         <i class="bi bi-file-earmark-x" style="font-size: 48px; color: #ddd;"></i>
-                        <p class="text-muted mt-2 mb-0">Belum ada file laporan asesmen lapangan</p>
+                        <p class="text-muted mt-2 mb-0">Belum ada file laporan asesmen lapangan banding</p>
                         @if($canReport)
                         <button type="button" class="btn btn-info mt-3 js-open-pelaporan" data-type="al_banding" data-assignment-id="{{ $assignment->id }}" data-nomor="{{ $pengajuan->nomor_pengajuan ?? $assignment->asesmen->code }}">
                             <i class="bi bi-upload"></i> Upload Laporan
@@ -133,18 +133,18 @@
             <!-- Informasi Asesmen -->
             <div class="card mt-4">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Informasi Pelaporan AL</h5>
+                    <h5 class="mb-0">Informasi Pelaporan AL Banding</h5>
                 </div>
                 <div class="card-body">
                     <table class="table table-borderless">
                         @if($pengajuan)
                         <tr>
-                            <th>Tanggal Pelaporan AL</th>
-                            <td>: {{ \App\Libraries\Date::tglIndo($pengajuan->tanggal_pelaporan_al) }}</td>
+                            <th>Tanggal Pelaporan AL Banding</th>
+                            <td>: {{ \App\Libraries\Date::tglIndo($pengajuan->tanggal_pelaporan_al_banding) }}</td>
                         </tr>
                         <tr>
-                            <th>Status Pelaporan AL</th>
-                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('pelaporan_al','validator') !!}</td>
+                            <th>Status Pelaporan AL Banding</th>
+                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('pelaporan_al_banding','de', 'label_long_for') !!}</td>
                         </tr>
                         @endif
                         <tr>
@@ -166,8 +166,8 @@
             @if($pengajuan)
             @php
             $filterStatuses = [
-            \App\Models\PengajuanAkreditasi::STATUS_AL_SELESAI,
-            \App\Models\PengajuanAkreditasi::STATUS_AL_DILAPORKAN,
+            \App\Models\PengajuanAkreditasi::STATUS_AL_BANDING_SELESAI,
+            \App\Models\PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN,
             ];
 
             $logs = $pengajuan->statusLog
@@ -213,16 +213,16 @@
             @endif
 
             <!-- Informasi Asesmen Lapangan -->
-            @if($assignment->asesmen->asesmenLapangan)
+            @if($assignment->asesmen->asesmenLapanganBanding)
             <div class="card mt-4">
                 <div class="card-header bg-info text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-info-circle"></i> Info Asesmen Lapangan
+                        <i class="bi bi-info-circle"></i> Info Asesmen Lapangan Banding
                     </h5>
                 </div>
                 <div class="card-body">
                     @php
-                    $al = $assignment->asesmen->asesmenLapangan;
+                    $al = $assignment->asesmen->asesmenLapanganBanding;
                     @endphp
                     <table class="table table-sm table-borderless mb-0">
                         <tr>

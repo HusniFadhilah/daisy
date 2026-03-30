@@ -72,7 +72,7 @@
 </div>
 
 {{-- Validasi Peringkat Unggul --}}
-@if($hasil->skor_al >= 361)
+@if($hasil->skor_final >= 361)
 <div class="card mb-4 border-{{ $validationSummary['dapat_unggul'] ? 'success' : 'warning' }}">
     <div class="card-header bg-{{ $validationSummary['dapat_unggul'] ? 'success' : 'warning' }} text-white">
         <h5 class="mb-0">
@@ -87,7 +87,7 @@
                     <i class="bi bi-check-circle-fill text-success fs-3 me-3"></i>
                     <div>
                         <strong>Skor Memenuhi Syarat</strong>
-                        <div class="text-muted">Skor >= 361 ({{ number_format($hasil->skor_al, 2) }})</div>
+                        <div class="text-muted">Skor >= 361 ({{ number_format($hasil->skor_final, 2) }})</div>
                     </div>
                 </div>
             </div>
@@ -209,7 +209,7 @@
                         <th colspan="3" class="text-end">TOTAL:</th>
                         <th class="text-center">{{ number_format($hasil->total_bobot_al ?? 0, 2) }}</th>
                         <th class="text-center">
-                            <strong class="text-primary fs-5">{{ number_format($hasil->skor_al ?? 0, 2) }}</strong>
+                            <strong class="text-primary fs-5">{{ number_format($hasil->skor_final ?? 0, 2) }}</strong>
                         </th>
                         <th></th>
                     </tr>

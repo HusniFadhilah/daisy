@@ -196,7 +196,7 @@
                                     'pending' => [
                                     'active text-dark',
                                     'bi-clock-fill text-info',
-                                    'LHA — Menunggu Persetujuan Prodi',
+                                    'Laporan Surveillance — Menunggu Persetujuan Prodi',
                                     ],
                                     default => [ // null = belum ada dokumen
                                     '',
@@ -242,7 +242,7 @@
                                         <i class="bi bi-lock"></i> Penilaian Dikunci
                                     </button>
                                     <small class="text-muted">
-                                        Diisi oleh {{ $firstOpener->user->name ?? 'asesor lain' }} <a href="{{ route('al_banding.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'personal_al', 'color' => false]) }}" target="_blank"><i class="bi bi-eye"></i></a>
+                                        Diisi oleh {{ $firstOpener->user->name ?? 'asesor lain' }} <a href="{{ route('al_banding.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'personal_al_banding', 'color' => false]) }}" target="_blank"><i class="bi bi-eye"></i></a>
                                     </small>
                                     <a href="{{ route('al_banding.berkas.documents.page', ['id' => $asesmen->id]) }}" class="btn btn-outline-secondary btn-sm btn-width-180">
                                         <i class="bi bi-file-earmark-text"></i> Lihat Berita Acara Banding

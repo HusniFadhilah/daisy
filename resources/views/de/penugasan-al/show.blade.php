@@ -122,7 +122,7 @@
             @endif
 
             <!-- Form Penugasan -->
-            @if(!$requirementsStatus['met'])
+            {{-- @if(!$requirementsStatus['met']) --}}
             <div class="card mb-4">
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">
@@ -148,7 +148,7 @@
                             </div>
                             <div class="col-md-12">
                                 <label class="form-label fw-bold">Lokasi Visitasi: <span class="text-danger">*</span></label>
-                                <input type="text" id="lokasiVisitasi" class="form-control" maxlength="500" placeholder="Alamat lengkap lokasi visitasi" required>
+                                <input type="text" id="lokasi" class="form-control" maxlength="500" placeholder="Alamat lengkap lokasi visitasi" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Tanggal Mulai: <span class="text-danger">*</span></label>
@@ -167,7 +167,7 @@
                     </form>
                 </div>
             </div>
-            @endif
+            {{-- @endif --}}
 
             <!-- Daftar Penugasan -->
             <div class="card mb-4">
@@ -272,11 +272,11 @@
                                     : '-' }}
                     </td>
                 </tr>
-                @if($pengajuan->asesmen->asesmenLapangan->lokasi_visitasi)
+                @if($pengajuan->asesmen->asesmenLapangan->lokasi)
                 <tr>
                     <th>Lokasi Visitasi</th>
                     <td>: <i class="bi bi-geo-alt-fill text-danger"></i>
-                        {{ $pengajuan->asesmen->asesmenLapangan->lokasi_visitasi }}
+                        {{ $pengajuan->asesmen->asesmenLapangan->lokasi }}
                     </td>
                 </tr>
                 @endif
@@ -424,12 +424,12 @@
                     </td>
                 </tr>
                 @endif
-                @if($al->lokasi_visitasi)
+                @if($al->lokasi)
                 <tr>
                     <th class="text-muted">Lokasi Visitasi</th>
                     <td>:
                         <i class="bi bi-geo-alt-fill text-danger"></i>
-                        {{ $al->lokasi_visitasi }}
+                        {{ $al->lokasi }}
                     </td>
                 </tr>
                 @endif
@@ -455,12 +455,12 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label fw-bold">Tanggal Mulai <span class="text-danger">*</span></label>
-                        <input type="date" class="form-control" id="updateTanggalMulai" required>
+                        <input type="date" class="form-control" id="updateTanggalMulai" value="{{ old('updateTanggalMulai',optional($pengajuan->asesmen->asesmenLapangan->tanggal_mulai)?->format('Y-m-d')) }}" required>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-bold">Estimasi Tanggal Selesai <span class="text-danger">*</span></label>
-                        <input type="date" class="form-control" id="updateTanggalSelesai" required>
+                        <input type="date" class="form-control" id="updateTanggalSelesai" value="{{ old('updateTanggalSelesai',optional($pengajuan->asesmen->asesmenLapangan->tanggal_selesai)?->format('Y-m-d')) }}" required>
                     </div>
 
                     <div class="mb-3">
@@ -533,7 +533,7 @@ $hasAsesmenLapangan = $pengajuan->asesmen?->asesmenLapangan;
         const userId = document.getElementById('userId').value;
         const tanggalMulai = document.getElementById('tanggalMulai').value;
         const tanggalSelesai = document.getElementById('tanggalSelesai').value;
-        const lokasiVisitasi = document.getElementById('lokasiVisitasi').value;
+        const lokasi = document.getElementById('lokasi').value;
         const fileSuratTugas = document.getElementById('fileSuratTugas').files[0];
 
         // Validate dates
@@ -550,7 +550,7 @@ $hasAsesmenLapangan = $pengajuan->asesmen?->asesmenLapangan;
         formData.append('id_user', userId);
         formData.append('tanggal_mulai', tanggalMulai);
         formData.append('tanggal_selesai', tanggalSelesai);
-        formData.append('lokasi_visitasi', lokasiVisitasi);
+        formData.append('lokasi', lokasi);
 
         if (fileSuratTugas) {
             formData.append('file_surat_tugas', fileSuratTugas);
@@ -647,9 +647,9 @@ $hasAsesmenLapangan = $pengajuan->asesmen?->asesmenLapangan;
 
         // Load current schedule data
         @if($hasAsesmenLapangan)
-        document.getElementById('updateTanggalMulai').value = '{{ $pengajuan->asesmen->asesmenLapangan->tanggal_mulai }}';
-        document.getElementById('updateTanggalSelesai').value = '{{ $pengajuan->asesmen->asesmenLapangan->tanggal_selesai }}';
-        document.getElementById('updateLokasiVisitasi').value = '{{ $pengajuan->asesmen->asesmenLapangan->lokasi_visitasi }}';
+        document.getElementById('updateTanggalMulai').value = "{{ optional($pengajuan->asesmen->asesmenLapangan->tanggal_mulai)?->format('Y-m-d') }}";
+        document.getElementById('updateTanggalSelesai').value = "{{ optional($pengajuan->asesmen->asesmenLapangan->tanggal_selesai)?->format('Y-m-d') }}";
+        document.getElementById('updateLokasiVisitasi').value = '{{ $pengajuan->asesmen->asesmenLapangan->lokasi }}';
         @endif
 
         const modal = new bootstrap.Modal(document.getElementById('modalUpdateSchedule'));
@@ -662,7 +662,7 @@ $hasAsesmenLapangan = $pengajuan->asesmen?->asesmenLapangan;
 
         const tanggalMulai = document.getElementById('updateTanggalMulai').value;
         const tanggalSelesai = document.getElementById('updateTanggalSelesai').value;
-        const lokasiVisitasi = document.getElementById('updateLokasiVisitasi').value;
+        const lokasi = document.getElementById('updateLokasiVisitasi').value;
 
         try {
             const response = await fetch(`/de/penugasan-al/${currentPengajuanId}/update-schedule`, {
@@ -675,7 +675,7 @@ $hasAsesmenLapangan = $pengajuan->asesmen?->asesmenLapangan;
                 , body: JSON.stringify({
                     tanggal_mulai: tanggalMulai
                     , tanggal_selesai: tanggalSelesai
-                    , lokasi_visitasi: lokasiVisitasi
+                    , lokasi: lokasi
                 })
             });
 

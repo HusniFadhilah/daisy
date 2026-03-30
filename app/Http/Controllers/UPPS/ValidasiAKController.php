@@ -16,6 +16,12 @@ class ValidasiAKController extends Controller
      */
     public function index(Request $request)
     {
+        $statusLogs = [
+            PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
+            PengajuanAkreditasi::STATUS_AK_ON_VALIDATION,
+            PengajuanAkreditasi::STATUS_AK_SELESAI,
+            PengajuanAkreditasi::STATUS_AK_DILAPORKAN,
+        ];
         $user = Auth::user();
         $studyProgramIds = $user->studyPrograms()->pluck('study_programs.id');
 
@@ -23,22 +29,12 @@ class ValidasiAKController extends Controller
             'studyProgram.university',
             'studyProgram.degreeLevel',
             'asesmen.asesorAK',
-            'statusLog' => fn($q) => $q->whereIn('status_to', [
-                PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
-                PengajuanAkreditasi::STATUS_AK_ON_VALIDATION,
-                PengajuanAkreditasi::STATUS_AK_SELESAI,
-                PengajuanAkreditasi::STATUS_AK_DILAPORKAN,
-            ])->orderBy('changed_at', 'desc'),
-        ])->whereIn('id_program_studi', $studyProgramIds)->whereExists(function ($q) {
+            'statusLog' => fn($q) => $q->whereIn('status_to', $statusLogs)->orderBy('changed_at', 'desc'),
+        ])->whereIn('id_program_studi', $studyProgramIds)->whereExists(function ($q) use ($statusLogs) {
             $q->select(DB::raw(1))
                 ->from('pengajuan_status_log as l')
                 ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
-                ->whereIn('l.status_to', [
-                    PengajuanAkreditasi::STATUS_AK_IN_PROGRESS,
-                    PengajuanAkreditasi::STATUS_AK_ON_VALIDATION,
-                    PengajuanAkreditasi::STATUS_AK_SELESAI,
-                    PengajuanAkreditasi::STATUS_AK_DILAPORKAN,
-                ]);
+                ->whereIn('l.status_to', $statusLogs);
         });
 
         // Apply filters

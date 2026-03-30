@@ -1,3 +1,4 @@
+{{-- resources\views\asesmen\banding\ak-banding\components\modal-validasi-detail.blade.php --}}
 <div class="modal fade" id="modalValidasiDetail" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable modal-fullscreen-sm-down">
         <div class="modal-content">
@@ -135,7 +136,7 @@
                                         Catatan Validator Banding
                                         <span class="text-danger" id="labelCatatanRequired">*</span>
                                     </label>
-                                    <textarea class="form-control" id="catatanValidator" rows="4" placeholder="Berikan catatan validasi atau alasan revisi... (misalkan: Penilaian AK Banding telah divalidasi, semua asesor banding telah memberikan penilaian dalam rentang yang dapat diterima)"></textarea>
+                                    <textarea class="form-control" id="catatanValidator" rows="4" placeholder="Berikan catatan validasi atau alasan revisi... (misalkan: Penilaian AK Banding telah divalidasi, semua asesor banding telah memberikan penilaian dalam rentang yang dapat diterima)" required></textarea>
                                     <small class="text-muted">
                                         Catatan wajib diisi
                                     </small>

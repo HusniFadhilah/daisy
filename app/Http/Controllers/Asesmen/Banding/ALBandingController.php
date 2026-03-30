@@ -151,7 +151,7 @@ class ALBandingController extends Controller
             ->where('id_user', $user->id)
             ->where('jenis_asesmen', 'al_banding')
             ->where('id_role', Role::ID_ROLE_ASESOR_BANDING)
-            ->with('role', 'asesmen.pengajuan', 'asesmen.asesmenLapanganBanding')
+            // ->with('role', 'asesmen.pengajuan', 'asesmen.asesmenLapanganBanding')
             ->firstOrFail();
 
         if ($assignment->role->name != $user->role_selected) {
@@ -162,90 +162,80 @@ class ALBandingController extends Controller
             );
         }
 
-        // Ambil semua asesor tim SEBELUM update status,
-        // supaya first opener/editor terbaca dari kondisi awal
-        $asesorTeam = AsesmenUserRole::where('id_asesmen', $idAsesmen)
+        // ── [BARU] Cek apakah ada asesor LAIN yang sudah lebih dulu membuka ──
+        $firstStartedByOther = AsesmenUserRole::where('id_asesmen', $idAsesmen)
             ->where('jenis_asesmen', 'al_banding')
-            ->where('id_role', Role::ID_ROLE_ASESOR_BANDING)
-            ->with('user')
-            ->orderBy('urutan_asesor')
-            ->get();
-
-        $firstActiveAsesor = $asesorTeam
+            ->whereHas('role', fn($q) => $q->where('name', 'asesor_banding'))
+            ->where('id_user', '!=', $user->id)
             ->where('status_pekerjaan', '!=', 'not_started')
-            ->sortBy(fn($item) => $item->started_at ?? $item->updated_at ?? $item->created_at)
+            ->with('user')
+            ->orderBy('updated_at')
             ->first();
 
         $iAmAlreadyStarted = $assignment->status_pekerjaan !== 'not_started';
-        $isFirstVisitForMe = !$iAmAlreadyStarted;
 
-        // Karena halaman ini sudah lewat middleware confirm opener,
-        // maka yang boleh masuk pertama kali adalah opener yang sah
-        $isFirstOpener   = !$firstActiveAsesor || $firstActiveAsesor->id_user == $user->id;
-        $firstOpenerUser = $firstActiveAsesor?->user;
+        // ── [BARU] HARD GATE: blok masuk jika orang lain sudah duluan ──────
+        // Pengecualian: jika saya sendiri sudah pernah masuk sebelumnya ($iAmAlreadyStarted),
+        // berarti saya memang bukan first opener tapi sudah terlanjur masuk — tetap blok.
+        if ($firstStartedByOther && !$iAmAlreadyStarted) {
+            // Saya belum pernah masuk, tapi orang lain sudah → blok sepenuhnya
+            return redirect()->route('al_banding.berkas')
+                ->with('error_first_opener', [
+                    'nama'      => $firstStartedByOther->user?->name ?? 'Asesor banding lain',
+                    'asesmen'   => $assignment->asesmen->getName(false) ?? 'asesmen ini',
+                ]);
+        }
 
-        // Update status setelah first opener dihitung
+        // ── Tangkap "apakah ini kunjungan pertama saya" SEBELUM update status ─
+        $isFirstVisitForMe = !$iAmAlreadyStarted; // true hanya sekali
+
+        // ── Update status (not_started → in_progress) ───────────────────────
         $this->updateStatusALBanding($assignment);
-        $assignment->refresh();
 
-        $asesmen = $assignment->asesmen;
+        $asesmen   = $assignment->asesmen;
+        $isFirstOpener   = is_null($firstStartedByOther); // pastikan true karena lolos gate
+        $firstOpenerUser = null; // kita sendiri yang pertama
 
-        // Re-query firstActiveAsesor setelah update, untuk ditampilkan ke view bila perlu
-        $asesorTeam = AsesmenUserRole::where('id_asesmen', $idAsesmen)
-            ->where('jenis_asesmen', 'al_banding')
-            ->where('id_role', Role::ID_ROLE_ASESOR_BANDING)
-            ->with('user')
-            ->orderBy('urutan_asesor')
-            ->get();
-
-        $firstActiveAsesor = $asesorTeam
-            ->where('status_pekerjaan', '!=', 'not_started')
-            ->sortBy(fn($item) => $item->started_at ?? $item->updated_at ?? $item->created_at)
-            ->first();
-
-        // Editor asesor = first opener
-        $isEditorAsesor = $firstActiveAsesor
-            ? $firstActiveAsesor->id_user == $user->id
-            : true;
-
-        // Get all kriteria with elemen and indikator
+        // ── Sisa logika sama seperti sebelumnya ─────────────────────────────
         $kriterias = Kriteria::with([
             'elemenStandar',
             'elemenStandar.indikator.jenisIndikator',
             'elemenStandar.indikatorPenilaian.jenjangPenilaian',
             'elemenStandar.penilaianElemenAlBanding' => function ($query) use ($asesmen, $user) {
-                $query->where('id_asesmen', $asesmen->id)
-                    ->where('id_asesor', $user->id);
-            },
+                $query->where('id_asesmen', $asesmen->id)->where('id_asesor', $user->id);
+            }
         ])->get();
 
         $needsRevisions = PenilaianElemenAlBanding::where('id_asesmen', $asesmen->id)
-            ->where('id_asesor', $user->id)
-            ->with('elemen.kriteria')
-            ->get();
+            ->where('id_asesor', $user->id)->with('elemen.kriteria')->get();
 
-        $jenjangs = JenjangPenilaian::all();
+        $jenjangs  = JenjangPenilaian::all();
+        $progress  = $this->calculateProgressBulk([$asesmen->id], $user->id)[$asesmen->id];
 
-        // Calculate progress
-        $progress = $this->calculateProgressBulk([$asesmen->id], $user->id)[$asesmen->id];
+        $asesorTeam = AsesmenUserRole::where('id_asesmen', $idAsesmen)
+            ->where('jenis_asesmen', 'al_banding')
+            ->whereHas('role', fn($q) => $q->where('name', 'asesor_banding'))
+            ->with('user')->get();
+
+        $isEditorAsesor  = true; // yang masuk ke sini PASTI first opener
+        $firstActiveAsesor = $asesorTeam
+            ->where('status_pekerjaan', '!=', 'not_started')
+            ->sortBy('updated_at')->first();
 
         $otherAsesorsProgress = [];
         foreach ($asesorTeam as $member) {
-            if ($member->id_user == $user->id) {
-                continue;
-            }
-
+            if ($member->id_user == $user->id) continue;
             $otherAsesorsProgress[$member->id_user] = [
                 'user'             => $member->user,
                 'status_pekerjaan' => $member->status_pekerjaan,
                 'progress'         => $this->calculateProgressBulk([$idAsesmen], $member->id_user)[$idAsesmen],
-                'started_at'       => $member->started_at,
+                'started_at'       => $member->updated_at,
             ];
         }
 
-        $isFinalized = in_array($asesmen->asesmenLapanganBanding?->status, ['completed', 'finalized']);
-        $isInProgress = $asesmen->asesmenLapanganBanding?->isInProgress() ?? false;
-        $uploadedFiles = $asesmen->pengajuan ? $asesmen->pengajuan->getUploadedDocuments() : null;
+        $isFinalized   = in_array($asesmen->asesmenLapanganBanding->status, ['completed', 'finalized']);
+        $isInProgress  = $asesmen->asesmenLapanganBanding->isInProgress();
+        $uploadedFiles = $asesmen->pengajuan?->getUploadedDocuments();
 
         return view('asesmen.banding.al-banding.berkas.show', compact(
             'asesmen',
@@ -262,9 +252,9 @@ class ALBandingController extends Controller
             'isEditorAsesor',
             'firstActiveAsesor',
             'otherAsesorsProgress',
-            'isFirstVisitForMe',
-            'isFirstOpener',
-            'firstOpenerUser'
+            'isFirstVisitForMe',   // [BARU]
+            'isFirstOpener',       // [BARU] selalu true di sini
+            'firstOpenerUser'      // [BARU] selalu null di sini
         ));
     }
 
@@ -283,7 +273,7 @@ class ALBandingController extends Controller
                 $pengajuan->statusLog()->firstOrCreate(
                     [
                         'status_from' => $statusFrom,
-                        'status_to'   => PengajuanAkreditasi::STATUS_AL_IN_PROGRESS,
+                        'status_to'   => PengajuanAkreditasi::STATUS_AL_BANDING_IN_PROGRESS,
                     ],
                     [
                         'changed_by'  => Auth::id(),
@@ -815,7 +805,7 @@ class ALBandingController extends Controller
             $useColor = $request->query('color', 'false') === 'true';
 
             // Validate mode
-            if (!in_array($mode, ['template', 'full', 'personal'])) {
+            if (!in_array($mode, ['template', 'full', 'personal', 'personal_al_banding'])) {
                 return redirect()->back()->with('error', 'Mode download tidak valid');
             }
 
@@ -940,7 +930,7 @@ class ALBandingController extends Controller
 
                     $skors = [];
                     foreach ($asesors as $asesor) {
-                        $penilaian = $elemen->penilaianElemenAk
+                        $penilaian = $elemen->penilaianElemenAlBanding
                             ->where('id_asesor', $asesor->id_user)
                             ->first();
 
@@ -987,51 +977,62 @@ class ALBandingController extends Controller
     {
         $user = Auth::user();
 
-        // Check if user has access to this asesmen
         $assignment = AsesmenUserRole::where('id_asesmen', $idAsesmen)
             ->where('id_user', $user->id)
             ->where('jenis_asesmen', 'al_banding')
             ->firstOrFail();
 
         if ($assignment->role->name != $user->role_selected) {
-            abort(403, 'Mohon maaf role Anda sebagai ' . ($user->role_selected) . ' tidak diizinkan membuka halaman ini.');
+            abort(403, 'Mohon maaf role Anda sebagai ' . $user->role_selected . ' tidak diizinkan membuka halaman ini.');
         }
 
-        $this->updateStatusALBanding($assignment);
-        $asesmen = $assignment->asesmen;
-
-        // ✅ Calculate progress untuk AL
-        $progress = $this->calculateProgressBulk([$asesmen->id], $user->id)[$asesmen->id];
-
-        $statusPekerjaan = $assignment->status_pekerjaan ?? 'not_started';
-        $isSubmittedOnly = $statusPekerjaan === 'submitted';
-        $isApproved = $statusPekerjaan === 'approved';
-        $isComplete = $progress['percentage'] == 100;
-
-        // ✅ CEK UPLOADER PERTAMA (from import log)
-        $firstUpload = PenilaianImportLog::where('id_asesmen', $idAsesmen)
-            ->where('status', 'completed') // Hanya yang berhasil
-            ->with('asesor')
-            ->orderBy('created_at', 'asc')
+        // ── Cek asesor lain yang sudah duluan — SAMA PERSIS dengan showBerkas ──
+        $firstStartedByOther = AsesmenUserRole::where('id_asesmen', $idAsesmen)
+            ->where('jenis_asesmen', 'al_banding')
+            ->whereHas('role', fn($q) => $q->where('name', 'asesor_banding'))
+            ->where('id_user', '!=', $user->id)
+            ->where('status_pekerjaan', '!=', 'not_started')
+            ->with('user')
+            ->orderBy('updated_at')
             ->first();
 
-        // ✅ Cek apakah user saat ini adalah uploader pertama
-        $currentUserId = Auth::id();
-        $isUploader = $firstUpload && $firstUpload->id_asesor == $currentUserId;
+        $iAmAlreadyStarted = $assignment->status_pekerjaan !== 'not_started';
 
-        // ✅ User bisa upload jika: belum ada upload ATAU dia adalah uploader pertama
-        // $canUpload = !$firstUpload || $isUploader;
-        $canUpload = true;
+        if ($firstStartedByOther && !$iAmAlreadyStarted) {
+            return redirect()->route('al_banding.berkas')
+                ->with('error_first_opener', [
+                    'nama'    => $firstStartedByOther->user?->name ?? 'Asesor lain',
+                    'asesmen' => $assignment->asesmen->getName(false) ?? 'asesmen ini',
+                ]);
+        }
 
-        // ✅ Get team asesor AL
+        $isFirstVisitForMe = !$iAmAlreadyStarted;
+        $isFirstOpener     = is_null($firstStartedByOther);
+        $firstOpenerUser   = null;
+
+        $this->updateStatusALBanding($assignment);
+
+        $asesmen = $assignment->asesmen;
+        $progress = $this->calculateProgressBulk([$asesmen->id], $user->id)[$asesmen->id];
+
+        $statusPekerjaan = $assignment->fresh()->status_pekerjaan ?? 'not_started';
+        $isSubmittedOnly = $statusPekerjaan === 'submitted';
+        $isApproved      = $statusPekerjaan === 'approved';
+        $isComplete      = $progress['percentage'] == 100;
+
+        // ── Asesor team — SAMA dengan showBerkas ────────────────────────────
         $asesorTeam = AsesmenUserRole::where('id_asesmen', $idAsesmen)
             ->where('jenis_asesmen', 'al_banding')
-            ->whereHas('role', function ($q) {
-                $q->where('name', 'asesor_banding');
-            })
+            ->whereHas('role', fn($q) => $q->where('name', 'asesor_banding'))
             ->with('user')
             ->orderBy('urutan_asesor')
             ->get();
+
+        $isEditorAsesor = true; // lolos gate = pasti first opener
+        $firstActiveAsesor = $asesorTeam
+            ->where('status_pekerjaan', '!=', 'not_started')
+            ->sortBy('updated_at')
+            ->first();
 
         return view('asesmen.banding.al-banding.berkas.upload-excel', compact(
             'asesmen',
@@ -1041,10 +1042,12 @@ class ALBandingController extends Controller
             'isSubmittedOnly',
             'isApproved',
             'isComplete',
-            'firstUpload',      // ✅ Tambahkan
-            'canUpload',        // ✅ Tambahkan
-            'isUploader',       // ✅ Tambahkan
-            'asesorTeam'        // ✅ Tambahkan
+            'asesorTeam',
+            'isEditorAsesor',
+            'firstActiveAsesor',
+            'isFirstVisitForMe',
+            'isFirstOpener',
+            'firstOpenerUser',
         ));
     }
 
@@ -1069,7 +1072,7 @@ class ALBandingController extends Controller
         }
 
         $editorAssignment = $this->resolveEditorAsesor($idAsesmen);
-        if (!$editorAssignment || $editorAssignment->id_user !== $user->id) {
+        if ($editorAssignment && $editorAssignment->id_user !== $user->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Hanya asesor editor/uploader yang dapat menginisialisasi penilaian dari AL.',
@@ -1109,6 +1112,21 @@ class ALBandingController extends Controller
         }
     }
 
+    private function resolveEditorAsesor(int $idAsesmen): ?AsesmenUserRole
+    {
+        $asesorTeam = AsesmenUserRole::where('id_asesmen', $idAsesmen)
+            ->where('jenis_asesmen', 'al_banding')
+            ->where('id_role', Role::ID_ROLE_ASESOR_BANDING)
+            ->with('user')
+            ->orderBy('urutan_asesor')
+            ->get();
+
+        return $asesorTeam
+            ->where('status_pekerjaan', '!=', 'not_started')
+            ->sortBy(fn($item) => $item->started_at ?? $item->updated_at ?? $item->created_at)
+            ->first();
+    }
+
     /**
      * Inti logika inisialisasi penilaian AL banding dari AL.
      * Karena AL banding hanya diisi satu asesor (editor/uploader),
@@ -1123,8 +1141,7 @@ class ALBandingController extends Controller
         $idAsesmen       = $assignmentBanding->id_asesmen;
         $idAsesorBanding = $assignmentBanding->id_user;
 
-        try {
-            // Cari asesor AL sumber yang benar-benar punya data
+        return DB::transaction(function () use ($idAsesmen, $idAsesorBanding) {
             $assignmentALSumber = AsesmenUserRole::where('id_asesmen', $idAsesmen)
                 ->where('jenis_asesmen', 'al')
                 ->where('id_role', Role::ID_ROLE_ASESOR)
@@ -1134,7 +1151,7 @@ class ALBandingController extends Controller
                 ->get()
                 ->first(function ($assignmentAL) use ($idAsesmen) {
                     return PenilaianElemenAl::where('id_asesmen', $idAsesmen)
-                        ->where('id_asesor', $assignmentAL->id_user)
+                        // ->where('id_asesor', $assignmentAL->id_user)
                         ->whereNotNull('skor')
                         ->exists();
                 });
@@ -1193,9 +1210,7 @@ class ALBandingController extends Controller
                     'nama_asesor'   => $assignmentALSumber->user->name ?? '-',
                 ],
             ];
-        } catch (\Throwable $e) {
-            throw $e;
-        }
+        });
     }
 
     /**
@@ -1277,15 +1292,8 @@ class ALBandingController extends Controller
         DB::beginTransaction();
 
         try {
-            if ($assignment->status_pekerjaan === 'not_started') {
-                $assignment->update([
-                    'status_pekerjaan' => 'in_progress',
-                    'started_at'       => now(),
-                ]);
-            }
-
             $hasAnyPenilaian = PenilaianElemenAlBanding::where('id_asesmen', $idAsesmen)
-                ->where('id_asesor', $user->id)
+                // ->where('id_asesor', $user->id)
                 ->whereNotNull('skor')
                 ->exists();
 
@@ -1305,7 +1313,7 @@ class ALBandingController extends Controller
                 'message'    => $e->getMessage(),
             ]);
 
-            return redirect()->route('al-banding.berkas')
+            return redirect()->route('al_banding.berkas')
                 ->with('error', 'Gagal mengonfirmasi opener: ' . $e->getMessage());
         }
     }

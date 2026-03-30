@@ -1,3 +1,4 @@
+{{-- resources\views\asesmen\banding\ak-banding\components\heatmap-matrix.blade.php --}}
 <!-- Heatmap Matrix Component - Enhanced with Merged Cells -->
 <div class="card mb-4 shadow-sm">
     <div class="card-header bg-white border-bottom">
@@ -6,8 +7,8 @@
                 <i class="bi bi-grid-3x3"></i> Matriks Visualisasi Penilaian
             </h5>
             <div class="btn-group btn-group-sm flex-wrap">
-                <button type="button" class="btn btn-outline-info" id="btnViewComparison" data-id-asesmen="{{ $asesmen->id }}" data-jenis-asesmen="ak" title="Lihat Perbandingan Penilaian Antar Asesor">
-                    <i class="bi bi-people"></i> Cek Split Asesor
+                <button type="button" class="btn btn-outline-info" id="btnViewComparison" data-id-asesmen="{{ $asesmen->id }}" data-jenis-asesmen="ak_banding" title="Lihat Perbandingan Penilaian Antar Asesor">
+                    <i class="bi bi-people"></i> Cek Split Asesor Banding
                 </button>
                 <button type="button" class="btn btn-outline-primary" id="btnZoomIn" title="Perbesar">
                     <i class="bi bi-zoom-in"></i>
@@ -347,32 +348,32 @@
          */
         window.updateMatrixCell = function(elemenId, skor) {
             try {
-                skor = parseInt(skor);
+                skor = parseInt(skor, 10);
                 if (isNaN(skor)) return;
 
-                // ambil semua cell untuk elemen ini (pemenuhan + pelampauan)
                 const cells = document.querySelectorAll(`.matrix-cell[data-elemen-id="${elemenId}"]`);
                 if (!cells.length) return;
 
                 cells.forEach(cell => {
-                    const colType = cell.dataset.col; // 'pemenuhan' / 'pelampauan'
+                    const colType = cell.dataset.col;
 
-                    // logika: skor 4 → isi hanya pelampauan, skor 0–3 → isi hanya pemenuhan
                     const shouldFill =
                         (skor === 4 && colType === 'pelampauan') ||
                         (skor !== 4 && colType === 'pemenuhan');
 
                     cell.classList.toggle('has-score', shouldFill);
                     cell.dataset.skor = shouldFill ? skor : '';
-                    cell.style.backgroundColor = shouldFill ? getSkorColorJS(skor) : '#e0e0e0';
+                    cell.style.backgroundColor = shouldFill ?
+                        getSkorColorJS(skor) :
+                        '#e0e0e0';
 
-                    // animasi kecil
                     cell.classList.add('updating');
                     setTimeout(() => cell.classList.remove('updating'), 500);
                 });
 
-                // update statistik ringkasan
-                updateMatrixStats();
+                // JANGAN update summary utama dari heatmap
+                // updateMatrixStats();
+
             } catch (error) {
                 console.error('Error updating matrix cell:', error);
             }

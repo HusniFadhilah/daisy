@@ -63,7 +63,10 @@ class LhaAsesorController extends Controller
             })
             ->with('user')
             ->get();
-
+        $statusPekerjaan = $asesorTeam->pluck('status_pekerjaan');
+        if (!$statusPekerjaan->contains('approved')) {
+            return redirect()->back()->with('warning', 'Masih terdapat penilaian AL yang belum difinalisasi. Mohon lakukan finalisasi terlebih dahulu');
+        }
         $lhaDocument = $asesmen->lhaDocuments->first();
 
         return view('asesmen.lha-asesor.index', compact(

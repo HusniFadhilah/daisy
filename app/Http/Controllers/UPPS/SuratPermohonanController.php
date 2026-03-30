@@ -21,6 +21,13 @@ class SuratPermohonanController extends Controller
      */
     public function index(Request $request)
     {
+        $statusLogs = [
+            PengajuanAkreditasi::STATUS_DRAFT,
+            PengajuanAkreditasi::STATUS_PENGINGAT_DIKIRIM,
+            PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM,
+            PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
+            PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITOLAK,
+        ];
         $user = Auth::user();
         $studyProgramIds = $user->studyPrograms()->pluck('study_programs.id');
 
@@ -30,25 +37,13 @@ class SuratPermohonanController extends Controller
             'deAssigned',
             'dokumen' => fn($q) => $q->where('jenis_dokumen', 'surat_permohonan')
                 ->where('is_latest', true),
-            'statusLog' => fn($q) => $q->whereIn('status_to', [
-                PengajuanAkreditasi::STATUS_DRAFT,
-                PengajuanAkreditasi::STATUS_PENGINGAT_DIKIRIM,
-                PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM,
-                PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
-                PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITOLAK,
-            ])->orderBy('changed_at', 'desc'),
+            'statusLog' => fn($q) => $q->whereIn('status_to', $statusLogs)->orderBy('changed_at', 'desc'),
         ])
-            ->whereIn('id_program_studi', $studyProgramIds)->whereExists(function ($q) {
+            ->whereIn('id_program_studi', $studyProgramIds)->whereExists(function ($q) use ($statusLogs) {
                 $q->select(DB::raw(1))
                     ->from('pengajuan_status_log as l')
                     ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
-                    ->whereIn('l.status_to', [
-                        PengajuanAkreditasi::STATUS_DRAFT,
-                        PengajuanAkreditasi::STATUS_PENGINGAT_DIKIRIM,
-                        PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM,
-                        PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
-                        PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITOLAK,
-                    ]);
+                    ->whereIn('l.status_to', $statusLogs);
             });
 
         // Apply filters
@@ -183,11 +178,11 @@ class SuratPermohonanController extends Controller
         DB::beginTransaction();
         try {
             // ✅ AUTO-DETECT: Cari pengingat yang sesuai
-            $pengingat = PengingatAkreditasi::where('id_program_studi', $validated['id_program_studi'])
+            $pengingats = PengingatAkreditasi::where('id_program_studi', $validated['id_program_studi'])
                 ->where('tahun_akreditasi', $validated['tahun_akreditasi'])
                 ->where('status', PengingatAkreditasi::STATUS_BELUM_DIRESPON)
-                ->orderBy('tanggal_dikirim', 'desc')
-                ->first();
+                ->orderBy('tanggal_dikirim', 'desc')->get();
+            $pengingat = $pengingats->first();
 
             // Tentukan status berdasarkan draft atau submit
             $status = $isDraft
@@ -218,10 +213,11 @@ class SuratPermohonanController extends Controller
             if ($request->hasFile('file_surat_permohonan')) {
                 $this->uploadSuratPermohonan($pengajuan, $request->file('file_surat_permohonan'));
             }
-
             // ✅ AUTO-MARK: Tandai pengingat sebagai responded jika submit (bukan draft) dan ada pengingat
             if ($pengingat && !$isDraft) {
-                $pengingat->markAsResponded($pengajuan);
+                foreach ($pengingats as $pengingatData) {
+                    $pengingatData->markAsResponded($pengajuan);
+                }
             }
 
             // ✅ Log status
@@ -421,11 +417,11 @@ class SuratPermohonanController extends Controller
             // ✅ AUTO-DETECT: Cari pengingat yang sesuai (jika belum ada)
             $pengingat = null;
             if (!$isDraft) {
-                $pengingat = PengingatAkreditasi::where('id_program_studi', $validated['id_program_studi'])
+                $pengingats = PengingatAkreditasi::where('id_program_studi', $validated['id_program_studi'])
                     ->where('tahun_akreditasi', $validated['tahun_akreditasi'])
                     ->where('status', PengingatAkreditasi::STATUS_BELUM_DIRESPON)
-                    ->orderBy('tanggal_dikirim', 'desc')
-                    ->first();
+                    ->orderBy('tanggal_dikirim', 'desc')->get();
+                $pengingat = $pengingats->first();
             }
 
             // ✅ Update pengajuan
@@ -451,7 +447,9 @@ class SuratPermohonanController extends Controller
 
             // ✅ AUTO-MARK: Tandai pengingat sebagai responded jika submit dari draft
             if (!$isDraft && $pengingat) {
-                $pengingat->markAsResponded($pengajuan);
+                foreach ($pengingats as $pengingatData) {
+                    $pengingatData->markAsResponded($pengajuan);
+                }
             }
 
             // ✅ Log status jika berubah

@@ -144,7 +144,7 @@
                         </tr>
                         <tr>
                             <th>Status Pelaporan AL</th>
-                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('pelaporan_al','validator') !!}</td>
+                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('pelaporan_al','de', 'label_long_for') !!}</td>
                         </tr>
                         @endif
                         <tr>

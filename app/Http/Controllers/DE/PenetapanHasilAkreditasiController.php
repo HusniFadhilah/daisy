@@ -153,11 +153,26 @@ class PenetapanHasilAkreditasiController extends Controller
             $asesmen = $pengajuan->asesmen;
 
             // Validation: AL must be finalized
-            if (!$asesmen || !$asesmen->hasil || !$asesmen->hasil->isAlFinalized()) {
+            $hasil = $asesmen->hasil;
+            if (!$asesmen || !$hasil || !$hasil->isAlFinalized()) {
                 return back()->with('error', 'Hasil AL belum difinalisasi.');
             }
 
-            $hasil = $asesmen->hasil;
+            // 🚨 Jika proses banding sedang berjalan tapi AL banding belum ada
+            $statusBanding = [
+                PengajuanAkreditasi::STATUS_BANDING_DIAJUKAN,
+                PengajuanAkreditasi::STATUS_AK_BANDING_DILAPORKAN,
+                PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN
+            ];
+            $log = $pengajuan->latestRelevantStatusLog($statusBanding);
+            $sedangBanding = in_array($log->status_to, $statusBanding);
+
+            $alBandingBelumAda = is_null($hasil->skor_al_banding);
+
+            // kondisi utama
+            if ($sedangBanding && $alBandingBelumAda) {
+                return back()->with('warning', 'Penetapan belum dapat dilakukan karena proses banding masih berjalan.');
+            }
 
             $hasil->load([
                 'studyProgram',

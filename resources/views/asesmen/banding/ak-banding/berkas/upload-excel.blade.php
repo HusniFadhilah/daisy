@@ -197,37 +197,8 @@
                     </div>
                     @endif
 
-                    {{-- ✅ Action Buttons --}}
-                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3">
-
-                        {{-- Finalisasi Button --}}
-                        <div>
-                            @if(!$isSubmittedOnly && !$isApproved)
-                            <button class="btn btn-success w-md-100 w-md-auto" id="btnSubmit" {{ $hasRevisionRequests ? 'disabled' : '' }}>
-                                <i class="bi bi-check-circle"></i> Finalisasi dan Kirim
-                            </button>
-                            <small class="d-block text-muted mt-1">
-                                <i class="bi bi-info-circle"></i>
-                                Pastikan semua elemen telah dinilai sebelum mengirim
-                            </small>
-                            @elseif($isSubmittedOnly)
-                            <button class="btn btn-secondary w-100 w-md-auto" disabled>
-                                <i class="bi bi-clock-history"></i> Menunggu Validasi
-                            </button>
-                            @else
-                            <button class="btn btn-success w-100 w-md-auto" disabled>
-                                <i class="bi bi-check-all"></i> Penilaian Disetujui
-                            </button>
-                            @endif
-                        </div>
-
-                        {{-- Link to Detail View --}}
-                        <div>
-                            <a href="{{ route('ak_banding.berkas.show', $asesmen->id) }}" class="btn btn-outline-primary">
-                                <i class="bi bi-eye"></i> Lihat Detail Penilaian
-                            </a>
-                        </div>
-                    </div>
+                    <!-- Finalisasi -->
+                    @include('asesmen.banding.ak-banding.components.finalisasi-button')
 
                     {{-- ✅ Progress Summary --}}
                     <div class="mt-3 p-3 bg-light rounded">

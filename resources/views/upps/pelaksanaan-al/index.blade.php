@@ -63,7 +63,7 @@
                 </p>
                 <div class="alert alert-light alert-permanent mb-2">
                     <i class="bi bi-info-circle-fill text-info"></i>
-                    <strong>Penting:</strong> Mohon segera tinjau dan setujui berita acara untuk melanjutkan proses akreditasi.
+                    <strong>Penting:</strong> Mohon segera tinjau dan setujui LHA untuk melanjutkan proses akreditasi.
                 </div>
             </div>
         </div>

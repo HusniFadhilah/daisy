@@ -6,23 +6,6 @@
 
 @push('styles')
 <style>
-    .pengajuan-card {
-        transition: all 0.3s ease;
-        cursor: pointer;
-        border: 2px solid #e0e0e0;
-    }
-
-    .pengajuan-card:hover {
-        border-color: #0d6efd;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    .pengajuan-card.selected {
-        border-color: #198754;
-        background-color: #d1e7dd;
-    }
-
     .form-section {
         background: #f8f9fa;
         border-radius: 8px;
@@ -46,161 +29,63 @@
 
     <!-- Header -->
     <div class="mb-4">
-        <h4>
+        <h5>
             <i class="bi bi-file-earmark-plus"></i>
             Kirim Permohonan Banding
-        </h4>
+        </h5>
+        <p class="text-muted">
+            Tuliskan data pokok permohonan banding akreditasi program studi sebagai berikut
+        </p>
     </div>
 
-    {{-- ✅ Jika belum pilih prodi, tampilkan pilihan prodi --}}
-    @if(!$selectedProdiId)
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-header bg-white border-bottom">
-            <h5 class="mb-0">
-                <i class="bi bi-building"></i> Pilih Program Studi
-            </h5>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-6">
-                    <label class="form-label fw-bold">Program Studi <span class="text-danger">*</span></label>
-                    <select class="form-select" id="select_prodi" onchange="loadPengajuans()">
-                        <option value="">-- Pilih Program Studi --</option>
-                        @foreach($prodis as $prodi)
-                        <option value="{{ $prodi->id }}">
-                            {{ $prodi->full_name }}
-                        </option>
-                        @endforeach
-                    </select>
-                    <small class="text-muted">
-                        <i class="bi bi-info-circle"></i> Pilih program studi yang akan mengajukan banding
-                    </small>
-                </div>
-            </div>
-        </div>
-    </div>
-    @endif
-
-    {{-- ✅ Jika sudah pilih prodi, tampilkan pengajuan & form --}}
-    @if($selectedProdiId)
-
-    {{-- Info Prodi yang Dipilih --}}
-    <div class="alert alert-light alert-permanent border-start border-primary border-2 mb-4">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h6 class="mb-1">
-                    <i class="bi bi-building"></i> Program Studi:
-                </h6>
-                <strong>{{ $selectedProdi ? $selectedProdi->full_name : '-' }}</strong>
-            </div>
-            <a href="{{ route('upps.permohonan-banding.create') }}" class="btn btn-sm btn-outline-secondary">
-                <i class="bi bi-arrow-repeat"></i> Ganti Prodi
-            </a>
-        </div>
-    </div>
-
-    {{-- Step 1: Pilih Permohonan Akreditasi --}}
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-header bg-white border-bottom">
-            <h5 class="mb-0">
-                <span class="badge bg-primary me-2">1</span>
-                Pilih Permohonan Akreditasi yang Akan Diajukan banding
-            </h5>
-        </div>
-        <div class="card-body">
-            @if($pengajuansAvailable->count() > 0)
-            <div class="row">
-                @foreach($pengajuansAvailable as $p)
-                @php
-                $asesmen = $p->asesmen;
-                $hasil = $asesmen ? $asesmen->hasil : null;
-                $peringkat = $hasil ? $hasil->peringkat_akreditasi_hasil : '-';
-                $skor = $hasil ? $hasil->skor_final : 0;
-                $badgeColor = $hasil ? $hasil->getPeringkatColor($peringkat) : '#e9ecef';
-                $isSelected = $selectedPengajuan && $selectedPengajuan->id === $p->id;
-                $tanggalHasil = $p->tanggal_hasil_akreditasi_dikirim ? $p->tanggal_hasil_akreditasi_dikirim->locale('id')->translatedFormat('d M Y') : '-';
-                @endphp
-                <div class="col-md-12 mb-3">
-                    <div class="card pengajuan-card h-100 {{ $isSelected ? 'selected' : '' }}" onclick="selectPengajuan({{ $p->id }})" data-pengajuan-id="{{ $p->id }}">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h6 class="mb-0">
-                                    <i class="bi bi-file-earmark-text"></i>
-                                    {{ $p->nomor_pengajuan }}
-                                </h6>
-                                @if($isSelected)
-                                <span class="badge bg-success">
-                                    <i class="bi bi-check-circle"></i> Dipilih
-                                </span>
-                                @endif
-                            </div>
-                            <div class="mb-2">
-                                <small class="text-muted d-block">
-                                    <i class="bi bi-calendar"></i> Tahun: {{ $p->tahun_akreditasi }}
-                                </small>
-                                <small class="text-muted d-block">
-                                    <i class="bi bi-tag"></i> Jenis: {{ $p->jenis_akreditasi_label }}
-                                </small>
-                                <small class="text-muted d-block">
-                                    <i class="bi bi-award"></i> Status Akreditasi Disampaikan:
-                                    <span class="badge" style="background-color: {{ $badgeColor }}; color: #222;">
-                                        {{ $peringkat }}
-                                    </span>
-                                </small>
-                                <small class="text-muted d-block">
-                                    <i class="bi bi-clock"></i> Hasil disampaikan: {{ $tanggalHasil }}
-                                </small>
-                            </div>
-                            <hr>
-                            <button type="button" class="btn btn-outline-success btn-sm w-100" onclick="selectPengajuan({{ $p->id }})">
-                                <i class="bi bi-arrow-right"></i> Pilih Permohonan Akreditasi Ini
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                @endforeach
-            </div>
-            @else
-            <div class="text-center py-5">
-                <i class="bi bi-inbox fs-1 text-muted"></i>
-                <p class="text-muted mb-2 mt-3">
-                    Tidak ada permohonan akreditasi yang dapat diajukan banding untuk program studi ini.
-                </p>
-                <small class="text-muted">
-                    Hanya permohonan akreditasi yang sudah disampaikan hasilnya dan dalam masa sanggah yang dapat diajukan banding.
-                </small>
-                <hr class="my-4">
-                <a href="{{ route('upps.permohonan-banding.create') }}" class="btn btn-secondary">
-                    <i class="bi bi-arrow-left"></i> Pilih Program Studi Lain
-                </a>
-            </div>
-            @endif
-        </div>
-    </div>
-
-    {{-- Step 2: Form Banding --}}
     <form action="{{ route('upps.permohonan-banding.store') }}" method="POST" enctype="multipart/form-data" id="formBanding">
         @csrf
-
-        <input type="hidden" name="id_pengajuan" id="id_pengajuan" value="{{ $selectedPengajuan ? $selectedPengajuan->id : '' }}">
 
         <div class="row">
             <!-- Main Form -->
             <div class="col-lg-8">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white border-bottom">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
                         <h5 class="mb-0">
-                            <span class="badge bg-primary me-2">2</span>
-                            Formulir Permohonan Banding
+                            <i class="bi bi-clipboard-check"></i> Data Pokok Permohonan Banding
                         </h5>
                     </div>
                     <div class="card-body">
-                        {{-- Alasan Banding --}}
-                        <div class="form-section">
-                            <h6 class="fw-bold mb-3 text-primary">
-                                <i class="bi bi-chat-left-text"></i> Alasan Banding
-                            </h6>
-                            <div class="mb-0">
+
+                        {{-- Section 1: Program Studi --}}
+                        <div class="mb-4">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">
+                                    Nama Program Studi <span class="text-danger">*</span>
+                                </label>
+                                @if($prodis->isEmpty())
+                                <div class="alert alert-warning mb-0">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                    Tidak ada program studi yang sedang dalam masa sanggah.
+                                </div>
+                                @else
+                                <select name="id_program_studi" id="id_program_studi" class="form-select @error('id_program_studi') is-invalid @enderror" required>
+                                    <option value="">-- Pilih Program Studi --</option>
+                                    @foreach($prodis as $prodi)
+                                    <option value="{{ $prodi->id }}" {{ old('id_program_studi') == $prodi->id ? 'selected' : '' }}>
+                                        {{ $prodi->full_name }}
+                                    </option>
+                                    @endforeach
+                                </select>
+                                @error('id_program_studi')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <small class="text-muted">
+                                    <i class="bi bi-info-circle"></i>
+                                    Hanya menampilkan program studi yang sedang dalam masa sanggah
+                                </small>
+                                @endif
+                            </div>
+                        </div>
+
+                        {{-- Section 2: Alasan Banding --}}
+                        <div class="mb-4">
+                            <div class="mb-3">
                                 <label class="form-label fw-bold">
                                     Alasan/Keberatan <span class="text-danger">*</span>
                                 </label>
@@ -215,11 +100,8 @@
                             </div>
                         </div>
 
-                        {{-- Upload Dokumen --}}
-                        <div class="form-section">
-                            <h6 class="fw-bold mb-3 text-primary">
-                                <i class="bi bi-file-earmark-arrow-up"></i> Dokumen Permohonan
-                            </h6>
+                        {{-- Section 3: Upload Dokumen --}}
+                        <div class="mb-4">
                             <div class="mb-3">
                                 <label class="form-label fw-bold">
                                     Surat Permohonan Banding (PDF) <span class="text-danger">*</span>
@@ -236,11 +118,11 @@
                         </div>
 
                         <!-- Action Buttons -->
-                        <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex justify-content-between align-items-center mt-4">
                             <a href="{{ route('upps.permohonan-banding') }}" class="btn btn-secondary">
                                 <i class="bi bi-arrow-left"></i> Kembali
                             </a>
-                            <button type="submit" class="btn btn-primary" id="btnSubmit">
+                            <button type="button" class="btn btn-primary" id="btnSubmit" {{ $prodis->isEmpty() ? 'disabled' : '' }}>
                                 <i class="bi bi-send"></i> Kirim Permohonan Banding
                             </button>
                         </div>
@@ -250,11 +132,10 @@
 
             <!-- Sidebar -->
             <div class="col-lg-4">
-                <!-- Info Card -->
-                <div class="card border-0 shadow-sm mb-3">
-                    <div class="card-header bg-white border-bottom">
+                <div class="card border-info mb-3">
+                    <div class="card-header bg-info text-white">
                         <h6 class="mb-0">
-                            <i class="bi bi-info-circle text-info"></i> Informasi
+                            <i class="bi bi-info-circle"></i> Informasi
                         </h6>
                     </div>
                     <div class="card-body">
@@ -262,7 +143,7 @@
                         <p class="small text-muted mb-3">
                             Permohonan banding hanya dapat diajukan selama masa sanggah yang telah ditentukan.
                         </p>
-
+                        <hr>
                         <h6 class="fw-bold">Proses Banding:</h6>
                         <ol class="small mb-0 ps-3">
                             <li>Pengajuan banding diterima</li>
@@ -275,12 +156,13 @@
                     </div>
                 </div>
 
-                <!-- Warning Card -->
-                <div class="card border-warning border-start border-2">
-                    <div class="card-body">
-                        <h6 class="fw-bold text-warning">
+                <div class="card border-warning">
+                    <div class="card-header bg-warning text-dark">
+                        <h6 class="mb-0">
                             <i class="bi bi-exclamation-triangle"></i> Perhatian
                         </h6>
+                    </div>
+                    <div class="card-body">
                         <ul class="mb-0 ps-3 small">
                             <li class="mb-2">Pastikan data yang diisi sudah benar</li>
                             <li class="mb-2">File PDF maksimal 5MB</li>
@@ -292,45 +174,12 @@
             </div>
         </div>
     </form>
-    @endif
 </div>
 @endsection
 
 @push('scripts')
 <script>
-    // ✅ Load pengajuans when prodi selected (first time only)
-    function loadPengajuans() {
-        const prodiId = document.getElementById('select_prodi').value;
-        if (prodiId) {
-            window.location.href = "{{ route('upps.permohonan-banding.create') }}?prodi_id=" + prodiId;
-        }
-    }
-
-    // ✅ Select pengajuan
-    function selectPengajuan(pengajuanId) {
-        // Remove selected class from all cards
-        document.querySelectorAll('.pengajuan-card').forEach(card => {
-            card.classList.remove('selected');
-        });
-
-        // Add selected class to clicked card
-        const selectedCard = document.querySelector('[data-pengajuan-id="' + pengajuanId + '"]');
-        if (selectedCard) {
-            selectedCard.classList.add('selected');
-            document.getElementById('id_pengajuan').value = pengajuanId;
-
-            // Scroll to form
-            const formElement = document.getElementById('formBanding');
-            if (formElement) {
-                formElement.scrollIntoView({
-                    behavior: 'smooth'
-                    , block: 'start'
-                });
-            }
-        }
-    }
-
-    // ✅ File preview
+    // File preview
     const fileInput = document.getElementById('file_surat_permohonan');
     if (fileInput) {
         fileInput.addEventListener('change', function(e) {
@@ -344,62 +193,46 @@
             const fileSize = file.size / 1024 / 1024;
 
             if (file.type !== 'application/pdf') {
-                preview.innerHTML = '<div class="alert alert-danger"><i class="bi bi-x-circle"></i> File harus berformat PDF</div>';
+                preview.innerHTML =
+                    '<div class="alert alert-danger alert-dismissible fade show">' +
+                    '<i class="bi bi-x-circle"></i> File harus berformat PDF' +
+                    '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                    '</div>';
                 e.target.value = '';
                 return;
             }
-
             if (fileSize > 5) {
-                preview.innerHTML = '<div class="alert alert-danger"><i class="bi bi-x-circle"></i> Ukuran file terlalu besar (' + fileSize.toFixed(2) + ' MB). Maksimal 5 MB</div>';
+                preview.innerHTML =
+                    '<div class="alert alert-danger alert-dismissible fade show">' +
+                    '<i class="bi bi-x-circle"></i> Ukuran file terlalu besar (' + fileSize.toFixed(2) + ' MB). Maksimal 5 MB' +
+                    '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                    '</div>';
                 e.target.value = '';
                 return;
             }
-
-            preview.innerHTML = '<div class="alert alert-success"><i class="bi bi-check-circle"></i> <strong>' + file.name + '</strong> (' + fileSize.toFixed(2) + ' MB)</div>';
+            preview.innerHTML =
+                '<div class="alert alert-success alert-dismissible fade show">' +
+                '<i class="bi bi-check-circle"></i> ' +
+                '<strong>' + file.name + '</strong> (' + fileSize.toFixed(2) + ' MB)' +
+                '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                '</div>';
         });
     }
 
-    const formBanding = document.getElementById('formBanding');
     const btnSubmit = document.getElementById('btnSubmit');
+    const formBanding = document.getElementById('formBanding');
 
     if (btnSubmit) {
-        // ✅ Konfirmasi tetap di click — sebelum submit
-        btnSubmit.addEventListener('click', async function(e) {
-            const pengajuanId = document.getElementById('id_pengajuan').value;
-
-            if (!pengajuanId) {
-                e.preventDefault();
-                Swal.fire('Perhatian', 'Pilih permohonan akreditasi terlebih dahulu!', 'warning');
-                const pengajuanCard = document.querySelector('.pengajuan-card')
-                if (pengajuanCard) pengajuanCard.scrollIntoView({
-                    behavior: 'smooth'
-                });
+        btnSubmit.addEventListener('click', async function() {
+            if (!(await swalConfirmSubmit('warning', 'Apakah Anda yakin akan mengajukan permohonan banding ini? Tindakan ini tidak dapat dibatalkan.'))) {
                 return;
             }
 
-            if (!(await swalConfirmSubmit('warning', 'Apakah Anda yakin akan mengajukan permohonan banding ini? Tindakan ini tidak dapat dibatalkan.'))) {
-                e.preventDefault();
-            }
-            // ✅ Jangan disable di sini — biarkan form submit dulu
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mengirim...';
+            formBanding.submit();
         });
     }
-
-    if (formBanding) {
-        // ✅ Disable HANYA setelah form benar-benar submit
-        formBanding.addEventListener('submit', function() {
-            if (btnSubmit) {
-                btnSubmit.disabled = true;
-                btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Mengirim...';
-            }
-        });
-    }
-
-    // ✅ Auto-select if from URL param
-    @if($selectedPengajuan)
-    window.addEventListener('load', function() {
-        selectPengajuan("{{ $selectedPengajuan->id }}");
-    });
-    @endif
 
 </script>
 @endpush

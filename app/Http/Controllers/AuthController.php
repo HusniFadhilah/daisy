@@ -36,7 +36,7 @@ class AuthController extends Controller
             $user = Auth::user();
             $user->syncRolesFromAssignments();
             $user = $user->fresh();
-            
+
             // If user has multiple roles, redirect to role selection
             if ($user->hasMultipleRoles()) {
                 return redirect()->route('select.role')
@@ -90,7 +90,7 @@ class AuthController extends Controller
 
         if ($user->switchRole($roleName)) {
             return redirect()->route('dashboard')
-                ->with('success', 'Role berhasil diubah ke: ' . ucfirst($roleName));
+                ->with('success', 'Role berhasil diubah ke: ' . $user->role_alias);
         }
 
         return back()->with('error', 'Role tidak valid');
@@ -185,7 +185,7 @@ class AuthController extends Controller
     public function skipChangePassword(Request $request)
     {
         $user = Auth::user();
-        
+
         // Set flag to false to skip next time
         $user->must_change_password = false;
         $user->save();

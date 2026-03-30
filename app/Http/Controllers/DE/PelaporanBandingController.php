@@ -18,6 +18,10 @@ class PelaporanBandingController extends Controller
      */
     public function index(Request $request)
     {
+        $statusLogs = [
+            PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
+            PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN,
+        ];
         $query = PengajuanAkreditasi::with([
             'studyProgram.university',
             'studyProgram.degreeLevel',
@@ -28,24 +32,18 @@ class PelaporanBandingController extends Controller
                 $q->where('jenis_dokumen', 'laporan_banding')
                     ->where('is_latest', true);
             },
-            'statusLog' => function ($q) {
-                $q->whereIn('status_to', [
-                    PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
-                    PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN,
-                ])->orderBy('changed_at', 'desc');
+            'statusLog' => function ($q) use ($statusLogs) {
+                $q->whereIn('status_to', $statusLogs)->orderBy('changed_at', 'desc');
             },
         ])
             // ✅ Filter: yang sudah punya hasil banding (sudah selesai pelaksanaan)
             ->whereNotNull('hasil_banding')
             // ✅ Dan pernah masuk fase pelaporan
-            ->whereExists(function ($q) {
+            ->whereExists(function ($q) use ($statusLogs) {
                 $q->select(DB::raw(1))
                     ->from('pengajuan_status_log as l')
                     ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
-                    ->whereIn('l.status_to', [
-                        PengajuanAkreditasi::STATUS_BANDING_DILAKSANAKAN,
-                        PengajuanAkreditasi::STATUS_AL_BANDING_DILAPORKAN,
-                    ]);
+                    ->whereIn('l.status_to', $statusLogs);
             });
 
         // Filter by status

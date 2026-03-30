@@ -98,7 +98,7 @@
                         </tr>
                         <tr>
                             <th>Status Pelaporan</th>
-                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('ak','asesor') !!}</td>
+                            <td>: {!! $pengajuan->getCustomBadgeLastStatus('ak','asesor', 'label_long_for') !!}</td>
                         </tr>
                         @else
                         <tr>

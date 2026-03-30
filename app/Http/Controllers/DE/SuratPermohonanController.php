@@ -19,30 +19,26 @@ class SuratPermohonanController extends Controller
      */
     public function index(Request $request)
     {
+        $statusLogs = [
+            PengajuanAkreditasi::STATUS_PENGINGAT_DIKIRIM,
+            PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM,
+            PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
+            PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITOLAK,
+        ];
         $query = PengajuanAkreditasi::with([
             'studyProgram.university',
             'studyProgram.degreeLevel',
             'pengaju',
-            'statusLog' => function ($q) {
-                $q->whereIn('status_to', [
-                    PengajuanAkreditasi::STATUS_PENGINGAT_DIKIRIM,
-                    PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM,
-                    PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
-                    PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITOLAK,
-                ])->orderBy('changed_at', 'desc');
+            'statusLog' => function ($q) use ($statusLogs) {
+                $q->whereIn('status_to', $statusLogs)->orderBy('changed_at', 'desc');
             },
         ])
             // ✅ basis list: pernah masuk fase surat
-            ->whereExists(function ($q) {
+            ->whereExists(function ($q) use ($statusLogs) {
                 $q->select(DB::raw(1))
                     ->from('pengajuan_status_log as l')
                     ->whereColumn('l.id_pengajuan', 'pengajuan_akreditasi.id')
-                    ->whereIn('l.status_to', [
-                        PengajuanAkreditasi::STATUS_PENGINGAT_DIKIRIM,
-                        PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DIKIRIM,
-                        PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITERIMA,
-                        PengajuanAkreditasi::STATUS_SURAT_PERMOHONAN_DITOLAK,
-                    ]);
+                    ->whereIn('l.status_to', $statusLogs);
             });
 
         // Filter by status

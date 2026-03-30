@@ -1,4 +1,4 @@
-{{-- resources/views/asesmen/al/berkas/upload-excel.blade.php --}}
+{{-- resources/views/asesmen/al-banding/berkas/upload-excel.blade.php --}}
 
 @extends('layouts.template.app')
 
@@ -75,15 +75,15 @@
                     </h4>
                     <p class="text-muted mb-0">{{ $asesmen->getName(false) }}</p>
                 </div>
-                <a href="{{ route('al.berkas') }}" class="btn btn-outline-secondary">
+                <a href="{{ route('al_banding.berkas') }}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left"></i> Kembali
                 </a>
             </div>
 
-            {{-- ✅ ALERT: Info Uploader --}}
-            @if($firstUpload)
+            {{-- ALERT: Info Editor/Opener --}}
+            @if($firstActiveAsesor)
             <div class="mt-3">
-                @if($isUploader)
+                @if($isEditorAsesor)
                 <div class="alert alert-success alert-permanent">
                     <div class="d-flex align-items-start">
                         <div class="flex-shrink-0">
@@ -91,14 +91,9 @@
                         </div>
                         <div class="flex-grow-1">
                             <h6 class="mb-2">
-                                <i class="bi bi-person-check"></i> Anda adalah Asesor Banding yang Mengupload Excel
+                                <i class="bi bi-person-check"></i> Anda adalah Asesor banding yang Membuka Penilaian
                             </h6>
-                            <p class="mb-0">
-                                Anda dapat mengupload file Excel baru untuk memperbarui data penilaian.
-                            </p>
-                            <small class="text-muted">
-                                <i class="bi bi-clock"></i> Pertama kali diupload: {{ $firstUpload->created_at->locale('id')->translatedFormat('d M Y, H:i') }}
-                            </small>
+                            <p class="mb-0">Anda dapat mengupload file Excel untuk mengisi data penilaian.</p>
                         </div>
                     </div>
                 </div>
@@ -110,18 +105,13 @@
                         </div>
                         <div class="flex-grow-1">
                             <h6 class="mb-2">
-                                <i class="bi bi-file-earmark-check"></i> Excel Telah Diupload
+                                <i class="bi bi-file-earmark-check"></i> Penilaian Sedang Dikerjakan Asesor Banding Lain
                             </h6>
                             <p class="mb-1">
-                                File Excel telah diupload oleh asesor banding: <strong>{{ $firstUpload->asesor->name ?? 'Asesor Banding' }}</strong>
+                                Penilaian sedang dikerjakan oleh: <strong>{{ $firstActiveAsesor->user->name ?? 'Asesor lain' }}</strong>
                             </p>
-                            <small class="text-muted">
-                                <i class="bi bi-clock"></i> Diupload pada: {{ $firstUpload->created_at->locale('id')->translatedFormat('d M Y, H:i') }}
-                            </small>
-                            <hr class="my-2">
                             <p class="mb-0 small text-muted">
-                                <i class="bi bi-lock"></i> Hanya asesor banding yang pertama kali mengupload yang dapat mengupload file baru.
-                                Anda dapat melihat hasil penilaian di halaman detail.
+                                <i class="bi bi-lock"></i> Hanya asesor banding yang pertama membuka yang dapat mengupload file Excel.
                             </p>
                         </div>
                     </div>
@@ -232,7 +222,7 @@
                         </div>
 
                         <div>
-                            <a href="{{ route('al.berkas.show', $asesmen->id) }}" class="btn btn-outline-primary">
+                            <a href="{{ route('al_banding.berkas.show', $asesmen->id) }}" class="btn btn-outline-primary">
                                 <i class="bi bi-eye"></i> Lihat Detail Penilaian
                             </a>
                         </div>
@@ -268,18 +258,18 @@
     <div class="row">
         {{-- Left: Upload Form --}}
         <div class="col-lg-8">
-            <div class="card {{ !$canUpload ? 'border-secondary' : '' }}">
-                <div class="card-header {{ $canUpload ? 'bg-primary' : 'bg-secondary' }} text-white">
+            <div class="card {{ !$isEditorAsesor ? 'border-secondary' : '' }}">
+                <div class="card-header {{ $isEditorAsesor ? 'bg-primary' : 'bg-secondary' }} text-white">
                     <h5 class="mb-0">
-                        <i class="bi bi-cloud-upload"></i> Upload File Penilaian AL
-                        @if(!$canUpload)
+                        <i class="bi bi-cloud-upload"></i> Upload File Penilaian AL Banding
+                        @if(!$isEditorAsesor)
                         <span class="badge bg-light text-dark ms-2">Dinonaktifkan</span>
                         @endif
                     </h5>
                 </div>
                 <div class="card-body">
                     {{-- ✅ Warning jika tidak bisa upload --}}
-                    @if(!$canUpload)
+                    @if(!$isEditorAsesor)
                     <div class="alert alert-warning alert-permanent">
                         <i class="bi bi-lock"></i>
                         <strong>Upload Dinonaktifkan</strong><br>
@@ -291,15 +281,14 @@
                     <form id="uploadForm" enctype="multipart/form-data">
                         @csrf
 
-                        <div class="upload-area {{ (!$canUpload || $isSubmittedOnly || $isApproved) ? 'disabled' : '' }}" id="uploadArea">
-                            <input type="file" id="fileInput" name="file" accept=".xlsx,.xls" class="d-none" required {{ (!$canUpload || $isSubmittedOnly || $isApproved) ? 'disabled' : '' }}>
-
+                        <div class="upload-area {{ (!$isEditorAsesor || $isSubmittedOnly || $isApproved) ? 'disabled' : '' }}" id="uploadArea">
+                            <input type="file" id="fileInput" name="file" accept=".xlsx,.xls" class="d-none" required {{ (!$isEditorAsesor || $isSubmittedOnly || $isApproved) ? 'disabled' : '' }}>
                             <div id="uploadPrompt">
                                 <i class="bi bi-cloud-arrow-up file-icon"></i>
                                 <h5 class="mt-3">
                                     @if($isSubmittedOnly || $isApproved)
                                     Upload Dinonaktifkan (Sudah Di-Submit)
-                                    @elseif(!$canUpload)
+                                    @elseif(!$isEditorAsesor)
                                     Upload Dinonaktifkan (Sudah Diupload Asesor Banding Lain)
                                     @else
                                     Silahkan Upload File Excel Penilaian AL banding di Sini
@@ -337,7 +326,7 @@
 
                         {{-- Submit Button --}}
                         <div class="mt-4 text-center">
-                            <button type="submit" class="btn btn-primary btn-md" id="btnUploadSubmit" {{ (!$canUpload || $isSubmittedOnly || $isApproved) ? 'disabled' : '' }}>
+                            <button type="submit" class="btn btn-primary btn-md" id="btnUploadSubmit" {{ (!$isEditorAsesor || $isSubmittedOnly || $isApproved) ? 'disabled' : '' }}>
                                 <i class="bi bi-upload"></i> Upload dan Proses
                             </button>
                         </div>
@@ -370,7 +359,7 @@
                     </div>
 
                     <div class="mb-4 text-center">
-                        <a href="{{ route('al.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'template']) }}" class="btn btn-md btn-outline-primary">
+                        <a href="{{ route('al_banding.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'template']) }}" class="btn btn-md btn-outline-primary">
                             <i class="bi bi-download"></i> Download Templat Penilaian AL Banding
                         </a>
                     </div>
@@ -390,8 +379,8 @@
                         @foreach($asesorTeam as $asesor)
                         <tr>
                             <td width="40">
-                                @if($firstUpload && $firstUpload->id_asesor == $asesor->id_user)
-                                <i class="bi bi-person-check-fill text-success" title="Uploader"></i>
+                                @if($firstActiveAsesor && $firstActiveAsesor->id_user == $asesor->id_user)
+                                <i class="bi bi-person-check-fill text-success" title="Editor"></i>
                                 @else
                                 <i class="bi bi-person"></i>
                                 @endif
@@ -401,8 +390,8 @@
                                 @if($asesor->id_user == Auth::id())
                                 <span class="badge bg-info ms-1">Anda</span>
                                 @endif
-                                @if($firstUpload && $firstUpload->id_asesor == $asesor->id_user)
-                                <span class="badge bg-success ms-1">Uploader</span>
+                                @if($firstActiveAsesor && $firstActiveAsesor->id_user == $asesor->id_user)
+                                <span class="badge bg-success ms-1">Editor</span>
                                 @endif
                             </td>
                         </tr>
@@ -423,7 +412,7 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
     document.addEventListener('DOMContentLoaded', function() {
         const idAsesmen = "{{ $asesmen->id }}";
         const isSubmitted = @json($isSubmitted);
-        const canUpload = @json($canUpload);
+        const isEditorAsesor = @json($isEditorAsesor);
 
         const qs = function(id) {
             return document.getElementById(id);
@@ -450,7 +439,7 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
         , };
 
         // ✅ Disable upload if submitted OR not uploader
-        if (isSubmitted || !canUpload) {
+        if (isSubmitted || !isEditorAsesor) {
             if (el.uploadArea) el.uploadArea.style.cursor = 'not-allowed';
             if (el.fileInput) el.fileInput.disabled = true;
             console.log('Upload disabled:', isSubmitted ? 'Already submitted' : 'Not the uploader');
@@ -562,7 +551,7 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
             formData.append('_token', '{{ csrf_token() }}');
 
             try {
-                const response = await fetch(`/al/berkas/${idAsesmen}/import`, {
+                const response = await fetch(`/al-banding/berkas/${idAsesmen}/import`, {
                     method: 'POST'
                     , body: formData
                     , headers: {
@@ -625,7 +614,7 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
                 }
 
                 try {
-                    const response = await fetch(`/al/import-status/${importLogId}`);
+                    const response = await fetch(`/al-banding/import-status/${importLogId}`);
                     const data = await response.json();
                     if (data.success) {
                         const log = data.data;
@@ -737,7 +726,7 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
             if (!confirmed.isConfirmed) return;
 
             try {
-                const response = await fetch(`/al/berkas/${idAsesmen}/submit`, {
+                const response = await fetch(`/al-banding/berkas/${idAsesmen}/submit`, {
                     method: 'POST'
                     , headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'

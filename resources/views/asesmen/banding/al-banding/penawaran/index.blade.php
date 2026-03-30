@@ -91,7 +91,7 @@ $authUser = Auth::user();
                         <div class="d-flex justify-content-between align-items-start mb-3">
                             <div class="flex-grow-1">
                                 <h5 class="card-title mb-1 text-primary">{{ $penawaran->asesmen->name }}</h5>
-                                <span class="badge bg-primary">{{ $penawaran->role->alias.' '.ucfirst($penawaran->jenis_asesmen) }}</span>
+                                <span class="badge bg-primary">{{ $penawaran->jenis_asesmen_role_label }}</span>
                             </div>
                             <span class="badge bg-warning status-badge">
                                 <i class="bi bi-clock-history"></i> Pending

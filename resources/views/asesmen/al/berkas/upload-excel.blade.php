@@ -80,21 +80,45 @@
                 </a>
             </div>
 
-            {{-- ✅ ALERT: Info Uploader --}}
-            <div class="alert alert-success alert-permanent mt-3 border-start border-2 border-success">
-                <div class="d-flex align-items-start">
-                    <i class="bi bi-shield-check fs-4 me-3 text-success flex-shrink-0 mt-1"></i>
-                    <div>
-                        <h6 class="mb-1">
-                            <i class="bi bi-person-check-fill"></i> Anda Asesor Pengupload pada Penilaian AL Ini
-                        </h6>
-                        <p class="mb-0 small text-muted">
-                            Anda adalah asesor pertama yang membuka halaman ini.
-                            Asesor lain dalam tim tidak dapat mengakses halaman penilaian ini.
-                        </p>
+            {{-- ALERT: Info Editor/Opener --}}
+            @if($firstActiveAsesor)
+            <div class="mt-3">
+                @if($isEditorAsesor)
+                <div class="alert alert-success alert-permanent">
+                    <div class="d-flex align-items-start">
+                        <div class="flex-shrink-0">
+                            <i class="bi bi-check-circle fs-4 me-3"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-2">
+                                <i class="bi bi-person-check"></i> Anda adalah Asesor yang Membuka Penilaian
+                            </h6>
+                            <p class="mb-0">Anda dapat mengupload file Excel untuk mengisi data penilaian.</p>
+                        </div>
                     </div>
                 </div>
+                @else
+                <div class="alert alert-info alert-permanent">
+                    <div class="d-flex align-items-start">
+                        <div class="flex-shrink-0">
+                            <i class="bi bi-info-circle fs-4 me-3"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-2">
+                                <i class="bi bi-file-earmark-check"></i> Penilaian Sedang Dikerjakan Asesor Lain
+                            </h6>
+                            <p class="mb-1">
+                                Penilaian sedang dikerjakan oleh: <strong>{{ $firstActiveAsesor->user->name ?? 'Asesor lain' }}</strong>
+                            </p>
+                            <p class="mb-0 small text-muted">
+                                <i class="bi bi-lock"></i> Hanya asesor yang pertama membuka yang dapat mengupload file Excel.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                @endif
             </div>
+            @endif
 
             {{-- ✅ Progress Section --}}
             <div class="progress-wrapper mt-4">
@@ -234,18 +258,18 @@
     <div class="row">
         {{-- Left: Upload Form --}}
         <div class="col-lg-8">
-            <div class="card {{ !$canUpload ? 'border-secondary' : '' }}">
-                <div class="card-header {{ $canUpload ? 'bg-primary' : 'bg-secondary' }} text-white">
+            <div class="card {{ !$isEditorAsesor ? 'border-secondary' : '' }}">
+                <div class="card-header {{ $isEditorAsesor ? 'bg-primary' : 'bg-secondary' }} text-white">
                     <h5 class="mb-0">
                         <i class="bi bi-cloud-upload"></i> Upload File Penilaian AL
-                        @if(!$canUpload)
+                        @if(!$isEditorAsesor)
                         <span class="badge bg-light text-dark ms-2">Dinonaktifkan</span>
                         @endif
                     </h5>
                 </div>
                 <div class="card-body">
                     {{-- ✅ Warning jika tidak bisa upload --}}
-                    @if(!$canUpload)
+                    @if(!$isEditorAsesor)
                     <div class="alert alert-warning alert-permanent">
                         <i class="bi bi-lock"></i>
                         <strong>Upload Dinonaktifkan</strong><br>
@@ -257,15 +281,14 @@
                     <form id="uploadForm" enctype="multipart/form-data">
                         @csrf
 
-                        <div class="upload-area {{ (!$canUpload || $isSubmittedOnly || $isApproved) ? 'disabled' : '' }}" id="uploadArea">
-                            <input type="file" id="fileInput" name="file" accept=".xlsx,.xls" class="d-none" required {{ (!$canUpload || $isSubmittedOnly || $isApproved) ? 'disabled' : '' }}>
-
+                        <div class="upload-area {{ (!$isEditorAsesor || $isSubmittedOnly || $isApproved) ? 'disabled' : '' }}" id="uploadArea">
+                            <input type="file" id="fileInput" name="file" accept=".xlsx,.xls" class="d-none" required {{ (!$isEditorAsesor || $isSubmittedOnly || $isApproved) ? 'disabled' : '' }}>
                             <div id="uploadPrompt">
                                 <i class="bi bi-cloud-arrow-up file-icon"></i>
                                 <h5 class="mt-3">
                                     @if($isSubmittedOnly || $isApproved)
                                     Upload Dinonaktifkan (Sudah Difinalisasi)
-                                    @elseif(!$canUpload)
+                                    @elseif(!$isEditorAsesor)
                                     Upload Dinonaktifkan (Sudah Diupload Asesor Lain)
                                     @else
                                     Silahkan Upload File Excel Penilaian AL di Sini
@@ -303,7 +326,7 @@
 
                         {{-- Submit Button --}}
                         <div class="mt-4 text-center">
-                            <button type="submit" class="btn btn-primary btn-md" id="btnUploadSubmit" {{ (!$canUpload || $isSubmittedOnly || $isApproved) ? 'disabled' : '' }}>
+                            <button type="submit" class="btn btn-primary btn-md" id="btnUploadSubmit" {{ (!$isEditorAsesor || $isSubmittedOnly || $isApproved) ? 'disabled' : '' }}>
                                 <i class="bi bi-upload"></i> Upload dan Proses
                             </button>
                         </div>
@@ -356,8 +379,8 @@
                         @foreach($asesorTeam as $asesor)
                         <tr>
                             <td width="40">
-                                @if($firstUpload && $firstUpload->id_asesor == $asesor->id_user)
-                                <i class="bi bi-person-check-fill text-success" title="Uploader"></i>
+                                @if($firstActiveAsesor && $firstActiveAsesor->id_user == $asesor->id_user)
+                                <i class="bi bi-person-check-fill text-success" title="Editor"></i>
                                 @else
                                 <i class="bi bi-person"></i>
                                 @endif
@@ -367,8 +390,8 @@
                                 @if($asesor->id_user == Auth::id())
                                 <span class="badge bg-info ms-1">Anda</span>
                                 @endif
-                                @if($firstUpload && $firstUpload->id_asesor == $asesor->id_user)
-                                <span class="badge bg-success ms-1">Uploader</span>
+                                @if($firstActiveAsesor && $firstActiveAsesor->id_user == $asesor->id_user)
+                                <span class="badge bg-success ms-1">Editor</span>
                                 @endif
                             </td>
                         </tr>
@@ -389,7 +412,7 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
     document.addEventListener('DOMContentLoaded', function() {
         const idAsesmen = "{{ $asesmen->id }}";
         const isSubmitted = @json($isSubmitted);
-        const canUpload = @json($canUpload);
+        const isEditorAsesor = @json($isEditorAsesor);
 
         const qs = function(id) {
             return document.getElementById(id);
@@ -416,7 +439,7 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
         , };
 
         // ✅ Disable upload if submitted OR not uploader
-        if (isSubmitted || !canUpload) {
+        if (isSubmitted || !isEditorAsesor) {
             if (el.uploadArea) el.uploadArea.style.cursor = 'not-allowed';
             if (el.fileInput) el.fileInput.disabled = true;
             console.log('Upload disabled:', isSubmitted ? 'Already submitted' : 'Not the uploader');
@@ -754,7 +777,7 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
                     Anda adalah <strong>asesor pertama</strong> yang membuka halaman
                     penilaian AL ini, sehingga hak mengisi penilaian diberikan kepada Anda.
                 </p>
-                <div class="alert alert-success mb-3" style="border-left:4px solid #198754;">
+                <div class="alert alert-success alert-permanent mb-3" style="border-left:4px solid #198754;">
                     <i class="bi bi-shield-check me-2"></i>
                     <strong>Hanya Anda yang dapat:</strong>
                     <ul class="mb-0 mt-1 small">
@@ -764,7 +787,7 @@ $isSubmitted = $isSubmittedOnly || $isApproved;
                         <li>Memfinalisasi dan mengirim penilaian</li>
                     </ul>
                 </div>
-                <div class="alert alert-warning mb-0" style="border-left:4px solid #ffc107;">
+                <div class="alert alert-warning alert-permanent mb-0" style="border-left:4px solid #ffc107;">
                     <i class="bi bi-people me-2"></i>
                     <strong>Asesor Lain dalam Tim</strong><br>
                     <small>

@@ -117,7 +117,7 @@ $isComplete = $progress['percentage'] == 100;
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
 
                 {{-- STEP 1 --}}
-                <a href="{{ route('al.berkas.show', ['idAsesmen' => $asesmen->id, 'step' => 1]) }}" class="text-decoration-none d-flex align-items-center gap-2">
+                <a href="{{ route('al_banding.berkas.show', ['idAsesmen' => $asesmen->id, 'step' => 1]) }}" class="text-decoration-none d-flex align-items-center gap-2">
                     <span class="step-circle {{ $step === 1 ? 'active' : 'done' }}">1</span>
                     <div>
                         <div class="fw-bold {{ $step === 1 ? '' : 'text-muted' }}">Penilaian Asesmen Lapangan</div>
@@ -128,7 +128,7 @@ $isComplete = $progress['percentage'] == 100;
                 <div class="step-line"></div>
 
                 {{-- STEP 2 --}}
-                {{-- <a href="{{ route('al.berkas.show', ['idAsesmen' => $asesmen->id, 'step' => 2]) }}" class="text-decoration-none d-flex align-items-center gap-2 {{ !($isSubmittedOnly && !$isApproved) ? 'disabled-link' : '' }}" {{ !($isSubmittedOnly && !$isApproved) ? 'disabled' : '' }}>
+                {{-- <a href="{{ route('al_banding.berkas.show', ['idAsesmen' => $asesmen->id, 'step' => 2]) }}" class="text-decoration-none d-flex align-items-center gap-2 {{ !($isSubmittedOnly && !$isApproved) ? 'disabled-link' : '' }}" {{ !($isSubmittedOnly && !$isApproved) ? 'disabled' : '' }}>
                 <span class="step-circle {{ $step === 2 ? 'active' : 'inactive' }}">2</span>
                 <div>
                     <div class="fw-bold {{ $step === 2 ? '' : 'text-muted' }}">Hasil dan Berita Acara Asesmen Lapangan (AL)</div>
@@ -148,7 +148,7 @@ $isComplete = $progress['percentage'] == 100;
                     <h3 class="mb-1">Penilaian Asesmen Lapangan</h3>
                     <p class="text-muted mb-0">{{ $asesmen->getName(false) }}</p>
                 </div>
-                <a href="{{ route('al.berkas') }}" class="btn btn-outline-secondary">
+                <a href="{{ route('al_banding.berkas') }}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left"></i> Kembali
                 </a>
             </div>
@@ -255,7 +255,7 @@ $isComplete = $progress['percentage'] == 100;
                     @if($isApproved)
                     <div class="alert alert-success alert-permanent alert-dismissible mb-3">
                         <i class="bi bi-check-circle me-2"></i>
-                        <strong>Penilaian Disetujui!</strong> Penilaian Anda pada tahap Asesmen Lapangan (AL) telah divalidasi dan disetujui oleh LAMDEPILAR. Silahkan unduh file Hasil penilaian lengkap di <a href="{{ route('al.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'personal']) }}" class="alert-link">link ini</a>. Tanda tangani, lalu upload ulang di step ke-2 (Hasil dan berita acara Asesmen Lapangan) di halaman <a href="{{ route('al.berkas.documents.page', ['id' => $asesmen->id]) }}" class="alert-link">berikut ini</a>.
+                        <strong>Penilaian Disetujui!</strong> Penilaian Anda pada tahap Asesmen Lapangan (AL) telah divalidasi dan disetujui oleh LAMDEPILAR. Silahkan unduh file Hasil penilaian lengkap di <a href="{{ route('al_banding.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'personal']) }}" class="alert-link">link ini</a>. Tanda tangani, lalu upload ulang di step ke-2 (Hasil dan berita acara Asesmen Lapangan) di halaman <a href="{{ route('al_banding.berkas.documents.page', ['id' => $asesmen->id]) }}" class="alert-link">berikut ini</a>.
                     </div>
                     @endif
 
@@ -303,7 +303,7 @@ $isComplete = $progress['percentage'] == 100;
 
                                 <!-- Download Templat -->
                                 <li>
-                                    <a class="dropdown-item" href="{{ route('al.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'template']) }}" id="btnDownloadTemplate">
+                                    <a class="dropdown-item" href="{{ route('al_banding.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'template']) }}" id="btnDownloadTemplate">
                                         <i class="bi bi-file-earmark-text text-info"></i> Download Templat
                                         <small class="d-block text-muted">Format Excel sebagai templat</small>
                                     </a>
@@ -311,7 +311,7 @@ $isComplete = $progress['percentage'] == 100;
 
                                 <!-- Hasil Penilaian - Lengkap -->
                                 {{-- <li>
-                                    <a class="dropdown-item btnDownloadData" data-mode="full" href="{{ route('al.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'full']) }}">
+                                    <a class="dropdown-item btnDownloadData" data-mode="full" href="{{ route('al_banding.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'full']) }}">
                                 <i class="bi bi-file-earmark-spreadsheet text-primary"></i> Hasil Penilaian Lengkap
                                 <small class="d-block text-muted">Menu + Kertas Kerja + Semua Asesor Banding</small>
                                 </a>
@@ -319,7 +319,7 @@ $isComplete = $progress['percentage'] == 100;
 
                                 <!-- Hasil Penilaian - Personal -->
                                 <li>
-                                    <a class="dropdown-item btnDownloadData" data-mode="personal" href="{{ route('al.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'personal']) }}">
+                                    <a class="dropdown-item btnDownloadData" data-mode="personal" href="{{ route('al_banding.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'personal']) }}">
                                         <i class="bi bi-person-check text-success"></i> Hasil Penilaian Anda
                                         <small class="d-block text-muted">Hanya Sheet Penilaian Anda</small>
                                     </a>
@@ -1167,13 +1167,11 @@ $isComplete = $progress['percentage'] == 100;
                 , title: 'Konfirmasi Submit Penilaian'
                 , html: `
                 <div class="text-start">
-                    <p><strong>Anda akan mengirim penilaian untuk validasi.</strong></p>
+                    <p><strong>Anda akan mengirim penilaian untuk difinalisasi.</strong></p>
                     <p>Setelah di-submit:</p>
                     <ul>
-                        <li>Penilaian akan dikirim ke validator</li>
+                        <li>Penilaian akan difinalisasi</li>
                         <li>Anda tidak bisa edit penilaian</li>
-                        <li>Validator akan memvalidasi penilaian Anda</li>
-                        <li>Jika perlu revisi, Anda akan diminta memperbaiki</li>
                     </ul>
                     <p class="text-primary"><i class="bi bi-info-circle"></i> Total: <strong>${total} elemen</strong> telah dinilai</p>
                 </div>
@@ -1194,7 +1192,7 @@ $isComplete = $progress['percentage'] == 100;
             showLoading();
 
             try {
-                const response = await fetch(`/al/berkas/${idAsesmen}/submit`, {
+                const response = await fetch(`/al-banding/berkas/${idAsesmen}/submit`, {
                     method: 'POST'
                     , headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -1270,7 +1268,7 @@ $isComplete = $progress['percentage'] == 100;
             showLoading();
 
             try {
-                const response = await fetch(`/al/berkas/${idAsesmen}/unsubmit`, {
+                const response = await fetch(`/al-banding/berkas/${idAsesmen}/unsubmit`, {
                     method: 'POST'
                     , headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -1347,7 +1345,7 @@ $isComplete = $progress['percentage'] == 100;
             showLoading();
 
             try {
-                window.location.href = `/al/berkas/${idAsesmen}/export`;
+                window.location.href = `/al-banding/berkas/${idAsesmen}/export`;
 
                 setTimeout(() => {
                     hideLoading();
@@ -1404,7 +1402,7 @@ $isComplete = $progress['percentage'] == 100;
 
             try {
                 // Upload file
-                const response = await fetch(`/al/berkas/${idAsesmen}/import`, {
+                const response = await fetch(`/al-banding/berkas/${idAsesmen}/import`, {
                     method: 'POST'
                     , body: formData
                     , headers: {
@@ -1490,7 +1488,7 @@ $isComplete = $progress['percentage'] == 100;
                 }
 
                 try {
-                    const response = await fetch(`/al/import-status/${importLogId}`, {
+                    const response = await fetch(`/al-banding/import-status/${importLogId}`, {
                         headers: {
                             'Accept': 'application/json'
                             , 'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -1653,7 +1651,7 @@ $isComplete = $progress['percentage'] == 100;
                             updateCharCount(komentarTextarea);
                             updateSaveStatus(form, 'Belum ada penilaian', 'text-muted');
 
-                            const card = form.closest('.indikator-card');
+                            const card = form.closest('.elemen-card');
                             card.classList.remove('has-penilaian');
 
                             const badge = card.querySelector('.badge.bg-success');
@@ -1684,7 +1682,7 @@ $isComplete = $progress['percentage'] == 100;
             if (isSaving) return;
             isSaving = true;
             try {
-                const response = await fetch(`/al/berkas/${idAsesmen}/nilai`, {
+                const response = await fetch(`/al-banding/berkas/${idAsesmen}/nilai`, {
                     method: 'POST'
                     , headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -1754,7 +1752,7 @@ $isComplete = $progress['percentage'] == 100;
             showLoading();
 
             try {
-                const response = await fetch(`/al/berkas/${idAsesmen}/nilai`, {
+                const response = await fetch(`/al-banding/berkas/${idAsesmen}/nilai`, {
                     method: 'POST'
                     , headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -1789,7 +1787,7 @@ $isComplete = $progress['percentage'] == 100;
                     });
                     updateSaveStatus(form, `Tersimpan pada ${timeStr}`, 'text-success');
 
-                    const card = form.closest('.indikator-card');
+                    const card = form.closest('.elemen-card');
                     if (card) {
                         card.classList.add('has-penilaian');
 
@@ -1994,7 +1992,7 @@ $isComplete = $progress['percentage'] == 100;
         function downloadTemplate() {
             showLoading();
 
-            window.location.href = `/al/berkas/${idAsesmen}/template`;
+            window.location.href = `/al-banding/berkas/${idAsesmen}/template`;
 
             setTimeout(() => {
                 hideLoading();
@@ -2014,7 +2012,7 @@ $isComplete = $progress['percentage'] == 100;
         function downloadDataExcel(e) {
             showLoading();
             const mode = e.currentTarget.dataset.mode;
-            window.location.href = `/al/berkas/${idAsesmen}/export?mode=${mode}`;
+            window.location.href = `/al-banding/berkas/${idAsesmen}/export?mode=${mode}`;
 
             setTimeout(() => {
                 hideLoading();
@@ -2133,7 +2131,7 @@ $isComplete = $progress['percentage'] == 100;
 
             // Load history
             try {
-                const response = await fetch(`/al/berkas/${idAsesmen}/import-history`, {
+                const response = await fetch(`/al-banding/berkas/${idAsesmen}/import-history`, {
                     headers: {
                         'Accept': 'application/json'
                         , 'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -2508,7 +2506,7 @@ $isComplete = $progress['percentage'] == 100;
             showLoading();
 
             try {
-                const response = await fetch(`/al/berkas/${idAsesmen}/reset-all`, {
+                const response = await fetch(`/al-banding/berkas/${idAsesmen}/reset-all`, {
                     method: 'DELETE'
                     , headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'

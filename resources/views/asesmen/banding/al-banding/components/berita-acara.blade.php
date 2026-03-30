@@ -54,12 +54,12 @@
                 <i class="bi bi-info-circle"></i>
                 Upload file Hasil dan Berita Acara Asesmen Lapangan (AL) (PDF).
                 Format file yang harus ditanda-tangani dapat didownload pada
-                <a href="{{ route('al.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'personal']) }}" class="alert-link">
+                <a href="{{ route('al_banding.berkas.export', ['idAsesmen' => $asesmen->id, 'mode' => 'personal']) }}" class="alert-link">
                     link ini
                 </a>.
             </div>
 
-            <form id="uploadForm" action="{{ route('al.berkas.documents.upload', $asesmen->id) }}" method="POST" enctype="multipart/form-data">
+            <form id="uploadForm" action="{{ route('al_banding.berkas.documents.upload', $asesmen->id) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="row g-2 align-items-end">
                     <div class="col-md-8">
@@ -133,8 +133,8 @@
 <script>
     const asesmenId = "{{ $asesmen->id }}";
     const isFinalized = "{{ $isFinalized }}";
-    const listUrl = "{{ route('al.berkas.documents.list', $asesmen->id) }}";
-    const finalizeUrl = "{{ route('al.berkas.documents.finalize', $asesmen->id) }}";
+    const listUrl = "{{ route('al_banding.berkas.documents.list', $asesmen->id) }}";
+    const finalizeUrl = "{{ route('al_banding.berkas.documents.finalize', $asesmen->id) }}";
 
     // Load files saat halaman dimuat
     document.addEventListener('DOMContentLoaded', function() {
